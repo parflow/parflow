@@ -199,11 +199,10 @@ BCStruct    *BCPressure(
 
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
-            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+            ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is,
             {
               patch_values_size++;
             });
-
             patch_values = talloc(double, patch_values_size);
             memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
@@ -215,134 +214,148 @@ BCStruct    *BCPressure(
 
             dz2 = SubgridDZ(subgrid) * 0.5;
 
-            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct,
-                              ipatch, is,
-            {
-              ref_press = DirEquilRefPatchValue(interval_data);
-              PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                 (0, NULL, NULL, &ref_press, &ref_den,
-                                  CALCFCN));
-              ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-              z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
-              iel = (i - ix) + (j - iy) * nx;
-              fcn_val = 0.0;
-              nonlin_resid = 1.0;
-              iterations = -1;
+            ForPatchCellsPerFace(ALL,
+                                 BeforeAllCells(DoNothing),
+                                 LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                                 Locals(int ips, iel, iterations, phase;
+                                        double ref_press, ref_den, fcn_val, nonlin_resid;
+                                        double z, dtmp, density, density_der;
+                                        double interface_press, offset, height;),
+                                 CellSetup({
+                                     ref_press = DirEquilRefPatchValue(interval_data);
+                                     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                                        (0, NULL, NULL, &ref_press, &ref_den,
+                                                         CALCFCN));
+                                     ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+                                     iel = (i - ix) + (j - iy) * nx;
+                                     fcn_val = 0.0;
+                                     nonlin_resid = 1.0;
+                                     iterations = -1;
+                                   }),
+                                 FACE(LeftFace,  { z = rsz_dat[ips]; }),
+                                 FACE(RightFace, { z = rsz_dat[ips]; }),
+                                 FACE(DownFace,  { z = rsz_dat[ips]; }),
+                                 FACE(UpFace,    { z = rsz_dat[ips]; }),
+                                 FACE(BackFace,  { z = rsz_dat[ips] - dz2 * z_mult_dat[ips]; }),
+                                 FACE(FrontFace, { z = rsz_dat[ips] + dz2 * z_mult_dat[ips];}),
+                                 CellFinalize(
+                                 {
+                                  /* Solve a nonlinear problem for hydrostatic pressure
+                                   * at points on boundary patch given pressure on reference
+                                   * patch.  Note that the problem is only nonlinear if
+                                   * density depends on pressure.
+                                   *
+                                   * The nonlinear problem to solve is:
+                                   *   F(p) = 0
+                                   *   F(p) = P - P_ref
+                                   *          - 0.5*(rho(P) + rho(P_ref))*gravity*(z - z_ref)
+                                   *
+                                   * Newton's method is used to find a solution. */
 
-              /* Solve a nonlinear problem for hydrostatic pressure
-               * at points on boundary patch given pressure on reference
-               * patch.  Note that the problem is only nonlinear if
-               * density depends on pressure.
-               *
-               * The nonlinear problem to solve is:
-               *   F(p) = 0
-               *   F(p) = P - P_ref
-               *          - 0.5*(rho(P) + rho(P_ref))*gravity*(z - z_ref)
-               *
-               * Newton's method is used to find a solution. */
+                                   while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
+                                   {
+                                     if (iterations > -1)
+                                     {
+                                       PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                                          (0, NULL, NULL, &patch_values[ival],
+                                                           &density_der, CALCDER));
+                                       dtmp = 1.0 - 0.5 * density_der * gravity
+                                              * (z - elevations[is][iel]);
+                                       patch_values[ival] = patch_values[ival] - fcn_val / dtmp;
+                                     }
+                                     else
+                                     {
+                                       patch_values[ival] = ref_press;
+                                     }
+                                     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                                        (0, NULL, NULL, &patch_values[ival],
+                                                         &density, CALCFCN));
 
-              while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
-              {
-                if (iterations > -1)
-                {
-                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                     (0, NULL, NULL, &patch_values[ival],
-                                      &density_der, CALCDER));
-                  dtmp = 1.0 - 0.5 * density_der * gravity
-                         * (z - elevations[is][iel]);
-                  patch_values[ival] = patch_values[ival] - fcn_val / dtmp;
-                }
-                else
-                {
-                  patch_values[ival] = ref_press;
-                }
-                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (0, NULL, NULL, &patch_values[ival],
-                                    &density, CALCFCN));
+                                     fcn_val = patch_values[ival] - ref_press
+                                               - 0.5 * (density + ref_den) * gravity
+                                               * (z - elevations[is][iel]);
+                                     nonlin_resid = fabs(fcn_val);
 
-                fcn_val = patch_values[ival] - ref_press
-                          - 0.5 * (density + ref_den) * gravity
-                          * (z - elevations[is][iel]);
-                nonlin_resid = fabs(fcn_val);
-
-                iterations++;
-              }            /* End of while loop */
+                                     iterations++;
+                                   }            /* End of while loop */
 
 
-              /* Iterate over the phases and reset pressures according to
-               * hydrostatic conditions with appropriate densities.
-               * At each interface, we have hydrostatic conditions, so
-               *
-               * z_inter = (P_inter - P_ref) /
-               *            (0.5*(rho(P_inter)+rho(P_ref))*gravity
-               + z_ref
-               +
-               + Thus, the interface height and pressure are known
-               + and hydrostatic conditions can be determined for
-               + new phase.
-               +
-               + NOTE:  This only works for Pc = 0. */
+                                   /* Iterate over the phases and reset pressures according to
+                                    * hydrostatic conditions with appropriate densities.
+                                    * At each interface, we have hydrostatic conditions, so
+                                    *
+                                    * z_inter = (P_inter - P_ref) /
+                                    *            (0.5*(rho(P_inter)+rho(P_ref))*gravity
+                                    + z_ref
+                                    +
+                                    + Thus, the interface height and pressure are known
+                                    + and hydrostatic conditions can be determined for
+                                    + new phase.
+                                    +
+                                    + NOTE:  This only works for Pc = 0. */
 
-              for (phase = 1; phase < num_phases; phase++)
-              {
-                interface_press = DirEquilRefPatchValueAtInterface(
-                                                                   interval_data, phase);
-                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (phase - 1, NULL, NULL, &interface_press,
-                                    &interface_den, CALCFCN));
-                offset = (interface_press - ref_press)
-                         / (0.5 * (interface_den + ref_den) * gravity);
-                ref_press = interface_press;
-                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (phase, NULL, NULL, &ref_press, &ref_den,
-                                    CALCFCN));
+                                   for (phase = 1; phase < num_phases; phase++)
+                                   {
+                                     interface_press = DirEquilRefPatchValueAtInterface(
+                                                                                        interval_data, phase);
+                                     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                                        (phase - 1, NULL, NULL, &interface_press,
+                                                         &interface_den, CALCFCN));
+                                     offset = (interface_press - ref_press)
+                                              / (0.5 * (interface_den + ref_den) * gravity);
+                                     ref_press = interface_press;
+                                     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                                        (phase, NULL, NULL, &ref_press, &ref_den,
+                                                         CALCFCN));
 
-                /* Only reset pressure value if in another phase.
-                 * The following "if" test determines whether this point
-                 * is in another phase by checking if the computed
-                 * pressure is less than the interface value.  This
-                 * test ONLY works if the phases are distributed such
-                 * that the lighter phases are above the heavier ones. */
+                                     /* Only reset pressure value if in another phase.
+                                      * The following "if" test determines whether this point
+                                      * is in another phase by checking if the computed
+                                      * pressure is less than the interface value.  This
+                                      * test ONLY works if the phases are distributed such
+                                      * that the lighter phases are above the heavier ones. */
 
-                if (patch_values[ival] < interface_press)
-                {
-                  height = elevations[is][iel];
-                  nonlin_resid = 1.0;
-                  iterations = -1;
-                  while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
-                  {
-                    if (iterations > -1)
-                    {
-                      PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                         (phase, NULL, NULL, &patch_values[ival],
-                                          &density_der, CALCDER));
+                                     if (patch_values[ival] < interface_press)
+                                     {
+                                       height = elevations[is][iel];
+                                       nonlin_resid = 1.0;
+                                       iterations = -1;
+                                       while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
+                                       {
+                                         if (iterations > -1)
+                                         {
+                                           PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                                              (phase, NULL, NULL, &patch_values[ival],
+                                                               &density_der, CALCDER));
 
-                      dtmp = 1.0 - 0.5 * density_der * gravity
-                             * (z - height);
-                      patch_values[ival] = patch_values[ival]
-                                           - fcn_val / dtmp;
-                    }
-                    else
-                    {
-                      height = height + offset;
-                      patch_values[ival] = ref_press;
-                    }
+                                           dtmp = 1.0 - 0.5 * density_der * gravity
+                                                  * (z - height);
+                                           patch_values[ival] = patch_values[ival]
+                                                                - fcn_val / dtmp;
+                                         }
+                                         else
+                                         {
+                                           height = height + offset;
+                                           patch_values[ival] = ref_press;
+                                         }
 
-                    PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                       (phase, NULL, NULL,
-                                        &patch_values[ival], &density,
-                                        CALCFCN));
+                                         PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                                            (phase, NULL, NULL,
+                                                             &patch_values[ival], &density,
+                                                             CALCFCN));
 
-                    fcn_val = patch_values[ival] - ref_press
-                              - 0.5 * (density + ref_den)
-                              * gravity * (z - height);
-                    nonlin_resid = fabs(fcn_val);
+                                         fcn_val = patch_values[ival] - ref_press
+                                                   - 0.5 * (density + ref_den)
+                                                   * gravity * (z - height);
+                                         nonlin_resid = fabs(fcn_val);
 
-                    iterations++;
-                  }              /* End of while loop */
-                }                /* End if above interface */
-              }                  /* End phase loop */
-            });                  /* End BCStructPatchLoop body */
+                                         iterations++;
+                                       }              /* End of while loop */
+                                     }                /* End if above interface */
+                                   }                  /* End phase loop */
+                                 }),
+                                 AfterAllCells(DoNothing)
+              ); /* End ForPatchCellsPerFace loop */
           }                      /* End subgrid loop */
 
 

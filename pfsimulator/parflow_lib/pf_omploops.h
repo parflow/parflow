@@ -716,7 +716,7 @@ static int FDIR_TABLE[][6] = {
         PV_iyu = pfmin((iy + ny - 1), box.up[1]);                       \
         PV_izu = pfmin((iz + nz - 1), box.up[2]);                       \
                                                                         \
-        PRAGMA(omp for private(i, j, k))                                \
+        PRAGMA(omp for collapse(3) private(i, j, k))                    \
           for (k = PV_izl; k <= PV_izu; k++)                            \
             for (j = PV_iyl; j <= PV_iyu; j++)                          \
               for (i = PV_ixl; i <= PV_ixu; i++)                        \
@@ -750,7 +750,7 @@ static int FDIR_TABLE[][6] = {
         PV_iyu = pfmin((iy + ny - 1), box.up[1]);                       \
         PV_izu = pfmin((iz + nz - 1), box.up[2]);                       \
                                                                         \
-        PRAGMA(omp for private(i, j, k))                                \
+        PRAGMA(omp for collapse(3) private(i, j, k))                    \
         for (k = PV_izl; k <= PV_izu; k++)                              \
           for (j = PV_iyl; j <= PV_iyu; j++)                            \
             for (i = PV_ixl; i <= PV_ixu; i++)                          \

@@ -118,8 +118,16 @@
 #define PlusEquals(a, b) (a += b)
 #endif
 
+#ifndef ReduceMax
+#define ReduceMax(a, b) if ((*a) < (b)) { (*a) = (b); } else {};
+#endif
+
+#ifndef ReduceMin
+#define ReduceMin(a, b) if ((*a) > (b)) { (*a) = (b); } else {};
+#endif
+
 #ifndef ReduceSum
-#define ReduceSum(a, b) (a += b)
+#define ReduceSum(a, b) ((*a) += b)
 #endif
 
 /* return 2^e, where e >= 0 is an integer */
@@ -184,21 +192,6 @@
 #ifndef __restrict__
   #define __restrict__
 #endif
-
-// Helper macros for the new BC loop interface
-#define InParallel
-#define NewParallel
-#define NoWait
-
-#define EMPTY()
-#define DEFER(x) x EMPTY()
-#define DEFER2(x) x EMPTY EMPTY() ()
-#define DEFER3(x) x EMPTY EMPTY EMPTY() () ()
-
-#undef Locals
-#define LOCALS(...) DEFER3(_LOCALS)(__VA_ARGS__)
-#define _LOCALS(...) __VA_ARGS__
-#define NO_LOCALS
 
 //NVTX Ranges for NSYS profiling
 #ifdef HAVE_CUDA

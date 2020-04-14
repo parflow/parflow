@@ -964,7 +964,7 @@ void    RichardsJacobianEval(
       permyp = SubvectorData(permy_sub);
       permzp = SubvectorData(permz_sub);
 
-ForBCStructNumPatches(ipatch, bc_struct)
+      ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(ALL,
                              BeforeAllCells(DoNothing),
