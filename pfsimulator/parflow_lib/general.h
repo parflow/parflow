@@ -103,13 +103,6 @@
 #define pfmin(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
 
-#ifndef pfmax_atomic
-#define pfmax_atomic(a, b)  if(a < b) a = b
-#endif
-#ifndef pfmin_atomic
-#define pfmin_atomic(a, b)  if(a > b) a = b
-#endif
-
 #ifndef pfround
 #define pfround(x)  (((x) < 0.0) ? ((int)(x - 0.5)) : ((int)(x + 0.5)))
 #endif
@@ -118,6 +111,12 @@
 #define PlusEquals(a, b) (a += b)
 #endif
 
+#ifndef ReduceMax
+#define ReduceMax(a, b) if(a < b) a = b
+#endif
+#ifndef ReduceMin
+#define ReduceMin(a, b) if(a > b) a = b
+#endif
 #ifndef ReduceSum
 #define ReduceSum(a, b) (a += b)
 #endif
