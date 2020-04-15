@@ -564,21 +564,29 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
             return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
             + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
         };                                                                          \
-    auto zero = *rslt;                                                              \
+    auto &zero = rslt;                                                              \
     auto lambda_body =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k,                           \
                    const int i1, const int i2)                                      \
         {                                                                           \
-            auto rslt = &zero;                                                      \
+            auto rslt = zero;                                                       \
             loop_body;                                                              \
         };                                                                          \
                                                                                     \
-    typedef function_traits<decltype(lambda_body)> traits;                          \
+    decltype(rslt) *ptr_rslt = (decltype(rslt)*)talloc_cuda(sizeof(decltype(rslt)));\
+    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    *ptr_rslt = rslt;                                                               \
+    MemPrefetchHostToDevice(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
                                                                                     \
-    DotKernelI2<traits::result_type><<<grid, block>>>                               \
-      (lambda_init, lambda_init, lambda_body, zero, rslt, ix, iy, iz, nx, ny, nz);  \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init, lambda_init,     \
+      lambda_body, zero, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     CUDA_ERR(cudaStreamSynchronize(0));                                             \
+                                                                                    \
+    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    rslt = *ptr_rslt;                                                               \
+    tfree_cuda(ptr_rslt);                                                           \
   }                                                                                 \
 }
 
@@ -609,21 +617,29 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
             return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
             + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
         };                                                                          \
-    auto zero = *rslt;                                                              \
+    auto &zero = rslt;                                                              \
     auto lambda_body =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k,                           \
                    const int i1, const int i2)                                      \
         {                                                                           \
-            auto rslt = &zero;                                                      \
+            auto rslt = zero;                                                       \
             loop_body;                                                              \
         };                                                                          \
                                                                                     \
-    typedef function_traits<decltype(lambda_body)> traits;                          \
+    decltype(rslt) *ptr_rslt = (decltype(rslt)*)talloc_cuda(sizeof(decltype(rslt)));\
+    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    *ptr_rslt = rslt;                                                               \
+    MemPrefetchHostToDevice(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
                                                                                     \
-    DotKernelI2<traits::result_type><<<grid, block>>>                               \
-      (lambda_init1, lambda_init2, lambda_body, zero, rslt, ix, iy, iz, nx, ny, nz);\
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1, lambda_init2,   \
+      lambda_body, zero, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     CUDA_ERR(cudaStreamSynchronize(0));                                             \
+                                                                                    \
+    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    rslt = *ptr_rslt;                                                               \
+    tfree_cuda(ptr_rslt);                                                           \
   }                                                                                 \
 }
 

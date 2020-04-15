@@ -44,6 +44,7 @@ double   InnerProd(
 
   const double * __restrict__ yp;
   const double * __restrict__ xp;
+  double result = 0.0;
 
   int ix, iy, iz;
   int nx, ny, nz;
@@ -51,11 +52,8 @@ double   InnerProd(
 
   int i_s, i, j, k, iv;
 
-  double *result = ctalloc(double, 1);
-  double return_val;
-
   amps_Invoice result_invoice;
-  result_invoice = amps_NewInvoice("%d", result);
+  result_invoice = amps_NewInvoice("%d", &result);
 
   ForSubgridI(i_s, GridSubgrids(grid))
   {
@@ -85,7 +83,7 @@ double   InnerProd(
               i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      ReduceSum(*result, yp[iv] * xp[iv]);
+      ReduceSum(result, yp[iv] * xp[iv]);
     });
   }
 
@@ -95,8 +93,5 @@ double   InnerProd(
 
   IncFLOPCount(2 * VectorSize(x) - 1);
 
-  return_val = *result;
-  tfree(result);
-
-  return return_val;
+  return result;
 }
