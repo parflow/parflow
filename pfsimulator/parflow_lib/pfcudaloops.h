@@ -580,7 +580,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init, lambda_init,     \
-      lambda_body, zero, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
+      lambda_body, rslt, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     CUDA_ERR(cudaStreamSynchronize(0));                                             \
                                                                                     \
@@ -633,7 +633,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1, lambda_init2,   \
-      lambda_body, zero, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
+      lambda_body, rslt, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     CUDA_ERR(cudaStreamSynchronize(0));                                             \
                                                                                     \
