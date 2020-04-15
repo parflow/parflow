@@ -564,12 +564,12 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
             return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
             + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
         };                                                                          \
-    auto &zero = rslt;                                                              \
+    auto &ref_rslt = rslt;                                                          \
     auto lambda_body =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k,                           \
                    const int i1, const int i2)                                      \
         {                                                                           \
-            auto rslt = zero;                                                       \
+            auto rslt = ref_rslt;                                                   \
             loop_body;                                                              \
         };                                                                          \
                                                                                     \
@@ -617,12 +617,12 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
             return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
             + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
         };                                                                          \
-    auto &zero = rslt;                                                              \
+    auto &ref_rslt = rslt;                                                          \
     auto lambda_body =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k,                           \
                    const int i1, const int i2)                                      \
         {                                                                           \
-            auto rslt = zero;                                                       \
+            auto rslt = ref_rslt;                                                   \
             loop_body;                                                              \
         };                                                                          \
                                                                                     \
@@ -888,7 +888,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
         auto lambda_body =                                                          \
              GPU_LAMBDA(const int i, const int j, const int k, int ival)            \
              {                                                                      \
-                locals;                                                             \
+                UNPACK(locals);                                                     \
                 setup;                                                              \
                 switch(PV_f)                                                        \
                 {                                                                   \

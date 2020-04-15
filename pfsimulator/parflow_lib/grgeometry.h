@@ -444,7 +444,7 @@ typedef struct {
           for (j = PV_iyl; j <= PV_iyu; j++)                            \
             for (i = PV_ixl; i <= PV_ixu; i++)                          \
             {                                                           \
-              locals;                                                   \
+              UNPACK(locals);                                           \
               setup;                                                    \
               switch(PV_f)                                              \
               {                                                         \

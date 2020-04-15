@@ -99,6 +99,7 @@
 #ifndef pfmax
 #define pfmax(a, b)  (((a) < (b)) ? (b) : (a))
 #endif
+
 #ifndef pfmin
 #define pfmin(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
@@ -114,9 +115,11 @@
 #ifndef ReduceMax
 #define ReduceMax(a, b) if(a < b) a = b
 #endif
+
 #ifndef ReduceMin
 #define ReduceMin(a, b) if(a > b) a = b
 #endif
+
 #ifndef ReduceSum
 #define ReduceSum(a, b) (a += b)
 #endif
@@ -175,21 +178,6 @@
 #ifndef __restrict__
   #define __restrict__
 #endif
-
-// Helper macros for the new BC loop interface
-#define InParallel
-#define NewParallel
-#define NoWait
-
-#define EMPTY()
-#define DEFER(x) x EMPTY()
-#define DEFER2(x) x EMPTY EMPTY() ()
-#define DEFER3(x) x EMPTY EMPTY EMPTY() () ()
-
-#undef LOCALS
-#define LOCALS(...) DEFER3(_LOCALS)(__VA_ARGS__)
-#define _LOCALS(...) __VA_ARGS__
-#define NO_LOCALS
 
 //Memory Prefetching
 #define MemPrefetchDeviceToHost(ptr, size, stream)
