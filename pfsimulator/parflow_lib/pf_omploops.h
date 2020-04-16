@@ -24,7 +24,7 @@
             "Node (%d) | Error: Hit Parallel region in %s:%d when not allowed\n", \
             amps_Rank(amps_CommWorld), __FUNCTION__, __LINE__);         \
     exit(-1);                                                           \
-  }
+  } else {};
 
 /**
  * @brief Interior macro for creating OpenMP pragma statements inside macro.  Relies on C99 _Pragma operator.
@@ -100,17 +100,17 @@ extern "C++"{
   template <typename T>
   struct ReduceMaxRes {T lambda_result;};
 #undef ReduceMax
-#define ReduceMax(a, b) struct ReduceMaxRes<std::remove_pointer<decltype(a)>::type> reduce_struct {.lambda_result = b}; return reduce_struct;
+#define ReduceMax(a, b) struct ReduceMaxRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
   template <typename T>
   struct ReduceMinRes {T lambda_result;};
 #undef ReduceMin
-#define ReduceMin(a, b) struct ReduceMinRes<std::remove_pointer<decltype(a)>::type> reduce_struct {.lambda_result = b}; return reduce_struct;
+#define ReduceMin(a, b) struct ReduceMinRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
   template <typename T>
   struct ReduceSumRes {T lambda_result;};
 #undef ReduceSum
-#define ReduceSum(a, b) struct ReduceSumRes<std::remove_pointer<decltype(a)>::type> reduce_struct {.lambda_result = b}; return reduce_struct;
+#define ReduceSum(a, b) struct ReduceSumRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
 #undef BoxLoopReduceI1
 #define BoxLoopReduceI1(sum,                                            \
@@ -119,12 +119,9 @@ extern "C++"{
                         i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
                         body)                                           \
   {                                                                     \
-    auto zero = sum;                                                    \
-    auto PV_result = *sum;                                              \
     auto lambda_body = [=](const int i, const int j, const int k,       \
                            const int i1)                                \
                        {                                                \
-                         auto sum = zero;                               \
                          body;                                          \
                        };                                               \
                                                                         \
@@ -133,20 +130,20 @@ extern "C++"{
                                                                         \
     typedef function_traits<decltype(lambda_body)> traits;              \
     static_assert(std::is_same<traits::result_type,                     \
-                  struct ReduceSumRes<std::remove_pointer<decltype(sum)>::type>>::value \
+                  struct ReduceSumRes<decltype(sum)>>::value            \
                   ||                                                    \
                   std::is_same<traits::result_type,                     \
-                  struct ReduceMaxRes<std::remove_pointer<decltype(sum)>::type>>::value \
+                  struct ReduceMaxRes<decltype(sum)>>::value            \
                   ||                                                    \
                   std::is_same<traits::result_type,                     \
-                  struct ReduceMinRes<std::remove_pointer<decltype(sum)>::type>>::value, \
+                  struct ReduceMinRes<decltype(sum)>>::value,           \
                   "Not a valid reduction clause!  Check compiler error message for file and line number." \
                   );                                                    \
                                                                         \
     if (std::is_same<traits::result_type,                               \
-        struct ReduceSumRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+        struct ReduceSumRes<decltype(sum)>>::value)                     \
       {                                                                 \
-        PRAGMA(omp parallel for reduction(+:PV_result) collapse(3) private(i, j, k, i1)) \
+        PRAGMA(omp parallel for reduction(+:sum) collapse(3) private(i, j, k, i1)) \
           for (k = iz; k < iz + nz; k++)                                \
             {                                                           \
               for (j = iy; j < iy + ny; j++)                            \
@@ -156,50 +153,49 @@ extern "C++"{
                       i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
                                    nx, ny, sx1, PV_jinc_1, PV_kinc_1);  \
                       auto rhs = lambda_body(i, j, k, i1);              \
-                      PV_result += rhs.lambda_result;                   \
+                      sum += rhs.lambda_result;                         \
                     }                                                   \
                 }                                                       \
             }                                                           \
       }                                                                 \
     else                                                                \
       if (std::is_same<traits::result_type,                             \
-          struct ReduceMaxRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+          struct ReduceMaxRes<decltype(sum)>>::value)                   \
         {                                                               \
-          PRAGMA(omp parallel for reduction(max:PV_result) collapse(3) private(i, j, k, i1)) \
-          for (k = iz; k < iz + nz; k++)                                \
-            {                                                           \
-              for (j = iy; j < iy + ny; j++)                            \
+          PRAGMA(omp parallel for reduction(max:sum) collapse(3) private(i, j, k, i1)) \
+            for (k = iz; k < iz + nz; k++)                              \
+              {                                                         \
+                for (j = iy; j < iy + ny; j++)                          \
+                  {                                                     \
+                    for (i = ix; i < ix + nx; i++)                      \
+                      {                                                 \
+                        i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
+                                     nx, ny, sx1, PV_jinc_1, PV_kinc_1); \
+                        auto rhs = lambda_body(i, j, k, i1);            \
+                        pfmax_atomic(sum, rhs.lambda_result);           \
+                      }                                                 \
+                  }                                                     \
+              }                                                         \
+        }                                                               \
+      else                                                              \
+        if (std::is_same<traits::result_type,                           \
+            struct ReduceMinRes<decltype(sum)>>::value)                 \
+          {                                                             \
+            PRAGMA(omp parallel for reduction(min:sum) collapse(3) private(i, j, k, i1)) \
+              for (k = iz; k < iz + nz; k++)                            \
                 {                                                       \
-                  for (i = ix; i < ix + nx; i++)                        \
+                  for (j = iy; j < iy + ny; j++)                        \
                     {                                                   \
-                      i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
-                                   nx, ny, sx1, PV_jinc_1, PV_kinc_1);  \
-                      auto rhs = lambda_body(i, j, k, i1);              \
-                      pfmax_atomic(PV_result, rhs.lambda_result);       \
+                      for (i = ix; i < ix + nx; i++)                    \
+                        {                                               \
+                          i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
+                                       nx, ny, sx1, PV_jinc_1, PV_kinc_1); \
+                          auto rhs = lambda_body(i, j, k, i1);          \
+                          pfmax_atomic(sum, rhs.lambda_result);         \
+                        }                                               \
                     }                                                   \
                 }                                                       \
-            }                                                           \
-        }                                                               \
-    else                                                                \
-      if (std::is_same<traits::result_type,                             \
-          struct ReduceMinRes<std::remove_pointer<decltype(sum)>::type>>::value) \
-        {                                                               \
-          PRAGMA(omp parallel for reduction(min:PV_result) collapse(3) private(i, j, k, i1)) \
-          for (k = iz; k < iz + nz; k++)                                \
-            {                                                           \
-              for (j = iy; j < iy + ny; j++)                            \
-                {                                                       \
-                  for (i = ix; i < ix + nx; i++)                        \
-                    {                                                   \
-                      i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
-                                   nx, ny, sx1, PV_jinc_1, PV_kinc_1);  \
-                      auto rhs = lambda_body(i, j, k, i1);              \
-                      pfmax_atomic(PV_result, rhs.lambda_result);       \
-                    }                                                   \
-                }                                                       \
-            }                                                           \
-        }                                                               \
-    *sum = PV_result;                                                   \
+          }                                                             \
   }
 
 #undef BoxLoopReduceI2
@@ -210,12 +206,9 @@ extern "C++"{
                         i2, nx2, ny2, nz2, sx2, sy2, sz2,               \
                         body)                                           \
   {                                                                     \
-    auto zero = sum;                                                    \
-    auto PV_result = *sum;                                              \
     auto lambda_body = [=](const int i, const int j, const int k,       \
                            const int i1, const int i2)                  \
                        {                                                \
-                         auto sum = zero;                               \
                          body;                                          \
                        };                                               \
                                                                         \
@@ -226,20 +219,20 @@ extern "C++"{
                                                                         \
     typedef function_traits<decltype(lambda_body)> traits;              \
     static_assert(std::is_same<traits::result_type,                     \
-                  struct ReduceSumRes<std::remove_pointer<decltype(sum)>::type>>::value \
+                  struct ReduceSumRes<decltype(sum)>>::value            \
                   ||                                                    \
                   std::is_same<traits::result_type,                     \
-                  struct ReduceMaxRes<std::remove_pointer<decltype(sum)>::type>>::value \
+                  struct ReduceMaxRes<decltype(sum)>>::value            \
                   ||                                                    \
                   std::is_same<traits::result_type,                     \
-                  struct ReduceMinRes<std::remove_pointer<decltype(sum)>::type>>::value, \
+                  struct ReduceMinRes<decltype(sum)>>::value,           \
                   "Not a valid reduction clause!  Check compiler error message for file and line number." \
                   );                                                    \
                                                                         \
     if (std::is_same<traits::result_type,                               \
-        struct ReduceSumRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+        struct ReduceSumRes<decltype(sum)>>::value)                     \
       {                                                                 \
-        PRAGMA(omp parallel for reduction(+:PV_result) collapse(3) private(i, j, k, i1, i2)) \
+        PRAGMA(omp parallel for reduction(+:sum) collapse(3) private(i, j, k, i1, i2)) \
           for (k = iz; k < iz + nz; k++)                                \
             {                                                           \
               for (j = iy; j < iy + ny; j++)                            \
@@ -250,17 +243,17 @@ extern "C++"{
                                    nx, ny, sx1, PV_jinc_1, PV_kinc_1);  \
                       i2 = INC_IDX(i2_start, (i - ix), (j - iy), (k - iz), \
                                    nx, ny, sx2, PV_jinc_2, PV_kinc_2);  \
-                      auto rhs = lambda_body(i, j, k, i1, i2);             \
-                      PV_result += rhs.lambda_result;                   \
+                      auto rhs = lambda_body(i, j, k, i1, i2);          \
+                      sum += rhs.lambda_result;                         \
                     }                                                   \
                 }                                                       \
             }                                                           \
       }                                                                 \
     else                                                                \
       if (std::is_same<traits::result_type,                             \
-          struct ReduceMaxRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+          struct ReduceMaxRes<decltype(sum)>>::value)                   \
         {                                                               \
-          PRAGMA(omp parallel for reduction(max:PV_result) collapse(3) private(i, j, k, i1, i2)) \
+          PRAGMA(omp parallel for reduction(max:sum) collapse(3) private(i, j, k, i1, i2)) \
             for (k = iz; k < iz + nz; k++)                              \
               {                                                         \
                 for (j = iy; j < iy + ny; j++)                          \
@@ -271,17 +264,17 @@ extern "C++"{
                                      nx, ny, sx1, PV_jinc_1, PV_kinc_1); \
                         i2 = INC_IDX(i2_start, (i - ix), (j - iy), (k - iz), \
                                      nx, ny, sx2, PV_jinc_2, PV_kinc_2); \
-                        auto rhs = lambda_body(i, j, k, i1, i2);           \
-                        pfmax_atomic(PV_result, rhs.lambda_result);     \
+                        auto rhs = lambda_body(i, j, k, i1, i2);        \
+                        pfmax_atomic(sum, rhs.lambda_result);           \
                       }                                                 \
                   }                                                     \
               }                                                         \
         }                                                               \
       else                                                              \
         if (std::is_same<traits::result_type,                           \
-            struct ReduceMinRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+            struct ReduceMinRes<decltype(sum)>>::value)                 \
           {                                                             \
-            PRAGMA(omp parallel for reduction(min:PV_result) collapse(3) private(i, j, k, i1, i2)) \
+            PRAGMA(omp parallel for reduction(min:sum) collapse(3) private(i, j, k, i1, i2)) \
               for (k = iz; k < iz + nz; k++)                            \
                 {                                                       \
                   for (j = iy; j < iy + ny; j++)                        \
@@ -293,12 +286,11 @@ extern "C++"{
                           i2 = INC_IDX(i2_start, (i - ix), (j - iy), (k - iz), \
                                        nx, ny, sx2, PV_jinc_2, PV_kinc_2); \
                           auto rhs = lambda_body(i, j, k, i1, i2);      \
-                          pfmax_atomic(PV_result, rhs.lambda_result);   \
+                          pfmax_atomic(sum, rhs.lambda_result);         \
                         }                                               \
                     }                                                   \
                 }                                                       \
           }                                                             \
-    *sum = PV_result;                                                   \
   }
 
 } // Extern C++

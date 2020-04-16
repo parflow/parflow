@@ -11,50 +11,57 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 # Set accelerator backend
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
-if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
-# Initialize CUDA
-  include(CheckLanguage)
-  check_language(CUDA)
-  if(CMAKE_CUDA_COMPILER)
-    enable_language(CUDA)
-    set(CMAKE_CUDA_STANDARD 11)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
-    set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
-    set(CMAKE_CUDA_FLAGS_RELEASE "-Xptxas ${CMAKE_CUDA_FLAGS_RELEASE}")
-    set(CMAKE_CUDA_HOST_COMPILER mpicxx)
-    message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
-    set(PARFLOW_HAVE_CUDA "yes")
-    set(HAVE_CUDA ${PARFLOW_HAVE_CUDA})
-  else(CMAKE_CUDA_COMPILER)
-    message(FATAL_ERROR "ERROR: CUDA installation not found")
-  endif(CMAKE_CUDA_COMPILER)
+if( ${PARFLOW_ACCELERATOR_BACKEND} )
+  if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
-# Include RapidsAI Memory Manager (RMM) for pool allocation
-  if(DEFINED RMM_ROOT)
-    find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
-    find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
-    if(RMM_INCLUDE AND RMM_LIBRARY)
-      message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
-      message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
-      add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
-      set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
-      set(PARFLOW_HAVE_RMM "yes")
-      set(HAVE_RMM ${PARFLOW_HAVE_RMM})
-    else(RMM_INCLUDE AND RMM_LIBRARY)
-      message(FATAL_ERROR "ERROR: RMM installation not found")
-    endif(RMM_INCLUDE AND RMM_LIBRARY)
-  endif(DEFINED RMM_ROOT)
+  # Initialize CUDA
+    include(CheckLanguage)
+    check_language(CUDA)
+    if(CMAKE_CUDA_COMPILER)
+      enable_language(CUDA)
+      set(CMAKE_CUDA_STANDARD 11)
+      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
+      set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
+      set(CMAKE_CUDA_FLAGS_RELEASE "-Xptxas ${CMAKE_CUDA_FLAGS_RELEASE}")
+      set(CMAKE_CUDA_HOST_COMPILER mpicxx)
+      message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
+      set(PARFLOW_HAVE_CUDA "yes")
+      set(HAVE_CUDA ${PARFLOW_HAVE_CUDA})
+    else(CMAKE_CUDA_COMPILER)
+      message(FATAL_ERROR "ERROR: CUDA installation not found")
+    endif(CMAKE_CUDA_COMPILER)
 
-elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "omp") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "OMP"))
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-  set (PARFLOW_HAVE_OMP "yes")
-  set (HAVE_OMP ${PARFLOW_HAVE_OMP})
-elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
-else(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
-  message(FATAL_ERROR "ERROR: PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
-endif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
+  # Include RapidsAI Memory Manager (RMM) for pool allocation
+  # @MCB 04/16/2020: This should probably be moved outside of the CUDA block at some point
+  #   so other accelerators have the option to use it as well.
+    if(DEFINED RMM_ROOT)
+      find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
+      find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
+      if(RMM_INCLUDE AND RMM_LIBRARY)
+        message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
+        message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
+        add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
+        set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
+        set(PARFLOW_HAVE_RMM "yes")
+        set(HAVE_RMM ${PARFLOW_HAVE_RMM})
+      else(RMM_INCLUDE AND RMM_LIBRARY)
+        message(FATAL_ERROR "ERROR: RMM installation not found")
+      endif(RMM_INCLUDE AND RMM_LIBRARY)
+    endif(DEFINED RMM_ROOT)
+
+  elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "omp") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "OMP"))
+
+  # Enable C and CXX -fopenmp flag, enable ParFlow defines.
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+    set (PARFLOW_HAVE_OMP "yes")
+    set (HAVE_OMP ${PARFLOW_HAVE_OMP})
+
+  else()
+    message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
+  endif()
+endif(${PARFLOW_ACCELERATOR_BACKEND})
 
 #-----------------------------------------------------------------------------
 # OMP Configuration
