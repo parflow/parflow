@@ -178,6 +178,13 @@ __host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
 /*--------------------------------------------------------------------------
  * CUDA helper macro redefinitions
  *--------------------------------------------------------------------------*/
+struct SkipParallelSync {const int dummy = 0;};
+#undef SKIP_PARALLEL_SYNC
+#define SKIP_PARALLEL_SYNC struct SkipParallelSync sync_struct; return sync_struct;
+
+#undef PARALLEL_SYNC
+#define PARALLEL_SYNC CUDA_ERR(cudaStreamSynchronize(0));
+
 #undef pfmax_atomic
 #define pfmax_atomic(a, b) AtomicMax(&(a), b)
 
@@ -188,19 +195,19 @@ __host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
 #define PlusEquals(a, b) AtomicAdd(&(a), b)
 
 template <typename T>
-struct ReduceMaxRes {T lambda_result;};
+struct ReduceMaxRes {T value;};
 #undef ReduceMax
-#define ReduceMax(a, b) struct ReduceMaxRes<std::decay<decltype(*result)>::type> reduce_struct {.lambda_result = pfmax(a, b)}; return reduce_struct;
+#define ReduceMax(a, b) struct ReduceMaxRes<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
 template <typename T>
-struct ReduceMinRes {T lambda_result;};
+struct ReduceMinRes {T value;};
 #undef ReduceMin
-#define ReduceMin(a, b) struct ReduceMinRes<std::decay<decltype(*result)>::type> reduce_struct {.lambda_result = pfmin(a, b)}; return reduce_struct;
+#define ReduceMin(a, b) struct ReduceMinRes<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
 template <typename T>
-struct ReduceSumRes {T lambda_result;};
+struct ReduceSumRes {T value;};
 #undef ReduceSum
-#define ReduceSum(a, b) struct ReduceSumRes<std::decay<decltype(*result)>::type> reduce_struct {.lambda_result = a + b}; return reduce_struct;
+#define ReduceSum(a, b) struct ReduceSumRes<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
@@ -302,7 +309,7 @@ template <typename ReduceOp, typename LambdaInit1, typename LambdaInit2, typenam
 __global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
 DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
-    T * __restrict__ rslt, const int ix, const int iy, const int iz,
+    const T init_val, T * __restrict__ rslt, const int ix, const int iy, const int iz,
     const int nx, const int ny, const int nz)
 {
     // Specialize BlockReduce for a 1D block of BLOCKSIZE_X * 1 * 1 threads on type T
@@ -321,7 +328,13 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     const int k = idx / (nx * ny);
     const int ntot = nx * ny * nz;
 
-    T thread_data = 0;
+    T thread_data;
+
+    // Initialize thread_data depending on reduction operation
+    if(std::is_same<ReduceOp, struct ReduceSumRes<T>>::value)
+      thread_data = 0;
+    else
+      thread_data = init_val;
 
     // Evaluate the loop body
     if (idx < ntot)
@@ -329,46 +342,64 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       const int i1 = loop_init1(i, j, k);
       const int i2 = loop_init2(i, j, k);
 
-      auto reduce_struct = loop_fun(i, j, k, i1, i2);
-      thread_data = reduce_struct.lambda_result;
+      thread_data = loop_fun(i, j, k, i1, i2).value;
     }
 
-    // Compute the block-wide sum for thread0
-    T aggregate;
+    // Perform reductions
     if(std::is_same<ReduceOp, struct ReduceSumRes<T>>::value)
     {
-      aggregate = BlockReduce(temp_storage).Sum(thread_data, ntot);
+      // Compute the block-wide sum for thread0
+      T aggregate = BlockReduce(temp_storage).Sum(thread_data);
+
+      // Store aggregate
+      if(threadIdx.x == 0)
+      {
+        atomicAdd(rslt, aggregate);
+      }
     }
     else if(std::is_same<ReduceOp, struct ReduceMaxRes<T>>::value)
     {
-      aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max(), ntot);
+      // Compute the block-wide sum for thread0
+      T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max());
+
+      // Store aggregate
+      if(threadIdx.x == 0)
+      {
+        AtomicMax(rslt, aggregate);
+      }
+
+      // Write to global memory directly from all threads
+      // if (idx < ntot)
+      // {
+      //   AtomicMax(rslt, thread_data);
+      // }
     }
     else if(std::is_same<ReduceOp, struct ReduceMinRes<T>>::value)
     {
-      aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Min(), ntot);
+      // Compute the block-wide sum for thread0
+      T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Min());
+
+      // Store aggregate
+      if(threadIdx.x == 0)
+      {
+        AtomicMin(rslt, aggregate);
+      }
+
+      // Write to global memory directly from all threads
+      // if (idx < ntot)
+      // {
+      //   AtomicMin(rslt, thread_data);
+      // }
     }
     else
     {
       printf("ERROR at %s:%d: Invalid reduction identifier, likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);
-    }
-
-    // Store aggregate
-    if(threadIdx.x == 0)
-    {
-      atomicAdd(rslt, aggregate);
     }
 }
 
 /*--------------------------------------------------------------------------
  * CUDA loop macro redefinitions
  *--------------------------------------------------------------------------*/
-static int gpu_sync = 1;
-
-#undef GPU_NOSYNC
-#define GPU_NOSYNC gpu_sync = 0;
-
-#undef GPU_SYNC
-#define GPU_SYNC gpu_sync = 1; CUDA_ERR(cudaStreamSynchronize(0));
 
 #define FindDims(grid, block, nx, ny, nz, dyn_blocksize)                            \
 {                                                                                   \
@@ -418,7 +449,10 @@ static int gpu_sync = 1;
     BoxKernelI1<<<grid, block>>>(                                                   \
         lambda_init, lambda_body, ix, iy, iz, nx, ny, nz);                          \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+                                                                                    \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
 }
 
@@ -456,7 +490,10 @@ static int gpu_sync = 1;
     BoxKernelI2<<<grid, block>>>(                                                   \
         lambda_init1, lambda_init2, lambda_body, ix, iy, iz, nx, ny, nz);           \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+                                                                                    \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
 }
 
@@ -501,8 +538,10 @@ static int gpu_sync = 1;
                                                                                     \
     BoxKernelI3<<<grid, block>>>(lambda_init1, lambda_init2, lambda_init3,          \
         lambda_body, ix, iy, iz, nx, ny, nz);                                       \
-    CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+                                                                                    \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
 }
 
@@ -519,27 +558,35 @@ static int gpu_sync = 1;
     int block = BLOCKSIZE_MAX;                                                      \
     int grid = ((nx * ny * nz - 1) + block) / block;                                \
                                                                                     \
-    auto lambda_init1 =                                                             \
+    auto lambda_init =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k)                           \
         {                                                                           \
             return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
             + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
         };                                                                          \
-    auto zero = *rslt;                                                              \
+    auto &ref_rslt = rslt;                                                          \
     auto lambda_body =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k,                           \
                    const int i1, const int i2)                                      \
         {                                                                           \
-            auto rslt = &zero;                                                      \
+            auto rslt = ref_rslt;                                                   \
             loop_body;                                                              \
         };                                                                          \
-    typedef function_traits<decltype(lambda_body)> traits;                          \
                                                                                     \
-    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1,                 \
-        lambda_init1, lambda_body,                                                  \
-        rslt, ix, iy, iz, nx, ny, nz);                                              \
+    decltype(rslt) *ptr_rslt = (decltype(rslt)*)talloc_cuda(sizeof(decltype(rslt)));\
+    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    *ptr_rslt = rslt;                                                               \
+    MemPrefetchHostToDevice(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+                                                                                    \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init, lambda_init,     \
+      lambda_body, rslt, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+    CUDA_ERR(cudaStreamSynchronize(0));                                             \
+                                                                                    \
+    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    rslt = *ptr_rslt;                                                               \
+    tfree_cuda(ptr_rslt);                                                           \
   }                                                                                 \
 }
 
@@ -570,20 +617,29 @@ static int gpu_sync = 1;
             return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
             + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
         };                                                                          \
-    auto zero = *rslt;                                                              \
+    auto &ref_rslt = rslt;                                                          \
     auto lambda_body =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k,                           \
                    const int i1, const int i2)                                      \
         {                                                                           \
-            auto rslt = &zero;                                                      \
+            auto rslt = ref_rslt;                                                   \
             loop_body;                                                              \
         };                                                                          \
-    typedef function_traits<decltype(lambda_body)> traits;                          \
                                                                                     \
-    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1,                 \
-        lambda_init2, lambda_body, rslt, ix, iy, iz, nx, ny, nz);                   \
+    decltype(rslt) *ptr_rslt = (decltype(rslt)*)talloc_cuda(sizeof(decltype(rslt)));\
+    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    *ptr_rslt = rslt;                                                               \
+    MemPrefetchHostToDevice(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+                                                                                    \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1, lambda_init2,   \
+      lambda_body, rslt, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+    CUDA_ERR(cudaStreamSynchronize(0));                                             \
+                                                                                    \
+    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    rslt = *ptr_rslt;                                                               \
+    tfree_cuda(ptr_rslt);                                                           \
   }                                                                                 \
 }
 
@@ -620,7 +676,7 @@ static int gpu_sync = 1;
           GPU_LAMBDA(const int i, const int j, const int k)loop_body,               \
           PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                      \
       CUDA_ERR(cudaPeekAtLastError());                                              \
-      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
   }                                                                                 \
 }
@@ -697,7 +753,7 @@ static int gpu_sync = 1;
         BoxKernelI0<<<grid, block>>>(lambda_body,                                   \
             PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                    \
         CUDA_ERR(cudaPeekAtLastError());                                            \
-        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -783,7 +839,7 @@ static int gpu_sync = 1;
         BoxKernelI1<<<grid, block>>>(                                               \
             lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
         CUDA_ERR(cudaPeekAtLastError());                                            \
-        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -832,7 +888,7 @@ static int gpu_sync = 1;
         auto lambda_body =                                                          \
              GPU_LAMBDA(const int i, const int j, const int k, int ival)            \
              {                                                                      \
-               UNPACK(locals);                                          \
+                UNPACK(locals);                                                     \
                 setup;                                                              \
                 switch(PV_f)                                                        \
                 {                                                                   \
@@ -849,7 +905,7 @@ static int gpu_sync = 1;
         BoxKernelI1<<<grid, block>>>(                                               \
             lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
         CUDA_ERR(cudaPeekAtLastError());                                            \
-        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -902,7 +958,7 @@ static int gpu_sync = 1;
       (BoxKernelI0<<<grid, block>>>(lambda_body,                                    \
           PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z));                \
       CUDA_ERR(cudaPeekAtLastError());                                              \
-      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
     i = PV_ixu;                                                                     \
     j = PV_iyu;                                                                     \
@@ -955,7 +1011,7 @@ static int gpu_sync = 1;
       BoxKernelI0<<<grid, block>>>(                                                 \
           lambda_body, ix, iy, iz, nx, ny, nz);                                     \
       CUDA_ERR(cudaPeekAtLastError());                                              \
-      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
   }                                                                                 \
 }

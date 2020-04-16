@@ -9,14 +9,14 @@ Building with CUDA may improve the performance significantly for large problems 
 
 ## CMake
 
-Building with GPU acceleration requires a [CUDA](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html) installation and a CUDA-Aware MPI library (if MPI is used). The pointers passed to the MPI library point to pinned GPU memory allocations, and therefore support for Unified Memory from MPI library is not required. Examples of CUDA-Aware MPI libraries include MVAPICH2-GDR 2.3.3, OpenMPI 4.0.3, and ParaStationMPI 5.4.2. Moreover, pool allocation for Unified Memory can be activated by using [RMM](https://github.com/rapidsai/rmm) library (v. 0.10) and often leads to notably better performance. The GPU acceleration is activated by specifying *DPARFLOW_ENABLE_CUDA=TRUE* option to the CMake, e.g.,
+Building with GPU acceleration requires a [CUDA](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html) installation and a CUDA-Aware MPI library (if MPI is used). The pointers passed to the MPI library point to pinned GPU memory allocations, and therefore support for Unified Memory from MPI library is not required. Examples of CUDA-Aware MPI libraries include MVAPICH2-GDR 2.3.3, OpenMPI 4.0.3, and ParaStationMPI 5.4.2. Moreover, pool allocation for Unified Memory can be activated by using [RMM](https://github.com/rapidsai/rmm) library (v. 0.10) and often leads to notably better performance. The GPU acceleration is activated by specifying *PARFLOW_ACCELERATOR_BACKEND=cuda* option to the CMake, e.g.,
 
 ```shell
-cmake ../parflow -DPARFLOW_AMPS_LAYER=cuda -DCMAKE_BUILD_TYPE=Release -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} -DPARFLOW_ENABLE_CUDA=TRUE
+cmake ../parflow -DPARFLOW_AMPS_LAYER=cuda -DCMAKE_BUILD_TYPE=Release -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} -DPARFLOW_ACCELERATOR_BACKEND=cuda
 ```
 where *DPARFLOW_AMPS_LAYER=cuda* is required to activate application-side GPU-based data packing and unpacking on pinned GPU staging buffers. Using *DPARFLOW_AMPS_LAYER=mpi1* typically results in significantly worse performance and segfaults may be experienced if the MPI library does not have full Unified Memory support for derived data types. Furthermore, RMM library can be activated by specifying the RMM root directory with *DRMM_ROOT=/path/to/rmm_root* as follows:
 ```shell
-cmake ../parflow -DPARFLOW_AMPS_LAYER=cuda -DCMAKE_BUILD_TYPE=Release -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} -DPARFLOW_ENABLE_CUDA=TRUE -DRMM_ROOT=/path/to/RMM
+cmake ../parflow -DPARFLOW_AMPS_LAYER=cuda -DCMAKE_BUILD_TYPE=Release -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=/path/to/RMM
 ```
 ## Running Parflow with GPU acceleration
 

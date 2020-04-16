@@ -130,7 +130,7 @@ RUN mkdir -p build && \
        -DPARFLOW_ENABLE_TIMING=TRUE \
        -DPARFLOW_HAVE_CLM=TRUE \
        -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
-       -DPARFLOW_ENABLE_CUDA=TRUE \ 
+       -DPARFLOW_ACCELERATOR_BACKEND=cuda \ 
        -DRMM_ROOT=$PARFLOW_DIR && \
      make install
 

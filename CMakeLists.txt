@@ -8,11 +8,10 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 #-----------------------------------------------------------------------------
-# GPU-Acceleration (CUDA)
+# Set accelerator backend
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_CUDA False)
-set (PARFLOW_ENABLE_CUDA CACHE BOOL "Enable CUDA")
-if( ${PARFLOW_ENABLE_CUDA} )
+set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
+if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
 # Initialize CUDA
   include(CheckLanguage)
@@ -47,7 +46,15 @@ if( ${PARFLOW_ENABLE_CUDA} )
     endif(RMM_INCLUDE AND RMM_LIBRARY)
   endif(DEFINED RMM_ROOT)
 
-endif( ${PARFLOW_ENABLE_CUDA} )
+elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "omp") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "OMP"))
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+  set (PARFLOW_HAVE_OMP "yes")
+  set (HAVE_OMP ${PARFLOW_HAVE_OMP})
+elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+else(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+  message(FATAL_ERROR "ERROR: PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
+endif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
 #-----------------------------------------------------------------------------
 # OMP Configuration

@@ -99,15 +99,9 @@
 #ifndef pfmax
 #define pfmax(a, b)  (((a) < (b)) ? (b) : (a))
 #endif
+
 #ifndef pfmin
 #define pfmin(a, b)  (((a) < (b)) ? (a) : (b))
-#endif
-
-#ifndef pfmax_atomic
-#define pfmax_atomic(a, b)  if(a < b) a = b
-#endif
-#ifndef pfmin_atomic
-#define pfmin_atomic(a, b)  if(a > b) a = b
 #endif
 
 #ifndef pfround
@@ -119,11 +113,11 @@
 #endif
 
 #ifndef ReduceMax
-#define ReduceMax(a, b) if ((*a) < (b)) { (*a) = (b); } else {};
+#define ReduceMax(a, b) if(a < b) { a = b; } else {};
 #endif
 
 #ifndef ReduceMin
-#define ReduceMin(a, b) if ((*a) > (b)) { (*a) = (b); } else {};
+#define ReduceMin(a, b) if(a > b) { a = b; } else {};
 #endif
 
 #ifndef ReduceSum
@@ -171,14 +165,6 @@
  * Define CUDA macros to do nothing if no GPU acceleration
  *--------------------------------------------------------------------------*/
 
-//Memory Prefetching
-#define MemPrefetchDeviceToHost(ptr, size, stream)
-#define MemPrefetchHostToDevice(ptr, size, gpuid, stream)
-
-//CUDA synchronizations
-#define GPU_NOSYNC
-#define GPU_SYNC
-
 //CUDA compiler specific keywords
 #ifndef __host__
   #define __host__
@@ -192,6 +178,14 @@
 #ifndef __restrict__
   #define __restrict__
 #endif
+
+//Memory Prefetching
+#define MemPrefetchDeviceToHost(ptr, size, stream)
+#define MemPrefetchHostToDevice(ptr, size, gpuid, stream)
+
+//Parallel synchronizations
+#define PARALLEL_SYNC
+#define SKIP_PARALLEL_SYNC
 
 //NVTX Ranges for NSYS profiling
 #ifdef HAVE_CUDA
