@@ -1212,7 +1212,7 @@ void    RichardsJacobianEval(
       ForPatchCellsPerFace(OverlandBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int im, ip, io; double *op;),
+                           Locals(int im, ip, io; double *op, vol;),
                            CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
                            FACE(LeftFace,  { op = wp; }),
                            FACE(RightFace, { op = ep; }),
