@@ -121,7 +121,7 @@
 #endif
 
 #ifndef ReduceSum
-#define ReduceSum(a, b) ((*a) += b)
+#define ReduceSum(a, b) (a += b)
 #endif
 
 /* return 2^e, where e >= 0 is an integer */

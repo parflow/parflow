@@ -12,13 +12,14 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
 
-if( ${PARFLOW_ACCELERATOR_BACKEND} )
+if( NOT ${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none" )
   if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
   # Initialize CUDA
     include(CheckLanguage)
     check_language(CUDA)
     if(CMAKE_CUDA_COMPILER)
+      message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator CUDA")
       enable_language(CUDA)
       set(CMAKE_CUDA_STANDARD 11)
       set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
@@ -52,6 +53,7 @@ if( ${PARFLOW_ACCELERATOR_BACKEND} )
 
   elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "omp") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "OMP"))
 
+    message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
   # Enable C and CXX -fopenmp flag, enable ParFlow defines.
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
@@ -61,7 +63,7 @@ if( ${PARFLOW_ACCELERATOR_BACKEND} )
   else()
     message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
   endif()
-endif(${PARFLOW_ACCELERATOR_BACKEND})
+endif( NOT ${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none" )
 
 #-----------------------------------------------------------------------------
 # OMP Configuration
