@@ -243,17 +243,17 @@ typedef struct {
 
 #if 0
 /* Template for copy+pasting for new BC loops */
-ForPatchCellsPerFace(ALL,
+ForPatchCellsPerFace(InsertBCTypeHere,
                      BeforeAllCells(DoNothing),
                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                      NoLocals,
                      CellSetup({}),
-                     FACE(Left, {}),
-                     FACE(Right, {}),
-                     FACE(Down, {}),
-                     FACE(Up, {}),
-                     FACE(Back, {}),
-                     FACE(Front, {}),
+                     FACE(LeftFace, {}),
+                     FACE(RightFace, {}),
+                     FACE(DownFace, {}),
+                     FACE(UpFace, {}),
+                     FACE(BackFace, {}),
+                     FACE(FrontFace, {}),
                      CellFinalize({}),
                      AfterAllCells(DoNothing)
                      );

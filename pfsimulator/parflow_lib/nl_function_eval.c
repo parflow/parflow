@@ -1858,6 +1858,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                      * RPMean(lower_cond, upper_cond,
                                               rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
                                      / viscosity;
+                             u_new = ffz * del_x_slope * del_y_slope;
                            }),
                            FACE(FrontFace,
                            {
@@ -1877,6 +1878,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                      * RPMean(lower_cond, upper_cond,
                                               rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
                                      / viscosity;
+                             u_new = ffz * del_x_slope * del_y_slope;
 
 
                              q_overlnd = 0.0;
