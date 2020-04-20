@@ -1245,23 +1245,22 @@ void    RichardsJacobianEval(
                                  assert(1);
 
                                case simple:
-                                 ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 io = SubvectorEltIndex(p_sub, i, j, 0);
-                                 im = SubmatrixEltIndex(J_sub, i, j, k);
-
+                               {
+                                 double vol = dx * dy * dz;
+                                 int ip = SubvectorEltIndex(p_sub, i, j, k);
                                  if ((pp[ip]) > 0.0)
                                  {
                                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
                                  }
-                                 break;
+                               }
+                               break;
 
                                case overland_flow:
+                               {
                                  if (overlandspinup == 1)
                                  {
-                                   vol = dx * dy * dz;
-                                   ip = SubvectorEltIndex(p_sub, i, j, k);
-                                   io = SubvectorEltIndex(p_sub, i, j, 0);
-                                   im = SubmatrixEltIndex(J_sub, i, j, k);
+                                   double vol = dx * dy * dz;
+                                   int ip = SubvectorEltIndex(p_sub, i, j, k);
 
                                    if ((pp[ip]) >= 0.0)
                                    {
@@ -1273,7 +1272,8 @@ void    RichardsJacobianEval(
                                      cp[im] += 0.0;
                                    }
                                  }
-                                 break;
+                               }
+                               break;
                              }
                            }),
                            CellFinalize({
