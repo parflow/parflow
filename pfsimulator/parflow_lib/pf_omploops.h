@@ -546,7 +546,7 @@ INC_IDX(int idx, int i, int j, int k,
  **************************************************************************/
 
 /* Used to calculate correct ival */
-#define CALC_IVAL(diff, a, b) ((diff) * (a) + (a) + (b))
+#define CALC_IVAL(diff, a, b, prev) ((diff) * (a) + (a) + (b)) + (prev)
 
 #undef GrGeomPatchLoopBoxesNoFdir
 #define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,\
@@ -564,6 +564,8 @@ INC_IDX(int idx, int i, int j, int k,
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                 \
     int *PV_visiting = NULL;                                            \
     PF_UNUSED(PV_visiting);                                             \
+                                                                        \
+    int prev_ival = 0;                                                  \
     for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)             \
     {                                                                   \
       BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f); \
@@ -596,11 +598,11 @@ INC_IDX(int idx, int i, int j, int k,
                 int PV_tmp_j = j - PV_iyl;                              \
                 int PV_tmp_k = k - PV_izl;                              \
                 if (!z_scale) {                                         \
-                  ival = CALC_IVAL(PV_diff_x, PV_tmp_j, PV_tmp_i);      \
+                  ival = CALC_IVAL(PV_diff_x, PV_tmp_j, PV_tmp_i, prev_ival);     \
                 } else if (!y_scale) {                                  \
-                  ival = CALC_IVAL(PV_diff_x, PV_tmp_k, PV_tmp_i);      \
+                  ival = CALC_IVAL(PV_diff_x, PV_tmp_k, PV_tmp_i, prev_ival);     \
                 } else {                                                \
-                  ival = CALC_IVAL(PV_diff_y, PV_tmp_k, PV_tmp_j);      \
+                  ival = CALC_IVAL(PV_diff_y, PV_tmp_k, PV_tmp_j, prev_ival);     \
                 }                                                       \
                 setup;                                                  \
                                                                         \
@@ -618,6 +620,7 @@ INC_IDX(int idx, int i, int j, int k,
               }                                                         \
             }                                                           \
           }                                                             \
+        prev_ival += (PV_diff_x+1) * (PV_diff_y+1) * (PV_diff_z+1);     \
       }                                                                 \
     }                                                                   \
   }
@@ -625,7 +628,7 @@ INC_IDX(int idx, int i, int j, int k,
 
 /* Per SGS suggestion on 12/3/2008
    @MCB: C won't allow *int to const *int conversion */
-static int FDIR_TABLE[][6] = {
+static const int FDIR_TABLE[6][3] = {
   {-1, 0,  0}, // Left
   {1,  0,  0}, // Right
   {0, -1,  0}, // Down
@@ -638,14 +641,16 @@ static int FDIR_TABLE[][6] = {
 #undef GrGeomPatchLoopBoxes
 #define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,          \
                              ix, iy, iz, nx, ny, nz, body)              \
-  PRAGMA(omp parallel firstprivate(fdir))                               \
+  PRAGMA(omp parallel)                                                  \
   {                                                                     \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                 \
     int *PV_visiting = NULL;                                            \
     PF_UNUSED(PV_visiting);                                             \
+                                                                        \
+    int prev_ival = 0;                                                  \
     for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)             \
     {                                                                   \
-      fdir = FDIR_TABLE[PV_f];                                          \
+      const int *fdir = FDIR_TABLE[PV_f];                               \
                                                                         \
       BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f); \
       for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)      \
@@ -676,15 +681,16 @@ static int FDIR_TABLE[][6] = {
                 int PV_tmp_j = j - PV_iyl;                              \
                 int PV_tmp_k = k - PV_izl;                              \
                 if (!z_scale) {                                         \
-                  ival = CALC_IVAL(PV_diff_x, PV_tmp_j, PV_tmp_i);      \
+                  ival = CALC_IVAL(PV_diff_x, PV_tmp_j, PV_tmp_i, prev_ival);     \
                 } else if (!y_scale) {                                  \
-                  ival = CALC_IVAL(PV_diff_x, PV_tmp_k, PV_tmp_i);      \
+                  ival = CALC_IVAL(PV_diff_x, PV_tmp_k, PV_tmp_i, prev_ival); \
                 } else {                                                \
-                  ival = CALC_IVAL(PV_diff_y, PV_tmp_k, PV_tmp_j);      \
+                  ival = CALC_IVAL(PV_diff_y, PV_tmp_k, PV_tmp_j, prev_ival); \
                 }                                                       \
                                                                         \
                 body;                                                   \
               }                                                         \
+        prev_ival += (PV_diff_x+1) * (PV_diff_y+1) * (PV_diff_z+1);     \
       }                                                                 \
     }                                                                   \
   }
@@ -728,7 +734,7 @@ static int FDIR_TABLE[][6] = {
     PF_UNUSED(PV_visiting);                                             \
     for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)             \
     {                                                                   \
-      fdir = FDIR_TABLE[PV_f];                                          \
+      const int *fdir = FDIR_TABLE[PV_f];                               \
                                                                         \
       BoxArray* boxes = GrGeomSolidSurfaceBoxes(grgeom, PV_f);          \
       for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)      \

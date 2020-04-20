@@ -426,9 +426,9 @@ typedef struct {
     int *PV_visiting = NULL;                                            \
     PF_UNUSED(PV_visiting);                                             \
     UNPACK(locals);                                                     \
+                                                                        \
     for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)             \
     {                                                                   \
-                                                                        \
       BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f); \
       for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)      \
       {                                                                 \
