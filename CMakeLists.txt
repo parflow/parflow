@@ -66,19 +66,6 @@ if( NOT ${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none" )
 endif( NOT ${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none" )
 
 #-----------------------------------------------------------------------------
-# OMP Configuration
-#-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_OMP False CACHE BOOL "Enable OpenMP")
-if ( ${PARFLOW_ENABLE_OMP} )
-
-   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-   set (PARFLOW_HAVE_OMP "yes")
-   set (HAVE_OMP ${PARFLOW_HAVE_OMP})
-
-endif( ${PARFLOW_ENABLE_OMP} )
-
-#-----------------------------------------------------------------------------
 # Version number
 #-----------------------------------------------------------------------------
 include (Version)
