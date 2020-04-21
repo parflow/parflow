@@ -64,7 +64,7 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
 __host__ __device__ __forceinline__ static void dev_dorand48(unsigned short xseed[3])
 {
   unsigned long accu;
-
+  
   unsigned short _rand48_mult[3] = {
     RAND48_MULT_0,
     RAND48_MULT_1,
@@ -183,7 +183,7 @@ struct SkipParallelSync {const int dummy = 0;};
 #define SKIP_PARALLEL_SYNC struct SkipParallelSync sync_struct; return sync_struct;
 
 #undef PARALLEL_SYNC
-#define PARALLEL_SYNC CUDA_ERR(cudaStreamSynchronize(0));
+#define PARALLEL_SYNC CUDA_ERR(cudaStreamSynchronize(0)); 
 
 #undef pfmax_atomic
 #define pfmax_atomic(a, b) AtomicMax(&(a), b)
@@ -213,9 +213,9 @@ struct ReduceSumRes {T value;};
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
 template <typename LambdaBody>
-__global__ static void
+__global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI0(LambdaBody loop_body,
+BoxKernelI0(LambdaBody loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -229,14 +229,14 @@ BoxKernelI0(LambdaBody loop_body,
     i += ix;
     j += iy;
     k += iz;
-
+    
     loop_body(i, j, k);
 }
 
 template <typename LambdaInit, typename LambdaBody>
-__global__ static void
+__global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body,
+BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -252,14 +252,14 @@ BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body,
     i += ix;
     j += iy;
     k += iz;
-
-    loop_body(i, j, k, i1);
+    
+    loop_body(i, j, k, i1);       
 }
 
 template <typename LambdaInit1, typename LambdaInit2, typename LambdaBody>
-__global__ static void
+__global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body,
+BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -276,14 +276,14 @@ BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body
     i += ix;
     j += iy;
     k += iz;
-
-    loop_body(i, j, k, i1, i2);
+    
+    loop_body(i, j, k, i1, i2);    
 }
 
 template <typename LambdaInit1, typename LambdaInit2, typename LambdaInit3, typename LambdaBody>
-__global__ static void
+__global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_init3,
+BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_init3, 
     LambdaBody loop_body, const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -301,15 +301,15 @@ BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_ini
     i += ix;
     j += iy;
     k += iz;
-
-    loop_body(i, j, k, i1, i2, i3);
+    
+    loop_body(i, j, k, i1, i2, i3);    
 }
 
 template <typename ReduceOp, typename LambdaInit1, typename LambdaInit2, typename LambdaFun, typename T>
-__global__ static void
+__global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
-    const T init_val, T * __restrict__ rslt, const int ix, const int iy, const int iz,
+DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun, 
+    const T init_val, T * __restrict__ rslt, const int ix, const int iy, const int iz, 
     const int nx, const int ny, const int nz)
 {
     // Specialize BlockReduce for a 1D block of BLOCKSIZE_X * 1 * 1 threads on type T
@@ -329,11 +329,11 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     const int ntot = nx * ny * nz;
 
     T thread_data;
-
+    
     // Initialize thread_data depending on reduction operation
     if(std::is_same<ReduceOp, struct ReduceSumRes<T>>::value)
       thread_data = 0;
-    else
+    else 
       thread_data = init_val;
 
     // Evaluate the loop body
@@ -352,7 +352,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       T aggregate = BlockReduce(temp_storage).Sum(thread_data);
 
       // Store aggregate
-      if(threadIdx.x == 0)
+      if(threadIdx.x == 0) 
       {
         atomicAdd(rslt, aggregate);
       }
@@ -363,7 +363,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max());
 
       // Store aggregate
-      if(threadIdx.x == 0)
+      if(threadIdx.x == 0) 
       {
         AtomicMax(rslt, aggregate);
       }
@@ -380,18 +380,18 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Min());
 
       // Store aggregate
-      if(threadIdx.x == 0)
+      if(threadIdx.x == 0) 
       {
         AtomicMin(rslt, aggregate);
       }
-
+      
       // Write to global memory directly from all threads
       // if (idx < ntot)
       // {
       //   AtomicMin(rslt, thread_data);
       // }
     }
-    else
+    else 
     {
       printf("ERROR at %s:%d: Invalid reduction identifier, likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);
     }
@@ -421,7 +421,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       ((nz - 1) + blocksize_z) / blocksize_z);                                      \
   }                                                                                 \
   block = dim3(blocksize_x, blocksize_y, blocksize_z);                              \
-}
+}  
 
 #undef BoxLoopI1
 #define BoxLoopI1(i, j, k,                                                          \
@@ -454,6 +454,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef BoxLoopI2
@@ -495,6 +496,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef BoxLoopI3
@@ -543,6 +545,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef BoxLoopReduceI1
@@ -588,6 +591,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     rslt = *ptr_rslt;                                                               \
     tfree_cuda(ptr_rslt);                                                           \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef BoxLoopReduceI2
@@ -641,6 +645,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     rslt = *ptr_rslt;                                                               \
     tfree_cuda(ptr_rslt);                                                           \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef GrGeomInLoopBoxes
@@ -679,6 +684,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef GrGeomSurfLoopBoxes
@@ -748,6 +754,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
           {                                                                         \
             const int fdir[3] = {fdir_capt0, fdir_capt1, fdir_capt2};               \
             loop_body;                                                              \
+            (void)fdir;                                                             \
           };                                                                        \
                                                                                     \
         BoxKernelI0<<<grid, block>>>(lambda_body,                                   \
@@ -757,6 +764,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       }                                                                             \
     }                                                                               \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef GrGeomPatchLoopBoxes
@@ -834,6 +842,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
              {                                                                      \
                const int fdir[3] = {fdir_capt0, fdir_capt1, fdir_capt2};            \
                loop_body;                                                           \
+               (void)fdir;                                                          \
              };                                                                     \
                                                                                     \
         BoxKernelI1<<<grid, block>>>(                                               \
@@ -843,12 +852,13 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       }                                                                             \
     }                                                                               \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef GrGeomPatchLoopBoxesNoFdir
-#define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,					\
-																	 ix, iy, iz, nx, ny, nz, locals, setup,	\
-																	 f_left, f_right, f_down, f_up, f_back, f_front, finalize) \
+#define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,                      \
+  ix, iy, iz, nx, ny, nz, locals, setup,                                            \
+  f_left, f_right, f_down, f_up, f_back, f_front, finalize)                         \
 {                                                                                   \
   for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
   {                                                                                 \
@@ -909,6 +919,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       }                                                                             \
     }                                                                               \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef GrGeomOctreeExteriorNodeLoop
@@ -964,6 +975,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     j = PV_iyu;                                                                     \
     k = PV_izu;                                                                     \
   })                                                                                \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 #undef GrGeomOutLoop
@@ -1014,6 +1026,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
   }                                                                                 \
+  (void)i;(void)j;(void)k;                                                          \
 }
 
 }
