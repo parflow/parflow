@@ -76,6 +76,12 @@ typedef struct {
 #define BCStructBCType(bc_struct, p)          ((bc_struct)->bc_types[p])
 #define BCStructPatchValues(bc_struct, p, s)  ((bc_struct)->values[p][s])
 
+/**
+ * @brief Iterate over number of Boundary Condition patches
+ *
+ * @param ipatch Iterator variable to use
+ * @param bc_struct BCStruct struct to read patch count from
+ */
 #define ForBCStructNumPatches(ipatch, bc_struct)										\
   for(ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
 
@@ -129,6 +135,11 @@ typedef struct {
     });                                                                           \
   }
 
+/**
+ * @brief Variant of BCStructPatchLoop that doesn't utilize an fdir variable, used in ForPatchCells loops.
+ *
+ * @note Do not call directly! Not intended for use code.
+ */
 #define BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,		\
                                 locals, setup,                          \
                                 f_left, f_right,                        \
@@ -197,39 +208,79 @@ typedef struct {
  * ForPatch loops and macros
  *--------------------------------------------------------------------------*/
 
-/* Used to allow any BC type in a loop.
-   Because all BC types are actually macro defines to integers,
-   the compiler will optimize the necessary checks away.
-*/
+/**
+ * @brief For use when a BCLoop should execute no matter what the patch type is
+ */
 #define ALL -1
+
+/**
+ * @brief For use when a statement body is unnecessary in ForPatchCellsPerFace.
+ */
 #define DoNothing
 
+/**
+ * @name Face directions
+ * @brief Declare which face a given FACE body should apply to
+ *
+ * These are aliases of the internal GrGeomOctreeFace definitions
+ * @{
+ */
 #define LeftFace GrGeomOctreeFaceL
 #define RightFace GrGeomOctreeFaceR
 #define DownFace GrGeomOctreeFaceD
 #define UpFace GrGeomOctreeFaceU
 #define BackFace GrGeomOctreeFaceB
 #define FrontFace GrGeomOctreeFaceF
+/** @} */
 
-//#define CellSetup(...) DEFER3(_CellSetup)(__VA_ARGS__)
-//#define _CellSetup(...) __VA_ARGS__
+/**
+ * @brief Unconditionally executes body at the beginning of each boundary cell iteration
+ */
 #define CellSetup(body) { body; };
+
+/**
+ * @brief Unconditionally executes body at the end of each boundary cell iteration
+ */
 #define CellFinalize(body) { body; };
+
+/**
+ * @brief Unconditionally executes body before all boundary cell iterations
+ */
 #define BeforeAllCells(body) { body; };
+
+/**
+ * @brief Unconditionally executes body after all boundary cell iterations
+ */
 #define AfterAllCells(body) { body; }
+
+/**
+ * @brief Used to pass loop variables (ex: i, j, k, ival, etc.) through to inner loop macros
+ */
 #define LoopVars(...) __VA_ARGS__
 
-/* @MCB:
-   Locals will pack everything into parens, which captures commas.
-   This will treat it as a single parameter in other macros.
-   It can then be exapnded at the correct place using UNPACK.
+/**
+ * @brief Packs arbitrary number of statements into paranthesis to pass through to other macros.
+ *
+ * Used in ForPatchCellsPerFace loop to declare local variables.  Provides architecture portability and scope safety.
+ * Expand the packed arguments using the UNPACK macro at the appropriate location in code.
  */
 #define Locals(...) (__VA_ARGS__)
+
+/**
+ * @brief For use when no locals variables need to be declared in a loop.
+ */
 #define NoLocals ()
 #define UNPACK(locals) _UNPACK locals
 #define _UNPACK(...) __VA_ARGS__ ;
 
-
+/**
+ * @brief For use with ForPatchCellsPerFace loop, manages conditional branching internally
+ *
+ * Expands to a case statement containing the statement body.
+ *
+ * @param[in] fdir Face direction to execute the body on (e.g. FaceLeft)
+ * @param[in] body Arbitrary statement body block to execute
+ */
 #define FACE(fdir, body)      \
   case fdir:                  \
   {                           \
@@ -237,28 +288,46 @@ typedef struct {
     break;                    \
   }
 
-#define _GetCurrentPatch(i, j, k, ival, bc_struct, ipatch, is) \
-  BCStructBCType(bc_struct, ipatch)
-
-
 #if 0
-/* Template for copy+pasting for new BC loops */
+/* @MCB: Template for copy+pasting for new BC loops.
+ Body blocks intentionally contain ~~ as a statement to cause syntax errors if left alone.
+ This is to ensure each cell body statement has been set and not left as a copy+paste.
+ */
 ForPatchCellsPerFace(InsertBCTypeHere,
                      BeforeAllCells(DoNothing),
                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                      NoLocals,
-                     CellSetup({}),
-                     FACE(LeftFace, {}),
-                     FACE(RightFace, {}),
-                     FACE(DownFace, {}),
-                     FACE(UpFace, {}),
-                     FACE(BackFace, {}),
-                     FACE(FrontFace, {}),
-                     CellFinalize({}),
+                     CellSetup({ ~~ }),
+                     FACE(LeftFace, { ~~ }),
+                     FACE(RightFace, { ~~ }),
+                     FACE(DownFace, { ~~ }),
+                     FACE(UpFace, { ~~ }),
+                     FACE(BackFace, { ~~ }),
+                     FACE(FrontFace, { ~~ }),
+                     CellFinalize({ ~~ }),
                      AfterAllCells(DoNothing)
-                     );
+  );
 #endif
 
+/**
+ * @brief Iterates over the cells of a boundary condition patch with conditional branching on each face direction
+ *
+ *
+ *
+ * @param bctype Boundary condition type this loop should apply computations to.  (e.g. OverlandBC)
+ * @param before_loop See BeforeAllCells macro.
+ * @param loopvars Variables to pass through to inner looping macro.  See LoopVars macro.
+ * @param locals Locally defined variables for use in loop.  See Locals macro.
+ * @param setup See CellSetup macro
+ * @param f_left Statement body to execute on Left cell face.  See FACE macro.
+ * @param f_right Statement body to execute on Right cell face.  See FACE macro.
+ * @param f_down Statement body to execute on Down cell face.  See FACE macro.
+ * @param f_up Statement body to execute on Up cell face.  See FACE macro.
+ * @param f_back Statement body to execute on Back cell face.  See FACE macro.
+ * @param f_front Statement body to execute on Front cell face.  See FACE macro.
+ * @param finalize See CellFinalize macro
+ * @param after_loop See AfterAllCells macro
+ */
 #define ForPatchCellsPerFace(bctype,													\
                              before_loop,											\
 														 loopvars, locals,								\
@@ -283,6 +352,10 @@ ForPatchCellsPerFace(InsertBCTypeHere,
     }                                                         \
   }
 
+/**
+ * @brief Variation of ForPatchCellsPerFace that extends loop bounds to include ghost cells
+ * See ForPatchCellsPerFace for further documentation
+ */
 #define ForPatchCellsPerFaceWithGhost(bctype, \
                                       before_loop, loopvars,          \
 																			locals,													\
@@ -308,9 +381,19 @@ ForPatchCellsPerFace(InsertBCTypeHere,
     }                                                                 \
   }
 
-/* Calls the loop directly
-   Puts "body" into what is normally CellSetup
-   Replaces locals, faces, and finalize with DoNothing
+/**
+ * @brief Iterates over cells of a boundary condition patch without any conditional branching
+ *
+ * @note Any local variable definitions should be made explicitly in the body of the loop
+ *
+ * @param[in,out] i X index
+ * @param[in,out] j Y index
+ * @param[in,out] k Z index
+ * @param[in,out] ival Index for patch value array
+ * @param bc_struct BCStruct to use in internal looping structures
+ * @param ipatch Current patch number
+ * @param is Current subgrid number
+ * @param body Statement body to execute
 */
 #define ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is, body)		\
   BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,					\

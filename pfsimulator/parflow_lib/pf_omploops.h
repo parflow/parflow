@@ -1,5 +1,31 @@
+/*BHEADER*********************************************************************
+ *
+ *  Originally authored 04/22/2020 at Boise State University
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+
 #ifndef _PF_OMPLOOPS_H_
 #define _PF_OMPLOOPS_H_
+
+/** @file
+ * @brief OpenMP functions and loop definitions
+ */
 
 #if ACC_BACKEND != BACKEND_OMP
 
@@ -14,7 +40,7 @@
  * @brief Assertion to prevent errant parallel region entries
  *
  * Function macro that checks active OpenMP parallel levels.
- * If current in a parallel region, prints function name and line to stderr and calls exit(-1).
+ * If currently in a parallel region, prints function name and line to stderr and calls exit(-1).
  *
  **/
 #define NO_OMP_PARALLEL                                                 \
@@ -63,31 +89,6 @@ extern "C++"{
   };
 
 
-//#undef pfmax_atomic
-//#define pfmax_atomic(a, b) AtomicMax(&(a), b)
-/* TODO: This should be replaced by turning the calling loop into reduction with (max: sum) clause */
-  template <typename T>
-  static inline void AtomicMax(T *addr, T val)
-  {
-#pragma omp critical
-    {
-      if (*addr < val)
-        *addr = val;
-    }
-  }
-
-//#undef pfmin_atomic
-//#define pfmin_atomic(a, b) AtomicMin(&(a), b)
-  template <typename T>
-  static inline void AtomicMin(T *addr, T val)
-  {
-    #pragma omp critical
-    {
-      if (*addr > val)
-        *addr = val;
-    }
-  }
-
 #undef PlusEquals
 #define PlusEquals(a, b) AtomicAdd(&(a), b)
   template<typename T>
@@ -97,21 +98,29 @@ extern "C++"{
     *addr += val;
   }
 
+  /** Helper struct for type comparison (not for direct use). */
   template <typename T>
   struct ReduceMaxRes {T lambda_result;};
 #undef ReduceMax
 #define ReduceMax(a, b) struct ReduceMaxRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
+  /** Helper struct for type comparison (not for direct use). */
   template <typename T>
   struct ReduceMinRes {T lambda_result;};
 #undef ReduceMin
 #define ReduceMin(a, b) struct ReduceMinRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
+  /** Helper struct for type comparison (not for direct use). */
   template <typename T>
   struct ReduceSumRes {T lambda_result;};
 #undef ReduceSum
 #define ReduceSum(a, b) struct ReduceSumRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
+  /** OpenMP BoxLoopReduceI1 definition.
+      Last statement in the body of the loop must be one of the above Reduce helper structures.
+      This macro will do compile-time type checking to determine which kind of reduction to perform.
+      See innerprod.c or vector_utilities.c for example usages
+   */
 #undef BoxLoopReduceI1
 #define BoxLoopReduceI1(sum,                                            \
                         i, j, k,                                        \
@@ -198,6 +207,10 @@ extern "C++"{
           }                                                             \
   }
 
+  /** OpenMP BoxLoopReduceI2 definition.
+      Last statement in the body of the loop must be one of the above Reduce helper structures.
+      This macro will do compile-time type checking to determine which kind of reduction to perform.
+  */
 #undef BoxLoopReduceI2
 #define BoxLoopReduceI2(sum,                                            \
                         i, j, k,                                        \
@@ -316,7 +329,17 @@ extern "C++"{
  * Pragma uses `declare simd` to tell the compiler this is SIMD safe.
  * `uniform` pragma tells the compiler which parameters will be constant for each SIMD pass.
  * BoxLoops are arranged in k -> j -> i ordering, so the only thing changing on each interior loop pass is i.
- * TODO: Detail the math used to calculate appropriate offsets.
+ *
+ * @param idx Original starting index
+ * @param i Current i of loop
+ * @param j Current j of loop
+ * @param k Current k of loop
+ * @param nx Subregion X size
+ * @param ny Subregion Y size
+ * @param sx Subregion X striding factor
+ * @param jinc Striding factor for J
+ * @param kinc Striding factor for K
+ * @return Current accessor index calculated from input parameters
  **/
 #pragma omp declare simd uniform(idx, j, k, nx, ny, sx, jinc, kinc)
 inline int
@@ -328,11 +351,6 @@ INC_IDX(int idx, int i, int j, int k,
           (k * ny * nx + j * nx + i) * sx) + idx;
 }
 
-/**
- * @brief BoxLoopI0 for OpenMP.  Spawns new parallel for, collapses all 3 loops.
- *
- * TODO: May be a good candidate for `collapse(2)` and a `for simd` on the innermost loop.  See SIMD_BoxLoopI0 for an example.
- **/
 #undef BoxLoopI0
 #define BoxLoopI0(i, j, k, ix, iy, iz, nx, ny, nz, body)    \
   {                                                         \
@@ -456,62 +474,6 @@ INC_IDX(int idx, int i, int j, int k,
       }                                                                 \
   }
 
-#if 0
-#undef BoxLoopReduceI1
-#define BoxLoopReduceI1(sum,                                            \
-                        i, j, k,                                        \
-                        ix, iy, iz, nx, ny, nz,                         \
-                        i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
-                        body)                                           \
-  {                                                                     \
-    int i1_start = i1;                                                  \
-    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1); \
-    PRAGMA(omp parallel for reduction(+:sum) collapse(3) private(i, j, k, i1)) \
-      for (k = iz; k < iz + nz; k++)                                    \
-      {                                                                 \
-        for (j = iy; j < iy + ny; j++)                                  \
-        {                                                               \
-          for (i = ix; i < ix + nx; i++)                                \
-          {                                                             \
-            i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz),        \
-                         nx, ny, sx1, PV_jinc_1, PV_kinc_1);            \
-            body;                                                       \
-          }                                                             \
-        }                                                               \
-      }                                                                 \
-  }
-
-
-#undef BoxLoopReduceI2
-#define BoxLoopReduceI2(sum,                                            \
-                        i, j, k,                                        \
-                        ix, iy, iz, nx, ny, nz,                         \
-                        i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
-                        i2, nx2, ny2, nz2, sx2, sy2, sz2,               \
-                        body)                                           \
-  {                                                                     \
-    int i1_start = i1;                                                  \
-    int i2_start = i2;                                                  \
-    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1); \
-    DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2); \
-    PRAGMA(omp parallel for reduction(+:sum) collapse(3) private(i, j, k, i1, i2)) \
-      for (k = iz; k < iz + nz; k++)                                    \
-      {                                                                 \
-        for (j = iy; j < iy + ny; j++)                                  \
-        {                                                               \
-          for (i = ix; i < ix + nx; i++)                                \
-          {                                                             \
-            i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz),        \
-                         nx, ny, sx1, PV_jinc_1, PV_kinc_1);            \
-            i2 = INC_IDX(i2_start, (i - ix), (j - iy), (k - iz),        \
-                         nx, ny, sx2, PV_jinc_2, PV_kinc_2);            \
-            body;                                                       \
-          }                                                             \
-        }                                                               \
-      }                                                                 \
-  }
-#endif
-
 
 /**************************************************************************
  * SIMD BoxLoop Variants
@@ -545,7 +507,16 @@ INC_IDX(int idx, int i, int j, int k,
  * OpenMP Cluster LoopBox Variants
  **************************************************************************/
 
-/* Used to calculate correct ival */
+/**
+ * @brief Calculate ival value in boundary condition loop body for a given iteration
+ *
+ *  Input variables depend on the bounds of the current box being iterated over.
+ *
+ * @param diff X/Y/Z offset of the current box
+ * @param a Normalized J or K iteration
+ * @param b Normalized I or J iteration
+ * @param prev Previous maximum ival value
+*/
 #define CALC_IVAL(diff, a, b, prev) ((diff) * (a) + (a) + (b)) + (prev)
 
 #undef GrGeomPatchLoopBoxesNoFdir
@@ -580,6 +551,7 @@ INC_IDX(int idx, int i, int j, int k,
         PV_iyu = pfmin((iy + ny - 1), box.up[1]);                       \
         PV_izu = pfmin((iz + nz - 1), box.up[2]);                       \
                                                                         \
+        /* Used to calculate individual ival values for each threads iteration */
         int PV_diff_x = PV_ixu - PV_ixl;                                \
         int PV_diff_y = PV_iyu - PV_iyl;                                \
         int PV_diff_z = PV_izu - PV_izl;                                \
@@ -626,8 +598,7 @@ INC_IDX(int idx, int i, int j, int k,
   }
 
 
-/* Per SGS suggestion on 12/3/2008
-   @MCB: C won't allow *int to const *int conversion */
+/* Per SGS suggestion on 12/3/2008 */
 static const int FDIR_TABLE[6][3] = {
   {-1, 0,  0}, // Left
   {1,  0,  0}, // Right
