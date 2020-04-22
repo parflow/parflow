@@ -37,12 +37,14 @@ extern "C++"{
 #define RAND48_MULT_2   (0x0005)
 #define RAND48_ADD      (0x000b)
 
+ /** Helper struct for type comparison (not for direct use). */
 template <typename T>
 struct function_traits
     : public function_traits<decltype(&T::operator())>
 {};
 // For generic types, directly use the result of the signature of its 'operator()'
 
+ /** Helper struct for type comparison (not for direct use). */
 template <typename ClassType, typename ReturnType, typename... Args>
 struct function_traits<ReturnType(ClassType::*)(Args...) const>
 // we specialize for pointers to member function
@@ -194,16 +196,19 @@ struct SkipParallelSync {const int dummy = 0;};
 #undef PlusEquals
 #define PlusEquals(a, b) AtomicAdd(&(a), b)
 
+ /** Helper struct for type comparison (not for direct use). */
 template <typename T>
 struct ReduceMaxRes {T value;};
 #undef ReduceMax
 #define ReduceMax(a, b) struct ReduceMaxRes<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
+ /** Helper struct for type comparison (not for direct use). */
 template <typename T>
 struct ReduceMinRes {T value;};
 #undef ReduceMin
 #define ReduceMin(a, b) struct ReduceMinRes<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
+ /** Helper struct for type comparison (not for direct use). */
 template <typename T>
 struct ReduceSumRes {T value;};
 #undef ReduceSum

@@ -5,11 +5,22 @@
 #include <cuda_runtime.h>
 #include <stdbool.h>
 
+/** @file
+ * @brief CUDA error handling and unified memory allocation.
+ */
+
 /*--------------------------------------------------------------------------
  * CUDA error handling macros
  *--------------------------------------------------------------------------*/
 
 #undef CUDA_ERR
+/**
+ * @brief CUDA error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr CUDA error (of type cudaError_t) [IN]
+ */
 #define CUDA_ERR(expr)                                                                 \
 {                                                                                      \
   cudaError_t err = expr;                                                              \
@@ -23,6 +34,13 @@
 #include <rmm/rmm_api.h>
 
 #undef RMM_ERR
+/**
+ * @brief RMM error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr RMM error (of type rmmError_t) [IN]
+ */
 #define RMM_ERR(expr)                                                                  \
 {                                                                                      \
   rmmError_t err = expr;                                                               \
@@ -37,6 +55,16 @@
  * Define static unified memory allocation routines for CUDA
  *--------------------------------------------------------------------------*/
 
+/**
+ * @brief Allocates unified memory.
+ * 
+ * If RMM library is available, pool allocation is used for better performance.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
 static inline void *talloc_cuda(size_t size)
 {
   void *ptr = NULL;  
@@ -51,6 +79,16 @@ static inline void *talloc_cuda(size_t size)
   return ptr;
 }
 
+/**
+ * @brief Allocates unified memory initialized to 0.
+ * 
+ * If RMM library is available, pool allocation is used for better performance.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
 static inline void *ctalloc_cuda(size_t size)
 {
   void *ptr = NULL;  
@@ -66,6 +104,14 @@ static inline void *ctalloc_cuda(size_t size)
   
   return ptr;
 }
+
+/**
+ * @brief Frees unified memory allocated with \ref talloc_cuda or \ref ctalloc_cuda.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param ptr a void pointer to the allocated dataspace [IN]
+ */
 static inline void tfree_cuda(void *ptr)
 {
 #ifdef HAVE_RMM

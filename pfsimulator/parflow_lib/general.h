@@ -25,11 +25,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
-/*****************************************************************************
-*
-* General structures and values
-*
-*****************************************************************************/
+
+/** @file
+ * @brief General macro definitions.
+ */
 
 #ifndef _GENERAL_HEADER
 #define _GENERAL_HEADER
@@ -70,14 +69,42 @@
  *--------------------------------------*/
 
 #else
-
+/**
+ * @brief Allocates memory.
+ * 
+ * When using an accelerator device, allocates unified memory with redefined macro.
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ * 
+ * @param type The C type name
+ * @param count Number of items of type to allocate
+ * @return Pointer to the allocated dataspace
+ */
 #define talloc(type, count) \
   (((count) > 0) ? (type*)malloc(sizeof(type) * (unsigned int)(count)) : NULL)
 
+/**
+ * @brief Allocates memory initialized to 0.
+ * 
+ * When using an accelerator device, allocates unified memory with redefined macro.
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @param type The C type name
+ * @param count Number of items of type to allocate
+ * @return Pointer to the allocated dataspace
+ */
 #define ctalloc(type, count) \
   (((count) > 0) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
-/* note: the `else' is required to guarantee termination of the `if' */
+/**
+ * Deallocates memory for objects that were allocated by \ref talloc or \ref ctalloc.
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ * 
+ * @param ptr Pointer to dataspace to free
+ * @return Error code
+ */
 #define tfree(ptr) if (ptr) free(ptr); else {}
 
 #endif
@@ -109,18 +136,54 @@
 #endif
 
 #ifndef PlusEquals
+/**
+ * Thread-safe addition assignment. This macro
+ * can be called anywhere in any compute kernel.
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @param a original value [IN], sum result [OUT]
+ * @param b value to be added [IN]
+ */
 #define PlusEquals(a, b) (a += b)
 #endif
 
 #ifndef ReduceMax
+/**
+ * Thread-safe reduction to find maximum value for reduction loops. 
+ * Each thread must call this macro as the last action inside the reduction loop body. 
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @param a value 1 for comparison [IN], max value [OUT]
+ * @param b value 2 for comparison [IN]
+ */
 #define ReduceMax(a, b) if(a < b) { a = b; } else {};
 #endif
 
 #ifndef ReduceMin
+/**
+ * Thread-safe reduction to find maximum value for reduction loops. 
+ * Each thread must call this macro as the last action inside the reduction loop body. 
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @param a value 1 for comparison [IN], min value [OUT]
+ * @param b value 2 for comparison [IN]
+ */
 #define ReduceMin(a, b) if(a > b) { a = b; } else {};
 #endif
 
 #ifndef ReduceSum
+/**
+ * Thread-safe addition assignment for reduction loops. 
+ * Each thread must call this macro as the last action inside the reduction loop body.
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers!  
+ *
+ * @param a original value [IN], sum result [OUT]
+ * @param b value to be added [IN]
+ */
 #define ReduceSum(a, b) (a += b)
 #endif
 
@@ -165,32 +228,67 @@
  * Define CUDA macros to do nothing if no GPU acceleration
  *--------------------------------------------------------------------------*/
 
-//CUDA compiler specific keywords
 #ifndef __host__
+  /** Defines an object accessible from host. @note Multiple definitions! */
   #define __host__
 #endif
 #ifndef __device__
+  /** Defines an object accessible from device. @note Multiple definitions! */
   #define __device__
 #endif
 #ifndef __managed__
+  /** Defines a variable that is automatically migrated between host/device. @note Multiple definitions! */
   #define __managed__
 #endif
 #ifndef __restrict__
+  /** Defines a restricted pointer. @note Multiple definitions! */
   #define __restrict__
 #endif
 
-//Memory Prefetching
+/**
+ * Used to prefetch data from host to device for better performance.
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @param ptr pointer to data [IN]
+ * @param size bytes to be prefetched [IN]
+ * @param stream the device stream (0, if no streams are launched) [IN]
+ * @return CUDA error code
+ */
 #define MemPrefetchDeviceToHost(ptr, size, stream)
-#define MemPrefetchHostToDevice(ptr, size, gpuid, stream)
 
-//Parallel synchronizations
+/**
+ * Used to prefetch data from host to device for better performance.
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @param ptr pointer to data [IN]
+ * @param size bytes to be prefetched [IN]
+ * @param stream the device stream (0, if no streams are launched) [IN]
+ * @return CUDA error code
+ */
+#define MemPrefetchHostToDevice(ptr, size, stream)
+
+/**
+ * Explicit sync between host and device default stream if accelerator present.
+ * Can be called anywhere.
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ */
 #define PARALLEL_SYNC
+
+/**
+ * Skip sync after BoxLoop if accelerator present.
+ * Must be the called as the last action inside the loop body.
+ * 
+ * @note Multiple definitions: Redefined in architecture-specific headers! 
+ */
 #define SKIP_PARALLEL_SYNC
 
-//NVTX Ranges for NSYS profiling
 #if ACC_BACKEND == BACKEND_CUDA
   #include "nvToolsExt.h"
-  #define PUSH_NVTX(name,cid)                                                              \
+  /** Record an NVTX range for NSYS if accelerator present. */
+  #define PUSH_NVTX(name,cid)                                                               \
   {                                                                                         \
   	const uint32_t colors_nvtx[] =                                                          \
   	  {0xff00ff00, 0xff0000ff, 0xffffff00, 0xffff00ff, 0xff00ffff, 0xffff0000, 0xffffffff}; \
@@ -206,9 +304,12 @@
     eventAttrib.message.ascii = name;                                                       \
     nvtxRangePushEx(&eventAttrib);                                                          \
   }
+  /** Stop recording an NVTX range for NSYS if accelerator present. */
   #define POP_NVTX nvtxRangePop();
 #else
+  /** Record an NVTX range for NSYS if accelerator present. */
   #define PUSH_NVTX(name,cid)
+  /** Stop recording an NVTX range for NSYS if accelerator present. */
   #define POP_NVTX
 #endif
 

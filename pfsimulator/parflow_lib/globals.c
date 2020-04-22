@@ -25,11 +25,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
-/*****************************************************************************
-*
-* Routines for manipulating global structures.
-*
-*****************************************************************************/
+
+/** @file
+ * @brief Routines for manipulating global structures.
+ */
 
 #define PARFLOW_GLOBALS
 
@@ -121,10 +120,19 @@ void  LogGlobals()
 
 #if ACC_BACKEND == BACKEND_CUDA
 
-// Allocate __constant__ memory on GPU for the Globals struct
+/**
+ * @brief A struct for constant global data in read-only device memory.
+ **/
 __constant__ Globals dev_globals;
+
+/**
+ * @brief A struct member for constant global data in read-only device memory.
+ **/
 __constant__ Background dev_background;
 
+/**
+ * @brief A function to copy constant global data to read-only device memory.
+ **/
 void CopyGlobalsToDevice()
 {
   // Temporary pointers for getting the symbol addresses
