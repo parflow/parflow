@@ -12,12 +12,16 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
 
-if( NOT ${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none" OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+add_compile_definitions(BACKEND_NONE=0)
+add_compile_definitions(BACKEND_CUDA=1)
+add_compile_definitions(BACKEND_OMP=2)
 
-  add_compile_definitions(BACKEND_NONE=0)
-  add_compile_definitions(BACKEND_CUDA=1)
-  add_compile_definitions(BACKEND_OMP=2)
+if((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+  
+  add_compile_definitions(ACC_BACKEND=0) 
 
+else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+  
   if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
   # Initialize CUDA
@@ -67,9 +71,8 @@ if( NOT ${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none" OR ("${PARFLOW_ACCELERATO
   else()
     message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
   endif()
-else( NOT ${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none" OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
-  add_compile_definitions(ACC_BACKEND=0)
-endif( NOT ${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none" OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+
+endif((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
 
 #-----------------------------------------------------------------------------
 # Version number
