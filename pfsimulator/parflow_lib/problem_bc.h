@@ -29,39 +29,51 @@
 *
 *****************************************************************************/
 
+/** @file
+ * @brief Boundary condition macros
+ */
+
 #ifndef _PROBLEM_BC_HEADER
 #define _PROBLEM_BC_HEADER
 
+/**
+ * @name Boundary Condition Types
+ * @brief Boundary condition types for conditional branching in patch loops
+ *
+ * @{
+ */
 #define DirichletBC  0
 #define FluxBC       1
 #define OverlandBC   2   //sk
 #define SeepageFaceBC   3   //rmm
-
-/* @MCB: Additional overlandflow cases per LEC */
 #define OverlandKinematicBC 4
 #define OverlandDiffusiveBC 5
+/** @} */
 
 /*----------------------------------------------------------------
  * BCStruct structure
  *----------------------------------------------------------------*/
 
 typedef struct {
-  SubgridArray    *subgrids;   /* subgrids that BC data is defined on */
+  SubgridArray    *subgrids;   /**< Subgrids that BC data is defined on */
 
   GrGeomSolid     *gr_domain;
 
-  int num_patches;
-  int             *patch_indexes;  /* num_patches patch indexes */
-  int             *bc_types;          /* num_patches BC types */
+  int num_patches; /**< Number of patches */
+  int             *patch_indexes;  /**< num_patches patch indexes */
+  int             *bc_types;          /**< num_patches BC types */
 
-  double        ***values;   /* num_patches x num_subgrids data arrays */
+  double        ***values;   /**< num_patches x num_subgrids data arrays */
 } BCStruct;
 
 
 /*--------------------------------------------------------------------------
  * Accessor macros:
  *--------------------------------------------------------------------------*/
-
+/**
+ * @name BCStruct Accessors
+ * @{
+ */
 #define BCStructSubgrids(bc_struct)           ((bc_struct)->subgrids)
 #define BCStructNumSubgrids(bc_struct) \
   SubgridArrayNumSubgrids(BCStructSubgrids(bc_struct))
@@ -75,6 +87,7 @@ typedef struct {
 #define BCStructPatchIndex(bc_struct, p)      ((bc_struct)->patch_indexes[p])
 #define BCStructBCType(bc_struct, p)          ((bc_struct)->bc_types[p])
 #define BCStructPatchValues(bc_struct, p, s)  ((bc_struct)->values[p][s])
+/** @} */
 
 /**
  * @brief Iterate over number of Boundary Condition patches
@@ -82,7 +95,7 @@ typedef struct {
  * @param ipatch Iterator variable to use
  * @param bc_struct BCStruct struct to read patch count from
  */
-#define ForBCStructNumPatches(ipatch, bc_struct)										\
+#define ForBCStructNumPatches(ipatch, bc_struct)                    \
   for(ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
 
 /*--------------------------------------------------------------------------
@@ -140,7 +153,7 @@ typedef struct {
  *
  * @note Do not call directly! Not intended for use code.
  */
-#define BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,		\
+#define BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,   \
                                 locals, setup,                          \
                                 f_left, f_right,                        \
                                 f_down, f_up,                           \
@@ -214,7 +227,7 @@ typedef struct {
 #define ALL -1
 
 /**
- * @brief For use when a statement body is unnecessary in ForPatchCellsPerFace.
+ * @brief For use when a statement body is unnecessary in ForPatchCellsPerFace().
  */
 #define DoNothing
 
@@ -262,7 +275,9 @@ typedef struct {
  * @brief Packs arbitrary number of statements into paranthesis to pass through to other macros.
  *
  * Used in ForPatchCellsPerFace loop to declare local variables.  Provides architecture portability and scope safety.
- * Expand the packed arguments using the UNPACK macro at the appropriate location in code.
+ * Allows for same-line, multiple declarations.  ex: Locals(int i, j, k;) is perfectly valid.
+ * This is because the macro will expand the arguments to (int i, j, k;), which is only recognized as "one" token by the preprocessor.
+ * The packed arguments can then be expanded using the UNPACK() macro at the appropriate place.
  */
 #define Locals(...) (__VA_ARGS__)
 
@@ -288,6 +303,12 @@ typedef struct {
     break;                    \
   }
 
+/**
+ * @brief Used to extract the current BCType from LoopVars in ForPatchCellsPerFace to manage control flow
+ */
+#define _GetCurrentPatch(i, j, k, ival, bc_struct, ipatch, is) \
+  BCStructBCType(bc_struct, ipatch)
+
 #if 0
 /* @MCB: Template for copy+pasting for new BC loops.
  Body blocks intentionally contain ~~ as a statement to cause syntax errors if left alone.
@@ -307,30 +328,61 @@ ForPatchCellsPerFace(InsertBCTypeHere,
                      CellFinalize({ ~~ }),
                      AfterAllCells(DoNothing)
   );
+
+/*---------------------------------------------
+  Generic example of a boundary condition using ForPatchCellsPerFace
+  --------------------------------------------- */
+ForPatchCellsPerFace(NotARealBCType,
+                     BeforeAllCells({
+                         PFModuleInvokeType(SomeModuleInvoke, some_module, (foo, bar, baz));
+                       }),
+                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                     Locals(int im, ip;
+                            double some_prod;),
+                     CellSetup({
+                         im = SubmatrixEltIndex(J_sub, i, j, k);
+                         ip = SubvectorEltIndex(p_sub, i, j, k);
+                       }),
+                     FACE(LeftFace, { op = wp; }),
+                     FACE(RightFace, { op = ep; }),
+                     FACE(DownFace, { op = sop; }),
+                     FACE(UpFace, { op = np; }),
+                     FACE(BackFace, { op = lp; }),
+                     FACE(FrontFace, { op = up; }),
+                     CellFinalize({
+                         cp[im] += op[im] * pp[ip];
+                         op[im] = 0.0;
+                       }),
+                     AfterAllCells(DoNothing)
+                     );
+
 #endif
 
 /**
  * @brief Iterates over the cells of a boundary condition patch with conditional branching on each face direction
  *
- *
+ * @note Do not use exposed commas inside of any statement body.
+ * Exposed means not encapsulated by paranthesis.  For example, `double *dummy1, *dummy2;` inside of the BeforeAllCells statement body is not allowed.  However, a call such as `int im = SubmatrixEltIndex(J_sub, i, j, k);` is perfectly fine, as the commas are contained within paranthesis.
+ * This is a limitation of the C Preprocessor.
+ * The only exception to this is the `Locals()` macro, which allows for multiple variable definitions on one line.
  *
  * @param bctype Boundary condition type this loop should apply computations to.  (e.g. OverlandBC)
- * @param before_loop See BeforeAllCells macro.
- * @param loopvars Variables to pass through to inner looping macro.  See LoopVars macro.
- * @param locals Locally defined variables for use in loop.  See Locals macro.
- * @param setup See CellSetup macro
- * @param f_left Statement body to execute on Left cell face.  See FACE macro.
- * @param f_right Statement body to execute on Right cell face.  See FACE macro.
- * @param f_down Statement body to execute on Down cell face.  See FACE macro.
- * @param f_up Statement body to execute on Up cell face.  See FACE macro.
- * @param f_back Statement body to execute on Back cell face.  See FACE macro.
- * @param f_front Statement body to execute on Front cell face.  See FACE macro.
- * @param finalize See CellFinalize macro
- * @param after_loop See AfterAllCells macro
+ * @param before_loop See BeforeAllCells() macro.
+ * @param loopvars Variables to pass through to inner looping macro.  See LoopVars() macro.
+ * @param locals Locally defined variables for use in loop.  See Locals() macro.
+ * @param setup See CellSetup() macro
+ * @param f_left Statement body to execute on Left cell face.  See FACE() macro.
+ * @param f_right Statement body to execute on Right cell face.  See FACE() macro.
+ * @param f_down Statement body to execute on Down cell face.  See FACE() macro.
+ * @param f_up Statement body to execute on Up cell face.  See FACE() macro.
+ * @param f_back Statement body to execute on Back cell face.  See FACE() macro.
+ * @param f_front Statement body to execute on Front cell face.  See FACE() macro.
+ * @param finalize See CellFinalize() macro
+ * @param after_loop See AfterAllCells() macro
  */
-#define ForPatchCellsPerFace(bctype,													\
-                             before_loop,											\
-														 loopvars, locals,								\
+#define ForPatchCellsPerFace(bctype,                          \
+                             before_loop,                     \
+                             loopvars, locals,                \
                              setup,                           \
                              f_left, f_right,                 \
                              f_down, f_up,                    \
@@ -353,12 +405,12 @@ ForPatchCellsPerFace(InsertBCTypeHere,
   }
 
 /**
- * @brief Variation of ForPatchCellsPerFace that extends loop bounds to include ghost cells
- * See ForPatchCellsPerFace for further documentation
+ * @brief Variation of ForPatchCellsPerFace() that extends loop bounds to include ghost cells
+ * See ForPatchCellsPerFace() for further documentation
  */
 #define ForPatchCellsPerFaceWithGhost(bctype, \
                                       before_loop, loopvars,          \
-																			locals,													\
+                                      locals,                         \
                                       setup,                          \
                                       f_left, f_right,                \
                                       f_down, f_up,                   \
@@ -371,7 +423,7 @@ ForPatchCellsPerFace(InsertBCTypeHere,
     {                                                                 \
       before_loop;                                                    \
       BCStructPatchLoopOvrlndNoFdir(loopvars,                         \
-																		locals,														\
+                                    locals,                           \
                                     setup,                            \
                                     f_left, f_right,                  \
                                     f_down, f_up,                     \
@@ -395,13 +447,13 @@ ForPatchCellsPerFace(InsertBCTypeHere,
  * @param is Current subgrid number
  * @param body Statement body to execute
 */
-#define ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is, body)		\
-  BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,					\
-													NoLocals,																			\
-													body,																					\
-                          DoNothing, DoNothing,													\
-                          DoNothing, DoNothing,													\
-                          DoNothing, DoNothing,													\
+#define ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is, body)    \
+  BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,         \
+                          NoLocals,                                     \
+                          body,                                         \
+                          DoNothing, DoNothing,                         \
+                          DoNothing, DoNothing,                         \
+                          DoNothing, DoNothing,                         \
                           DoNothing);
 
 #endif

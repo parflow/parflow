@@ -26,6 +26,10 @@
  *  USA
  **********************************************************************EHEADER*/
 
+/** @file
+ * @brief Generic loop macros
+ */
+
 /*****************************************************************************
 * Generic Loop Macros
 *
@@ -35,14 +39,54 @@
 #ifndef _LOOPS_HEADER
 #define _LOOPS_HEADER
 
+/**
+ * @brief Declare increment variables for striding indices in BoxLoops
+ * @param[in,out] jinc Name of the Y increment variable to be declared
+ * @param[in,out] kinc Name of the Z increment variable to be declared
+ * @param[in] nx X size of subgrid
+ * @param[in] ny Y size of subgrid
+ * @param[in] nz Z size of subgrid
+ * @param[in] nxd X size of vector subregion
+ * @param[in] nyd Y size of vector subregion
+ * @param[in] nzd Z size of vector subregion
+ * @param[in] sx X striding factor
+ * @param[in] sy Y striding factor
+ * @param[in] sz Z striding factor
+ */
 #define DeclareInc(jinc, kinc, nx, ny, nz, nxd, nyd, nzd, sx, sy, sz) \
   int jinc = (sy) * (nxd) - (nx) * (sx);                              \
-  int kinc = (sz) * (nxd) * (nyd) - (ny) * (sy) * (nxd);	      \
-  PF_UNUSED(nz);						      \
+  int kinc = (sz) * (nxd) * (nyd) - (ny) * (sy) * (nxd);              \
+  PF_UNUSED(nz);                                                      \
   PF_UNUSED(nzd)
 
+/**
+ * @brief Perform a reduction over a BoxLoopI1 iteration space
+ *
+ * @note Last statement in loop body must be a valid reduction clause (see general.h).
+ * Multiple definitions: Redefined in architecture-specific headers!
+ *
+ * @param[in,out] sum Variable to perform reduction operation on.
+ */
 #define BoxLoopReduceI1(sum, ...) BoxLoopI1(__VA_ARGS__)
+
+/**
+ * @brief Perform a reduction over a BoxLoopI2 iteration space
+ *
+ * @note Last statement in loop body must be a valid reduction clause (see general.h).
+ * Multiple definitions: Redefined in architecture-specific headers!
+ *
+ * @param[in,out] sum Variable to perform reduction operation on.
+ */
 #define BoxLoopReduceI2(sum, ...) BoxLoopI2(__VA_ARGS__)
+
+/**
+ * @brief Perform a reduction over a BoxLoopI3 iteration space
+ *
+ * @note Last statement in loop body must be a valid reduction clause (see general.h).
+ * Multiple definitions: Redefined in architecture-specific headers!
+ *
+ * @param[in,out] sum Variable to perform reduction operation on.
+ */
 #define BoxLoopReduceI3(sum, ...) BoxLoopI3(__VA_ARGS__)
 
 #define BoxLoopI0(i, j, k,                \

@@ -1146,7 +1146,10 @@ typedef struct grgeom_octree {
     })                                                                       \
   }
 
-  #define GrGeomOctreeFaceLoopNoFdir(i, j, k,                           \
+/**
+ * @brief Loop over the faces of an octree without use of fdir array
+ */
+#define GrGeomOctreeFaceLoopNoFdir(i, j, k,                             \
                                    node, octree, level_of_interest,     \
                                    ix, iy, iz, nx, ny, nz,              \
                                    locals, setup,                       \
@@ -1157,7 +1160,7 @@ typedef struct grgeom_octree {
   {                                                                     \
     int PV_f;                                                           \
     UNPACK(locals);                                                     \
-    GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest,\
+    GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest, \
                                ix, iy, iz, nx, ny, nz,                  \
                                TRUE,                                    \
     {                                                                   \

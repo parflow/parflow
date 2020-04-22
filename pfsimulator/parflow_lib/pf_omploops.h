@@ -551,7 +551,7 @@ INC_IDX(int idx, int i, int j, int k,
         PV_iyu = pfmin((iy + ny - 1), box.up[1]);                       \
         PV_izu = pfmin((iz + nz - 1), box.up[2]);                       \
                                                                         \
-        /* Used to calculate individual ival values for each threads iteration */
+        /* Used to calculate individual ival values for each threads iteration */\
         int PV_diff_x = PV_ixu - PV_ixl;                                \
         int PV_diff_y = PV_iyu - PV_iyl;                                \
         int PV_diff_z = PV_izu - PV_izl;                                \

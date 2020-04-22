@@ -51,7 +51,10 @@ Juelich Supercomputing Centre, Forschungszentrum Juelich
 Juelich, Germany.
 
 **Michael Burke**
+Supported by funding from NSF Grant 1835704
 Boise State University
+Boise, ID, USA
+michaelburke@u.boisestate.edu
 
 **David Thompson**
 Kitware, Inc

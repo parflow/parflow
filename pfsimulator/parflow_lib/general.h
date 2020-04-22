@@ -71,11 +71,11 @@
 #else
 /**
  * @brief Allocates memory.
- * 
+ *
  * When using an accelerator device, allocates unified memory with redefined macro.
  *
- * @note Multiple definitions: Redefined in architecture-specific headers! 
- * 
+ * @note Multiple definitions: Redefined in architecture-specific headers!
+ *
  * @param type The C type name
  * @param count Number of items of type to allocate
  * @return Pointer to the allocated dataspace
@@ -85,10 +85,10 @@
 
 /**
  * @brief Allocates memory initialized to 0.
- * 
+ *
  * When using an accelerator device, allocates unified memory with redefined macro.
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  *
  * @param type The C type name
  * @param count Number of items of type to allocate
@@ -99,9 +99,9 @@
 
 /**
  * Deallocates memory for objects that were allocated by \ref talloc or \ref ctalloc.
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers! 
- * 
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
+ *
  * @param ptr Pointer to dataspace to free
  * @return Error code
  */
@@ -139,8 +139,8 @@
 /**
  * Thread-safe addition assignment. This macro
  * can be called anywhere in any compute kernel.
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  *
  * @param a original value [IN], sum result [OUT]
  * @param b value to be added [IN]
@@ -150,10 +150,10 @@
 
 #ifndef ReduceMax
 /**
- * Thread-safe reduction to find maximum value for reduction loops. 
- * Each thread must call this macro as the last action inside the reduction loop body. 
+ * Thread-safe reduction to find maximum value for reduction loops.
+ * Each thread must call this macro as the last action inside the reduction loop body.
  *
- * @note Multiple definitions: Redefined in architecture-specific headers! 
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  *
  * @param a value 1 for comparison [IN], max value [OUT]
  * @param b value 2 for comparison [IN]
@@ -163,10 +163,10 @@
 
 #ifndef ReduceMin
 /**
- * Thread-safe reduction to find maximum value for reduction loops. 
- * Each thread must call this macro as the last action inside the reduction loop body. 
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers! 
+ * Thread-safe reduction to find maximum value for reduction loops.
+ * Each thread must call this macro as the last action inside the reduction loop body.
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  *
  * @param a value 1 for comparison [IN], min value [OUT]
  * @param b value 2 for comparison [IN]
@@ -176,10 +176,10 @@
 
 #ifndef ReduceSum
 /**
- * Thread-safe addition assignment for reduction loops. 
+ * Thread-safe addition assignment for reduction loops.
  * Each thread must call this macro as the last action inside the reduction loop body.
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers!  
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  *
  * @param a original value [IN], sum result [OUT]
  * @param b value to be added [IN]
@@ -247,8 +247,8 @@
 
 /**
  * Used to prefetch data from host to device for better performance.
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  *
  * @param ptr pointer to data [IN]
  * @param size bytes to be prefetched [IN]
@@ -259,8 +259,8 @@
 
 /**
  * Used to prefetch data from host to device for better performance.
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  *
  * @param ptr pointer to data [IN]
  * @param size bytes to be prefetched [IN]
@@ -272,16 +272,16 @@
 /**
  * Explicit sync between host and device default stream if accelerator present.
  * Can be called anywhere.
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  */
 #define PARALLEL_SYNC
 
 /**
  * Skip sync after BoxLoop if accelerator present.
  * Must be the called as the last action inside the loop body.
- * 
- * @note Multiple definitions: Redefined in architecture-specific headers! 
+ *
+ * @note Multiple definitions: Redefined in architecture-specific headers!
  */
 #define SKIP_PARALLEL_SYNC
 
