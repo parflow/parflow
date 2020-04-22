@@ -60,7 +60,7 @@ typedef struct {
   GrGeomOctree **patches;
   int num_patches;
 
-#ifdef HAVE_CUDA
+#if ACC_BACKEND == BACKEND_CUDA
   /** Flags for GrGeomOutLoop cells */
   int *outflag;
 #endif

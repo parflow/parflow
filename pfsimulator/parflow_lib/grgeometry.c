@@ -295,7 +295,7 @@ GrGeomSolid   *GrGeomNewSolid(
 
   new_grgeomsolid->interior_boxes = NULL;
 
-#ifdef HAVE_CUDA
+#if ACC_BACKEND == BACKEND_CUDA
   GrGeomSolidOutflag(new_grgeomsolid) = NULL;
 #endif
 
@@ -351,7 +351,7 @@ void          GrGeomFreeSolid(
     tfree(solid->patch_boxes[f]);
   }
 
-#ifdef HAVE_CUDA
+#if ACC_BACKEND == BACKEND_CUDA
   if(GrGeomSolidOutflag(solid)) tfree_cuda(GrGeomSolidOutflag(solid));
 #endif
 

@@ -188,7 +188,7 @@
 #define SKIP_PARALLEL_SYNC
 
 //NVTX Ranges for NSYS profiling
-#ifdef HAVE_CUDA
+#if ACC_BACKEND == BACKEND_CUDA
   #include "nvToolsExt.h"
   #define PUSH_NVTX(name,cid)                                                              \
   {                                                                                         \

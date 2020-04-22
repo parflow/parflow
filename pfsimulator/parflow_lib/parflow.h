@@ -94,7 +94,7 @@
 */
 
 /* Include CUDA headers if CUDA active and NVCC compiler */
-#if defined(HAVE_CUDA) && defined(__CUDACC__)
+#if (ACC_BACKEND == BACKEND_CUDA) && defined(__CUDACC__)
 
   #if PF_COMP_UNIT_TYPE == 1
     #include "pfcudaloops.h"
@@ -103,9 +103,8 @@
   #else
     #include "pfcudaerr.h"
   #endif
-#endif
 
-#ifdef HAVE_OMP
+#elif ACC_BACKEND == BACKEND_OMP
 
   #if PF_COMP_UNIT_TYPE == 1
     #include "pf_omploops.h" // For OMP loops

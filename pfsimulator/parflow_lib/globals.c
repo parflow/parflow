@@ -119,7 +119,7 @@ void  LogGlobals()
   }
 }
 
-#ifdef HAVE_CUDA
+#if ACC_BACKEND == BACKEND_CUDA
 
 // Allocate __constant__ memory on GPU for the Globals struct
 __constant__ Globals dev_globals;
@@ -144,4 +144,4 @@ void CopyGlobalsToDevice()
   // Assign dev_globals address to dev_globals_ptr
   CUDA_ERR(cudaMemcpyToSymbol(dev_globals_ptr, &tmp_globals_ptr, sizeof(Globals*), 0, cudaMemcpyHostToDevice));
 }
-#endif // HAVE_CUDA
+#endif // ACC_BACKEND == BACKEND_CUDA

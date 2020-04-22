@@ -1,7 +1,7 @@
 #ifndef _PF_OMPLOOPS_H_
 #define _PF_OMPLOOPS_H_
 
-#ifndef HAVE_OMP
+#if ACC_BACKEND != BACKEND_OMP
 
 #define NO_OMP_PARALLEL
 
@@ -759,5 +759,5 @@ static const int FDIR_TABLE[6][3] = {
     }                                                                   \
   }
 
-#endif // ifdef HAVE_OMP
+#endif // ACC_BACKEND != BACKEND_OMP
 #endif // _PF_OMPLOOPS_H_
