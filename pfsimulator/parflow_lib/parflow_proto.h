@@ -200,7 +200,7 @@ void IntersectLineWithTriangle(unsigned int line_direction, double coord_0, doub
 void NewGlobals(char *run_name);
 void FreeGlobals(void);
 void LogGlobals(void);
-#ifdef HAVE_CUDA
+#if ACC_BACKEND == BACKEND_CUDA
   void CopyGlobalsToDevice(void);
 #endif
 

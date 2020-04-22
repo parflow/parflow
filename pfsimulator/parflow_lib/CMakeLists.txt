@@ -125,13 +125,14 @@ set (SRC_FILES_CONST advect.F
 
 if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 
-  set (SRC_FILES_ARCH
-    axpy.cpp
-    calc_elevations.cpp
-    clustering.cpp
-    copy.cpp
+  set (SRC_FILES_ARCH_TYPE_0
     globals.cpp
     grgeometry.cpp
+  )
+  set (SRC_FILES_ARCH_TYPE_1
+    axpy.cpp
+    clustering.cpp
+    copy.cpp
     innerprod.cpp
     matrix.cpp
     matvec.cpp
@@ -142,20 +143,45 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     overlandflow_eval.cpp
     overlandflow_eval_diffusive.cpp
     overlandflow_eval_Kin.cpp
-    pf_module.cpp
-    problem_bc.cpp
-    problem_bc_pressure.cpp
-    problem_ic_phase_pressure.cpp
     problem_phase_density.cpp
     problem_phase_rel_perm.cpp
     problem_phase_source.cpp
     problem_saturation.cpp
     rb_GS_point.cpp
-    region.cpp
     richards_jacobian_eval.cpp
     vector.cpp
     vector_utilities.cpp
   )
+  set (SRC_FILES_ARCH_TYPE_2
+    calc_elevations.cpp
+    pf_module.cpp
+    problem_bc.cpp
+    problem_bc_pressure.cpp
+    problem_ic_phase_pressure.cpp
+    region.cpp
+  )
+
+  #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
+	#  ------------------------------------------------------------
+  #  CUDA
+	#  ------------------------------------------------------------
+	#  1:     NVCC compiler, Unified Memory allocation, Parallel loops on GPUs
+	#  2:     NVCC compiler, Unified Memory allocation, Sequential loops on host
+	#  Other: NVCC compiler, Standard heap allocation, Sequential loops on host
+  #
+	#  ------------------------------------------------------------
+  #  OpenMP
+	#  ------------------------------------------------------------
+  #  1:     CXX compiler, Unified Memory allocation, Parallel loops on CPU
+	#  2:     CXX compiler, Unified Memory allocation, Sequential loops on CPU
+	#  Other: CXX compiler, Standard heap allocation, Sequential loops on CPU
+
+  set_source_files_properties(${SRC_FILES_ARCH_TYPE_0} PROPERTIES COMPILE_DEFINITIONS "PF_COMP_UNIT_TYPE=0")
+  set_source_files_properties(${SRC_FILES_ARCH_TYPE_1} PROPERTIES COMPILE_DEFINITIONS "PF_COMP_UNIT_TYPE=1")
+  set_source_files_properties(${SRC_FILES_ARCH_TYPE_2} PROPERTIES COMPILE_DEFINITIONS "PF_COMP_UNIT_TYPE=2")
+
+  set (SRC_FILES_ARCH ${SRC_FILES_ARCH_TYPE_0} ${SRC_FILES_ARCH_TYPE_1} ${SRC_FILES_ARCH_TYPE_2})
+
   if ( ${PARFLOW_HAVE_CUDA} )
     set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CUDA)
   else ( ${PARFLOW_HAVE_CUDA} )
@@ -210,6 +236,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     vector_utilities.c
   )
   add_library(pfsimulator ${SRC_FILES_CONST} ${SRC_FILES_ARCH})
+
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})

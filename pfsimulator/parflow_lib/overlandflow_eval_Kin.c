@@ -25,7 +25,7 @@
 
 #include "parflow.h"
 
-#ifndef HAVE_CUDA
+#if ACC_BACKEND != BACKEND_CUDA
 #include "llnlmath.h"
 #endif
 /*--------------------------------------------------------------------------
