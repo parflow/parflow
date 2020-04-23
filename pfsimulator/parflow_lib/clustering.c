@@ -49,8 +49,16 @@
  * Sys, Man, and Cyber (21)5:1278-1286.
  */
 
-
-/* This must be in the global scope due to __managed__ keyword */
+/**
+ * Tag count.
+ *
+ * The __managed__ keyword makes this variable to automatically migrate
+ * between host and device, but unfortunately requires global scope.
+ * 
+ * @TODO Find a better way to do this, some options:
+ *  - Put this variable into heap
+ *  - Use parallel reduction loops (currently not compatible with GrGeomLoops) 
+ */
 __managed__ static int tag_count;
 
 /**

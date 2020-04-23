@@ -149,21 +149,21 @@ before_script:
   - export OMP_NUM_THREADS=2
 
 # Build with PARFLOW_ACCELERATOR_BACKEND=none
-  - if [[ $PF_TEST == 'seq' ]]; then
+  - if [[ $PF_TEST_TYPE == 'seq' ]]; then
       export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install && mkdir -p $PARFLOW_DIR;
       mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR;
       cd $TRAVIS_BUILD_DIR/build && make && make install;
     fi
 
 # Build with PARFLOW_ACCELERATOR_BACKEND=omp
-  - if [[ $PF_TEST == 'parallel' ]]; then
+  - if [[ $PF_TEST_TYPE == 'parallel' ]]; then
       export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_omp && mkdir -p $PARFLOW_DIR;
       mkdir -p $TRAVIS_BUILD_DIR/build_omp && cd $TRAVIS_BUILD_DIR/build_omp && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=omp;
       cd $TRAVIS_BUILD_DIR/build_omp && make && make install;
     fi
 
 # Build with PARFLOW_ACCELERATOR_BACKEND=cuda
-  - if [[ $PF_TEST == 'parallel' ]]; then
+  - if [[ $PF_TEST_TYPE == 'parallel' ]]; then
       export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
       mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT;
       cd $TRAVIS_BUILD_DIR/build_cuda && make && make install;
@@ -171,13 +171,13 @@ before_script:
 
 script:
 # Run tests with PARFLOW_ACCELERATOR_BACKEND=none
-  - if [[ $PF_TEST == 'seq' ]]; then
+  - if [[ $PF_TEST_TYPE == 'seq' ]]; then
       export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install;
       (cd $TRAVIS_BUILD_DIR/build && make test);
     fi
 
 # Run tests with PARFLOW_ACCELERATOR_BACKEND=omp
-  - if [[ $PF_TEST == 'parallel' ]]; then
+  - if [[ $PF_TEST_TYPE == 'parallel' ]]; then
       export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_omp;
       (cd $TRAVIS_BUILD_DIR/build_omp && make test);
     fi
