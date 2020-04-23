@@ -17,7 +17,7 @@
  *  USA
  ***********************************************************************/
 
-/** @file
+/* @file
  * @brief Contains macros, functions, and structs for CUDA compute kernels.
  */
 
@@ -59,14 +59,14 @@ extern "C++"{
 #define RAND48_MULT_2   (0x0005)
 #define RAND48_ADD      (0x000b)
 
- /** Helper struct for type comparison (not for direct use). */
+ /** Helper struct for type comparison. @note Not for direct use! */
 template <typename T>
 struct function_traits
     : public function_traits<decltype(&T::operator())>
 {};
 // For generic types, directly use the result of the signature of its 'operator()'
 
- /** Helper struct for type comparison (not for direct use). */
+ /** Helper struct for type comparison. @note Not for direct use! */
 template <typename ClassType, typename ReturnType, typename... Args>
 struct function_traits<ReturnType(ClassType::*)(Args...) const>
 // we specialize for pointers to member function
@@ -85,6 +85,7 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
     };
 };
 
+/** Device-callable dorand48() function for CUDA compute kernels. */
 __host__ __device__ __forceinline__ static void dev_dorand48(unsigned short xseed[3])
 {
   unsigned long accu;
@@ -111,6 +112,7 @@ __host__ __device__ __forceinline__ static void dev_dorand48(unsigned short xsee
   xseed[2] = (unsigned short)accu;
 }
 
+/** Device-callable erand48() function for CUDA compute kernels. */
 __host__ __device__ __forceinline__ static double dev_erand48(unsigned short xseed[3])
 {
   dev_dorand48(xseed);
@@ -119,6 +121,7 @@ __host__ __device__ __forceinline__ static double dev_erand48(unsigned short xse
          ldexp((double)xseed[2], -16);
 }
 
+/** Device-callable drand48() function for CUDA compute kernels. */
 __host__ __device__ __forceinline__ static double dev_drand48(void)
 {
   unsigned short _rand48_seed[3] = {
@@ -129,6 +132,25 @@ __host__ __device__ __forceinline__ static double dev_drand48(void)
   return dev_erand48(_rand48_seed);
 }
 
+/** Device-callable RPowerR() function for CUDA compute kernels. */
+template <typename T>
+__host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
+{
+  if (base <= 0.0)
+    return(0.0);
+
+  return((T)pow((double)base, (double)exponent));
+}
+
+/**
+ * Thread-safe function to find minimum value in compute kernels.
+ * The function definition depends whether called from host or device code.
+ *
+ * @note Not for direct use!
+ *
+ * @param address pointer to first value [IN], pointer to min value [OUT]
+ * @param val2 second value [IN]
+ */
 __host__ __device__ __forceinline__ static void AtomicMin(int *address, int val2)
 {
 #ifdef __CUDA_ARCH__
@@ -138,6 +160,15 @@ __host__ __device__ __forceinline__ static void AtomicMin(int *address, int val2
 #endif
 }
 
+/**
+ * Thread-safe function to find maximum value in compute kernels.
+ * The function definition depends whether called from host or device code.
+ *
+ * @note Not for direct use!
+ *
+ * @param address pointer to first value [IN], pointer to max value [OUT]
+ * @param val2 second value [IN]
+ */
 __host__ __device__ __forceinline__ static void AtomicMax(int *address, int val2)
 {
 #ifdef __CUDA_ARCH__
@@ -147,6 +178,15 @@ __host__ __device__ __forceinline__ static void AtomicMax(int *address, int val2
 #endif
 }
 
+/**
+ * Thread-safe function to find minimum value in compute kernels.
+ * The function definition depends whether called from host or device code.
+ *
+ * @note Not for direct use!
+ *
+ * @param address pointer to first value [IN], pointer to min value [OUT]
+ * @param val2 second value [IN]
+ */
 __host__ __device__ __forceinline__ static void AtomicMin(double *address, double val2)
 {
 #ifdef __CUDA_ARCH__
@@ -163,6 +203,15 @@ __host__ __device__ __forceinline__ static void AtomicMin(double *address, doubl
 #endif
 }
 
+/**
+ * Thread-safe function to find maximum value in compute kernels.
+ * The function definition depends whether called from host or device code.
+ *
+ * @note Not for direct use!
+ *
+ * @param address pointer to first value [IN], pointer to max value [OUT]
+ * @param val2 second value [IN]
+ */
 __host__ __device__ __forceinline__ static void AtomicMax(double *address, double val2)
 {
 #ifdef __CUDA_ARCH__
@@ -179,6 +228,15 @@ __host__ __device__ __forceinline__ static void AtomicMax(double *address, doubl
 #endif
 }
 
+/**
+ * Thread-safe addition assignment for compute kernels.
+ * The function definition depends whether called from host or device code.
+ *
+ * @note Not for direct use!
+ *
+ * @param array_loc original value [IN], sum result [OUT]
+ * @param value value to be added [IN]
+ */
 template <typename T>
 __host__ __device__ __forceinline__ static void AtomicAdd(T *array_loc, T value)
 {
@@ -190,18 +248,7 @@ __host__ __device__ __forceinline__ static void AtomicAdd(T *array_loc, T value)
 #endif
 }
 
-template <typename T>
-__host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
-{
-  if (base <= 0.0)
-    return(0.0);
-
-  return((T)pow((double)base, (double)exponent));
-}
-
-/*--------------------------------------------------------------------------
- * CUDA helper macro redefinitions
- *--------------------------------------------------------------------------*/
+ /** Helper struct for type comparison. @note Not for direct use! */
 struct SkipParallelSync {const int dummy = 0;};
 #undef SKIP_PARALLEL_SYNC
 #define SKIP_PARALLEL_SYNC struct SkipParallelSync sync_struct; return sync_struct;
@@ -209,36 +256,42 @@ struct SkipParallelSync {const int dummy = 0;};
 #undef PARALLEL_SYNC
 #define PARALLEL_SYNC CUDA_ERR(cudaStreamSynchronize(0)); 
 
-#undef pfmax_atomic
-#define pfmax_atomic(a, b) AtomicMax(&(a), b)
-
-#undef pfmin_atomic
-#define pfmin_atomic(a, b) AtomicMin(&(a), b)
-
 #undef PlusEquals
 #define PlusEquals(a, b) AtomicAdd(&(a), b)
 
- /** Helper struct for type comparison (not for direct use). */
+ /** Helper struct for type comparison. @note Not for direct use! */
 template <typename T>
-struct ReduceMaxRes {T value;};
+struct ReduceMaxType {T value;};
 #undef ReduceMax
-#define ReduceMax(a, b) struct ReduceMaxRes<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
+#define ReduceMax(a, b) struct ReduceMaxType<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
- /** Helper struct for type comparison (not for direct use). */
+ /** Helper struct for type comparison. @note Not for direct use! */
 template <typename T>
-struct ReduceMinRes {T value;};
+struct ReduceMinType {T value;};
 #undef ReduceMin
-#define ReduceMin(a, b) struct ReduceMinRes<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
+#define ReduceMin(a, b) struct ReduceMinType<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
- /** Helper struct for type comparison (not for direct use). */
+ /** Helper struct for type comparison. @note Not for direct use! */
 template <typename T>
-struct ReduceSumRes {T value;};
+struct ReduceSumType {T value;};
 #undef ReduceSum
-#define ReduceSum(a, b) struct ReduceSumRes<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
+#define ReduceSum(a, b) struct ReduceSumType<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
+
+/**
+ * @brief CUDA compute kernel.
+ *
+ * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
+ * @param ix The loop starting index for the first dim [IN]
+ * @param iy The loop starting index for the second dim [IN]
+ * @param iz The loop starting index for the third dim [IN]
+ * @param nx The size of the first dim [IN]
+ * @param ny The size of the second dim [IN]
+ * @param nz The size of the third dim [IN]
+ */
 template <typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
@@ -260,6 +313,19 @@ BoxKernelI0(LambdaBody loop_body,
     loop_body(i, j, k);
 }
 
+
+/**
+ * @brief CUDA compute kernel.
+ *
+ * @param loop_init A lambda function that calculates a thread-local index [IN]
+ * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
+ * @param ix The loop starting index for the first dim [IN]
+ * @param iy The loop starting index for the second dim [IN]
+ * @param iz The loop starting index for the third dim [IN]
+ * @param nx The size of the first dim [IN]
+ * @param ny The size of the second dim [IN]
+ * @param nz The size of the third dim [IN]
+ */
 template <typename LambdaInit, typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
@@ -283,6 +349,19 @@ BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body,
     loop_body(i, j, k, i1);       
 }
 
+/**
+ * @brief CUDA compute kernel.
+ *
+ * @param loop_init1 A lambda function that calculates a thread-local index [IN]
+ * @param loop_init2 A lambda function that calculates a thread-local index [IN]
+ * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
+ * @param ix The loop starting index for the first dim [IN]
+ * @param iy The loop starting index for the second dim [IN]
+ * @param iz The loop starting index for the third dim [IN]
+ * @param nx The size of the first dim [IN]
+ * @param ny The size of the second dim [IN]
+ * @param nz The size of the third dim [IN]
+ */
 template <typename LambdaInit1, typename LambdaInit2, typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
@@ -307,6 +386,20 @@ BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body
     loop_body(i, j, k, i1, i2);    
 }
 
+/**
+ * @brief CUDA compute kernel.
+ *
+ * @param loop_init1 A lambda function that calculates a thread-local index [IN]
+ * @param loop_init2 A lambda function that calculates a thread-local index [IN]
+ * @param loop_init3 A lambda function that calculates a thread-local index [IN]
+ * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
+ * @param ix The loop starting index for the first dim [IN]
+ * @param iy The loop starting index for the second dim [IN]
+ * @param iz The loop starting index for the third dim [IN]
+ * @param nx The size of the first dim [IN]
+ * @param ny The size of the second dim [IN]
+ * @param nz The size of the third dim [IN]
+ */
 template <typename LambdaInit1, typename LambdaInit2, typename LambdaInit3, typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
@@ -332,6 +425,21 @@ BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_ini
     loop_body(i, j, k, i1, i2, i3);    
 }
 
+/**
+ * @brief CUDA compute kernel for parallel reductions.
+ *
+ * @param loop_init1 A lambda function that calculates a thread-local index [IN]
+ * @param loop_init2 A lambda function that calculates a thread-local index [IN]
+ * @param loop_fun A lambda function that evaluates the loop body [IN/OUT]
+ * @param init_val The initial value of the reduction variable [IN]
+ * @param rslt A pointer to the result/sum variable [OUT]
+ * @param ix The loop starting index for the first dim [IN]
+ * @param iy The loop starting index for the second dim [IN]
+ * @param iz The loop starting index for the third dim [IN]
+ * @param nx The size of the first dim [IN]
+ * @param ny The size of the second dim [IN]
+ * @param nz The size of the third dim [IN]
+ */
 template <typename ReduceOp, typename LambdaInit1, typename LambdaInit2, typename LambdaFun, typename T>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
@@ -358,7 +466,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     T thread_data;
     
     // Initialize thread_data depending on reduction operation
-    if(std::is_same<ReduceOp, struct ReduceSumRes<T>>::value)
+    if(std::is_same<ReduceOp, struct ReduceSumType<T>>::value)
       thread_data = 0;
     else 
       thread_data = init_val;
@@ -373,7 +481,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     }
 
     // Perform reductions
-    if(std::is_same<ReduceOp, struct ReduceSumRes<T>>::value)
+    if(std::is_same<ReduceOp, struct ReduceSumType<T>>::value)
     {
       // Compute the block-wide sum for thread0
       T aggregate = BlockReduce(temp_storage).Sum(thread_data);
@@ -384,7 +492,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
         atomicAdd(rslt, aggregate);
       }
     }
-    else if(std::is_same<ReduceOp, struct ReduceMaxRes<T>>::value)
+    else if(std::is_same<ReduceOp, struct ReduceMaxType<T>>::value)
     {
       // Compute the block-wide sum for thread0
       T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max());
@@ -401,7 +509,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       //   AtomicMax(rslt, thread_data);
       // }
     }
-    else if(std::is_same<ReduceOp, struct ReduceMinRes<T>>::value)
+    else if(std::is_same<ReduceOp, struct ReduceMinType<T>>::value)
     {
       // Compute the block-wide sum for thread0
       T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Min());
@@ -428,6 +536,18 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
  * CUDA loop macro redefinitions
  *--------------------------------------------------------------------------*/
 
+/**
+ * A macro for finding the 3D CUDA grid and block dimensions.
+ *
+ * @note Not for direct use!
+ *
+ * @param grid grid dimensions [OUT]
+ * @param block block dimensions [OUT]
+ * @param nx The size of the first dim [IN]
+ * @param ny The size of the second dim [IN]
+ * @param nz The size of the third dim [IN]
+ * @param dyn_blocksize Runtime adjustment of y- and z-blocksizes [IN]
+ */
 #define FindDims(grid, block, nx, ny, nz, dyn_blocksize)                            \
 {                                                                                   \
   int blocksize_x = BLOCKSIZE_X;                                                    \
@@ -451,6 +571,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }  
 
 #undef BoxLoopI1
+ /** Loop redefinition for CUDA. */
 #define BoxLoopI1(i, j, k,                                                          \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
@@ -485,6 +606,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef BoxLoopI2
+ /** Loop redefinition for CUDA. */
 #define BoxLoopI2(i, j, k,                                                          \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
@@ -527,6 +649,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef BoxLoopI3
+ /** Loop redefinition for CUDA. */
 #define BoxLoopI3(i, j, k,                                                          \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
@@ -576,6 +699,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef BoxLoopReduceI1
+ /** Loop redefinition for CUDA. */
 #define BoxLoopReduceI1(rslt, i, j, k,                                              \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
@@ -622,6 +746,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef BoxLoopReduceI2
+ /** Loop redefinition for CUDA. */
 #define BoxLoopReduceI2(rslt, i, j, k,                                              \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
@@ -676,6 +801,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef GrGeomInLoopBoxes
+ /** Loop redefinition for CUDA. */
 #define GrGeomInLoopBoxes(i, j, k,                                                  \
   grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
 {                                                                                   \
@@ -715,6 +841,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef GrGeomSurfLoopBoxes
+ /** Loop redefinition for CUDA. */
 #define GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom,                                  \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
@@ -795,6 +922,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef GrGeomPatchLoopBoxes
+ /** Loop redefinition for CUDA. */
 #define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,                      \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
@@ -883,6 +1011,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef GrGeomPatchLoopBoxesNoFdir
+ /** Loop redefinition for CUDA. */
 #define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,                      \
   ix, iy, iz, nx, ny, nz, locals, setup,                                            \
   f_left, f_right, f_down, f_up, f_back, f_front, finalize)                         \
@@ -950,6 +1079,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef GrGeomOctreeExteriorNodeLoop
+ /** Loop redefinition for CUDA. */
 #define GrGeomOctreeExteriorNodeLoop(i, j, k, node, octree, level,                  \
   ix, iy, iz, nx, ny, nz, val_test, loop_body)                                      \
 {                                                                                   \
@@ -1006,6 +1136,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 #undef GrGeomOutLoop
+ /** Loop redefinition for CUDA. */
 #define GrGeomOutLoop(i, j, k, grgeom, r,                                           \
   ix, iy, iz, nx, ny, nz, body)                                                     \
 {                                                                                   \
