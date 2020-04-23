@@ -58,3 +58,7 @@ michaelburke@u.boisestate.edu
 
 **David Thompson**
 Kitware, Inc
+
+**Jaro Hokkanen**
+IBG-3, Forschungszentrum Juelich,
+Juelich, Germany

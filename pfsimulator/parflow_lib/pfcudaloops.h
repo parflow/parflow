@@ -1,10 +1,32 @@
+/**********************************************************************
+ *
+ *  Please read the LICENSE file for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ ***********************************************************************/
+
+/** @file
+ * @brief Contains macros, functions, and structs for CUDA compute kernels.
+ */
+
 #ifndef PFCUDALOOPS_H
 #define PFCUDALOOPS_H
 
 /*--------------------------------------------------------------------------
  * Include CUDA headers
  *--------------------------------------------------------------------------*/
-
 #include "pfcudaerr.h"
 #include "pfcudamalloc.h"
 
@@ -27,7 +49,7 @@ extern "C++"{
 #define GPU_LAMBDA [=] __host__ __device__
 
 /*--------------------------------------------------------------------------
- * CUDA helper functions
+ * CUDA helper macros and functions
  *--------------------------------------------------------------------------*/
 #define RAND48_SEED_0   (0x330e)
 #define RAND48_SEED_1   (0xabcd)
