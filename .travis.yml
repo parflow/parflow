@@ -4,6 +4,7 @@ jobs:
     dist: trusty
     name: 'Ubuntu 14.04LTS'
     env: PF_TEST=trusty
+    env: PF_TEST_TYPE=seq
     env: PF_TEST_VER=ubuntu1404
     addons:
         apt:
@@ -16,16 +17,17 @@ jobs:
             - tk-dev
 
   - os: linux
-    dist: xenial
-    name: 'Ubuntu 16.04LTS'
-    env: PF_TEST=xenial
-    env: PF_TEST_VER=ubuntu1604
+    dist: trusty
+    name: 'Ubuntu 14.04LTS with ACC'
+    env: PF_TEST=trusty
+    env: PF_TEST_TYPE=parallel
+    env: PF_TEST_VER=ubuntu1404
     addons:
         apt:
           packages:
             - gfortran
             - libhdf5-openmpi-dev
-            - libhdf5-openmpi-10
+            - libhdf5-openmpi-7
             - hdf5-helpers
             - tcl-dev
             - tk-dev
@@ -34,6 +36,7 @@ jobs:
     dist: bionic
     name: 'Ubuntu 18.04LTS'	
     env: PF_TEST=bionic
+    env: PF_TEST_TYPE=seq
     env: PF_TEST_VER=ubuntu1804
     addons:
         apt:
@@ -44,6 +47,22 @@ jobs:
             - hdf5-helpers
             - tcl-dev
             - tk-dev
+
+  - os: linux
+    dist: bionic
+    name: 'Ubuntu 18.04LTS with ACC'	
+    env: PF_TEST=bionic
+    env: PF_TEST_TYPE=parallel
+    env: PF_TEST_VER=ubuntu1804
+    addons:
+        apt:
+          packages:
+            - gfortran
+            - libhdf5-openmpi-dev
+            - libhdf5-openmpi-100
+            - hdf5-helpers
+            - tcl-dev
+            - tk-dev            
 
 language: cpp
 
@@ -127,31 +146,41 @@ before_script:
   - cd $TRAVIS_BUILD_DIR
   - export CC=mpicc && export CXX=mpicxx && export F77=mpif77 && export FC=mpif90
   - export OMPI_MCA_rmaps_base_oversubscribe=1
-  - export OMP_NUM_THREADS=4
+  - export OMP_NUM_THREADS=2
 
 # Build with PARFLOW_ACCELERATOR_BACKEND=none
-  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install && mkdir -p $PARFLOW_DIR
-  - mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
-  - cd $TRAVIS_BUILD_DIR/build && make && make install
+  - if [[ $PF_TEST == 'seq' ]]; then
+      export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install && mkdir -p $PARFLOW_DIR;
+      mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR;
+      cd $TRAVIS_BUILD_DIR/build && make && make install;
+    fi
 
 # Build with PARFLOW_ACCELERATOR_BACKEND=omp
-  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_omp && mkdir -p $PARFLOW_DIR;
-  - mkdir -p $TRAVIS_BUILD_DIR/build_omp && cd $TRAVIS_BUILD_DIR/build_omp && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=omp
-  - cd $TRAVIS_BUILD_DIR/build_omp && make && make install;
+  - if [[ $PF_TEST == 'parallel' ]]; then
+      export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_omp && mkdir -p $PARFLOW_DIR;
+      mkdir -p $TRAVIS_BUILD_DIR/build_omp && cd $TRAVIS_BUILD_DIR/build_omp && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=omp;
+      cd $TRAVIS_BUILD_DIR/build_omp && make && make install;
+    fi
 
 # Build with PARFLOW_ACCELERATOR_BACKEND=cuda
-  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
-  - mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT
-  - cd $TRAVIS_BUILD_DIR/build_cuda && make && make install;
+  - if [[ $PF_TEST == 'parallel' ]]; then
+      export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
+      mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT;
+      cd $TRAVIS_BUILD_DIR/build_cuda && make && make install;
+    fi
 
 script:
 # Run tests with PARFLOW_ACCELERATOR_BACKEND=none
-  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install
-  - (cd $TRAVIS_BUILD_DIR/build && make test)
+  - if [[ $PF_TEST == 'seq' ]]; then
+      export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install;
+      (cd $TRAVIS_BUILD_DIR/build && make test);
+    fi
 
 # Run tests with PARFLOW_ACCELERATOR_BACKEND=omp
-  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_omp
-  - (cd $TRAVIS_BUILD_DIR/build_omp && make test)
+  - if [[ $PF_TEST == 'parallel' ]]; then
+      export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_omp;
+      (cd $TRAVIS_BUILD_DIR/build_omp && make test);
+    fi
 
 after_failure:
   - cat $TRAVIS_BUILD_DIR/build/Testing/Temporary/LastTest.log
