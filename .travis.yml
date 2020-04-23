@@ -3,66 +3,66 @@ jobs:
   - os: linux
     dist: trusty
     name: 'Ubuntu 14.04LTS'
-    env: PF_ACC_BACKEND=none
-    env: PF_TEST=trusty
-    env: PF_TEST_VER=ubuntu1404
+    env: 
+      - PF_ACC_BACKEND=none
+      - PF_TEST_VER=ubuntu1404
     addons:
-        apt:
-          packages:
-            - gfortran
-            - libhdf5-openmpi-dev
-            - libhdf5-openmpi-7
-            - hdf5-helpers
-            - tcl-dev
-            - tk-dev
+      apt:
+        packages:
+          - gfortran
+          - libhdf5-openmpi-dev
+          - libhdf5-openmpi-7
+          - hdf5-helpers
+          - tcl-dev
+          - tk-dev
 
   - os: linux
     dist: trusty
     name: 'Ubuntu 14.04LTS with ACC'
-    env: PF_ACC_BACKEND=omp
-    env: PF_TEST=trusty
-    env: PF_TEST_VER=ubuntu1404
+    env: 
+      - PF_ACC_BACKEND=omp
+      - PF_TEST_VER=ubuntu1404
     addons:
-        apt:
-          packages:
-            - gfortran
-            - libhdf5-openmpi-dev
-            - libhdf5-openmpi-7
-            - hdf5-helpers
-            - tcl-dev
-            - tk-dev
+      apt:
+        packages:
+          - gfortran
+          - libhdf5-openmpi-dev
+          - libhdf5-openmpi-7
+          - hdf5-helpers
+          - tcl-dev
+          - tk-dev
 
   - os: linux
     dist: bionic
     name: 'Ubuntu 18.04LTS'
-    env: PF_ACC_BACKEND=none
-    env: PF_TEST=bionic
-    env: PF_TEST_VER=ubuntu1804
+    env: 
+      - PF_ACC_BACKEND=none
+      - PF_TEST_VER=ubuntu1804
     addons:
-        apt:
-          packages:
-            - gfortran
-            - libhdf5-openmpi-dev
-            - libhdf5-openmpi-100
-            - hdf5-helpers
-            - tcl-dev
-            - tk-dev
+      apt:
+        packages:
+          - gfortran
+          - libhdf5-openmpi-dev
+          - libhdf5-openmpi-100
+          - hdf5-helpers
+          - tcl-dev
+          - tk-dev
 
   - os: linux
     dist: bionic
     name: 'Ubuntu 18.04LTS with ACC'
-    env: PF_ACC_BACKEND=omp
-    env: PF_TEST=bionic
-    env: PF_TEST_VER=ubuntu1804
+    env: 
+      - PF_ACC_BACKEND=omp
+      - PF_TEST_VER=ubuntu1804
     addons:
-        apt:
-          packages:
-            - gfortran
-            - libhdf5-openmpi-dev
-            - libhdf5-openmpi-100
-            - hdf5-helpers
-            - tcl-dev
-            - tk-dev            
+      apt:
+        packages:
+          - gfortran
+          - libhdf5-openmpi-dev
+          - libhdf5-openmpi-100
+          - hdf5-helpers
+          - tcl-dev
+          - tk-dev            
 
 language: cpp
 
@@ -153,13 +153,15 @@ before_script:
   - mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND;
   - cd $TRAVIS_BUILD_DIR/build && make && make install;
 
-# Build with PARFLOW_ACCELERATOR_BACKEND=cuda
-  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
-  - mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT;
-  - cd $TRAVIS_BUILD_DIR/build_cuda && make && make install;
+# If $PF_ACC_BACKEND == 'omp', make sure CUDA-build works as well
+  - if [[ $PF_ACC_BACKEND == 'omp' ]]; then
+      export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
+      mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT;
+      cd $TRAVIS_BUILD_DIR/build_cuda && make install;
+    fi
 
 script:
-# Run tests with PARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND
+# Run tests with PARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND (Travis does not support running with CUDA)
   - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install;
   - (cd $TRAVIS_BUILD_DIR/build && make test);
 
