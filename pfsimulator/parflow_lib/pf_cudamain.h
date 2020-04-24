@@ -32,7 +32,6 @@
  * CUDA error handling macros
  *--------------------------------------------------------------------------*/
 
-#undef CUDA_ERR
 /**
  * @brief CUDA error handling.
  * 
@@ -51,8 +50,6 @@
 
 #ifdef HAVE_RMM
 #include <rmm/rmm_api.h>
-
-#undef RMM_ERR
 /**
  * @brief RMM error handling.
  * 

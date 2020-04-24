@@ -14,6 +14,10 @@ add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
 if(${PARFLOW_HAVE_CUDA})
   target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+  if( ${PARFLOW_HAVE_RMM} )
+    target_link_libraries(amps rmm)
+    target_include_directories(amps PUBLIC ${RMM_INCLUDE})
+  endif( ${PARFLOW_HAVE_RMM} )
 endif(${PARFLOW_HAVE_CUDA})
 
 if (${PARFLOW_HAVE_MPI})

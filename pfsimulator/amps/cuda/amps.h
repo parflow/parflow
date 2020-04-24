@@ -474,8 +474,8 @@ extern amps_Buffer *amps_BufferFreeList;
       const int blocksize = 1024;                                                                            \
       StridedCopyKernel<<<(len + blocksize - 1)/blocksize, blocksize>>>(                                     \
         (type_*)(dest), 1, (type_*)(src), stride, len);                                                      \
-      CUDA_ERR(cudaPeekAtLastError());                                                                       \
-      CUDA_ERR(cudaStreamSynchronize(0));                                                                    \
+      CUDA_ERRCHK(cudaPeekAtLastError());                                                                       \
+      CUDA_ERRCHK(cudaStreamSynchronize(0));                                                                    \
     }                                                                                                        \
   }                                                                                                          \
 }
@@ -506,8 +506,8 @@ extern amps_Buffer *amps_BufferFreeList;
       const int blocksize = 1024;                                                                            \
       StridedCopyKernel<<<(len + blocksize - 1)/blocksize, blocksize>>>(                                     \
         (type_*)(dest), stride, (type_*)(src), 1, len);                                                      \
-      CUDA_ERR(cudaPeekAtLastError());                                                                       \
-      CUDA_ERR(cudaStreamSynchronize(0));                                                                    \
+      CUDA_ERRCHK(cudaPeekAtLastError());                                                                       \
+      CUDA_ERRCHK(cudaStreamSynchronize(0));                                                                    \
     }                                                                                                        \
   }                                                                                                          \
 }  
@@ -1041,16 +1041,41 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #endif
 
 /*--------------------------------------------------------------------------
- *  GPU error handling
+ *  GPU error handling macros
  *--------------------------------------------------------------------------*/
-#undef CUDA_ERR
-#define CUDA_ERR( err ) (gpuError( err, __FILE__, __LINE__ ))
-static inline void gpuError(cudaError_t err, const char *file, int line) {
+
+/**
+ * @brief CUDA error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr CUDA error (of type cudaError_t) [IN]
+ */
+#define CUDA_ERRCHK( err ) (amps_cuda_error( err, __FILE__, __LINE__ ))
+static inline void amps_cuda_error(cudaError_t err, const char *file, int line) {
 	if (err != cudaSuccess) {
 		printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
 		exit(1);
 	}
 }
+
+#ifdef HAVE_RMM
+#include <rmm/rmm_api.h>
+/**
+ * @brief RMM error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr RMM error (of type rmmError_t) [IN]
+ */
+#define RMM_ERRCHK( err ) (amps_rmm_error( err, __FILE__, __LINE__ ))
+static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
+	if (err != RMM_SUCCESS) {
+		printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), file, line);
+		exit(1);
+	}
+}
+#endif
 
 /*--------------------------------------------------------------------------
  * Define amps GPU kernels
@@ -1124,35 +1149,74 @@ UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data,
 #endif
 
 /*--------------------------------------------------------------------------
- * Define unified memory allocation routines for GPU
+ * Define static unified memory allocation routines for CUDA
  *--------------------------------------------------------------------------*/
 
-static inline void *amps_talloc_cuda(size_t size)
+/**
+ * @brief Allocates unified memory.
+ * 
+ * If RMM library is available, pool allocation is used for better performance.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
+static inline void *_amps_talloc_cuda(size_t size)
 {
-   void *ptr = NULL;
-
-   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
-  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
-
-   return ptr;
+  void *ptr = NULL;  
+  
+#ifdef HAVE_RMM
+  RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));  
+#endif
+  
+  return ptr;
 }
 
-static inline void *amps_ctalloc_cuda(size_t size)
+/**
+ * @brief Allocates unified memory initialized to 0.
+ * 
+ * If RMM library is available, pool allocation is used for better performance.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
+static inline void *_amps_ctalloc_cuda(size_t size)
 {
-   void *ptr = NULL;
+  void *ptr = NULL;  
 
-   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
-  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
-   
-  //  memset(ptr, 0, size);
-   CUDA_ERR(cudaMemset(ptr, 0, size));
-
-   return ptr;
+#ifdef HAVE_RMM
+  RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+#endif  
+  // memset(ptr, 0, size);
+  CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
+  
+  return ptr;
 }
-static inline void amps_tfree_cuda(void *ptr)
+
+/**
+ * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param ptr a void pointer to the allocated dataspace [IN]
+ */
+static inline void _amps_tfree_cuda(void *ptr)
 {
-   CUDA_ERR(cudaFree(ptr));
-  //  CUDA_ERR(cudaFreeHost(ptr));
+#ifdef HAVE_RMM
+  RMM_ERRCHK(rmmFree(ptr,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaFree(ptr));
+  // CUDA_ERRCHK(cudaFreeHost(ptr));
+#endif
 }
 
 /*===========================================================================*/
@@ -1175,7 +1239,10 @@ static inline void amps_tfree_cuda(void *ptr)
  * @return Pointer to the allocated dataspace
  */
 
-#define amps_TAlloc(type, count) ((count>0) ? (type*)amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+
+/** Same as \ref amps_TAlloc for amps cuda layer */
+#define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /*===========================================================================*/
 /**
@@ -1198,7 +1265,10 @@ static inline void amps_tfree_cuda(void *ptr)
  * @return Pointer to the allocated dataspace
  */
 
-#define amps_CTAlloc(type, count) ((count) ? (type*)amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_CTAlloc(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+
+/** Same as \ref amps_CTAlloc for amps cuda layer */
+#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /**
  *
@@ -1216,8 +1286,11 @@ static inline void amps_tfree_cuda(void *ptr)
  * @return Error code
  */
 
-#define amps_TFree(ptr) if (ptr) amps_tfree_cuda(ptr); else {}
+#define amps_TFree(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
 /* note: the `else' is required to guarantee termination of the `if' */
+
+/** Same as \ref amps_TFree for amps cuda layer */
+#define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
 
 // SGS FIXME this should do something more than this
 #define amps_Error(name, type, comment, operation) \

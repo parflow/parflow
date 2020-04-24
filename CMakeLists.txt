@@ -28,7 +28,6 @@ else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR
     include(CheckLanguage)
     check_language(CUDA)
     if(CMAKE_CUDA_COMPILER)
-      message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator CUDA")
       enable_language(CUDA)
       set(CMAKE_CUDA_STANDARD 11)
       set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
@@ -58,6 +57,9 @@ else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR
       else(RMM_INCLUDE AND RMM_LIBRARY)
         message(FATAL_ERROR "ERROR: RMM installation not found")
       endif(RMM_INCLUDE AND RMM_LIBRARY)
+      message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
+    else(DEFINED RMM_ROOT)
+      message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
     endif(DEFINED RMM_ROOT)
 
   elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "omp") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "OMP"))

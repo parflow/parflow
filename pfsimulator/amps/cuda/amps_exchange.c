@@ -45,13 +45,13 @@ int _amps_send_sizes(amps_Package package, int **sizes)
   /* check to see if enough space is already allocated            */
   if (amps_device_globals.combuf_send_size < size_acc)
   {
-    if (amps_device_globals.combuf_send_size != 0) CUDA_ERR(cudaFree(amps_device_globals.combuf_send));
+    if (amps_device_globals.combuf_send_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_send));
 
-    CUDA_ERR(cudaMalloc((void**)&amps_device_globals.combuf_send, size_acc));
+    CUDA_ERRCHK(cudaMalloc((void**)&amps_device_globals.combuf_send, size_acc));
     amps_device_globals.combuf_send_size = size_acc;
   }
 
-  // CUDA_ERR(cudaStreamSynchronize(0)); 
+  // CUDA_ERRCHK(cudaStreamSynchronize(0)); 
 
   size_acc = 0;
   for (int i = 0; i < package->num_send; i++)
@@ -68,7 +68,7 @@ int _amps_send_sizes(amps_Package package, int **sizes)
   for(int i = 0; i < streams_hired; i++)
   {
     if(i < amps_device_max_streams)
-      CUDA_ERR(cudaStreamSynchronize(amps_device_globals.stream[i])); 
+      CUDA_ERRCHK(cudaStreamSynchronize(amps_device_globals.stream[i])); 
   }
 
   return(0);
@@ -92,10 +92,10 @@ int _amps_recv_sizes(amps_Package package)
   /* check to see if enough space is already allocated            */
   if (amps_device_globals.combuf_recv_size < size_acc)
   {
-    if (amps_device_globals.combuf_recv_size != 0) CUDA_ERR(cudaFree(amps_device_globals.combuf_recv));
+    if (amps_device_globals.combuf_recv_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_recv));
 
-    CUDA_ERR(cudaMalloc((void**)&(amps_device_globals.combuf_recv), size_acc));
-    CUDA_ERR(cudaMemset(amps_device_globals.combuf_recv, 0, size_acc));
+    CUDA_ERRCHK(cudaMalloc((void**)&(amps_device_globals.combuf_recv), size_acc));
+    CUDA_ERRCHK(cudaMemset(amps_device_globals.combuf_recv, 0, size_acc));
     amps_device_globals.combuf_recv_size = size_acc;
   }
 
@@ -135,7 +135,7 @@ void _amps_wait_exchange(amps_Handle handle)
       for(int i = 0; i < streams_hired; i++)
       {
         if(i < amps_device_max_streams)
-          CUDA_ERR(cudaStreamSynchronize(amps_device_globals.stream[i])); 
+          CUDA_ERRCHK(cudaStreamSynchronize(amps_device_globals.stream[i])); 
       }
     }
   }

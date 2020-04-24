@@ -48,11 +48,47 @@
  * Define memory allocation routines
  *--------------------------------------------------------------------------*/
 
+/**
+ * @brief Allocates memory that is passed to amps library.
+ *
+ * When using an accelerator device, allocates unified memory with redefined macro.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
+ *
+ * @param type the C type name
+ * @param count number of items of type to allocate
+ * @return pointer to the allocated dataspace
+ */
+#define talloc_amps_default(type, count) amps_TAlloc(type, count)
+
+/**
+ * @brief Allocates memory initialized to 0 that is passed to amps library.
+ *
+ * When using an accelerator device, allocates unified memory with redefined macro.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
+ *
+ * @param type the C type name
+ * @param count number of items of type to allocate
+ * @return pointer to the allocated dataspace
+ */
+#define ctalloc_amps_default(type, count) amps_CTAlloc(type, count)
+
+/**
+ * Deallocates memory for objects that were allocated by \ref talloc_amps_default or \ref ctalloc_amps_default.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
+ *
+ * @param ptr pointer to dataspace to free
+ * @return error code
+ */
+#define tfree_amps_default(ptr) amps_TFree(ptr)
+
+#ifdef PF_MEMORY_ALLOC_CHECK
+
 /*--------------------------------------
  * Check memory allocation
  *--------------------------------------*/
-
-#ifdef PF_MEMORY_ALLOC_CHECK
 
 #define talloc_default(type, count) \
   (type*)malloc_chk((unsigned int)((count) * sizeof(type)), __FILE__, __LINE__)
@@ -61,11 +97,12 @@
   (type*)calloc_chk((unsigned int)(count), (unsigned int)sizeof(type), \
                     __FILE__, __LINE__)
 
+#else
+
 /*--------------------------------------
  * Do not check memory allocation
  *--------------------------------------*/
 
-#else
 /**
  * @brief Allocates memory.
  *
@@ -123,9 +160,9 @@
  * TempData macros
  *--------------------------------------------------------------------------*/
 
-#define NewTempData(temp_data_sz)  amps_CTAlloc(double, (temp_data_sz))
+#define NewTempData(temp_data_sz) amps_CTAlloc(double, (temp_data_sz))
 
-#define FreeTempData(temp_data)    amps_TFree(temp_data)
+#define FreeTempData(temp_data) amps_TFree(temp_data)
 
 
 /*--------------------------------------------------------------------------

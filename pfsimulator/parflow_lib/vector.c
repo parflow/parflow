@@ -318,7 +318,7 @@ static void     AllocateVectorData(
 
     SubvectorDataSize(subvector) = data_size;
 
-    double  *data = amps_CTAlloc(double, data_size);
+    double  *data = ctalloc_amps(double, data_size);
     VectorSubvector(vector, i)->allocated = TRUE;
 
     SubvectorData(VectorSubvector(vector, i)) = data;
@@ -638,7 +638,7 @@ void FreeSubvector(Subvector *subvector)
 {
   if (subvector->allocated)
   {
-    tfree(SubvectorData(subvector));
+    tfree_amps(SubvectorData(subvector));
   }
   tfree(subvector);
 }

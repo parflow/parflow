@@ -31,6 +31,12 @@
  * Memory management macros for CUDA
  *--------------------------------------------------------------------------*/
 
+#define talloc_amps_cuda(type, count) amps_TAlloc_managed(type, count)
+
+#define ctalloc_amps_cuda(type, count) amps_CTAlloc_managed(type, count)
+
+#define tfree_amps_cuda(ptr) amps_TFree_managed(ptr)
+
 #define talloc_cuda(type, count) \
   ((count) ? (type*)_talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
 
@@ -54,19 +60,5 @@
   CUDA_ERR(cudaGetDevice(&device));                                  \
   CUDA_ERR(cudaMemPrefetchAsync(ptr, size, device, stream))          \
 }
-
-// Redefine amps.h definitions 
-// @TODO: Find a better way, this is problematic because these are defined in amps.h
-#undef amps_TAlloc
-#define amps_TAlloc(type, count) \
-  ((count) ? (type*)_talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
-
-#undef amps_CTAlloc
-#define amps_CTAlloc(type, count) \
-  ((count) ? (type*)_ctalloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
-
-#undef amps_TFree
-#define amps_TFree(ptr) if (ptr) _tfree_cuda(ptr); else {}
-
 
 #endif // PF_CUDAMALLOC_H

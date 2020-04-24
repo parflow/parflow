@@ -74,6 +74,24 @@
 
 // Memory management
 
+#if defined(talloc_amps_cuda) || defined(talloc_amps_omp)
+  #define talloc_amps CHOOSE_BACKEND(DEFER(talloc_amps), ACC_ID)
+#else
+  #define talloc_amps talloc_amps_default
+#endif
+
+#if defined(ctalloc_amps_cuda) || defined(ctalloc_amps_omp)
+  #define ctalloc_amps CHOOSE_BACKEND(DEFER(ctalloc_amps), ACC_ID)
+#else
+  #define ctalloc_amps ctalloc_amps_default
+#endif
+
+#if defined(tfree_amps_cuda) || defined(tfree_amps_omp)
+  #define tfree_amps CHOOSE_BACKEND(DEFER(tfree_amps), ACC_ID)
+#else
+  #define tfree_amps tfree_amps_default
+#endif
+
 #if defined(talloc_cuda) || defined(talloc_omp)
   #define talloc CHOOSE_BACKEND(DEFER(talloc), ACC_ID)
 #else

@@ -14,9 +14,6 @@
 
 #cmakedefine AMPS_SPLIT_FILE
 
-#cmakedefine PARFLOW_HAVE_RMM
-#cmakedefine HAVE_RMM
-
 #cmakedefine PARFLOW_HAVE_TCL
 #cmakedefine HAVE_TCL
 
@@ -66,5 +63,11 @@
 #cmakedefine HAVE_MALLINFO
 
 #cmakedefine PARFLOW_HAVE_ETRACE
+
+#cmakedefine PARFLOW_HAVE_CUDA
+
+#cmakedefine PARFLOW_HAVE_RMM
+
+#cmakedefine PARFLOW_HAVE_OMP
 
 #endif // PARFLOW_CONFIG_H

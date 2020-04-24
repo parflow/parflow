@@ -537,7 +537,7 @@ int amps_unpack(amps_Comm comm, amps_Invoice inv, char *buffer, int *streams_hir
     {
       if(amps_device_globals.streams_created < amps_device_max_streams)
         {
-          CUDA_ERR(cudaStreamCreate(&(amps_device_globals.stream[*streams_hired - 1])));
+          CUDA_ERRCHK(cudaStreamCreate(&(amps_device_globals.stream[*streams_hired - 1])));
           amps_device_globals.streams_created++;
         }
     }
@@ -550,7 +550,7 @@ int amps_unpack(amps_Comm comm, amps_Invoice inv, char *buffer, int *streams_hir
       dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
       dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);      
       UnpackingKernel<<<grid, block, 0, amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams]>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
-      // CUDA_ERR(cudaStreamSynchronize(amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams])); 
+      // CUDA_ERRCHK(cudaStreamSynchronize(amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams])); 
     }
     else
     {
