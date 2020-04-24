@@ -54,15 +54,12 @@
 
 #ifdef PF_MEMORY_ALLOC_CHECK
 
-#define talloc(type, count) \
+#define talloc_default(type, count) \
   (type*)malloc_chk((unsigned int)((count) * sizeof(type)), __FILE__, __LINE__)
 
-#define ctalloc(type, count)                                           \
+#define ctalloc_default(type, count)                                           \
   (type*)calloc_chk((unsigned int)(count), (unsigned int)sizeof(type), \
                     __FILE__, __LINE__)
-
-/* note: the `else' is required to guarantee termination of the `if' */
-#define tfree(ptr) if (ptr) free(ptr); else {}
 
 /*--------------------------------------
  * Do not check memory allocation
@@ -73,41 +70,53 @@
  * @brief Allocates memory.
  *
  * When using an accelerator device, allocates unified memory with redefined macro.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  *
- * @note Multiple definitions: Redefined in architecture-specific headers!
- *
- * @param type The C type name
- * @param count Number of items of type to allocate
- * @return Pointer to the allocated dataspace
+ * @param type the C type name
+ * @param count number of items of type to allocate
+ * @return pointer to the allocated dataspace
  */
-#define talloc(type, count) \
+#define talloc_default(type, count) \
   (((count) > 0) ? (type*)malloc(sizeof(type) * (unsigned int)(count)) : NULL)
 
 /**
  * @brief Allocates memory initialized to 0.
  *
  * When using an accelerator device, allocates unified memory with redefined macro.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  *
- * @note Multiple definitions: Redefined in architecture-specific headers!
- *
- * @param type The C type name
- * @param count Number of items of type to allocate
- * @return Pointer to the allocated dataspace
+ * @param type the C type name
+ * @param count number of items of type to allocate
+ * @return pointer to the allocated dataspace
  */
-#define ctalloc(type, count) \
+#define ctalloc_default(type, count) \
   (((count) > 0) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
-/**
- * Deallocates memory for objects that were allocated by \ref talloc or \ref ctalloc.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
- *
- * @param ptr Pointer to dataspace to free
- * @return Error code
- */
-#define tfree(ptr) if (ptr) free(ptr); else {}
-
 #endif
+
+/**
+ * Deallocates memory for objects that were allocated by \ref talloc_default or \ref ctalloc_default.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
+ *
+ * @param ptr pointer to dataspace to free
+ * @return error code
+ */
+#define tfree_default(ptr) if (ptr) free(ptr); else {}
+
+/**
+ * Copies data from dest to src
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
+ *
+ * @param dest destination address
+ * @param src source address
+ * @param bytes amount of data to be copied
+ * @return error code
+ */
+#define tmemcpy_default(dest, src, bytes) memcpy(dest, src, bytes)
 
 
 /*--------------------------------------------------------------------------
@@ -123,69 +132,55 @@
  * Define various functions
  *--------------------------------------------------------------------------*/
 
-#ifndef pfmax
 #define pfmax(a, b)  (((a) < (b)) ? (b) : (a))
-#endif
 
-#ifndef pfmin
 #define pfmin(a, b)  (((a) < (b)) ? (a) : (b))
-#endif
 
-#ifndef pfround
 #define pfround(x)  (((x) < 0.0) ? ((int)(x - 0.5)) : ((int)(x + 0.5)))
-#endif
 
-#ifndef PlusEquals
 /**
  * Thread-safe addition assignment. This macro
  * can be called anywhere in any compute kernel.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param a original value [IN], sum result [OUT]
  * @param b value to be added [IN]
  */
-#define PlusEquals(a, b) (a += b)
-#endif
+#define PlusEquals_default(a, b) (a += b)
 
-#ifndef ReduceMax
 /**
  * Thread-safe reduction to find maximum value for reduction loops.
- * Each thread must call this macro as the last action inside the reduction loop body.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
+ * Each thread must call this macro as the last statement inside the reduction loop body.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param a value 1 for comparison [IN], max value [OUT]
  * @param b value 2 for comparison [IN]
  */
-#define ReduceMax(a, b) if(a < b) { a = b; } else {};
-#endif
+#define ReduceMax_default(a, b) if(a < b) { a = b; } else {};
 
-#ifndef ReduceMin
 /**
  * Thread-safe reduction to find maximum value for reduction loops.
- * Each thread must call this macro as the last action inside the reduction loop body.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
+ * Each thread must call this macro as the last statement inside the reduction loop body.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param a value 1 for comparison [IN], min value [OUT]
  * @param b value 2 for comparison [IN]
  */
-#define ReduceMin(a, b) if(a > b) { a = b; } else {};
-#endif
+#define ReduceMin_default(a, b) if(a > b) { a = b; } else {};
 
-#ifndef ReduceSum
 /**
  * Thread-safe addition assignment for reduction loops.
- * Each thread must call this macro as the last action inside the reduction loop body.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
+ * Each thread must call this macro as the last statement inside the reduction loop body.
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param a original value [IN], sum result [OUT]
  * @param b value to be added [IN]
  */
-#define ReduceSum(a, b) (a += b)
-#endif
+#define ReduceSum_default(a, b) (a += b)
 
 /* return 2^e, where e >= 0 is an integer */
 #define Pow2(e)   (((unsigned int)0x01) << (e))
@@ -229,88 +224,67 @@
  *--------------------------------------------------------------------------*/
 
 #ifndef __host__
-  /** Defines an object accessible from host. @note Multiple definitions! */
+  /** Defines an object accessible from host. @note Does nothing if not supported by the compiler. */
   #define __host__
 #endif
 #ifndef __device__
-  /** Defines an object accessible from device. @note Multiple definitions! */
+  /** Defines an object accessible from device. @note Does nothing if not supported by the compiler. */
   #define __device__
 #endif
 #ifndef __managed__
-  /** Defines a variable that is automatically migrated between host/device. @note Multiple definitions! */
+  /** Defines a variable that is automatically migrated between host/device. @note Does nothing if not supported by the compiler. */
   #define __managed__
 #endif
 #ifndef __restrict__
-  /** Defines a restricted pointer. @note Multiple definitions! */
+  /** Defines a restricted pointer. @note Does nothing if not supported by the compiler. */
   #define __restrict__
 #endif
 
 /**
  * Used to prefetch data from host to device for better performance.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param ptr pointer to data [IN]
  * @param size bytes to be prefetched [IN]
  * @param stream the device stream (0, if no streams are launched) [IN]
  * @return CUDA error code
  */
-#define MemPrefetchDeviceToHost(ptr, size, stream)
+#define MemPrefetchDeviceToHost_default(ptr, size, stream)
 
 /**
  * Used to prefetch data from host to device for better performance.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param ptr pointer to data [IN]
  * @param size bytes to be prefetched [IN]
  * @param stream the device stream (0, if no streams are launched) [IN]
  * @return CUDA error code
  */
-#define MemPrefetchHostToDevice(ptr, size, stream)
+#define MemPrefetchHostToDevice_default(ptr, size, stream)
 
 /**
  * Explicit sync between host and device default stream if accelerator present.
  * Can be called anywhere.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  */
-#define PARALLEL_SYNC
+#define PARALLEL_SYNC_default
 
 /**
  * Skip sync after BoxLoop if accelerator present.
  * Must be the called as the last action inside the loop body.
- *
- * @note Multiple definitions: Redefined in architecture-specific headers!
+ * 
+ * @note Multiple definitions (see backend_mapping.h).
  */
-#define SKIP_PARALLEL_SYNC
+#define SKIP_PARALLEL_SYNC_default
 
-#if ACC_BACKEND == BACKEND_CUDA
-  #include "nvToolsExt.h"
-  /** Record an NVTX range for NSYS if accelerator present. */
-  #define PUSH_NVTX(name,cid)                                                               \
-  {                                                                                         \
-  	const uint32_t colors_nvtx[] =                                                          \
-  	  {0xff00ff00, 0xff0000ff, 0xffffff00, 0xffff00ff, 0xff00ffff, 0xffff0000, 0xffffffff}; \
-  	const int num_colors_nvtx = sizeof(colors_nvtx)/sizeof(uint32_t);                       \
-    int color_id_nvtx = cid;                                                                \
-    color_id_nvtx = color_id_nvtx%num_colors_nvtx;                                          \
-    nvtxEventAttributes_t eventAttrib = {0};                                                \
-    eventAttrib.version = NVTX_VERSION;                                                     \
-    eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;                                       \
-    eventAttrib.colorType = NVTX_COLOR_ARGB;                                                \
-    eventAttrib.color = colors_nvtx[color_id_nvtx];                                         \
-    eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;                                      \
-    eventAttrib.message.ascii = name;                                                       \
-    nvtxRangePushEx(&eventAttrib);                                                          \
-  }
-  /** Stop recording an NVTX range for NSYS if accelerator present. */
-  #define POP_NVTX nvtxRangePop();
-#else
-  /** Record an NVTX range for NSYS if accelerator present. */
-  #define PUSH_NVTX(name,cid)
-  /** Stop recording an NVTX range for NSYS if accelerator present. */
-  #define POP_NVTX
-#endif
+/** Record an NVTX range for NSYS if accelerator present. @note Multiple definitions (see backend_mapping.h). */
+#define PUSH_NVTX_default(name,cid)
+
+/** Stop recording an NVTX range for NSYS if accelerator present. @note Multiple definitions (see backend_mapping.h). */
+#define POP_NVTX_default
+
 
 #endif

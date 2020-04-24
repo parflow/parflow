@@ -21,8 +21,8 @@
  * @brief Contains macros, functions, and structs for CUDA compute kernels.
  */
 
-#ifndef PFCUDALOOPS_H
-#define PFCUDALOOPS_H
+#ifndef PF_CUDALOOPS_H
+#define PF_CUDALOOPS_H
 
 /*--------------------------------------------------------------------------
  * Include CUDA headers
@@ -718,9 +718,9 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
         };                                                                          \
                                                                                     \
     decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_cuda(sizeof(decltype(rslt)));\
-    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
     *ptr_rslt = rslt;                                                               \
-    MemPrefetchHostToDevice(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init, lambda_init,     \
@@ -728,9 +728,9 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     CUDA_ERR(cudaPeekAtLastError());                                                \
     CUDA_ERR(cudaStreamSynchronize(0));                                             \
                                                                                     \
-    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
     rslt = *ptr_rslt;                                                               \
-    tfree_cuda(ptr_rslt);                                                           \
+    _tfree_cuda(ptr_rslt);                                                          \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
@@ -772,9 +772,9 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
         };                                                                          \
                                                                                     \
     decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_cuda(sizeof(decltype(rslt)));\
-    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
     *ptr_rslt = rslt;                                                               \
-    MemPrefetchHostToDevice(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1, lambda_init2,   \
@@ -782,9 +782,9 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     CUDA_ERR(cudaPeekAtLastError());                                                \
     CUDA_ERR(cudaStreamSynchronize(0));                                             \
                                                                                     \
-    MemPrefetchDeviceToHost(ptr_rslt, sizeof(decltype(rslt)), 0);                   \
+    MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
     rslt = *ptr_rslt;                                                               \
-    tfree_cuda(ptr_rslt);                                                           \
+    _tfree_cuda(ptr_rslt);                                                          \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
@@ -1171,4 +1171,4 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 }
 
 }
-#endif // PFCUDALOOPS_H
+#endif // PF_CUDALOOPS_H

@@ -62,7 +62,7 @@ using namespace SAMRAI;
 #endif
 
 #if ACC_BACKEND == BACKEND_CUDA
-#include "pfcudaerr.h"
+#include "pf_cudamain.h"
 #endif
 
 #ifdef PARFLOW_HAVE_ETRACE

@@ -352,7 +352,8 @@ void          GrGeomFreeSolid(
   }
 
 #if ACC_BACKEND == BACKEND_CUDA
-  if(GrGeomSolidOutflag(solid)) tfree_cuda(GrGeomSolidOutflag(solid));
+  // Internal _tfree_cuda function is used because unified memory is not active in this comp unit
+  if(GrGeomSolidOutflag(solid)) _tfree_cuda(GrGeomSolidOutflag(solid));
 #endif
 
   GrGeomFreeOctree(GrGeomSolidData(solid));

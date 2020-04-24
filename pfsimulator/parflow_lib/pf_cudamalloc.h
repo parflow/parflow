@@ -21,53 +21,52 @@
  * @brief Contains macro redefinitions for unified memory management.
  */
 
-#ifndef PFCUDAMALLOC_H
-#define PFCUDAMALLOC_H
+#ifndef PF_CUDAMALLOC_H
+#define PF_CUDAMALLOC_H
 
 #include <string.h>
-#include "pfcudaerr.h"
+#include "pf_cudamain.h"
 
 /*--------------------------------------------------------------------------
- * Redefine macros for CUDA
+ * Memory management macros for CUDA
  *--------------------------------------------------------------------------*/
 
-// Redefine amps.h definitions
-#undef amps_TAlloc
-#define amps_TAlloc(type, count) \
-  ((count) ? (type*)talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
+#define talloc_cuda(type, count) \
+  ((count) ? (type*)_talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
 
-#undef amps_CTAlloc
-#define amps_CTAlloc(type, count) \
-  ((count) ? (type*)ctalloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
+#define ctalloc_cuda(type, count) \
+  ((count) ? (type*)_ctalloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
 
-#undef amps_TFree
-#define amps_TFree(ptr) if (ptr) tfree_cuda(ptr); else {}
+#define tfree_cuda(ptr) if (ptr) _tfree_cuda(ptr); else {}
 
-// Redefine general.h definitions
-#undef talloc
-#define talloc(type, count) \
-  ((count) ? (type*)talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
+#define tmemcpy_cuda(dest, src, bytes) \
+  CUDA_ERR(cudaMemcpy(dest, src, bytes, cudaMemcpyDeviceToDevice))
 
-#undef ctalloc
-#define ctalloc(type, count) \
-  ((count) ? (type*)ctalloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
-
-#undef tfree
-#define tfree(ptr) if (ptr) tfree_cuda(ptr); else {}
-
-#undef MemPrefetchDeviceToHost
-#define MemPrefetchDeviceToHost(ptr, size, stream)                   \
+#define MemPrefetchDeviceToHost_cuda(ptr, size, stream)              \
 {                                                                    \
   CUDA_ERR(cudaMemPrefetchAsync(ptr, size, cudaCpuDeviceId, stream));\
   CUDA_ERR(cudaStreamSynchronize(stream));                           \
 }
 
-#undef MemPrefetchHostToDevice
-#define MemPrefetchHostToDevice(ptr, size, stream)                   \
+#define MemPrefetchHostToDevice_cuda(ptr, size, stream)              \
 {                                                                    \
   int device;                                                        \
   CUDA_ERR(cudaGetDevice(&device));                                  \
   CUDA_ERR(cudaMemPrefetchAsync(ptr, size, device, stream))          \
 }
 
-#endif // PFCUDAMALLOC_H
+// Redefine amps.h definitions 
+// @TODO: Find a better way, this is problematic because these are defined in amps.h
+#undef amps_TAlloc
+#define amps_TAlloc(type, count) \
+  ((count) ? (type*)_talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
+
+#undef amps_CTAlloc
+#define amps_CTAlloc(type, count) \
+  ((count) ? (type*)_ctalloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
+
+#undef amps_TFree
+#define amps_TFree(ptr) if (ptr) _tfree_cuda(ptr); else {}
+
+
+#endif // PF_CUDAMALLOC_H

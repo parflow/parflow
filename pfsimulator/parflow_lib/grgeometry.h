@@ -112,7 +112,7 @@ typedef struct {
  *   Macro for looping over the inside of a solid.
  *--------------------------------------------------------------------------*/
 
-#define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body) \
+#define GrGeomInLoopBoxes_default(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body) \
   {                                                                      \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                  \
     int *PV_visiting = NULL;                                             \
@@ -196,7 +196,7 @@ typedef struct {
  *   Macro for looping over the outside of a solid.
  *--------------------------------------------------------------------------*/
 
-#define GrGeomOutLoop(i, j, k, grgeom,                                 \
+#define GrGeomOutLoop_default(i, j, k, grgeom,                                 \
                       r, ix, iy, iz, nx, ny, nz, body)                 \
   {                                                                    \
     GrGeomOctree  *PV_node;                                            \
@@ -265,7 +265,7 @@ typedef struct {
 // fdir = FDIR[PV_f] type of thing.
 //
 
-#define GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom, ix, iy, iz, nx, ny, nz, body) \
+#define GrGeomSurfLoopBoxes_default(i, j, k, fdir, grgeom, ix, iy, iz, nx, ny, nz, body) \
   {                                                                              \
     int PV_fdir[3];                                                              \
                                                                                  \
@@ -357,7 +357,7 @@ typedef struct {
 
 #if 1
 
-#define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num, ix, iy, iz, nx, ny, nz, body) \
+#define GrGeomPatchLoopBoxes_default(i, j, k, fdir, grgeom, patch_num, ix, iy, iz, nx, ny, nz, body) \
   {                                                                                          \
     int PV_fdir[3];                                                                          \
                                                                                              \
@@ -414,7 +414,7 @@ typedef struct {
     }                                                                                        \
   }
 
-#define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,					\
+#define GrGeomPatchLoopBoxesNoFdir_default(i, j, k, grgeom, patch_num,					\
                                    ix, iy, iz, nx, ny, nz,              \
                                    locals, setup,                       \
                                    f_left, f_right,                     \

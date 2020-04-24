@@ -89,8 +89,7 @@ extern "C++"{
   };
 
 
-#undef PlusEquals
-#define PlusEquals(a, b) AtomicAdd(&(a), b)
+#define PlusEquals_omp(a, b) AtomicAdd(&(a), b)
   template<typename T>
   static inline void AtomicAdd(T *addr, T val)
   {
@@ -101,28 +100,24 @@ extern "C++"{
   /** Helper struct for type comparison (not for direct use). */
   template <typename T>
   struct ReduceMaxRes {T lambda_result;};
-#undef ReduceMax
-#define ReduceMax(a, b) struct ReduceMaxRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
+#define ReduceMax_omp(a, b) struct ReduceMaxRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
   /** Helper struct for type comparison (not for direct use). */
   template <typename T>
   struct ReduceMinRes {T lambda_result;};
-#undef ReduceMin
-#define ReduceMin(a, b) struct ReduceMinRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
+#define ReduceMin_omp(a, b) struct ReduceMinRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
   /** Helper struct for type comparison (not for direct use). */
   template <typename T>
   struct ReduceSumRes {T lambda_result;};
-#undef ReduceSum
-#define ReduceSum(a, b) struct ReduceSumRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
+#define ReduceSum_omp(a, b) struct ReduceSumRes<decltype(a)> reduce_struct {.lambda_result = b}; return reduce_struct;
 
   /** OpenMP BoxLoopReduceI1 definition.
       Last statement in the body of the loop must be one of the above Reduce helper structures.
       This macro will do compile-time type checking to determine which kind of reduction to perform.
       See innerprod.c or vector_utilities.c for example usages
    */
-#undef BoxLoopReduceI1
-#define BoxLoopReduceI1(sum,                                            \
+#define BoxLoopReduceI1_omp(sum,                                        \
                         i, j, k,                                        \
                         ix, iy, iz, nx, ny, nz,                         \
                         i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
@@ -211,8 +206,7 @@ extern "C++"{
       Last statement in the body of the loop must be one of the above Reduce helper structures.
       This macro will do compile-time type checking to determine which kind of reduction to perform.
   */
-#undef BoxLoopReduceI2
-#define BoxLoopReduceI2(sum,                                            \
+#define BoxLoopReduceI2_omp(sum,                                        \
                         i, j, k,                                        \
                         ix, iy, iz, nx, ny, nz,                         \
                         i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
@@ -313,10 +307,8 @@ extern "C++"{
    NOTE | These are expected to be used inside of OMP reduction loops with the max or min clause
    They are NOT atomic, the reduction clause it meant to handle that for better performance
 */
-#undef pfmin_atomic
 #define pfmin_atomic(a,b) (a) = (a) < (b) ? (a) : (b)
 
-#undef pfmax_atomic
 #define pfmax_atomic(a,b) (a) = (a) > (b) ? (a) : (b)
 
 /**************************************************************************
@@ -351,24 +343,22 @@ INC_IDX(int idx, int i, int j, int k,
           (k * ny * nx + j * nx + i) * sx) + idx;
 }
 
-#undef BoxLoopI0
-#define BoxLoopI0(i, j, k, ix, iy, iz, nx, ny, nz, body)    \
-  {                                                         \
-    PRAGMA(omp parallel for collapse(3) private(i, j, k))   \
-      for (k = iz; k < iz + nz; k++)                        \
-      {                                                     \
-        for (j = iy; j < iy + ny; j++)                      \
-        {                                                   \
-          for (i = ix; i < ix + nx; i++)                    \
-          {                                                 \
-            body;                                           \
-          }                                                 \
-        }                                                   \
-      }                                                     \
+#define BoxLoopI0_omp(i, j, k, ix, iy, iz, nx, ny, nz, body)    \
+  {                                                             \
+    PRAGMA(omp parallel for collapse(3) private(i, j, k))       \
+      for (k = iz; k < iz + nz; k++)                            \
+      {                                                         \
+        for (j = iy; j < iy + ny; j++)                          \
+        {                                                       \
+          for (i = ix; i < ix + nx; i++)                        \
+          {                                                     \
+            body;                                               \
+          }                                                     \
+        }                                                       \
+      }                                                         \
   }
 
-#undef BoxLoopI1
-#define BoxLoopI1(i, j, k,                                              \
+#define BoxLoopI1_omp(i, j, k,                                          \
                   ix, iy, iz, nx, ny, nz,                               \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                     \
                   body)                                                 \
@@ -390,8 +380,7 @@ INC_IDX(int idx, int i, int j, int k,
       }                                                                 \
   }
 
-#undef BoxLoopI2
-#define BoxLoopI2(i, j, k,                                              \
+#define BoxLoopI2_omp(i, j, k,                                          \
                    ix, iy, iz, nx, ny, nz,                              \
                    i1, nx1, ny1, nz1, sx1, sy1, sz1,                    \
                    i2, nx2, ny2, nz2, sx2, sy2, sz2,                    \
@@ -418,8 +407,7 @@ INC_IDX(int idx, int i, int j, int k,
       }                                                                 \
   }
 
-#undef BoxLoopI3
-#define BoxLoopI3(i, j, k,                                              \
+#define BoxLoopI3_omp(i, j, k,                                          \
                    ix, iy, iz, nx, ny, nz,                              \
                    i1, nx1, ny1, nz1, sx1, sy1, sz1,                    \
                    i2, nx2, ny2, nz2, sx2, sy2, sz2,                    \
@@ -455,8 +443,7 @@ INC_IDX(int idx, int i, int j, int k,
  * BoxLoop Reduction Variants
  **************************************************************************/
 
-#undef BoxLoopReduceI0
-#define BoxLoopReduceI0(sum,                                            \
+#define BoxLoopReduceI0_omp(sum,                                        \
                         i, j, k,                                        \
                         ix, iy, iz, nx, ny, nz,                         \
                         body)                                           \
@@ -519,17 +506,16 @@ INC_IDX(int idx, int i, int j, int k,
 */
 #define CALC_IVAL(diff, a, b, prev) ((diff) * (a) + (a) + (b)) + (prev)
 
-#undef GrGeomPatchLoopBoxesNoFdir
-#define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,\
-                                   ix, iy, iz, nx, ny, nz,    \
-                                   locals, setup,            \
-                                   f_left, f_right,          \
-                                   f_down, f_up,             \
-                                   f_back, f_front,          \
-                                   finalize)                 \
+#define GrGeomPatchLoopBoxesNoFdir_omp(i, j, k, grgeom, patch_num,      \
+                                   ix, iy, iz, nx, ny, nz,              \
+                                   locals, setup,                       \
+                                   f_left, f_right,                     \
+                                   f_down, f_up,                        \
+                                   f_back, f_front,                     \
+                                   finalize)                            \
   PRAGMA(omp parallel)                                                  \
   {                                                                     \
-    /* @MCB: Redeclare locals instead of using OMP Private pragma for */ \
+    /* @MCB: Redeclare locals instead of using OMP Private pragma for */\
     /* architecture portability. */                                     \
     UNPACK(locals);                                                     \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                 \
@@ -609,8 +595,7 @@ static const int FDIR_TABLE[6][3] = {
 };
 
 
-#undef GrGeomPatchLoopBoxes
-#define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,          \
+#define GrGeomPatchLoopBoxes_omp(i, j, k, fdir, grgeom, patch_num,      \
                              ix, iy, iz, nx, ny, nz, body)              \
   PRAGMA(omp parallel)                                                  \
   {                                                                     \
@@ -666,8 +651,7 @@ static const int FDIR_TABLE[6][3] = {
     }                                                                   \
   }
 
-#undef GrGeomInLoopBoxes
-#define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body) \
+#define GrGeomInLoopBoxes_omp(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body) \
     PRAGMA(omp parallel)                                                \
     {                                                                   \
       int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;               \
@@ -696,8 +680,7 @@ static const int FDIR_TABLE[6][3] = {
     }
 
 
-#undef GrGeomSurfLoopBoxes
-#define GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom, ix, iy, iz, nx, ny, nz, body) \
+#define GrGeomSurfLoopBoxes_omp(i, j, k, fdir, grgeom, ix, iy, iz, nx, ny, nz, body) \
   PRAGMA(omp parallel firstprivate(fdir))                               \
   {                                                                     \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                 \

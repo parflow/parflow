@@ -840,7 +840,7 @@ typedef struct grgeom_octree {
  * @param[in] value_test boolean if tests evaluated before body execution
  * @param[in] body code to execute
  */
-#define GrGeomOctreeExteriorNodeLoop(i, j, k, node, octree, level,                    \
+#define GrGeomOctreeExteriorNodeLoop_default(i, j, k, node, octree, level,            \
                                      ix, iy, iz, nx, ny, nz, value_test,              \
                                      body)                                            \
   {                                                                                   \

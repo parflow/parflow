@@ -18,11 +18,11 @@
  ***********************************************************************/
 
 /** @file
- * @brief Contains macros and functions for CUDA error handling and unified memory allocation.
+ * @brief Contains general CUDA related macros and functions.
  */
 
-#ifndef PFCUDAERR_H
-#define PFCUDAERR_H
+#ifndef PF_CUDAMAIN_H
+#define PF_CUDAMAIN_H
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -71,6 +71,31 @@
 #endif
 
 /*--------------------------------------------------------------------------
+ * CUDA profiling macros
+ *--------------------------------------------------------------------------*/
+
+/** Record an NVTX range for NSYS if accelerator present. */
+#include "nvToolsExt.h"
+#define PUSH_NVTX_cuda(name,cid)                                                          \
+{                                                                                         \
+  const uint32_t colors_nvtx[] =                                                          \
+    {0xff00ff00, 0xff0000ff, 0xffffff00, 0xffff00ff, 0xff00ffff, 0xffff0000, 0xffffffff}; \
+  const int num_colors_nvtx = sizeof(colors_nvtx)/sizeof(uint32_t);                       \
+  int color_id_nvtx = cid;                                                                \
+  color_id_nvtx = color_id_nvtx%num_colors_nvtx;                                          \
+  nvtxEventAttributes_t eventAttrib = {0};                                                \
+  eventAttrib.version = NVTX_VERSION;                                                     \
+  eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;                                       \
+  eventAttrib.colorType = NVTX_COLOR_ARGB;                                                \
+  eventAttrib.color = colors_nvtx[color_id_nvtx];                                         \
+  eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;                                      \
+  eventAttrib.message.ascii = name;                                                       \
+  nvtxRangePushEx(&eventAttrib);                                                          \
+}
+/** Stop recording an NVTX range for NSYS if accelerator present. */
+#define POP_NVTX_cuda nvtxRangePop();
+
+/*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for CUDA
  *--------------------------------------------------------------------------*/
 
@@ -84,7 +109,7 @@
  * @param size bytes to be allocated [IN]
  * @return a void pointer to the allocated dataspace
  */
-static inline void *talloc_cuda(size_t size)
+static inline void *_talloc_cuda(size_t size)
 {
   void *ptr = NULL;  
   
@@ -108,7 +133,7 @@ static inline void *talloc_cuda(size_t size)
  * @param size bytes to be allocated [IN]
  * @return a void pointer to the allocated dataspace
  */
-static inline void *ctalloc_cuda(size_t size)
+static inline void *_ctalloc_cuda(size_t size)
 {
   void *ptr = NULL;  
 
@@ -125,13 +150,13 @@ static inline void *ctalloc_cuda(size_t size)
 }
 
 /**
- * @brief Frees unified memory allocated with \ref talloc_cuda or \ref ctalloc_cuda.
+ * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda.
  * 
  * @note Should not be called directly.
  *
  * @param ptr a void pointer to the allocated dataspace [IN]
  */
-static inline void tfree_cuda(void *ptr)
+static inline void _tfree_cuda(void *ptr)
 {
 #ifdef HAVE_RMM
   RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
@@ -141,4 +166,4 @@ static inline void tfree_cuda(void *ptr)
 #endif
 }
 
-#endif // PFCUDAERR_H
+#endif // PF_CUDAMAIN_H

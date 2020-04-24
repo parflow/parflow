@@ -76,40 +76,7 @@
 // SGS FIXME this should not be here, in fact this whole parflow.h file is dumb.
 #include <math.h>
 
-/* PF_COMP_UNIT_TYPE determines the behavior of the NVCC compilation unit and/or OpenMP loops:
-------------------------------------------------------------
-   CUDA
-------------------------------------------------------------
-	 1:     NVCC compiler, Unified Memory allocation, Parallel loops on GPUs
-	 2:     NVCC compiler, Unified Memory allocation, Sequential loops on host
-	 Other: NVCC compiler, Standard heap allocation, Sequential loops on host
-
-
-------------------------------------------------------------
-   OpenMP
-------------------------------------------------------------
-   1:     CXX compiler, Unified Memory allocation, Parallel loops on CPU
-	 2:     CXX compiler, Unified Memory allocation, Sequential loops on CPU
-	 Other: CXX compiler, Standard heap allocation, Sequential loops on CPU
-*/
-
-/* Include CUDA headers if CUDA active and NVCC compiler */
-#if (ACC_BACKEND == BACKEND_CUDA) && defined(__CUDACC__)
-
-  #if PF_COMP_UNIT_TYPE == 1
-    #include "pfcudaloops.h"
-  #elif PF_COMP_UNIT_TYPE == 2
-    #include "pfcudamalloc.h"
-  #else
-    #include "pfcudaerr.h"
-  #endif
-
-#elif ACC_BACKEND == BACKEND_OMP
-
-  #if PF_COMP_UNIT_TYPE == 1
-    #include "pf_omploops.h" // For OMP loops
-  #endif
-
-#endif
+// backend_mapping.h must be included as the last header
+#include "backend_mapping.h"
 
 #endif

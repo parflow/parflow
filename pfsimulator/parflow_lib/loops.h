@@ -63,33 +63,33 @@
  * @brief Perform a reduction over a BoxLoopI1 iteration space
  *
  * @note Last statement in loop body must be a valid reduction clause (see general.h).
- * Multiple definitions: Redefined in architecture-specific headers!
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param[in,out] sum Variable to perform reduction operation on.
  */
-#define BoxLoopReduceI1(sum, ...) BoxLoopI1(__VA_ARGS__)
+#define BoxLoopReduceI1_default(sum, ...) BoxLoopI1(__VA_ARGS__)
 
 /**
  * @brief Perform a reduction over a BoxLoopI2 iteration space
  *
  * @note Last statement in loop body must be a valid reduction clause (see general.h).
- * Multiple definitions: Redefined in architecture-specific headers!
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param[in,out] sum Variable to perform reduction operation on.
  */
-#define BoxLoopReduceI2(sum, ...) BoxLoopI2(__VA_ARGS__)
+#define BoxLoopReduceI2_default(sum, ...) BoxLoopI2(__VA_ARGS__)
 
 /**
  * @brief Perform a reduction over a BoxLoopI3 iteration space
  *
  * @note Last statement in loop body must be a valid reduction clause (see general.h).
- * Multiple definitions: Redefined in architecture-specific headers!
+ * @note Multiple definitions (see backend_mapping.h).
  *
  * @param[in,out] sum Variable to perform reduction operation on.
  */
-#define BoxLoopReduceI3(sum, ...) BoxLoopI3(__VA_ARGS__)
+#define BoxLoopReduceI3_default(sum, ...) BoxLoopI3(__VA_ARGS__)
 
-#define BoxLoopI0(i, j, k,                \
+#define BoxLoopI0_default(i, j, k,        \
                   ix, iy, iz, nx, ny, nz, \
                   body)                   \
   {                                       \
@@ -105,7 +105,7 @@
     }                                     \
   }
 
-#define BoxLoopI1(i, j, k,                                                      \
+#define BoxLoopI1_default(i, j, k,                                              \
                   ix, iy, iz, nx, ny, nz,                                       \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
                   body)                                                         \
@@ -126,7 +126,7 @@
     }                                                                           \
   }
 
-#define BoxLoopI2(i, j, k,                                                      \
+#define BoxLoopI2_default(i, j, k,                                              \
                   ix, iy, iz, nx, ny, nz,                                       \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
                   i2, nx2, ny2, nz2, sx2, sy2, sz2,                             \
@@ -152,7 +152,7 @@
     }                                                                           \
   }
 
-#define BoxLoopI3(i, j, k,                                                      \
+#define BoxLoopI3_default(i, j, k,                                              \
                   ix, iy, iz, nx, ny, nz,                                       \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
                   i2, nx2, ny2, nz2, sx2, sy2, sz2,                             \
