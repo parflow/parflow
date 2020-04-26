@@ -73,7 +73,11 @@ typedef struct {
   int print_concen;                          /* print concentrations? */
   int print_wells;                           /* print well data? */
 
-  int write_pdi_press;                            /* print pressure via PDI */
+  int write_pdi_subsurf_data;                /* print subsurf via PDI */
+  int write_pdi_press;                       /* print pressure via PDI */
+  int write_pdi_velocities;                  /* print velocities via PDI */
+  int write_pdi_satur;                       /* print satur via PDI */
+  int write_pdi_concern;                     /* print concern via PDI */
 
   int write_silo_subsurf_data;                    /* print perm./porosity? */
   int write_silo_press;                           /* print pressures? */
@@ -852,6 +856,46 @@ void      SolverImpes()
             pressure_file_dumped = 1;
           }
         }
+        
+        if (public_xtra->write_pdi_velocities)
+        {
+          for (phase = 0; phase < ProblemNumPhases(problem); phase++)
+          {
+            sprintf(file_postfix, "phasex.%01d", phase);
+            WritePDI(file_prefix, file_postfix, file_number - 1, phase_x_velocity[phase]);
+
+            sprintf(file_postfix, "phasey.%01d", phase);
+            WritePDI(file_prefix, file_postfix, file_number - 1, phase_y_velocity[phase]);
+
+            sprintf(file_postfix, "phasez.%01d", phase);
+            WritePDI(file_prefix, file_postfix, file_number - 1, phase_z_velocity[phase]);
+
+            IfLogging(1)
+            {
+              dumped_log[number_logged - 1] = file_number - 1;
+            }
+            pressure_file_dumped = 1;
+          }
+            
+          if (is_multiphase)
+          {
+            sprintf(file_postfix, "totalx.%05d", file_number - 1);
+            WritePDI(file_prefix, file_postfix, file_number - 1, total_x_velocity);
+
+            sprintf(file_postfix, "totaly.%05d", file_number - 1);
+            WritePDI(file_prefix, file_postfix, file_number - 1, total_y_velocity);
+
+            sprintf(file_postfix, "totalz.%05d", file_number - 1);
+            WritePDI(file_prefix, file_postfix, file_number - 1, total_z_velocity);
+            IfLogging(1)
+            {
+              dumped_log[number_logged - 1] = file_number - 1;
+            }
+            pressure_file_dumped = 1;
+          }
+            
+        }
+        
       }
     }
 
@@ -2087,7 +2131,9 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
   }
   public_xtra->print_wells = switch_value;
 
-  sprintf(key, "%s.WritePdiPressure", name);
+  /* PDI file writing control */
+
+  sprintf(key, "%s.WritePDIPressure", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
   if (switch_value < 0)
@@ -2096,6 +2142,16 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
                switch_name, key);
   }
   public_xtra->write_pdi_press = switch_value;
+
+  sprintf(key, "%s.WritePDIVelocities", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_velocities = switch_value;
 
   /* Silo file writing control */
   sprintf(key, "%s.WriteSiloSubsurfData", name);

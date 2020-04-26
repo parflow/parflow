@@ -77,7 +77,7 @@
         type: int
 logging: trace
 metadata:
-  it:                     int
+  file_number:            int
   parflowrank:            int
   temp_data_size:         int
   num_grid:               int
@@ -126,5 +126,6 @@ data:
         type: int
 plugins:
   decl_hdf5:
-  - file: test.${it}.${it}.h5
-    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, parflowrank, it, num_subgrids, vector_data ]
+#  - file: ${filename}.${rank}.${file_number}.h5
+  - file: test.${file_number}.h5
+    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, parflowrank, file_number, num_subgrids, vector_data ]
