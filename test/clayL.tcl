@@ -295,7 +295,7 @@ pfset Geom.domain.ICPressure.RefPatch                   bottom
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-pfwritedb test
+pfwritedb clayL
 #pfrun clayL
 
 
