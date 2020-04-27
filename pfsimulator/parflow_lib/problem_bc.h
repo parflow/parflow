@@ -330,7 +330,7 @@ ForPatchCellsPerFace(InsertBCTypeHere,
   );
 
 /*---------------------------------------------
-  Generic example of a boundary condition using ForPatchCellsPerFace
+  Generic example of a made-up boundary condition using ForPatchCellsPerFace
   --------------------------------------------- */
 ForPatchCellsPerFace(NotARealBCType,
                      BeforeAllCells({
@@ -338,10 +338,12 @@ ForPatchCellsPerFace(NotARealBCType,
                        }),
                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                      Locals(int im, ip;
-                            double some_prod;),
+                            double some_prod;
+                            double *op;),
                      CellSetup({
                          im = SubmatrixEltIndex(J_sub, i, j, k);
                          ip = SubvectorEltIndex(p_sub, i, j, k);
+                         some_prod = ddp[ip] * dp[ip];
                        }),
                      FACE(LeftFace, { op = wp; }),
                      FACE(RightFace, { op = ep; }),
@@ -350,7 +352,7 @@ ForPatchCellsPerFace(NotARealBCType,
                      FACE(BackFace, { op = lp; }),
                      FACE(FrontFace, { op = up; }),
                      CellFinalize({
-                         cp[im] += op[im] * pp[ip];
+                         cp[im] += op[im] * some_prod;
                          op[im] = 0.0;
                        }),
                      AfterAllCells(DoNothing)
@@ -411,7 +413,7 @@ ForPatchCellsPerFace(NotARealBCType,
 
 /**
  * @brief Variation of ForPatchCellsPerFace() that extends loop bounds to include ghost cells
- * See ForPatchCellsPerFace() for further documentation
+ * See ForPatchCellsPerFace() for further documentation.  Previously would have been called BCStructPatchLoopOvrlnd.
  */
 #define ForPatchCellsPerFaceWithGhost(bctype, \
                                       before_loop, loopvars,          \

@@ -856,7 +856,7 @@ BCStruct    *BCPressure(
                                      FACE(DownFace,    { y = y - dy2; }),
                                      FACE(UpFace,      { y = y + dy2; }),
                                      FACE(BackFace,    { z = z - dz2 * z_mult_dat[ips]; }),
-                                     FACE(FrontFace,   { z = z - dz2 * z_mult_dat[ips]; }),
+                                     FACE(FrontFace,   { z = z + dz2 * z_mult_dat[ips]; }),
                                      CellFinalize({ patch_values[ival] = x + y + z; }),
                                      AfterAllCells(DoNothing)
                   );
@@ -928,7 +928,7 @@ BCStruct    *BCPressure(
                                      FACE(DownFace,  { y = y - dy2; }),
                                      FACE(UpFace,    { y = y + dy2; }),
                                      FACE(BackFace,  { z = z - dz2 * z_mult_dat[ips]; }),
-                                     FACE(FrontFace, { z = z - dz2 * z_mult_dat[ips]; }),
+                                     FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
                                      CellFinalize({ patch_values[ival] = x * y * z * time + 1; }),
                                      AfterAllCells(DoNothing)
                   );
@@ -952,7 +952,7 @@ BCStruct    *BCPressure(
                                      FACE(DownFace,  { y = y - dy2; }),
                                      FACE(UpFace,    { y = y + dy2; }),
                                      FACE(BackFace,  { z = z - dz2 * z_mult_dat[ips]; }),
-                                     FACE(FrontFace, { z = z - dz2 * z_mult_dat[ips]; }),
+                                     FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
                                      CellFinalize({ patch_values[ival] = x * y * z * time + 1; }),
                                      AfterAllCells(DoNothing)
                   );

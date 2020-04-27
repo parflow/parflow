@@ -1,7 +1,5 @@
 /*BHEADER*********************************************************************
  *
- *  Originally authored 04/22/2020 at Boise State University
- *
  *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
  *  for the GNU Lesser General Public License.
  *
