@@ -1181,6 +1181,15 @@ void      SolverImpes()
                 any_file_dumped = 1;
               }
 
+              if (public_xtra->write_pdi_satur)
+              {
+                sprintf(file_postfix, "satur.%01d.%05d", phase,
+                        file_number);
+                WritePDI(file_prefix, file_postfix, file_number,
+                              saturations[phase]);
+                any_file_dumped = 1;
+              }
+
               if (public_xtra->write_silo_satur)
               {
                 sprintf(file_postfix, "%01d.%05d", phase,
