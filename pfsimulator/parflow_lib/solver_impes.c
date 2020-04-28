@@ -287,6 +287,25 @@ void      SolverImpes()
                   ProblemDataPorosity(problem_data));
   }
 
+  if (public_xtra->write_pdi_subsurf_data)
+  {
+    sprintf(file_postfix, "perm_x");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataPermeabilityX(problem_data));
+
+    sprintf(file_postfix, "perm_y");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataPermeabilityY(problem_data));
+
+    sprintf(file_postfix, "perm_z");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataPermeabilityZ(problem_data));
+
+    sprintf(file_postfix, "porosity");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataPorosity(problem_data));
+  }
+
   if (public_xtra->write_silo_subsurf_data)
   {
     strcpy(file_postfix,"");
