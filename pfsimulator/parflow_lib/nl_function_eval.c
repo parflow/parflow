@@ -2131,10 +2131,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   // Compute running sum of overland flow
 
-  if (ProblemDataOverlandFlowSumCell(problem_data))
+  if (ProblemDataOverlandCellOutflow(problem_data) || ProblemDataOverlandFaceFlow(problem_data)[0])
   {
-    ComputeOverlandFlowSumCell(ProblemDataOverlandFlowSumCell(problem_data),
-			       KE, KW, KN, KS, bc_struct);
+    ComputeOverlandFlowRunningSums(ProblemDataOverlandFaceFlow(problem_data),
+				   ProblemDataOverlandCellOutflow(problem_data),
+				   KE, KW, KN, KS, bc_struct);
   }
 
   FreeBCStruct(bc_struct);

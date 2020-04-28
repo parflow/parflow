@@ -37,6 +37,7 @@
 #include "parflow.h"
 #include "problem.h"
 
+char* OverlandFlowFaceName[4] = {"KE","KW","KN","KS"};
 
 /*--------------------------------------------------------------------------
  * NewProblem
@@ -453,7 +454,12 @@ ProblemData   *NewProblemData(
 
   // Allocated in richards_jacobian eval since hard to determine if
   // overland flow is being used at this point.
-  ProblemDataOverlandFlowSumCell(problem_data) = NULL;
+  ProblemDataOverlandCellOutflow(problem_data) = NULL;
+
+  for(int face = 0; face < OverlandFlowKMax; face++)
+  {
+    ProblemDataOverlandFaceFlow(problem_data)[face] = NULL;
+  }
 
   return problem_data;
 }
@@ -499,11 +505,19 @@ void          FreeProblemData(
     FreeVector(ProblemDataRealSpaceZ(problem_data));
     FreeVector(ProblemDataIndexOfDomainTop(problem_data));
 
-    if(ProblemDataOverlandFlowSumCell(problem_data))
+    if(ProblemDataOverlandCellOutflow(problem_data))
     {
-      FreeVector(ProblemDataOverlandFlowSumCell(problem_data));
+      FreeVector(ProblemDataOverlandCellOutflow(problem_data));
     }
 
+    if(ProblemDataOverlandFaceFlow(problem_data)[0])
+    {
+      for(int face = 0; face < OverlandFlowKMax; face++)
+      {
+	FreeVector(ProblemDataOverlandFaceFlow(problem_data)[face]);
+      }
+    }
+    
     tfree(problem_data);
   }
 }

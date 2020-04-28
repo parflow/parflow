@@ -113,6 +113,14 @@ typedef struct {
   PFModule  *real_space_z;
 } Problem;
 
+#define OverlandFlowKE 0
+#define OverlandFlowKW 1
+#define OverlandFlowKN 2
+#define OverlandFlowKS 3
+#define OverlandFlowKMax 4
+
+extern char* OverlandFlowFaceName[4];
+
 typedef struct {
   /* geometry information */
   int num_solids;
@@ -166,7 +174,9 @@ typedef struct {
    * a running sum of the overland flow is needed over all the timesteps 
    * in each output interval.
    */
-  Vector *overlandflow_sum_cell;
+  Vector *overlandflow_cell_outflow;
+
+  Vector *overlandflow_face_flow[OverlandFlowKMax];
   
 } ProblemData;
 
@@ -284,7 +294,9 @@ typedef struct {
 #define ProblemDataSSlopeY(problem_data)        ((problem_data)->y_sslope)   //RMM
 #define ProblemDataZmult(problem_data)          ((problem_data)->dz_mult)    //RMM
 #define ProblemDataRealSpaceZ(problem_data)     ((problem_data)->rsz)
-#define ProblemDataOverlandFlowSumCell(problem_data)((problem_data)->overlandflow_sum_cell)
+#define ProblemDataOverlandCellOutflow(problem_data)((problem_data)->overlandflow_cell_outflow)
+#define ProblemDataOverlandFaceFlow(problem_data)((problem_data)->overlandflow_face_flow)
+
 /*--------------------------------------------------------------------------
  * Misc macros
  *   RDF not quite right, maybe?

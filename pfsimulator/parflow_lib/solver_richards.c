@@ -87,7 +87,8 @@ typedef struct {
   int print_dzmult;             /* print dz multiplier? */
   int print_evaptrans;          /* print evaptrans? */
   int print_evaptrans_sum;      /* print evaptrans_sum? */
-  int print_overland_sum;       /* print overland_sum? */
+  int print_overland_cell_outflow;       /* print cell outflow */
+  int print_overland_face_flow;       /* print face flow vectors */
   int print_overland_bc_flux;   /* print overland outflow boundary condition flux? */
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
@@ -101,7 +102,8 @@ typedef struct {
   int write_silo_mannings;      /* write mannings? */
   int write_silo_specific_storage;      /* write specific storage? */
   int write_silo_top;           /* write top? */
-  int write_silo_overland_sum;  /* write sum of overland outflow? */
+  int write_silo_overland_cell_outflow;  /* write overland cell outflow? */
+  int write_silo_overland_face_flow;  /* write overland face flows? */
   int write_silo_overland_bc_flux;      /* write overland outflow boundary condition flux? */
   int write_silo_dzmult;        /* write dz multiplier */
   int write_silopmpio_subsurf_data;     /* write permeability/porosity as PMPIO? */
@@ -116,7 +118,8 @@ typedef struct {
   int write_silopmpio_mannings; /* write mannings as PMPIO? */
   int write_silopmpio_specific_storage; /* write specific storage as PMPIO? */
   int write_silopmpio_top;      /* write top as PMPIO? */
-  int write_silopmpio_overland_sum;     /* write sum of overland outflow as PMPIO? */
+  int write_silopmpio_overland_cell_outflow;     /* write cell overland outflow as PMPIO? */
+  int write_silopmpio_overland_face_flow;     /* write cell overland face flows as PMPIO? */
   int write_silopmpio_overland_bc_flux; /* write overland outflow boundary condition flux as PMPIO? */
   int write_silopmpio_dzmult;   /* write dz multiplier as PMPIO? */
   int spinup;                   /* spinup flag, remove ponded water */
@@ -179,7 +182,8 @@ typedef struct {
   int write_netcdf_satur;       /* write saturations? */
   int write_netcdf_evaptrans;   /* write evaptrans? */
   int write_netcdf_evaptrans_sum;       /* write evaptrans_sum? */
-  int write_netcdf_overland_sum;        /* write overland_sum? */
+  int write_netcdf_overland_cell_outflow;  /* write overland cell outflow? */
+  int write_netcdf_overland_face_flow; /* write overland face flows? */
   int write_netcdf_overland_bc_flux;    /* write overland_bc_flux? */
   int write_netcdf_mask;        /* write mask? */
   int write_netcdf_mannings;    /* write mask? */
@@ -234,7 +238,6 @@ typedef struct {
   Vector *mask;
 
   Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
-  Vector *overland_sum;         /* overland sum at boundaries; flow leaving domain */
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
   Vector *dz_mult;              /* vector containing dz multplier values for all cells */
   Vector *x_velocity, *y_velocity, *z_velocity; /* vectors to hold velocity face values for pfbs - jjb */
@@ -795,20 +798,31 @@ SetupRichards(PFModule * this_module)
       NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
     InitVectorAll(instance_xtra->ovrl_bc_flx, 0.0);
 
-    if (public_xtra->write_silo_overland_sum
-        || public_xtra->print_overland_sum
-        || public_xtra->write_silopmpio_overland_sum
-        || public_xtra->write_netcdf_overland_sum)
+    if (public_xtra->write_silo_overland_cell_outflow
+        || public_xtra->print_overland_cell_outflow
+        || public_xtra->write_silopmpio_overland_cell_outflow
+        || public_xtra->write_netcdf_overland_cell_outflow)
     {
-      instance_xtra->overland_sum =
-        NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-      InitVectorAll(instance_xtra->overland_sum, 0.0);
-
       // Allocating here since hard to determine if using overland flow in in NewProblemData.
-      ProblemDataOverlandFlowSumCell(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered);
-      InitVectorAll(ProblemDataOverlandFlowSumCell(problem_data), 0.0);
+      ProblemDataOverlandCellOutflow(problem_data) =
+	NewVectorType(grid2d, 1, 1, vector_cell_centered);
+      InitVectorAll(ProblemDataOverlandCellOutflow(problem_data), 0.0);
     }
 
+    if (public_xtra->write_silo_overland_face_flow
+        || public_xtra->print_overland_face_flow
+        || public_xtra->write_silopmpio_overland_face_flow
+        || public_xtra->write_netcdf_overland_face_flow)
+    {
+      // Allocating here since hard to determine if using overland flow in in NewProblemData.
+      for(int face = 0; face < OverlandFlowKMax; face++)
+      {
+	ProblemDataOverlandFaceFlow(problem_data)[face] =
+	  NewVectorType(grid2d, 1, 1, vector_cell_centered);
+	InitVectorAll(ProblemDataOverlandFaceFlow(problem_data)[face], 0.0);
+      }
+    }
+    
     instance_xtra->mask = NewVectorType(grid, 1, 1, vector_cell_centered);
     InitVectorAll(instance_xtra->mask, 0.0);
 
@@ -1519,7 +1533,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
   Vector *porosity = ProblemDataPorosity(problem_data);
   Vector *evap_trans_sum = instance_xtra->evap_trans_sum;
-  Vector *overland_sum = instance_xtra->overland_sum;   /* sk: Vector of outflow at the boundary */
 
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
@@ -2870,18 +2883,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
     }
 
-    /***************************************************************
-     * Compute running sum of overland outflow for water balance
-     **************************************************************/
-    if (public_xtra->write_silo_overland_sum
-        || public_xtra->print_overland_sum
-        || public_xtra->write_netcdf_overland_sum)
-    {
-      OverlandSum(problem_data,
-                  instance_xtra->pressure,
-                  dt, instance_xtra->overland_sum);
-    }
-
     /***************************************************************/
     /*                 Print the pressure and saturation           */
     /***************************************************************/
@@ -2896,7 +2897,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           || public_xtra->write_netcdf_satur
           || public_xtra->write_netcdf_evaptrans
           || public_xtra->write_netcdf_evaptrans_sum
-          || public_xtra->write_netcdf_overland_sum
+          || public_xtra->write_netcdf_overland_cell_outflow
+	  || public_xtra->write_netcdf_overland_face_flow
           || public_xtra->write_netcdf_overland_bc_flux)
       {
         WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
@@ -3108,77 +3110,115 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         PFVConstInit(0.0, evap_trans_sum);
       }
 
-      if (public_xtra->print_overland_sum
-          || public_xtra->write_silo_overland_sum
-          || public_xtra->write_netcdf_overland_sum)
+      if (public_xtra->print_overland_cell_outflow
+          || public_xtra->write_silo_overland_cell_outflow
+          || public_xtra->write_netcdf_overland_cell_outflow)
       {
-        if (public_xtra->write_netcdf_overland_sum)
+        if (public_xtra->write_netcdf_overland_cell_outflow)
         {
           sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-          WritePFNC(file_prefix, nc_postfix, t, overland_sum,
-                    public_xtra->numVarTimeVariant, "overland_sum",
-                    2, false, public_xtra->numVarIni);
-	  
-          sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-          WritePFNC(file_prefix, nc_postfix, t, ProblemDataOverlandFlowSumCell(problem_data),
-                    public_xtra->numVarTimeVariant, "overland_sum_cell",
+          WritePFNC(file_prefix, nc_postfix, t, ProblemDataOverlandCellOutflow(problem_data),
+                    public_xtra->numVarTimeVariant, "overland_cell_outflow",
                     2, false, public_xtra->numVarIni);
           any_file_dumped = 1;
         }
 
-        if (public_xtra->print_overland_sum)
+        if (public_xtra->print_overland_cell_outflow)
         {
-          sprintf(file_postfix, "overlandsum.%05d",
+	  sprintf(file_postfix, "overland_cell_outflow.%05d",
                   instance_xtra->file_number);
-          WritePFBinary(file_prefix, file_postfix, overland_sum);
-
-	  // SGS discuss with Reed/Laura on names
-	  sprintf(file_postfix, "overlandsum_cell.%05d",
-                  instance_xtra->file_number);
-          WritePFBinary(file_prefix, file_postfix, ProblemDataOverlandFlowSumCell(problem_data));
+          WritePFBinary(file_prefix, file_postfix, ProblemDataOverlandCellOutflow(problem_data));
 	  
           any_file_dumped = 1;
         }
 
-        if (public_xtra->write_silo_overland_sum)
+        if (public_xtra->write_silo_overland_cell_outflow)
         {
-          sprintf(file_postfix, "%05d", instance_xtra->file_number);
-          sprintf(file_type, "overlandsum");
-          WriteSilo(file_prefix, file_type, file_postfix,
-                    overland_sum, t, instance_xtra->file_number,
-                    "OverlandSum");
-
 	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
-          sprintf(file_type, "overlandsum_cell");
+          sprintf(file_type, "overland_cell_outflow");
           WriteSilo(file_prefix, file_type, file_postfix,
-                    ProblemDataOverlandFlowSumCell(problem_data), t, instance_xtra->file_number,
-                    "OverlandSumCell");
+                    ProblemDataOverlandCellOutflow(problem_data), t, instance_xtra->file_number,
+                    "OverlandCellOutflow");
 
           any_file_dumped = 1;
         }
 
-        if (public_xtra->write_silopmpio_overland_sum)
+        if (public_xtra->write_silopmpio_overland_cell_outflow)
         {
-          sprintf(file_postfix, "%05d", instance_xtra->file_number);
-          sprintf(file_type, "overlandsum");
-          WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-                         overland_sum, t, instance_xtra->file_number,
-                         "OverlandSum");
-
 	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
-          sprintf(file_type, "overlandsum_cell");
+          sprintf(file_type, "overland_cell_outflow");
           WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-                         ProblemDataOverlandFlowSumCell(problem_data), t, instance_xtra->file_number,
-                         "OverlandSumCell");
+                         ProblemDataOverlandCellOutflow(problem_data), t, instance_xtra->file_number,
+                         "OverlandCellOutflow");
 
           any_file_dumped = 1;
         }
 
         /* reset sum after output */
-        PFVConstInit(0.0, overland_sum);
-	PFVConstInit(0.0, ProblemDataOverlandFlowSumCell(problem_data));
+	PFVConstInit(0.0, ProblemDataOverlandCellOutflow(problem_data));
       }
 
+      if (public_xtra->print_overland_face_flow
+          || public_xtra->write_silo_overland_face_flow
+          || public_xtra->write_netcdf_overland_face_flow)
+      {
+
+	for(int face = 0; face < OverlandFlowKMax; face++)
+	{
+	  char *face_name = OverlandFlowFaceName[face];
+
+#ifdef NOT_DONE_YET	  
+	  if (public_xtra->write_netcdf_overland_face_flow)
+	  {
+	    sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+	    WritePFNC(file_prefix, nc_postfix, t, ProblemDataOverlandFlowCellFaceFlow(problem_data)[face],
+		      public_xtra->numVarTimeVariant, "overland_face_flow",
+		      2, false, public_xtra->numVarIni);
+	    any_file_dumped = 1;
+	  }
+#endif
+
+	  if (public_xtra->print_overland_face_flow)
+	  {
+	    sprintf(file_postfix, "overland_face_flow_%s.%05d",
+		    face_name,
+		    instance_xtra->file_number);
+	    WritePFBinary(file_prefix, file_postfix, ProblemDataOverlandFaceFlow(problem_data)[face]);
+	  
+	    any_file_dumped = 1;
+	  }
+
+#ifdef NOT_DONE_YET
+	  if (public_xtra->write_silo_overland_face_flow)
+	  {
+	    sprintf(file_postfix, "%05d", instance_xtra->file_number);
+	    sprintf(file_type, "overland_face_flow");
+	    WriteSilo(file_prefix, file_type, file_postfix,
+		      ProblemDataOverlandFlowCellFaceFlow(problem_data)[face], t, instance_xtra->file_number,
+		      "OverlandCellFaceFlow");
+
+	    any_file_dumped = 1;
+	  }
+
+	  if (public_xtra->write_silopmpio_overland_face_flow)
+	  {
+	    sprintf(file_postfix, "%05d", instance_xtra->file_number);
+	    sprintf(file_type, "overland_face_flow");
+	    WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+			   ProblemDataOverlandFlowCellFaceFlow(problem_data)[face], t, instance_xtra->file_number,
+			   "OverlandCellFaceFlow");
+
+	    any_file_dumped = 1;
+	  }
+#endif
+	  
+	  /* reset sum after output */
+	  PFVConstInit(0.0, ProblemDataOverlandFaceFlow(problem_data)[face]);
+	}
+
+      } // for face
+
+      
       if (public_xtra->print_overland_bc_flux)
       {
         sprintf(file_postfix, "overland_bc_flux.%05d",
@@ -3800,76 +3840,115 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       PFVConstInit(0.0, evap_trans_sum);
     }
 
-      if (public_xtra->print_overland_sum
-          || public_xtra->write_silo_overland_sum
-          || public_xtra->write_netcdf_overland_sum)
+    if (public_xtra->print_overland_cell_outflow
+	|| public_xtra->write_silo_overland_cell_outflow
+	|| public_xtra->write_netcdf_overland_cell_outflow)
+    {
+      if (public_xtra->write_netcdf_overland_cell_outflow)
       {
-        if (public_xtra->write_netcdf_overland_sum)
-        {
-          sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-          WritePFNC(file_prefix, nc_postfix, t, overland_sum,
-                    public_xtra->numVarTimeVariant, "overland_sum",
-                    2, false, public_xtra->numVarIni);
-	  
-          sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-          WritePFNC(file_prefix, nc_postfix, t, ProblemDataOverlandFlowSumCell(problem_data),
-                    public_xtra->numVarTimeVariant, "overland_sum_cell",
-                    2, false, public_xtra->numVarIni);
-          any_file_dumped = 1;
-        }
-
-        if (public_xtra->print_overland_sum)
-        {
-          sprintf(file_postfix, "overlandsum.%05d",
-                  instance_xtra->file_number);
-          WritePFBinary(file_prefix, file_postfix, overland_sum);
-
-	  // SGS discuss with Reed/Laura on names
-	  sprintf(file_postfix, "overlandsum_cell.%05d",
-                  instance_xtra->file_number);
-          WritePFBinary(file_prefix, file_postfix, ProblemDataOverlandFlowSumCell(problem_data));
-	  
-          any_file_dumped = 1;
-        }
-
-        if (public_xtra->write_silo_overland_sum)
-        {
-          sprintf(file_postfix, "%05d", instance_xtra->file_number);
-          sprintf(file_type, "overlandsum");
-          WriteSilo(file_prefix, file_type, file_postfix,
-                    overland_sum, t, instance_xtra->file_number,
-                    "OverlandSum");
-
-	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
-          sprintf(file_type, "overlandsum_cell");
-          WriteSilo(file_prefix, file_type, file_postfix,
-                    ProblemDataOverlandFlowSumCell(problem_data), t, instance_xtra->file_number,
-                    "OverlandSumCell");
-
-          any_file_dumped = 1;
-        }
-
-        if (public_xtra->write_silopmpio_overland_sum)
-        {
-          sprintf(file_postfix, "%05d", instance_xtra->file_number);
-          sprintf(file_type, "overlandsum");
-          WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-                         overland_sum, t, instance_xtra->file_number,
-                         "OverlandSum");
-
-	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
-          sprintf(file_type, "overlandsum_cell");
-          WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-                         ProblemDataOverlandFlowSumCell(problem_data), t, instance_xtra->file_number,
-                         "OverlandSumCell");
-
-          any_file_dumped = 1;
-        }
-
-        /* reset sum after output */
-        PFVConstInit(0.0, overland_sum);
-	PFVConstInit(0.0, ProblemDataOverlandFlowSumCell(problem_data));
+	sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+	WritePFNC(file_prefix, nc_postfix, t, ProblemDataOverlandCellOutflow(problem_data),
+		  public_xtra->numVarTimeVariant, "overland_cell_outflow",
+		  2, false, public_xtra->numVarIni);
+	any_file_dumped = 1;
       }
+
+      if (public_xtra->print_overland_cell_outflow)
+      {
+	sprintf(file_postfix, "overlandsum_cell.%05d",
+		instance_xtra->file_number);
+	WritePFBinary(file_prefix, file_postfix, ProblemDataOverlandCellOutflow(problem_data));
+	  
+	any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_silo_overland_cell_outflow)
+      {
+	sprintf(file_postfix, "%05d", instance_xtra->file_number);
+	sprintf(file_type, "overland_cell_outflow");
+	WriteSilo(file_prefix, file_type, file_postfix,
+		  ProblemDataOverlandCellOutflow(problem_data), t, instance_xtra->file_number,
+		  "OverlandCellOutflow");
+
+	any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_silopmpio_overland_cell_outflow)
+      {
+	sprintf(file_postfix, "%05d", instance_xtra->file_number);
+	sprintf(file_type, "overland_cell_outflow");
+	WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+		       ProblemDataOverlandCellOutflow(problem_data), t, instance_xtra->file_number,
+		       "OverlandCellOutflow");
+
+	any_file_dumped = 1;
+      }
+
+      /* reset sum after output */
+      PFVConstInit(0.0, ProblemDataOverlandCellOutflow(problem_data));
+    }
+
+    if (public_xtra->print_overland_face_flow
+	|| public_xtra->write_silo_overland_face_flow
+	|| public_xtra->write_netcdf_overland_face_flow)
+    {
+
+      for(int face = 0; face < OverlandFlowKMax; face++)
+      {
+	char *face_name = OverlandFlowFaceName[face];
+
+#ifdef NOT_DONE_YET	  
+	if (public_xtra->write_netcdf_overland_face_flow)
+	{
+	  sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+	  WritePFNC(file_prefix, nc_postfix, t, ProblemDataOverlandFlowCellFaceFlow(problem_data)[face],
+		    public_xtra->numVarTimeVariant, "overland_face_flow",
+		    2, false, public_xtra->numVarIni);
+	  any_file_dumped = 1;
+	}
+#endif
+
+	if (public_xtra->print_overland_face_flow)
+	{
+	  sprintf(file_postfix, "overland_face_flow_%s.%05d",
+		  face_name,
+		  instance_xtra->file_number);
+	  WritePFBinary(file_prefix, file_postfix, ProblemDataOverlandFaceFlow(problem_data)[face]);
+	  
+	  any_file_dumped = 1;
+	}
+
+#ifdef NOT_DONE_YET
+	if (public_xtra->write_silo_overland_face_flow)
+	{
+	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
+	  sprintf(file_type, "overland_face_flow");
+	  WriteSilo(file_prefix, file_type, file_postfix,
+		    ProblemDataOverlandFlowCellFaceFlow(problem_data)[face], t, instance_xtra->file_number,
+		    "OverlandCellFaceFlow");
+
+	  any_file_dumped = 1;
+	}
+
+	if (public_xtra->write_silopmpio_overland_face_flow)
+	{
+	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
+	  sprintf(file_type, "overland_face_flow");
+	  WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+			 ProblemDataOverlandFlowCellFaceFlow(problem_data)[face], t, instance_xtra->file_number,
+			 "OverlandCellFaceFlow");
+
+	  any_file_dumped = 1;
+	}
+#endif
+	  
+	/* reset sum after output */
+	PFVConstInit(0.0, ProblemDataOverlandFaceFlow(problem_data)[face]);
+      }
+
+    } // for face
+
+    
 
     if (public_xtra->print_overland_bc_flux)
     {
@@ -3942,11 +4021,6 @@ TeardownRichards(PFModule * this_module)
   if (instance_xtra->evap_trans_sum)
   {
     FreeVector(instance_xtra->evap_trans_sum);
-  }
-
-  if (instance_xtra->overland_sum)
-  {
-    FreeVector(instance_xtra->overland_sum);
   }
 
 #ifdef HAVE_CLM
@@ -5235,7 +5309,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->print_evaptrans_sum = switch_value;
 
-  sprintf(key, "%s.PrintOverlandSum", name);
+  sprintf(key, "%s.PrintOverlandCellOutflow", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
   if (switch_value < 0)
@@ -5243,7 +5317,17 @@ SolverRichardsNewPublicXtra(char *name)
     InputError("Error: invalid print switch value <%s> for key <%s>\n",
                switch_name, key);
   }
-  public_xtra->print_overland_sum = switch_value;
+  public_xtra->print_overland_cell_outflow = switch_value;
+
+  sprintf(key, "%s.PrintOverlandFaceFlow", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->print_overland_face_flow = switch_value;
 
   sprintf(key, "%s.PrintOverlandBCFlux", name);
   switch_name = GetStringDefault(key, "False");
@@ -5347,7 +5431,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->write_silo_evaptrans_sum = switch_value;
 
-  sprintf(key, "%s.WriteSiloOverlandSum", name);
+  sprintf(key, "%s.WriteSiloOverlandCellOutflow", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
   if (switch_value < 0)
@@ -5355,8 +5439,18 @@ SolverRichardsNewPublicXtra(char *name)
     InputError("Error: invalid value <%s> for key <%s>\n",
                switch_name, key);
   }
-  public_xtra->write_silo_overland_sum = switch_value;
+  public_xtra->write_silo_overland_cell_outflow = switch_value;
 
+  sprintf(key, "%s.WriteSiloOverlandFaceFlow", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_silo_overland_face_flow = switch_value;
+  
   sprintf(key, "%s.WriteSiloOverlandBCFlux", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -5451,7 +5545,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->write_netcdf_evaptrans_sum = switch_value;
 
-  sprintf(key, "NetCDF.WriteOverlandSum");
+  sprintf(key, "NetCDF.WriteOverlandCellOutflow");
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
   if (switch_value < 0)
@@ -5463,8 +5557,22 @@ SolverRichardsNewPublicXtra(char *name)
   {
     public_xtra->numVarTimeVariant++;
   }
-  public_xtra->write_netcdf_overland_sum = switch_value;
+  public_xtra->write_netcdf_overland_cell_outflow = switch_value;
 
+  sprintf(key, "NetCDF.WriteOverlandFaceFlow");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    public_xtra->numVarTimeVariant++;
+  }
+  public_xtra->write_netcdf_overland_face_flow = switch_value;
+  
   sprintf(key, "NetCDF.WriteOverlandBCFlux");
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -5571,7 +5679,8 @@ SolverRichardsNewPublicXtra(char *name)
   if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur
       || public_xtra->write_netcdf_evaptrans
       || public_xtra->write_netcdf_evaptrans_sum
-      || public_xtra->write_netcdf_overland_sum
+      || public_xtra->write_netcdf_overland_cell_outflow
+      || public_xtra->write_netcdf_overland_face_flow
       || public_xtra->write_netcdf_overland_bc_flux)
 
   {
@@ -5683,7 +5792,8 @@ SolverRichardsNewPublicXtra(char *name)
       public_xtra->write_silo_mannings ||
       public_xtra->write_silo_mask ||
       public_xtra->write_silo_top ||
-      public_xtra->write_silo_overland_sum ||
+      public_xtra->write_silo_overland_cell_outflow ||
+      public_xtra->write_silo_overland_face_flow ||
       public_xtra->write_silo_overland_bc_flux ||
       public_xtra->write_silo_dzmult || public_xtra->write_silo_CLM)
   {
@@ -5755,7 +5865,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->write_silopmpio_evaptrans_sum = switch_value;
 
-  sprintf(key, "%s.WriteSiloPMPIOOverlandSum", name);
+  sprintf(key, "%s.WriteSiloPMPIOOverlandCellOutflow", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
   if (switch_value < 0)
@@ -5763,8 +5873,18 @@ SolverRichardsNewPublicXtra(char *name)
     InputError("Error: invalid value <%s> for key <%s>\n",
                switch_name, key);
   }
-  public_xtra->write_silopmpio_overland_sum = switch_value;
+  public_xtra->write_silopmpio_overland_cell_outflow = switch_value;
 
+  sprintf(key, "%s.WriteSiloPMPIOOverlandFaceFlow", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_silopmpio_overland_face_flow = switch_value;
+  
   sprintf(key, "%s.WriteSiloPMPIOOverlandBCFlux", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -5920,7 +6040,8 @@ SolverRichardsNewPublicXtra(char *name)
       public_xtra->write_silopmpio_mannings ||
       public_xtra->write_silopmpio_mask ||
       public_xtra->write_silopmpio_top ||
-      public_xtra->write_silopmpio_overland_sum ||
+      public_xtra->write_silopmpio_overland_cell_outflow ||
+      public_xtra->write_silopmpio_overland_face_flow ||
       public_xtra->write_silopmpio_overland_bc_flux ||
       public_xtra->write_silopmpio_dzmult || public_xtra->write_silopmpio_CLM)
   {

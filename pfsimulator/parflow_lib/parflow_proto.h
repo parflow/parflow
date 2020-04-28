@@ -1386,11 +1386,6 @@ int CheckTime(Problem *problem, char *key, double time);
 /* evaptranssum.c */
 void EvapTransSum(ProblemData *problem_data, double dt, Vector *evap_trans_sum, Vector *evap_trans);
 
-void OverlandSum(ProblemData *problem_data,
-                 Vector *     pressure,       /* Current pressure values */
-                 double       dt,
-                 Vector *     overland_sum);
-
 /**
  * Compute running sum of overland flow outflow for each top cell.
  *
@@ -1399,18 +1394,16 @@ void OverlandSum(ProblemData *problem_data,
  * output interval.   Running sum should be set to zero after it is
  * written to a file.
  *
- * @param [in/out] overlandflow_sum Running sum of overland flow outflow 
+ * @param [in/out] overlandflow_face_flow Running sum of K face flows
+ * @param [in/out] overlandflow_cell_outflow Running sum of cell outflow
  * @param [in] KE East overland flow flux
  * @param [in] KW West overland flow flux
  * @param [in] KN North overland flow flux
  * @param [in] KS South overland flow flux
  * @param [in] bc_struct Boundary condition type data
  */
-void ComputeOverlandFlowSumCell(Vector* overlandflow_sum,
-				Vector *KE,
-				Vector *KW,
-				Vector *KN,
-				Vector *KS,
-				BCStruct *bc_struct);
+void ComputeOverlandFlowRunningSums(Vector* overlandflow_face_flow[],
+				    Vector* overlandflow_cell_outflow,
+				    Vector *KE, Vector *KW, Vector *KN, Vector *KS, BCStruct *bc_struct);
 
 Grid      *ReadProcessGrid();

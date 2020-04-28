@@ -915,7 +915,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     }
     return evaptrans_sumVarID;
   }
-  if (strcmp(varName, "overland_sum") == 0)
+  if (strcmp(varName, "overland_cell_outflow") == 0)
   {
     *myVarNCData = malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
