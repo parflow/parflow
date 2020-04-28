@@ -110,7 +110,7 @@ void     WritePDI(
     
     PDI_expose("X", &BackgroundX(GlobalsBackground), PDI_OUT);
     PDI_expose("Y", &BackgroundY(GlobalsBackground), PDI_OUT);
-    PDI_expose("Z", &BackgroundY(GlobalsBackground), PDI_OUT);
+    PDI_expose("Z", &BackgroundZ(GlobalsBackground), PDI_OUT);
     
     PDI_expose("NX", &SubgridNX(GridBackground(grid)), PDI_OUT);
     PDI_expose("NY", &SubgridNY(GridBackground(grid)), PDI_OUT);

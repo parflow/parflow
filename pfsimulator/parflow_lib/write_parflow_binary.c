@@ -107,12 +107,20 @@ void       WritePFBinary_Subvector(
    *  this is way to slow we need better boxloops that operate
    *  on arrays */
 
+  // printf("nx_v: %d %d %d\n",nx_v,ny_v,nz_v);
+  // printf("jinc: %d\n",(1) * (nx_v) - (nx) * (1));
+  // printf("zinc: %d\n",(1) * (nx_v) * (ny_v) - (ny) * (1) * (nx_v));
+  // printf( "index:  %d\n",  (ix - SubvectorIX(subvector) + (iy - SubvectorIY(subvector) +          \
+  //     (iz - SubvectorIZ(subvector)) *        \
+  //     SubvectorNY(subvector)) *  SubvectorNX(subvector)));
+
   ai = 0;
   BoxLoopI1(i, j, k,
             ix, iy, iz, nx, ny, nz,
             ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     amps_WriteDouble(file, &data[ai], 1);
+    //printf("ai: %d\n",ai);
   });
 }
 

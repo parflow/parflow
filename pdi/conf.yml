@@ -90,9 +90,9 @@ metadata:
   X:                      double
   Y:                      double
   Z:                      double
-  NX:                     double
-  NY:                     double
-  NZ:                     double
+  NX:                     int
+  NY:                     int
+  NZ:                     int
   DX:                     double
   DY:                     double
   DZ:                     double
