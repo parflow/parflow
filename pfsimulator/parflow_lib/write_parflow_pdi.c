@@ -102,9 +102,9 @@ void     WritePDI(
     PC_tree_t conf = PC_parse_path("conf.yml");
     PDI_init(conf);
     
-    PDI_expose("file_number", &file_number, PDI_OUT);
     PDI_expose("parflowrank", &p, PDI_OUT);
     PDI_expose("filename", &filename, PDI_OUT);
+    PDI_expose("file_number", &file_number, PDI_OUT);
     
     PDI_expose("X", &BackgroundX(GlobalsBackground), PDI_OUT);
     PDI_expose("Y", &BackgroundY(GlobalsBackground), PDI_OUT);

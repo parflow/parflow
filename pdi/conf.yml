@@ -77,15 +77,15 @@
         type: int
 logging: trace
 metadata:
-  file_number:            int
+  filename:               { type: array, subtype: char, size: 32 }
   parflowrank:            int
+  file_number:            int
   temp_data_size:         int
   num_grid:               int
   grid_disp:              int
   data_space_disp:        int
   size_disp:              int
   vector_pdi_buffer_size: int
-  filename:               { type: array, subtype: char, size: 32 }
   X:                      double
   Y:                      double
   Z:                      double
@@ -126,6 +126,6 @@ data:
         type: int
 plugins:
   decl_hdf5:
-  - file: ${filename}.${rank}.${file_number}.h5
+  - file: ${filename}.${parflowrank}.h5
 #  - file: test.${file_number}.h5
-    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, parflowrank, file_number, num_subgrids, vector_data ]
+    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, file_number, num_subgrids, vector_data ]

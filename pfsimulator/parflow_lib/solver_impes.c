@@ -77,7 +77,8 @@ typedef struct {
   int write_pdi_press;                       /* print pressure via PDI */
   int write_pdi_velocities;                  /* print velocities via PDI */
   int write_pdi_satur;                       /* print satur via PDI */
-  int write_pdi_concern;                     /* print concern via PDI */
+  int write_pdi_concen;                      /* print concern via PDI */
+  int write_pdi_wells;                       /* print concern via PDI */
 
   int write_silo_subsurf_data;                    /* print perm./porosity? */
   int write_silo_press;                           /* print pressures? */
@@ -528,6 +529,13 @@ void      SolverImpes()
             any_file_dumped = 1;
           }
 
+          if (public_xtra->write_pdi_satur)
+          {
+            sprintf(file_postfix, "satur.%01d.%05d", phase, file_number);
+            WritePDI(file_prefix, file_postfix, file_number, saturations[phase]);
+            any_file_dumped = 1;
+          }
+
           if (public_xtra->write_silo_satur)
           {
             sprintf(file_postfix, "%01d", phase);
@@ -815,7 +823,7 @@ void      SolverImpes()
         
         if (public_xtra->write_pdi_press)
         {
-          sprintf(file_postfix, "press");
+          sprintf(file_postfix, "press.%05d", file_number - 1);
           WritePDI(file_prefix, file_postfix, file_number - 1, pressure);
           IfLogging(1)
           {
@@ -1339,7 +1347,7 @@ void      SolverImpes()
 
       if (public_xtra->write_silo_press)
       {
-	strcpy(file_postfix, "");
+	      strcpy(file_postfix, "");
         sprintf(file_type, "press");
         WriteSilo(file_prefix, file_type, file_postfix, pressure,
                   t, file_number, "Pressure");
@@ -2152,6 +2160,16 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
 
   /* PDI file writing control */
 
+  sprintf(key, "%s.WritePDISubsurf", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_subsurf_data = switch_value;
+
   sprintf(key, "%s.WritePDIPressure", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -2172,6 +2190,36 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
   }
   public_xtra->write_pdi_velocities = switch_value;
 
+  sprintf(key, "%s.WritePDISaturation", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_satur = switch_value;
+
+  sprintf(key, "%s.WritePDIConcentration", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_concen = switch_value;
+
+  sprintf(key, "%s.WritePDIWells", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_wells = switch_value;
+
   /* Silo file writing control */
   sprintf(key, "%s.WriteSiloSubsurfData", name);
   switch_name = GetStringDefault(key, "False");
@@ -2181,7 +2229,6 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
     InputError("Error: invalid value <%s> for key <%s>\n",
                switch_name, key);
   }
-
   public_xtra->write_silo_subsurf_data = switch_value;
   
   sprintf(key, "%s.WriteSiloPressure", name);
