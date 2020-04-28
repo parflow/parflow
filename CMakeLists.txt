@@ -2,10 +2,33 @@ cmake_minimum_required (VERSION 3.9)
 
 project (PARFLOW LANGUAGES C Fortran CXX)
 
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
+#-----------------------------------------------------------------------------
+# Set standard compiler flagsx
+#-----------------------------------------------------------------------------
 set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_C_STANDARD 11)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+include (CheckCCompilerFlag)
+include (CheckCXXCompilerFlag)
+
+# Check if compiler supports extra debugging flags
+foreach (DEBUG_FLAG "-ggdb" "-g3")
+  check_C_compiler_flag(${DEBUG_FLAG} FOUND)
+  if(${FOUND})
+    set(CMAKE_C_FLAGS_DEBUG ${DEBUG_FLAG})
+    break ()
+  endif ()
+endforeach ()
+
+foreach (DEBUG_FLAG "-ggdb" "-g3")
+  check_CXX_compiler_flag(${DEBUG_FLAG} FOUND)
+  if(${FOUND})
+    set(CMAKE_CXX_FLAGS_DEBUG ${DEBUG_FLAG})
+    break ()
+  endif ()
+endforeach ()
 
 #-----------------------------------------------------------------------------
 # Version number
