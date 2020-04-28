@@ -77,7 +77,7 @@ void     WritePDI(
   }
   
   // File name to be passed to PDI
-  char filename[64] = "";
+  char filename[255] = "";
   sprintf(filename, "%s.%s", file_prefix, file_suffix);
   
   if (p == 0)

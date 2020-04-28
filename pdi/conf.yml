@@ -77,7 +77,7 @@
         type: int
 logging: trace
 metadata:
-  filename:               { type: array, subtype: char, size: 32 }
+  filename:               { type: array, subtype: char, size: 255 }
   parflowrank:            int
   file_number:            int
   drop_tolerance:         int
@@ -127,6 +127,6 @@ data:
         type: int
 plugins:
   decl_hdf5:
-  - file: ${filename}.${parflowrank}.h5
-#  - file: test.${file_number}.h5
+#  - file: ${filename}.${parflowrank}.h5
+  - file: ${filename}.h5
     write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, file_number, num_subgrids, vector_data ]

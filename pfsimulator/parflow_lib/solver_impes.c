@@ -897,13 +897,13 @@ void      SolverImpes()
         {
           for (phase = 0; phase < ProblemNumPhases(problem); phase++)
           {
-            sprintf(file_postfix, "phasex.%01d", phase);
+            sprintf(file_postfix, "phasex.%01d.%05d", phase, file_number - 1);
             WritePDI(file_prefix, file_postfix, file_number - 1, phase_x_velocity[phase], 0);
 
-            sprintf(file_postfix, "phasey.%01d", phase);
+            sprintf(file_postfix, "phasey.%01d.%05d", phase, file_number - 1);
             WritePDI(file_prefix, file_postfix, file_number - 1, phase_y_velocity[phase], 0);
 
-            sprintf(file_postfix, "phasez.%01d", phase);
+            sprintf(file_postfix, "phasez.%01d.%05d", phase, file_number - 1);
             WritePDI(file_prefix, file_postfix, file_number - 1, phase_z_velocity[phase], 0);
 
             IfLogging(1)
@@ -1289,6 +1289,14 @@ void      SolverImpes()
                 {
                   sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen, file_number);
                   WritePFSBinary(file_prefix, file_postfix,
+                                 concentrations[indx], drop_tol);
+                  any_file_dumped = 1;
+                }
+
+                if (public_xtra->write_pdi_concen)
+                {
+                  sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen, file_number);
+                  WritePDI(file_prefix, file_postfix, file_number,
                                  concentrations[indx], drop_tol);
                   any_file_dumped = 1;
                 }
