@@ -48,7 +48,8 @@ void     WritePDI(
                        char *  file_prefix,
                        char *  file_suffix,
                        int     file_number,
-                       Vector *v)
+                       Vector *v,
+                       double  drop_tolerance)
 {
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
@@ -105,6 +106,7 @@ void     WritePDI(
     PDI_expose("parflowrank", &p, PDI_OUT);
     PDI_expose("filename", &filename, PDI_OUT);
     PDI_expose("file_number", &file_number, PDI_OUT);
+    PDI_expose("drop_tolerance", &drop_tolerance, PDI_OUT);
     
     PDI_expose("X", &BackgroundX(GlobalsBackground), PDI_OUT);
     PDI_expose("Y", &BackgroundY(GlobalsBackground), PDI_OUT);

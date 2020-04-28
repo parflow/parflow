@@ -80,6 +80,7 @@ metadata:
   filename:               { type: array, subtype: char, size: 32 }
   parflowrank:            int
   file_number:            int
+  drop_tolerance:         int
   temp_data_size:         int
   num_grid:               int
   grid_disp:              int
