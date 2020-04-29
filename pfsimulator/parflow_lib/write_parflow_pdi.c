@@ -104,11 +104,11 @@ void     WritePDI(
     PC_tree_t conf = PC_parse_path("conf.yml");
     PDI_init(conf);
     
-    PDI_expose("parflowrank", &p, PDI_OUT);
-    PDI_expose("filename", &filename, PDI_OUT);
-    PDI_expose("file_number", &file_number, PDI_OUT);
-    PDI_expose("drop_tolerance", &drop_tolerance, PDI_OUT);
-    PDI_expose("with_tolerance", &with_tolerance, PDI_OUT);
+    PDI_expose("parflowrank",    &p, PDI_OUT);
+    PDI_expose("filename",       &filename, PDI_OUT);
+    PDI_expose("file_number",    &file_number, PDI_OUT);
+    PDI_expose("drop_tolerance", &drop_tolerance,    PDI_OUT);
+    PDI_expose("with_tolerance", &with_tolerance,    PDI_OUT);
     
     PDI_expose("X", &BackgroundX(GlobalsBackground), PDI_OUT);
     PDI_expose("Y", &BackgroundY(GlobalsBackground), PDI_OUT);
@@ -122,7 +122,7 @@ void     WritePDI(
     PDI_expose("DY", &BackgroundDY(GlobalsBackground), PDI_OUT);
     PDI_expose("DZ", &BackgroundDZ(GlobalsBackground), PDI_OUT);
     
-    PDI_expose("num_subgrids", &num_subgrids, PDI_OUT);
+    PDI_expose("num_subgrids", &num_subgrids,          PDI_OUT);
     
     subvector = VectorSubvector(v, 0);
     int temp_data_size = SubvectorDataSize(subvector);
