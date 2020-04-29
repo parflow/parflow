@@ -89,6 +89,9 @@ typedef struct {
   int print_evaptrans_sum;      /* print evaptrans_sum? */
   int print_overland_sum;       /* print overland_sum? */
   int print_overland_bc_flux;   /* print overland outflow boundary condition flux? */
+  
+  int write_pdi_subsurf_data;   /* print subsurf via PDI */
+  
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
   int write_silo_velocities;    /* write velocities? */
@@ -514,6 +517,31 @@ SetupRichards(PFModule * this_module)
                            storage_filenames);
   }
 
+  /* Write subsurface data */
+  if (public_xtra->write_pdi_subsurf_data)
+  {
+    strcpy(file_postfix, "perm_x");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataPermeabilityX(problem_data),0,0);
+                  
+    strcpy(file_postfix, "perm_y");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataPermeabilityY(problem_data),0,0);
+
+    strcpy(file_postfix, "perm_z");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataPermeabilityZ(problem_data),0,0);
+
+    strcpy(file_postfix, "porosity");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataPorosity(problem_data),0,0);
+
+    // IMF -- added specific storage to subsurface bundle
+    strcpy(file_postfix, "specific_storage");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataSpecificStorage(problem_data),0,0);
+                  
+  }
 
   if (public_xtra->write_silo_subsurf_data)
   {
@@ -5208,6 +5236,17 @@ SolverRichardsNewPublicXtra(char *name)
   }
 #endif
 
+  /* PDI file writing control */
+  
+  sprintf(key, "%s.WritePDISubsurfData", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_subsurf_data = switch_value;
 
   /* Silo file writing control */
   sprintf(key, "%s.WriteSiloSubsurfData", name);
