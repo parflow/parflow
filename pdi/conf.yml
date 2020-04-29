@@ -80,7 +80,8 @@ metadata:
   filename:               { type: array, subtype: char, size: 255 }
   parflowrank:            int
   file_number:            int
-  drop_tolerance:         int
+  drop_tolerance:         double
+  with_tolerance:         int
   temp_data_size:         int
   num_grid:               int
   grid_disp:              int
@@ -129,4 +130,4 @@ plugins:
   decl_hdf5:
 #  - file: ${filename}.${parflowrank}.h5
   - file: ${filename}.h5
-    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, file_number, num_subgrids, vector_data ]
+    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, file_number, num_subgrids, drop_tolerance, with_tolerance, vector_data ]
