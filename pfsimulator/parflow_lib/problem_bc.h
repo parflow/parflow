@@ -274,7 +274,7 @@ typedef struct {
 /**
  * @brief Packs arbitrary number of statements into paranthesis to pass through to other macros.
  *
- * Used in ForPatchCellsPerFace loop to declare local variables.  Provides architecture portability and scope safety.
+ * Used in ForPatchCellsPerFace loop to declare local variables.  Provides architecture portability and scope safety.  Use to provide thread-local variables for use in accelerators.
  * Allows for same-line, multiple declarations.  ex: Locals(int i, j, k;) is perfectly valid.
  * This is because the macro will expand the arguments to (int i, j, k;), which is only recognized as "one" token by the preprocessor.
  * The packed arguments can then be expanded using the UNPACK() macro at the appropriate place.
@@ -330,7 +330,7 @@ ForPatchCellsPerFace(InsertBCTypeHere,
   );
 
 /*---------------------------------------------
-  Generic example of a boundary condition using ForPatchCellsPerFace
+  Generic example of a made-up boundary condition using ForPatchCellsPerFace
   --------------------------------------------- */
 ForPatchCellsPerFace(NotARealBCType,
                      BeforeAllCells({
@@ -338,10 +338,12 @@ ForPatchCellsPerFace(NotARealBCType,
                        }),
                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                      Locals(int im, ip;
-                            double some_prod;),
+                            double some_prod;
+                            double *op;),
                      CellSetup({
                          im = SubmatrixEltIndex(J_sub, i, j, k);
                          ip = SubvectorEltIndex(p_sub, i, j, k);
+                         some_prod = ddp[ip] * dp[ip];
                        }),
                      FACE(LeftFace, { op = wp; }),
                      FACE(RightFace, { op = ep; }),
@@ -350,7 +352,7 @@ ForPatchCellsPerFace(NotARealBCType,
                      FACE(BackFace, { op = lp; }),
                      FACE(FrontFace, { op = up; }),
                      CellFinalize({
-                         cp[im] += op[im] * pp[ip];
+                         cp[im] += op[im] * some_prod;
                          op[im] = 0.0;
                        }),
                      AfterAllCells(DoNothing)
@@ -365,6 +367,11 @@ ForPatchCellsPerFace(NotARealBCType,
  * Exposed means not encapsulated by paranthesis.  For example, `double *dummy1, *dummy2;` inside of the BeforeAllCells statement body is not allowed.  However, a call such as `int im = SubmatrixEltIndex(J_sub, i, j, k);` is perfectly fine, as the commas are contained within paranthesis.
  * This is a limitation of the C Preprocessor.
  * The only exception to this is the `Locals()` macro, which allows for multiple variable definitions on one line.
+ *
+ * If compile time errors are encountered, check for missing or stray commas.
+ * Error messages related to "Too few" arguments often means a comma is missing between parameters.
+ * Error messages related to "Too many" arguments often means a stray comma is exposed in a statement body.
+ * Check that all statement brackets {} match up.  Most IDEs with smart indenting will make dangling brackets easier to spot.
  *
  * @param bctype Boundary condition type this loop should apply computations to.  (e.g. OverlandBC)
  * @param before_loop See BeforeAllCells() macro.
@@ -406,7 +413,7 @@ ForPatchCellsPerFace(NotARealBCType,
 
 /**
  * @brief Variation of ForPatchCellsPerFace() that extends loop bounds to include ghost cells
- * See ForPatchCellsPerFace() for further documentation
+ * See ForPatchCellsPerFace() for further documentation.  Previously would have been called BCStructPatchLoopOvrlnd.
  */
 #define ForPatchCellsPerFaceWithGhost(bctype, \
                                       before_loop, loopvars,          \
