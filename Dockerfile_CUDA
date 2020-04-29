@@ -117,7 +117,7 @@ ENV OMPI_MCA_rmaps_base_oversubscribe 1
 
 WORKDIR /home/parflow
 
-RUN git clone -b CUDA --single-branch https://github.com/hokkanen/parflow.git parflow
+RUN git clone -b master --single-branch https://github.com/parflow/parflow.git parflow
 RUN mkdir -p build && \
     cd build && \
     CC=mpicc CXX=mpicxx FC=mpif90 cmake ../parflow \

@@ -105,7 +105,3 @@
 
 # VS Code
 .vscode/
-
-# Ignore these for now in CUDA branch
-examples/
-test/
