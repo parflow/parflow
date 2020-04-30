@@ -79,10 +79,10 @@ void     WritePDI(
   
   // File name to be passed to PDI
   char filename[255] = "";
-  sprintf(filename, "%s.%s", file_prefix, file_suffix);
+  sprintf(filename, "%s.%s.h5.%d", file_prefix, file_suffix, p);
   
-  if (p == 0)
-  {
+  // if (p == 0)
+  // {
     /* Size of the Vector structure for PDI */
     int vector_pdi_buffer_size = sizeof(Vector);
     /* disp set dynamically for PDI due to SHMEM_OBJECTS */
@@ -132,15 +132,15 @@ void     WritePDI(
     PDI_expose("num_grid", &num_grid, PDI_OUT);
     
     PDI_expose("vector_pdi_buffer_size", &vector_pdi_buffer_size, PDI_OUT);
-    PDI_expose("grid_disp",       &grid_disp, PDI_OUT);
-    PDI_expose("data_space_disp", &data_space_disp, PDI_OUT);
-    PDI_expose("size_disp",       &size_disp, PDI_OUT);
+    PDI_expose("grid_disp",              &grid_disp, PDI_OUT);
+    PDI_expose("data_space_disp",        &data_space_disp, PDI_OUT);
+    PDI_expose("size_disp",              &size_disp, PDI_OUT);
     
     PDI_expose("vector_data", v, PDI_OUT);
     
     // finalize PDI
     PDI_finalize();
-  }
+  // }
   
   //EndTiming(PFBTimingIndex);
   
