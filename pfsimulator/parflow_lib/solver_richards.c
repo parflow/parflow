@@ -91,6 +91,8 @@ typedef struct {
   int print_overland_bc_flux;   /* print overland outflow boundary condition flux? */
   
   int write_pdi_subsurf_data;   /* print subsurf via PDI */
+  int write_pdi_press;          /* print subsurf via PDI */
+  int write_pdi_mannings;       /* print mannings via PDI */
   
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
@@ -658,6 +660,14 @@ SetupRichards(PFModule * this_module)
                            js_inputs, file_prefix, "mannings", "s/m^(1/3)", "cell", "surface",
                            sizeof(mannings_filenames) / sizeof(mannings_filenames[0]),
                            mannings_filenames);
+  }
+
+  if (public_xtra->write_pdi_mannings)
+  {
+    strcpy(file_postfix, "mannings");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataMannings(problem_data), 0, 0);
+
   }
 
   if (public_xtra->write_silo_mannings)
@@ -1246,6 +1256,13 @@ SetupRichards(PFModule * this_module)
                               js_outputs, file_prefix, t, 0, "pressure", "m", "cell", "subsurface",
                               sizeof(press_filenames) / sizeof(press_filenames[0]),
                               press_filenames);
+    }
+
+    if (public_xtra->write_pdi_press)
+    {
+      sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number, instance_xtra->pressure, 0, 0);
+      any_file_dumped = 1;
     }
 
     if (public_xtra->write_silo_press)
@@ -2942,6 +2959,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         MetadataAddDynamicField(
                                 js_outputs, file_prefix, t, instance_xtra->file_number,
                                 "pressure", "m", "cell", "subsurface", 0, NULL);
+      }
+
+      if (public_xtra->write_pdi_press)
+      {
+        sprintf(file_postfix, "press.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                      instance_xtra->pressure, 0, 0);
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_silo_press)
@@ -5248,7 +5274,28 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->write_pdi_subsurf_data = switch_value;
 
+  sprintf(key, "%s.WritePDIMannings", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_mannings = switch_value;
+
+  sprintf(key, "%s.WritePDIPressure", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_press = switch_value;
+
   /* Silo file writing control */
+  
   sprintf(key, "%s.WriteSiloSubsurfData", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);

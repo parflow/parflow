@@ -7,6 +7,7 @@ import h5py as h5py
 import numpy as np
 import sys
 import struct
+import glob
 
 # ______________________________________________________________________________
 # Functions
@@ -18,7 +19,11 @@ def compare_files(name):
     print(" Analyze {}".format(name))
     print("")
 
-    f = h5py.File(name, "r")
+    files = sorted(glob.glob(name + '.h5*'))
+    
+    print(files)
+
+    f = h5py.File(files[0], "r")
 
     vector_data = f['vector_data']
     subvectors = vector_data['subvectors']
@@ -50,93 +55,99 @@ def compare_files(name):
 
     pdi_subvectors = []
 
-    for igrid,subvector in enumerate(subvectors):
+    for file in files:
+        
+        print(" File: {}".format(file))
+        
+        f = h5py.File(file, "r")
 
-        d = {}
-        d['ix'] = subregions[igrid]['ix'][0]
-        d['iy'] = subregions[igrid]['iy'][0]
-        d['iz'] = subregions[igrid]['iz'][0]
-        
-        d['nx'] = subregions[igrid]['nx'][0]
-        d['ny'] = subregions[igrid]['ny'][0]
-        d['nz'] = subregions[igrid]['nz'][0]
-        
-        d['rx'] = subregions[igrid]['rx'][0]
-        d['ry'] = subregions[igrid]['ry'][0]
-        d['rz'] = subregions[igrid]['rz'][0]
+        for igrid,subvector in enumerate(subvectors):
 
-        d['ix_v'] = subvector['data_space']['ix']
-        d['iy_v'] = subvector['data_space']['iy']
-        d['iz_v'] = subvector['data_space']['iz']
-        
-        d['nx_v'] = subvector['data_space']['nx']
-        d['ny_v'] = subvector['data_space']['ny']
-        d['nz_v'] = subvector['data_space']['nz']
-        
-        yinc = d['nx_v'] - d['nx'];
-        zinc = d['nx_v']  * d['ny_v']  - d['ny'] * d['nx_v'];
-        
-        if (with_tolerance <= 0):
+            d = {}
+            d['ix'] = subregions[igrid]['ix'][0]
+            d['iy'] = subregions[igrid]['iy'][0]
+            d['iz'] = subregions[igrid]['iz'][0]
             
-            num_elements = d['nx']*d['ny']*d['nz']
+            d['nx'] = subregions[igrid]['nx'][0]
+            d['ny'] = subregions[igrid]['ny'][0]
+            d['nz'] = subregions[igrid]['nz'][0]
             
-            first_index = ((d['ix'] - d['ix_v']) + ((d['iy'] - d['iy_v']) + (d['iz'] - d['iz_v']) * d['ny_v']) * d['nx_v'])
+            d['rx'] = subregions[igrid]['rx'][0]
+            d['ry'] = subregions[igrid]['ry'][0]
+            d['rz'] = subregions[igrid]['rz'][0]
+
+            d['ix_v'] = subvector['data_space']['ix']
+            d['iy_v'] = subvector['data_space']['iy']
+            d['iz_v'] = subvector['data_space']['iz']
             
-            d['data'] = np.zeros([d['nx'],d['ny'],d['nz']])
+            d['nx_v'] = subvector['data_space']['nx']
+            d['ny_v'] = subvector['data_space']['ny']
+            d['nz_v'] = subvector['data_space']['nz']
             
-            k = first_index
-            for iz in range(d['iz'],d['iz']+d['nz']):
-                for iy in range(d['iy'],d['iy']+d['ny']):
-                    for ix in range(d['ix'],d['ix']+d['nx']):
-                        d['data'][ix,iy,iz] = subvector['data'][k]
-                        k += 1
-                    k += yinc
-                k += zinc
-        
-        else:
+            yinc = d['nx_v'] - d['nx'];
+            zinc = d['nx_v']  * d['ny_v']  - d['ny'] * d['nx_v'];
             
-            num_elements = d['nx']*d['ny']*d['nz']
-            first_index = ((d['ix'] - d['ix_v']) + ((d['iy'] - d['iy_v']) + (d['iz'] - d['iz_v']) * d['ny_v']) * d['nx_v'])
-            
-            d['data'] = np.zeros([num_elements])
-            d['indx'] = np.zeros([num_elements])
-            d['indy'] = np.zeros([num_elements])
-            d['indz'] = np.zeros([num_elements])
-        
-            n = 0
-            k = first_index
-            for iz in range(d['iz'],d['iz']+d['nz']):
-                for iy in range(d['iy'],d['iy']+d['ny']):
-                    for ix in range(d['ix'],d['ix']+d['nx']):
-                        if (abs(subvector['data'][k]) > drop_tolerance):
-                            d['data'][n] = subvector['data'][k]
-                            d['indx'][n] = ix
-                            d['indy'][n] = iy
-                            d['indz'][n] = iz
-                            n+= 1
-                        k += 1
-                    k += yinc
-                k += zinc
+            if (with_tolerance <= 0):
                 
-            d['data'].resize(n)
-        
-        data_sum = np.sum(d['data'])
-        data_sum_2 = np.sum(subvector['data'])
-        
-        print("  > subvector #{}".format(igrid))
-        print("    num elements: {} {}".format(num_elements,len(subvector['data'])))
-        if (with_tolerance):
-            print("    num elements tolerance: {}".format(len(d['data'])))
-        print("    first index: {}".format(first_index))
-        print("    last index: {}".format(k - zinc - yinc - 1 - first_index))
-        print("    ix: {}, iy: {}, iz: {}".format(d['ix'],d['iy'],d['iz']))
-        print("    nx: {}, ny: {}, nz: {}".format(d['nx'],d['ny'],d['nz']))
-        print("    rx: {}, ry: {}, rz: {}".format(d['rx'],d['ry'],d['rz']))
-        print("    nx_v: {}, ny_v: {}, nz_v: {}".format(d['nx_v'],d['ny_v'],d['nz_v']))
-        print("    yinc: {}, zinc: {}".format(yinc,zinc))
-        print("    sum(data): {}".format(data_sum))
-        print("    sum(data) 2: {}".format(data_sum_2))
-        pdi_subvectors.append(d)
+                num_elements = d['nx']*d['ny']*d['nz']
+                
+                first_index = ((d['ix'] - d['ix_v']) + ((d['iy'] - d['iy_v']) + (d['iz'] - d['iz_v']) * d['ny_v']) * d['nx_v'])
+                
+                d['data'] = np.zeros([d['nx'],d['ny'],d['nz']])
+                
+                k = first_index
+                for iz in range(d['iz'],d['iz']+d['nz']):
+                    for iy in range(d['iy'],d['iy']+d['ny']):
+                        for ix in range(d['ix'],d['ix']+d['nx']):
+                            d['data'][ix,iy,iz] = subvector['data'][k]
+                            k += 1
+                        k += yinc
+                    k += zinc
+            
+            else:
+                
+                num_elements = d['nx']*d['ny']*d['nz']
+                first_index = ((d['ix'] - d['ix_v']) + ((d['iy'] - d['iy_v']) + (d['iz'] - d['iz_v']) * d['ny_v']) * d['nx_v'])
+                
+                d['data'] = np.zeros([num_elements])
+                d['indx'] = np.zeros([num_elements])
+                d['indy'] = np.zeros([num_elements])
+                d['indz'] = np.zeros([num_elements])
+            
+                n = 0
+                k = first_index
+                for iz in range(d['iz'],d['iz']+d['nz']):
+                    for iy in range(d['iy'],d['iy']+d['ny']):
+                        for ix in range(d['ix'],d['ix']+d['nx']):
+                            if (abs(subvector['data'][k]) > drop_tolerance):
+                                d['data'][n] = subvector['data'][k]
+                                d['indx'][n] = ix
+                                d['indy'][n] = iy
+                                d['indz'][n] = iz
+                                n+= 1
+                            k += 1
+                        k += yinc
+                    k += zinc
+                    
+                d['data'].resize(n)
+            
+            data_sum = np.sum(d['data'])
+            data_sum_2 = np.sum(subvector['data'])
+            
+            print("  > subvector #{}".format(igrid))
+            print("    num elements: {} {}".format(num_elements,len(subvector['data'])))
+            if (with_tolerance):
+                print("    num elements tolerance: {}".format(len(d['data'])))
+            print("    first index: {}".format(first_index))
+            print("    last index: {}".format(k - zinc - yinc - 1 - first_index))
+            print("    ix: {}, iy: {}, iz: {}".format(d['ix'],d['iy'],d['iz']))
+            print("    nx: {}, ny: {}, nz: {}".format(d['nx'],d['ny'],d['nz']))
+            print("    rx: {}, ry: {}, rz: {}".format(d['rx'],d['ry'],d['rz']))
+            print("    nx_v: {}, ny_v: {}, nz_v: {}".format(d['nx_v'],d['ny_v'],d['nz_v']))
+            print("    yinc: {}, zinc: {}".format(yinc,zinc))
+            print("    sum(data): {}".format(data_sum))
+            print("    sum(data) 2: {}".format(data_sum_2))
+            pdi_subvectors.append(d)
 
     # ______________________________________________________________________________
 
@@ -221,17 +232,11 @@ def compare_files(name):
 
 # ______________________________________________________________________________
 
-names = ["default_single.out.press.00000",
-         "default_single.out.porosity",
-         "default_single.out.phasex.0.00000",
-         "default_single.out.phasey.0.00000",
-         "default_single.out.phasez.0.00000",
-         "default_single.out.perm_x",
-         "default_single.out.perm_y",
-         "default_single.out.perm_z",
-         "default_single.out.concen.0.00.00000",
-         "default_single.out.concen.0.00.00001",
-         "default_single.out.concen.0.00.00002"]
+try:
+    names = sys.argv[1:]
+except:
+    print("\n Please, provide a path to the tables.\n")
+    raise
 
 for name in names:
     compare_files(name)
