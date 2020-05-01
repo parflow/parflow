@@ -90,9 +90,10 @@ typedef struct {
   int print_overland_sum;       /* print overland_sum? */
   int print_overland_bc_flux;   /* print overland outflow boundary condition flux? */
   
-  int write_pdi_subsurf_data;   /* print subsurf via PDI */
-  int write_pdi_press;          /* print subsurf via PDI */
-  int write_pdi_mannings;       /* print mannings via PDI */
+  int write_pdi_subsurf_data;   /* write subsurf via PDI */
+  int write_pdi_press;          /* write pressure via PDI */
+  int write_pdi_slopes;         /* write slopes via PDI */
+  int write_pdi_mannings;       /* write mannings via PDI */
   
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
@@ -621,6 +622,17 @@ SetupRichards(PFModule * this_module)
                            js_inputs, file_prefix, "slope", NULL, "cell", "surface",
                            sizeof(slope_filenames) / sizeof(slope_filenames[0]),
                            slope_filenames);
+  }
+
+  if (public_xtra->write_pdi_slopes)
+  {
+    strcpy(file_postfix, "slope_x");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataTSlopeX(problem_data), 0, 0);
+
+    strcpy(file_postfix, "slope_y");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataTSlopeY(problem_data), 0, 0);
   }
 
   if (public_xtra->write_silo_slopes)
@@ -5283,6 +5295,16 @@ SolverRichardsNewPublicXtra(char *name)
                switch_name, key);
   }
   public_xtra->write_pdi_mannings = switch_value;
+
+  sprintf(key, "%s.WritePDISlopes", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_slopes = switch_value;
 
   sprintf(key, "%s.WritePDIPressure", name);
   switch_name = GetStringDefault(key, "False");
