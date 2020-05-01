@@ -154,9 +154,14 @@ def compare_files(name):
     print("")
 
     if (with_tolerance <= 0):
-        pfb_file = open(name + ".pfb", mode='rb')
+        
+        files = sorted(glob.glob(name + '.pfb*'))
+        print(files)
+        pfb_file = open(files[0], mode='rb')
+        
     else:
         pfb_file = open(name + ".pfsb", mode='rb')
+        
     content = pfb_file.read()
 
     position = 0
@@ -177,48 +182,61 @@ def compare_files(name):
     print(" X: {}, Y: {}, Z: {}".format(X,Y,Z))
     print(" NX: {}, NY: {}, NZ: {}".format(NX,NY,NZ))
     print(" DX: {}, DY: {}, DZ: {}".format(DX,DY,DZ))
-    print(" Number of subgrids: {}".format(numgrids))
 
     pfb_subvectors = []
 
-    for igrid in range(numgrids):
-        pfd_d = {}
-        (pfd_d['ix'],pfd_d['iy'],pfd_d['iz']) = struct.unpack(">iii", content[position:position+4*3]); position += 4*3;
-        (pfd_d['nx'],pfd_d['ny'],pfd_d['nz']) = struct.unpack(">iii", content[position:position+4*3]); position += 4*3;
-        (pfd_d['rx'],pfd_d['ry'],pfd_d['rz']) = struct.unpack(">iii", content[position:position+4*3]); position += 4*3;
+    for file in files:
+
+        pfb_file = open(file, mode='rb')
+
+        print(" File: {}".format(file))
         
-        if (with_tolerance <= 0):
-            num_elements = (pfd_d['nx'])*(pfd_d['ny'])*(pfd_d['nz'])
+        position = 3*(8 + 4 + 8)
+
+        (numgrids,) = struct.unpack(">i", content[position:position+4]); position += 4;
+        numgrids_per_file = numgrids / len(files)
+
+        print(" Total number of subgrids: {}".format(numgrids))
+        print(" Local number of subgrids: {}".format(numgrids_per_file))
+
+        for igrid in range(numgrids_per_file):
+            pfd_d = {}
+            (pfd_d['ix'],pfd_d['iy'],pfd_d['iz']) = struct.unpack(">iii", content[position:position+4*3]); position += 4*3;
+            (pfd_d['nx'],pfd_d['ny'],pfd_d['nz']) = struct.unpack(">iii", content[position:position+4*3]); position += 4*3;
+            (pfd_d['rx'],pfd_d['ry'],pfd_d['rz']) = struct.unpack(">iii", content[position:position+4*3]); position += 4*3;
             
-            pfd_d['data'] = np.zeros([(pfd_d['nx']),pfd_d['ny'],(pfd_d['nz'])])
-            for iz in range(pfd_d['nz']):
-                for iy in range(pfd_d['ny']):
-                    for ix in range(pfd_d['nx']):
-                        (pfd_d['data'][ix,iy,iz],) = struct.unpack(">d", content[position:position+8]); position += 8;
-        else:
-            (num_elements,) = struct.unpack(">i", content[position:position+4]); position += 4;
-            
-            pfd_d['data'] = np.zeros([num_elements])
-            pfd_d['indx'] = np.zeros([num_elements])
-            pfd_d['indy'] = np.zeros([num_elements])
-            pfd_d['indz'] = np.zeros([num_elements])
-            
-            for k in range(num_elements):
-                (pfd_d['indx'][k],) = struct.unpack(">i", content[position:position+4]); position += 4;
-                (pfd_d['indy'][k],) = struct.unpack(">i", content[position:position+4]); position += 4;
-                (pfd_d['indz'][k],) = struct.unpack(">i", content[position:position+4]); position += 4;
-                (pfd_d['data'][k],) = struct.unpack(">d", content[position:position+8]); position += 8;
+            if (with_tolerance <= 0):
+                num_elements = (pfd_d['nx'])*(pfd_d['ny'])*(pfd_d['nz'])
                 
-        #d['data'] = np.zeros([num_elements])
-        #(d['data'],) = struct.unpack(">" + "d"*num_elements, content[position:position+8*num_elements]); position += 8*num_elements;
-        data_sum = np.sum(pfd_d['data'])
-        print("  > subvector #{}".format(igrid))
-        print("    num elements: {}".format(num_elements))
-        print("    ix: {}, iy: {}, iz: {}".format(pfd_d['ix'],pfd_d['iy'],pfd_d['iz']))
-        print("    nx: {}, ny: {}, nz: {}".format(pfd_d['nx'],pfd_d['ny'],pfd_d['nz']))
-        print("    rx: {}, ry: {}, rz: {}".format(pfd_d['rx'],pfd_d['ry'],pfd_d['rz']))
-        print("    sum(data): {}".format(data_sum))
-        pfb_subvectors.append(pfd_d)
+                pfd_d['data'] = np.zeros([(pfd_d['nx']),pfd_d['ny'],(pfd_d['nz'])])
+                for iz in range(pfd_d['nz']):
+                    for iy in range(pfd_d['ny']):
+                        for ix in range(pfd_d['nx']):
+                            (pfd_d['data'][ix,iy,iz],) = struct.unpack(">d", content[position:position+8]); position += 8;
+            else:
+                (num_elements,) = struct.unpack(">i", content[position:position+4]); position += 4;
+                
+                pfd_d['data'] = np.zeros([num_elements])
+                pfd_d['indx'] = np.zeros([num_elements])
+                pfd_d['indy'] = np.zeros([num_elements])
+                pfd_d['indz'] = np.zeros([num_elements])
+                
+                for k in range(num_elements):
+                    (pfd_d['indx'][k],) = struct.unpack(">i", content[position:position+4]); position += 4;
+                    (pfd_d['indy'][k],) = struct.unpack(">i", content[position:position+4]); position += 4;
+                    (pfd_d['indz'][k],) = struct.unpack(">i", content[position:position+4]); position += 4;
+                    (pfd_d['data'][k],) = struct.unpack(">d", content[position:position+8]); position += 8;
+                    
+            #d['data'] = np.zeros([num_elements])
+            #(d['data'],) = struct.unpack(">" + "d"*num_elements, content[position:position+8*num_elements]); position += 8*num_elements;
+            data_sum = np.sum(pfd_d['data'])
+            print("  > subvector #{}".format(igrid))
+            print("    num elements: {}".format(num_elements))
+            print("    ix: {}, iy: {}, iz: {}".format(pfd_d['ix'],pfd_d['iy'],pfd_d['iz']))
+            print("    nx: {}, ny: {}, nz: {}".format(pfd_d['nx'],pfd_d['ny'],pfd_d['nz']))
+            print("    rx: {}, ry: {}, rz: {}".format(pfd_d['rx'],pfd_d['ry'],pfd_d['rz']))
+            print("    sum(data): {}".format(data_sum))
+            pfb_subvectors.append(pfd_d)
 
     print("")
     print(" Data comparison")

@@ -12,3 +12,9 @@ This can be done easily by addind this at the beginning of the tcl file :
 ```tcl
 file copy -force $env(PARFLOW_DIR)/../pdi/conf.yml ./
 ```
+
+## Python script to check files
+
+```
+python $PARFLOW_DIR../pdi/compare_pdi_pfb.py <file name without extension>
+```

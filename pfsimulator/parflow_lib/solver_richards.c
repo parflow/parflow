@@ -94,6 +94,10 @@ typedef struct {
   int write_pdi_press;          /* write pressure via PDI */
   int write_pdi_slopes;         /* write slopes via PDI */
   int write_pdi_mannings;       /* write mannings via PDI */
+  int write_pdi_specific_storage;       /* write specific storage via PDI */
+  int write_pdi_top;            /* write top via PDI */
+  int write_pdi_velocities;     /* write velocities via PDI */
+  int write_pdi_satur;          /* write velocities via PDI */
   
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
@@ -750,6 +754,17 @@ SetupRichards(PFModule * this_module)
     }
   }
 
+  // IMF --
+  // Lumped specific storage w/ subsurf bundle,
+  // Left keys for individual printing for backward compatibility
+  if (public_xtra->write_pdi_specific_storage)
+  {
+    strcpy(file_postfix, "specific_storage");
+    WritePDI(file_prefix, file_postfix, 0,
+                  ProblemDataSpecificStorage(problem_data), 0, 0);
+
+  }
+
   if (public_xtra->write_silo_specific_storage)
   {
     strcpy(file_postfix, "");
@@ -762,6 +777,13 @@ SetupRichards(PFModule * this_module)
   if (public_xtra->print_top)
   {
     printf("PrintTop -- not yet implemented\n");
+    // strcpy(file_postfix, "top");
+    // WritePFBinary(file_prefix, file_postfix, XXXXXXXXXXXXXXXX(problem_data));
+  }
+
+  if (public_xtra->write_pdi_top)
+  {
+    printf("WritePDITop -- not yet implemented\n");
     // strcpy(file_postfix, "top");
     // WritePFBinary(file_prefix, file_postfix, XXXXXXXXXXXXXXXX(problem_data));
   }
@@ -1325,6 +1347,14 @@ SetupRichards(PFModule * this_module)
                               satur_filenames);
     }
 
+    if (public_xtra->write_pdi_satur)
+    {
+      sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                    instance_xtra->saturation, 0, 0);
+      any_file_dumped = 1;
+    }
+
     if (public_xtra->write_silo_satur)
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
@@ -1498,6 +1528,23 @@ SetupRichards(PFModule * this_module)
                               js_outputs, file_prefix, t, 0, "velocity", "m/s", "cell", "subsurface",
                               sizeof(mask_filenames) / sizeof(mask_filenames[0]),
                               mask_filenames);
+    }
+
+    if (public_xtra->write_pdi_velocities)
+    {
+      sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                    instance_xtra->x_velocity, 0, 0);
+
+      sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                    instance_xtra->y_velocity, 0, 0);
+
+      sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                    instance_xtra->z_velocity, 0, 0);
+
+      any_file_dumped = 1;
     }
 
     /*-----------------------------------------------------------------
@@ -3033,6 +3080,21 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                                 "velocity", "m/s", "cell", "subsurface", 0, NULL);
       }
 
+      if (public_xtra->write_pdi_velocities)        //jjb
+      {
+        sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                      instance_xtra->x_velocity, 0, 0);
+
+        sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                      instance_xtra->y_velocity, 0, 0);
+
+        sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                      instance_xtra->z_velocity, 0, 0);
+        any_file_dumped = 1;
+      }
 
       if (public_xtra->print_satur)
       {
@@ -3046,6 +3108,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         MetadataAddDynamicField(
                                 js_outputs, file_prefix, t, instance_xtra->file_number,
                                 "saturation", "1/m", "cell", "subsurface", 0, NULL);
+      }
+
+      if (public_xtra->write_pdi_satur)
+      {
+        sprintf(file_postfix, "satur.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                      instance_xtra->saturation, 0, 0);
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_silo_satur)
@@ -3782,6 +3853,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
       WritePFBinary(file_prefix, file_postfix,
                     instance_xtra->saturation);
+      any_file_dumped = 1;
+    }
+
+    if (public_xtra->write_pdi_satur)
+    {
+      sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                    instance_xtra->saturation, 0, 0);
       any_file_dumped = 1;
     }
 
@@ -5315,6 +5394,36 @@ SolverRichardsNewPublicXtra(char *name)
                switch_name, key);
   }
   public_xtra->write_pdi_press = switch_value;
+
+  sprintf(key, "%s.WritePDISpecificStorage", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_specific_storage = switch_value;
+
+  sprintf(key, "%s.WritePDIVelocities", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_velocities = switch_value;
+
+  sprintf(key, "%s.WritePDISaturation", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_satur = switch_value;
 
   /* Silo file writing control */
   
