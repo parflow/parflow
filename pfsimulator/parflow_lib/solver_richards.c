@@ -90,14 +90,22 @@ typedef struct {
   int print_overland_sum;       /* print overland_sum? */
   int print_overland_bc_flux;   /* print overland outflow boundary condition flux? */
   
-  int write_pdi_subsurf_data;   /* write subsurf via PDI */
-  int write_pdi_press;          /* write pressure via PDI */
-  int write_pdi_slopes;         /* write slopes via PDI */
-  int write_pdi_mannings;       /* write mannings via PDI */
-  int write_pdi_specific_storage;       /* write specific storage via PDI */
-  int write_pdi_top;            /* write top via PDI */
-  int write_pdi_velocities;     /* write velocities via PDI */
-  int write_pdi_satur;          /* write velocities via PDI */
+  int write_pdi_subsurf_data;     /* write subsurf via PDI */
+  int write_pdi_press;            /* write pressure via PDI */
+  int write_pdi_slopes;           /* write slopes via PDI */
+  int write_pdi_mannings;         /* write mannings via PDI */
+  int write_pdi_specific_storage; /* write specific storage via PDI */
+  int write_pdi_top;              /* write top via PDI */
+  int write_pdi_velocities;       /* write velocities via PDI */
+  int write_pdi_satur;            /* write saturation via PDI */
+  int write_pdi_mask;             /* write mask via PDI */
+  //int write_pdi_concen;         /* write concentration via PDI */
+  //int write_pdi_wells;          /* write wells via PDI */
+  int write_pdi_dzmult;           /* write dzmult via PDI */
+  int write_pdi_evaptrans;        /* write evaptrans via PDI */
+  int write_pdi_evaptrans_sum;    /* write evaptrans_sum via PDI */
+  int write_pdi_overland_sum;     /* write overland_sum via PDI */
+  int write_pdi_overland_bc_flux; /* write overland_bc_flux via PDI */
   
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
@@ -716,6 +724,12 @@ SetupRichards(PFModule * this_module)
                            dzmult_filenames);
   }
 
+  if (public_xtra->write_pdi_dzmult)
+  {
+    strcpy(file_postfix, "dz_mult");
+    WritePDI(file_prefix, file_postfix, 0, instance_xtra->dz_mult, 0, 0);
+  }
+
   if (public_xtra->write_silo_dzmult)
   {
     strcpy(file_postfix, "");
@@ -869,6 +883,7 @@ SetupRichards(PFModule * this_module)
 
     if (public_xtra->write_silo_overland_sum
         || public_xtra->print_overland_sum
+        || public_xtra->write_pdi_overland_sum
         || public_xtra->write_silopmpio_overland_sum
         || public_xtra->write_netcdf_overland_sum)
     {
@@ -1472,6 +1487,13 @@ SetupRichards(PFModule * this_module)
                              js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
                              sizeof(mask_filenames) / sizeof(mask_filenames[0]),
                              mask_filenames);
+    }
+
+    if (public_xtra->write_pdi_mask)
+    {
+      strcpy(file_postfix, "mask");
+      WritePDI(file_prefix, file_postfix, 0, instance_xtra->mask, 0, 0);
+      any_file_dumped = 1;
     }
 
     if (public_xtra->write_netcdf_mask)
@@ -2965,6 +2987,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      **************************************************************/
     if (public_xtra->write_silo_evaptrans_sum
         || public_xtra->print_evaptrans_sum
+        || public_xtra->write_pdi_evaptrans_sum
         || public_xtra->write_netcdf_evaptrans_sum)
     {
       EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
@@ -2975,6 +2998,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      **************************************************************/
     if (public_xtra->write_silo_overland_sum
         || public_xtra->print_overland_sum
+        || public_xtra->write_pdi_overland_sum
         || public_xtra->write_netcdf_overland_sum)
     {
       OverlandSum(problem_data,
@@ -3164,7 +3188,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
          * "evapotranspiration", "mm", "cell", "subsurface", 0, NULL);
          */
       }
-
+      
+      if (public_xtra->write_pdi_evaptrans)
+      {
+        sprintf(file_postfix, "evaptrans.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number, evap_trans, 0, 0);
+        any_file_dumped = 1;
+      }
 
       if (public_xtra->write_silo_evaptrans)
       {
@@ -3197,6 +3228,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
       if (public_xtra->print_evaptrans_sum
           || public_xtra->write_silo_evaptrans_sum
+          || public_xtra->write_pdi_evaptrans_sum
           || public_xtra->write_netcdf_evaptrans_sum)
       {
         if (public_xtra->write_netcdf_evaptrans_sum)
@@ -3213,6 +3245,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           sprintf(file_postfix, "evaptranssum.%05d",
                   instance_xtra->file_number);
           WritePFBinary(file_prefix, file_postfix, evap_trans_sum);
+          any_file_dumped = 1;
+        }
+        
+        if (public_xtra->write_pdi_evaptrans_sum)
+        {
+          sprintf(file_postfix, "evaptranssum.%05d",
+                  instance_xtra->file_number);
+          WritePDI(file_prefix, file_postfix, instance_xtra->file_number, evap_trans_sum, 0, 0);
           any_file_dumped = 1;
         }
 
@@ -3242,6 +3282,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
       if (public_xtra->print_overland_sum
+          || public_xtra->write_pdi_overland_sum
           || public_xtra->write_silo_overland_sum
           || public_xtra->write_netcdf_overland_sum)
       {
@@ -3259,6 +3300,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           sprintf(file_postfix, "overlandsum.%05d",
                   instance_xtra->file_number);
           WritePFBinary(file_prefix, file_postfix, overland_sum);
+          any_file_dumped = 1;
+        }
+        
+        if (public_xtra->write_pdi_overland_sum)
+        {
+          sprintf(file_postfix, "overlandsum.%05d",
+                  instance_xtra->file_number);
+          WritePDI(file_prefix, file_postfix, instance_xtra->file_number, overland_sum, 0, 0);
           any_file_dumped = 1;
         }
 
@@ -3300,6 +3349,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
          * js_outputs, file_prefix, t, instance_xtra->file_number,
          * "overland bc flux", "m", "cell", "subsurface", 0, NULL);
          */
+      }
+
+      if (public_xtra->write_pdi_overland_bc_flux)
+      {
+        sprintf(file_postfix, "overland_bc_flux.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                      instance_xtra->ovrl_bc_flx, 0, 0);
+        any_file_dumped = 1;
+
       }
 
       if (public_xtra->write_netcdf_overland_bc_flux)
@@ -3881,6 +3940,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       WritePFBinary(file_prefix, file_postfix, evap_trans);
       any_file_dumped = 1;
     }
+    
+    if (public_xtra->write_pdi_evaptrans)
+    {
+      sprintf(file_postfix, "evaptrans.%05d",
+              instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number, evap_trans, 0, 0);
+      any_file_dumped = 1;
+    }
 
     if (public_xtra->write_silo_evaptrans)
     {
@@ -3892,6 +3959,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     }
 
     if (public_xtra->print_evaptrans_sum
+        || public_xtra->write_pdi_evaptrans_sum
         || public_xtra->write_silo_evaptrans_sum)
     {
       if (public_xtra->print_evaptrans_sum)
@@ -3899,6 +3967,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "evaptranssum.%05d",
                 instance_xtra->file_number);
         WritePFBinary(file_prefix, file_postfix, evap_trans_sum);
+        any_file_dumped = 1;
+      }
+      
+      if (public_xtra->write_pdi_evaptrans_sum)
+      {
+        sprintf(file_postfix, "evaptranssum.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number, evap_trans_sum, 0, 0);
         any_file_dumped = 1;
       }
 
@@ -3916,6 +3992,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     }
 
     if (public_xtra->print_overland_sum
+        || public_xtra->write_pdi_overland_sum
         || public_xtra->write_silo_overland_sum)
     {
       if (public_xtra->print_overland_sum)
@@ -3923,6 +4000,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "overlandsum.%05d",
                 instance_xtra->file_number);
         WritePFBinary(file_prefix, file_postfix, overland_sum);
+        any_file_dumped = 1;
+      }
+      
+      if (public_xtra->write_pdi_overland_sum)
+      {
+        sprintf(file_postfix, "overlandsum.%05d",
+                instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number, overland_sum, 0, 0);
         any_file_dumped = 1;
       }
 
@@ -3945,6 +4030,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               instance_xtra->file_number);
       WritePFBinary(file_prefix, file_postfix,
                     instance_xtra->ovrl_bc_flx);
+      any_file_dumped = 1;
+    }
+
+    if (public_xtra->write_pdi_overland_bc_flux)
+    {
+      sprintf(file_postfix, "overland_bc_flux.%05d",
+              instance_xtra->file_number);
+      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                    instance_xtra->ovrl_bc_flx, 0, 0);
       any_file_dumped = 1;
     }
 
@@ -5424,6 +5518,76 @@ SolverRichardsNewPublicXtra(char *name)
                switch_name, key);
   }
   public_xtra->write_pdi_satur = switch_value;
+
+  sprintf(key, "%s.WritePDIMask", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_mask = switch_value;
+
+  // sprintf(key, "%s.WritePDIConcentration", name);
+  // switch_name = GetStringDefault(key, "True");
+  // switch_value = NA_NameToIndex(switch_na, switch_name);
+  // if (switch_value < 0)
+  // {
+  //   InputError("Error: invalid print switch value <%s> for key <%s>\n",
+  //              switch_name, key);
+  // }
+  // public_xtra->write_pdi_concen = switch_value;
+
+  sprintf(key, "%s.WritePDIDZMultiplier", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_dzmult = switch_value;
+
+  sprintf(key, "%s.WritePDIEvapTrans", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_evaptrans = switch_value;
+
+  sprintf(key, "%s.WritePDIEvapTransSum", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_evaptrans_sum = switch_value;
+
+  sprintf(key, "%s.WritePDIOverlandSum", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_overland_sum = switch_value;
+
+  sprintf(key, "%s.WritePDIOverlandBCFlux", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_overland_bc_flux = switch_value;
 
   /* Silo file writing control */
   
