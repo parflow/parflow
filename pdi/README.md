@@ -13,6 +13,51 @@ This can be done easily by addind this at the beginning of the tcl file :
 file copy -force $env(PARFLOW_DIR)/../pdi/conf.yml ./
 ```
 
+## Installation
+
+Using `cmake`, add the following flag `-DPDI_ROOT=$PDI_HOME`.
+
+## Solvers
+
+### Impec solver
+
+```tcl
+pfset Solver.WritePDISubsurfData True
+pfset Solver.WritePDIPressure True
+pfset Solver.WritePDIVelocities True
+pfset Solver.WritePDISaturation True
+pfset Solver.WritePDIWells True
+pfset Solver.WritePDIConcentration True
+```
+
+### Richards solver
+
+```tcl
+pfset Solver.WritePDISubsurfData True
+pfset Solver.WritePDIMannings True
+pfset Solver.WritePDISlopes True
+pfset Solver.WritePDIPressure True
+pfset Solver.WritePDISpecificStorage True
+pfset Solver.WritePDIVelocities True
+pfset Solver.WritePDISaturation True
+pfset Solver.WritePDIMask True
+pfset Solver.WritePDIDZMultiplier True
+pfset Solver.WritePDIEvapTransSum True
+pfset Solver.WritePDIEvapTrans True
+pfset Solver.WritePDIOverlandSum True
+pfset Solver.WritePDIOverlandBCFlux True
+```
+
+### LB solver
+
+```tcl
+pfset Solver.WritePDISubsurfData True
+pfset Solver.WritePDIPressure True
+pfset Solver.WritePDISaturation True
+pfset Solver.WritePDIWells True
+pfset Solver.WritePDIConcentration True
+```
+
 ## Python script to check files
 
 ```

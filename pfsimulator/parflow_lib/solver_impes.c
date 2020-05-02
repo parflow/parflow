@@ -78,7 +78,7 @@ typedef struct {
   int write_pdi_velocities;                  /* print velocities via PDI */
   int write_pdi_satur;                       /* print satur via PDI */
   int write_pdi_concen;                      /* print concern via PDI */
-  int write_pdi_wells;                       /* print concern via PDI */
+//  int write_pdi_wells;                       /* print concern via PDI */
 
   int write_silo_subsurf_data;                    /* print perm./porosity? */
   int write_silo_press;                           /* print pressures? */
@@ -1074,7 +1074,8 @@ void      SolverImpes()
          * this iteration.
          *------------------------------------------------------------*/
 
-        if (print_press || print_velocities || print_satur || print_concen || print_wells)
+        if (print_press || print_velocities || print_satur || print_concen || print_wells ||
+            public_xtra->write_pdi_press || public_xtra->write_pdi_satur || public_xtra->write_pdi_concen)
         {
           dump_files = 0;
 
@@ -1369,6 +1370,12 @@ void      SolverImpes()
         sprintf(file_postfix, "press");
         WritePFBinary(file_prefix, file_postfix, pressure);
       }
+      
+      if (public_xtra->write_pdi_press)
+      {
+        sprintf(file_postfix, "press");
+        WritePDI(file_prefix, file_postfix, 0, pressure, 0, 0);
+      }
 
       if (public_xtra->write_silo_press)
       {
@@ -1395,6 +1402,13 @@ void      SolverImpes()
       any_file_dumped = 1;
     }
 
+    if (public_xtra->write_pdi_press)
+    {
+      sprintf(file_postfix, "press.%05d", file_number);
+      WritePDI(file_prefix, file_postfix, file_number, pressure, 0, 0);
+      any_file_dumped = 1;
+    }
+
     if (public_xtra->write_silo_press)
     {
       sprintf(file_postfix, "%05d", file_number);
@@ -1410,6 +1424,13 @@ void      SolverImpes()
       {
         sprintf(file_postfix, "satur.%01d.%05d", phase, file_number);
         WritePFBinary(file_prefix, file_postfix, saturations[phase]);
+        any_file_dumped = 1;
+      }
+      
+      if (public_xtra->write_pdi_satur)
+      {
+        sprintf(file_postfix, "satur.%01d.%05d", phase, file_number);
+        WritePDI(file_prefix, file_postfix, file_number, saturations[phase], 0, 0);
         any_file_dumped = 1;
       }
 
@@ -1436,6 +1457,15 @@ void      SolverImpes()
             sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen, file_number);
             WritePFSBinary(file_prefix, file_postfix,
                            concentrations[indx], drop_tol);
+
+            any_file_dumped = 1;
+          }
+
+          if (public_xtra->write_pdi_concen)
+          {
+            sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen, file_number);
+            WritePDI(file_prefix, file_postfix, file_number,
+                           concentrations[indx], 1, drop_tol);
 
             any_file_dumped = 1;
           }
@@ -2235,15 +2265,15 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
   }
   public_xtra->write_pdi_concen = switch_value;
 
-  sprintf(key, "%s.WritePDIWells", name);
-  switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
-  public_xtra->write_pdi_wells = switch_value;
+  // sprintf(key, "%s.WritePDIWells", name);
+  // switch_name = GetStringDefault(key, "True");
+  // switch_value = NA_NameToIndex(switch_na, switch_name);
+  // if (switch_value < 0)
+  // {
+  //   InputError("Error: invalid print switch value <%s> for key <%s>\n",
+  //              switch_name, key);
+  // }
+  // public_xtra->write_pdi_wells = switch_value;
 
   /* Silo file writing control */
   sprintf(key, "%s.WriteSiloSubsurfData", name);

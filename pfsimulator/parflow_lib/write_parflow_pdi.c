@@ -62,7 +62,8 @@ void     WritePDI(
 
   long size;
   
-  //BeginTiming(PFBTimingIndex);
+  // Same timers as for PFB files
+  BeginTiming(PFBTimingIndex);
   
   /* Current rank */
   p = amps_Rank(amps_CommWorld);
@@ -142,6 +143,6 @@ void     WritePDI(
     PDI_finalize();
   // }
   
-  //EndTiming(PFBTimingIndex);
+  EndTiming(PFBTimingIndex);
   
 }
