@@ -125,10 +125,10 @@ void    OverlandFlowEvalDiff(
     ForPatchCellsPerFaceWithGhost(ALL,
                                   BeforeAllCells(DoNothing),
                                   LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                                  Locals(int io, itop, ip, ipp1, ippsy;
+                                  Locals(int io, itop, ip=0, ipp1, ippsy;
                                          int k1, k0x, k0y, k1x, k1y;
                                          double Press_x, Press_y;
-                                         double Sf_x, Sf_y, Sf_xo, Sf_yo, Sf_mag;
+                                         double Sf_x, Sf_y, Sf_xo=NAN, Sf_yo=NAN, Sf_mag;
                                          double Pupx, Pupy, Pupox, Pupoy, Pdown, Pdowno;),
                                   CellSetup(DoNothing),
                                   FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
@@ -252,10 +252,10 @@ void    OverlandFlowEvalDiff(
     ForPatchCellsPerFace(ALL,
                          BeforeAllCells(DoNothing),
                          LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                         Locals(int io, itop, ip, ipp1, ippsy;
+                         Locals(int io, itop, ip=0, ipp1, ippsy;
                                 int k1, k0x, k0y, k1x, k1y;
                                 double Pupx, Pupy, Pupox, Pupoy, Pdown, Pdowno;
-                                double Sf_x, Sf_y, Sf_xo, Sf_yo, Sf_mag;),
+                                double Sf_x, Sf_y, Sf_xo=NAN, Sf_yo=NAN, Sf_mag;),
                          CellSetup(DoNothing),
                          FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                          FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
