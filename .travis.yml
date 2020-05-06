@@ -18,7 +18,7 @@ jobs:
 
   - os: linux
     dist: trusty
-    name: 'Ubuntu 14.04LTS with ACC'
+    name: 'Ubuntu 14.04LTS with OMP'
     env: 
       - PF_ACC_BACKEND=omp
       - PF_TEST_VER=ubuntu1404
@@ -50,7 +50,7 @@ jobs:
 
   - os: linux
     dist: bionic
-    name: 'Ubuntu 18.04LTS with ACC'
+    name: 'Ubuntu 18.04LTS with OMP'
     env: 
       - PF_ACC_BACKEND=omp
       - PF_TEST_VER=ubuntu1804
@@ -62,7 +62,23 @@ jobs:
           - libhdf5-openmpi-100
           - hdf5-helpers
           - tcl-dev
-          - tk-dev            
+          - tk-dev     
+          
+  - os: linux
+    dist: bionic
+    name: 'Ubuntu 18.04LTS with CUDA'
+    env: 
+      - PF_ACC_BACKEND=cuda
+      - PF_TEST_VER=ubuntu1804
+    addons:
+      apt:
+        packages:
+          - gfortran
+          - libhdf5-openmpi-dev
+          - libhdf5-openmpi-100
+          - hdf5-helpers
+          - tcl-dev
+          - tk-dev   
 
 language: cpp
 
@@ -75,25 +91,29 @@ before_install:
   - echo $LC_ALL
   - test -n $CC  && unset CC
   - test -n $CXX && unset CXX
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13;
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157;
   - sudo apt-get -qq update
 
 # Set up CMake
-  - if [[ ! -f cmake-3.17.0-Linux-x86_64/bin/cmake ]]; then 
-      wget --no-check-certificate http://cmake.org/files/v3.17/cmake-3.17.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.17.0-Linux-x86_64.tar.gz; 
+  - if [[ ! -f cmake-3.12.0-Linux-x86_64/bin/cmake ]]; then 
+      wget --no-check-certificate http://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.12.0-Linux-x86_64.tar.gz; 
     fi
-  - export PATH=$TRAVIS_BUILD_DIR/cmake-3.17.0-Linux-x86_64/bin/:$PATH;
+  - export PATH=$TRAVIS_BUILD_DIR/cmake-3.12.0-Linux-x86_64/bin/:$PATH;
 
-# Update GCC
-  - sudo apt-get install -y software-properties-common;
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
-  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13;
-  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157;
-  - sudo apt update -qq;
-  - sudo apt install -y gcc-8;
-  - sudo apt install -y g++-8;
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8;
+# Set up Hypre
+  - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz && tar -xvf hypre-2.11.2.tar.gz
+  - cd hypre-2.11.2/src 
+  - ./configure && make install 
+  - export HYPRE_ROOT=`pwd`/hypre && cd ../..
 
-# Set up CUDA
+# Set up Silo
+  - wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz && tar -xvf silo-4.10.2.tar.gz
+  - cd silo-4.10.2 
+  - ./configure --disable-silex --disable-hzip --disable-fpzip && make install 
+  - export SILO_ROOT=`pwd` && cd ..
+
+  # Set up CUDA
   - CUDA_SHORT=10.1;
   - CUDA_VER=10.1.105-1;
   - wget http://developer.download.nvidia.com/compute/cuda/repos/${PF_TEST_VER}/x86_64/cuda-repo-${PF_TEST_VER}_${CUDA_VER}_amd64.deb;
@@ -122,24 +142,11 @@ before_install:
   - sudo ldconfig;
   - cd ..;
 
-# Set up Hypre
-  - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz && tar -xvf hypre-2.11.2.tar.gz
-  - cd hypre-2.11.2/src 
-  - ./configure && make install 
-  - export HYPRE_ROOT=`pwd`/hypre && cd ../..
-
-# Set up Silo
-  - wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz && tar -xvf silo-4.10.2.tar.gz
-  - cd silo-4.10.2 
-  - ./configure --disable-silex --disable-hzip --disable-fpzip && make install 
-  - export SILO_ROOT=`pwd` && cd ..
-
 # Set up RMM
-  - git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git;
-  - cd rmm;
-  - export RMM_ROOT=`pwd`;
-  - cmake . -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install;
-  - cd ..;
+  - if [[ $PF_ACC_BACKEND == 'cuda' ]]; then
+      git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git;
+      cd rmm && export RMM_ROOT=`pwd` && cmake . -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install && cd ..;
+    fi
 
 before_script:
 # Set up Parflow
@@ -150,20 +157,18 @@ before_script:
 
 # Build with PARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND
   - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install && mkdir -p $PARFLOW_DIR;
-  - mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND;
-  - cd $TRAVIS_BUILD_DIR/build && make && make install;
-
-# If $PF_ACC_BACKEND == 'omp', make sure CUDA-build works as well
-  - if [[ $PF_ACC_BACKEND == 'omp' ]]; then
-      export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
-      mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT;
-      cd $TRAVIS_BUILD_DIR/build_cuda && make install;
+  - if [[ $PF_ACC_BACKEND == 'cuda' ]]; then
+      mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT;
+    else
+      mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND;
     fi
+  - cd $TRAVIS_BUILD_DIR/build && make && make install;
 
 script:
 # Run tests with PARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND (Travis does not support running with CUDA)
-  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install;
-  - (cd $TRAVIS_BUILD_DIR/build && make test);
+  - if [[ $PF_ACC_BACKEND != 'cuda' ]]; then
+      (cd $TRAVIS_BUILD_DIR/build && make test);
+    fi
 
 after_failure:
   - cat $TRAVIS_BUILD_DIR/build/Testing/Temporary/LastTest.log
