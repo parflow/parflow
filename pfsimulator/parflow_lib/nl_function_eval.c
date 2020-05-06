@@ -214,7 +214,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
   double      *bc_patch_values;
 
-  int         *fdir;
   int ipatch, ival;
 
   VectorUpdateCommHandle  *handle;
@@ -1087,7 +1086,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int dir, ip;
-                                  double diff, u_new, u_old, value;
+                                  double diff, u_new, u_old;
                                   double x_dir_g, y_dir_g, z_dir_g;
                                   double sep, lower_cond, upper_cond;
                                   double del_x_slope, del_y_slope;),
@@ -1265,10 +1264,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                              {
                                /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
                                 * routing added */
-                               double *dummy1;
-                               double *dummy2;
-                               double *dummy3;
-                               double *dummy4;
+                               double *dummy1 = NULL;
+                               double *dummy2 = NULL;
+                               double *dummy3 = NULL;
+                               double *dummy4 = NULL;
                                PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                                                   (grid, is, bc_struct, ipatch,
                                                    problem_data, pressure, old_pressure,
@@ -1525,10 +1524,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                            {
 /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
  * routing added */
-                             double *dummy1;
-                             double *dummy2;
-                             double *dummy3;
-                             double *dummy4;
+                               double *dummy1 = NULL;
+                               double *dummy2 = NULL;
+                               double *dummy3 = NULL;
+                               double *dummy4 = NULL;
                              PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
                                                 (grid, is, bc_struct, ipatch, problem_data, pressure,
                                                  ke_, kw_, kn_, ks_,
@@ -1714,10 +1713,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                            {
                              /*  @RMM this is a new module for diffusive wave
                               */
-                             double *dummy1;
-                             double *dummy2;
-                             double *dummy3;
-                             double *dummy4;
+                               double *dummy1 = NULL;
+                               double *dummy2 = NULL;
+                               double *dummy3 = NULL;
+                               double *dummy4 = NULL;
                              PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                                                 (grid, is, bc_struct, ipatch,
                                                  problem_data, pressure, old_pressure,
@@ -1931,11 +1930,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       ForPatchCellsPerFace(DirichletBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int pp_idx, ip; double value;),
+                           Locals(int pp_idx, ip; /*double value;*/),
                            CellSetup({
                                pp_idx = 0;
                                ip = SubvectorEltIndex(p_sub, i, j, k);
-                               value = bc_patch_values[ival];
+                               /*value = bc_patch_values[ival];*/
                              }),
                            FACE(LeftFace,  { pp_idx = ip - 1; }),
                            FACE(RightFace, { pp_idx = ip + 1; }),

@@ -744,7 +744,7 @@ void          DiscretizePressure(
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int iv, im, phase;
                                   double ff, d, o_temp, f_temp;
-                                  double *ttp_p, *tm_p;),
+                                  double *tm_p;),
                            CellSetup({
                                iv = SubvectorEltIndex(f_sub, i, j, k);
                                im = SubmatrixEltIndex(A_sub, i, j, k);

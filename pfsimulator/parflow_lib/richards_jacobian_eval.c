@@ -300,7 +300,6 @@ void    RichardsJacobianEval(
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
   double      *bc_patch_values;
 
-  int         *fdir;
   int ipatch, ival;
 
   CommHandle  *handle;
@@ -860,7 +859,7 @@ void    RichardsJacobianEval(
                                  prod = rpp[ip] * dp[ip];
                                  prod_der = 0.0;
                                  prod_lo = 0.0;
-                                 prod_up = 0;0;
+                                 prod_up = 0.0;
                                  coeff = 0.0;
                                  diff = 0.0;
                                  lower_cond = 0.0;
@@ -1075,7 +1074,7 @@ void    RichardsJacobianEval(
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int ip, im;
                                   double *op;
-                                  double den_d, dend_d, value, o_temp;
+                                  double den_d, value, o_temp;
                                   double prod, prod_der, prod_val;
                                   double diff, coeff, lower_cond, upper_cond;),
                            CellSetup(
@@ -1092,6 +1091,7 @@ void    RichardsJacobianEval(
                              lower_cond = 0.0;
                              upper_cond = 0.0;
 
+							 /* Note: If dend_d is needed, redeclare in Locals block above */
                              if (phase_type == 0) {
                                den_d = fcn_phase_const;
                                //dend_d = der_phase_const;
@@ -1212,7 +1212,7 @@ void    RichardsJacobianEval(
       ForPatchCellsPerFace(OverlandBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int im, ip, io; double *op, vol;),
+                           Locals(int im, ip; double *op;),
                            CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
                            FACE(LeftFace,  { op = wp; }),
                            FACE(RightFace, { op = ep; }),
@@ -1309,6 +1309,9 @@ void    RichardsJacobianEval(
                                                          kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
                                    }
                                  }
+								 break;
+
+							 default:
                                  break;
                              }
                            })
@@ -1317,7 +1320,7 @@ void    RichardsJacobianEval(
       ForPatchCellsPerFace(SeepageFaceBC,
                            BeforeAllCells({ vol = dx * dy * dz; }),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int ip, io, im;),
+                           Locals(int ip, im;),
                            CellSetup(DoNothing),
                            FACE(LeftFace,  DoNothing),
                            FACE(RightFace, DoNothing),
@@ -1327,7 +1330,6 @@ void    RichardsJacobianEval(
                            FACE(FrontFace,
                            {
                              ip = SubvectorEltIndex(p_sub, i, j, k);
-                             io = SubvectorEltIndex(p_sub, i, j, 0);
                              im = SubmatrixEltIndex(J_sub, i, j, k);
 
                              if ((pp[ip]) >= 0.0)
