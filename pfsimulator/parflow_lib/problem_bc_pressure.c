@@ -97,10 +97,8 @@ BCStruct    *BCPressure(
   double         *patch_values;
   int patch_values_size;
 
-  int            *fdir;
-
   int num_patches;
-  int ipatch, is, i, j, k, ival, ips, phase;
+  int ipatch, is, i, j, k, ival, phase;
   int cycle_number, interval_number;
 
 
@@ -151,17 +149,13 @@ BCStruct    *BCPressure(
            * grad p - rho g grad z = 0 */
 
           GeomSolid       *ref_solid;
-          double z, dz2, dtmp;
-          double offset, interface_press, interface_den;
-          double ref_den, ref_press, nonlin_resid;
-          double density_der, density, fcn_val;
-          double height;
+          double dz2;
+          double interface_den;
           double gravity = -ProblemGravity(problem);
 
           int ref_patch;
           int max_its = 10;
-          int iterations;
-          int ix, iy, nx, iel;
+          int ix, iy, nx;
 
           double         **elevations;
 
@@ -374,17 +368,16 @@ BCStruct    *BCPressure(
           int num_points;
           int ip;
 
-          double x, y, z, dx2, dy2, dz2;
+          double dx2, dy2, dz2;
           double unitx, unity, line_min, line_length, xy, slope;
 
           double dtmp, offset, interface_press, interface_den;
-          double ref_den, ref_press, nonlin_resid;
-          double density_der, density, fcn_val;
+          double ref_den, ref_press;
+          double density_der, density;
           double height;
           double gravity = -ProblemGravity(problem);
 
           int max_its = 10;
-          int iterations;
 
           GetBCPressureTypeStruct(DirEquilPLinear, interval_data, bc_pressure_data,
                                   ipatch, interval_number);
@@ -726,7 +719,7 @@ BCStruct    *BCPressure(
             tmpp = SubvectorData(subvector);
             ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is,
             {
-              ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+				/*int ips = SubvectorEltIndex(z_mult_sub, i, j, k);*/
               itmp = SubvectorEltIndex(subvector, i, j, k);
 
               patch_values[ival] = tmpp[itmp];     /*- density*gravity*z;*/
@@ -787,7 +780,7 @@ BCStruct    *BCPressure(
         case ExactSolution:
         {
           /* Calculate pressure based on pre-defined functions */
-          double x, y, z, dx2, dy2, dz2;
+          double dx2, dy2, dz2;
           int fcn_type;
 
           GetBCPressureTypeStruct(ExactSolution, interval_data, bc_pressure_data,
@@ -868,9 +861,8 @@ BCStruct    *BCPressure(
                 ForPatchCellsPerFace(ALL,
                                      BeforeAllCells(DoNothing),
                                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                     Locals(int ips; double x, y;),
+                                     Locals(double x, y;),
                                      CellSetup({
-                                         ips = SubvectorEltIndex(z_mult_sub, i, j, k);
                                          x = RealSpaceX(i, SubgridRX(subgrid));
                                          y = RealSpaceY(j, SubgridRY(subgrid));
                                        }),
@@ -892,9 +884,8 @@ BCStruct    *BCPressure(
                 ForPatchCellsPerFace(ALL,
                                      BeforeAllCells(DoNothing),
                                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                     Locals(int ips; double x, y;),
+                                     Locals(double x, y;),
                                      CellSetup({
-                                         ips = SubvectorEltIndex(z_mult_sub, i, j, k);
                                          x = RealSpaceX(i, SubgridRX(subgrid));
                                          y = RealSpaceY(j, SubgridRY(subgrid));
                                        }),

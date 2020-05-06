@@ -107,9 +107,7 @@ void          BCPhaseSaturation(
   int nx_v, ny_v;
   int sx_v, sy_v, sz_v;
 
-  int            *fdir;
-
-  int indx, ipatch, is, i, j, k, ival, iv, sv;
+  int indx, ipatch, is, i, j, k, ival;
 
 
   /*-----------------------------------------------------------------------
@@ -158,7 +156,7 @@ void          BCPhaseSaturation(
                                    constant = (dummy0->constant);
                                  }),
                                LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                               Locals(int sv, ip;),
+                               Locals(int sv, iv;),
                                CellSetup({
                                    sv = 0;
                                    iv = SubvectorEltIndex(sat_sub, i, j, k);
@@ -231,15 +229,14 @@ void          BCPhaseSaturation(
 
         case 2:
         {
-          int ip, num_points;
+          int num_points;
           double  *point;
           double  *height;
           double lower;
           double upper;
 
-          double x, y, z, dx2, dy2, dz2;
-          double unitx, unity, line_min, line_length, xy, slope;
-          double interp_height;
+          double dx2, dy2, dz2;
+          double unitx, unity, line_min, line_length;
 
           ForPatchCellsPerFace(ALL,
                                BeforeAllCells({

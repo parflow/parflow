@@ -79,7 +79,6 @@ void    OverlandFlowEvalKin(
   double ov_epsilon;
 
   int i, j, k, ival, sy_v;
-  int *fdir;
 
   p_sub = VectorSubvector(pressure, sg);
 
