@@ -300,6 +300,16 @@ template <typename T>
 struct ReduceSumType {T value;};
 #define ReduceSum_cuda(a, b) struct ReduceSumType<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
 
+/** A constant table for fdir (borrowed from OMP backend) */
+static const int FDIR_TABLE[6][3] = {
+  {-1, 0,  0}, // Left
+  {1,  0,  0}, // Right
+  {0, -1,  0}, // Down
+  {0,  1,  0}, // Up
+  {0,  0, -1}, // Back
+  {0,  0,  1}, // Front
+};
+
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
@@ -865,34 +875,9 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 #define GrGeomSurfLoopBoxes_cuda(i, j, k, fdir, grgeom,                             \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
-  int PV_fdir[3];                                                                   \
-  fdir = PV_fdir;                                                                   \
   for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
   {                                                                                 \
-    switch (PV_f)                                                                   \
-    {                                                                               \
-    case GrGeomOctreeFaceL:                                                         \
-        fdir[0] = -1; fdir[1] = 0; fdir[2] = 0;                                     \
-        break;                                                                      \
-    case GrGeomOctreeFaceR:                                                         \
-        fdir[0] = 1; fdir[1] = 0; fdir[2] = 0;                                      \
-        break;                                                                      \
-    case GrGeomOctreeFaceD:                                                         \
-        fdir[0] = 0; fdir[1] = -1; fdir[2] = 0;                                     \
-        break;                                                                      \
-    case GrGeomOctreeFaceU:                                                         \
-        fdir[0] = 0; fdir[1] = 1; fdir[2] = 0;                                      \
-        break;                                                                      \
-    case GrGeomOctreeFaceB:                                                         \
-        fdir[0] = 0; fdir[1] = 0; fdir[2] = -1;                                     \
-        break;                                                                      \
-    case GrGeomOctreeFaceF:                                                         \
-        fdir[0] = 0; fdir[1] = 0; fdir[2] = 1;                                      \
-        break;                                                                      \
-    default:                                                                        \
-        fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999;                         \
-        break;                                                                      \
-    }                                                                               \
+    const int *fdir = FDIR_TABLE[PV_f];                                             \
                                                                                     \
     BoxArray* boxes = GrGeomSolidSurfaceBoxes(grgeom, PV_f);                        \
     for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                    \
@@ -945,34 +930,9 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 #define GrGeomPatchLoopBoxes_cuda(i, j, k, fdir, grgeom, patch_num,                 \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
-  int PV_fdir[3];                                                                   \
-  fdir = PV_fdir;                                                                   \
   for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
   {                                                                                 \
-    switch (PV_f)                                                                   \
-    {                                                                               \
-      case GrGeomOctreeFaceL:                                                       \
-        fdir[0] = -1; fdir[1] = 0; fdir[2] = 0;                                     \
-        break;                                                                      \
-      case GrGeomOctreeFaceR:                                                       \
-        fdir[0] = 1; fdir[1] = 0; fdir[2] = 0;                                      \
-        break;                                                                      \
-      case GrGeomOctreeFaceD:                                                       \
-        fdir[0] = 0; fdir[1] = -1; fdir[2] = 0;                                     \
-        break;                                                                      \
-      case GrGeomOctreeFaceU:                                                       \
-        fdir[0] = 0; fdir[1] = 1; fdir[2] = 0;                                      \
-        break;                                                                      \
-      case GrGeomOctreeFaceB:                                                       \
-        fdir[0] = 0; fdir[1] = 0; fdir[2] = -1;                                     \
-        break;                                                                      \
-      case GrGeomOctreeFaceF:                                                       \
-        fdir[0] = 0; fdir[1] = 0; fdir[2] = 1;                                      \
-        break;                                                                      \
-      default:                                                                      \
-        fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999;                         \
-        break;                                                                      \
-    }                                                                               \
+    const int *fdir = FDIR_TABLE[PV_f];                                             \
                                                                                     \
     int n_prev = 0;                                                                 \
     BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);               \
