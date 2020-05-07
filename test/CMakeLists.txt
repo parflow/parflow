@@ -104,6 +104,10 @@ endforeach()
 
 foreach(inputfile ${PARALLEL_3DTOPO_TESTS})
   foreach(processor_topology "1 1 2" "1 2 1" "2 1 1" "2 2 2" "3 3 3" "1 1 4" "1 4 1" "4 1 1")
+    if(((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP})) AND (${processor_topology} STREQUAL "3 3 3"))
+      #These tests should pass with CUDA or OMP, but they take a very long time
+      continue()
+    endif(((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP})) AND (${processor_topology} STREQUAL "3 3 3"))
     pf_add_parallel_test(${inputfile} ${processor_topology})
   endforeach()
 endforeach()
