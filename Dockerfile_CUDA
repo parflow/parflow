@@ -134,9 +134,9 @@ RUN mkdir -p build && \
        -DRMM_ROOT=$PARFLOW_DIR && \
      make install
 
-# RUN cd .. && \
-    # rm -fr parflow build
+RUN cd .. && \
+    rm -fr parflow build
 
-# WORKDIR /data
+WORKDIR /data
 
-# ENTRYPOINT ["tclsh"]
+ENTRYPOINT ["tclsh"]
