@@ -167,14 +167,14 @@ int main(int argc, char *argv [])
         exit(1);
       }
 
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
       // RMM
       rmmOptions_t rmmOptions;
       rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
       rmmOptions.initial_pool_size = 1; // size = 0 initializes half the device memory
       rmmOptions.enable_logging = false;
       RMM_ERR(rmmInitialize(&rmmOptions));
-#endif // HAVE_RMM
+#endif // PARFLOW_HAVE_RMM
     }
 #endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
 
@@ -488,7 +488,7 @@ int main(int argc, char *argv [])
   /*-----------------------------------------------------------------------
   * Shutdown RMM pool allocator
   *-----------------------------------------------------------------------*/
-#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(HAVE_RMM)
+#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(PARFLOW_HAVE_RMM)
     RMM_ERR(rmmFinalize());
 #endif
 

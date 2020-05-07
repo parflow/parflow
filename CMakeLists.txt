@@ -48,8 +48,11 @@ else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR
         message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
         add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
         set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
+      # PARFLOW_HAVE_RMM is not defined in parflow_config.h because because it is 
+      # only set for the compilation of parflow_exe, parflow_lib, and kinsol sources. 
+      # RMM must be initialized before it is used, so, for example, 
+      # the amps tests would fail if used across all compiles.
         set(PARFLOW_HAVE_RMM "yes")
-        set(HAVE_RMM ${PARFLOW_HAVE_RMM})
       else(RMM_INCLUDE AND RMM_LIBRARY)
         message(FATAL_ERROR "ERROR: RMM installation not found")
       endif(RMM_INCLUDE AND RMM_LIBRARY)

@@ -48,7 +48,7 @@
   }                                                                                    \
 }
 
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
 #include <rmm/rmm_api.h>
 /**
  * @brief RMM error handling.
@@ -110,7 +110,7 @@ static inline void *_talloc_cuda(size_t size)
 {
   void *ptr = NULL;  
   
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
 #else
   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
@@ -134,7 +134,7 @@ static inline void *_ctalloc_cuda(size_t size)
 {
   void *ptr = NULL;  
 
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
 #else
   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
@@ -155,7 +155,7 @@ static inline void *_ctalloc_cuda(size_t size)
  */
 static inline void _tfree_cuda(void *ptr)
 {
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
 #else
   CUDA_ERR(cudaFree(ptr));

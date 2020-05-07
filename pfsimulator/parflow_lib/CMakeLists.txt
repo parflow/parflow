@@ -200,7 +200,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   if( ${PARFLOW_HAVE_RMM} )
     target_link_libraries(pfsimulator rmm)
     target_include_directories(pfsimulator PRIVATE ${RMM_INCLUDE})
-    target_compile_definitions(pfsimulator PRIVATE HAVE_RMM)
+    target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
   endif( ${PARFLOW_HAVE_RMM} )
 
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )

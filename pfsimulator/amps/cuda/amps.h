@@ -1059,7 +1059,7 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line) 
 	}
 }
 
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
 #include <rmm/rmm_api.h>
 /**
  * @brief RMM error handling.
@@ -1166,7 +1166,7 @@ static inline void *_amps_talloc_cuda(size_t size)
 {
   void *ptr = NULL;  
   
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
@@ -1190,7 +1190,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 {
   void *ptr = NULL;  
 
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
@@ -1211,7 +1211,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
  */
 static inline void _amps_tfree_cuda(void *ptr)
 {
-#ifdef HAVE_RMM
+#ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmFree(ptr,0,__FILE__,__LINE__));
 #else
   CUDA_ERRCHK(cudaFree(ptr));
