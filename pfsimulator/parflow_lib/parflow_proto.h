@@ -200,7 +200,7 @@ void IntersectLineWithTriangle(unsigned int line_direction, double coord_0, doub
 void NewGlobals(char *run_name);
 void FreeGlobals(void);
 void LogGlobals(void);
-#if ACC_BACKEND == BACKEND_CUDA
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
   void CopyGlobalsToDevice(void);
 #endif
 

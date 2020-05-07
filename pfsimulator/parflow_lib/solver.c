@@ -124,7 +124,7 @@ NewSolver()
   /*-----------------------------------------------------------------------
    * Copy Globals struct to GPU (does not copy all unneccessary data)
    *-----------------------------------------------------------------------*/
-#if ACC_BACKEND == BACKEND_CUDA
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
   CopyGlobalsToDevice();
 #endif
 

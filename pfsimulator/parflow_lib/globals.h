@@ -104,7 +104,7 @@ amps_ThreadLocalDcl(extern IDB *, input_database);
 /*--------------------------------------------------------------------------
  * Define __constant__ device pointer for globals struct (CUDA)  
  *--------------------------------------------------------------------------*/
-#if (ACC_BACKEND == BACKEND_CUDA) && defined(__CUDACC__)
+#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(__CUDACC__)
 #ifdef PARFLOW_GLOBALS
 __constant__  Globals *dev_globals_ptr;
 #else
@@ -112,7 +112,7 @@ __constant__  Globals *dev_globals_ptr;
    treats *dev_globals_ptr as static variable for each compilation unit   */
 extern __constant__  Globals *dev_globals_ptr;
 #endif // PARFLOW_GLOBALS
-#endif // ACC_BACKEND == BACKEND_CUDA && __CUDACC__
+#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA && __CUDACC__
 
 
 /*--------------------------------------------------------------------------

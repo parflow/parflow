@@ -118,7 +118,7 @@ void  LogGlobals()
   }
 }
 
-#if ACC_BACKEND == BACKEND_CUDA
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
 
 /**
  * @brief A struct for constant global data in read-only device memory.
@@ -152,4 +152,4 @@ void CopyGlobalsToDevice()
   // Assign dev_globals address to dev_globals_ptr
   CUDA_ERR(cudaMemcpyToSymbol(dev_globals_ptr, &tmp_globals_ptr, sizeof(Globals*), 0, cudaMemcpyHostToDevice));
 }
-#endif // ACC_BACKEND == BACKEND_CUDA
+#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA

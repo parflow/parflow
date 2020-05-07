@@ -141,11 +141,11 @@ void PrintVersionInfo(FILE *log_file)
   fprintf(log_file, "\tWith F77 flags  : %s\n", FFLAGS);
 #endif
 
-#if (ACC_BACKEND == BACKEND_CUDA) && !defined(HAVE_RMM)
+#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && !defined(HAVE_RMM)
   fprintf(log_file, "\tWith acc backend: CUDA\n");
-#elif (ACC_BACKEND == BACKEND_CUDA) && defined(HAVE_RMM)
+#elif (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(HAVE_RMM)
   fprintf(log_file, "\tWith acc backend: CUDA+RMM\n");
-#elif (ACC_BACKEND == BACKEND_OMP)
+#elif (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_OMP)
   fprintf(log_file, "\tWith acc backend: OMP\n");
 #endif
 

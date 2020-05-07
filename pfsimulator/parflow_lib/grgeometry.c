@@ -295,7 +295,7 @@ GrGeomSolid   *GrGeomNewSolid(
 
   new_grgeomsolid->interior_boxes = NULL;
 
-#if ACC_BACKEND == BACKEND_CUDA
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
   GrGeomSolidOutflag(new_grgeomsolid) = NULL;
 #endif
 
@@ -351,7 +351,7 @@ void          GrGeomFreeSolid(
     tfree(solid->patch_boxes[f]);
   }
 
-#if ACC_BACKEND == BACKEND_CUDA
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
   // Internal _tfree_cuda function is used because unified memory is not active in this comp unit
   if(GrGeomSolidOutflag(solid)) _tfree_cuda(GrGeomSolidOutflag(solid));
 #endif

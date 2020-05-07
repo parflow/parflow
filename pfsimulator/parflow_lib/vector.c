@@ -924,7 +924,7 @@ void    InitVectorRandom(
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-#if ACC_BACKEND == BACKEND_CUDA
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
       vp[iv] = dev_drand48();
 #else
       vp[iv] = drand48();

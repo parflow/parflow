@@ -65,7 +65,7 @@ amps_ThreadLocalDcl(extern PFModule *, global_ptr_this_pf_module);
  * Define __device__ pointer for global_ptr_this_pf_module (CUDA)  
  *--------------------------------------------------------------------------*/
 
-#if (ACC_BACKEND == BACKEND_CUDA) && defined(__CUDACC__)
+#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(__CUDACC__)
 #ifdef PARFLOW_GLOBALS
 __device__ PFModule *dev_global_ptr_this_pf_module;
 #else
@@ -73,7 +73,7 @@ __device__ PFModule *dev_global_ptr_this_pf_module;
    treats the pointer as static variable for each compilation unit          */
 extern __device__ PFModule *dev_global_ptr_this_pf_module;
 #endif // PARFLOW_GLOBALS
-#endif // ACC_BACKEND == BACKEND_CUDA && __CUDACC__
+#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA && __CUDACC__
 
 /*--------------------------------------------------------------------------
  * Accessor macros

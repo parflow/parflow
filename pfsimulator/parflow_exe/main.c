@@ -61,7 +61,7 @@ using namespace SAMRAI;
 #include <cegdb.h>
 #endif
 
-#if ACC_BACKEND == BACKEND_CUDA
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
 #include "pf_cudamain.h"
 #endif
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv [])
     cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
 #endif
 
-#if ACC_BACKEND == BACKEND_CUDA
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
 
 #ifndef NDEBUG
     /*-----------------------------------------------------------------------
@@ -176,7 +176,7 @@ int main(int argc, char *argv [])
       RMM_ERR(rmmInitialize(&rmmOptions));
 #endif // HAVE_RMM
     }
-#endif // ACC_BACKEND == BACKEND_CUDA
+#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
 
     wall_clock_time = amps_Clock();
 
@@ -488,7 +488,7 @@ int main(int argc, char *argv [])
   /*-----------------------------------------------------------------------
   * Shutdown RMM pool allocator
   *-----------------------------------------------------------------------*/
-#if (ACC_BACKEND == BACKEND_CUDA) && defined(HAVE_RMM)
+#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(HAVE_RMM)
     RMM_ERR(rmmFinalize());
 #endif
 

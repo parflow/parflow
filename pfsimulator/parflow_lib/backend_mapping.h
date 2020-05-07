@@ -23,7 +23,7 @@
 
 /* PF_COMP_UNIT_TYPE determines the behavior of the NVCC compilation unit and/or OpenMP loops:
 ------------------------------------------------------------
-   CUDA: ACC_BACKEND == BACKEND_CUDA
+   CUDA: PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
 ------------------------------------------------------------
    1:     NVCC compiler, Unified Memory allocation, Parallel loops on GPUs
    2:     NVCC compiler, Unified Memory allocation, Sequential loops on host
@@ -31,7 +31,7 @@
 
 
 ------------------------------------------------------------
-   OpenMP: ACC_BACKEND == BACKEND_OMP
+   OpenMP: PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_OMP
 ------------------------------------------------------------
    1:     CXX compiler, Unified Memory allocation, Parallel loops on CPU
    2:     CXX compiler, Unified Memory allocation, Sequential loops on CPU
@@ -39,7 +39,7 @@
 */
 
 /* Include headers depending on the accelerator backend */
-#if (ACC_BACKEND == BACKEND_CUDA)
+#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA)
 
   #define ACC_ID _cuda
 
@@ -51,7 +51,7 @@
     #include "pf_cudamalloc.h"
   #endif
 
-#elif (ACC_BACKEND == BACKEND_OMP)
+#elif (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_OMP)
 
   #define ACC_ID _omp
 

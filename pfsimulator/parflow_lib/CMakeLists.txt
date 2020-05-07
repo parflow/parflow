@@ -236,7 +236,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     vector.c
     vector_utilities.c
   )
-  add_library(pfsimulator ${SRC_FILES_CONST} ${SRC_FILES_ARCH})
+  add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 

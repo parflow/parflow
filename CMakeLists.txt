@@ -12,13 +12,9 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
 
-add_compile_definitions(BACKEND_NONE=0)
-add_compile_definitions(BACKEND_CUDA=1)
-add_compile_definitions(BACKEND_OMP=2)
-
 if((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
   
-  add_compile_definitions(ACC_BACKEND=0) 
+  set(PARFLOW_ACC_BACKEND 0)
 
 else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
   
@@ -36,7 +32,7 @@ else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR
       set(CMAKE_CUDA_HOST_COMPILER mpicxx)
       message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
       set(PARFLOW_HAVE_CUDA "yes")
-      add_compile_definitions(ACC_BACKEND=1)
+      set(PARFLOW_ACC_BACKEND 1)
     else(CMAKE_CUDA_COMPILER)
       message(FATAL_ERROR "ERROR: CUDA installation not found")
     endif(CMAKE_CUDA_COMPILER)
@@ -69,7 +65,7 @@ else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
     set(PARFLOW_HAVE_OMP "yes")
-    add_compile_definitions(ACC_BACKEND=2)
+    set(PARFLOW_ACC_BACKEND 2)
   else()
     message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
   endif()
