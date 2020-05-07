@@ -14,12 +14,12 @@ MAINTAINER Jaro Hokkanen <j.hokkanen@fz-juelich.de>
 #-----------------------------------------------------------------------------
 # Set environment vars
 #-----------------------------------------------------------------------------
-ENV CMAKE_DIR /home/parflow/cmake-3.14.5-Linux-x86_64
-ENV CUDA_HOME /usr/local/cuda
 ENV DEBIAN_FRONTEND noninteractive
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/lib64/openmpi/lib
+ENV CMAKE_DIR /home/parflow/cmake-3.14.0-Linux-x86_64
+ENV CUDA_HOME /usr/local/cuda
 ENV PARFLOW_DIR /usr/local
-ENV PATH $PATH:/usr/lib64/openmpi/bin:$CMAKE_DIR/bin:$PARFLOW_DIR/bin
+ENV LD_LIBRARY_PATH $PARFLOW_DIR/openmpi-cuda/lib:$LD_LIBRARY_PATH
+ENV PATH $CMAKE_DIR/bin:$PARFLOW_DIR/openmpi-cuda/bin:$PARFLOW_DIR/bin:$PATH
 
 #-----------------------------------------------------------------------------
 #  Package dependencies
@@ -44,13 +44,21 @@ RUN apt-get update && \
     wget && mkdir -p /home/parflow
 
 #-----------------------------------------------------------------------------
+# Install CMake
+#-----------------------------------------------------------------------------
+WORKDIR /home/parflow
+RUN wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.0-Linux-x86_64.tar.gz && \
+    tar -xvf cmake-3.14.0-Linux-x86_64.tar.gz && \
+    rm -fr cmake-3.14.0-Linux-x86_64.tar.gz
+
+#-----------------------------------------------------------------------------
 # Install UCX and OpenMPI
 #-----------------------------------------------------------------------------
 WORKDIR /home/parflow
 RUN wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && \
     tar -xvf ucx-1.8.0.tar.gz && \
     cd ucx-1.8.0 && \
-    ./contrib/configure-release --prefix=$PARFLOW_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --with-java=no --disable-numa && \
+    ./contrib/configure-release --prefix=$PARFLOW_DIR/ucx-cuda --with-cuda=$CUDA_HOME --with-java=no --disable-numa && \
     make -j8 install && \
     cd .. && \
     rm -fr ucx-1.8.0 ucx-1.8.0.tar.gz
@@ -59,23 +67,21 @@ WORKDIR /home/parflow
 RUN wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && \
     tar -xvf openmpi-4.0.3.tar.gz && \
     cd openmpi-4.0.3 && \
-    ./configure --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DIR/ucx-cuda-install && \
+    ./configure --prefix=$PARFLOW_DIR/openmpi-cuda --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DIR/ucx-cuda && \
     make -j8 install && \
     ldconfig && \
     cd .. && \
-    rm -fr openmpi-4.0.3 openmpi-4.0.3.tar.gz 
+    rm -fr openmpi-4.0.3 openmpi-4.0.3.tar.gz
 
 #-----------------------------------------------------------------------------
 # Build libraries
 #-----------------------------------------------------------------------------
 
 #
-# SILO && CMake
+# SILO
 #
 WORKDIR /home/parflow
-RUN wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.5-Linux-x86_64.tar.gz && \
-    tar -xvf cmake-3.14.5-Linux-x86_64.tar.gz && \
-    curl "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" -o "silo-4.10.2.tar.gz" && \
+RUN curl "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" -o "silo-4.10.2.tar.gz" && \
     tar -xf silo-4.10.2.tar.gz && \
     cd silo-4.10.2 && \
     ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && \
@@ -88,7 +94,7 @@ RUN wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.5-Li
 #
 WORKDIR /home/parflow
 RUN wget -q https://github.com/hypre-space/hypre/archive/v2.17.0.tar.gz && \
-   tar xf v2.17.0.tar.gz && \
+   tar -xvf v2.17.0.tar.gz && \
    cd hypre-2.17.0/src && \
    ./configure --prefix=$PARFLOW_DIR && \
    make install && \
@@ -120,7 +126,8 @@ WORKDIR /home/parflow
 RUN git clone -b master --single-branch https://github.com/parflow/parflow.git parflow
 RUN mkdir -p build && \
     cd build && \
-    CC=mpicc CXX=mpicxx FC=mpif90 cmake ../parflow \
+    CC=mpicc CXX=mpicxx FC=mpif90 && \
+    cmake ../parflow \
        -DCMAKE_C_FLAGS=-lcuda \
        -DPARFLOW_AMPS_LAYER=cuda \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \

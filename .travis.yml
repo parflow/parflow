@@ -96,10 +96,10 @@ before_install:
   - sudo apt-get -qq update
 
 # Set up CMake
-  - if [[ ! -f cmake-3.12.0-Linux-x86_64/bin/cmake ]]; then 
-      wget --no-check-certificate http://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.12.0-Linux-x86_64.tar.gz; 
+  - if [[ ! -f cmake-3.14.0-Linux-x86_64/bin/cmake ]]; then 
+      wget --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.14.0-Linux-x86_64.tar.gz; 
     fi
-  - export PATH=$TRAVIS_BUILD_DIR/cmake-3.12.0-Linux-x86_64/bin/:$PATH;
+  - export PATH=$TRAVIS_BUILD_DIR/cmake-3.14.0-Linux-x86_64/bin/:$PATH;
 
 # Set up Hypre
   - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz && tar -xvf hypre-2.11.2.tar.gz
@@ -123,7 +123,7 @@ before_install:
   - sudo apt install -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-};
   - export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT};
   - export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH};
-  - export LIBRARY_PATH=${CUDA_HOME}/lib64/stubs
+  - export LIBRARY_PATH=${CUDA_HOME}/lib64/stubs;
   - export PATH=${CUDA_HOME}/bin:${PATH};
 
 # Set up UCX for OpenMPI
@@ -132,15 +132,17 @@ before_install:
   - sudo apt install -y libtool;
   - wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xvf ucx-1.8.0.tar.gz;
   - cd ucx-1.8.0;
-  - ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --with-java=no --disable-numa && sudo make -j8 install;
+  - ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda --with-cuda=$CUDA_HOME --with-java=no --disable-numa && sudo make -j8 install;
   - cd ..;
 
 # Set up OpenMPI
   - wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz;
   - cd openmpi-4.0.3;
-  - ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda-install && sudo make -j8 install;
-  - sudo ldconfig;
+  - ./configure --prefix=$TRAVIS_BUILD_DIR/openmp-cuda --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda && sudo make -j8 install;
   - cd ..;
+  - export LD_LIBRARY_PATH=${TRAVIS_BUILD_DIR}/openmpi-cuda/lib:${LD_LIBRARY_PATH};
+  - export PATH=${TRAVIS_BUILD_DIR}/openmpi-cuda/bin:${PATH};
+  - sudo ldconfig;
 
 # Set up RMM
   - if [[ $PF_ACC_BACKEND == 'cuda' ]]; then
@@ -153,7 +155,7 @@ before_script:
   - cd $TRAVIS_BUILD_DIR
   - export CC=mpicc && export CXX=mpicxx && export F77=mpif77 && export FC=mpif90
   - export OMPI_MCA_rmaps_base_oversubscribe=1
-  - export OMP_NUM_THREADS=2
+  - export OMP_NUM_THREADS=1
 
 # Build with PARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND
   - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install && mkdir -p $PARFLOW_DIR;
@@ -167,7 +169,7 @@ before_script:
 script:
 # Run tests with PARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND (Travis does not support running with CUDA)
   - if [[ $PF_ACC_BACKEND != 'cuda' ]]; then
-      (cd $TRAVIS_BUILD_DIR/build && make test);
+      cd $TRAVIS_BUILD_DIR/build && make test;
     fi
 
 after_failure:
