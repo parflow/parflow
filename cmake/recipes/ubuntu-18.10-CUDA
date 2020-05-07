@@ -1,0 +1,109 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Set install directory
+export PFDIR=`pwd`/pfdir
+mkdir -p $PFDIR && cd $PFDIR
+export PARFLOW_DIR=$PFDIR/install && mkdir -p $PARFLOW_DIR
+
+# Set up dependencies
+sudo apt-get install -y software-properties-common
+sudo add-apt-repository -y main
+sudo add-apt-repository -y universe
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157
+sudo apt-get update -qq
+sudo apt-get install -y git
+sudo apt-get install -y wget
+sudo apt-get install -y gfortran
+sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers
+sudo apt-get install -y tcl-dev tk-dev
+
+# Set up GPU driver
+sudo add-apt-repository -y ppa:graphics-drivers
+sudo apt-get update -qq
+sudo apt-get install -y nvidia-driver-440
+
+# Set up CMake
+wget --no-check-certificate http://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.12.0-Linux-x86_64.tar.gz
+export PATH=$PFDIR/cmake-3.12.0-Linux-x86_64/bin/:$PATH
+rm -fr cmake-3.12.0-Linux-x86_64.tar.gz
+
+# Set up CUDA
+CUDA_SHORT=10.1
+CUDA_VER=10.1.105-1
+OS_VER=ubuntu1804
+wget http://developer.download.nvidia.com/compute/cuda/repos/${OS_VER}/x86_64/cuda-repo-${OS_VER}_${CUDA_VER}_amd64.deb
+sudo dpkg -i cuda-repo-${OS_VER}_${CUDA_VER}_amd64.deb
+sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${OS_VER}/x86_64/7fa2af80.pub
+sudo apt update -qq
+sudo apt install -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-}
+export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
+export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+export PATH=${CUDA_HOME}/bin:${PATH}
+
+# Set up UCX for OpenMPI
+sudo apt install -y autoconf
+sudo apt install -y automake 
+sudo apt install -y libtool
+wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xvf ucx-1.8.0.tar.gz
+cd ucx-1.8.0
+./contrib/configure-release --prefix=$PARFLOW_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --with-java=no --disable-numa && sudo make -j8 install
+cd ..
+rm -fr ucx-1.8.0 ucx-1.8.0.tar.gz
+
+# Set up OpenMPI
+wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz
+cd openmpi-4.0.3
+./configure --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DIR/ucx-cuda-install && sudo make -j8 install
+sudo ldconfig
+cd ..
+rm -fr openmpi-4.0.3 openmpi-4.0.3.tar.gz 
+
+#Set up Hypre
+wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz && tar -xvf hypre-2.11.2.tar.gz
+cd hypre-2.11.2/src
+./configure --prefix=$PARFLOW_DIR && make install
+cd ../..
+rm -fr hypre-2.11.2 hypre-2.11.2.tar.gz
+
+#Set up Silo
+wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz && tar -xvf silo-4.10.2.tar.gz
+cd silo-4.10.2
+./configure --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && make install
+cd ..
+rm -fr silo-4.10.2 silo-4.10.2.tar.gz
+
+# Set up RMM
+git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+cd rmm
+cmake . -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR && make -j && make install
+cd ..
+rm -fr rmm
+
+# Set up ParFlow
+export CC=mpicc && export CXX=mpicxx && export F77=mpif77 && export FC=mpif90
+git clone -b main --single-branch https://github.com/parflow/parflow.git parflow
+
+# Build with CUDA
+mkdir -p build
+cd build
+cmake ../parflow \
+       -DCMAKE_C_FLAGS=-lcuda \
+       -DPARFLOW_AMPS_LAYER=cuda \
+       -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
+       -DHYPRE_ROOT=$PARFLOW_DIR \
+       -DSILO_ROOT=$PARFLOW_DIR \
+       -DPARFLOW_ENABLE_HDF5=TRUE \
+       -DPARFLOW_ENABLE_TIMING=TRUE \
+       -DPARFLOW_HAVE_CLM=TRUE \
+       -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+       -DPARFLOW_ACCELERATOR_BACKEND=cuda \
+       -DRMM_ROOT=$PARFLOW_DIR
+
+make install
+
+# Run tests
+export UCX_MEMTYPE_CACHE=n
+export OMPI_MCA_rmaps_base_oversubscribe=1
+make test
