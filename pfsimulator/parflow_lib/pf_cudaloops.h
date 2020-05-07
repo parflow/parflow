@@ -36,11 +36,40 @@ extern "C++"{
 #include "cub.cuh"
 
 /*--------------------------------------------------------------------------
- * CUDA block size definitions
+ * CUDA blocksize definitions
  *--------------------------------------------------------------------------*/
+
+/**
+ * The largest blocksize ParFlow is using, but also the largest blocksize 
+ * supported by any currently available NVIDIA GPU architecture. This can 
+ * also differ between different architectures. It is used for informing 
+ * the compiler about how many registers should be available for the GPU 
+ * kernel during the compilation. Another option is to use 
+ * --maxrregcount 64 compiler flag, but NVIDIA recommends specifying 
+ * this kernel-by-kernel basis by __launch_bounds__() identifier.
+ */
 #define BLOCKSIZE_MAX 1024
+
+/**
+ * The blocksize for the x-dimension. This is is set to 32, 
+ * because the warp size for the current NVIDIA architectures is 32. 
+ * Therefore, letting each thread in a warp access consecutive memory 
+ * locations along the x-dimension results in best memory coalescence. 
+ * It is also important that the total blocksize (the product of x, y, 
+ * and z-blocksizes) is divisible by the warp size (32).
+ */
 #define BLOCKSIZE_X 32
+
+/**
+ * The default blocksize for the y-dimension. Blocksizes along y and 
+ * z-dimensions are less important compared to the x-dimension. 
+ */
 #define BLOCKSIZE_Y 8
+
+/**
+ * The default blocksize for the z-dimension. Blocksizes along y and 
+ * z-dimensions are less important compared to the x-dimension. 
+ */
 #define BLOCKSIZE_Z 4
 
 /*--------------------------------------------------------------------------
@@ -531,7 +560,11 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
  *--------------------------------------------------------------------------*/
 
 /**
- * A macro for finding the 3D CUDA grid and block dimensions.
+ * @brief A macro for finding the 3D CUDA grid and block dimensions.
+ * 
+ * The runtime adjustment of y and z-blocksizes is based on a heuristic 
+ * to improve the occupancy when launching a kernel with small grid size 
+ * (does not have a very significant performance implications).
  *
  * @note Not for direct use!
  *
