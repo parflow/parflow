@@ -4,7 +4,7 @@
 
 The GPU acceleration is currently compatible only with NVIDIA GPUs due to CUDA being the only backend option so far. The minimum supported CUDA compute capability for the hardware is 6.0 (NVIDIA Pascal architecture).
 
-Building with CUDA may improve the performance significantly for large problems but is often slower for test cases and small problems due to initialization overhead associated with the GPU use. Installation reference can be found in [Dockerfile](Dockerfile_CUDA) and [travis.yml](.travis.yml).
+Building with CUDA may improve the performance significantly for large problems but is often slower for test cases and small problems due to initialization overhead associated with the GPU use. Installation reference can be found in [Ubuntu recipe](/cmake/recipes/ubuntu-18.10-CUDA), [Dockerfile](Dockerfile_CUDA), and [travis.yml](.travis.yml).
 
 
 ## CMake
@@ -20,6 +20,10 @@ cmake ../parflow -DPARFLOW_AMPS_LAYER=cuda -DCMAKE_BUILD_TYPE=Release -DPARFLOW_
 ```
 ## Running Parflow with GPU acceleration
 
-Running Parflow built with GPU support requires that each MPI process has access to a GPU device. Best performance is typically achieved by launching one MPI process per available GPU device. Launching more processes is not recommended and typically results in reduced performance. However, if more processes are used, performance may be improved using CUDA Multi-Process Service (MPS).
+Running Parflow built with GPU support requires that each MPI process has access to a GPU device. Best performance is typically achieved by launching one MPI process per available GPU device. The MPI processes map to the available GPUs by 
+
+```cudaSetDevice(node_local_rank % local_num_devices);```
+
+where node_local_rank and local_num_devices are the node-local rank of the process and the number of GPUs associated with the corresponding node, respectively. Therefore, launching 4 MPI processes per node that has 4 GPUs automatically means that each process uses a different GPU. Launching more processes is not recommended and typically results in reduced performance. However, if more processes are used, performance may be improved using CUDA Multi-Process Service (MPS).
 
 Any existing input script can be run with GPU acceleration; no changes are necessary. However, it is noted that two subsequent runs of the same input script using the same compiled executable are not guaranteed to produce identical results. This is expected behavior due to atomic operations performed by the GPU device (i.e., the order of floating-point operations may change between two subsequent runs).
