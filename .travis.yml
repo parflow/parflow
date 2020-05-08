@@ -138,10 +138,8 @@ before_install:
 # Set up OpenMPI
   - wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz;
   - cd openmpi-4.0.3;
-  - ./configure --prefix=$TRAVIS_BUILD_DIR/openmp-cuda --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda && sudo make -j8 install;
+  - ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda && sudo make -j8 install;
   - cd ..;
-  - export LD_LIBRARY_PATH=${TRAVIS_BUILD_DIR}/openmpi-cuda/lib:${LD_LIBRARY_PATH};
-  - export PATH=${TRAVIS_BUILD_DIR}/openmpi-cuda/bin:${PATH};
   - sudo ldconfig;
 
 # Set up RMM
