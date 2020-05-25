@@ -315,12 +315,9 @@ static const int FDIR_TABLE[6][3] = {
  *--------------------------------------------------------------------------*/
 
 /**
- * @brief CUDA compute kernel.
+ * @brief CUDA basic compute kernel.
  *
  * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
- * @param ix The loop starting index for the first dim [IN]
- * @param iy The loop starting index for the second dim [IN]
- * @param iz The loop starting index for the third dim [IN]
  * @param nx The size of the first dim [IN]
  * @param ny The size of the second dim [IN]
  * @param nz The size of the third dim [IN]
@@ -328,157 +325,34 @@ static const int FDIR_TABLE[6][3] = {
 template <typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI0(LambdaBody loop_body, 
-    const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
+BoxKernel(LambdaBody loop_body, const int nx, const int ny, const int nz)
 {
 
-    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
+    const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
     if(i >= nx)return;
-    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
+    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
     if(j >= ny)return;
-    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
+    const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
     if(k >= nz)return;
-
-    i += ix;
-    j += iy;
-    k += iz;
     
     loop_body(i, j, k);
-}
-
-
-/**
- * @brief CUDA compute kernel.
- *
- * @param loop_init A lambda function that calculates a thread-local index [IN]
- * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
- * @param ix The loop starting index for the first dim [IN]
- * @param iy The loop starting index for the second dim [IN]
- * @param iz The loop starting index for the third dim [IN]
- * @param nx The size of the first dim [IN]
- * @param ny The size of the second dim [IN]
- * @param nz The size of the third dim [IN]
- */
-template <typename LambdaInit, typename LambdaBody>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body, 
-    const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
-{
-
-    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    if(i >= nx)return;
-    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
-    if(j >= ny)return;
-    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
-    if(k >= nz)return;
-
-    const int i1 = loop_init(i, j, k);
-
-    i += ix;
-    j += iy;
-    k += iz;
-    
-    loop_body(i, j, k, i1);       
-}
-
-/**
- * @brief CUDA compute kernel.
- *
- * @param loop_init1 A lambda function that calculates a thread-local index [IN]
- * @param loop_init2 A lambda function that calculates a thread-local index [IN]
- * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
- * @param ix The loop starting index for the first dim [IN]
- * @param iy The loop starting index for the second dim [IN]
- * @param iz The loop starting index for the third dim [IN]
- * @param nx The size of the first dim [IN]
- * @param ny The size of the second dim [IN]
- * @param nz The size of the third dim [IN]
- */
-template <typename LambdaInit1, typename LambdaInit2, typename LambdaBody>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body, 
-    const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
-{
-
-    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    if(i >= nx)return;
-    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
-    if(j >= ny)return;
-    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
-    if(k >= nz)return;
-
-    const int i1 = loop_init1(i, j, k);
-    const int i2 = loop_init2(i, j, k);
-
-    i += ix;
-    j += iy;
-    k += iz;
-    
-    loop_body(i, j, k, i1, i2);    
-}
-
-/**
- * @brief CUDA compute kernel.
- *
- * @param loop_init1 A lambda function that calculates a thread-local index [IN]
- * @param loop_init2 A lambda function that calculates a thread-local index [IN]
- * @param loop_init3 A lambda function that calculates a thread-local index [IN]
- * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
- * @param ix The loop starting index for the first dim [IN]
- * @param iy The loop starting index for the second dim [IN]
- * @param iz The loop starting index for the third dim [IN]
- * @param nx The size of the first dim [IN]
- * @param ny The size of the second dim [IN]
- * @param nz The size of the third dim [IN]
- */
-template <typename LambdaInit1, typename LambdaInit2, typename LambdaInit3, typename LambdaBody>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_init3, 
-    LambdaBody loop_body, const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
-{
-
-    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    if(i >= nx)return;
-    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
-    if(j >= ny)return;
-    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
-    if(k >= nz)return;
-
-    const int i1 = loop_init1(i, j, k);
-    const int i2 = loop_init2(i, j, k);
-    const int i3 = loop_init3(i, j, k);
-
-    i += ix;
-    j += iy;
-    k += iz;
-    
-    loop_body(i, j, k, i1, i2, i3);    
 }
 
 /**
  * @brief CUDA compute kernel for parallel reductions.
  *
- * @param loop_init1 A lambda function that calculates a thread-local index [IN]
- * @param loop_init2 A lambda function that calculates a thread-local index [IN]
  * @param loop_fun A lambda function that evaluates the loop body [IN/OUT]
  * @param init_val The initial value of the reduction variable [IN]
  * @param rslt A pointer to the result/sum variable [OUT]
- * @param ix The loop starting index for the first dim [IN]
- * @param iy The loop starting index for the second dim [IN]
- * @param iz The loop starting index for the third dim [IN]
  * @param nx The size of the first dim [IN]
  * @param ny The size of the second dim [IN]
  * @param nz The size of the third dim [IN]
  */
-template <typename ReduceOp, typename LambdaInit1, typename LambdaInit2, typename LambdaFun, typename T>
+template <typename ReduceOp, typename LambdaFun, typename T>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun, 
-    const T init_val, T * __restrict__ rslt, const int ix, const int iy, const int iz, 
-    const int nx, const int ny, const int nz)
+DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt, 
+  const int nx, const int ny, const int nz)
 {
     // Specialize BlockReduce for a 1D block of BLOCKSIZE_X * 1 * 1 threads on type T
 #ifdef __CUDA_ARCH__
@@ -506,12 +380,7 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 
     // Evaluate the loop body
     if (idx < ntot)
-    {
-      const int i1 = loop_init1(i, j, k);
-      const int i2 = loop_init2(i, j, k);
-
-      thread_data = loop_fun(i, j, k, i1, i2).value;
-    }
+      thread_data = loop_fun(i, j, k).value;
 
     // Perform reductions
     if(std::is_same<ReduceOp, struct ReduceSumType<T>>::value)
@@ -620,18 +489,22 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     dim3 block, grid;                                                               \
     FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
-    auto lambda_init =                                                              \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
-            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
-        };                                                                          \
-    auto lambda_body =                                                              \
-        GPU_LAMBDA(const int i, const int j, const int k, const int i1)             \
-        loop_body;                                                                  \
+    const auto &ref_i1 = i1;                                                        \
                                                                                     \
-    BoxKernelI1<<<grid, block>>>(                                                   \
-        lambda_init, lambda_body, ix, iy, iz, nx, ny, nz);                          \
+    auto lambda_body =                                                              \
+      GPU_LAMBDA(int i, int j, int k)                                               \
+      {                                                                             \
+        const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
+          + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
+                                                                                    \
+        i += ix;                                                                    \
+        j += iy;                                                                    \
+        k += iz;                                                                    \
+                                                                                    \
+        loop_body;                                                                  \
+      };                                                                            \
+                                                                                    \
+    BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                            \
     CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
@@ -656,24 +529,25 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     dim3 block, grid;                                                               \
     FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
-    auto lambda_init1 =                                                             \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
-            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
-        };                                                                          \
-    auto lambda_init2 =                                                             \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
-            + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
-        };                                                                          \
-    auto lambda_body =                                                              \
-        GPU_LAMBDA(const int i, const int j, const int k,                           \
-        const int i1, const int i2)loop_body;                                       \
+    const auto &ref_i1 = i1;                                                        \
+    const auto &ref_i2 = i2;                                                        \
                                                                                     \
-    BoxKernelI2<<<grid, block>>>(                                                   \
-        lambda_init1, lambda_init2, lambda_body, ix, iy, iz, nx, ny, nz);           \
+    auto lambda_body =                                                              \
+      GPU_LAMBDA(int i, int j, int k)                                               \
+      {                                                                             \
+        const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
+          + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
+        const int i2 = k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                     \
+          + (k * ny * nx + j * nx + i) * sx2 + ref_i2;                              \
+                                                                                    \
+        i += ix;                                                                    \
+        j += iy;                                                                    \
+        k += iz;                                                                    \
+                                                                                    \
+        loop_body;                                                                  \
+      };                                                                            \
+                                                                                    \
+    BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                            \
     CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
@@ -700,30 +574,29 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     dim3 block, grid;                                                               \
     FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
-    auto lambda_init1 =                                                             \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
-            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
-        };                                                                          \
-    auto lambda_init2 =                                                             \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
-            + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
-        };                                                                          \
-    auto lambda_init3 =                                                             \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_3 + (k * ny + j) * PV_jinc_3                         \
-            + (k * ny * nx + j * nx + i) * sx3 + i3;                                \
-        };                                                                          \
-    auto lambda_body =                                                              \
-        GPU_LAMBDA(const int i, const int j, const int k,                           \
-        const int i1, const int i2, const int i3)loop_body;                         \
+    const auto &ref_i1 = i1;                                                        \
+    const auto &ref_i2 = i2;                                                        \
+    const auto &ref_i3 = i3;                                                        \
                                                                                     \
-    BoxKernelI3<<<grid, block>>>(lambda_init1, lambda_init2, lambda_init3,          \
-        lambda_body, ix, iy, iz, nx, ny, nz);                                       \
+    auto lambda_body =                                                              \
+      GPU_LAMBDA(int i, int j, int k)                                               \
+      {                                                                             \
+        const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
+          + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
+        const int i2 = k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                     \
+          + (k * ny * nx + j * nx + i) * sx2 + ref_i2;                              \
+        const int i3 = k * PV_kinc_3 + (k * ny + j) * PV_jinc_3                     \
+          + (k * ny * nx + j * nx + i) * sx3 + ref_i3;                              \
+                                                                                    \
+        i += ix;                                                                    \
+        j += iy;                                                                    \
+        k += iz;                                                                    \
+                                                                                    \
+        loop_body;                                                                  \
+      };                                                                            \
+                                                                                    \
+    BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                            \
+    CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
@@ -745,20 +618,22 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     int block = BLOCKSIZE_MAX;                                                      \
     int grid = ((nx * ny * nz - 1) + block) / block;                                \
                                                                                     \
-    auto lambda_init =                                                              \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
-            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
-        };                                                                          \
-    auto &ref_rslt = rslt;                                                          \
+    const auto &ref_rslt = rslt;                                                    \
+    const auto &ref_i1 = i1;                                                        \
+                                                                                    \
     auto lambda_body =                                                              \
-        GPU_LAMBDA(const int i, const int j, const int k,                           \
-                   const int i1, const int i2)                                      \
-        {                                                                           \
-            auto rslt = ref_rslt;                                                   \
-            loop_body;                                                              \
-        };                                                                          \
+      GPU_LAMBDA(int i, int j, int k)                                               \
+      {                                                                             \
+        auto rslt = ref_rslt;                                                       \
+        const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
+          + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
+                                                                                    \
+        i += ix;                                                                    \
+        j += iy;                                                                    \
+        k += iz;                                                                    \
+                                                                                    \
+        loop_body;                                                                  \
+      };                                                                            \
                                                                                     \
     decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_cuda(sizeof(decltype(rslt)));\
     MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
@@ -766,8 +641,8 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
-    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init, lambda_init,     \
-      lambda_body, rslt, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
+    DotKernel<traits::result_type><<<grid, block>>>(lambda_body,                    \
+      rslt, ptr_rslt, nx, ny, nz);                                                  \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     CUDA_ERR(cudaStreamSynchronize(0));                                             \
                                                                                     \
@@ -793,26 +668,25 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     int block = BLOCKSIZE_MAX;                                                      \
     int grid = ((nx * ny * nz - 1) + block) / block;                                \
                                                                                     \
-    auto lambda_init1 =                                                             \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
-            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
-        };                                                                          \
-    auto lambda_init2 =                                                             \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
-            + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
-        };                                                                          \
-    auto &ref_rslt = rslt;                                                          \
+    const auto &ref_rslt = rslt;                                                    \
+    const auto &ref_i1 = i1;                                                        \
+    const auto &ref_i2 = i2;                                                        \
+                                                                                    \
     auto lambda_body =                                                              \
-        GPU_LAMBDA(const int i, const int j, const int k,                           \
-                   const int i1, const int i2)                                      \
-        {                                                                           \
-            auto rslt = ref_rslt;                                                   \
-            loop_body;                                                              \
-        };                                                                          \
+      GPU_LAMBDA(int i, int j, int k)                                               \
+      {                                                                             \
+        auto rslt = ref_rslt;                                                       \
+        const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
+          + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
+        const int i2 = k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                     \
+          + (k * ny * nx + j * nx + i) * sx2 + ref_i2;                              \
+                                                                                    \
+        i += ix;                                                                    \
+        j += iy;                                                                    \
+        k += iz;                                                                    \
+                                                                                    \
+        loop_body;                                                                  \
+      };                                                                            \
                                                                                     \
     decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_cuda(sizeof(decltype(rslt)));\
     MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
@@ -820,8 +694,8 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
-    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1, lambda_init2,   \
-      lambda_body, rslt, ptr_rslt, ix, iy, iz, nx, ny, nz);                         \
+    DotKernel<traits::result_type><<<grid, block>>>(lambda_body,                    \
+      rslt, ptr_rslt, nx, ny, nz);                                                  \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     CUDA_ERR(cudaStreamSynchronize(0));                                             \
                                                                                     \
@@ -861,9 +735,17 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       int ny = PV_diff_y + 1;                                                       \
       int nz = PV_diff_z + 1;                                                       \
                                                                                     \
-      BoxKernelI0<<<grid, block>>>(                                                 \
-          GPU_LAMBDA(const int i, const int j, const int k)loop_body,               \
-          PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                      \
+      auto lambda_body =                                                            \
+        GPU_LAMBDA(int i, int j, int k)                                             \
+        {                                                                           \
+          i += PV_ixl;                                                              \
+          j += PV_iyl;                                                              \
+          k += PV_izl;                                                              \
+                                                                                    \
+          loop_body;                                                                \
+        };                                                                          \
+                                                                                    \
+      BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                          \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
@@ -904,20 +786,24 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
         int ny = PV_diff_y + 1;                                                     \
         int nz = PV_diff_z + 1;                                                     \
                                                                                     \
-        const int fdir_capt0 = fdir[0];                                             \
-        const int fdir_capt1 = fdir[1];                                             \
-        const int fdir_capt2 = fdir[2];                                             \
+        const int _fdir0 = fdir[0];                                                 \
+        const int _fdir1 = fdir[1];                                                 \
+        const int _fdir2 = fdir[2];                                                 \
                                                                                     \
         auto lambda_body =                                                          \
-          GPU_LAMBDA(const int i, const int j, const int k)                         \
+          GPU_LAMBDA(int i, int j, int k)                                           \
           {                                                                         \
-            const int fdir[3] = {fdir_capt0, fdir_capt1, fdir_capt2};               \
+            const int fdir[3] = {_fdir0, _fdir1, _fdir2};                           \
+                                                                                    \
+            i += PV_ixl;                                                            \
+            j += PV_iyl;                                                            \
+            k += PV_izl;                                                            \
+                                                                                    \
             loop_body;                                                              \
             (void)fdir;                                                             \
           };                                                                        \
                                                                                     \
-        BoxKernelI0<<<grid, block>>>(lambda_body,                                   \
-            PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                    \
+        BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                        \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -960,27 +846,26 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
         int ny = PV_diff_y + 1;                                                     \
         int nz = PV_diff_z + 1;                                                     \
                                                                                     \
-        auto lambda_init =                                                          \
-            GPU_LAMBDA(const int i, const int j, const int k)                       \
-            {                                                                       \
-                return n_prev + k * ny * nx + j * nx + i;                           \
-            };                                                                      \
-        n_prev += nz * ny * nx;                                                     \
-                                                                                    \
-        const int fdir_capt0 = fdir[0];                                             \
-        const int fdir_capt1 = fdir[1];                                             \
-        const int fdir_capt2 = fdir[2];                                             \
+        const int _fdir0 = fdir[0];                                                 \
+        const int _fdir1 = fdir[1];                                                 \
+        const int _fdir2 = fdir[2];                                                 \
                                                                                     \
         auto lambda_body =                                                          \
-             GPU_LAMBDA(const int i, const int j, const int k, int ival)            \
-             {                                                                      \
-               const int fdir[3] = {fdir_capt0, fdir_capt1, fdir_capt2};            \
-               loop_body;                                                           \
-               (void)fdir;                                                          \
-             };                                                                     \
+          GPU_LAMBDA(int i, int j, int k)                                           \
+          {                                                                         \
+            const int fdir[3] = {_fdir0, _fdir1, _fdir2};                           \
+            int ival = n_prev + k * ny * nx + j * nx + i;                           \
                                                                                     \
-        BoxKernelI1<<<grid, block>>>(                                               \
-            lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
+            i += PV_ixl;                                                            \
+            j += PV_iyl;                                                            \
+            k += PV_izl;                                                            \
+                                                                                    \
+            loop_body;                                                              \
+            (void)fdir;                                                             \
+          };                                                                        \
+        n_prev += nz * ny * nx;                                                     \
+                                                                                    \
+        BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                        \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -1022,32 +907,31 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
         int ny = PV_diff_y + 1;                                                     \
         int nz = PV_diff_z + 1;                                                     \
                                                                                     \
-        auto lambda_init =                                                          \
-            GPU_LAMBDA(const int i, const int j, const int k)                       \
+        auto lambda_body =                                                          \
+          GPU_LAMBDA(int i, int j, int k)                                           \
+          {                                                                         \
+            int ival = n_prev + k * ny * nx + j * nx + i;                           \
+                                                                                    \
+            i += PV_ixl;                                                            \
+            j += PV_iyl;                                                            \
+            k += PV_izl;                                                            \
+                                                                                    \
+            UNPACK(locals);                                                         \
+            setup;                                                                  \
+            switch(PV_f)                                                            \
             {                                                                       \
-                return n_prev + k * ny * nx + j * nx + i;                           \
-            };                                                                      \
+              f_left;                                                               \
+              f_right;                                                              \
+              f_down;                                                               \
+              f_up;                                                                 \
+              f_back;                                                               \
+              f_front;                                                              \
+            }                                                                       \
+            finalize;                                                               \
+          };                                                                        \
         n_prev += nz * ny * nx;                                                     \
                                                                                     \
-        auto lambda_body =                                                          \
-             GPU_LAMBDA(const int i, const int j, const int k, int ival)            \
-             {                                                                      \
-                UNPACK(locals);                                                     \
-                setup;                                                              \
-                switch(PV_f)                                                        \
-                {                                                                   \
-                  f_left;                                                           \
-                  f_right;                                                          \
-                  f_down;                                                           \
-                  f_up;                                                             \
-                  f_back;                                                           \
-                  f_front;                                                          \
-                }                                                                   \
-                finalize;                                                           \
-             };                                                                     \
-                                                                                    \
-        BoxKernelI1<<<grid, block>>>(                                               \
-            lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
+        BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                        \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -1098,10 +982,17 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
       dim3 grid;                                                                    \
       FindDims(grid, block, PV_diff_x, PV_diff_y, PV_diff_z, 1);                    \
                                                                                     \
-      auto lambda_body = GPU_LAMBDA(const int i, const int j, const int k)loop_body;\
+      auto lambda_body =                                                            \
+        GPU_LAMBDA(int i, int j, int k)                                             \
+        {                                                                           \
+          i += PV_ixl;                                                              \
+          j += PV_iyl;                                                              \
+          k += PV_izl;                                                              \
                                                                                     \
-      (BoxKernelI0<<<grid, block>>>(lambda_body,                                    \
-          PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z));                \
+          loop_body;                                                                \
+        };                                                                          \
+                                                                                    \
+      (BoxKernel<<<grid, block>>>(lambda_body, PV_diff_x, PV_diff_y, PV_diff_z));   \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
@@ -1146,16 +1037,19 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
                                                                                     \
       int *outflag = GrGeomSolidOutflag(grgeom);                                    \
       auto lambda_body =                                                            \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
+          i += ix;                                                                  \
+          j += iy;                                                                  \
+          k += iz;                                                                  \
+                                                                                    \
           if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] == 1)           \
           {                                                                         \
             body;                                                                   \
           }                                                                         \
         };                                                                          \
                                                                                     \
-      BoxKernelI0<<<grid, block>>>(                                                 \
-          lambda_body, ix, iy, iz, nx, ny, nz);                                     \
+      BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                          \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
