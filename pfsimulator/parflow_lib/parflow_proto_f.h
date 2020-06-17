@@ -125,6 +125,7 @@ void SADVECT(double *s, double *sn,
                      nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,                                                                                                     \
                      sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                              \
                      lai_data, sai_data, z0m_data, displa_data,                                                                                                                \
+                     slope_x_data, slope_y_data,                                                                                                                               \
                      eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                             \
                      qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                      \
                      qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                   \
@@ -136,6 +137,7 @@ void SADVECT(double *s, double *sn,
           dz_mult_data, &istep, &dt, &t, &start_time, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &nz_rz, &ip, &p, &q, &r, &gnx, &gny, &rank,                 \
           sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                         \
           lai_data, sai_data, z0m_data, displa_data,                                                                                                                           \
+          slope_x_data, slope_y_data,                                                                                                                                          \
           eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                                        \
           qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                                 \
           qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                              \
@@ -150,6 +152,7 @@ void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_
              int *nx_f, int *ny_f, int *nz_f, int *nz_rz, int *ip, int *p, int *q, int *r, int *gnx, int *gny, int *rank,
              double *sw_data, double *lw_data, double *prcp_data, double *tas_data, double *u_data, double *v_data, double *patm_data, double *qatm_data,
              double *lai_data, double *sai_data, double *z0m_data, double *displa_data,
+             double *slope_x_data, double *slope_y_data,
              double *eflx_lh_tot_data, double *eflx_lwrad_out_data, double *eflx_sh_tot_data, double *eflx_soil_grnd_data, double *qflx_eval_tot_data,
              double *qflx_evap_grnd_data, double *qflx_evap_soi_data, double *qflx_evap_veg_data, double *qflx_tran_veg_data,
              double *qflx_infl_data, double *swe_out_data, double *t_grnd_data, double *t_soil_data, int *clm_dump_interval, int *clm_1d_out,

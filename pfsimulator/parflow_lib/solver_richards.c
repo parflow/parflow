@@ -1565,12 +1565,17 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
   Subvector *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub, *lai_forc_sub, *sai_forc_sub, *z0m_forc_sub, *displa_forc_sub, *veg_map_forc_sub;      /*BH: added LAI/SAI/Z0M/DISPLA/vegmap */
 
+  /* Slopes */
+  Subvector *slope_x_sub, *slope_y_sub;
+  double *slope_x_data, *slope_y_data;
+
   /* IMF: For writing CLM output */
   Subvector *eflx_lh_tot_sub, *eflx_lwrad_out_sub, *eflx_sh_tot_sub,
     *eflx_soil_grnd_sub, *qflx_evap_tot_sub, *qflx_evap_grnd_sub,
     *qflx_evap_soi_sub, *qflx_evap_veg_sub, *qflx_tran_veg_sub,
     *qflx_infl_sub, *swe_out_sub, *t_grnd_sub, *tsoil_sub, *irr_flag_sub,
     *qflx_qirr_sub, *qflx_qirr_inst_sub;
+
   double *eflx_lh, *eflx_lwrad, *eflx_sh, *eflx_grnd, *qflx_tot, *qflx_grnd,
     *qflx_soi, *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *iflag,
     *qirr, *qirr_inst;
@@ -2177,6 +2182,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         veg_map_forc_sub =
           VectorSubvector(instance_xtra->veg_map_forc, is);
 
+        /* Slope */
+        slope_x_sub = VectorSubvector(ProblemDataTSlopeX(problem_data), is);
+        slope_y_sub = VectorSubvector(ProblemDataTSlopeY(problem_data), is);
+        slope_x_data = SubvectorData(slope_x_sub);
+        slope_y_data = SubvectorData(slope_y_sub);
+
         nx = SubgridNX(subgrid);
         ny = SubgridNY(subgrid);
         nz = SubgridNZ(subgrid);
@@ -2334,6 +2345,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          gny, rank, sw_data, lw_data, prcp_data,
                          tas_data, u_data, v_data, patm_data,
                          qatm_data, lai_data, sai_data, z0m_data,
+                         slope_x_data, slope_y_data,
                          displa_data, eflx_lh, eflx_lwrad, eflx_sh,
                          eflx_grnd, qflx_tot, qflx_grnd, qflx_soi,
                          qflx_eveg, qflx_tveg, qflx_in, swe, t_g,

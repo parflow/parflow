@@ -3,6 +3,7 @@
 subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,           &
 start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx,gny,rank,sw_pf,lw_pf,    &
 prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,                               &
+slope_x_pf,slope_y_pf,                                                                                 &
 eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,                                                     &
 qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
@@ -114,6 +115,9 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   real(r8) :: irr_flag_pf((nx+2)*(ny+2)*3)       ! irrigation flag for deficit-based scheduling -- 1 = irrigate, 0 = no-irrigate
   real(r8) :: qirr_pf((nx+2)*(ny+2)*3)           ! irrigation applied above ground -- spray or drip (2D)
   real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(pf_nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
+
+  real(r8) :: slope_x_pf((nx+2)*(ny+2)*3)        ! Slope in x-direction from PF
+  real(r8) :: slope_y_pf((nx+2)*(ny+2)*3)        ! Slope in y-direction from PF
 
   ! output keys
   real(r8) :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
@@ -524,7 +528,8 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   !BH: this replaces values from clm_dynvegpar called previously from drv_clmini and 
   !BH: replaces values from drv_readvegpf
   call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
-	patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg)
+  patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg, &
+  slope_x_pf,slope_y_pf)
   !=== Actual time loop
   !    (loop over CLM tile space, call 1D CLM at each point)
   do t = 1, drv%nch     
