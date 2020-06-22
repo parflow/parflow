@@ -62,7 +62,9 @@ typedef struct {
 
 #if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
   /** Flags for GrGeomOutLoop cells */
+  int *inflag;
   int *outflag;
+  int *surfflag;
 #endif
 
   /* these fields are used to relate the background with the octree */
@@ -94,7 +96,9 @@ typedef struct {
 #define GrGeomSolidData(solid)          ((solid)->data)
 #define GrGeomSolidPatches(solid)       ((solid)->patches)
 #define GrGeomSolidNumPatches(solid)    ((solid)->num_patches)
+#define GrGeomSolidInflag(solid)        ((solid)->inflag)
 #define GrGeomSolidOutflag(solid)       ((solid)->outflag)
+#define GrGeomSolidSurfflag(solid)      ((solid)->surfflag)
 #define GrGeomSolidOctreeBGLevel(solid) ((solid)->octree_bg_level)
 #define GrGeomSolidOctreeIX(solid)      ((solid)->octree_ix)
 #define GrGeomSolidOctreeIY(solid)      ((solid)->octree_iy)

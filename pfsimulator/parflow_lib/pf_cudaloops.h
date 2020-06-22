@@ -710,42 +710,99 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
 #define GrGeomInLoopBoxes_cuda(i, j, k,                                             \
   grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
 {                                                                                   \
+  int ixl = std::numeric_limits<int>::max();                                        \
+  int iyl = std::numeric_limits<int>::max();                                        \
+  int izl = std::numeric_limits<int>::max();                                        \
+  int ixu = 0;                                                                      \
+  int iyu = 0;                                                                      \
+  int izu = 0;                                                                      \
+                                                                                    \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
   for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                      \
   {                                                                                 \
     Box box = BoxArrayGetBox(boxes, PV_box);                                        \
     /* find octree and region intersection */                                       \
-    int PV_ixl = pfmax(ix, box.lo[0]);                                              \
-    int PV_iyl = pfmax(iy, box.lo[1]);                                              \
-    int PV_izl = pfmax(iz, box.lo[2]);                                              \
-    int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                                   \
-    int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                                   \
-    int PV_izu = pfmin((iz + nz - 1), box.up[2]);                                   \
+    ixl = pfmin(ixl, pfmax(ix, box.lo[0]));                                         \
+    iyl = pfmin(iyl, pfmax(iy, box.lo[1]));                                         \
+    izl = pfmin(izl, pfmax(iz, box.lo[2]));                                         \
+    ixu = pfmax(ixu, pfmin((ix + nx - 1), box.up[0]));                              \
+    iyu = pfmax(iyu, pfmin((iy + ny - 1), box.up[1]));                              \
+    izu = pfmax(izu, pfmin((iz + nz - 1), box.up[2]));                              \
+  }                                                                                 \
                                                                                     \
-    if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                    \
+  int nxl = ixu - ixl + 1;                                                          \
+  int nyl = iyu - iyl + 1;                                                          \
+  int nzl = izu - izl + 1;                                                          \
+                                                                                    \
+  if(!GrGeomSolidInflag(grgeom))                                                    \
+  {                                                                                 \
+    unsigned inflag_size = sizeof(int) * (unsigned)(nzl * nyl * nxl);               \
+    int *inflag = (int*)_ctalloc_cuda(inflag_size);                                 \
+                                                                                    \
+    for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                    \
     {                                                                               \
-      int PV_diff_x = PV_ixu - PV_ixl;                                              \
-      int PV_diff_y = PV_iyu - PV_iyl;                                              \
-      int PV_diff_z = PV_izu - PV_izl;                                              \
+      Box box = BoxArrayGetBox(boxes, PV_box);                                      \
+      /* find octree and region intersection */                                     \
+      int PV_ixl = pfmax(ix, box.lo[0]);                                            \
+      int PV_iyl = pfmax(iy, box.lo[1]);                                            \
+      int PV_izl = pfmax(iz, box.lo[2]);                                            \
+      int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                                 \
+      int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                                 \
+      int PV_izu = pfmin((iz + nz - 1), box.up[2]);                                 \
                                                                                     \
+      if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                  \
+      {                                                                             \
+        int PV_diff_x = PV_ixu - PV_ixl;                                            \
+        int PV_diff_y = PV_iyu - PV_iyl;                                            \
+        int PV_diff_z = PV_izu - PV_izl;                                            \
+                                                                                    \
+        dim3 block, grid;                                                           \
+        FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);      \
+                                                                                    \
+        int nx_box = PV_diff_x + 1;                                                 \
+        int ny_box = PV_diff_y + 1;                                                 \
+        int nz_box = PV_diff_z + 1;                                                 \
+                                                                                    \
+        auto lambda_body =                                                          \
+          GPU_LAMBDA(int i, int j, int k)                                           \
+          {                                                                         \
+            i += PV_ixl;                                                            \
+            j += PV_iyl;                                                            \
+            k += PV_izl;                                                            \
+                                                                                    \
+            loop_body;                                                              \
+            inflag[(k - izl) * nyl * nxl + (j - iyl) * nxl + (i - ixl)] = 1;        \
+          };                                                                        \
+                                                                                    \
+        BoxKernel<<<grid, block>>>(lambda_body, nx_box, ny_box, nz_box);            \
+        CUDA_ERR(cudaPeekAtLastError());                                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
+      }                                                                             \
+    }                                                                               \
+    GrGeomSolidInflag(grgeom) = inflag;                                             \
+  }                                                                                 \
+  else                                                                              \
+  {                                                                                 \
+    if(nxl > 0 && nyl > 0 && nzl > 0)                                               \
+    {                                                                               \
       dim3 block, grid;                                                             \
-      FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);        \
+      FindDims(grid, block, nxl, nyl, nzl, 1);                                      \
                                                                                     \
-      int nx = PV_diff_x + 1;                                                       \
-      int ny = PV_diff_y + 1;                                                       \
-      int nz = PV_diff_z + 1;                                                       \
-                                                                                    \
+      int *inflag = GrGeomSolidInflag(grgeom);                                      \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
-          i += PV_ixl;                                                              \
-          j += PV_iyl;                                                              \
-          k += PV_izl;                                                              \
+          if(inflag[k * nyl * nxl + j * nxl + i] == 1)                              \
+          {                                                                         \
+            i += ixl;                                                               \
+            j += iyl;                                                               \
+            k += izl;                                                               \
                                                                                     \
-          loop_body;                                                                \
+            loop_body;                                                              \
+          }                                                                         \
         };                                                                          \
                                                                                     \
-      BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                          \
+      BoxKernel<<<grid, block>>>(lambda_body, nxl, nyl, nzl);                       \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \

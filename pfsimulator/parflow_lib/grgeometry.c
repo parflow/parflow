@@ -296,7 +296,9 @@ GrGeomSolid   *GrGeomNewSolid(
   new_grgeomsolid->interior_boxes = NULL;
 
 #if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+  GrGeomSolidInflag(new_grgeomsolid) = NULL;
   GrGeomSolidOutflag(new_grgeomsolid) = NULL;
+  GrGeomSolidSurfflag(new_grgeomsolid) = NULL;
 #endif
 
   for (int f = 0; f < GrGeomOctreeNumFaces; f++)
@@ -353,7 +355,9 @@ void          GrGeomFreeSolid(
 
 #if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
   // Internal _tfree_cuda function is used because unified memory is not active in this comp unit
+  if(GrGeomSolidInflag(solid)) _tfree_cuda(GrGeomSolidInflag(solid));
   if(GrGeomSolidOutflag(solid)) _tfree_cuda(GrGeomSolidOutflag(solid));
+  if(GrGeomSolidSurfflag(solid)) _tfree_cuda(GrGeomSolidSurfflag(solid));
 #endif
 
   GrGeomFreeOctree(GrGeomSolidData(solid));
