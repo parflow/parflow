@@ -722,12 +722,13 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   {                                                                                 \
     Box box = BoxArrayGetBox(boxes, PV_box);                                        \
     /* find octree and region intersection */                                       \
-    ixl = pfmin(ixl, pfmax(ix, box.lo[0]));                                         \
-    iyl = pfmin(iyl, pfmax(iy, box.lo[1]));                                         \
-    izl = pfmin(izl, pfmax(iz, box.lo[2]));                                         \
-    ixu = pfmax(ixu, pfmin((ix + nx - 1), box.up[0]));                              \
-    iyu = pfmax(iyu, pfmin((iy + ny - 1), box.up[1]));                              \
-    izu = pfmax(izu, pfmin((iz + nz - 1), box.up[2]));                              \
+    ixl = pfmin(ixl, box.lo[0]);                                         \
+    iyl = pfmin(iyl, box.lo[1]);                                         \
+    izl = pfmin(izl, box.lo[2]);                                         \
+    ixu = pfmax(ixu, box.up[0]);                              \
+    iyu = pfmax(iyu, box.up[1]);                              \
+    izu = pfmax(izu, box.up[2]);                              \
+  /*  printf("N:%d: PV_box:%d, iz:%d, nz:%d, box.lo[2]:%d, box.up[2]:%d\n",amps_node_rank,PV_box,iz,nz,box.lo[2],box.up[2]);*/\
   }                                                                                 \
                                                                                     \
   int nxl = ixu - ixl + 1;                                                          \
@@ -743,12 +744,12 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     {                                                                               \
       Box box = BoxArrayGetBox(boxes, PV_box);                                      \
       /* find octree and region intersection */                                     \
-      int PV_ixl = pfmax(ix, box.lo[0]);                                            \
-      int PV_iyl = pfmax(iy, box.lo[1]);                                            \
-      int PV_izl = pfmax(iz, box.lo[2]);                                            \
-      int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                                 \
-      int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                                 \
-      int PV_izu = pfmin((iz + nz - 1), box.up[2]);                                 \
+      int PV_ixl = box.lo[0];                                            \
+      int PV_iyl = box.lo[1];                                            \
+      int PV_izl = box.lo[2];                                            \
+      int PV_ixu = box.up[0];                                 \
+      int PV_iyu = box.up[1];                                 \
+      int PV_izu = box.up[2];                                 \
                                                                                     \
       if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                  \
       {                                                                             \
@@ -763,6 +764,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         int ny_box = PV_diff_y + 1;                                                 \
         int nz_box = PV_diff_z + 1;                                                 \
                                                                                     \
+        auto node_rank = amps_node_rank; \
         auto lambda_body =                                                          \
           GPU_LAMBDA(int i, int j, int k)                                           \
           {                                                                         \
@@ -772,6 +774,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
             loop_body;                                                              \
             inflag[(k - izl) * nyl * nxl + (j - iyl) * nxl + (i - ixl)] = 1;        \
+           /* printf("N:%d: nxl:%d, nyl:%d, nzl:%d, ixl:%d, iyl:%d, izl:%d, i:%d, j:%d, k:%d\n",node_rank,nxl,nyl,nzl,ixl,iyl,izl,i,j,k);*/\
           };                                                                        \
                                                                                     \
         BoxKernel<<<grid, block>>>(lambda_body, nx_box, ny_box, nz_box);            \
@@ -789,6 +792,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       FindDims(grid, block, nxl, nyl, nzl, 1);                                      \
                                                                                     \
       int *inflag = GrGeomSolidInflag(grgeom);                                      \
+              auto node_rank = amps_node_rank; \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
@@ -799,6 +803,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             k += izl;                                                               \
                                                                                     \
             loop_body;                                                              \
+           /* printf("N:%d ELSE: nxl:%d, nyl:%d, nzl:%d, ixl:%d, iyl:%d, izl:%d, i:%d, j:%d, k:%d\n",node_rank,nxl,nyl,nzl,ixl,iyl,izl,i,j,k);*/\
           }                                                                         \
         };                                                                          \
                                                                                     \
