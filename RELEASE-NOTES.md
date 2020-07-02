@@ -12,6 +12,7 @@ work.
 * New overland flow formulations
 * Utility for writing PFB file from R
 * Additional solid file utilities in TCL
+* NetCDF and HDF5 added to Docker instance
 
 ## User Visible Changes
 
