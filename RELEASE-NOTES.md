@@ -15,7 +15,7 @@ work.
 
 ## User Visible Changes
 
-### Autoconf support has been removed.
+### Autoconf support has been removed
 
 The GNU Autoconf (e.g. configure) support has been dropped.  Use CMake
 to build ParFlow.  See the README.md file for information on building
