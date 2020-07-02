@@ -7,6 +7,7 @@ work.
 
 ## Overview of Changes
 
+* Autoconf support has been removed.
 * Support for on-node parallelism using OpenMP and CUDA
 * New overland flow formulations
 * Utility for writing PFB file from R
@@ -64,6 +65,8 @@ The ParFlow Docker instance now includes support for NetCDF and HDF5.
 ## Bug Fixes
 
 ### Fixed compilation issue with NetCDF
+
+CMake support for NetCDF compilation has been improved.
 
 ### Memory leaks
 
