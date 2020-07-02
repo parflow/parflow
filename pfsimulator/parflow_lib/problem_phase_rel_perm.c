@@ -152,7 +152,7 @@ VanGTable *VanGComputeTable(
   double del_der[num_sample_points + 1];
   double alph, beta, magn;
   int index;
-  double interval, m, opahn, ahnm1, coeff;
+  double interval, m;
 
   // Loop over sample min_pressure_head to 0.0, min_pressure_head/num_sample_points step
   interval = min_pressure_head / (double)(num_sample_points - 1);
@@ -163,13 +163,13 @@ VanGTable *VanGComputeTable(
   for (index = 0; index <= num_sample_points; index++)
   {
     x[index] = fabs(index * interval);
-    opahn = 1.0 + pow(alpha * x[index], n);
-    ahnm1 = pow(alpha * x[index], n - 1);
+    double opahn = 1.0 + pow(alpha * x[index], n);
+    double ahnm1 = pow(alpha * x[index], n - 1);
     // calculating function at interpolation points
     a[index] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
                / pow(opahn, (m / 2));
 
-    coeff = 1.0 - ahnm1 * pow(opahn, -m);
+    double coeff = 1.0 - ahnm1 * pow(opahn, -m);
     // calculating derivative at interpolation points
     a_der[index] = 2.0 * (coeff / (pow(opahn, (m / 2))))
                    * ((n - 1) * pow(alpha * x[index], n - 2) * alpha
@@ -257,7 +257,7 @@ VanGTable *VanGComputeTable(
   return new_table;
 }
 
-
+__host__ __device__
 static inline double VanGLookupSpline(
                                       double     pressure_head,
                                       VanGTable *lookup_table,
@@ -442,9 +442,7 @@ void         PhaseRelPerm(
   int ix, iy, iz;
   int nx, ny, nz;
 
-  int i, j, k, r, ipr, ipp, ipd;
-
-  int n_index, alpha_index;
+  int i, j, k, r;
 
   int num_regions, *region_indices;
   int ir, *fdir;
@@ -499,7 +497,7 @@ void         PhaseRelPerm(
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                            nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub,
+              int ipr = SubvectorEltIndex(pr_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
               prdat[ipr] = values[ir];
             });
@@ -509,7 +507,7 @@ void         PhaseRelPerm(
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                            nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub,
+              int ipr = SubvectorEltIndex(pr_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
               prdat[ipr] = 0.0;
             });
@@ -542,7 +540,7 @@ void         PhaseRelPerm(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub, i, j, k);
+              int ipr = SubvectorEltIndex(pr_sub, i, j, k);
               prdat[ipr] = values[ir];
             });
           }
@@ -550,7 +548,7 @@ void         PhaseRelPerm(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub, i, j, k);
+              int ipr = SubvectorEltIndex(pr_sub, i, j, k);
               prdat[ipr] = 0.0;
             });
           }     /* End else clause */
@@ -562,8 +560,7 @@ void         PhaseRelPerm(
     case 1: /* Van Genuchten relative permeability */
     {
       int data_from_file;
-      double  *alphas, *ns, head;
-      double alpha, n, m, opahn, ahnm1, coeff;
+      double  *alphas, *ns;
 
       Vector  *n_values, *alpha_values;
 
@@ -612,14 +609,14 @@ void         PhaseRelPerm(
             {
               dummy1->print_table[ir] = 0;
 
-              for (head = 0.0; head < fabs((dummy1->lookup_tables[ir])->min_pressure_head); head += 0.001)
+              for (double head = 0.0; head < fabs((dummy1->lookup_tables[ir])->min_pressure_head); head += 0.001)
               {
-                alpha = alphas[ir];
-                n = ns[ir];
-                m = 1.0e0 - (1.0e0 / n);
+                double alpha = alphas[ir];
+                double n = ns[ir];
+                double m = 1.0e0 - (1.0e0 / n);
 
-                opahn = 1.0 + pow(alpha * head, n);
-                ahnm1 = pow(alpha * head, n - 1);
+                double opahn = 1.0 + pow(alpha * head, n);
+                double ahnm1 = pow(alpha * head, n - 1);
                 double f_val = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
                                / pow(opahn, (m / 2));
 
@@ -640,15 +637,15 @@ void         PhaseRelPerm(
                        );
               }
 
-              for (head = 0.0; head < fabs((dummy1->lookup_tables[ir])->min_pressure_head); head += 0.001)
+              for (double head = 0.0; head < fabs((dummy1->lookup_tables[ir])->min_pressure_head); head += 0.001)
               {
-                alpha = alphas[ir];
-                n = ns[ir];
-                m = 1.0e0 - (1.0e0 / n);
+                double alpha = alphas[ir];
+                double n = ns[ir];
+                double m = 1.0e0 - (1.0e0 / n);
 
-                opahn = 1.0 + pow(alpha * head, n);
-                ahnm1 = pow(alpha * head, n - 1);
-                coeff = 1.0 - ahnm1 * pow(opahn, -m);
+                double opahn = 1.0 + pow(alpha * head, n);
+                double ahnm1 = pow(alpha * head, n - 1);
+                double coeff = 1.0 - ahnm1 * pow(opahn, -m);
 
                 double f_val = 2.0 * (coeff / (pow(opahn, (m / 2))))
                                * ((n - 1) * pow(alpha * head, n - 2) * alpha
@@ -689,18 +686,18 @@ void         PhaseRelPerm(
                     {
                       /* Table Lookup */
 
-                      ipr = SubvectorEltIndex(pr_sub,
+                      int ipr = SubvectorEltIndex(pr_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
-                      ipp = SubvectorEltIndex(pp_sub,
+                      int ipp = SubvectorEltIndex(pp_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
-                      ipd = SubvectorEltIndex(pd_sub,
+                      int ipd = SubvectorEltIndex(pd_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
                       else
                       {
-                        head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                        double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
 
                         prdat[ipr] = VanGLookupSpline(head,
                                                       dummy1->lookup_tables[ir],
@@ -713,7 +710,6 @@ void         PhaseRelPerm(
                   // Linear
                   case 1:
                   {
-                    int pt = 0;
                     VanGTable *lookup_table = dummy1->lookup_tables[ir];
                     double interval = lookup_table->interval;
                     double min_pressure_head = lookup_table->min_pressure_head;
@@ -726,22 +722,22 @@ void         PhaseRelPerm(
                     {
                       /* Table Lookup */
 
-                      ipr = SubvectorEltIndex(pr_sub,
+                      int ipr = SubvectorEltIndex(pr_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
-                      ipp = SubvectorEltIndex(pp_sub,
+                      int ipp = SubvectorEltIndex(pp_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
-                      ipd = SubvectorEltIndex(pd_sub,
+                      int ipd = SubvectorEltIndex(pd_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
                       else
                       {
-                        head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                        double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
 
                         if (head < fabs(min_pressure_head))
                         {
-                          pt = (int)floor(head / interval);
+                          int pt = (int)floor(head / interval);
                           assert(pt < max);
 
                           prdat[ipr] = lookup_table->a[pt] + lookup_table->slope[pt] *
@@ -764,24 +760,24 @@ void         PhaseRelPerm(
                 GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                nx, ny, nz,
                 {
-                  ipr = SubvectorEltIndex(pr_sub,
+                  int ipr = SubvectorEltIndex(pr_sub,
                                           i + fdir[0], j + fdir[1], k + fdir[2]);
-                  ipp = SubvectorEltIndex(pp_sub,
+                  int ipp = SubvectorEltIndex(pp_sub,
                                           i + fdir[0], j + fdir[1], k + fdir[2]);
-                  ipd = SubvectorEltIndex(pd_sub,
+                  int ipd = SubvectorEltIndex(pd_sub,
                                           i + fdir[0], j + fdir[1], k + fdir[2]);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 1.0;
                   else
                   {
-                    alpha = alphas[ir];
-                    n = ns[ir];
-                    m = 1.0e0 - (1.0e0 / n);
+                    double alpha = alphas[ir];
+                    double n = ns[ir];
+                    double m = 1.0e0 - (1.0e0 / n);
 
-                    head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    opahn = 1.0 + pow(alpha * head, n);
-                    ahnm1 = pow(alpha * head, n - 1);
+                    double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                    double opahn = 1.0 + pow(alpha * head, n);
+                    double ahnm1 = pow(alpha * head, n - 1);
                     prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
                                  / pow(opahn, (m / 2));
                   }
@@ -802,18 +798,18 @@ void         PhaseRelPerm(
                     {
                       /* Table Lookup */
 
-                      ipr = SubvectorEltIndex(pr_sub,
+                      int ipr = SubvectorEltIndex(pr_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
-                      ipp = SubvectorEltIndex(pp_sub,
+                      int ipp = SubvectorEltIndex(pp_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
-                      ipd = SubvectorEltIndex(pd_sub,
+                      int ipd = SubvectorEltIndex(pd_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
                       else
                       {
-                        head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                        double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                         prdat[ipr] = VanGLookupSpline(head,
                                                       dummy1->lookup_tables[ir],
                                                       CALCDER);
@@ -825,7 +821,6 @@ void         PhaseRelPerm(
                   // Linear
                   case 1:
                   {
-                    int pt = 0;
                     VanGTable *lookup_table = dummy1->lookup_tables[ir];
                     double interval = lookup_table->interval;
                     double min_pressure_head = lookup_table->min_pressure_head;
@@ -838,18 +833,18 @@ void         PhaseRelPerm(
                     {
                       /* Table Lookup */
 
-                      ipr = SubvectorEltIndex(pr_sub,
+                      int ipr = SubvectorEltIndex(pr_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
-                      ipp = SubvectorEltIndex(pp_sub,
+                      int ipp = SubvectorEltIndex(pp_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
-                      ipd = SubvectorEltIndex(pd_sub,
+                      int ipd = SubvectorEltIndex(pd_sub,
                                               i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
                       else
                       {
-                        head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                        double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                         if (ppdat[ipp] >= 0.0)
                           prdat[ipr] = 1.0;
                         else
@@ -858,7 +853,7 @@ void         PhaseRelPerm(
 
                           if (head < fabs(min_pressure_head))
                           {
-                            pt = (int)floor(head / interval);
+                            int pt = (int)floor(head / interval);
                             assert(pt < max);
 
                             prdat[ipr] = lookup_table->a_der[pt] + lookup_table->slope_der[pt] *
@@ -882,25 +877,25 @@ void         PhaseRelPerm(
                 GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                nx, ny, nz,
                 {
-                  ipr = SubvectorEltIndex(pr_sub,
+                  int ipr = SubvectorEltIndex(pr_sub,
                                           i + fdir[0], j + fdir[1], k + fdir[2]);
-                  ipp = SubvectorEltIndex(pp_sub,
+                  int ipp = SubvectorEltIndex(pp_sub,
                                           i + fdir[0], j + fdir[1], k + fdir[2]);
-                  ipd = SubvectorEltIndex(pd_sub,
+                  int ipd = SubvectorEltIndex(pd_sub,
                                           i + fdir[0], j + fdir[1], k + fdir[2]);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 0.0;
                   else
                   {
-                    alpha = alphas[ir];
-                    n = ns[ir];
-                    m = 1.0e0 - (1.0e0 / n);
+                    double alpha = alphas[ir];
+                    double n = ns[ir];
+                    double m = 1.0e0 - (1.0e0 / n);
 
-                    head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    opahn = 1.0 + pow(alpha * head, n);
-                    ahnm1 = pow(alpha * head, n - 1);
-                    coeff = 1.0 - ahnm1 * pow(opahn, -m);
+                    double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                    double opahn = 1.0 + pow(alpha * head, n);
+                    double ahnm1 = pow(alpha * head, n - 1);
+                    double coeff = 1.0 - ahnm1 * pow(opahn, -m);
 
                     prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
                                  * ((n - 1) * pow(alpha * head, n - 2) * alpha
@@ -955,27 +950,27 @@ void         PhaseRelPerm(
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                            nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub,
+              int ipr = SubvectorEltIndex(pr_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipp = SubvectorEltIndex(pp_sub,
+              int ipp = SubvectorEltIndex(pp_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipd = SubvectorEltIndex(pd_sub,
+              int ipd = SubvectorEltIndex(pd_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
 
-              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 1.0;
               else
               {
-                alpha = alpha_values_dat[alpha_index];
-                n = n_values_dat[n_index];
-                m = 1.0e0 - (1.0e0 / n);
+                double alpha = alpha_values_dat[alpha_index];
+                double n = n_values_dat[n_index];
+                double m = 1.0e0 - (1.0e0 / n);
 
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                opahn = 1.0 + pow(alpha * head, n);
-                ahnm1 = pow(alpha * head, n - 1);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double opahn = 1.0 + pow(alpha * head, n);
+                double ahnm1 = pow(alpha * head, n - 1);
                 prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
                              / pow(opahn, (m / 2));
               }
@@ -986,28 +981,28 @@ void         PhaseRelPerm(
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                            nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub,
+              int ipr = SubvectorEltIndex(pr_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipp = SubvectorEltIndex(pp_sub,
+              int ipp = SubvectorEltIndex(pp_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipd = SubvectorEltIndex(pd_sub,
+              int ipd = SubvectorEltIndex(pd_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
 
-              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 0.0;
               else
               {
-                alpha = alpha_values_dat[alpha_index];
-                n = n_values_dat[n_index];
-                m = 1.0e0 - (1.0e0 / n);
+                double alpha = alpha_values_dat[alpha_index];
+                double n = n_values_dat[n_index];
+                double m = 1.0e0 - (1.0e0 / n);
 
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                opahn = 1.0 + pow(alpha * head, n);
-                ahnm1 = pow(alpha * head, n - 1);
-                coeff = 1.0 - ahnm1 * pow(opahn, -m);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double opahn = 1.0 + pow(alpha * head, n);
+                double ahnm1 = pow(alpha * head, n - 1);
+                double coeff = 1.0 - ahnm1 * pow(opahn, -m);
 
                 prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
                              * ((n - 1) * pow(alpha * head, n - 2) * alpha
@@ -1062,15 +1057,15 @@ void         PhaseRelPerm(
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
                       /* Table Lookup */
-                      ipr = SubvectorEltIndex(pr_sub, i, j, k);
-                      ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                      ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                      int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+                      int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                      int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
                       else
                       {
-                        head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                        double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                         prdat[ipr] = VanGLookupSpline(head,
                                                       dummy1->lookup_tables[ir],
                                                       CALCFCN);
@@ -1082,7 +1077,6 @@ void         PhaseRelPerm(
                   // Linear
                   case 1:
                   {
-                    int pt = 0;
                     VanGTable *lookup_table = dummy1->lookup_tables[ir];
                     double interval = lookup_table->interval;
                     double min_pressure_head = lookup_table->min_pressure_head;
@@ -1093,15 +1087,15 @@ void         PhaseRelPerm(
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
                       /* Table Lookup */
-                      ipr = SubvectorEltIndex(pr_sub, i, j, k);
-                      ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                      ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                      int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+                      int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                      int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
                       else
                       {
-                        head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                        double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                         if (ppdat[ipp] >= 0.0)
                           prdat[ipr] = 1.0;
                         else
@@ -1110,7 +1104,7 @@ void         PhaseRelPerm(
 
                           if (head < fabs(min_pressure_head))
                           {
-                            pt = (int)floor(head / interval);
+                            int pt = (int)floor(head / interval);
                             assert(pt < max);
 
                             prdat[ipr] = lookup_table->a[pt] + lookup_table->slope[pt] *
@@ -1133,21 +1127,21 @@ void         PhaseRelPerm(
 
                 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                 {
-                  ipr = SubvectorEltIndex(pr_sub, i, j, k);
-                  ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                  ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                  int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+                  int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                  int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 1.0;
                   else
                   {
-                    alpha = alphas[ir];
-                    n = ns[ir];
-                    m = 1.0e0 - (1.0e0 / n);
+                    double alpha = alphas[ir];
+                    double n = ns[ir];
+                    double m = 1.0e0 - (1.0e0 / n);
 
-                    head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    opahn = 1.0 + pow(alpha * head, n);
-                    ahnm1 = pow(alpha * head, n - 1);
+                    double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                    double opahn = 1.0 + pow(alpha * head, n);
+                    double ahnm1 = pow(alpha * head, n - 1);
                     prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
                                  / pow(opahn, (m / 2));
                   }
@@ -1166,15 +1160,15 @@ void         PhaseRelPerm(
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
                       /* Table Lookup */
-                      ipr = SubvectorEltIndex(pr_sub, i, j, k);
-                      ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                      ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                      int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+                      int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                      int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
                       else
                       {
-                        head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                        double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
 
                         prdat[ipr] = VanGLookupSpline(head,
                                                       dummy1->lookup_tables[ir],
@@ -1186,7 +1180,6 @@ void         PhaseRelPerm(
 
                   case 1:
                   {
-                    int pt = 0;
                     VanGTable *lookup_table = dummy1->lookup_tables[ir];
                     double interval = lookup_table->interval;
                     double min_pressure_head = lookup_table->min_pressure_head;
@@ -1197,19 +1190,19 @@ void         PhaseRelPerm(
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
                       /* Table Lookup */
-                      ipr = SubvectorEltIndex(pr_sub, i, j, k);
-                      ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                      ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                      int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+                      int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                      int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
                       else
                       {
-                        head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                        double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
 
                         if (head < fabs(min_pressure_head))
                         {
-                          pt = (int)floor(head / interval);
+                          int pt = (int)floor(head / interval);
                           assert(pt < max);
 
                           prdat[ipr] = lookup_table->a_der[pt] + lookup_table->slope_der[pt] *
@@ -1231,22 +1224,22 @@ void         PhaseRelPerm(
 
                 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                 {
-                  ipr = SubvectorEltIndex(pr_sub, i, j, k);
-                  ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                  ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                  int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+                  int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                  int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 0.0;
                   else
                   {
-                    alpha = alphas[ir];
-                    n = ns[ir];
-                    m = 1.0e0 - (1.0e0 / n);
+                    double alpha = alphas[ir];
+                    double n = ns[ir];
+                    double m = 1.0e0 - (1.0e0 / n);
 
-                    head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                    opahn = 1.0 + pow(alpha * head, n);
-                    ahnm1 = pow(alpha * head, n - 1);
-                    coeff = 1.0 - ahnm1 * pow(opahn, -m);
+                    double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                    double opahn = 1.0 + pow(alpha * head, n);
+                    double ahnm1 = pow(alpha * head, n - 1);
+                    double coeff = 1.0 - ahnm1 * pow(opahn, -m);
 
                     prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
                                  * ((n - 1) * pow(alpha * head, n - 2) * alpha
@@ -1299,24 +1292,24 @@ void         PhaseRelPerm(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 1.0;
               else
               {
-                alpha = alpha_values_dat[alpha_index];
-                n = n_values_dat[n_index];
-                m = 1.0e0 - (1.0e0 / n);
+                double alpha = alpha_values_dat[alpha_index];
+                double n = n_values_dat[n_index];
+                double m = 1.0e0 - (1.0e0 / n);
 
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                opahn = 1.0 + pow(alpha * head, n);
-                ahnm1 = pow(alpha * head, n - 1);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double opahn = 1.0 + pow(alpha * head, n);
+                double ahnm1 = pow(alpha * head, n - 1);
                 prdat[ipr] = pow(1.0 - ahnm1 / (pow(opahn, m)), 2)
                              / pow(opahn, (m / 2));
               }
@@ -1326,25 +1319,25 @@ void         PhaseRelPerm(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 0.0;
               else
               {
-                alpha = alpha_values_dat[alpha_index];
-                n = n_values_dat[n_index];
-                m = 1.0e0 - (1.0e0 / n);
+                double alpha = alpha_values_dat[alpha_index];
+                double n = n_values_dat[n_index];
+                double m = 1.0e0 - (1.0e0 / n);
 
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                opahn = 1.0 + pow(alpha * head, n);
-                ahnm1 = pow(alpha * head, n - 1);
-                coeff = 1.0 - ahnm1 * pow(opahn, -m);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double opahn = 1.0 + pow(alpha * head, n);
+                double ahnm1 = pow(alpha * head, n - 1);
+                double coeff = 1.0 - ahnm1 * pow(opahn, -m);
 
                 prdat[ipr] = 2.0 * (coeff / (pow(opahn, (m / 2))))
                              * ((n - 1) * pow(alpha * head, n - 2) * alpha
@@ -1362,7 +1355,7 @@ void         PhaseRelPerm(
 
     case 2:  /* Haverkamp et.al. relative permeability */
     {
-      double  *As, *gammas, head, tmp;
+      double  *As, *gammas;
 
       dummy2 = (Type2*)(public_xtra->data);
 
@@ -1403,19 +1396,19 @@ void         PhaseRelPerm(
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                            nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub,
+              int ipr = SubvectorEltIndex(pr_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipp = SubvectorEltIndex(pp_sub,
+              int ipp = SubvectorEltIndex(pp_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipd = SubvectorEltIndex(pd_sub,
+              int ipd = SubvectorEltIndex(pd_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 1.0;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                tmp = As[ir] + pow(head, gammas[ir]);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double tmp = As[ir] + pow(head, gammas[ir]);
                 prdat[ipr] = As[ir] / tmp;
               }
             });
@@ -1425,19 +1418,19 @@ void         PhaseRelPerm(
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                            nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub,
+              int ipr = SubvectorEltIndex(pr_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipp = SubvectorEltIndex(pp_sub,
+              int ipp = SubvectorEltIndex(pp_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipd = SubvectorEltIndex(pd_sub,
+              int ipd = SubvectorEltIndex(pd_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 0.0;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                tmp = pow(head, gammas[ir]);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double tmp = pow(head, gammas[ir]);
                 prdat[ipr] = As[ir] * gammas[ir]
                              * pow(head, gammas[ir] - 1) / pow(tmp, 2);
               }
@@ -1477,16 +1470,16 @@ void         PhaseRelPerm(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 1.0;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                tmp = As[ir] + pow(head, gammas[ir]);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double tmp = As[ir] + pow(head, gammas[ir]);
                 prdat[ipr] = As[ir] / tmp;
               }
             });
@@ -1495,16 +1488,16 @@ void         PhaseRelPerm(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 0.0;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                tmp = pow(head, gammas[ir]);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double tmp = pow(head, gammas[ir]);
                 prdat[ipr] = As[ir] * gammas[ir]
                              * pow(head, gammas[ir] - 1) / pow(tmp, 2);
               }
@@ -1527,7 +1520,7 @@ void         PhaseRelPerm(
 
     case 4:  /* Polynomial function of pressure relative permeability */
     {
-      int     *degrees, dg;
+      int     *degrees;
       double **coefficients, *region_coeffs;
 
       dummy4 = (Type4*)(public_xtra->data);
@@ -1568,16 +1561,16 @@ void         PhaseRelPerm(
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                            nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub,
+              int ipr = SubvectorEltIndex(pr_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipp = SubvectorEltIndex(pp_sub,
+              int ipp = SubvectorEltIndex(pp_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = region_coeffs[0];
               else
               {
                 prdat[ipr] = 0.0;
-                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   prdat[ipr] += region_coeffs[dg] * pow(ppdat[ipp], dg);
                 }
@@ -1589,16 +1582,16 @@ void         PhaseRelPerm(
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                            nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub,
+              int ipr = SubvectorEltIndex(pr_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
-              ipp = SubvectorEltIndex(pp_sub,
+              int ipp = SubvectorEltIndex(pp_sub,
                                       i + fdir[0], j + fdir[1], k + fdir[2]);
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = 0.0;
               else
               {
                 prdat[ipr] = 0.0;
-                for (dg = 1; dg < degrees[ir] + 1; dg++)
+                for (int dg = 1; dg < degrees[ir] + 1; dg++)
                 {
                   prdat[ipr] += region_coeffs[dg] * dg
                                 * pow(ppdat[ipp], (dg - 1));
@@ -1639,15 +1632,15 @@ void         PhaseRelPerm(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = region_coeffs[0];
               else
               {
                 prdat[ipr] = 0.0;
-                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   prdat[ipr] += region_coeffs[dg] * pow(ppdat[ipp], dg);
                 }
@@ -1658,15 +1651,15 @@ void         PhaseRelPerm(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ipr = SubvectorEltIndex(pr_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipr = SubvectorEltIndex(pr_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = 0.0;
               else
               {
                 prdat[ipr] = 0.0;
-                for (dg = 1; dg < degrees[ir] + 1; dg++)
+                for (int dg = 1; dg < degrees[ir] + 1; dg++)
                 {
                   prdat[ipr] += region_coeffs[dg] * dg
                                 * pow(ppdat[ipp], (dg - 1));

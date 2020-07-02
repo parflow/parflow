@@ -1,0 +1,82 @@
+/** @name Reference
+
+{\large Constants}
+\begin{itemize}
+\item \Ref{amps_CommWorld}
+\end{itemize}
+
+{\large Initialization and Exiting}
+\begin{itemize}
+\item \Ref{amps_Init}
+\item \Ref{amps_Finalize}
+\item \Ref{amps_Exit}
+\end{itemize}
+
+{\large Collective}
+\begin{itemize}
+\item \Ref{amps_AllReduce}
+\item \Ref{amps_BCast}
+\item \Ref{amps_Sync}
+\end{itemize}
+
+{\large Global and Static Variable}
+\begin{itemize}
+\item \Ref{amps_ThreadLocalDcl}
+\item \Ref{amps_ThreadLocal}
+\end{itemize}
+
+{\large Invoice}
+\begin{itemize}
+\item \Ref{amps_CreateInvoice}
+\item \Ref{amps_ClearInvoice}
+\item \Ref{amps_FreeInvoice}
+\item \Ref{amps_NewInvoice}
+\item \Ref{amps_AppendInvoice}
+\end{itemize}
+
+{\large Timing}
+\begin{itemize}
+\item \Ref{amps_Clock}
+\end{itemize}
+
+{\large Package}
+\begin{itemize}
+\item \Ref{amps_IExchangePackage}
+\item \Ref{amps_TAlloc}
+\item \Ref{amps_CTAlloc}
+\item \Ref{amps_TFree}
+\end{itemize}
+
+{\large Input Output}
+\begin{itemize}
+\item \Ref{amps_FFopen}
+\item \Ref{amps_FFclose}
+\item \Ref{amps_Fopen}
+\item \Ref{amps_Fclose}
+\item \Ref{amps_SFopen}
+\item \Ref{amps_SFclose}
+\item \Ref{amps_SFBCast}
+\item \Ref{amps_Printf}
+\item \Ref{amps_Fprintf}
+\item \Ref{amps_Fscanf}
+\item \Ref{amps_WriteType}
+\item \Ref{amps_ReadType}
+\end{itemize}
+
+{\large Send and Recieve}
+\begin{itemize}
+\item \Ref{amps_IRecv}
+\item \Ref{amps_Recv}
+\item \Ref{amps_Send}
+\item \Ref{amps_ISend}
+\item \Ref{amps_Test}
+\item \Ref{amps_Wait}
+\end{itemize}
+
+{\large Identification}
+\begin{itemize}
+\item \Ref{amps_Rank}
+\item \Ref{amps_Size}
+\end{itemize}
+
+*/

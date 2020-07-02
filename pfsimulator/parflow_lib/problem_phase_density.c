@@ -72,6 +72,42 @@ typedef struct {
   double compressibility_constant;
 } Type1;                      /* rho_ref exp(compressibility*pressure) */
 
+/*-------------------------------------------------------------------------
+ * PhaseDensityConstants
+ * Used to get the constant values for when density vector is always NULL
+ *-------------------------------------------------------------------------*/
+
+void    PhaseDensityConstants(int phase,
+                              int fcn,
+                              int *phase_type,
+                              double *constant,
+                              double *ref_den,
+                              double *comp_const)
+{
+  PFModule *this_module = ThisPFModule;
+  PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+  Type0 *dummy0;
+  Type1 *dummy1;
+
+  (*phase_type) = public_xtra->type[phase];
+  switch(*phase_type)
+  {
+    case 0:
+      if (fcn == CALCFCN) {
+        dummy0 = (Type0*)(public_xtra->data[phase]);
+        (*constant) = dummy0->constant;
+      } else {
+        (*constant) = 0.0;
+      }
+      break;
+
+    case 1:
+      dummy1 = (Type1*)(public_xtra->data[phase]);
+      (*ref_den) = dummy1->reference_density;
+      (*comp_const) = dummy1->compressibility_constant;
+      break;
+  }
+}
 
 /*-------------------------------------------------------------------------
  * PhaseDensity

@@ -102,3 +102,6 @@
 ### Emacs ###
 *~
 \#*\#
+
+# VS Code
+.vscode/

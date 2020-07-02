@@ -152,9 +152,7 @@ void     Saturation(
   int ix, iy, iz, r;
   int nx, ny, nz;
 
-  int i, j, k, ips, ipp, ipd, ipRF;
-
-  int n_index, alpha_index, s_res_index, s_sat_index;
+  int i, j, k;
 
   int            *region_indices, num_regions, ir;
 
@@ -202,7 +200,7 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
               psdat[ips] = values[ir];
             });
           }
@@ -210,7 +208,7 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
               psdat[ips] = 0.0;
             });
           }     /* End else clause */
@@ -223,7 +221,6 @@ void     Saturation(
     {
       int data_from_file;
       double *alphas, *ns, *s_ress, *s_difs;
-      double head, alpha, n, s_res, s_dif, s_sat, m;
 
       Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
 
@@ -268,21 +265,21 @@ void     Saturation(
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
-                ips = SubvectorEltIndex(ps_sub, i, j, k);
-                ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                int ips = SubvectorEltIndex(ps_sub, i, j, k);
+                int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                alpha = alphas[ir];
-                n = ns[ir];
-                m = 1.0e0 - (1.0e0 / n);
-                s_res = s_ress[ir];
-                s_dif = s_difs[ir];
+                double alpha = alphas[ir];
+                double n = ns[ir];
+                double m = 1.0e0 - (1.0e0 / n);
+                double s_res = s_ress[ir];
+                double s_dif = s_difs[ir];
 
                 if (ppdat[ipp] >= 0.0)
                   psdat[ips] = s_dif + s_res;
                 else
                 {
-                  head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                  double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                   psdat[ips] = s_dif / pow(1.0 + pow((alpha * head), n), m)
                                + s_res;
                 }
@@ -292,21 +289,20 @@ void     Saturation(
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
-                ips = SubvectorEltIndex(ps_sub, i, j, k);
-                ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                int ips = SubvectorEltIndex(ps_sub, i, j, k);
+                int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                alpha = alphas[ir];
-                n = ns[ir];
-                m = 1.0e0 - (1.0e0 / n);
-                s_res = s_ress[ir];
-                s_dif = s_difs[ir];
+                double alpha = alphas[ir];
+                double n = ns[ir];
+                double m = 1.0e0 - (1.0e0 / n);
+                double s_dif = s_difs[ir];
 
                 if (ppdat[ipp] >= 0.0)
                   psdat[ips] = 0.0;
                 else
                 {
-                  head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                  double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                   psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
                                / (pow(1.0 + pow(alpha * head, n), m + 1));
                 }
@@ -358,26 +354,26 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
-              s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
-              s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
+              int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              int s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
+              int s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
 
-              alpha = alpha_values_dat[alpha_index];
-              n = n_values_dat[n_index];
-              m = 1.0e0 - (1.0e0 / n);
-              s_res = s_res_values_dat[s_res_index];
-              s_sat = s_sat_values_dat[s_sat_index];
+              double alpha = alpha_values_dat[alpha_index];
+              double n = n_values_dat[n_index];
+              double m = 1.0e0 - (1.0e0 / n);
+              double s_res = s_res_values_dat[s_res_index];
+              double s_sat = s_sat_values_dat[s_sat_index];
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = s_sat;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = (s_sat - s_res) /
                              pow(1.0 + pow((alpha * head), n), m)
                              + s_res;
@@ -388,27 +384,27 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
-              s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
-              s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
+              int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              int s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
+              int s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
 
-              alpha = alpha_values_dat[alpha_index];
-              n = n_values_dat[n_index];
-              m = 1.0e0 - (1.0e0 / n);
-              s_res = s_res_values_dat[s_res_index];
-              s_sat = s_sat_values_dat[s_sat_index];
-              s_dif = s_sat - s_res;
+              double alpha = alpha_values_dat[alpha_index];
+              double n = n_values_dat[n_index];
+              double m = 1.0e0 - (1.0e0 / n);
+              double s_res = s_res_values_dat[s_res_index];
+              double s_sat = s_sat_values_dat[s_sat_index];
+              double s_dif = s_sat - s_res;
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = 0.0;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
                              / (pow(1.0 + pow(alpha * head, n), m + 1));
               }
@@ -422,7 +418,6 @@ void     Saturation(
     case 2: /* Haverkamp et.al. saturation curve */
     {
       double *alphas, *betas, *s_ress, *s_difs;
-      double head, alpha, beta, s_res, s_dif;
 
       dummy2 = (Type2*)(public_xtra->data);
 
@@ -462,20 +457,20 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              alpha = alphas[ir];
-              beta = betas[ir];
-              s_res = s_ress[ir];
-              s_dif = s_difs[ir];
+              double alpha = alphas[ir];
+              double beta = betas[ir];
+              double s_res = s_ress[ir];
+              double s_dif = s_difs[ir];
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = s_dif + s_res;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = alpha * s_dif / (alpha + pow(head, beta))
                              + s_res;
               }
@@ -485,20 +480,19 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              alpha = alphas[ir];
-              beta = betas[ir];
-              s_res = s_ress[ir];
-              s_dif = s_difs[ir];
+              double alpha = alphas[ir];
+              double beta = betas[ir];
+              double s_dif = s_difs[ir];
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = 0.0;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = alpha * s_dif * beta * pow(head, beta - 1)
                              / pow((alpha + pow(head, beta)), 2);
               }
@@ -524,7 +518,7 @@ void     Saturation(
 
     case 4: /* Polynomial function of pressure saturation curve */
     {
-      int     *degrees, dg;
+      int     *degrees;
       double **coefficients, *region_coeffs;
 
       dummy4 = (Type4*)(public_xtra->data);
@@ -564,15 +558,15 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
               if (ppdat[ipp] == 0.0)
                 psdat[ips] = region_coeffs[0];
               else
               {
                 psdat[ips] = 0.0;
-                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   psdat[ips] += region_coeffs[dg] * pow(ppdat[ipp], dg);
                 }
@@ -583,15 +577,15 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
               if (ppdat[ipp] == 0.0)
                 psdat[ips] = 0.0;
               else
               {
                 psdat[ips] = 0.0;
-                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   psdat[ips] += region_coeffs[dg] * dg
                                 * pow(ppdat[ipp], (dg - 1));
@@ -638,8 +632,8 @@ void     Saturation(
         {
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
-            ips = SubvectorEltIndex(ps_sub, i, j, k);
-            ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
+            int ips = SubvectorEltIndex(ps_sub, i, j, k);
+            int ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
 
             psdat[ips] = satRFdat[ipRF];
           });
@@ -648,8 +642,7 @@ void     Saturation(
         {
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
-            ips = SubvectorEltIndex(ps_sub, i, j, k);
-            ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
+            int ips = SubvectorEltIndex(ps_sub, i, j, k);
 
             psdat[ips] = 0.0;
           });

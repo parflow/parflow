@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.9)
+cmake_minimum_required (VERSION 3.14)
 
 project (PARFLOW LANGUAGES C Fortran CXX)
 
@@ -6,6 +6,74 @@ set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_C_STANDARD 11)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
+#-----------------------------------------------------------------------------
+# Set accelerator backend
+#-----------------------------------------------------------------------------
+set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
+
+if((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+  
+  set(PARFLOW_ACC_BACKEND 0)
+
+else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+  
+  if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
+
+  # Initialize CUDA
+    include(CheckLanguage)
+    check_language(CUDA)
+    if(CMAKE_CUDA_COMPILER)
+      enable_language(CUDA)
+      set(CMAKE_CUDA_STANDARD 11)
+      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
+      set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
+      set(CMAKE_CUDA_FLAGS_RELEASE "-Xptxas ${CMAKE_CUDA_FLAGS_RELEASE}")
+      set(CMAKE_CUDA_HOST_COMPILER mpicxx)
+      message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
+      set(PARFLOW_HAVE_CUDA "yes")
+      set(PARFLOW_ACC_BACKEND 1)
+    else(CMAKE_CUDA_COMPILER)
+      message(FATAL_ERROR "ERROR: CUDA installation not found")
+    endif(CMAKE_CUDA_COMPILER)
+
+  # Include RapidsAI Memory Manager (RMM) for pool allocation
+  # @MCB 04/16/2020: This should probably be moved outside of the CUDA block at some point
+  #   so other accelerators have the option to use it as well.
+    if(DEFINED RMM_ROOT)
+      find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
+      find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
+      if(RMM_INCLUDE AND RMM_LIBRARY)
+        message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
+        message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
+        add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
+        set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
+      # PARFLOW_HAVE_RMM is not defined in parflow_config.h because because it is 
+      # only set for the compilation of parflow_exe, parflow_lib, and kinsol sources. 
+      # RMM must be initialized before it is used, so, for example, 
+      # the amps tests would fail if used across all compiles.
+        set(PARFLOW_HAVE_RMM "yes")
+      else(RMM_INCLUDE AND RMM_LIBRARY)
+        message(FATAL_ERROR "ERROR: RMM installation not found")
+      endif(RMM_INCLUDE AND RMM_LIBRARY)
+      message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
+    else(DEFINED RMM_ROOT)
+      message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
+    endif(DEFINED RMM_ROOT)
+
+  elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "omp") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "OMP"))
+
+    message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
+  # Enable C and CXX -fopenmp flag, enable ParFlow defines.
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+    set(PARFLOW_HAVE_OMP "yes")
+    set(PARFLOW_ACC_BACKEND 2)
+  else()
+    message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
+  endif()
+
+endif((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
 
 #-----------------------------------------------------------------------------
 # Version number
@@ -22,7 +90,7 @@ git_describe(PARFLOW_VERSION --tags)
 if (NOT PARFLOW_VERSION)
   file (STRINGS "VERSION" PARFLOW_VERSION)
 endif ()
- 
+
 message("Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
 
@@ -63,8 +131,12 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
-set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 smpi oas3 win32)
+set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 cuda smpi oas3 win32)
 set(AMPS ${PARFLOW_AMPS_LAYER})
+
+if((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
+  message(FATAL_ERROR "ERROR: Using PARFLOW_AMPS_LAYER=cuda requires building with GPU acceleration!")
+endif((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
 
 option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "FALSE")
 
@@ -83,8 +155,8 @@ if (${PARFLOW_HAVE_OAS3})
   set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
 endif (${PARFLOW_HAVE_OAS3})
 
-set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
-set (PARFLOW_TEST_PARALLEL mpi1 smpi)
+set (PARFLOW_AMPS_LAYER_REQUIRE_MPI cuda mpi1 smpi oas3)
+set (PARFLOW_TEST_PARALLEL cuda mpi1 smpi)
 
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
@@ -225,7 +297,7 @@ endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
 #-----------------------------------------------------------------------------
 if (NOT DEFINED PARFLOW_LIBM)
   find_library(PARFLOW_LIBM m)
-endif (NOT DEFINED PARFLOW_LIBM)		    
+endif (NOT DEFINED PARFLOW_LIBM)
 
 #-----------------------------------------------------------------------------
 # Valgrind
@@ -245,7 +317,7 @@ endif (${PARFLOW_ENABLE_VALGRIND})
 set (PARFLOW_ENABLE_ETRACE False CACHE BOOL "Build with etrace")
 if (${PARFLOW_ENABLE_ETRACE})
   set(PARFLOW_HAVE_ETRACE "yes")
-  
+
   set(PARFLOW_ETRACE_COMPILE_FLAGS "-finstrument-functions")
   set(PARFLOW_ETRACE_LIBRARY "etrace")
 else (${PARFLOW_ENABLE_ETRACE})
@@ -449,7 +521,7 @@ install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
 install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
 
 #-----------------------------------------------------------------------------
-# Doxygen 
+# Doxygen
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_DOXYGEN False CACHE BOOL "Enable Doxygen and building of code documentation")
 
@@ -458,7 +530,7 @@ if ( ${PARFLOW_ENABLE_DOXYGEN} )
   if (DOXYGEN_FOUND)
     set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/docs/doxygen)
     set(DOXYGEN_IMAGE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/docs/doxygen/images)
-    
+
     message("Doxygen build started")
 
     doxygen_add_docs(doxygen

@@ -840,7 +840,7 @@ typedef struct grgeom_octree {
  * @param[in] value_test boolean if tests evaluated before body execution
  * @param[in] body code to execute
  */
-#define GrGeomOctreeExteriorNodeLoop(i, j, k, node, octree, level,                    \
+#define GrGeomOctreeExteriorNodeLoop_default(i, j, k, node, octree, level,            \
                                      ix, iy, iz, nx, ny, nz, value_test,              \
                                      body)                                            \
   {                                                                                   \
@@ -1144,6 +1144,44 @@ typedef struct grgeom_octree {
           body;                                                              \
         }                                                                    \
     })                                                                       \
+  }
+
+/**
+ * @brief Loop over the faces of an octree without use of fdir array
+ */
+#define GrGeomOctreeFaceLoopNoFdir(i, j, k,                             \
+                                   node, octree, level_of_interest,     \
+                                   ix, iy, iz, nx, ny, nz,              \
+                                   locals, setup,                       \
+                                   f_left, f_right,                     \
+                                   f_down, f_up,                        \
+                                   f_back, f_front,                     \
+                                   finalize)                            \
+  {                                                                     \
+    int PV_f;                                                           \
+    UNPACK(locals);                                                     \
+    GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest, \
+                               ix, iy, iz, nx, ny, nz,                  \
+                               TRUE,                                    \
+    {                                                                   \
+      for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)               \
+        if (GrGeomOctreeHasFace(node, PV_f))                            \
+        {                                                               \
+          setup;                                                        \
+                                                                        \
+          switch (PV_f)                                                 \
+          {                                                             \
+            f_left;                                                     \
+            f_right;                                                    \
+            f_down;                                                     \
+            f_up;                                                       \
+            f_back;                                                     \
+            f_front;                                                    \
+          }                                                             \
+                                                                        \
+          finalize;                                                     \
+        }                                                               \
+    })                                                                  \
   }
 
 /*==========================================================================
