@@ -34,6 +34,10 @@ Big thank you goes to Michael Burke and Jaro Hokkanen and the teams at
 Boise State, U of Arizona, and FZ-Juelich for their hard work on
 adding OpenMP and CUDA support.
 
+### CMake dependency on version 3.14
+
+ParFlow now requires CMake version 3.14 or better.
+
 ###  New overland flow formulations
 
 Overland flow saw significant work:
