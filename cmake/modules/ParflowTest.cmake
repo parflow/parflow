@@ -72,6 +72,10 @@ endfunction()
 # inputfile is the TCL script that defines the test.
 #
 function (pf_add_amps_sequential_test test loops)
-  set(ranks -1)
+  if ( ${AMPS_TEST_FORCE_MPIEXEC} )
+    set(ranks 1)
+  else()
+    set(ranks -1)
+  endif()
   pf_add_amps_parallel_test(${test} ${ranks} ${loops})
 endfunction()
