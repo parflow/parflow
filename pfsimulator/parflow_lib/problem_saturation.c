@@ -158,7 +158,22 @@ void     Saturation(
 
   int            *region_indices, num_regions, ir;
 
+  Vector *pd_alpha = ProblemDataAlpha(problem_data);    //BB
+  Vector *pd_n = ProblemDataN(problem_data);            //BB
+  Vector *pd_sres = ProblemDataSres(problem_data);      //BB
+  Vector *pd_ssat = ProblemDataSsat(problem_data);      //BB
+  Subvector      *pd_alpha_sub;         //BB
+  Subvector      *pd_n_sub;         //BB
+  Subvector      *pd_sres_sub;         //BB
+  Subvector      *pd_ssat_sub;         //BB
+  double *pd_alpha_dat, *pd_n_dat, *pd_sres_dat, *pd_ssat_dat;    //BB
+
+
   /* Initialize saturations */
+  InitVector(pd_alpha, 0.0);  //BB
+  InitVector(pd_n, 0.0);      //BB
+  InitVector(pd_sres, 0.0);   //BB
+  InitVector(pd_ssat, 0.0);   //BB
 
 // SGS FIXME why is this needed?
 #undef max
@@ -250,6 +265,11 @@ void     Saturation(
             pp_sub = VectorSubvector(phase_pressure, sg);
             pd_sub = VectorSubvector(phase_density, sg);
 
+            pd_alpha_sub = VectorSubvector(pd_alpha, sg);   //BB
+            pd_n_sub = VectorSubvector(pd_n, sg);           //BB
+            pd_sres_sub = VectorSubvector(pd_sres, sg);     //BB
+            pd_ssat_sub = VectorSubvector(pd_ssat, sg);     //BB
+
             ix = SubgridIX(subgrid);
             iy = SubgridIY(subgrid);
             iz = SubgridIZ(subgrid);
@@ -264,6 +284,11 @@ void     Saturation(
             ppdat = SubvectorData(pp_sub);
             pddat = SubvectorData(pd_sub);
 
+            pd_alpha_dat = SubvectorData(pd_alpha_sub);   //BB
+            pd_n_dat = SubvectorData(pd_n_sub);           //BB
+            pd_sres_dat = SubvectorData(pd_sres_sub);     //BB
+            pd_ssat_dat = SubvectorData(pd_ssat_sub);     //BB
+
             if (fcn == CALCFCN)
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
@@ -277,6 +302,11 @@ void     Saturation(
                 m = 1.0e0 - (1.0e0 / n);
                 s_res = s_ress[ir];
                 s_dif = s_difs[ir];
+
+                pd_alpha_dat[ips] = alpha;  //BB
+                pd_n_dat[ips] = n;  //BB
+                pd_sres_dat[ips] = s_res;  //BB  // no ssat???
+
 
                 if (ppdat[ipp] >= 0.0)
                   psdat[ips] = s_dif + s_res;
@@ -301,6 +331,10 @@ void     Saturation(
                 m = 1.0e0 - (1.0e0 / n);
                 s_res = s_ress[ir];
                 s_dif = s_difs[ir];
+
+                pd_alpha_dat[ips] = alpha;  //BB
+                pd_n_dat[ips] = n;  //BB
+                pd_sres_dat[ips] = s_res;  //BB  // no ssat???
 
                 if (ppdat[ipp] >= 0.0)
                   psdat[ips] = 0.0;
@@ -335,6 +369,11 @@ void     Saturation(
           s_res_values_sub = VectorSubvector(s_res_values, sg);
           s_sat_values_sub = VectorSubvector(s_sat_values, sg);
 
+          pd_alpha_sub = VectorSubvector(pd_alpha, sg);   //BB
+          pd_n_sub = VectorSubvector(pd_n, sg);           //BB
+          pd_sres_sub = VectorSubvector(pd_sres, sg);     //BB
+          pd_ssat_sub = VectorSubvector(pd_ssat, sg);     //BB
+
           ix = SubgridIX(subgrid);
           iy = SubgridIY(subgrid);
           iz = SubgridIZ(subgrid);
@@ -354,6 +393,11 @@ void     Saturation(
           s_res_values_dat = SubvectorData(s_res_values_sub);
           s_sat_values_dat = SubvectorData(s_sat_values_sub);
 
+          pd_alpha_dat = SubvectorData(pd_alpha_sub);   //BB
+          pd_n_dat = SubvectorData(pd_n_sub);           //BB
+          pd_sres_dat = SubvectorData(pd_sres_sub);     //BB
+          pd_ssat_dat = SubvectorData(pd_ssat_sub);     //BB
+
           if (fcn == CALCFCN)
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
@@ -372,6 +416,12 @@ void     Saturation(
               m = 1.0e0 - (1.0e0 / n);
               s_res = s_res_values_dat[s_res_index];
               s_sat = s_sat_values_dat[s_sat_index];
+
+              pd_alpha_dat[ips] = alpha;  //BB
+              pd_n_dat[ips] = n;  //BB
+              pd_sres_dat[ips] = s_res;  //BB
+              pd_ssat_dat[ips] = s_sat;  //BB
+
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = s_sat;
@@ -403,6 +453,11 @@ void     Saturation(
               s_res = s_res_values_dat[s_res_index];
               s_sat = s_sat_values_dat[s_sat_index];
               s_dif = s_sat - s_res;
+
+              pd_alpha_dat[ips] = alpha;  //BB
+              pd_n_dat[ips] = n;  //BB
+              pd_sres_dat[ips] = s_res;  //BB
+              pd_ssat_dat[ips] = s_sat;  //BB
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = 0.0;

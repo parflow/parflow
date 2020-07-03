@@ -424,6 +424,13 @@ ProblemData   *NewProblemData(
   ProblemDataPermeabilityZ(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
   ProblemDataSpecificStorage(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);  //sk
+
+  ProblemDataAlpha(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);     //BB
+  ProblemDataN(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);         //BB
+  ProblemDataSres(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);      //BB
+  ProblemDataSsat(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);      //BB
+
+
   ProblemDataTSlopeX(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //sk
   ProblemDataTSlopeY(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //sk
   ProblemDataMannings(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);  //sk
@@ -482,6 +489,12 @@ void          FreeProblemData(
     FreeVector(ProblemDataPermeabilityY(problem_data));
     FreeVector(ProblemDataPermeabilityZ(problem_data));
     FreeVector(ProblemDataSpecificStorage(problem_data));   //sk
+
+    FreeVector(ProblemDataAlpha(problem_data));     //BB
+    FreeVector(ProblemDataN(problem_data));         //BB
+    FreeVector(ProblemDataSres(problem_data));      //BB
+    FreeVector(ProblemDataSsat(problem_data));      //BB
+
     FreeVector(ProblemDataTSlopeX(problem_data));   //sk
     FreeVector(ProblemDataTSlopeY(problem_data));   //sk
     FreeVector(ProblemDataMannings(problem_data));   //sk

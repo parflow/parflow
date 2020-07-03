@@ -138,6 +138,12 @@ typedef struct {
 
   Vector         *specific_storage;   //sk
 
+  Vector         *alpha;   //BB
+  Vector         *n;       //BB
+  Vector         *sres;    //BB
+  Vector         *ssat;    //BB
+
+
   Vector         *FBx;  //RMM
   Vector         *FBy;  //RMM
   Vector         *FBz;  //RMM
@@ -267,6 +273,12 @@ typedef struct {
 #define ProblemDataWellData(problem_data)       ((problem_data)->well_data)
 #define ProblemDataBCPressureData(problem_data) ((problem_data)->bc_pressure_data)
 #define ProblemDataSpecificStorage(problem_data)((problem_data)->specific_storage)   //sk
+
+#define ProblemDataAlpha(problem_data)((problem_data)->alpha)   //BB
+#define ProblemDataN(problem_data)((problem_data)->n)           //BB
+#define ProblemDataSres(problem_data)((problem_data)->sres)     //BB
+#define ProblemDataSsat(problem_data)((problem_data)->ssat)     //BB
+
 #define ProblemDataTSlopeX(problem_data)        ((problem_data)->x_slope)   //sk
 #define ProblemDataTSlopeY(problem_data)        ((problem_data)->y_slope)   //sk
 #define ProblemDataMannings(problem_data)       ((problem_data)->mann)   //sk

@@ -51,6 +51,9 @@ typedef struct {
   PFModule  *wells;
   PFModule  *bc_pressure;
   PFModule  *specific_storage;  //sk
+
+  PFModule *alpha; //BB
+
   PFModule  *x_slope;  //sk
   PFModule  *y_slope;  //sk
   PFModule  *mann;  //sk
@@ -87,6 +90,9 @@ void          SetProblemData(
   PFModule      *wells = (instance_xtra->wells);
   PFModule      *bc_pressure = (instance_xtra->bc_pressure);
   PFModule      *specific_storage = (instance_xtra->specific_storage);    //sk
+
+  PFModule      *alpha = (instance_xtra->alpha);    //BB
+
   PFModule      *x_slope = (instance_xtra->x_slope);         //sk
   PFModule      *y_slope = (instance_xtra->y_slope);         //sk
   PFModule      *mann = (instance_xtra->mann);            //sk
@@ -121,6 +127,7 @@ void          SetProblemData(
     PFModuleInvokeType(SpecStorageInvoke, specific_storage,                   //sk
                        (problem_data,
                         ProblemDataSpecificStorage(problem_data)));
+
     PFModuleInvokeType(SlopeInvoke, x_slope,                   //sk
                        (problem_data,
                         ProblemDataTSlopeX(problem_data),
