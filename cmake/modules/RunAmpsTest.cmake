@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.4)
 macro(pf_amps_exec_check cmd ranks args)
 
   set( ENV{PF_TEST} "yes" )
-  if (${ranks} GREATER 0)
+  if (${${ranks}} GREATER 0)
     # Separate potentially space delimited arguments in MPIEXEC_PREFLAGS and MPIEXEC_POSTFLAGS.
     separate_arguments(sep_MPIEXEC_PREFLAGS NATIVE_COMMAND ${MPIEXEC_PREFLAGS})
     separate_arguments(sep_MPIEXEC_POSTFLAGS NATIVE_COMMAND ${MPIEXEC_POSTFLAGS})
