@@ -70,6 +70,7 @@ subroutine clm_coszen (clm, day, coszen)
   real(r8) sind           !sine   of declination
   real(r8) cosd           !cosine of declination
   real(r8) phi            !greenwich calendar day + longitude offset
+  real(r8) si             !latitude 
   real(r8) loctim         !local time (hour)
   real(r8) hrang          !solar hour angle, 24 hour periodicity (radians)
   real(r8) mcsec          !current seconds in day (0, ..., 86400)
@@ -77,31 +78,52 @@ subroutine clm_coszen (clm, day, coszen)
 
 !=== End Variable List ===================================================
 
+
+
   pi = 4.*atan(1.)  ! Value of Pi to system and types maximum precision
 
 ! Slope aspect from ParFlow terrain
-
   slope = atan( sqrt( clm%slope_x**2 + clm%slope_y**2 ) )
   Sy = abs(clm%slope_y)
   Sx = abs(clm%slope_x)
 
-  if (clm%slope_y>=0 .and. clm%slope_x>=0) then
+
+  if (clm%slope_y>0 .and. clm%slope_x>0) then
     aspect = atan(Sx/Sy)
 
-  else if(clm%slope_y>=0 .and. clm%slope_x<0) then
+  else if(clm%slope_y>0 .and. clm%slope_x<0) then
     aspect = -atan(Sx/Sy)
 
-  else if(clm%slope_y<0 .and. clm%slope_x>=0) then
+  else if(clm%slope_y<0 .and. clm%slope_x>0) then
     aspect = pi - atan(Sx/Sy)
 
   else if(clm%slope_y<0 .and. clm%slope_x<0) then
     aspect = -pi + atan(Sx/Sy)
+    
+  else if (clm%slope_y>0 .and. clm%slope_x==0) then
+    aspect = 0
 
+  else if(clm%slope_y<0 .and. clm%slope_x==0) then
+    aspect = pi
+
+  else if(clm%slope_y==0 .and. clm%slope_x>0) then
+    aspect = pi/2
+
+  else if(clm%slope_y==0 .and. clm%slope_x<0) then
+    aspect = -pi/2
+    
+  else if(clm%slope_y==0 .and. clm%slope_x==0) then
+    aspect = 0
+ 
+  else
+    aspect = -99
+    
   end if
+  
 
 ! Solar declination: match CCM2
 
-  theta = (2.*pi*day)/365.0
+  theta = (2.*pi*day)/365.0 
   delta = .006918 - .399912*cos(   theta) + .070257*sin(   theta) &
        - .006758*cos(2.*theta) + .000907*sin(2.*theta) &
        - .002697*cos(3.*theta) + .001480*sin(3.*theta)
@@ -119,15 +141,20 @@ subroutine clm_coszen (clm, day, coszen)
 
   hrang = 15. * (loctim-12.) * pi/180.     ! 360/24 = 15
 
+  
+  si = clm%lat
+
+
 ! Cosine solar zenith angle.  Reset points with sun slightly below horizon 
 ! to slightly above horizon, as discussed in description.
 
-  coszen = sin(phi) * sin(delta) * cos(slope) &
-    - sin(delta) * cos(phi) * sin(slope) * cos(aspect) &
-    + cos(phi) * cos(hrang) * cos(delta) * cos(slope) &
-    + cos(delta) * sin(slope) * sin(phi) * cos(aspect) * cos(hrang) &
-    + cos(delta) * sin(slope) * sin(aspect) * sin(hrang)
+  coszen = sin(delta) * sin(si)  * cos(slope) &
+    - sin(delta) * cos(si) * sin(slope) * cos(aspect) &
+    + cos(delta) * cos(si) * cos(slope) * cos(hrang) &
+    + cos(delta) * sin(si) * sin(slope) * cos(aspect) * cos(hrang) &
+    + cos(delta) * sin(aspect) * sin(slope) * sin(hrang)
 
   if (coszen >= -0.001 .and. coszen <= 0.) coszen=0.001
+
 
 end subroutine clm_coszen
