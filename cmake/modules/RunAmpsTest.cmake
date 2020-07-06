@@ -3,7 +3,7 @@
 #
 # Use find_package(MPI) in project to set the MPI variables
 
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.14)
 
 # Execute command with error check
 # all parameters passed in as reference
@@ -19,7 +19,13 @@ macro(pf_amps_exec_check cmd ranks args)
     set( full_command ./${${cmd}} ${${args}} )
   endif()
 
-  execute_process (COMMAND ${full_command} RESULT_VARIABLE cmd_result OUTPUT_VARIABLE joined_stdout_stderr ERROR_VARIABLE joined_stdout_stderr COMMAND_ECHO STDOUT)
+  # Note: This method of printing the command is only necessary because the
+  # 'COMMAND_ECHO' parameter of execute_process is relatively new, introduced
+  # around cmake-3.15, and we'd like to be compatible with older cmake versions.
+  # See the cmake_minimum_required above.
+  list(JOIN ${cmd} " " cmd_str)
+  message(STATUS "Executing: ${cmd_str}")
+  execute_process (COMMAND ${full_command} RESULT_VARIABLE cmd_result OUTPUT_VARIABLE joined_stdout_stderr ERROR_VARIABLE joined_stdout_stderr)
   message(STATUS "Output:\n${joined_stdout_stderr}")
   if (cmd_result)
     message (FATAL_ERROR "Error (${cmd_result}) while running test.")

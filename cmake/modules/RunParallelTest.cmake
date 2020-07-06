@@ -3,7 +3,7 @@
 #
 # Must have find_package(MPI) in project using this macro
 
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.14)
 
 # Execute command with error check
 # cmd parameter passed in as reference
@@ -14,7 +14,14 @@ macro(pf_exec_check cmd)
     set( ENV{PARFLOW_HAVE_SILO} "yes")
   endif()
 
-  execute_process (COMMAND ${${cmd}} RESULT_VARIABLE cmd_result OUTPUT_VARIABLE joined_stdout_stderr ERROR_VARIABLE joined_stdout_stderr COMMAND_ECHO STDOUT)
+  # Note: This method of printing the command is only necessary because the
+  # 'COMMAND_ECHO' parameter of execute_process is relatively new, introduced
+  # around cmake-3.15, and we'd like to be compatible with older cmake versions.
+  # See the cmake_minimum_required above.
+  list(JOIN ${cmd} " " cmd_str)
+  message(STATUS "Executing: ${cmd_str}")
+  execute_process (COMMAND ${${cmd}} RESULT_VARIABLE cmd_result OUTPUT_VARIABLE joined_stdout_stderr ERROR_VARIABLE joined_stdout_stderr)
+
   message(STATUS "Output:\n${joined_stdout_stderr}")
   if (cmd_result)
     message (FATAL_ERROR "Error (${cmd_result}) while running test.")
