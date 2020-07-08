@@ -304,6 +304,7 @@ parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
   }
 }
 
+void
 parflow_p4est_qcorner(parflow_p4est_qiter_t * qiter,
                       double v[3], double pv[3])
 {

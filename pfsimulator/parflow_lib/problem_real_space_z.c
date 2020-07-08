@@ -299,7 +299,8 @@ breakout:;
     {
       sc_array_destroy(new_requests);
       sc_mempool_destroy(sendbuf);
-      sendbuf = new_requests = NULL;
+      sendbuf = NULL;
+      new_requests = NULL;
     }
 
     if (old_requests != NULL)
