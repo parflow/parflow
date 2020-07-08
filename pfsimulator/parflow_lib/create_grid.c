@@ -92,7 +92,7 @@ Grid           *CreateGrid(
   parflow_p4est_quad_data_t  *quad_data = NULL;
   parflow_p4est_ghost_data_t *ghost_data = NULL;
   int initial_level;
-  int num_local_quads, num_nonlocal_quads;
+  int num_local_quads;
   int num_ghost_children;
   int                        *z_levels;
   int                        *g_exchange_info;
@@ -148,7 +148,6 @@ Grid           *CreateGrid(
 
     initial_level = parflow_p4est_get_initial_level(pfgrid);
     num_local_quads = parflow_p4est_local_num_quads(pfgrid);
-    num_nonlocal_quads = parflow_p4est_ghost_num_quads(pfgrid);
     nchildren =  1 << parflow_p4est_dim (pfgrid);
 
     /* Allocate p4est mesh structure if required*/

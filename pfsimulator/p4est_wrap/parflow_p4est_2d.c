@@ -272,7 +272,6 @@ parflow_p4est_get_zneigh_2d(Subgrid * subgrid
 #ifdef P4_TO_P8
   p4est_mesh_t   *mesh = pfgrid->mesh;
   p4est_locidx_t K = mesh->local_num_quadrants;
-  p4est_locidx_t G = mesh->ghost_num_quadrants;
   int8_t qtof;
   p4est_locidx_t qtoq;
   int f, lidx;
@@ -298,7 +297,7 @@ parflow_p4est_get_zneigh_2d(Subgrid * subgrid
       {
         /** face neighbor is on a different processor,
          *  then qtoq contains its local index in the ghost layer */
-        P4EST_ASSERT((qtoq - K) < G);
+        P4EST_ASSERT((qtoq - K) < mesh->ghost_num_quadrants);
         z_neighs[f] = qtoq; /* TODO: assumes ghosts come directly after locals in Sall*/
       }
       else
@@ -717,7 +716,6 @@ parflow_p4est_get_projection_info_2d(Subgrid * subgrid
   p4est_tree_t   *tree;
   p4est_topidx_t tt = (int32_t)subgrid->owner_tree;
   p4est_quadrant_t *quad;
-  p4est_topidx_t num_trees = pfg->Tx * pfg->Ty * pfg->Tz;
   p4est_topidx_t tp;
   p4est_quadrant_t proj;
 
@@ -747,7 +745,7 @@ parflow_p4est_get_projection_info_2d(Subgrid * subgrid
   vv[2] = zl_idx / qlen;
 
   lidx = parflow_p4est_lexicord(pfg->Tx, pfg->Ty, vv);
-  P4EST_ASSERT(lidx >= 0 && lidx < num_trees);
+  P4EST_ASSERT(lidx >= 0 && lidx < pfg->Tx * pfg->Ty * pfg->Tz);
   tp = pfg->lexic_to_tree[lidx];
   P4EST_ASSERT(tp >= 0);
 

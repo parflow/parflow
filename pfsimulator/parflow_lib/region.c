@@ -55,9 +55,6 @@ Subregion  *NewSubregion(
                          int process)
 {
   Subregion *new_subregion;
-#ifdef HAVE_P4EST
-  int i;
-#endif
 
   new_subregion = talloc(Subregion, 1);
 

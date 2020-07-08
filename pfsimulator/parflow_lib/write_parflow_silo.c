@@ -346,8 +346,6 @@ void     WriteSilo(char *  file_prefix,
 #endif
 
 #ifdef HAVE_P4EST
-  int mpiret;
-  int num_names = 0;
   int *quads_per_rank;
 #endif
 

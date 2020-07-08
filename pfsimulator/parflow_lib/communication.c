@@ -240,7 +240,6 @@ CommPkg         *NewCommPkg(
   int dim;
 
 #ifdef HAVE_P4EST
-  int t[3];
   int tag;
   int which_child, which_ghost;
   double * g_data;
