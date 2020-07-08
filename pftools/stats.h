@@ -58,7 +58,7 @@ extern "C" {
 
 /* stats.c */
 void Stats(Databox *databox, double *min, double *max, double *mean,
-	   double *sum, double *variance, double *stdev);
+           double *sum, double *variance, double *stdev);
 
 #ifdef __cplusplus
 }

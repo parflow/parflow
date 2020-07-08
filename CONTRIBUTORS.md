@@ -49,3 +49,9 @@ Richland, WA, USA.
 **Ketan B. Kulkarni**
 Juelich Supercomputing Centre, Forschungszentrum Juelich
 Juelich, Germany.
+
+**Michael Burke**
+Boise State University
+
+**David Thompson**
+Kitware, Inc

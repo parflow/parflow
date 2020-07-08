@@ -37,10 +37,10 @@
  *    Email:  ashby@llnl.gov
  *
  * LLNL Contributors:
- *	Steven G. Smith
+ *      Steven G. Smith
  *      Rob Falgout
  *
- *	.	.	.	.	.	.	.	.	.
+ *      .       .       .       .       .       .       .       .       .
  *
  * (C) 1993 Regents of the University of California.
  *
@@ -49,9 +49,9 @@
  *              This work was produced under the sponsorship of            *
  *              the U.S. Department of Energy.   The Government            *
  *              retains certains rights therein.                           *
- *									   *
- *                                  Notice				   *
- *			            ------				   *
+ *                                                                         *
+ *                                  Notice                                 *
+ *                                  ------                                 *
  *    This computer code material was prepared as an  account  of  work    *
  *    sponsored  by  the  United States Government.  Neither the United    *
  *    States nor the United States Department of  Energy,  nor  any  of    *
@@ -60,8 +60,8 @@
  *    sumes  any  legal  liability  or responsibility for the accuracy,    *
  *    completeness or usefulness of any information, apparatus, product    *
  *    or  process  disclosed,  or represents that its use would not in-    *
- *    fringe privately owned rights.					   *
- *									   *
+ *    fringe privately owned rights.                                       *
+ *                                                                         *
  ***************************************************************************
  *
  *

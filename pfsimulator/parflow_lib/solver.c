@@ -179,11 +179,11 @@ NewSolver()
   }
 
   {
-     NameArray switch_na;
-     switch_na = NA_NewNameArray("False True");
-     switch_name = GetStringDefault("UseClustering", "True");
-     GlobalsUseClustering = NA_NameToIndex(switch_na, switch_name);
-     NA_FreeNameArray(switch_na);
+    NameArray switch_na;
+    switch_na = NA_NewNameArray("False True");
+    switch_name = GetStringDefault("UseClustering", "True");
+    GlobalsUseClustering = NA_NameToIndex(switch_na, switch_name);
+    NA_FreeNameArray(switch_na);
   }
 
   /*-----------------------------------------------------------------------
@@ -198,11 +198,11 @@ NewSolver()
 #endif
 
   {
-     NameArray solver_na;
-     solver_na = NA_NewNameArray("Richards Diffusion Impes");
-     switch_name = GetStringDefault("Solver", "Impes");
-     solver = NA_NameToIndex(solver_na, switch_name);
-     NA_FreeNameArray(solver_na);
+    NameArray solver_na;
+    solver_na = NA_NewNameArray("Richards Diffusion Impes");
+    switch_name = GetStringDefault("Solver", "Impes");
+    solver = NA_NameToIndex(solver_na, switch_name);
+    NA_FreeNameArray(solver_na);
   }
 
 #ifdef HAVE_P4EST

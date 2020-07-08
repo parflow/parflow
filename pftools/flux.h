@@ -57,7 +57,7 @@ extern "C" {
  *-----------------------------------------------------------------------*/
 
 /* flux.c */
-Databox * CompFlux (Databox *k, Databox *h);
+Databox * CompFlux(Databox *k, Databox *h);
 
 #ifdef __cplusplus
 extern "C" {

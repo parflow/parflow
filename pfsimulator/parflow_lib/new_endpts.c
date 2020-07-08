@@ -27,31 +27,31 @@
  **********************************************************************EHEADER*/
 /*****************************************************************************
  *
- * File:	NewEndpts.c
+ * File:        NewEndpts.c
  *
- * Written by:	Bill Bosl
- *		Lawrence Livermore National Lab
- *		phone:  (510) 423-2873
- *		e-mail: wjbosl@llnl.gov
+ * Written by:  Bill Bosl
+ *              Lawrence Livermore National Lab
+ *              phone:  (510) 423-2873
+ *              e-mail: wjbosl@llnl.gov
  *
  * Functions contained in this file:
- *		NewEndpts ( ... )
+ *              NewEndpts ( ... )
  *
  * External functions called:
- *		ratqr ()	This is an Eispack routine written in
+ *              ratqr ()        This is an Eispack routine written in
  *                               Fortran.
  *
  * Purpose:
  *               This function estimates the eigenvalues and condition
- *		number of a matrix A using a Lanczos-type algorithm.
- *		The key input parameters (alpha, beta) are generated
- *		in the calling routine, which implements a
- *		Chebyshev polynomial preconditioned conjugate gradient
- *		iterative solver. For more information, see:
+ *              number of a matrix A using a Lanczos-type algorithm.
+ *              The key input parameters (alpha, beta) are generated
+ *              in the calling routine, which implements a
+ *              Chebyshev polynomial preconditioned conjugate gradient
+ *              iterative solver. For more information, see:
  *
- *		Ashby, Manteuffel, Saylor, "A Taxonomy for Conjugate
- *		Gradient Methods", SIAM Journel of Numerical Analysis,
- *		Vol. 27, No. 6, 1542-1568, December 1990.
+ *              Ashby, Manteuffel, Saylor, "A Taxonomy for Conjugate
+ *              Gradient Methods", SIAM Journel of Numerical Analysis,
+ *              Vol. 27, No. 6, 1542-1568, December 1990.
  *
  *****************************************************************************
  *

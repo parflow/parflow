@@ -33,10 +33,10 @@
 
 void PointCopy(Point point, Point src)
 {
-  for(int dim = 0; dim < DIM; dim++)
+  for (int dim = 0; dim < DIM; dim++)
   {
     point[dim] = src[dim];
-  }  
+  }
 }
 
 int BoxSize(Box *box)
@@ -46,7 +46,7 @@ int BoxSize(Box *box)
 
 void BoxNumberCells(Box* box, Point* number_cells)
 {
-  for(int dim = 0; dim < DIM; dim++)
+  for (int dim = 0; dim < DIM; dim++)
   {
     (*number_cells)[dim] = box->up[dim] - box->lo[dim] + 1;
   }
@@ -54,28 +54,28 @@ void BoxNumberCells(Box* box, Point* number_cells)
 
 void BoxClear(Box *box)
 {
-  for(int dim = 0; dim < DIM; dim++)
+  for (int dim = 0; dim < DIM; dim++)
   {
-    box -> lo[dim] = INT_MAX;
-    box -> up[dim] = INT_MAX;
+    box->lo[dim] = INT_MAX;
+    box->up[dim] = INT_MAX;
   }
 }
 
 void BoxSet(Box *box, Point lo, Point up)
 {
-  for(int dim = 0; dim < DIM; dim++)
+  for (int dim = 0; dim < DIM; dim++)
   {
-    box -> lo[dim] = lo[dim];
-    box -> up[dim] = up[dim];
+    box->lo[dim] = lo[dim];
+    box->up[dim] = up[dim];
   }
 }
 
 void BoxCopy(Box *dst, Box *src)
 {
-  for(int dim = 0; dim < DIM; dim++)
+  for (int dim = 0; dim < DIM; dim++)
   {
-    dst -> lo[dim] = src -> lo[dim];
-    dst -> up[dim] = src -> up[dim];
+    dst->lo[dim] = src->lo[dim];
+    dst->up[dim] = src->up[dim];
   }
 }
 
@@ -86,36 +86,35 @@ void BoxPrint(Box* box)
 
 BoxArray* NewBoxArray(BoxList *box_list)
 {
-   BoxArray* box_array = ctalloc(BoxArray,1);
+  BoxArray* box_array = ctalloc(BoxArray, 1);
 
-   if(box_list)
-   {
-      box_array -> size = BoxListSize(box_list);
-      box_array -> boxes = ctalloc(Box, box_array -> size);
+  if (box_list)
+  {
+    box_array->size = BoxListSize(box_list);
+    box_array->boxes = ctalloc(Box, box_array->size);
 
-      int i = 0;
-      BoxListElement* element = box_list -> head;
-      while(element)
-      {
-	 BoxCopy(&(box_array -> boxes[i++]), &(element -> box));
-	 element = element -> next;
-      }
+    int i = 0;
+    BoxListElement* element = box_list->head;
+    while (element)
+    {
+      BoxCopy(&(box_array->boxes[i++]), &(element->box));
+      element = element->next;
+    }
+  }
 
-   }
-   
-   return box_array;
+  return box_array;
 }
 
 void FreeBoxArray(BoxArray* box_array)
 {
-  if(box_array)
+  if (box_array)
   {
-     if(box_array -> boxes)
-     {
-	tfree(box_array -> boxes);
-     }
+    if (box_array->boxes)
+    {
+      tfree(box_array->boxes);
+    }
 
-     tfree(box_array);
+    tfree(box_array);
   }
 }
 
@@ -126,94 +125,97 @@ BoxList* NewBoxList(void)
 
 void FreeBoxList(BoxList *box_list)
 {
-  if(box_list)
+  if (box_list)
   {
-     BoxListElement* element = box_list -> head;
-     while(element)
-     {
-	BoxListElement* next = element -> next;
-	tfree(element);
-	element = next;
-     }
-  
-     tfree(box_list);
+    BoxListElement* element = box_list->head;
+    while (element)
+    {
+      BoxListElement* next = element->next;
+      tfree(element);
+      element = next;
+    }
+
+    tfree(box_list);
   }
 }
 
 int BoxListSize(BoxList *box_list)
 {
-  return box_list -> size;
+  return box_list->size;
 }
 
 int BoxListIsEmpty(BoxList *box_list)
 {
-  return box_list -> size > 0 ? 0 : 1;
+  return box_list->size > 0 ? 0 : 1;
 }
 
 Box* BoxListFront(BoxList *box_list)
 {
-  return &(box_list -> head -> box);
+  return &(box_list->head->box);
 }
 
 void BoxListAppend(BoxList* box_list, Box* box)
 {
-  if(box_list -> size == 0)
+  if (box_list->size == 0)
   {
-    box_list -> head = ctalloc(BoxListElement, 1);
-    BoxCopy(&(box_list -> head -> box), box);
-    
-    box_list -> tail = box_list -> head;
-    box_list -> head -> next = NULL;
-    box_list -> head -> prev = NULL;
-    
-    box_list -> size = 1;
+    box_list->head = ctalloc(BoxListElement, 1);
+    BoxCopy(&(box_list->head->box), box);
+
+    box_list->tail = box_list->head;
+    box_list->head->next = NULL;
+    box_list->head->prev = NULL;
+
+    box_list->size = 1;
   }
   else
   {
     BoxListElement* new_element = ctalloc(BoxListElement, 1);
-    BoxCopy(&(new_element -> box), box);
-    
-    new_element -> next = NULL;
-    new_element -> prev = box_list -> tail;
-    box_list -> tail -> next = new_element;
-    box_list -> tail = new_element;
-    
-    box_list -> size++;
+    BoxCopy(&(new_element->box), box);
+
+    new_element->next = NULL;
+    new_element->prev = box_list->tail;
+    box_list->tail->next = new_element;
+    box_list->tail = new_element;
+
+    box_list->size++;
   }
 }
 
 void BoxListConcatenate(BoxList *box_list, BoxList *concatenate_list)
 {
-  BoxListElement* element = concatenate_list -> head;
-  while(element)
+  BoxListElement* element = concatenate_list->head;
+
+  while (element)
   {
-    BoxListAppend(box_list, &(element -> box));
-    element = element -> next;
+    BoxListAppend(box_list, &(element->box));
+    element = element->next;
   }
 }
 
 void BoxListClearItems(BoxList* box_list)
 {
-  BoxListElement* element = box_list -> head;
-  while(element)
+  BoxListElement* element = box_list->head;
+
+  while (element)
   {
     BoxListElement* next = element->next;
     tfree(element);
     element = next;
   }
 
-  box_list -> head = NULL;
-  box_list -> tail = NULL;
-  box_list -> size = 0;
+  box_list->head = NULL;
+  box_list->tail = NULL;
+  box_list->size = 0;
 }
 
 void BoxListPrint(BoxList* box_list)
 {
-  BoxListElement* element = box_list -> head;
-  while(element)
+  BoxListElement* element = box_list->head;
+
+  while (element)
   {
     printf("\t");
-    BoxPrint(&(element -> box));
+    BoxPrint(&(element->box));
     printf("\n");
     element = element->next;
   }

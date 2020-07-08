@@ -70,6 +70,10 @@ typedef struct {
                                          * SolverRichards */
   PFModule   *phase_source;
   PFModule   *specific_storage;         //sk
+  PFModule   *FBx;         //rmm flow barrier multipliers in X, Y, Z
+  PFModule   *FBy;         //rmm
+  PFModule   *FBz;
+
   PFModule   *capillary_pressure;
   PFModule   *saturation;               /* saturation function used in
                                          * SolverRichards */
@@ -102,6 +106,7 @@ typedef struct {
   PFModule  *mann;
   PFModule  *overlandflow_eval;        //DOK
   PFModule  *overlandflow_eval_diff;         //@RMM
+  PFModule  *overlandflow_eval_kin;  //@MCB
 
   /* @RMM Variable dZ */
   PFModule  *dz_mult;           //rmm
@@ -132,6 +137,11 @@ typedef struct {
   Vector         *porosity;
 
   Vector         *specific_storage;   //sk
+
+  Vector         *FBx;  //RMM
+  Vector         *FBy;  //RMM
+  Vector         *FBz;  //RMM
+
 
   WellData       *well_data;
   BCPressureData *bc_pressure_data;
@@ -200,10 +210,15 @@ typedef struct {
 #define ProblemSpecStorage(problem)               ((problem)->specific_storage)   //sk
 #define ProblemXSlope(problem)                    ((problem)->x_slope)   //sk
 #define ProblemYSlope(problem)                    ((problem)->y_slope)   //sk
+#define ProblemFBx(problem)                      ((problem)->FBx)    //RMM
+#define ProblemFBy(problem)                      ((problem)->FBy)    //RMM
+#define ProblemFBz(problem)                      ((problem)->FBz)    //RMM
+
 #define ProblemMannings(problem)                  ((problem)->mann)   //sk
 
 #define ProblemOverlandFlowEval(problem)          ((problem)->overlandflow_eval)   //DOK
 #define ProblemOverlandFlowEvalDiff(problem)          ((problem)->overlandflow_eval_diff)   //@RMM
+#define ProblemOverlandFlowEvalKin(problem)  ((problem)->overlandflow_eval_kin) //@MCB
 
 #define ProblemdzScale(problem)            ((problem)->dz_mult)    //RMM
 #define ProblemRealSpaceZ(problem)            ((problem)->real_space_z)
@@ -246,6 +261,9 @@ typedef struct {
 #define ProblemDataPermeabilityY(problem_data)  ((problem_data)->permeability_y)
 #define ProblemDataPermeabilityZ(problem_data)  ((problem_data)->permeability_z)
 #define ProblemDataPorosity(problem_data)       ((problem_data)->porosity)
+#define ProblemDataFBx(problem_data)            ((problem_data)->FBx)    //RMM
+#define ProblemDataFBy(problem_data)            ((problem_data)->FBy)    //RMM
+#define ProblemDataFBz(problem_data)            ((problem_data)->FBz)    //RMM
 #define ProblemDataWellData(problem_data)       ((problem_data)->well_data)
 #define ProblemDataBCPressureData(problem_data) ((problem_data)->bc_pressure_data)
 #define ProblemDataSpecificStorage(problem_data)((problem_data)->specific_storage)   //sk

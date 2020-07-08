@@ -5,6 +5,7 @@ set (SRC_FILES advect.F
   bc_lb.c
   bc_pressure.c
   bc_pressure_package.c
+  cJSON.c
   calc_elevations.c
   cghs.c
   char_vector.c
@@ -53,6 +54,7 @@ set (SRC_FILES advect.F
   matrix.c
   matvec.c
   max_field_value.c
+  metadata.c
   mg_semi.c
   mg_semi_prolong.c
   mg_semi_restrict.c
@@ -63,6 +65,7 @@ set (SRC_FILES advect.F
   nodiag_scale.c
   overlandflow_eval.c
   overlandflow_eval_diffusive.c
+  overlandflow_eval_Kin.c
   overlandsum.c
   pcg.c
   permeability_face.c
@@ -87,6 +90,9 @@ set (SRC_FILES advect.F
   problem_domain.c
   problem_dz_scale.c
   problem_eval.c
+  problem_FBx.c
+  problem_FBy.c
+  problem_FBz.c
   problem_geometries.c
   problem_ic_phase_concen.c
   problem_ic_phase_pressure.c
@@ -186,4 +192,3 @@ if (${PARFLOW_HAVE_NETCDF})
   target_include_directories (pfsimulator PUBLIC "${netCDF_INCLUDE_DIRS}")
   target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
 endif (${PARFLOW_HAVE_NETCDF})
-

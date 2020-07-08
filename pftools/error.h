@@ -186,27 +186,27 @@ static char *DELETEUSAGE = "Usage: pfdelete dataset\n";
 
 /* Function prototypes for error checking functions */
 
-int SameDimensions (Databox *databoxp, Databox *databoxq);
-int InRange (int i, int j, int k, Databox *databox);
-int IsValidFileType (char *option);
-char *GetValidFileExtension (char *filename);
+int SameDimensions(Databox *databoxp, Databox *databoxq);
+int InRange(int i, int j, int k, Databox *databox);
+int IsValidFileType(char *option);
+char *GetValidFileExtension(char *filename);
 
 /* Function prototypes for creating error messages  */
 
-void InvalidOptionError (Tcl_Interp *interp, int argnum, char *usage);
-void InvalidArgError (Tcl_Interp *interp, int argnum, char *usage);
-void WrongNumArgsError (Tcl_Interp *interp, char *usage);
-void MissingOptionError (Tcl_Interp *interp, int argnum, char *usage);
-void MissingFilenameError (Tcl_Interp *interp, int argnum, char *usage);
-void InvalidFileExtensionError (Tcl_Interp *interp, int argnum, char *usage);
-void NotAnIntError (Tcl_Interp *interp, int argnum, char *usage);
-void NotADoubleError (Tcl_Interp *interp, int argnum, char *usage);
-void NumberNotPositiveError (Tcl_Interp *interp, int argnum);
-void SetNonExistantError (Tcl_Interp *interp, char *hashkey);
-void MemoryError (Tcl_Interp *interp);
-void ReadWriteError (Tcl_Interp *interp);
-void OutOfRangeError (Tcl_Interp *interp, int i, int j, int k);
-void DimensionError (Tcl_Interp *interp);
+void InvalidOptionError(Tcl_Interp *interp, int argnum, char *usage);
+void InvalidArgError(Tcl_Interp *interp, int argnum, char *usage);
+void WrongNumArgsError(Tcl_Interp *interp, char *usage);
+void MissingOptionError(Tcl_Interp *interp, int argnum, char *usage);
+void MissingFilenameError(Tcl_Interp *interp, int argnum, char *usage);
+void InvalidFileExtensionError(Tcl_Interp *interp, int argnum, char *usage);
+void NotAnIntError(Tcl_Interp *interp, int argnum, char *usage);
+void NotADoubleError(Tcl_Interp *interp, int argnum, char *usage);
+void NumberNotPositiveError(Tcl_Interp *interp, int argnum);
+void SetNonExistantError(Tcl_Interp *interp, char *hashkey);
+void MemoryError(Tcl_Interp *interp);
+void ReadWriteError(Tcl_Interp *interp);
+void OutOfRangeError(Tcl_Interp *interp, int i, int j, int k);
+void DimensionError(Tcl_Interp *interp);
 
 #ifdef __cplusplus
 }

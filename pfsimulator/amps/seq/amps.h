@@ -218,8 +218,8 @@ typedef struct amps_HandleObject {
 #define PACK_HOST_TYPE 1
 #define PACK_NO_CONVERT_TYPE 2
 
-#define AMPS_ALIGN(type, dest) \
-  ((sizeof(type) - \
+#define AMPS_ALIGN(type, dest)              \
+  ((sizeof(type) -                          \
     ((unsigned long)(dest) % sizeof(type))) \
    % sizeof(type));
 
@@ -237,17 +237,17 @@ typedef struct amps_HandleObject {
 /*---------------------------------------------------------------------------*/
 #if SGS
 #define AMPS_CLEAR_INVOICE(invoice) \
-  { \
-    amps_ClearInvoice(invoice); \
+  {                                 \
+    amps_ClearInvoice(invoice);     \
   }
 
 #define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
-  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED) \
-    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED; \
-  else \
-  { \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    pvm_freebuf(amps_letter); \
+  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
+    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;    \
+  else                                                    \
+  {                                                       \
+    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
+    pvm_freebuf(amps_letter);                             \
   }
 
 #endif
@@ -336,23 +336,23 @@ typedef struct amps_HandleObject {
 
 #ifdef AMPS_MEMORY_ALLOC_CHECK
 
-#define amps_TAlloc(type, count) \
-  { \
-    (type*)ptr; \
+#define amps_TAlloc(type, count)                                      \
+  {                                                                   \
+    (type*)ptr;                                                       \
     if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count)))) \
-        == NULL) \
-      amps_Printf("Error: out of memory in <%s> at line %d\n", \
-                  __FILE__, __LINE__); \
-    ptr; \
+        == NULL)                                                      \
+      amps_Printf("Error: out of memory in <%s> at line %d\n",        \
+                  __FILE__, __LINE__);                                \
+    ptr;                                                              \
   }
 
-#define amps_CTAlloc(type, count) \
-  { \
-    (type*)ptr; \
+#define amps_CTAlloc(type, count)                                                         \
+  {                                                                                       \
+    (type*)ptr;                                                                           \
     if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL) \
-      amps_Printf("Error: out of memory in <%s> at line %d\n", \
-                  __FILE__, __LINE__); \
-    ptr; \
+      amps_Printf("Error: out of memory in <%s> at line %d\n",                            \
+                  __FILE__, __LINE__);                                                    \
+    ptr;                                                                                  \
   }
 
 /* note: the `else' is required to guarantee termination of the `if' */

@@ -35,7 +35,11 @@
 #define DirichletBC  0
 #define FluxBC       1
 #define OverlandBC   2   //sk
-#define ConstHeadRiver   3   //rm
+#define SeepageFaceBC   3   //rmm
+
+/* @MCB: Additional overlandflow cases per LEC */
+#define OverlandKinematicBC 4
+#define OverlandDiffusiveBC 5
 
 /*----------------------------------------------------------------
  * BCStruct structure
@@ -77,49 +81,49 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is, body) \
-  { \
-    GrGeomSolid  *PV_gr_domain = BCStructGrDomain(bc_struct); \
-    int PV_patch_index = BCStructPatchIndex(bc_struct, ipatch); \
-    Subgrid      *PV_subgrid = BCStructSubgrid(bc_struct, is); \
-\
-    int PV_r = SubgridRX(PV_subgrid); \
-    int PV_ix = SubgridIX(PV_subgrid); \
-    int PV_iy = SubgridIY(PV_subgrid); \
-    int PV_iz = SubgridIZ(PV_subgrid); \
-    int PV_nx = SubgridNX(PV_subgrid); \
-    int PV_ny = SubgridNY(PV_subgrid); \
-    int PV_nz = SubgridNZ(PV_subgrid); \
-\
-    ival = 0; \
-    GrGeomPatchLoop(i, j, k, fdir, PV_gr_domain, PV_patch_index, \
-                    PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz, \
-    { \
-      body; \
-      ival++; \
-    }); \
+  {                                                                         \
+    GrGeomSolid  *PV_gr_domain = BCStructGrDomain(bc_struct);               \
+    int PV_patch_index = BCStructPatchIndex(bc_struct, ipatch);             \
+    Subgrid      *PV_subgrid = BCStructSubgrid(bc_struct, is);              \
+                                                                            \
+    int PV_r = SubgridRX(PV_subgrid);                                       \
+    int PV_ix = SubgridIX(PV_subgrid);                                      \
+    int PV_iy = SubgridIY(PV_subgrid);                                      \
+    int PV_iz = SubgridIZ(PV_subgrid);                                      \
+    int PV_nx = SubgridNX(PV_subgrid);                                      \
+    int PV_ny = SubgridNY(PV_subgrid);                                      \
+    int PV_nz = SubgridNZ(PV_subgrid);                                      \
+                                                                            \
+    ival = 0;                                                               \
+    GrGeomPatchLoop(i, j, k, fdir, PV_gr_domain, PV_patch_index,            \
+                    PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz,         \
+    {                                                                       \
+      body;                                                                 \
+      ival++;                                                               \
+    });                                                                     \
   }
 
 #define BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, is, body) \
-  { \
-    GrGeomSolid  *PV_gr_domain = BCStructGrDomain(bc_struct); \
-    int PV_patch_index = BCStructPatchIndex(bc_struct, ipatch); \
-    Subgrid      *PV_subgrid = BCStructSubgrid(bc_struct, is); \
-\
-    int PV_r = SubgridRX(PV_subgrid); \
-    int PV_ix = SubgridIX(PV_subgrid) - 1; \
-    int PV_iy = SubgridIY(PV_subgrid) - 1; \
-    int PV_iz = SubgridIZ(PV_subgrid) - 1; \
-    int PV_nx = SubgridNX(PV_subgrid) + 2; \
-    int PV_ny = SubgridNY(PV_subgrid) + 2; \
-    int PV_nz = SubgridNZ(PV_subgrid) + 2; \
-\
-    ival = 0; \
-    GrGeomPatchLoop(i, j, k, fdir, PV_gr_domain, PV_patch_index, \
-                    PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz, \
-    { \
-      body; \
-      ival++; \
-    }); \
+  {                                                                               \
+    GrGeomSolid  *PV_gr_domain = BCStructGrDomain(bc_struct);                     \
+    int PV_patch_index = BCStructPatchIndex(bc_struct, ipatch);                   \
+    Subgrid      *PV_subgrid = BCStructSubgrid(bc_struct, is);                    \
+                                                                                  \
+    int PV_r = SubgridRX(PV_subgrid);                                             \
+    int PV_ix = SubgridIX(PV_subgrid) - 1;                                        \
+    int PV_iy = SubgridIY(PV_subgrid) - 1;                                        \
+    int PV_iz = SubgridIZ(PV_subgrid) - 1;                                        \
+    int PV_nx = SubgridNX(PV_subgrid) + 2;                                        \
+    int PV_ny = SubgridNY(PV_subgrid) + 2;                                        \
+    int PV_nz = SubgridNZ(PV_subgrid) + 2;                                        \
+                                                                                  \
+    ival = 0;                                                                     \
+    GrGeomPatchLoop(i, j, k, fdir, PV_gr_domain, PV_patch_index,                  \
+                    PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz,               \
+    {                                                                             \
+      body;                                                                       \
+      ival++;                                                                     \
+    });                                                                           \
   }
 
 
