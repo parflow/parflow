@@ -2838,19 +2838,13 @@ void ComputeTopoDeficitToWT(
                             Databox *wtdepth)
 {
   int i, j, k;
-  int nx, ny, nz;
-  double x, y, z;
-  double dx, dy, dz;
+  int nx, ny;
+  double dz;
   double D0, D1, Z;
 
   nx = DataboxNx(mask);
   ny = DataboxNy(mask);
-  nz = DataboxNz(mask);
-  x = DataboxX(mask);
-  y = DataboxY(mask);
-  z = DataboxZ(mask);
-  dx = DataboxDx(mask);
-  dy = DataboxDy(mask);
+  
   dz = DataboxDz(mask);
 
   // loop over grid, skip nodata/ocean cells
@@ -2927,18 +2921,12 @@ void ComputeHydroStatFromWT(
                             Databox *press0)
 {
   int i, j, k, ktop;
-  int nx, ny, nz;
-  double x, y, z;
-  double dx, dy, dz;
+  int nx, ny;
+  double dz;
 
   nx = DataboxNx(mask);
   ny = DataboxNy(mask);
-  nz = DataboxNz(mask);
-  x = DataboxX(mask);
-  y = DataboxY(mask);
-  z = DataboxZ(mask);
-  dx = DataboxDx(mask);
-  dy = DataboxDy(mask);
+
   dz = DataboxDz(mask);
 
   // loop over grid, skipping nodata/ocean cells
@@ -2992,22 +2980,17 @@ void ComputeSlopeD8(
 {
   int i, j, ii, jj;
   int imin, jmin;
-  int nx, ny, nz;
+  int nx, ny;
   int nodata;
-  double x, y, z;
-  double dx, dy, dz;
+  double dx, dy;
   double dxy, zmin;
   double s1, s2, s3;
 
   nx = DataboxNx(dem);
   ny = DataboxNy(dem);
-  nz = DataboxNz(dem);
-  x = DataboxX(dem);
-  y = DataboxY(dem);
-  z = DataboxZ(dem);
+
   dx = DataboxDx(dem);
   dy = DataboxDy(dem);
-  dz = DataboxDz(dem);
 
   dxy = sqrt(dx * dx + dy * dy);
 
@@ -3231,22 +3214,17 @@ void ComputeSegmentD8(
 {
   int i, j, ii, jj;
   int imin, jmin;
-  int nx, ny, nz;
+  int nx, ny;
   int nodata;
-  double x, y, z;
-  double dx, dy, dz;
+  double dx, dy;
   double dxy, zmin;
   double s1, s2, s3, smax;
 
   nx = DataboxNx(dem);
   ny = DataboxNy(dem);
-  nz = DataboxNz(dem);
-  x = DataboxX(dem);
-  y = DataboxY(dem);
-  z = DataboxZ(dem);
+  
   dx = DataboxDx(dem);
   dy = DataboxDy(dem);
-  dz = DataboxDz(dem);
 
   dxy = sqrt(dx * dx + dy * dy);
 
@@ -3475,20 +3453,11 @@ void ComputeChildD8(
 {
   int i, j, ii, jj;
   int imin, jmin;
-  int nx, ny, nz;
-  double x, y, z;
-  double dx, dy, dz;
+  int nx, ny;
   double zmin;
 
   nx = DataboxNx(dem);
   ny = DataboxNy(dem);
-  nz = DataboxNz(dem);
-  x = DataboxX(dem);
-  y = DataboxY(dem);
-  z = DataboxZ(dem);
-  dx = DataboxDx(dem);
-  dy = DataboxDy(dem);
-  dz = DataboxDz(dem);
 
   // Loop over all [i,j]
   for (j = 0; j < ny; j++)
@@ -3968,7 +3937,7 @@ void ComputeFlintsLawFit(
   double da[ma];
   double alpha[ma][ma];
   double covar[ma][ma];
-  double oneda[ma][1];
+  double oneda[ma][2];
   double chisq = 1000.0;
   double ochisq = 0.1;
   double dchisq = 100.0 * (chisq - ochisq) / (ochisq);
@@ -4314,7 +4283,7 @@ double ComputeLMCoeff(
 void ComputeGaussJordan(
                         double a[][2],
                         int    n,
-                        double b[][1],
+                        double b[][2],
                         int    m)
 {
   int i, icol, irow, j, k, l, ll;
@@ -4568,7 +4537,7 @@ void ComputeFlintsLawByBasin(
         double da[ma];
         double alpha[ma][ma];
         double covar[ma][ma];
-        double oneda[ma][1];
+        double oneda[ma][2];
         double chisq = 1000.0;
         double ochisq = 0.1;
         double dchisq = 100.0 * (chisq - ochisq) / (ochisq);

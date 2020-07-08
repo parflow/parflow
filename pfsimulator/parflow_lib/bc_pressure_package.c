@@ -1120,15 +1120,18 @@ void  BCPressurePackageFreePublicXtra()
           //RMM
           FreePatch(OverlandFlowPFB,
           {
-            int interval_number;
+
 
             GetTypeStruct(OverlandFlowPFB, data, public_xtra, i);
 
-            /* for(interval_number = 0; interval_number < interval_division; interval_number++)
+            /* 
+	     * @RMM had to remove to not error our
+	     * int interval_number;
+	     * for(interval_number = 0; interval_number < interval_division; interval_number++)
              * {
              *   tfree(((dummy8 -> filenames)[interval_number]));
-             * }  */
-            // @RMM had to remove to not error our
+             * }  
+	     */
 
             tfree((data->filenames));
             tfree(data);

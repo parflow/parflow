@@ -663,12 +663,10 @@ void BergerRigoutsos(Vector*    vector,
                      BoxList*   boxes)
 {
   Grid* grid = VectorGrid(vector);
-  Subvector* v_sub;
   Subgrid* subgrid;
 
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
 
   int i_s;
 
@@ -682,8 +680,6 @@ void BergerRigoutsos(Vector*    vector,
   {
     subgrid = GridSubgrid(grid, i_s);
 
-    v_sub = VectorSubvector(vector, i_s);
-
     ix = SubgridIX(subgrid) - num_ghost;
     iy = SubgridIY(subgrid) - num_ghost;
     iz = SubgridIZ(subgrid) - num_ghost;
@@ -691,10 +687,6 @@ void BergerRigoutsos(Vector*    vector,
     nx = SubgridNX(subgrid) + 2 * num_ghost;
     ny = SubgridNY(subgrid) + 2 * num_ghost;
     nz = SubgridNZ(subgrid) + 2 * num_ghost;
-
-    nx_v = SubvectorNX(v_sub);
-    ny_v = SubvectorNY(v_sub);
-    nz_v = SubvectorNZ(v_sub);
 
     lo[0] = ix;
     lo[1] = iy;
@@ -791,7 +783,7 @@ void BergerRigoutsos(Vector*    vector,
  *
  * The computed box arrays are stored in the geom_solid.
  */
-BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
+void ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
 {
   Grid *grid = CreateGrid(GlobalsUserGrid);
 
@@ -812,7 +804,6 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
-    double dx, dy, dz;
 
     double *dp;
 
@@ -834,10 +825,6 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-
-      dx = SubgridDX(subgrid);
-      dy = SubgridDY(subgrid);
-      dz = SubgridDZ(subgrid);
 
       dp = SubvectorData(d_sub);
 
@@ -918,7 +905,6 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
-    double dx, dy, dz;
 
     double *dp;
 
@@ -940,10 +926,6 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-
-      dx = SubgridDX(subgrid);
-      dy = SubgridDY(subgrid);
-      dz = SubgridDZ(subgrid);
 
       dp = SubvectorData(d_sub);
 
@@ -1023,7 +1005,6 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
-    double dx, dy, dz;
 
     double *dp;
 
@@ -1045,10 +1026,6 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-
-      dx = SubgridDX(subgrid);
-      dy = SubgridDY(subgrid);
-      dz = SubgridDZ(subgrid);
 
       dp = SubvectorData(d_sub);
 

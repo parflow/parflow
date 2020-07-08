@@ -49,4 +49,8 @@ extern long AMPS_CPU_TICKS_PER_SEC;
 
 #endif
 
+#define PF_UNUSED(expr) do { (void)(expr); } while (0)
+
+#define AMPS_ABORT(msg) _amps_Abort(msg, __FILE__, __LINE__)
+
 #endif

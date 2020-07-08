@@ -87,7 +87,7 @@ int amps_unpack(
 
     switch (ptr->type)
     {
-      case AMPS_INVOICE_CHAR_CTYPE:
+      case AMPS_INVOICE_BYTE_CTYPE:
         if (!ptr->ignore)
         {
           if (ptr->data_type == AMPS_INVOICE_POINTER)
@@ -108,6 +108,37 @@ int amps_unpack(
           else
           {
             MPI_Type_vector(len, 1, stride, MPI_BYTE, &mpi_type);
+
+            MPI_Type_commit(&mpi_type);
+            MPI_Unpack(buffer, buf_size, &position,
+                       ptr->data, 1, mpi_type, comm);
+            MPI_Type_free(&mpi_type);
+          }
+        }
+        break;
+
+	
+      case AMPS_INVOICE_CHAR_CTYPE:
+        if (!ptr->ignore)
+        {
+          if (ptr->data_type == AMPS_INVOICE_POINTER)
+          {
+            *((void**)(ptr->data)) = malloc(sizeof(char) *
+                                            (size_t)(len * stride));
+            malloced = TRUE;
+
+            MPI_Type_vector(len, 1, stride, MPI_CHAR, &mpi_type);
+
+            MPI_Type_commit(&mpi_type);
+
+            MPI_Unpack(buffer, buf_size, &position,
+                       *((void**)(ptr->data)), 1, mpi_type, comm);
+
+            MPI_Type_free(&mpi_type);
+          }
+          else
+          {
+            MPI_Type_vector(len, 1, stride, MPI_CHAR, &mpi_type);
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
@@ -279,10 +310,18 @@ int amps_unpack(
 
         switch (ptr->type - AMPS_INVOICE_LAST_CTYPE)
         {
+	  case AMPS_INVOICE_BYTE_CTYPE:
+	                if (!ptr->ignore)
+            {
+              MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
+              element_size = sizeof(char);
+            }
+            break;
+
           case AMPS_INVOICE_CHAR_CTYPE:
             if (!ptr->ignore)
             {
-              MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
+              MPI_Type_vector(len, 1, stride, MPI_CHAR, base_type);
               element_size = sizeof(char);
             }
             break;

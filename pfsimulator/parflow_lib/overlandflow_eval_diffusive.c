@@ -76,8 +76,6 @@ void    OverlandFlowEvalDiff(
                                                 * fcn = CALCDER => calculate the function
                                                 *                  derivative */
 {
-  PFModule      *this_module = ThisPFModule;
-
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
   Vector      *mannings = ProblemDataMannings(problem_data);
@@ -90,24 +88,17 @@ void    OverlandFlowEvalDiff(
 
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp, *opp;
 
-  double xdir, ydir;
-  double q_lo, q_mid, q_hi;
-  double q_v[4], slope_fx_lo, slope_fx_hi, slope_fx_mid;
-  double slope_fy_lo, slope_fy_hi, slope_fy_mid, dx, dy;
-  double coeff, Pmean, P2, P3, Pdel, Pcen;
-  double slope_mean, manning, s1, s2, Sf_mag;
-  double Press_x, Press_y, Sf_x, Sf_y, Sf_xo, Sf_yo;
-  double Pupx, Pupy, Pupox, Pupoy, Pdown, Pdowno;
+  double dx, dy;
+  double Sf_mag;
+  double Press_x=NAN, Press_y, Sf_x=NAN, Sf_y, Sf_xo=NAN, Sf_yo=NAN;
+  double Pupx=NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
   double ov_epsilon;
 
-  int ival, sy_v, step;
-  int            *fdir;
+  int ival, sy_v;
+  int *fdir;
 
-  int i, ii, j, k, ip, ip2, ip3, ip4, ip0, io, itop;
-  int i1, j1, k1, k0x, k0y, iojm1, iojp1, ioip1, ioim1;
-  /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
-  int gnx = BackgroundNX(GlobalsBackground);
-  int gny = BackgroundNY(GlobalsBackground);
+  int i, j, k, ip=0, io, itop,k1x, k1y, ipp1, ippsy;
+  int k1, k0x, k0y;
 
   p_sub = VectorSubvector(pressure, sg);
   op_sub = VectorSubvector(old_pressure, sg);
@@ -144,14 +135,18 @@ void    OverlandFlowEvalDiff(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
+        k1x = (int)top_dat[itop + 1];
+        k1y = (int)top_dat[itop + sy_v];
 
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
-          Pupx = pfmax(pp[ip + 1], 0.0);
-          Pupy = pfmax(pp[ip + sy_v], 0.0);
-          Pupox = pfmax(opp[ip + 1], 0.0);
-          Pupoy = pfmax(opp[ip + sy_v], 0.0);
+          ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
+          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
+          Pupx = pfmax(pp[ipp1], 0.0);
+          Pupy = pfmax(pp[ippsy], 0.0);
+          Pupox = pfmax(opp[ipp1], 0.0);
+          Pupoy = pfmax(opp[ippsy], 0.0);
           Pdown = pfmax(pp[ip], 0.0);
           Pdowno = pfmax(opp[ip], 0.0);
 
@@ -165,8 +160,8 @@ void    OverlandFlowEvalDiff(
           if (Sf_mag < ov_epsilon)
             Sf_mag = ov_epsilon;
 
-          Press_x = RPMean(-Sf_x, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ip + 1]), 0.0));
-          Press_y = RPMean(-Sf_y, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ip + sy_v]), 0.0));
+          Press_x = RPMean(-Sf_x, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ipp1]), 0.0));
+          Press_y = RPMean(-Sf_y, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ippsy]), 0.0));
 
           qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
           qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
@@ -247,13 +242,18 @@ void    OverlandFlowEvalDiff(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
+        k1x = (int)top_dat[itop + 1];
+        k1y = (int)top_dat[itop + sy_v];
+
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
-          Pupx = pfmax(pp[ip + 1], 0.0);
-          Pupy = pfmax(pp[ip + sy_v], 0.0);
-          Pupox = pfmax(opp[ip + 1], 0.0);
-          Pupoy = pfmax(opp[ip + sy_v], 0.0);
+          ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
+          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
+          Pupx = pfmax(pp[ipp1], 0.0);
+          Pupy = pfmax(pp[ippsy], 0.0);
+          Pupox = pfmax(opp[ipp1], 0.0);
+          Pupoy = pfmax(opp[ippsy], 0.0);
           Pdown = pfmax(pp[ip], 0.0);
           Pdowno = pfmax(opp[ip], 0.0);
 

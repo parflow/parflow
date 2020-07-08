@@ -6,7 +6,7 @@ set (TOOLS_SRC_FILES pftappinit.c printdatabox.c readdatabox.c databox.c
   error.c velocity.c head.c flux.c diff.c stats.c tools_io.c axpy.c
   getsubbox.c enlargebox.c load.c usergrid.c grid.c region.c file.c
   pftools.c top.c compute_domain.c water_balance.c water_table.c
-  toposlopes.c sum.c
+  toposlopes.c sum.c solidtools.c
   )
 
 add_library(pftools SHARED ${TOOLS_SRC_FILES})
@@ -66,7 +66,7 @@ install(TARGETS projecttin DESTINATION bin)
 # Mask utilities
 #-----------------------------------------------------------------------------
 add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp)
-target_include_directories(pfmask-to-pfsol PUBLIC third-party)
+target_include_directories(pfmask-to-pfsol PUBLIC third_party)
 target_link_libraries(pfmask-to-pfsol pftools)
 install(TARGETS pfmask-to-pfsol DESTINATION bin)
 
@@ -74,7 +74,7 @@ add_executable(pfsol-to-vtk pfsol-to-vtk.c)
 install(TARGETS pfsol-to-vtk DESTINATION bin)
 
 add_executable(pfmaskdownsize pfmaskdownsize.cpp)
-target_include_directories(pfmaskdownsize PUBLIC third-party)
+target_include_directories(pfmaskdownsize PUBLIC third_party)
 install(TARGETS pfmaskdownsize DESTINATION bin)
 
 add_subdirectory (test)

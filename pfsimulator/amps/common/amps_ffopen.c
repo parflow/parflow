@@ -202,13 +202,23 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
     {
       printf("AMPS Error: Can't open the distribution file %s for reading\n",
              dist_filename);
-      exit(1);
+      AMPS_ABORT("AMPS Error");
     }
 
-    fscanf(file, "%ld", &start);
+    if(fscanf(file, "%ld", &start) != 1)
+    {
+      printf("AMPS Error: Can't read start in file %s\n", dist_filename);
+      AMPS_ABORT("AMPS Error");
+    }
+    
     for (p = 1; p < amps_Size(comm); p++)
     {
-      fscanf(file, "%ld", &start);
+      if(fscanf(file, "%ld", &start) != 1)
+      {
+	printf("AMPS Error: Can't read start in file %s\n", dist_filename);
+	AMPS_ABORT("AMPS Error");
+      }
+      
       amps_Send(comm, p, invoice);
     }
     fclose(file);

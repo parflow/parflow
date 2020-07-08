@@ -103,7 +103,7 @@ void    InternalEnergyDensity(
 
   Grid          *grid;
 
-  Subvector     *u_sub, *d_sub, *t_sub;
+  Subvector     *u_sub, *d_sub;
 
   // SGS
   // This code can't possibly be correct, pt is never set to point to any vector!
@@ -157,7 +157,7 @@ void    InternalEnergyDensity(
   const double sa11 = 2.995284926E-4;
   const double sa12 = 2.040E-1;
 
-  double tkr, tkr2, tkr3, tkr4, tkr5, tkr6, tkr7, tkr8, tkr9, tkr10, tkr11, tkr19, tkr18, tkr20;
+  double tkr, tkr2, tkr3, tkr4, tkr6, tkr7, tkr8, tkr10, tkr11, tkr19, tkr18, tkr20;
   double pnmr, pnmr2, pnmr3, pnmr4;
   double y, zp, z, cz, aa1;
   double par1, par2, par3, par4, par5;
@@ -234,7 +234,6 @@ void    InternalEnergyDensity(
         subgrid = GridSubgrid(grid, sg);
 
         u_sub = VectorSubvector(energy, sg);
-        t_sub = VectorSubvector(temperature, sg);
 
         ix = SubgridIX(subgrid) - 1;
         iy = SubgridIY(subgrid) - 1;
@@ -260,11 +259,9 @@ void    InternalEnergyDensity(
             tkr2 = tkr * tkr;
             tkr3 = tkr * tkr2;
             tkr4 = tkr2 * tkr2;
-            tkr5 = tkr2 * tkr3;
             tkr6 = tkr4 * tkr2;
             tkr7 = tkr4 * tkr3;
             tkr8 = tkr4 * tkr4;
-            tkr9 = tkr4 * tkr5;
             tkr10 = tkr4 * tkr6;
             tkr11 = tkr * tkr10;
             tkr19 = tkr8 * tkr11;

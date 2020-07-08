@@ -37,7 +37,8 @@ if(${PARFLOW_HAVE_HYPRE})
     overland_FlatICP.tcl
     richards_FBx.tcl
     richards_FBy.tcl
-    richards_box_proctest.tcl)
+    richards_box_proctest.tcl
+    richards_box_proctest.vardz.tcl)
 endif()
 
 if(${PARFLOW_HAVE_SILO})
@@ -55,8 +56,8 @@ endif()
 if(${PARFLOW_HAVE_NETCDF})
   if(${PARFLOW_HAVE_HYPRE})
     #This test is failing on several platforms
-    #list(APPEND TESTS
-    #	default_richards_with_netcdf.tcl)
+    list(APPEND TESTS
+    	default_richards_with_netcdf.tcl)
   endif()
 endif()
 
@@ -74,7 +75,7 @@ endif()
 list(APPEND PARALLEL_3DTOPO_TESTS "")
 list(APPEND PARALLEL_2DTOPO_TESTS "")
 
-if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
+if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
     default_single.tcl)
 
@@ -90,7 +91,9 @@ if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
       water_balance_x.hardflow.nojac.tcl
       water_balance_x.hardflow.jac.tcl
       LW_var_dz.tcl
-      LW_var_dz_spinup.tcl)
+      LW_var_dz_spinup.tcl
+      overland_slopingslab_KWE.tcl
+      richards_box_proctest.vardz.tcl)
   endif()
 
 endif()

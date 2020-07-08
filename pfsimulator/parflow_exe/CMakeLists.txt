@@ -1,6 +1,11 @@
 add_executable(parflow main.c)
 
-target_link_libraries(parflow pfsimulator pfkinsol amps)
+target_link_libraries(parflow pfsimulator)
+
+if( ${PARFLOW_HAVE_ETRACE} )
+  target_include_directories(parflow PUBLIC "../third_party/etrace")
+  target_link_libraries(parflow etrace)
+endif( ${PARFLOW_HAVE_ETRACE} )
 
 if( ${PARFLOW_HAVE_CLM} )
   target_link_libraries(parflow pfclm)
@@ -11,6 +16,8 @@ if (${PARFLOW_HAVE_HYPRE})
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})
+  # In CMake 3.13 this could be target_link_options
+  target_link_libraries(parflow ${MPI_LINK_FLAGS})
   target_link_libraries (parflow ${MPI_LIBRARIES})
 
   if (${PARFLOW_HAVE_P4EST})
@@ -34,6 +41,7 @@ if (${PARFLOW_HAVE_HDF5})
 
   if (${PARFLOW_HAVE_NETCDF})
     target_link_libraries (parflow ${HDF5_HL_LIBRARIES})
+
   endif (${PARFLOW_HAVE_NETCDF})
 endif (${PARFLOW_HAVE_HDF5})
 

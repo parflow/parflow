@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.9)
 
-project (PARFLOW C Fortran CXX)
+project (PARFLOW LANGUAGES C Fortran CXX)
 
 set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_C_STANDARD 11)
@@ -84,6 +84,7 @@ if (${PARFLOW_HAVE_OAS3})
 endif (${PARFLOW_HAVE_OAS3})
 
 set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
+set (PARFLOW_TEST_PARALLEL mpi1 smpi)
 
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
@@ -128,6 +129,7 @@ if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR
   if (${NETCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
+    find_package(CURL)
   endif (${NETCDF_FOUND})
 endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
 
@@ -257,7 +259,9 @@ endif (${PARFLOW_ENABLE_P4EST} OR DEFINED P4EST_ROOT)
 #-----------------------------------------------------------------------------
 # libm
 #-----------------------------------------------------------------------------
-find_library(PARFLOW_LIBM m)
+if (NOT DEFINED PARFLOW_LIBM)
+  find_library(PARFLOW_LIBM m)
+endif (NOT DEFINED PARFLOW_LIBM)		    
 
 #-----------------------------------------------------------------------------
 # Valgrind
@@ -270,6 +274,20 @@ if (${PARFLOW_ENABLE_VALGRIND} )
   set(PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/bin/valgrind.sup")
   set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--gen-suppressions=all --leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
 endif (${PARFLOW_ENABLE_VALGRIND})
+
+#-----------------------------------------------------------------------------
+# Ptrace
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_ETRACE False CACHE BOOL "Build with etrace")
+if (${PARFLOW_ENABLE_ETRACE})
+  set(PARFLOW_HAVE_ETRACE "yes")
+  
+  set(PARFLOW_ETRACE_COMPILE_FLAGS "-finstrument-functions")
+  set(PARFLOW_ETRACE_LIBRARY "etrace")
+else (${PARFLOW_ENABLE_ETRACE})
+  set(PARFLOW_ETRACE_COMPILE_FLAGS "")
+  set(PARFLOW_ETRACE_LIBRARY "")
+endif (${PARFLOW_ENABLE_ETRACE})
 
 #-----------------------------------------------------------------------------
 # Fortran checks
@@ -463,6 +481,8 @@ if ( ${PARFLOW_ENABLE_LATEX} )
 endif()
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
+# Test script for docker builds
+install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
 
 #-----------------------------------------------------------------------------
 # Doxygen 

@@ -316,9 +316,7 @@ double    DiffElt(
 
   double sig_dig_rhs;
   double adiff, amax, sdiff;
-  double max_sdiff;
   int m_sig_digs;
-
 
   /*-----------------------------------------------------------------------
    * diff the values and print the results
@@ -328,8 +326,6 @@ double    DiffElt(
 
   v1_p = DataboxCoeff(v1, i, j, k);
   v2_p = DataboxCoeff(v2, i, j, k);
-
-  max_sdiff = 0.0;
 
   adiff = fabs((*v1_p) - (*v2_p));
   amax = max(fabs(*v1_p), fabs(*v2_p));

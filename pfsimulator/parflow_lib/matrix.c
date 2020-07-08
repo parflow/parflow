@@ -32,7 +32,6 @@
 *****************************************************************************/
 
 #include "parflow.h"
-
 #include "matrix.h"
 
 #ifdef HAVE_SAMRAI
@@ -42,13 +41,13 @@
 
 using namespace SAMRAI;
 
+static int samrai_matrix_ids[4][2048];
+
 #endif
 
 #ifdef HAVE_P4EST
 #include "parflow_p4est_dependences.h"
 #endif
-
-static int samrai_matrix_ids[4][2048];
 
 
 /*--------------------------------------------------------------------------
@@ -385,8 +384,8 @@ Matrix          *NewMatrixType(
     }
   }
 
-  enum ParflowGridType grid_type = invalid_grid_type;
 #ifdef HAVE_SAMRAI
+  enum ParflowGridType grid_type = invalid_grid_type;
   switch (type)
   {
     case matrix_cell_centered:
@@ -648,6 +647,9 @@ Matrix          *NewMatrixType(
         ForSubgridI(i, GridSubgrids(grid))
         MatrixCommPkg(new_matrix, i) = NewMatrixUpdatePkg(new_matrix, i, ghost);
 
+      break;
+    default:
+      PARFLOW_ERROR("invalid matrix type");
       break;
   }
 

@@ -30,8 +30,10 @@
  * the nodes and then amps_Exits
  */
 
-#include <stdio.h>
 #include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
 
 int main(argc, argv)
 int argc;
@@ -43,8 +45,6 @@ char *argv[];
 
   int result = 0;
 
-  char *ptr;
-
   /* To make sure that malloc checking is on */
 
   if (amps_Init(&argc, &argv))
@@ -52,8 +52,6 @@ char *argv[];
     amps_Printf("Error amps_Init\n");
     amps_Exit(1);
   }
-
-  ptr = malloc(20);
 
   num = amps_Size(amps_CommWorld);
 
@@ -68,6 +66,6 @@ char *argv[];
 
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }
 

@@ -107,7 +107,6 @@ void         PFMGOctree(
   int nx_v, ny_v, nz_v;
   int i, j, k;
   int num_i, num_j, num_k;
-  int iv;
 
   int num_iterations;
   double rel_norm;
@@ -257,8 +256,6 @@ void         PFMGOctree(
     ny_v = SubvectorNY(soln_sub);
     nz_v = SubvectorNZ(soln_sub);
 
-    iv = SubvectorEltIndex(soln_sub, ix, iy, iz);
-
     ilo[0] = SubvectorIX(soln_sub);
     ilo[1] = SubvectorIY(soln_sub);
     ilo[2] = SubvectorIZ(soln_sub);
@@ -328,8 +325,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
   Subvector          *top_sub = NULL;
 
   Submatrix          *pfB_sub, *pfC_sub;
-  double             *cp, *wp, *ep, *sop, *np, *lp, *up;
-  double             *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL, *top_dat;
+  double             *cp_c, *top_dat;
 
   double coeffs[7] = { 0, 0, 0, 0, 0, 0, 0 };
   double coeffs_symm[4] = { 0, 0, 0, 0 };
@@ -338,8 +334,8 @@ PFModule  *PFMGOctreeInitInstanceXtra(
   int num_i, num_j, num_k;
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_m, ny_m, nz_m, sy_m, sy_v;
-  int im, io, itop, ktop, k1;
+  int nx_m, ny_m, nz_m;
+  int im, io, itop, ktop;
   int stencil_size;
   int symmetric;
 
@@ -350,8 +346,6 @@ PFModule  *PFMGOctreeInitInstanceXtra(
   int index[3];
   int ilo[3];
   int ihi[3];
-
-  int r;
 
   int box_size_power = public_xtra->box_size_power;
 
@@ -400,8 +394,6 @@ PFModule  *PFMGOctreeInitInstanceXtra(
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-
-      r = SubgridRX(subgrid);
 
       instance_xtra->dxyz[0] = SubgridDX(subgrid);
       instance_xtra->dxyz[1] = SubgridDY(subgrid);
@@ -500,25 +492,6 @@ PFModule  *PFMGOctreeInitInstanceXtra(
         subgrid = GridSubgrid(mat_grid, sg);
 
         pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
-
-        if (symmetric)
-        {
-          /* Pull off upper diagonal coeffs here for symmetric part */
-          cp = SubmatrixStencilData(pfB_sub, 0);
-          ep = SubmatrixStencilData(pfB_sub, 2);
-          np = SubmatrixStencilData(pfB_sub, 4);
-          up = SubmatrixStencilData(pfB_sub, 6);
-        }
-        else
-        {
-          cp = SubmatrixStencilData(pfB_sub, 0);
-          wp = SubmatrixStencilData(pfB_sub, 1);
-          ep = SubmatrixStencilData(pfB_sub, 2);
-          sop = SubmatrixStencilData(pfB_sub, 3);
-          np = SubmatrixStencilData(pfB_sub, 4);
-          lp = SubmatrixStencilData(pfB_sub, 5);
-          up = SubmatrixStencilData(pfB_sub, 6);
-        }
 
         ix = SubgridIX(subgrid);
         iy = SubgridIY(subgrid);
@@ -680,37 +653,12 @@ PFModule  *PFMGOctreeInitInstanceXtra(
         if (symmetric)
         {
           /* Pull off upper diagonal coeffs here for symmetric part */
-          cp = SubmatrixStencilData(pfB_sub, 0);
-          ep = SubmatrixStencilData(pfB_sub, 2);
-          np = SubmatrixStencilData(pfB_sub, 4);
-          up = SubmatrixStencilData(pfB_sub, 6);
-
-//                      cp_c    = SubmatrixStencilData(pfC_sub, 0);
-//                      ep_c    = SubmatrixStencilData(pfC_sub, 2);
-//                      np_c    = SubmatrixStencilData(pfC_sub, 4);
           cp_c = SubmatrixStencilData(pfC_sub, 0);
-          wp_c = SubmatrixStencilData(pfC_sub, 1);
-          ep_c = SubmatrixStencilData(pfC_sub, 2);
-          sop_c = SubmatrixStencilData(pfC_sub, 3);
-          np_c = SubmatrixStencilData(pfC_sub, 4);
           top_dat = SubvectorData(top_sub);
         }
         else
         {
-          cp = SubmatrixStencilData(pfB_sub, 0);
-          wp = SubmatrixStencilData(pfB_sub, 1);
-          ep = SubmatrixStencilData(pfB_sub, 2);
-          sop = SubmatrixStencilData(pfB_sub, 3);
-          np = SubmatrixStencilData(pfB_sub, 4);
-          lp = SubmatrixStencilData(pfB_sub, 5);
-          up = SubmatrixStencilData(pfB_sub, 6);
-
-
           cp_c = SubmatrixStencilData(pfC_sub, 0);
-          wp_c = SubmatrixStencilData(pfC_sub, 1);
-          ep_c = SubmatrixStencilData(pfC_sub, 2);
-          sop_c = SubmatrixStencilData(pfC_sub, 3);
-          np_c = SubmatrixStencilData(pfC_sub, 4);
           top_dat = SubvectorData(top_sub);
         }
 
@@ -725,10 +673,6 @@ PFModule  *PFMGOctreeInitInstanceXtra(
         nx_m = SubmatrixNX(pfB_sub);
         ny_m = SubmatrixNY(pfB_sub);
         nz_m = SubmatrixNZ(pfB_sub);
-
-        sy_v = SubvectorNX(top_sub);
-
-        sy_m = nx_m;
 
         im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
 

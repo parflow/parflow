@@ -55,10 +55,15 @@ using namespace SAMRAI;
 
 #endif
 
+
 #include "Parflow.hxx"
 
 #ifdef HAVE_CEGDB
 #include <cegdb.h>
+#endif
+
+#ifdef PARFLOW_HAVE_ETRACE
+#include "ptrace.h"
 #endif
 
 #include <string.h>
@@ -132,7 +137,6 @@ int main(int argc, char *argv [])
     int is_from_restart = FALSE;
     int restore_num = 0;
     int c;
-    int index;
     char * input_name = NULL;
 
     opterr = 0;
@@ -178,6 +182,15 @@ int main(int argc, char *argv [])
       }
     }
 
+#ifdef PARFLOW_HAVE_ETRACE
+    {
+      char filename[2048];
+      sprintf(filename, "%s.%06d.etrace", input_name, amps_Rank(MPI_CommWorld));
+      init_tracefile (filename);
+    }
+#endif
+
+#ifdef HAVE_SAMRAI
     /*-----------------------------------------------------------------------
      * SAMRAI initialization.
      *-----------------------------------------------------------------------*/
@@ -186,7 +199,6 @@ int main(int argc, char *argv [])
      * Create input database and parse all data in input file.
      *-----------------------------------------------------------------------*/
 
-#ifdef HAVE_SAMRAI
     std::string input_filename("samrai.input");
 
     tbox::Dimension dim(3);
@@ -274,6 +286,10 @@ int main(int argc, char *argv [])
       openRestartFile(restart_dir, restore_num,
                       amps_Size());
     }
+#else
+    PF_UNUSED(restore_num);
+    PF_UNUSED(is_from_restart);
+    PF_UNUSED(restart_read_dirname);
 #endif
 
     /*-----------------------------------------------------------------------
