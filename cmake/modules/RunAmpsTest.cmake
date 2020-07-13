@@ -23,7 +23,7 @@ macro(pf_amps_exec_check cmd ranks args)
   # 'COMMAND_ECHO' parameter of execute_process is relatively new, introduced
   # around cmake-3.15, and we'd like to be compatible with older cmake versions.
   # See the cmake_minimum_required above.
-  list(JOIN ${full_command} " " cmd_str)
+  list(JOIN full_command " " cmd_str)
   message(STATUS "Executing: ${cmd_str}")
   execute_process (COMMAND ${full_command} RESULT_VARIABLE cmd_result OUTPUT_VARIABLE joined_stdout_stderr ERROR_VARIABLE joined_stdout_stderr)
   message(STATUS "Output:\n${joined_stdout_stderr}")
