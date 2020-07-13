@@ -14,7 +14,7 @@ macro(pf_amps_exec_check cmd ranks args)
     # Separate potentially space delimited arguments in MPIEXEC_PREFLAGS and MPIEXEC_POSTFLAGS.
     separate_arguments(sep_MPIEXEC_PREFLAGS NATIVE_COMMAND ${MPIEXEC_PREFLAGS})
     separate_arguments(sep_MPIEXEC_POSTFLAGS NATIVE_COMMAND ${MPIEXEC_POSTFLAGS})
-    set( full_command ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${${ranks}} ${sep_MPIEXEC_PREFLAGS} ${sep_MPIEXEC_POSTFLAGS} ${${cmd}} ${${args}} )
+    set( full_command ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${${ranks}} ${sep_MPIEXEC_POSTFLAGS} ${sep_MPIEXEC_PREFLAGS} ${${cmd}} ${${args}} )
   else()
     set( full_command ./${${cmd}} ${${args}} )
   endif()
