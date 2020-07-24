@@ -24,9 +24,9 @@ pfset ComputationalGrid.Lower.X                -10.0
 pfset ComputationalGrid.Lower.Y                 10.0
 pfset ComputationalGrid.Lower.Z                  1.0
 
-set NX 100
-set NY 100
-set NZ  40
+set NX 400
+set NY 400
+set NZ   40
 
 # Sizes are from original default richards test.
 pfset ComputationalGrid.DX	                [expr  88.8888888888888930 / $NX]
@@ -330,6 +330,25 @@ pfset Solver.Linear.KrylovDimension                      10
 pfset Solver.Linear.Preconditioner                       PFMG 
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
+
+
+pfset Solver.PrintConcentration "False"
+pfset Solver.PrintDZMultiplier "False"
+pfset Solver.PrintEvapTrans "False"
+pfset Solver.PrintEvapTransSum "False"
+pfset Solver.PrintLSMSink "False"
+pfset Solver.PrintMannings "False"
+pfset Solver.PrintMask "False"
+pfset Solver.PrintOverlandBCFlux "False"
+pfset Solver.PrintOverlandSum "False"
+pfset Solver.PrintPressure "False"
+pfset Solver.PrintSaturation "False"
+pfset Solver.PrintSlopes "False"
+pfset Solver.PrintSpecificStorage "False"
+pfset Solver.PrintSubsurfData "False"
+pfset Solver.PrintTop "False"
+pfset Solver.PrintVelocities "False"
+pfset Solver.PrintWells "False"
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

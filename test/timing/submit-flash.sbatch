@@ -6,8 +6,6 @@
 
 echo 'STARTING JOB'
 
-# tclsh timing-richards.tcl 1 1 1
-
 for i in *.tcl
 do
    tclsh $i 1 1 1

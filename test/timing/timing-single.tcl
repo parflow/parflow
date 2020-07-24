@@ -29,8 +29,8 @@ pfset ComputationalGrid.Lower.Y                 10.0
 pfset ComputationalGrid.Lower.Z                  1.0
 
 
-set NX  100
-set NY  100
+set NX  400
+set NY  400
 set NZ  20
 
 # Sizes are from original default single test.
@@ -318,10 +318,12 @@ pfset PhaseConcen.water.tce.GeomNames                 concen_region
 pfset PhaseConcen.water.tce.Geom.concen_region.Value  0.8
 
 
-pfset Solver.WriteSiloSubsurfData True
-pfset Solver.WriteSiloPressure True
-pfset Solver.WriteSiloSaturation True
-pfset Solver.WriteSiloConcentration True
+pfset Solver.PrintConcentration "False"
+pfset Solver.PrintPressure "False"
+pfset Solver.PrintSaturation "False"
+pfset Solver.PrintSubsurf "False"
+pfset Solver.PrintVelocities "False"
+pfset Solver.PrintWells "False"
 
 
 #-----------------------------------------------------------------------------
