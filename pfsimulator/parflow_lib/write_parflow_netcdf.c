@@ -374,7 +374,7 @@ void CloseNC(int ncID)
 int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 {
 #ifdef PARFLOW_HAVE_NETCDF
-  // Read NetCDF Compression Konfiguration Settings
+  // Read NetCDF compression configuration settings
   int enable_netcdf_compression = 0;
   {
     char key[IDB_MAX_KEY_LEN];

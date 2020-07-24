@@ -187,7 +187,7 @@ void NCCLMDefDimensions(Vector *v, int dimensionality, int *clmIDs)
 int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 {
 #ifdef PARFLOW_HAVE_NETCDF
-  // Read NetCDF Compression Konfiguration Settings
+  // Read NetCDF compression configuration settings
   int enable_netcdf_compression = 0;
   {
     char key[IDB_MAX_KEY_LEN];
