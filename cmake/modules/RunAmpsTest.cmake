@@ -6,6 +6,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 # Execute command with error check
+# A rank of -1 is used for a sequential run that is run without mpiexec.
 # all parameters passed in as reference
 macro(pf_amps_exec_check cmd ranks args)
 
