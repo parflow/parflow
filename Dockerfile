@@ -91,13 +91,13 @@ RUN wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.5-Li
 WORKDIR /home/parflow
 RUN source /etc/profile.d/modules.sh && \
    module load mpi/openmpi-x86_64 && \
-   wget -q https://github.com/hypre-space/hypre/archive/v2.17.0.tar.gz && \
-   tar xf v2.17.0.tar.gz && \
-   cd hypre-2.17.0/src && \
+   wget -q https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz && \
+   tar xf v2.18.2.tar.gz && \
+   cd hypre-2.18.2/src && \
    ./configure --prefix=$PARFLOW_DIR && \
    make install && \
    cd ../.. && \
-   rm -fr hypre-2.17.0 v2.17.0.tar.gz
+   rm -fr hypre-2.18.2 v2.18.2.tar.gz
 
 #-----------------------------------------------------------------------------
 # Parflow configure and build

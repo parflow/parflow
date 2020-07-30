@@ -97,18 +97,18 @@ before_install:
 
 # Set up CMake
   - if [[ ! -f cmake-3.14.0-Linux-x86_64/bin/cmake ]]; then 
-      wget --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.14.0-Linux-x86_64.tar.gz; 
+      wget --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.0-Linux-x86_64.tar.gz && tar -xf cmake-3.14.0-Linux-x86_64.tar.gz; 
     fi
   - export PATH=$TRAVIS_BUILD_DIR/cmake-3.14.0-Linux-x86_64/bin/:$PATH;
 
-# Set up Hypre
-  - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz && tar -xvf hypre-2.11.2.tar.gz
-  - cd hypre-2.11.2/src 
+# Set up Hypre; testing against version used in XSDK 0.5
+  - wget https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz && tar -xf v2.18.2.tar.gz 
+  - cd hypre-2.18.2/src 
   - ./configure && make install 
   - export HYPRE_ROOT=`pwd`/hypre && cd ../..
 
 # Set up Silo
-  - wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz && tar -xvf silo-4.10.2.tar.gz
+  - wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz && tar -xf silo-4.10.2.tar.gz
   - cd silo-4.10.2 
   - ./configure --disable-silex --disable-hzip --disable-fpzip && make install 
   - export SILO_ROOT=`pwd` && cd ..
@@ -130,13 +130,13 @@ before_install:
   - sudo apt install -y autoconf;
   - sudo apt install -y automake;
   - sudo apt install -y libtool;
-  - wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xvf ucx-1.8.0.tar.gz;
+  - wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xf ucx-1.8.0.tar.gz;
   - cd ucx-1.8.0;
   - ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda --with-cuda=$CUDA_HOME --with-java=no --disable-numa && sudo make -j8 install;
   - cd ..;
 
 # Set up OpenMPI
-  - wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz;
+  - wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xf openmpi-4.0.3.tar.gz;
   - cd openmpi-4.0.3;
   - ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda && sudo make -j8 install;
   - cd ..;
