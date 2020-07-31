@@ -840,6 +840,8 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
             hypre_BoxDestroy(set_box);
           });
+
+#if 0
           /* Now add surface contributions.
            * We need to loop separately over this since the above
            * box loop does not allow us to loop over the individual
@@ -885,10 +887,168 @@ PFModule  *PFMGOctreeInitInstanceXtra(
                                             coeffs);
             }
           });
-
-          hypre_BoxDestroy(value_box);
+#endif
+	  hypre_BoxDestroy(value_box);
         }
       }     /* End subgrid loop */
+
+#if 1
+
+      /******************************************************************************/
+
+      ForSubgridI(sg, GridSubgrids(mat_grid))
+      {
+	double *cp, *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
+	double             *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL;
+	
+        subgrid = GridSubgrid(mat_grid, sg);
+
+        pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
+        pfC_sub = MatrixSubmatrix(pf_Cmat, sg);
+
+        top_sub = VectorSubvector(top, sg);
+
+        if (symmetric)
+        {
+          /* Pull off upper diagonal coeffs here for symmetric part */
+          cp = SubmatrixStencilData(pfB_sub, 0);
+          ep = SubmatrixStencilData(pfB_sub, 2);
+          np = SubmatrixStencilData(pfB_sub, 4);
+          up = SubmatrixStencilData(pfB_sub, 6);
+
+          cp_c = SubmatrixStencilData(pfC_sub, 0);
+          wp_c = SubmatrixStencilData(pfC_sub, 1);
+          ep_c = SubmatrixStencilData(pfC_sub, 2);
+          sop_c = SubmatrixStencilData(pfC_sub, 3);
+          np_c = SubmatrixStencilData(pfC_sub, 4);
+          top_dat = SubvectorData(top_sub);
+        }
+        else
+        {
+          cp = SubmatrixStencilData(pfB_sub, 0);
+          wp = SubmatrixStencilData(pfB_sub, 1);
+          ep = SubmatrixStencilData(pfB_sub, 2);
+          sop = SubmatrixStencilData(pfB_sub, 3);
+          np = SubmatrixStencilData(pfB_sub, 4);
+          lp = SubmatrixStencilData(pfB_sub, 5);
+          up = SubmatrixStencilData(pfB_sub, 6);
+
+          cp_c = SubmatrixStencilData(pfC_sub, 0);
+          wp_c = SubmatrixStencilData(pfC_sub, 1);
+          ep_c = SubmatrixStencilData(pfC_sub, 2);
+          sop_c = SubmatrixStencilData(pfC_sub, 3);
+          np_c = SubmatrixStencilData(pfC_sub, 4);
+          top_dat = SubvectorData(top_sub);
+        }
+
+        ix = SubgridIX(subgrid);
+        iy = SubgridIY(subgrid);
+        iz = SubgridIZ(subgrid);
+
+        nx = SubgridNX(subgrid);
+        ny = SubgridNY(subgrid);
+        nz = SubgridNZ(subgrid);
+
+        nx_m = SubmatrixNX(pfB_sub);
+        ny_m = SubmatrixNY(pfB_sub);
+        nz_m = SubmatrixNZ(pfB_sub);
+
+	int sy_v = SubvectorNX(top_sub);
+
+        im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
+
+        if (symmetric)
+        {
+          BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+                    im, nx_m, ny_m, nz_m, 1, 1, 1,
+          {
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
+            ktop = (int)top_dat[itop];
+            io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+            /* Since we are using a boxloop, we need to check for top index
+             * to update with the surface contributions */
+            if (ktop == k)
+            {
+              /* update diagonal coeff */
+              coeffs_symm[0] = cp_c[io];               //cp[im] is zero
+              /* update east coeff */
+              coeffs_symm[1] = ep[im];
+              /* update north coeff */
+              coeffs_symm[2] = np[im];
+              /* update upper coeff */
+              coeffs_symm[3] = up[im];               // JB keeps upper term on surface. This should be zero
+	      
+	      index[0] = i;
+	      index[1] = j;
+	      index[2] = k;
+	      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+					  index,
+					  stencil_size,
+					  stencil_indices_symm,
+					  coeffs_symm);
+	    }
+	    
+	  });
+        }
+        else
+        {
+          BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+                    im, nx_m, ny_m, nz_m, 1, 1, 1,
+          {
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
+            ktop = (int)top_dat[itop];
+            io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+            /* Since we are using a boxloop, we need to check for top index
+             * to update with the surface contributions */
+            if (ktop == k)
+            {
+              /* update diagonal coeff */
+              coeffs[0] = cp_c[io];               //cp[im] is zero
+              /* update west coeff */
+              int k1 = (int)top_dat[itop - 1];
+              if (k1 == ktop)
+                coeffs[1] = wp_c[io];                  //wp[im] is zero
+              else
+                coeffs[1] = wp[im];
+              /* update east coeff */
+              k1 = (int)top_dat[itop + 1];
+              if (k1 == ktop)
+                coeffs[2] = ep_c[io];                  //ep[im] is zero
+              else
+                coeffs[2] = ep[im];
+              /* update south coeff */
+              k1 = (int)top_dat[itop - sy_v];
+              if (k1 == ktop)
+                coeffs[3] = sop_c[io];                  //sop[im] is zero
+              else
+                coeffs[3] = sop[im];
+              /* update north coeff */
+              k1 = (int)top_dat[itop + sy_v];
+              if (k1 == ktop)
+                coeffs[4] = np_c[io];                  //np[im] is zero
+              else
+                coeffs[4] = np[im];
+              /* update upper coeff */
+              coeffs[5] = lp[im];               // JB keeps lower term on surface.
+              /* update upper coeff */
+              coeffs[6] = up[im];               // JB keeps upper term on surface. This should be zero
+
+	      index[0] = i;
+	      index[1] = j;
+	      index[2] = k;
+	      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+					  index,
+					  stencil_size,
+					  stencil_indices, coeffs);
+	    }
+
+	  });
+        }
+      }   /* End subgrid loop */
+
+      /******************************************************************************/
+#endif
+      
     }  /* end if pf_Cmat==NULL */
 
 
