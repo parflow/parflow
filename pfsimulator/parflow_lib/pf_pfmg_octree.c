@@ -841,65 +841,14 @@ PFModule  *PFMGOctreeInitInstanceXtra(
             hypre_BoxDestroy(set_box);
           });
 
-#if 0
-          /* Now add surface contributions.
-           * We need to loop separately over this since the above
-           * box loop does not allow us to loop over the individual
-           * top cells. For nonsymmetric, we need to include the
-           * diagonal, east, west, north, and south terms - DOK
-           */
-          BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
-                    im, nx_m, ny_m, nz_m, 1, 1, 1,
-          {
-            itop = SubvectorEltIndex(top_sub, i, j, 0);
-            ktop = (int)top_dat[itop];
-
-            if (ktop >= 0)
-            {
-              io = SubmatrixEltIndex(pfC_sub, i, j, iz);
-
-              /* update diagonal coeff */
-              coeffs[0] = cp_c[io];                               //cp[im] is zero
-              /* update west coeff */
-              //k1 = (int)top_dat[itop-1];
-              //if(k1 == ktop)
-              coeffs[1] = 0.0;                                  //wp_c[io] ; //wp[im] is zero
-              /* update east coeff */
-              //k1 = (int)top_dat[itop+1];
-              //if(k1 == ktop)
-              coeffs[2] = 0.0;                                  //ep_c[io] ; //ep[im] is zero
-              /* update south coeff */
-              //k1 = (int)top_dat[itop-sy_v];
-              //if(k1 == ktop)
-              coeffs[3] = 0.0;                                  //sop_c[io] ; //sop[im] is zero
-              /* update north coeff */
-              //k1 = (int)top_dat[itop+sy_v];
-              //if(k1 == ktop)
-              coeffs[4] = 0.0;                                  //np_c[io] ; //np[im] is zero
-
-              index[0] = i;
-              index[1] = j;
-              index[2] = ktop;
-              HYPRE_StructMatrixAddToValues(instance_xtra->hypre_mat,
-                                            index,
-                                            stencil_size,
-                                            stencil_indices,
-                                            coeffs);
-            }
-          });
-#endif
 	  hypre_BoxDestroy(value_box);
         }
       }     /* End subgrid loop */
 
-#if 1
-
-      /******************************************************************************/
-
       ForSubgridI(sg, GridSubgrids(mat_grid))
       {
-	double *cp, *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
-	double             *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL;
+	double *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
+	double *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL;
 	
         subgrid = GridSubgrid(mat_grid, sg);
 
@@ -911,7 +860,6 @@ PFModule  *PFMGOctreeInitInstanceXtra(
         if (symmetric)
         {
           /* Pull off upper diagonal coeffs here for symmetric part */
-          cp = SubmatrixStencilData(pfB_sub, 0);
           ep = SubmatrixStencilData(pfB_sub, 2);
           np = SubmatrixStencilData(pfB_sub, 4);
           up = SubmatrixStencilData(pfB_sub, 6);
@@ -925,7 +873,6 @@ PFModule  *PFMGOctreeInitInstanceXtra(
         }
         else
         {
-          cp = SubmatrixStencilData(pfB_sub, 0);
           wp = SubmatrixStencilData(pfB_sub, 1);
           ep = SubmatrixStencilData(pfB_sub, 2);
           sop = SubmatrixStencilData(pfB_sub, 3);
@@ -959,6 +906,13 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
         if (symmetric)
         {
+	  /* 
+	   * Loop in 2D over top points for surface contributions
+	   * We need to loop separately over this since the above
+           * box loop does not allow us to loop over the individual
+           * top cells. For nonsymmetric, we need to include the
+           * diagonal, east, west, north, and south terms - DOK
+	   */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
@@ -989,11 +943,17 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 					  coeffs_symm);
 	    }
 	    
-	  });
-        }
+	  }); // BoxLoop
+        } // symmetric 
         else
         {
-	  
+	  /* 
+	   * Loop in 2D over top points for surface contributions
+	   * We need to loop separately over this since the above
+           * box loop does not allow us to loop over the individual
+           * top cells. For nonsymmetric, we need to include the
+           * diagonal, east, west, north, and south terms - DOK
+	   */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
@@ -1045,12 +1005,9 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 					  stencil_indices, coeffs);
 	    }
 
-	  });
-        }
+	  }); // BoxLoop
+        } // non symmetric
       }   /* End subgrid loop */
-
-      /******************************************************************************/
-#endif
       
     }  /* end if pf_Cmat==NULL */
 
