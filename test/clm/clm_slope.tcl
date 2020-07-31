@@ -422,15 +422,16 @@ pfset Solver.Drop                                        1E-20
 pfset Solver.AbsTol                                      1E-9
  
 pfset Solver.LSM                                         CLM
-pfset Solver.WriteSiloCLM                                True
+pfset Solver.WriteSiloCLM                                False
 pfset Solver.CLM.MetForcing                              1D
 pfset Solver.CLM.MetFileName                             narr_1hr.sc3.txt.0
 pfset Solver.CLM.MetFilePath                             ./
 
-pfset Solver.WriteSiloEvapTrans                          True
-pfset Solver.WriteSiloOverlandBCFlux                     True
-pfset Solver.PrintCLM  True
+pfset Solver.WriteSiloEvapTrans                          False
+pfset Solver.WriteSiloOverlandBCFlux                     False
+pfset Solver.PrintCLM                                    False
 
+#---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
  
