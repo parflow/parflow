@@ -965,9 +965,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
 
-            /* Since we are using a boxloop, we need to check for top index
-             * to update with the surface contributions */
-            if (ktop == k)
+	    if (ktop >= 0)
             {
 	      io = SubmatrixEltIndex(pfC_sub, i, j, 0);
 	      int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
@@ -995,50 +993,52 @@ PFModule  *PFMGOctreeInitInstanceXtra(
         }
         else
         {
-          BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+	  
+          BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
-            io = SubmatrixEltIndex(pfC_sub, i, j, iz);
-            /* Since we are using a boxloop, we need to check for top index
-             * to update with the surface contributions */
-            if (ktop == k)
+
+	    if (ktop >= 0)
             {
+	      io = SubmatrixEltIndex(pfC_sub, i, j, 0);
+	      int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
+	      
               /* update diagonal coeff */
-              coeffs[0] = cp_c[io];               //cp[im] is zero
+              coeffs[0] = cp_c[io];               //cp[ioB] is zero
               /* update west coeff */
               int k1 = (int)top_dat[itop - 1];
               if (k1 == ktop)
-                coeffs[1] = wp_c[io];                  //wp[im] is zero
+                coeffs[1] = wp_c[io];                  //wp[ioB] is zero
               else
-                coeffs[1] = wp[im];
+                coeffs[1] = wp[ioB];
               /* update east coeff */
               k1 = (int)top_dat[itop + 1];
               if (k1 == ktop)
-                coeffs[2] = ep_c[io];                  //ep[im] is zero
+                coeffs[2] = ep_c[io];                  //ep[ioB] is zero
               else
-                coeffs[2] = ep[im];
+                coeffs[2] = ep[ioB];
               /* update south coeff */
               k1 = (int)top_dat[itop - sy_v];
               if (k1 == ktop)
-                coeffs[3] = sop_c[io];                  //sop[im] is zero
+                coeffs[3] = sop_c[io];                  //sop[ioB] is zero
               else
-                coeffs[3] = sop[im];
+                coeffs[3] = sop[ioB];
               /* update north coeff */
               k1 = (int)top_dat[itop + sy_v];
               if (k1 == ktop)
-                coeffs[4] = np_c[io];                  //np[im] is zero
+                coeffs[4] = np_c[io];                  //np[ioB] is zero
               else
-                coeffs[4] = np[im];
+                coeffs[4] = np[ioB];
               /* update upper coeff */
-              coeffs[5] = lp[im];               // JB keeps lower term on surface.
+              coeffs[5] = lp[ioB];               // JB keeps lower term on surface.
               /* update upper coeff */
-              coeffs[6] = up[im];               // JB keeps upper term on surface. This should be zero
+              coeffs[6] = up[ioB];               // JB keeps upper term on surface. This should be zero
 
 	      index[0] = i;
 	      index[1] = j;
-	      index[2] = k;
+	      index[2] = ktop;
 	      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
 					  index,
 					  stencil_size,
