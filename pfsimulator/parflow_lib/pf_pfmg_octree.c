@@ -959,28 +959,31 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
         if (symmetric)
         {
-          BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+          BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
-            io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+
             /* Since we are using a boxloop, we need to check for top index
              * to update with the surface contributions */
             if (ktop == k)
             {
+	      io = SubmatrixEltIndex(pfC_sub, i, j, 0);
+	      int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
+	      
               /* update diagonal coeff */
               coeffs_symm[0] = cp_c[io];               //cp[im] is zero
               /* update east coeff */
-              coeffs_symm[1] = ep[im];
+              coeffs_symm[1] = ep[ioB];
               /* update north coeff */
-              coeffs_symm[2] = np[im];
+              coeffs_symm[2] = np[ioB];
               /* update upper coeff */
-              coeffs_symm[3] = up[im];               // JB keeps upper term on surface. This should be zero
+              coeffs_symm[3] = up[ioB];               // JB keeps upper term on surface. This should be zero
 	      
 	      index[0] = i;
 	      index[1] = j;
-	      index[2] = k;
+	      index[2] = ktop;
 	      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
 					  index,
 					  stencil_size,
