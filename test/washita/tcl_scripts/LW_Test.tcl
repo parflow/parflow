@@ -472,9 +472,12 @@ pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      70
 pfset Solver.Linear.MaxRestarts                           2
 
-pfset Solver.Linear.Preconditioner                       PFMGOctree
-pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
+#pfset Solver.Linear.Preconditioner                       PFMGOctree
+#pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
 
+pfset Solver.Linear.Preconditioner                        SMG
+pfset Solver.Linear.Preconditioner                       MGSemi
+pfset Solver.Linear.Preconditioner.SymmetricMat           Symmetric
 
 #-----------------------------------------------------------------------------
 # Copy files and distribute.
