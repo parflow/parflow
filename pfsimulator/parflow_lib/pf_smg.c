@@ -77,25 +77,6 @@ void         SMG(
 
   HYPRE_StructSolver hypre_smg_data = instance_xtra->hypre_smg_data;
 
-  Grid               *grid = VectorGrid(rhs);
-  Subgrid            *subgrid;
-  int sg;
-
-  Subvector          *rhs_sub;
-  Subvector          *soln_sub;
-
-  double             *rhs_ptr;
-  double             *soln_ptr;
-  double value;
-
-  int index[3];
-
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
-  int i, j, k;
-  int iv;
-
   int num_iterations;
   double rel_norm;
 
@@ -173,29 +154,9 @@ PFModule  *SMGInitInstanceXtra(
   int num_pre_relax = public_xtra->num_pre_relax;
   int num_post_relax = public_xtra->num_post_relax;
 
-  Grid               *mat_grid;
   Subgrid            *subgrid;
   int sg;
 
-  Submatrix          *pf_sub;
-  double             *cp, *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up;
-
-  double coeffs[7];
-  double coeffs_symm[4];
-
-  int i, j, k;
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_m, ny_m, nz_m;
-  int im;
-  int stencil_size;
-  int symmetric;
-
-  int full_ghosts[6] = { 1, 1, 1, 1, 1, 1 };
-  int no_ghosts[6] = { 0, 0, 0, 0, 0, 0 };
-  int stencil_indices[7] = { 0, 1, 2, 3, 4, 5, 6 };
-  int stencil_indices_symm[4] = { 0, 1, 2, 3 };
-  int index[3];
   int ilo[3];
   int ihi[3];
 

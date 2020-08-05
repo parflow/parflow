@@ -204,18 +204,13 @@ void AssembleHypreMatrixAsElements(
   int sg;
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
   int nx_m, ny_m, nz_m, sy_v;
   int i, j, k, itop, k1, ktop;
   int im, io;
 
-  int full_ghosts[6] = { 1, 1, 1, 1, 1, 1 };
-  int no_ghosts[6] = { 0, 0, 0, 0, 0, 0 };
   int stencil_indices[7] = { 0, 1, 2, 3, 4, 5, 6 };
   int stencil_indices_symm[4] = { 0, 1, 2, 3 };
   int index[3];
-  int ilo[3];
-  int ihi[3];
 
   double coeffs[7];
   double coeffs_symm[4];
