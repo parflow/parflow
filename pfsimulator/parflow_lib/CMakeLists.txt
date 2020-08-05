@@ -52,7 +52,6 @@ set (SRC_FILES_CONST advect.F
   pcg.c
   permeability_face.c
   perturb_lb.c
-  pf_hypre.c
   pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
