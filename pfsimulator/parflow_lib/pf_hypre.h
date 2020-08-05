@@ -51,8 +51,16 @@ void CopyParFlowVectorToHypreVector(
  */
 void CopyHypreVectorToParflowVector(
 				    HYPRE_StructVector* hypre_vector,
-				    Vector *pf_vector,
+				    Vector *pf_vector
 				    );
+
+
+void HypreAssembleGrid(
+		       Grid* pf_grid,
+		       HYPRE_StructGrid* hypre_grid,
+		       double* dxyz
+		       );
+
 /**
  * Create and initialize Hypre structures.
  * 
@@ -93,7 +101,7 @@ void HypreInitialize(Matrix* pf_matrix,
  * @param hyre_mat The filled in Hypre matrix
  * @param problem_data ParFlow problem data
  */
-void AssembleHypreMatrixAsElements(
+void HypreAssembleMatrixAsElements(
 				   Matrix *     pf_Bmat,
 				   Matrix *     pf_Cmat,
 				   HYPRE_StructMatrix* hypre_mat,

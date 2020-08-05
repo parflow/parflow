@@ -154,11 +154,7 @@ PFModule  *SMGInitInstanceXtra(
   int num_pre_relax = public_xtra->num_pre_relax;
   int num_post_relax = public_xtra->num_post_relax;
 
-  Subgrid            *subgrid;
-  int sg;
-
-  int ilo[3];
-  int ihi[3];
+  double dummy[3];
 
   (void)problem;
   (void)problem_data;
@@ -169,32 +165,7 @@ PFModule  *SMGInitInstanceXtra(
   else
     instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
-  if (grid != NULL)
-  {
-    /* Free the HYPRE grid */
-    if (instance_xtra->hypre_grid)
-    {
-      HYPRE_StructGridDestroy(instance_xtra->hypre_grid);
-      instance_xtra->hypre_grid = NULL;
-    }
-
-    /* Set the HYPRE grid */
-    HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, &(instance_xtra->hypre_grid));
-
-    /* Set local grid extents as global grid values */
-    ForSubgridI(sg, GridSubgrids(grid))
-    {
-      subgrid = GridSubgrid(grid, sg);
-      ilo[0] = SubgridIX(subgrid);
-      ilo[1] = SubgridIY(subgrid);
-      ilo[2] = SubgridIZ(subgrid);
-      ihi[0] = ilo[0] + SubgridNX(subgrid) - 1;
-      ihi[1] = ilo[1] + SubgridNY(subgrid) - 1;
-      ihi[2] = ilo[2] + SubgridNZ(subgrid) - 1;
-    }
-    HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi);
-    HYPRE_StructGridAssemble(instance_xtra->hypre_grid);
-  }
+  HypreAssembleGrid(grid, &(instance_xtra->hypre_grid), dummy);
 
   /* Reset the HYPRE solver for each recompute of the PC matrix.
    * This reset will require a matrix copy from PF format to HYPRE format. */
@@ -220,7 +191,7 @@ PFModule  *SMGInitInstanceXtra(
     /* Copy the matrix entries */
     BeginTiming(public_xtra->time_index_copy_hypre);
     
-    AssembleHypreMatrixAsElements(pf_Bmat,
+    HypreAssembleMatrixAsElements(pf_Bmat,
 				  pf_Cmat,
 				  &(instance_xtra -> hypre_mat),
 				  problem_data);

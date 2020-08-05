@@ -130,6 +130,51 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
   }
 }
 
+
+void HypreAssembleGrid(
+		       Grid* pf_grid,
+		       HYPRE_StructGrid* hypre_grid,
+		       double* dxyz
+		       )
+{
+  int sg;
+
+  int ilo[3];
+  int ihi[3];
+  
+  if (pf_grid != NULL)
+  {
+    /* Free the HYPRE grid */
+    if (*hypre_grid)
+    {
+      HYPRE_StructGridDestroy(*hypre_grid);
+      hypre_grid = NULL;
+    }
+
+    /* Set the HYPRE grid */
+    HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, hypre_grid);
+
+    /* Set local grid extents as global grid values */
+    ForSubgridI(sg, GridSubgrids(pf_grid))
+    {
+      Subgrid* subgrid = GridSubgrid(pf_grid, sg);
+
+      ilo[0] = SubgridIX(subgrid);
+      ilo[1] = SubgridIY(subgrid);
+      ilo[2] = SubgridIZ(subgrid);
+      ihi[0] = ilo[0] + SubgridNX(subgrid) - 1;
+      ihi[1] = ilo[1] + SubgridNY(subgrid) - 1;
+      ihi[2] = ilo[2] + SubgridNZ(subgrid) - 1;
+
+      dxyz[0] = SubgridDX(subgrid);
+      dxyz[1] = SubgridDY(subgrid);
+      dxyz[2] = SubgridDZ(subgrid);
+    }
+    HYPRE_StructGridSetExtents(*hypre_grid, ilo, ihi);
+    HYPRE_StructGridAssemble(*hypre_grid);
+  }
+}
+
 void HypreInitialize(Matrix* pf_Bmat,
                      HYPRE_StructGrid* hypre_grid,
                      HYPRE_StructStencil* hypre_stencil,
@@ -191,7 +236,7 @@ void HypreInitialize(Matrix* pf_Bmat,
   HYPRE_StructVectorAssemble(*hypre_x);
 }
 
-void AssembleHypreMatrixAsElements(
+void HypreAssembleMatrixAsElements(
                                    Matrix *     pf_Bmat,
                                    Matrix *     pf_Cmat,
                                    HYPRE_StructMatrix* hypre_mat,
