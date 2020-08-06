@@ -25,6 +25,7 @@ amps_Invoice amps_NewInvoice P((const char *fmt0, ...));
 int amps_num_package_items P((amps_Invoice inv));
 
 /* amps_io.c */
+void amps_ScanByte(amps_File file, char *data, int len, int stride);
 void amps_ScanChar P((amps_File file, char *data, int len, int stride));
 void amps_ScanShort P((amps_File file, short *data, int len, int stride));
 void amps_ScanInt P((amps_File file, int *data, int len, int stride));
