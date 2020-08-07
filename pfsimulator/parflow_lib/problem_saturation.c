@@ -691,6 +691,11 @@ PFModule  *SaturationInitInstanceXtra(
           FreeVector(dummy1->alpha_values);
           FreeVector(dummy1->s_res_values);
           FreeVector(dummy1->s_sat_values);
+
+	  dummy1->n_values = NULL;
+	  dummy1->alpha_values = NULL;
+	  dummy1->s_res_values = NULL;
+	  dummy1->s_sat_values = NULL;
         }
       }
       if (public_xtra->type == 5)
@@ -769,10 +774,37 @@ void  SaturationFreeInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
+  PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
 
   if (instance_xtra)
   {
+    if (public_xtra->type == 1)
+    {
+      Type1* dummy1 = (Type1*)(public_xtra->data);
+      if ((dummy1->data_from_file) == 1)
+      {
+	/* Data will be shared by all instances */
+	if (dummy1->n_values)
+	{
+	  FreeVector(dummy1->n_values);
+	  FreeVector(dummy1->alpha_values);
+	  FreeVector(dummy1->s_res_values);
+	  FreeVector(dummy1->s_sat_values);
+
+	  dummy1->n_values = NULL;
+	  dummy1->alpha_values = NULL;
+	  dummy1->s_res_values = NULL;
+	  dummy1->s_sat_values = NULL;
+	}
+      }
+    }
+    if (public_xtra->type == 5)
+    {
+      Type5* dummy5 = (Type5*)(public_xtra->data);
+      FreeVector(dummy5->satRF);
+    }
+    
     tfree(instance_xtra);
   }
 }
@@ -1090,19 +1122,15 @@ void  SaturationFreePublicXtra()
       {
         dummy1 = (Type1*)(public_xtra->data);
 
-        if (dummy1->data_from_file == 1)
-        {
-          FreeVector(dummy1->alpha_values);
-          FreeVector(dummy1->n_values);
-          FreeVector(dummy1->s_res_values);
-          FreeVector(dummy1->s_sat_values);
-        }
-
-        tfree(dummy1->region_indices);
-        tfree(dummy1->alphas);
-        tfree(dummy1->ns);
-        tfree(dummy1->s_ress);
-        tfree(dummy1->s_difs);
+        if (dummy1->data_from_file == 0)
+	{
+	  tfree(dummy1->region_indices);
+	  tfree(dummy1->alphas);
+	  tfree(dummy1->ns);
+	  tfree(dummy1->s_ress);
+	  tfree(dummy1->s_difs);
+	}
+	
         tfree(dummy1);
 
         break;
@@ -1154,8 +1182,6 @@ void  SaturationFreePublicXtra()
       case 5:
       {
         dummy5 = (Type5*)(public_xtra->data);
-
-        FreeVector(dummy5->satRF);
 
         tfree(dummy5);
 
