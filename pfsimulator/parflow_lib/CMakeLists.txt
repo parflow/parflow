@@ -111,6 +111,7 @@ set (SRC_FILES advect.F
   problem_saturation.c
   problem_saturation_constitutive.c
   problem_spec_storage.c
+  problem_van_genuchten.c
   problem_thermal_conductivity.c
   problem_toposlope_x.c
   problem_toposlope_y.c

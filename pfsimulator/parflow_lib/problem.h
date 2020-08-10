@@ -70,6 +70,7 @@ typedef struct {
                                          * SolverRichards */
   PFModule   *phase_source;
   PFModule   *specific_storage;         //sk
+  PFModule   *van_genuchten;         //BB
   PFModule   *FBx;         //rmm flow barrier multipliers in X, Y, Z
   PFModule   *FBy;         //rmm
   PFModule   *FBz;
@@ -214,6 +215,7 @@ typedef struct {
 #define ProblemSaturation(problem)                ((problem)->saturation)
 #define ProblemBCInternal(problem)                ((problem)->bc_internal)
 #define ProblemSpecStorage(problem)               ((problem)->specific_storage)   //sk
+#define ProblemVanGenuchten(problem)              ((problem)->van_genuchten)   //BB
 #define ProblemXSlope(problem)                    ((problem)->x_slope)   //sk
 #define ProblemYSlope(problem)                    ((problem)->y_slope)   //sk
 #define ProblemFBx(problem)                      ((problem)->FBx)    //RMM

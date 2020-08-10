@@ -210,6 +210,9 @@ Problem   *NewProblem(
   ProblemSpecStorage(problem) =
     PFModuleNewModule(SpecStorage, ());   //sk
 
+  ProblemVanGenuchten(problem) =
+    PFModuleNewModule(vanGenuchten, ());   //BB
+
   ProblemXSlope(problem) =
     PFModuleNewModule(XSlope, ());   //sk
 
