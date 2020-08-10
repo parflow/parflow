@@ -30,7 +30,6 @@
 * The main routine
 *
 *****************************************************************************/
-
 #include "parflow.h"
 #include "pfversion.h"
 #include "amps.h"
@@ -62,12 +61,18 @@ using namespace SAMRAI;
 #include <cegdb.h>
 #endif
 
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+#include "pf_cudamain.h"
+#endif
+
 #ifdef PARFLOW_HAVE_ETRACE
 #include "ptrace.h"
 #endif
 
-#include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 int main(int argc, char *argv [])
 {
@@ -112,6 +117,66 @@ int main(int argc, char *argv [])
 #ifdef HAVE_CEGDB
     cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
 #endif
+
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+
+#ifndef NDEBUG
+    /*-----------------------------------------------------------------------
+    * Wait for debugger if MPI_DEBUG_RANK environment variable is set
+    *-----------------------------------------------------------------------*/
+    if(getenv("MPI_DEBUG_RANK") != NULL) {
+      const int mpi_debug = atoi(getenv("MPI_DEBUG_RANK"));
+      if(mpi_debug == amps_Rank(amps_CommWorld)){
+        volatile int i = 0;
+        amps_Printf("MPI_DEBUG_RANK environment variable found.\n");
+        amps_Printf("Attach debugger to PID %ld (MPI rank %d) and set var i = 1 to continue\n", (long)getpid(), mpi_debug);
+        while(i == 0) {/*  change 'i' in the  debugger  */}
+      }
+      amps_Sync(amps_CommWorld);
+    }
+#endif // !NDEBUG
+
+    /*-----------------------------------------------------------------------
+    * Check CUDA compute capability, set device, and initialize RMM allocator
+    *-----------------------------------------------------------------------*/
+    {
+      // CUDA
+      if (!amps_Rank(amps_CommWorld))
+      {
+        CUDA_ERR(cudaSetDevice(0));  
+      }else{
+        int num_devices = 0;
+        CUDA_ERR(cudaGetDeviceCount(&num_devices));
+        CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
+      }
+    
+      int device;
+      CUDA_ERR(cudaGetDevice(&device));
+
+      struct cudaDeviceProp props;
+      CUDA_ERR(cudaGetDeviceProperties(&props, device));
+
+      // int value;
+      // CUDA_ERR(cudaDeviceGetAttribute(&value, cudaDevAttrCanUseHostPointerForRegisteredMem, device));
+      // printf("cudaDevAttrCanUseHostPointerForRegisteredMem: %d\n", value);
+
+      if (props.major < 6)
+      {
+        amps_Printf("\nError: The GPU compute capability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
+        amps_Printf("\nThe minimum required GPU compute capability is 6.0.\n");
+        exit(1);
+      }
+
+#ifdef PARFLOW_HAVE_RMM
+      // RMM
+      rmmOptions_t rmmOptions;
+      rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
+      rmmOptions.initial_pool_size = 1; // size = 0 initializes half the device memory
+      rmmOptions.enable_logging = false;
+      RMM_ERR(rmmInitialize(&rmmOptions));
+#endif // PARFLOW_HAVE_RMM
+    }
+#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
 
     wall_clock_time = amps_Clock();
 
@@ -420,6 +485,12 @@ int main(int argc, char *argv [])
   tbox::SAMRAI_MPI::finalize();
 #endif
 
+  /*-----------------------------------------------------------------------
+  * Shutdown RMM pool allocator
+  *-----------------------------------------------------------------------*/
+#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(PARFLOW_HAVE_RMM)
+    RMM_ERR(rmmFinalize());
+#endif
+
   return 0;
 }
-

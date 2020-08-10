@@ -22,8 +22,12 @@
 *
 * @LEC, @RMM
 *****************************************************************************/
+
 #include "parflow.h"
+
+#if PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_CUDA
 #include "llnlmath.h"
+#endif
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -72,16 +76,9 @@ void    OverlandFlowEvalKin(
 
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp;
 
-  double qx_temp, qy_temp;
-  double Sf_mag;
-  double Press_x, Press_y, Sf_x, Sf_y;
   double ov_epsilon;
 
-  int ival, sy_v;
-  int *fdir;
-
-  int i, j, k, ip, io, itop, k1x, k1y, ipp1, ippsy;
-  int k1, k0x, k0y;
+  int i, j, k, ival, sy_v;
 
   p_sub = VectorSubvector(pressure, sg);
 
@@ -105,183 +102,223 @@ void    OverlandFlowEvalKin(
 
   if (fcn == CALCFCN)
   {
-    BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-    {
-      if (fdir[2] == 1)
-      {
-        io = SubvectorEltIndex(sx_sub, i, j, 0);
-        itop = SubvectorEltIndex(top_sub, i, j, 0);
+    ForPatchCellsPerFaceWithGhost(ALL,
+                                  BeforeAllCells(DoNothing),
+                                  LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                                  Locals(int io, itop, ip, ipp1, ippsy;
+                                         int k1, k0x, k0y, k1x, k1y;
+                                         double Sf_x, Sf_y, Sf_mag;
+                                         double Press_x, Press_y;),
+                                  CellSetup(DoNothing),
+                                  FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                                  FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                                  FACE(BackFace, DoNothing),
+                                  FACE(FrontFace,
+                                  {
+                                    io = SubvectorEltIndex(sx_sub, i, j, 0);
+                                    itop = SubvectorEltIndex(top_sub, i, j, 0);
 
-        k1 = (int)top_dat[itop];
-        k0x = (int)top_dat[itop - 1];
-        k0y = (int)top_dat[itop - sy_v];
-        k1x = pfmax((int)top_dat[itop + 1],0);
-        k1y = pfmax((int)top_dat[itop + sy_v],0);
+                                    k1 = (int)top_dat[itop];
+                                    k0x = (int)top_dat[itop - 1];
+                                    k0y = (int)top_dat[itop - sy_v];
+                                    k1x = pfmax((int)top_dat[itop + 1],0);
+                                    k1y = pfmax((int)top_dat[itop + sy_v],0);
 
-        if (k1 >= 0)
-        {
-          ip = SubvectorEltIndex(p_sub, i, j, k1);
-          Sf_x = sx_dat[io];
-          Sf_y = sy_dat[io];
-          ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
-          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
+                                    if (k1 >= 0)
+                                    {
+                                      ip = SubvectorEltIndex(p_sub, i, j, k1);
+                                      Sf_x = sx_dat[io];
+                                      Sf_y = sy_dat[io];
+                                      ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
+                                      ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
 
-          Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
-          if (Sf_mag < ov_epsilon)
-            Sf_mag = ov_epsilon;
+                                      Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+                                      if (Sf_mag < ov_epsilon)
+                                        Sf_mag = ov_epsilon;
 
-          Press_x = RPMean(-Sf_x, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ipp1]), 0.0));
-          Press_y = RPMean(-Sf_y, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ippsy]), 0.0));
+                                      Press_x = RPMean(-Sf_x, 0.0,
+                                                       pfmax((pp[ip]), 0.0),
+                                                       pfmax((pp[ipp1]), 0.0));
+                                      Press_y = RPMean(-Sf_y, 0.0,
+                                                       pfmax((pp[ip]), 0.0),
+                                                       pfmax((pp[ippsy]), 0.0));
 
-          qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
-          qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
-        }
+                                      qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
+                                                 * RPowerR(Press_x, (5.0 / 3.0));
+                                      qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
+                                                           * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
+                                    }
 
-        //fix for lower x boundary
-        if (k0x < 0.0)
-        {
-          if (k1 >= 0.0)
-          {
-            Sf_x = sx_dat[io];
-            Sf_y = sy_dat[io];
+                                    //fix for lower x boundary
+                                    if (k0x < 0.0)
+                                    {
+                                      if (k1 >= 0.0)
+                                      {
+                                        Sf_x = sx_dat[io];
+                                        Sf_y = sy_dat[io];
 
-            double Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
-            if (Sf_mag < ov_epsilon)
-              Sf_mag = ov_epsilon;
+                                        double Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+                                        if (Sf_mag < ov_epsilon)
+                                          Sf_mag = ov_epsilon;
 
-            if (Sf_x > 0.0)
-            {
-              ip = SubvectorEltIndex(p_sub, i, j, k1);
-              Press_x = pfmax((pp[ip]), 0.0);
-              qx_v[io - 1] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
-            }
-          }
-        }
+                                        if (Sf_x > 0.0)
+                                        {
+                                          ip = SubvectorEltIndex(p_sub, i, j, k1);
+                                          Press_x = pfmax((pp[ip]), 0.0);
+                                          qx_v[io - 1] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
+                                        }
+                                      }
+                                    }
 
-        //fix for lower y boundary
-        if (k0y < 0.0)
-        {
-          if (k1 >= 0.0)
-          {
-            Sf_x = sx_dat[io];
-            Sf_y = sy_dat[io];
+                                    //fix for lower y boundary
+                                    if (k0y < 0.0)
+                                    {
+                                      if (k1 >= 0.0)
+                                      {
+                                        Sf_x = sx_dat[io];
+                                        Sf_y = sy_dat[io];
 
-            double Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
-            if (Sf_mag < ov_epsilon)
-              Sf_mag = ov_epsilon;
+                                        double Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+                                        if (Sf_mag < ov_epsilon)
+                                          Sf_mag = ov_epsilon;
 
-            if (Sf_y > 0.0)
-            {
-              ip = SubvectorEltIndex(p_sub, i, j, k1);
-              Press_y = pfmax((pp[ip]), 0.0);
-              qy_v[io - sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
-            }
-          }
-        }
-      }
-    });
+                                        if (Sf_y > 0.0)
+                                        {
+                                          ip = SubvectorEltIndex(p_sub, i, j, k1);
+                                          Press_y = pfmax((pp[ip]), 0.0);
+                                          qy_v[io - sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
+                                        }
+                                      }
+                                    }
+                                  }),
+                                  CellFinalize(DoNothing),
+                                  AfterAllCells(DoNothing)
+      );
 
-    BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-    {
-      if (fdir[2] == 1)
-      {
-        io = SubvectorEltIndex(sx_sub, i, j, 0);
-        ke_v[io] = qx_v[io];
-        kw_v[io] = qx_v[io - 1];
-        kn_v[io] = qy_v[io];
-        ks_v[io] = qy_v[io - sy_v];
-      }
-    });
+    ForPatchCellsPerFace(ALL,
+                         BeforeAllCells(DoNothing),
+                         LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                         Locals(int io;),
+                         CellSetup(DoNothing),
+                         FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                         FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                         FACE(BackFace, DoNothing),
+                         FACE(FrontFace,
+                         {
+                           io = SubvectorEltIndex(sx_sub, i, j, 0);
+                           ke_v[io] = qx_v[io];
+                           kw_v[io] = qx_v[io - 1];
+                           kn_v[io] = qy_v[io];
+                           ks_v[io] = qy_v[io - sy_v];
+                         }),
+                         CellFinalize(DoNothing),
+                         AfterAllCells(DoNothing)
+      );
   }
   else          //fcn = CALCDER calculates the derivs
   {
-    BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-    {
-      if (fdir[2] == 1)
-      {
-        io = SubvectorEltIndex(sx_sub, i, j, 0);
-        itop = SubvectorEltIndex(top_sub, i, j, 0);
+    ForPatchCellsPerFaceWithGhost(ALL,
+                                  BeforeAllCells(DoNothing),
+                                  LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                                  Locals(int io, itop, ip, ipp1, ippsy;
+                                         int k1, k0x, k0y, k1x, k1y;
+                                         double Sf_x, Sf_y, Sf_mag;
+                                         double Press_x, Press_y, qx_temp, qy_temp;),
+                                  CellSetup(DoNothing),
+                                  FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                                  FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                                  FACE(BackFace, DoNothing),
+                                  FACE(FrontFace,
+                                  {
+                                    io = SubvectorEltIndex(sx_sub, i, j, 0);
+                                    itop = SubvectorEltIndex(top_sub, i, j, 0);
 
-        k1 = (int)top_dat[itop];
-        k0x = (int)top_dat[itop - 1];
-        k0y = (int)top_dat[itop - sy_v];
-        k1x = (int)top_dat[itop + 1];
-        k1y = (int)top_dat[itop + sy_v];
+                                    k1 = (int)top_dat[itop];
+                                    k0x = (int)top_dat[itop - 1];
+                                    k0y = (int)top_dat[itop - sy_v];
+                                    k1x = (int)top_dat[itop + 1];
+                                    k1y = (int)top_dat[itop + sy_v];
 
-        if (k1 >= 0)
-        {
-          ip = SubvectorEltIndex(p_sub, i, j, k1);
-          ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
-          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
+                                    if (k1 >= 0)
+                                    {
+                                      ip = SubvectorEltIndex(p_sub, i, j, k1);
+                                      ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
+                                      ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
 
-          Sf_x = sx_dat[io];
-          Sf_y = sy_dat[io];
+                                      Sf_x = sx_dat[io];
+                                      Sf_y = sy_dat[io];
 
-          Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
-          if (Sf_mag < ov_epsilon)
-            Sf_mag = ov_epsilon;
+                                      Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+                                      if (Sf_mag < ov_epsilon)
+                                        Sf_mag = ov_epsilon;
 
-          Press_x = RPMean(-Sf_x, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ipp1]), 0.0));
-          Press_y = RPMean(-Sf_y, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ippsy]), 0.0));
+                                      Press_x = RPMean(-Sf_x, 0.0,
+                                                       pfmax((pp[ip]), 0.0),
+                                                       pfmax((pp[ipp1]), 0.0));
+                                      Press_y = RPMean(-Sf_y, 0.0,
+                                                       pfmax((pp[ip]), 0.0),
+                                                       pfmax((pp[ippsy]), 0.0));
 
-          qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
-          qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
+                                      qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
+                                      qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
 
-          ke_v[io] = pfmax(qx_temp, 0);
-          kw_v[io + 1] = -pfmax(-qx_temp, 0);
-          kn_v[io] = pfmax(qy_temp, 0);
-          ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
-        }
+                                      ke_v[io] = pfmax(qx_temp, 0);
+                                      kw_v[io + 1] = -pfmax(-qx_temp, 0);
+                                      kn_v[io] = pfmax(qy_temp, 0);
+                                      ks_v[io + sy_v] = -pfmax(-qy_temp, 0);
+                                    }
 
-        //fix for lower x boundary
-        if (k0x < 0.0)
-        {
-          if (k1 >= 0.0)
-          {
-            Sf_x = sx_dat[io];
-            Sf_y = sy_dat[io];
+                                    //fix for lower x boundary
+                                    if (k0x < 0.0)
+                                    {
+                                      if (k1 >= 0.0)
+                                      {
+                                        Sf_x = sx_dat[io];
+                                        Sf_y = sy_dat[io];
 
-            double Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
-            if (Sf_mag < ov_epsilon)
-              Sf_mag = ov_epsilon;
+                                        double Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
+                                        if (Sf_mag < ov_epsilon)
+                                          Sf_mag = ov_epsilon;
 
-            if (Sf_x > 0.0)
-            {
-              ip = SubvectorEltIndex(p_sub, i, j, k1);
-              Press_x = pfmax((pp[ip]), 0.0);
-              qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
+                                        if (Sf_x > 0.0)
+                                        {
+                                          ip = SubvectorEltIndex(p_sub, i, j, k1);
+                                          Press_x = pfmax((pp[ip]), 0.0);
+                                          qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
 
-              kw_v[io] = qx_temp;
-              ke_v[io - 1] = qx_temp;
-            }
-          }
-        }
+                                          kw_v[io] = qx_temp;
+                                          ke_v[io - 1] = qx_temp;
+                                        }
+                                      }
+                                    }
 
-        //fix for lower y boundary
-        if (k0y < 0.0)
-        {
-          if (k1 >= 0.0)
-          {
-            Sf_x = sx_dat[io];
-            Sf_y = sy_dat[io];
+                                    //fix for lower y boundary
+                                    if (k0y < 0.0)
+                                    {
+                                      if (k1 >= 0.0)
+                                      {
+                                        Sf_x = sx_dat[io];
+                                        Sf_y = sy_dat[io];
 
-            double Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);  //+ov_epsilon;
-            if (Sf_mag < ov_epsilon)
-              Sf_mag = ov_epsilon;
+                                        double Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);  //+ov_epsilon;
+                                        if (Sf_mag < ov_epsilon)
+                                          Sf_mag = ov_epsilon;
 
-            if (Sf_y > 0.0)
-            {
-              ip = SubvectorEltIndex(p_sub, i, j, k1);
-              Press_y = pfmax((pp[ip]), 0.0);
-              qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
+                                        if (Sf_y > 0.0)
+                                        {
+                                          ip = SubvectorEltIndex(p_sub, i, j, k1);
+                                          Press_y = pfmax((pp[ip]), 0.0);
+                                          qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
 
-              ks_v[io] = qy_temp;
-              kn_v[io - sy_v] = qy_temp;
-            }
-          }
-        }
-      }
-    });
+                                          ks_v[io] = qy_temp;
+                                          kn_v[io - sy_v] = qy_temp;
+                                        }
+                                      }
+                                    }
+                                  }),
+                                  CellFinalize(DoNothing),
+                                  AfterAllCells(DoNothing)
+      );
   }   // else calcder
 }     // function
 

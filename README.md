@@ -152,14 +152,14 @@ https://cmake.org/runningcmake/
 #### Building with the cmake command line
 
 CMake may also be configured from the command line using the cmake
-command.  The default will configure a sequential version of ParFlow
+command. Instructions to build with different accelerator backends are found from separate documents: [CUDA](README-CUDA.md), [OpenMP](README-OPENMP.md). The default will configure a sequential version of ParFlow
 using MPI libraries.  CLM is being enabled.
 
 ```shell
    mkdir build
    cd build
    cmake ../parflow \
-   	 -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR) \
+   	 -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
    	 -DPARFLOW_HAVE_CLM=ON
 ```
 
@@ -178,7 +178,7 @@ is a minimal example of an MPI build with CLM:
    mkdir build
    cd build
    cmake ../parflow \
-      	 -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR) \
+      	 -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
    	 -DPARFLOW_HAVE_CLM=ON \
 	 -DPARFLOW_AMPS_LAYER=mpi1
 ```
@@ -191,14 +191,13 @@ packages are being specified and some features are being enabled:
    cd build
    cmake ../parflow \
         -DPARFLOW_AMPS_LAYER=mpi1 \
-	-DHYPRE_ROOT=$(PARFLOW_HYPRE_DIR) \
-	-DHDF5_ROOT=$(PARFLOW_HDF5_DIR) \
-	-DSILO_ROOT=$(PARFLOW_SILO_DIR) \
-	-DSUNDIALS_ROOT=$(PARFLOW_SUNDIALS_DIR) \
+	-DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
+	-DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
+	-DSILO_ROOT=${PARFLOW_SILO_DIR} \
 	-DCMAKE_BUILD_TYPE=Debug \
 	-DPARFLOW_ENABLE_TIMING=TRUE \
 	-DPARFLOW_HAVE_CLM=ON \
-	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
 ```
 
 ### Step 4: Building and installing
@@ -246,11 +245,11 @@ building of the documentation.
    cmake ../parflow \
         <other cmake options> \
 	-DPARFLOW_ENABLE_LATEX=TRUE \
-	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
 ```
 
 When make is run the documenation will be built and installed in
-$(INSTALL_DIR)/docs/user_manual.pdf.
+${INSTALL_DIR}/docs/user_manual.pdf.
 
 ### Code documentation
 

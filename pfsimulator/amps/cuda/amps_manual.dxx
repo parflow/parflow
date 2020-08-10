@@ -1,0 +1,26 @@
+/**@name AMPS
+ * 
+ * \begin{center}
+ * 	{\Large{\bf  AMPS User Manual}}
+ * \end{center}
+ * 
+{\em AMPS} (Another Message Passing System) is a message-passing system
+that was designed to be used by the {\em NMG} group at Lawrence
+Livermore National Laboratory.  {\em AMPS} is a small porting layer
+designed to maintain independence from any specific message-passing
+system.
+ * 
+ * @memo	AMPS User Manual
+ * @version	3.01
+ * @author	Steven G. Smith
+ */
+//@{
+    //@Include: intro.dxx
+    //@Include: userguide.dxx
+    //@Include: reference.dxx
+    //@Include: source.dxx
+//@}
+
+
+
+

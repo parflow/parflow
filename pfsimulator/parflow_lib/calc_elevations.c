@@ -33,7 +33,6 @@
 
 #include <assert.h>
 
-
 /*--------------------------------------------------------------------------
  * This routine returns the elevations on a patch of a
  * solid at each (x,y) coordinate of an array of subgrid.  The result is
@@ -230,7 +229,7 @@ double         **CalcElevations(
         }
       }
 
-      free(temp_array);
+      tfree(temp_array);
 
       /*
        * Original algorithm had default value of 0.0. This forces unset values to 0.0
