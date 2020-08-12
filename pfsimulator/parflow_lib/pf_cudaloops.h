@@ -706,6 +706,22 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   (void)i;(void)j;(void)k;                                                          \
 }
 
+#define CheckCellFlagAllocation(grgeom, nx, ny, nz)                                 \
+{                                                                                   \
+  int flagdata_size = sizeof(short) * (nz * ny * nx);                                 \
+  if(GrGeomSolidCellFlagDataSize(grgeom) < flagdata_size)                           \
+  {                                                                                 \
+    short *flagdata = (short*)_ctalloc_cuda(flagdata_size);                             \
+                                                                                    \
+    if(GrGeomSolidCellFlagDataSize(grgeom) > 0)                                     \
+      CUDA_ERR(cudaMemcpy(flagdata, GrGeomSolidCellFlagData(grgeom), GrGeomSolidCellFlagDataSize(grgeom), cudaMemcpyDeviceToDevice));\
+                                                                                          \
+    _tfree_cuda(GrGeomSolidCellFlagData(grgeom));                                   \
+    GrGeomSolidCellFlagData(grgeom) = flagdata;                                     \
+    GrGeomSolidCellFlagDataSize(grgeom) = flagdata_size;                            \
+  }                                                                                 \
+}
+
  /** Loop definition for CUDA. */
 #define GrGeomInLoopBoxes_cuda(i, j, k,                                             \
   grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
@@ -728,17 +744,17 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     ixu = pfmax(ixu, box.up[0]);                              \
     iyu = pfmax(iyu, box.up[1]);                              \
     izu = pfmax(izu, box.up[2]);                              \
-  /*  printf("N:%d: PV_box:%d, iz:%d, nz:%d, box.lo[2]:%d, box.up[2]:%d\n",amps_node_rank,PV_box,iz,nz,box.lo[2],box.up[2]);*/\
+    /*printf("N:%d: PV_box:%d, ix:%d, nx:%d, iy:%d, ny:%d, iz:%d, nz:%d, box.lo[0]:%d, box.up[0]:%d, box.lo[1]:%d, box.up[1]:%d, box.lo[2]:%d, box.up[2]:%d\n",amps_node_rank,PV_box,ix,nx,iy,ny,iz,nz,box.lo[0],box.up[0],box.lo[1],box.up[1],box.lo[2],box.up[2]);*/\
   }                                                                                 \
                                                                                     \
   int nxl = ixu - ixl + 1;                                                          \
   int nyl = iyu - iyl + 1;                                                          \
   int nzl = izu - izl + 1;                                                          \
-                                                                                    \
-  if(!GrGeomSolidInflag(grgeom))                                                    \
+\
+  if(!(GrGeomSolidCellFlagInitialized(grgeom) & 1))                                                    \
   {                                                                                 \
-    unsigned inflag_size = sizeof(int) * (unsigned)(nzl * nyl * nxl);               \
-    int *inflag = (int*)_ctalloc_cuda(inflag_size);                                 \
+    CheckCellFlagAllocation(grgeom, nxl, nyl, nzl); \
+    short *inflag = GrGeomSolidCellFlagData(grgeom); \
                                                                                     \
     for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                    \
     {                                                                               \
@@ -772,8 +788,12 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             j += PV_iyl;                                                            \
             k += PV_izl;                                                            \
                                                                                     \
-            loop_body;                                                              \
-            inflag[(k - izl) * nyl * nxl + (j - iyl) * nxl + (i - ixl)] = 1;        \
+            inflag[(k - izl) * nyl * nxl + (j - iyl) * nxl + (i - ixl)] |= 1;      \
+                                                                                    \
+            if(i >= ix && j >= iy && k >= iz && i < ix + nx && j < iy + ny && k < iz + nz)\
+            {                                                                         \
+              loop_body;                                                          \
+            }                                                                     \
            /* printf("N:%d: nxl:%d, nyl:%d, nzl:%d, ixl:%d, iyl:%d, izl:%d, i:%d, j:%d, k:%d\n",node_rank,nxl,nyl,nzl,ixl,iyl,izl,i,j,k);*/\
           };                                                                        \
                                                                                     \
@@ -782,32 +802,40 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
-    GrGeomSolidInflag(grgeom) = inflag;                                             \
+    GrGeomSolidCellFlagInitialized(grgeom) |= 1;                                 \
   }                                                                                 \
   else                                                                              \
   {                                                                                 \
-    if(nxl > 0 && nyl > 0 && nzl > 0)                                               \
+    int ixl_act = pfmax(ix, ixl); \
+    int iyl_act = pfmax(iy, iyl); \
+    int izl_act = pfmax(iz, izl); \
+    int ixu_act = pfmin((ix + nx - 1), ixu); \
+    int iyu_act = pfmin((iy + ny - 1), iyu); \
+    int izu_act = pfmin((iz + nz - 1), izu); \
+    int nxl_act = ixu_act - ixl_act + 1;                                                          \
+    int nyl_act = iyu_act - iyl_act + 1;                                                          \
+    int nzl_act = izu_act - izl_act + 1;                                                          \
+    if(nxl_act > 0 && nyl_act > 0 && nzl_act > 0)                                               \
     {                                                                               \
       dim3 block, grid;                                                             \
-      FindDims(grid, block, nxl, nyl, nzl, 1);                                      \
+      FindDims(grid, block, nxl_act, nyl_act, nzl_act, 1);                                      \
                                                                                     \
-      int *inflag = GrGeomSolidInflag(grgeom);                                      \
-              auto node_rank = amps_node_rank; \
+      short *inflag = GrGeomSolidCellFlagData(grgeom);                           \
+      auto node_rank = amps_node_rank; \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
-          if(inflag[k * nyl * nxl + j * nxl + i] == 1)                              \
+            i += ixl_act;                                                               \
+            j += iyl_act;                                                               \
+            k += izl_act;                                                               \
+          if(inflag[(k - izl) * nyl * nxl + (j - iyl) * nxl + (i - ixl)] & 1)       \
           {                                                                         \
-            i += ixl;                                                               \
-            j += iyl;                                                               \
-            k += izl;                                                               \
-                                                                                    \
-            loop_body;                                                              \
+              loop_body;                                                            \
            /* printf("N:%d ELSE: nxl:%d, nyl:%d, nzl:%d, ixl:%d, iyl:%d, izl:%d, i:%d, j:%d, k:%d\n",node_rank,nxl,nyl,nzl,ixl,iyl,izl,i,j,k);*/\
           }                                                                         \
         };                                                                          \
                                                                                     \
-      BoxKernel<<<grid, block>>>(lambda_body, nxl, nyl, nzl);                       \
+      BoxKernel<<<grid, block>>>(lambda_body, nxl_act, nyl_act, nzl_act);           \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
@@ -1071,12 +1099,13 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
-    if(!GrGeomSolidOutflag(grgeom))                                                 \
+    if(!(GrGeomSolidCellFlagInitialized(grgeom) & (1 << 1)))                        \
     {                                                                               \
+      CheckCellFlagAllocation(grgeom, nx, ny, nz);                               \
+      short *outflag = GrGeomSolidCellFlagData(grgeom);                          \
+                                                                                    \
       GrGeomOctree  *PV_node;                                                       \
       double PV_ref = pow(2.0, r);                                                  \
-      unsigned outflag_size = sizeof(int) * (unsigned)(nz * ny * nx);               \
-      int *outflag = (int*)_ctalloc_cuda(outflag_size);                             \
                                                                                     \
       i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                                \
       j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                \
@@ -1088,16 +1117,16 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                    TRUE,                                            \
       {                                                                             \
         body;                                                                       \
-        outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] = 1;                 \
+        outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] |= (1 << 1);         \
       });                                                                           \
-      GrGeomSolidOutflag(grgeom) = outflag;                                         \
+      GrGeomSolidCellFlagInitialized(grgeom) |= (1 << 1);                        \
     }                                                                               \
     else                                                                            \
     {                                                                               \
       dim3 block, grid;                                                             \
       FindDims(grid, block, nx, ny, nz, 1);                                         \
                                                                                     \
-      int *outflag = GrGeomSolidOutflag(grgeom);                                    \
+      short *outflag = GrGeomSolidCellFlagData(grgeom);                          \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
@@ -1105,7 +1134,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           j += iy;                                                                  \
           k += iz;                                                                  \
                                                                                     \
-          if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] == 1)           \
+          if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] & (1 << 1))     \
           {                                                                         \
             body;                                                                   \
           }                                                                         \

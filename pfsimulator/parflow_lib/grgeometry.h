@@ -49,7 +49,6 @@ typedef struct {
   int size;
 } GrGeomExtentArray;
 
-
 /*--------------------------------------------------------------------------
  * Solid structures:
  *--------------------------------------------------------------------------*/
@@ -61,10 +60,23 @@ typedef struct {
   int num_patches;
 
 #if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
-  /** Flags for GrGeomOutLoop cells */
-  int *inflag;
-  int *outflag;
-  int *surfflag;
+  /* Cell flags for GrGeomLoops (0: do not evaluate cell, 1 = evaluate cell)
+   *  Bit 0: GrGeomInLoop
+   *  Bit 1: GrGeomOutLoop
+   *  Bits 2-7: GrGeomSurfLoop (1 bit for each face)
+   *  Bits 8-13: GrGeomPatchLoop (1 bit for each face)
+   */
+
+  /* A pointer to an array for each relevant cell. 
+   * Bits 0-13 of each element determine if the cell is evaluated by the respective loop. 
+   */ 
+  short *cell_mask;
+
+  /* The size of cell_mask array in bytes. */
+  int mask_size;
+
+  /* Bits 0-13 indicate if cell_mask has been filled (ie. initialized) for the respective loop */
+  short loops_masked;
 #endif
 
   /* these fields are used to relate the background with the octree */
@@ -93,12 +105,13 @@ typedef struct {
 #define GrGeomExtentArrayExtents(ext_array)  ((ext_array)->extents)
 #define GrGeomExtentArraySize(ext_array)     ((ext_array)->size)
 
+#define GrGeomSolidCellFlagData(solid)        ((solid)->cell_mask)
+#define GrGeomSolidCellFlagDataSize(solid)    ((solid)->mask_size)
+#define GrGeomSolidCellFlagInitialized(solid) ((solid)->loops_masked)
+
 #define GrGeomSolidData(solid)          ((solid)->data)
 #define GrGeomSolidPatches(solid)       ((solid)->patches)
 #define GrGeomSolidNumPatches(solid)    ((solid)->num_patches)
-#define GrGeomSolidInflag(solid)        ((solid)->inflag)
-#define GrGeomSolidOutflag(solid)       ((solid)->outflag)
-#define GrGeomSolidSurfflag(solid)      ((solid)->surfflag)
 #define GrGeomSolidOctreeBGLevel(solid) ((solid)->octree_bg_level)
 #define GrGeomSolidOctreeIX(solid)      ((solid)->octree_ix)
 #define GrGeomSolidOctreeIY(solid)      ((solid)->octree_iy)
