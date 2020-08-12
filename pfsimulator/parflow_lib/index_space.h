@@ -79,6 +79,7 @@ typedef struct _BoxList {
  */
 typedef struct _BoxArray {
   Box* boxes;
+  int boxlimits[2 * DIM];
   unsigned int size;
 } BoxArray;
 
@@ -246,6 +247,24 @@ void FreeBoxArray(BoxArray* box_array);
  * @return the ith box in the array
  */
 #define BoxArrayGetBox(box_array, i) (box_array->boxes[i])
+
+/**
+ * Maximum cell coordinates of any box in box array
+ *
+ * @param box_array box array
+ * @param dim dimension
+ * @return cell index of the respective dimension
+ */
+#define BoxArrayMaxCell(box_array, dim) (box_array->boxlimits[DIM + dim])
+
+/**
+ * Minimum cell coordinates of any box in box array
+ *
+ * @param box_array box array
+ * @param dim dimension
+ * @return cell index of the respective dimension
+ */
+#define BoxArrayMinCell(box_array, dim) (box_array->boxlimits[dim])
 
 /**
  * Size of box array
