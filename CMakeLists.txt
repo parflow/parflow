@@ -138,12 +138,12 @@ if((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
   message(FATAL_ERROR "ERROR: Using PARFLOW_AMPS_LAYER=cuda requires building with GPU acceleration!")
 endif((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
 
-option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "FALSE")
+option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "TRUE")
 
 if (${PARFLOW_AMPS_SEQUENTIAL_IO})
   message("Using single file AMPS I/O for PFB output")
 else ()
-  message("Using multiple file AMPS I/O for PFB output")
+  message("Using multiple file AMPS I/O for PFB output (deprecated)")
   set(AMPS_SPLIT_FILE "yes")
 endif ()
 
