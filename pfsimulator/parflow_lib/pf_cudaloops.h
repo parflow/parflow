@@ -770,7 +770,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         dim3 block, grid;                                                           \
         FindDims(grid, block, PV_nx, PV_ny, PV_nz, 1);                              \
                                                                                     \
-        auto node_rank = amps_node_rank;                                            \
         auto lambda_body =                                                          \
           GPU_LAMBDA(int i, int j, int k)                                           \
           {                                                                         \
@@ -812,7 +811,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                             \
                                                                                     \
       short *inflag = GrGeomSolidCellFlagData(grgeom);                              \
-      auto node_rank = amps_node_rank;                                              \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \

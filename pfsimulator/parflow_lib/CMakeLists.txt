@@ -131,7 +131,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   )
   set (SRC_FILES_ARCH_TYPE_1
     axpy.cpp
-    clustering.cpp
     copy.cpp
     innerprod.cpp
     matrix.cpp
@@ -154,6 +153,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   )
   set (SRC_FILES_ARCH_TYPE_2
     calc_elevations.cpp
+    clustering.cpp
     pf_module.cpp
     problem_bc.cpp
     problem_bc_pressure.cpp
