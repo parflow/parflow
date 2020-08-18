@@ -105,3 +105,7 @@
 
 # VS Code
 .vscode/
+
+### Python ###
+__pycache__
+*.pyc

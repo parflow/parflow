@@ -79,3 +79,24 @@ function (pf_add_amps_sequential_test test loops)
   endif()
   pf_add_amps_parallel_test(${test} ${ranks} ${loops})
 endfunction()
+
+
+# Add parflow testing of Python files
+function (pf_add_python_tests group_name)
+
+  file(GLOB test_names LIST_DIRECTORIES true RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *)
+
+  foreach(test_name ${test_names})
+    if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}")
+      add_test(
+        NAME "${group_name}_${test_name}"
+        COMMAND ${PARFLOW_PYTHON} "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}/${test_name}.py"
+      )
+      set_tests_properties(
+        "${group_name}_${test_name}"
+        PROPERTIES ENVIRONMENT PYTHONPATH=${PROJECT_SOURCE_DIR}/pftools/python:$ENV{PYTHONPATH}
+      )
+    endif()
+  endforeach()
+
+endfunction()

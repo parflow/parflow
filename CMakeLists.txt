@@ -13,11 +13,11 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
 
 if((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
-  
+
   set(PARFLOW_ACC_BACKEND 0)
 
 else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
-  
+
   if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
   # Initialize CUDA
@@ -48,9 +48,9 @@ else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR
         message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
         add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
         set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
-      # PARFLOW_HAVE_RMM is not defined in parflow_config.h because because it is 
-      # only set for the compilation of parflow_exe, parflow_lib, and kinsol sources. 
-      # RMM must be initialized before it is used, so, for example, 
+      # PARFLOW_HAVE_RMM is not defined in parflow_config.h because because it is
+      # only set for the compilation of parflow_exe, parflow_lib, and kinsol sources.
+      # RMM must be initialized before it is used, so, for example,
       # the amps tests would fail if used across all compiles.
         set(PARFLOW_HAVE_RMM "yes")
       else(RMM_INCLUDE AND RMM_LIBRARY)
@@ -541,4 +541,51 @@ if ( ${PARFLOW_ENABLE_DOXYGEN} )
   else (DOXYGEN_FOUND)
     message("Doxygen need to be installed to generate the doxygen documentation")
   endif (DOXYGEN_FOUND)
+endif()
+
+#-----------------------------------------------------------------------------
+# Building Python key library and documentation if required
+#-----------------------------------------------------------------------------
+
+option(PARFLOW_USE_PYTHON "Build python module for running ParFlow" "FALSE")
+if (PARFLOW_USE_PYTHON)
+  find_package(Python3 3.3 QUIET REQUIRED COMPONENTS Interpreter)
+  set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
+  set(PARFLOW_PYTHON_DEPENDS)
+
+  option(USE_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
+  if (USE_VIRTUAL_ENV)
+    set(PARFLOW_PYTHON "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/python")
+    add_custom_command(
+      WORKING_DIRECTORY
+        "${CMAKE_CURRENT_BINARY_DIR}"
+      OUTPUT
+        "${PARFLOW_PYTHON}"
+      COMMAND
+        ${Python3_EXECUTABLE} -m venv py-env
+      COMMAND
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements.txt"
+      COMMAND
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/pf-keys/requirements.txt"
+      COMMENT
+        "Generate virtual environment for building Python components"
+      VERBATIM
+    )
+    add_custom_target(
+      BuildVirtualEnv
+      DEPENDS
+        "${PARFLOW_PYTHON}"
+    )
+    set(PARFLOW_PYTHON_DEPENDS BuildVirtualEnv)
+  endif()
+
+  add_subdirectory(pf-keys)
+  add_subdirectory(pftools/python)
+  add_subdirectory(test/python)
+
+  # Only enable Key Documentation if we enable Python
+  option(PARFLOW_KEY_DOCUMENTATION "Build key documentation for ParFlow" "FALSE")
+  if (PARFLOW_KEY_DOCUMENTATION)
+    add_subdirectory(docs/pf-keys)
+  endif()
 endif()
