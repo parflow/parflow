@@ -1,0 +1,14 @@
+FileVersion: 4
+Process:
+  Topology:
+    P: 1
+    Q: 1
+    R: 1
+Solver:
+  $_: Impes
+  LSM: none
+  Linear:
+    $_: PCG
+    KrylovDimension: 10
+    Preconditioner: MGSemi
+  TerrainFollowingGrid: false
