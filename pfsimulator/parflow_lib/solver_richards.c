@@ -171,6 +171,7 @@ typedef struct {
   int write_silopmpio_CLM;      /* write CLM output as silo as PMPIO? */
   int print_CLM;                /* print CLM output as PFB? */
   int write_CLM_binary;         /* write binary output (**default**)? */
+  int slope_accounting_CLM;     /* account for slopes in energy budget */
 
   int single_clm_file;          /* NBE: Write all CLM outputs into a single multi-layer PFB */
 
@@ -2356,6 +2357,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          clm_file_dir_length,
                          public_xtra->clm_bin_out_dir,
                          public_xtra->write_CLM_binary,
+                         public_xtra->slope_accounting_CLM,
                          public_xtra->clm_beta_function,
                          public_xtra->clm_veg_function,
                          public_xtra->clm_veg_wilting,
@@ -4766,6 +4768,17 @@ SolverRichardsNewPublicXtra(char *name)
                switch_name, key);
   }
   public_xtra->write_CLM_binary = switch_value;
+  
+/* IMF Account for slope in CLM energy budget (default=False) */
+  sprintf(key, "%s.SlopeAccountingCLM", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->slope_accounting_CLM = switch_value;
 
   /* IMF Key for CLM met file path */
   sprintf(key, "%s.CLM.MetFilePath", name);
