@@ -386,6 +386,7 @@ void      FreeProblem(
   PFModuleFreeModule(ProblemPhaseDensity(problem));
   tfree(problem->phase_viscosity);
   PFModuleFreeModule(ProblemSpecStorage(problem));  //sk
+  PFModuleFreeModule(ProblemVanGenuchten(problem));  //BB
   PFModuleFreeModule(ProblemXSlope(problem));  //sk
   PFModuleFreeModule(ProblemYSlope(problem));
   PFModuleFreeModule(ProblemMannings(problem));
