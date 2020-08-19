@@ -3,6 +3,7 @@ This module aims to provide the core components that are required to build
 a Parflow input deck.
 '''
 import os
+import re
 from .domains import validate_value_with_exception, validate_value_to_string
 from .handlers import decorate_value
 
@@ -131,6 +132,7 @@ class PFDBObj:
         Create container object while keeping a reference to your parent
         '''
         self._parent = parent
+        self._prefix = None
 
     # ---------------------------------------------------------------------------
 
@@ -200,6 +202,9 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def __getitem__(self, key):
+        if self._prefix and not key.startswith(self._prefix):
+            return getattr(self, f'{self._prefix}{key}')
+
         return getattr(self, key)
 
     # ---------------------------------------------------------------------------
@@ -325,11 +330,20 @@ class PFDBObj:
         Helper method returning the key to use for Parflow on a given field key.
         This allow to handle differences between what can be defined in Python vs Parflow key.
         '''
-        if parent_namespace:
-            # replace - dealing with changing key names for variable DZ
-            return f'{parent_namespace.replace("Cell.l", "Cell.")}.{key}'
+        value = self.__dict__[key]
+        prefix = ''
+        if isinstance(value, PFDBObj):
+            if value._prefix and key.startswith(value._prefix):
+                prefix = value._prefix
+        else:
+            detail = self._details[key]
+            if '_prefix' in detail:
+                prefix = detail["_prefix"]
 
-        return key
+        if parent_namespace:
+            return f'{parent_namespace}.{key[len(prefix):]}'
+
+        return key[len(prefix):]
 
     # ---------------------------------------------------------------------------
 
@@ -431,3 +445,40 @@ class PFDBObj:
             for name in names:
                 if name is not None:
                     self.__dict__[name] = klass(self)
+
+# -----------------------------------------------------------------------------
+# Main DB Object
+# -----------------------------------------------------------------------------
+
+class PFDBObjListNumber(PFDBObj):
+
+    def __setattr__(self, name, value):
+        '''
+        Helper method that aims to streamline dot notation assignment
+        '''
+        print(name)
+        print(self.__dict__)
+        if name.startswith(self._prefix):
+            self.__dict__[name] = value
+        else:
+            self.__dict__[f'{self._prefix}{name}'] = value
+
+    # def get_parflow_key(self, parent_namespace, key):
+    #     '''
+    #     Helper method returning the key to use for Parflow on a given field key.
+    #     This allow to handle differences between what can be defined in Python vs Parflow key.
+    #     '''
+    #     value = self.__dict__[key]
+    #     prefix = ''
+    #     if isinstance(value, PFDBObj):
+    #         if value._prefix and key.startswith(value._prefix):
+    #             prefix = value._prefix
+    #     else:
+    #         detail = self._details[key]
+    #         if '_prefix' in detail:
+    #             prefix = detail["_prefix"]
+    #
+    #     if parent_namespace:
+    #         return f'{parent_namespace}.{key[len(prefix):]}'
+    #
+    #     return key[len(prefix):]

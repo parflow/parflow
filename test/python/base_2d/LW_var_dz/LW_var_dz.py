@@ -63,9 +63,9 @@ LWvdz.dzScale.nzListNumber = 6
 
 #pfset dzScale.Type            nzList
 #pfset dzScale.nzListNumber       3
-LWvdz.Cell.l0.dzScale.Value = 1.0
-LWvdz.Cell.l1.dzScale.Value = 1.00
-LWvdz.Cell.l2.dzScale.Value = 1.000
+LWvdz.Cell._0.dzScale.Value = 1.0
+LWvdz.Cell._1.dzScale.Value = 1.00
+LWvdz.Cell._2.dzScale.Value = 1.000
 LWvdz.Cell.l3.dzScale.Value = 1.000
 LWvdz.Cell.l4.dzScale.Value = 1.000
 LWvdz.Cell.l5.dzScale.Value = 0.05

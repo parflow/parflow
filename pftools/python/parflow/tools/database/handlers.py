@@ -25,6 +25,9 @@ class ValueHandlerException(Exception):
 
 
 class ChildrenHandler:
+    '''
+    This class takes creates new keys from user-defined name inputs (e.g. GeomNames)
+    '''
     def decorate(self, value, container, class_name=None, location='.', eager=None, **kwargs):
         klass = getattr(generated, class_name)
         destination_containers = container.get_selection_from_location(location)
@@ -46,11 +49,11 @@ class ChildrenHandler:
 
             return valid_names
 
-        # for handling variable DZ setting
+        # for handling variable DZ setting and BCPressure/BCSaturation NumPoints (and possibly others)
         elif isinstance(value, int):
             valid_names = []
             for i in range(value):
-                name = f'l{i}'
+                name = f'_{i}'
                 valid_names.append(name)
                 for destination_container in destination_containers:
                     if destination_container is not None:

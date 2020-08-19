@@ -76,6 +76,14 @@ def has_value(key, definition):
 
 # -----------------------------------------------------------------------------
 
+def has_prefix(key, definition):
+    if key[0] == '_':
+        return False
+
+    return '__prefix__' in definition
+
+# -----------------------------------------------------------------------------
+
 def is_class_item(key, definition):
     if key[0] == '.':
         return True
@@ -157,7 +165,7 @@ class PythonModule:
             f"Generated on {datetime.now().strftime('%Y/%m/%d - %H:%M:%S')}",
             "",
             "'''",
-            "from .core import PFDBObj",
+            "from .core import PFDBObj, PFDBObjListNumber",
         ]
         self.str_indent = ' '*indent
 
@@ -184,7 +192,12 @@ class PythonModule:
                 class_name, class_definition)
             self.validationSummary.add_class(class_name)
 
-            self.add_line(f'class {dedup_class_name}(PFDBObj):')
+            inheritance = 'PFDBObj'
+
+            if '__inheritance__' in class_definition:
+                inheritance = class_definition['__inheritance__']
+
+            self.add_line(f'class {dedup_class_name}({inheritance}):')
             if '__doc__' in class_keys:
                 self.add_comment(class_definition['__doc__'], self.str_indent)
 
@@ -198,7 +211,8 @@ class PythonModule:
                 if is_class_item(key, class_definition):
                     class_items.append(class_definition[key])
 
-            if len(class_members) + len(field_members) + len(class_instances) > 0 or '_dynamic' in class_definition:
+            if len(class_members) + len(field_members) + len(class_instances) > 0 or '_dynamic' in class_definition \
+                or has_prefix(class_name, class_definition):
                 '''
                   def __init__(self, parent=None):
                     super().__init__(parent)
@@ -211,6 +225,9 @@ class PythonModule:
                 if has_value(class_name, class_definition):
                     self.add_field(
                         '_value', class_definition['__value__'], class_details)
+
+                if has_prefix(class_name, class_definition):
+                    self.add_line(f"{self.str_indent * 2}self._prefix = '{class_definition['__prefix__']}'")
 
                 for instance in class_members:
                     self.add_line(

@@ -1,0 +1,148 @@
+Main {
+// log file parameters 
+   log_file_name    = "test.log"
+   log_all_nodes    = TRUE
+
+// visualization dump parameters 
+   viz_dump_interval     = 1          // zero to turn off
+   viz_dump_dirname      = "test"
+   visit_number_procs_per_file = 1    
+
+// restart dump parameters 
+   restart_interval        = 0        // zero to turn off
+   restart_write_dirname   = "restart_test"
+
+   max_num_time_steps = 200
+}
+
+
+Parflow {
+
+     regrid_timestep = 10
+
+     StandardTagAndInitializeFlow3D {
+          tagging_method = "GRADIENT_DETECTOR"
+     }
+
+     LoadBalancerFlow3D {
+         // using default uniform load balance configuration
+     }
+
+     GriddingAlgorithmFlow3D {
+        max_levels = 1         // Maximum number of levels in hierarchy.
+
+   	   ratio_to_coarser {      // vector ratio to next coarser level
+              level_1 = 1 , 1, 1
+     	   }
+
+	   largest_patch_size {
+              level_0 = 9999999 , 9999999, 9999999
+              // all finer levels will use same values as level_0...
+           }
+
+           smallest_patch_size {
+              level_0 = 0, 0, 0
+              // all finer levels will use same values as level_0...
+           }
+
+           efficiency_tolerance    = 0.85e0   // min % of tag cells in new patch level
+           combine_efficiency      = 0.95e0   // chop box if sum of volumes of smaller
+                                      // boxes < efficiency * vol of large box
+     }
+
+     StandardTagAndInitializeSurface2D {
+          tagging_method = "GRADIENT_DETECTOR"
+     }
+
+     LoadBalancerSurface2D {
+         // using default uniform load balance configuration
+     }
+
+     GriddingAlgorithmSurface2D {
+        max_levels = 1         // Maximum number of levels in hierarchy.
+
+   	   ratio_to_coarser {      // vector ratio to next coarser level
+              level_1 = 1 , 1, 1
+     	   }
+
+	   largest_patch_size {
+              level_0 = 9999999 , 9999999, 9999999
+              // all finer levels will use same values as level_0...
+           }
+
+           smallest_patch_size {
+              level_0 = 0, 0, 0
+              // all finer levels will use same values as level_0...
+           }
+
+           efficiency_tolerance    = 0.85e0   // min % of tag cells in new patch level
+           combine_efficiency      = 0.95e0   // chop box if sum of volumes of smaller
+                                      // boxes < efficiency * vol of large box
+     }
+
+     //-----------------------------------------------------------------------  
+      StandardTagAndInitializeMet2D {
+          tagging_method = "GRADIENT_DETECTOR"
+     }
+
+     LoadBalancerMet2D {
+         // using default uniform load balance configuration
+     }
+
+     GriddingAlgorithmMet2D {
+        max_levels = 1         // Maximum number of levels in hierarchy.
+
+   	   ratio_to_coarser {      // vector ratio to next coarser level
+              level_1 = 1 , 1, 1
+     	   }
+
+	   largest_patch_size {
+              level_0 = 9999999 , 9999999, 9999999
+              // all finer levels will use same values as level_0...
+           }
+
+           smallest_patch_size {
+              level_0 = 0, 0, 0
+              // all finer levels will use same values as level_0...
+           }
+
+           efficiency_tolerance    = 0.85e0   // min % of tag cells in new patch level
+           combine_efficiency      = 0.95e0   // chop box if sum of volumes of smaller
+                                      // boxes < efficiency * vol of large box
+     }
+
+
+     //-----------------------------------------------------------------------  
+     StandardTagAndInitializeCLMTopSoil {
+          tagging_method = "GRADIENT_DETECTOR"
+     }
+
+     LoadBalancerCLMTopSoil {
+         // using default uniform load balance configuration
+     }
+
+     GriddingAlgorithmCLMTopSoil {
+        max_levels = 1         // Maximum number of levels in hierarchy.
+
+   	   ratio_to_coarser {      // vector ratio to next coarser level
+              level_1 = 1 , 1, 1
+     	   }
+
+	   largest_patch_size {
+              level_0 = 9999999 , 9999999, 9999999
+              // all finer levels will use same values as level_0...
+           }
+
+           smallest_patch_size {
+              level_0 = 0, 0, 0
+              // all finer levels will use same values as level_0...
+           }
+
+           efficiency_tolerance    = 0.85e0   // min % of tag cells in new patch level
+           combine_efficiency      = 0.95e0   // chop box if sum of volumes of smaller
+                                      // boxes < efficiency * vol of large box
+     }
+
+}
+
+

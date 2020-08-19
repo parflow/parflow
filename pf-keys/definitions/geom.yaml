@@ -299,6 +299,7 @@ Cell:
     Setting the Cell.nzListNumber.dzScale.Value
 
   .{nzListNumber}:
+    __prefix__: _
     __class__: CellnzItem
     __rst__:
       name: Cell.{nzListNumber}
@@ -858,17 +859,12 @@ Geom:
 
       # Coeff is for setting the key Geom.geom_name.RelPerm.Coeff.coeff_number
       Coeff:
+        __inheritance__: PFDBObjListNumber
+        __prefix__: _
         __doc__: >
-          Setting the coefficients for the polynomial relative permeability curve.
-
-        # TODO: need to deal with this corner case similar to how we deal with the variable DZ
-        Coeff_number:
-          __rst__:
-            name: Geom.{geom_name}.RelPerm.Coeff.{coeff_number}
-          help: >
-            [Type: double] This key specifies the 'coeff_number'th coefficient of the Polynomial relative permeability given on geom_name.
-          domains:
-            DoubleValue:
+          Container for coefficients of the polynomial relative permeability curve.
+        __rst__:
+          name: Geom.{geom_name}.RelPerm.Coeff.{coeff_number}
 
       InterpolationMethod:
         help: >
@@ -1007,17 +1003,12 @@ Geom:
 
       # Coeff is for setting the key Geom.geom_name.Saturation.Coeff.coeff_number
       Coeff:
+        __inheritance__: PFDBObjListNumber
+        __prefix__: _
         __doc__: >
-          Setting the coefficients for the polynomial saturation curve.
-
-        # TODO: need to deal with this corner case similar to how we deal with the variable DZ
-        Coeff_number:
-          __rst__:
-            name: Geom.{geom_name}.Saturation.Coeff.{coeff_number}
-          help: >
-            [Type: double] This key specifies the 'coeff_number'th coefficient of the Polynomial saturation given on geom_name.
-          domains:
-            DoubleValue:
+          Container for coefficients of the polynomial relative permeability curve.
+        __rst__:
+          name: Geom.{geom_name}.RelPerm.Coeff.{coeff_number}
 
       FileName:
         help: >

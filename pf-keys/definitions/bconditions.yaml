@@ -210,6 +210,7 @@ Patch:
               DoubleValue:
 
         .{point_number}:
+          __prefix__: _
           __class__: BCPressIntPntItem
           __rst__:
             skip:
@@ -392,6 +393,7 @@ Patch:
               class_name: BCSatPhasePointItem
 
         .{point_number}:
+          __prefix__: _
           __class__: BCSatPhasePointItem
           __doc__: ''
           __rst__:
