@@ -61,8 +61,8 @@ prefix.dzScale.nzListNumber = 6
 
 #pfset dzScale.Type            nzList
 #pfset dzScale.nzListNumber       3
-prefix.Cell._0.dzScale.Value = 1.0
-prefix.Cell['1'].dzScale.Value = 1.00
+prefix.Cell['0'].dzScale.Value = 1.0
+prefix.Cell['_1'].dzScale.Value = 1.00
 prefix.Cell._2.dzScale.Value = 1.000
 prefix.Cell._3.dzScale.Value = 1.000
 prefix.Cell._4.dzScale.Value = 1.000

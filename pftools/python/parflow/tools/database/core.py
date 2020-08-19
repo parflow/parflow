@@ -456,12 +456,18 @@ class PFDBObjListNumber(PFDBObj):
         '''
         Helper method that aims to streamline dot notation assignment
         '''
-        print(name)
-        print(self.__dict__)
-        if name.startswith(self._prefix):
+        if name[0] == '_':
             self.__dict__[name] = value
-        else:
-            self.__dict__[f'{self._prefix}{name}'] = value
+            return
+
+        if self._prefix:
+            if name.startswith(self._prefix):
+                self.__dict__[name] = value
+            else:
+                self.__dict__[f'{self._prefix}{name}'] = value
+            return
+
+        self.__dict__[name] = value
 
     # def get_parflow_key(self, parent_namespace, key):
     #     '''
