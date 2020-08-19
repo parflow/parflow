@@ -199,6 +199,11 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    # ---------------------------------------------------------------------------
+
     def help(self, key=None):
         '''
         Dynamic help function for runtime evaluation

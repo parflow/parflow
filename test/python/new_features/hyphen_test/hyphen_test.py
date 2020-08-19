@@ -41,46 +41,46 @@ dover.GeomInput.rightinput.InputType = 'Box'
 dover.GeomInput.channelinput.InputType = 'Box'
 
 #---------------------------------------------------------
-# Domain Geometry 
+# Domain Geometry
 #---------------------------------------------------------
 dover.Geom.domain.Lower.X = 0.0
 dover.Geom.domain.Lower.Y = 0.0
 dover.Geom.domain.Lower.Z = 0.0
-#  
+#
 dover.Geom.domain.Upper.X = 300.0
 dover.Geom.domain.Upper.Y = 300.0
 dover.Geom.domain.Upper.Z = 1.5
 dover.Geom.domain.Patches = 'x-lower x-upper y-lower y-upper z-lower z-upper'
 
 #---------------------------------------------------------
-# Left Slope Geometry 
+# Left Slope Geometry
 #---------------------------------------------------------
 dover.Geom.left.Lower.X = 0.0
 dover.Geom.left.Lower.Y = 0.0
 dover.Geom.left.Lower.Z = 0.0
-#  
+#
 dover.Geom.left.Upper.X = 140.0
 dover.Geom.left.Upper.Y = 300.0
 dover.Geom.left.Upper.Z = 1.5
 
 #---------------------------------------------------------
-# Right Slope Geometry 
+# Right Slope Geometry
 #---------------------------------------------------------
 dover.Geom.right.Lower.X = 160.0
 dover.Geom.right.Lower.Y = 0.0
 dover.Geom.right.Lower.Z = 0.0
-#  
+#
 dover.Geom.right.Upper.X = 300.0
 dover.Geom.right.Upper.Y = 300.0
 dover.Geom.right.Upper.Z = 1.5
 
 #---------------------------------------------------------
-# Channel Geometry 
+# Channel Geometry
 #---------------------------------------------------------
 dover.Geom.channel.Lower.X = 140.0
 dover.Geom.channel.Lower.Y = 0.0
 dover.Geom.channel.Lower.Z = 0.0
-#  
+#
 dover.Geom.channel.Upper.X = 160.0
 dover.Geom.channel.Upper.Y = 300.0
 dover.Geom.channel.Upper.Z = 1.5
@@ -194,7 +194,7 @@ dover.Gravity = 1.0
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-# 
+#
 dover.TimingInfo.BaseUnit = 0.1
 dover.TimingInfo.StartCount = 0
 dover.TimingInfo.StartTime = 0.0
@@ -202,7 +202,7 @@ dover.TimingInfo.StopTime = 0.4
 dover.TimingInfo.DumpInterval = -1
 dover.TimeStep.Type = 'Constant'
 dover.TimeStep.Value = 0.1
-#  
+#
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
@@ -268,37 +268,37 @@ dover.Cycle.rainrec.Names = 'rain rec'
 dover.Cycle.rainrec.rain.Length = 1
 dover.Cycle.rainrec.rec.Length = 2
 dover.Cycle.rainrec.Repeat = -1
-#  
+#
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
 dover.BCPressure.PatchNames = dover.Geom.domain.Patches
 
-dover.Patch.x-lower.BCPressure.Type = 'FluxConst'
-dover.Patch.x-lower.BCPressure.Cycle = 'constant'
-dover.Patch.x-lower.BCPressure.alltime.Value = 0.0
+dover.Patch['x-lower'].BCPressure.Type = 'FluxConst'
+dover.Patch['x-lower'].BCPressure.Cycle = 'constant'
+dover.Patch['x-lower'].BCPressure.alltime.Value = 0.0
 
-dover.Patch.y-lower.BCPressure.Type = 'FluxConst'
-dover.Patch.y-lower.BCPressure.Cycle = 'constant'
-dover.Patch.y-lower.BCPressure.alltime.Value = 0.0
+dover.Patch['y-lower'].BCPressure.Type = 'FluxConst'
+dover.Patch['y-lower'].BCPressure.Cycle = 'constant'
+dover.Patch['y-lower'].BCPressure.alltime.Value = 0.0
 
-dover.Patch.z-lower.BCPressure.Type = 'FluxConst'
-dover.Patch.z-lower.BCPressure.Cycle = 'constant'
-dover.Patch.z-lower.BCPressure.alltime.Value = 0.0
+dover.Patch['z-lower'].BCPressure.Type = 'FluxConst'
+dover.Patch['z-lower'].BCPressure.Cycle = 'constant'
+dover.Patch['z-lower'].BCPressure.alltime.Value = 0.0
 
-dover.Patch.x-upper.BCPressure.Type = 'FluxConst'
-dover.Patch.x-upper.BCPressure.Cycle = 'constant'
-dover.Patch.x-upper.BCPressure.alltime.Value = 0.0
+dover.Patch['x-upper'].BCPressure.Type = 'FluxConst'
+dover.Patch['x-upper'].BCPressure.Cycle = 'constant'
+dover.Patch['x-upper'].BCPressure.alltime.Value = 0.0
 
-dover.Patch.y-upper.BCPressure.Type = 'FluxConst'
-dover.Patch.y-upper.BCPressure.Cycle = 'constant'
-dover.Patch.y-upper.BCPressure.alltime.Value = 0.0
+dover.Patch['y-upper'].BCPressure.Type = 'FluxConst'
+dover.Patch['y-upper'].BCPressure.Cycle = 'constant'
+dover.Patch['y-upper'].BCPressure.alltime.Value = 0.0
 
 ## overland flow boundary condition with very heavy rainfall then slight ET
-dover.Patch.z-upper.BCPressure.Type = 'OverlandFlow'
-dover.Patch.z-upper.BCPressure.Cycle = 'rainrec'
-dover.Patch.z-upper.BCPressure.rain.Value = -0.05
-dover.Patch.z-upper.BCPressure.rec.Value = 0.000001
+dover.Patch['z-upper'].BCPressure.Type = 'OverlandFlow'
+dover.Patch['z-upper'].BCPressure.Cycle = 'rainrec'
+dover.Patch['z-upper'].BCPressure.rain.Value = -0.05
+dover.Patch['z-upper'].BCPressure.rec.Value = 0.000001
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
@@ -322,7 +322,7 @@ dover.TopoSlopesY.Geom.right.Value = 0.001
 dover.TopoSlopesY.Geom.channel.Value = 0.001
 
 #---------------------------------------------------------
-# Mannings coefficient 
+# Mannings coefficient
 #---------------------------------------------------------
 
 dover.Mannings.Type = 'Constant'
@@ -368,7 +368,7 @@ dover.Solver.Linear.Preconditioner = 'PFMGOctree'
 dover.Solver.PrintSubsurf = False
 dover.Solver.Drop = 1E-20
 dover.Solver.AbsTol = 1E-9
-#  
+#
 dover.Solver.WriteSiloSubsurfData = True
 dover.Solver.WriteSiloPressure = True
 dover.Solver.WriteSiloSaturation = True
@@ -390,4 +390,4 @@ dover.Geom.domain.ICPressure.RefPatch = 'z-upper'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dover.run()
+dover.validate()
