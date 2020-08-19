@@ -435,7 +435,7 @@ if ( ${PARFLOW_HAVE_MALLINFO} )
   set(HAVE_MALLINFO ${PARFLOW_HAVE_MALLINFO})
 endif ( ${PARFLOW_HAVE_MALLINFO} )
 
-option(PARFLOW_HAVE_CLM "Compile with CLM" "no")
+option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
 if ( ${PARFLOW_HAVE_CLM} )
   # Make true value match autoconf value; for some backwards compatiblity
@@ -448,13 +448,13 @@ endif ( ${PARFLOW_HAVE_CLM} )
 #
 
 # Control timing of Parflow functions.
-set (PARFLOW_ENABLE_TIMING False CACHE BOOL "Enable timing of key Parflow functions; may slow down performance")
+option(PARFLOW_ENABLE_TIMING "Enable timing of key Parflow functions; may slow down performance" "False")
 if( ${PARFLOW_ENABLE_TIMING} )
   set (PF_TIMING ${PARFLOW_ENABLE_TIMING})
 endif( ${PARFLOW_ENABLE_TIMING} )
 
 # Profiling
-set (PARFLOW_ENABLE_PROFILING False CACHE BOOL "Enable profiling; will slow down performance")
+option(PARFLOW_ENABLE_PROFILING "Enable profiling; will slow down performance" "False")
 if( ${PARFLOW_ENABLE_PROFILING} )
   set (PARFLOW_PROFILE_OPTS "-pg")
   set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${PARFLOW_PROFILE_OPTS}" )
@@ -495,14 +495,14 @@ enable_testing ()
 # This is used on architectures where the login node is a different architecture
 # than the compute nodes.   The simulator is built for the compute nodes; tools
 # is built for the login node.
-set (PARFLOW_ENABLE_SIMULATOR True CACHE BOOL "Enable building of the Parflow simulator")
+option(PARFLOW_ENABLE_SIMULATOR "Enable building of the Parflow simulator" "True")
 if ( ${PARFLOW_ENABLE_SIMULATOR} )
   add_subdirectory (pfsimulator)
   add_subdirectory (test)
   add_subdirectory (examples)
 endif ()
 
-set (PARFLOW_ENABLE_TOOLS True CACHE BOOL "Enable building of the Parflow tools")
+option(PARFLOW_ENABLE_TOOLS "Enable building of the Parflow tools" "True")
 if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
 endif ()
@@ -547,8 +547,8 @@ endif()
 # Building Python key library and documentation if required
 #-----------------------------------------------------------------------------
 
-option(PARFLOW_USE_PYTHON "Build python module for running ParFlow" "FALSE")
-if (PARFLOW_USE_PYTHON)
+option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
+if (PARFLOW_ENABLE_PYTHON)
   find_package(Python3 3.3 QUIET REQUIRED COMPONENTS Interpreter)
   set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
   set(PARFLOW_PYTHON_DEPENDS)
