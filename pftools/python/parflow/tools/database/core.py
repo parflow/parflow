@@ -132,7 +132,7 @@ class PFDBObj:
         Create container object while keeping a reference to your parent
         '''
         self._parent_ = parent
-        self._prefix__ = None
+        self._prefix_ = None
 
     # ---------------------------------------------------------------------------
 
@@ -347,12 +347,15 @@ class PFDBObj:
         value = self.__dict__[key]
         prefix = ''
         if isinstance(value, PFDBObj):
-            if hasattr(value, '_prefix_') and key.startswith(value._prefix_):
+            if value._prefix_ and key.startswith(value._prefix_):
                 prefix = value._prefix_
         else:
-            detail = self._details_[key]
-            if '_prefix_' in detail:
-                prefix = detail["_prefix_"]
+            if key in self._details_:
+                detail = self._details_[key]
+                if '_prefix_' in detail:
+                    prefix = detail["_prefix_"]
+            elif self._prefix_:
+                prefix = self._prefix_
 
         if parent_namespace:
             return f'{parent_namespace}.{key[len(prefix):]}'
@@ -494,9 +497,9 @@ class PFDBObjListNumber(PFDBObj):
     #         if value._prefix_ and key.startswith(value._prefix_):
     #             prefix = value._prefix_
     #     else:
-    #         detail = self._details__[key]
-    #         if '_prefix__' in detail:
-    #             prefix = detail["_prefix__"]
+    #         detail = self._details_[key]
+    #         if '_prefix_' in detail:
+    #             prefix = detail["_prefix_"]
     #
     #     if parent_namespace:
     #         return f'{parent_namespace}.{key[len(prefix):]}'

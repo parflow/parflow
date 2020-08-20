@@ -232,7 +232,13 @@ prefix.Patch.x_lower.BCPressure.Type = 'DirEquilPLinear'
 prefix.Patch.x_lower.BCPressure.Cycle = 'constant'
 prefix.Patch.x_lower.BCPressure.alltime.NumPoints = 2
 prefix.Patch.x_lower.BCPressure.alltime._0.Location = 0.0
+prefix.Patch.x_lower.BCPressure.alltime['0'].Value = 0.0
+prefix.Patch.x_lower.BCPressure.alltime['1'].Location = 0.0
 prefix.Patch.x_lower.BCPressure.alltime['1'].Value = 14.0
+prefix.Patch.x_lower.BCPressure.alltime.XLower = 0.0
+prefix.Patch.x_lower.BCPressure.alltime.YLower = 0.0
+prefix.Patch.x_lower.BCPressure.alltime.XUpper = 1.0
+prefix.Patch.x_lower.BCPressure.alltime.YUpper = 1.0
 
 
 prefix.Patch.y_lower.BCPressure.Type = 'FluxConst'
@@ -268,20 +274,20 @@ prefix.Patch.z_upper.BCPressure.alltime.Value = -0.005
 # Topo slopes in x-direction
 #---------------------------------------------------------
 
-prefix.TopoSlopesX.Type = 'PFBFile'
+prefix.TopoSlopesX.Type = 'Constant'
 prefix.TopoSlopesX.GeomNames = 'domain'
 
-prefix.TopoSlopesX.FileName = 'lw.1km.slope_x.10x.pfb'
+prefix.TopoSlopesX.Geom.domain.Value = 0.05
 
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-prefix.TopoSlopesY.Type = 'PFBFile'
+prefix.TopoSlopesY.Type = 'Constant'
 prefix.TopoSlopesY.GeomNames = 'domain'
 
-prefix.TopoSlopesY.FileName = 'lw.1km.slope_y.10x.pfb'
+prefix.TopoSlopesY.Geom.domain.Value = -0.05
 
 #---------
 ##  Distribute slopes
@@ -290,10 +296,6 @@ prefix.TopoSlopesY.FileName = 'lw.1km.slope_y.10x.pfb'
 prefix.ComputationalGrid.NX = 45
 prefix.ComputationalGrid.NY = 32
 prefix.ComputationalGrid.NZ = 6
-
-# Slope files 1D files so distribute with -nz 1
-# pfdist -nz 1 lw.1km.slope_x.10x.pfb
-# pfdist -nz 1 lw.1km.slope_y.10x.pfb
 
 #---------------------------------------------------------
 # Mannings coefficient
@@ -353,13 +355,6 @@ prefix.Solver.Linear.Preconditioner = 'MGSemi'
 prefix.Solver.Linear.Preconditioner = 'PFMG'
 prefix.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 
-#pfset Solver.WriteSiloSubsurfData True
-#pfset Solver.WriteSiloPressure True
-#pfset Solver.WriteSiloSaturation True
-#pfset Solver.WriteSiloConcentration True
-#pfset Solver.WriteSiloSlopes True
-#pfset Solver.WriteSiloMask True
-
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
@@ -372,10 +367,6 @@ prefix.Geom.domain.ICPressure.Value = -10.0
 prefix.Geom.domain.ICPressure.RefGeom = 'domain'
 prefix.Geom.domain.ICPressure.RefPatch = 'z_upper'
 
-
-#spinup key
-# True=skim pressures, False = regular (default)
-#pfset Solver.Spinup           True
 prefix.Solver.Spinup = False
 
 #-----------------------------------------------------------------------------
