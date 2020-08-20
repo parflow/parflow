@@ -279,6 +279,22 @@
    ...
 }
 
+###############################################################
+#
+# GNU Fortran
+#
+###############################################################
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:write_decimal.constprop.10
+   fun:write_integer
+   fun:list_formatted_write_scalar
+   fun:_gfortrani_list_formatted_write
+   ...
+}
+
+
 ##############################################################################
 #
 # CLM allocates but does not free
@@ -296,3 +312,5 @@
    fun:Solve
    fun:main
 }
+
+
