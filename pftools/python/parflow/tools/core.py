@@ -10,7 +10,7 @@ This module provide the core objects for controlling ParFlow.
 import os
 import sys
 
-from .database.generated import BaseRun, PFDBObj
+from .database.generated import BaseRun, PFDBObj, PFDBObjListNumber
 from .utils import extract_keys_from_object, write_dict
 from .terminal import Symbols as termSymbol
 

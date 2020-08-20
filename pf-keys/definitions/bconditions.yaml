@@ -170,6 +170,10 @@ Patch:
           domains:
             IntValue:
               min_value: 1
+          handlers:
+            BCPressIntPointItemUpdater:
+              type: ChildrenHandler
+              class_name: BCPressIntPointItem
 
         FileName:
           help: >
@@ -211,7 +215,7 @@ Patch:
 
         .{point_number}:
           __prefix__: _
-          __class__: BCPressIntPntItem
+          __class__: BCPressIntPointItem
           __rst__:
             skip:
           __doc__: ''

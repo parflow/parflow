@@ -53,7 +53,7 @@ prefix.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 
 #--------------------------------------------
 # variable dz assignments
-#------------------------------------------
+#--------------------------------------------
 prefix.Solver.Nonlinear.VariableDz = True
 prefix.dzScale.GeomNames = 'domain'
 prefix.dzScale.Type = 'nzList'
@@ -61,8 +61,8 @@ prefix.dzScale.nzListNumber = 6
 
 #pfset dzScale.Type            nzList
 #pfset dzScale.nzListNumber       3
-prefix.Cell['0'].dzScale.Value = 1.0
-prefix.Cell['_1'].dzScale.Value = 1.00
+prefix.Cell['_0'].dzScale.Value = 1.0
+prefix.Cell['1'].dzScale.Value = 1.00
 prefix.Cell._2.dzScale.Value = 1.000
 prefix.Cell._3.dzScale.Value = 1.000
 prefix.Cell._4.dzScale.Value = 1.000
@@ -181,6 +181,8 @@ prefix.Phase.RelPerm.GeomNames = 'domain'
 prefix.Geom.domain.RelPerm.Alpha = 1.
 prefix.Geom.domain.RelPerm.Alpha = 1.0
 prefix.Geom.domain.RelPerm.N = 3.
+prefix.Geom.domain.RelPerm.Coeff._0 = 0.5
+# prefix.Geom.domain.RelPerm.Coeff['1'] = 1.0
 #pfset Geom.domain.RelPerm.NumSamplePoints   10000
 #pfset Geom.domain.RelPerm.MinPressureHead   -200
 #pfset Geom.domain.RelPerm.InterpolationMethod   "Linear"
@@ -228,8 +230,8 @@ prefix.BCPressure.PatchNames = prefix.Geom.domain.Patches
 
 prefix.Patch.x_lower.BCPressure.Type = 'DirEquilPLinear'
 prefix.Patch.x_lower.BCPressure.Cycle = 'constant'
-prefix.Patch.x_lower.BCPressure.alltime.NumPoints = 1
-prefix.Patch.x_lower.BCPressure.alltime._1.Location = 0.0
+prefix.Patch.x_lower.BCPressure.alltime.NumPoints = 2
+prefix.Patch.x_lower.BCPressure.alltime._0.Location = 0.0
 prefix.Patch.x_lower.BCPressure.alltime['1'].Value = 14.0
 
 

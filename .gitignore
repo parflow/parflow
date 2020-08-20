@@ -109,3 +109,6 @@
 ### Python ###
 __pycache__
 *.pyc
+
+# PyCharm
+.idea

@@ -185,6 +185,8 @@ class PythonModule:
             class_instances = []
             class_items = []
             class_details = {}
+            field_with_prefix = 0
+            field_prefix_value = None
 
             self.add_separator()
 
@@ -210,8 +212,12 @@ class PythonModule:
                     class_instances = class_definition['__class_instances__']
                 if is_class_item(key, class_definition):
                     class_items.append(class_definition[key])
+                    if '__prefix__' in class_definition[key]:
+                        field_with_prefix += 1
+                        field_prefix_value = class_definition[key]['__prefix__']
 
-            if len(class_members) + len(field_members) + len(class_instances) > 0 or '_dynamic' in class_definition \
+            if len(class_members) + len(field_members) + len(class_instances) + field_with_prefix > 0 \
+                or '_dynamic' in class_definition \
                 or has_prefix(class_name, class_definition):
                 '''
                   def __init__(self, parent=None):
@@ -238,6 +244,9 @@ class PythonModule:
 
                 for field in field_members:
                     self.add_field(field, class_definition[field], class_details)
+
+                if field_with_prefix:
+                    class_details['_prefix'] = field_prefix_value
 
                 self.add_details(class_details)
                 self.add_dynamic(class_definition)

@@ -202,10 +202,21 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def __getitem__(self, key):
-        if self._prefix and not key.startswith(self._prefix):
-            return getattr(self, f'{self._prefix}{key}')
+        key_str = str(key)
 
-        return getattr(self, key)
+        if hasattr(self, key_str):
+            return getattr(self, key_str)
+
+        prefix = '_'
+        if self._details and '_prefix' in self._details:
+            prefix = self._details['_prefix']
+
+        key_str = f'{prefix}{key_str}'
+        if hasattr(self, key_str):
+            return getattr(self, key_str)
+
+        print(f'Could not find key {key_str} in {self.__dict__.keys()}')
+        return getattr(self, key_str)
 
     # ---------------------------------------------------------------------------
 
@@ -238,7 +249,9 @@ class PFDBObj:
                 print('need to fix the children instantiator')
                 continue
 
-            if name[0] == '_':
+            if name[0] == '_' and name[1].isalpha():
+                # if name[1].isdigit():
+                #     print(name)
                 continue
 
             obj = self.__dict__[name]
@@ -336,6 +349,7 @@ class PFDBObj:
             if value._prefix and key.startswith(value._prefix):
                 prefix = value._prefix
         else:
+            print(value)
             detail = self._details[key]
             if '_prefix' in detail:
                 prefix = detail["_prefix"]

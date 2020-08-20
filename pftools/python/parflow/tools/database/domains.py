@@ -114,9 +114,8 @@ class IntValue:
       - min_value: If available the value must be strictly above it
       - max_value: If available the value must be strictly below it
     '''
-    # NEED TO COME UP WITH A BETTER WAY TO HANDLE THE VARIABLE DZ CORNER CASE
 
-    def validate(self, value, min_value=None, max_value=None, into_list=False, **kwargs):
+    def validate(self, value, min_value=None, max_value=None, **kwargs):
         errors = []
 
         if value is None:
@@ -124,9 +123,6 @@ class IntValue:
 
         if not isinstance(value, int):
             errors.append(error('Needs to be an integer'))
-
-        if into_list:
-            return errors
 
         if min_value is not None and value < min_value:
             errors.append(error(f'Is smaller than min: {min_value}'))

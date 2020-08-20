@@ -53,7 +53,7 @@ class ChildrenHandler:
         elif isinstance(value, int):
             valid_names = []
             for i in range(value):
-                name = f'{i}'
+                name = f'_{i}'
                 valid_names.append(name)
                 for destination_container in destination_containers:
                     if destination_container is not None:
@@ -63,7 +63,6 @@ class ChildrenHandler:
                     elif eager:
                         print(f'Error no selection for {location}')
 
-            print(valid_names)
             return valid_names
 
         if hasattr(value, '__iter__'):
