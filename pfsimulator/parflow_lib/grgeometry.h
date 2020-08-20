@@ -77,6 +77,9 @@ typedef struct {
 
   /* Bits 0-13 indicate if cell_mask has been filled (ie. initialized) for the respective loop */
   short loops_masked;
+
+  /* ival indices for parallel exec of patchloops */ 
+  int ***ival;
 #endif
 
   /* these fields are used to relate the background with the octree */
@@ -108,6 +111,7 @@ typedef struct {
 #define GrGeomSolidCellFlagData(solid)        ((solid)->cell_mask)
 #define GrGeomSolidCellFlagDataSize(solid)    ((solid)->mask_size)
 #define GrGeomSolidCellFlagInitialized(solid) ((solid)->loops_masked)
+#define GrGeomSolidCellIval(solid, patch, i)  ((solid)->ival[i][patch])
 
 #define GrGeomSolidData(solid)          ((solid)->data)
 #define GrGeomSolidPatches(solid)       ((solid)->patches)
@@ -431,7 +435,7 @@ typedef struct {
     }                                                                                        \
   }
 
-#define GrGeomPatchLoopBoxesNoFdir_default(i, j, k, grgeom, patch_num,					\
+#define GrGeomPatchLoopBoxesNoFdir_default(i, j, k, grgeom, patch_num, ovrlnd,				\
                                    ix, iy, iz, nx, ny, nz,              \
                                    locals, setup,                       \
                                    f_left, f_right,                     \
@@ -502,7 +506,7 @@ typedef struct {
     }                                                                                 \
   }
 
-#define GrGeomPatchLoopNoFdir(i, j, k, grgeom, patch_num,               \
+#define GrGeomPatchLoopNoFdir(i, j, k, grgeom, patch_num, ovrlnd,       \
                               r, ix, iy, iz, nx, ny, nz,                \
                               locals, setup,                            \
                               f_left, f_right,                          \
@@ -512,7 +516,7 @@ typedef struct {
   {                                                                     \
     if (r == 0 && GrGeomSolidPatchBoxes(grgeom, patch_num, GrGeomOctreeNumFaces - 1)) \
     {                                                                   \
-      GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,            \
+      GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num, ovrlnd,    \
                                  ix, iy, iz, nx, ny, nz,                \
                                  locals, setup,                         \
                                  f_left, f_right,                       \
