@@ -13,7 +13,7 @@ from .handlers import decorate_value
 # -----------------------------------------------------------------------------
 
 def map_to_parent(pfdbObj):
-    return pfdbObj._parent
+    return pfdbObj._parent_
 
 # -----------------------------------------------------------------------------
 
@@ -42,13 +42,13 @@ def validate_helper(container_obj, name, obj, indent, error_count):
     nbErrors = 0
     validation_string = ''
     history = None
-    if 'history' in container_obj._details[name] and len(container_obj._details[name]['history']):
-        history = container_obj._details[name]['history']
-    if 'default' in container_obj._details[name] and obj == container_obj._details[name]['default'] and \
-            'MandatoryValue' not in container_obj._details[name]['domains']:
+    if 'history' in container_obj._details_[name] and len(container_obj._details_[name]['history']):
+        history = container_obj._details_[name]['history']
+    if 'default' in container_obj._details_[name] and obj == container_obj._details_[name]['default'] and \
+            'MandatoryValue' not in container_obj._details_[name]['domains']:
         pass
     else:
-        nbErrors, validation_string = validate_value_to_string(name, obj, container_obj._details[name]['domains'],
+        nbErrors, validation_string = validate_value_to_string(name, obj, container_obj._details_[name]['domains'],
                                                                container_obj.get_context_settings(), history, indent)
 
     return nbErrors, validation_string
@@ -61,23 +61,23 @@ def detail_helper(container, name, value):
     handlers = None
     history = None
     crosscheck = None
-    if name in container._details:
-        if 'domains' in container._details[name]:
-            domains = container._details[name]['domains']
+    if name in container._details_:
+        if 'domains' in container._details_[name]:
+            domains = container._details_[name]['domains']
 
-        if 'handlers' in container._details[name]:
-            handlers = container._details[name]['handlers']
+        if 'handlers' in container._details_[name]:
+            handlers = container._details_[name]['handlers']
 
-        if 'history' in container._details[name]:
-            history = container._details[name]['history']
+        if 'history' in container._details_[name]:
+            history = container._details_[name]['history']
 
         else:
             history = []
-            container._details[name]['history'] = history
+            container._details_[name]['history'] = history
         history.append(value)
 
-        if 'crosscheck' in container._details[name]:
-            crosscheck = container._details[name]['crosscheck']
+        if 'crosscheck' in container._details_[name]:
+            crosscheck = container._details_[name]['crosscheck']
 
     return domains, handlers, history, crosscheck
 
@@ -131,8 +131,8 @@ class PFDBObj:
         '''
         Create container object while keeping a reference to your parent
         '''
-        self._parent = parent
-        self._prefix = None
+        self._parent_ = parent
+        self._prefix__ = None
 
     # ---------------------------------------------------------------------------
 
@@ -144,8 +144,8 @@ class PFDBObj:
         handlers = None
         history = None
         value_object_assignment = False
-        if name[0] != '_' and hasattr(self, '_details'):
-            if name in self._details:
+        if name[0] != '_' and hasattr(self, '_details_'):
+            if name in self._details_:
                 domains, handlers, history, crosscheck = detail_helper(
                     self, name, value)
             elif hasattr(self, name) and isinstance(self.__dict__[name], PFDBObj):
@@ -153,7 +153,7 @@ class PFDBObj:
                 value_object_assignment = True
                 value_obj = self.__dict__[name]
                 domains, handlers, history, crosscheck = detail_helper(
-                    value_obj, '_value', value)
+                    value_obj, '_value_', value)
             else:
                 print(
                     f'Field {name} is not part of the expected schema {self.__class__}')
@@ -168,7 +168,7 @@ class PFDBObj:
 
         if value_object_assignment:
             self.__dict__[name].__dict__[
-                '_value'] = decorate_value(value, self, handlers)
+                '_value_'] = decorate_value(value, self, handlers)
         else:
             # Decorate value if need be (i.e. Geom.names: 'a b c')
             self.__dict__[name] = decorate_value(value, self, handlers)
@@ -184,7 +184,7 @@ class PFDBObj:
         '''
         value_count = 0
 
-        if hasattr(self, '_value') and self._value is not None:
+        if hasattr(self, '_value_') and self._value_ is not None:
             value_count += 1
 
         for name in self.get_key_names(True):
@@ -193,8 +193,8 @@ class PFDBObj:
                 value_count += len(obj)
             elif obj is not None:
                 value_count += 1
-            elif hasattr(self, '_details') and name in self._details and 'domains' in self._details[name]:
-                if 'MandatoryValue' in self._details[name]['domains']:
+            elif hasattr(self, '_details_') and name in self._details_ and 'domains' in self._details_[name]:
+                if 'MandatoryValue' in self._details_[name]['domains']:
                     value_count += 1
 
         return value_count
@@ -208,8 +208,8 @@ class PFDBObj:
             return getattr(self, key_str)
 
         prefix = '_'
-        if self._details and '_prefix' in self._details:
-            prefix = self._details['_prefix']
+        if self._details_ and '_prefix_' in self._details_:
+            prefix = self._details_['_prefix_']
 
         key_str = f'{prefix}{key_str}'
         if hasattr(self, key_str):
@@ -225,33 +225,34 @@ class PFDBObj:
         Dynamic help function for runtime evaluation
         '''
         if key is not None:
-            if key in self._details:
-                if 'help' in self._details[key]:
-                    print(self._details[key]['help'])
+            if key in self._details_:
+                if 'help' in self._details_[key]:
+                    print(self._details_[key]['help'])
             else:
                 obj = self.__dict__[key]
                 if hasattr(obj, '__doc__'):
                     print(obj.__doc__)
 
-                if hasattr(obj, '_details') and '_value' in obj._details and 'help' in obj._details['_value']:
-                    print(obj._details['_value']['help'])
+                if hasattr(obj, '_details_') and '_value_' in obj._details_ and 'help' in obj._details_['_value_']:
+                    print(obj._details_['_value_']['help'])
 
         elif hasattr(self, '__doc__'):
             print(self.__doc__)
-            if hasattr(self, '_details') and '_value' in self._details and 'help' in self._details['_value']:
-                print(self._details['_value']['help'])
+            if hasattr(self, '_details_') and '_value_' in self._details_ and 'help' in self._details_['_value_']:
+                print(self._details_['_value_']['help'])
 
     # ---------------------------------------------------------------------------
 
     def get_key_names(self, skip_default=False):
+        '''
+        Gets the key names necessary for the run
+        '''
         for name in self.__dict__:
             if name is None:
                 print('need to fix the children instantiator')
                 continue
 
-            if name[0] == '_' and name[1].isalpha():
-                # if name[1].isdigit():
-                #     print(name)
+            if name[0] == name[-1] and name[0] == '_':
                 continue
 
             obj = self.__dict__[name]
@@ -261,11 +262,11 @@ class PFDBObj:
 
             else:
                 has_details = hasattr(
-                    self, '_details') and name in self._details
-                has_default = has_details and 'default' in self._details[name]
-                has_domain = has_details and 'domains' in self._details[name]
-                is_mandatory = has_domain and 'MandatoryValue' in self._details[name]['domains']
-                is_default = has_default and obj == self._details[name]['default']
+                    self, '_details_') and name in self._details_
+                has_default = has_details and 'default' in self._details_[name]
+                has_domain = has_details and 'domains' in self._details_[name]
+                is_mandatory = has_domain and 'MandatoryValue' in self._details_[name]['domains']
+                is_default = has_default and obj == self._details_[name]['default']
 
                 if obj is not None:
                     if skip_default:
@@ -292,10 +293,10 @@ class PFDBObj:
             obj = self.__dict__[name]
             if isinstance(obj, PFDBObj):
                 if len(obj):
-                    if hasattr(obj, '_value'):
-                        value = obj._value
+                    if hasattr(obj, '_value_'):
+                        value = obj._value_
                         add_errors, validation_string = validate_helper(
-                            obj, '_value', value, indent, error_count)
+                            obj, '_value_', value, indent, error_count)
                         print(f'{indent_str}{name}: {validation_string}')
                         error_count += add_errors
                     else:
@@ -303,7 +304,7 @@ class PFDBObj:
 
                     error_count += obj.validate(indent + 1)
 
-            elif hasattr(self, '_details') and name in self._details:
+            elif hasattr(self, '_details_') and name in self._details_:
                 add_errors, validation_string = validate_helper(
                     self, name, obj, indent, error_count)
                 print(f'{indent_str}{name}: {validation_string}')
@@ -322,9 +323,9 @@ class PFDBObj:
         full_path = []
         current_location = self
         count = 0
-        while current_location._parent is not None:
+        while current_location._parent_ is not None:
             count += 1
-            parent = current_location._parent
+            parent = current_location._parent_
             for name in parent.__dict__:
                 value = parent.__dict__[name]
                 if value == current_location:
@@ -346,13 +347,12 @@ class PFDBObj:
         value = self.__dict__[key]
         prefix = ''
         if isinstance(value, PFDBObj):
-            if value._prefix and key.startswith(value._prefix):
-                prefix = value._prefix
+            if hasattr(value, '_prefix_') and key.startswith(value._prefix_):
+                prefix = value._prefix_
         else:
-            print(value)
-            detail = self._details[key]
-            if '_prefix' in detail:
-                prefix = detail["_prefix"]
+            detail = self._details_[key]
+            if '_prefix_' in detail:
+                prefix = detail["_prefix_"]
 
         if parent_namespace:
             return f'{parent_namespace}.{key[len(prefix):]}'
@@ -385,8 +385,8 @@ class PFDBObj:
         current_location = self
         path_items = location.split('/')
         if location[0] == '/':
-            while current_location._parent is not None:
-                current_location = current_location._parent
+            while current_location._parent_ is not None:
+                current_location = current_location._parent_
 
         next_list = [current_location]
         for path_item in path_items:
@@ -442,9 +442,9 @@ class PFDBObj:
             container[tokens[-1]] = value
         else:
             # store key on the side
-            if '_pfstore' not in self.__dict__:
-                self.__dict__['_pfstore'] = {}
-            self.__dict__['_pfstore'][key] = value
+            if '_pfstore_' not in self.__dict__:
+                self.__dict__['_pfstore_'] = {}
+            self.__dict__['_pfstore_'][key] = value
 
     # ---------------------------------------------------------------------------
 
@@ -453,7 +453,7 @@ class PFDBObj:
         Processing the dynamically defined (user-defined) key names
         '''
         from . import generated
-        for (class_name, selection) in self._dynamic.items():
+        for (class_name, selection) in self._dynamic_.items():
             klass = getattr(generated, class_name)
             names = self.get_selection_from_location(selection)
             for name in names:
@@ -474,11 +474,11 @@ class PFDBObjListNumber(PFDBObj):
             self.__dict__[name] = value
             return
 
-        if self._prefix:
-            if name.startswith(self._prefix):
+        if self._prefix_:
+            if name.startswith(self._prefix_):
                 self.__dict__[name] = value
             else:
-                self.__dict__[f'{self._prefix}{name}'] = value
+                self.__dict__[f'{self._prefix_}{name}'] = value
             return
 
         self.__dict__[name] = value
@@ -491,12 +491,12 @@ class PFDBObjListNumber(PFDBObj):
     #     value = self.__dict__[key]
     #     prefix = ''
     #     if isinstance(value, PFDBObj):
-    #         if value._prefix and key.startswith(value._prefix):
-    #             prefix = value._prefix
+    #         if value._prefix_ and key.startswith(value._prefix_):
+    #             prefix = value._prefix_
     #     else:
-    #         detail = self._details[key]
-    #         if '_prefix' in detail:
-    #             prefix = detail["_prefix"]
+    #         detail = self._details__[key]
+    #         if '_prefix__' in detail:
+    #             prefix = detail["_prefix__"]
     #
     #     if parent_namespace:
     #         return f'{parent_namespace}.{key[len(prefix):]}'

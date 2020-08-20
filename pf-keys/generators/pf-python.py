@@ -217,7 +217,7 @@ class PythonModule:
                         field_prefix_value = class_definition[key]['__prefix__']
 
             if len(class_members) + len(field_members) + len(class_instances) + field_with_prefix > 0 \
-                or '_dynamic' in class_definition \
+                or '_dynamic_' in class_definition \
                 or has_prefix(class_name, class_definition):
                 '''
                   def __init__(self, parent=None):
@@ -230,10 +230,12 @@ class PythonModule:
 
                 if has_value(class_name, class_definition):
                     self.add_field(
-                        '_value', class_definition['__value__'], class_details)
+                        '_value_', class_definition['__value__'], class_details)
 
                 if has_prefix(class_name, class_definition):
-                    self.add_line(f"{self.str_indent * 2}self._prefix = '{class_definition['__prefix__']}'")
+                    self.add_line(f"{self.str_indent * 2}self._prefix_ = '{class_definition['__prefix__']}'")
+                    if inheritance == 'PFDBObjListNumber':
+                        self.add_line(f"{self.str_indent * 2}self._details_ = ""{}")
 
                 for instance in class_members:
                     self.add_line(
@@ -246,7 +248,7 @@ class PythonModule:
                     self.add_field(field, class_definition[field], class_details)
 
                 if field_with_prefix:
-                    class_details['_prefix'] = field_prefix_value
+                    class_details['_prefix_'] = field_prefix_value
 
                 self.add_details(class_details)
                 self.add_dynamic(class_definition)
@@ -270,17 +272,17 @@ class PythonModule:
         if len(class_details):
             detailsLines = json.dumps(class_details, indent=2).splitlines()
             self.add_line(
-                f'{self.str_indent * 2}self._details = {detailsLines[0]}')
+                f'{self.str_indent * 2}self._details_ = {detailsLines[0]}')
             for line in detailsLines[1:]:
                 line_with_indent = f'{self.str_indent * 2}{line}'
                 self.add_line(json_to_python(line_with_indent))
 
     def add_dynamic(self, class_details):
-        if '_dynamic' in class_details:
+        if '_dynamic_' in class_details:
             dynamicLines = json.dumps(
-                class_details['_dynamic'], indent=2).splitlines()
+                class_details['_dynamic_'], indent=2).splitlines()
             self.add_line(
-                f'{self.str_indent * 2}self._dynamic = {dynamicLines[0]}')
+                f'{self.str_indent * 2}self._dynamic_ = {dynamicLines[0]}')
             for line in dynamicLines[1:]:
                 line_with_indent = f'{self.str_indent * 2}{line}'
                 self.add_line(json_to_python(line_with_indent))

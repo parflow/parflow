@@ -80,7 +80,7 @@ class Run(BaseRun):
     """
     def __init__(self, name, basescript=None):
         super().__init__(None)
-        self._name = name
+        self._name_ = name
         if basescript:
             PFDBObj.set_working_directory(os.path.dirname(basescript))
 
@@ -121,7 +121,7 @@ class Run(BaseRun):
 
         """
         f_name = os.path.join(PFDBObj.working_directory,
-                              f'{self._name}.{file_format}')
+                              f'{self._name_}.{file_format}')
         if file_name:
             f_name = os.path.join(PFDBObj.working_directory,
                                   f'{file_name}.{file_format}')

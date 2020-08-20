@@ -26,7 +26,7 @@ Wells:
       name: Wells.{well_name}
     __doc__: >
       Specifying properties for wells
-    _dynamic:
+    _dynamic_:
       WellIntervalItem: /Cycle/{CycleItem}/Names
 
     # Setting key Wells.{well_name}.{interval_name}...
@@ -57,7 +57,7 @@ Wells:
         __rst__:
           skip:
         __doc__: ''
-        _dynamic:
+        _dynamic_:
           WellIntervalSaturationPhaseItem: /Phase/Names
 
         .{phase_name}:
@@ -81,7 +81,7 @@ Wells:
         __rst__:
           skip:
         __doc__: ''
-        _dynamic:
+        _dynamic_:
           WellIntervalFluxPhaseItem: /Phase/Names
 
         .{phase_name}:
@@ -149,7 +149,7 @@ Wells:
             skip:
           __doc__: >
             Setting flux for a named well within a specified cycle for a specific phase in an extraction well.
-          _dynamic:
+          _dynamic_:
             ExtractionFluxPhaseItem: /Phase/Names
 
           .{phase_name}:
@@ -193,7 +193,7 @@ Wells:
             skip:
           __doc__: >
             Setting flux for a named well within a specified cycle for a specific phase in an injection well.
-          _dynamic:
+          _dynamic_:
             InjectionFluxPhaseItem: /Phase/Names
 
           .{phase_name}:
@@ -218,7 +218,7 @@ Wells:
             skip:
           __doc__: >
             Setting the fraction of the extracted contaminant which gets resupplied to the injection well.
-          _dynamic:
+          _dynamic_:
             InjectionConcentrationPhaseItem: /Phase/Names
 
           .{phase_name}:
@@ -226,7 +226,7 @@ Wells:
             __rst__:
               skip:
             __doc__: ''
-            _dynamic:
+            _dynamic_:
               InjectionConcentrationPhaseContaminantItem: /Contaminants/Names
 
             .{contaminant_name}:

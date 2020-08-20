@@ -121,7 +121,7 @@ Patch:
       __rst__:
         skip:
       __doc__: ''
-      _dynamic:
+      _dynamic_:
         BCPressureIntervalItem: /Cycle/{CycleItem}/Names
 
       .{interval_name}:

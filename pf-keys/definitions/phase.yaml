@@ -237,7 +237,6 @@ Phase:
           [Type: string] This key specifies whether the mobility for phase_name will be a given constant or a polynomial of the form,
           (S-So)^a, where S is saturation, So is irreducible saturation, and a is some exponent. The possibilities for this key
           are Constant and Polynomial.
-        default: Constant
         domains:
           EnumDomain:
             enum_list:
@@ -315,7 +314,7 @@ Phase:
       __rst__:
         skip:
       __doc__: ''
-      _dynamic:
+      _dynamic_:
         PhaseNameHeatGeomItem: /Phase/{PhaseNameItem}/HeatCapacity/GeomNames
 
       .{geom_name}:
@@ -349,7 +348,7 @@ PhaseConcen:
     __rst__:
       skip:
     __doc__: ''
-    _dynamic:
+    _dynamic_:
       PhaseConcenContaminantItem: /Contaminants/Names
 
     .{contaminant_name}:
@@ -374,7 +373,7 @@ PhaseConcen:
         __doc__: ''
         __rst__:
           skip:
-        _dynamic:
+        _dynamic_:
           PhaseConcenContaminantGeomItem: /PhaseConcen/{PhaseConcenPhaseNameItem}/{PhaseConcenContaminantItem}/GeomNames
 
         .{geom_input_name}:
@@ -469,7 +468,7 @@ PhaseSources:
       __rst__:
         skip:
       __doc__: ''
-      _dynamic:
+      _dynamic_:
         PhaseSourcePhaseGeomItem: /PhaseSources/{PhaseSourceNameItem}/GeomNames
 
       .{geom_input_name}:

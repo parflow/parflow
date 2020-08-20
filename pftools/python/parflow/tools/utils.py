@@ -38,9 +38,9 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
 
         full_qualified_key = instance.get_parflow_key(parent_namespace, key)
         if isinstance(value, PFDBObj):
-            if hasattr(value, '_value'):
+            if hasattr(value, '_value_'):
                 dict_to_fill[full_qualified_key] = convert_value_for_string_dict(
-                    value._value)
+                    value._value_)
             extract_keys_from_object(dict_to_fill, value, full_qualified_key)
         else:
             dict_to_fill[full_qualified_key] = convert_value_for_string_dict(value)

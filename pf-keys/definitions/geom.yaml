@@ -391,7 +391,7 @@ Geom:
 
     _rst:
       prefix: Geom.{geom_name}
-    _dynamic:
+    _dynamic_:
       GeomContItem: /Contaminants/Names
 
     # Geom.geom_name.FileName
