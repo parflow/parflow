@@ -12,7 +12,7 @@ import sys
 import argparse
 
 from .database.generated import BaseRun, PFDBObj, PFDBObjListNumber
-from .utils import extract_keys_from_object, write_dict
+from .database.core import extract_keys_from_object, write_dict
 from .terminal import Symbols as termSymbol
 
 def check_parflow_execution(out_file):
