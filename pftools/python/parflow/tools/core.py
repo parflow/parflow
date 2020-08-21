@@ -54,6 +54,7 @@ def get_current_parflow_version():
         str: Return ParFlow version like '3.6.0'
 
     """
+    version = '3.6.0'
     version_file = f'{os.getenv("PARFLOW_DIR")}/config/pf-cmake-env.sh'
     if os.path.exists(os.path.abspath(version_file)):
         with open(version_file, "rt") as f:
