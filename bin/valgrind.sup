@@ -221,6 +221,14 @@
 
 {
    <insert_a_suppression_name_here>
+   Memcheck:Param
+   rt_sigaction(act->sa_mask)
+   ...
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
    Memcheck:Cond
    ...
    fun:mv2_get_arch_hca_type
