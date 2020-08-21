@@ -45,12 +45,14 @@ if(${PARFLOW_HAVE_SILO})
   list(APPEND TESTS
     indicator_field.tcl)
 
-if(${PARFLOW_HAVE_HYPRE})
-  list(APPEND TESTS
-	water_balance_y.tcl
-	water_balance_x.tcl
-	default_richards_with_silo.tcl)
-endif()
+  if(${PARFLOW_HAVE_HYPRE})
+    list(APPEND TESTS
+      water_balance_y.tcl
+      water_balance_x.tcl
+      water_balance_x.hardflow.nojac.tcl
+      water_balance_x.hardflow.jac.tcl
+      default_richards_with_silo.tcl)
+  endif()
 endif()
 
 if(${PARFLOW_HAVE_NETCDF})
@@ -88,8 +90,6 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
       default_overland.pfmg.jac.tcl
       default_overland.pfmg_octree.jac.tcl
       default_overland.pfmg_octree.fulljac.tcl
-      water_balance_x.hardflow.nojac.tcl
-      water_balance_x.hardflow.jac.tcl
       LW_var_dz.tcl
       LW_var_dz_spinup.tcl
       overland_slopingslab_KWE.tcl

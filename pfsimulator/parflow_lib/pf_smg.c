@@ -29,7 +29,7 @@
 #include "parflow.h"
 
 #ifdef HAVE_HYPRE
-
+#include "pf_hypre.h"
 #include "hypre_dependences.h"
 
 /*--------------------------------------------------------------------------
@@ -77,25 +77,6 @@ void         SMG(
 
   HYPRE_StructSolver hypre_smg_data = instance_xtra->hypre_smg_data;
 
-  Grid               *grid = VectorGrid(rhs);
-  Subgrid            *subgrid;
-  int sg;
-
-  Subvector          *rhs_sub;
-  Subvector          *soln_sub;
-
-  double             *rhs_ptr;
-  double             *soln_ptr;
-  double value;
-
-  int index[3];
-
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
-  int i, j, k;
-  int iv;
-
   int num_iterations;
   double rel_norm;
 
@@ -104,38 +85,7 @@ void         SMG(
   /* Copy rhs to hypre_b vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
 
-  ForSubgridI(sg, GridSubgrids(grid))
-  {
-    subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
-    rhs_sub = VectorSubvector(rhs, sg);
-
-    rhs_ptr = SubvectorData(rhs_sub);
-
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
-
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
-
-    nx_v = SubvectorNX(rhs_sub);
-    ny_v = SubvectorNY(rhs_sub);
-    nz_v = SubvectorNZ(rhs_sub);
-
-    iv = SubvectorEltIndex(rhs_sub, ix, iy, iz);
-
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
-    {
-      index[0] = i;
-      index[1] = j;
-      index[2] = k;
-
-      HYPRE_StructVectorSetValues(hypre_b, index, rhs_ptr[iv]);
-    });
-  }
-  HYPRE_StructVectorAssemble(hypre_b);
+  CopyParFlowVectorToHypreVector(rhs, &hypre_b);
 
   EndTiming(public_xtra->time_index_copy_hypre);
 
@@ -177,38 +127,8 @@ void         SMG(
   /* Copy solution from hypre_x vector to the soln vector. */
   BeginTiming(public_xtra->time_index_copy_hypre);
 
-  ForSubgridI(sg, GridSubgrids(grid))
-  {
-    subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
-    soln_sub = VectorSubvector(soln, sg);
+  CopyHypreVectorToParflowVector(&hypre_x, soln);
 
-    soln_ptr = SubvectorData(soln_sub);
-
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
-
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
-
-    nx_v = SubvectorNX(soln_sub);
-    ny_v = SubvectorNY(soln_sub);
-    nz_v = SubvectorNZ(soln_sub);
-
-    iv = SubvectorEltIndex(soln_sub, ix, iy, iz);
-
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
-    {
-      index[0] = i;
-      index[1] = j;
-      index[2] = k;
-
-      HYPRE_StructVectorGetValues(hypre_x, index, &value);
-      soln_ptr[iv] = value;
-    });
-  }
   EndTiming(public_xtra->time_index_copy_hypre);
 #endif
 }
@@ -221,7 +141,8 @@ PFModule  *SMGInitInstanceXtra(
                                Problem *    problem,
                                Grid *       grid,
                                ProblemData *problem_data,
-                               Matrix *     pf_matrix,
+			       Matrix *     pf_Bmat,
+			       Matrix *     pf_Cmat,
                                double *     temp_data)
 {
 #ifdef HAVE_HYPRE
@@ -233,31 +154,7 @@ PFModule  *SMGInitInstanceXtra(
   int num_pre_relax = public_xtra->num_pre_relax;
   int num_post_relax = public_xtra->num_post_relax;
 
-  Grid               *mat_grid;
-  Subgrid            *subgrid;
-  int sg;
-
-  Submatrix          *pf_sub;
-  double             *cp, *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up;
-
-  double coeffs[7];
-  double coeffs_symm[4];
-
-  int i, j, k;
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_m, ny_m, nz_m;
-  int im;
-  int stencil_size;
-  int symmetric;
-
-  int full_ghosts[6] = { 1, 1, 1, 1, 1, 1 };
-  int no_ghosts[6] = { 0, 0, 0, 0, 0, 0 };
-  int stencil_indices[7] = { 0, 1, 2, 3, 4, 5, 6 };
-  int stencil_indices_symm[4] = { 0, 1, 2, 3 };
-  int index[3];
-  int ilo[3];
-  int ihi[3];
+  double dummy[3];
 
   (void)problem;
   (void)problem_data;
@@ -268,36 +165,11 @@ PFModule  *SMGInitInstanceXtra(
   else
     instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
-  if (grid != NULL)
-  {
-    /* Free the HYPRE grid */
-    if (instance_xtra->hypre_grid)
-    {
-      HYPRE_StructGridDestroy(instance_xtra->hypre_grid);
-      instance_xtra->hypre_grid = NULL;
-    }
-
-    /* Set the HYPRE grid */
-    HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, &(instance_xtra->hypre_grid));
-
-    /* Set local grid extents as global grid values */
-    ForSubgridI(sg, GridSubgrids(grid))
-    {
-      subgrid = GridSubgrid(grid, sg);
-      ilo[0] = SubgridIX(subgrid);
-      ilo[1] = SubgridIY(subgrid);
-      ilo[2] = SubgridIZ(subgrid);
-      ihi[0] = ilo[0] + SubgridNX(subgrid) - 1;
-      ihi[1] = ilo[1] + SubgridNY(subgrid) - 1;
-      ihi[2] = ilo[2] + SubgridNZ(subgrid) - 1;
-    }
-    HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi);
-    HYPRE_StructGridAssemble(instance_xtra->hypre_grid);
-  }
+  HypreAssembleGrid(grid, &(instance_xtra->hypre_grid), dummy);
 
   /* Reset the HYPRE solver for each recompute of the PC matrix.
    * This reset will require a matrix copy from PF format to HYPRE format. */
-  if (pf_matrix != NULL)
+  if (pf_Bmat != NULL)
   {
     /* Free old solver data because HYPRE requires a new solver if
      * matrix values change */
@@ -308,141 +180,21 @@ PFModule  *SMGInitInstanceXtra(
     }
 
 
-    /* For remainder of routine, assume matrix is structured the same for
-     * entire nonlinear solve process */
-    /* Set stencil parameters */
-    stencil_size = MatrixDataStencilSize(pf_matrix);
-    if (!(instance_xtra->hypre_stencil))
-    {
-      HYPRE_StructStencilCreate(3, stencil_size,
-                                &(instance_xtra->hypre_stencil));
-
-      for (i = 0; i < stencil_size; i++)
-      {
-        HYPRE_StructStencilSetElement(instance_xtra->hypre_stencil, i,
-                                      &(MatrixDataStencil(pf_matrix))[i * 3]);
-      }
-    }
-
-    /* Set up new matrix */
-    symmetric = MatrixSymmetric(pf_matrix);
-    if (!(instance_xtra->hypre_mat))
-    {
-      HYPRE_StructMatrixCreate(MPI_COMM_WORLD, instance_xtra->hypre_grid,
-                               instance_xtra->hypre_stencil,
-                               &(instance_xtra->hypre_mat));
-      HYPRE_StructMatrixSetNumGhost(instance_xtra->hypre_mat, full_ghosts);
-      HYPRE_StructMatrixSetSymmetric(instance_xtra->hypre_mat, symmetric);
-      HYPRE_StructMatrixInitialize(instance_xtra->hypre_mat);
-    }
-
-    /* Set up new right-hand-side vector */
-    if (!(instance_xtra->hypre_b))
-    {
-      HYPRE_StructVectorCreate(MPI_COMM_WORLD,
-                               instance_xtra->hypre_grid,
-                               &(instance_xtra->hypre_b));
-      HYPRE_StructVectorSetNumGhost(instance_xtra->hypre_b, no_ghosts);
-      HYPRE_StructVectorInitialize(instance_xtra->hypre_b);
-    }
-
-    /* Set up new solution vector */
-    if (!(instance_xtra->hypre_x))
-    {
-      HYPRE_StructVectorCreate(MPI_COMM_WORLD,
-                               instance_xtra->hypre_grid,
-                               &(instance_xtra->hypre_x));
-      HYPRE_StructVectorSetNumGhost(instance_xtra->hypre_x, full_ghosts);
-      HYPRE_StructVectorInitialize(instance_xtra->hypre_x);
-    }
-    HYPRE_StructVectorSetConstantValues(instance_xtra->hypre_x, 0.0e0);
-    HYPRE_StructVectorAssemble(instance_xtra->hypre_x);
+    HypreInitialize(pf_Bmat,
+		    &(instance_xtra -> hypre_grid),
+		    &(instance_xtra -> hypre_stencil),
+		    &(instance_xtra -> hypre_mat),
+		    &(instance_xtra -> hypre_b),
+		    &(instance_xtra -> hypre_x)
+		    );
 
     /* Copy the matrix entries */
     BeginTiming(public_xtra->time_index_copy_hypre);
-
-    mat_grid = MatrixGrid(pf_matrix);
-    ForSubgridI(sg, GridSubgrids(mat_grid))
-    {
-      subgrid = GridSubgrid(mat_grid, sg);
-
-      pf_sub = MatrixSubmatrix(pf_matrix, sg);
-
-      if (symmetric)
-      {
-        /* Pull off upper diagonal coeffs here for symmetric part */
-        cp = SubmatrixStencilData(pf_sub, 0);
-        ep = SubmatrixStencilData(pf_sub, 2);
-        np = SubmatrixStencilData(pf_sub, 4);
-        up = SubmatrixStencilData(pf_sub, 6);
-      }
-      else
-      {
-        cp = SubmatrixStencilData(pf_sub, 0);
-        wp = SubmatrixStencilData(pf_sub, 1);
-        ep = SubmatrixStencilData(pf_sub, 2);
-        sop = SubmatrixStencilData(pf_sub, 3);
-        np = SubmatrixStencilData(pf_sub, 4);
-        lp = SubmatrixStencilData(pf_sub, 5);
-        up = SubmatrixStencilData(pf_sub, 6);
-      }
-
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
-
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
-
-      nx_m = SubmatrixNX(pf_sub);
-      ny_m = SubmatrixNY(pf_sub);
-      nz_m = SubmatrixNZ(pf_sub);
-
-      im = SubmatrixEltIndex(pf_sub, ix, iy, iz);
-
-      if (symmetric)
-      {
-        BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                  im, nx_m, ny_m, nz_m, 1, 1, 1,
-        {
-          coeffs_symm[0] = cp[im];
-          coeffs_symm[1] = ep[im];
-          coeffs_symm[2] = np[im];
-          coeffs_symm[3] = up[im];
-          index[0] = i;
-          index[1] = j;
-          index[2] = k;
-          HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-                                      index,
-                                      stencil_size,
-                                      stencil_indices_symm,
-                                      coeffs_symm);
-        });
-      }
-      else
-      {
-        BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                  im, nx_m, ny_m, nz_m, 1, 1, 1,
-        {
-          coeffs[0] = cp[im];
-          coeffs[1] = wp[im];
-          coeffs[2] = ep[im];
-          coeffs[3] = sop[im];
-          coeffs[4] = np[im];
-          coeffs[5] = lp[im];
-          coeffs[6] = up[im];
-          index[0] = i;
-          index[1] = j;
-          index[2] = k;
-          HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-                                      index,
-                                      stencil_size,
-                                      stencil_indices, coeffs);
-        });
-      }
-    }     /* End subgrid loop */
-    HYPRE_StructMatrixAssemble(instance_xtra->hypre_mat);
+    
+    HypreAssembleMatrixAsElements(pf_Bmat,
+				  pf_Cmat,
+				  &(instance_xtra -> hypre_mat),
+				  problem_data);
 
     EndTiming(public_xtra->time_index_copy_hypre);
 
