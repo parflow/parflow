@@ -1,6 +1,6 @@
-#  This runs the a Little Washita Test Problem with variable dz
-#  and a constant rain forcing.  The full Jacobian is use and there is no dampening in the
-#  overland flow.
+#  This is an adaptation of the LW_var_dz.py test
+#  This test demonstrates the different ways to set integers within a key name
+# See lines
 
 from parflow import Run
 prefix = Run("prefix", __file__)
@@ -59,11 +59,14 @@ prefix.dzScale.GeomNames = 'domain'
 prefix.dzScale.Type = 'nzList'
 prefix.dzScale.nzListNumber = 6
 
-#pfset dzScale.Type            nzList
-#pfset dzScale.nzListNumber       3
+# Here are four different ways to set integer values as part of a key name:
+# 1) bracket, quotes, underscore
 prefix.Cell['_0'].dzScale.Value = 1.0
+# 2) bracket, quotes, no underscore
 prefix.Cell['1'].dzScale.Value = 1.00
+# 3) bracket, no quotes, no underscore
 prefix.Cell[2].dzScale.Value = 1.000
+# 4) no bracket, no quotes, underscore
 prefix.Cell._3.dzScale.Value = 1.000
 prefix.Cell._4.dzScale.Value = 1.000
 prefix.Cell._5.dzScale.Value = 0.05
@@ -162,7 +165,6 @@ prefix.Geom.Porosity.GeomNames = 'domain'
 
 prefix.Geom.domain.Porosity.Type = 'Constant'
 prefix.Geom.domain.Porosity.Value = 0.25
-#pfset Geom.domain.Porosity.Value         0.
 
 
 #-----------------------------------------------------------------------------
@@ -178,14 +180,14 @@ prefix.Domain.GeomName = 'domain'
 prefix.Phase.RelPerm.Type = 'VanGenuchten'
 prefix.Phase.RelPerm.GeomNames = 'domain'
 
-prefix.Geom.domain.RelPerm.Alpha = 1.
 prefix.Geom.domain.RelPerm.Alpha = 1.0
 prefix.Geom.domain.RelPerm.N = 3.
+
+# Another example
 prefix.Geom.domain.RelPerm.Coeff._0 = 0.5
-# prefix.Geom.domain.RelPerm.Coeff['1'] = 1.0
-#pfset Geom.domain.RelPerm.NumSamplePoints   10000
-#pfset Geom.domain.RelPerm.MinPressureHead   -200
-#pfset Geom.domain.RelPerm.InterpolationMethod   "Linear"
+prefix.Geom.domain.RelPerm.Coeff[1] = 1.0
+prefix.Geom.domain.RelPerm.Coeff[2] = 1.0
+
 #---------------------------------------------------------
 # Saturation
 #---------------------------------------------------------
@@ -210,13 +212,9 @@ prefix.Wells.Names = ''
 # Time Cycles
 #-----------------------------------------------------------------------------
 prefix.Cycle.Names = 'constant rainrec'
-# prefix.Cycle.Names = 'constant'
 prefix.Cycle.constant.Names = 'alltime'
 prefix.Cycle.constant.alltime.Length = 10000000
 prefix.Cycle.constant.Repeat = -1
-
-# rainfall and recession time periods are defined here
-# rain for 1 hour, recession for 2 hours
 
 prefix.Cycle.rainrec.Names = 'rain rec'
 prefix.Cycle.rainrec.rain.Length = 10
@@ -231,6 +229,8 @@ prefix.BCPressure.PatchNames = prefix.Geom.domain.Patches
 prefix.Patch.x_lower.BCPressure.Type = 'DirEquilPLinear'
 prefix.Patch.x_lower.BCPressure.Cycle = 'constant'
 prefix.Patch.x_lower.BCPressure.alltime.NumPoints = 2
+
+# Another example
 prefix.Patch.x_lower.BCPressure.alltime._0.Location = 0.0
 prefix.Patch.x_lower.BCPressure.alltime['0'].Value = 0.0
 prefix.Patch.x_lower.BCPressure.alltime['1'].Location = 0.0
@@ -257,18 +257,9 @@ prefix.Patch.y_upper.BCPressure.Type = 'FluxConst'
 prefix.Patch.y_upper.BCPressure.Cycle = 'constant'
 prefix.Patch.y_upper.BCPressure.alltime.Value = 0.0
 
-## overland flow boundary condition with very heavy rainfall
 prefix.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
 prefix.Patch.z_upper.BCPressure.Cycle = 'constant'
-# constant recharge at 100 mm / y
 prefix.Patch.z_upper.BCPressure.alltime.Value = -0.005
-
-#---------------
-# Copy slopes to working dir
-#----------------
-
-# file copy -force input/lw.1km.slope_x.10x.pfb .
-# file copy -force input/lw.1km.slope_y.10x.pfb .
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
@@ -276,7 +267,6 @@ prefix.Patch.z_upper.BCPressure.alltime.Value = -0.005
 
 prefix.TopoSlopesX.Type = 'Constant'
 prefix.TopoSlopesX.GeomNames = 'domain'
-
 prefix.TopoSlopesX.Geom.domain.Value = 0.05
 
 
@@ -286,16 +276,7 @@ prefix.TopoSlopesX.Geom.domain.Value = 0.05
 
 prefix.TopoSlopesY.Type = 'Constant'
 prefix.TopoSlopesY.GeomNames = 'domain'
-
 prefix.TopoSlopesY.Geom.domain.Value = -0.05
-
-#---------
-##  Distribute slopes
-#---------
-
-prefix.ComputationalGrid.NX = 45
-prefix.ComputationalGrid.NY = 32
-prefix.ComputationalGrid.NZ = 6
 
 #---------------------------------------------------------
 # Mannings coefficient
@@ -304,7 +285,6 @@ prefix.ComputationalGrid.NZ = 6
 prefix.Mannings.Type = 'Constant'
 prefix.Mannings.GeomNames = 'domain'
 prefix.Mannings.Geom.domain.Value = 0.00005
-
 
 #-----------------------------------------------------------------------------
 # Phase sources:
@@ -319,7 +299,6 @@ prefix.PhaseSources.water.Geom.domain.Value = 0.0
 #-----------------------------------------------------------------------------
 
 prefix.KnownSolution = 'NoKnownSolution'
-
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
@@ -344,7 +323,6 @@ prefix.Solver.AbsTol = 1E-10
 prefix.Solver.Nonlinear.EtaChoice = 'EtaConstant'
 prefix.Solver.Nonlinear.EtaValue = 0.001
 prefix.Solver.Nonlinear.UseJacobian = True
-#pfset Solver.Nonlinear.UseJacobian                       False
 prefix.Solver.Nonlinear.DerivativeEpsilon = 1e-14
 prefix.Solver.Nonlinear.StepTol = 1e-25
 prefix.Solver.Nonlinear.Globalization = 'LineSearch'
