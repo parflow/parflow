@@ -11,15 +11,15 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 # Set accelerator backend
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
+set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda)
+# should not be needed
+string(TOLOWER PARFLOW_ACCELERATOR_BACKEND PARFLOW_ACCELERATOR_BACKEND_LOWER)
 
-if((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
-
+if(PARFLOW_ACCELERATOR_BACKEND_LOWER STREQUAL "none")
   set(PARFLOW_ACC_BACKEND 0)
+endif()
 
-else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
-
-  if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
-
+if(PARFLOW_ACCELERATOR_BACKEND_LOWER STREQUAL "cuda")
   # Initialize CUDA
     include(CheckLanguage)
     check_language(CUDA)
@@ -72,8 +72,7 @@ else((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR
   else()
     message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
   endif()
-
-endif((${PARFLOW_ACCELERATOR_BACKEND} STREQUAL "none") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "NONE"))
+endif()
 
 #-----------------------------------------------------------------------------
 # Version number
@@ -94,9 +93,6 @@ endif ()
 message("Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
 
-# enable testing
-enable_testing ()
-
 #-----------------------------------------------------------------------------
 # General project wide configuration
 #-----------------------------------------------------------------------------
@@ -110,24 +106,24 @@ enable_testing ()
 #SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # use, i.e. don't skip the full RPATH for the build tree
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 
 # when building, don't use the install RPATH already
 # (but later on when installing)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 
 # the RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-IF("${isSystemDir}" STREQUAL "-1")
-   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-ENDIF("${isSystemDir}" STREQUAL "-1")
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
 
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
@@ -140,7 +136,7 @@ endif((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
 
 option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "FALSE")
 
-if (${PARFLOW_AMPS_SEQUENTIAL_IO})
+if (PARFLOW_AMPS_SEQUENTIAL_IO)
   message("Using single file AMPS I/O for PFB output")
 else ()
   message("Using multiple file AMPS I/O for PFB output")
@@ -150,14 +146,14 @@ endif ()
 # OAS3
 option(PARFLOW_HAVE_OAS3 "Build with OAS3" "no")
 
-if (${PARFLOW_HAVE_OAS3})
+if (PARFLOW_HAVE_OAS3)
   set (PARFLOW_HAVE_OAS3 "yes")
   set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
-endif (${PARFLOW_HAVE_OAS3})
+endif ()
 
 set (PARFLOW_AMPS_LAYER_REQUIRE_MPI cuda mpi1 smpi oas3)
 set (PARFLOW_TEST_PARALLEL cuda mpi1 smpi)
-set (PARFLOW_TEST_FORCE_MPIEXEC false CACHE BOOL "Always use MPIEXEC runner for MPI applications in tests")
+option(PARFLOW_TEST_FORCE_MPIEXEC "Always use MPIEXEC runner for MPI applications in tests" "OFF")
 
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
@@ -171,7 +167,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
-find_package(TCL)
+find_package(TCL QUIET)
 if (${TCL_FOUND})
   set(PARFLOW_HAVE_TCL "yes")
   set(HAVE_TCL ${PARFLOW_HAVE_TCL})
@@ -184,7 +180,7 @@ endif (${TCL_FOUND})
 #-----------------------------------------------------------------------------
 # SILO
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_SILO False CACHE BOOL "Build with Silo")
+option(PARFLOW_ENABLE_SILO "Build with Silo" "OFF")
 if (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
   find_package(Silo)
   if (${SILO_FOUND})
@@ -196,7 +192,7 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 #-----------------------------------------------------------------------------
 # NetCDF
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
+option(PARFLOW_ENABLE_NETCDF "Build with NetCDF" "OFF")
 if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
   find_package (NetCDF)
   if (${NETCDF_FOUND})
@@ -209,7 +205,7 @@ endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_
 #-----------------------------------------------------------------------------
 # HDF5
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_HDF5 False CACHE BOOL "Build with HDF5")
+option(PARFLOW_ENABLE_HDF5 "Build with HDF5" "OFF")
 if (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
   set(HDF5_PREFER_PARALLEL True)
 
@@ -229,7 +225,7 @@ endif (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
 #-----------------------------------------------------------------------------
 # Hypre
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_HYPRE False CACHE BOOL "Build with Hypre")
+option(PARFLOW_ENABLE_HYPRE "Build with Hypre" "OFF")
 if (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
   find_package(Hypre)
   if (${HYPRE_FOUND})
@@ -249,7 +245,7 @@ endif (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
 #-----------------------------------------------------------------------------
 # ZLIB
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_ZLIB False CACHE BOOL "Build with Zlib compression library")
+option(PARFLOW_ENABLE_ZLIB "Build with Zlib compression library" "OFF")
 if (${PARFLOW_ENABLE_ZLIB} OR DEFINED ZLIB_ROOT)
   find_package(ZLIB)
   if (${ZLIB_FOUND})
@@ -260,7 +256,7 @@ endif (${PARFLOW_ENABLE_ZLIB} OR DEFINED ZLIB_ROOT)
 #-----------------------------------------------------------------------------
 # SZLIB
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_SZLIB False CACHE BOOL "Build with SZlib compression library")
+option(PARFLOW_ENABLE_SZLIB "Build with SZlib compression library" "OFF")
 if (${PARFLOW_ENABLE_SZLIB} OR DEFINED SZLIB_ROOT)
   find_package(SZLIB)
   if (${SZLIB_FOUND})
@@ -271,7 +267,7 @@ endif (${PARFLOW_ENABLE_SZLIB} OR DEFINED SZLIB_ROOT)
 #-----------------------------------------------------------------------------
 # Sundials
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_SUNDIALS False CACHE BOOL "Build with SZlib compression library")
+option(PARFLOW_ENABLE_SUNDIALS "Build with SUNDIALS" "OFF")
 if (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
   find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol)
   if (${SUNDIALS_FOUND})
@@ -283,7 +279,7 @@ endif (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
 #-----------------------------------------------------------------------------
 # SLURM
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_SLURM False CACHE BOOL "Build with SLURM support")
+option(PARFLOW_ENABLE_SLURM "Build with SLURM support" "OFF")
 if (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
   find_package(SLURM)
   if (${SLURM_FOUND})
@@ -303,8 +299,7 @@ endif (NOT DEFINED PARFLOW_LIBM)
 #-----------------------------------------------------------------------------
 # Valgrind
 #-----------------------------------------------------------------------------
-
-set (PARFLOW_ENABLE_VALGRIND False CACHE BOOL "Build with Valgrind support")
+option(PARFLOW_ENABLE_VALGRIND "Build with Valgrind support" "OFF")
 if (${PARFLOW_ENABLE_VALGRIND} )
   find_program( PARFLOW_MEMORYCHECK_COMMAND valgrind)
   set(PARFLOW_HAVE_MEMORYCHECK "yes")
@@ -315,7 +310,7 @@ endif (${PARFLOW_ENABLE_VALGRIND})
 #-----------------------------------------------------------------------------
 # Ptrace
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_ETRACE False CACHE BOOL "Build with etrace")
+option(PARFLOW_ENABLE_ETRACE "Build with etrace" "OFF")
 if (${PARFLOW_ENABLE_ETRACE})
   set(PARFLOW_HAVE_ETRACE "yes")
 
@@ -329,7 +324,7 @@ endif (${PARFLOW_ENABLE_ETRACE})
 #-----------------------------------------------------------------------------
 # Fortran checks
 #-----------------------------------------------------------------------------
-INCLUDE (CheckFortranSourceCompiles)
+include(CheckFortranSourceCompiles)
 
 # Check if simple fortran 77 compile works
 CHECK_Fortran_SOURCE_COMPILES("      program main
@@ -392,7 +387,7 @@ endif(${PARFLOW_FORTRAN_IMPLICIT_NONE})
 
 set(CMAKE_REQUIRED_FLAGS ${SAVE_CMAKE_REQUIRED_FLAGS})
 
-INCLUDE (CheckCSourceCompiles)
+include(CheckCSourceCompiles)
 
 CHECK_C_SOURCE_COMPILES("int main(int argc, char **argv) {return 0;}"
   C_WORKS)
@@ -449,19 +444,19 @@ endif ( ${PARFLOW_HAVE_CLM} )
 
 # Control timing of Parflow functions.
 option(PARFLOW_ENABLE_TIMING "Enable timing of key Parflow functions; may slow down performance" "False")
-if( ${PARFLOW_ENABLE_TIMING} )
+if(PARFLOW_ENABLE_TIMING)
   set (PF_TIMING ${PARFLOW_ENABLE_TIMING})
-endif( ${PARFLOW_ENABLE_TIMING} )
+endif(PARFLOW_ENABLE_TIMING)
 
 # Profiling
 option(PARFLOW_ENABLE_PROFILING "Enable profiling; will slow down performance" "False")
-if( ${PARFLOW_ENABLE_PROFILING} )
-  set (PARFLOW_PROFILE_OPTS "-pg")
-  set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${PARFLOW_PROFILE_OPTS}" )
-  set( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${PARFLOW_PROFILE_OPTS}" )
-else( ${PARFLOW_ENABLE_PROFILING} )
+if(PARFLOW_ENABLE_PROFILING)
+  set(PARFLOW_PROFILE_OPTS "-pg")
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${PARFLOW_PROFILE_OPTS}" )
+  set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${PARFLOW_PROFILE_OPTS}" )
+else(PARFLOW_ENABLE_PROFILING)
   set (PARFLOW_PROFILE_OPTS "")
-endif( ${PARFLOW_ENABLE_PROFILING} )
+endif(PARFLOW_ENABLE_PROFILING)
 
 include_directories ("${CMAKE_SOURCE_DIR}/pfsimulator/parflow_lib")
 
@@ -489,7 +484,10 @@ endif ( ${PARFLOW_HAVE_CLM} )
 #-----------------------------------------------------------------------------
 
 # Need to turn on testing so tests in subdirctories are included in test target.
-enable_testing ()
+option(PARFLOW_ENABLE_TESTING "Enable testing for Parflow" "True")
+if (PARFLOW_ENABLE_TESTING)
+  enable_testing ()
+endif (PARFLOW_ENABLE_TESTING)
 
 # Optionally build the simulator and/or tools.
 # This is used on architectures where the login node is a different architecture
@@ -512,8 +510,8 @@ endif ()
 #-----------------------------------------------------------------------------
 include (CTest)
 
-set (PARFLOW_ENABLE_LATEX False CACHE BOOL "Enable LaTEX and building of documentation")
-if ( ${PARFLOW_ENABLE_LATEX} )
+option(PARFLOW_ENABLE_LATEX "Enable LaTEX and building of documentation" "OFF")
+if (PARFLOW_ENABLE_LATEX)
   add_subdirectory(docs/manuals)
 endif()
 
@@ -524,7 +522,7 @@ install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
 #-----------------------------------------------------------------------------
 # Doxygen
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_DOXYGEN False CACHE BOOL "Enable Doxygen and building of code documentation")
+option(PARFLOW_ENABLE_DOXYGEN "Enable Doxygen and building of code documentation" "OFF")
 
 if ( ${PARFLOW_ENABLE_DOXYGEN} )
   find_package(Doxygen)
