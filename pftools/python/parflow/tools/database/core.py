@@ -82,9 +82,18 @@ def detail_helper(container, name, value):
     return domains, handlers, history, crosscheck
 
 # -----------------------------------------------------------------------------
-# Main DB Object
+
+def is_private_key(name):
+    return name[0] == '_' and name[-1] == '_'
+
 # -----------------------------------------------------------------------------
 
+def is_not_private_key(name):
+    return not is_private_key(name)
+
+# -----------------------------------------------------------------------------
+# Main DB Object
+# -----------------------------------------------------------------------------
 
 class PFDBObj:
     print_line_error = False
@@ -144,7 +153,7 @@ class PFDBObj:
         handlers = None
         history = None
         value_object_assignment = False
-        if name[0] != '_' and name[-1] != '_' and hasattr(self, '_details_'):
+        if is_not_private_key(name) and hasattr(self, '_details_'):
             if name in self._details_:
                 domains, handlers, history, crosscheck = detail_helper(
                     self, name, value)
@@ -193,7 +202,8 @@ class PFDBObj:
                 value_count += len(obj)
             elif obj is not None:
                 value_count += 1
-            elif hasattr(self, '_details_') and name in self._details_ and 'domains' in self._details_[name]:
+            elif hasattr(self, '_details_') and name in self._details_ \
+                    and 'domains' in self._details_[name]:
                 if 'MandatoryValue' in self._details_[name]['domains']:
                     value_count += 1
 
@@ -202,12 +212,18 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def __getitem__(self, key):
+        '''
+        Used for obj[] lookup:
+           - Need to handle key with prefix
+           - Need to handle key with missing prefix
+           - Need to handle int key
+        '''
         key_str = str(key)
 
         if hasattr(self, key_str):
             return getattr(self, key_str)
 
-        prefix = '_'
+        prefix = ''
         if self._details_ and '_prefix_' in self._details_:
             prefix = self._details_['_prefix_']
 
@@ -215,7 +231,7 @@ class PFDBObj:
         if hasattr(self, key_str):
             return getattr(self, key_str)
 
-        print(f'Could not find key {key_str} in {self.__dict__.keys()}')
+        print(f'Could not find key {key}/{key_str} in {self.__dict__.keys()}')
         return getattr(self, key_str)
 
     # ---------------------------------------------------------------------------
@@ -233,26 +249,28 @@ class PFDBObj:
                 if hasattr(obj, '__doc__'):
                     print(obj.__doc__)
 
-                if hasattr(obj, '_details_') and '_value_' in obj._details_ and 'help' in obj._details_['_value_']:
+                if hasattr(obj, '_details_') and '_value_' in obj._details_ \
+                        and 'help' in obj._details_['_value_']:
                     print(obj._details_['_value_']['help'])
 
         elif hasattr(self, '__doc__'):
             print(self.__doc__)
-            if hasattr(self, '_details_') and '_value_' in self._details_ and 'help' in self._details_['_value_']:
+            if hasattr(self, '_details_') and '_value_' in self._details_ \
+                    and 'help' in self._details_['_value_']:
                 print(self._details_['_value_']['help'])
 
     # ---------------------------------------------------------------------------
 
     def get_key_names(self, skip_default=False):
         '''
-        Gets the key names necessary for the run
+        Gets the key names necessary for the run while skiping unset ones
         '''
         for name in self.__dict__:
             if name is None:
                 print('need to fix the children instantiator')
                 continue
 
-            if name[0] == name[-1] and name[0] == '_':
+            if is_private_key(name):
                 continue
 
             obj = self.__dict__[name]
@@ -261,12 +279,16 @@ class PFDBObj:
                     yield name
 
             else:
-                has_details = hasattr(
-                    self, '_details_') and name in self._details_
-                has_default = has_details and 'default' in self._details_[name]
-                has_domain = has_details and 'domains' in self._details_[name]
-                is_mandatory = has_domain and 'MandatoryValue' in self._details_[name]['domains']
-                is_default = has_default and obj == self._details_[name]['default']
+                has_details = hasattr(self, '_details_') \
+                    and name in self._details_
+                has_default = has_details \
+                    and 'default' in self._details_[name]
+                has_domain = has_details \
+                    and 'domains' in self._details_[name]
+                is_mandatory = has_domain \
+                    and 'MandatoryValue' in self._details_[name]['domains']
+                is_default = has_default \
+                    and obj == self._details_[name]['default']
 
                 if obj is not None:
                     if skip_default:
@@ -329,7 +351,10 @@ class PFDBObj:
             for name in parent.__dict__:
                 value = parent.__dict__[name]
                 if value == current_location:
-                    full_path.append(name)
+                    if current_location._prefix_:
+                        full_path.append(name[len(current_location._prefix_):])
+                    else:
+                        full_path.append(name)
             current_location = parent
             if count > len(full_path):
                 return f'not found {count}: {".".join(full_path)}'
@@ -354,9 +379,6 @@ class PFDBObj:
                 detail = self._details_[key]
                 if '_prefix_' in detail:
                     prefix = detail["_prefix_"]
-            # Seb: I think this is wrong
-            # elif self._prefix_:
-            #     prefix = self._prefix_
 
         if parent_namespace:
             return f'{parent_namespace}.{key[len(prefix):]}'
@@ -368,7 +390,7 @@ class PFDBObj:
     def get_children_of_type(self, class_name):
         results = []
         for (key, value) in self.__dict__.items():
-            if key[0] == '_':
+            if is_private_key(key):
                 continue
             if value.__class__.__name__ == class_name:
                 results.append(value)
@@ -385,6 +407,7 @@ class PFDBObj:
           run.Process.Topology.getObjFromLocation('.') => run.Process.Topology
           run.Process.Topology.getObjFromLocation('..') => run.Process
           run.Process.Topology.getObjFromLocation('../../Geom') => run.Geom
+          run.Process.Topology.getObjFromLocation('/Geom') => run.Geom
         '''
         current_location = self
         path_items = location.split('/')
@@ -396,9 +419,6 @@ class PFDBObj:
         for path_item in path_items:
             if path_item == '':
                 continue
-
-            # print(f'>>> List: {next_list}')
-            # print(f'>>> Path: {path_item}')
 
             current_list = next_list
             next_list = []
@@ -417,7 +437,6 @@ class PFDBObj:
                     next_list = [
                         item for sublist in next_list for item in sublist]
 
-        # print(f'=>{next_list}')
         return next_list
 
     # ---------------------------------------------------------------------------
@@ -429,7 +448,7 @@ class PFDBObj:
         '''
         return {
             'print_line_error': PFDBObj.print_line_error,
-            'exitOnError': PFDBObj.exit_on_error,
+            'exit_on_error': PFDBObj.exit_on_error,
             'working_directory': PFDBObj.working_directory,
             'pf_version': PFDBObj.pf_version
         }
@@ -474,7 +493,7 @@ class PFDBObjListNumber(PFDBObj):
         '''
         Helper method that aims to streamline dot notation assignment
         '''
-        if name[0] == '_':
+        if is_private_key(name):
             self.__dict__[name] = value
             return
 
@@ -486,23 +505,3 @@ class PFDBObjListNumber(PFDBObj):
             return
 
         self.__dict__[name] = value
-
-    # def get_parflow_key(self, parent_namespace, key):
-    #     '''
-    #     Helper method returning the key to use for Parflow on a given field key.
-    #     This allow to handle differences between what can be defined in Python vs Parflow key.
-    #     '''
-    #     value = self.__dict__[key]
-    #     prefix = ''
-    #     if isinstance(value, PFDBObj):
-    #         if value._prefix_ and key.startswith(value._prefix_):
-    #             prefix = value._prefix_
-    #     else:
-    #         detail = self._details_[key]
-    #         if '_prefix_' in detail:
-    #             prefix = detail["_prefix_"]
-    #
-    #     if parent_namespace:
-    #         return f'{parent_namespace}.{key[len(prefix):]}'
-    #
-    #     return key[len(prefix):]
