@@ -96,15 +96,6 @@ class Run(BaseRun):
         extract_keys_from_object(key_dict, self)
         return key_dict
 
-    # TODO: add feature to read external files
-    # def readExternalFile(self, file_name=None, fileFormat='yaml'):
-    #     inputDict = externalFileToDict(file_name, fileFormat)
-    #     for key, value in inputDict.items():
-    #         if not value == 'NA':
-    #             # extKeyList =
-    #             extKey = '.'.join(self, key)
-    #             # print(extKey)
-
     def write(self, file_name=None, file_format='pfidb'):
         """Method to write database file to disk
 

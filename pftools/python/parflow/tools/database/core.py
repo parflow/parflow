@@ -466,8 +466,8 @@ class PFDBObj:
         Allow to define any parflow key so it can be exported
         '''
         tokens = key.split('.')
-        container = self.get_selection_from_location('/'.join(tokens[:-1]))[0]
-        if container:
+        if len(tokens) > 1:
+            container = self.get_selection_from_location('/'.join(tokens[:-1]))[0]
             container[tokens[-1]] = value
         else:
             # store key on the side
@@ -512,4 +512,16 @@ class PFDBObjListNumber(PFDBObj):
             return
 
         self.__dict__[key_str] = value
+
+    def get_parflow_key(self, parent_namespace, key):
+        '''
+        Helper method returning the key to use for Parflow on a given field key.
+        This allow to handle differences between what can be defined in Python vs Parflow key.
+        '''
+        prefix = self._prefix_ if self._prefix_ else ''
+
+        if parent_namespace:
+            return f'{parent_namespace}.{key[len(prefix):]}'
+
+        return key[len(prefix):]
 

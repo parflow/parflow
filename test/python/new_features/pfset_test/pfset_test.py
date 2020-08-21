@@ -2,7 +2,7 @@
 
 from parflow import Run
 
-pfset_test = Run('default_richards', __file__)
+pfset_test = Run('pfset_test', __file__)
 
 
 pfset_test.Process.Topology.P = 1
@@ -325,4 +325,5 @@ pfset_test.Solver.Linear.Preconditioner = 'PFMG'
 # pfset_test.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 
 
-pfset_test.run()
+pfset_test.validate()
+pfset_test.write()
