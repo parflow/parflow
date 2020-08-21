@@ -488,10 +488,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
  */
 #define CheckCellFlagAllocation(grgeom, nx, ny, nz)                                 \
 {                                                                                   \
-  int flagdata_size = sizeof(short) * (nz * ny * nx);                               \
+  int flagdata_size = sizeof(char) * (nz * ny * nx);                                \
   if(GrGeomSolidCellFlagDataSize(grgeom) < flagdata_size)                           \
   {                                                                                 \
-    short *flagdata = (short*)_ctalloc_cuda(flagdata_size);                         \
+    char *flagdata = (char*)_ctalloc_cuda(flagdata_size);                           \
                                                                                     \
     if(GrGeomSolidCellFlagDataSize(grgeom) > 0)                                     \
       CUDA_ERR(cudaMemcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                \
@@ -749,7 +749,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   if(!(GrGeomSolidCellFlagInitialized(grgeom) & 1))                                 \
   {                                                                                 \
     CheckCellFlagAllocation(grgeom, nx_bxs, ny_bxs, nz_bxs);                        \
-    short *inflag = GrGeomSolidCellFlagData(grgeom);                                \
+    char *inflag = GrGeomSolidCellFlagData(grgeom);                                 \
                                                                                     \
     for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                    \
     {                                                                               \
@@ -810,7 +810,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       dim3 block, grid;                                                             \
       FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                             \
                                                                                     \
-      short *inflag = GrGeomSolidCellFlagData(grgeom);                              \
+      char *inflag = GrGeomSolidCellFlagData(grgeom);                               \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
@@ -852,7 +852,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     if(!(GrGeomSolidCellFlagInitialized(grgeom) & (1 << (2 + PV_f))))               \
     {                                                                               \
       CheckCellFlagAllocation(grgeom, nx_bxs, ny_bxs, nz_bxs);                      \
-      short *surfflag = GrGeomSolidCellFlagData(grgeom);                            \
+      char *surfflag = GrGeomSolidCellFlagData(grgeom);                             \
                                                                                     \
       for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                  \
       {                                                                             \
@@ -919,7 +919,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         dim3 block, grid;                                                           \
         FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                           \
                                                                                     \
-        short *surfflag = GrGeomSolidCellFlagData(grgeom);                          \
+        char *surfflag = GrGeomSolidCellFlagData(grgeom);                           \
                                                                                     \
         const int _fdir0 = fdir[0];                                                 \
         const int _fdir1 = fdir[1];                                                 \
@@ -1198,7 +1198,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     if(!(GrGeomSolidCellFlagInitialized(grgeom) & (1 << 1)))                        \
     {                                                                               \
       CheckCellFlagAllocation(grgeom, nx, ny, nz);                                  \
-      short *outflag = GrGeomSolidCellFlagData(grgeom);                             \
+      char *outflag = GrGeomSolidCellFlagData(grgeom);                              \
                                                                                     \
       GrGeomOctree  *PV_node;                                                       \
       double PV_ref = pow(2.0, r);                                                  \
@@ -1222,7 +1222,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       dim3 block, grid;                                                             \
       FindDims(grid, block, nx, ny, nz, 1);                                         \
                                                                                     \
-      short *outflag = GrGeomSolidCellFlagData(grgeom);                             \
+      char *outflag = GrGeomSolidCellFlagData(grgeom);                              \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \

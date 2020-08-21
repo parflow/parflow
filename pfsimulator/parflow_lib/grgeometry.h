@@ -60,23 +60,22 @@ typedef struct {
   int num_patches;
 
 #if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
-  /* Cell flags for GrGeomLoops (0: do not evaluate cell, 1 = evaluate cell)
+  /* Cell flags for 3 GrGeomLoops (0: do not evaluate cell, 1 = evaluate cell)
    *  Bit 0: GrGeomInLoop
    *  Bit 1: GrGeomOutLoop
    *  Bits 2-7: GrGeomSurfLoop (1 bit for each face)
-   *  Bits 8-13: GrGeomPatchLoop (1 bit for each face)
    */
 
   /* A pointer to an array for each relevant cell. 
-   * Bits 0-13 of each element determine if the cell is evaluated by the respective loop. 
+   * Bits 0-7 of each element determine if the cell is evaluated by the respective loop. 
    */ 
-  short *cell_mask;
+  char *cell_mask;
 
   /* The size of cell_mask array in bytes. */
   int mask_size;
 
-  /* Bits 0-13 indicate if cell_mask has been filled (ie. initialized) for the respective loop */
-  short loops_masked;
+  /* Bits 0-7 indicate if cell_mask has been filled (ie. initialized) for the respective loop */
+  char loops_masked;
 
   /* ival indices for parallel exec of patchloops */ 
   int ***ival;
