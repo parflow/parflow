@@ -354,8 +354,9 @@ class PFDBObj:
                 detail = self._details_[key]
                 if '_prefix_' in detail:
                     prefix = detail["_prefix_"]
-            elif self._prefix_:
-                prefix = self._prefix_
+            # Seb: I think this is wrong
+            # elif self._prefix_:
+            #     prefix = self._prefix_
 
         if parent_namespace:
             return f'{parent_namespace}.{key[len(prefix):]}'

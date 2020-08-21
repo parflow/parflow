@@ -63,7 +63,7 @@ prefix.dzScale.nzListNumber = 6
 #pfset dzScale.nzListNumber       3
 prefix.Cell['_0'].dzScale.Value = 1.0
 prefix.Cell['1'].dzScale.Value = 1.00
-prefix.Cell._2.dzScale.Value = 1.000
+prefix.Cell[2].dzScale.Value = 1.000
 prefix.Cell._3.dzScale.Value = 1.000
 prefix.Cell._4.dzScale.Value = 1.000
 prefix.Cell._5.dzScale.Value = 0.05
@@ -234,7 +234,7 @@ prefix.Patch.x_lower.BCPressure.alltime.NumPoints = 2
 prefix.Patch.x_lower.BCPressure.alltime._0.Location = 0.0
 prefix.Patch.x_lower.BCPressure.alltime['0'].Value = 0.0
 prefix.Patch.x_lower.BCPressure.alltime['1'].Location = 0.0
-prefix.Patch.x_lower.BCPressure.alltime['1'].Value = 14.0
+prefix.Patch.x_lower.BCPressure.alltime[1].Value = 14.0
 prefix.Patch.x_lower.BCPressure.alltime.XLower = 0.0
 prefix.Patch.x_lower.BCPressure.alltime.YLower = 0.0
 prefix.Patch.x_lower.BCPressure.alltime.XUpper = 1.0
