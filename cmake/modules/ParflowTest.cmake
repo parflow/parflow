@@ -89,11 +89,11 @@ function (pf_add_python_tests group_name)
   foreach(test_name ${test_names})
     if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}")
       add_test(
-        NAME "${group_name}_${test_name}"
+        NAME "py_${group_name}_${test_name}"
         COMMAND ${PARFLOW_PYTHON} "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}/${test_name}.py"
       )
       set_tests_properties(
-        "${group_name}_${test_name}"
+        "py_${group_name}_${test_name}"
         PROPERTIES ENVIRONMENT PYTHONPATH=${PROJECT_SOURCE_DIR}/pftools/python:$ENV{PYTHONPATH}
       )
     endif()
