@@ -25,7 +25,7 @@ def map_to_self(pfdbObj):
 
 
 def map_to_child(name):
-    return lambda pfdbObj: getattr(pfdbObj, name)
+    return lambda pfdbObj: getattr(pfdbObj, name) if hasattr(pfdbObj, name) else None
 
 # -----------------------------------------------------------------------------
 
@@ -465,11 +465,15 @@ class PFDBObj:
         '''
         Allow to define any parflow key so it can be exported
         '''
+        key_stored = False
         tokens = key.split('.')
         if len(tokens) > 1:
             container = self.get_selection_from_location('/'.join(tokens[:-1]))[0]
-            container[tokens[-1]] = value
-        else:
+            if container:
+                container[tokens[-1]] = value
+                key_stored = True
+
+        if not key_stored:
             # store key on the side
             if '_pfstore_' not in self.__dict__:
                 self.__dict__['_pfstore_'] = {}

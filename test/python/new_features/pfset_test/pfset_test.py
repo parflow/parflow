@@ -10,6 +10,10 @@ pfset_test.Process.Topology.Q = 1
 pfset_test.Process.Topology.R = 1
 
 pfset_test.pfset(key='NewKeyTest', value=1)
+pfset_test.pfset(key='Process.Topology.P', value=2)
+pfset_test.Process.pfset(key='Topology.Q', value=3)
+pfset_test.Process.Topology.pfset(key='R', value=4)
+pfset_test.pfset(key='Process.Topology.Random.Path', value=5)
 
 #---------------------------------------------------------
 # Computational Grid
@@ -326,4 +330,5 @@ pfset_test.Solver.Linear.Preconditioner = 'PFMG'
 
 
 pfset_test.validate()
+pfset_test.write(file_format='yaml')
 pfset_test.write()
