@@ -40,14 +40,14 @@ add_custom_target(
 
 include(FindPythonModules)
 find_python_module("sphinx" sphinx_found)
-if (NOT sphinx_found AND NOT USE_VIRTUAL_ENV)
+if (NOT sphinx_found AND NOT PARFLOW_PYTHON_VIRTUAL_ENV)
   message(STATUS
     "Please install Sphinx to generate documentation for ParFlow keys or use the VirtualEnv option.")
   return()
 endif()
 
 find_python_module("sphinx-rtd-theme" sphinx_theme_found)
-if (NOT sphinx_theme_found AND NOT USE_VIRTUAL_ENV)
+if (NOT sphinx_theme_found AND NOT PARFLOW_PYTHON_VIRTUAL_ENV)
   message(STATUS
     "Please install sphinx-rtd-theme to generate documentation for ParFlow keys or use the VirtualEnv option.")
   return()

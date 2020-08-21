@@ -11,67 +11,60 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 # Set accelerator backend
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
-set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda)
-# should not be needed
-string(TOLOWER PARFLOW_ACCELERATOR_BACKEND PARFLOW_ACCELERATOR_BACKEND_LOWER)
+set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda omp)
 
-if(PARFLOW_ACCELERATOR_BACKEND_LOWER STREQUAL "none")
+if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
   set(PARFLOW_ACC_BACKEND 0)
-endif()
-
-if(PARFLOW_ACCELERATOR_BACKEND_LOWER STREQUAL "cuda")
+elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
   # Initialize CUDA
-    include(CheckLanguage)
-    check_language(CUDA)
-    if(CMAKE_CUDA_COMPILER)
-      enable_language(CUDA)
-      set(CMAKE_CUDA_STANDARD 11)
-      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
-      set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
-      set(CMAKE_CUDA_FLAGS_RELEASE "-Xptxas ${CMAKE_CUDA_FLAGS_RELEASE}")
-      set(CMAKE_CUDA_HOST_COMPILER mpicxx)
-      message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
-      set(PARFLOW_HAVE_CUDA "yes")
-      set(PARFLOW_ACC_BACKEND 1)
-    else(CMAKE_CUDA_COMPILER)
-      message(FATAL_ERROR "ERROR: CUDA installation not found")
-    endif(CMAKE_CUDA_COMPILER)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_STANDARD 11)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
+    set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
+    set(CMAKE_CUDA_FLAGS_RELEASE "-Xptxas ${CMAKE_CUDA_FLAGS_RELEASE}")
+    set(CMAKE_CUDA_HOST_COMPILER mpicxx)
+    message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
+    set(PARFLOW_HAVE_CUDA "yes")
+    set(PARFLOW_ACC_BACKEND 1)
+  else(CMAKE_CUDA_COMPILER)
+    message(FATAL_ERROR "ERROR: CUDA installation not found")
+  endif(CMAKE_CUDA_COMPILER)
 
   # Include RapidsAI Memory Manager (RMM) for pool allocation
   # @MCB 04/16/2020: This should probably be moved outside of the CUDA block at some point
   #   so other accelerators have the option to use it as well.
-    if(DEFINED RMM_ROOT)
-      find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
-      find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
-      if(RMM_INCLUDE AND RMM_LIBRARY)
-        message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
-        message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
-        add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
-        set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
-      # PARFLOW_HAVE_RMM is not defined in parflow_config.h because because it is
-      # only set for the compilation of parflow_exe, parflow_lib, and kinsol sources.
-      # RMM must be initialized before it is used, so, for example,
-      # the amps tests would fail if used across all compiles.
-        set(PARFLOW_HAVE_RMM "yes")
-      else(RMM_INCLUDE AND RMM_LIBRARY)
-        message(FATAL_ERROR "ERROR: RMM installation not found")
-      endif(RMM_INCLUDE AND RMM_LIBRARY)
-      message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
-    else(DEFINED RMM_ROOT)
-      message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
-    endif(DEFINED RMM_ROOT)
-
-  elseif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "omp") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "OMP"))
-
-    message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
+  if(DEFINED RMM_ROOT)
+    find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
+    find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
+    if(RMM_INCLUDE AND RMM_LIBRARY)
+      message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
+      message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
+      add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
+      set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
+    # PARFLOW_HAVE_RMM is not defined in parflow_config.h because because it is
+    # only set for the compilation of parflow_exe, parflow_lib, and kinsol sources.
+    # RMM must be initialized before it is used, so, for example,
+    # the amps tests would fail if used across all compiles.
+      set(PARFLOW_HAVE_RMM "yes")
+    else(RMM_INCLUDE AND RMM_LIBRARY)
+      message(FATAL_ERROR "ERROR: RMM installation not found")
+    endif(RMM_INCLUDE AND RMM_LIBRARY)
+    message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
+  else(DEFINED RMM_ROOT)
+    message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
+  endif(DEFINED RMM_ROOT)
+elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
+  message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
   # Enable C and CXX -fopenmp flag, enable ParFlow defines.
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-    set(PARFLOW_HAVE_OMP "yes")
-    set(PARFLOW_ACC_BACKEND 2)
-  else()
-    message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
-  endif()
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+  set(PARFLOW_HAVE_OMP "yes")
+  set(PARFLOW_ACC_BACKEND 2)
+else()
+  message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
 endif()
 
 #-----------------------------------------------------------------------------
@@ -484,10 +477,7 @@ endif ( ${PARFLOW_HAVE_CLM} )
 #-----------------------------------------------------------------------------
 
 # Need to turn on testing so tests in subdirctories are included in test target.
-option(PARFLOW_ENABLE_TESTING "Enable testing for Parflow" "True")
-if (PARFLOW_ENABLE_TESTING)
-  enable_testing ()
-endif (PARFLOW_ENABLE_TESTING)
+enable_testing ()
 
 # Optionally build the simulator and/or tools.
 # This is used on architectures where the login node is a different architecture
@@ -551,8 +541,8 @@ if (PARFLOW_ENABLE_PYTHON)
   set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
   set(PARFLOW_PYTHON_DEPENDS)
 
-  option(USE_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
-  if (USE_VIRTUAL_ENV)
+  option(PARFLOW_PYTHON_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
+  if (PARFLOW_PYTHON_VIRTUAL_ENV)
     set(PARFLOW_PYTHON "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/python")
     add_custom_command(
       WORKING_DIRECTORY
@@ -582,8 +572,8 @@ if (PARFLOW_ENABLE_PYTHON)
   add_subdirectory(test/python)
 
   # Only enable Key Documentation if we enable Python
-  option(PARFLOW_KEY_DOCUMENTATION "Build key documentation for ParFlow" "FALSE")
-  if (PARFLOW_KEY_DOCUMENTATION)
+  option(PARFLOW_ENABLE_KEYS_DOC "Build key documentation for ParFlow" "FALSE")
+  if (PARFLOW_ENABLE_KEYS_DOC)
     add_subdirectory(docs/pf-keys)
   endif()
 endif()
