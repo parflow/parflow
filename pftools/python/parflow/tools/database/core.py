@@ -144,7 +144,7 @@ class PFDBObj:
         handlers = None
         history = None
         value_object_assignment = False
-        if name[0] != '_' and hasattr(self, '_details_'):
+        if name[0] != '_' and name[-1] != '_' and hasattr(self, '_details_'):
             if name in self._details_:
                 domains, handlers, history, crosscheck = detail_helper(
                     self, name, value)
@@ -167,8 +167,8 @@ class PFDBObj:
                 value, domains, PFDBObj.exit_on_error)
 
         if value_object_assignment:
-            self.__dict__[name].__dict__[
-                '_value_'] = decorate_value(value, self, handlers)
+            self.__dict__[name].__dict__['_value_'] = \
+                decorate_value(value, self, handlers)
         else:
             # Decorate value if need be (i.e. Geom.names: 'a b c')
             self.__dict__[name] = decorate_value(value, self, handlers)
