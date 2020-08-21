@@ -472,12 +472,16 @@ class PFDBObj:
             if container:
                 container[tokens[-1]] = value
                 key_stored = True
+        elif len(tokens) == 1:
+            self[tokens[0]] = value
+            key_stored = True
 
         if not key_stored:
             # store key on the side
             if '_pfstore_' not in self.__dict__:
                 self.__dict__['_pfstore_'] = {}
-            self.__dict__['_pfstore_'][key] = value
+            parentNamespace = self.get_full_key_name()
+            self.__dict__['_pfstore_'][f"{parentNamespace}{'.' if parentNamespace else ''}{key}"] = value
 
     # ---------------------------------------------------------------------------
 

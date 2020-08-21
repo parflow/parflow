@@ -9,11 +9,20 @@ pfset_test.Process.Topology.P = 1
 pfset_test.Process.Topology.Q = 1
 pfset_test.Process.Topology.R = 1
 
-pfset_test.pfset(key='NewKeyTest', value=1)
-pfset_test.pfset(key='Process.Topology.P', value=2)
-pfset_test.Process.pfset(key='Topology.Q', value=3)
-pfset_test.Process.Topology.pfset(key='R', value=4)
+# Test key that does not exist
+pfset_test.pfset(key='A.New.Key.Test', value='SomeSuperContent')
+# Test key that does not exist with partial valid path
 pfset_test.pfset(key='Process.Topology.Random.Path', value=5)
+# Test key that does not exist from a child element
+pfset_test.Process.Topology.pfset(key='Random.PathFromTopology', value=6)
+# Test setting a valid value from a full path
+pfset_test.pfset(key='Process.Topology.P', value=2)
+# Test setting a valid value from a relative path
+pfset_test.Process.pfset(key='Topology.Q', value=3)
+# Test setting a valid field
+pfset_test.Process.Topology.pfset(key='R', value=4)
+# Test setting an invalid field
+pfset_test.Process.Topology.pfset(key='Seb', value=5)
 
 #---------------------------------------------------------
 # Computational Grid
