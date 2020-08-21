@@ -185,8 +185,9 @@ prefix.Geom.domain.RelPerm.N = 3.
 
 # Another example
 prefix.Geom.domain.RelPerm.Coeff._0 = 0.5
-prefix.Geom.domain.RelPerm.Coeff[1] = 1.0
-prefix.Geom.domain.RelPerm.Coeff[2] = 1.0
+prefix.Geom.domain.RelPerm.Coeff['_1'] = 1.0
+prefix.Geom.domain.RelPerm.Coeff['2'] = 1.0
+prefix.Geom.domain.RelPerm.Coeff[3] = 1.0
 
 #---------------------------------------------------------
 # Saturation

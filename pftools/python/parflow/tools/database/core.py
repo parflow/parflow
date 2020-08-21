@@ -145,6 +145,12 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
+    def __setitem__(self, key, value):
+        '''Allow a[x] for assignment as well'''
+        self.__setattr__(key, value)
+
+    # ---------------------------------------------------------------------------
+
     def __setattr__(self, name, value):
         '''
         Helper method that aims to streamline dot notation assignment
@@ -493,15 +499,17 @@ class PFDBObjListNumber(PFDBObj):
         '''
         Helper method that aims to streamline dot notation assignment
         '''
-        if is_private_key(name):
-            self.__dict__[name] = value
+        key_str = str(name)
+        if is_private_key(key_str):
+            self.__dict__[key_str] = value
             return
 
         if self._prefix_:
-            if name.startswith(self._prefix_):
-                self.__dict__[name] = value
+            if key_str.startswith(self._prefix_):
+                self.__dict__[key_str] = value
             else:
-                self.__dict__[f'{self._prefix_}{name}'] = value
+                self.__dict__[f'{self._prefix_}{key_str}'] = value
             return
 
-        self.__dict__[name] = value
+        self.__dict__[key_str] = value
+
