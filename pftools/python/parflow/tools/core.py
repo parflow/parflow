@@ -9,6 +9,7 @@ This module provide the core objects for controlling ParFlow.
 """
 import os
 import sys
+import argparse
 
 from .database.generated import BaseRun, PFDBObj, PFDBObjListNumber
 from .utils import extract_keys_from_object, write_dict
@@ -43,6 +44,7 @@ def check_parflow_execution(out_file):
     print(f'# {"=" * 78}')
     return execute_success
 
+# -----------------------------------------------------------------------------
 
 def get_current_parflow_version():
     """Helper function to extract ParFlow version
@@ -68,6 +70,103 @@ def get_current_parflow_version():
             f'Cannot find environment file in {os.path.abspath(version_file)}.')
     return version
 
+# -----------------------------------------------------------------------------
+
+def get_process_args():
+    '''
+    General processing of script arguments
+    '''
+    parser = argparse.ArgumentParser(description="Parflow run arguments")
+
+    # ++++++++++++++++
+    group = parser.add_argument_group('Parflow settings')
+    group.add_argument("--parflow-directory",
+                       default=None,
+                       dest="parflow_directory",
+                       help="Path to use for PARFLOW_DIR")
+    group.add_argument("--parflow-version",
+                       default=None,
+                       dest="parflow_version",
+                       help="Override detected Parflow version")
+    # ++++++++++++++++
+    group = parser.add_argument_group('Execution settings')
+    group.add_argument("--working-directory",
+                        default=None,
+                        dest="working_directory",
+                        help="Path to execution working directory")
+
+    group.add_argument("--skip-validation",
+                        default=False,
+                        dest="skipValidation",
+                        action='store_true',
+                        help="Disable validation pass")
+    # ++++++++++++++++
+    group = parser.add_argument_group('Error handling settings')
+    group.add_argument("--show-line-error",
+                        default=False,
+                        dest="show_line_error",
+                        action='store_true',
+                        help="Show line error")
+
+    group.add_argument("--exit-on-error",
+                        default=False,
+                        dest="exit_on_error",
+                        action='store_true',
+                        help="Exit at error")
+    # ++++++++++++++++
+    group = parser.add_argument_group('Additional output')
+    group.add_argument("--write-yaml",
+                        default=False,
+                        dest="writeYAML",
+                        action='store_true',
+                        help="Enable config to be written as YAML file")
+    # ++++++++++++++++
+    group = parser.add_argument_group('Parallel execution')
+    group.add_argument("-p", type=int, default=0,
+                        dest="p",
+                        help="P allocates the number of processes to the grid-cells in x")
+    group.add_argument("-q", type=int, default=0,
+                        dest="q",
+                        help="Q allocates the number of processes to the grid-cells in y")
+    group.add_argument("-r", type=int, default=0,
+                        dest="r",
+                        help="R allocates the number of processes to the grid-cells in z")
+
+    return parser.parse_args()
+
+# -----------------------------------------------------------------------------
+
+def update_run_from_args(run, args):
+    if args.parflow_directory:
+        os.environ["PARFLOW_DIR"] = str(args.parflow_directory)
+        PFDBObj.set_parflow_version(get_current_parflow_version())
+
+    if args.working_directory:
+        PFDBObj.set_working_directory(args.working_directory)
+
+    if args.parflow_version:
+        PFDBObj.set_parflow_version(args.parflow_version)
+
+    if args.show_line_error:
+        PFDBObj.enable_line_error()
+
+    if args.exit_on_error:
+        PFDBObj.enable_exit_error()
+
+    if args.p:
+        run.Process.Topology.P = args.p
+
+    if args.q:
+        run.Process.Topology.Q = args.q
+
+    if args.r:
+        run.Process.Topology.R = args.r
+
+    if args.writeYAML:
+        run.write(file_format='yaml')
+
+# -----------------------------------------------------------------------------
+
 class Run(BaseRun):
     """Main object that can be used to define a ParFlow simulation
 
@@ -81,6 +180,7 @@ class Run(BaseRun):
     """
     def __init__(self, name, basescript=None):
         super().__init__(None)
+        self._process_args_ = get_process_args()
         self._name_ = name
         if basescript:
             PFDBObj.set_working_directory(os.path.dirname(basescript))
@@ -140,10 +240,12 @@ class Run(BaseRun):
         """
         if working_directory:
             PFDBObj.set_working_directory(working_directory)
+        PFDBObj.set_parflow_version(get_current_parflow_version())
+
+        # Any provided args should override the scripts ones
+        update_run_from_args(self, self._process_args_)
 
         file_name, run_file = self.write()
-
-        PFDBObj.set_parflow_version(get_current_parflow_version())
 
         print()
         print(f'# {"="*78}')
@@ -159,7 +261,7 @@ class Run(BaseRun):
         print()
 
         error_count = 0
-        if not skip_validation:
+        if not (skip_validation or self._process_args_.skipValidation):
             error_count += self.validate()
             print()
 
