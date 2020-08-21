@@ -1,5 +1,5 @@
 #  Testing pfset python function for setting keys that aren't in the library
-
+import sys
 from parflow import Run
 
 pfset_test = Run('pfset_test', __file__)
@@ -339,5 +339,12 @@ pfset_test.Solver.Linear.Preconditioner = 'PFMG'
 
 
 pfset_test.validate()
-pfset_test.write(file_format='yaml')
-pfset_test.write()
+generatedFile, runFile = pfset_test.write(file_format='yaml')
+
+# Prevent regression
+with open(generatedFile) as new, open(f'{generatedFile}.ref') as ref:
+  if new.read() == ref.read():
+    print('Success we have the same file')
+  else:
+    print('Files are different')
+    sys.exit(1)
