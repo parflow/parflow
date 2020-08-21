@@ -30,6 +30,10 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
     """Method that walk PFDBObj object and record their key and value
     inside a Python dict.
     """
+    if hasattr(instance, '_pfstore_'):
+        for key, value in instance._pfstore_.items():
+            dict_to_fill[key] = convert_value_for_string_dict(value)
+
     for key in instance.get_key_names(skip_default=True):
 
         value = instance.__dict__[key]
