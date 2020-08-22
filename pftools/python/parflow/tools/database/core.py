@@ -6,6 +6,7 @@ import json
 import os
 import re
 import yaml
+import sys
 
 from .domains import validate_value_to_string, validate_value_with_exception
 from .handlers import decorate_value
@@ -19,18 +20,15 @@ def map_to_parent(pfdbObj):
 
 # -----------------------------------------------------------------------------
 
-
 def map_to_self(pfdbObj):
     return pfdbObj
 
 # -----------------------------------------------------------------------------
 
-
 def map_to_child(name):
     return lambda pfdbObj: getattr(pfdbObj, name) if hasattr(pfdbObj, name) else None
 
 # -----------------------------------------------------------------------------
-
 
 def map_to_children_of_type(class_name):
     def get_children_of_type(pfdbObj):
@@ -38,7 +36,6 @@ def map_to_children_of_type(class_name):
     return get_children_of_type
 
 # -----------------------------------------------------------------------------
-
 
 def validate_helper(container_obj, name, obj, indent, error_count):
     nbErrors = 0
@@ -54,7 +51,6 @@ def validate_helper(container_obj, name, obj, indent, error_count):
                                                                container_obj.get_context_settings(), history, indent)
 
     return nbErrors, validation_string
-
 
 # -----------------------------------------------------------------------------
 
@@ -95,6 +91,25 @@ def is_not_private_key(name):
 
 # -----------------------------------------------------------------------------
 # Utils functions
+# -----------------------------------------------------------------------------
+
+def get_key_priority(key_name):
+    priority_value = 0
+    path_token = key_name.split('.')
+    if 'Name' in key_name:
+        priority_value -= 100
+
+    for token in path_token:
+        if token[0].isupper():
+            priority_value += 1
+        else:
+            priority_value += 10
+
+    priority_value *= 100
+    priority_value += len(key_name)
+
+    return priority_value
+
 # -----------------------------------------------------------------------------
 
 def resolve_path(file_path):
@@ -670,7 +685,7 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def pfset(self, key='', value=None, yamlFile=None, yamlContent=None, hierarchical_map=None, flat_map=None):
+    def pfset(self, key='', value=None, yamlFile=None, yamlContent=None, hierarchical_map=None, flat_map=None, exit_if_undefined=False):
         '''
         Allow to define any parflow key so it can be exported
         '''
@@ -694,8 +709,13 @@ class PFDBObj:
             # print('-'*30)
             # print(f'Got flat_map')
             # print(f'Current path: {self.get_full_key_name()}')
-            for k, v in flat_map.items():
-                self.pfset(key=k, value=v)
+            key_list = []
+            for key, value in flat_map.items():
+                key_list.append((key, value, get_key_priority(key)))
+            key_list.sort(key=lambda t: t[2])
+            for item in key_list:
+                self.pfset(key=item[0], value=item[1],
+                           exit_if_undefined=exit_if_undefined)
 
         if not key:
             return
@@ -704,7 +724,6 @@ class PFDBObj:
 
         key_stored = False
         tokens = key.split('.')
-        allContainers = None
         if len(tokens) > 1:
             container = self.get_selection_from_location(
                 '/'.join(tokens[:-1]))[0]
@@ -724,6 +743,8 @@ class PFDBObj:
             self.__dict__['_pfstore_'][fullkeyName] = value
             rootPath = self.get_full_key_name()
             print(f"Caution: Using internal store of {rootPath if rootPath else 'run'} to save {fullkeyName} = {value}")
+            if exit_if_undefined:
+                sys.exit(1)
 
     # ---------------------------------------------------------------------------
 
