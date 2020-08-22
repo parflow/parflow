@@ -221,6 +221,11 @@ class Run(BaseRun):
         write_dict(self.get_key_dict(), full_file_path)
         return full_file_path, full_file_path[:-(len(file_format)+1)]
 
+    def clone(self, name):
+        new_run = Run(name)
+        new_run.pfset(flat_map=self.get_key_dict())
+        return new_run
+
     def run(self, working_directory=None, skip_validation=False):
         """Method to run simulation
 
