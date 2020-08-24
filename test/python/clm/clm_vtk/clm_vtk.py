@@ -19,9 +19,9 @@ clm_vtk.FileVersion = 4
 # Process Topology
 #-----------------------------------------------------------------------------
 
-clm_vtk.Process.Topology.P = [lindex $argv 0]
-clm_vtk.Process.Topology.Q = [lindex $argv 1]
-clm_vtk.Process.Topology.R = [lindex $argv 2]
+clm_vtk.Process.Topology.P = 1
+clm_vtk.Process.Topology.Q = 1
+clm_vtk.Process.Topology.R = 1
 
 #-----------------------------------------------------------------------------
 # Computational Grid
@@ -201,7 +201,7 @@ clm_vtk.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-clm_vtk.BCPressure.PatchNames = [pfget Geom.domain.Patches]
+clm_vtk.BCPressure.PatchNames = clm_vtk.Geom.domain.Patches
 #  
 clm_vtk.Patch.x_lower.BCPressure.Type = 'FluxConst'
 clm_vtk.Patch.x_lower.BCPressure.Cycle = 'constant'
@@ -290,9 +290,9 @@ clm_vtk.Solver.AbsTol = 1E-9
 #  
 clm_vtk.Solver.LSM = 'CLM'
 clm_vtk.Solver.WriteSiloCLM = False
-clm_vtk.Solver.CLM.MetForcing = 1D
+clm_vtk.Solver.CLM.MetForcing = '1D'
 clm_vtk.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
-clm_vtk.Solver.CLM.MetFilePath = ./
+clm_vtk.Solver.CLM.MetFilePath = '../'
 
 
 clm_vtk.Solver.WriteSiloEvapTrans = False
@@ -305,7 +305,7 @@ clm_vtk.Solver.WriteCLMBinary = False
 clm_vtk.Solver.WriteSiloCLM = False
 
 clm_vtk.Solver.PrintLSMSink = False
-clm_vtk.Solver.CLM.CLMFileDir = 'output/'
+clm_vtk.Solver.CLM.CLMFileDir = '../'
 clm_vtk.Solver.CLM.BinaryOutDir = False
 
 clm_vtk.Solver.CLM.WriteLastRST = True
@@ -324,7 +324,7 @@ clm_vtk.Geom.domain.ICPressure.RefPatch = 'z_upper'
 
 
 
-num_processors = [expr [pfget Process.Topology.P] * [pfget Process.Topology.Q] * [pfget Process.Topology.R]]
+# num_processors = [expr [pfget Process.Topology.P] * [pfget Process.Topology.Q] * [pfget Process.Topology.R]]
 # for {set i 0} { $i <= $num_processors } {incr i} {
 #     file delete drv_vegm.dat.$i
 #     file copy  drv_vegm.dat drv_vegm.dat.$i
@@ -336,28 +336,4 @@ num_processors = [expr [pfget Process.Topology.P] * [pfget Process.Topology.Q] *
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-
-# pfrun clm 
-# pfundist clm 
-
-
-# file copy -force CLM_dem.cpfb CLM_dem.pfb
-
-CLMdat = [pfload -pfb clm.out.clm_output.00005.C.pfb]
-Pdat = [pfload -pfb clm.out.press.00005.pfb]
-Perm = [pfload -pfb clm.out.perm_x.pfb]
-DEMdat = [pfload -pfb CLM_dem.pfb]
-
-dzlist = "10 6.0 5.0 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5"
-
-# pfvtksave $Pdat -vtk "CLM.out.Press.00005a.vtk" -var "Press" 
-# pfvtksave $Pdat -vtk "CLM.out.Press.00005b.vtk" -var "Press" -flt 
-# pfvtksave $Pdat -vtk "CLM.out.Press.00005c.vtk" -var "Press" -dem $DEMdat 
-# pfvtksave $Pdat -vtk "CLM.out.Press.00005d.vtk" -var "Press" -dem $DEMdat -flt
-# pfvtksave $Pdat -vtk "CLM.out.Press.00005e.vtk" -var "Press" -dem $DEMdat -flt -tfg $dzlist
-# pfvtksave $Perm -vtk "CLM.out.Perm.00005.vtk" -var "Perm" -flt -dem $DEMdat -tfg $dzlist
-
-# pfvtksave $CLMdat -clmvtk "CLM.out.CLM.00005.vtk" -flt 
-# pfvtksave $CLMdat -clmvtk "CLM.out.CLM.00005.vtk" -flt -dem $DEMdat
-
-# pfvtksave $DEMdat -vtk "CLM.out.Elev.00000.vtk" -flt -var "Elevation" -dem $DEMdatclm_vtk.run()
+clm_vtk.run()

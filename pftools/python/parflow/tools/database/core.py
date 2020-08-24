@@ -52,7 +52,7 @@ def validate_helper(container_obj, name, obj, indent, error_count):
             'MandatoryValue' not in container_obj._details_[name]['domains']:
         pass
     else:
-        nbErrors, validation_string = validate_value_to_string(name, obj, container_obj._details_[name]['domains'],
+        nbErrors, validation_string = validate_value_to_string(container_obj, name, obj, container_obj._details_[name]['domains'],
                                                                container_obj.get_context_settings(), history, indent)
 
     return nbErrors, validation_string
@@ -638,10 +638,10 @@ class PFDBObj:
         Return a PFDBObj object based on a location.
 
         i.e.:
-          run.Process.Topology.getObjFromLocation('.') => run.Process.Topology
-          run.Process.Topology.getObjFromLocation('..') => run.Process
-          run.Process.Topology.getObjFromLocation('../../Geom') => run.Geom
-          run.Process.Topology.getObjFromLocation('/Geom') => run.Geom
+          run.Process.Topology.get_selection_from_location('.') => run.Process.Topology
+          run.Process.Topology.get_selection_from_location('..') => run.Process
+          run.Process.Topology.get_selection_from_location('../../Geom') => run.Geom
+          run.Process.Topology.get_selection_from_location('/Geom') => run.Geom
         '''
         current_location = self
         path_items = location.split('/')
@@ -702,7 +702,7 @@ class PFDBObj:
         if yamlContent:
             # print('-'*30)
             # print(f'Got yamlContent')
-            hierarchical_map = yaml.load(yamlContent)
+            hierarchical_map = yaml.load(yamlContent, Loader=yaml.FullLoader)
 
         if hierarchical_map:
             # print('-'*30)

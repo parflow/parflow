@@ -19,9 +19,9 @@ clm.FileVersion = 4
 # Process Topology
 #-----------------------------------------------------------------------------
 
-clm.Process.Topology.P = [lindex $argv 0]
-clm.Process.Topology.Q = [lindex $argv 1]
-clm.Process.Topology.R = [lindex $argv 2]
+clm.Process.Topology.P = 1
+clm.Process.Topology.Q = 1
+clm.Process.Topology.R = 1
 
 #-----------------------------------------------------------------------------
 # Computational Grid
@@ -186,7 +186,7 @@ clm.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-clm.BCPressure.PatchNames = [pfget Geom.domain.Patches]
+clm.BCPressure.PatchNames = clm.Geom.domain.Patches
 #  
 clm.Patch.x_lower.BCPressure.Type = 'FluxConst'
 clm.Patch.x_lower.BCPressure.Cycle = 'constant'
@@ -275,9 +275,9 @@ clm.Solver.AbsTol = 1E-9
 #  
 clm.Solver.LSM = 'CLM'
 clm.Solver.WriteSiloCLM = True
-clm.Solver.CLM.MetForcing = 1D
+clm.Solver.CLM.MetForcing = '1D'
 clm.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
-clm.Solver.CLM.MetFilePath = ./
+clm.Solver.CLM.MetFilePath = '../'
 
 clm.Solver.WriteSiloEvapTrans = True
 clm.Solver.WriteSiloOverlandBCFlux = True
@@ -295,78 +295,9 @@ clm.Geom.domain.ICPressure.RefPatch = 'z_upper'
 
 
 
-num_processors = [expr [pfget Process.Topology.P] * [pfget Process.Topology.Q] * [pfget Process.Topology.R]]
-# for {set i 0} { $i <= $num_processors } {incr i} {
-#     file delete drv_vegm.dat.$i
-#     file copy  drv_vegm.dat drv_vegm.dat.$i
-#     file delete drv_clmin.dat.$i
-#     file copy drv_clmin.dat drv_clmin.dat.$i
-# }
-
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-
-# pfrun clm 
-# pfundist clm 
-
-#
-# Tests 
-#
-# source ../pftest.tcl
-passed = 1
-
-# if ![pftestFile clm.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
-#     set passed 0
-# }
-# if ![pftestFile clm.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
-#     set passed 0
-# }
-# if ![pftestFile clm.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
-#     set passed 0
-# }
-
-# for {set i 0} { $i <= 5 } {incr i} {
-#     set i_string [format "%05d" $i]
-#     if ![pftestFile clm.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits] {
-#     set passed 0
-#     }
-#     if ![pftestFile clm.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits] {
-#     set passed 0
-#     }
-# }
-
-mask = [pfload clm.out.mask.pfb]
-top = [Parflow::pfcomputetop $mask]
-
-# pfsave $top -pfb "clm.out.top_index.pfb"
-
-data = [pfload clm.out.press.00000.pfb]
-top_data = [Parflow::pfextracttop $top $data]
-
-# pfsave $data -pfb "clm.out.press.00000.pfb"
-# pfsave $top_data -pfb "clm.out.top.press.00000.pfb"
-
-# pfdelete $mask
-# pfdelete $top
-# pfdelete $data
-# pfdelete $top_data
-
-# if ![pftestFile clm.out.top_index.pfb "Max difference in top_index" $sig_digits] {
-#     set passed 0
-# }
-
-# if ![pftestFile clm.out.top.press.00000.pfb "Max difference in top_clm.out.press.00000.pfb" $sig_digits] {
-#     set passed 0
-# }
-
-
-
-# if $passed {
-#     puts "clm : PASSED"
-# } {
-#     puts "clm : FAILED"
-# }
 
 clm.run()

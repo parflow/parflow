@@ -679,6 +679,7 @@ Geom:
           values would be read in only once.
         domains:
           AnyString:
+          ValidFile:
 
       TensorValX:
         help: >
@@ -709,6 +710,7 @@ Geom:
         # need to impose this condition
         domains:
           AnyString:
+          ValidFile:
 
       TensorFileY:
         help: >
@@ -718,6 +720,7 @@ Geom:
         # need to impose this condition
         domains:
           AnyString:
+          ValidFile:
 
       TensorFileZ:
         help: >
@@ -727,6 +730,7 @@ Geom:
         # need to impose this condition
         domains:
           AnyString:
+          ValidFile:
 
     # Porosity
     Porosity:
@@ -758,6 +762,7 @@ Geom:
           only choice for the value of geometry_name is “domain”.
         domains:
           AnyString:
+          ValidFile:
 
     # Specific Storage
     SpecificStorage:
@@ -801,6 +806,7 @@ Geom:
             The ONLY option for geom_name is "domain."
           domains:
             AnyString:
+            ValidFile:
 
       N:
         __doc__: ''
@@ -820,6 +826,7 @@ Geom:
             The ONLY option for geom_name is "domain."
           domains:
             AnyString:
+            ValidFile:
 
       NumSamplePoints:
         help: >
@@ -923,6 +930,7 @@ Geom:
             The ONLY option for geom_name is "domain."
           domains:
             AnyString:
+            ValidFile:
 
       N:
         __doc__: ''
@@ -942,6 +950,7 @@ Geom:
             The ONLY option for geom_name is "domain."
           domains:
             AnyString:
+            ValidFile:
 
       SRes:
         __doc__: ''
@@ -956,12 +965,13 @@ Geom:
               max_value: 1.0
 
         # Corner case with SRes as class and field
-        Filename:
+        FileName:
           help: >
             [Type: string] This key specifies a pfb filename containing the residual saturation parameters for the VanGenuchten function cell-by-cell.
             The ONLY option for geom_name is "domain."
           domains:
             AnyString:
+            ValidFile:
 
       SSat:
         __doc__: ''
@@ -982,6 +992,7 @@ Geom:
             The ONLY option for geom_name is "domain."
           domains:
             AnyString:
+            ValidFile:
 
       A:
         help: >
@@ -1016,6 +1027,7 @@ Geom:
           is “domain” for this key.
         domains:
           AnyString:
+          ValidFile:
 
     # dz Scaling
     dzScale:
@@ -1036,6 +1048,7 @@ Geom:
           was set to PFBFile.
         domains:
           AnyString:
+          ValidFile:
 
     # Thermal Conductivity - missing from manual
     ThermalConductivity:
@@ -1086,6 +1099,7 @@ Geom:
             The ONLY option for geom_name is "domain."
           domains:
             AnyString:
+            ValidFile:
 
     FBx:
       __doc__: >
@@ -1096,6 +1110,7 @@ Geom:
           if the type was set to PFBFile.
         domains:
           AnyString:
+          ValidFile:
 
     FBy:
       __doc__: >
@@ -1106,6 +1121,7 @@ Geom:
           if the type was set to PFBFile.
         domains:
           AnyString:
+          ValidFile:
 
     FBz:
       __doc__: >
@@ -1116,6 +1132,7 @@ Geom:
           if the type was set to PFBFile.
         domains:
           AnyString:
+          ValidFile:
 
     # HeatCapacity is missing from the manual
     HeatCapacity:
@@ -1140,6 +1157,7 @@ Geom:
           is “domain” for this key.
         domains:
           AnyString:
+          ValidFile:
 
       RefElevation:
         help: >
@@ -1248,6 +1266,7 @@ TopoSlopes:
         slopes. This is optional but can be useful when post-processing terrain-following grids.
       domains:
         Anystring:
+        ValidFile:
 
 TopoSlopesX:
   __doc__: >
@@ -1285,6 +1304,7 @@ TopoSlopesX:
       [Type: string] This key specifies the value assigned to all points be read in from a ParFlow binary file.
     domains:
       AnyString:
+      ValidFile:
 
   Geom:
     __rst__:
@@ -1339,6 +1359,7 @@ TopoSlopesY:
       [Type: string] This key specifies the value assigned to all points be read in from a ParFlow binary file.
     domains:
       AnyString:
+      ValidFile:
 
   Geom:
     __rst__:
@@ -1427,6 +1448,7 @@ Mannings:
       [Type: string] This key specifies the name of the ParFlow binary file with Manning's values.
     domains:
       AnyString:
+      ValidFile:
 
   Geom:
     __rst__:

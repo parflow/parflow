@@ -6,13 +6,13 @@
 # Import the ParFlow TCL package
 #
 from parflow import Run
-clm-reuse = Run("clm-reuse", __file__)
+clm_reuse = Run("clm_reuse", __file__)
 
 # Total runtime of simulation
 #set stopt 7762
 stopt = 100
 # Reuse values to run with
-reuseValues = {1 4}
+reuseValues = [1,4]
 
 # This was set for reuse = 4 test; other reuse values will fail
 relativeErrorTolerance = 0.2
@@ -26,9 +26,9 @@ clm_reuse.FileVersion = 4
 # Process Topology
 #-----------------------------------------------------------------------------
 
-clm_reuse.Process.Topology.P = [lindex $argv 0]
-clm_reuse.Process.Topology.Q = [lindex $argv 1]
-clm_reuse.Process.Topology.R = [lindex $argv 2]
+clm_reuse.Process.Topology.P = 1
+clm_reuse.Process.Topology.Q = 1
+clm_reuse.Process.Topology.R = 1
 
 #-----------------------------------------------------------------------------
 # Computational Grid
@@ -45,12 +45,12 @@ clm_reuse.ComputationalGrid.NX = 1
 clm_reuse.ComputationalGrid.NY = 1
 clm_reuse.ComputationalGrid.NZ = 100
 
-nx = [pfget ComputationalGrid.NX]
-dx = [pfget ComputationalGrid.DX]
-ny = [pfget ComputationalGrid.NY]
-dy = [pfget ComputationalGrid.DY]
-nz = [pfget ComputationalGrid.NZ]
-dz = [pfget ComputationalGrid.DZ]
+nx = clm_reuse.ComputationalGrid.NX
+dx = clm_reuse.ComputationalGrid.DX
+ny = clm_reuse.ComputationalGrid.NY
+dy = clm_reuse.ComputationalGrid.DY
+nz = clm_reuse.ComputationalGrid.NZ
+dz = clm_reuse.ComputationalGrid.DZ
 
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
@@ -70,9 +70,9 @@ clm_reuse.Geom.domain.Lower.X = 0.0
 clm_reuse.Geom.domain.Lower.Y = 0.0
 clm_reuse.Geom.domain.Lower.Z = 0.0
 
-clm_reuse.Geom.domain.Upper.X = [expr ($nx * $dx)]
-clm_reuse.Geom.domain.Upper.Y = [expr ($ny * $dy)]
-clm_reuse.Geom.domain.Upper.Z = [expr ($nz * $dz)]
+clm_reuse.Geom.domain.Upper.X = (nx * dx)
+clm_reuse.Geom.domain.Upper.Y = (ny * dy)
+clm_reuse.Geom.domain.Upper.Z = (nz * dz)
 
 clm_reuse.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 
@@ -198,7 +198,7 @@ clm_reuse.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-clm_reuse.BCPressure.PatchNames = [pfget Geom.domain.Patches]
+clm_reuse.BCPressure.PatchNames = clm_reuse.Geom.domain.Patches
 
 clm_reuse.Patch.x_lower.BCPressure.Type = 'FluxConst'
 clm_reuse.Patch.x_lower.BCPressure.Cycle = 'constant'
@@ -293,9 +293,9 @@ clm_reuse.Solver.AbsTol = 1E-9
 
 clm_reuse.Solver.LSM = 'CLM'
 clm_reuse.Solver.WriteSiloCLM = True
-clm_reuse.Solver.CLM.MetForcing = 1D
+clm_reuse.Solver.CLM.MetForcing = '1D'
 clm_reuse.Solver.CLM.MetFileName = 'forcing_1.txt'
-clm_reuse.Solver.CLM.MetFilePath = ./
+clm_reuse.Solver.CLM.MetFilePath = './'
 
 #pfset Solver.TerrainFollowingGrid                       True
 clm_reuse.Solver.CLM.EvapBeta = 'Linear'
@@ -351,102 +351,10 @@ clm_reuse.Geom.domain.ICPressure.Value = -1.0
 clm_reuse.Geom.domain.ICPressure.RefGeom = 'domain'
 clm_reuse.Geom.domain.ICPressure.RefPatch = 'z_upper'
 
-# set runname reuse
+for reuseCount in reuseValues:
+  new_name = f'clm_reuse_ts_{reuseCount}'
+  new_name = clm_reuse.clone(f'{new_name}')
+  new_name.Solver.CLM.ReuseCount = reuseCount
+  new_name.TimeStep.Value = (1.0 / reuseCount)
 
-# Run each of the cases
-# foreach reuseCount $reuseValues {
-
-#     pfset Solver.CLM.ReuseCount      $reuseCount
-#     pfset TimeStep.Value             [expr 1.0 / $reuseCount]
-
-#     #-----------------------------------------------------------------------------
-#     # Run and Unload the ParFlow output files
-#     #-----------------------------------------------------------------------------
-
-#     set dirname [format "clm-reuse-ts-%2.2f" [pfget TimeStep.Value]]
-#     puts "Running : $dirname"
-
-#     pfrun $runname
-#     pfundist $runname
-
-#     for {set k 1} {$k <=$stopt} {incr k} {
-# 	set outfile1 [format "%s.out.clm_output.%05d.C.pfb" $runname $k]
-# 	pfundist $outfile1
-#     }
-
-#     exec rm -fr $dirname
-#     exec mkdir -p $dirname
-#     exec bash -c "mv $runname?* $dirname"
-#     exec mv CLM.out.clm.log clm.rst.00000.0 $dirname
-# }
-
-#-----------------------------------------------------------------------------
-# Post process output.
-#-----------------------------------------------------------------------------
-
-# swe.csv file contains SWE values for each of the cases run.
-sweFile = [open "swe.out.csv" w]
-
-# puts -nonewline $sweFile "Time"
-# foreach reuseCount $reuseValues {
-#     set norm($reuseCount) 0.0
-#     set timeStep [expr 1.0 / $reuseCount]
-#     puts -nonewline $sweFile [format ",%e" $timeStep]
-# }
-# puts $sweFile ""
-
-# Read each timestep output file for each reuse value and append to SWE file and build up 2-norm for comparison.
-compareReuse = [lindex $reuseValues 0]
-# for {set k 1} {$k <=$stopt} {incr k} {
-#     
-#     foreach reuseCount $reuseValues {
-# 	set timeStep [expr 1.0 / $reuseCount]
-# 	set dirname1 [format "clm-reuse-ts-%2.2f" $timeStep]
-# 	set file($reuseCount) [format "%s/%s.out.clm_output.%05d.C.pfb" $dirname1 $runname $k]
-# 	set ds($reuseCount) [pfload $file($reuseCount)]
-#     }
-#     
-#     puts -nonewline $sweFile [format "%d" $k]
-#     
-#     foreach reuseCount $reuseValues {
-# 	puts -nonewline $sweFile [format ",%e" [pfgetelt $ds($reuseCount) 0 0 10]]
-# 	if [string equal $reuseCount $compareReuse] {
-# 	    set norm($compareReuse) [expr { $norm($compareReuse) + ([pfgetelt $ds($compareReuse) 0 0 10] * [pfgetelt $ds($compareReuse) 0 0 10]) } ]
-# 	} {
-# 	    set norm($reuseCount) [expr { $norm($reuseCount) + ([pfgetelt $ds($compareReuse) 0 0 10] - [pfgetelt $ds($reuseCount) 0 0 10] ) * ([pfgetelt $ds($compareReuse) 0 0 10] - [pfgetelt $ds($reuseCount) 0 0 10] ) } ]
-# 	}
-#     }
-#     puts $sweFile ""
-#     
-#     foreach reuseCount $reuseValues {
-# 	pfdelete $ds($reuseCount)
-#     }
-# }
-
-# foreach reuseCount $reuseValues {
-#     set norm($reuseCount) [expr sqrt($norm($reuseCount))]
-# }
-
-# close $sweFile
-
-#-----------------------------------------------------------------------------
-# Tests
-#-----------------------------------------------------------------------------
-
-passed = 1
-
-# Test each 2-norm
-# foreach reuseCount [lrange $reuseValues 1 end] {
-#     set relerror($reuseCount) [expr $norm($reuseCount)  / $norm($compareReuse) ]
-#     if [expr $relerror($reuseCount) > $relativeErrorTolerance] {
-# 	puts "FAILED : relative error for reuse count = $reuseCount exceeds error tolerance ( $relerror($reuseCount) > $relativeErrorTolerance)"
-# 	set passed = 
-#     }
-# }
-
-# if $passed {
-#     puts "default_single : PASSED"
-# } {
-#     puts "default_single : FAILED"
-# }
-clm-reuse.run()
+  new_name.run()

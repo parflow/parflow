@@ -167,6 +167,10 @@ Cycle:
           type: ChildrenHandler
           class_name: WellIntervalItem
           location: /Wells/{WellItem}
+        BCPressureIntervalItemUpdater:
+          type: ChildrenHandler
+          class_name: BCPressureIntervalItem
+          location: /Patch/{BCItem}/BCPressure
 
     Repeat:
       help: >

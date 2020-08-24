@@ -176,6 +176,7 @@ NetCDF:
       domains:
         AnyString:
         RequiresModule: 'NETCDF'
+        ValidFile:
 
   CLMNumStepsPerFile:
     help: >

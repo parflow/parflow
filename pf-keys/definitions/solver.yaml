@@ -302,6 +302,8 @@ Solver:
       domains:
         AnyString:
         RequiresModule: 'CLM'
+        ValidFile:
+          path_prefix_source: /Solver/CLM/MetFilePath
 
     MetFilePath:
       help: >

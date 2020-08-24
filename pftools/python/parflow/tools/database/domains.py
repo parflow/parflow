@@ -246,8 +246,9 @@ class ValidFile:
     '''
     ValidFile domain checks the working directory to find the specified file.
     '''
-    def validate(self, value, working_directory=None, **kwargs):
+    def validate(self, value, working_directory=None, path_prefix_source=None, container=None, **kwargs):
         errors = []
+        path_prefix = ''
 
         if value is None:
             return errors
@@ -256,11 +257,14 @@ class ValidFile:
             errors.append(error('Working directory is not defined'))
             return errors
 
-        if os.path.exists(os.path.join(working_directory, value)):
+        if path_prefix_source:
+            path_prefix = container.get_selection_from_location('/'.join(path_prefix_source.split('/')))[0]
+
+        if os.path.exists(os.path.join(working_directory, path_prefix, value)):
             return errors
 
         errors.append(error(
-            f'Could not locate file {os.path.abspath(os.path.join(working_directory, value))}'))
+            f'Could not locate file {os.path.abspath(os.path.join(working_directory, path_prefix, value))}'))
         return errors
 
 
@@ -460,8 +464,9 @@ def validate_value_with_exception(value, domain_definition=None, domain_add_on_k
 
 # -----------------------------------------------------------------------------
 
-def validate_value_to_string(name, value, domain_definition=None, domain_add_on_kwargs=None, history=None, indent=1):
+def validate_value_to_string(container, name, value, domain_definition=None, domain_add_on_kwargs=None, history=None, indent=1):
     indent_str = '  ' * (indent - 1)
+    domain_add_on_kwargs['container'] = container
     all_messages = validate_value_with_errors(
         value, domain_definition, domain_add_on_kwargs)
     errors = filter_errors_by_type('ERROR', all_messages)

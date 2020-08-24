@@ -182,6 +182,7 @@ Patch:
             In both cases, only the values needed for the patch will be used. The rest of the data is ignored.
           domains:
             AnyString:
+            ValidFile:
 
         PredefinedFunction:
           help: >

@@ -157,6 +157,7 @@ Phase:
           [Type: string] This specifies the file name for the thermal conductivity function.
         domains:
           AnyString:
+          ValidFile:
 
   .{phase_name}:
     __class__: PhaseNameItem
@@ -407,6 +408,7 @@ PhaseConcen:
           was set to PFBFile.
         domains:
           AnyString:
+          ValidFile:
 
 # -----------------------------------------------------------------------------
 # PhaseSources

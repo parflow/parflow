@@ -1,4 +1,6 @@
 *.out.*
+*_output*
+*.rst.*
 *.pfidb
 *.silo
 !.gitignore
