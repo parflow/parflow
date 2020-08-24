@@ -702,7 +702,7 @@ class PFDBObj:
         if yamlContent:
             # print('-'*30)
             # print(f'Got yamlContent')
-            hierarchical_map = yaml.load(yamlContent, Loader=yaml.FullLoader)
+            hierarchical_map = yaml.safe_load(yamlContent)
 
         if hierarchical_map:
             # print('-'*30)
