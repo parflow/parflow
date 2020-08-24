@@ -199,7 +199,7 @@ def generate_module_from_definitions(definitions):
 
     for yaml_file in definitions:
         with open(yaml_file) as file:
-            yaml_struct = yaml.load(file, Loader=yaml.FullLoader)
+            yaml_struct = yaml.safe_load(file)
 
             for root_key in yaml_struct.keys():
                 generated_RST.add_section(0, '', root_key, yaml_struct[root_key])

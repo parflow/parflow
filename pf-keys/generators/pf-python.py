@@ -7,8 +7,8 @@ be used to query the help and constraints associated to each keys.
 import os
 import sys
 import traceback
-import yaml
 import json
+import yaml
 from datetime import datetime
 
 # -----------------------------------------------------------------------------
@@ -332,7 +332,7 @@ def generate_module_from_definitions(definitions):
 
     for yaml_file in definitions:
         with open(yaml_file) as file:
-            yaml_dict = yaml.load(file, Loader=yaml.FullLoader)
+            yaml_dict = yaml.safe_load(file)
 
             for root_key in yaml_dict.keys():
                 generated_module.add_class(root_key, yaml_dict[root_key])

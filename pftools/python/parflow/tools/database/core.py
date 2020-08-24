@@ -5,8 +5,13 @@ a Parflow input deck.
 import json
 import os
 import re
-import yaml
 import sys
+import yaml
+
+try:
+    from yaml import CDumper as YAMLDumper
+except ImportError:
+    from yaml import Dumper as YAMLDumper
 
 from .domains import validate_value_to_string, validate_value_with_exception
 from .handlers import decorate_value
@@ -222,8 +227,7 @@ def write_dict_as_yaml(dict_obj, file_name):
       valueObj['$_'] = value
 
     with open(file_name, 'w') as out:
-        # out.write(yaml.dump(sort_dict(overriden_keys)))
-        out.write(yaml.dump(sort_dict(yamlObj)))
+        out.write(yaml.dump(sort_dict(yamlObj), Dumper=YAMLDumper))
 
 # -----------------------------------------------------------------------------
 
