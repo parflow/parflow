@@ -31,11 +31,14 @@ def check_parflow_execution(out_file):
         with open(out_file, "rt") as f:
             contents = f.read()
             if 'Problem solved' in contents:
-                print(f'# ParFlow ran successfully {termSymbol.splash*3}')
+                emoji = f'{termSymbol.splash} '
+                print(
+                    f'# ParFlow ran successfully {emoji*3}')
                 execute_success = True
             else:
+                emoji = f'{termSymbol.x} '
                 print(
-                    f'# ParFlow run failed. {termSymbol.x} {termSymbol.x} {termSymbol.x} Contents of error output file:')
+                    f'# ParFlow run failed. {emoji*3} Contents of error output file:')
                 print("-"*80)
                 print(contents)
                 print("-"*80)
