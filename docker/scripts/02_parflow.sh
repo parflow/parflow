@@ -78,7 +78,7 @@ make install
 git clone                             \
   --recursive --single-branch          \
   --branch $PARFLOW_BRANCH              \
-  https://github.com/parflow/parflow.git \
+  https://github.com/grapp1/parflow.git \
   $ROOT/parflow/src
 
 $CMAKE                           \
