@@ -2,7 +2,7 @@ set(PARFLOW_DOCKER_BASE_IMAGE "ubuntu:20.04" CACHE STRING "Docker base image to 
 set(PARFLOW_DOCKER_VERSION "py-pftools-integration" CACHE STRING "Version of ParFlow to install in docker (v3.6.0, master)")
 set(PARFLOW_DOCKER_HYPRE "v2.19.0" CACHE STRING "Version of Hypre to install in docker (v2.19.0, master)")
 
-add_custom_target(buildDevelopmentDocker
+add_custom_target(DockerBuildDevelopment
   docker build --rm -t parflow-development
     --build-arg "BASE_IMAGE=${PARFLOW_DOCKER_BASE_IMAGE}"
     --build-arg "PARFLOW_VERSION=${PARFLOW_DOCKER_VERSION}"
@@ -12,19 +12,19 @@ add_custom_target(buildDevelopmentDocker
   VERBATIM
 )
 
-add_custom_target(buildRuntimeDocker
+add_custom_target(DockerBuildRuntime
   docker build --rm -t parflow-runtime
     --build-arg "BASE_IMAGE=${PARFLOW_DOCKER_BASE_IMAGE}"
     -f "${CMAKE_CURRENT_SOURCE_DIR}/runtime/Dockerfile"
     "${CMAKE_CURRENT_SOURCE_DIR}"
   DEPENDS
-    buildDevelopmentDocker
+    DockerBuildDevelopment
   VERBATIM
 )
 
-add_custom_target(testDevelopmentDocker
+add_custom_target(DockerTestDevelopment
   docker exec --rm -it parflow-development $CTEST --build-and-test /home/ubuntu/parflow/parflow /home/ubuntu/parflow/build
   DEPENDS
-    buildDevelopmentDocker
+    DockerBuildDevelopment
   VERBATIM
 )
