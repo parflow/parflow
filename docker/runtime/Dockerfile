@@ -26,7 +26,8 @@ run apt-get update && \
     python3 \
     python3-pip \
     tcl-dev \
-    tk-dev
+    tk-dev && \
+  pip3 install pyyaml
 
 RUN groupadd -g 1000 ubuntu && \
   useradd -u 1000 -g ubuntu -m -N -s /bin/bash ubuntu
