@@ -35,3 +35,5 @@ apt-get install -y \
   python3-pip \
   tcl-dev \
   tk-dev
+
+pip3 install pyyaml

@@ -88,7 +88,8 @@ $CMAKE                           \
    -D PARFLOW_AMPS_LAYER=mpi1        \
    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
    -D PARFLOW_ENABLE_TIMING=TRUE       \
-   -D PARFLOW_HAVE_CLM=TRUE
+   -D PARFLOW_HAVE_CLM=TRUE             \
+   -D PARFLOW_ENABLE_PYTHON=TRUE         \
 
 $CMAKE --build $ROOT/parflow/build
 $CMAKE --install $ROOT/parflow/build \
