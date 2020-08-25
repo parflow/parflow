@@ -1,4 +1,7 @@
+include(ParflowTest)
 
 if(${PARFLOW_HAVE_HYPRE})
-  add_test (NAME washita COMMAND tclsh LW_Test.tcl WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  if(${PARFLOW_HAVE_CLM})
+    pf_add_py_test(LW_Test)
+  endif()
 endif()

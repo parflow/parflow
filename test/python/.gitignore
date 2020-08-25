@@ -1,5 +1,6 @@
 *.out.*
 *_output*
+*.output*
 *.rst.*
 *.pfidb
 *.silo

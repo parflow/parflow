@@ -1,2 +1,17 @@
  clm.F90: rank =           0    istep =           1
  INITIALIZATION
+ Allocate arrays -- using NCH =          25
+ Check soi_z           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7           7
+ Call clm_typini
+ DIMENSIONS:
+ local NX:           5  NX with ghost:           7  IX:           0
+ local NY:           5  NY with ghost:           7  IY:           0
+ PF    NZ:          10 NZ with ghost:          12
+ global  NX:           5  global NY:           5
+ DRV-NC:           5  DRV-NR:           5 DRV-NCH:          25
+  Processor Number:           0  local vector start:          57
+ Read in vegetation data and set tile information accordingly
+ Transfer grid variables to tile space           25
+ Read vegetation parameter data file for IGBP classification
+ Initialize CLM and DIAG variables
+ Initialize the CLM topography mask

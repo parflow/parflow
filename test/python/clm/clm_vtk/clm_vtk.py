@@ -3,12 +3,18 @@
 #
 # Import the ParFlow TCL package
 #
+import os
 from parflow import Run
 clm_vtk = Run("clm_vtk", __file__)
 
-# foreach dir {qflx_evap_grnd eflx_lh_tot qflx_evap_tot qflx_tran_veg correct_output qflx_infl swe_out eflx_lwrad_out t_grnd diag_out qflx_evap_soi eflx_soil_grnd eflx_sh_tot qflx_evap_veg qflx_top_soil} {
-#     file mkdir $dir
-# }
+directories = ['qflx_evap_grnd', 'eflx_lh_tot', 'qflx_evap_tot', 'qflx_tran_veg', 'correct_output',
+               'qflx_infl', 'swe_out', 'eflx_lwrad_out', 't_grnd', 'diag_out', 'qflx_evap_soi', 'eflx_soil_grnd',
+               'eflx_sh_tot', 'qflx_evap_veg', 'qflx_top_soil']
+
+for directory in directories:
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -305,7 +311,7 @@ clm_vtk.Solver.WriteCLMBinary = False
 clm_vtk.Solver.WriteSiloCLM = False
 
 clm_vtk.Solver.PrintLSMSink = False
-clm_vtk.Solver.CLM.CLMFileDir = '../'
+clm_vtk.Solver.CLM.CLMFileDir = './'
 clm_vtk.Solver.CLM.BinaryOutDir = False
 
 clm_vtk.Solver.CLM.WriteLastRST = True
