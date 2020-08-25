@@ -105,7 +105,7 @@ Solver:
       default: True
       domains:
         BoolDomain:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     CLMDumpInterval:
       help: >
@@ -115,7 +115,7 @@ Solver:
       domains:
         IntValue:
           min_value: 1
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     CLMFileDir:
       help: >
@@ -124,7 +124,7 @@ Solver:
         must be compiled and linked at runtime for this option to be active.
       domains:
         AnyString:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     DailyRST:
       help: >
@@ -136,7 +136,7 @@ Solver:
       default: True
       domains:
         BoolDomain:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     EvapBeta:
       help: >
@@ -149,7 +149,7 @@ Solver:
             - None
             - Linear
             - Cosine
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     FieldCapacity:
       help: >
@@ -161,7 +161,7 @@ Solver:
         DoubleValue:
           min_value: 0.0
           max_value: 1.0
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     ForceVegetation:
       help: >
@@ -183,14 +183,14 @@ Solver:
       default: False
       domains:
         BoolDomain:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     FstepStart:
       help: >
         [Type: int]
       domains:
         DoubleValue:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     IrrigationCycle:
       help: >
@@ -203,7 +203,7 @@ Solver:
           enum_list:
             - Constant
             - Deficit
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     IrrigationRate:
       help: >
@@ -211,7 +211,7 @@ Solver:
       domains:
         DoubleValue:
           min_value: 0.0
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     IrrigationStartTime:
       help: >
@@ -220,7 +220,7 @@ Solver:
         DoubleValue:
           min_value: 0.0
           max_value: 2400.0
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     IrrigationStopTime:
       help: >
@@ -229,7 +229,7 @@ Solver:
         DoubleValue:
           min_value: 0.0
           max_value: 2400.0
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     IrrigationThreshold:
       help: >
@@ -238,7 +238,7 @@ Solver:
       domains:
         DoubleValue:
           min_value: 0.0
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     # missing from manual
     IrrigationThresholdType:
@@ -246,7 +246,7 @@ Solver:
         [Type: string]
       domains:
         DoubleValue:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     IrrigationType:
       help: >
@@ -259,7 +259,7 @@ Solver:
             - Spray
             - Drip
             - Instant
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     IstepStart:
       help: >
@@ -269,14 +269,14 @@ Solver:
       default: 1
       domains:
         IntValue: # may need to update this
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     MetFileNT:
       help: >
         [Type: int] This key specifies the number of timesteps per file for 3D forcing data.
       domains:
         IntValue:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     MetFileName:
       help: >
@@ -301,7 +301,7 @@ Solver:
         Note that CLM must be compiled and linked at runtime for this option to be active.
       domains:
         AnyString:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
         ValidFile:
           path_prefix_source: /Solver/CLM/MetFilePath
 
@@ -312,7 +312,7 @@ Solver:
         Note that CLM must be compiled and linked at runtime for this option to be active.
       domains:
         AnyString:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     # missing from the manual
     MetFileSubdir:
@@ -320,7 +320,7 @@ Solver:
         [Type: int]
       domains:
         DoubleValue:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     MetForcing:
       help: >
@@ -337,7 +337,7 @@ Solver:
             - 1D
             - 2D
             - 3D
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     Print1dOut:
       help: >
@@ -347,7 +347,7 @@ Solver:
       default: False
       domains:
         BoolDomain:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     ResSat:
       help: >
@@ -357,7 +357,7 @@ Solver:
       domains:
         DoubleValue:
           min_value: 0.0
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     ReuseCount:
       help: >
@@ -370,7 +370,7 @@ Solver:
       domains:
         IntValue:
           min_value: 0
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     RootZoneNZ:
       help: >
@@ -381,14 +381,14 @@ Solver:
       domains:
         IntValue:
           min_value: 1 # can we set the max value to whatever the user sets to NZ?
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     # Not in grep or manual, but in a script somewhere (per LT)
     RZWaterStress:
       help: >
         [Type: ???]
       domains:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     SingleFile:
       help: >
@@ -401,7 +401,7 @@ Solver:
       default: False
       domains:
         BoolDomain:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     SoiLayer:
       help: >
@@ -411,7 +411,7 @@ Solver:
       domains:
         IntValue:
           min_value: 1
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     VegWaterStress:
       help: >
@@ -424,7 +424,7 @@ Solver:
             - None
             - Saturation
             - Pressure
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     WiltingPoint:
       help: >
@@ -435,7 +435,7 @@ Solver:
       domains:
         DoubleValue:
           min_value: 0.0
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     WriteLastRST:
       help: >
@@ -446,7 +446,7 @@ Solver:
       default: False
       domains:
         BoolDomain:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
     WriteLogs:
       help: >
@@ -456,7 +456,7 @@ Solver:
       default: True
       domains:
         BoolDomain:
-        RequiresModule: 'CLM'
+        RequiresModule: CLM
 
   # -----------------------------------------------------------------------------
   # Other Solver Settings
@@ -660,7 +660,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'CLM'
+      RequiresModule: CLM
 
   PrintConcentration:
     help: >
@@ -1246,7 +1246,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloConcentration:
     help: >
@@ -1255,7 +1255,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloDZMultiplier:
     help: >
@@ -1263,7 +1263,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloEvapTrans:
     help: >
@@ -1273,7 +1273,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloEvapTransSum:
     help: >
@@ -1283,7 +1283,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloMannings:
     help: >
@@ -1292,7 +1292,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloMask:
     help: >
@@ -1302,7 +1302,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloOverlandBCFlux:
     help: >
@@ -1310,7 +1310,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloOverlandSum:
     help: >
@@ -1321,7 +1321,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOConcentration:
     help: >
@@ -1329,7 +1329,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIODZMultiplier:
     help: >
@@ -1337,7 +1337,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOEvapTrans:
     help: >
@@ -1345,7 +1345,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOEvapTransSum:
     help: >
@@ -1353,7 +1353,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOMannings:
     help: >
@@ -1361,7 +1361,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOMask:
     help: >
@@ -1369,7 +1369,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOOverlandBCFlux:
     help: >
@@ -1377,7 +1377,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOOverlandSum:
     help: >
@@ -1385,7 +1385,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOPressure:
     help: >
@@ -1393,7 +1393,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOSaturation:
     help: >
@@ -1401,7 +1401,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOSlopes:
     help: >
@@ -1409,7 +1409,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOSpecificStorage:
     help: >
@@ -1417,7 +1417,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOSubsurfData:
     help: >
@@ -1425,7 +1425,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOTop:
     help: >
@@ -1433,7 +1433,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloPMPIOVelocities:
     help: >
@@ -1441,7 +1441,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   # typo in manual (says saturation instead of pressure)
   WriteSiloPressure:
@@ -1451,7 +1451,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloSaturation:
     help: >
@@ -1460,7 +1460,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloSlopes:
     help: >
@@ -1469,7 +1469,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloSpecificStorage:
     help: >
@@ -1478,7 +1478,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloSubsurfData:
     help: >
@@ -1488,7 +1488,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloTop:
     help: >
@@ -1497,7 +1497,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   WriteSiloVelocities:
     help: >
@@ -1506,7 +1506,7 @@ Solver:
     default: False
     domains:
       BoolDomain:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
 # SILO options
 SILO: # typo in documentation
@@ -1524,7 +1524,7 @@ SILO: # typo in documentation
         enum_list:
           - PDB
           - HDF5
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
   CompressionOptions:
     help: > # typo on 'available' in manual
@@ -1533,7 +1533,7 @@ SILO: # typo in documentation
       options when building SILO.
     domains:
       AnyString:
-      RequiresModule: 'SILO'
+      RequiresModule: SILO
 
 # -----------------------------------------------------------------------------
 # KnownSolution
