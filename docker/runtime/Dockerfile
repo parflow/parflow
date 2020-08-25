@@ -42,3 +42,4 @@ WORKDIR /home/ubuntu/
 env HYPRE_DIR /opt/hypre
 env PARFLOW_DIR /opt/parflow
 
+ENTRYPOINT ["python3"]
