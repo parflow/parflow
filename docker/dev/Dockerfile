@@ -66,7 +66,7 @@ RUN mkdir -p                            \
 # -----------------------------------------------------------------------------
 
 RUN cd $BASE_PATH/parflow/dependencies/cmake && \
-    curl -L "https://cmake.org/files/v3.17/${CMAKE_TYPE}" | tar --strip-components=1 -xzv
+    curl -L "https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz" | tar --strip-components=1 -xzv
 
 ENV CMAKE $BASE_PATH/parflow/dependencies/cmake/bin/cmake
 ENV CTEST $BASE_PATH/parflow/dependencies/cmake/bin/ctest
