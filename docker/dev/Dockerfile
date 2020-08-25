@@ -79,7 +79,7 @@ ENV HYPRE_DIR $BASE_PATH/parflow/dependencies/hypre
 
 RUN cd $BASE_PATH/parflow/dependencies/hypre-src && \
     git clone https://github.com/hypre-space/hypre.git \
-    --single-branch --branch $HYPRE_BRANCH
+    --single-branch --branch $HYPRE_VERSION
 
 RUN cd $BASE_PATH/parflow/dependencies/hypre-src/hypre/src && \
     ./configure --prefix=$HYPRE_DIR --with-MPI && \
