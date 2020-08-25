@@ -577,3 +577,12 @@ if (PARFLOW_ENABLE_PYTHON)
     add_subdirectory(docs/pf-keys)
   endif()
 endif()
+
+#-----------------------------------------------------------------------------
+# Building Docker
+#-----------------------------------------------------------------------------
+
+option(PARFLOW_ENABLE_DOCKER "Build Docker for running ParFlow" "FALSE")
+if (PARFLOW_ENABLE_DOCKER)
+  add_subdirectory(docker)
+endif()
