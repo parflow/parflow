@@ -169,8 +169,7 @@ RUN $CMAKE                     \
     -D PARFLOW_AMPS_LAYER=mpi1           \
     -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE    \
     -D PARFLOW_ENABLE_NETCDF=TRUE          \
-    -D NETCDF_LIBRARY=$NETCDF_DIR/lib/libnetcdf.a      \
-    -D NETCDF_INCLUDE_DIR=$NETCDF_DIR/include \
+    -D NETCDF_DIR=$NETCDF_DIR               \
     -D CURL_LIBRARY=/usr/lib/x86_64-linux-gnu/libcurl.so.4
 
 RUN $CMAKE --build $BASE_PATH/parflow/build
