@@ -1,7 +1,7 @@
 r'''
-This module provide the infrastructure to load and generate the Parflow
+This module provides the infrastructure to load and generate the ParFlow
 database structure as Python classes so IDE and runtime environment can
-be used to query the help and constraints associated to each keys.
+be used to query the help and constraints associated to each key.
 '''
 
 import os
@@ -109,6 +109,10 @@ def yaml_value(yval):
 # -----------------------------------------------------------------------------
 
 class ValidationSummary:
+    '''
+    This is the class to generate the Python library of ParFlow keys from the
+    yaml files.
+    '''
     def __init__(self):
         self.class_name_count = {}
         self.class_count = 0
@@ -156,6 +160,10 @@ class ValidationSummary:
 # -----------------------------------------------------------------------------
 
 class PythonModule:
+    '''
+    This class generates the Python library of ParFlow keys from the
+    yaml files.
+    '''
     def __init__(self, indent=4):
         self.validationSummary = ValidationSummary()
         self.content = [
@@ -324,7 +332,7 @@ class PythonModule:
             output.write(self.get_content(line_separator))
 
 # -----------------------------------------------------------------------------
-# Expected API to use
+# API to generate library module
 # -----------------------------------------------------------------------------
 
 def generate_module_from_definitions(definitions):

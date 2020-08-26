@@ -15,6 +15,7 @@ run apt-get update && \
   dpkg-reconfigure --frontend noninteractive tzdata && \
   apt-get install -y \
     curl \
+    libcurl4 \
     git \
     vim \
     libopenblas-dev \

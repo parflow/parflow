@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Terminal helper
 
-This module provide colors and symbols for proving nice terminal output.
+This module provides colors and symbols for generating nice terminal output.
 
 """
 

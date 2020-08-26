@@ -41,6 +41,7 @@ RUN apt-get update && \
     apt-get install -y \
         build-essential \
         curl \
+        libcurl4 \
         git \
         vim \
         gfortran \
@@ -158,24 +159,25 @@ RUN git clone                           \
 RUN $CMAKE                     \
     -S $BASE_PATH/parflow/src   \
     -B $BASE_PATH/parflow/build  \
-    # -D HDF5_DIR=$HDF5_DIR         \
-    # -D PARFLOW_ENABLE_HDF5=TRUE    \
+    -D HDF5_ROOT=$HDF5_DIR         \
+    -D PARFLOW_ENABLE_HDF5=TRUE    \
     -D HYPRE_ROOT=$HYPRE_DIR        \
-    # -D SILO_ROOT=$SILO_DIR           \
+    -D SILO_ROOT=$SILO_DIR           \
     -D PARFLOW_HAVE_CLM=TRUE          \
     -D PARFLOW_ENABLE_PYTHON=TRUE      \
     -D PARFLOW_ENABLE_TIMING=TRUE       \
     -D PARFLOW_AMPS_LAYER=mpi1           \
-    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE
-    # -D PARFLOW_ENABLE_NETCDF=TRUE          \
-    # -D NETCDF_LIBRARY=$NETCDF_DIR/lib/      \
-    # -D NETCDF_INCLUDE_DIR=$NETCDF_DIR/include
+    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE    \
+    -D PARFLOW_ENABLE_NETCDF=TRUE          \
+    -D NETCDF_LIBRARY=$NETCDF_DIR/lib/libnetcdf.a      \
+    -D NETCDF_INCLUDE_DIR=$NETCDF_DIR/include \
+    -D CURL_LIBRARY=/usr/lib/x86_64-linux-gnu/libcurl.so.4
 
 RUN $CMAKE --build $BASE_PATH/parflow/build
 
 USER root
 RUN $CMAKE --install $BASE_PATH/parflow/build --prefix /opt/parflow
-# USER ubuntu
+USER ubuntu
 
 ENV PARFLOW_DIR /opt/parflow/
 WORKDIR /opt/parflow/

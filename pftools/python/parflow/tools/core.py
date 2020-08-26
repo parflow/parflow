@@ -225,6 +225,17 @@ class Run(BaseRun):
         return full_file_path, full_file_path[:-(len(file_format)+1)]
 
     def clone(self, name):
+        """Method to generate a clone of a run (for generating
+        run ensembles, etc.)
+
+        This will return an identical run with the given name.
+        See parflow/test/python/new_features/serial_runs/serial_runs.py
+        for an example.
+
+        Args:
+          name (str): Name of the new run.
+
+        """
         new_run = Run(name)
         new_run.pfset(flat_map=self.get_key_dict())
         return new_run

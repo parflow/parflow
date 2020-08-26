@@ -392,13 +392,13 @@ dover_1.run()
 #-----------------------------------------------------------------------------
 
 
-dover_3 = dover_1.clone('dover_2')
+dover_2 = dover_1.clone('dover_2')
 
-dover_3.TopoSlopesX.Type = 'Constant'
-dover_3.TopoSlopesX.GeomNames = 'left right channel'
-dover_3.TopoSlopesX.Geom.left.Value = -0.002
-dover_3.TopoSlopesX.Geom.right.Value = 0.002
-dover_3.TopoSlopesX.Geom.channel.Value = 0.00
+dover_2.TopoSlopesX.Type = 'Constant'
+dover_2.TopoSlopesX.GeomNames = 'left right channel'
+dover_2.TopoSlopesX.Geom.left.Value = -0.002
+dover_2.TopoSlopesX.Geom.right.Value = 0.002
+dover_2.TopoSlopesX.Geom.channel.Value = 0.00
 
-dover_3.run()
+dover_2.run()
 
