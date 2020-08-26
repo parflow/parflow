@@ -10,8 +10,8 @@ add_custom_command(
     "${CMAKE_CURRENT_BINARY_DIR}/parflow/tools/core.py"
   COMMAND
     "${CMAKE_COMMAND}" -E copy_directory
-    "${CMAKE_CURRENT_SOURCE_DIR}/parflow"
-    "${CMAKE_CURRENT_BINARY_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_BINARY_DIR}"
   DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/__init__.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/__init__.py"
