@@ -293,7 +293,7 @@
 #
 ###############################################################
 {
-   CLM-Write
+   <insert_a_suppression_name_here>
    Memcheck:Cond
    fun:write_decimal.constprop.10
    fun:write_integer
