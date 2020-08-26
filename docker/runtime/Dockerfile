@@ -35,8 +35,11 @@ RUN groupadd -g 1000 ubuntu && \
 
 USER ubuntu
 
-COPY --from=devimage  /opt/parflow  /opt/parflow
-COPY --from=devimage  /opt/hypre /opt/hypre
+COPY --from=devimage /opt/parflow /opt/parflow
+COPY --from=devimage /opt/hypre   /opt/hypre
+COPY --from=devimage /opt/netcdf  /opt/netcdf
+COPY --from=devimage /opt/hdf5    /opt/hdf5
+COPY --from=devimage /opt/silo    /opt/silo
 
 USER ubuntu
 WORKDIR /home/ubuntu/

@@ -135,7 +135,7 @@ USER ubuntu
 # Install SILO
 # -----------------------------------------------------------------------------
 
-ENV SILO_DIR $BASE_PATH/parflow/dependencies/silo
+ENV SILO_DIR /opt/silo
 
 WORKDIR $BASE_PATH/parflow/dependencies/silo-src
 RUN curl -L "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" | tar --strip-components=1 -xzv && \
