@@ -34,8 +34,8 @@ RUN groupadd -g 1000 ubuntu && \
 
 USER ubuntu
 
-COPY --from=devimage  /home/ubuntu/parflow/install  /opt/parflow
-COPY --from=devimage  /home/ubuntu/parflow/dependencies/hypre /opt/hypre
+COPY --from=devimage  /opt/parflow  /opt/parflow
+COPY --from=devimage  /opt/hypre /opt/hypre
 
 USER ubuntu
 WORKDIR /home/ubuntu/

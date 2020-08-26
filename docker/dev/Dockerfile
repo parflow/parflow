@@ -85,50 +85,66 @@ ENV CTEST $BASE_PATH/parflow/dependencies/cmake/bin/ctest
 # Install Hypre
 # -----------------------------------------------------------------------------
 
-ENV HYPRE_DIR $BASE_PATH/parflow/dependencies/hypre
+ENV HYPRE_DIR /opt/hypre
 
-RUN cd $BASE_PATH/parflow/dependencies/hypre-src && \
-    git clone https://github.com/hypre-space/hypre.git --single-branch --branch $HYPRE_VERSION
+WORKDIR $BASE_PATH/parflow/dependencies/hypre-src
+RUN git clone https://github.com/hypre-space/hypre.git --single-branch --branch $HYPRE_VERSION
 
-RUN cd $BASE_PATH/parflow/dependencies/hypre-src/hypre/src && \
-    ./configure --prefix=$HYPRE_DIR --with-MPI && \
-    make install
+WORKDIR $BASE_PATH/parflow/dependencies/hypre-src/hypre/src
+RUN ./configure --prefix=$HYPRE_DIR --with-MPI
+
+USER root
+RUN make install
+USER ubuntu
 
 # -----------------------------------------------------------------------------
 # Install HDF5
 # -----------------------------------------------------------------------------
 
-# ENV HDF5_DIR $BASE_PATH/parflow/dependencies/hdf5
-
-# run cd $BASE_PATH/parflow/dependencies/hdf5-src && \
-#     curl -L "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz" | tar --strip-components=1 -xzv && \
+# ENV HDF5_DIR /opt/hdf5
+#
+# WORKDIR $BASE_PATH/parflow/dependencies/hdf5-src
+# RUN curl -L "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz" | tar --strip-components=1 -xzv && \
 #     CC=mpicc ./configure \
 #       --prefix=$HDF5_DIR \
 #       --enable-parallel && \
-#     make && make install
+#     make
+#
+# USER root
+# RUN make install
+# USER ubuntu
 
 # -----------------------------------------------------------------------------
 # Install NetCDF
 # -----------------------------------------------------------------------------
 
-# ENV NETCDF_DIR $BASE_PATH/parflow/dependencies/netcdf
-
-# RUN cd $BASE_PATH/parflow/dependencies/netcdf-src && \
-#     curl -L "https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz" | tar --strip-components=1 -xzv && \
+# ENV NETCDF_DIR /opt/netcdf
+#
+# WORKDIR $BASE_PATH/parflow/dependencies/netcdf-src
+# RUN curl -L "https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz" | tar --strip-components=1 -xzv && \
 #     CC=mpicc CPPFLAGS=-I$HDF5_DIR/include LDFLAGS=-L$HDF5_DIR/lib \
 #     ./configure --disable-shared --prefix=${NETCDF_DIR} && \
-#     make && make install
+#     make
+#
+# USER root
+# RUN make install
+# USER ubuntu
 
 # -----------------------------------------------------------------------------
 # Install SILO
 # -----------------------------------------------------------------------------
 
 # ENV SILO_DIR $BASE_PATH/parflow/dependencies/silo
-
-# RUN cd $BASE_PATH/parflow/dependencies/silo-src && \
-#     curl -L "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" | tar --strip-components=1 -xzv && \
+#
+# WORKDIR $BASE_PATH/parflow/dependencies/silo-src
+# RUN curl -L "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" | tar --strip-components=1 -xzv && \
 #     ./configure  --prefix=$SILO_DIR --disable-silex --disable-hzip --disable-fpzip && \
-#     make install
+#     make
+#
+# USER root
+# RUN make install
+# USER ubuntu
+
 
 # -----------------------------------------------------------------------------
 # Install Parflow
@@ -156,9 +172,11 @@ RUN $CMAKE                     \
     # -D NETCDF_LIBRARY=$NETCDF_DIR/lib/      \
     # -D NETCDF_INCLUDE_DIR=$NETCDF_DIR/include
 
-RUN $CMAKE --build $BASE_PATH/parflow/build && \
-    $CMAKE --install $BASE_PATH/parflow/build --prefix $BASE_PATH/parflow/install
+RUN $CMAKE --build $BASE_PATH/parflow/build
 
-ENV PARFLOW_DIR $BASE_PATH/parflow/install
+USER root
+RUN $CMAKE --install $BASE_PATH/parflow/build --prefix /opt/parflow
+USER ubuntu
 
-WORKDIR $BASE_PATH/parflow/build
+ENV PARFLOW_DIR /opt/parflow/
+WORKDIR /opt/parflow/
