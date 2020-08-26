@@ -6,10 +6,12 @@ add_custom_target(DockerBuildDevelopment
   docker build --rm -t parflow-development
     --build-arg "BASE_IMAGE=${PARFLOW_DOCKER_BASE_IMAGE}"
     --build-arg "PARFLOW_VERSION=${PARFLOW_DOCKER_VERSION}"
-    --build-arg "PARFLOW_GIT_URL=https://github.com/grapp1/parflow.git" # Need to remove once part of ParFlow repo
+    --build-arg "PARFLOW_GIT_URL=https://github.com/grapp1/parflow.git"        # Need to remove once part of ParFlow repo
     --build-arg "HYPRE_VERSION=${PARFLOW_DOCKER_HYPRE}"
     -f "${CMAKE_CURRENT_SOURCE_DIR}/dev/Dockerfile"
     "${CMAKE_CURRENT_SOURCE_DIR}"
+  COMMENT
+    "Build docker image 'parflow-development'"
   VERBATIM
 )
 
@@ -21,17 +23,15 @@ add_custom_target(DockerBuildRuntime
   DEPENDS
     DockerBuildDevelopment
   VERBATIM
+  COMMENT
+    "Build docker image 'parflow-runtime'"
 )
 
 add_custom_target(DockerTestDevelopment
-  docker run parflow-development
-    /home/ubuntu/parflow/dependencies/cmake/bin/ctest
-      --build-and-test
-        /home/ubuntu/parflow/parflow
-        /home/ubuntu/parflow/build
-      --build-generator
-        Make
+  docker run --rm parflow-development /home/ubuntu/parflow/dependencies/cmake/bin/ctest
   DEPENDS
     DockerBuildDevelopment
-  VERBATIM
+  USES_TERMINAL
+  COMMENT
+    "Run parflow tests inside 'parflow-development' docker image"
 )

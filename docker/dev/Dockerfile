@@ -16,12 +16,19 @@
 #       master
 #
 # -----------------------------------------------------------------------------
+
 ARG BASE_IMAGE=ubuntu:18.04
+FROM ${BASE_IMAGE}
+
+# -----------------------------------------------------------------------------
+# Must be after FROM otherwise they are not part of the build process
+# -----------------------------------------------------------------------------
+
 ARG PARFLOW_VERSION=v3.6.0
 ARG PARFLOW_GIT_URL=https://github.com/parflow/parflow.git
 ARG HYPRE_VERSION=v2.19.0
+
 # -----------------------------------------------------------------------------
-FROM ${BASE_IMAGE}
 
 # Non interactive mode
 ENV DEBIAN_FRONTEND noninteractive
@@ -56,13 +63,16 @@ USER ubuntu
 WORKDIR /home/ubuntu/
 ENV BASE_PATH /home/ubuntu/
 
-RUN mkdir -p                            \
-    $BASE_PATH/parflow/build             \
-    $BASE_PATH/parflow/dependencies/cmake \
-    $BASE_PATH/parflow/dependencies/hypre-src
+RUN mkdir -p                              \
+    $BASE_PATH/parflow/build               \
+    $BASE_PATH/parflow/dependencies/cmake   \
+    $BASE_PATH/parflow/dependencies/silo-src \
+    $BASE_PATH/parflow/dependencies/hdf5-src  \
+    $BASE_PATH/parflow/dependencies/hypre-src  \
+    $BASE_PATH/parflow/dependencies/netcdf-src
 
 # -----------------------------------------------------------------------------
-# Setup CMake 3.17
+# Setup CMake 3.18.2
 # -----------------------------------------------------------------------------
 
 RUN cd $BASE_PATH/parflow/dependencies/cmake && \
@@ -78,12 +88,47 @@ ENV CTEST $BASE_PATH/parflow/dependencies/cmake/bin/ctest
 ENV HYPRE_DIR $BASE_PATH/parflow/dependencies/hypre
 
 RUN cd $BASE_PATH/parflow/dependencies/hypre-src && \
-    git clone https://github.com/hypre-space/hypre.git \
-    --single-branch --branch $HYPRE_VERSION
+    git clone https://github.com/hypre-space/hypre.git --single-branch --branch $HYPRE_VERSION
 
 RUN cd $BASE_PATH/parflow/dependencies/hypre-src/hypre/src && \
     ./configure --prefix=$HYPRE_DIR --with-MPI && \
     make install
+
+# -----------------------------------------------------------------------------
+# Install HDF5
+# -----------------------------------------------------------------------------
+
+# ENV HDF5_DIR $BASE_PATH/parflow/dependencies/hdf5
+
+# run cd $BASE_PATH/parflow/dependencies/hdf5-src && \
+#     curl -L "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz" | tar --strip-components=1 -xzv && \
+#     CC=mpicc ./configure \
+#       --prefix=$HDF5_DIR \
+#       --enable-parallel && \
+#     make && make install
+
+# -----------------------------------------------------------------------------
+# Install NetCDF
+# -----------------------------------------------------------------------------
+
+# ENV NETCDF_DIR $BASE_PATH/parflow/dependencies/netcdf
+
+# RUN cd $BASE_PATH/parflow/dependencies/netcdf-src && \
+#     curl -L "https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz" | tar --strip-components=1 -xzv && \
+#     CC=mpicc CPPFLAGS=-I$HDF5_DIR/include LDFLAGS=-L$HDF5_DIR/lib \
+#     ./configure --disable-shared --prefix=${NETCDF_DIR} && \
+#     make && make install
+
+# -----------------------------------------------------------------------------
+# Install SILO
+# -----------------------------------------------------------------------------
+
+# ENV SILO_DIR $BASE_PATH/parflow/dependencies/silo
+
+# RUN cd $BASE_PATH/parflow/dependencies/silo-src && \
+#     curl -L "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" | tar --strip-components=1 -xzv && \
+#     ./configure  --prefix=$SILO_DIR --disable-silex --disable-hzip --disable-fpzip && \
+#     make install
 
 # -----------------------------------------------------------------------------
 # Install Parflow
@@ -95,17 +140,25 @@ RUN git clone                           \
     $PARFLOW_GIT_URL                       \
     $BASE_PATH/parflow/src
 
-RUN $CMAKE                        \
-    -S $BASE_PATH/parflow/src      \
-    -B $BASE_PATH/parflow/build     \
-    -D HYPRE_ROOT=$HYPRE_DIR         \
-    -D PARFLOW_AMPS_LAYER=mpi1        \
-    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
+RUN $CMAKE                     \
+    -S $BASE_PATH/parflow/src   \
+    -B $BASE_PATH/parflow/build  \
+    # -D HDF5_DIR=$HDF5_DIR         \
+    # -D PARFLOW_ENABLE_HDF5=TRUE    \
+    -D HYPRE_ROOT=$HYPRE_DIR        \
+    # -D SILO_ROOT=$SILO_DIR           \
+    -D PARFLOW_HAVE_CLM=TRUE          \
+    -D PARFLOW_ENABLE_PYTHON=TRUE      \
     -D PARFLOW_ENABLE_TIMING=TRUE       \
-    -D PARFLOW_HAVE_CLM=TRUE             \
-    -D PARFLOW_ENABLE_PYTHON=TRUE
+    -D PARFLOW_AMPS_LAYER=mpi1           \
+    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE
+    # -D PARFLOW_ENABLE_NETCDF=TRUE          \
+    # -D NETCDF_LIBRARY=$NETCDF_DIR/lib/      \
+    # -D NETCDF_INCLUDE_DIR=$NETCDF_DIR/include
 
 RUN $CMAKE --build $BASE_PATH/parflow/build && \
     $CMAKE --install $BASE_PATH/parflow/build --prefix $BASE_PATH/parflow/install
 
 ENV PARFLOW_DIR $BASE_PATH/parflow/install
+
+WORKDIR $BASE_PATH/parflow/build
