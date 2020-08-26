@@ -95,7 +95,7 @@ RUN ./configure --prefix=$HYPRE_DIR --with-MPI
 
 USER root
 RUN make install
-# USER ubuntu
+USER ubuntu
 
 # -----------------------------------------------------------------------------
 # Install HDF5
@@ -105,14 +105,14 @@ ENV HDF5_DIR /opt/hdf5
 
 WORKDIR $BASE_PATH/parflow/dependencies/hdf5-src
 RUN curl -L "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz" | tar --strip-components=1 -xzv && \
-     CC=mpicc ./configure \
+    CC=mpicc ./configure \
       --prefix=$HDF5_DIR \
       --enable-parallel && \
-     make
+    make
 
-# USER root
+USER root
 RUN make install
-# USER ubuntu
+USER ubuntu
 
 # -----------------------------------------------------------------------------
 # Install NetCDF
@@ -122,13 +122,13 @@ ENV NETCDF_DIR /opt/netcdf
 
 WORKDIR $BASE_PATH/parflow/dependencies/netcdf-src
 RUN curl -L "https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz" | tar --strip-components=1 -xzv && \
-     CC=mpicc CPPFLAGS=-I$HDF5_DIR/include LDFLAGS=-L$HDF5_DIR/lib \
-     ./configure --disable-shared --disable-dap --prefix=${NETCDF_DIR} && \
-     make
+    CC=mpicc CPPFLAGS=-I$HDF5_DIR/include LDFLAGS=-L$HDF5_DIR/lib \
+    ./configure --disable-shared --disable-dap --prefix=${NETCDF_DIR} && \
+    make
 
-# USER root
+USER root
 RUN make install
-# USER ubuntu
+USER ubuntu
 
 # -----------------------------------------------------------------------------
 # Install SILO
@@ -138,13 +138,12 @@ ENV SILO_DIR $BASE_PATH/parflow/dependencies/silo
 
 WORKDIR $BASE_PATH/parflow/dependencies/silo-src
 RUN curl -L "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" | tar --strip-components=1 -xzv && \
-   ./configure  --prefix=$SILO_DIR --disable-silex --disable-hzip --disable-fpzip && \
+    ./configure  --prefix=$SILO_DIR --disable-silex --disable-hzip --disable-fpzip && \
     make
 
-# USER root
+USER root
 RUN make install
-# USER ubuntu
-
+USER ubuntu
 
 # -----------------------------------------------------------------------------
 # Install Parflow
@@ -174,9 +173,9 @@ RUN $CMAKE                     \
 
 RUN $CMAKE --build $BASE_PATH/parflow/build
 
-# USER root
+USER root
 RUN $CMAKE --install $BASE_PATH/parflow/build --prefix /opt/parflow
-USER ubuntu
+# USER ubuntu
 
 ENV PARFLOW_DIR /opt/parflow/
 WORKDIR /opt/parflow/
