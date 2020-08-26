@@ -6,11 +6,24 @@
 # into CMAKE_BUILD_DIR (or something like that)
 
 add_custom_command(
-    OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/parflow"
-    COMMAND "${CMAKE_COMMAND}" -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/parflow"
-            "${CMAKE_CURRENT_BINARY_DIR}/parflow"
-   COMMENT "Copying Python pftools to the build directory"
+  OUTPUT
+    "${CMAKE_CURRENT_BINARY_DIR}/parflow/tools/core.py"
+  COMMAND
+    "${CMAKE_COMMAND}" -E copy_directory
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow"
+    "${CMAKE_CURRENT_BINARY_DIR}/"
+  DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/__init__.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/__init__.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/builders.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/core.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/terminal.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/__init__.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/core.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/domains.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/handlers.py"
+  COMMENT
+    "Copying Python pftools to the build directory"
 )
 
 # moving files to source tree when make install
@@ -39,7 +52,7 @@ add_custom_command(
 add_custom_target(
   pf-python ALL
   DEPENDS
-    "${CMAKE_CURRENT_BINARY_DIR}/parflow"
+    "${CMAKE_CURRENT_BINARY_DIR}/parflow/tools/core.py"
     GeneratePythonKeys
 )
 
