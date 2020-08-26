@@ -19,7 +19,7 @@ add_custom_command(
   COMMAND
     ${PARFLOW_PYTHON} pf-python.py
   OUTPUT
-    "${CMAKE_CURRENT_SOURCE_DIR}/../pftools/python/parflow/tools/database/generated.py"
+    "${CMAKE_CURRENT_BINARY_DIR}/../pftools/python/parflow/tools/database/generated.py"
   DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/generators/pf-python.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/definitions/wells.yaml"

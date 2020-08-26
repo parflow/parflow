@@ -2,14 +2,18 @@
 # Make sure we update the generated.py file
 # -----------------------------------------------------------------------------
 
-# add_custom_command(
-#   OUTPUT  "${_vtk_add_python_package_file_output}"
-#   DEPENDS "${_vtk_add_python_package_file}"
-#   COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-#           "${_vtk_add_python_package_file}"
-#           "${_vtk_add_python_package_file_output}"
-#   COMMENT "Copying ${_vtk_add_python_package_name} to the binary directory"
-# )
+# copy the source tree into the build tree (pftools/python/parflow)
+# into CMAKE_BUILD_DIR (or something like that)
+
+add_custom_command(
+    OUTPUT  "${CMAKE_CURRENT_BINARY_DIR}/parflow"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/parflow"
+            "${CMAKE_CURRENT_BINARY_DIR}/parflow"
+   COMMENT "Copying Python pftools to the build directory"
+)
+
+# moving files to source tree when make install
 
 # install(
 #   FILES "${_vtk_add_python_package_name}"
@@ -35,6 +39,7 @@
 add_custom_target(
   pf-python ALL
   DEPENDS
+    "${CMAKE_CURRENT_BINARY_DIR}/parflow"
     GeneratePythonKeys
 )
 
