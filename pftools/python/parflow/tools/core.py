@@ -12,7 +12,7 @@ import sys
 import argparse
 
 from .database.generated import BaseRun, PFDBObj, PFDBObjListNumber
-from .database.core import extract_keys_from_object, write_dict
+from .database.core import extract_keys_from_object, write_dict, resolve_path
 from .terminal import Symbols as termSymbol
 
 def check_parflow_execution(out_file):
@@ -296,3 +296,17 @@ class Run(BaseRun):
         print()
         if not success or error_count > 0:
             sys.exit(1)
+
+    def dist(pfbFile, p=-1, q=-1, r=-1):
+        inputFile = resolve_path(pfbFile)
+        outputFile = f'{inputFile}.dist'
+        if p < 1:
+            p = self.Process.Topology.P
+        if q < 1:
+            q = self.Process.Topology.Q
+        if r < 1:
+            r = self.Process.Topology.R
+
+        from parflowio.pyParflowio import PFData
+        pfb_data = PFData(inputFile)
+        pfb_data.distFile(p, q, r, outputFile)
