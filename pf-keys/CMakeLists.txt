@@ -15,13 +15,9 @@ endif()
 # Build generated python file for key definitions
 # -----------------------------------------------------------------------------
 
-set(_generated_output
-  "${CMAKE_CURRENT_BINARY_DIR}/../pftools/python/parflow/tools/database/generated.py"
-)
-
 add_custom_command(
   OUTPUT
-    "${_generated_output}"
+    "${CMAKE_CURRENT_BINARY_DIR}/../pftools/python/parflow/tools/database/generated.py"
   COMMAND
     "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/../pftools/python/parflow/tools/database/"
   COMMAND
@@ -50,5 +46,5 @@ add_custom_target(
   GeneratePythonKeys
   DEPENDS
     ${PARFLOW_PYTHON_DEPENDS}
-    "${_generated_output}"
+    "${CMAKE_CURRENT_BINARY_DIR}/../pftools/python/parflow/tools/database/generated.py"
 )
