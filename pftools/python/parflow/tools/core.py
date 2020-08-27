@@ -297,7 +297,7 @@ class Run(BaseRun):
         if not success or error_count > 0:
             sys.exit(1)
 
-    def dist(pfbFile, p=-1, q=-1, r=-1):
+    def dist(self, pfbFile, p=-1, q=-1, r=-1):
         inputFile = resolve_path(pfbFile)
         outputFile = f'{inputFile}.dist'
         if p < 1:

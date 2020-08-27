@@ -66,9 +66,9 @@ LWvdz.dzScale.nzListNumber = 6
 LWvdz.Cell._0.dzScale.Value = 1.0
 LWvdz.Cell._1.dzScale.Value = 1.00
 LWvdz.Cell._2.dzScale.Value = 1.000
-LWvdz.Cell.l3.dzScale.Value = 1.000
-LWvdz.Cell.l4.dzScale.Value = 1.000
-LWvdz.Cell.l5.dzScale.Value = 0.05
+LWvdz.Cell._3.dzScale.Value = 1.000
+LWvdz.Cell._4.dzScale.Value = 1.000
+LWvdz.Cell._5.dzScale.Value = 0.05
 
 #-----------------------------------------------------------------------------
 # Perm
