@@ -27,13 +27,13 @@ run apt-get update && \
     python3 \
     python3-pip \
     tcl-dev \
-    tk-dev && \
-  pip3 install pyyaml
+    tk-dev
 
 RUN groupadd -g 1000 ubuntu && \
   useradd -u 1000 -g ubuntu -m -N -s /bin/bash ubuntu
 
 USER ubuntu
+WORKDIR /home/ubuntu/
 
 COPY --from=devimage /opt/parflow /opt/parflow
 COPY --from=devimage /opt/hypre   /opt/hypre
@@ -41,10 +41,10 @@ COPY --from=devimage /opt/netcdf  /opt/netcdf
 COPY --from=devimage /opt/hdf5    /opt/hdf5
 COPY --from=devimage /opt/silo    /opt/silo
 
-USER ubuntu
-WORKDIR /home/ubuntu/
+RUN pip install -r /opt/parflow/python/requirements.txt
 
-env HYPRE_DIR /opt/hypre
-env PARFLOW_DIR /opt/parflow
+ENV HYPRE_DIR /opt/hypre
+ENV PARFLOW_DIR /opt/parflow
+ENV PYTHONPATH /opt/parflow/python
 
 ENTRYPOINT ["python3"]

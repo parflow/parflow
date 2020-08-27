@@ -29,7 +29,14 @@ install(
   DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/parflow"
   DESTINATION "python"
   PATTERN "__pycache__" EXCLUDE
-  PATTERN "*.pyc" EXCLUDE
+  PATTERN "*.pyc"       EXCLUDE
+)
+install(
+  FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+  DESTINATION
+    "python"
 )
 
 add_custom_target(
