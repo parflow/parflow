@@ -298,6 +298,10 @@ class Run(BaseRun):
             sys.exit(1)
 
     def dist(self, pfbFile, p=-1, q=-1, r=-1):
+        '''
+        Distribute a PFB file using the P/Q/R settings from the run or
+        override them with the provided arguments
+        '''
         inputFile = resolve_path(pfbFile)
         outputFile = f'{inputFile}.dist'
         if p < 1:

@@ -171,7 +171,7 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
             dict_to_fill[key] = convert_value_for_string_dict(value)
 
     for key in instance.get_key_names(skip_default=True):
-        value = instance.__dict__[key]
+        value = instance.get_value(key)
         if value is None:
             continue
 
@@ -467,6 +467,22 @@ class PFDBObj:
 
         print(f'Could not find key {key}/{key_str} in {self.__dict__.keys()}')
         return getattr(self, key_str)
+
+    # ---------------------------------------------------------------------------
+
+    def get_value(self, key='_value_'):
+        '''
+        This allow to decorate any stored value at access time.
+        This especially relevant to convert relative file path
+        to absolute when the working directory can actually change
+        between calls.
+        '''
+        value = self.__getitem__(key)
+        if hasattr(self, '_details_') and key in self._details_:
+            if 'domains' in self._details_[key] and 'ValidFile' in self._details_[key]['domain']:
+                return resolve_path(value)
+
+        return value
 
     # ---------------------------------------------------------------------------
 

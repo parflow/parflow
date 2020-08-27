@@ -112,7 +112,7 @@ function (pf_add_py_test test_name)
     )
     set_tests_properties(
       "py_${test_name}"
-      PROPERTIES ENVIRONMENT PYTHONPATH=${PROJECT_SOURCE_DIR}/pftools/python:$ENV{PYTHONPATH}
+      PROPERTIES ENVIRONMENT PYTHONPATH=${PROJECT_BINARY_DIR}/pftools/python:$ENV{PYTHONPATH}
     )
   endif()
 
