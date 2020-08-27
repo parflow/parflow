@@ -302,6 +302,9 @@ class Run(BaseRun):
         Distribute a PFB file using the P/Q/R settings from the run or
         override them with the provided arguments
         '''
+        # Any provided args should override the scripts ones
+        update_run_from_args(self, self._process_args_)
+
         inputFile = resolve_path(pfbFile)
         outputFile = f'{inputFile}.dist'
         if p < 1:
