@@ -35,3 +35,12 @@ add_custom_target(DockerTestDevelopment
   COMMENT
     "Run parflow tests inside 'parflow-development' docker image"
 )
+
+add_custom_target(DockerTestRuntime
+  docker run --rm -v "${CMAKE_CURRENT_SOURCE_DIR}/../test/python:/tests" -it parflow-runtime  /tests/new_features/full_clone/full_clone.py
+  DEPENDS
+    DockerBuildRuntime
+  USES_TERMINAL
+  COMMENT
+    "Run a parflow test inside 'parflow-runtime' docker image"
+)
