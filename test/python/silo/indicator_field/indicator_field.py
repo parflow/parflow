@@ -320,4 +320,6 @@ indicator_field.Solver.WriteSiloConcentration = True
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
+indicator_field.dist('small_domain_indicator_field.pfb')
+
 indicator_field.run()
