@@ -2,13 +2,9 @@ include(ParflowTest)
 
 if(${PARFLOW_HAVE_CLM})
   set(CLM_TESTS
-    clm
-    clm_varDZ
-    clm.jac
-    clm_forc_veg
     clm-reuse
   )
-   set(CLM_2D_TESTS
+  set(CLM_2D_TESTS
     clm
     clm_varDZ
     clm.jac
@@ -23,8 +19,10 @@ endforeach()
 
 
 foreach(inputfile ${CLM_2D_TESTS})
-  foreach(processor_topology "1 2 1" "2 1 1" "1 4 1" "4 1 1")
-    continue()
-  endforeach()
+  pf_add_py_parallel_test(${inputfile} 1 1 1)
+  pf_add_py_parallel_test(${inputfile} 1 2 1)
+  pf_add_py_parallel_test(${inputfile} 2 1 1)
+  pf_add_py_parallel_test(${inputfile} 1 4 1)
+  pf_add_py_parallel_test(${inputfile} 4 1 1)
 endforeach()
 
