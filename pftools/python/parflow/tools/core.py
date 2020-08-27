@@ -297,7 +297,7 @@ class Run(BaseRun):
         if not success or error_count > 0:
             sys.exit(1)
 
-    def dist(self, pfbFile, p=-1, q=-1, r=-1):
+    def dist(self, pfbFile, **kwargs):
         '''
         Distribute a PFB file using the P/Q/R settings from the run or
         override them with the provided arguments
@@ -307,13 +307,24 @@ class Run(BaseRun):
 
         inputFile = resolve_path(pfbFile)
         outputFile = f'{inputFile}.dist'
-        if p < 1:
-            p = self.Process.Topology.P
-        if q < 1:
-            q = self.Process.Topology.Q
-        if r < 1:
-            r = self.Process.Topology.R
+        p = self.Process.Topology.P
+        q = self.Process.Topology.Q
+        r = self.Process.Topology.R
+
+        if 'P' in kwargs:
+            p = kwargs['P']
+        if 'Q' in kwargs:
+            q = kwargs['Q']
+        if 'R' in kwargs:
+            r = kwargs['R']
 
         from parflowio.pyParflowio import PFData
         pfb_data = PFData(inputFile)
+        for key, value in kwargs.items():
+            methodName = f'set{key}'
+            if hasattr(pfb_data, methodName):
+                getattr(pfb_data, methodName)(value)
+            else:
+                print(f'Error could not call {methodName}({value}) for pfdist')
+
         pfb_data.distFile(p, q, r, outputFile)

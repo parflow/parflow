@@ -288,9 +288,9 @@ LWvdz.ComputationalGrid.NX = 45
 LWvdz.ComputationalGrid.NY = 32
 LWvdz.ComputationalGrid.NZ = 6
 
-# Slope files 1D files so distribute with z/r 1
-LWvdz.dist('lw.1km.slope_x.10x.pfb', r=1)
-LWvdz.dist('lw.1km.slope_y.10x.pfb', r=1)
+# Slope files 1D files so distribute with NZ=1
+LWvdz.dist('lw.1km.slope_x.10x.pfb', NZ=1)
+LWvdz.dist('lw.1km.slope_y.10x.pfb', NZ=1)
 
 #---------------------------------------------------------
 # Mannings coefficient
