@@ -124,7 +124,7 @@ function (pf_add_py_parallel_test test_name topology_P topology_Q topology_R)
   if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}")
     add_test(
       NAME "py_${test_name}_${topology_P}_${topology_Q}_${topology_R}"
-      COMMAND ${PARFLOW_PYTHON} "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}/${test_name}.py -p ${topology_P} -q ${topology_Q} -r ${topology_R}"
+      COMMAND ${PARFLOW_PYTHON} "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}/${test_name}.py" -p ${topology_P} -q ${topology_Q} -r ${topology_R}
     )
     set_tests_properties(
       "py_${test_name}_${topology_P}_${topology_Q}_${topology_R}"

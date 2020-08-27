@@ -13,16 +13,10 @@ if(${PARFLOW_HAVE_HYPRE})
   )
 endif()
 
-set(TOPO_VALS
-  1
-  2
-  4
-)
-
 foreach(inputfile ${2D_TESTS})
-  foreach(process_topo_p ${TOPO_VALS})
-      foreach(process_topo_q ${TOPO_VALS})
-         pf_add_py_parallel_test(${inputfile} ${process_topo_p} ${process_topo_q} 1)
-      endforeach()
-  endforeach()
+  pf_add_py_parallel_test(${inputfile} 1 1 1)
+  pf_add_py_parallel_test(${inputfile} 1 2 1)
+  pf_add_py_parallel_test(${inputfile} 2 1 1)
+  pf_add_py_parallel_test(${inputfile} 1 4 1)
+  pf_add_py_parallel_test(${inputfile} 4 1 1)
 endforeach()
