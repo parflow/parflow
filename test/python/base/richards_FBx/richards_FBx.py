@@ -185,7 +185,7 @@ richards_FBx.Geom.domain.FBx.FileName = 'Flow_Barrier_X.pfb'
 # pfsetgrid {20 20 20} {0.0 0.0 0.0} {1.0 1.0 1.0} $FBx
 # pfsave $FBx -pfb Flow_Barrier_X.pfb
 
-richards_FBx.dist('Flow_Barrier_X.pfb')
+# richards_FBx.dist('Flow_Barrier_X.pfb')
 
 #-----------------------------------------------------------------------------
 # Wells

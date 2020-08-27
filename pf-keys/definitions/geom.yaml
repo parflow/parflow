@@ -800,7 +800,7 @@ Geom:
               min_value: 0.0
 
         # Corner case with Alpha as class and field
-        FileName:
+        Filename:
           help: >
             [Type: string] This key specifies a pfb filename containing the alpha parameters for the VanGenuchten function cell-by-cell.
             The ONLY option for geom_name is "domain."
@@ -820,7 +820,7 @@ Geom:
               min_value: 0.0
 
         # Corner case with N as class and field
-        FileName:
+        Filename:
           help: >
             [Type: string] This key specifies a pfb filename containing the N parameters for the VanGenuchten function cell-by-cell.
             The ONLY option for geom_name is "domain."
@@ -924,7 +924,7 @@ Geom:
               min_value: 0.0
 
         # Corner case with Alpha as class and field
-        FileName:
+        Filename:
           help: >
             [Type: string] This key specifies a pfb filename containing the alpha parameters for the VanGenuchten function cell-by-cell.
             The ONLY option for geom_name is "domain."
@@ -944,7 +944,7 @@ Geom:
               min_value: 0.0
 
         # Corner case with N as class and field
-        FileName:
+        Filename:
           help: >
             [Type: string] This key specifies a pfb filename containing the N parameters for the VanGenuchten function cell-by-cell.
             The ONLY option for geom_name is "domain."
@@ -965,7 +965,7 @@ Geom:
               max_value: 1.0
 
         # Corner case with SRes as class and field
-        FileName:
+        Filename:
           help: >
             [Type: string] This key specifies a pfb filename containing the residual saturation parameters for the VanGenuchten function cell-by-cell.
             The ONLY option for geom_name is "domain."
@@ -986,7 +986,7 @@ Geom:
               max_value: 1.0
 
         # Corner case with SSat as class and field
-        FileName:
+        Filename:
           help: >
             [Type: string] This key specifies a pfb filename containing the SSat parameters for the VanGenuchten function cell-by-cell.
             The ONLY option for geom_name is "domain."
