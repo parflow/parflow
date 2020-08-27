@@ -479,7 +479,7 @@ class PFDBObj:
         '''
         value = self.__getitem__(key)
         if hasattr(self, '_details_') and key in self._details_:
-            if 'domains' in self._details_[key] and 'ValidFile' in self._details_[key]['domain']:
+            if 'domains' in self._details_[key] and 'ValidFile' in self._details_[key]['domains']:
                 return resolve_path(value)
 
         return value
