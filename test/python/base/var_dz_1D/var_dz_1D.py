@@ -84,20 +84,20 @@ var_dz_1D.Solver.Nonlinear.VariableDz = True
 var_dz_1D.dzScale.GeomNames = 'domain'
 var_dz_1D.dzScale.Type = 'nzList'
 var_dz_1D.dzScale.nzListNumber = 14
-var_dz_1D.Cell.l0.dzScale.Value = 1.2
-var_dz_1D.Cell.l1.dzScale.Value = 1.0
-var_dz_1D.Cell.l2.dzScale.Value = 1.0
-var_dz_1D.Cell.l3.dzScale.Value = 1.0
-var_dz_1D.Cell.l4.dzScale.Value = 1.0
-var_dz_1D.Cell.l5.dzScale.Value = 1.0
-var_dz_1D.Cell.l6.dzScale.Value = 1.0
-var_dz_1D.Cell.l7.dzScale.Value = 1.0
-var_dz_1D.Cell.l8.dzScale.Value = 1.0
-var_dz_1D.Cell.l9.dzScale.Value = 1.0
-var_dz_1D.Cell.l10.dzScale.Value = 0.15
-var_dz_1D.Cell.l11.dzScale.Value = 0.1
-var_dz_1D.Cell.l12.dzScale.Value = 0.1
-var_dz_1D.Cell.l13.dzScale.Value = 0.05
+var_dz_1D.Cell._0.dzScale.Value = 1.2
+var_dz_1D.Cell._1.dzScale.Value = 1.0
+var_dz_1D.Cell._2.dzScale.Value = 1.0
+var_dz_1D.Cell._3.dzScale.Value = 1.0
+var_dz_1D.Cell._4.dzScale.Value = 1.0
+var_dz_1D.Cell._5.dzScale.Value = 1.0
+var_dz_1D.Cell._6.dzScale.Value = 1.0
+var_dz_1D.Cell._7.dzScale.Value = 1.0
+var_dz_1D.Cell._8.dzScale.Value = 1.0
+var_dz_1D.Cell._9.dzScale.Value = 1.0
+var_dz_1D.Cell._10.dzScale.Value = 0.15
+var_dz_1D.Cell._11.dzScale.Value = 0.1
+var_dz_1D.Cell._12.dzScale.Value = 0.1
+var_dz_1D.Cell._13.dzScale.Value = 0.05
 
 #-----------------------------------------------------------------------------
 # Perm

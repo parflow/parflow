@@ -339,5 +339,9 @@ van_genuchten_file.Solver.Linear.Preconditioner = 'PFMG'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
+van_genuchten_file.dist('van-genuchten-alpha.pfb')
+van_genuchten_file.dist('van-genuchten-n.pfb')
+van_genuchten_file.dist('van-genuchten-sr.pfb')
+van_genuchten_file.dist('van-genuchten-ssat.pfb')
 
 van_genuchten_file.run()
