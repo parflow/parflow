@@ -159,17 +159,18 @@ RUN git clone                           \
 RUN $CMAKE                     \
     -S $BASE_PATH/parflow/src   \
     -B $BASE_PATH/parflow/build  \
+    -D CMAKE_BUILD_TYPE=Release   \
     -D HDF5_ROOT=$HDF5_DIR         \
-    -D PARFLOW_ENABLE_HDF5=TRUE    \
-    -D HYPRE_ROOT=$HYPRE_DIR        \
-    -D SILO_ROOT=$SILO_DIR           \
-    -D PARFLOW_HAVE_CLM=TRUE          \
-    -D PARFLOW_ENABLE_PYTHON=TRUE      \
-    -D PARFLOW_ENABLE_TIMING=TRUE       \
-    -D PARFLOW_AMPS_LAYER=mpi1           \
-    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE    \
-    -D PARFLOW_ENABLE_NETCDF=TRUE          \
-    -D NETCDF_DIR=$NETCDF_DIR               \
+    -D PARFLOW_ENABLE_HDF5=TRUE     \
+    -D HYPRE_ROOT=$HYPRE_DIR         \
+    -D SILO_ROOT=$SILO_DIR            \
+    -D PARFLOW_HAVE_CLM=TRUE           \
+    -D PARFLOW_ENABLE_PYTHON=TRUE       \
+    -D PARFLOW_ENABLE_TIMING=TRUE        \
+    -D PARFLOW_AMPS_LAYER=mpi1            \
+    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE     \
+    -D PARFLOW_ENABLE_NETCDF=TRUE           \
+    -D NETCDF_DIR=$NETCDF_DIR                \
     -D CURL_LIBRARY=/usr/lib/x86_64-linux-gnu/libcurl.so.4
 
 RUN $CMAKE --build $BASE_PATH/parflow/build
