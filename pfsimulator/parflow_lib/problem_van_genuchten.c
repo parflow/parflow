@@ -480,7 +480,7 @@ PFModule   *vanGenuchtenNewPublicXtra()
 
   public_xtra = ctalloc(PublicXtra, 1);
 
-  switch_name = GetString("Phase.Saturation.Type");
+  switch_name = GetStringDefault("Phase.Saturation.Type", "VanGenuchten");  //BB Testing single_default error
   public_xtra->type = NA_NameToIndex(type_na, switch_name);
 
 
