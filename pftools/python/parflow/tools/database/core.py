@@ -1,7 +1,7 @@
-r'''
+r"""
 This module aims to provide the core components that are required to build
 a Parflow input deck.
-'''
+"""
 import json
 import os
 import re
@@ -21,38 +21,48 @@ from .handlers import decorate_value
 # -----------------------------------------------------------------------------
 
 def map_to_parent(pfdbObj):
+    """Helper function to extract the parent of a pfdbObj"""
     return pfdbObj._parent_
 
 # -----------------------------------------------------------------------------
 
 def map_to_self(pfdbObj):
+    """Helper function to extract self of self (noop)"""
     return pfdbObj
 
 # -----------------------------------------------------------------------------
 
 def map_to_child(name):
+    """Helper function that return a function for extracting a field name
+    """
     return lambda pfdbObj: getattr(pfdbObj, name) if hasattr(pfdbObj, name) else None
 
 # -----------------------------------------------------------------------------
 
 def map_to_children_of_type(class_name):
+    """Helper function that return a function for extracting children
+    of a given type (class_name).
+    """
     def get_children_of_type(pfdbObj):
         return pfdbObj.get_children_of_type(class_name)
     return get_children_of_type
 
 # -----------------------------------------------------------------------------
 
-def validate_helper(container_obj, name, obj, indent, error_count):
+def validate_helper(container_obj, name, value, indent):
+    """Helper function for validating a value
+    """
     nbErrors = 0
     validation_string = ''
     history = None
     if 'history' in container_obj._details_[name] and len(container_obj._details_[name]['history']):
         history = container_obj._details_[name]['history']
-    if 'default' in container_obj._details_[name] and obj == container_obj._details_[name]['default'] and \
-            'MandatoryValue' not in container_obj._details_[name]['domains']:
+    if 'default' in container_obj._details_[name] \
+        and value == container_obj._details_[name]['default'] \
+        and 'MandatoryValue' not in container_obj._details_[name]['domains']:
         pass
     else:
-        nbErrors, validation_string = validate_value_to_string(container_obj, name, obj, container_obj._details_[name]['domains'],
+        nbErrors, validation_string = validate_value_to_string(container_obj, name, value, container_obj._details_[name]['domains'],
                                                                container_obj.get_context_settings(), history, indent)
 
     return nbErrors, validation_string
@@ -60,6 +70,7 @@ def validate_helper(container_obj, name, obj, indent, error_count):
 # -----------------------------------------------------------------------------
 
 def detail_helper(container, name, value):
+    """Helper function that extract elements of the field's detail"""
     domains = None
     handlers = None
     history = None
@@ -87,11 +98,19 @@ def detail_helper(container, name, value):
 # -----------------------------------------------------------------------------
 
 def is_private_key(name):
+    """Test if the given key is a key or a private member
+
+    Return True if it is a private member
+    """
     return name[0] == '_' and name[-1] == '_'
 
 # -----------------------------------------------------------------------------
 
 def is_not_private_key(name):
+    """Test if the given key is a key or a private member
+
+    Return True if it is a key
+    """
     return not is_private_key(name)
 
 # -----------------------------------------------------------------------------
@@ -99,6 +118,8 @@ def is_not_private_key(name):
 # -----------------------------------------------------------------------------
 
 def get_key_priority(key_name):
+    """Return number that can be used to sort keys in term of priority
+    """
     priority_value = 0
     path_token = key_name.split('.')
     if 'Name' in key_name:
@@ -118,6 +139,11 @@ def get_key_priority(key_name):
 # -----------------------------------------------------------------------------
 
 def resolve_path(file_path):
+    """Helper function to resolve a file path while using the proper
+    working directory.
+
+    Return: Absolute file path
+    """
     if os.path.isabs(file_path):
         return file_path
     return os.path.abspath(os.path.join(PFDBObj.working_directory, file_path))
@@ -138,6 +164,9 @@ def convert_value_for_string_dict(value):
 # -----------------------------------------------------------------------------
 
 def extract_keys_from_dict(dict_to_fill, dictObj, parent_namespace=''):
+    """Helper function to extract a flat key/value dictionary for
+    a given PFDBObj inside dict_to_fill.
+    """
     for key, value in dictObj.items():
         if len(parent_namespace) and key == '$_' or key == '_value_':
             dict_to_fill[parent_namespace] = value
@@ -184,15 +213,6 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
         else:
             dict_to_fill[full_qualified_key] = convert_value_for_string_dict(
                 value)
-
-# -----------------------------------------------------------------------------
-
-# TODO: add feature to read external files
-# def external_file_to_dict(file_name, fileFormat):
-#     externalFileDict = {}
-#     externalFileDict['GeomInput.Names.domain_input.InputType'] = 'Box'
-#     print(externalFileDict)
-#     return externalFileDict
 
 # -----------------------------------------------------------------------------
 
@@ -301,20 +321,25 @@ def sort_dict(input):
 # -----------------------------------------------------------------------------
 
 def get_or_create_dict(root, keyPath, overriden_keys):
-  currentContainer = root
-  for i in range(len(keyPath)):
-    if keyPath[i] not in currentContainer:
-      currentContainer[keyPath[i]] = {}
-    elif not isinstance(currentContainer[keyPath[i]], dict):
-      overriden_keys['.'.join(keyPath[:i+1])] = currentContainer[keyPath[i]]
-      currentContainer[keyPath[i]] = {}
-    currentContainer = currentContainer[keyPath[i]]
+    """Helper function to get/create a container dict for a given key path
+    """
+    currentContainer = root
+    for i in range(len(keyPath)):
+        if keyPath[i] not in currentContainer:
+            currentContainer[keyPath[i]] = {}
+        elif not isinstance(currentContainer[keyPath[i]], dict):
+            overriden_keys['.'.join(keyPath[:i+1])] = currentContainer[keyPath[i]]
+            currentContainer[keyPath[i]] = {}
+        currentContainer = currentContainer[keyPath[i]]
 
-  return currentContainer
+    return currentContainer
 
 # -----------------------------------------------------------------------------
 
 def flatten_hierarchical_map(hirearchical_map):
+    """Helper function that take a hierarchical map and return a flat
+    version of it.
+    """
     flat_map = {}
     extract_keys_from_dict(flat_map, hirearchical_map, parent_namespace='')
     return flat_map
@@ -324,6 +349,8 @@ def flatten_hierarchical_map(hirearchical_map):
 # -----------------------------------------------------------------------------
 
 class PFDBObj:
+    """Core ParFlow Database Object node
+    """
     print_line_error = False
     exit_on_error = False
     working_directory = os.getcwd()
@@ -335,22 +362,37 @@ class PFDBObj:
 
     @staticmethod
     def enable_line_error():
+        """Calling that method will enable line feedback on validation
+        error
+        """
         PFDBObj.print_line_error = True
 
     @staticmethod
     def disable_line_error():
+        """Calling that method will disable line feedback on validation
+        error
+        """
         PFDBObj.enable_domain_exceptions = False
 
     @staticmethod
     def enable_exit_error():
+        """Calling that method will force the program to exit on
+        validation error.
+        """
         PFDBObj.exit_on_error = True
 
     @staticmethod
     def disable_exit_error():
+        """Calling that method will force the program to not exit on
+        validation error.
+        """
         PFDBObj.exit_on_error = False
 
     @staticmethod
     def set_working_directory(workdir):
+        """This will set the working directory to use for all the
+        relative file path.
+        """
         if workdir:
             PFDBObj.working_directory = workdir
         else:
@@ -358,6 +400,8 @@ class PFDBObj:
 
     @staticmethod
     def set_parflow_version(version):
+        """Globally store the ParFlow version to test against
+        """
         PFDBObj.pf_version = version
 
     # ---------------------------------------------------------------------------
@@ -365,24 +409,24 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def __init__(self, parent=None):
-        '''
+        """
         Create container object while keeping a reference to your parent
-        '''
+        """
         self._parent_ = parent
         self._prefix_ = None
 
     # ---------------------------------------------------------------------------
 
     def __setitem__(self, key, value):
-        '''Allow a[x] for assignment as well'''
+        """Allow a[x] for assignment as well"""
         self.__setattr__(key, value)
 
     # ---------------------------------------------------------------------------
 
     def __setattr__(self, name, value):
-        '''
+        """
         Helper method that aims to streamline dot notation assignment
-        '''
+        """
         domains = None
         handlers = None
         history = None
@@ -419,12 +463,12 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def __len__(self):
-        '''
+        """
         Return the count of nested fields.
           - If a field is not set but is Mandatory it will count as 1
           - If a field is not set, it will count as 0
           - A container does not count. (0)
-        '''
+        """
         value_count = 0
 
         if hasattr(self, '_value_') and self._value_ is not None:
@@ -446,12 +490,12 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def __getitem__(self, key):
-        '''
+        """
         Used for obj[] lookup:
            - Need to handle key with prefix
            - Need to handle key with missing prefix
            - Need to handle int key
-        '''
+        """
         key_str = str(key)
 
         if hasattr(self, key_str):
@@ -471,12 +515,12 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def get_value(self, key='_value_'):
-        '''
+        """
         This allow to decorate any stored value at access time.
         This especially relevant to convert relative file path
         to absolute when the working directory can actually change
         between calls.
-        '''
+        """
         value = self.__getitem__(key)
         if hasattr(self, '_details_') and key in self._details_:
             if 'domains' in self._details_[key] and 'ValidFile' in self._details_[key]['domains']:
@@ -487,9 +531,9 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def help(self, key=None):
-        '''
+        """
         Dynamic help function for runtime evaluation
-        '''
+        """
         if key is not None:
             if key in self._details_:
                 if 'help' in self._details_[key]:
@@ -512,9 +556,9 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def get_key_names(self, skip_default=False):
-        '''
+        """
         Gets the key names necessary for the run while skiping unset ones
-        '''
+        """
         for name in self.__dict__:
             if name is None:
                 print('need to fix the children instantiator')
@@ -553,9 +597,9 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def validate(self, indent=1, workdir=None):
-        '''
+        """
         Method to validate sub hierarchy
-        '''
+        """
         if len(self) == 0:
             return 0
 
@@ -568,7 +612,7 @@ class PFDBObj:
                     if hasattr(obj, '_value_'):
                         value = obj._value_
                         add_errors, validation_string = validate_helper(
-                            obj, '_value_', value, indent, error_count)
+                            obj, '_value_', value, indent)
                         print(f'{indent_str}{name}: {validation_string}')
                         error_count += add_errors
                     else:
@@ -578,7 +622,7 @@ class PFDBObj:
 
             elif hasattr(self, '_details_') and name in self._details_:
                 add_errors, validation_string = validate_helper(
-                    self, name, obj, indent, error_count)
+                    self, name, obj, indent)
                 print(f'{indent_str}{name}: {validation_string}')
                 error_count += add_errors
             elif obj is not None:
@@ -589,9 +633,9 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def get_full_key_name(self):
-        '''
+        """
         Helper method returning the full name of a given ParFlow key.
-        '''
+        """
         full_path = []
         current_location = self
         count = 0
@@ -615,10 +659,10 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def get_parflow_key(self, parent_namespace, key):
-        '''
+        """
         Helper method returning the key to use for Parflow on a given field key.
         This allow to handle differences between what can be defined in Python vs Parflow key.
-        '''
+        """
         value = self.__dict__[key]
         prefix = ''
         if isinstance(value, PFDBObj):
@@ -638,6 +682,9 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def get_children_of_type(self, class_name):
+        """Return a list of PFDBObj of a given type that are part of
+        our children.
+        """
         results = []
         for (key, value) in self.__dict__.items():
             if is_private_key(key):
@@ -650,7 +697,7 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def get_selection_from_location(self, location='.'):
-        '''
+        """
         Return a PFDBObj object based on a location.
 
         i.e.:
@@ -658,7 +705,7 @@ class PFDBObj:
           run.Process.Topology.get_selection_from_location('..') => run.Process
           run.Process.Topology.get_selection_from_location('../../Geom') => run.Geom
           run.Process.Topology.get_selection_from_location('/Geom') => run.Geom
-        '''
+        """
         current_location = self
         path_items = location.split('/')
         if location[0] == '/':
@@ -692,10 +739,10 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def get_context_settings(self):
-        '''
+        """
         Return global settings for our current parflow run.
         This is useful when providing global information for domains or else.
-        '''
+        """
         return {
             'print_line_error': PFDBObj.print_line_error,
             'exit_on_error': PFDBObj.exit_on_error,
@@ -706,9 +753,19 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def pfset(self, key='', value=None, yamlFile=None, yamlContent=None, hierarchical_map=None, flat_map=None, exit_if_undefined=False):
-        '''
-        Allow to define any parflow key so it can be exported
-        '''
+        """
+        Allow to define any parflow key so it can be exported. Many format are supported:
+            - key/value: To set a single value relative to our current
+                PFDBObj.
+            - yamlFile: YAML file path to load and import using the
+                current PFDBObj as root.
+            - yamlContent: YAML string to load and import using the
+                current PFDBObj as root.
+            - hierarchical_map: Nested dict containing several key/value
+                pair using the current PFDBObj as root.
+            - flat_map: Flat dict with parflow key/value pair to set
+                using the current PFDBObj as root.
+        """
         if yamlFile:
             # print('-'*30)
             # print(f'Got file {yamlFile} => {resolve_path(yamlFile)}')
@@ -769,9 +826,9 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def process_dynamic(self):
-        '''
+        """
         Processing the dynamically defined (user-defined) key names
-        '''
+        """
         from . import generated
         for (class_name, selection) in self._dynamic_.items():
             klass = getattr(generated, class_name)
@@ -785,11 +842,12 @@ class PFDBObj:
 # -----------------------------------------------------------------------------
 
 class PFDBObjListNumber(PFDBObj):
+    """Class for leaf list values"""
 
     def __setattr__(self, name, value):
-        '''
+        """
         Helper method that aims to streamline dot notation assignment
-        '''
+        """
         key_str = str(name)
         if is_private_key(key_str):
             self.__dict__[key_str] = value
@@ -805,10 +863,10 @@ class PFDBObjListNumber(PFDBObj):
         self.__dict__[key_str] = value
 
     def get_parflow_key(self, parent_namespace, key):
-        '''
+        """
         Helper method returning the key to use for Parflow on a given field key.
         This allow to handle differences between what can be defined in Python vs Parflow key.
-        '''
+        """
         prefix = self._prefix_ if self._prefix_ else ''
 
         if parent_namespace:

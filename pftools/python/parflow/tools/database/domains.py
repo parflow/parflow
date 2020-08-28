@@ -1,7 +1,7 @@
-r'''
+r"""
 This module aims to gather all kind of value validation you would like to
 enable inside Parflow run.
-'''
+"""
 
 import sys
 import traceback
@@ -15,6 +15,7 @@ from ..terminal import Symbols as term_symbol
 # -----------------------------------------------------------------------------
 
 def filter_errors_by_type(msg_type, errors):
+    """Extract decorated message for a given type"""
     filter_list = []
     for error in errors:
         if error['type'] == msg_type:
@@ -25,6 +26,7 @@ def filter_errors_by_type(msg_type, errors):
 # -----------------------------------------------------------------------------
 
 def error(message):
+    """Message decorator that add ERROR as type"""
     return {
         'type': 'ERROR',
         'message': message
@@ -33,6 +35,7 @@ def error(message):
 # -----------------------------------------------------------------------------
 
 def warning(message):
+    """Message decorator that add WARNING as type"""
     return {
         'type': 'WARNING',
         'message': message
@@ -40,16 +43,16 @@ def warning(message):
 
 # -----------------------------------------------------------------------------
 
-def duplicate_search(history):
-    if len(history) > 1:
-        dup_count = len(history)
-        return dup_count
-    else:
-        pass
-
-# -----------------------------------------------------------------------------
-
 def get_comparable_version(version):
+    """Return an integer that can be used for comparison
+
+    Args:
+        version (str): A version like '3.6.0' or 'v3.6.0'
+
+    Returns:
+        int: An integer that you can easily conpare (i.e: 3006000)
+
+    """
     c_version = 0
     validVersionNumber = version[1:] if version[0] == 'v' else version
     version_tokens = validVersionNumber.split('.')
@@ -61,6 +64,16 @@ def get_comparable_version(version):
 # -----------------------------------------------------------------------------
 
 def get_installed_parflow_module(module):
+    """Helper function to test if a given module is available inside ParFlow
+    This method rely on PARFLOW_DIR environment variable.
+
+    Args:
+        module (str): Name of the module to test. (CLM, SILO, NetCDF, etc.)
+
+    Returns:
+        bool: Return True if the provided module was found.
+
+    """
     module_file = f'{os.getenv("PARFLOW_DIR")}/config/Makefile.config'
     has_module_installed = False
     if os.path.exists(os.path.abspath(module_file)):
@@ -77,23 +90,23 @@ def get_installed_parflow_module(module):
 # Validation classes
 # -----------------------------------------------------------------------------
 
-
 class ValidationException(Exception):
-    '''
+    """
     Basic parflow exception used for domains to report error
-    '''
+    """
     pass
 
 # -----------------------------------------------------------------------------
 
 
 class MandatoryValue:
-    '''
+    """
     MandatoryValue makes sure that the key is set
 
     If the value is not defined in the script and has a default value,
-    the default value will be written out in the validation message and database file.
-    '''
+    the default value will be written out in the validation message
+    and database file.
+    """
     def validate(self, value, **kwargs):
         errors = []
 
@@ -105,7 +118,7 @@ class MandatoryValue:
 
 
 class IntValue:
-    '''
+    """
     IntRange domain constrains value to be an integer
     while also ensure optionally if its value needs to be
     above or below another one.
@@ -113,8 +126,7 @@ class IntValue:
     The expected set of keyword arguments are:
       - min_value: If available the value must be strictly above it
       - max_value: If available the value must be strictly below it
-    '''
-
+    """
     def validate(self, value, min_value=None, max_value=None, **kwargs):
         errors = []
 
@@ -133,7 +145,7 @@ class IntValue:
 
 
 class DoubleValue:
-    '''
+    """
     DoubleValue domain constrains value to be a double (or int)
     while also ensure optionally if its value needs to be
     above or below another one.
@@ -141,8 +153,7 @@ class DoubleValue:
     The expected set of keyword arguments are:
       - min_value: If available the value must be strictly above it
       - max_value: If available the value must be strictly below it
-    '''
-
+    """
     def validate(self, value, min_value=None, max_value=None, **kwargs):
         errors = []
 
@@ -163,13 +174,12 @@ class DoubleValue:
 
 
 class EnumDomain:
-    '''
+    """
     EnumDomain domain constrains value to be a particular string
     that is part of a list defined in the enum_list.
 
     The expected keyword argument is a list of the accepted values.
-    '''
-
+    """
     def validate(self, value, enum_list=[], pf_version=None, **kwargs):
         errors = []
 
@@ -205,9 +215,9 @@ class EnumDomain:
 
 
 class AnyString:
-    '''
+    """
     AnyString domain constrains the value to be a string or list of strings.
-    '''
+    """
     def validate(self, value, **kwargs):
         errors = []
 
@@ -224,9 +234,9 @@ class AnyString:
 
 
 class BoolDomain:
-    '''
+    """
     BoolDomain domain constrains the value to be a boolean.
-    '''
+    """
     def validate(self, value, **kwargs):
         errors = []
 
@@ -243,9 +253,9 @@ class BoolDomain:
 
 
 class ValidFile:
-    '''
+    """
     ValidFile domain checks the working directory to find the specified file.
-    '''
+    """
     def validate(self, value, working_directory=None, path_prefix_source=None, container=None, **kwargs):
         errors = []
         path_prefix = ''
@@ -270,13 +280,12 @@ class ValidFile:
 
 # -----------------------------------------------------------------------------
 
-
 class AddedInVersion:
-    '''
+    """
     AddedInVersion domain deals with keys that were added to the ParFlow code in
     recent versions. It will check your version of ParFlow with the added version
     and print an error if your ParFlow version does not have the given key.
-    '''
+    """
     def validate(self, value, arg, pf_version=None, **kwargs):
         errors = []
 
@@ -300,11 +309,11 @@ class AddedInVersion:
 
 
 class DeprecatedInVersion:
-    '''
+    """
     DeprecatedInVersion domain deals with keys that have been or will be deprecated. It
     will check your version of ParFlow with the deprecated version and print
     an error or warning depending on whether the key has been deprecated.
-    '''
+    """
     def validate(self, value, arg, pf_version=None, **kwargs):
         errors = []
 
@@ -326,12 +335,12 @@ class DeprecatedInVersion:
 
 
 class RemovedInVersion:
-    '''
+    """
     RemovedInVersion domain deals with keys that have been or will be removed from the
     ParFlow code. It will check your version of ParFlow with the removed version
     and print an error or warning depending on whether the key has been or will
     be removed.
-    '''
+    """
     def validate(self, value, arg, pf_version=None, **kwargs):
         errors = []
 
@@ -353,12 +362,12 @@ class RemovedInVersion:
 
 
 class RequiresModule:
-    '''
+    """
     RequiresModule domain deals with keys that require specific modules associated
     with ParFlow (e.g. CLM, SILO, NetCDF, etc.). It will check to see whether the
     required modules are installed with ParFlow and will print an error message
     if the required module is missing.
-    '''
+    """
     def validate(self, value, arg, **kwargs):
         errors = []
 
@@ -377,11 +386,15 @@ class RequiresModule:
 # Helper map with an instance of each domain type
 # -----------------------------------------------------------------------------
 
-
 AVAILABLE_DOMAINS = {}
 
-
 def get_domain(class_name):
+    """Return a domain instance based on its class_name or None if
+    not found.
+
+    A message will be printed to notify the user that a domain was
+    not found.
+    """
     if class_name in AVAILABLE_DOMAINS:
         return AVAILABLE_DOMAINS[class_name]
 
@@ -401,16 +414,27 @@ def get_domain(class_name):
 
 
 def validate_value_with_errors(value, domain_definitions=None, domain_add_on_kwargs=None):
-    '''
-    domain_definitions = {
-      IntRangeDomain: {
-        min_value: 1
-      },
-      NoNoneValueDomain:
-    }
-    This method validates the value set to a key using the domains provided in the key
-    definition files.
-    '''
+    """This method validates the value set to a key using the domains
+    provided in the key definition files.
+
+    Args:
+        value (?): Value to check
+        domain_definitions (dict): Set of domains to test against.
+            The structure will look like the one below:
+            domain_definitions = {
+                IntRangeDomain: {
+                    min_value: 1
+                  },
+                NoNoneValueDomain:
+            }
+        domain_add_on_kwargs (dict): This dictionary will contains
+            global settings such as parflow version, working directory.
+            This allow domains to validate things to a broader scale.
+
+    Returns:
+        List of errors/warnings: A list of tagged message
+
+    """
     errors = []
     if not domain_definitions:
         return errors
@@ -438,6 +462,27 @@ def validate_value_with_errors(value, domain_definitions=None, domain_add_on_kwa
 
 
 def validate_value_with_exception(value, domain_definition=None, domain_add_on_kwargs=None, exit_on_error=False):
+    """This method validates the value set to a key using the domains
+    provided in the key definition files. But it will print information
+    on where the error was detected (line number).
+
+    Args:
+        value (?): Value to check
+        domain_definitions (dict): Set of domains to test against.
+            The structure will look like the one below:
+            domain_definitions = {
+                IntRangeDomain: {
+                    min_value: 1
+                  },
+                NoNoneValueDomain:
+            }
+        domain_add_on_kwargs (dict): This dictionary will contains
+            global settings such as parflow version, working directory.
+            This allow domains to validate things to a broader scale.
+        exit_on_error (bool): If True the program will stop at the first
+            error.
+
+    """
     all_messages = validate_value_with_errors(
         value, domain_definition, domain_add_on_kwargs)
     errors = filter_errors_by_type('ERROR', all_messages)
@@ -465,6 +510,32 @@ def validate_value_with_exception(value, domain_definition=None, domain_add_on_k
 # -----------------------------------------------------------------------------
 
 def validate_value_to_string(container, name, value, domain_definition=None, domain_add_on_kwargs=None, history=None, indent=1):
+    """This method validates the value set to a key using the domains
+    provided in the key definition files. But it will return a string
+    that could be used for printing information.
+
+    Args:
+        container (PFDBObj): Object that own the field
+        name (str): Name of the key that hold the value
+        value (?): Value to check
+        domain_definitions (dict): Set of domains to test against.
+            The structure will look like the one below:
+            domain_definitions = {
+                IntRangeDomain: {
+                    min_value: 1
+                  },
+                NoNoneValueDomain:
+            }
+        domain_add_on_kwargs (dict): This dictionary will contains
+            global settings such as parflow version, working directory.
+            This allow domains to validate things to a broader scale.
+        history (array): List of set values
+        indent (int): Depth level of the given value
+
+    Returns:
+        number_of_errors (int): Number of detected issue
+        message (str): String to print
+    """
     indent_str = '  ' * (indent - 1)
     domain_add_on_kwargs['container'] = container
     all_messages = validate_value_with_errors(
@@ -482,8 +553,8 @@ def validate_value_to_string(container, name, value, domain_definition=None, dom
     elif value is not None:
         # checking for duplicates and changing print statement
         if history is not None:
-            dup_count = duplicate_search(history)
-            if dup_count is not None and dup_count >= 1:
+            dup_count = len(history)
+            if dup_count >= 1:
                 # offset = 1 if 'default' in name else 1
                 dup_str = '('
                 for val in range(dup_count-1):

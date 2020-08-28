@@ -5,6 +5,7 @@ This module provide the core objects for controlling ParFlow.
 
 - A `Run()` object for configuring and running ParFlow simulations.
 - A `check_parflow_execution(out_file)` function to parse output file
+- A `get_current_parflow_version()` function to extract current ParFlow version
 
 """
 import os
@@ -76,9 +77,9 @@ def get_current_parflow_version():
 # -----------------------------------------------------------------------------
 
 def get_process_args():
-    '''
+    """
     General processing of script arguments
-    '''
+    """
     parser = argparse.ArgumentParser(description="Parflow run arguments")
 
     # ++++++++++++++++
@@ -140,6 +141,9 @@ def get_process_args():
 # -----------------------------------------------------------------------------
 
 def update_run_from_args(run, args):
+    """
+    Push processed args onto run properties.
+    """
     if args.parflow_directory:
         os.environ["PARFLOW_DIR"] = str(args.parflow_directory)
         PFDBObj.set_parflow_version(get_current_parflow_version())
@@ -176,9 +180,10 @@ class Run(BaseRun):
     Args:
         name (str): Name for the given run.
         basescript (str): Path to current file so the simulation
-            execution will put output files next to it.
-            If not provided, the working directory will be used
-            as base path.
+            execution and relative path will be assumed to have
+            the script directory as their working directory.
+            If not provided, the working directory will be the
+            directory where the python executable was run from.
 
     """
     def __init__(self, name, basescript=None):
@@ -252,7 +257,7 @@ class Run(BaseRun):
         Args:
           working_directory (str): Path to write output files.
               If not provided, the default run working directory will
-              be used.
+              be used. This also affect the relative FileNames.
           skip_validation (bool): Allow user to skip validation before
               running the simulation.
 
@@ -298,10 +303,12 @@ class Run(BaseRun):
             sys.exit(1)
 
     def dist(self, pfbFile, **kwargs):
-        '''
-        Distribute a PFB file using the P/Q/R settings from the run or
-        override them with the provided arguments
-        '''
+        """Distribute a PFB file using the P/Q/R settings from the run
+        or override them with the provided arguments.
+
+        We can also use the kwargs to set other properties such as:
+          - NX, NY, NZ...
+        """
         # Any provided args should override the scripts ones
         update_run_from_args(self, self._process_args_)
 
