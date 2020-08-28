@@ -277,7 +277,7 @@ clm.Solver.LSM = 'CLM'
 clm.Solver.WriteSiloCLM = True
 clm.Solver.CLM.MetForcing = '1D'
 clm.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
-clm.Solver.CLM.MetFilePath = '../'
+clm.Solver.CLM.MetFilePath = './'
 
 clm.Solver.WriteSiloEvapTrans = True
 clm.Solver.WriteSiloOverlandBCFlux = True

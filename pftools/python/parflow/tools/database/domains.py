@@ -554,15 +554,13 @@ def validate_value_to_string(container, name, value, domain_definition=None, dom
         # checking for duplicates and changing print statement
         if history is not None:
             dup_count = len(history)
-            if dup_count >= 1:
-                # offset = 1 if 'default' in name else 1
+            if dup_count > 1:
                 dup_str = '('
                 for val in range(dup_count-1):
                     dup_str += str(history[val]) + ' => '
                 dup_str += str(history[dup_count-1]) + ')'
                 validation_string.append(
                     f'{term.MAGENTA}{term_symbol.warning}{term.ENDC} {value}  {term.MAGENTA}{dup_str}{term.ENDC}')
-            # elif 'default' in name
             else:
                 validation_string.append(
                     f'{value} {term.OKGREEN}{term_symbol.ok}{term.ENDC}')
