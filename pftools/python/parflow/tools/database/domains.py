@@ -509,7 +509,7 @@ def validate_value_with_exception(value, domain_definition=None, domain_add_on_k
 
 # -----------------------------------------------------------------------------
 
-def validate_value_to_string(container, name, value, domain_definition=None, domain_add_on_kwargs=None, history=None, indent=1):
+def validate_value_to_string(container, value, has_default=False, domain_definition=None, domain_add_on_kwargs=None, history=None, indent=1):
     """This method validates the value set to a key using the domains
     provided in the key definition files. But it will return a string
     that could be used for printing information.
@@ -553,7 +553,7 @@ def validate_value_to_string(container, name, value, domain_definition=None, dom
     elif value is not None:
         # checking for duplicates and changing print statement
         if history is not None:
-            dup_count = len(history)
+            dup_count = len(history)-1 if has_default is True else len(history)
             if dup_count > 1:
                 dup_str = '('
                 for val in range(dup_count-1):

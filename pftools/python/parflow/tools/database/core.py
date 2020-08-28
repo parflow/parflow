@@ -54,6 +54,7 @@ def validate_helper(container_obj, name, value, indent):
     """
     nbErrors = 0
     validation_string = ''
+    has_default = True if 'default' in container_obj._details_[name] else False
     history = None
     if 'history' in container_obj._details_[name] and len(container_obj._details_[name]['history']):
         history = container_obj._details_[name]['history']
@@ -62,7 +63,7 @@ def validate_helper(container_obj, name, value, indent):
         and 'MandatoryValue' not in container_obj._details_[name]['domains']:
         pass
     else:
-        nbErrors, validation_string = validate_value_to_string(container_obj, name, value, container_obj._details_[name]['domains'],
+        nbErrors, validation_string = validate_value_to_string(container_obj, value, has_default, container_obj._details_[name]['domains'],
                                                                container_obj.get_context_settings(), history, indent)
 
     return nbErrors, validation_string
