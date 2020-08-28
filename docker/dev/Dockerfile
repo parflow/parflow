@@ -20,16 +20,6 @@
 ARG BASE_IMAGE=ubuntu:18.04
 FROM ${BASE_IMAGE}
 
-# -----------------------------------------------------------------------------
-# Must be after FROM otherwise they are not part of the build process
-# -----------------------------------------------------------------------------
-
-ARG PARFLOW_VERSION=v3.6.0
-ARG PARFLOW_GIT_URL=https://github.com/parflow/parflow.git
-ARG HYPRE_VERSION=v2.19.0
-
-# -----------------------------------------------------------------------------
-
 # Non interactive mode
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -55,7 +45,7 @@ RUN apt-get update && \
         python3-pip \
         tcl-dev \
         tk-dev && \
-    pip3 install pyyaml
+    pip3 install pyyaml parflowio
 
 RUN groupadd -g 1000 ubuntu && \
     useradd -u 1000 -g ubuntu -m -N -s /bin/bash ubuntu
@@ -81,22 +71,6 @@ RUN cd $BASE_PATH/parflow/dependencies/cmake && \
 
 ENV CMAKE $BASE_PATH/parflow/dependencies/cmake/bin/cmake
 ENV CTEST $BASE_PATH/parflow/dependencies/cmake/bin/ctest
-
-# -----------------------------------------------------------------------------
-# Install Hypre
-# -----------------------------------------------------------------------------
-
-ENV HYPRE_DIR /opt/hypre
-
-WORKDIR $BASE_PATH/parflow/dependencies/hypre-src
-RUN git clone https://github.com/hypre-space/hypre.git --single-branch --branch $HYPRE_VERSION
-
-WORKDIR $BASE_PATH/parflow/dependencies/hypre-src/hypre/src
-RUN ./configure --prefix=$HYPRE_DIR --with-MPI
-
-USER root
-RUN make install
-USER ubuntu
 
 # -----------------------------------------------------------------------------
 # Install HDF5
@@ -147,8 +121,29 @@ RUN make install
 USER ubuntu
 
 # -----------------------------------------------------------------------------
+# Install Hypre
+# -----------------------------------------------------------------------------
+
+ARG HYPRE_VERSION=v2.19.0
+
+ENV HYPRE_DIR /opt/hypre
+
+WORKDIR $BASE_PATH/parflow/dependencies/hypre-src
+RUN git clone https://github.com/hypre-space/hypre.git --single-branch --branch $HYPRE_VERSION
+
+WORKDIR $BASE_PATH/parflow/dependencies/hypre-src/hypre/src
+RUN ./configure --prefix=$HYPRE_DIR --with-MPI
+
+USER root
+RUN make install
+USER ubuntu
+
+# -----------------------------------------------------------------------------
 # Install Parflow
 # -----------------------------------------------------------------------------
+
+ARG PARFLOW_VERSION=v3.6.0
+ARG PARFLOW_GIT_URL=https://github.com/parflow/parflow.git
 
 RUN git clone                           \
     --recursive --single-branch          \
@@ -163,17 +158,27 @@ RUN $CMAKE                     \
     -D HDF5_ROOT=$HDF5_DIR         \
     -D PARFLOW_ENABLE_HDF5=TRUE     \
     -D HYPRE_ROOT=$HYPRE_DIR         \
-    -D SILO_ROOT=$SILO_DIR            \
-    -D PARFLOW_HAVE_CLM=TRUE           \
-    -D PARFLOW_ENABLE_PYTHON=TRUE       \
-    -D PARFLOW_ENABLE_TIMING=TRUE        \
-    -D PARFLOW_AMPS_LAYER=mpi1            \
-    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE     \
-    -D PARFLOW_ENABLE_NETCDF=TRUE           \
-    -D NETCDF_DIR=$NETCDF_DIR                \
+    -D PARFLOW_ENABLE_HYPRE=TRUE      \
+    -D PARFLOW_ENABLE_SILO=TRUE        \
+    -D SILO_ROOT=$SILO_DIR              \
+    -D PARFLOW_HAVE_CLM=TRUE             \
+    -D PARFLOW_ENABLE_PYTHON=TRUE         \
+    -D PARFLOW_ENABLE_TIMING=TRUE          \
+    -D PARFLOW_AMPS_LAYER=mpi1              \
+    -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE       \
+    -D PARFLOW_ENABLE_NETCDF=TRUE             \
+    -D NETCDF_DIR=$NETCDF_DIR                  \
     -D CURL_LIBRARY=/usr/lib/x86_64-linux-gnu/libcurl.so.4
 
 RUN $CMAKE --build $BASE_PATH/parflow/build
+
+# ---------------------------------------------------------
+# Incremental pull/build of parflow
+# ---------------------------------------------------------
+WORKDIR $BASE_PATH/parflow/src
+ARG CACHE_DATE=not_a_date
+RUN git pull && $CMAKE --build $BASE_PATH/parflow/build
+# ---------------------------------------------------------
 
 USER root
 RUN $CMAKE --install $BASE_PATH/parflow/build --prefix /opt/parflow
