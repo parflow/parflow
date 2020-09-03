@@ -80,7 +80,7 @@ add_custom_target(PythonPublishPackage
   WORKING_DIRECTORY
       "${CMAKE_CURRENT_BINARY_DIR}"
   COMMAND
-      twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+      twine upload dist/*
   COMMENT
       "Publishing the pftools Python package"
   VERBATIM
