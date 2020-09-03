@@ -832,6 +832,17 @@ Solver:
         min_value: 1
         max_value: 2
 
+  # new key as of 9/3/2020
+  SlopeAccountingCLM:
+    help: >
+      [Type: boolean] This key specifies whether the CLM allows for the inclusion of slopes when determining
+      solar zenith angles. Note that CLM must be compiled and linked at runtime for this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: CLM
+      AddedInVersion: '3.7.0'
+
   # missing from manual
   Smoother:
     help: >
