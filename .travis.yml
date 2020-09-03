@@ -148,6 +148,13 @@ before_install:
       cd rmm && export RMM_ROOT=`pwd` && cmake . -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install && cd ..;
     fi
 
+# Set up p4est
+  - if [[ $PF_ACC_BACKEND == 'none' ]]; then
+      git clone https://github.com/cburstedde/p4est && cd p4est && export P4EST_ROOT=`pwd`;
+      git submodule init && git submodule update;
+      ./bootstrap && ./configure --enable-mpi --prefix=$P4EST_ROOT && make -j && sudo make install && cd ..;
+    fi
+
 before_script:
 # Set up Parflow
   - cd $TRAVIS_BUILD_DIR
@@ -159,8 +166,10 @@ before_script:
   - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install && mkdir -p $PARFLOW_DIR;
   - if [[ $PF_ACC_BACKEND == 'cuda' ]]; then
       mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda -Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT;
-    else
+    elif [[  $PF_ACC_BACKEND == 'omp' ]]; then
       mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND;
+    else
+      mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DP4EST_ROOT=$P4EST_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND;
     fi
   - cd $TRAVIS_BUILD_DIR/build && make && make install;
 
