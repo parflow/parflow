@@ -33,7 +33,6 @@
 
 #include "parflow.h"
 
-
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -97,6 +96,8 @@ void     MGSemi(
                 double  tol,
                 int     zero)
 {
+  PUSH_NVTX("MGSemi",2)
+  
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -159,6 +160,7 @@ void     MGSemi(
   /*-----------------------------------------------------------------------
    * Allocate temp vectors
    *-----------------------------------------------------------------------*/
+
   x_l = talloc(Vector *, num_levels);
   b_l = talloc(Vector *, num_levels);
   temp_vec_l = talloc(Vector *, num_levels);
@@ -210,6 +212,7 @@ void     MGSemi(
   /* smooth (use `zero' to determine initial x) */
   PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, zero));
 
+  PUSH_NVTX("MGSemi_solveloop",4)
   while (++i)
   {
     /*--------------------------------------------------------------------
@@ -357,6 +360,7 @@ void     MGSemi(
     /* smooth (non-zero initial x) */
     PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, 0));
   }
+  POP_NVTX
 
   if (tol > 0.0)
   {
@@ -422,6 +426,7 @@ void     MGSemi(
       tfree(rel_norm_log);
     }
   }
+  POP_NVTX
 }
 
 
@@ -447,7 +452,6 @@ void              SetupCoarseOps(
   double               *p1, *p2;
   double         *a0, *a1, *a2, *a3, *a4, *a5, *a6;
   double         *ac0, *ac1, *ac2, *ac3, *ac4, *ac5, *ac6;
-  double ap0;
 
   Stencil        *P_stencil, *A_stencil;
   StencilElt     *P_ss, *A_ss;
@@ -463,8 +467,8 @@ void              SetupCoarseOps(
   int ix, iy, iz;
   int sx, sy, sz;
 
-  int iP, iP1, iP2, dP12 = 0;
-  int iA, iA1, iA2, dA12 = 0;
+  int iP, iP1, dP12 = 0;
+  int iA, dA12 = 0;
   int iAc;
 
   int l, i, j, k;
@@ -556,7 +560,7 @@ void              SetupCoarseOps(
                   iP, nx_P, ny_P, nz_P, 1, 1, 1,
                   iA, nx_A, ny_A, nz_A, sx, sy, sz,
         {
-          ap0 = a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA];
+          double ap0 = a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA];
 
           if (ap0)
           {
@@ -666,9 +670,9 @@ void              SetupCoarseOps(
                   iA, nx_A, ny_A, nz_A, sx, sy, sz,
                   iAc, nx_Ac, ny_Ac, nz_Ac, 1, 1, 1,
         {
-          iP2 = iP1 + dP12;
-          iA1 = iA - dA12;
-          iA2 = iA + dA12;
+          int iP2 = iP1 + dP12;
+          int iA1 = iA - dA12;
+          int iA2 = iA + dA12;
 
           ac3[iAc] = a3[iA] + 0.5 * a3[iA1] + 0.5 * a3[iA2];
           ac4[iAc] = a4[iA] + 0.5 * a4[iA1] + 0.5 * a4[iA2];
@@ -768,6 +772,8 @@ PFModule     *MGSemiInitInstanceXtra(
                                      Matrix *     A,
                                      double *     temp_data)
 {
+  PUSH_NVTX("MGSemiInitInstanceXtra",3)
+
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra;
@@ -1163,6 +1169,8 @@ PFModule     *MGSemiInitInstanceXtra(
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
+
+  POP_NVTX
   return this_module;
 }
 

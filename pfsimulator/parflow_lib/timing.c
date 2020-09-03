@@ -55,13 +55,13 @@ void  NewTiming()
 
   RegisterTiming("Solver Setup");
   RegisterTiming("Solver");
+  RegisterTiming("Richards Exclude 1st Time Step");
   RegisterTiming("Solver Cleanup");
   RegisterTiming("Matvec");
   RegisterTiming("PFSB I/O");
   RegisterTiming("PFB I/O");
   RegisterTiming("CLM");
   RegisterTiming("PFSOL Read");
-  RegisterTiming("IDB Read");
   RegisterTiming("Clustering");
 #ifdef HAVE_P4EST
   RegisterTiming("P4EST_Setup");

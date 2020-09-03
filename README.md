@@ -152,7 +152,7 @@ https://cmake.org/runningcmake/
 #### Building with the cmake command line
 
 CMake may also be configured from the command line using the cmake
-command.  The default will configure a sequential version of ParFlow
+command. Instructions to build with different accelerator backends are found from separate documents: [CUDA](README-CUDA.md), [OpenMP](README-OPENMP.md). The default will configure a sequential version of ParFlow
 using MPI libraries.  CLM is being enabled.
 
 ```shell

@@ -892,7 +892,7 @@ void  ICPhasePressureFreeInstanceXtra()
 
     PFModuleFreeInstance(instance_xtra->phase_density);
 
-    free(instance_xtra);
+    tfree(instance_xtra);
   }
 }
 

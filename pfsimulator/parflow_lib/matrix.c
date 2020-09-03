@@ -543,7 +543,7 @@ Matrix          *NewMatrixType(
       case matrix_non_samrai:
       {
         Submatrix *submatrix = MatrixSubmatrix(new_matrix, i);
-        data = amps_CTAlloc(double, submatrix->data_size);
+        data = ctalloc_amps(double, submatrix->data_size);
         submatrix->allocated = TRUE;
         SubmatrixData(submatrix) = data;
 
@@ -734,7 +734,7 @@ void FreeMatrix(
 
     if (submatrix->allocated)
     {
-      tfree(submatrix->data);
+      tfree_amps(submatrix->data);
     }
 
     tfree(submatrix->data_index);

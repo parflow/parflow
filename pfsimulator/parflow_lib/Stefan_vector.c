@@ -218,9 +218,9 @@ int num_ghost;
 #ifdef SHMEM_OBJECTS
   /* Node 0 allocates */
   if (!amps_Rank(amps_CommWorld))
-    data = amps_CTAlloc(double, SizeOfVector(new));
+    data = ctalloc_amps(double, SizeOfVector(new));
 #else
-  data = amps_CTAlloc(double, SizeOfVector(new));
+  data = ctalloc_amps(double, SizeOfVector(new));
 #endif
 
   SetTempVectorData(new, data);
@@ -262,7 +262,7 @@ void     FreeVector(vector)
 Vector * vector;
 {
 #ifndef SHMEM_OBJECTS
-  amps_TFree(VectorData(vector));
+  tfree_amps(VectorData(vector));
 #endif
 
   FreeTempVector(vector);

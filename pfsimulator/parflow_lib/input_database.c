@@ -144,7 +144,6 @@ IDB *IDB_NewDB(char *filename)
   amps_File file;
 
 
-  BeginTiming(IDBReadTimingIndex);
   /* Initalize the db structure */
   db = (IDB*)HBT_new(IDB_Compare,
                      IDB_Free,
@@ -184,7 +183,6 @@ IDB *IDB_NewDB(char *filename)
 
   amps_SFclose(file);
 
-  EndTiming(IDBReadTimingIndex);
 #else
   size_t fret;
   int file_len;
@@ -199,7 +197,6 @@ IDB *IDB_NewDB(char *filename)
   FILE *file;
   int mpiret, rank;
 
-  BeginTiming(IDBReadTimingIndex);
 
   rank = amps_Rank(amps_CommWorld);
 
@@ -332,7 +329,6 @@ IDB *IDB_NewDB(char *filename)
   SC_ASSERT(file_data != NULL);
   tfree(file_data);
 
-  EndTiming(IDBReadTimingIndex);
 #endif
 
   return db;

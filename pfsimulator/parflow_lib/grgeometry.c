@@ -283,7 +283,6 @@ GrGeomSolid   *GrGeomNewSolid(
 {
   GrGeomSolid   *new_grgeomsolid;
 
-
   new_grgeomsolid = talloc(GrGeomSolid, 1);
 
   new_grgeomsolid->data = data;
@@ -295,6 +294,10 @@ GrGeomSolid   *GrGeomNewSolid(
   new_grgeomsolid->octree_iz = octree_iz;
 
   new_grgeomsolid->interior_boxes = NULL;
+
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+  GrGeomSolidOutflag(new_grgeomsolid) = NULL;
+#endif
 
   for (int f = 0; f < GrGeomOctreeNumFaces; f++)
   {
@@ -312,7 +315,6 @@ GrGeomSolid   *GrGeomNewSolid(
   {
     ComputeBoxes(new_grgeomsolid);
   }
-
   return new_grgeomsolid;
 }
 
@@ -348,6 +350,11 @@ void          GrGeomFreeSolid(
 
     tfree(solid->patch_boxes[f]);
   }
+
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+  // Internal _tfree_cuda function is used because unified memory is not active in this comp unit
+  if(GrGeomSolidOutflag(solid)) _tfree_cuda(GrGeomSolidOutflag(solid));
+#endif
 
   GrGeomFreeOctree(GrGeomSolidData(solid));
   for (i = 0; i < GrGeomSolidNumPatches(solid); i++)

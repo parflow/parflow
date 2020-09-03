@@ -107,7 +107,6 @@ VectorUpdateCommHandle  *InitVectorUpdate(
 {
   int i;
   CommHandle **amps_com_handle;
-  VectorUpdateCommHandle *vector_update_comm_handle = ctalloc(VectorUpdateCommHandle, 1);
 
   enum ParflowGridType grid_type = invalid_grid_type;
 
@@ -196,6 +195,8 @@ VectorUpdateCommHandle  *InitVectorUpdate(
 #endif
   }
 
+  VectorUpdateCommHandle *vector_update_comm_handle = talloc(VectorUpdateCommHandle, 1);
+  memset(vector_update_comm_handle, 0, sizeof(VectorUpdateCommHandle));
   vector_update_comm_handle->vector = vector;
   vector_update_comm_handle->comm_handle = amps_com_handle;
 
@@ -290,6 +291,7 @@ static Vector  *NewTempVector(
 #endif
   {
     new_subvector = ctalloc(Subvector, 1);
+    memset(new_subvector, 0, sizeof(Subvector));
 
     subgrid = SubvectorDataSpace(new_subvector) =
             DuplicateSubgrid(GridSubgrid(grid, i));
@@ -372,7 +374,7 @@ static void     AllocateVectorData(
     data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
     SubvectorDataSize(subvector) = data_size;
 
-    data = amps_CTAlloc(double, data_size);
+    double  *data = ctalloc_amps(double, data_size);
     VectorSubvector(vector, i)->allocated = TRUE;
 
     SubvectorData(VectorSubvector(vector, i)) = data;
@@ -692,7 +694,7 @@ void FreeSubvector(Subvector *subvector)
 {
   if (subvector->allocated)
   {
-    tfree(SubvectorData(subvector));
+    tfree_amps(SubvectorData(subvector));
   }
   tfree(subvector);
 }
@@ -994,8 +996,11 @@ void    InitVectorRandom(
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+      vp[iv] = dev_drand48();
+#else
       vp[iv] = drand48();
+#endif
     });
   }
 }
-
