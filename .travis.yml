@@ -152,7 +152,7 @@ before_install:
   - if [[ $PF_ACC_BACKEND == 'none' ]]; then
       git clone https://github.com/cburstedde/p4est && cd p4est && export P4EST_ROOT=`pwd`;
       git submodule init && git submodule update;
-      ./bootstrap && ./configure --enable-mpi --prefix=$P4EST_ROOT && make -j && sudo make install && cd ..;
+      ./bootstrap && ./configure --enable-mpi --without-blas --prefix=$P4EST_ROOT && make -j && sudo make install && cd ..;
     fi
 
 before_script:
