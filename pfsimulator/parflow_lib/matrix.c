@@ -460,12 +460,15 @@ Matrix          *NewMatrixType(
 
 
   new_matrix->comm_pkg = ctalloc(CommPkg *, GridNumSubgrids(grid));
-  (new_matrix->submatrices) = ctalloc(Submatrix *, numLocalSubs + numInnerGhosts);
 
   MatrixDataSpace(new_matrix) = NewSubregionArray();
 #ifndef HAVE_P4EST
+  (new_matrix->submatrices) = ctalloc(Submatrix *, GridNumSubgrids(grid));
+
   ForSubgridI(i, GridSubgrids(grid))
 #else
+  (new_matrix->submatrices) = ctalloc(Submatrix *, numLocalSubs + numInnerGhosts);
+
   for (i = 0; i < numLocalSubs + numInnerGhosts; i++)
 #endif
   {

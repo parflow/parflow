@@ -276,17 +276,18 @@ static Vector  *NewTempVector(
   new_vector = ctalloc(Vector, 1);  /*address of storage is assigned to the ptr "new_" of type Vector, which is also
                                      *                      the return value of this function */
 
-  (new_vector->subvectors) = ctalloc(Subvector *, numLocalSubs + numInnerGhosts);    /* 1st arg.: variable type;
-                                                                              *                                                               2nd arg.: # of elements to be allocated*/
-
   new_vector->comm_pkg = ctalloc(CommPkg *, GridNumSubgrids(grid) * NumUpdateModes);
 
   data_size = 0;
 
   VectorDataSpace(new_vector) = NewSubgridArray();
 #ifndef HAVE_P4EST
+  (new_vector->subvectors) = ctalloc(Subvector *,GridNumSubgrids(grid));
+
   ForSubgridI(i, GridSubgrids(grid))
 #else
+  (new_vector->subvectors) = ctalloc(Subvector *, numLocalSubs + numInnerGhosts);
+
   for (i = 0; i < numLocalSubs + numInnerGhosts; i++)
 #endif
   {
@@ -374,7 +375,7 @@ static void     AllocateVectorData(
     data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
     SubvectorDataSize(subvector) = data_size;
 
-    double  *data = ctalloc_amps(double, data_size);
+    data = ctalloc_amps(double, data_size);
     VectorSubvector(vector, i)->allocated = TRUE;
 
     SubvectorData(VectorSubvector(vector, i)) = data;

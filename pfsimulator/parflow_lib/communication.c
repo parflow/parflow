@@ -239,12 +239,13 @@ CommPkg         *NewCommPkg(
 
   int dim;
 
+  int which_ghost;
+  double * g_data;
+  Subregion *g_data_sr;
 #ifdef HAVE_P4EST
   int tag;
-  int which_child, which_ghost;
-  double * g_data;
+  int which_child;
   parflow_p4est_grid_t *pfgrid = globals->grid3d->pfgrid;
-  Subregion *g_data_sr;
 #endif
 
   new_comm_pkg = ctalloc(CommPkg, 1);
@@ -341,6 +342,9 @@ CommPkg         *NewCommPkg(
           g_data_sr = SubregionArraySubregion(data_space, which_ghost);
           g_data = FetchData(numericalObject,ctype, which_ghost);
       }
+#else
+      g_data_sr = NULL;
+      g_data = NULL;
 #endif
 
       dim = NewCommPkgInfo(which_ghost > 0 ? g_data_sr : data_sr,

@@ -87,7 +87,6 @@ void realSpaceZ(ProblemData *problem_data, Vector *rsz)
   int r;
   int is, i, j, k, l, ips = 0;
   int srcRank, dstRank;
-  int num_z_levels;
 
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
@@ -102,8 +101,9 @@ void realSpaceZ(ProblemData *problem_data, Vector *rsz)
   double             *zbuf;
   int                *z_levels = grid->z_levels;
   sc_MPI_Request     *outreq;
-  int tag, mpiret;
-  int ll, sidx;
+  int                num_z_levels;
+  int                tag, mpiret;
+  int                ll, sidx;
 #endif
 
   /*-----------------------------------------------------------------------
@@ -112,18 +112,12 @@ void realSpaceZ(ProblemData *problem_data, Vector *rsz)
 
   InitVectorAll(rsz, 1.0);
 
-  if (!USE_P4EST)
-  {
-    num_z_levels = 1;
-  }
-  else
-  {
 #ifdef HAVE_P4EST
-    num_z_levels = GlobalsNumProcsZ;
-#else
-    PARFLOW_ERROR("ParFlow compiled without p4est");
+    if (USE_P4EST)
+      num_z_levels = GlobalsNumProcsZ;
+    else
+      num_z_levels = 1;
 #endif
-  }
 
 #ifdef HAVE_P4EST
   for (ll = 0; ll < num_z_levels; ++ll)
