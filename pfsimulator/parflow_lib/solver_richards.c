@@ -171,6 +171,7 @@ typedef struct {
   int write_silopmpio_CLM;      /* write CLM output as silo as PMPIO? */
   int print_CLM;                /* print CLM output as PFB? */
   int write_CLM_binary;         /* write binary output (**default**)? */
+  int slope_accounting_CLM;     /* account for slopes in energy budget */
 
   int single_clm_file;          /* NBE: Write all CLM outputs into a single multi-layer PFB */
 
@@ -1565,12 +1566,17 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
   Subvector *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub, *lai_forc_sub, *sai_forc_sub, *z0m_forc_sub, *displa_forc_sub, *veg_map_forc_sub;      /*BH: added LAI/SAI/Z0M/DISPLA/vegmap */
 
+  /* Slopes */
+  Subvector *slope_x_sub, *slope_y_sub;
+  double *slope_x_data, *slope_y_data;
+
   /* IMF: For writing CLM output */
   Subvector *eflx_lh_tot_sub, *eflx_lwrad_out_sub, *eflx_sh_tot_sub,
     *eflx_soil_grnd_sub, *qflx_evap_tot_sub, *qflx_evap_grnd_sub,
     *qflx_evap_soi_sub, *qflx_evap_veg_sub, *qflx_tran_veg_sub,
     *qflx_infl_sub, *swe_out_sub, *t_grnd_sub, *tsoil_sub, *irr_flag_sub,
     *qflx_qirr_sub, *qflx_qirr_inst_sub;
+
   double *eflx_lh, *eflx_lwrad, *eflx_sh, *eflx_grnd, *qflx_tot, *qflx_grnd,
     *qflx_soi, *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *iflag,
     *qirr, *qirr_inst;
@@ -2177,6 +2183,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         veg_map_forc_sub =
           VectorSubvector(instance_xtra->veg_map_forc, is);
 
+        /* Slope */
+        slope_x_sub = VectorSubvector(ProblemDataTSlopeX(problem_data), is);
+        slope_y_sub = VectorSubvector(ProblemDataTSlopeY(problem_data), is);
+        slope_x_data = SubvectorData(slope_x_sub);
+        slope_y_data = SubvectorData(slope_y_sub);
+
         nx = SubgridNX(subgrid);
         ny = SubgridNY(subgrid);
         nz = SubgridNZ(subgrid);
@@ -2333,8 +2345,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
                          gny, rank, sw_data, lw_data, prcp_data,
                          tas_data, u_data, v_data, patm_data,
-                         qatm_data, lai_data, sai_data, z0m_data,
-                         displa_data, eflx_lh, eflx_lwrad, eflx_sh,
+                         qatm_data, lai_data, sai_data, z0m_data, displa_data,
+                         slope_x_data, slope_y_data,
+                         eflx_lh, eflx_lwrad, eflx_sh,
                          eflx_grnd, qflx_tot, qflx_grnd, qflx_soi,
                          qflx_eveg, qflx_tveg, qflx_in, swe, t_g,
                          t_soi, public_xtra->clm_dump_interval,
@@ -2344,6 +2357,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          clm_file_dir_length,
                          public_xtra->clm_bin_out_dir,
                          public_xtra->write_CLM_binary,
+                         public_xtra->slope_accounting_CLM,
                          public_xtra->clm_beta_function,
                          public_xtra->clm_veg_function,
                          public_xtra->clm_veg_wilting,
@@ -4763,6 +4777,17 @@ SolverRichardsNewPublicXtra(char *name)
                switch_name, key);
   }
   public_xtra->write_CLM_binary = switch_value;
+  
+/* IMF Account for slope in CLM energy budget (default=False) */
+  sprintf(key, "%s.SlopeAccountingCLM", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->slope_accounting_CLM = switch_value;
 
   /* IMF Key for CLM met file path */
   sprintf(key, "%s.CLM.MetFilePath", name);

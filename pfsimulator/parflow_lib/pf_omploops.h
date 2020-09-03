@@ -504,7 +504,7 @@ INC_IDX(int idx, int i, int j, int k,
 */
 #define CALC_IVAL(diff, a, b, prev) ((diff) * (a) + (a) + (b)) + (prev)
 
-#define GrGeomPatchLoopBoxesNoFdir_omp(i, j, k, grgeom, patch_num,      \
+#define GrGeomPatchLoopBoxesNoFdir_omp(i, j, k, grgeom, patch_num, ovrlnd,     \
                                    ix, iy, iz, nx, ny, nz,              \
                                    locals, setup,                       \
                                    f_left, f_right,                     \

@@ -53,6 +53,12 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
   ! Open and read 1-D  CLM input file
   open(9, file=drv%vegpf, form='formatted', status = 'old',action='read')
 
+
+  ! Setup defaults; this prevents use of unitialized state
+  do t=1,drv%nch 
+     clm(t)%irrig = 0  !default - no irrigation
+  end do
+
   ioval=0
   do while (ioval == 0)
 
