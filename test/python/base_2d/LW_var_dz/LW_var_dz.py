@@ -1,14 +1,22 @@
+#--------------------------------------------------------------
 #  This runs the a Little Washita Test Problem with variable dz
 #  and a constant rain forcing.  The full Jacobian is use and there is no dampening in the
 #  overland flow.
+#--------------------------------------------------------------
 
 from parflow import Run
 from parflow.tools.fs import cp
 
 LWvdz = Run("LWvdz", __file__)
 
+#---------------------------------------------------------
+# Copying slope files
+#---------------------------------------------------------
+
 cp('$PF_SRC/test/input/lw.1km.slope_x.10x.pfb')
 cp('$PF_SRC/test/input/lw.1km.slope_y.10x.pfb')
+
+#---------------------------------------------------------
 
 LWvdz.FileVersion = 4
 
@@ -19,6 +27,7 @@ LWvdz.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 LWvdz.ComputationalGrid.Lower.X = 0.0
 LWvdz.ComputationalGrid.Lower.Y = 0.0
 LWvdz.ComputationalGrid.Lower.Z = 0.0
@@ -38,6 +47,7 @@ LWvdz.ComputationalGrid.DZ = 2.0
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
+
 LWvdz.GeomInput.Names = 'domaininput'
 
 LWvdz.GeomInput.domaininput.GeomName = 'domain'
@@ -46,6 +56,7 @@ LWvdz.GeomInput.domaininput.InputType = 'Box'
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
+
 LWvdz.Geom.domain.Lower.X = 0.0
 LWvdz.Geom.domain.Lower.Y = 0.0
 LWvdz.Geom.domain.Lower.Z = 0.0
@@ -58,7 +69,8 @@ LWvdz.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 
 #--------------------------------------------
 # variable dz assignments
-#------------------------------------------
+#--------------------------------------------
+
 LWvdz.Solver.Nonlinear.VariableDz = True
 LWvdz.dzScale.GeomNames = 'domain'
 LWvdz.dzScale.Type = 'nzList'
@@ -79,7 +91,6 @@ LWvdz.Geom.Perm.Names = 'domain'
 
 # Values in m/hour
 
-
 LWvdz.Geom.domain.Perm.Type = 'Constant'
 
 LWvdz.Geom.domain.Perm.Type = 'TurnBands'
@@ -97,7 +108,6 @@ LWvdz.Geom.domain.Perm.DelK = 0.2
 LWvdz.Geom.domain.Perm.Seed = 33333
 LWvdz.Geom.domain.Perm.LogNormal = 'Log'
 LWvdz.Geom.domain.Perm.StratType = 'Bottom'
-
 
 LWvdz.Perm.TensorType = 'TensorByGeom'
 
@@ -148,6 +158,7 @@ LWvdz.Gravity = 1.0
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
+
 LWvdz.TimingInfo.BaseUnit = 10.0
 LWvdz.TimingInfo.StartCount = 0
 LWvdz.TimingInfo.StartTime = 0.0
@@ -155,15 +166,14 @@ LWvdz.TimingInfo.StopTime = 200.0
 LWvdz.TimingInfo.DumpInterval = 20.0
 LWvdz.TimeStep.Type = 'Constant'
 LWvdz.TimeStep.Value = 10.0
+
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
 LWvdz.Geom.Porosity.GeomNames = 'domain'
-
 LWvdz.Geom.domain.Porosity.Type = 'Constant'
 LWvdz.Geom.domain.Porosity.Value = 0.25
-
 
 #-----------------------------------------------------------------------------
 # Domain
@@ -198,11 +208,13 @@ LWvdz.Geom.domain.Saturation.SSat = 1.0
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 LWvdz.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 LWvdz.Cycle.Names = 'constant rainrec'
 LWvdz.Cycle.constant.Names = 'alltime'
 LWvdz.Cycle.constant.alltime.Length = 10000000
@@ -219,6 +231,7 @@ LWvdz.Cycle.rainrec.Repeat = 14
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 LWvdz.BCPressure.PatchNames = LWvdz.Geom.domain.Patches
 
 LWvdz.Patch.x_lower.BCPressure.Type = 'FluxConst'
@@ -253,9 +266,7 @@ LWvdz.Patch.z_upper.BCPressure.alltime.Value = -0.005
 
 LWvdz.TopoSlopesX.Type = 'PFBFile'
 LWvdz.TopoSlopesX.GeomNames = 'domain'
-
 LWvdz.TopoSlopesX.FileName = 'lw.1km.slope_x.10x.pfb'
-
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
@@ -263,7 +274,6 @@ LWvdz.TopoSlopesX.FileName = 'lw.1km.slope_x.10x.pfb'
 
 LWvdz.TopoSlopesY.Type = 'PFBFile'
 LWvdz.TopoSlopesY.GeomNames = 'domain'
-
 LWvdz.TopoSlopesY.FileName = 'lw.1km.slope_y.10x.pfb'
 
 #---------------------------------------------------------
@@ -295,7 +305,6 @@ LWvdz.PhaseSources.water.Geom.domain.Value = 0.0
 
 LWvdz.KnownSolution = 'NoKnownSolution'
 
-
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
@@ -305,16 +314,13 @@ LWvdz.Solver.MaxIter = 2500
 
 LWvdz.Solver.TerrainFollowingGrid = True
 
-
 LWvdz.Solver.Nonlinear.MaxIter = 80
 LWvdz.Solver.Nonlinear.ResidualTol = 1e-5
 LWvdz.Solver.Nonlinear.EtaValue = 0.001
 
-
 LWvdz.Solver.PrintSubsurf = False
 LWvdz.Solver.Drop = 1E-20
 LWvdz.Solver.AbsTol = 1E-10
-
 
 LWvdz.Solver.Nonlinear.EtaChoice = 'EtaConstant'
 LWvdz.Solver.Nonlinear.EtaValue = 0.001
@@ -341,7 +347,6 @@ LWvdz.Geom.domain.ICPressure.Value = -10.0
 
 LWvdz.Geom.domain.ICPressure.RefGeom = 'domain'
 LWvdz.Geom.domain.ICPressure.RefPatch = 'z_upper'
-
 
 #spinup key
 LWvdz.Solver.Spinup = False

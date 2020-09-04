@@ -1,9 +1,14 @@
+#------------------------------------------------------------------
 #  This runs the basic smg test case based off of default richards
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
+#------------------------------------------------------------------
 
 from parflow import Run
+
 smg = Run("smg", __file__)
+
+#------------------------------------------------------------------
 
 smg.FileVersion = 4
 
@@ -14,6 +19,7 @@ smg.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 smg.ComputationalGrid.Lower.X = -10.0
 smg.ComputationalGrid.Lower.Y = 10.0
 smg.ComputationalGrid.Lower.Z = 1.0
@@ -29,18 +35,20 @@ smg.ComputationalGrid.NZ = 8
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-smg.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
+smg.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
+
 smg.GeomInput.domain_input.InputType = 'Box'
 smg.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
+
 smg.Geom.domain.Lower.X = -10.0
 smg.Geom.domain.Lower.Y = 10.0
 smg.Geom.domain.Lower.Z = 1.0
@@ -54,12 +62,14 @@ smg.Geom.domain.Patches = 'left right front back bottom top'
 #---------------------------------------------------------
 # Background Geometry Input
 #---------------------------------------------------------
+
 smg.GeomInput.background_input.InputType = 'Box'
 smg.GeomInput.background_input.GeomName = 'background'
 
 #---------------------------------------------------------
 # Background Geometry
 #---------------------------------------------------------
+
 smg.Geom.background.Lower.X = -99999999.0
 smg.Geom.background.Lower.Y = -99999999.0
 smg.Geom.background.Lower.Z = -99999999.0
@@ -68,16 +78,17 @@ smg.Geom.background.Upper.X = 99999999.0
 smg.Geom.background.Upper.Y = 99999999.0
 smg.Geom.background.Upper.Z = 99999999.0
 
-
 #---------------------------------------------------------
 # Source_Region Geometry Input
 #---------------------------------------------------------
+
 smg.GeomInput.source_region_input.InputType = 'Box'
 smg.GeomInput.source_region_input.GeomName = 'source_region'
 
 #---------------------------------------------------------
 # Source_Region Geometry
 #---------------------------------------------------------
+
 smg.Geom.source_region.Lower.X = 65.56
 smg.Geom.source_region.Lower.Y = 79.34
 smg.Geom.source_region.Lower.Z = 4.5
@@ -86,16 +97,17 @@ smg.Geom.source_region.Upper.X = 74.44
 smg.Geom.source_region.Upper.Y = 89.99
 smg.Geom.source_region.Upper.Z = 5.5
 
-
 #---------------------------------------------------------
 # Concen_Region Geometry Input
 #---------------------------------------------------------
+
 smg.GeomInput.concen_region_input.InputType = 'Box'
 smg.GeomInput.concen_region_input.GeomName = 'concen_region'
 
 #---------------------------------------------------------
 # Concen_Region Geometry
 #---------------------------------------------------------
+
 smg.Geom.concen_region.Lower.X = 60.0
 smg.Geom.concen_region.Lower.Y = 80.0
 smg.Geom.concen_region.Lower.Z = 4.0
@@ -107,6 +119,7 @@ smg.Geom.concen_region.Upper.Z = 6.0
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 smg.Geom.Perm.Names = 'background'
 
 smg.Geom.background.Perm.Type = 'Constant'
@@ -143,11 +156,13 @@ smg.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
+
 smg.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
+
 smg.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
@@ -180,6 +195,7 @@ smg.Geom.background.Porosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 smg.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
@@ -205,11 +221,13 @@ smg.Geom.domain.Saturation.SSat = 0.99
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 smg.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 smg.Cycle.Names = 'constant'
 smg.Cycle.constant.Names = 'alltime'
 smg.Cycle.constant.alltime.Length = 1
@@ -218,6 +236,7 @@ smg.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 smg.BCPressure.PatchNames = 'left right front back bottom top'
 
 smg.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
@@ -254,7 +273,6 @@ smg.Patch.top.BCPressure.alltime.Value = 0.0
 
 smg.TopoSlopesX.Type = 'Constant'
 smg.TopoSlopesX.GeomNames = 'domain'
-
 smg.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -263,7 +281,6 @@ smg.TopoSlopesX.Geom.domain.Value = 0.0
 
 smg.TopoSlopesY.Type = 'Constant'
 smg.TopoSlopesY.GeomNames = 'domain'
-
 smg.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -292,17 +309,16 @@ smg.PhaseSources.water.Type = 'Constant'
 smg.PhaseSources.water.GeomNames = 'background'
 smg.PhaseSources.water.Geom.background.Value = 0.0
 
-
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
 smg.KnownSolution = 'NoKnownSolution'
 
-
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 smg.Solver = 'Richards'
 smg.Solver.MaxIter = 5
 

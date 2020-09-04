@@ -1,16 +1,24 @@
+#---------------------------------------------------------
 #  This runs the basic default_richards test case.
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
+#---------------------------------------------------------
 
 from parflow import Run
 from parflow.tools.fs import cp
 
 vgf = Run("van-genuchten-file", __file__)
 
+#---------------------------------------------------------
+# Copying parameter files
+#---------------------------------------------------------
+
 cp('$PF_SRC/test/input/van-genuchten-alpha.pfb')
 cp('$PF_SRC/test/input/van-genuchten-n.pfb')
 cp('$PF_SRC/test/input/van-genuchten-sr.pfb')
 cp('$PF_SRC/test/input/van-genuchten-ssat.pfb')
+
+#---------------------------------------------------------
 
 vgf.FileVersion = 4
 
@@ -21,6 +29,7 @@ vgf.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 vgf.ComputationalGrid.Lower.X = -10.0
 vgf.ComputationalGrid.Lower.Y = 10.0
 vgf.ComputationalGrid.Lower.Z = 1.0
@@ -36,18 +45,20 @@ vgf.ComputationalGrid.NZ = 8
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-vgf.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
+vgf.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
+
 vgf.GeomInput.domain_input.InputType = 'Box'
 vgf.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
+
 vgf.Geom.domain.Lower.X = -10.0
 vgf.Geom.domain.Lower.Y = 10.0
 vgf.Geom.domain.Lower.Z = 1.0
@@ -61,12 +72,14 @@ vgf.Geom.domain.Patches = 'left right front back bottom top'
 #---------------------------------------------------------
 # Background Geometry Input
 #---------------------------------------------------------
+
 vgf.GeomInput.background_input.InputType = 'Box'
 vgf.GeomInput.background_input.GeomName = 'background'
 
 #---------------------------------------------------------
 # Background Geometry
 #---------------------------------------------------------
+
 vgf.Geom.background.Lower.X = -99999999.0
 vgf.Geom.background.Lower.Y = -99999999.0
 vgf.Geom.background.Lower.Z = -99999999.0
@@ -75,16 +88,17 @@ vgf.Geom.background.Upper.X = 99999999.0
 vgf.Geom.background.Upper.Y = 99999999.0
 vgf.Geom.background.Upper.Z = 99999999.0
 
-
 #---------------------------------------------------------
 # Source_Region Geometry Input
 #---------------------------------------------------------
+
 vgf.GeomInput.source_region_input.InputType = 'Box'
 vgf.GeomInput.source_region_input.GeomName = 'source_region'
 
 #---------------------------------------------------------
 # Source_Region Geometry
 #---------------------------------------------------------
+
 vgf.Geom.source_region.Lower.X = 65.56
 vgf.Geom.source_region.Lower.Y = 79.34
 vgf.Geom.source_region.Lower.Z = 4.5
@@ -93,16 +107,17 @@ vgf.Geom.source_region.Upper.X = 74.44
 vgf.Geom.source_region.Upper.Y = 89.99
 vgf.Geom.source_region.Upper.Z = 5.5
 
-
 #---------------------------------------------------------
 # Concen_Region Geometry Input
 #---------------------------------------------------------
+
 vgf.GeomInput.concen_region_input.InputType = 'Box'
 vgf.GeomInput.concen_region_input.GeomName = 'concen_region'
 
 #---------------------------------------------------------
 # Concen_Region Geometry
 #---------------------------------------------------------
+
 vgf.Geom.concen_region.Lower.X = 60.0
 vgf.Geom.concen_region.Lower.Y = 80.0
 vgf.Geom.concen_region.Lower.Z = 4.0
@@ -114,6 +129,7 @@ vgf.Geom.concen_region.Upper.Z = 6.0
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 vgf.Geom.Perm.Names = 'background'
 
 vgf.Geom.background.Perm.Type = 'Constant'
@@ -150,11 +166,13 @@ vgf.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
+
 vgf.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
+
 vgf.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
@@ -187,6 +205,7 @@ vgf.Geom.background.Porosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 vgf.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
@@ -218,15 +237,16 @@ vgf.Geom.domain.Saturation.N.Filename = 'van-genuchten-n.pfb'
 vgf.Geom.domain.Saturation.SRes.Filename = 'van-genuchten-sr.pfb'
 vgf.Geom.domain.Saturation.SSat.Filename = 'van-genuchten-ssat.pfb'
 
-
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 vgf.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 vgf.Cycle.Names = 'constant'
 vgf.Cycle.constant.Names = 'alltime'
 vgf.Cycle.constant.alltime.Length = 1
@@ -235,6 +255,7 @@ vgf.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 vgf.BCPressure.PatchNames = 'left right front back bottom top'
 
 vgf.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
@@ -271,7 +292,6 @@ vgf.Patch.top.BCPressure.alltime.Value = 0.0
 
 vgf.TopoSlopesX.Type = 'Constant'
 vgf.TopoSlopesX.GeomNames = 'domain'
-
 vgf.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -280,7 +300,6 @@ vgf.TopoSlopesX.Geom.domain.Value = 0.0
 
 vgf.TopoSlopesY.Type = 'Constant'
 vgf.TopoSlopesY.GeomNames = 'domain'
-
 vgf.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -316,10 +335,10 @@ vgf.PhaseSources.water.Geom.background.Value = 0.0
 
 vgf.KnownSolution = 'NoKnownSolution'
 
-
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 vgf.Solver = 'Richards'
 vgf.Solver.MaxIter = 5
 
@@ -333,7 +352,6 @@ vgf.Solver.Nonlinear.DerivativeEpsilon = 1e-2
 vgf.Solver.Linear.KrylovDimension = 10
 
 vgf.Solver.Linear.Preconditioner = 'PFMG'
-
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

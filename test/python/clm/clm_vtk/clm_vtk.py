@@ -1,10 +1,15 @@
+#-----------------------------------------------------------------------------
 # this runs CLM test case with vtk (not included in the ParFlow test suite)
+#-----------------------------------------------------------------------------
 
-import os
 from parflow import Run
 from parflow.tools.fs import cp, mkdir
 
 clm_vtk = Run("clm_vtk", __file__)
+
+#-----------------------------------------------------------------------------
+# Making output directories and copying input files
+#-----------------------------------------------------------------------------
 
 directories = ['qflx_evap_grnd', 'eflx_lh_tot', 'qflx_evap_tot', 'qflx_tran_veg', 'correct_output',
                'qflx_infl', 'swe_out', 'eflx_lwrad_out', 't_grnd', 'diag_out', 'qflx_evap_soi', 'eflx_soil_grnd',
@@ -18,10 +23,10 @@ cp('$PF_SRC/test/clm/drv_vegm.dat')
 cp('$PF_SRC/test/clm/drv_vegp.dat')
 cp('$PF_SRC/test/clm/narr_1hr.sc3.txt.0')
 
-
 #-----------------------------------------------------------------------------
 # File input version number
 #-----------------------------------------------------------------------------
+
 clm_vtk.FileVersion = 4
 
 #-----------------------------------------------------------------------------
@@ -35,6 +40,7 @@ clm_vtk.Process.Topology.R = 1
 #-----------------------------------------------------------------------------
 # Computational Grid
 #-----------------------------------------------------------------------------
+
 clm_vtk.ComputationalGrid.Lower.X = 0.0
 clm_vtk.ComputationalGrid.Lower.Y = 0.0
 clm_vtk.ComputationalGrid.Lower.Z = 0.0
@@ -50,18 +56,20 @@ clm_vtk.ComputationalGrid.NZ = 10
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
 #-----------------------------------------------------------------------------
-clm_vtk.GeomInput.Names = 'domain_input'
 
+clm_vtk.GeomInput.Names = 'domain_input'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry Input
 #-----------------------------------------------------------------------------
+
 clm_vtk.GeomInput.domain_input.InputType = 'Box'
 clm_vtk.GeomInput.domain_input.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry
 #-----------------------------------------------------------------------------
+
 clm_vtk.Geom.domain.Lower.X = 0.0
 clm_vtk.Geom.domain.Lower.Y = 0.0
 clm_vtk.Geom.domain.Lower.Z = 0.0
@@ -75,6 +83,7 @@ clm_vtk.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 clm_vtk.Geom.Perm.Names = 'domain'
 
 clm_vtk.Geom.domain.Perm.Type = 'TurnBands'
@@ -90,7 +99,6 @@ clm_vtk.Geom.domain.Perm.DelK = 0.2
 clm_vtk.Geom.domain.Perm.Seed = 23333
 clm_vtk.Geom.domain.Perm.LogNormal = 'Log'
 clm_vtk.Geom.domain.Perm.StratType = 'Bottom'
-
 
 clm_vtk.Perm.TensorType = 'TensorByGeom'
 
@@ -125,8 +133,8 @@ clm_vtk.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-clm_vtk.Contaminants.Names = ''
 
+clm_vtk.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
@@ -137,7 +145,7 @@ clm_vtk.Gravity = 1.0
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
-#
+
 clm_vtk.TimingInfo.BaseUnit = 1.0
 clm_vtk.TimingInfo.StartCount = 0
 clm_vtk.TimingInfo.StartTime = 0.0
@@ -145,7 +153,6 @@ clm_vtk.TimingInfo.StopTime = 5
 clm_vtk.TimingInfo.DumpInterval = -1
 clm_vtk.TimeStep.Type = 'Constant'
 clm_vtk.TimeStep.Value = 1.0
-#
 
 #-----------------------------------------------------------------------------
 # Porosity
@@ -159,21 +166,23 @@ clm_vtk.Geom.domain.Porosity.Value = 0.390
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 clm_vtk.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Mobility
 #-----------------------------------------------------------------------------
+
 clm_vtk.Phase.water.Mobility.Type = 'Constant'
 clm_vtk.Phase.water.Mobility.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
-#
+
 clm_vtk.Phase.RelPerm.Type = 'VanGenuchten'
 clm_vtk.Phase.RelPerm.GeomNames = 'domain'
-#
+
 clm_vtk.Geom.domain.RelPerm.Alpha = 3.5
 clm_vtk.Geom.domain.RelPerm.N = 2.
 
@@ -183,7 +192,7 @@ clm_vtk.Geom.domain.RelPerm.N = 2.
 
 clm_vtk.Phase.Saturation.Type = 'VanGenuchten'
 clm_vtk.Phase.Saturation.GeomNames = 'domain'
-#
+
 clm_vtk.Geom.domain.Saturation.Alpha = 3.5
 clm_vtk.Geom.domain.Saturation.N = 2.
 clm_vtk.Geom.domain.Saturation.SRes = 0.01
@@ -192,12 +201,13 @@ clm_vtk.Geom.domain.Saturation.SSat = 1.0
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-clm_vtk.Wells.Names = ''
 
+clm_vtk.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 clm_vtk.Cycle.Names = 'constant'
 clm_vtk.Cycle.constant.Names = 'alltime'
 clm_vtk.Cycle.constant.alltime.Length = 1
@@ -206,28 +216,29 @@ clm_vtk.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 clm_vtk.BCPressure.PatchNames = clm_vtk.Geom.domain.Patches
-#
+
 clm_vtk.Patch.x_lower.BCPressure.Type = 'FluxConst'
 clm_vtk.Patch.x_lower.BCPressure.Cycle = 'constant'
 clm_vtk.Patch.x_lower.BCPressure.alltime.Value = 0.0
-#
+
 clm_vtk.Patch.y_lower.BCPressure.Type = 'FluxConst'
 clm_vtk.Patch.y_lower.BCPressure.Cycle = 'constant'
 clm_vtk.Patch.y_lower.BCPressure.alltime.Value = 0.0
-#
+
 clm_vtk.Patch.z_lower.BCPressure.Type = 'FluxConst'
 clm_vtk.Patch.z_lower.BCPressure.Cycle = 'constant'
 clm_vtk.Patch.z_lower.BCPressure.alltime.Value = 0.0
-#
+
 clm_vtk.Patch.x_upper.BCPressure.Type = 'FluxConst'
 clm_vtk.Patch.x_upper.BCPressure.Cycle = 'constant'
 clm_vtk.Patch.x_upper.BCPressure.alltime.Value = 0.0
-#
+
 clm_vtk.Patch.y_upper.BCPressure.Type = 'FluxConst'
 clm_vtk.Patch.y_upper.BCPressure.Cycle = 'constant'
 clm_vtk.Patch.y_upper.BCPressure.alltime.Value = 0.0
-#
+
 clm_vtk.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
 clm_vtk.Patch.z_upper.BCPressure.Cycle = 'constant'
 clm_vtk.Patch.z_upper.BCPressure.alltime.Value = 0.0
@@ -235,23 +246,23 @@ clm_vtk.Patch.z_upper.BCPressure.alltime.Value = 0.0
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
-#
+
 clm_vtk.TopoSlopesX.Type = 'Constant'
 clm_vtk.TopoSlopesX.GeomNames = 'domain'
 clm_vtk.TopoSlopesX.Geom.domain.Value = -0.001
-#
+
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
-#
+
 clm_vtk.TopoSlopesY.Type = 'Constant'
 clm_vtk.TopoSlopesY.GeomNames = 'domain'
 clm_vtk.TopoSlopesY.Geom.domain.Value = 0.001
-#
+
 #---------------------------------------------------------
 # Mannings coefficient
 #---------------------------------------------------------
-#
+
 clm_vtk.Mannings.Type = 'Constant'
 clm_vtk.Mannings.GeomNames = 'domain'
 clm_vtk.Mannings.Geom.domain.Value = 5.52e-6
@@ -263,20 +274,20 @@ clm_vtk.Mannings.Geom.domain.Value = 5.52e-6
 clm_vtk.PhaseSources.water.Type = 'Constant'
 clm_vtk.PhaseSources.water.GeomNames = 'domain'
 clm_vtk.PhaseSources.water.Geom.domain.Value = 0.0
-#
+
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
-#
+
 clm_vtk.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
-#
+
 clm_vtk.Solver = 'Richards'
 clm_vtk.Solver.MaxIter = 500
-#
+
 clm_vtk.Solver.Nonlinear.MaxIter = 75
 clm_vtk.Solver.Nonlinear.ResidualTol = 1e-9
 clm_vtk.Solver.Nonlinear.EtaChoice = 'EtaConstant'
@@ -286,18 +297,17 @@ clm_vtk.Solver.Nonlinear.StepTol = 1e-20
 clm_vtk.Solver.Nonlinear.Globalization = 'LineSearch'
 clm_vtk.Solver.Linear.KrylovDimension = 15
 clm_vtk.Solver.Linear.MaxRestart = 2
-#
+
 clm_vtk.Solver.Linear.Preconditioner = 'PFMG'
 clm_vtk.Solver.PrintSubsurf = False
 clm_vtk.Solver.Drop = 1E-20
 clm_vtk.Solver.AbsTol = 1E-9
-#
+
 clm_vtk.Solver.LSM = 'CLM'
 clm_vtk.Solver.WriteSiloCLM = False
 clm_vtk.Solver.CLM.MetForcing = '1D'
 clm_vtk.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
 clm_vtk.Solver.CLM.MetFilePath = '.'
-
 
 clm_vtk.Solver.WriteSiloEvapTrans = False
 clm_vtk.Solver.WriteSiloOverlandBCFlux = False
@@ -316,13 +326,14 @@ clm_vtk.Solver.CLM.WriteLastRST = True
 clm_vtk.Solver.CLM.WriteLogs = False
 clm_vtk.Solver.CLM.DailyRST = False
 
+#---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
-#
+
 clm_vtk.ICPressure.Type = 'HydroStaticPatch'
 clm_vtk.ICPressure.GeomNames = 'domain'
 clm_vtk.Geom.domain.ICPressure.Value = -2.0
-#
+
 clm_vtk.Geom.domain.ICPressure.RefGeom = 'domain'
 clm_vtk.Geom.domain.ICPressure.RefPatch = 'z_upper'
 

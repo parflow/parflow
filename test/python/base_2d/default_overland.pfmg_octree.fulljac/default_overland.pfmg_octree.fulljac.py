@@ -1,97 +1,106 @@
+#---------------------------------------------------------
 #  This runs the tilted-v catchment problem
 #  similar to that in Kollet and Maxwell (2006) AWR
-
-tcl_precision = 17
+#---------------------------------------------------------
 
 from parflow import Run
-default_overland_pfmg_octree_fulljac = Run("default_overland_pfmg_octree_fulljac", __file__)
 
-default_overland_pfmg_octree_fulljac.FileVersion = 4
+dover = Run("default_overland_pfmg_octree_fulljac", __file__)
 
-default_overland_pfmg_octree_fulljac.Process.Topology.P = 1
-default_overland_pfmg_octree_fulljac.Process.Topology.Q = 1
-default_overland_pfmg_octree_fulljac.Process.Topology.R = 1
+#---------------------------------------------------------
+
+dover.FileVersion = 4
+
+dover.Process.Topology.P = 1
+dover.Process.Topology.Q = 1
+dover.Process.Topology.R = 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-default_overland_pfmg_octree_fulljac.ComputationalGrid.Lower.X = 0.0
-default_overland_pfmg_octree_fulljac.ComputationalGrid.Lower.Y = 0.0
-default_overland_pfmg_octree_fulljac.ComputationalGrid.Lower.Z = 0.0
 
-default_overland_pfmg_octree_fulljac.ComputationalGrid.NX = 30
-default_overland_pfmg_octree_fulljac.ComputationalGrid.NY = 30
-default_overland_pfmg_octree_fulljac.ComputationalGrid.NZ = 30
+dover.ComputationalGrid.Lower.X = 0.0
+dover.ComputationalGrid.Lower.Y = 0.0
+dover.ComputationalGrid.Lower.Z = 0.0
 
-default_overland_pfmg_octree_fulljac.ComputationalGrid.DX = 10.0
-default_overland_pfmg_octree_fulljac.ComputationalGrid.DY = 10.0
-default_overland_pfmg_octree_fulljac.ComputationalGrid.DZ = .05
+dover.ComputationalGrid.NX = 30
+dover.ComputationalGrid.NY = 30
+dover.ComputationalGrid.NZ = 30
+
+dover.ComputationalGrid.DX = 10.0
+dover.ComputationalGrid.DY = 10.0
+dover.ComputationalGrid.DZ = .05
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-default_overland_pfmg_octree_fulljac.GeomInput.Names = 'domaininput leftinput rightinput channelinput'
 
-default_overland_pfmg_octree_fulljac.GeomInput.domaininput.GeomName = 'domain'
-default_overland_pfmg_octree_fulljac.GeomInput.leftinput.GeomName = 'left'
-default_overland_pfmg_octree_fulljac.GeomInput.rightinput.GeomName = 'right'
-default_overland_pfmg_octree_fulljac.GeomInput.channelinput.GeomName = 'channel'
+dover.GeomInput.Names = 'domaininput leftinput rightinput channelinput'
 
-default_overland_pfmg_octree_fulljac.GeomInput.domaininput.InputType = 'Box'
-default_overland_pfmg_octree_fulljac.GeomInput.leftinput.InputType = 'Box'
-default_overland_pfmg_octree_fulljac.GeomInput.rightinput.InputType = 'Box'
-default_overland_pfmg_octree_fulljac.GeomInput.channelinput.InputType = 'Box'
+dover.GeomInput.domaininput.GeomName = 'domain'
+dover.GeomInput.leftinput.GeomName = 'left'
+dover.GeomInput.rightinput.GeomName = 'right'
+dover.GeomInput.channelinput.GeomName = 'channel'
+
+dover.GeomInput.domaininput.InputType = 'Box'
+dover.GeomInput.leftinput.InputType = 'Box'
+dover.GeomInput.rightinput.InputType = 'Box'
+dover.GeomInput.channelinput.InputType = 'Box'
 
 #---------------------------------------------------------
 # Domain Geometry 
 #---------------------------------------------------------
-default_overland_pfmg_octree_fulljac.Geom.domain.Lower.X = 0.0
-default_overland_pfmg_octree_fulljac.Geom.domain.Lower.Y = 0.0
-default_overland_pfmg_octree_fulljac.Geom.domain.Lower.Z = 0.0
-#  
-default_overland_pfmg_octree_fulljac.Geom.domain.Upper.X = 300.0
-default_overland_pfmg_octree_fulljac.Geom.domain.Upper.Y = 300.0
-default_overland_pfmg_octree_fulljac.Geom.domain.Upper.Z = 1.5
-default_overland_pfmg_octree_fulljac.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
+
+dover.Geom.domain.Lower.X = 0.0
+dover.Geom.domain.Lower.Y = 0.0
+dover.Geom.domain.Lower.Z = 0.0
+
+dover.Geom.domain.Upper.X = 300.0
+dover.Geom.domain.Upper.Y = 300.0
+dover.Geom.domain.Upper.Z = 1.5
+dover.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 
 #---------------------------------------------------------
 # Left Slope Geometry 
 #---------------------------------------------------------
-default_overland_pfmg_octree_fulljac.Geom.left.Lower.X = 0.0
-default_overland_pfmg_octree_fulljac.Geom.left.Lower.Y = 0.0
-default_overland_pfmg_octree_fulljac.Geom.left.Lower.Z = 0.0
-#  
-default_overland_pfmg_octree_fulljac.Geom.left.Upper.X = 140.0
-default_overland_pfmg_octree_fulljac.Geom.left.Upper.Y = 300.0
-default_overland_pfmg_octree_fulljac.Geom.left.Upper.Z = 1.5
+
+dover.Geom.left.Lower.X = 0.0
+dover.Geom.left.Lower.Y = 0.0
+dover.Geom.left.Lower.Z = 0.0
+
+dover.Geom.left.Upper.X = 140.0
+dover.Geom.left.Upper.Y = 300.0
+dover.Geom.left.Upper.Z = 1.5
 
 #---------------------------------------------------------
 # Right Slope Geometry 
 #---------------------------------------------------------
-default_overland_pfmg_octree_fulljac.Geom.right.Lower.X = 160.0
-default_overland_pfmg_octree_fulljac.Geom.right.Lower.Y = 0.0
-default_overland_pfmg_octree_fulljac.Geom.right.Lower.Z = 0.0
-#  
-default_overland_pfmg_octree_fulljac.Geom.right.Upper.X = 300.0
-default_overland_pfmg_octree_fulljac.Geom.right.Upper.Y = 300.0
-default_overland_pfmg_octree_fulljac.Geom.right.Upper.Z = 1.5
+
+dover.Geom.right.Lower.X = 160.0
+dover.Geom.right.Lower.Y = 0.0
+dover.Geom.right.Lower.Z = 0.0
+
+dover.Geom.right.Upper.X = 300.0
+dover.Geom.right.Upper.Y = 300.0
+dover.Geom.right.Upper.Z = 1.5
 
 #---------------------------------------------------------
 # Channel Geometry 
 #---------------------------------------------------------
-default_overland_pfmg_octree_fulljac.Geom.channel.Lower.X = 140.0
-default_overland_pfmg_octree_fulljac.Geom.channel.Lower.Y = 0.0
-default_overland_pfmg_octree_fulljac.Geom.channel.Lower.Z = 0.0
-#  
-default_overland_pfmg_octree_fulljac.Geom.channel.Upper.X = 160.0
-default_overland_pfmg_octree_fulljac.Geom.channel.Upper.Y = 300.0
-default_overland_pfmg_octree_fulljac.Geom.channel.Upper.Z = 1.5
+
+dover.Geom.channel.Lower.X = 140.0
+dover.Geom.channel.Lower.Y = 0.0
+dover.Geom.channel.Lower.Z = 0.0
+
+dover.Geom.channel.Upper.X = 160.0
+dover.Geom.channel.Upper.Y = 300.0
+dover.Geom.channel.Upper.Z = 1.5
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Geom.Perm.Names = 'left right channel'
+dover.Geom.Perm.Names = 'left right channel'
 
 # Values in m/hour
 
@@ -99,298 +108,289 @@ default_overland_pfmg_octree_fulljac.Geom.Perm.Names = 'left right channel'
 # the following is ignored if the perm.type "Constant" settings are not
 # commented out, below.
 
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.Type = 'TurnBands'
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.LambdaX = 50.
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.LambdaY = 50.
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.LambdaZ = 0.5
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.GeomMean = 0.01
+dover.Geom.left.Perm.Type = 'TurnBands'
+dover.Geom.left.Perm.LambdaX = 50.
+dover.Geom.left.Perm.LambdaY = 50.
+dover.Geom.left.Perm.LambdaZ = 0.5
+dover.Geom.left.Perm.GeomMean = 0.01
 
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.Sigma = 0.5
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.NumLines = 40
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.RZeta = 5.0
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.KMax = 100.0
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.DelK = 0.2
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.Seed = 33333
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.LogNormal = 'Log'
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.StratType = 'Bottom'
+dover.Geom.left.Perm.Sigma = 0.5
+dover.Geom.left.Perm.NumLines = 40
+dover.Geom.left.Perm.RZeta = 5.0
+dover.Geom.left.Perm.KMax = 100.0
+dover.Geom.left.Perm.DelK = 0.2
+dover.Geom.left.Perm.Seed = 33333
+dover.Geom.left.Perm.LogNormal = 'Log'
+dover.Geom.left.Perm.StratType = 'Bottom'
 
+dover.Geom.right.Perm.Type = 'TurnBands'
+dover.Geom.right.Perm.LambdaX = 50.
+dover.Geom.right.Perm.LambdaY = 50.
+dover.Geom.right.Perm.LambdaZ = 0.5
+dover.Geom.right.Perm.GeomMean = 0.05
 
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.Type = 'TurnBands'
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.LambdaX = 50.
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.LambdaY = 50.
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.LambdaZ = 0.5
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.GeomMean = 0.05
-
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.Sigma = 0.5
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.NumLines = 40
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.RZeta = 5.0
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.KMax = 100.0
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.DelK = 0.2
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.Seed = 13333
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.LogNormal = 'Log'
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.StratType = 'Bottom'
+dover.Geom.right.Perm.Sigma = 0.5
+dover.Geom.right.Perm.NumLines = 40
+dover.Geom.right.Perm.RZeta = 5.0
+dover.Geom.right.Perm.KMax = 100.0
+dover.Geom.right.Perm.DelK = 0.2
+dover.Geom.right.Perm.Seed = 13333
+dover.Geom.right.Perm.LogNormal = 'Log'
+dover.Geom.right.Perm.StratType = 'Bottom'
 
 # hydraulic conductivity is very low, but not zero, top node will have to saturate
 # before overland flow can begin and will be driven by hortonian flow
 # comment out the left and right settings to make the subsurface heterogeneous using
 # turning bands above.  Run time increases quite a bit with a heterogeneous
 # subsurface
-#
 
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Geom.left.Perm.Value = 0.001
+dover.Geom.left.Perm.Type = 'Constant'
+dover.Geom.left.Perm.Value = 0.001
 
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Geom.right.Perm.Value = 0.01
+dover.Geom.right.Perm.Type = 'Constant'
+dover.Geom.right.Perm.Value = 0.01
 
-default_overland_pfmg_octree_fulljac.Geom.channel.Perm.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Geom.channel.Perm.Value = 0.00001
+dover.Geom.channel.Perm.Type = 'Constant'
+dover.Geom.channel.Perm.Value = 0.00001
 
-default_overland_pfmg_octree_fulljac.Perm.TensorType = 'TensorByGeom'
+dover.Perm.TensorType = 'TensorByGeom'
 
-default_overland_pfmg_octree_fulljac.Geom.Perm.TensorByGeom.Names = 'domain'
+dover.Geom.Perm.TensorByGeom.Names = 'domain'
 
-default_overland_pfmg_octree_fulljac.Geom.domain.Perm.TensorValX = 1.0
-default_overland_pfmg_octree_fulljac.Geom.domain.Perm.TensorValY = 1.0
-default_overland_pfmg_octree_fulljac.Geom.domain.Perm.TensorValZ = 1.0
+dover.Geom.domain.Perm.TensorValX = 1.0
+dover.Geom.domain.Perm.TensorValY = 1.0
+dover.Geom.domain.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.SpecificStorage.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.SpecificStorage.GeomNames = 'domain'
-default_overland_pfmg_octree_fulljac.Geom.domain.SpecificStorage.Value = 1.0e-4
+dover.SpecificStorage.Type = 'Constant'
+dover.SpecificStorage.GeomNames = 'domain'
+dover.Geom.domain.SpecificStorage.Value = 1.0e-4
 
 #-----------------------------------------------------------------------------
 # Phases
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Phase.Names = 'water'
+dover.Phase.Names = 'water'
 
-default_overland_pfmg_octree_fulljac.Phase.water.Density.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Phase.water.Density.Value = 1.0
+dover.Phase.water.Density.Type = 'Constant'
+dover.Phase.water.Density.Value = 1.0
 
-default_overland_pfmg_octree_fulljac.Phase.water.Viscosity.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Phase.water.Viscosity.Value = 1.0
+dover.Phase.water.Viscosity.Type = 'Constant'
+dover.Phase.water.Viscosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Contaminants.Names = ''
+dover.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Geom.Retardation.GeomNames = ''
+dover.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Gravity = 1.0
+dover.Gravity = 1.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-# 
-default_overland_pfmg_octree_fulljac.TimingInfo.BaseUnit = 0.1
-default_overland_pfmg_octree_fulljac.TimingInfo.StartCount = 0
-default_overland_pfmg_octree_fulljac.TimingInfo.StartTime = 0.0
-default_overland_pfmg_octree_fulljac.TimingInfo.StopTime = 0.4
-default_overland_pfmg_octree_fulljac.TimingInfo.DumpInterval = -1
-default_overland_pfmg_octree_fulljac.TimeStep.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.TimeStep.Value = 0.1
-#  
+dover.TimingInfo.BaseUnit = 0.1
+dover.TimingInfo.StartCount = 0
+dover.TimingInfo.StartTime = 0.0
+dover.TimingInfo.StopTime = 0.4
+dover.TimingInfo.DumpInterval = -1
+dover.TimeStep.Type = 'Constant'
+dover.TimeStep.Value = 0.1
+
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Geom.Porosity.GeomNames = 'left right channel'
+dover.Geom.Porosity.GeomNames = 'left right channel'
 
-default_overland_pfmg_octree_fulljac.Geom.left.Porosity.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Geom.left.Porosity.Value = 0.25
+dover.Geom.left.Porosity.Type = 'Constant'
+dover.Geom.left.Porosity.Value = 0.25
 
-default_overland_pfmg_octree_fulljac.Geom.right.Porosity.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Geom.right.Porosity.Value = 0.25
+dover.Geom.right.Porosity.Type = 'Constant'
+dover.Geom.right.Porosity.Value = 0.25
 
-default_overland_pfmg_octree_fulljac.Geom.channel.Porosity.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Geom.channel.Porosity.Value = 0.01
+dover.Geom.channel.Porosity.Type = 'Constant'
+dover.Geom.channel.Porosity.Value = 0.01
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Domain.GeomName = 'domain'
+dover.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Phase.RelPerm.Type = 'VanGenuchten'
-default_overland_pfmg_octree_fulljac.Phase.RelPerm.GeomNames = 'domain'
+dover.Phase.RelPerm.Type = 'VanGenuchten'
+dover.Phase.RelPerm.GeomNames = 'domain'
 
-default_overland_pfmg_octree_fulljac.Geom.domain.RelPerm.Alpha = 6.0
-default_overland_pfmg_octree_fulljac.Geom.domain.RelPerm.N = 2.
+dover.Geom.domain.RelPerm.Alpha = 6.0
+dover.Geom.domain.RelPerm.N = 2.
 
 #---------------------------------------------------------
 # Saturation
 #---------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Phase.Saturation.Type = 'VanGenuchten'
-default_overland_pfmg_octree_fulljac.Phase.Saturation.GeomNames = 'domain'
+dover.Phase.Saturation.Type = 'VanGenuchten'
+dover.Phase.Saturation.GeomNames = 'domain'
 
-default_overland_pfmg_octree_fulljac.Geom.domain.Saturation.Alpha = 6.0
-default_overland_pfmg_octree_fulljac.Geom.domain.Saturation.N = 2.
-default_overland_pfmg_octree_fulljac.Geom.domain.Saturation.SRes = 0.2
-default_overland_pfmg_octree_fulljac.Geom.domain.Saturation.SSat = 1.0
-
-
+dover.Geom.domain.Saturation.Alpha = 6.0
+dover.Geom.domain.Saturation.N = 2.
+dover.Geom.domain.Saturation.SRes = 0.2
+dover.Geom.domain.Saturation.SSat = 1.0
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-default_overland_pfmg_octree_fulljac.Wells.Names = ''
+
+dover.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
-default_overland_pfmg_octree_fulljac.Cycle.Names = 'constant rainrec'
-default_overland_pfmg_octree_fulljac.Cycle.constant.Names = 'alltime'
-default_overland_pfmg_octree_fulljac.Cycle.constant.alltime.Length = 1
-default_overland_pfmg_octree_fulljac.Cycle.constant.Repeat = -1
+
+dover.Cycle.Names = 'constant rainrec'
+dover.Cycle.constant.Names = 'alltime'
+dover.Cycle.constant.alltime.Length = 1
+dover.Cycle.constant.Repeat = -1
 
 # rainfall and recession time periods are defined here
 # rain for 1 hour, recession for 2 hours
 
-default_overland_pfmg_octree_fulljac.Cycle.rainrec.Names = 'rain rec'
-default_overland_pfmg_octree_fulljac.Cycle.rainrec.rain.Length = 1
-default_overland_pfmg_octree_fulljac.Cycle.rainrec.rec.Length = 2
-default_overland_pfmg_octree_fulljac.Cycle.rainrec.Repeat = -1
-#  
+dover.Cycle.rainrec.Names = 'rain rec'
+dover.Cycle.rainrec.rain.Length = 1
+dover.Cycle.rainrec.rec.Length = 2
+dover.Cycle.rainrec.Repeat = -1
+
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-default_overland_pfmg_octree_fulljac.BCPressure.PatchNames = default_overland_pfmg_octree_fulljac.Geom.domain.Patches
 
-default_overland_pfmg_octree_fulljac.Patch.x_lower.BCPressure.Type = 'FluxConst'
-default_overland_pfmg_octree_fulljac.Patch.x_lower.BCPressure.Cycle = 'constant'
-default_overland_pfmg_octree_fulljac.Patch.x_lower.BCPressure.alltime.Value = 0.0
+dover.BCPressure.PatchNames = dover.Geom.domain.Patches
 
-default_overland_pfmg_octree_fulljac.Patch.y_lower.BCPressure.Type = 'FluxConst'
-default_overland_pfmg_octree_fulljac.Patch.y_lower.BCPressure.Cycle = 'constant'
-default_overland_pfmg_octree_fulljac.Patch.y_lower.BCPressure.alltime.Value = 0.0
+dover.Patch.x_lower.BCPressure.Type = 'FluxConst'
+dover.Patch.x_lower.BCPressure.Cycle = 'constant'
+dover.Patch.x_lower.BCPressure.alltime.Value = 0.0
 
-default_overland_pfmg_octree_fulljac.Patch.z_lower.BCPressure.Type = 'FluxConst'
-default_overland_pfmg_octree_fulljac.Patch.z_lower.BCPressure.Cycle = 'constant'
-default_overland_pfmg_octree_fulljac.Patch.z_lower.BCPressure.alltime.Value = 0.0
+dover.Patch.y_lower.BCPressure.Type = 'FluxConst'
+dover.Patch.y_lower.BCPressure.Cycle = 'constant'
+dover.Patch.y_lower.BCPressure.alltime.Value = 0.0
 
-default_overland_pfmg_octree_fulljac.Patch.x_upper.BCPressure.Type = 'FluxConst'
-default_overland_pfmg_octree_fulljac.Patch.x_upper.BCPressure.Cycle = 'constant'
-default_overland_pfmg_octree_fulljac.Patch.x_upper.BCPressure.alltime.Value = 0.0
+dover.Patch.z_lower.BCPressure.Type = 'FluxConst'
+dover.Patch.z_lower.BCPressure.Cycle = 'constant'
+dover.Patch.z_lower.BCPressure.alltime.Value = 0.0
 
-default_overland_pfmg_octree_fulljac.Patch.y_upper.BCPressure.Type = 'FluxConst'
-default_overland_pfmg_octree_fulljac.Patch.y_upper.BCPressure.Cycle = 'constant'
-default_overland_pfmg_octree_fulljac.Patch.y_upper.BCPressure.alltime.Value = 0.0
+dover.Patch.x_upper.BCPressure.Type = 'FluxConst'
+dover.Patch.x_upper.BCPressure.Cycle = 'constant'
+dover.Patch.x_upper.BCPressure.alltime.Value = 0.0
+
+dover.Patch.y_upper.BCPressure.Type = 'FluxConst'
+dover.Patch.y_upper.BCPressure.Cycle = 'constant'
+dover.Patch.y_upper.BCPressure.alltime.Value = 0.0
 
 ## overland flow boundary condition with very heavy rainfall then slight ET
-default_overland_pfmg_octree_fulljac.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
-default_overland_pfmg_octree_fulljac.Patch.z_upper.BCPressure.Cycle = 'rainrec'
-default_overland_pfmg_octree_fulljac.Patch.z_upper.BCPressure.rain.Value = -0.05
-default_overland_pfmg_octree_fulljac.Patch.z_upper.BCPressure.rec.Value = 0.000001
+dover.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
+dover.Patch.z_upper.BCPressure.Cycle = 'rainrec'
+dover.Patch.z_upper.BCPressure.rain.Value = -0.05
+dover.Patch.z_upper.BCPressure.rec.Value = 0.000001
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.TopoSlopesX.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.TopoSlopesX.GeomNames = 'left right channel'
-default_overland_pfmg_octree_fulljac.TopoSlopesX.Geom.left.Value = -0.005
-default_overland_pfmg_octree_fulljac.TopoSlopesX.Geom.right.Value = 0.005
-default_overland_pfmg_octree_fulljac.TopoSlopesX.Geom.channel.Value = 0.00
+dover.TopoSlopesX.Type = 'Constant'
+dover.TopoSlopesX.GeomNames = 'left right channel'
+dover.TopoSlopesX.Geom.left.Value = -0.005
+dover.TopoSlopesX.Geom.right.Value = 0.005
+dover.TopoSlopesX.Geom.channel.Value = 0.00
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-
-default_overland_pfmg_octree_fulljac.TopoSlopesY.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.TopoSlopesY.GeomNames = 'left right channel'
-default_overland_pfmg_octree_fulljac.TopoSlopesY.Geom.left.Value = 0.001
-default_overland_pfmg_octree_fulljac.TopoSlopesY.Geom.right.Value = 0.001
-default_overland_pfmg_octree_fulljac.TopoSlopesY.Geom.channel.Value = 0.001
+dover.TopoSlopesY.Type = 'Constant'
+dover.TopoSlopesY.GeomNames = 'left right channel'
+dover.TopoSlopesY.Geom.left.Value = 0.001
+dover.TopoSlopesY.Geom.right.Value = 0.001
+dover.TopoSlopesY.Geom.channel.Value = 0.001
 
 #---------------------------------------------------------
 # Mannings coefficient 
 #---------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Mannings.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.Mannings.GeomNames = 'left right channel'
-default_overland_pfmg_octree_fulljac.Mannings.Geom.left.Value = 5.e-6
-default_overland_pfmg_octree_fulljac.Mannings.Geom.right.Value = 5.e-6
-default_overland_pfmg_octree_fulljac.Mannings.Geom.channel.Value = 1.e-6
+dover.Mannings.Type = 'Constant'
+dover.Mannings.GeomNames = 'left right channel'
+dover.Mannings.Geom.left.Value = 5.e-6
+dover.Mannings.Geom.right.Value = 5.e-6
+dover.Mannings.Geom.channel.Value = 1.e-6
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.PhaseSources.water.Type = 'Constant'
-default_overland_pfmg_octree_fulljac.PhaseSources.water.GeomNames = 'domain'
-default_overland_pfmg_octree_fulljac.PhaseSources.water.Geom.domain.Value = 0.0
+dover.PhaseSources.water.Type = 'Constant'
+dover.PhaseSources.water.GeomNames = 'domain'
+dover.PhaseSources.water.Geom.domain.Value = 0.0
 
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.KnownSolution = 'NoKnownSolution'
-
+dover.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.Solver = 'Richards'
-default_overland_pfmg_octree_fulljac.Solver.MaxIter = 2500
+dover.Solver = 'Richards'
+dover.Solver.MaxIter = 2500
 
-default_overland_pfmg_octree_fulljac.Solver.Nonlinear.MaxIter = 20
-default_overland_pfmg_octree_fulljac.Solver.Nonlinear.ResidualTol = 1e-9
-default_overland_pfmg_octree_fulljac.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-default_overland_pfmg_octree_fulljac.Solver.Nonlinear.EtaValue = 0.01
-default_overland_pfmg_octree_fulljac.Solver.Nonlinear.UseJacobian = True
-default_overland_pfmg_octree_fulljac.Solver.Nonlinear.DerivativeEpsilon = 1e-8
-default_overland_pfmg_octree_fulljac.Solver.Nonlinear.StepTol = 1e-20
-default_overland_pfmg_octree_fulljac.Solver.Nonlinear.Globalization = 'LineSearch'
-default_overland_pfmg_octree_fulljac.Solver.Linear.KrylovDimension = 20
-default_overland_pfmg_octree_fulljac.Solver.Linear.MaxRestart = 2
+dover.Solver.Nonlinear.MaxIter = 20
+dover.Solver.Nonlinear.ResidualTol = 1e-9
+dover.Solver.Nonlinear.EtaChoice = 'EtaConstant'
+dover.Solver.Nonlinear.EtaValue = 0.01
+dover.Solver.Nonlinear.UseJacobian = True
+dover.Solver.Nonlinear.DerivativeEpsilon = 1e-8
+dover.Solver.Nonlinear.StepTol = 1e-20
+dover.Solver.Nonlinear.Globalization = 'LineSearch'
+dover.Solver.Linear.KrylovDimension = 20
+dover.Solver.Linear.MaxRestart = 2
 
-default_overland_pfmg_octree_fulljac.Solver.Linear.Preconditioner = 'PFMGOctree'
-default_overland_pfmg_octree_fulljac.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
-default_overland_pfmg_octree_fulljac.Solver.PrintSubsurf = False
-default_overland_pfmg_octree_fulljac.Solver.Drop = 1E-20
-default_overland_pfmg_octree_fulljac.Solver.AbsTol = 1E-9
-#  
-default_overland_pfmg_octree_fulljac.Solver.WriteSiloSubsurfData = True
-default_overland_pfmg_octree_fulljac.Solver.WriteSiloPressure = True
-default_overland_pfmg_octree_fulljac.Solver.WriteSiloSaturation = True
-default_overland_pfmg_octree_fulljac.Solver.WriteSiloConcentration = True
+dover.Solver.Linear.Preconditioner = 'PFMGOctree'
+dover.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
+dover.Solver.PrintSubsurf = False
+dover.Solver.Drop = 1E-20
+dover.Solver.AbsTol = 1E-9
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
 
 # set water table to be at the bottom of the domain, the top layer is initially dry
-default_overland_pfmg_octree_fulljac.ICPressure.Type = 'HydroStaticPatch'
-default_overland_pfmg_octree_fulljac.ICPressure.GeomNames = 'domain'
-default_overland_pfmg_octree_fulljac.Geom.domain.ICPressure.Value = -3.0
+dover.ICPressure.Type = 'HydroStaticPatch'
+dover.ICPressure.GeomNames = 'domain'
+dover.Geom.domain.ICPressure.Value = -3.0
 
-default_overland_pfmg_octree_fulljac.Geom.domain.ICPressure.RefGeom = 'domain'
-default_overland_pfmg_octree_fulljac.Geom.domain.ICPressure.RefPatch = 'z_upper'
+dover.Geom.domain.ICPressure.RefGeom = 'domain'
+dover.Geom.domain.ICPressure.RefPatch = 'z_upper'
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-default_overland_pfmg_octree_fulljac.run()
+dover.run()

@@ -1,9 +1,7 @@
+#---------------------------------------------------------
 #  This runs the tilted-v catchment problem
 #  similar to that in Kollet and Maxwell (2006) AWR
-
-tcl_precision = 16
-
-verbose = 0
+#---------------------------------------------------------
 
 #---------------------------------------------------------
 # Some controls for the test
@@ -11,34 +9,36 @@ verbose = 0
 
 #---------------------------------------------------------
 # Control slopes 
-#-1 = slope to lower-x
-# 0 = flat top (no overland flow)
-# 1 = slope to upper-x
+# -1 = slope to lower-x
+#  0 = flat top (no overland flow)
+#  1 = slope to upper-x
 #---------------------------------------------------------
+
 use_slopes = 1
 
 #---------------------------------------------------------
 # Flux on the top surface
 #---------------------------------------------------------
+
 rain_flux = -0.05
 rec_flux = 0.0
 
 #---------------------------------------------------------
-# Import the ParFlow TCL package
+# Import ParFlow
 #---------------------------------------------------------
+
 from parflow import Run
 
-#---------------------------------------------------------
-# Name of the run
-#---------------------------------------------------------
-
 wbx = Run("wbx", __file__)
+
+#---------------------------------------------------------
 
 wbx.FileVersion = 4
 
 #---------------------------------------------------------
 # Processor topology
 #---------------------------------------------------------
+
 wbx.Process.Topology.P = 1
 wbx.Process.Topology.Q = 1
 wbx.Process.Topology.R = 1
@@ -46,6 +46,7 @@ wbx.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 wbx.ComputationalGrid.Lower.X = 0.0
 wbx.ComputationalGrid.Lower.Y = 0.0
 wbx.ComputationalGrid.Lower.Z = 0.0
@@ -61,6 +62,7 @@ wbx.ComputationalGrid.DZ = 0.05
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
+
 wbx.GeomInput.Names = 'domaininput leftinput rightinput channelinput'
 
 wbx.GeomInput.domaininput.GeomName = 'domain'
@@ -76,6 +78,7 @@ wbx.GeomInput.channelinput.InputType = 'Box'
 #---------------------------------------------------------
 # Domain Geometry 
 #---------------------------------------------------------
+
 wbx.Geom.domain.Lower.X = 0.0
 wbx.Geom.domain.Lower.Y = 0.0
 wbx.Geom.domain.Lower.Z = 0.0
@@ -87,6 +90,7 @@ wbx.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 #---------------------------------------------------------
 # Left Slope Geometry 
 #---------------------------------------------------------
+
 wbx.Geom.left.Lower.X = 0.0
 wbx.Geom.left.Lower.Y = 0.0
 wbx.Geom.left.Lower.Z = 0.0
@@ -97,6 +101,7 @@ wbx.Geom.left.Upper.Z = 1.5
 #---------------------------------------------------------
 # Right Slope Geometry 
 #---------------------------------------------------------
+
 wbx.Geom.right.Lower.X = 0.0
 wbx.Geom.right.Lower.Y = 160.0
 wbx.Geom.right.Lower.Z = 0.0
@@ -107,6 +112,7 @@ wbx.Geom.right.Upper.Z = 1.5
 #---------------------------------------------------------
 # Channel Geometry 
 #---------------------------------------------------------
+
 wbx.Geom.channel.Lower.X = 0.0
 wbx.Geom.channel.Lower.Y = 140.0
 wbx.Geom.channel.Lower.Z = 0.0
@@ -141,7 +147,6 @@ wbx.Geom.left.Perm.Seed = 33333
 wbx.Geom.left.Perm.LogNormal = 'Log'
 wbx.Geom.left.Perm.StratType = 'Bottom'
 
-
 wbx.Geom.right.Perm.Type = 'TurnBands'
 wbx.Geom.right.Perm.LambdaX = 50.
 wbx.Geom.right.Perm.LambdaY = 50.
@@ -162,7 +167,6 @@ wbx.Geom.right.Perm.StratType = 'Bottom'
 # comment out the left and right settings to make the subsurface heterogeneous using
 # turning bands above.  Run time increases quite a bit with a heterogeneous
 # subsurface
-#
 
 wbx.Geom.left.Perm.Type = 'Constant'
 wbx.Geom.left.Perm.Value = 0.001
@@ -230,6 +234,7 @@ wbx.TimingInfo.StopTime = 2.0
 wbx.TimingInfo.DumpInterval = 0.1
 wbx.TimeStep.Type = 'Constant'
 wbx.TimeStep.Value = 0.1
+
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
@@ -273,16 +278,16 @@ wbx.Geom.domain.Saturation.N = 3.
 wbx.Geom.domain.Saturation.SRes = 0.2
 wbx.Geom.domain.Saturation.SSat = 1.0
 
-
-
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 wbx.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 wbx.Cycle.Names = 'constant rainrec'
 wbx.Cycle.constant.Names = 'alltime'
 wbx.Cycle.constant.alltime.Length = 1
@@ -301,9 +306,11 @@ wbx.Cycle.rainrec.r5.Length = 1
 wbx.Cycle.rainrec.r6.Length = 1
 
 wbx.Cycle.rainrec.Repeat = 1
+
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 wbx.BCPressure.PatchNames = wbx.Geom.domain.Patches
 
 wbx.Patch.x_lower.BCPressure.Type = 'FluxConst'
@@ -337,7 +344,6 @@ wbx.Patch.z_upper.BCPressure.r4.Value = rec_flux
 wbx.Patch.z_upper.BCPressure.r5.Value = rec_flux
 wbx.Patch.z_upper.BCPressure.r6.Value = rec_flux
 
-
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
@@ -353,10 +359,10 @@ else:
   wbx.TopoSlopesX.Geom.right.Value = 0.000
   wbx.TopoSlopesX.Geom.channel.Value = 0.000
 
-
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
+
 wbx.TopoSlopesY.Type = 'Constant'
 wbx.TopoSlopesY.GeomNames = 'left right channel'
 if use_slopes > 0:
@@ -392,7 +398,6 @@ wbx.PhaseSources.water.Geom.domain.Value = 0.0
 
 wbx.KnownSolution = 'NoKnownSolution'
 
-
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
@@ -418,7 +423,6 @@ wbx.Solver.Linear.Preconditioner.PFMG.MaxIter = 1
 wbx.Solver.Linear.Preconditioner.PFMG.Smoother = 'RBGaussSeidelNonSymmetric'
 wbx.Solver.Linear.Preconditioner.PFMG.NumPreRelax = 1
 wbx.Solver.Linear.Preconditioner.PFMG.NumPostRelax = 1
-
 
 wbx.Solver.WriteSiloSubsurfData = True
 wbx.Solver.WriteSiloPressure = True

@@ -1,14 +1,22 @@
+#-----------------------------------------------------------------------------
 #  This runs Problem 2 in the paper
 #     "Robust Numerical Methods for Saturated-Unsaturated Flow with
 #      Dry Initial Conditions", Forsyth, Wu and Pruess,
 #      Advances in Water Resources, 1995.
+#-----------------------------------------------------------------------------
 
 from parflow import Run
 from parflow.tools.fs import cp
 
 forsyth2 = Run("forsyth2", __file__)
 
+#---------------------------------------------------------
+# Copy solid file
+#---------------------------------------------------------
+
 cp('$PF_SRC/test/fors2_hf.pfsol')
+
+#---------------------------------------------------------
 
 forsyth2.FileVersion = 4
 
@@ -19,6 +27,7 @@ forsyth2.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 forsyth2.ComputationalGrid.Lower.X = 0.0
 forsyth2.ComputationalGrid.Lower.Y = 0.0
 forsyth2.ComputationalGrid.Lower.Z = 0.0
@@ -46,6 +55,7 @@ forsyth2.ComputationalGrid.DZ = (UpperZ - LowerZ) / NZ
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
+
 Zones = "zone1 zone2 zone3above4 zone3left4 zone3right4 zone3below4 zone4"
 
 forsyth2.GeomInput.Names = f'solidinput {Zones} background'
@@ -136,10 +146,10 @@ forsyth2.Geom.background.Upper.Z = 99999999.0
 
 forsyth2.Geom.domain.Patches = 'infiltration z_upper x_lower y_lower x_upper y_upper z_lower'
 
-
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 forsyth2.Geom.Perm.Names = Zones
 
 # Values in cm^2
@@ -343,11 +353,13 @@ forsyth2.Geom.zone4.Saturation.SSat = 1.0
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 forsyth2.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 forsyth2.Cycle.Names = 'constant'
 forsyth2.Cycle.constant.Names = 'alltime'
 forsyth2.Cycle.constant.alltime.Length = 1
@@ -356,6 +368,7 @@ forsyth2.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 forsyth2.BCPressure.PatchNames = forsyth2.Geom.domain.Patches
 
 forsyth2.Patch.infiltration.BCPressure.Type = 'FluxConst'
@@ -428,7 +441,6 @@ forsyth2.PhaseSources.water.Type = 'Constant'
 forsyth2.PhaseSources.water.GeomNames = 'background'
 forsyth2.PhaseSources.water.Geom.background.Value = 0.0
 
-
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
@@ -438,6 +450,7 @@ forsyth2.KnownSolution = 'NoKnownSolution'
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 forsyth2.Solver = 'Richards'
 forsyth2.Solver.MaxIter = 10000
 

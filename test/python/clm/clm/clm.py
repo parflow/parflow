@@ -1,10 +1,15 @@
+#-----------------------------------------------------------------------------
 # this runs CLM test case
+#-----------------------------------------------------------------------------
 
-import os
 from parflow import Run
 from parflow.tools.fs import mkdir, cp
 
 clm = Run("clm", __file__)
+
+#-----------------------------------------------------------------------------
+# Making output directories and copying input files
+#-----------------------------------------------------------------------------
 
 directories = [
   'qflx_evap_grnd',
@@ -31,7 +36,6 @@ cp('$PF_SRC/test/clm/drv_clmin.dat')
 cp('$PF_SRC/test/clm/drv_vegm.dat')
 cp('$PF_SRC/test/clm/drv_vegp.dat')
 cp('$PF_SRC/test/clm/narr_1hr.sc3.txt.0')
-
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -158,7 +162,6 @@ clm.TimeStep.Value = 1.0
 #-----------------------------------------------------------------------------
 
 clm.Geom.Porosity.GeomNames = 'domain'
-
 clm.Geom.domain.Porosity.Type = 'Constant'
 clm.Geom.domain.Porosity.Value = 0.390
 

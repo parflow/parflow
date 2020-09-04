@@ -1,16 +1,17 @@
+#-----------------------------------------------------------------------------
 # this runs the Cape Cod site flow case for the Harvey and Garabedian bacterial
 # injection experiment from Maxwell, et al, 2007.
+#-----------------------------------------------------------------------------
 
-import os
 from parflow import Run
 from parflow.tools.fs import cp, chdir
 
 hflow = Run("hflow", __file__)
 
-
 #-----------------------------------------------------------------------------
 # File input version number
 #-----------------------------------------------------------------------------
+
 hflow.FileVersion = 4
 
 #-----------------------------------------------------------------------------
@@ -24,6 +25,7 @@ hflow.Process.Topology.R = 1
 #-----------------------------------------------------------------------------
 # Computational Grid
 #-----------------------------------------------------------------------------
+
 hflow.ComputationalGrid.Lower.X = 0.0
 hflow.ComputationalGrid.Lower.Y = 0.0
 hflow.ComputationalGrid.Lower.Z = 0.0
@@ -39,18 +41,20 @@ hflow.ComputationalGrid.NZ = 100
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
 #-----------------------------------------------------------------------------
-hflow.GeomInput.Names = 'domain_input upper_aquifer_input lower_aquifer_input'
 
+hflow.GeomInput.Names = 'domain_input upper_aquifer_input lower_aquifer_input'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry Input
 #-----------------------------------------------------------------------------
+
 hflow.GeomInput.domain_input.InputType = 'Box'
 hflow.GeomInput.domain_input.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry
 #-----------------------------------------------------------------------------
+
 hflow.Geom.domain.Lower.X = 0.0
 hflow.Geom.domain.Lower.Y = 0.0
 hflow.Geom.domain.Lower.Z = 0.0
@@ -64,16 +68,17 @@ hflow.Geom.domain.Patches = 'left right front back bottom top'
 #-----------------------------------------------------------------------------
 # Upper Aquifer Geometry Input
 #-----------------------------------------------------------------------------
+
 hflow.GeomInput.upper_aquifer_input.InputType = 'Box'
 hflow.GeomInput.upper_aquifer_input.GeomName = 'upper_aquifer'
 
 #-----------------------------------------------------------------------------
 # Upper Aquifer Geometry
 #-----------------------------------------------------------------------------
+
 hflow.Geom.upper_aquifer.Lower.X = 0.0
 hflow.Geom.upper_aquifer.Lower.Y = 0.0
 hflow.Geom.upper_aquifer.Lower.Z = 1.5
-
 
 hflow.Geom.upper_aquifer.Upper.X = 17.0
 hflow.Geom.upper_aquifer.Upper.Y = 10.2
@@ -82,12 +87,14 @@ hflow.Geom.upper_aquifer.Upper.Z = 3.8
 #-----------------------------------------------------------------------------
 # Lower Aquifer Geometry Input
 #-----------------------------------------------------------------------------
+
 hflow.GeomInput.lower_aquifer_input.InputType = 'Box'
 hflow.GeomInput.lower_aquifer_input.GeomName = 'lower_aquifer'
 
 #-----------------------------------------------------------------------------
 # Lower Aquifer Geometry
 #-----------------------------------------------------------------------------
+
 hflow.Geom.lower_aquifer.Lower.X = 0.0
 hflow.Geom.lower_aquifer.Lower.Y = 0.0
 hflow.Geom.lower_aquifer.Lower.Z = 0.0
@@ -96,13 +103,13 @@ hflow.Geom.lower_aquifer.Upper.X = 17.0
 hflow.Geom.lower_aquifer.Upper.Y = 10.2
 hflow.Geom.lower_aquifer.Upper.Z = 1.5
 
-
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
-hflow.Geom.Perm.Names = 'upper_aquifer lower_aquifer'
-# we open a file, in this case from PEST to set upper and lower kg and sigma
 
+hflow.Geom.Perm.Names = 'upper_aquifer lower_aquifer'
+
+# we open a file, in this case from PEST to set upper and lower kg and sigma
 cp('$PF_SRC/test/stats4.txt')
 chdir('.')
 
@@ -115,7 +122,6 @@ varl = float(lines[3])
 
 ## we use the parallel turning bands formulation in ParFlow to simulate
 ## GRF for upper and lower aquifer
-##
 
 hflow.Geom.upper_aquifer.Perm.Type = 'TurnBands'
 hflow.Geom.upper_aquifer.Perm.LambdaX = 3.60
@@ -148,6 +154,7 @@ hflow.Geom.lower_aquifer.Perm.Seed = 33333
 hflow.Geom.lower_aquifer.Perm.LogNormal = 'Log'
 hflow.Geom.lower_aquifer.Perm.StratType = 'Bottom'
 
+#-----------------------------------------------------------------------------
 # uncomment the lines below to run parallel gaussian instead
 # of parallel turning bands
 
@@ -165,6 +172,7 @@ hflow.Geom.lower_aquifer.Perm.StratType = 'Bottom'
 #pfset Geom.lower_aquifer.Perm.MaxCpts = 20
 
 #pfset lower aqu and upper aq stats to pest/read in values
+#-----------------------------------------------------------------------------
 
 hflow.Geom.upper_aquifer.Perm.GeomMean = kgu
 hflow.Geom.upper_aquifer.Perm.Sigma = varu
@@ -206,8 +214,8 @@ hflow.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-hflow.Contaminants.Names = ''
 
+hflow.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
@@ -230,31 +238,32 @@ hflow.TimingInfo.DumpInterval = -1
 #-----------------------------------------------------------------------------
 
 hflow.Geom.Porosity.GeomNames = 'domain'
-
 hflow.Geom.domain.Porosity.Type = 'Constant'
 hflow.Geom.domain.Porosity.Value = 0.390
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 hflow.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Mobility
 #-----------------------------------------------------------------------------
+
 hflow.Phase.water.Mobility.Type = 'Constant'
 hflow.Phase.water.Mobility.Value = 1.0
-
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-hflow.Wells.Names = ''
 
+hflow.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 hflow.Cycle.Names = 'constant'
 hflow.Cycle.constant.Names = 'alltime'
 hflow.Cycle.constant.alltime.Length = 1
@@ -263,6 +272,7 @@ hflow.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 hflow.BCPressure.PatchNames = 'left right front back bottom top'
 
 hflow.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
@@ -301,7 +311,6 @@ hflow.Patch.top.BCPressure.alltime.Value = 0.0
 
 hflow.TopoSlopesX.Type = 'Constant'
 hflow.TopoSlopesX.GeomNames = 'domain'
-
 hflow.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -334,6 +343,7 @@ hflow.PhaseSources.water.Geom.domain.Value = 0.0
 #-----------------------------------------------------------------------------
 #  Solver Impes
 #-----------------------------------------------------------------------------
+
 hflow.Solver.MaxIter = 50
 hflow.Solver.AbsTol = 1E-10
 hflow.Solver.Drop = 1E-15

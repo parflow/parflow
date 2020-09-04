@@ -1,9 +1,15 @@
+#-----------------------------------------------------------------------------
 # this runs CLM test case
+#-----------------------------------------------------------------------------
 
 from parflow import Run
 from parflow.tools.fs import mkdir, cp
 
-clm_4levels = Run("clm_4levels", __file__)
+clm = Run("clm_4levels", __file__)
+
+#-----------------------------------------------------------------------------
+# Making output directories and copying input files
+#-----------------------------------------------------------------------------
 
 directories = ['qflx_evap_grnd', 'eflx_lh_tot', 'qflx_evap_tot', 'qflx_tran_veg', 'correct_output',
                'qflx_infl', 'swe_out', 'eflx_lwrad_out', 't_grnd', 'diag_out', 'qflx_evap_soi', 'eflx_soil_grnd',
@@ -17,76 +23,79 @@ cp('$PF_SRC/test/clm/drv_vegm.dat')
 cp('$PF_SRC/test/clm/drv_vegp.dat')
 cp('$PF_SRC/test/clm/narr_1hr.sc3.txt.0')
 
-
 #-----------------------------------------------------------------------------
 # File input version number
 #-----------------------------------------------------------------------------
-clm_4levels.FileVersion = 4
+
+clm.FileVersion = 4
 
 #-----------------------------------------------------------------------------
 # Process Topology
 #-----------------------------------------------------------------------------
 
-clm_4levels.Process.Topology.P = 1
-clm_4levels.Process.Topology.Q = 1
-clm_4levels.Process.Topology.R = 1
+clm.Process.Topology.P = 1
+clm.Process.Topology.Q = 1
+clm.Process.Topology.R = 1
 
 #-----------------------------------------------------------------------------
 # Computational Grid
 #-----------------------------------------------------------------------------
-clm_4levels.ComputationalGrid.Lower.X = 0.0
-clm_4levels.ComputationalGrid.Lower.Y = 0.0
-clm_4levels.ComputationalGrid.Lower.Z = 0.0
 
-clm_4levels.ComputationalGrid.DX = 1000.
-clm_4levels.ComputationalGrid.DY = 1000.
-clm_4levels.ComputationalGrid.DZ = 0.5
+clm.ComputationalGrid.Lower.X = 0.0
+clm.ComputationalGrid.Lower.Y = 0.0
+clm.ComputationalGrid.Lower.Z = 0.0
 
-clm_4levels.ComputationalGrid.NX = 5
-clm_4levels.ComputationalGrid.NY = 5
-clm_4levels.ComputationalGrid.NZ = 10
+clm.ComputationalGrid.DX = 1000.
+clm.ComputationalGrid.DY = 1000.
+clm.ComputationalGrid.DZ = 0.5
+
+clm.ComputationalGrid.NX = 5
+clm.ComputationalGrid.NY = 5
+clm.ComputationalGrid.NZ = 10
 
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
 #-----------------------------------------------------------------------------
-clm_4levels.GeomInput.Names = 'domain_input'
 
+clm.GeomInput.Names = 'domain_input'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry Input
 #-----------------------------------------------------------------------------
-clm_4levels.GeomInput.domain_input.InputType = 'Box'
-clm_4levels.GeomInput.domain_input.GeomName = 'domain'
+
+clm.GeomInput.domain_input.InputType = 'Box'
+clm.GeomInput.domain_input.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry
 #-----------------------------------------------------------------------------
-clm_4levels.Geom.domain.Lower.X = 0.0
-clm_4levels.Geom.domain.Lower.Y = 0.0
-clm_4levels.Geom.domain.Lower.Z = 0.0
 
-clm_4levels.Geom.domain.Upper.X = 5000.
-clm_4levels.Geom.domain.Upper.Y = 5000.
-clm_4levels.Geom.domain.Upper.Z = 5.
+clm.Geom.domain.Lower.X = 0.0
+clm.Geom.domain.Lower.Y = 0.0
+clm.Geom.domain.Lower.Z = 0.0
 
-clm_4levels.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
+clm.Geom.domain.Upper.X = 5000.
+clm.Geom.domain.Upper.Y = 5000.
+clm.Geom.domain.Upper.Z = 5.
+
+clm.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
-clm_4levels.Geom.Perm.Names = 'domain'
 
-clm_4levels.Geom.domain.Perm.Type = 'Constant'
-clm_4levels.Geom.domain.Perm.Value = 0.2
+clm.Geom.Perm.Names = 'domain'
 
+clm.Geom.domain.Perm.Type = 'Constant'
+clm.Geom.domain.Perm.Value = 0.2
 
-clm_4levels.Perm.TensorType = 'TensorByGeom'
+clm.Perm.TensorType = 'TensorByGeom'
 
-clm_4levels.Geom.Perm.TensorByGeom.Names = 'domain'
+clm.Geom.Perm.TensorByGeom.Names = 'domain'
 
-clm_4levels.Geom.domain.Perm.TensorValX = 1.0
-clm_4levels.Geom.domain.Perm.TensorValY = 1.0
-clm_4levels.Geom.domain.Perm.TensorValZ = 1.0
+clm.Geom.domain.Perm.TensorValX = 1.0
+clm.Geom.domain.Perm.TensorValY = 1.0
+clm.Geom.domain.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
@@ -94,217 +103,218 @@ clm_4levels.Geom.domain.Perm.TensorValZ = 1.0
 # specific storage does not figure into the impes (fully sat) case but we still
 # need a key for it
 
-clm_4levels.SpecificStorage.Type = 'Constant'
-clm_4levels.SpecificStorage.GeomNames = 'domain'
-clm_4levels.Geom.domain.SpecificStorage.Value = 1.0e-6
+clm.SpecificStorage.Type = 'Constant'
+clm.SpecificStorage.GeomNames = 'domain'
+clm.Geom.domain.SpecificStorage.Value = 1.0e-6
 
 #-----------------------------------------------------------------------------
 # Phases
 #-----------------------------------------------------------------------------
 
-clm_4levels.Phase.Names = 'water'
+clm.Phase.Names = 'water'
 
-clm_4levels.Phase.water.Density.Type = 'Constant'
-clm_4levels.Phase.water.Density.Value = 1.0
+clm.Phase.water.Density.Type = 'Constant'
+clm.Phase.water.Density.Value = 1.0
 
-clm_4levels.Phase.water.Viscosity.Type = 'Constant'
-clm_4levels.Phase.water.Viscosity.Value = 1.0
+clm.Phase.water.Viscosity.Type = 'Constant'
+clm.Phase.water.Viscosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-clm_4levels.Contaminants.Names = ''
 
+clm.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
 #-----------------------------------------------------------------------------
 
-clm_4levels.Gravity = 1.0
+clm.Gravity = 1.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
-#
-clm_4levels.TimingInfo.BaseUnit = 1.0
-clm_4levels.TimingInfo.StartCount = 0
-clm_4levels.TimingInfo.StartTime = 0.0
-clm_4levels.TimingInfo.StopTime = 5
-clm_4levels.TimingInfo.DumpInterval = -1
-clm_4levels.TimeStep.Type = 'Constant'
-clm_4levels.TimeStep.Value = 1.0
-#
+
+clm.TimingInfo.BaseUnit = 1.0
+clm.TimingInfo.StartCount = 0
+clm.TimingInfo.StartTime = 0.0
+clm.TimingInfo.StopTime = 5
+clm.TimingInfo.DumpInterval = -1
+clm.TimeStep.Type = 'Constant'
+clm.TimeStep.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
-clm_4levels.Geom.Porosity.GeomNames = 'domain'
-
-clm_4levels.Geom.domain.Porosity.Type = 'Constant'
-clm_4levels.Geom.domain.Porosity.Value = 0.390
+clm.Geom.Porosity.GeomNames = 'domain'
+clm.Geom.domain.Porosity.Type = 'Constant'
+clm.Geom.domain.Porosity.Value = 0.390
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
-clm_4levels.Domain.GeomName = 'domain'
+
+clm.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Mobility
 #-----------------------------------------------------------------------------
-clm_4levels.Phase.water.Mobility.Type = 'Constant'
-clm_4levels.Phase.water.Mobility.Value = 1.0
+
+clm.Phase.water.Mobility.Type = 'Constant'
+clm.Phase.water.Mobility.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
-#
-clm_4levels.Phase.RelPerm.Type = 'VanGenuchten'
-clm_4levels.Phase.RelPerm.GeomNames = 'domain'
-#
-clm_4levels.Geom.domain.RelPerm.Alpha = 3.5
-clm_4levels.Geom.domain.RelPerm.N = 2.
+
+clm.Phase.RelPerm.Type = 'VanGenuchten'
+clm.Phase.RelPerm.GeomNames = 'domain'
+
+clm.Geom.domain.RelPerm.Alpha = 3.5
+clm.Geom.domain.RelPerm.N = 2.
 
 #---------------------------------------------------------
 # Saturation
 #---------------------------------------------------------
 
-clm_4levels.Phase.Saturation.Type = 'VanGenuchten'
-clm_4levels.Phase.Saturation.GeomNames = 'domain'
-#
-clm_4levels.Geom.domain.Saturation.Alpha = 3.5
-clm_4levels.Geom.domain.Saturation.N = 2.
-clm_4levels.Geom.domain.Saturation.SRes = 0.01
-clm_4levels.Geom.domain.Saturation.SSat = 1.0
+clm.Phase.Saturation.Type = 'VanGenuchten'
+clm.Phase.Saturation.GeomNames = 'domain'
+
+clm.Geom.domain.Saturation.Alpha = 3.5
+clm.Geom.domain.Saturation.N = 2.
+clm.Geom.domain.Saturation.SRes = 0.01
+clm.Geom.domain.Saturation.SSat = 1.0
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-clm_4levels.Wells.Names = ''
 
+clm.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
-clm_4levels.Cycle.Names = 'constant'
-clm_4levels.Cycle.constant.Names = 'alltime'
-clm_4levels.Cycle.constant.alltime.Length = 1
-clm_4levels.Cycle.constant.Repeat = -1
+
+clm.Cycle.Names = 'constant'
+clm.Cycle.constant.Names = 'alltime'
+clm.Cycle.constant.alltime.Length = 1
+clm.Cycle.constant.Repeat = -1
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-clm_4levels.BCPressure.PatchNames = clm_4levels.Geom.domain.Patches
-#
-clm_4levels.Patch.x_lower.BCPressure.Type = 'FluxConst'
-clm_4levels.Patch.x_lower.BCPressure.Cycle = 'constant'
-clm_4levels.Patch.x_lower.BCPressure.alltime.Value = 0.0
-#
-clm_4levels.Patch.y_lower.BCPressure.Type = 'FluxConst'
-clm_4levels.Patch.y_lower.BCPressure.Cycle = 'constant'
-clm_4levels.Patch.y_lower.BCPressure.alltime.Value = 0.0
-#
-clm_4levels.Patch.z_lower.BCPressure.Type = 'FluxConst'
-clm_4levels.Patch.z_lower.BCPressure.Cycle = 'constant'
-clm_4levels.Patch.z_lower.BCPressure.alltime.Value = 0.0
-#
-clm_4levels.Patch.x_upper.BCPressure.Type = 'FluxConst'
-clm_4levels.Patch.x_upper.BCPressure.Cycle = 'constant'
-clm_4levels.Patch.x_upper.BCPressure.alltime.Value = 0.0
-#
-clm_4levels.Patch.y_upper.BCPressure.Type = 'FluxConst'
-clm_4levels.Patch.y_upper.BCPressure.Cycle = 'constant'
-clm_4levels.Patch.y_upper.BCPressure.alltime.Value = 0.0
-#
-clm_4levels.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
-clm_4levels.Patch.z_upper.BCPressure.Cycle = 'constant'
-clm_4levels.Patch.z_upper.BCPressure.alltime.Value = 0.0
+clm.BCPressure.PatchNames = clm.Geom.domain.Patches
+
+clm.Patch.x_lower.BCPressure.Type = 'FluxConst'
+clm.Patch.x_lower.BCPressure.Cycle = 'constant'
+clm.Patch.x_lower.BCPressure.alltime.Value = 0.0
+
+clm.Patch.y_lower.BCPressure.Type = 'FluxConst'
+clm.Patch.y_lower.BCPressure.Cycle = 'constant'
+clm.Patch.y_lower.BCPressure.alltime.Value = 0.0
+
+clm.Patch.z_lower.BCPressure.Type = 'FluxConst'
+clm.Patch.z_lower.BCPressure.Cycle = 'constant'
+clm.Patch.z_lower.BCPressure.alltime.Value = 0.0
+
+clm.Patch.x_upper.BCPressure.Type = 'FluxConst'
+clm.Patch.x_upper.BCPressure.Cycle = 'constant'
+clm.Patch.x_upper.BCPressure.alltime.Value = 0.0
+
+clm.Patch.y_upper.BCPressure.Type = 'FluxConst'
+clm.Patch.y_upper.BCPressure.Cycle = 'constant'
+clm.Patch.y_upper.BCPressure.alltime.Value = 0.0
+
+clm.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
+clm.Patch.z_upper.BCPressure.Cycle = 'constant'
+clm.Patch.z_upper.BCPressure.alltime.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
-#
-clm_4levels.TopoSlopesX.Type = 'Constant'
-clm_4levels.TopoSlopesX.GeomNames = 'domain'
-clm_4levels.TopoSlopesX.Geom.domain.Value = -0.001
-#
+
+clm.TopoSlopesX.Type = 'Constant'
+clm.TopoSlopesX.GeomNames = 'domain'
+clm.TopoSlopesX.Geom.domain.Value = -0.001
+
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
-#
-clm_4levels.TopoSlopesY.Type = 'Constant'
-clm_4levels.TopoSlopesY.GeomNames = 'domain'
-clm_4levels.TopoSlopesY.Geom.domain.Value = 0.001
-#
+
+clm.TopoSlopesY.Type = 'Constant'
+clm.TopoSlopesY.GeomNames = 'domain'
+clm.TopoSlopesY.Geom.domain.Value = 0.001
+
 #---------------------------------------------------------
 # Mannings coefficient
 #---------------------------------------------------------
-#
-clm_4levels.Mannings.Type = 'Constant'
-clm_4levels.Mannings.GeomNames = 'domain'
-clm_4levels.Mannings.Geom.domain.Value = 5.52e-6
+
+clm.Mannings.Type = 'Constant'
+clm.Mannings.GeomNames = 'domain'
+clm.Mannings.Geom.domain.Value = 5.52e-6
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-clm_4levels.PhaseSources.water.Type = 'Constant'
-clm_4levels.PhaseSources.water.GeomNames = 'domain'
-clm_4levels.PhaseSources.water.Geom.domain.Value = 0.0
-#
+clm.PhaseSources.water.Type = 'Constant'
+clm.PhaseSources.water.GeomNames = 'domain'
+clm.PhaseSources.water.Geom.domain.Value = 0.0
+
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
-#
-clm_4levels.KnownSolution = 'NoKnownSolution'
+
+clm.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
-#
-clm_4levels.Solver = 'Richards'
-clm_4levels.Solver.MaxIter = 500
-#
-clm_4levels.Solver.Nonlinear.MaxIter = 15
-clm_4levels.Solver.Nonlinear.ResidualTol = 1e-9
-clm_4levels.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-clm_4levels.Solver.Nonlinear.EtaValue = 0.01
-clm_4levels.Solver.Nonlinear.UseJacobian = True
-clm_4levels.Solver.Nonlinear.StepTol = 1e-20
-clm_4levels.Solver.Nonlinear.Globalization = 'LineSearch'
-clm_4levels.Solver.Linear.KrylovDimension = 15
-clm_4levels.Solver.Linear.MaxRestart = 2
-#
-clm_4levels.Solver.Linear.Preconditioner = 'PFMG'
-clm_4levels.Solver.PrintSubsurf = False
-clm_4levels.Solver.Drop = 1E-20
-clm_4levels.Solver.AbsTol = 1E-9
-#
-clm_4levels.Solver.LSM = 'CLM'
-clm_4levels.Solver.WriteSiloCLM = True
-clm_4levels.Solver.CLM.MetForcing = '1D'
-clm_4levels.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
-clm_4levels.Solver.CLM.MetFilePath = '.'
 
-clm_4levels.Solver.CLM.RootZoneNZ = 4
+clm.Solver = 'Richards'
+clm.Solver.MaxIter = 500
 
-clm_4levels.Solver.WriteSiloEvapTrans = True
-clm_4levels.Solver.WriteSiloOverlandBCFlux = True
-clm_4levels.Solver.PrintCLM = True
+clm.Solver.Nonlinear.MaxIter = 15
+clm.Solver.Nonlinear.ResidualTol = 1e-9
+clm.Solver.Nonlinear.EtaChoice = 'EtaConstant'
+clm.Solver.Nonlinear.EtaValue = 0.01
+clm.Solver.Nonlinear.UseJacobian = True
+clm.Solver.Nonlinear.StepTol = 1e-20
+clm.Solver.Nonlinear.Globalization = 'LineSearch'
+clm.Solver.Linear.KrylovDimension = 15
+clm.Solver.Linear.MaxRestart = 2
 
+clm.Solver.Linear.Preconditioner = 'PFMG'
+clm.Solver.PrintSubsurf = False
+clm.Solver.Drop = 1E-20
+clm.Solver.AbsTol = 1E-9
+
+clm.Solver.LSM = 'CLM'
+clm.Solver.WriteSiloCLM = True
+clm.Solver.CLM.MetForcing = '1D'
+clm.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
+clm.Solver.CLM.MetFilePath = '.'
+
+clm.Solver.CLM.RootZoneNZ = 4
+
+clm.Solver.WriteSiloEvapTrans = True
+clm.Solver.WriteSiloOverlandBCFlux = True
+clm.Solver.PrintCLM = True
+
+#---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
-#
-clm_4levels.ICPressure.Type = 'HydroStaticPatch'
-clm_4levels.ICPressure.GeomNames = 'domain'
-clm_4levels.Geom.domain.ICPressure.Value = -2.0
-#
-clm_4levels.Geom.domain.ICPressure.RefGeom = 'domain'
-clm_4levels.Geom.domain.ICPressure.RefPatch = 'z_upper'
+
+clm.ICPressure.Type = 'HydroStaticPatch'
+clm.ICPressure.GeomNames = 'domain'
+clm.Geom.domain.ICPressure.Value = -2.0
+
+clm.Geom.domain.ICPressure.RefGeom = 'domain'
+clm.Geom.domain.ICPressure.RefPatch = 'z_upper'
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-
-clm_4levels.run()
+clm.run()

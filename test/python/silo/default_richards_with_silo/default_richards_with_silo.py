@@ -1,329 +1,344 @@
+#---------------------------------------------------------
 #  This runs the basic default_richards test case.
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
+#---------------------------------------------------------
 
 from parflow import Run
-default_richards_with_silo = Run("default_richards_with_silo", __file__)
 
-default_richards_with_silo.FileVersion = 4
+drich = Run("default_richards_with_silo", __file__)
 
-default_richards_with_silo.Process.Topology.P = 1
-default_richards_with_silo.Process.Topology.Q = 1
-default_richards_with_silo.Process.Topology.R = 1
+#---------------------------------------------------------
+
+drich.FileVersion = 4
+
+drich.Process.Topology.P = 1
+drich.Process.Topology.Q = 1
+drich.Process.Topology.R = 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-default_richards_with_silo.ComputationalGrid.Lower.X = -10.0
-default_richards_with_silo.ComputationalGrid.Lower.Y = 10.0
-default_richards_with_silo.ComputationalGrid.Lower.Z = 1.0
 
-default_richards_with_silo.ComputationalGrid.DX = 8.8888888888888893
-default_richards_with_silo.ComputationalGrid.DY = 10.666666666666666
-default_richards_with_silo.ComputationalGrid.DZ = 1.0
+drich.ComputationalGrid.Lower.X = -10.0
+drich.ComputationalGrid.Lower.Y = 10.0
+drich.ComputationalGrid.Lower.Z = 1.0
 
-default_richards_with_silo.ComputationalGrid.NX = 10
-default_richards_with_silo.ComputationalGrid.NY = 10
-default_richards_with_silo.ComputationalGrid.NZ = 8
+drich.ComputationalGrid.DX = 8.8888888888888893
+drich.ComputationalGrid.DY = 10.666666666666666
+drich.ComputationalGrid.DZ = 1.0
+
+drich.ComputationalGrid.NX = 10
+drich.ComputationalGrid.NY = 10
+drich.ComputationalGrid.NZ = 8
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-default_richards_with_silo.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
+drich.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
-default_richards_with_silo.GeomInput.domain_input.InputType = 'Box'
-default_richards_with_silo.GeomInput.domain_input.GeomName = 'domain'
+
+drich.GeomInput.domain_input.InputType = 'Box'
+drich.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
-default_richards_with_silo.Geom.domain.Lower.X = -10.0
-default_richards_with_silo.Geom.domain.Lower.Y = 10.0
-default_richards_with_silo.Geom.domain.Lower.Z = 1.0
 
-default_richards_with_silo.Geom.domain.Upper.X = 150.0
-default_richards_with_silo.Geom.domain.Upper.Y = 170.0
-default_richards_with_silo.Geom.domain.Upper.Z = 9.0
+drich.Geom.domain.Lower.X = -10.0
+drich.Geom.domain.Lower.Y = 10.0
+drich.Geom.domain.Lower.Z = 1.0
 
-default_richards_with_silo.Geom.domain.Patches = 'left right front back bottom top'
+drich.Geom.domain.Upper.X = 150.0
+drich.Geom.domain.Upper.Y = 170.0
+drich.Geom.domain.Upper.Z = 9.0
+
+drich.Geom.domain.Patches = 'left right front back bottom top'
 
 #---------------------------------------------------------
 # Background Geometry Input
 #---------------------------------------------------------
-default_richards_with_silo.GeomInput.background_input.InputType = 'Box'
-default_richards_with_silo.GeomInput.background_input.GeomName = 'background'
+
+drich.GeomInput.background_input.InputType = 'Box'
+drich.GeomInput.background_input.GeomName = 'background'
 
 #---------------------------------------------------------
 # Background Geometry
 #---------------------------------------------------------
-default_richards_with_silo.Geom.background.Lower.X = -99999999.0
-default_richards_with_silo.Geom.background.Lower.Y = -99999999.0
-default_richards_with_silo.Geom.background.Lower.Z = -99999999.0
 
-default_richards_with_silo.Geom.background.Upper.X = 99999999.0
-default_richards_with_silo.Geom.background.Upper.Y = 99999999.0
-default_richards_with_silo.Geom.background.Upper.Z = 99999999.0
+drich.Geom.background.Lower.X = -99999999.0
+drich.Geom.background.Lower.Y = -99999999.0
+drich.Geom.background.Lower.Z = -99999999.0
 
+drich.Geom.background.Upper.X = 99999999.0
+drich.Geom.background.Upper.Y = 99999999.0
+drich.Geom.background.Upper.Z = 99999999.0
 
 #---------------------------------------------------------
 # Source_Region Geometry Input
 #---------------------------------------------------------
-default_richards_with_silo.GeomInput.source_region_input.InputType = 'Box'
-default_richards_with_silo.GeomInput.source_region_input.GeomName = 'source_region'
+
+drich.GeomInput.source_region_input.InputType = 'Box'
+drich.GeomInput.source_region_input.GeomName = 'source_region'
 
 #---------------------------------------------------------
 # Source_Region Geometry
 #---------------------------------------------------------
-default_richards_with_silo.Geom.source_region.Lower.X = 65.56
-default_richards_with_silo.Geom.source_region.Lower.Y = 79.34
-default_richards_with_silo.Geom.source_region.Lower.Z = 4.5
 
-default_richards_with_silo.Geom.source_region.Upper.X = 74.44
-default_richards_with_silo.Geom.source_region.Upper.Y = 89.99
-default_richards_with_silo.Geom.source_region.Upper.Z = 5.5
+drich.Geom.source_region.Lower.X = 65.56
+drich.Geom.source_region.Lower.Y = 79.34
+drich.Geom.source_region.Lower.Z = 4.5
 
+drich.Geom.source_region.Upper.X = 74.44
+drich.Geom.source_region.Upper.Y = 89.99
+drich.Geom.source_region.Upper.Z = 5.5
 
 #---------------------------------------------------------
 # Concen_Region Geometry Input
 #---------------------------------------------------------
-default_richards_with_silo.GeomInput.concen_region_input.InputType = 'Box'
-default_richards_with_silo.GeomInput.concen_region_input.GeomName = 'concen_region'
+
+drich.GeomInput.concen_region_input.InputType = 'Box'
+drich.GeomInput.concen_region_input.GeomName = 'concen_region'
 
 #---------------------------------------------------------
 # Concen_Region Geometry
 #---------------------------------------------------------
-default_richards_with_silo.Geom.concen_region.Lower.X = 60.0
-default_richards_with_silo.Geom.concen_region.Lower.Y = 80.0
-default_richards_with_silo.Geom.concen_region.Lower.Z = 4.0
 
-default_richards_with_silo.Geom.concen_region.Upper.X = 80.0
-default_richards_with_silo.Geom.concen_region.Upper.Y = 100.0
-default_richards_with_silo.Geom.concen_region.Upper.Z = 6.0
+drich.Geom.concen_region.Lower.X = 60.0
+drich.Geom.concen_region.Lower.Y = 80.0
+drich.Geom.concen_region.Lower.Z = 4.0
+
+drich.Geom.concen_region.Upper.X = 80.0
+drich.Geom.concen_region.Upper.Y = 100.0
+drich.Geom.concen_region.Upper.Z = 6.0
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
-default_richards_with_silo.Geom.Perm.Names = 'background'
 
-default_richards_with_silo.Geom.background.Perm.Type = 'Constant'
-default_richards_with_silo.Geom.background.Perm.Value = 4.0
+drich.Geom.Perm.Names = 'background'
 
-default_richards_with_silo.Perm.TensorType = 'TensorByGeom'
+drich.Geom.background.Perm.Type = 'Constant'
+drich.Geom.background.Perm.Value = 4.0
 
-default_richards_with_silo.Geom.Perm.TensorByGeom.Names = 'background'
+drich.Perm.TensorType = 'TensorByGeom'
 
-default_richards_with_silo.Geom.background.Perm.TensorValX = 1.0
-default_richards_with_silo.Geom.background.Perm.TensorValY = 1.0
-default_richards_with_silo.Geom.background.Perm.TensorValZ = 1.0
+drich.Geom.Perm.TensorByGeom.Names = 'background'
+
+drich.Geom.background.Perm.TensorValX = 1.0
+drich.Geom.background.Perm.TensorValY = 1.0
+drich.Geom.background.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.SpecificStorage.Type = 'Constant'
-default_richards_with_silo.SpecificStorage.GeomNames = 'domain'
-default_richards_with_silo.Geom.domain.SpecificStorage.Value = 1.0e-4
+drich.SpecificStorage.Type = 'Constant'
+drich.SpecificStorage.GeomNames = 'domain'
+drich.Geom.domain.SpecificStorage.Value = 1.0e-4
 
 #-----------------------------------------------------------------------------
 # Phases
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.Phase.Names = 'water'
+drich.Phase.Names = 'water'
 
-default_richards_with_silo.Phase.water.Density.Type = 'Constant'
-default_richards_with_silo.Phase.water.Density.Value = 1.0
+drich.Phase.water.Density.Type = 'Constant'
+drich.Phase.water.Density.Value = 1.0
 
-default_richards_with_silo.Phase.water.Viscosity.Type = 'Constant'
-default_richards_with_silo.Phase.water.Viscosity.Value = 1.0
+drich.Phase.water.Viscosity.Type = 'Constant'
+drich.Phase.water.Viscosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-default_richards_with_silo.Contaminants.Names = ''
+
+drich.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
-default_richards_with_silo.Geom.Retardation.GeomNames = ''
+
+drich.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.Gravity = 1.0
+drich.Gravity = 1.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.TimingInfo.BaseUnit = 1.0
-default_richards_with_silo.TimingInfo.StartCount = 0
-default_richards_with_silo.TimingInfo.StartTime = 0.0
-default_richards_with_silo.TimingInfo.StopTime = 0.010
-default_richards_with_silo.TimingInfo.DumpInterval = -1
-default_richards_with_silo.TimeStep.Type = 'Constant'
-default_richards_with_silo.TimeStep.Value = 0.001
+drich.TimingInfo.BaseUnit = 1.0
+drich.TimingInfo.StartCount = 0
+drich.TimingInfo.StartTime = 0.0
+drich.TimingInfo.StopTime = 0.010
+drich.TimingInfo.DumpInterval = -1
+drich.TimeStep.Type = 'Constant'
+drich.TimeStep.Value = 0.001
 
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.Geom.Porosity.GeomNames = 'background'
-
-default_richards_with_silo.Geom.background.Porosity.Type = 'Constant'
-default_richards_with_silo.Geom.background.Porosity.Value = 1.0
+drich.Geom.Porosity.GeomNames = 'background'
+drich.Geom.background.Porosity.Type = 'Constant'
+drich.Geom.background.Porosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
-default_richards_with_silo.Domain.GeomName = 'domain'
+
+drich.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.Phase.RelPerm.Type = 'VanGenuchten'
-default_richards_with_silo.Phase.RelPerm.GeomNames = 'domain'
-default_richards_with_silo.Geom.domain.RelPerm.Alpha = 0.005
-default_richards_with_silo.Geom.domain.RelPerm.N = 2.0
+drich.Phase.RelPerm.Type = 'VanGenuchten'
+drich.Phase.RelPerm.GeomNames = 'domain'
+drich.Geom.domain.RelPerm.Alpha = 0.005
+drich.Geom.domain.RelPerm.N = 2.0
 
 #---------------------------------------------------------
 # Saturation
 #---------------------------------------------------------
 
-default_richards_with_silo.Phase.Saturation.Type = 'VanGenuchten'
-default_richards_with_silo.Phase.Saturation.GeomNames = 'domain'
-default_richards_with_silo.Geom.domain.Saturation.Alpha = 0.005
-default_richards_with_silo.Geom.domain.Saturation.N = 2.0
-default_richards_with_silo.Geom.domain.Saturation.SRes = 0.2
-default_richards_with_silo.Geom.domain.Saturation.SSat = 0.99
+drich.Phase.Saturation.Type = 'VanGenuchten'
+drich.Phase.Saturation.GeomNames = 'domain'
+drich.Geom.domain.Saturation.Alpha = 0.005
+drich.Geom.domain.Saturation.N = 2.0
+drich.Geom.domain.Saturation.SRes = 0.2
+drich.Geom.domain.Saturation.SSat = 0.99
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-default_richards_with_silo.Wells.Names = ''
+
+drich.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
-default_richards_with_silo.Cycle.Names = 'constant'
-default_richards_with_silo.Cycle.constant.Names = 'alltime'
-default_richards_with_silo.Cycle.constant.alltime.Length = 1
-default_richards_with_silo.Cycle.constant.Repeat = -1
+
+drich.Cycle.Names = 'constant'
+drich.Cycle.constant.Names = 'alltime'
+drich.Cycle.constant.alltime.Length = 1
+drich.Cycle.constant.Repeat = -1
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-default_richards_with_silo.BCPressure.PatchNames = 'left right front back bottom top'
 
-default_richards_with_silo.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
-default_richards_with_silo.Patch.left.BCPressure.Cycle = 'constant'
-default_richards_with_silo.Patch.left.BCPressure.RefGeom = 'domain'
-default_richards_with_silo.Patch.left.BCPressure.RefPatch = 'bottom'
-default_richards_with_silo.Patch.left.BCPressure.alltime.Value = 5.0
+drich.BCPressure.PatchNames = 'left right front back bottom top'
 
-default_richards_with_silo.Patch.right.BCPressure.Type = 'DirEquilRefPatch'
-default_richards_with_silo.Patch.right.BCPressure.Cycle = 'constant'
-default_richards_with_silo.Patch.right.BCPressure.RefGeom = 'domain'
-default_richards_with_silo.Patch.right.BCPressure.RefPatch = 'bottom'
-default_richards_with_silo.Patch.right.BCPressure.alltime.Value = 3.0
+drich.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
+drich.Patch.left.BCPressure.Cycle = 'constant'
+drich.Patch.left.BCPressure.RefGeom = 'domain'
+drich.Patch.left.BCPressure.RefPatch = 'bottom'
+drich.Patch.left.BCPressure.alltime.Value = 5.0
 
-default_richards_with_silo.Patch.front.BCPressure.Type = 'FluxConst'
-default_richards_with_silo.Patch.front.BCPressure.Cycle = 'constant'
-default_richards_with_silo.Patch.front.BCPressure.alltime.Value = 0.0
+drich.Patch.right.BCPressure.Type = 'DirEquilRefPatch'
+drich.Patch.right.BCPressure.Cycle = 'constant'
+drich.Patch.right.BCPressure.RefGeom = 'domain'
+drich.Patch.right.BCPressure.RefPatch = 'bottom'
+drich.Patch.right.BCPressure.alltime.Value = 3.0
 
-default_richards_with_silo.Patch.back.BCPressure.Type = 'FluxConst'
-default_richards_with_silo.Patch.back.BCPressure.Cycle = 'constant'
-default_richards_with_silo.Patch.back.BCPressure.alltime.Value = 0.0
+drich.Patch.front.BCPressure.Type = 'FluxConst'
+drich.Patch.front.BCPressure.Cycle = 'constant'
+drich.Patch.front.BCPressure.alltime.Value = 0.0
 
-default_richards_with_silo.Patch.bottom.BCPressure.Type = 'FluxConst'
-default_richards_with_silo.Patch.bottom.BCPressure.Cycle = 'constant'
-default_richards_with_silo.Patch.bottom.BCPressure.alltime.Value = 0.0
+drich.Patch.back.BCPressure.Type = 'FluxConst'
+drich.Patch.back.BCPressure.Cycle = 'constant'
+drich.Patch.back.BCPressure.alltime.Value = 0.0
 
-default_richards_with_silo.Patch.top.BCPressure.Type = 'FluxConst'
-default_richards_with_silo.Patch.top.BCPressure.Cycle = 'constant'
-default_richards_with_silo.Patch.top.BCPressure.alltime.Value = 0.0
+drich.Patch.bottom.BCPressure.Type = 'FluxConst'
+drich.Patch.bottom.BCPressure.Cycle = 'constant'
+drich.Patch.bottom.BCPressure.alltime.Value = 0.0
+
+drich.Patch.top.BCPressure.Type = 'FluxConst'
+drich.Patch.top.BCPressure.Cycle = 'constant'
+drich.Patch.top.BCPressure.alltime.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
 
-default_richards_with_silo.TopoSlopesX.Type = 'Constant'
-default_richards_with_silo.TopoSlopesX.GeomNames = 'domain'
-
-default_richards_with_silo.TopoSlopesX.Geom.domain.Value = 0.0
+drich.TopoSlopesX.Type = 'Constant'
+drich.TopoSlopesX.GeomNames = 'domain'
+drich.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-default_richards_with_silo.TopoSlopesY.Type = 'Constant'
-default_richards_with_silo.TopoSlopesY.GeomNames = 'domain'
-
-default_richards_with_silo.TopoSlopesY.Geom.domain.Value = 0.0
+drich.TopoSlopesY.Type = 'Constant'
+drich.TopoSlopesY.GeomNames = 'domain'
+drich.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Mannings coefficient 
 #---------------------------------------------------------
 
-default_richards_with_silo.Mannings.Type = 'Constant'
-default_richards_with_silo.Mannings.GeomNames = 'domain'
-default_richards_with_silo.Mannings.Geom.domain.Value = 0.
+drich.Mannings.Type = 'Constant'
+drich.Mannings.GeomNames = 'domain'
+drich.Mannings.Geom.domain.Value = 0.
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
 
-default_richards_with_silo.ICPressure.Type = 'HydroStaticPatch'
-default_richards_with_silo.ICPressure.GeomNames = 'domain'
-default_richards_with_silo.Geom.domain.ICPressure.Value = 3.0
-default_richards_with_silo.Geom.domain.ICPressure.RefGeom = 'domain'
-default_richards_with_silo.Geom.domain.ICPressure.RefPatch = 'bottom'
+drich.ICPressure.Type = 'HydroStaticPatch'
+drich.ICPressure.GeomNames = 'domain'
+drich.Geom.domain.ICPressure.Value = 3.0
+drich.Geom.domain.ICPressure.RefGeom = 'domain'
+drich.Geom.domain.ICPressure.RefPatch = 'bottom'
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.PhaseSources.water.Type = 'Constant'
-default_richards_with_silo.PhaseSources.water.GeomNames = 'background'
-default_richards_with_silo.PhaseSources.water.Geom.background.Value = 0.0
-
+drich.PhaseSources.water.Type = 'Constant'
+drich.PhaseSources.water.GeomNames = 'background'
+drich.PhaseSources.water.Geom.background.Value = 0.0
 
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.KnownSolution = 'NoKnownSolution'
-
+drich.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
-default_richards_with_silo.Solver = 'Richards'
-default_richards_with_silo.Solver.MaxIter = 5
 
-default_richards_with_silo.Solver.Nonlinear.MaxIter = 10
-default_richards_with_silo.Solver.Nonlinear.ResidualTol = 1e-9
-default_richards_with_silo.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-default_richards_with_silo.Solver.Nonlinear.EtaValue = 1e-5
-default_richards_with_silo.Solver.Nonlinear.UseJacobian = True
-default_richards_with_silo.Solver.Nonlinear.DerivativeEpsilon = 1e-2
+drich.Solver = 'Richards'
+drich.Solver.MaxIter = 5
 
-default_richards_with_silo.Solver.Linear.KrylovDimension = 10
+drich.Solver.Nonlinear.MaxIter = 10
+drich.Solver.Nonlinear.ResidualTol = 1e-9
+drich.Solver.Nonlinear.EtaChoice = 'EtaConstant'
+drich.Solver.Nonlinear.EtaValue = 1e-5
+drich.Solver.Nonlinear.UseJacobian = True
+drich.Solver.Nonlinear.DerivativeEpsilon = 1e-2
 
-default_richards_with_silo.Solver.Linear.Preconditioner = 'PFMGOctree'
+drich.Solver.Linear.KrylovDimension = 10
 
-default_richards_with_silo.Solver.WriteSiloSubsurfData = True
-default_richards_with_silo.Solver.WriteSiloPressure = True
-default_richards_with_silo.Solver.WriteSiloSaturation = True
-default_richards_with_silo.Solver.WriteSiloConcentration = True
+drich.Solver.Linear.Preconditioner = 'PFMGOctree'
+
+drich.Solver.WriteSiloSubsurfData = True
+drich.Solver.WriteSiloPressure = True
+drich.Solver.WriteSiloSaturation = True
+drich.Solver.WriteSiloConcentration = True
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-default_richards_with_silo.run()
+drich.run()

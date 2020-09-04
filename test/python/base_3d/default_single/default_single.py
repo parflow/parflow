@@ -1,13 +1,13 @@
-#
-# Import the ParFlow TCL package
-#
+#-----------------------------------------------------------------------------
+# default_single test run
+#-----------------------------------------------------------------------------
+
 from parflow import Run
 
 dsingle = Run("dsingle", __file__)
 
 #-----------------------------------------------------------------------------
-# File input version number
-#-----------------------------------------------------------------------------
+
 dsingle.FileVersion = 4
 
 #-----------------------------------------------------------------------------
@@ -21,6 +21,7 @@ dsingle.Process.Topology.R = 1
 #-----------------------------------------------------------------------------
 # Computational Grid
 #-----------------------------------------------------------------------------
+
 dsingle.ComputationalGrid.Lower.X = -10.0
 dsingle.ComputationalGrid.Lower.Y = 10.0
 dsingle.ComputationalGrid.Lower.Z = 1.0
@@ -36,18 +37,20 @@ dsingle.ComputationalGrid.NZ = 8
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
 #-----------------------------------------------------------------------------
-dsingle.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
+dsingle.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry Input
 #-----------------------------------------------------------------------------
+
 dsingle.GeomInput.domain_input.InputType = 'Box'
 dsingle.GeomInput.domain_input.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry
 #-----------------------------------------------------------------------------
+
 dsingle.Geom.domain.Lower.X = -10.0
 dsingle.Geom.domain.Lower.Y = 10.0
 dsingle.Geom.domain.Lower.Z = 1.0
@@ -61,12 +64,14 @@ dsingle.Geom.domain.Patches = 'left right front back bottom top'
 #-----------------------------------------------------------------------------
 # Background Geometry Input
 #-----------------------------------------------------------------------------
+
 dsingle.GeomInput.background_input.InputType = 'Box'
 dsingle.GeomInput.background_input.GeomName = 'background'
 
 #-----------------------------------------------------------------------------
 # Background Geometry
 #-----------------------------------------------------------------------------
+
 dsingle.Geom.background.Lower.X = -99999999.0
 dsingle.Geom.background.Lower.Y = -99999999.0
 dsingle.Geom.background.Lower.Z = -99999999.0
@@ -75,16 +80,17 @@ dsingle.Geom.background.Upper.X = 99999999.0
 dsingle.Geom.background.Upper.Y = 99999999.0
 dsingle.Geom.background.Upper.Z = 99999999.0
 
-
 #-----------------------------------------------------------------------------
 # Source_Region Geometry Input
 #-----------------------------------------------------------------------------
+
 dsingle.GeomInput.source_region_input.InputType = 'Box'
 dsingle.GeomInput.source_region_input.GeomName = 'source_region'
 
 #-----------------------------------------------------------------------------
 # Source_Region Geometry
 #-----------------------------------------------------------------------------
+
 dsingle.Geom.source_region.Lower.X = 65.56
 dsingle.Geom.source_region.Lower.Y = 79.34
 dsingle.Geom.source_region.Lower.Z = 4.5
@@ -93,16 +99,17 @@ dsingle.Geom.source_region.Upper.X = 74.44
 dsingle.Geom.source_region.Upper.Y = 89.99
 dsingle.Geom.source_region.Upper.Z = 5.5
 
-
 #-----------------------------------------------------------------------------
 # Concen_Region Geometry Input
 #-----------------------------------------------------------------------------
+
 dsingle.GeomInput.concen_region_input.InputType = 'Box'
 dsingle.GeomInput.concen_region_input.GeomName = 'concen_region'
 
 #-----------------------------------------------------------------------------
 # Concen_Region Geometry
 #-----------------------------------------------------------------------------
+
 dsingle.Geom.concen_region.Lower.X = 60.0
 dsingle.Geom.concen_region.Lower.Y = 80.0
 dsingle.Geom.concen_region.Lower.Z = 4.0
@@ -114,6 +121,7 @@ dsingle.Geom.concen_region.Upper.Z = 6.0
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 dsingle.Geom.Perm.Names = 'background'
 
 dsingle.Geom.background.Perm.Type = 'Constant'
@@ -130,9 +138,9 @@ dsingle.Geom.background.Perm.TensorValZ = 1.0
 #-----------------------------------------------------------------------------
 # Specific Storage
 #-----------------------------------------------------------------------------
+
 # specific storage does not figure into the impes (fully sat) case but we still
 # need a key for it
-
 dsingle.SpecificStorage.Type = 'Constant'
 dsingle.SpecificStorage.GeomNames = ''
 dsingle.Geom.domain.SpecificStorage.Value = 1.0e-4
@@ -152,6 +160,7 @@ dsingle.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
+
 dsingle.Contaminants.Names = 'tce'
 dsingle.Contaminants.tce.Degradation.Value = 0.0
 
@@ -176,24 +185,26 @@ dsingle.TimingInfo.DumpInterval = -1
 #-----------------------------------------------------------------------------
 
 dsingle.Geom.Porosity.GeomNames = 'background'
-
 dsingle.Geom.background.Porosity.Type = 'Constant'
 dsingle.Geom.background.Porosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 dsingle.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Mobility
 #-----------------------------------------------------------------------------
+
 dsingle.Phase.water.Mobility.Type = 'Constant'
 dsingle.Phase.water.Mobility.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
+
 dsingle.Geom.Retardation.GeomNames = 'background'
 dsingle.Geom.background.tce.Retardation.Type = 'Linear'
 dsingle.Geom.background.tce.Retardation.Rate = 0.0
@@ -201,6 +212,7 @@ dsingle.Geom.background.tce.Retardation.Rate = 0.0
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 dsingle.Cycle.Names = 'constant'
 dsingle.Cycle.constant.Names = 'alltime'
 dsingle.Cycle.constant.alltime.Length = 1
@@ -209,6 +221,7 @@ dsingle.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 dsingle.Wells.Names = 'snoopy'
 
 dsingle.Wells.snoopy.InputType = 'Recirc'
@@ -228,10 +241,6 @@ dsingle.Wells.snoopy.InjectionZUpper = 2.0
 dsingle.Wells.snoopy.ExtractionMethod = 'Standard'
 dsingle.Wells.snoopy.InjectionMethod = 'Standard'
 
-dsingle.Wells.snoopy.alltime.Extraction.Flux.water.Value = 5.0
-dsingle.Wells.snoopy.alltime.Injection.Flux.water.Value = 7.5
-dsingle.Wells.snoopy.alltime.Injection.Concentration.water.tce.Fraction = 0.1
-
 #-----------------------------------------------------------------------------
 # Assigning well with newly assigned interval name
 #-----------------------------------------------------------------------------
@@ -243,6 +252,7 @@ dsingle.Wells.snoopy.alltime.Injection.Concentration.water.tce.Fraction = 0.1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 dsingle.BCPressure.PatchNames = 'left right front back bottom top'
 
 dsingle.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
@@ -273,7 +283,6 @@ dsingle.Patch.top.BCPressure.Type = 'FluxConst'
 dsingle.Patch.top.BCPressure.Cycle = 'constant'
 dsingle.Patch.top.BCPressure.alltime.Value = 0.0
 
-
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
@@ -282,7 +291,6 @@ dsingle.Patch.top.BCPressure.alltime.Value = 0.0
 
 dsingle.TopoSlopesX.Type = 'Constant'
 dsingle.TopoSlopesX.GeomNames = ''
-
 dsingle.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -291,7 +299,6 @@ dsingle.TopoSlopesX.Geom.domain.Value = 0.0
 
 dsingle.TopoSlopesY.Type = 'Constant'
 dsingle.TopoSlopesY.GeomNames = ''
-
 dsingle.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -316,23 +323,12 @@ dsingle.PhaseConcen.water.tce.Type = 'Constant'
 dsingle.PhaseConcen.water.tce.GeomNames = 'concen_region'
 dsingle.PhaseConcen.water.tce.Geom.concen_region.Value = 0.8
 
-
-dsingle.Solver.WriteSiloSubsurfData = True
-dsingle.Solver.WriteSiloPressure = True
-dsingle.Solver.WriteSiloSaturation = True
-dsingle.Solver.WriteSiloConcentration = True
-
-
 #-----------------------------------------------------------------------------
 # The Solver Impes MaxIter default value changed so to get previous
 # results we need to set it back to what it was
 #-----------------------------------------------------------------------------
+
 dsingle.Solver.MaxIter = 5
-
-# This key is not set in the original default_single.tcl, but is included here
-# to test whether it is written since it equals the default value (1e-9)
-dsingle.Solver.AbsTol = 1e-9
-
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

@@ -1,8 +1,13 @@
+#-----------------------------------------------------------------------------
 # this runs CLM test case
+#-----------------------------------------------------------------------------
 
-import os
 from parflow import Run
 from parflow.tools.fs import mkdir, cp
+
+#-----------------------------------------------------------------------------
+# Making output directories and copying input files
+#-----------------------------------------------------------------------------
 
 clm_jac = Run("clm_jac", __file__)
 
@@ -21,6 +26,7 @@ cp('$PF_SRC/test/clm/narr_1hr.sc3.txt.0')
 #-----------------------------------------------------------------------------
 # File input version number
 #-----------------------------------------------------------------------------
+
 clm_jac.FileVersion = 4
 
 #-----------------------------------------------------------------------------
@@ -34,6 +40,7 @@ clm_jac.Process.Topology.R =1
 #-----------------------------------------------------------------------------
 # Computational Grid
 #-----------------------------------------------------------------------------
+
 clm_jac.ComputationalGrid.Lower.X = 0.0
 clm_jac.ComputationalGrid.Lower.Y = 0.0
 clm_jac.ComputationalGrid.Lower.Z = 0.0
@@ -49,18 +56,20 @@ clm_jac.ComputationalGrid.NZ = 10
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
 #-----------------------------------------------------------------------------
-clm_jac.GeomInput.Names = 'domain_input'
 
+clm_jac.GeomInput.Names = 'domain_input'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry Input
 #-----------------------------------------------------------------------------
+
 clm_jac.GeomInput.domain_input.InputType = 'Box'
 clm_jac.GeomInput.domain_input.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry
 #-----------------------------------------------------------------------------
+
 clm_jac.Geom.domain.Lower.X = 0.0
 clm_jac.Geom.domain.Lower.Y = 0.0
 clm_jac.Geom.domain.Lower.Z = 0.0
@@ -74,11 +83,11 @@ clm_jac.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 clm_jac.Geom.Perm.Names = 'domain'
 
 clm_jac.Geom.domain.Perm.Type = 'Constant'
 clm_jac.Geom.domain.Perm.Value = 0.2
-
 
 clm_jac.Perm.TensorType = 'TensorByGeom'
 
@@ -113,8 +122,8 @@ clm_jac.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-clm_jac.Contaminants.Names = ''
 
+clm_jac.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
@@ -125,7 +134,7 @@ clm_jac.Gravity = 1.0
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
-#
+
 clm_jac.TimingInfo.BaseUnit = 1.0
 clm_jac.TimingInfo.StartCount = 0
 clm_jac.TimingInfo.StartTime = 0.0
@@ -133,35 +142,35 @@ clm_jac.TimingInfo.StopTime = 5
 clm_jac.TimingInfo.DumpInterval = -1
 clm_jac.TimeStep.Type = 'Constant'
 clm_jac.TimeStep.Value = 1.0
-#
 
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
 clm_jac.Geom.Porosity.GeomNames = 'domain'
-
 clm_jac.Geom.domain.Porosity.Type = 'Constant'
 clm_jac.Geom.domain.Porosity.Value = 0.390
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 clm_jac.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Mobility
 #-----------------------------------------------------------------------------
+
 clm_jac.Phase.water.Mobility.Type = 'Constant'
 clm_jac.Phase.water.Mobility.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
-#
+
 clm_jac.Phase.RelPerm.Type = 'VanGenuchten'
 clm_jac.Phase.RelPerm.GeomNames = 'domain'
-#
+
 clm_jac.Geom.domain.RelPerm.Alpha = 3.5
 clm_jac.Geom.domain.RelPerm.N = 2.
 
@@ -171,7 +180,7 @@ clm_jac.Geom.domain.RelPerm.N = 2.
 
 clm_jac.Phase.Saturation.Type = 'VanGenuchten'
 clm_jac.Phase.Saturation.GeomNames = 'domain'
-#
+
 clm_jac.Geom.domain.Saturation.Alpha = 3.5
 clm_jac.Geom.domain.Saturation.N = 2.
 clm_jac.Geom.domain.Saturation.SRes = 0.01
@@ -180,12 +189,13 @@ clm_jac.Geom.domain.Saturation.SSat = 1.0
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-clm_jac.Wells.Names = ''
 
+clm_jac.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 clm_jac.Cycle.Names = 'constant'
 clm_jac.Cycle.constant.Names = 'alltime'
 clm_jac.Cycle.constant.alltime.Length = 1
@@ -194,28 +204,29 @@ clm_jac.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 clm_jac.BCPressure.PatchNames = clm_jac.Geom.domain.Patches
-#
+
 clm_jac.Patch.x_lower.BCPressure.Type = 'FluxConst'
 clm_jac.Patch.x_lower.BCPressure.Cycle = 'constant'
 clm_jac.Patch.x_lower.BCPressure.alltime.Value = 0.0
-#
+
 clm_jac.Patch.y_lower.BCPressure.Type = 'FluxConst'
 clm_jac.Patch.y_lower.BCPressure.Cycle = 'constant'
 clm_jac.Patch.y_lower.BCPressure.alltime.Value = 0.0
-#
+
 clm_jac.Patch.z_lower.BCPressure.Type = 'FluxConst'
 clm_jac.Patch.z_lower.BCPressure.Cycle = 'constant'
 clm_jac.Patch.z_lower.BCPressure.alltime.Value = 0.0
-#
+
 clm_jac.Patch.x_upper.BCPressure.Type = 'FluxConst'
 clm_jac.Patch.x_upper.BCPressure.Cycle = 'constant'
 clm_jac.Patch.x_upper.BCPressure.alltime.Value = 0.0
-#
+
 clm_jac.Patch.y_upper.BCPressure.Type = 'FluxConst'
 clm_jac.Patch.y_upper.BCPressure.Cycle = 'constant'
 clm_jac.Patch.y_upper.BCPressure.alltime.Value = 0.0
-#
+
 clm_jac.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
 clm_jac.Patch.z_upper.BCPressure.Cycle = 'constant'
 clm_jac.Patch.z_upper.BCPressure.alltime.Value = 0.0
@@ -223,23 +234,23 @@ clm_jac.Patch.z_upper.BCPressure.alltime.Value = 0.0
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
-#
+
 clm_jac.TopoSlopesX.Type = 'Constant'
 clm_jac.TopoSlopesX.GeomNames = 'domain'
 clm_jac.TopoSlopesX.Geom.domain.Value = -0.001
-#
+
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
-#
+
 clm_jac.TopoSlopesY.Type = 'Constant'
 clm_jac.TopoSlopesY.GeomNames = 'domain'
 clm_jac.TopoSlopesY.Geom.domain.Value = 0.001
-#
+
 #---------------------------------------------------------
 # Mannings coefficient
 #---------------------------------------------------------
-#
+
 clm_jac.Mannings.Type = 'Constant'
 clm_jac.Mannings.GeomNames = 'domain'
 clm_jac.Mannings.Geom.domain.Value = 5.52e-6
@@ -251,20 +262,20 @@ clm_jac.Mannings.Geom.domain.Value = 5.52e-6
 clm_jac.PhaseSources.water.Type = 'Constant'
 clm_jac.PhaseSources.water.GeomNames = 'domain'
 clm_jac.PhaseSources.water.Geom.domain.Value = 0.0
-#
+
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
-#
+
 clm_jac.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
-#
+
 clm_jac.Solver = 'Richards'
 clm_jac.Solver.MaxIter = 500
-#
+
 clm_jac.Solver.Nonlinear.MaxIter = 15
 clm_jac.Solver.Nonlinear.ResidualTol = 1e-9
 clm_jac.Solver.Nonlinear.EtaChoice = 'EtaConstant'
@@ -275,30 +286,29 @@ clm_jac.Solver.Nonlinear.StepTol = 1e-20
 clm_jac.Solver.Nonlinear.Globalization = 'LineSearch'
 clm_jac.Solver.Linear.KrylovDimension = 15
 clm_jac.Solver.Linear.MaxRestart = 2
-#
+
 clm_jac.Solver.Linear.Preconditioner = 'PFMG'
 clm_jac.Solver.PrintSubsurf = False
 clm_jac.Solver.Drop = 1E-20
 clm_jac.Solver.AbsTol = 1E-9
-#
+
 clm_jac.Solver.LSM = 'CLM'
 clm_jac.Solver.WriteSiloCLM = True
 clm_jac.Solver.CLM.MetForcing = '1D'
 clm_jac.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
 clm_jac.Solver.CLM.MetFilePath = '.'
 
-
 clm_jac.Solver.WriteSiloEvapTrans = True
 clm_jac.Solver.WriteSiloOverlandBCFlux = True
 
-
+#---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
-#
+
 clm_jac.ICPressure.Type = 'HydroStaticPatch'
 clm_jac.ICPressure.GeomNames = 'domain'
 clm_jac.Geom.domain.ICPressure.Value = -2.0
-#
+
 clm_jac.Geom.domain.ICPressure.RefGeom = 'domain'
 clm_jac.Geom.domain.ICPressure.RefPatch = 'z_upper'
 

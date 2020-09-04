@@ -1,15 +1,17 @@
+#----------------------------------------------------------------------------
 # This runs a test case with the Richards' solver
 # with a simple flow domain and different BCs on the top.
 # The domain geometry is purposefully smaller than the computational grid
 # making more than 1/2 the domain inactive in Y.  When run with topology
 # 1 2 1 this will test PF behavior for inactive processors, for different BCs
 # and solver configurations.
-
-# set runname richards_ptest_vdz
-tcl_precision = 17
+#----------------------------------------------------------------------------
 
 from parflow import Run
+
 richards_box_proctest_vardz = Run("richards_box_proctest_vardz", __file__)
+
+#---------------------------------------------------------
 
 richards_box_proctest_vardz.FileVersion = 4
 
@@ -20,6 +22,7 @@ richards_box_proctest_vardz.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 richards_box_proctest_vardz.ComputationalGrid.Lower.X = 0.0
 richards_box_proctest_vardz.ComputationalGrid.Lower.Y = 0.0
 richards_box_proctest_vardz.ComputationalGrid.Lower.Z = 0.0
@@ -35,17 +38,20 @@ richards_box_proctest_vardz.ComputationalGrid.NZ = 20
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
+
 richards_box_proctest_vardz.GeomInput.Names = 'domain_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
+
 richards_box_proctest_vardz.GeomInput.domain_input.InputType = 'Box'
 richards_box_proctest_vardz.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
+
 richards_box_proctest_vardz.Geom.domain.Lower.X = 0.0
 richards_box_proctest_vardz.Geom.domain.Lower.Y = 0.0
 richards_box_proctest_vardz.Geom.domain.Lower.Z = 0.0
@@ -56,9 +62,10 @@ richards_box_proctest_vardz.Geom.domain.Upper.Z = 20.0
 
 richards_box_proctest_vardz.Geom.domain.Patches = 'left right front back bottom top'
 
-#--------------------------------------------
+#---------------------------------------------------------
 # variable dz assignments
-#------------------------------------------
+#---------------------------------------------------------
+
 richards_box_proctest_vardz.Solver.Nonlinear.VariableDz = True
 richards_box_proctest_vardz.dzScale.GeomNames = 'domain'
 richards_box_proctest_vardz.dzScale.Type = 'nzList'
@@ -100,8 +107,6 @@ richards_box_proctest_vardz.Geom.domain.Perm.TensorValX = 1.0
 richards_box_proctest_vardz.Geom.domain.Perm.TensorValY = 1.0
 richards_box_proctest_vardz.Geom.domain.Perm.TensorValZ = 1.0
 
-
-
 #-----------------------------------------------------------------------------
 # Specific Storage
 #-----------------------------------------------------------------------------
@@ -125,11 +130,13 @@ richards_box_proctest_vardz.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
+
 richards_box_proctest_vardz.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
+
 richards_box_proctest_vardz.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
@@ -155,13 +162,13 @@ richards_box_proctest_vardz.TimeStep.Value = 10.0
 #-----------------------------------------------------------------------------
 
 richards_box_proctest_vardz.Geom.Porosity.GeomNames = 'domain'
-
 richards_box_proctest_vardz.Geom.domain.Porosity.Type = 'Constant'
 richards_box_proctest_vardz.Geom.domain.Porosity.Value = 0.25
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 richards_box_proctest_vardz.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
@@ -190,16 +197,16 @@ richards_box_proctest_vardz.Geom.domain.Saturation.SSat = 1.0
 
 richards_box_proctest_vardz.Solver.Nonlinear.FlowBarrierX = False
 
-
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-richards_box_proctest_vardz.Wells.Names = ''
 
+richards_box_proctest_vardz.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 richards_box_proctest_vardz.Cycle.Names = 'constant'
 richards_box_proctest_vardz.Cycle.constant.Names = 'alltime'
 richards_box_proctest_vardz.Cycle.constant.alltime.Length = 1
@@ -250,7 +257,6 @@ richards_box_proctest_vardz.Patch.top.BCPressure.alltime.Value = 0.0
 
 richards_box_proctest_vardz.TopoSlopesX.Type = 'Constant'
 richards_box_proctest_vardz.TopoSlopesX.GeomNames = 'domain'
-
 richards_box_proctest_vardz.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -259,7 +265,6 @@ richards_box_proctest_vardz.TopoSlopesX.Geom.domain.Value = 0.0
 
 richards_box_proctest_vardz.TopoSlopesY.Type = 'Constant'
 richards_box_proctest_vardz.TopoSlopesY.GeomNames = 'domain'
-
 richards_box_proctest_vardz.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -288,17 +293,16 @@ richards_box_proctest_vardz.PhaseSources.water.Type = 'Constant'
 richards_box_proctest_vardz.PhaseSources.water.GeomNames = 'domain'
 richards_box_proctest_vardz.PhaseSources.water.Geom.domain.Value = 0.0
 
-
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
 richards_box_proctest_vardz.KnownSolution = 'NoKnownSolution'
 
-
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 richards_box_proctest_vardz.Solver = 'Richards'
 richards_box_proctest_vardz.Solver.MaxIter = 50000
 

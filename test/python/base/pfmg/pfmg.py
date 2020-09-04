@@ -1,9 +1,14 @@
+#------------------------------------------------------------------
 #  This runs the basic pfmg test case based off of default richards
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
+#------------------------------------------------------------------
 
 from parflow import Run
+
 pfmg = Run("pfmg", __file__)
+
+#------------------------------------------------------------------
 
 pfmg.FileVersion = 4
 
@@ -14,6 +19,7 @@ pfmg.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 pfmg.ComputationalGrid.Lower.X = -10.0
 pfmg.ComputationalGrid.Lower.Y = 10.0
 pfmg.ComputationalGrid.Lower.Z = 1.0
@@ -29,18 +35,20 @@ pfmg.ComputationalGrid.NZ = 8
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-pfmg.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
+pfmg.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
+
 pfmg.GeomInput.domain_input.InputType = 'Box'
 pfmg.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
+
 pfmg.Geom.domain.Lower.X = -10.0
 pfmg.Geom.domain.Lower.Y = 10.0
 pfmg.Geom.domain.Lower.Z = 1.0
@@ -54,12 +62,14 @@ pfmg.Geom.domain.Patches = 'left right front back bottom top'
 #---------------------------------------------------------
 # Background Geometry Input
 #---------------------------------------------------------
+
 pfmg.GeomInput.background_input.InputType = 'Box'
 pfmg.GeomInput.background_input.GeomName = 'background'
 
 #---------------------------------------------------------
 # Background Geometry
 #---------------------------------------------------------
+
 pfmg.Geom.background.Lower.X = -99999999.0
 pfmg.Geom.background.Lower.Y = -99999999.0
 pfmg.Geom.background.Lower.Z = -99999999.0
@@ -68,16 +78,17 @@ pfmg.Geom.background.Upper.X = 99999999.0
 pfmg.Geom.background.Upper.Y = 99999999.0
 pfmg.Geom.background.Upper.Z = 99999999.0
 
-
 #---------------------------------------------------------
 # Source_Region Geometry Input
 #---------------------------------------------------------
+
 pfmg.GeomInput.source_region_input.InputType = 'Box'
 pfmg.GeomInput.source_region_input.GeomName = 'source_region'
 
 #---------------------------------------------------------
 # Source_Region Geometry
 #---------------------------------------------------------
+
 pfmg.Geom.source_region.Lower.X = 65.56
 pfmg.Geom.source_region.Lower.Y = 79.34
 pfmg.Geom.source_region.Lower.Z = 4.5
@@ -86,16 +97,17 @@ pfmg.Geom.source_region.Upper.X = 74.44
 pfmg.Geom.source_region.Upper.Y = 89.99
 pfmg.Geom.source_region.Upper.Z = 5.5
 
-
 #---------------------------------------------------------
 # Concen_Region Geometry Input
 #---------------------------------------------------------
+
 pfmg.GeomInput.concen_region_input.InputType = 'Box'
 pfmg.GeomInput.concen_region_input.GeomName = 'concen_region'
 
 #---------------------------------------------------------
 # Concen_Region Geometry
 #---------------------------------------------------------
+
 pfmg.Geom.concen_region.Lower.X = 60.0
 pfmg.Geom.concen_region.Lower.Y = 80.0
 pfmg.Geom.concen_region.Lower.Z = 4.0
@@ -107,6 +119,7 @@ pfmg.Geom.concen_region.Upper.Z = 6.0
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 pfmg.Geom.Perm.Names = 'background'
 
 pfmg.Geom.background.Perm.Type = 'Constant'
@@ -143,11 +156,13 @@ pfmg.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
+
 pfmg.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
+
 pfmg.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
@@ -173,13 +188,13 @@ pfmg.TimeStep.Value = 0.001
 #-----------------------------------------------------------------------------
 
 pfmg.Geom.Porosity.GeomNames = 'background'
-
 pfmg.Geom.background.Porosity.Type = 'Constant'
 pfmg.Geom.background.Porosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 pfmg.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
@@ -205,11 +220,13 @@ pfmg.Geom.domain.Saturation.SSat = 0.99
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 pfmg.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 pfmg.Cycle.Names = 'constant'
 pfmg.Cycle.constant.Names = 'alltime'
 pfmg.Cycle.constant.alltime.Length = 1
@@ -218,6 +235,7 @@ pfmg.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 pfmg.BCPressure.PatchNames = 'left right front back bottom top'
 
 pfmg.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
@@ -254,7 +272,6 @@ pfmg.Patch.top.BCPressure.alltime.Value = 0.0
 
 pfmg.TopoSlopesX.Type = 'Constant'
 pfmg.TopoSlopesX.GeomNames = 'domain'
-
 pfmg.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -263,7 +280,6 @@ pfmg.TopoSlopesX.Geom.domain.Value = 0.0
 
 pfmg.TopoSlopesY.Type = 'Constant'
 pfmg.TopoSlopesY.GeomNames = 'domain'
-
 pfmg.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -292,17 +308,16 @@ pfmg.PhaseSources.water.Type = 'Constant'
 pfmg.PhaseSources.water.GeomNames = 'background'
 pfmg.PhaseSources.water.Geom.background.Value = 0.0
 
-
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
 pfmg.KnownSolution = 'NoKnownSolution'
 
-
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 pfmg.Solver = 'Richards'
 pfmg.Solver.MaxIter = 5
 
@@ -317,7 +332,6 @@ pfmg.Solver.Linear.KrylovDimension = 10
 
 pfmg.Solver.Linear.Preconditioner = 'PFMG'
 pfmg.Solver.Linear.Preconditioner.PFMG.Smoother = 'WJacobi'
-
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

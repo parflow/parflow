@@ -1,9 +1,13 @@
+#---------------------------------------------------------
 #  This runs the tilted-v catchment problem
 #  similar to that in Kollet and Maxwell (2006) AWR
+#---------------------------------------------------------
 
 from parflow import Run
 
 dover = Run("dover", __file__)
+
+#---------------------------------------------------------
 
 dover.FileVersion = 4
 
@@ -14,6 +18,7 @@ dover.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 dover.ComputationalGrid.Lower.X = 0.0
 dover.ComputationalGrid.Lower.Y = 0.0
 dover.ComputationalGrid.Lower.Z = 0.0
@@ -29,6 +34,7 @@ dover.ComputationalGrid.DZ = .05
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
+
 dover.GeomInput.Names = 'domaininput leftinput rightinput channelinput'
 
 dover.GeomInput.domaininput.GeomName = 'domain'
@@ -44,10 +50,11 @@ dover.GeomInput.channelinput.InputType = 'Box'
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
+
 dover.Geom.domain.Lower.X = 0.0
 dover.Geom.domain.Lower.Y = 0.0
 dover.Geom.domain.Lower.Z = 0.0
-#
+
 dover.Geom.domain.Upper.X = 300.0
 dover.Geom.domain.Upper.Y = 300.0
 dover.Geom.domain.Upper.Z = 1.5
@@ -56,10 +63,11 @@ dover.Geom.domain.Patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
 #---------------------------------------------------------
 # Left Slope Geometry
 #---------------------------------------------------------
+
 dover.Geom.left.Lower.X = 0.0
 dover.Geom.left.Lower.Y = 0.0
 dover.Geom.left.Lower.Z = 0.0
-#
+
 dover.Geom.left.Upper.X = 140.0
 dover.Geom.left.Upper.Y = 300.0
 dover.Geom.left.Upper.Z = 1.5
@@ -67,10 +75,11 @@ dover.Geom.left.Upper.Z = 1.5
 #---------------------------------------------------------
 # Right Slope Geometry
 #---------------------------------------------------------
+
 dover.Geom.right.Lower.X = 160.0
 dover.Geom.right.Lower.Y = 0.0
 dover.Geom.right.Lower.Z = 0.0
-#
+
 dover.Geom.right.Upper.X = 300.0
 dover.Geom.right.Upper.Y = 300.0
 dover.Geom.right.Upper.Z = 1.5
@@ -78,10 +87,11 @@ dover.Geom.right.Upper.Z = 1.5
 #---------------------------------------------------------
 # Channel Geometry
 #---------------------------------------------------------
+
 dover.Geom.channel.Lower.X = 140.0
 dover.Geom.channel.Lower.Y = 0.0
 dover.Geom.channel.Lower.Z = 0.0
-#
+
 dover.Geom.channel.Upper.X = 160.0
 dover.Geom.channel.Upper.Y = 300.0
 dover.Geom.channel.Upper.Z = 1.5
@@ -113,7 +123,6 @@ dover.Geom.left.Perm.Seed = 33333
 dover.Geom.left.Perm.LogNormal = 'Log'
 dover.Geom.left.Perm.StratType = 'Bottom'
 
-
 dover.Geom.right.Perm.Type = 'TurnBands'
 dover.Geom.right.Perm.LambdaX = 50.
 dover.Geom.right.Perm.LambdaY = 50.
@@ -134,7 +143,6 @@ dover.Geom.right.Perm.StratType = 'Bottom'
 # comment out the left and right settings to make the subsurface heterogeneous using
 # turning bands above.  Run time increases quite a bit with a heterogeneous
 # subsurface
-#
 
 dover.Geom.left.Perm.Type = 'Constant'
 dover.Geom.left.Perm.Value = 0.001
@@ -195,7 +203,6 @@ dover.Gravity = 1.0
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-#
 dover.TimingInfo.BaseUnit = 0.1
 dover.TimingInfo.StartCount = 0
 dover.TimingInfo.StartTime = 0.0
@@ -203,7 +210,7 @@ dover.TimingInfo.StopTime = 0.4
 dover.TimingInfo.DumpInterval = -1
 dover.TimeStep.Type = 'Constant'
 dover.TimeStep.Value = 0.1
-#
+
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
@@ -247,16 +254,16 @@ dover.Geom.domain.Saturation.N = 2.
 dover.Geom.domain.Saturation.SRes = 0.2
 dover.Geom.domain.Saturation.SSat = 1.0
 
-
-
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 dover.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 dover.Cycle.Names = 'constant rainrec'
 dover.Cycle.constant.Names = 'alltime'
 dover.Cycle.constant.alltime.Length = 1
@@ -269,10 +276,11 @@ dover.Cycle.rainrec.Names = 'rain rec'
 dover.Cycle.rainrec.rain.Length = 1
 dover.Cycle.rainrec.rec.Length = 2
 dover.Cycle.rainrec.Repeat = -1
-#
+
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 dover.BCPressure.PatchNames = dover.Geom.domain.Patches
 
 dover.Patch.x_lower.BCPressure.Type = 'FluxConst'
@@ -315,7 +323,6 @@ dover.TopoSlopesX.Geom.channel.Value = 0.00
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-
 dover.TopoSlopesY.Type = 'Constant'
 dover.TopoSlopesY.GeomNames = 'left right channel'
 dover.TopoSlopesY.Geom.left.Value = 0.001
@@ -346,7 +353,6 @@ dover.PhaseSources.water.Geom.domain.Value = 0.0
 
 dover.KnownSolution = 'NoKnownSolution'
 
-
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
@@ -369,11 +375,6 @@ dover.Solver.Linear.Preconditioner = 'PFMGOctree'
 dover.Solver.PrintSubsurf = False
 dover.Solver.Drop = 1E-20
 dover.Solver.AbsTol = 1E-9
-#
-dover.Solver.WriteSiloSubsurfData = True
-dover.Solver.WriteSiloPressure = True
-dover.Solver.WriteSiloSaturation = True
-dover.Solver.WriteSiloConcentration = True
 
 #---------------------------------------------------------
 # Initial conditions: water pressure

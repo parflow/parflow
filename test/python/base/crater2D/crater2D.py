@@ -1,5 +1,7 @@
+#-----------------------------------------------------------------------------
 #  This is a 2D crater problem w/ time varying input and topography
-#
+#-----------------------------------------------------------------------------
+
 from parflow import Run
 from parflow.tools.fs import cp
 
@@ -22,6 +24,7 @@ crater.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 crater.ComputationalGrid.Lower.X = 0.0
 crater.ComputationalGrid.Lower.Y = 0.0
 crater.ComputationalGrid.Lower.Z = 0.0
@@ -49,6 +52,7 @@ crater.ComputationalGrid.DZ = (UpperZ - LowerZ) / NZ
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
+
 Zones = "zone1 zone2 zone3above4 zone3left4 zone3right4 zone3below4 zone4"
 
 crater.GeomInput.Names = f'solidinput {Zones} background'
@@ -139,12 +143,11 @@ crater.Geom.background.Upper.Z = 99999999.0
 
 crater.Geom.domain.Patches = 'infiltration z_upper x_lower y_lower x_upper y_upper z_lower'
 
-
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
-crater.Geom.Perm.Names = Zones
 
+crater.Geom.Perm.Names = Zones
 
 crater.Geom.zone1.Perm.Type = 'Constant'
 crater.Geom.zone1.Perm.Value = 9.1496
@@ -201,13 +204,11 @@ crater.Phase.water.Viscosity.Value = 1.0
 
 crater.Contaminants.Names = ''
 
-
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
 
 crater.Geom.Retardation.GeomNames = ''
-
 
 #-----------------------------------------------------------------------------
 # Gravity
@@ -338,11 +339,13 @@ crater.Geom.zone4.Saturation.SSat = 1.0
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 crater.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 crater.Cycle.Names = 'constant onoff'
 crater.Cycle.constant.Names = 'alltime'
 crater.Cycle.constant.alltime.Length = 1
@@ -356,6 +359,7 @@ crater.Cycle.onoff.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 crater.BCPressure.PatchNames = crater.Geom.domain.Patches
 
 crater.Patch.infiltration.BCPressure.Type = 'FluxConst'
@@ -393,7 +397,6 @@ crater.Patch.z_upper.BCPressure.alltime.Value = 0.0
 
 crater.TopoSlopesX.Type = 'Constant'
 crater.TopoSlopesX.GeomNames = 'domain'
-
 crater.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -402,7 +405,6 @@ crater.TopoSlopesX.Geom.domain.Value = 0.0
 
 crater.TopoSlopesY.Type = 'Constant'
 crater.TopoSlopesY.GeomNames = 'domain'
-
 crater.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -436,7 +438,6 @@ crater.PhaseSources.water.Type = 'Constant'
 crater.PhaseSources.water.GeomNames = 'background'
 crater.PhaseSources.water.Geom.background.Value = 0.0
 
-
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
@@ -446,6 +447,7 @@ crater.KnownSolution = 'NoKnownSolution'
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 crater.Solver = 'Richards'
 crater.Solver.MaxIter = 10000
 

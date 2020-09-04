@@ -1,4 +1,7 @@
-#  Testing pfset python function for setting keys that aren't in the library
+#---------------------------------------------------------
+# Testing Python clone function
+#---------------------------------------------------------
+
 import sys
 import os
 from parflow import Run
@@ -7,7 +10,6 @@ test = Run('full_clone', __file__)
 
 test.pfset(yamlFile='./full_clone.yaml.ref', exit_if_undefined=True)
 
-#-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 
 test.validate()

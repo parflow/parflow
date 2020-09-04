@@ -1,169 +1,173 @@
+#------------------------------------------------------------------
 # This runs a test case with the Richards' solver
 # with simple flow domains, like a wall or a fault.
-
-tcl_precision = 17
+#------------------------------------------------------------------
 
 from parflow import Run
 from parflow.tools.fs import get_absolute_path
-
-import numpy as np
 from parflowio.pyParflowio import PFData
+import numpy as np
 
-richards_FBy = Run("richards_FBy", __file__)
+rich_fby = Run("richards_FBy", __file__)
 
-richards_FBy.FileVersion = 4
+#------------------------------------------------------------------
 
-richards_FBy.Process.Topology.P = 1
-richards_FBy.Process.Topology.Q = 1
-richards_FBy.Process.Topology.R = 1
+rich_fby.FileVersion = 4
+
+rich_fby.Process.Topology.P = 1
+rich_fby.Process.Topology.Q = 1
+rich_fby.Process.Topology.R = 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-richards_FBy.ComputationalGrid.Lower.X = 0.0
-richards_FBy.ComputationalGrid.Lower.Y = 0.0
-richards_FBy.ComputationalGrid.Lower.Z = 0.0
 
-richards_FBy.ComputationalGrid.DX = 1.0
-richards_FBy.ComputationalGrid.DY = 1.0
-richards_FBy.ComputationalGrid.DZ = 1.0
+rich_fby.ComputationalGrid.Lower.X = 0.0
+rich_fby.ComputationalGrid.Lower.Y = 0.0
+rich_fby.ComputationalGrid.Lower.Z = 0.0
 
-richards_FBy.ComputationalGrid.NX = 20
-richards_FBy.ComputationalGrid.NY = 20
-richards_FBy.ComputationalGrid.NZ = 20
+rich_fby.ComputationalGrid.DX = 1.0
+rich_fby.ComputationalGrid.DY = 1.0
+rich_fby.ComputationalGrid.DZ = 1.0
+
+rich_fby.ComputationalGrid.NX = 20
+rich_fby.ComputationalGrid.NY = 20
+rich_fby.ComputationalGrid.NZ = 20
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-richards_FBy.GeomInput.Names = 'domain_input'
+
+rich_fby.GeomInput.Names = 'domain_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
-richards_FBy.GeomInput.domain_input.InputType = 'Box'
-richards_FBy.GeomInput.domain_input.GeomName = 'domain'
+
+rich_fby.GeomInput.domain_input.InputType = 'Box'
+rich_fby.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
-richards_FBy.Geom.domain.Lower.X = 0.0
-richards_FBy.Geom.domain.Lower.Y = 0.0
-richards_FBy.Geom.domain.Lower.Z = 0.0
 
-richards_FBy.Geom.domain.Upper.X = 20.0
-richards_FBy.Geom.domain.Upper.Y = 20.0
-richards_FBy.Geom.domain.Upper.Z = 20.0
+rich_fby.Geom.domain.Lower.X = 0.0
+rich_fby.Geom.domain.Lower.Y = 0.0
+rich_fby.Geom.domain.Lower.Z = 0.0
 
-richards_FBy.Geom.domain.Patches = 'left right front back bottom top'
+rich_fby.Geom.domain.Upper.X = 20.0
+rich_fby.Geom.domain.Upper.Y = 20.0
+rich_fby.Geom.domain.Upper.Z = 20.0
 
+rich_fby.Geom.domain.Patches = 'left right front back bottom top'
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
 
-richards_FBy.Geom.Perm.Names = 'domain'
-richards_FBy.Geom.domain.Perm.Type = 'Constant'
-richards_FBy.Geom.domain.Perm.Value = 1.0
+rich_fby.Geom.Perm.Names = 'domain'
+rich_fby.Geom.domain.Perm.Type = 'Constant'
+rich_fby.Geom.domain.Perm.Value = 1.0
 
-richards_FBy.Perm.TensorType = 'TensorByGeom'
+rich_fby.Perm.TensorType = 'TensorByGeom'
 
-richards_FBy.Geom.Perm.TensorByGeom.Names = 'domain'
+rich_fby.Geom.Perm.TensorByGeom.Names = 'domain'
 
-richards_FBy.Geom.domain.Perm.TensorValX = 1.0
-richards_FBy.Geom.domain.Perm.TensorValY = 1.0
-richards_FBy.Geom.domain.Perm.TensorValZ = 1.0
-
-
+rich_fby.Geom.domain.Perm.TensorValX = 1.0
+rich_fby.Geom.domain.Perm.TensorValY = 1.0
+rich_fby.Geom.domain.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
 #-----------------------------------------------------------------------------
 
-richards_FBy.SpecificStorage.Type = 'Constant'
-richards_FBy.SpecificStorage.GeomNames = 'domain'
-richards_FBy.Geom.domain.SpecificStorage.Value = 1.0e-4
+rich_fby.SpecificStorage.Type = 'Constant'
+rich_fby.SpecificStorage.GeomNames = 'domain'
+rich_fby.Geom.domain.SpecificStorage.Value = 1.0e-4
 
 #-----------------------------------------------------------------------------
 # Phases
 #-----------------------------------------------------------------------------
 
-richards_FBy.Phase.Names = 'water'
+rich_fby.Phase.Names = 'water'
 
-richards_FBy.Phase.water.Density.Type = 'Constant'
-richards_FBy.Phase.water.Density.Value = 1.0
+rich_fby.Phase.water.Density.Type = 'Constant'
+rich_fby.Phase.water.Density.Value = 1.0
 
-richards_FBy.Phase.water.Viscosity.Type = 'Constant'
-richards_FBy.Phase.water.Viscosity.Value = 1.0
+rich_fby.Phase.water.Viscosity.Type = 'Constant'
+rich_fby.Phase.water.Viscosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-richards_FBy.Contaminants.Names = ''
+
+rich_fby.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
-richards_FBy.Geom.Retardation.GeomNames = ''
+
+rich_fby.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
 #-----------------------------------------------------------------------------
 
-richards_FBy.Gravity = 1.0
+rich_fby.Gravity = 1.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-richards_FBy.TimingInfo.BaseUnit = 10.
-richards_FBy.TimingInfo.StartCount = 0
-richards_FBy.TimingInfo.StartTime = 0.0
-richards_FBy.TimingInfo.StopTime = 100.0
-richards_FBy.TimingInfo.DumpInterval = 10.0
-richards_FBy.TimeStep.Type = 'Constant'
-richards_FBy.TimeStep.Value = 10.0
+rich_fby.TimingInfo.BaseUnit = 10.
+rich_fby.TimingInfo.StartCount = 0
+rich_fby.TimingInfo.StartTime = 0.0
+rich_fby.TimingInfo.StopTime = 100.0
+rich_fby.TimingInfo.DumpInterval = 10.0
+rich_fby.TimeStep.Type = 'Constant'
+rich_fby.TimeStep.Value = 10.0
 
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
-richards_FBy.Geom.Porosity.GeomNames = 'domain'
-
-richards_FBy.Geom.domain.Porosity.Type = 'Constant'
-richards_FBy.Geom.domain.Porosity.Value = 0.25
+rich_fby.Geom.Porosity.GeomNames = 'domain'
+rich_fby.Geom.domain.Porosity.Type = 'Constant'
+rich_fby.Geom.domain.Porosity.Value = 0.25
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
-richards_FBy.Domain.GeomName = 'domain'
+
+rich_fby.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
 
-richards_FBy.Phase.RelPerm.Type = 'VanGenuchten'
-richards_FBy.Phase.RelPerm.GeomNames = 'domain'
-richards_FBy.Geom.domain.RelPerm.Alpha = 2.0
-richards_FBy.Geom.domain.RelPerm.N = 2.0
+rich_fby.Phase.RelPerm.Type = 'VanGenuchten'
+rich_fby.Phase.RelPerm.GeomNames = 'domain'
+rich_fby.Geom.domain.RelPerm.Alpha = 2.0
+rich_fby.Geom.domain.RelPerm.N = 2.0
 
 #---------------------------------------------------------
 # Saturation
 #---------------------------------------------------------
 
-richards_FBy.Phase.Saturation.Type = 'VanGenuchten'
-richards_FBy.Phase.Saturation.GeomNames = 'domain'
-richards_FBy.Geom.domain.Saturation.Alpha = 2.0
-richards_FBy.Geom.domain.Saturation.N = 2.0
-richards_FBy.Geom.domain.Saturation.SRes = 0.1
-richards_FBy.Geom.domain.Saturation.SSat = 1.0
+rich_fby.Phase.Saturation.Type = 'VanGenuchten'
+rich_fby.Phase.Saturation.GeomNames = 'domain'
+rich_fby.Geom.domain.Saturation.Alpha = 2.0
+rich_fby.Geom.domain.Saturation.N = 2.0
+rich_fby.Geom.domain.Saturation.SRes = 0.1
+rich_fby.Geom.domain.Saturation.SSat = 1.0
 
 #---------------------------------------------------------
 # Flow Barrier in Y between cells 10 and 11 in all Z
 #---------------------------------------------------------
 
-richards_FBy.Solver.Nonlinear.FlowBarrierY = True
-richards_FBy.FBy.Type = 'PFBFile'
-richards_FBy.Geom.domain.FBy.FileName = 'Flow_Barrier_Y.pfb'
+rich_fby.Solver.Nonlinear.FlowBarrierY = True
+rich_fby.FBy.Type = 'PFBFile'
+rich_fby.Geom.domain.FBy.FileName = 'Flow_Barrier_Y.pfb'
 
 ## write flow barrier file
 FBy_data = np.full((20, 20, 20), 1.0)
@@ -177,129 +181,126 @@ FBy_data_pfb = PFData(FBy_data)
 FBy_data_pfb.writeFile(get_absolute_path('Flow_Barrier_Y.pfb'))
 FBy_data_pfb.close()
 
-richards_FBy.dist('Flow_Barrier_Y.pfb')
+rich_fby.dist('Flow_Barrier_Y.pfb')
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-richards_FBy.Wells.Names = ''
 
+rich_fby.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
-richards_FBy.Cycle.Names = 'constant'
-richards_FBy.Cycle.constant.Names = 'alltime'
-richards_FBy.Cycle.constant.alltime.Length = 1
-richards_FBy.Cycle.constant.Repeat = -1
+
+rich_fby.Cycle.Names = 'constant'
+rich_fby.Cycle.constant.Names = 'alltime'
+rich_fby.Cycle.constant.alltime.Length = 1
+rich_fby.Cycle.constant.Repeat = -1
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
 
-richards_FBy.BCPressure.PatchNames = 'left right front back bottom top'
+rich_fby.BCPressure.PatchNames = 'left right front back bottom top'
 
-richards_FBy.Patch.front.BCPressure.Type = 'DirEquilRefPatch'
-richards_FBy.Patch.front.BCPressure.Cycle = 'constant'
-richards_FBy.Patch.front.BCPressure.RefGeom = 'domain'
-richards_FBy.Patch.front.BCPressure.RefPatch = 'bottom'
-richards_FBy.Patch.front.BCPressure.alltime.Value = 11.0
+rich_fby.Patch.front.BCPressure.Type = 'DirEquilRefPatch'
+rich_fby.Patch.front.BCPressure.Cycle = 'constant'
+rich_fby.Patch.front.BCPressure.RefGeom = 'domain'
+rich_fby.Patch.front.BCPressure.RefPatch = 'bottom'
+rich_fby.Patch.front.BCPressure.alltime.Value = 11.0
 
-richards_FBy.Patch.back.BCPressure.Type = 'DirEquilRefPatch'
-richards_FBy.Patch.back.BCPressure.Cycle = 'constant'
-richards_FBy.Patch.back.BCPressure.RefGeom = 'domain'
-richards_FBy.Patch.back.BCPressure.RefPatch = 'bottom'
-richards_FBy.Patch.back.BCPressure.alltime.Value = 15.0
+rich_fby.Patch.back.BCPressure.Type = 'DirEquilRefPatch'
+rich_fby.Patch.back.BCPressure.Cycle = 'constant'
+rich_fby.Patch.back.BCPressure.RefGeom = 'domain'
+rich_fby.Patch.back.BCPressure.RefPatch = 'bottom'
+rich_fby.Patch.back.BCPressure.alltime.Value = 15.0
 
-richards_FBy.Patch.left.BCPressure.Type = 'FluxConst'
-richards_FBy.Patch.left.BCPressure.Cycle = 'constant'
-richards_FBy.Patch.left.BCPressure.alltime.Value = 0.0
+rich_fby.Patch.left.BCPressure.Type = 'FluxConst'
+rich_fby.Patch.left.BCPressure.Cycle = 'constant'
+rich_fby.Patch.left.BCPressure.alltime.Value = 0.0
 
-richards_FBy.Patch.right.BCPressure.Type = 'FluxConst'
-richards_FBy.Patch.right.BCPressure.Cycle = 'constant'
-richards_FBy.Patch.right.BCPressure.alltime.Value = 0.0
+rich_fby.Patch.right.BCPressure.Type = 'FluxConst'
+rich_fby.Patch.right.BCPressure.Cycle = 'constant'
+rich_fby.Patch.right.BCPressure.alltime.Value = 0.0
 
-richards_FBy.Patch.bottom.BCPressure.Type = 'FluxConst'
-richards_FBy.Patch.bottom.BCPressure.Cycle = 'constant'
-richards_FBy.Patch.bottom.BCPressure.alltime.Value = 0.0
+rich_fby.Patch.bottom.BCPressure.Type = 'FluxConst'
+rich_fby.Patch.bottom.BCPressure.Cycle = 'constant'
+rich_fby.Patch.bottom.BCPressure.alltime.Value = 0.0
 
-richards_FBy.Patch.top.BCPressure.Type = 'FluxConst'
-richards_FBy.Patch.top.BCPressure.Cycle = 'constant'
-richards_FBy.Patch.top.BCPressure.alltime.Value = 0.0
+rich_fby.Patch.top.BCPressure.Type = 'FluxConst'
+rich_fby.Patch.top.BCPressure.Cycle = 'constant'
+rich_fby.Patch.top.BCPressure.alltime.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
 
-richards_FBy.TopoSlopesX.Type = 'Constant'
-richards_FBy.TopoSlopesX.GeomNames = 'domain'
-
-richards_FBy.TopoSlopesX.Geom.domain.Value = 0.0
+rich_fby.TopoSlopesX.Type = 'Constant'
+rich_fby.TopoSlopesX.GeomNames = 'domain'
+rich_fby.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-richards_FBy.TopoSlopesY.Type = 'Constant'
-richards_FBy.TopoSlopesY.GeomNames = 'domain'
-
-richards_FBy.TopoSlopesY.Geom.domain.Value = 0.0
+rich_fby.TopoSlopesY.Type = 'Constant'
+rich_fby.TopoSlopesY.GeomNames = 'domain'
+rich_fby.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Mannings coefficient
 #---------------------------------------------------------
 
-richards_FBy.Mannings.Type = 'Constant'
-richards_FBy.Mannings.GeomNames = 'domain'
-richards_FBy.Mannings.Geom.domain.Value = 0.
+rich_fby.Mannings.Type = 'Constant'
+rich_fby.Mannings.GeomNames = 'domain'
+rich_fby.Mannings.Geom.domain.Value = 0.
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
 
-richards_FBy.ICPressure.Type = 'HydroStaticPatch'
-richards_FBy.ICPressure.GeomNames = 'domain'
-richards_FBy.Geom.domain.ICPressure.Value = 13.0
-richards_FBy.Geom.domain.ICPressure.RefGeom = 'domain'
-richards_FBy.Geom.domain.ICPressure.RefPatch = 'bottom'
+rich_fby.ICPressure.Type = 'HydroStaticPatch'
+rich_fby.ICPressure.GeomNames = 'domain'
+rich_fby.Geom.domain.ICPressure.Value = 13.0
+rich_fby.Geom.domain.ICPressure.RefGeom = 'domain'
+rich_fby.Geom.domain.ICPressure.RefPatch = 'bottom'
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-richards_FBy.PhaseSources.water.Type = 'Constant'
-richards_FBy.PhaseSources.water.GeomNames = 'domain'
-richards_FBy.PhaseSources.water.Geom.domain.Value = 0.0
-
+rich_fby.PhaseSources.water.Type = 'Constant'
+rich_fby.PhaseSources.water.GeomNames = 'domain'
+rich_fby.PhaseSources.water.Geom.domain.Value = 0.0
 
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
-richards_FBy.KnownSolution = 'NoKnownSolution'
-
+rich_fby.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
-richards_FBy.Solver = 'Richards'
-richards_FBy.Solver.MaxIter = 50000
 
-richards_FBy.Solver.Nonlinear.MaxIter = 100
-richards_FBy.Solver.Nonlinear.ResidualTol = 1e-6
-richards_FBy.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-richards_FBy.Solver.Nonlinear.EtaValue = 1e-2
-richards_FBy.Solver.Nonlinear.UseJacobian = True
+rich_fby.Solver = 'Richards'
+rich_fby.Solver.MaxIter = 50000
 
-richards_FBy.Solver.Nonlinear.DerivativeEpsilon = 1e-12
+rich_fby.Solver.Nonlinear.MaxIter = 100
+rich_fby.Solver.Nonlinear.ResidualTol = 1e-6
+rich_fby.Solver.Nonlinear.EtaChoice = 'EtaConstant'
+rich_fby.Solver.Nonlinear.EtaValue = 1e-2
+rich_fby.Solver.Nonlinear.UseJacobian = True
 
-richards_FBy.Solver.Linear.KrylovDimension = 100
+rich_fby.Solver.Nonlinear.DerivativeEpsilon = 1e-12
 
-richards_FBy.Solver.Linear.Preconditioner = 'PFMG'
+rich_fby.Solver.Linear.KrylovDimension = 100
 
+rich_fby.Solver.Linear.Preconditioner = 'PFMG'
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-richards_FBy.run()
+rich_fby.run()

@@ -1,4 +1,6 @@
+#---------------------------------------------------------
 # Testing copy, remove, and mkdir methods on Python Run object
+#---------------------------------------------------------
 
 import sys
 
@@ -7,7 +9,6 @@ from parflow.tools.fs import cp, rm, mkdir, exists
 
 # Update the working directory via the __file__ arg
 os_fxn = Run("os_fxn", __file__)
-
 
 def checkOK(file_path):
   if not exists(file_path):

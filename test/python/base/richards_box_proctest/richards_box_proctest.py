@@ -1,10 +1,13 @@
+#---------------------------------------------------------
 # This runs a test case with the Richards' solver
 # with simple flow domains, like a wall or a fault.
-
-tcl_precision = 17
+#---------------------------------------------------------
 
 from parflow import Run
+
 richards_box_proctest = Run("richards_box_proctest", __file__)
+
+#---------------------------------------------------------
 
 richards_box_proctest.FileVersion = 4
 
@@ -15,6 +18,7 @@ richards_box_proctest.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 richards_box_proctest.ComputationalGrid.Lower.X = 0.0
 richards_box_proctest.ComputationalGrid.Lower.Y = 0.0
 richards_box_proctest.ComputationalGrid.Lower.Z = 0.0
@@ -30,17 +34,20 @@ richards_box_proctest.ComputationalGrid.NZ = 20
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
+
 richards_box_proctest.GeomInput.Names = 'domain_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
+
 richards_box_proctest.GeomInput.domain_input.InputType = 'Box'
 richards_box_proctest.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
+
 richards_box_proctest.Geom.domain.Lower.X = 0.0
 richards_box_proctest.Geom.domain.Lower.Y = 0.0
 richards_box_proctest.Geom.domain.Lower.Z = 0.0
@@ -50,7 +57,6 @@ richards_box_proctest.Geom.domain.Upper.Y = 20.0
 richards_box_proctest.Geom.domain.Upper.Z = 20.0
 
 richards_box_proctest.Geom.domain.Patches = 'left right front back bottom top'
-
 
 #-----------------------------------------------------------------------------
 # Perm
@@ -67,8 +73,6 @@ richards_box_proctest.Geom.Perm.TensorByGeom.Names = 'domain'
 richards_box_proctest.Geom.domain.Perm.TensorValX = 1.0
 richards_box_proctest.Geom.domain.Perm.TensorValY = 1.0
 richards_box_proctest.Geom.domain.Perm.TensorValZ = 1.0
-
-
 
 #-----------------------------------------------------------------------------
 # Specific Storage
@@ -93,11 +97,13 @@ richards_box_proctest.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
+
 richards_box_proctest.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
+
 richards_box_proctest.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
@@ -123,13 +129,13 @@ richards_box_proctest.TimeStep.Value = 10.0
 #-----------------------------------------------------------------------------
 
 richards_box_proctest.Geom.Porosity.GeomNames = 'domain'
-
 richards_box_proctest.Geom.domain.Porosity.Type = 'Constant'
 richards_box_proctest.Geom.domain.Porosity.Value = 0.25
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 richards_box_proctest.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
@@ -158,16 +164,16 @@ richards_box_proctest.Geom.domain.Saturation.SSat = 1.0
 
 richards_box_proctest.Solver.Nonlinear.FlowBarrierX = False
 
-
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-richards_box_proctest.Wells.Names = ''
 
+richards_box_proctest.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 richards_box_proctest.Cycle.Names = 'constant'
 richards_box_proctest.Cycle.constant.Names = 'alltime'
 richards_box_proctest.Cycle.constant.alltime.Length = 1
@@ -213,7 +219,6 @@ richards_box_proctest.Patch.top.BCPressure.alltime.Value = 0.0
 
 richards_box_proctest.TopoSlopesX.Type = 'Constant'
 richards_box_proctest.TopoSlopesX.GeomNames = 'domain'
-
 richards_box_proctest.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -222,7 +227,6 @@ richards_box_proctest.TopoSlopesX.Geom.domain.Value = 0.0
 
 richards_box_proctest.TopoSlopesY.Type = 'Constant'
 richards_box_proctest.TopoSlopesY.GeomNames = 'domain'
-
 richards_box_proctest.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -251,17 +255,16 @@ richards_box_proctest.PhaseSources.water.Type = 'Constant'
 richards_box_proctest.PhaseSources.water.GeomNames = 'domain'
 richards_box_proctest.PhaseSources.water.Geom.domain.Value = 0.0
 
-
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
 richards_box_proctest.KnownSolution = 'NoKnownSolution'
 
-
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 richards_box_proctest.Solver = 'Richards'
 richards_box_proctest.Solver.MaxIter = 50000
 
@@ -276,7 +279,6 @@ richards_box_proctest.Solver.Nonlinear.DerivativeEpsilon = 1e-12
 richards_box_proctest.Solver.Linear.KrylovDimension = 100
 
 richards_box_proctest.Solver.Linear.Preconditioner = 'PFMG'
-
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

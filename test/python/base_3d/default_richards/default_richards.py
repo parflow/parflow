@@ -1,11 +1,14 @@
+#---------------------------------------------------------
 #  This runs the basic default_richards test case.
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
+#---------------------------------------------------------
 
 from parflow import Run
 
 drich = Run('default_richards', __file__)
 
+#---------------------------------------------------------
 
 drich.Process.Topology.P = 1
 drich.Process.Topology.Q = 1
@@ -14,6 +17,7 @@ drich.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 drich.ComputationalGrid.Lower.X = -10.0
 drich.ComputationalGrid.Lower.Y = 10.0
 drich.ComputationalGrid.Lower.Z = 1.0
@@ -29,18 +33,20 @@ drich.ComputationalGrid.NZ = 8
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-drich.GeomInput.Names = "domain_input background_input source_region_input concen_region_input"
 
+drich.GeomInput.Names = "domain_input background_input source_region_input concen_region_input"
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
+
 drich.GeomInput.domain_input.InputType = 'Box'
 drich.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
+
 drich.Geom.domain.Lower.X = -10.0
 drich.Geom.domain.Lower.Y = 10.0
 drich.Geom.domain.Lower.Z = 1.0
@@ -54,12 +60,14 @@ drich.Geom.domain.Patches = "left right front back bottom top"
 #---------------------------------------------------------
 # Background Geometry Input
 #---------------------------------------------------------
+
 drich.GeomInput.background_input.InputType = 'Box'
 drich.GeomInput.background_input.GeomName = 'background'
 
 #---------------------------------------------------------
 # Background Geometry
 #---------------------------------------------------------
+
 drich.Geom.background.Lower.X = -99999999.0
 drich.Geom.background.Lower.Y = -99999999.0
 drich.Geom.background.Lower.Z = -99999999.0
@@ -68,16 +76,17 @@ drich.Geom.background.Upper.X = 99999999.0
 drich.Geom.background.Upper.Y = 99999999.0
 drich.Geom.background.Upper.Z = 99999999.0
 
-
 #---------------------------------------------------------
 # Source_Region Geometry Input
 #---------------------------------------------------------
+
 drich.GeomInput.source_region_input.InputType = 'Box'
 drich.GeomInput.source_region_input.GeomName = 'source_region'
 
 #---------------------------------------------------------
 # Source_Region Geometry
 #---------------------------------------------------------
+
 drich.Geom.source_region.Lower.X = 65.56
 drich.Geom.source_region.Lower.Y = 79.34
 drich.Geom.source_region.Lower.Z = 4.5
@@ -86,16 +95,17 @@ drich.Geom.source_region.Upper.X = 74.44
 drich.Geom.source_region.Upper.Y = 89.99
 drich.Geom.source_region.Upper.Z = 5.5
 
-
 #---------------------------------------------------------
 # Concen_Region Geometry Input
 #---------------------------------------------------------
+
 drich.GeomInput.concen_region_input.InputType = 'Box'
 drich.GeomInput.concen_region_input.GeomName = 'concen_region'
 
 #---------------------------------------------------------
 # Concen_Region Geometry
 #---------------------------------------------------------
+
 drich.Geom.concen_region.Lower.X = 60.0
 drich.Geom.concen_region.Lower.Y = 80.0
 drich.Geom.concen_region.Lower.Z = 4.0
@@ -107,6 +117,7 @@ drich.Geom.concen_region.Upper.Z = 6.0
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 drich.Geom.Perm.Names = "background"
 
 drich.Geom.background.Perm.Type = 'Constant'
@@ -143,11 +154,13 @@ drich.Phase.water.Viscosity.Value = 1.0
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
+
 drich.Contaminants.Names = ""
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
+
 drich.Geom.Retardation.GeomNames = ""
 
 #-----------------------------------------------------------------------------
@@ -173,13 +186,13 @@ drich.TimeStep.Value = 0.001
 #-----------------------------------------------------------------------------
 
 drich.Geom.Porosity.GeomNames = 'background'
-
 drich.Geom.background.Porosity.Type = 'Constant'
 drich.Geom.background.Porosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
+
 drich.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
@@ -189,7 +202,6 @@ drich.Domain.GeomName = 'domain'
 drich.Phase.RelPerm.Type = 'VanGenuchten'
 drich.Phase.RelPerm.GeomNames = 'domain'
 drich.Geom.domain.RelPerm.Alpha = 0.005
-# drich.Geom.domain.RelPerm.Alpha.FileName = 'alpha_file.pfb'
 drich.Geom.domain.RelPerm.N = 2.0
 
 #---------------------------------------------------------
@@ -206,11 +218,13 @@ drich.Geom.domain.Saturation.SSat = 0.99
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 drich.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 drich.Cycle.Names = 'constant'
 drich.Cycle.constant.Names = "alltime"
 drich.Cycle.constant.alltime.Length = 1
@@ -219,6 +233,7 @@ drich.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
+
 drich.BCPressure.PatchNames = "left right front back bottom top"
 
 drich.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
@@ -254,9 +269,7 @@ drich.Patch.top.BCPressure.alltime.Value = 0.0
 #---------------------------------------------------------
 
 drich.TopoSlopesX.Type = "Constant"
-# seb added domain otherwise failing after
 drich.TopoSlopesX.GeomNames = "domain"
-
 drich.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -264,9 +277,7 @@ drich.TopoSlopesX.Geom.domain.Value = 0.0
 #---------------------------------------------------------
 
 drich.TopoSlopesY.Type = "Constant"
-# seb added domain otherwise failing after
 drich.TopoSlopesY.GeomNames = "domain"
-
 drich.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -274,7 +285,6 @@ drich.TopoSlopesY.Geom.domain.Value = 0.0
 #---------------------------------------------------------
 
 drich.Mannings.Type = "Constant"
-# seb added domain otherwise failing after
 drich.Mannings.GeomNames = "domain"
 drich.Mannings.Geom.domain.Value = 0.
 
@@ -296,7 +306,6 @@ drich.PhaseSources.water.Type = 'Constant'
 drich.PhaseSources.water.GeomNames = 'background'
 drich.PhaseSources.water.Geom.background.Value = 0.0
 
-
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
@@ -306,6 +315,7 @@ drich.KnownSolution = 'NoKnownSolution'
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 drich.Solver = 'Richards'
 drich.Solver.MaxIter = 5
 
@@ -320,5 +330,8 @@ drich.Solver.Linear.KrylovDimension = 10
 
 drich.Solver.Linear.Preconditioner = 'PFMG'
 
+#-----------------------------------------------------------------------------
+# Run ParFlow
+#-----------------------------------------------------------------------------
 
 drich.run()

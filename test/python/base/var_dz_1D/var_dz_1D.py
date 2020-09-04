@@ -1,333 +1,342 @@
+#---------------------------------------------------------
 # Runs a simple sand draining problem, rectangular domain
 # with variable dz and a heterogenous subsurface with different K the top and bottom layers
+#---------------------------------------------------------
 
 from parflow import Run
-var_dz_1D = Run("var_dz_1D", __file__)
 
-var_dz_1D.FileVersion = 4
+vardz = Run("var_d5z_1D", __file__)
 
-var_dz_1D.Process.Topology.P = 1
-var_dz_1D.Process.Topology.Q = 1
-var_dz_1D.Process.Topology.R = 1
+#---------------------------------------------------------
+
+vardz.FileVersion = 4
+
+vardz.Process.Topology.P = 1
+vardz.Process.Topology.Q = 1
+vardz.Process.Topology.R = 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-var_dz_1D.ComputationalGrid.Lower.X = 0.0
-var_dz_1D.ComputationalGrid.Lower.Y = 0.0
-var_dz_1D.ComputationalGrid.Lower.Z = 0.0
 
-var_dz_1D.ComputationalGrid.DX = 1.0
-var_dz_1D.ComputationalGrid.DY = 1.0
-var_dz_1D.ComputationalGrid.DZ = 0.1
+vardz.ComputationalGrid.Lower.X = 0.0
+vardz.ComputationalGrid.Lower.Y = 0.0
+vardz.ComputationalGrid.Lower.Z = 0.0
 
-var_dz_1D.ComputationalGrid.NX = 1
-var_dz_1D.ComputationalGrid.NY = 1
-var_dz_1D.ComputationalGrid.NZ = 14
+vardz.ComputationalGrid.DX = 1.0
+vardz.ComputationalGrid.DY = 1.0
+vardz.ComputationalGrid.DZ = 0.1
+
+vardz.ComputationalGrid.NX = 1
+vardz.ComputationalGrid.NY = 1
+vardz.ComputationalGrid.NZ = 14
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-var_dz_1D.GeomInput.Names = 'domain_input het_input1 het_input2'
+
+vardz.GeomInput.Names = 'domain_input het_input1 het_input2'
 
 #---------------------------------------------------------
 # Geometry Input
 #---------------------------------------------------------
-var_dz_1D.GeomInput.domain_input.InputType = 'Box'
-var_dz_1D.GeomInput.domain_input.GeomName = 'domain'
 
-var_dz_1D.GeomInput.het_input1.InputType = 'Box'
-var_dz_1D.GeomInput.het_input1.GeomName = 'het1'
+vardz.GeomInput.domain_input.InputType = 'Box'
+vardz.GeomInput.domain_input.GeomName = 'domain'
 
-var_dz_1D.GeomInput.het_input2.InputType = 'Box'
-var_dz_1D.GeomInput.het_input2.GeomName = 'het2'
+vardz.GeomInput.het_input1.InputType = 'Box'
+vardz.GeomInput.het_input1.GeomName = 'het1'
+
+vardz.GeomInput.het_input2.InputType = 'Box'
+vardz.GeomInput.het_input2.GeomName = 'het2'
 
 #---------------------------------------------------------
 # Geometry
 #---------------------------------------------------------
-#domain
-var_dz_1D.Geom.domain.Lower.X = 0.0
-var_dz_1D.Geom.domain.Lower.Y = 0.0
-var_dz_1D.Geom.domain.Lower.Z = 0.0
 
-var_dz_1D.Geom.domain.Upper.X = 1.0
-var_dz_1D.Geom.domain.Upper.Y = 1.0
-var_dz_1D.Geom.domain.Upper.Z = 1.4
+vardz.Geom.domain.Lower.X = 0.0
+vardz.Geom.domain.Lower.Y = 0.0
+vardz.Geom.domain.Lower.Z = 0.0
 
-var_dz_1D.Geom.domain.Patches = 'left right front back bottom top'
+vardz.Geom.domain.Upper.X = 1.0
+vardz.Geom.domain.Upper.Y = 1.0
+vardz.Geom.domain.Upper.Z = 1.4
 
-#het1
-var_dz_1D.Geom.het1.Lower.X = 0.0
-var_dz_1D.Geom.het1.Lower.Y = 0.0
-var_dz_1D.Geom.het1.Lower.Z = 1.3
+vardz.Geom.domain.Patches = 'left right front back bottom top'
 
-var_dz_1D.Geom.het1.Upper.X = 1.0
-var_dz_1D.Geom.het1.Upper.Y = 1.0
-var_dz_1D.Geom.het1.Upper.Z = 1.4
+vardz.Geom.het1.Lower.X = 0.0
+vardz.Geom.het1.Lower.Y = 0.0
+vardz.Geom.het1.Lower.Z = 1.3
 
-#het2
-var_dz_1D.Geom.het2.Lower.X = 0.0
-var_dz_1D.Geom.het2.Lower.Y = 0.0
-var_dz_1D.Geom.het2.Lower.Z = 0.0
+vardz.Geom.het1.Upper.X = 1.0
+vardz.Geom.het1.Upper.Y = 1.0
+vardz.Geom.het1.Upper.Z = 1.4
 
-var_dz_1D.Geom.het2.Upper.X = 1.0
-var_dz_1D.Geom.het2.Upper.Y = 1.0
-var_dz_1D.Geom.het2.Upper.Z = 0.1
+vardz.Geom.het2.Lower.X = 0.0
+vardz.Geom.het2.Lower.Y = 0.0
+vardz.Geom.het2.Lower.Z = 0.0
+
+vardz.Geom.het2.Upper.X = 1.0
+vardz.Geom.het2.Upper.Y = 1.0
+vardz.Geom.het2.Upper.Z = 0.1
 
 #--------------------------------------------
 # variable dz assignments
 #------------------------------------------
-var_dz_1D.Solver.Nonlinear.VariableDz = True
-var_dz_1D.dzScale.GeomNames = 'domain'
-var_dz_1D.dzScale.Type = 'nzList'
-var_dz_1D.dzScale.nzListNumber = 14
-var_dz_1D.Cell._0.dzScale.Value = 1.2
-var_dz_1D.Cell._1.dzScale.Value = 1.0
-var_dz_1D.Cell._2.dzScale.Value = 1.0
-var_dz_1D.Cell._3.dzScale.Value = 1.0
-var_dz_1D.Cell._4.dzScale.Value = 1.0
-var_dz_1D.Cell._5.dzScale.Value = 1.0
-var_dz_1D.Cell._6.dzScale.Value = 1.0
-var_dz_1D.Cell._7.dzScale.Value = 1.0
-var_dz_1D.Cell._8.dzScale.Value = 1.0
-var_dz_1D.Cell._9.dzScale.Value = 1.0
-var_dz_1D.Cell._10.dzScale.Value = 0.15
-var_dz_1D.Cell._11.dzScale.Value = 0.1
-var_dz_1D.Cell._12.dzScale.Value = 0.1
-var_dz_1D.Cell._13.dzScale.Value = 0.05
+
+vardz.Solver.Nonlinear.VariableDz = True
+vardz.dzScale.GeomNames = 'domain'
+vardz.dzScale.Type = 'nzList'
+vardz.dzScale.nzListNumber = 14
+vardz.Cell._0.dzScale.Value = 1.2
+vardz.Cell._1.dzScale.Value = 1.0
+vardz.Cell._2.dzScale.Value = 1.0
+vardz.Cell._3.dzScale.Value = 1.0
+vardz.Cell._4.dzScale.Value = 1.0
+vardz.Cell._5.dzScale.Value = 1.0
+vardz.Cell._6.dzScale.Value = 1.0
+vardz.Cell._7.dzScale.Value = 1.0
+vardz.Cell._8.dzScale.Value = 1.0
+vardz.Cell._9.dzScale.Value = 1.0
+vardz.Cell._10.dzScale.Value = 0.15
+vardz.Cell._11.dzScale.Value = 0.1
+vardz.Cell._12.dzScale.Value = 0.1
+vardz.Cell._13.dzScale.Value = 0.05
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
-var_dz_1D.Geom.Perm.Names = 'domain het1 het2'
 
-var_dz_1D.Geom.domain.Perm.Type = 'Constant'
-var_dz_1D.Geom.domain.Perm.Value = 5.129
+vardz.Geom.Perm.Names = 'domain het1 het2'
 
-var_dz_1D.Geom.het1.Perm.Type = 'Constant'
-var_dz_1D.Geom.het1.Perm.Value = 0.0001
+vardz.Geom.domain.Perm.Type = 'Constant'
+vardz.Geom.domain.Perm.Value = 5.129
 
-var_dz_1D.Geom.het2.Perm.Type = 'Constant'
-var_dz_1D.Geom.het2.Perm.Value = 0.001
+vardz.Geom.het1.Perm.Type = 'Constant'
+vardz.Geom.het1.Perm.Value = 0.0001
 
-var_dz_1D.Perm.TensorType = 'TensorByGeom'
+vardz.Geom.het2.Perm.Type = 'Constant'
+vardz.Geom.het2.Perm.Value = 0.001
 
-var_dz_1D.Geom.Perm.TensorByGeom.Names = 'domain'
+vardz.Perm.TensorType = 'TensorByGeom'
 
-var_dz_1D.Geom.domain.Perm.TensorValX = 1.0
-var_dz_1D.Geom.domain.Perm.TensorValY = 1.0
-var_dz_1D.Geom.domain.Perm.TensorValZ = 1.0
+vardz.Geom.Perm.TensorByGeom.Names = 'domain'
+
+vardz.Geom.domain.Perm.TensorValX = 1.0
+vardz.Geom.domain.Perm.TensorValY = 1.0
+vardz.Geom.domain.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
 #-----------------------------------------------------------------------------
 
-var_dz_1D.SpecificStorage.Type = 'Constant'
-var_dz_1D.SpecificStorage.GeomNames = 'domain'
-var_dz_1D.Geom.domain.SpecificStorage.Value = 1.0e-6
+vardz.SpecificStorage.Type = 'Constant'
+vardz.SpecificStorage.GeomNames = 'domain'
+vardz.Geom.domain.SpecificStorage.Value = 1.0e-6
 
 #-----------------------------------------------------------------------------
 # Phases
 #-----------------------------------------------------------------------------
 
-var_dz_1D.Phase.Names = 'water'
+vardz.Phase.Names = 'water'
 
-var_dz_1D.Phase.water.Density.Type = 'Constant'
-var_dz_1D.Phase.water.Density.Value = 1.0
+vardz.Phase.water.Density.Type = 'Constant'
+vardz.Phase.water.Density.Value = 1.0
 
-var_dz_1D.Phase.water.Viscosity.Type = 'Constant'
-var_dz_1D.Phase.water.Viscosity.Value = 1.0
+vardz.Phase.water.Viscosity.Type = 'Constant'
+vardz.Phase.water.Viscosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-var_dz_1D.Contaminants.Names = ''
+
+vardz.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
-var_dz_1D.Geom.Retardation.GeomNames = ''
+
+vardz.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
 #-----------------------------------------------------------------------------
-var_dz_1D.Gravity = 1.0
+
+vardz.Gravity = 1.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-var_dz_1D.TimingInfo.BaseUnit = 1.0
-var_dz_1D.TimingInfo.StartCount = 0
-var_dz_1D.TimingInfo.StartTime = 0.0
-var_dz_1D.TimingInfo.StopTime = 50.0
-var_dz_1D.TimingInfo.DumpInterval = -100
-var_dz_1D.TimeStep.Type = 'Constant'
-var_dz_1D.TimeStep.Value = 0.01
-var_dz_1D.TimeStep.Value = 0.01
+vardz.TimingInfo.BaseUnit = 1.0
+vardz.TimingInfo.StartCount = 0
+vardz.TimingInfo.StartTime = 0.0
+vardz.TimingInfo.StopTime = 50.0
+vardz.TimingInfo.DumpInterval = -100
+vardz.TimeStep.Type = 'Constant'
+vardz.TimeStep.Value = 0.01
+vardz.TimeStep.Value = 0.01
 
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
-var_dz_1D.Geom.Porosity.GeomNames = 'domain'
-
-var_dz_1D.Geom.domain.Porosity.Type = 'Constant'
-var_dz_1D.Geom.domain.Porosity.Value = 0.4150
+vardz.Geom.Porosity.GeomNames = 'domain'
+vardz.Geom.domain.Porosity.Type = 'Constant'
+vardz.Geom.domain.Porosity.Value = 0.4150
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
-var_dz_1D.Domain.GeomName = 'domain'
+
+vardz.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
 
-var_dz_1D.Phase.RelPerm.Type = 'VanGenuchten'
-var_dz_1D.Phase.RelPerm.GeomNames = 'domain'
-var_dz_1D.Geom.domain.RelPerm.Alpha = 2.7
-var_dz_1D.Geom.domain.RelPerm.N = 3.8
+vardz.Phase.RelPerm.Type = 'VanGenuchten'
+vardz.Phase.RelPerm.GeomNames = 'domain'
+vardz.Geom.domain.RelPerm.Alpha = 2.7
+vardz.Geom.domain.RelPerm.N = 3.8
 
 #---------------------------------------------------------
 # Saturation
 #---------------------------------------------------------
 
-var_dz_1D.Phase.Saturation.Type = 'VanGenuchten'
-var_dz_1D.Phase.Saturation.GeomNames = 'domain'
-var_dz_1D.Geom.domain.Saturation.Alpha = 2.7
-var_dz_1D.Geom.domain.Saturation.N = 3.8
-var_dz_1D.Geom.domain.Saturation.SRes = 0.106
-var_dz_1D.Geom.domain.Saturation.SSat = 1.0
+vardz.Phase.Saturation.Type = 'VanGenuchten'
+vardz.Phase.Saturation.GeomNames = 'domain'
+vardz.Geom.domain.Saturation.Alpha = 2.7
+vardz.Geom.domain.Saturation.N = 3.8
+vardz.Geom.domain.Saturation.SRes = 0.106
+vardz.Geom.domain.Saturation.SSat = 1.0
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-var_dz_1D.Wells.Names = ''
+
+vardz.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
-var_dz_1D.Cycle.Names = 'constant'
-var_dz_1D.Cycle.constant.Names = 'alltime'
-var_dz_1D.Cycle.constant.alltime.Length = 1
-var_dz_1D.Cycle.constant.Repeat = -1
+
+vardz.Cycle.Names = 'constant'
+vardz.Cycle.constant.Names = 'alltime'
+vardz.Cycle.constant.alltime.Length = 1
+vardz.Cycle.constant.Repeat = -1
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-var_dz_1D.BCPressure.PatchNames = 'left right front back bottom top'
 
-var_dz_1D.Patch.left.BCPressure.Type = 'FluxConst'
-var_dz_1D.Patch.left.BCPressure.Cycle = 'constant'
-var_dz_1D.Patch.left.BCPressure.RefGeom = 'domain'
-var_dz_1D.Patch.left.BCPressure.RefPatch = 'bottom'
-var_dz_1D.Patch.left.BCPressure.alltime.Value = 0.0
+vardz.BCPressure.PatchNames = 'left right front back bottom top'
 
-var_dz_1D.Patch.right.BCPressure.Type = 'FluxConst'
-var_dz_1D.Patch.right.BCPressure.Cycle = 'constant'
-var_dz_1D.Patch.right.BCPressure.RefGeom = 'domain'
-var_dz_1D.Patch.right.BCPressure.RefPatch = 'bottom'
-var_dz_1D.Patch.right.BCPressure.alltime.Value = 0.0
+vardz.Patch.left.BCPressure.Type = 'FluxConst'
+vardz.Patch.left.BCPressure.Cycle = 'constant'
+vardz.Patch.left.BCPressure.RefGeom = 'domain'
+vardz.Patch.left.BCPressure.RefPatch = 'bottom'
+vardz.Patch.left.BCPressure.alltime.Value = 0.0
 
-var_dz_1D.Patch.front.BCPressure.Type = 'FluxConst'
-var_dz_1D.Patch.front.BCPressure.Cycle = 'constant'
-var_dz_1D.Patch.front.BCPressure.alltime.Value = 0.0
+vardz.Patch.right.BCPressure.Type = 'FluxConst'
+vardz.Patch.right.BCPressure.Cycle = 'constant'
+vardz.Patch.right.BCPressure.RefGeom = 'domain'
+vardz.Patch.right.BCPressure.RefPatch = 'bottom'
+vardz.Patch.right.BCPressure.alltime.Value = 0.0
 
-var_dz_1D.Patch.back.BCPressure.Type = 'FluxConst'
-var_dz_1D.Patch.back.BCPressure.Cycle = 'constant'
-var_dz_1D.Patch.back.BCPressure.alltime.Value = 0.0
+vardz.Patch.front.BCPressure.Type = 'FluxConst'
+vardz.Patch.front.BCPressure.Cycle = 'constant'
+vardz.Patch.front.BCPressure.alltime.Value = 0.0
 
-var_dz_1D.Patch.bottom.BCPressure.Type = 'DirEquilRefPatch'
-var_dz_1D.Patch.bottom.BCPressure.Type = 'FluxConst'
-var_dz_1D.Patch.bottom.BCPressure.Cycle = 'constant'
-var_dz_1D.Patch.bottom.BCPressure.RefGeom = 'domain'
-var_dz_1D.Patch.bottom.BCPressure.RefPatch = 'bottom'
-var_dz_1D.Patch.bottom.BCPressure.alltime.Value = 0.0
+vardz.Patch.back.BCPressure.Type = 'FluxConst'
+vardz.Patch.back.BCPressure.Cycle = 'constant'
+vardz.Patch.back.BCPressure.alltime.Value = 0.0
 
-var_dz_1D.Patch.top.BCPressure.Type = 'DirEquilRefPatch'
-var_dz_1D.Patch.top.BCPressure.Type = 'FluxConst'
-#pfset Patch.top.BCPressure.Type			      OverlandFlow 
-var_dz_1D.Patch.top.BCPressure.Cycle = 'constant'
-var_dz_1D.Patch.top.BCPressure.RefGeom = 'domain'
-var_dz_1D.Patch.top.BCPressure.RefPatch = 'bottom'
-var_dz_1D.Patch.top.BCPressure.alltime.Value = -0.0001
+vardz.Patch.bottom.BCPressure.Type = 'DirEquilRefPatch'
+vardz.Patch.bottom.BCPressure.Type = 'FluxConst'
+vardz.Patch.bottom.BCPressure.Cycle = 'constant'
+vardz.Patch.bottom.BCPressure.RefGeom = 'domain'
+vardz.Patch.bottom.BCPressure.RefPatch = 'bottom'
+vardz.Patch.bottom.BCPressure.alltime.Value = 0.0
 
+vardz.Patch.top.BCPressure.Type = 'DirEquilRefPatch'
+vardz.Patch.top.BCPressure.Type = 'FluxConst'
+vardz.Patch.top.BCPressure.Cycle = 'constant'
+vardz.Patch.top.BCPressure.RefGeom = 'domain'
+vardz.Patch.top.BCPressure.RefPatch = 'bottom'
+vardz.Patch.top.BCPressure.alltime.Value = -0.0001
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
 
-var_dz_1D.TopoSlopesX.Type = 'Constant'
-var_dz_1D.TopoSlopesX.GeomNames = 'domain'
-
-var_dz_1D.TopoSlopesX.Geom.domain.Value = 0.0
+vardz.TopoSlopesX.Type = 'Constant'
+vardz.TopoSlopesX.GeomNames = 'domain'
+vardz.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-var_dz_1D.TopoSlopesY.Type = 'Constant'
-var_dz_1D.TopoSlopesY.GeomNames = 'domain'
-
-var_dz_1D.TopoSlopesY.Geom.domain.Value = 0.0
+vardz.TopoSlopesY.Type = 'Constant'
+vardz.TopoSlopesY.GeomNames = 'domain'
+vardz.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Mannings coefficient
 #---------------------------------------------------------
 
-var_dz_1D.Mannings.Type = 'Constant'
-var_dz_1D.Mannings.GeomNames = 'domain'
-var_dz_1D.Mannings.Geom.domain.Value = 0.
+vardz.Mannings.Type = 'Constant'
+vardz.Mannings.GeomNames = 'domain'
+vardz.Mannings.Geom.domain.Value = 0.
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
 
-var_dz_1D.ICPressure.Type = 'Constant'
-var_dz_1D.ICPressure.GeomNames = 'domain'
-var_dz_1D.Geom.domain.ICPressure.Value = -10.0
-var_dz_1D.Geom.domain.ICPressure.RefGeom = 'domain'
-var_dz_1D.Geom.domain.ICPressure.RefPatch = 'top'
+vardz.ICPressure.Type = 'Constant'
+vardz.ICPressure.GeomNames = 'domain'
+vardz.Geom.domain.ICPressure.Value = -10.0
+vardz.Geom.domain.ICPressure.RefGeom = 'domain'
+vardz.Geom.domain.ICPressure.RefPatch = 'top'
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-var_dz_1D.PhaseSources.water.Type = 'Constant'
-var_dz_1D.PhaseSources.water.GeomNames = 'domain'
-var_dz_1D.PhaseSources.water.Geom.domain.Value = 0.0
+vardz.PhaseSources.water.Type = 'Constant'
+vardz.PhaseSources.water.GeomNames = 'domain'
+vardz.PhaseSources.water.Geom.domain.Value = 0.0
 
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
-var_dz_1D.KnownSolution = 'NoKnownSolution'
+vardz.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
-var_dz_1D.Solver = 'Richards'
-var_dz_1D.Solver.MaxIter = 2500
 
-var_dz_1D.Solver.Nonlinear.MaxIter = 200
-var_dz_1D.Solver.Nonlinear.ResidualTol = 1e-9
-var_dz_1D.Solver.Nonlinear.EtaChoice = 'Walker1'
-var_dz_1D.Solver.Nonlinear.EtaValue = 1e-5
-var_dz_1D.Solver.Nonlinear.UseJacobian = True
-#pfset Solver.Nonlinear.UseJacobian                     False
-var_dz_1D.Solver.Nonlinear.DerivativeEpsilon = 1e-10
+vardz.Solver = 'Richards'
+vardz.Solver.MaxIter = 2500
 
-var_dz_1D.Solver.Linear.KrylovDimension = 10
+vardz.Solver.Nonlinear.MaxIter = 200
+vardz.Solver.Nonlinear.ResidualTol = 1e-9
+vardz.Solver.Nonlinear.EtaChoice = 'Walker1'
+vardz.Solver.Nonlinear.EtaValue = 1e-5
+vardz.Solver.Nonlinear.UseJacobian = True
+vardz.Solver.Nonlinear.DerivativeEpsilon = 1e-10
 
-var_dz_1D.Solver.Linear.Preconditioner = 'MGSemi'
-var_dz_1D.Solver.Linear.Preconditioner = 'PFMG'
-var_dz_1D.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
-var_dz_1D.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
+vardz.Solver.Linear.KrylovDimension = 10
 
+vardz.Solver.Linear.Preconditioner = 'MGSemi'
+vardz.Solver.Linear.Preconditioner = 'PFMG'
+vardz.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
+vardz.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
 #-----------------------------------------------------------------------------
 # Run and do tests
 #-----------------------------------------------------------------------------
 
-var_dz_1D.run()
+vardz.run()

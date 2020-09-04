@@ -1,326 +1,341 @@
+#------------------------------------------------------------------
 #  This runs the basic pfmg test case based off of default richards
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
+#------------------------------------------------------------------
 
 from parflow import Run
-pfmg_octree = Run("pfmg_octree", __file__)
 
-pfmg_octree.FileVersion = 4
+pfmg = Run("pfmg_octree", __file__)
 
-pfmg_octree.Process.Topology.P = 1
-pfmg_octree.Process.Topology.Q = 1
-pfmg_octree.Process.Topology.R = 1
+#------------------------------------------------------------------
+
+pfmg.FileVersion = 4
+
+pfmg.Process.Topology.P = 1
+pfmg.Process.Topology.Q = 1
+pfmg.Process.Topology.R = 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-pfmg_octree.ComputationalGrid.Lower.X = -10.0
-pfmg_octree.ComputationalGrid.Lower.Y = 10.0
-pfmg_octree.ComputationalGrid.Lower.Z = 1.0
 
-pfmg_octree.ComputationalGrid.DX = 8.8888888888888893
-pfmg_octree.ComputationalGrid.DY = 10.666666666666666
-pfmg_octree.ComputationalGrid.DZ = 1.0
+pfmg.ComputationalGrid.Lower.X = -10.0
+pfmg.ComputationalGrid.Lower.Y = 10.0
+pfmg.ComputationalGrid.Lower.Z = 1.0
 
-pfmg_octree.ComputationalGrid.NX = 10
-pfmg_octree.ComputationalGrid.NY = 10
-pfmg_octree.ComputationalGrid.NZ = 8
+pfmg.ComputationalGrid.DX = 8.8888888888888893
+pfmg.ComputationalGrid.DY = 10.666666666666666
+pfmg.ComputationalGrid.DZ = 1.0
+
+pfmg.ComputationalGrid.NX = 10
+pfmg.ComputationalGrid.NY = 10
+pfmg.ComputationalGrid.NZ = 8
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-pfmg_octree.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
+pfmg.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
-pfmg_octree.GeomInput.domain_input.InputType = 'Box'
-pfmg_octree.GeomInput.domain_input.GeomName = 'domain'
+
+pfmg.GeomInput.domain_input.InputType = 'Box'
+pfmg.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
-pfmg_octree.Geom.domain.Lower.X = -10.0
-pfmg_octree.Geom.domain.Lower.Y = 10.0
-pfmg_octree.Geom.domain.Lower.Z = 1.0
 
-pfmg_octree.Geom.domain.Upper.X = 150.0
-pfmg_octree.Geom.domain.Upper.Y = 170.0
-pfmg_octree.Geom.domain.Upper.Z = 9.0
+pfmg.Geom.domain.Lower.X = -10.0
+pfmg.Geom.domain.Lower.Y = 10.0
+pfmg.Geom.domain.Lower.Z = 1.0
 
-pfmg_octree.Geom.domain.Patches = 'left right front back bottom top'
+pfmg.Geom.domain.Upper.X = 150.0
+pfmg.Geom.domain.Upper.Y = 170.0
+pfmg.Geom.domain.Upper.Z = 9.0
+
+pfmg.Geom.domain.Patches = 'left right front back bottom top'
 
 #---------------------------------------------------------
 # Background Geometry Input
 #---------------------------------------------------------
-pfmg_octree.GeomInput.background_input.InputType = 'Box'
-pfmg_octree.GeomInput.background_input.GeomName = 'background'
+
+pfmg.GeomInput.background_input.InputType = 'Box'
+pfmg.GeomInput.background_input.GeomName = 'background'
 
 #---------------------------------------------------------
 # Background Geometry
 #---------------------------------------------------------
-pfmg_octree.Geom.background.Lower.X = -99999999.0
-pfmg_octree.Geom.background.Lower.Y = -99999999.0
-pfmg_octree.Geom.background.Lower.Z = -99999999.0
 
-pfmg_octree.Geom.background.Upper.X = 99999999.0
-pfmg_octree.Geom.background.Upper.Y = 99999999.0
-pfmg_octree.Geom.background.Upper.Z = 99999999.0
+pfmg.Geom.background.Lower.X = -99999999.0
+pfmg.Geom.background.Lower.Y = -99999999.0
+pfmg.Geom.background.Lower.Z = -99999999.0
 
+pfmg.Geom.background.Upper.X = 99999999.0
+pfmg.Geom.background.Upper.Y = 99999999.0
+pfmg.Geom.background.Upper.Z = 99999999.0
 
 #---------------------------------------------------------
 # Source_Region Geometry Input
 #---------------------------------------------------------
-pfmg_octree.GeomInput.source_region_input.InputType = 'Box'
-pfmg_octree.GeomInput.source_region_input.GeomName = 'source_region'
+
+pfmg.GeomInput.source_region_input.InputType = 'Box'
+pfmg.GeomInput.source_region_input.GeomName = 'source_region'
 
 #---------------------------------------------------------
 # Source_Region Geometry
 #---------------------------------------------------------
-pfmg_octree.Geom.source_region.Lower.X = 65.56
-pfmg_octree.Geom.source_region.Lower.Y = 79.34
-pfmg_octree.Geom.source_region.Lower.Z = 4.5
 
-pfmg_octree.Geom.source_region.Upper.X = 74.44
-pfmg_octree.Geom.source_region.Upper.Y = 89.99
-pfmg_octree.Geom.source_region.Upper.Z = 5.5
+pfmg.Geom.source_region.Lower.X = 65.56
+pfmg.Geom.source_region.Lower.Y = 79.34
+pfmg.Geom.source_region.Lower.Z = 4.5
 
+pfmg.Geom.source_region.Upper.X = 74.44
+pfmg.Geom.source_region.Upper.Y = 89.99
+pfmg.Geom.source_region.Upper.Z = 5.5
 
 #---------------------------------------------------------
 # Concen_Region Geometry Input
 #---------------------------------------------------------
-pfmg_octree.GeomInput.concen_region_input.InputType = 'Box'
-pfmg_octree.GeomInput.concen_region_input.GeomName = 'concen_region'
+
+pfmg.GeomInput.concen_region_input.InputType = 'Box'
+pfmg.GeomInput.concen_region_input.GeomName = 'concen_region'
 
 #---------------------------------------------------------
 # Concen_Region Geometry
 #---------------------------------------------------------
-pfmg_octree.Geom.concen_region.Lower.X = 60.0
-pfmg_octree.Geom.concen_region.Lower.Y = 80.0
-pfmg_octree.Geom.concen_region.Lower.Z = 4.0
 
-pfmg_octree.Geom.concen_region.Upper.X = 80.0
-pfmg_octree.Geom.concen_region.Upper.Y = 100.0
-pfmg_octree.Geom.concen_region.Upper.Z = 6.0
+pfmg.Geom.concen_region.Lower.X = 60.0
+pfmg.Geom.concen_region.Lower.Y = 80.0
+pfmg.Geom.concen_region.Lower.Z = 4.0
+
+pfmg.Geom.concen_region.Upper.X = 80.0
+pfmg.Geom.concen_region.Upper.Y = 100.0
+pfmg.Geom.concen_region.Upper.Z = 6.0
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
-pfmg_octree.Geom.Perm.Names = 'background'
 
-pfmg_octree.Geom.background.Perm.Type = 'Constant'
-pfmg_octree.Geom.background.Perm.Value = 4.0
+pfmg.Geom.Perm.Names = 'background'
 
-pfmg_octree.Perm.TensorType = 'TensorByGeom'
+pfmg.Geom.background.Perm.Type = 'Constant'
+pfmg.Geom.background.Perm.Value = 4.0
 
-pfmg_octree.Geom.Perm.TensorByGeom.Names = 'background'
+pfmg.Perm.TensorType = 'TensorByGeom'
 
-pfmg_octree.Geom.background.Perm.TensorValX = 1.0
-pfmg_octree.Geom.background.Perm.TensorValY = 1.0
-pfmg_octree.Geom.background.Perm.TensorValZ = 1.0
+pfmg.Geom.Perm.TensorByGeom.Names = 'background'
+
+pfmg.Geom.background.Perm.TensorValX = 1.0
+pfmg.Geom.background.Perm.TensorValY = 1.0
+pfmg.Geom.background.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
 #-----------------------------------------------------------------------------
 
-pfmg_octree.SpecificStorage.Type = 'Constant'
-pfmg_octree.SpecificStorage.GeomNames = 'domain'
-pfmg_octree.Geom.domain.SpecificStorage.Value = 1.0e-4
+pfmg.SpecificStorage.Type = 'Constant'
+pfmg.SpecificStorage.GeomNames = 'domain'
+pfmg.Geom.domain.SpecificStorage.Value = 1.0e-4
 
 #-----------------------------------------------------------------------------
 # Phases
 #-----------------------------------------------------------------------------
 
-pfmg_octree.Phase.Names = 'water'
+pfmg.Phase.Names = 'water'
 
-pfmg_octree.Phase.water.Density.Type = 'Constant'
-pfmg_octree.Phase.water.Density.Value = 1.0
+pfmg.Phase.water.Density.Type = 'Constant'
+pfmg.Phase.water.Density.Value = 1.0
 
-pfmg_octree.Phase.water.Viscosity.Type = 'Constant'
-pfmg_octree.Phase.water.Viscosity.Value = 1.0
+pfmg.Phase.water.Viscosity.Type = 'Constant'
+pfmg.Phase.water.Viscosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-pfmg_octree.Contaminants.Names = ''
+
+pfmg.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
-pfmg_octree.Geom.Retardation.GeomNames = ''
+
+pfmg.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
 #-----------------------------------------------------------------------------
 
-pfmg_octree.Gravity = 1.0
+pfmg.Gravity = 1.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-pfmg_octree.TimingInfo.BaseUnit = 1.0
-pfmg_octree.TimingInfo.StartCount = 0
-pfmg_octree.TimingInfo.StartTime = 0.0
-pfmg_octree.TimingInfo.StopTime = 0.010
-pfmg_octree.TimingInfo.DumpInterval = -1
-pfmg_octree.TimeStep.Type = 'Constant'
-pfmg_octree.TimeStep.Value = 0.001
+pfmg.TimingInfo.BaseUnit = 1.0
+pfmg.TimingInfo.StartCount = 0
+pfmg.TimingInfo.StartTime = 0.0
+pfmg.TimingInfo.StopTime = 0.010
+pfmg.TimingInfo.DumpInterval = -1
+pfmg.TimeStep.Type = 'Constant'
+pfmg.TimeStep.Value = 0.001
 
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
-pfmg_octree.Geom.Porosity.GeomNames = 'background'
-
-pfmg_octree.Geom.background.Porosity.Type = 'Constant'
-pfmg_octree.Geom.background.Porosity.Value = 1.0
+pfmg.Geom.Porosity.GeomNames = 'background'
+pfmg.Geom.background.Porosity.Type = 'Constant'
+pfmg.Geom.background.Porosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
-pfmg_octree.Domain.GeomName = 'domain'
+
+pfmg.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
 
-pfmg_octree.Phase.RelPerm.Type = 'VanGenuchten'
-pfmg_octree.Phase.RelPerm.GeomNames = 'domain'
-pfmg_octree.Geom.domain.RelPerm.Alpha = 0.005
-pfmg_octree.Geom.domain.RelPerm.N = 2.0
+pfmg.Phase.RelPerm.Type = 'VanGenuchten'
+pfmg.Phase.RelPerm.GeomNames = 'domain'
+pfmg.Geom.domain.RelPerm.Alpha = 0.005
+pfmg.Geom.domain.RelPerm.N = 2.0
 
 #---------------------------------------------------------
 # Saturation
 #---------------------------------------------------------
 
-pfmg_octree.Phase.Saturation.Type = 'VanGenuchten'
-pfmg_octree.Phase.Saturation.GeomNames = 'domain'
-pfmg_octree.Geom.domain.Saturation.Alpha = 0.005
-pfmg_octree.Geom.domain.Saturation.N = 2.0
-pfmg_octree.Geom.domain.Saturation.SRes = 0.2
-pfmg_octree.Geom.domain.Saturation.SSat = 0.99
+pfmg.Phase.Saturation.Type = 'VanGenuchten'
+pfmg.Phase.Saturation.GeomNames = 'domain'
+pfmg.Geom.domain.Saturation.Alpha = 0.005
+pfmg.Geom.domain.Saturation.N = 2.0
+pfmg.Geom.domain.Saturation.SRes = 0.2
+pfmg.Geom.domain.Saturation.SSat = 0.99
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-pfmg_octree.Wells.Names = ''
+
+pfmg.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
-pfmg_octree.Cycle.Names = 'constant'
-pfmg_octree.Cycle.constant.Names = 'alltime'
-pfmg_octree.Cycle.constant.alltime.Length = 1
-pfmg_octree.Cycle.constant.Repeat = -1
+
+pfmg.Cycle.Names = 'constant'
+pfmg.Cycle.constant.Names = 'alltime'
+pfmg.Cycle.constant.alltime.Length = 1
+pfmg.Cycle.constant.Repeat = -1
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-pfmg_octree.BCPressure.PatchNames = 'left right front back bottom top'
 
-pfmg_octree.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
-pfmg_octree.Patch.left.BCPressure.Cycle = 'constant'
-pfmg_octree.Patch.left.BCPressure.RefGeom = 'domain'
-pfmg_octree.Patch.left.BCPressure.RefPatch = 'bottom'
-pfmg_octree.Patch.left.BCPressure.alltime.Value = 5.0
+pfmg.BCPressure.PatchNames = 'left right front back bottom top'
 
-pfmg_octree.Patch.right.BCPressure.Type = 'DirEquilRefPatch'
-pfmg_octree.Patch.right.BCPressure.Cycle = 'constant'
-pfmg_octree.Patch.right.BCPressure.RefGeom = 'domain'
-pfmg_octree.Patch.right.BCPressure.RefPatch = 'bottom'
-pfmg_octree.Patch.right.BCPressure.alltime.Value = 3.0
+pfmg.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
+pfmg.Patch.left.BCPressure.Cycle = 'constant'
+pfmg.Patch.left.BCPressure.RefGeom = 'domain'
+pfmg.Patch.left.BCPressure.RefPatch = 'bottom'
+pfmg.Patch.left.BCPressure.alltime.Value = 5.0
 
-pfmg_octree.Patch.front.BCPressure.Type = 'FluxConst'
-pfmg_octree.Patch.front.BCPressure.Cycle = 'constant'
-pfmg_octree.Patch.front.BCPressure.alltime.Value = 0.0
+pfmg.Patch.right.BCPressure.Type = 'DirEquilRefPatch'
+pfmg.Patch.right.BCPressure.Cycle = 'constant'
+pfmg.Patch.right.BCPressure.RefGeom = 'domain'
+pfmg.Patch.right.BCPressure.RefPatch = 'bottom'
+pfmg.Patch.right.BCPressure.alltime.Value = 3.0
 
-pfmg_octree.Patch.back.BCPressure.Type = 'FluxConst'
-pfmg_octree.Patch.back.BCPressure.Cycle = 'constant'
-pfmg_octree.Patch.back.BCPressure.alltime.Value = 0.0
+pfmg.Patch.front.BCPressure.Type = 'FluxConst'
+pfmg.Patch.front.BCPressure.Cycle = 'constant'
+pfmg.Patch.front.BCPressure.alltime.Value = 0.0
 
-pfmg_octree.Patch.bottom.BCPressure.Type = 'FluxConst'
-pfmg_octree.Patch.bottom.BCPressure.Cycle = 'constant'
-pfmg_octree.Patch.bottom.BCPressure.alltime.Value = 0.0
+pfmg.Patch.back.BCPressure.Type = 'FluxConst'
+pfmg.Patch.back.BCPressure.Cycle = 'constant'
+pfmg.Patch.back.BCPressure.alltime.Value = 0.0
 
-pfmg_octree.Patch.top.BCPressure.Type = 'FluxConst'
-pfmg_octree.Patch.top.BCPressure.Cycle = 'constant'
-pfmg_octree.Patch.top.BCPressure.alltime.Value = 0.0
+pfmg.Patch.bottom.BCPressure.Type = 'FluxConst'
+pfmg.Patch.bottom.BCPressure.Cycle = 'constant'
+pfmg.Patch.bottom.BCPressure.alltime.Value = 0.0
+
+pfmg.Patch.top.BCPressure.Type = 'FluxConst'
+pfmg.Patch.top.BCPressure.Cycle = 'constant'
+pfmg.Patch.top.BCPressure.alltime.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
 
-pfmg_octree.TopoSlopesX.Type = 'Constant'
-pfmg_octree.TopoSlopesX.GeomNames = 'domain'
-
-pfmg_octree.TopoSlopesX.Geom.domain.Value = 0.0
+pfmg.TopoSlopesX.Type = 'Constant'
+pfmg.TopoSlopesX.GeomNames = 'domain'
+pfmg.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-pfmg_octree.TopoSlopesY.Type = 'Constant'
-pfmg_octree.TopoSlopesY.GeomNames = 'domain'
-
-pfmg_octree.TopoSlopesY.Geom.domain.Value = 0.0
+pfmg.TopoSlopesY.Type = 'Constant'
+pfmg.TopoSlopesY.GeomNames = 'domain'
+pfmg.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Mannings coefficient 
 #---------------------------------------------------------
 
-pfmg_octree.Mannings.Type = 'Constant'
-pfmg_octree.Mannings.GeomNames = 'domain'
-pfmg_octree.Mannings.Geom.domain.Value = 0.
+pfmg.Mannings.Type = 'Constant'
+pfmg.Mannings.GeomNames = 'domain'
+pfmg.Mannings.Geom.domain.Value = 0.
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
 
-pfmg_octree.ICPressure.Type = 'HydroStaticPatch'
-pfmg_octree.ICPressure.GeomNames = 'domain'
-pfmg_octree.Geom.domain.ICPressure.Value = 3.0
-pfmg_octree.Geom.domain.ICPressure.RefGeom = 'domain'
-pfmg_octree.Geom.domain.ICPressure.RefPatch = 'bottom'
+pfmg.ICPressure.Type = 'HydroStaticPatch'
+pfmg.ICPressure.GeomNames = 'domain'
+pfmg.Geom.domain.ICPressure.Value = 3.0
+pfmg.Geom.domain.ICPressure.RefGeom = 'domain'
+pfmg.Geom.domain.ICPressure.RefPatch = 'bottom'
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-pfmg_octree.PhaseSources.water.Type = 'Constant'
-pfmg_octree.PhaseSources.water.GeomNames = 'background'
-pfmg_octree.PhaseSources.water.Geom.background.Value = 0.0
-
+pfmg.PhaseSources.water.Type = 'Constant'
+pfmg.PhaseSources.water.GeomNames = 'background'
+pfmg.PhaseSources.water.Geom.background.Value = 0.0
 
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
-pfmg_octree.KnownSolution = 'NoKnownSolution'
-
+pfmg.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
-pfmg_octree.Solver = 'Richards'
-pfmg_octree.Solver.MaxIter = 5
 
-pfmg_octree.Solver.Nonlinear.MaxIter = 10
-pfmg_octree.Solver.Nonlinear.ResidualTol = 1e-9
-pfmg_octree.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-pfmg_octree.Solver.Nonlinear.EtaValue = 1e-5
-pfmg_octree.Solver.Nonlinear.UseJacobian = True
-pfmg_octree.Solver.Nonlinear.DerivativeEpsilon = 1e-2
+pfmg.Solver = 'Richards'
+pfmg.Solver.MaxIter = 5
 
-pfmg_octree.Solver.Linear.KrylovDimension = 10
+pfmg.Solver.Nonlinear.MaxIter = 10
+pfmg.Solver.Nonlinear.ResidualTol = 1e-9
+pfmg.Solver.Nonlinear.EtaChoice = 'EtaConstant'
+pfmg.Solver.Nonlinear.EtaValue = 1e-5
+pfmg.Solver.Nonlinear.UseJacobian = True
+pfmg.Solver.Nonlinear.DerivativeEpsilon = 1e-2
 
-pfmg_octree.Solver.Linear.Preconditioner = 'PFMGOctree'
+pfmg.Solver.Linear.KrylovDimension = 10
 
-pfmg_octree.Solver.Linear.Preconditioner.PFMGOctree.BoxSizePowerOf2 = 2
+pfmg.Solver.Linear.Preconditioner = 'PFMGOctree'
+
+pfmg.Solver.Linear.Preconditioner.PFMGOctree.BoxSizePowerOf2 = 2
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-pfmg_octree.run()
+pfmg.run()

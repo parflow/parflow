@@ -1,6 +1,8 @@
+#-----------------------------------------------------------------------------
 #  This is an adaptation of the LW_var_dz.py test
 #  This test demonstrates the different ways to set integers within a key name
-# See lines
+#  See dzScale and Coeff keys
+#-----------------------------------------------------------------------------
 
 from parflow import Run
 prefix = Run("prefix", __file__)

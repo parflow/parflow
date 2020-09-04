@@ -1,3 +1,7 @@
+#---------------------------------------------------------
+# Testing versioning of enumerated list domain for Python
+# library
+#---------------------------------------------------------
 
 import sys
 from parflow import Run

@@ -1,15 +1,26 @@
+#------------------------------------------------------------------
 #  This is a 2D sloped problem w/ time varying input and topography
 #  it is used as a test of active/inactive efficiency
-#
+#------------------------------------------------------------------
 
 from parflow import Run
 from parflow.tools.fs import cp
 
 small_domain = Run("small_domain", __file__)
 
+#---------------------------------------------------------
+# Copying solid file
+#---------------------------------------------------------
+
 cp('$PF_SRC/test/small_domain.pfsol')
 
+#---------------------------------------------------------
+# Setting size for domain
+#---------------------------------------------------------
+
 size = 1
+
+#---------------------------------------------------------
 
 small_domain.FileVersion = 4
 
@@ -20,6 +31,7 @@ small_domain.Process.Topology.R = 1
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
+
 small_domain.ComputationalGrid.Lower.X = 0.0
 small_domain.ComputationalGrid.Lower.Y = 0.0
 small_domain.ComputationalGrid.Lower.Z = 0.0
@@ -54,7 +66,6 @@ small_domain.GeomInput.solidinput.InputType = 'SolidFile'
 small_domain.GeomInput.solidinput.GeomNames = 'domain'
 small_domain.GeomInput.solidinput.FileName = 'small_domain.pfsol'
 
-
 small_domain.GeomInput.background.InputType = 'Box'
 small_domain.GeomInput.background.GeomName = 'background'
 
@@ -67,13 +78,11 @@ small_domain.Geom.background.Upper.Z = 99999999.0
 
 small_domain.Geom.domain.Patches = 'infiltration z_upper x_lower y_lower x_upper y_upper z_lower'
 
-
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
+
 small_domain.Geom.Perm.Names = 'domain'
-
-
 
 small_domain.Geom.domain.Perm.Type = 'Constant'
 small_domain.Geom.domain.Perm.Value = 1.0
@@ -112,13 +121,11 @@ small_domain.Phase.water.Viscosity.Value = 1.0
 
 small_domain.Contaminants.Names = ''
 
-
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
 
 small_domain.Geom.Retardation.GeomNames = ''
-
 
 #-----------------------------------------------------------------------------
 # Gravity
@@ -144,7 +151,6 @@ small_domain.TimingInfo.DumpAtEnd = True
 #-----------------------------------------------------------------------------
 
 small_domain.Geom.Porosity.GeomNames = 'domain'
-
 small_domain.Geom.domain.Porosity.Type = 'Constant'
 small_domain.Geom.domain.Porosity.Value = 0.3680
 
@@ -179,11 +185,13 @@ small_domain.Geom.domain.Saturation.SSat = 1.0
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 small_domain.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 small_domain.Cycle.Names = 'constant onoff'
 small_domain.Cycle.constant.Names = 'alltime'
 small_domain.Cycle.constant.alltime.Length = 1
@@ -234,7 +242,6 @@ small_domain.Patch.z_upper.BCPressure.alltime.Value = 0.0
 
 small_domain.TopoSlopesX.Type = 'Constant'
 small_domain.TopoSlopesX.GeomNames = 'domain'
-
 small_domain.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -243,7 +250,6 @@ small_domain.TopoSlopesX.Geom.domain.Value = 0.0
 
 small_domain.TopoSlopesY.Type = 'Constant'
 small_domain.TopoSlopesY.GeomNames = 'domain'
-
 small_domain.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -277,7 +283,6 @@ small_domain.PhaseSources.water.Type = 'Constant'
 small_domain.PhaseSources.water.GeomNames = 'background'
 small_domain.PhaseSources.water.Geom.background.Value = 0.0
 
-
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
@@ -287,6 +292,7 @@ small_domain.KnownSolution = 'NoKnownSolution'
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
+
 small_domain.Solver = 'Richards'
 small_domain.Solver.MaxIter = 10000
 

@@ -1,5 +1,7 @@
-#  This runs the tilted-v catchment problem
-#  similar to that in Kollet and Maxwell (2006) AWR
+#---------------------------------------------------------
+# Testing hyphenated user-defined tokens
+# (from default_overland)
+#---------------------------------------------------------
 
 from parflow import Run
 dover = Run("dover", __file__)
@@ -246,16 +248,16 @@ dover.Geom.domain.Saturation.N = 2.
 dover.Geom.domain.Saturation.SRes = 0.2
 dover.Geom.domain.Saturation.SSat = 1.0
 
-
-
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
+
 dover.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
+
 dover.Cycle.Names = 'constant rainrec'
 dover.Cycle.constant.Names = 'alltime'
 dover.Cycle.constant.alltime.Length = 1
@@ -368,7 +370,7 @@ dover.Solver.Linear.Preconditioner = 'PFMGOctree'
 dover.Solver.PrintSubsurf = False
 dover.Solver.Drop = 1E-20
 dover.Solver.AbsTol = 1E-9
-#
+
 dover.Solver.WriteSiloSubsurfData = True
 dover.Solver.WriteSiloPressure = True
 dover.Solver.WriteSiloSaturation = True

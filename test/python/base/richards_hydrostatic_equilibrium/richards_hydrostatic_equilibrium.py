@@ -1,298 +1,303 @@
-# This runs a test case with the Richards' solver 
+#---------------------------------------------------------
+# This runs a test case with the Richards' solver
 # in hydrostatic equilibrium.  As such the solution
 # should not change over time and should not
 # take any solver iterations.
+#---------------------------------------------------------
 
 from parflow import Run
-richards_hydrostatic_equilibrium = Run("richards_hydrostatic_equilibrium", __file__)
 
-richards_hydrostatic_equilibrium.FileVersion = 4
+rich = Run("richards_hydrostatic_equilibrium", __file__)
 
-richards_hydrostatic_equilibrium.Process.Topology.P = 1
-richards_hydrostatic_equilibrium.Process.Topology.Q = 1
-richards_hydrostatic_equilibrium.Process.Topology.R = 1
+#---------------------------------------------------------
+
+rich.FileVersion = 4
+
+rich.Process.Topology.P = 1
+rich.Process.Topology.Q = 1
+rich.Process.Topology.R = 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-richards_hydrostatic_equilibrium.ComputationalGrid.Lower.X = 0.0
-richards_hydrostatic_equilibrium.ComputationalGrid.Lower.Y = 0.0
-richards_hydrostatic_equilibrium.ComputationalGrid.Lower.Z = 0.0
 
-richards_hydrostatic_equilibrium.ComputationalGrid.DX = 1
-richards_hydrostatic_equilibrium.ComputationalGrid.DY = 1
-richards_hydrostatic_equilibrium.ComputationalGrid.DZ = 0.3
+rich.ComputationalGrid.Lower.X = 0.0
+rich.ComputationalGrid.Lower.Y = 0.0
+rich.ComputationalGrid.Lower.Z = 0.0
 
-richards_hydrostatic_equilibrium.ComputationalGrid.NX = 15
-richards_hydrostatic_equilibrium.ComputationalGrid.NY = 20
-richards_hydrostatic_equilibrium.ComputationalGrid.NZ = 10
+rich.ComputationalGrid.DX = 1
+rich.ComputationalGrid.DY = 1
+rich.ComputationalGrid.DZ = 0.3
+
+rich.ComputationalGrid.NX = 15
+rich.ComputationalGrid.NY = 20
+rich.ComputationalGrid.NZ = 10
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
 #---------------------------------------------------------
-richards_hydrostatic_equilibrium.GeomInput.Names = 'domain_input background_input'
+
+rich.GeomInput.Names = 'domain_input background_input'
 
 #---------------------------------------------------------
 # Domain Geometry Input
 #---------------------------------------------------------
-richards_hydrostatic_equilibrium.GeomInput.domain_input.InputType = 'Box'
-richards_hydrostatic_equilibrium.GeomInput.domain_input.GeomName = 'domain'
+
+rich.GeomInput.domain_input.InputType = 'Box'
+rich.GeomInput.domain_input.GeomName = 'domain'
 
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
-richards_hydrostatic_equilibrium.Geom.domain.Lower.X = 0.0
-richards_hydrostatic_equilibrium.Geom.domain.Lower.Y = 0.0
-richards_hydrostatic_equilibrium.Geom.domain.Lower.Z = 0.0
 
-richards_hydrostatic_equilibrium.Geom.domain.Upper.X = 15.0
-richards_hydrostatic_equilibrium.Geom.domain.Upper.Y = 19.0
-richards_hydrostatic_equilibrium.Geom.domain.Upper.Z = 3.0
+rich.Geom.domain.Lower.X = 0.0
+rich.Geom.domain.Lower.Y = 0.0
+rich.Geom.domain.Lower.Z = 0.0
 
-richards_hydrostatic_equilibrium.Geom.domain.Patches = 'left right front back bottom top'
+rich.Geom.domain.Upper.X = 15.0
+rich.Geom.domain.Upper.Y = 19.0
+rich.Geom.domain.Upper.Z = 3.0
+
+rich.Geom.domain.Patches = 'left right front back bottom top'
 
 #---------------------------------------------------------
 # Background Geometry Input
 #---------------------------------------------------------
-richards_hydrostatic_equilibrium.GeomInput.background_input.InputType = 'Box'
-richards_hydrostatic_equilibrium.GeomInput.background_input.GeomName = 'background'
+
+rich.GeomInput.background_input.InputType = 'Box'
+rich.GeomInput.background_input.GeomName = 'background'
 
 #---------------------------------------------------------
 # Background Geometry
 #---------------------------------------------------------
-richards_hydrostatic_equilibrium.Geom.background.Lower.X = -99999999.0
-richards_hydrostatic_equilibrium.Geom.background.Lower.Y = -99999999.0
-richards_hydrostatic_equilibrium.Geom.background.Lower.Z = -99999999.0
 
-richards_hydrostatic_equilibrium.Geom.background.Upper.X = 99999999.0
-richards_hydrostatic_equilibrium.Geom.background.Upper.Y = 99999999.0
-richards_hydrostatic_equilibrium.Geom.background.Upper.Z = 99999999.0
+rich.Geom.background.Lower.X = -99999999.0
+rich.Geom.background.Lower.Y = -99999999.0
+rich.Geom.background.Lower.Z = -99999999.0
+
+rich.Geom.background.Upper.X = 99999999.0
+rich.Geom.background.Upper.Y = 99999999.0
+rich.Geom.background.Upper.Z = 99999999.0
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.Geom.Perm.Names = 'background'
-richards_hydrostatic_equilibrium.Geom.background.Perm.Type = 'Constant'
-richards_hydrostatic_equilibrium.Geom.background.Perm.Value = 4.0
+rich.Geom.Perm.Names = 'background'
+rich.Geom.background.Perm.Type = 'Constant'
+rich.Geom.background.Perm.Value = 4.0
 
-richards_hydrostatic_equilibrium.Perm.TensorType = 'TensorByGeom'
+rich.Perm.TensorType = 'TensorByGeom'
 
-richards_hydrostatic_equilibrium.Geom.Perm.TensorByGeom.Names = 'background'
+rich.Geom.Perm.TensorByGeom.Names = 'background'
 
-richards_hydrostatic_equilibrium.Geom.background.Perm.TensorValX = 1.0
-richards_hydrostatic_equilibrium.Geom.background.Perm.TensorValY = 1.0
-richards_hydrostatic_equilibrium.Geom.background.Perm.TensorValZ = 1.0
+rich.Geom.background.Perm.TensorValX = 1.0
+rich.Geom.background.Perm.TensorValY = 1.0
+rich.Geom.background.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.SpecificStorage.Type = 'Constant'
-richards_hydrostatic_equilibrium.SpecificStorage.GeomNames = 'background'
-richards_hydrostatic_equilibrium.Geom.background.SpecificStorage.Value = 1.0e-4
+rich.SpecificStorage.Type = 'Constant'
+rich.SpecificStorage.GeomNames = 'background'
+rich.Geom.background.SpecificStorage.Value = 1.0e-4
 
 #-----------------------------------------------------------------------------
 # Phases
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.Phase.Names = 'water'
+rich.Phase.Names = 'water'
 
-richards_hydrostatic_equilibrium.Phase.water.Density.Type = 'Constant'
-richards_hydrostatic_equilibrium.Phase.water.Density.Value = 1.0
+rich.Phase.water.Density.Type = 'Constant'
+rich.Phase.water.Density.Value = 1.0
 
-richards_hydrostatic_equilibrium.Phase.water.Viscosity.Type = 'Constant'
-richards_hydrostatic_equilibrium.Phase.water.Viscosity.Value = 1.0
+rich.Phase.water.Viscosity.Type = 'Constant'
+rich.Phase.water.Viscosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
-richards_hydrostatic_equilibrium.Contaminants.Names = ''
+
+rich.Contaminants.Names = ''
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
-richards_hydrostatic_equilibrium.Geom.Retardation.GeomNames = ''
+
+rich.Geom.Retardation.GeomNames = ''
 
 #-----------------------------------------------------------------------------
 # Gravity
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.Gravity = 1.0
+rich.Gravity = 1.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.TimingInfo.BaseUnit = 0.5
-richards_hydrostatic_equilibrium.TimingInfo.StartCount = 0
-richards_hydrostatic_equilibrium.TimingInfo.StartTime = 0.0
-richards_hydrostatic_equilibrium.TimingInfo.StopTime = 1.5
-richards_hydrostatic_equilibrium.TimingInfo.DumpInterval = -1
-richards_hydrostatic_equilibrium.TimeStep.Type = 'Constant'
-richards_hydrostatic_equilibrium.TimeStep.Value = 0.5
+rich.TimingInfo.BaseUnit = 0.5
+rich.TimingInfo.StartCount = 0
+rich.TimingInfo.StartTime = 0.0
+rich.TimingInfo.StopTime = 1.5
+rich.TimingInfo.DumpInterval = -1
+rich.TimeStep.Type = 'Constant'
+rich.TimeStep.Value = 0.5
 
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.Geom.Porosity.GeomNames = 'background'
-
-richards_hydrostatic_equilibrium.Geom.background.Porosity.Type = 'Constant'
-richards_hydrostatic_equilibrium.Geom.background.Porosity.Value = 0.15
+rich.Geom.Porosity.GeomNames = 'background'
+rich.Geom.background.Porosity.Type = 'Constant'
+rich.Geom.background.Porosity.Value = 0.15
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
-richards_hydrostatic_equilibrium.Domain.GeomName = 'domain'
+
+rich.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Relative Permeability
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.Phase.RelPerm.Type = 'VanGenuchten'
-richards_hydrostatic_equilibrium.Phase.RelPerm.GeomNames = 'background'
-richards_hydrostatic_equilibrium.Geom.background.RelPerm.Alpha = 2.0
-richards_hydrostatic_equilibrium.Geom.background.RelPerm.N = 2.0
+rich.Phase.RelPerm.Type = 'VanGenuchten'
+rich.Phase.RelPerm.GeomNames = 'background'
+rich.Geom.background.RelPerm.Alpha = 2.0
+rich.Geom.background.RelPerm.N = 2.0
 
 #---------------------------------------------------------
 # Saturation
 #---------------------------------------------------------
 
-richards_hydrostatic_equilibrium.Phase.Saturation.Type = 'VanGenuchten'
-richards_hydrostatic_equilibrium.Phase.Saturation.GeomNames = 'background'
-richards_hydrostatic_equilibrium.Geom.background.Saturation.Alpha = 2.0
-richards_hydrostatic_equilibrium.Geom.background.Saturation.N = 2.0
-richards_hydrostatic_equilibrium.Geom.background.Saturation.SRes = 0.0
-richards_hydrostatic_equilibrium.Geom.background.Saturation.SSat = 1.0
-
+rich.Phase.Saturation.Type = 'VanGenuchten'
+rich.Phase.Saturation.GeomNames = 'background'
+rich.Geom.background.Saturation.Alpha = 2.0
+rich.Geom.background.Saturation.N = 2.0
+rich.Geom.background.Saturation.SRes = 0.0
+rich.Geom.background.Saturation.SSat = 1.0
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
-richards_hydrostatic_equilibrium.Wells.Names = ''
 
+rich.Wells.Names = ''
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
-richards_hydrostatic_equilibrium.Cycle.Names = 'constant'
-richards_hydrostatic_equilibrium.Cycle.constant.Names = 'alltime'
-richards_hydrostatic_equilibrium.Cycle.constant.alltime.Length = 1
-richards_hydrostatic_equilibrium.Cycle.constant.Repeat = -1
+
+rich.Cycle.Names = 'constant'
+rich.Cycle.constant.Names = 'alltime'
+rich.Cycle.constant.alltime.Length = 1
+rich.Cycle.constant.Repeat = -1
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.BCPressure.PatchNames = 'left right front back bottom top'
+rich.BCPressure.PatchNames = 'left right front back bottom top'
 
-richards_hydrostatic_equilibrium.Patch.front.BCPressure.Type = 'DirEquilRefPatch'
-richards_hydrostatic_equilibrium.Patch.front.BCPressure.Cycle = 'constant'
-richards_hydrostatic_equilibrium.Patch.front.BCPressure.RefGeom = 'domain'
-richards_hydrostatic_equilibrium.Patch.front.BCPressure.RefPatch = 'bottom'
-richards_hydrostatic_equilibrium.Patch.front.BCPressure.alltime.Value = 1.0
+rich.Patch.front.BCPressure.Type = 'DirEquilRefPatch'
+rich.Patch.front.BCPressure.Cycle = 'constant'
+rich.Patch.front.BCPressure.RefGeom = 'domain'
+rich.Patch.front.BCPressure.RefPatch = 'bottom'
+rich.Patch.front.BCPressure.alltime.Value = 1.0
 
-richards_hydrostatic_equilibrium.Patch.back.BCPressure.Type = 'DirEquilRefPatch'
-richards_hydrostatic_equilibrium.Patch.back.BCPressure.Cycle = 'constant'
-richards_hydrostatic_equilibrium.Patch.back.BCPressure.RefGeom = 'domain'
-richards_hydrostatic_equilibrium.Patch.back.BCPressure.RefPatch = 'bottom'
-richards_hydrostatic_equilibrium.Patch.back.BCPressure.alltime.Value = 1.0
+rich.Patch.back.BCPressure.Type = 'DirEquilRefPatch'
+rich.Patch.back.BCPressure.Cycle = 'constant'
+rich.Patch.back.BCPressure.RefGeom = 'domain'
+rich.Patch.back.BCPressure.RefPatch = 'bottom'
+rich.Patch.back.BCPressure.alltime.Value = 1.0
 
-richards_hydrostatic_equilibrium.Patch.left.BCPressure.Type = 'FluxConst'
-richards_hydrostatic_equilibrium.Patch.left.BCPressure.Cycle = 'constant'
-richards_hydrostatic_equilibrium.Patch.left.BCPressure.alltime.Value = 0.0
+rich.Patch.left.BCPressure.Type = 'FluxConst'
+rich.Patch.left.BCPressure.Cycle = 'constant'
+rich.Patch.left.BCPressure.alltime.Value = 0.0
 
-richards_hydrostatic_equilibrium.Patch.right.BCPressure.Type = 'FluxConst'
-richards_hydrostatic_equilibrium.Patch.right.BCPressure.Cycle = 'constant'
-richards_hydrostatic_equilibrium.Patch.right.BCPressure.alltime.Value = 0.0
+rich.Patch.right.BCPressure.Type = 'FluxConst'
+rich.Patch.right.BCPressure.Cycle = 'constant'
+rich.Patch.right.BCPressure.alltime.Value = 0.0
 
-richards_hydrostatic_equilibrium.Patch.bottom.BCPressure.Type = 'FluxConst'
-richards_hydrostatic_equilibrium.Patch.bottom.BCPressure.Cycle = 'constant'
-richards_hydrostatic_equilibrium.Patch.bottom.BCPressure.alltime.Value = 0.0
+rich.Patch.bottom.BCPressure.Type = 'FluxConst'
+rich.Patch.bottom.BCPressure.Cycle = 'constant'
+rich.Patch.bottom.BCPressure.alltime.Value = 0.0
 
-richards_hydrostatic_equilibrium.Patch.top.BCPressure.Type = 'FluxConst'
-richards_hydrostatic_equilibrium.Patch.top.BCPressure.Cycle = 'constant'
-richards_hydrostatic_equilibrium.Patch.top.BCPressure.alltime.Value = 0.0
+rich.Patch.top.BCPressure.Type = 'FluxConst'
+rich.Patch.top.BCPressure.Cycle = 'constant'
+rich.Patch.top.BCPressure.alltime.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
 #---------------------------------------------------------
 
-richards_hydrostatic_equilibrium.TopoSlopesX.Type = 'Constant'
-richards_hydrostatic_equilibrium.TopoSlopesX.GeomNames = 'domain'
-
-richards_hydrostatic_equilibrium.TopoSlopesX.Geom.domain.Value = 0.0
+rich.TopoSlopesX.Type = 'Constant'
+rich.TopoSlopesX.GeomNames = 'domain'
+rich.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-richards_hydrostatic_equilibrium.TopoSlopesY.Type = 'Constant'
-richards_hydrostatic_equilibrium.TopoSlopesY.GeomNames = 'domain'
-
-richards_hydrostatic_equilibrium.TopoSlopesY.Geom.domain.Value = 0.0
+rich.TopoSlopesY.Type = 'Constant'
+rich.TopoSlopesY.GeomNames = 'domain'
+rich.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Mannings coefficient 
 #---------------------------------------------------------
 
-richards_hydrostatic_equilibrium.Mannings.Type = 'Constant'
-richards_hydrostatic_equilibrium.Mannings.GeomNames = 'domain'
-richards_hydrostatic_equilibrium.Mannings.Geom.domain.Value = 0.
+rich.Mannings.Type = 'Constant'
+rich.Mannings.GeomNames = 'domain'
+rich.Mannings.Geom.domain.Value = 0.
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
 
-richards_hydrostatic_equilibrium.ICPressure.Type = 'HydroStaticPatch'
-richards_hydrostatic_equilibrium.ICPressure.GeomNames = 'domain'
-richards_hydrostatic_equilibrium.Geom.domain.ICPressure.Value = 1.0
-richards_hydrostatic_equilibrium.Geom.domain.ICPressure.RefGeom = 'domain'
-richards_hydrostatic_equilibrium.Geom.domain.ICPressure.RefPatch = 'bottom'
+rich.ICPressure.Type = 'HydroStaticPatch'
+rich.ICPressure.GeomNames = 'domain'
+rich.Geom.domain.ICPressure.Value = 1.0
+rich.Geom.domain.ICPressure.RefGeom = 'domain'
+rich.Geom.domain.ICPressure.RefPatch = 'bottom'
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.PhaseSources.water.Type = 'Constant'
-richards_hydrostatic_equilibrium.PhaseSources.water.GeomNames = 'background'
-richards_hydrostatic_equilibrium.PhaseSources.water.Geom.background.Value = 0.0
-
+rich.PhaseSources.water.Type = 'Constant'
+rich.PhaseSources.water.GeomNames = 'background'
+rich.PhaseSources.water.Geom.background.Value = 0.0
 
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.KnownSolution = 'NoKnownSolution'
-
+rich.KnownSolution = 'NoKnownSolution'
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
 #-----------------------------------------------------------------------------
-richards_hydrostatic_equilibrium.Solver = 'Richards'
-richards_hydrostatic_equilibrium.Solver.MaxIter = 50000
 
-richards_hydrostatic_equilibrium.Solver.Nonlinear.MaxIter = 100
-richards_hydrostatic_equilibrium.Solver.Nonlinear.ResidualTol = 1e-9
-richards_hydrostatic_equilibrium.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-richards_hydrostatic_equilibrium.Solver.Nonlinear.EtaValue = 1e-2
-richards_hydrostatic_equilibrium.Solver.Nonlinear.UseJacobian = True
-richards_hydrostatic_equilibrium.Solver.Nonlinear.DerivativeEpsilon = 1e-9
+rich.Solver = 'Richards'
+rich.Solver.MaxIter = 50000
 
-richards_hydrostatic_equilibrium.Solver.Linear.KrylovDimension = 10
+rich.Solver.Nonlinear.MaxIter = 100
+rich.Solver.Nonlinear.ResidualTol = 1e-9
+rich.Solver.Nonlinear.EtaChoice = 'EtaConstant'
+rich.Solver.Nonlinear.EtaValue = 1e-2
+rich.Solver.Nonlinear.UseJacobian = True
+rich.Solver.Nonlinear.DerivativeEpsilon = 1e-9
 
-richards_hydrostatic_equilibrium.Solver.Linear.Preconditioner = 'MGSemi'
-richards_hydrostatic_equilibrium.Solver.Linear.Preconditioner.MGSemi.MaxIter = 10
-richards_hydrostatic_equilibrium.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
+rich.Solver.Linear.KrylovDimension = 10
 
-richards_hydrostatic_equilibrium.Solver.WriteSiloSubsurfData = True
-richards_hydrostatic_equilibrium.Solver.WriteSiloPressure = True
-richards_hydrostatic_equilibrium.Solver.WriteSiloSaturation = True
-richards_hydrostatic_equilibrium.Solver.WriteSiloConcentration = True
+rich.Solver.Linear.Preconditioner = 'MGSemi'
+rich.Solver.Linear.Preconditioner.MGSemi.MaxIter = 10
+rich.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-richards_hydrostatic_equilibrium.run()
+rich.run()

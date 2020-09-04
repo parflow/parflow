@@ -1,5 +1,6 @@
-#  This runs the tilted-v catchment problem
-#  similar to that in Kollet and Maxwell (2006) AWR
+#-----------------------------------------------------------------------------
+#  Testing serial runs within same script
+#-----------------------------------------------------------------------------
 
 from parflow import Run
 dover_1 = Run("dover_1", __file__)
