@@ -530,3 +530,53 @@ if ( ${PARFLOW_ENABLE_DOXYGEN} )
     message("Doxygen need to be installed to generate the doxygen documentation")
   endif (DOXYGEN_FOUND)
 endif()
+
+#-----------------------------------------------------------------------------
+# Building Python key library and documentation if required
+#-----------------------------------------------------------------------------
+
+option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
+if (PARFLOW_ENABLE_PYTHON)
+  find_package(Python3 3.3 QUIET REQUIRED COMPONENTS Interpreter)
+  set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
+  set(PARFLOW_PYTHON_DEPENDS)
+
+  option(PARFLOW_PYTHON_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
+  if (PARFLOW_PYTHON_VIRTUAL_ENV)
+    set(PARFLOW_PYTHON "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/python3")
+    add_custom_command(
+      WORKING_DIRECTORY
+        "${CMAKE_CURRENT_BINARY_DIR}"
+      OUTPUT
+        "${PARFLOW_PYTHON}"
+      COMMAND
+        ${Python3_EXECUTABLE} -m venv py-env
+      COMMAND
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install --upgrade pip wheel setuptools
+      COMMAND
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements.txt"
+      COMMAND
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/pf-keys/requirements.txt"
+      COMMAND
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_dev.txt"
+      COMMENT
+        "Generate virtual environment for building Python components"
+      VERBATIM
+    )
+    add_custom_target(
+      BuildVirtualEnv
+      DEPENDS
+        "${PARFLOW_PYTHON}"
+    )
+    set(PARFLOW_PYTHON_DEPENDS BuildVirtualEnv)
+  endif()
+
+  add_subdirectory(pf-keys)
+  add_subdirectory(pftools/python)
+
+  # Only enable Key Documentation if we enable Python
+  option(PARFLOW_ENABLE_KEYS_DOC "Build key documentation for ParFlow" "FALSE")
+  if (PARFLOW_ENABLE_KEYS_DOC)
+    add_subdirectory(docs/pf-keys)
+  endif()
+endif()
