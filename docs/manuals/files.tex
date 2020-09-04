@@ -4402,6 +4402,16 @@ pfset Solver.CLM.RootZoneNZ      4
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.SoiLayer      4
 \end{verbatim}\end{display}
+%====
+% @JSS CLM Slope Keys here
+%=====
+\pfkey{string}{Solver.SlopeAccountingCLM}{False}
+{This key specifies whether the \code{CLM} allows for the inclusion of slopes when determining solar zenith angles.
+ Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.SlopeAccountingCLM True
+\end{verbatim}\end{display}
 
 %=============================================================================
 %=============================================================================

@@ -106,16 +106,16 @@ typedef FILE *amps_File;
 /* Macros for all commands that have no function in sequential code.         */
 /*---------------------------------------------------------------------------*/
 
-#define VOID_FUNC(amps_name) printf("AMPS Error: The %s function is not implemented\n", amps_name);
+#define VOID_FUNC(amps_name) printf("AMPS Error: The %s function is not implemented\n", amps_name)
 
-#define amps_append_invoice amps_new_invoice
+#define amps_IRecv(comm, source, invoice) VOID_FUNC("amps_IRecv")
 
-#define amps_IRecv VOID_FUNC("amps_IRecv")
-
-#define amps_Recv VOID_FUNC("amps_Recv")
+#define amps_Recv(comm, source, invoice) VOID_FUNC("amps_Recv")
 
 #define amps_ISend(comm, dest, invoice) VOID_FUNC("amps_ISend")
-#define amps_Send VOID_FUNC("amps_Send")
+#define amps_Send(comm, dest, invoide) VOID_FUNC("amps_Send")
+
+#define amps_Test(handle) VOID_FUNC("amps_test")
 
 #define amps_new(comm, size) VOID_FUNC("amps_new")
 
@@ -364,7 +364,7 @@ typedef struct amps_HandleObject {
 
 #else
 
-#define amps_Talloc(type, count) \
+#define amps_TAlloc(type, count) \
   ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 #define amps_CTAlloc(type, count) \
@@ -377,10 +377,10 @@ typedef struct amps_HandleObject {
 
 /* These are the built-in types that are supported */
 
-#define AMPS_INVOICE_CHAR_CTYPE                1
+#define AMPS_INVOICE_BYTE_CTYPE                1
 #define AMPS_INVOICE_CHAR_CTYPE                2
 #define AMPS_INVOICE_SHORT_CTYPE               3
-#define AMPS_INVOICE_INT_CTYPE                 5
+#define AMPS_INVOICE_INT_CTYPE                 4
 #define AMPS_INVOICE_LONG_CTYPE                5
 #define AMPS_INVOICE_DOUBLE_CTYPE              6
 #define AMPS_INVOICE_FLOAT_CTYPE               7

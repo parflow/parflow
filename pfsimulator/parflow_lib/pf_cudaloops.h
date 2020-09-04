@@ -474,7 +474,34 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       ((nz - 1) + blocksize_z) / blocksize_z);                                      \
   }                                                                                 \
   block = dim3(blocksize_x, blocksize_y, blocksize_z);                              \
-}  
+}
+
+/**
+ * @brief A macro for checking if cell flag data array must be reallocated.
+ *
+ * @note Not for direct use!
+ *
+ * @param grgeom The geometry details [IN/OUT]
+ * @param nx The size of the first dim [IN]
+ * @param ny The size of the second dim [IN]
+ * @param nz The size of the third dim [IN]
+ */
+#define CheckCellFlagAllocation(grgeom, nx, ny, nz)                                 \
+{                                                                                   \
+  int flagdata_size = sizeof(char) * (nz * ny * nx);                                \
+  if(GrGeomSolidCellFlagDataSize(grgeom) < flagdata_size)                           \
+  {                                                                                 \
+    char *flagdata = (char*)_ctalloc_cuda(flagdata_size);                           \
+                                                                                    \
+    if(GrGeomSolidCellFlagDataSize(grgeom) > 0)                                     \
+      CUDA_ERR(cudaMemcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                \
+        GrGeomSolidCellFlagDataSize(grgeom), cudaMemcpyDeviceToDevice));            \
+                                                                                    \
+    _tfree_cuda(GrGeomSolidCellFlagData(grgeom));                                   \
+    GrGeomSolidCellFlagData(grgeom) = flagdata;                                     \
+    GrGeomSolidCellFlagDataSize(grgeom) = flagdata_size;                            \
+  }                                                                                 \
+}
 
  /** Loop definition for CUDA. */
 #define BoxLoopI1_cuda(i, j, k,                                                     \
@@ -711,41 +738,93 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
 {                                                                                   \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
-  for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                      \
+  int ix_bxs = BoxArrayMinCell(boxes, 0);                                           \
+  int iy_bxs = BoxArrayMinCell(boxes, 1);                                           \
+  int iz_bxs = BoxArrayMinCell(boxes, 2);                                           \
+                                                                                    \
+  int nx_bxs = BoxArrayMaxCell(boxes, 0) - ix_bxs + 1;                              \
+  int ny_bxs = BoxArrayMaxCell(boxes, 1) - iy_bxs + 1;                              \
+  int nz_bxs = BoxArrayMaxCell(boxes, 2) - iz_bxs + 1;                              \
+                                                                                    \
+  if(!(GrGeomSolidCellFlagInitialized(grgeom) & 1))                                 \
   {                                                                                 \
-    Box box = BoxArrayGetBox(boxes, PV_box);                                        \
-    /* find octree and region intersection */                                       \
-    int PV_ixl = pfmax(ix, box.lo[0]);                                              \
-    int PV_iyl = pfmax(iy, box.lo[1]);                                              \
-    int PV_izl = pfmax(iz, box.lo[2]);                                              \
-    int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                                   \
-    int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                                   \
-    int PV_izu = pfmin((iz + nz - 1), box.up[2]);                                   \
+    CheckCellFlagAllocation(grgeom, nx_bxs, ny_bxs, nz_bxs);                        \
+    char *inflag = GrGeomSolidCellFlagData(grgeom);                                 \
                                                                                     \
-    if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                    \
+    for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                    \
     {                                                                               \
-      int PV_diff_x = PV_ixu - PV_ixl;                                              \
-      int PV_diff_y = PV_iyu - PV_iyl;                                              \
-      int PV_diff_z = PV_izu - PV_izl;                                              \
+      Box box = BoxArrayGetBox(boxes, PV_box);                                      \
+      int PV_ixl = box.lo[0];                                                       \
+      int PV_iyl = box.lo[1];                                                       \
+      int PV_izl = box.lo[2];                                                       \
+      int PV_ixu = box.up[0];                                                       \
+      int PV_iyu = box.up[1];                                                       \
+      int PV_izu = box.up[2];                                                       \
                                                                                     \
+      if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                  \
+      {                                                                             \
+        int PV_nx = PV_ixu - PV_ixl + 1;                                            \
+        int PV_ny = PV_iyu - PV_iyl + 1;                                            \
+        int PV_nz = PV_izu - PV_izl + 1;                                            \
+                                                                                    \
+        dim3 block, grid;                                                           \
+        FindDims(grid, block, PV_nx, PV_ny, PV_nz, 1);                              \
+                                                                                    \
+        auto lambda_body =                                                          \
+          GPU_LAMBDA(int i, int j, int k)                                           \
+          {                                                                         \
+            i += PV_ixl;                                                            \
+            j += PV_iyl;                                                            \
+            k += PV_izl;                                                            \
+                                                                                    \
+            /* Set inflag for all cells in boxes regardless of loop limits */       \
+            inflag[(k - iz_bxs) * ny_bxs * nx_bxs +                                 \
+              (j - iy_bxs) * nx_bxs + (i - ix_bxs)] |= 1;                           \
+                                                                                    \
+            /* Only evaluate loop body if the cell is within loop limits */         \
+            if(i >= ix && j >= iy && k >= iz &&                                     \
+              i < ix + nx && j < iy + ny && k < iz + nz)                            \
+            {                                                                       \
+              loop_body;                                                            \
+            }                                                                       \
+          };                                                                        \
+                                                                                    \
+        BoxKernel<<<grid, block>>>(lambda_body, PV_nx, PV_ny, PV_nz);               \
+        CUDA_ERR(cudaPeekAtLastError());                                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
+      }                                                                             \
+    }                                                                               \
+    GrGeomSolidCellFlagInitialized(grgeom) |= 1;                                    \
+  }                                                                                 \
+  else                                                                              \
+  {                                                                                 \
+    int ixl_gpu = pfmax(ix, ix_bxs);                                                \
+    int iyl_gpu = pfmax(iy, iy_bxs);                                                \
+    int izl_gpu = pfmax(iz, iz_bxs);                                                \
+    int nx_gpu = pfmin((ix + nx - 1), BoxArrayMaxCell(boxes, 0)) - ixl_gpu + 1;     \
+    int ny_gpu = pfmin((iy + ny - 1), BoxArrayMaxCell(boxes, 1)) - iyl_gpu + 1;     \
+    int nz_gpu = pfmin((iz + nz - 1), BoxArrayMaxCell(boxes, 2)) - izl_gpu + 1;     \
+                                                                                    \
+    if(nx_gpu > 0 && ny_gpu > 0 && nz_gpu > 0)                                      \
+    {                                                                               \
       dim3 block, grid;                                                             \
-      FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);        \
+      FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                             \
                                                                                     \
-      int nx = PV_diff_x + 1;                                                       \
-      int ny = PV_diff_y + 1;                                                       \
-      int nz = PV_diff_z + 1;                                                       \
-                                                                                    \
+      char *inflag = GrGeomSolidCellFlagData(grgeom);                               \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
-          i += PV_ixl;                                                              \
-          j += PV_iyl;                                                              \
-          k += PV_izl;                                                              \
-                                                                                    \
-          loop_body;                                                                \
+          i += ixl_gpu;                                                             \
+          j += iyl_gpu;                                                             \
+          k += izl_gpu;                                                             \
+          if(inflag[(k - iz_bxs) * ny_bxs * nx_bxs +                                \
+            (j - iy_bxs) * nx_bxs + (i - ix_bxs)] & 1)                              \
+          {                                                                         \
+            loop_body;                                                              \
+          }                                                                         \
         };                                                                          \
                                                                                     \
-      BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                          \
+      BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);              \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
@@ -762,29 +841,85 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     const int *fdir = FDIR_TABLE[PV_f];                                             \
                                                                                     \
     BoxArray* boxes = GrGeomSolidSurfaceBoxes(grgeom, PV_f);                        \
-    for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                    \
+    int ix_bxs = BoxArrayMinCell(boxes, 0);                                         \
+    int iy_bxs = BoxArrayMinCell(boxes, 1);                                         \
+    int iz_bxs = BoxArrayMinCell(boxes, 2);                                         \
+                                                                                    \
+    int nx_bxs = BoxArrayMaxCell(boxes, 0) - ix_bxs + 1;                            \
+    int ny_bxs = BoxArrayMaxCell(boxes, 1) - iy_bxs + 1;                            \
+    int nz_bxs = BoxArrayMaxCell(boxes, 2) - iz_bxs + 1;                            \
+                                                                                    \
+    if(!(GrGeomSolidCellFlagInitialized(grgeom) & (1 << (2 + PV_f))))               \
     {                                                                               \
-      Box box = BoxArrayGetBox(boxes, PV_box);                                      \
-      /* find octree and region intersection */                                     \
-      int PV_ixl = pfmax(ix, box.lo[0]);                                            \
-      int PV_iyl = pfmax(iy, box.lo[1]);                                            \
-      int PV_izl = pfmax(iz, box.lo[2]);                                            \
-      int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                                 \
-      int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                                 \
-      int PV_izu = pfmin((iz + nz - 1), box.up[2]);                                 \
+      CheckCellFlagAllocation(grgeom, nx_bxs, ny_bxs, nz_bxs);                      \
+      char *surfflag = GrGeomSolidCellFlagData(grgeom);                             \
                                                                                     \
-      if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                  \
+      for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                  \
       {                                                                             \
-        int PV_diff_x = PV_ixu - PV_ixl;                                            \
-        int PV_diff_y = PV_iyu - PV_iyl;                                            \
-        int PV_diff_z = PV_izu - PV_izl;                                            \
+        Box box = BoxArrayGetBox(boxes, PV_box);                                    \
+        int PV_ixl = box.lo[0];                                                     \
+        int PV_iyl = box.lo[1];                                                     \
+        int PV_izl = box.lo[2];                                                     \
+        int PV_ixu = box.up[0];                                                     \
+        int PV_iyu = box.up[1];                                                     \
+        int PV_izu = box.up[2];                                                     \
                                                                                     \
+        if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                \
+        {                                                                           \
+          int PV_nx = PV_ixu - PV_ixl + 1;                                          \
+          int PV_ny = PV_iyu - PV_iyl + 1;                                          \
+          int PV_nz = PV_izu - PV_izl + 1;                                          \
+                                                                                    \
+          dim3 block, grid;                                                         \
+          FindDims(grid, block, PV_nx, PV_ny, PV_nz, 1);                            \
+                                                                                    \
+          const int _fdir0 = fdir[0];                                               \
+          const int _fdir1 = fdir[1];                                               \
+          const int _fdir2 = fdir[2];                                               \
+                                                                                    \
+          auto lambda_body =                                                        \
+            GPU_LAMBDA(int i, int j, int k)                                         \
+            {                                                                       \
+              i += PV_ixl;                                                          \
+              j += PV_iyl;                                                          \
+              k += PV_izl;                                                          \
+                                                                                    \
+              /* Set surfflag for all cells in boxes regardless of loop limits */   \
+              surfflag[(k - iz_bxs) * ny_bxs * nx_bxs +                             \
+                (j - iy_bxs) * nx_bxs + (i - ix_bxs)] |= (1 << (2 + PV_f));         \
+                                                                                    \
+              /* Only evaluate loop body if the cell is within loop limits */       \
+              if(i >= ix && j >= iy && k >= iz &&                                   \
+                i < ix + nx && j < iy + ny && k < iz + nz)                          \
+              {                                                                     \
+                const int fdir[3] = {_fdir0, _fdir1, _fdir2};                       \
+                loop_body;                                                          \
+                (void)fdir;                                                         \
+              }                                                                     \
+            };                                                                      \
+                                                                                    \
+          BoxKernel<<<grid, block>>>(lambda_body, PV_nx, PV_ny, PV_nz);             \
+          CUDA_ERR(cudaPeekAtLastError());                                          \
+          CUDA_ERR(cudaStreamSynchronize(0));                                       \
+        }                                                                           \
+      }                                                                             \
+      GrGeomSolidCellFlagInitialized(grgeom) |= (1 << (2 + PV_f));                  \
+    }                                                                               \
+    else                                                                            \
+    {                                                                               \
+      int ixl_gpu = pfmax(ix, ix_bxs);                                              \
+      int iyl_gpu = pfmax(iy, iy_bxs);                                              \
+      int izl_gpu = pfmax(iz, iz_bxs);                                              \
+      int nx_gpu = pfmin((ix + nx - 1), BoxArrayMaxCell(boxes, 0)) - ixl_gpu + 1;   \
+      int ny_gpu = pfmin((iy + ny - 1), BoxArrayMaxCell(boxes, 1)) - iyl_gpu + 1;   \
+      int nz_gpu = pfmin((iz + nz - 1), BoxArrayMaxCell(boxes, 2)) - izl_gpu + 1;   \
+                                                                                    \
+      if(nx_gpu > 0 && ny_gpu > 0 && nz_gpu > 0)                                    \
+      {                                                                             \
         dim3 block, grid;                                                           \
-        FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);      \
+        FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                           \
                                                                                     \
-        int nx = PV_diff_x + 1;                                                     \
-        int ny = PV_diff_y + 1;                                                     \
-        int nz = PV_diff_z + 1;                                                     \
+        char *surfflag = GrGeomSolidCellFlagData(grgeom);                           \
                                                                                     \
         const int _fdir0 = fdir[0];                                                 \
         const int _fdir1 = fdir[1];                                                 \
@@ -793,17 +928,20 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         auto lambda_body =                                                          \
           GPU_LAMBDA(int i, int j, int k)                                           \
           {                                                                         \
-            const int fdir[3] = {_fdir0, _fdir1, _fdir2};                           \
+            i += ixl_gpu;                                                           \
+            j += iyl_gpu;                                                           \
+            k += izl_gpu;                                                           \
                                                                                     \
-            i += PV_ixl;                                                            \
-            j += PV_iyl;                                                            \
-            k += PV_izl;                                                            \
-                                                                                    \
-            loop_body;                                                              \
-            (void)fdir;                                                             \
+            if(surfflag[(k - iz_bxs) * ny_bxs * nx_bxs +                            \
+              (j - iy_bxs) * nx_bxs + (i - ix_bxs)] & (1 << (2 + PV_f)))            \
+            {                                                                       \
+              const int fdir[3] = {_fdir0, _fdir1, _fdir2};                         \
+              loop_body;                                                            \
+              (void)fdir;                                                           \
+            }                                                                       \
           };                                                                        \
                                                                                     \
-        BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                        \
+        BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);            \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -875,63 +1013,111 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
 }
 
  /** Loop definition for CUDA. */
-#define GrGeomPatchLoopBoxesNoFdir_cuda(i, j, k, grgeom, patch_num,                 \
+#define GrGeomPatchLoopBoxesNoFdir_cuda(i, j, k, grgeom, patch_num, ovrlnd,         \
   ix, iy, iz, nx, ny, nz, locals, setup,                                            \
   f_left, f_right, f_down, f_up, f_back, f_front, finalize)                         \
 {                                                                                   \
   for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
   {                                                                                 \
-    int n_prev = 0;                                                                 \
     BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);               \
-    for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                    \
+                                                                                    \
+    int ix_bxs = BoxArrayMinCell(boxes, 0);                                         \
+    int iy_bxs = BoxArrayMinCell(boxes, 1);                                         \
+    int iz_bxs = BoxArrayMinCell(boxes, 2);                                         \
+                                                                                    \
+    int nx_bxs = BoxArrayMaxCell(boxes, 0) - ix_bxs + 1;                            \
+    int ny_bxs = BoxArrayMaxCell(boxes, 1) - iy_bxs + 1;                            \
+    int nz_bxs = BoxArrayMaxCell(boxes, 2) - iz_bxs + 1;                            \
+                                                                                    \
+    int patch_loc;                                                                  \
+    if(ovrlnd)                                                                      \
+      patch_loc = GrGeomSolidNumPatches(grgeom) + patch_num;                        \
+    else                                                                            \
+      patch_loc = patch_num;                                                        \
+                                                                                    \
+    int *ptr_ival = GrGeomSolidCellIval(grgeom, patch_loc, PV_f);                   \
+    if(!(ptr_ival))                                                                 \
     {                                                                               \
-      Box box = BoxArrayGetBox(boxes, PV_box);                                      \
-      /* find octree and region intersection */                                     \
-      int PV_ixl = pfmax(ix, box.lo[0]);                                            \
-      int PV_iyl = pfmax(iy, box.lo[1]);                                            \
-      int PV_izl = pfmax(iz, box.lo[2]);                                            \
-      int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                                 \
-      int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                                 \
-      int PV_izu = pfmin((iz + nz - 1), box.up[2]);                                 \
+      GrGeomSolidCellIval(grgeom, patch_loc, PV_f) =                                \
+        (int*)_talloc_cuda(sizeof(int) * nx_bxs * ny_bxs * nz_bxs);                 \
                                                                                     \
-      if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                  \
+      ptr_ival = GrGeomSolidCellIval(grgeom, patch_loc, PV_f);                      \
+      for (int idx = 0; idx < nx_bxs * ny_bxs * nz_bxs; idx++)                      \
+        ptr_ival[idx] = -1;                                                         \
+                                                                                    \
+      int n_ival = 0;                                                               \
+      for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                  \
       {                                                                             \
-        int PV_diff_x = PV_ixu - PV_ixl;                                            \
-        int PV_diff_y = PV_iyu - PV_iyl;                                            \
-        int PV_diff_z = PV_izu - PV_izl;                                            \
+        Box box = BoxArrayGetBox(boxes, PV_box);                                    \
+        int PV_ixl = pfmax(ix, box.lo[0]);                                          \
+        int PV_iyl = pfmax(iy, box.lo[1]);                                          \
+        int PV_izl = pfmax(iz, box.lo[2]);                                          \
+        int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                               \
+        int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                               \
+        int PV_izu = pfmin((iz + nz - 1), box.up[2]);                               \
                                                                                     \
+        for (k = PV_izl; k <= PV_izu; k++)                                          \
+          for (j = PV_iyl; j <= PV_iyu; j++)                                        \
+            for (i = PV_ixl; i <= PV_ixu; i++)                                      \
+            {                                                                       \
+              UNPACK(locals);                                                       \
+              setup;                                                                \
+              switch(PV_f)                                                          \
+              {                                                                     \
+                f_left;                                                             \
+                f_right;                                                            \
+                f_down;                                                             \
+                f_up;                                                               \
+                f_back;                                                             \
+                f_front;                                                            \
+              }                                                                     \
+              finalize;                                                             \
+              ptr_ival[(k - iz_bxs) * ny_bxs * nx_bxs + (j - iy_bxs) *              \
+                nx_bxs + (i - ix_bxs)] = n_ival++;                                  \
+            }                                                                       \
+      }                                                                             \
+    }                                                                               \
+    else                                                                            \
+    {                                                                               \
+      int ixl_gpu = pfmax(ix, ix_bxs);                                              \
+      int iyl_gpu = pfmax(iy, iy_bxs);                                              \
+      int izl_gpu = pfmax(iz, iz_bxs);                                              \
+      int nx_gpu = pfmin((ix + nx - 1), BoxArrayMaxCell(boxes, 0)) - ixl_gpu + 1;   \
+      int ny_gpu = pfmin((iy + ny - 1), BoxArrayMaxCell(boxes, 1)) - iyl_gpu + 1;   \
+      int nz_gpu = pfmin((iz + nz - 1), BoxArrayMaxCell(boxes, 2)) - izl_gpu + 1;   \
+                                                                                    \
+      if(nx_gpu > 0 && ny_gpu > 0 && nz_gpu > 0)                                    \
+      {                                                                             \
         dim3 block, grid;                                                           \
-        FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);      \
-                                                                                    \
-        int nx = PV_diff_x + 1;                                                     \
-        int ny = PV_diff_y + 1;                                                     \
-        int nz = PV_diff_z + 1;                                                     \
+        FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                           \
                                                                                     \
         auto lambda_body =                                                          \
           GPU_LAMBDA(int i, int j, int k)                                           \
           {                                                                         \
-            int ival = n_prev + k * ny * nx + j * nx + i;                           \
+            i += ixl_gpu;                                                           \
+            j += iyl_gpu;                                                           \
+            k += izl_gpu;                                                           \
                                                                                     \
-            i += PV_ixl;                                                            \
-            j += PV_iyl;                                                            \
-            k += PV_izl;                                                            \
-                                                                                    \
-            UNPACK(locals);                                                         \
-            setup;                                                                  \
-            switch(PV_f)                                                            \
+            int ival = ptr_ival[(k - iz_bxs) * ny_bxs * nx_bxs +                    \
+              (j - iy_bxs) * nx_bxs + (i - ix_bxs)];                                \
+            if(ival >= 0)                                                           \
             {                                                                       \
-              f_left;                                                               \
-              f_right;                                                              \
-              f_down;                                                               \
-              f_up;                                                                 \
-              f_back;                                                               \
-              f_front;                                                              \
+              UNPACK(locals);                                                       \
+              setup;                                                                \
+              switch(PV_f)                                                          \
+              {                                                                     \
+                f_left;                                                             \
+                f_right;                                                            \
+                f_down;                                                             \
+                f_up;                                                               \
+                f_back;                                                             \
+                f_front;                                                            \
+              }                                                                     \
+              finalize;                                                             \
             }                                                                       \
-            finalize;                                                               \
           };                                                                        \
-        n_prev += nz * ny * nx;                                                     \
                                                                                     \
-        BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                        \
+        BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);            \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -1009,12 +1195,13 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
-    if(!GrGeomSolidOutflag(grgeom))                                                 \
+    if(!(GrGeomSolidCellFlagInitialized(grgeom) & (1 << 1)))                        \
     {                                                                               \
+      CheckCellFlagAllocation(grgeom, nx, ny, nz);                                  \
+      char *outflag = GrGeomSolidCellFlagData(grgeom);                              \
+                                                                                    \
       GrGeomOctree  *PV_node;                                                       \
       double PV_ref = pow(2.0, r);                                                  \
-      unsigned outflag_size = sizeof(int) * (unsigned)(nz * ny * nx);               \
-      int *outflag = (int*)_ctalloc_cuda(outflag_size);                             \
                                                                                     \
       i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                                \
       j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                \
@@ -1026,16 +1213,16 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                    TRUE,                                            \
       {                                                                             \
         body;                                                                       \
-        outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] = 1;                 \
+        outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] |= (1 << 1);         \
       });                                                                           \
-      GrGeomSolidOutflag(grgeom) = outflag;                                         \
+      GrGeomSolidCellFlagInitialized(grgeom) |= (1 << 1);                           \
     }                                                                               \
     else                                                                            \
     {                                                                               \
       dim3 block, grid;                                                             \
       FindDims(grid, block, nx, ny, nz, 1);                                         \
                                                                                     \
-      int *outflag = GrGeomSolidOutflag(grgeom);                                    \
+      char *outflag = GrGeomSolidCellFlagData(grgeom);                              \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
@@ -1043,7 +1230,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           j += iy;                                                                  \
           k += iz;                                                                  \
                                                                                     \
-          if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] == 1)           \
+          if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] & (1 << 1))     \
           {                                                                         \
             body;                                                                   \
           }                                                                         \

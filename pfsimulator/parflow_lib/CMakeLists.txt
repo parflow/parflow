@@ -52,6 +52,7 @@ set (SRC_FILES_CONST advect.F
   pcg.c
   permeability_face.c
   perturb_lb.c
+  pf_hypre.c
   pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
@@ -131,7 +132,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   )
   set (SRC_FILES_ARCH_TYPE_1
     axpy.cpp
-    clustering.cpp
     copy.cpp
     innerprod.cpp
     matrix.cpp
@@ -154,6 +154,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   )
   set (SRC_FILES_ARCH_TYPE_2
     calc_elevations.cpp
+    clustering.cpp
     pf_module.cpp
     problem_bc.cpp
     problem_bc_pressure.cpp

@@ -138,7 +138,7 @@ if((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
   message(FATAL_ERROR "ERROR: Using PARFLOW_AMPS_LAYER=cuda requires building with GPU acceleration!")
 endif((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
 
-option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "FALSE")
+option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "TRUE")
 
 if (${PARFLOW_AMPS_SEQUENTIAL_IO})
   message("Using single file AMPS I/O for PFB output")
@@ -157,6 +157,7 @@ endif (${PARFLOW_HAVE_OAS3})
 
 set (PARFLOW_AMPS_LAYER_REQUIRE_MPI cuda mpi1 smpi oas3)
 set (PARFLOW_TEST_PARALLEL cuda mpi1 smpi)
+set (PARFLOW_TEST_FORCE_MPIEXEC false CACHE BOOL "Always use MPIEXEC runner for MPI applications in tests")
 
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
