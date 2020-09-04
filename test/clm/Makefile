@@ -16,7 +16,8 @@ ifeq (${PARFLOW_HAVE_CLM},yes)
 ifeq (${PARFLOW_HAVE_HYPRE},yes)
 TESTS += clm.tcl \
          clm_forc_veg.tcl \
-	 clm_varDZ.tcl
+	 clm_varDZ.tcl \
+         clm_slope.tcl
 endif
 endif
 
@@ -29,7 +30,8 @@ ifeq (${PARFLOW_HAVE_HYPRE},yes)
 		clm.tcl \
 		clm.jac.tcl \
         clm_forc_veg.tcl \
-		clm_varDZ.tcl
+		clm_varDZ.tcl \
+                clm_slope.tcl
 endif
 endif
 endif
@@ -126,7 +128,11 @@ testclean:
 	@rm -fr clm_varDZ_output.txt.*
 	@rm -fr clm_varDZ.out
 	@rm -f clm_varDZ.out.pftcl
-	@rm -f clm_varDZ_elog.txt.*
+	@rm -f clm_varDZ_elog.txt.*	
+	@rm -fr clm_slope_output.txt.*
+	@rm -fr clm_slope.out
+	@rm -f clm_slope.out.pftcl
+	@rm -f clm_slope_elog.txt.*
 	@rm -fr clm_forc_veg_output.txt.*
 	@rm -fr clm_forc_veg.out
 	@rm -f clm_forc_veg.out.pftcl

@@ -49,7 +49,6 @@ typedef struct {
   int size;
 } GrGeomExtentArray;
 
-
 /*--------------------------------------------------------------------------
  * Solid structures:
  *--------------------------------------------------------------------------*/
@@ -61,8 +60,25 @@ typedef struct {
   int num_patches;
 
 #if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
-  /** Flags for GrGeomOutLoop cells */
-  int *outflag;
+  /* Cell flags for 3 GrGeomLoops (0: do not evaluate cell, 1 = evaluate cell)
+   *  Bit 0: GrGeomInLoop
+   *  Bit 1: GrGeomOutLoop
+   *  Bits 2-7: GrGeomSurfLoop (1 bit for each face)
+   */
+
+  /* A pointer to an array for each relevant cell. 
+   * Bits 0-7 of each element determine if the cell is evaluated by the respective loop. 
+   */ 
+  char *cell_mask;
+
+  /* The size of cell_mask array in bytes. */
+  int mask_size;
+
+  /* Bits 0-7 indicate if cell_mask has been filled (ie. initialized) for the respective loop */
+  char loops_masked;
+
+  /* ival indices for parallel exec of patchloops */ 
+  int ***ival;
 #endif
 
   /* these fields are used to relate the background with the octree */
@@ -91,10 +107,14 @@ typedef struct {
 #define GrGeomExtentArrayExtents(ext_array)  ((ext_array)->extents)
 #define GrGeomExtentArraySize(ext_array)     ((ext_array)->size)
 
+#define GrGeomSolidCellFlagData(solid)        ((solid)->cell_mask)
+#define GrGeomSolidCellFlagDataSize(solid)    ((solid)->mask_size)
+#define GrGeomSolidCellFlagInitialized(solid) ((solid)->loops_masked)
+#define GrGeomSolidCellIval(solid, patch, i)  ((solid)->ival[i][patch])
+
 #define GrGeomSolidData(solid)          ((solid)->data)
 #define GrGeomSolidPatches(solid)       ((solid)->patches)
 #define GrGeomSolidNumPatches(solid)    ((solid)->num_patches)
-#define GrGeomSolidOutflag(solid)       ((solid)->outflag)
 #define GrGeomSolidOctreeBGLevel(solid) ((solid)->octree_bg_level)
 #define GrGeomSolidOctreeIX(solid)      ((solid)->octree_ix)
 #define GrGeomSolidOctreeIY(solid)      ((solid)->octree_iy)
@@ -414,7 +434,7 @@ typedef struct {
     }                                                                                        \
   }
 
-#define GrGeomPatchLoopBoxesNoFdir_default(i, j, k, grgeom, patch_num,					\
+#define GrGeomPatchLoopBoxesNoFdir_default(i, j, k, grgeom, patch_num, ovrlnd,				\
                                    ix, iy, iz, nx, ny, nz,              \
                                    locals, setup,                       \
                                    f_left, f_right,                     \
@@ -485,7 +505,7 @@ typedef struct {
     }                                                                                 \
   }
 
-#define GrGeomPatchLoopNoFdir(i, j, k, grgeom, patch_num,               \
+#define GrGeomPatchLoopNoFdir(i, j, k, grgeom, patch_num, ovrlnd,       \
                               r, ix, iy, iz, nx, ny, nz,                \
                               locals, setup,                            \
                               f_left, f_right,                          \
@@ -495,7 +515,7 @@ typedef struct {
   {                                                                     \
     if (r == 0 && GrGeomSolidPatchBoxes(grgeom, patch_num, GrGeomOctreeNumFaces - 1)) \
     {                                                                   \
-      GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,            \
+      GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num, ovrlnd,    \
                                  ix, iy, iz, nx, ny, nz,                \
                                  locals, setup,                         \
                                  f_left, f_right,                       \

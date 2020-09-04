@@ -73,6 +73,10 @@ testclean:
 	@rm -fr clm_varDZ.out
 	@rm -f clm_varDZ.out.pftcl
 	@rm -f clm_varDZ_elog.txt.*
+        @rm -fr clm_slope_output.txt.*
+        @rm -fr clm_slope.out
+        @rm -f clm_slope.out.pftcl
+        @rm -f clm_slope_elog.txt.*
 	@rm -fr clm_forc_veg_output.txt.*
 	@rm -fr clm_forc_veg.out
 	@rm -f clm_forc_veg.out.pftcl

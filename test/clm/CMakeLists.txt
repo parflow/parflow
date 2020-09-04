@@ -7,7 +7,8 @@ if(${PARFLOW_HAVE_CLM})
     list(APPEND TESTS
       clm.tcl
       clm_forc_veg.tcl
-      clm_varDZ.tcl)
+      clm_varDZ.tcl
+      clm_slope.tcl)
   endif()
 endif()
 
@@ -19,7 +20,8 @@ if((${PARFLOW_AMPS_LAYER} STREQUAL "mpi1") OR (${PARFLOW_AMPS_LAYER} STREQUAL "c
       clm.tcl
       clm.jac.tcl
       clm_forc_veg.tcl
-      clm_varDZ.tcl)
+      clm_varDZ.tcl
+      clm_slope.tcl)
   endif()
 endif()
 
