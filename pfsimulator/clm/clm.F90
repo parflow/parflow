@@ -521,6 +521,17 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   end if ! CLM log
 
 
+  if (slope_accounting_CLM==0) then
+  	WHERE (slope_x_pf > 0)
+  		slope_x_pf = 0
+  		slope_y_pf = 0
+  	ELSEWHERE 
+  		slope_x_pf = 0
+  		slope_y_pf = 0
+  	END WHERE
+  end if
+
+
   !=== Read in the atmospheric forcing for off-line run
   !    (values no longer read by drv_getforce, passed from PF)
   !    (drv_getforce is modified to convert arrays from PF input to CLM space)
@@ -566,15 +577,6 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
      end if ! write_CLM_binary
   end if ! mod of istep and dump_interval
   
-  if (slope_accounting_CLM==0) then
-  	WHERE (slope_x_pf > 0)
-  		slope_x_pf = 0
-  		slope_y_pf = 0
-  	ELSEWHERE 
-  		slope_x_pf = 0
-  		slope_y_pf = 0
-  	END WHERE
-  end if
 
   !=== Copy values from 2D CLM arrays to PF arrays for printing from PF (as Silo)
   do t=1,drv%nch

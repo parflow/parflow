@@ -74,13 +74,13 @@ subroutine clm_coszen (clm, day, coszen)
   real(r8) loctim         !local time (hour)
   real(r8) hrang          !solar hour angle, 24 hour periodicity (radians)
   real(r8) mcsec          !current seconds in day (0, ..., 86400)
-  real(r8) pi             !calculated value of numerical constant Pi
+  real(r8) pie             !calculated value of numerical constant pie
 
 !=== End Variable List ===================================================
 
 
 
-  pi = 4.*atan(1.)  ! Value of Pi to system and types maximum precision
+  pie = 4.*atan(1.)  ! Value of pie to system and types maximum precision
 
 ! Slope aspect from ParFlow terrain
   slope = atan( sqrt( clm%slope_x**2 + clm%slope_y**2 ) )
@@ -95,22 +95,22 @@ subroutine clm_coszen (clm, day, coszen)
     aspect = -atan(Sx/Sy)
 
   else if(clm%slope_y<0 .and. clm%slope_x>0) then
-    aspect = pi - atan(Sx/Sy)
+    aspect = pie - atan(Sx/Sy)
 
   else if(clm%slope_y<0 .and. clm%slope_x<0) then
-    aspect = -pi + atan(Sx/Sy)
+    aspect = -pie + atan(Sx/Sy)
     
   else if (clm%slope_y>0 .and. clm%slope_x==0) then
     aspect = 0
 
   else if(clm%slope_y<0 .and. clm%slope_x==0) then
-    aspect = pi
+    aspect = pie
 
   else if(clm%slope_y==0 .and. clm%slope_x>0) then
-    aspect = pi/2
+    aspect = pie/2
 
   else if(clm%slope_y==0 .and. clm%slope_x<0) then
-    aspect = -pi/2
+    aspect = -pie/2
     
   else if(clm%slope_y==0 .and. clm%slope_x==0) then
     aspect = 0
@@ -123,7 +123,7 @@ subroutine clm_coszen (clm, day, coszen)
 
 ! Solar declination: match CCM2
 
-  theta = (2.*pi*day)/365.0 
+  theta = (2.*pie*day)/365.0 
   delta = .006918 - .399912*cos(   theta) + .070257*sin(   theta) &
        - .006758*cos(2.*theta) + .000907*sin(2.*theta) &
        - .002697*cos(3.*theta) + .001480*sin(3.*theta)
@@ -133,13 +133,13 @@ subroutine clm_coszen (clm, day, coszen)
 ! Local time
 
   mcsec = (day - int(day)) * 86400.
-  phi = day + (clm%lon)/(2.*pi)
+  phi = day + (clm%lon)/(2.*pie)
   loctim = (mcsec + (phi-day)*86400.) / 3600.
   if (loctim>=24.) loctim = loctim - 24.
 
 ! Hour angle
 
-  hrang = 15. * (loctim-12.) * pi/180.     ! 360/24 = 15
+  hrang = 15. * (loctim-12.) * pie/180.     ! 360/24 = 15
 
   
   si = clm%lat
@@ -156,5 +156,6 @@ subroutine clm_coszen (clm, day, coszen)
 
   if (coszen >= -0.001 .and. coszen <= 0.) coszen=0.001
 
+print*,'coszen, clm%lat,clm%lon,hrang:',coszen,clm%lat,clm%lon,hrang
 
 end subroutine clm_coszen
