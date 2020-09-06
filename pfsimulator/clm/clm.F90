@@ -572,7 +572,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   		slope_y_pf = 0
   	ELSEWHERE 
   		slope_x_pf = 0
-  		slope_x_pf = 0
+  		slope_y_pf = 0
   	END WHERE
   end if
 
