@@ -586,24 +586,26 @@ void  vanGenuchtenFreePublicXtra()
 
   if (public_xtra)
   {
-    NA_FreeNameArray(public_xtra->regions);
-    dummy1 = (Type1*)(public_xtra->data);
+    if ((public_xtra->type) == 1 || (public_xtra->type) == 5) {  // BB only do this if van_genuchten is used. What do we need PFBFile for??
 
-    if (dummy1->data_from_file == 1)
-    {
-      FreeVector(dummy1->alpha_values);
-      FreeVector(dummy1->n_values);
-      FreeVector(dummy1->s_res_values);
-      FreeVector(dummy1->s_sat_values);
+      NA_FreeNameArray(public_xtra->regions);
+      dummy1 = (Type1 *) (public_xtra->data);
+
+      if (dummy1->data_from_file == 1) {
+        FreeVector(dummy1->alpha_values);
+        FreeVector(dummy1->n_values);
+        FreeVector(dummy1->s_res_values);
+        FreeVector(dummy1->s_sat_values);
+      }
+
+      tfree(dummy1->region_indices);
+      tfree(dummy1->alphas);
+      tfree(dummy1->ns);
+      tfree(dummy1->s_ress);
+      tfree(dummy1->s_difs);
+      tfree(dummy1);
+      tfree(public_xtra);
     }
-
-    tfree(dummy1->region_indices);
-    tfree(dummy1->alphas);
-    tfree(dummy1->ns);
-    tfree(dummy1->s_ress);
-    tfree(dummy1->s_difs);
-    tfree(dummy1);
-    tfree(public_xtra);
   }
 }
 
@@ -620,13 +622,14 @@ int  vanGenuchtenSizeOfTempData()
 
   int sz = 0;
   dummy1 = (Type1*)(public_xtra->data);
-  if ((dummy1->data_from_file) == 1)
-  {
-    /* add local TempData size to `sz' */
-    sz += SizeOfVector(dummy1->n_values);
-    sz += SizeOfVector(dummy1->alpha_values);
-    sz += SizeOfVector(dummy1->s_res_values);
-    sz += SizeOfVector(dummy1->s_sat_values);
+  if ((public_xtra->type) == 1 || (public_xtra->type) == 5) {  // BB only do this if van_genuchten is used. What do we need PFBFile for??
+    if ((dummy1->data_from_file) == 1) {
+      /* add local TempData size to `sz' */
+      sz += SizeOfVector(dummy1->n_values);
+      sz += SizeOfVector(dummy1->alpha_values);
+      sz += SizeOfVector(dummy1->s_res_values);
+      sz += SizeOfVector(dummy1->s_sat_values);
+    }
   }
   return sz;
 }
