@@ -480,89 +480,84 @@ PFModule   *vanGenuchtenNewPublicXtra()
 
   public_xtra = ctalloc(PublicXtra, 1);
 
-  switch_name = GetStringDefault("Phase.Saturation.Type", "VanGenuchten");  //BB Testing single_default error
+  switch_name = GetStringDefault("Phase.Saturation.Type", "Constant");  //BB Testing single_default error
   public_xtra->type = NA_NameToIndex(type_na, switch_name);
 
+  if ((public_xtra->type) == 1 || (public_xtra->type) == 5) {  // BB only do this if van_genuchten is used. What do we need PFBFile for??
+    switch_name = GetString("Phase.Saturation.GeomNames");
+    public_xtra->regions = NA_NewNameArray(switch_name);
 
-  switch_name = GetString("Phase.Saturation.GeomNames");
-  public_xtra->regions = NA_NewNameArray(switch_name);
+    num_regions = NA_Sizeof(public_xtra->regions);
 
-  num_regions = NA_Sizeof(public_xtra->regions);
+    double s_sat;
 
-  double s_sat;
+    dummy1 = ctalloc(Type1, 1);
 
-  dummy1 = ctalloc(Type1, 1);
+    sprintf(key, "Phase.Saturation.VanGenuchten.File");
+    dummy1->data_from_file = GetIntDefault(key, 0);
 
-  sprintf(key, "Phase.Saturation.VanGenuchten.File");
-  dummy1->data_from_file = GetIntDefault(key, 0);
+    if ((dummy1->data_from_file) == 0) {
+      dummy1->num_regions = num_regions;
 
-  if ((dummy1->data_from_file) == 0)
-  {
-    dummy1->num_regions = num_regions;
+      (dummy1->region_indices) = ctalloc(int, num_regions);
+      (dummy1->alphas) = ctalloc(double, num_regions);
+      (dummy1->ns) = ctalloc(double, num_regions);
+      (dummy1->s_ress) = ctalloc(double, num_regions);
+      (dummy1->s_difs) = ctalloc(double, num_regions);
 
-    (dummy1->region_indices) = ctalloc(int, num_regions);
-    (dummy1->alphas) = ctalloc(double, num_regions);
-    (dummy1->ns) = ctalloc(double, num_regions);
-    (dummy1->s_ress) = ctalloc(double, num_regions);
-    (dummy1->s_difs) = ctalloc(double, num_regions);
+      for (ir = 0; ir < num_regions; ir++) {
+        region = NA_IndexToName(public_xtra->regions, ir);
 
-    for (ir = 0; ir < num_regions; ir++)
-    {
-      region = NA_IndexToName(public_xtra->regions, ir);
+        dummy1->region_indices[ir] =
+            NA_NameToIndex(GlobalsGeomNames, region);
 
-      dummy1->region_indices[ir] =
-          NA_NameToIndex(GlobalsGeomNames, region);
+        if (dummy1->region_indices[ir] < 0) {
+          InputError("Error: invalid geometry name <%s> for key <%s>\n",
+                     region, "Phase.Saturation.GeomNames");
+        }
 
-      if (dummy1->region_indices[ir] < 0)
-      {
-        InputError("Error: invalid geometry name <%s> for key <%s>\n",
-                   region, "Phase.Saturation.GeomNames");
+
+        sprintf(key, "Geom.%s.Saturation.Alpha", region);
+        dummy1->alphas[ir] = GetDouble(key);
+
+        sprintf(key, "Geom.%s.Saturation.N", region);
+        dummy1->ns[ir] = GetDouble(key);
+
+        sprintf(key, "Geom.%s.Saturation.SRes", region);
+        dummy1->s_ress[ir] = GetDouble(key);
+
+        sprintf(key, "Geom.%s.Saturation.SSat", region);
+        s_sat = GetDouble(key);
+
+        (dummy1->s_difs[ir]) = s_sat - (dummy1->s_ress[ir]);
       }
 
+      dummy1->alpha_file = NULL;
+      dummy1->n_file = NULL;
+      dummy1->s_res_file = NULL;
+      dummy1->s_sat_file = NULL;
+      dummy1->alpha_values = NULL;
+      dummy1->n_values = NULL;
+      dummy1->s_res_values = NULL;
+      dummy1->s_sat_values = NULL;
+    } else {
+      sprintf(key, "Geom.%s.Saturation.Alpha.Filename", "domain");
+      dummy1->alpha_file = GetString(key);
+      sprintf(key, "Geom.%s.Saturation.N.Filename", "domain");
+      dummy1->n_file = GetString(key);
+      sprintf(key, "Geom.%s.Saturation.SRes.Filename", "domain");
+      dummy1->s_res_file = GetString(key);
+      sprintf(key, "Geom.%s.Saturation.SSat.Filename", "domain");
+      dummy1->s_sat_file = GetString(key);
 
-      sprintf(key, "Geom.%s.Saturation.Alpha", region);
-      dummy1->alphas[ir] = GetDouble(key);
-
-      sprintf(key, "Geom.%s.Saturation.N", region);
-      dummy1->ns[ir] = GetDouble(key);
-
-      sprintf(key, "Geom.%s.Saturation.SRes", region);
-      dummy1->s_ress[ir] = GetDouble(key);
-
-      sprintf(key, "Geom.%s.Saturation.SSat", region);
-      s_sat = GetDouble(key);
-
-      (dummy1->s_difs[ir]) = s_sat - (dummy1->s_ress[ir]);
+      dummy1->num_regions = 0;
+      dummy1->region_indices = NULL;
+      dummy1->alphas = NULL;
+      dummy1->ns = NULL;
+      dummy1->s_ress = NULL;
+      dummy1->s_difs = NULL;
     }
-
-    dummy1->alpha_file = NULL;
-    dummy1->n_file = NULL;
-    dummy1->s_res_file = NULL;
-    dummy1->s_sat_file = NULL;
-    dummy1->alpha_values = NULL;
-    dummy1->n_values = NULL;
-    dummy1->s_res_values = NULL;
-    dummy1->s_sat_values = NULL;
   }
-  else
-  {
-    sprintf(key, "Geom.%s.Saturation.Alpha.Filename", "domain");
-    dummy1->alpha_file = GetString(key);
-    sprintf(key, "Geom.%s.Saturation.N.Filename", "domain");
-    dummy1->n_file = GetString(key);
-    sprintf(key, "Geom.%s.Saturation.SRes.Filename", "domain");
-    dummy1->s_res_file = GetString(key);
-    sprintf(key, "Geom.%s.Saturation.SSat.Filename", "domain");
-    dummy1->s_sat_file = GetString(key);
-
-    dummy1->num_regions = 0;
-    dummy1->region_indices = NULL;
-    dummy1->alphas = NULL;
-    dummy1->ns = NULL;
-    dummy1->s_ress = NULL;
-    dummy1->s_difs = NULL;
-  }
-
   (public_xtra->data) = (void*)dummy1;
 
   NA_FreeNameArray(type_na);
