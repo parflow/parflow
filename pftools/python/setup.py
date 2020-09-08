@@ -20,5 +20,5 @@ setup(
     ],
     keywords=['ParFlow','groundwater model','surface water model'],
     packages=find_packages(),
-    install_requires=['pyyaml', 'parflowio']
+    install_requires=['pyyaml==5.3.1', 'parflowio']
 )

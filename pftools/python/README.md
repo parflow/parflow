@@ -38,22 +38,55 @@ which ParFlow reads as input.
         runname.GeomInput.domain_input.InputType = 'SolidFile'
 
 
-5. At the end of your Python script, call the run() method:
+5. After you have assigned values to your keys, you can call multiple methods on your
+ParFlow run object:
 
-        runname.run()
+    - `validate()`: This will validate your set of key/value pairs and print validation
+    messages. This does not require ParFlow.
+    - `write(file_name=None, file_format='pfidb')`: This will write your key/value
+    pairs to a file with your choice of format (default is the ParFlow database `pfidb`
+    format). Other acceptable formats passed as the `file_format` argument include 
+    `yml`, `yaml`, and `json`. This method does not require ParFlow. 
+    - `clone(name)`: This will generate a clone object of your run with the given `name`.
+    See `parflow/test/python/new_features/serial_runs/serial_runs.py` for an example of
+    how to use this. 
+    - `run(working_directory=None, skip_validation=False)`: This will execute the 
+    `write()` method. If `skip_validation` is set to `False`, it will also execute the 
+    `validate()` method. The `working_directory` can be defined as an argument if you
+    would like to change the directory where the output files will be written, but it 
+    defaults to the directory of the Python script. Finally, `run()` will execute 
+    ParFlow. This will print the data for your environment (ParFlow directory, 
+    ParFlow version, working directory, and the generated ParFlow database file).
+    If ParFlow runs successfully, you will get a message `ParFlow ran successfully`. 
+    Otherwise, you will get a message `ParFlow run failed.` followed by a print of the 
+    contents of the `runname.out.txt` file. 
 
 
 6. Once you have completed your input script, save and run it via the Python terminal
 or command line:
 
         python3 runname.py
-
-    This will print the data for your environment (ParFlow directory, ParFlow version,
-    working directory, and the generated ParFlow database file) run the key validation,
-    and run ParFlow. If ParFlow does not run successfully, it will also print out the
-    contents of the out.txt file for your run.
+        
+    You can append one or more of the following arguments to the run:
     
-## How to update this package
+    - `--parflow-directory [None]`: overrides environment variable for 
+    `$PARFLOW_DIR`.
+    - `--parflow-version [None]`: overrides the sourced version of ParFlow used to validate
+    keys. 
+    - `--working-directory [None]`: overrides the working directory for the ParFlow run.
+    This is identical to specifying `working_directory` in the `run()` method.
+    - `--skip-validation [False]`: skips the `validate()` method if set to `True`. This is 
+    identical to specifying `skip_validation` in the `run()` method.
+    - `--show-line-error [False]`: shows the line where an error occurs when set to `True`.
+    - `--exit-on-error [False]`: causes the run to exit whenever it encounters an error when
+    set to `True`.
+    - `--write-yaml [False]`: writes the key/value pairs to a yaml file when set to `True`. 
+    This is identical to calling the method `runname.write(file_format='yaml)`.
+    - `-p [0]`: overrides the value for `Process.Topology.P` (must be an integer).
+    - `-q [0]`: overrides the value for `Process.Topology.Q` (must be an integer).
+    - `-r [0]`: overrides the value for `Process.Topology.R` (must be an integer).
+    
+## How to update this package (developers only)
 
 This assumes that you are using CMake with the pftools package as it is 
 contained within the main ParFlow repo (see https://github.com/parflow/parflow)
