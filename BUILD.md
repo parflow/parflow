@@ -11,25 +11,25 @@ ParFlow is composed of several components that can be enabled independently
 from each other. The list below explain what those `PARFLOW_ENABLE_XXX`
 are for and how you can configure them based on what you are looking for.
 
-__SIMULATOR__: The simulator is actually the core of ParFlow as it represent the simulation code.
-__DOCKER__: This provide helpers for building docker images with ParFlow enable in them.
-__DOXYGEN__: Doxygen and building of code documentation (C/Fortran).
-__ETRACE__: builds ParFlow with etrace
-__HDF5__: builds ParFlow with HDF5 which is required for the _NETCDF_ file format.
-__HYPRE__: builds ParFlow with Hypre
-__KEYS_DOC__: builds documentation (rst files) from key definitions.
-__LATEX__: enables LaTEX and building of documentation (Manual PDF)
-__NETCDF__: builds ParFlow with NetCDF. (If ON, HDF5 is required)
-__PROFILING__: This allow to enable extra code execution that would enable code profiling.
-__TIMING__: enables timing of key Parflow functions; may slow down performance
-__TOOLS__: enables building of the Parflow tools (TCL version)
-__VALGRIND__: builds ParFlow with Valgrind support
-__PYTHON__: This is to enable you to build the Python version of __pftools__.
-__SILO__: builds ParFlow with Silo.
-__SLURM__: builds ParFlow with SLURM support (SLURM is queuing system on HPC).
-__SUNDIALS__: builds ParFlow with SUNDIALS
-__SZLIB__: builds ParFlow with SZlib compression library
-__ZLIB__: builds ParFlow with Zlib compression library
+- __SIMULATOR__: The simulator is actually the core of ParFlow as it represent the simulation code.
+- __DOCKER__: This provide helpers for building docker images with ParFlow enable in them.
+- __DOXYGEN__: Doxygen and building of code documentation (C/Fortran).
+- __ETRACE__: builds ParFlow with etrace
+- __HDF5__: builds ParFlow with HDF5 which is required for the _NETCDF_ file format.
+- __HYPRE__: builds ParFlow with Hypre
+- __KEYS_DOC__: builds documentation (rst files) from key definitions.
+- __LATEX__: enables LaTEX and building of documentation (Manual PDF)
+- __NETCDF__: builds ParFlow with NetCDF. (If ON, HDF5 is required)
+- __PROFILING__: This allow to enable extra code execution that would enable code profiling.
+- __TIMING__: enables timing of key Parflow functions; may slow down performance
+- __TOOLS__: enables building of the Parflow tools (TCL version)
+- __VALGRIND__: builds ParFlow with Valgrind support
+- __PYTHON__: This is to enable you to build the Python version of __pftools__.
+- __SILO__: builds ParFlow with Silo.
+- __SLURM__: builds ParFlow with SLURM support (SLURM is queuing system on HPC).
+- __SUNDIALS__: builds ParFlow with SUNDIALS
+- __SZLIB__: builds ParFlow with SZlib compression library
+- __ZLIB__: builds ParFlow with Zlib compression library
 
 ### Standard ParFlow build
 
