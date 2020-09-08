@@ -4,12 +4,20 @@
 # Build options (* = default)
 #
 #  BASE_IMAGE
-#    *  ubuntu:18.04
-#       ubuntu:20.04
+#       ubuntu:18.04
+#    *  ubuntu:20.04
 #
-#  PARFLOW_VERSION
-#    *  v3.6.0
-#       master
+#  CMAKE_URL
+#    *  https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz
+#
+#  HDF5_URL
+#    *  https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz
+#
+#  NETCDF_URL
+#    *  https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz
+#
+#  SILO_URL
+#    *  https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
 #
 #  HYPRE_VERSION
 #    *  v2.19.0
@@ -17,7 +25,7 @@
 #
 # -----------------------------------------------------------------------------
 
-ARG BASE_IMAGE=ubuntu:18.04
+ARG BASE_IMAGE=ubuntu:20.04
 FROM ${BASE_IMAGE}
 
 # Non interactive mode
@@ -66,8 +74,10 @@ RUN mkdir -p                              \
 # Setup CMake 3.18.2
 # -----------------------------------------------------------------------------
 
+ARG CMAKE_URL=https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz
+
 RUN cd $BASE_PATH/parflow/dependencies/cmake && \
-    curl -L "https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz" | tar --strip-components=1 -xzv
+    curl -L $CMAKE_URL | tar --strip-components=1 -xzv
 
 ENV CMAKE $BASE_PATH/parflow/dependencies/cmake/bin/cmake
 ENV CTEST $BASE_PATH/parflow/dependencies/cmake/bin/ctest
@@ -76,10 +86,12 @@ ENV CTEST $BASE_PATH/parflow/dependencies/cmake/bin/ctest
 # Install HDF5
 # -----------------------------------------------------------------------------
 
+ARG HDF5_URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz
+
 ENV HDF5_DIR /opt/hdf5
 
 WORKDIR $BASE_PATH/parflow/dependencies/hdf5-src
-RUN curl -L "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz" | tar --strip-components=1 -xzv && \
+RUN curl -L $HDF5_URL | tar --strip-components=1 -xzv && \
     CC=mpicc ./configure \
       --prefix=$HDF5_DIR \
       --enable-parallel && \
@@ -93,10 +105,12 @@ USER ubuntu
 # Install NetCDF
 # -----------------------------------------------------------------------------
 
+ARG NETCDF_URL=https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz
+
 ENV NETCDF_DIR /opt/netcdf
 
 WORKDIR $BASE_PATH/parflow/dependencies/netcdf-src
-RUN curl -L "https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz" | tar --strip-components=1 -xzv && \
+RUN curl -L $NETCDF_URL | tar --strip-components=1 -xzv && \
     CC=mpicc CPPFLAGS=-I$HDF5_DIR/include LDFLAGS=-L$HDF5_DIR/lib \
     ./configure --disable-shared --disable-dap --prefix=${NETCDF_DIR} && \
     make
@@ -109,10 +123,12 @@ USER ubuntu
 # Install SILO
 # -----------------------------------------------------------------------------
 
+ARG SILO_URL=https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+
 ENV SILO_DIR /opt/silo
 
 WORKDIR $BASE_PATH/parflow/dependencies/silo-src
-RUN curl -L "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" | tar --strip-components=1 -xzv && \
+RUN curl -L $SILO_URL | tar --strip-components=1 -xzv && \
     ./configure  --prefix=$SILO_DIR --disable-silex --disable-hzip --disable-fpzip && \
     make
 
@@ -142,14 +158,15 @@ USER ubuntu
 # Install Parflow
 # -----------------------------------------------------------------------------
 
-ARG PARFLOW_VERSION=v3.6.0
-ARG PARFLOW_GIT_URL=https://github.com/parflow/parflow.git
+COPY --chown=ubuntu:ubuntu . $BASE_PATH/parflow/src
 
-RUN git clone                           \
-    --recursive --single-branch          \
-    --branch $PARFLOW_VERSION             \
-    $PARFLOW_GIT_URL                       \
-    $BASE_PATH/parflow/src
+# ARG PARFLOW_VERSION=master
+# ARG PARFLOW_GIT_URL=
+# RUN git clone                           \
+#     --recursive --single-branch          \
+#     --branch $PARFLOW_VERSION             \
+#     $PARFLOW_GIT_URL                       \
+#     $BASE_PATH/parflow/src
 
 RUN $CMAKE                     \
     -S $BASE_PATH/parflow/src   \
@@ -171,14 +188,6 @@ RUN $CMAKE                     \
     -D CURL_LIBRARY=/usr/lib/x86_64-linux-gnu/libcurl.so.4
 
 RUN $CMAKE --build $BASE_PATH/parflow/build
-
-# ---------------------------------------------------------
-# Incremental pull/build of parflow
-# ---------------------------------------------------------
-WORKDIR $BASE_PATH/parflow/src
-ARG CACHE_DATE=not_a_date
-RUN git pull && $CMAKE --build $BASE_PATH/parflow/build
-# ---------------------------------------------------------
 
 USER root
 RUN $CMAKE --install $BASE_PATH/parflow/build --prefix /opt/parflow

@@ -1,16 +1,13 @@
-set(PARFLOW_DOCKER_BASE_IMAGE "ubuntu:20.04" CACHE STRING "Docker base image to use")
-set(PARFLOW_DOCKER_VERSION "py-pftools" CACHE STRING "Version of ParFlow to install in docker (v3.6.0, master)")
-set(PARFLOW_DOCKER_HYPRE "v2.19.0" CACHE STRING "Version of Hypre to install in docker (v2.19.0, master)")
-set(PARFLOW_DOCKER_CACHE_TS "Default" CACHE STRING "Change value to trigger a new ParFlow pull in docker (Useful for incremental build)")
-
 add_custom_target(DockerBuildDevelopment
   docker build --rm -t parflow-development
-    --build-arg "BASE_IMAGE=${PARFLOW_DOCKER_BASE_IMAGE}"
-    --build-arg "PARFLOW_VERSION=${PARFLOW_DOCKER_VERSION}"
-    --build-arg "HYPRE_VERSION=${PARFLOW_DOCKER_HYPRE}"
-    --build-arg "CACHE_DATE=${PARFLOW_DOCKER_CACHE_TS}"
+    # --build-arg "BASE_IMAGE=ubuntu:20.04"
+    # --build-arg "CMAKE_URL=https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz"
+    # --build-arg "HDF5_URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
+    # --build-arg "NETCDF_URL=https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz"
+    # --build-arg "SILO_URL=https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz"
+    # --build-arg "HYPRE_VERSION=v2.19.0"
     -f "${CMAKE_CURRENT_SOURCE_DIR}/dev/Dockerfile"
-    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."
   COMMENT
     "Build docker image 'parflow-development'"
   VERBATIM
@@ -18,7 +15,7 @@ add_custom_target(DockerBuildDevelopment
 
 add_custom_target(DockerBuildRuntime
   docker build --rm -t parflow-runtime
-    --build-arg "BASE_IMAGE=${PARFLOW_DOCKER_BASE_IMAGE}"
+    # --build-arg "BASE_IMAGE=ubuntu:20.04"
     -f "${CMAKE_CURRENT_SOURCE_DIR}/runtime/Dockerfile"
     "${CMAKE_CURRENT_SOURCE_DIR}"
   DEPENDS

@@ -63,14 +63,3 @@ If you want to have a shell and just run python3 manually inside that container,
 you can execute the following in the command line:
 
         docker run --rm --entrypoint /bin/bash -it parflow-runtime
-
-## Configuration options
-
- PARFLOW_DOCKER_BASE_IMAGE
-   - [ubuntu:20.04] Base image to use for the Docker image.
-
- PARFLOW_DOCKER_HYPRE
-   - [v2.19.0] Version of Hypre to install in the Docker image.
-
- PARFLOW_DOCKER_VERSION
-   - [v3.7.0] Version of ParFlow to install in Docker image.

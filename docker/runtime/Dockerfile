@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ubuntu:18.04
+ARG BASE_IMAGE=ubuntu:20.04
 ARG DEV_IMAGE=parflow-development
 
 FROM ${DEV_IMAGE} AS devimage
