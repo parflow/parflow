@@ -74,13 +74,14 @@ subroutine clm_coszen (clm, day, coszen)
   real(r8) loctim         !local time (hour)
   real(r8) hrang          !solar hour angle, 24 hour periodicity (radians)
   real(r8) mcsec          !current seconds in day (0, ..., 86400)
-  real(r8) pie             !calculated value of numerical constant pie
+  real(r8) pie             !calculated value of numerical constant Pi
 
 !=== End Variable List ===================================================
 
 
 
   pie = 4.*atan(1.)  ! Value of pie to system and types maximum precision
+
 
 ! Slope aspect from ParFlow terrain
   slope = atan( sqrt( clm%slope_x**2 + clm%slope_y**2 ) )
@@ -112,7 +113,7 @@ subroutine clm_coszen (clm, day, coszen)
   else if(clm%slope_y==0 .and. clm%slope_x<0) then
     aspect = -pie/2
     
-  else if(clm%slope_y==0 .and. clm%slope_x==0) then
+  else if(clm%slope_y==0.0 .and. clm%slope_x==0.0) then
     aspect = 0
  
   else
@@ -154,8 +155,8 @@ subroutine clm_coszen (clm, day, coszen)
     + cos(delta) * sin(si) * sin(slope) * cos(aspect) * cos(hrang) &
     + cos(delta) * sin(aspect) * sin(slope) * sin(hrang)
 
+
   if (coszen >= -0.001 .and. coszen <= 0.) coszen=0.001
 
-print*,'coszen, clm%lat,clm%lon,hrang:',coszen,clm%lat,clm%lon,hrang
 
 end subroutine clm_coszen
