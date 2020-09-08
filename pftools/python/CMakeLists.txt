@@ -45,8 +45,16 @@ install(
   FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
     "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
   DESTINATION
     "python"
+)
+install(
+  PROGRAMS
+    "${CMAKE_CURRENT_SOURCE_DIR}/py-setup"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pfpython"
+  DESTINATION
+    "bin"
 )
 
 add_custom_target(
