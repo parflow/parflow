@@ -10,5 +10,6 @@ add_subdirectory(clm)
 add_subdirectory(washita/py_scripts)
 
 add_subdirectory(new_features)
+add_subdirectory(pfsol)
 
 # -----------------------------------------------------------------------------
