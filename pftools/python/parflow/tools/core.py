@@ -109,6 +109,12 @@ def get_process_args():
                         dest="skipValidation",
                         action='store_true',
                         help="Disable validation pass")
+
+    group.add_argument("--dry-run",
+                        default=False,
+                        action='store_true',
+                        dest="dry_run",
+                        help="Prevent execution")
     # ++++++++++++++++
     group = parser.add_argument_group('Error handling settings')
     group.add_argument("--show-line-error",
@@ -175,7 +181,8 @@ def update_run_from_args(run, args):
         run.Process.Topology.R = args.r
 
     if args.writeYAML:
-        run.write(file_format='yaml')
+        full_path, no_extension = run.write(file_format='yaml')
+        print(f'YAML output: "{full_path}"')
 
 # -----------------------------------------------------------------------------
 
@@ -292,10 +299,12 @@ class Run(BaseRun):
         #     ['/bin/sh', '$PARFLOW_DIR/bin/run', run_file, str(num_procs)],
         #     cwd=PFDBObj.working_directory
         # )
-        os.chdir(settings.WORKING_DIRECTORY)
-        os.system(f'sh $PARFLOW_DIR/bin/run {run_file} {num_procs}')
+        success = True
+        if not self._process_args_.dry_run:
+            os.chdir(settings.WORKING_DIRECTORY)
+            os.system(f'sh $PARFLOW_DIR/bin/run {run_file} {num_procs}')
+            success = check_parflow_execution(f'{run_file}.out.txt')
 
-        success = check_parflow_execution(f'{run_file}.out.txt')
         print()
         if not success or error_count > 0:
             sys.exit(1)
