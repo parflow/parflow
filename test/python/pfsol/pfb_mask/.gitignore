@@ -1,5 +1,5 @@
 *.sa
 *.asc
 *.vtk
-!*.pfb
+!sabino_mask.pfb
 

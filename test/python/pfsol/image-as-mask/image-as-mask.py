@@ -1,8 +1,6 @@
 #-----------------------------------------------------------------------------
 # example for pfsol generation from images
 #-----------------------------------------------------------------------------
-import os
-import numpy as np
 
 from parflow import Run
 from parflow.tools.fs import get_absolute_path

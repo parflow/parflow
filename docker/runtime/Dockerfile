@@ -41,7 +41,7 @@ COPY --from=devimage /opt/netcdf  /opt/netcdf
 COPY --from=devimage /opt/hdf5    /opt/hdf5
 COPY --from=devimage /opt/silo    /opt/silo
 
-RUN pip3 install -r /opt/parflow/python/requirements.txt
+RUN pip3 install -r /opt/parflow/python/requirements_all.txt
 
 ENV HYPRE_DIR /opt/hypre
 ENV PARFLOW_DIR /opt/parflow

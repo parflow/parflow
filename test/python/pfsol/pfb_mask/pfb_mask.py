@@ -1,11 +1,7 @@
 #-----------------------------------------------------------------------------
 # example for pfsol generation
-#
+# Testing pfb to mask generation
 #-----------------------------------------------------------------------------
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-import sys
 
 from parflow import Run
 from parflow.tools.fs import get_absolute_path
@@ -14,6 +10,29 @@ from parflow.tools.builders import SolidFileBuilder
 
 sabino = Run("sabino", __file__)
 
+#-----------------------------------------------------------------------------
+# Set Processor topology
+#-----------------------------------------------------------------------------
+
+sabino.Process.Topology.P = 1
+sabino.Process.Topology.Q = 1
+sabino.Process.Topology.R = 1
+
+#-----------------------------------------------------------------------------
+# Computational Grid
+#-----------------------------------------------------------------------------
+
+sabino.ComputationalGrid.Lower.X = 0.0
+sabino.ComputationalGrid.Lower.Y = 0.0
+sabino.ComputationalGrid.Lower.Z = 0.0
+
+sabino.ComputationalGrid.DX = 90.0
+sabino.ComputationalGrid.DY = 90.0
+sabino.ComputationalGrid.DZ = 100.0
+
+sabino.ComputationalGrid.NX = 91
+sabino.ComputationalGrid.NY = 70
+sabino.ComputationalGrid.NZ = 20
 
 #-----------------------------------------------------------------------------
 # Names of the GeomInputs
@@ -298,4 +317,4 @@ sabino.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 # Distribute inputs and run simulation
 #-----------------------------------------------------------------------------
 
-sabino.validate()
+sabino.run()

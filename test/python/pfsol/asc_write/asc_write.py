@@ -1,16 +1,13 @@
 #-----------------------------------------------------------------------------
 # example for pfsol generation
-#
+# checking for correct .asc file writing
 #-----------------------------------------------------------------------------
-import os
-import numpy as np
-import matplotlib.pyplot as plt
+
 import sys
 
 from parflow import Run
 from parflow.tools.fs import get_absolute_path
 from parflow.tools.io import load_patch_matrix_from_sa_file, load_patch_matrix_from_asc_file, write_patch_matrix_as_sa
-from parflow.tools.builders import SolidFileBuilder
 
 asc_write = Run("asc_write", __file__)
 

@@ -2,9 +2,6 @@
 # example for pfsol generation
 #
 #-----------------------------------------------------------------------------
-import os
-import numpy as np
-import matplotlib.pyplot as plt
 
 from parflow import Run
 from parflow.tools.fs import get_absolute_path

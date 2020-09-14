@@ -44,6 +44,9 @@ install(
 install(
   FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/requirements_all.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/requirements_pfsol.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/requirements_pfb.txt"
     "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
     "${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
   DESTINATION
