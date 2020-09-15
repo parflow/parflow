@@ -33,7 +33,6 @@
 
 #include "parflow.h"
 
-
 /*--------------------------------------------------------------------------
  * Matvec
  *--------------------------------------------------------------------------*/
@@ -373,9 +372,6 @@ void            MatvecSubMat(
 
   int compute_i, sra, sr, si, sg, i, j, k;
 
-  int itop;
-  int k1;
-
   double temp;
 
   double         *bp, *cp;
@@ -384,7 +380,7 @@ void            MatvecSubMat(
 
   double         *top_dat = NULL;
 
-  int vi, mi, y_index, x_index;
+  int vi, mi;
 
   int ix, iy, iz;
   int nx, ny, nz;
@@ -629,7 +625,7 @@ void            MatvecSubMat(
         {
           cp = SubmatrixElt(JC_sub, si, ix, iy, iz);
 
-          vi = 0; mi = 0; x_index = 0; y_index = 0;
+          vi = 0; mi = 0;
 
           /* Only JC involved here */
           BoxLoopI2(i, j, k,
@@ -637,18 +633,18 @@ void            MatvecSubMat(
                     vi, nx_v, ny_v, nz_v, sx, sy, sz,
                     mi, nx_mc, ny_mc, nz_mc, 1, 1, 1,
           {
-            itop = SubvectorEltIndex(top_sub, i, j, 0);
-            k1 = (int)top_dat[itop];
+            int itop = SubvectorEltIndex(top_sub, i, j, 0);
+            int k1 = (int)top_dat[itop];
             /* Since we are using a boxloop, we need to check for top index
              * to update with the surface contributions */
             if (k1 >= 0)
             {
-              y_index = SubvectorEltIndex(y_sub, i, j, k1);
+              int y_index = SubvectorEltIndex(y_sub, i, j, k1);
               //itop   = SubvectorEltIndex(top_sub, (i+s[si][0]), (j+s[si][1]), 0);
               k1 = (int)top_dat[itop + s[si][0] + nx_v * s[si][1]];
               if (k1 >= 0)
               {
-                x_index = SubvectorEltIndex(x_sub, (i + s[si][0]), (j + s[si][1]), k1);
+                int x_index = SubvectorEltIndex(x_sub, (i + s[si][0]), (j + s[si][1]), k1);
 
                 yp[y_index] += cp[mi] * xp[x_index];
               }
@@ -723,16 +719,13 @@ void            MatvecJacF(
 
   int compute_i, sra, sr, si, sg, i, j, k;
 
-  int itop;
-  int k1;
-
   double temp;
 
   double         *fp, *top_dat;
   double         *xp;
   double         *yp;
 
-  int vi, mi, y_index;
+  int vi, mi;
 
   int ix, iy, iz;
   int nx, ny, nz;
@@ -953,18 +946,17 @@ void            MatvecJacF(
 
           vi = 0;
           mi = 0;
-          y_index = 0;
 
           BoxLoopI2(i, j, k,
                     ix, iy, iz, nx, ny, 1,
                     vi, nx_v, ny_v, nz_v, sx, sy, sz,
                     mi, nx_mf, ny_mf, nz_mf, 1, 1, 1,
           {
-            itop = SubvectorEltIndex(top_sub, (i + s[si][0]), (j + s[si][1]), 0);
-            k1 = (int)top_dat[itop];
+            int itop = SubvectorEltIndex(top_sub, (i + s[si][0]), (j + s[si][1]), 0);
+            int k1 = (int)top_dat[itop];
             if (k1 >= 0)
             {
-              y_index = SubvectorEltIndex(y_sub, i, j, k1);
+              int y_index = SubvectorEltIndex(y_sub, i, j, k1);
               yp[y_index] += fp[mi] * xp[vi];
             }
           });
@@ -985,11 +977,11 @@ void            MatvecJacF(
                   vi, nx_v, ny_v, nz_v, sx, sy, sz,
                   mi, nx_mf, ny_mf, nz_mf, 1, 1, 1,
         {
-          itop = SubvectorEltIndex(top_sub, i, j, 0);
-          k1 = (int)top_dat[itop];
+          int itop = SubvectorEltIndex(top_sub, i, j, 0);
+          int k1 = (int)top_dat[itop];
           if (k1 >= 0)
           {
-            y_index = SubvectorEltIndex(y_sub, i, j, (k1 - s[si][2]));       /* (i,j,k-1) from top */
+            int y_index = SubvectorEltIndex(y_sub, i, j, (k1 - s[si][2]));       /* (i,j,k-1) from top */
             yp[y_index] += fp[mi] * xp[vi];
           }
         });
@@ -1062,15 +1054,13 @@ void            MatvecJacE(
 
   int compute_i, sra, sr, si, sg, i, j, k;
 
-  int itop, k1;
-
   double temp;
 
   double         *ep, *top_dat;
   double         *xp;
   double         *yp;
 
-  int vi, mi, x_index;
+  int vi, mi;
 
   int ix, iy, iz;
   int nx, ny, nz;
@@ -1289,18 +1279,17 @@ void            MatvecJacE(
 
           vi = 0;
           mi = 0;
-          x_index = 0;
 
           BoxLoopI2(i, j, k,
                     ix, iy, iz, nx, ny, 1,
                     vi, nx_v, ny_v, nz_v, sx, sy, sz,
                     mi, nx_me, ny_me, nz_me, 1, 1, 1,
           {
-            itop = SubvectorEltIndex(top_sub, i, j, 0);
-            k1 = (int)top_dat[itop];
+            int itop = SubvectorEltIndex(top_sub, i, j, 0);
+            int k1 = (int)top_dat[itop];
             if (k1 >= 0)
             {
-              x_index = SubvectorEltIndex(x_sub, (i + s[si][0]), (j + s[si][1]), k1);
+              int x_index = SubvectorEltIndex(x_sub, (i + s[si][0]), (j + s[si][1]), k1);
               yp[vi] += ep[mi] * xp[x_index];
             }
           });
@@ -1310,17 +1299,17 @@ void            MatvecJacE(
         si = 5;
         ep = SubmatrixElt(JE_sub, si, ix, iy, iz);
 
-        vi = 0; mi = 0; x_index = 0;
+        vi = 0; mi = 0;
         BoxLoopI2(i, j, k,
                   ix, iy, iz, nx, ny, 1,
                   vi, nx_v, ny_v, nz_v, sx, sy, sz,
                   mi, nx_me, ny_me, nz_me, 1, 1, 1,
         {
-          itop = SubvectorEltIndex(top_sub, i, j, 0);
-          k1 = (int)top_dat[itop];
+          int itop = SubvectorEltIndex(top_sub, i, j, 0);
+          int k1 = (int)top_dat[itop];
           if (k1 >= 0)
           {
-            x_index = SubvectorEltIndex(x_sub, i, j, (k1 + s[si][2]));          /* (i,j,k-1) from top */
+            int x_index = SubvectorEltIndex(x_sub, i, j, (k1 + s[si][2]));          /* (i,j,k-1) from top */
             yp[vi] += ep[mi] * xp[x_index];
           }
         });
@@ -1352,4 +1341,3 @@ void            MatvecJacE(
   EventTiming[NumEvents++][MatvecEnd] = amps_Clock();
 #endif
 }
-

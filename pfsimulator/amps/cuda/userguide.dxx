@@ -1,0 +1,232 @@
+/** @name User Guide
+
+The following User Guide contains several examples that you can read
+through to become acquainted with {\em AMPS}.  It will be filled in
+when/if time allows.  Since the development team is currently rather
+small conversations with Steve Smith will have to take the place
+of a genuine User Guide.
+
+Information about compiling and executing {\em AMPS} programs is given in
+\Ref{Environment}.
+
+*/
+//@{ 
+	/** @name Hello World 
+
+This section contains an example of the ubiquitous "hello
+world" program.  Each node prints the message "Hello World".
+
+This example shows the basic outline of an {\em AMPS} program.
+First you must call \Ref{amps_Init}.  This function performs any
+initialization that needs to be done, including starting up of node
+programs.  Note that we pass {\em argv} and {\em argc} to
+\Ref{amps_Init} to enable the transfer of command line parameters to
+{\em AMPS} and the underlying message passing system.  After
+\Ref{amps_Init} has been called you are free to make any {\em AMPS}
+calls.
+
+You might have noticed the \Ref{amps_CommWorld} value being passed
+into \Ref{amps_Rank}.  Many {\em AMPS} calls take a communicator
+variable.  This is to allow "contexts" of communication in later
+releases.  If you wish to know more about contexts refer to {\em
+Zipcode} and {\em MPI} documentation
+\cite{SkLe90,skjellum.smith.ea.93,smith.falgout.ea.93, mpiforum.93,
+mpiforum.94}.  Currently there is only a single context in {\em AMPS},
+the global context.  You can safely use {\bf amps\_CommWorld} whenever
+a \Ref{amps_Comm} variable is required by an {\em AMPS} call.
+\Ref{amps_CommWorld} is defined in {\bf amps.h}.
+
+In this example program we call \Ref{amps_Rank} to get the "rank" of
+this node.  The rank of a node is an integer value which is used to
+identify a node.  A rank is similar in nature to node id numbers in
+other message passing systems.  The rank is communicator dependent; in
+different communicators the same node will have different ranks.
+
+When all message passing is completed, the function \Ref{amps_Finalize}
+is invoked to clean up after {\em AMPS}.  \Ref{amps_Finalize} also
+synchronizes the host and nodes so everyone should exit at about the
+same time.  This command is generally the last function invoked in a
+program.
+
+\begin{verbatim}
+#include <stdio.h>
+#include "amps.h"
+
+int main (argc, argv)
+int argc;
+char *argv[];
+{
+   int   me;
+
+   if (amps_Init(&argc, &argv))
+   {
+      amps_Printf("Error amps_Init\n");
+      exit(1);
+   }
+
+   me = amps_Rank(amps_CommWorld);
+
+   amps_Printf("Hello World! from node (%d)\n", me);
+
+   amps_Finalize();
+
+   return 0;
+}
+\end{verbatim}
+
+*/
+
+	/** @name Platform Notes
+
+	{\em AMPS} is layered on the top of many different message passing and
+	shared memory APIs. Some of these ports have restrictions or unique
+	features. For a several of the ports shortcuts were taken in the
+	development of {\em AMPS} to overcome limitations on that platform.
+	This chapter contains information on the various ports that users need
+	to be aware of.
+	*/
+	//@{
+		/** @name CRAY T3D
+		The port on the {\em CRAY T3D} is based on both {\em
+		CRAY PVM} and {\em CRAY SHMEM} API's.  The {\em PVM}
+		library is currently used for most of the
+		communication; the {\em SHMEM} library is used for the
+		\Ref{amps_Package} and for small collective
+		operations (i.e.  \Ref{amps_AllReduce}.  This split
+		came about since {\em PVM} was for the initial port
+		and the {\em SHMEM} addition was made in the most time
+		critical operations for {\em ParFlow}.
+
+		Because the {\em SHMEM} operations must access memory
+		addresses that are valid on the local as well as the
+		remote node, the use of {\em SHMEM} was difficult to
+		implement in an efficient manor.  Our solution was to
+		allocate a large pool of memory to be used by the
+		\Ref{amps_TAlloc} and \Ref{amps_CTAlloc} operations.
+		Since all nodes allocate this large using
+		{\bf shmalloc} we are guaranteed that it is at the
+		same address on all machines.  We can then freely use
+		{\bf shmem\_put} to write to the remote location.
+		This has enabled us to achieve very good performance.
+
+		The problem with this method is that the shared memory
+		region must be pre-allocated.  The size of this
+		regions is controlled using the the
+		\Ref{AMPS_SHMEM_SIZE} environment variable.  This
+		variable is the total number of bytes that can be used
+		by the {\em AMPS} memory allocation routines during
+		the course of your program.  By default {\em ParFlow}
+		uses a size of 43200000 bytes.
+
+		Currently the \Ref{amps_TFree} routine does not
+		return the memory allocated back to a free pool.  Once
+		memory is allocated it can NOT be returned for later
+		use.  We can add a heap algorithm to the shared memory
+		pool but it was not needed for {\em ParFlow} so we
+		delayed the implementation.  Hopefully later versions
+		of the {\em CRAY} architecture will not have some of
+		the current addressing restrictions so we won't have
+		to deal with this.
+		*/
+		
+		/** @name SGI IRIX
+
+		The port the SGI's IRIX operating system is based on
+		their IRIX IPC API.  The shared memory mechanism is
+		done using memory mapped files.  {\em AMPS} creates
+		the shared files in the directory specified by the
+		\Ref{AMPS_SHMEM_FILEDIR} environment variable.  You
+		should set this to point to a directory which has
+		enough space to allocate a file of size
+		\Ref{AMPS_SHMEM_SIZE} bytes.  \Ref{AMPS_SHMEM_SIZE}
+		controls the total amount of memory that can be
+		allocated using the {\em AMPS} memory allocation
+		functions.  It is important to not that IRIX will
+		check to make sure that the directory has sufficient
+		space for the file and {\em AMPS} will fail if it does
+		not.  The file will NOT be allocated all at once
+		(i.e. it will grow each time you allocate more space)
+		but IRIX checks when the file is created to see if
+		there is enough space to potentially allocate a file
+		of size \Ref{AMPS_SHMEM_SIZE}.  This really makes no
+		sense to me since the space could be chewed up by
+		other applications between the initialization step and
+		when the file actually gets to be that big; I thus
+		don't really see the point of doing the check.
+
+		By default {\em ParFlow} sets \Ref{AMPS_SHMEM_FILEDIR}
+		to {\bf /usr/tmp} and \Ref{AMPS_SHMEM_SIZE} to
+		100000000.
+		*/
+
+		/** @name SGI IRIX MT
+
+		This port is very similar to the SGI IRIX port except
+		it uses the {\bf sproc} call rather than {\bf fork}
+		to create the multiple ``threads of control''.  This
+		is not really a multi-threaded version in a technical
+		sense but I will refer to it in that way since it is
+		close.
+
+		So far this experiment has not been very successful.
+		The reason is the time spent in a lock around the
+		Standard C Library routines.  Since the C library was
+		not constructed to be thread safe a lock which creates
+		a bottle-neck.  During the timing tests I found that
+		the problem setup (where most of the Standard C
+		Library calls are made) was taking longer than the
+		{\bf fork} version but once things were up and
+		running there was some small improvement.  I am
+		currently looking into ways to improve this port (at a
+		very low priority).
+
+		*/
+
+		/** @name CE/RK
+
+		{\large Important Note:}
+		The {\em CE/RK} port is no longer supported.
+
+		The {\em Cosmic Environment/Reactive Kernel (CE/RK)}
+		port has a minor problem in that the node executables
+		need to be in the current working directory.  The
+		{\em ParFlow} run script will create a soft-link to fix
+		this problem.  You also must do the \Ref{getmc}
+		process from the directory that you want to run in.
+
+		Output from nodes under {\em CE/RK} is done by doing
+		some complicated stuff with the tty device.  So
+		attempting to redirect standard output is not very
+		successful.
+
+		*/
+
+		/** @name PVM
+		There are no special features.
+
+		*/
+
+		/** @name Chameleon
+
+		{\large Important Note:} This version is no longer supported.
+
+		On the {\em IBM-SP1}, {\em AMPS} distributed files can
+		actually be distributed.  This feature was never fully
+		fleshed out and since we have not really run on this
+		machine much it probably doesn't work all that great.
+
+		Under workstations a hack was needed to get the
+		current working directory to work with the
+		auto-mounter.  The {\em Chameleon} process gets the
+		``real'' mount point not the auto-mounter ``mount''
+		point.  This is fixed in later implementations of the
+		auto-mounter (i.e. {\em Solaris 2.x}).  The
+		{\bf CHAMELEON\_CWD} is environment variable is used
+		to set this explicitly.  You should set this before
+		executing an {\em AMPS} program.
+		
+		*/
+
+
+	//@}
+//@}

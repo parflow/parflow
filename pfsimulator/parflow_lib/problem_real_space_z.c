@@ -128,21 +128,35 @@ void realSpaceZ(ProblemData *problem_data, Vector *rsz)
       int *breaking_out_PV_visiting = 0;
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, l, nx, ny, 1,
       {
-        //we need one index of level k which is inside the domain
+        //we need one index of level l which is inside the domain
         ips = SubvectorEltIndex(rsz_sub, i, j, k);
 
         breaking_out_PV_visiting = PV_visiting;
+	// Can't just do a break since GrGeom loops are multiple levels deep.
         goto  breakout;
       });
 
 breakout:;
+
+      /* 
+       * If we broke out of GrGeomInLoop we found point in 
+       * domain on this rank.   If not then nothing 
+       * was in domain.
+       */
+
+      // Free temporary space allocated in GrGeomInLoop if needed since we did a goto.
       if (breaking_out_PV_visiting)
       {
         tfree(breaking_out_PV_visiting - 1);
       }
-      z += 0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
-      zz[k - iz] = z;
-      z += 0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
+
+      // GrGeomInLoop didnt' find any points in domain
+      if (k - iz < nz)
+      {
+        z += 0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
+        zz[k - iz] = z;
+        z += 0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
+      }
     }
 
     /* Send partial sum to rank above current rank */

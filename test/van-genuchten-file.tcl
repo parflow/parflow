@@ -208,12 +208,13 @@ pfset Geom.domain.RelPerm.N.Filename       van-genuchten-n.pfb
 pfset Phase.Saturation.Type            VanGenuchten
 pfset Phase.Saturation.GeomNames       domain
 
-pfset Geom.domain.Saturation.Alpha     0.005
-pfset Geom.domain.Saturation.N         2.0
-pfset Geom.domain.Saturation.SRes      0.2
-pfset Geom.domain.Saturation.SSat      0.99
+# Test input data matches this problem
+# pfset Geom.domain.Saturation.Alpha     0.005
+# pfset Geom.domain.Saturation.N         2.0
+# pfset Geom.domain.Saturation.SRes      0.2
+# pfset Geom.domain.Saturation.SSat      0.99
 
-pfset Geom.domain.Saturation.VanGenuchten.File        1 
+pfset Phase.Saturation.VanGenuchten.File              1 
 pfset Geom.domain.Saturation.Alpha.Filename           van-genuchten-alpha.pfb
 pfset Geom.domain.Saturation.N.Filename               van-genuchten-n.pfb
 pfset Geom.domain.Saturation.SRes.Filename            van-genuchten-sr.pfb 

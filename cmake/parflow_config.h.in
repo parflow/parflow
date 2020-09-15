@@ -1,3 +1,6 @@
+#ifndef PARFLOW_CONFIG_H
+#define PARFLOW_CONFIG_H
+
 /*
  * Parflow configure file.
  */
@@ -5,7 +8,6 @@
 /* Use PARFLOW_ versions; other names are deprecated */
 /* TODO should get rid of non prefixed versions of these flags; CPP
    symbols should be in PARFLOW namespace.  Should make naming consistent as well */
-
 
 #cmakedefine PARFLOW_AMPS_LAYER
 #cmakedefine AMPS
@@ -62,6 +64,18 @@
 
 #cmakedefine PARFLOW_HAVE_ETRACE
 
+#cmakedefine PARFLOW_HAVE_CUDA
 
+/* PARFLOW_HAVE_RMM is not defined here because because it is only set 
+   for the compilation of parflow_exe, parflow_lib, and kinsol sources. 
+   RMM must be initialized before it is used, so, for example, 
+   the amps tests would fail if used across all compiles.              */
 
+#cmakedefine PARFLOW_HAVE_OMP
 
+#define PARFLOW_BACKEND_NONE 0
+#define PARFLOW_BACKEND_CUDA 1
+#define PARFLOW_BACKEND_OMP 2
+#define PARFLOW_ACC_BACKEND @PARFLOW_ACC_BACKEND@
+
+#endif // PARFLOW_CONFIG_H

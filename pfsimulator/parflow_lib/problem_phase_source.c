@@ -81,7 +81,7 @@ void         PhaseSource(
   int nx_p, ny_p, nz_p;
   int nx_ps, ny_ps, nz_ps;
 
-  int is, i, j, k, ip, ips;
+  int is, i, j, k;
 
   /* Locals associated with wells */
   int well;
@@ -90,7 +90,6 @@ void         PhaseSource(
 
 // SGS FIXME why is this needed?
 #undef max
-  double weight = -FLT_MAX;
   double area_x, area_y, area_z, area_sum;
   double avg_x, avg_y, avg_z;
   double dx, dy, dz;
@@ -143,7 +142,7 @@ void         PhaseSource(
           data = SubvectorData(ps_sub);
           GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
           {
-            ips = SubvectorEltIndex(ps_sub, i, j, k);
+            int ips = SubvectorEltIndex(ps_sub, i, j, k);
 
             data[ips] = value;
           });
@@ -156,7 +155,6 @@ void         PhaseSource(
     case 1:
     {
       GrGeomSolid  *gr_domain;
-      double x, y, z;
       int function_type;
 
       dummy1 = (Type1*)(public_xtra->data[phase]);
@@ -189,8 +187,7 @@ void         PhaseSource(
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              x = RealSpaceX(i, SubgridRX(subgrid));
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
               /* nonlinear case -div(p grad p) = f */
               data[ips] = -1.0;
             });
@@ -201,7 +198,7 @@ void         PhaseSource(
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
               /* nonlinear case -div(p grad p) = f */
               data[ips] = -3.0;
             });
@@ -212,9 +209,9 @@ void         PhaseSource(
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              x = RealSpaceX(i, SubgridRX(subgrid));
-              y = RealSpaceY(j, SubgridRY(subgrid));
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              double x = RealSpaceX(i, SubgridRX(subgrid));
+              double y = RealSpaceY(j, SubgridRY(subgrid));
               /* nonlinear case -div(p grad p) = f */
               data[ips] = -pow((3 * x * x * y * y + y * cos(x * y)), 2) - pow((2 * x * x * x * y + x * cos(x * y)), 2) - (x * x * x * y * y + sin(x * y) + 1) * (6 * x * y * y + 2 * x * x * x - (x * x + y * y) * sin(x * y));
             });
@@ -225,10 +222,9 @@ void         PhaseSource(
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              x = RealSpaceX(i, SubgridRX(subgrid));
-              y = RealSpaceY(j, SubgridRY(subgrid));
-              z = RealSpaceZ(k, SubgridRZ(subgrid));
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              double x = RealSpaceX(i, SubgridRX(subgrid));
+              double y = RealSpaceY(j, SubgridRY(subgrid));
 
               data[ips] = -pow(3 * x * x * pow(y, 4) + 2 * x + y * cos(x * y) * cos(y), 2) - pow(4 * x * x * x * y * y * y + x * cos(x * y) * cos(y) - sin(x * y) * sin(y), 2) - (x * x * x * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1) * (6 * x * pow(y, 4) + 2 - (x * x + y * y + 1) * sin(x * y) * cos(y) + 12 * x * x * x * y * y - 2 * x * cos(x * y) * sin(y));
             });
@@ -239,10 +235,10 @@ void         PhaseSource(
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              x = RealSpaceX(i, SubgridRX(subgrid));
-              y = RealSpaceY(j, SubgridRY(subgrid));
-              z = RealSpaceZ(k, SubgridRZ(subgrid));
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              double x = RealSpaceX(i, SubgridRX(subgrid));
+              double y = RealSpaceY(j, SubgridRY(subgrid));
+              double z = RealSpaceZ(k, SubgridRZ(subgrid));
 
               data[ips] = x * y * z - time * time * (y * y * z * z + x * x * z * z + x * x * y * y);
             });
@@ -254,10 +250,10 @@ void         PhaseSource(
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              x = RealSpaceX(i, SubgridRX(subgrid));
-              y = RealSpaceY(j, SubgridRY(subgrid));
-              z = RealSpaceZ(k, SubgridRZ(subgrid));
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              double x = RealSpaceX(i, SubgridRX(subgrid));
+              double y = RealSpaceY(j, SubgridRY(subgrid));
+              double z = RealSpaceZ(k, SubgridRZ(subgrid));
 
               data[ips] = x * y * z
                           - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
@@ -354,32 +350,34 @@ void         PhaseSource(
 
           data = SubvectorElt(ps_sub, ix, iy, iz);
 
-          ip = 0;
-          ips = 0;
-          BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                    ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                    ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
-          {
-            if (WellDataPhysicalMethod(well_data_physical)
-                == FLUX_STANDARD)
-            {
-              weight = 1.0;
-            }
-            else if (WellDataPhysicalMethod(well_data_physical)
-                     == FLUX_WEIGHTED)
-            {
-              weight = (px[ip] / avg_x) * (area_x / area_sum)
-                       + (py[ip] / avg_y) * (area_y / area_sum)
-                       + (pz[ip] / avg_z) * (area_z / area_sum);
-            }
-            else if (WellDataPhysicalMethod(well_data_physical)
-                     == FLUX_PATTERNED)
-            {
-              weight = 0.0;
-            }
-            data[ips] += weight * flux;
-          });
+          int ip = 0;
+          int ips = 0;          
 
+          if (WellDataPhysicalMethod(well_data_physical)
+              == FLUX_WEIGHTED)
+          {
+            BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
+                      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+            {
+              double weight = (px[ip] / avg_x) * (area_x / area_sum)
+                      + (py[ip] / avg_y) * (area_y / area_sum)
+                      + (pz[ip] / avg_z) * (area_z / area_sum);
+              data[ips] += weight * flux;
+            });
+          }else{
+            double weight = -FLT_MAX;            
+            if (WellDataPhysicalMethod(well_data_physical)
+                == FLUX_STANDARD)weight = 1.0;
+            else if (WellDataPhysicalMethod(well_data_physical)
+                     == FLUX_PATTERNED)weight = 0.0;
+            BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
+                      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+            {
+              data[ips] += weight * flux;
+            });
+          }
           /* done with this temporay subgrid */
           FreeSubgrid(tmp_subgrid);
         }

@@ -547,6 +547,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   !BH: replaces values from drv_readvegpf
   call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
   patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg)
+
   !=== Actual time loop
   !    (loop over CLM tile space, call 1D CLM at each point)
   do t = 1, drv%nch     
@@ -581,7 +582,16 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
 
      end if ! write_CLM_binary
   end if ! mod of istep and dump_interval
-
+  
+  if (slope_accounting_CLM==0) then
+  	WHERE (slope_x_pf > 0)
+  		slope_x_pf = 0
+  		slope_y_pf = 0
+  	ELSEWHERE 
+  		slope_x_pf = 0
+  		slope_x_pf = 0
+  	END WHERE
+  end if
 
   !=== Copy values from 2D CLM arrays to PF arrays for printing from PF (as Silo)
   do t=1,drv%nch
