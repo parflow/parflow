@@ -180,10 +180,6 @@ def update_run_from_args(run, args):
     if args.r and run.Process.Topology.R != args.r:
         run.Process.Topology.R = args.r
 
-    if args.writeYAML:
-        full_path, no_extension = run.write(file_format='yaml')
-        print(f'YAML output: "{full_path}"')
-
 # -----------------------------------------------------------------------------
 
 class Run(BaseRun):
@@ -283,8 +279,13 @@ class Run(BaseRun):
         print(f'# ParFlow database')
         print(f'#  - {os.path.basename(file_name)}')
         print(f'# {"="*78}')
-        print()
 
+        # Only write YAML in run()
+        if self._process_args_.writeYAML:
+            full_path, no_extension = self.write(file_format='yaml')
+            print(f'YAML output: "{full_path}"')
+
+        print()
         error_count = 0
         if not (skip_validation or self._process_args_.skipValidation):
             error_count += self.validate()
