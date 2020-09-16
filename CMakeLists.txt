@@ -554,7 +554,7 @@ if (PARFLOW_ENABLE_PYTHON)
       COMMAND
         "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install --upgrade pip wheel setuptools
       COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements.txt"
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_all.txt"
       COMMAND
         "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/pf-keys/requirements.txt"
       COMMAND
