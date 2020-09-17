@@ -1,0 +1,1585 @@
+# solver.yaml
+# Definitions of solver components, time stepping, and other components of ParFlow
+# Includes Solver and all subkeys (includes Silo and CLM keys)
+
+
+# -----------------------------------------------------------------------------
+# SolverItems
+# -----------------------------------------------------------------------------
+
+Solver:
+  __doc__: ''
+  __rst__:
+    skip:
+
+  __value__:
+    help: >
+      [Type: string] ParFlow can operate using a number of different solvers. Two of these solvers, IMPES
+      (running in single-phase, fully-saturated mode, not multiphase) and RICHARDS (running in variably-saturated mode, not
+      multiphase, with the options of land surface processes and coupled overland flow) are detailed below. This is
+      a brief summary of solver settings used to simulate under three sets of conditions, fully-saturated, variably saturated
+      and variably-saturated with overland flow. To simulate fully saturated, steady-state conditions set
+      the solver to IMPES. This is also the default solver in ParFlow, so if no solver is specified, the code solves using IMPES.
+      To simulate variably-saturated, transient conditions, using Richards’ equation, variably/fully saturated,
+      transient with compressible storage set the solver to RICHARDS. This is also the
+      solver used to simulate surface flow or coupled surface-subsurface flow.
+    default: Impes
+    domains:
+      EnumDomain:
+        enum_list:
+          - Impes
+          - Richards
+
+  AbsTol:
+    help: >
+      [Type: double] This value gives the absolute tolerance for the linear solve algorithm.
+    default: 1e-9
+    domains:
+      DoubleValue:
+        min_value: 0.0
+
+  AdvectOrder:
+    help: >
+      [Type: int] This key controls the order of the explicit method used in advancing the concentrations. This value can be either
+      1 for a standard upwind first order or 2 for a second order Godunov method.
+    default: 2
+    domains:
+      IntValue:
+        min_value: 1
+        max_value: 2
+
+  # missing from manual
+  BetaFluid:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  BetaFracture:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  BetaPerm:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  BetaPore:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  BoxSizePowerOf2:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  CFL:
+    help: >
+      [Type: double] This key gives the value of the weight put on the computed CFL limit before computing a global timestep value.
+      Values greater than 1 are not suggested and in fact because this is an approximation, values slightly less than 1 can
+      also produce instabilities.
+    default: 0.7
+    domains:
+      DoubleValue:
+
+  # CLM settings
+  CLM:
+    __doc__: >
+      Setting CLM parameters
+
+    BinaryOutDir:
+      help: >
+        [Type: boolean/string] This key specifies whether the CLM writes each set of two dimensional binary output files to a corresponding
+        directory. These directories my be created before ParFlow is run (using the tcl script, for example). Choices for
+        this key include True and False. Note that CLM must be compiled and linked at runtime for this option to be active.
+      default: True
+      domains:
+        BoolDomain:
+        RequiresModule: CLM
+
+    CLMDumpInterval:
+      help: >
+        [Type: int] This key specifies how often output from the CLM is written. This key is in integer multipliers of the CLM timestep.
+        Note that CLM must be compiled and linked at runtime for this option to be active.
+      default: 1
+      domains:
+        IntValue:
+          min_value: 1
+        RequiresModule: CLM
+
+    CLMFileDir:
+      help: >
+        [Type: string] This key specifies what directory all output from the CLM is written to. This key may be set to "./" or "" to
+        write output to the ParFlow run directory. This directory must be created before ParFlow is run. Note that CLM
+        must be compiled and linked at runtime for this option to be active.
+      domains:
+        AnyString:
+        RequiresModule: CLM
+
+    DailyRST:
+      help: >
+        [Type: boolean/string] Controls whether CLM writes daily restart files (default) or at every time step when set to False; outputs are
+        numbered according to the istep from ParFlow. If ReuseCount=n, with n greater than 1, the output will be written
+        every n steps (i.e. it still writes hourly restart files if your time step is 0.5 or 0.25, etc...). Fully compatible with
+        WriteLastRST=False so that each daily output is overwritten to time 00000 in restart file name.00000.p where p
+        is the processor number.
+      default: True
+      domains:
+        BoolDomain:
+        RequiresModule: CLM
+
+    EvapBeta:
+      help: >
+        [Type: string] This key specifies the form of the bare soil evaporation parameter in CLM. The valid types for this key are
+        None, Linear, Cosine.
+      default: Linear
+      domains:
+        EnumDomain:
+          enum_list:
+            - None
+            - Linear
+            - Cosine
+        RequiresModule: CLM
+
+    FieldCapacity:
+      help: >
+        [Type: double] This key specifies the field capacity for the beta-t function in CLM. Note that the units for this function
+        are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that CLM must
+        be compiled and linked at runtime for this option to be active.
+      default: 1.0
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 1.0
+        RequiresModule: CLM
+
+    ForceVegetation:
+      help: >
+        [Type: boolean/string] This key specifies whether vegetation should be forced in CLM. Currently this option only works for 1D and 3D
+        forcings, as specified by the key Solver.CLM.MetForcing. Choices for this key include True and False. Forced
+        vegetation variables are :
+        LAI: Leaf Area Index [-]
+        SAI: Stem Area Index [-]
+        Z0M: Aerodynamic roughness length [m]
+        DISPLA: Displacement height [m]
+        In the case of 1D meteorological forcings, CLM requires four files for vegetation time series and one vegetation map.
+        The four files should be named respectively lai.dat, sai.dat, z0m.dat, displa.dat. They are ASCII files and
+        contain 18 time-series columns (one per IGBP vegetation class, and each timestep per row). The vegetation map
+        should be a properly distributed 2D ParFlow binary file (.pfb) which contains vegetation indices (from 1 to 18).
+        The vegetation map filename is veg_map.pfb. ParFlow uses the vegetation map to pass to CLM a 2D map for each
+        vegetation variable at each time step. In the case of 3D meteorological forcings, ParFlow expects four distincts
+        properly distributed ParFlow binary file (.pfb), the third dimension being the timesteps. The files should be named
+        LAI.pfb, SAI.pfb, Z0M.pfb, DISPLA.pfb. No vegetation map is needed in this case.
+      default: False
+      domains:
+        BoolDomain:
+        RequiresModule: CLM
+
+    FstepStart:
+      help: >
+        [Type: int]
+      domains:
+        DoubleValue:
+        RequiresModule: CLM
+
+    IrrigationCycle:
+      help: >
+        [Type: string] This key specifies the cycle of the irrigation in CLM. The valid types for this key are Constant, Deficit. Note
+        only Constant is currently implemented. Constant cycle applies irrigation each day from IrrigationStartTime to
+        IrrigationStopTime in GMT.
+      default: Constant
+      domains:
+        EnumDomain:
+          enum_list:
+            - Constant
+            - Deficit
+        RequiresModule: CLM
+
+    IrrigationRate:
+      help: >
+        [Type: double] This key specifies the rate of the irrigation in CLM in [mm/s].
+      domains:
+        DoubleValue:
+          min_value: 0.0
+        RequiresModule: CLM
+
+    IrrigationStartTime:
+      help: >
+        [Type: double] This key specifies the start time of the irrigation in CLM GMT.
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 2400.0
+        RequiresModule: CLM
+
+    IrrigationStopTime:
+      help: >
+        [Type: double] This key specifies the stop time of the irrigation in CLM GMT.
+      domains:
+        DoubleValue:
+          min_value: 0.0
+          max_value: 2400.0
+        RequiresModule: CLM
+
+    IrrigationThreshold:
+      help: >
+        [Type: double] This key specifies the threshold value for the irrigation in CLM [-].
+      default: 0.5
+      domains:
+        DoubleValue:
+          min_value: 0.0
+        RequiresModule: CLM
+
+    # missing from manual
+    IrrigationThresholdType:
+      help: >
+        [Type: string]
+      domains:
+        DoubleValue:
+        RequiresModule: CLM
+
+    IrrigationType:
+      help: >
+        [Type: string] This key specifies the form of the irrigation in CLM. The valid types for this key are none, Spray, Drip, Instant.
+      default: none
+      domains:
+        EnumDomain:
+          enum_list:
+            - none
+            - Spray
+            - Drip
+            - Instant
+        RequiresModule: CLM
+
+    IstepStart:
+      help: >
+        [Type: int] This key specifies the value of the counter, istep in CLM. This key primarily determines the start of the output
+        counter for CLM.It is used to restart a run by setting the key to the ending step of the previous run plus one. Note
+        that CLM must be compiled and linked at runtime for this option to be active.
+      default: 1
+      domains:
+        IntValue: # may need to update this
+        RequiresModule: CLM
+
+    MetFileNT:
+      help: >
+        [Type: int] This key specifies the number of timesteps per file for 3D forcing data.
+      domains:
+        IntValue:
+        RequiresModule: CLM
+
+    MetFileName:
+      help: >
+        [Type: string] This key specifies defines the file name for 1D, 2D or 3D forcing data. 1D meteorological forcing files are text
+        files with single columns for each variable and each timestep per row, while 2D and 3D forcing files are distributed
+        ParFlow binary files, one for each variable and timestep (2D) or one for each variable and multiple timesteps (3D).
+        Behavior of this key is different for 1D and 2D and 3D cases, as sepcified by the Solver.CLM.MetForcing key
+        above. For 1D cases, it is the FULL FILE NAME. Note that in this configuration, this forcing file is not distributed,
+        the user does not provide copies such as narr.1hr.txt.0, narr.1hr.txt.1 for each processor. ParFlow only needs
+        the single original file (e.g. narr.1hr.txt). For 2D cases, this key is the BASE FILE NAME for the 2D forcing files,
+        currently set to NLDAS, with individual files determined as follows NLDAS.<variable>.<time step>.pfb. Where the
+        <variable> is the forcing variable and <timestep> is the integer file counter corresponding to istep above. Forcing
+        is needed for following variables:
+        DSWR: Downward Visible or Short-Wave radiation [W/m2].
+        DLWR: Downward Infa-Red or Long-Wave radiation [W/m2]
+        APCP: Precipitation rate [mm/s]
+        Temp: Air temperature [K]
+        UGRD: West-to-East or U-component of wind [m/s]
+        VGRD: South-to-North or V-component of wind [m/s]
+        Press: Atmospheric Pressure [pa]
+        SPFH: Water-vapor specific humidity [kg/kg]
+        Note that CLM must be compiled and linked at runtime for this option to be active.
+      domains:
+        AnyString:
+        RequiresModule: CLM
+#        ValidFile:
+#          path_prefix_source: /Solver/CLM/MetFilePath
+
+    MetFilePath:
+      help: >
+        [Type: string] This key specifies defines the location of 1D, 2D or 3D forcing data. For 1D cases, this is the path to a single
+        forcing file (e.g. narr.1hr.txt). For 2D and 3D cases, this is the path to the directory containing all forcing files.
+        Note that CLM must be compiled and linked at runtime for this option to be active.
+      domains:
+        AnyString:
+        RequiresModule: CLM
+
+    # missing from the manual
+    MetFileSubdir:
+      help: >
+        [Type: int]
+      domains:
+        DoubleValue:
+        RequiresModule: CLM
+
+    MetForcing:
+      help: >
+        [Type: string] This key specifies defines whether 1D (uniform over the domain), 2D (spatially distributed) or 3D (spatially
+        distributed with multiple timesteps per .pfb forcing file) forcing data is used. Choices for this key are 1D, 2D and
+        3D. This key has no default so the user must set it to 1D, 2D or 3D. Failure to set this key will cause CLM to still be
+        run but with unpredictable values causing CLM to eventually crash. 1D meteorological forcing files are text files with
+        single columns for each variable and each timestep per row, while 2D forcing files are distributed ParFlow binary
+        files, one for each variable and timestep. File names are specified in the Solver.CLM.MetFileName variable below.
+        Note that CLM must be compiled and linked at runtime for this option to be active.
+      domains:
+        EnumDomain:
+          enum_list:
+            - 1D
+            - 2D
+            - 3D
+        RequiresModule: CLM
+
+    Print1dOut:
+      help: >
+        [Type: boolean/string] This key specifies whether the CLM one dimensional (averaged over each processor) output file is written or not.
+        Choices for this key include True and False. Note that CLM must be compiled and linked at runtime for this option
+        to be active.
+      default: False
+      domains:
+        BoolDomain:
+        RequiresModule: CLM
+
+    ResSat:
+      help: >
+        [Type: double] This key specifies the residual saturation for the saturation function in CLM. Note that CLM must be
+        compiled and linked at runtime for this option to be active.
+      default: 0.1
+      domains:
+        DoubleValue:
+          min_value: 0.0
+        RequiresModule: CLM
+
+    ReuseCount:
+      help: >
+        [Type: int] How many times to reuse a CLM atmospheric forcing file input. For example timestep=1, reuse =1 is normal
+        behavior but reuse=2 and timestep=0.5 subdivides the time step using the same CLM input for both halves instead
+        of needing two files. This is particually useful for large, distributed runs when the user wants to run ParFlow at
+        a smaller timestep than the CLM forcing. Forcing files will be re-used and total fluxes adjusted accordingly without
+        needing duplicate files.
+      default: 1
+      domains:
+        IntValue:
+          min_value: 0
+        RequiresModule: CLM
+
+    RootZoneNZ:
+      help: >
+        [Type: int] This key sets the number of soil layers the ParFlow expects from CLM. It will allocate and format all the arrays
+        for passing variables to and from CLM accordingly. This value now sets the CLM number as well so recompilation is
+        not required anymore. Most likely the key Solver.CLM.SoiLayer will also need to be changed.
+      default: 10
+      domains:
+        IntValue:
+          min_value: 1 # can we set the max value to whatever the user sets to NZ?
+        RequiresModule: CLM
+
+    # Not in grep or manual, but in a script somewhere (per LT)
+    RZWaterStress:
+      help: >
+        [Type: ???]
+      domains:
+        RequiresModule: CLM
+
+    SingleFile:
+      help: >
+        [Type: boolean/string] Controls whether ParFlow writes all CLM output variables as a single file per time step. When "True", this
+        combines the output of all the CLM output variables into a special multi-layer PFB with the file extension ".C.pfb".
+        The first 13 layers correspond to the 2-D CLM outputs and the remaining layers are the soil temperatures in each
+        layer. For example, a model with 4 soil layers will create a SingleFile CLM output with 17 layers at each time step.
+        The file pseudo code is given below in § 6.4 and the variables and units are as specified in the multiple PFB and SILO
+        formats as above.
+      default: False
+      domains:
+        BoolDomain:
+        RequiresModule: CLM
+
+    SoiLayer:
+      help: >
+        [Type: int] This key sets the soil layer, and thus the soil depth, that CLM uses for the seasonal temperature adjustment for
+        all leaf and stem area indices.
+      default: 7
+      domains:
+        IntValue:
+          min_value: 1
+        RequiresModule: CLM
+
+    VegWaterStress:
+      help: >
+        [Type: string] This key specifies the form of the plant water stress function parameter in CLM. The valid types for this key
+        are None, Saturation, Pressure.
+      default: Saturation
+      domains:
+        EnumDomain:
+          enum_list:
+            - None
+            - Saturation
+            - Pressure
+        RequiresModule: CLM
+
+    WiltingPoint:
+      help: >
+        [Type: double] This key specifies the wilting point for the bets-t function in CLM. Note that the units for this function
+        are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that CLM must
+        be compiled and linked at runtime for this option to be active.
+      default: 0.1
+      domains:
+        DoubleValue:
+          min_value: 0.0
+        RequiresModule: CLM
+
+    WriteLastRST:
+      help: >
+        [Type: boolean/string] Controls whether CLM restart files are sequentially written or whether a single file restart file name.00000.p
+        is overwritten each time the restart file is output, where p is the processor number. If "True" only one file is
+        written/overwritten and if "False" outputs are written more frequently. Compatible with DailyRST and ReuseCount;
+        for the latter, outputs are written every n steps where n is the value of ReuseCount.
+      default: False
+      domains:
+        BoolDomain:
+        RequiresModule: CLM
+
+    WriteLogs:
+      help: >
+        [Type: boolean/string] When False, this disables writing of the CLM output log files for each processor. For example, in the clm.tcl test
+        case, if this flag is added False, washita.output.txt.p and washita.para.out.dat.p (were p is the processor #) are not
+        created, assuming washita is the run name.
+      default: True
+      domains:
+        BoolDomain:
+        RequiresModule: CLM
+
+  # -----------------------------------------------------------------------------
+  # Other Solver Settings
+  # -----------------------------------------------------------------------------
+
+  # missing from manual
+  CoarseSolve:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  CompCompress:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  DiagScale:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  DiagSolver:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  Drop:
+    help: >
+      [Type: double] This key gives a clipping value for data written to PFSB files. Data values greater than the negative of this value
+      and less than the value itself are treated as zero and not written to PFSB files.
+    default: 1e-8
+    domains:
+      DoubleValue:
+        min_value: 0
+
+  # missing from manual
+  DropTol:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  EvapTrans:
+    __doc__: >
+      Setting EvapTrans files
+
+    # missing from manual
+    FileLooping:
+      help: >
+        [Type: boolean/string]
+      domains:
+        BoolDomain:
+
+    FileName:
+      help: >
+        [Type: string] This key specifies specifies filename for the distributed .pfb file that contains the flux values for Richards’ equation.
+        This file has [T-1] units. For the steady-state option (Solver.EvapTransFile=True) this key should be the complete
+        filename. For the transient option (Solver.EvapTransFileTransient=True then the filename is a header and ParFlow
+        will load one file per timestep, with the form filename.00000.pfb.
+      domains:
+        AnyString:
+
+  EvapTransFile:
+    help: >
+      [Type: boolean/string] This key specifies specifies that the Flux terms for Richards’ equation are read in from a .pfb file. This file has
+      [T-1] units. Note this key is for a steady-state flux and should not be used in conjunction with the transient key
+      below.
+    default: False
+    domains:
+      BoolDomain:
+
+  EvapTransFileTransient:
+    help: >
+      [Type: boolean/string] This key specifies specifies that the Flux terms for Richards’ equation are read in from a series of flux .pfb file.
+      Each file has [T-1] units. Note this key should not be used with the key above, only one of these keys should be set
+      to True at a time, not both.
+    default: False
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  Jacobian:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  LSM:
+    help: >
+      [Type: string] This key specifies whether a land surface model, such as CLM, will be called each solver timestep. Choices for this
+      key include none and CLM. Note that CLM must be compiled and linked at runtime for this option to be active.
+    default: none
+    domains:
+      EnumDomain:
+        enum_list:
+          - none
+          - CLM
+
+  MaxConvergenceFailures:
+    help: >
+      [Type: int] This key gives the maximum number of convergence failures allowed. Each convergence failure cuts the timestep
+      in half and the solver tries to advance the solution with the reduced timestep. The default value is 3.
+      Note that setting this value to a value greater than 9 may result in errors in how time cycles are calculated.
+      Time is discretized in terms of the base time unit and if the solver begins to take very small timesteps
+      smallerthanbasetimeunit1000 the values based on time cycles will be change at slightly incorrect times. If the
+      problem is failing converge so poorly that a large number of restarts are required, consider setting the timestep to a
+      smaller value.
+    default: 3
+    domains:
+      IntValue:
+        min_value: 1
+
+  MaxIter:
+    help: >
+      [Type: int] This key gives the maximum number of iterations that will be allowed for time-stepping. This is to prevent a
+      run-away simulation.
+    default: 1000000
+    domains:
+      IntValue:
+
+  # missing from manual
+  MaxLevels:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  MaxMinNX:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  MaxMinNY:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  MaxMinNZ:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  OverlandDiffusive:
+    __doc__: >
+      Setting epsilon value for the diffusive overland flow formulation.
+
+    Epsilon:
+      help: >
+        [Type: double] This key provides a minimum value for the Sf used in the OverlandDiffusive boundary condition.
+      default: 0.00001
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
+  OverlandKinematic:
+    __doc__: >
+      Setting epsilon value for the diffusive kinematic flow formulation.
+
+    Epsilon:
+      help: >
+        [Type: double] This key provides a minimum value for the Sf used in the OverlandKinematic boundary condition.
+      default: 0.00001
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
+  # missing from manual
+  PolyDegree:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  PolyPC:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  PrintCLM:
+    help: >
+      [Type: boolean/string] This key specifies whether the CLM writes two dimensional binary output files to a PFB binary format. Note that
+      CLM must be compiled and linked at runtime for this option to be active. These files are all written according to the
+      standard format used for all ParFlow variables, using the runname, and istep. Variables are either two-dimensional
+      or over the number of CLM layers (default of ten).
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: CLM
+
+  PrintConcentration:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the concentration data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  PrintDZMultiplier:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  PrintEvapTrans:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  PrintEvapTransSum:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  PrintLSMSink:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the flux array passed from CLM to ParFlow. Printing occurs at each
+      DumpInterval time.
+    default: False
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  PrintMannings:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the flux array passed from CLM to ParFlow. Printing occurs at each
+      DumpInterval time.
+    default: False
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  PrintMask:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the flux array passed from CLM to ParFlow. Printing occurs at each
+      DumpInterval time.
+    default: False
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  PrintOverlandBCFlux:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the flux array passed from CLM to ParFlow. Printing occurs at each
+      DumpInterval time.
+    default: False
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  PrintOverlandSum:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the flux array passed from CLM to ParFlow. Printing occurs at each
+      DumpInterval time.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintPressure:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the pressure data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
+  PrintSaturation:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  PrintSlopes:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  PrintSpecificStorage:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
+  PrintSubsurf:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the subsurface data, Permeability and Porosity. The data is printed after
+      it is generated and before the main time stepping loop - only once during the run. The data is written as a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
+  # PrintSubsurfData is missing from the manual. Is this equivalent to PrintSubsurf?
+  PrintSubsurfData:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the subsurface data, Permeability and Porosity. The data is printed after
+      it is generated and before the main time stepping loop - only once during the run. The data is written as a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
+  # PrintTop is missing from the manual.
+  PrintTop:
+    help: >
+      [Type: boolean/string] ?
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintVelocities:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the x,y, and z velocity data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: False
+    domains:
+      BoolDomain:
+
+  PrintWells:
+    help: >
+      [Type: boolean/string] This key is used to turn on collection and printing of the well data. The data is collected at intervals given by
+      values in the timing information section. Printing occurs at the end of the run when all collected data is written.
+    default: True
+    domains:
+      BoolDomain:
+
+  # missing from manual - maybe only included as Linear.Preconditioner.PFMG.RAPType
+  RAPType:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  RelTol:
+    help: >
+      [Type: double] This value gives the relative tolerance for the linear solve algorithm.
+    default: 1.0
+    domains:
+      DoubleValue:
+
+  SadvectOrder:
+    help: >
+      [Type: int] This key controls the order of the explicit method used in advancing the concentrations. This value can be either
+      1 for a standard upwind first order or 2 for a second order Godunov method.
+    default: 2
+    domains:
+      IntValue:
+        min_value: 1
+        max_value: 2
+
+  # new key as of 9/3/2020
+  SlopeAccountingCLM:
+    help: >
+      [Type: boolean] This key specifies whether the CLM allows for the inclusion of slopes when determining
+      solar zenith angles. Note that CLM must be compiled and linked at runtime for this option to be active.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: CLM
+      AddedInVersion: '3.7.0'
+
+  # missing from manual
+  Smoother:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual, but is in grep and set in LW_var_dz example (as False)
+  Spinup:
+    help: >
+      [Type: boolean]
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  Symmetric:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  TerrainFollowingGrid:
+    __doc__: >
+      Assigning properties to TerrainFollowingGrid and TerrainFollowingGrid.SlopeUpwindFormulation
+    __value__:
+      help: >
+        [Type: boolean/string] This key specifies that a terrain-following coordinate transform is used for solver Richards. This key sets x and
+        y subsurface slopes to be the same as the Topographic slopes (a value of False sets these subsurface slopes to zero).
+        These slopes are used in the Darcy fluxes to add a density, gravity -dependent term. This key will not change the
+        output files (that is the output is still orthogonal) or the geometries (they will still follow the computational grid)–
+        these two things are both to do items. This key only changes solver Richards, not solver Impes.
+      default: False
+      domains:
+        BoolDomain:
+
+    SlopeUpwindFormulation:
+      help: >
+        [Type: string] This key specifies optional modifications to the terrain following grid formulation (Equation 5.8) . Choices for
+        this key are Original, Upwind, UpwindSine. Original is the original TFG formulation shown in Equation 5.8
+        in the manual. The Original option calculates the theta-x and theta-y for a cell face as the average of the two
+        adjacent cell slopes (i.e. assuming a cell centered slope calculation). The Upwind option uses the the theta-x and theta-y of
+        a cell directly without averaging (i.e. assuming a face centered slope calculation). The UpwindSine is the same as
+        the Upwind option but it also removes the Sine term from 5.8. Note the UpwindSine option is for experimental
+        purposes only and should not be used in standard simulations. Also note that the choice of upwind orOriginal
+        formulation should consistent with the choice of overland flow boundary condition if overland flow is being used. The
+        upwind and UpwindSine are consistent with OverlandDiffusive and OverlandKinematic while Original is
+        consistent with OverlandFlow.
+      default: Original
+      domains:
+        EnumDomain:
+          enum_list:
+            - Original
+            - Upwind
+            - UpwindSine
+
+  # missing from manual
+  TwoNorm:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  # missing from manual
+  Weight:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  WriteCLMBinary:
+    help: >
+      [Type: boolean/string] This key specifies whether the CLM writes two dimensional binary output files in a generic binary format. Note
+      that CLM must be compiled and linked at runtime for this option to be active.
+    default: True
+    domains:
+      BoolDomain:
+
+  # Solver.Linear.{} keys
+  Linear:
+    __doc__: >
+      Assigning properties to Solver.Linear
+
+    # Setting Linear.Solver
+    __value__:
+      help: >
+        [Type: string] This key specifies the linear solver used for solver IMPES. Choices for this key are MGSemi, PPCG, PCG,
+        and CGHS. The choice MGSemi is an algebraic mulitgrid linear solver (not a preconditioned conjugate gradient)
+        which may be less robust than PCG as described in [3]. The choice PPCG is a preconditioned conjugate gradient
+        solver. The choice PCG is a conjugate gradient solver with a multigrid preconditioner. The choice CGHS is a
+        conjugate gradient solver.
+      default: 'PCG'
+      domains:
+        EnumDomain:
+          enum_list:
+            - MGSemi
+            - PPCG
+            - PCG
+            - CGHS
+
+    KrylovDimension:
+      help: >
+        [Type: int] This key specifies the maximum number of vectors to be used in setting up the Krylov subspace in the GMRES
+        iterative solver. These vectors are of problem size and it should be noted that large increases in this parameter can
+        limit problem sizes. However, increasing this parameter can sometimes help nonlinear solver convergence.
+      default: 10
+      domains:
+        IntValue:
+          min_value: 1 # check
+
+    MaxRestarts:
+      help: >
+        [Type: int] This key specifies the number of restarts allowed to the GMRES solver. Restarts start the development of the
+        Krylov subspace over using the current iterate as the initial iterate for the next pass.
+      default: 0
+      domains:
+        IntValue:
+          min_value: 0
+
+    # missing from manual, but assigned in water_balance_x.tcl example
+    MaxRestart:
+      help: >
+        [Type: int] This key specifies the number of restarts allowed to the GMRES solver. Restarts start the development of the
+        Krylov subspace over using the current iterate as the initial iterate for the next pass.
+      default: 0
+      domains:
+        IntValue:
+          min_value: 0
+
+    Preconditioner:
+      __doc__: >
+        Setting properties for Solver.Linear.Preconditioner
+      __rst__:
+        skip:
+
+      __value__:
+        help: >
+          [Type: string] This key specifies which preconditioner to use. Currently, the three choices are NoPC, MGSemi, PFMG,
+          PFMGOctree and SMG. The choice NoPC specifies that no preconditioner should be used. The choice MGSemi
+          specifies a semi-coarsening multigrid algorithm which uses a point relaxation method. The choice SMG specifies a
+          semi-coarsening multigrid algorithm which uses plane relaxations. This method is more robust than MGSemi, but
+          generally requires more memory and compute time. The choice PFMGOctree can be more efficient for problems
+          with large numbers of inactive cells.
+        default: MGSemi
+        domains:
+          EnumDomain:
+            enum_list:
+              - NoPC
+              - MGSemi
+              - PFMG
+              - PFMGOctree
+              - SMG
+        handlers:
+          LPreMethodUpdater:
+            type: ChildrenHandler
+            class_name: PrecondMethodItem
+            location: ./Preconditioner
+
+      SymmetricMat:
+        help: >
+          [Type: string] This key specifies whether the preconditioning matrix is symmetric. Choices fo rthis key are Symmetric and
+          Nonsymmetric. The choice Symmetric specifies that the symmetric part of the Jacobian will be used as the preconditioning
+          matrix. The choice Nonsymmetric specifies that the full Jacobian will be used as the preconditioning
+          matrix. NOTE: ONLY Symmetric CAN BE USED IF MGSemi IS THE SPECIFIED PRECONDITIONER!
+        default: Symmetric
+        domains:
+          EnumDomain:
+            enum_list:
+              - Symmetric
+              - Nonsymmetric
+
+      # missing from manual
+      PCMatrixType:
+        help: >
+          [Type: string]
+        domains:
+          EnumDomain:
+            enum_list:
+              - FullJacobian
+              - PFSymmetric
+
+      # defining key for Solver.Linear.Preconditioner.{precond_method}... keys
+      .{precond_method}:
+        __class__: PrecondMethodItem
+        __doc__: >
+          Setting Solver.Linear.Preconditioner.{precond_method} keys
+
+        MaxIter:
+          help: >
+            [Type: int] This key specifies the maximum number of iterations to take in solving the preconditioner system with precond_
+            method solver.
+          default: 1
+          domains:
+            IntValue:
+              min_value: 1
+
+        # not in the manual - check to make sure that it is not the same as the Solver.MaxLevels listed above
+        MaxLevels:
+          help: >
+            [Type: int] Max Levels
+          domains:
+            IntValue:
+              min_value: 1
+
+        # missing from manual if applicable to preconditioners other than SMG
+        NumPreRelax:
+          help: >
+            [Type: int] This key specifies the number of relaxations to take before coarsening in the specified preconditioner method.
+            Note that this key is only relevant to the SMG multigrid preconditioner.
+          default: 1
+          domains:
+            IntValue:
+              min_value: 1
+
+        # missing from manual if applicable to preconditioners other than SMG
+        NumPostRelax:
+          help: >
+            [Type: int] This key specifies the number of relaxations to take after coarsening in the specified preconditioner method.
+            Note that this key is only relevant to the SMG multigrid preconditioner.
+          default: 1
+          domains:
+            IntValue:
+              min_value: 1
+
+        # missing from manual
+        Smoother:
+          help: >
+            [Type: string]
+          domains:
+            AnyString:
+
+        # only for the PFMG solver
+        RAPType:
+          help: >
+            [Type: string] For the PFMG solver, this key specifies the Hypre RAP type. Valid values are Galerkin or NonGalerkin
+          default: NonGalerkin
+          domains:
+            EnumDomain:
+              enum_list:
+                - Galerkin
+                - NonGalerkin
+
+  # Solver.Nonlinear.{} keys
+
+  # missing from manual
+  NonlinearSolver:
+    help: >
+      [Type: int]
+    domains:
+      DoubleValue:
+
+  Nonlinear:
+    __doc__: >
+      Setting nonlinear solver keys
+
+    VariableDz:
+      help: >
+        [Type: boolean/string] This key specifies whether dZ multipliers are to be used, the default is False. The default indicates a false or
+        non-active variable dz and each layer thickness is 1.0 [L].
+      default: False
+      domains:
+        BoolDomain:
+
+    FlowBarrierX:
+      help: >
+        [Type: boolean/string] This key specifies whether Flow Barriers are to be used in the X direction, the default is False. The default
+        indicates a false or FBx value of one [-] everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+
+    FlowBarrierY:
+      help: >
+        [Type: boolean/string] This key specifies whether Flow Barriers are to be used in the Y direction, the default is False. The default
+        indicates a false or FBy value of one [-] everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+
+    FlowBarrierZ:
+      help: >
+        [Type: boolean/string] This key specifies whether Flow Barriers are to be used in the Z direction, the default is False. The default
+        indicates a false or FBz value of one [-] everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+
+    ResidualTol:
+      help: >
+        [Type: double] This key specifies the tolerance that measures how much the relative reduction in the nonlinear residual should
+        be before nonlinear iterations stop. The magnitude of the residual is measured with the l1 (max) norm.
+      default: 1e-7
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
+    StepTol:
+      help: >
+        [Type: double] This key specifies the tolerance that measures how small the difference between two consecutive nonlinear steps
+        can be before nonlinear iterations stop.
+      default: 1e-7
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
+    MaxIter:
+      help: >
+        [Type: int] This key specifies the maximum number of nonlinear iterations allowed before iterations stop with a convergence
+        failure.
+      default: 15
+      domains:
+        IntValue:
+          min_value: 1
+
+    PrintFlag:
+      help: >
+        [Type: string] This key specifies the amount of informational data that is printed to the *.out.kinsol.log file. Choices for this
+        key are NoVerbosity, LowVerbosity, NormalVerbosity and HighVerbosity. The choice NoVerbosity prints
+        no statistics about the nonlinear convergence process. The choice LowVerbosity outputs the nonlinear iteration
+        count, the scaled norm of the nonlinear function, and the number of function calls. The choice NormalVerbosity
+        prints the same as for LowVerbosity and also the global strategy statistics. The choice HighVerbosity prints the
+        same as for NormalVerbosity with the addition of further Krylov iteration statistics.
+      default: HighVerbosity
+      domains:
+        EnumDomain:
+          enum_list:
+            - NoVerbosity
+            - LowVerbosity
+            - NormalVerbosity
+            - HighVerbosity
+
+    EtaChoice:
+      help: >
+        [Type: string] This key specifies how the linear system tolerance will be selected. The linear system is solved until a relative
+        residual reduction of n is achieved. Linear residual norms are measured in the l^2 norm. Choices for this key include
+        EtaConstant, Walker1 and Walker2. If the choice EtaConstant is specified, then n will be taken as constant.
+        The choices Walker1 and Walker2 specify choices for n developed by Eisenstat and Walker (see reference in manual).
+        For both of the last two choices, n is never allowed to be less than 1e-4.
+      default: Walker2
+      domains:
+        EnumDomain:
+          enum_list:
+            - EtaConstant
+            - Walker1
+            - Walker2
+
+    EtaValue:
+      help: >
+        [Type: double] This key specifies the constant value of n for the EtaChoice key EtaConstant.
+      default: 1e-4
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
+    EtaAlpha:
+      help: >
+        [Type: double] This key specifies the value of alpha for the case of EtaChoice being Walker2.
+      default: 2.0
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
+    EtaGamma:
+      help: >
+        [Type: double] This key specifies the value of gamma for the case of EtaChoice being Walker2.
+      default: 0.9
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
+    UseJacobian:
+      help: >
+        [Type: boolean/string] This key specifies whether the Jacobian will be used in matrix-vector products or whether a matrix-free version of
+        the code will run. Choices for this key are False and True. Using the Jacobian will most likely decrease the number
+        of nonlinear iterations but require more memory to run.
+      default: False
+      domains:
+        BoolDomain:
+
+    DerivativeEpsilon:
+      help: >
+        [Type: double] This key specifies the value of epsilon used in approximating the action of the Jacobian on a vector with approximate
+        directional derivatives of the nonlinear function. This parameter is only used when the UseJacobian key is False.
+      default: 1e-7
+      domains:
+        DoubleValue:
+          min_value: 0.0
+
+    Globalization:
+      help: >
+        [Type: string] This key specifies the type of global strategy to use. Possible choices for this key are InexactNewton and
+        LineSearch. The choice InexactNewton specifies no global strategy, and the choice LineSearch specifies that
+        a line search strategy should be used where the nonlinear step can be lengthened or decreased to satisfy certain
+        criteria.
+      default: LineSearch
+      domains:
+        EnumDomain:
+          enum_list:
+            - LineSearch
+            - InexactNewton
+
+  # SILO outputs
+  WriteSiloCLM:
+    help: >
+      [Type: boolean/string] This key specifies whether the CLM writes two dimensional binary output files to a silo binary format. This data
+      may be read in by VisIT and other visualization packages. Note that CLM and silo must be compiled and linked
+      at runtime for this option to be active. These files are all written according to the standard format used for all
+      ParFlow variables, using the runname, and istep. Variables are either two-dimensional or over the number of CLM
+      layers (default of ten).
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloConcentration:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the concentration data in silo binary format. The printing of the data is
+      controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloDZMultiplier:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloEvapTrans:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the evaporation and rainfall flux data using silo binary format. This
+      data comes from either clm or from external calls to ParFlow such as WRF. This data is in units of [L3T-1]. The
+      printing of the data is controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloEvapTransSum:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the evaporation and rainfall flux data using silo binary format as a running,
+      cumulative amount. This data comes from either clm or from external calls to ParFlow such as WRF. This data is
+      in units of [L3]. The printing of the data is controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloMannings:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the Manning’s roughness data in silo binary format. The printing of the
+      data is controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloMask:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the mask data using silo binary format. The mask contains values equal
+      to one for active cells and zero for inactive cells. The printing of the data is controlled by values in the timing
+      information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloOverlandBCFlux:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloOverlandSum:
+    help: >
+      [Type: boolean/string] This key is used to specify calculation and printing of the total overland outflow from the domain using silo
+      binary format as a running cumulative amount. This is integrated along all domain boundaries and is calculated any
+      location that slopes at the edge of the domain point outward. This data is in units of [L3]. The printing of the data
+      is controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOConcentration:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIODZMultiplier:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOEvapTrans:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOEvapTransSum:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOMannings:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOMask:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOOverlandBCFlux:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOOverlandSum:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOPressure:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOSaturation:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOSlopes:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOSpecificStorage:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOSubsurfData:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOTop:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloPMPIOVelocities:
+    help: >
+      [Type: boolean/string]
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  # typo in manual (says saturation instead of pressure)
+  WriteSiloPressure:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the pressure data in silo binary format. The printing of the data is
+      controlled by values in the timing information section. This data may be read in by VisIT and other visualization packages.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloSaturation:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the saturation data using silo binary format. The printing of the data is
+      controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloSlopes:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the x adn y slope data in silo binary format. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloSpecificStorage:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the specific storage data in silo binary format. The printing of the data is
+      controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloSubsurfData:
+    help: >
+      [Type: boolean/string] This key is used to specify printing of the subsurface data, Permeability and Porosity in silo binary file format.
+      The data is printed after it is generated and before the main time stepping loop - only once during the run. This
+      data may be read in by VisIT and other visualization packages.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloTop:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the x,y, and z velocity data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloVelocities:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the x,y, and z velocity data in silo binary format. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+# SILO options
+SILO: # typo in documentation
+  __doc__: >
+    These keys are used to control how SILO writes data. SILO allows writing to PDB and HDF5 file formats.
+    SILO also allows data compression to be used, which can save significant amounts of disk space for some problems.
+
+  Filetype:
+    help: >
+      [Type: string] This key is used to specify the SILO filetype. Allowed values are PDB and HDF5. Note that you must have
+      configured SILO with HDF5 in order to use that option.
+    default: 'PDB'
+    domains:
+      enumDomain:
+        enum_list:
+          - PDB
+          - HDF5
+      RequiresModule: SILO
+
+  CompressionOptions:
+    help: > # typo on 'available' in manual
+      [Type: string] This key is used to specify the SILO compression options. See the SILO manual for the DB_SetCompression
+      command for information on available options. NOTE: the options available are highly dependent on the configure
+      options when building SILO.
+    domains:
+      AnyString:
+      RequiresModule: SILO
+
+# -----------------------------------------------------------------------------
+# KnownSolution
+# -----------------------------------------------------------------------------
+
+KnownSolution:
+  __rst__:
+    skip:
+  __doc__: ''
+
+  __value__:
+    help: >
+      [Type: string] This specifies the predefined function that will be used as the known solution. Possible choices for this key are No-
+      KnownSolution, Constant, X, XPlusYPlusZ, X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1,
+      XYZTPlus1 and XYZTPlus1PermTensor.
+      Choices for this key correspond to solutions as follows:
+      NoKnownSolution: No solution is known for this problem.
+      Constant: p = constant
+      X: p = x
+      XPlusYPlusZ: p = x + y + z
+      X3Y2PlusSinXYPlus1: p = x3y2 + sin(xy) + 1
+      X3Y4PlusX2PlusSinXYCosYPlus1: p = x3y4 + x2 + sin(xy) cos y + 1
+      XYZTPlus1: p = xyzt + 1
+      XYZTPlus1: p = xyzt + 1
+    domains:
+      EnumDomain:
+        enum_list:
+          - NoKnownSolution
+          - Constant
+          - X
+          - XPlusYPlusZ
+          - X3Y2PlusSinXYPlus1
+          - X3Y4PlusX2PlusSinXYCosYPlus1
+          - XYZTPlus1
+          - XYZTPlus1
+
+  Value:
+    help: >
+      [Type: double] This key specifies the constant value of the known solution for type Constant known solutions.
+    domains:
+      DoubleValue:

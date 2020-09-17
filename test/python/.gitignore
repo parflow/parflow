@@ -1,0 +1,13 @@
+*.dat
+*.out.*
+*_output*
+*.output*
+*.rst.*
+*.pfidb
+*.silo
+*.pfsol
+!.gitignore
+stats4.txt
+*.pfb
+*.tcl
+*.asc
