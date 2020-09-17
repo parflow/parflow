@@ -81,18 +81,9 @@ jobs:
           - tk-dev   
 
 language: cpp
-sudo: required
-dist: trusty
+
 compiler:
   - gcc
-os:
-  - linux
-addons:
-  sources:
-    - ubuntu-toolchain-r-test
-  apt:
-    packages:
-    - cmake
 
 before_install:
 # Set up dependencies
