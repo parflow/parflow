@@ -51,7 +51,7 @@ jobs:
           - tcl-dev
           - tk-dev
           - python3
-	  - python3-venv
+          - python3-venv
 
   - os: linux
     dist: bionic
