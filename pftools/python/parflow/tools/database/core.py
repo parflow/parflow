@@ -285,7 +285,7 @@ class PFDBObj:
             return getattr(self, key_str)
 
         prefix = ''
-        if self._details_ and '_prefix_' in self._details_:
+        if hasattr(self, '_details_') and '_prefix_' in self._details_:
             prefix = self._details_['_prefix_']
 
         key_str = f'{prefix}{key_str}'

@@ -147,7 +147,8 @@ def get_process_args():
                         dest="r",
                         help="R allocates the number of processes to the grid-cells in z")
 
-    return parser.parse_args()
+    args, unknown = parser.parse_known_args()
+    return args
 
 # -----------------------------------------------------------------------------
 
