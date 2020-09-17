@@ -1,0 +1,17 @@
+*/diag_out/
+*/eflx_lh_tot/
+*/eflx_lwrad_out/
+*/eflx_sh_tot/
+*/eflx_soil_grnd/
+*narr_1hr.sc3.txt.0
+*forcing_1.txt
+*/qflx_evap_grnd/
+*/qflx_evap_soi/
+*/qflx_evap_tot/
+*/qflx_evap_veg/
+*/qflx_infl/
+*/qflx_top_soil/
+*/qflx_tran_veg/
+*/swe_out/
+*/t_grnd/
+*.pfb*

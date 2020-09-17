@@ -4779,7 +4779,7 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->write_CLM_binary = switch_value;
   
 /* IMF Account for slope in CLM energy budget (default=False) */
-  sprintf(key, "%s.SlopeAccountingCLM", name);
+  sprintf(key, "%s.CLM.UseSlopeAspect", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
   if (switch_value < 0)
