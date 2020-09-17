@@ -6,8 +6,7 @@ jobs:
     env: 
       - PF_ACC_BACKEND=none
       - PF_TEST_VER=ubuntu1404
-      - PF_PYTHON=false
-      addons:
+    addons:
       apt:
         packages:
           - gfortran
@@ -23,7 +22,6 @@ jobs:
     env: 
       - PF_ACC_BACKEND=omp
       - PF_TEST_VER=ubuntu1404
-      - PF_PYTHON=false
     addons:
       apt:
         packages:
@@ -40,7 +38,6 @@ jobs:
     env: 
       - PF_ACC_BACKEND=none
       - PF_TEST_VER=ubuntu1804
-      - PF_PYTHON=true
     addons:
       apt:
         packages:
@@ -50,7 +47,6 @@ jobs:
           - hdf5-helpers
           - tcl-dev
           - tk-dev
-	  - python
 
   - os: linux
     dist: bionic
@@ -58,7 +54,6 @@ jobs:
     env: 
       - PF_ACC_BACKEND=omp
       - PF_TEST_VER=ubuntu1804
-      - PF_PYTHON=false
     addons:
       apt:
         packages:
@@ -75,7 +70,6 @@ jobs:
     env: 
       - PF_ACC_BACKEND=cuda
       - PF_TEST_VER=ubuntu1804
-      - PF_PYTHON=false	
     addons:
       apt:
         packages:
@@ -166,7 +160,7 @@ before_script:
   - if [[ $PF_ACC_BACKEND == 'cuda' ]]; then
       mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda -Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=cuda -DRMM_ROOT=$RMM_ROOT;
     else
-      mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND -DPARFLOW_ENABLE_PYTHON=$PF_PYTHON -DPARFLOW_PYTHON_VIRTUAL_ENV=$PF_PYTHON;
+      mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ACCELERATOR_BACKEND=$PF_ACC_BACKEND;
     fi
   - cd $TRAVIS_BUILD_DIR/build && make && make install;
 
