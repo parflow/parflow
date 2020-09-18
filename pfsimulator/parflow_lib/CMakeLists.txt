@@ -127,6 +127,7 @@ set (SRC_FILES_CONST advect.F
 if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH_TYPE_0
+    clustering.cpp
     globals.cpp
     grgeometry.cpp
   )
@@ -154,7 +155,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   )
   set (SRC_FILES_ARCH_TYPE_2
     calc_elevations.cpp
-    clustering.cpp
     pf_module.cpp
     problem_bc.cpp
     problem_bc_pressure.cpp
