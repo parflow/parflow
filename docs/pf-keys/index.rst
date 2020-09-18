@@ -1,28 +1,34 @@
-.. ParFlow Key documentation master file, created by
+.. ParFlow-Python documentation master file, created by
    sphinx-quickstart on Fri Jul 10 16:55:21 2020.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the documentation of ParFlow Keys!
-=======================================================
+ParFlow
+=======
 
 .. toctree::
-   :maxdepth: 3
-   :caption: Contents:
+   :maxdepth: 2
+   :caption: ParFlow
 
-   parflow_keys.rst
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   parflow/keys
+   parflow/keys_contribution
 
 
-Features
---------
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Python
 
-- Python interface for building and running ParFlow models
+   python/getting_started
+   python/run_script
+
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Tutorials
+
+   tutorials/tcl2py
+   tutorials/fs
+   tutorials/pfb
+   tutorials/solid_files
