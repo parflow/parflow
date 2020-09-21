@@ -66,10 +66,6 @@ implemented in the Python tests.
 - clm_varDZ
 - clm_vtk (not part of the main test suite)
 
-### clm-samrai
-
-- clm_samrai (INCOMPLETE)
-
 ### netcdf
 
 - default_richards_with_netcdf (INCOMPLETE)
@@ -88,10 +84,18 @@ implemented in the Python tests.
 - write_check
 - yaml_output
 
-### samrai
+### pfsol
 
-- samrai_compute_domain (INCOMPLETE)
-- samrai (INCOMPLETE)
+> Tests for Python solid file generation helper
+
+- asc_write
+- image-as-mask
+- pfb_mask
+- simple-mask
+
+### samrai/clm_samrai
+
+- clm_samrai (INCOMPLETE)
 
 ### scenarios
 
@@ -107,3 +111,10 @@ implemented in the Python tests.
 - water_balance_x.hardflow.jac
 - water_balance_x.hardflow.nojac
 - water_balance_y
+
+### washita/py_scripts
+
+- Dist_Forcings (INCOMPLETE)
+- LW_NetCDF_Test (INCOMPLETE)
+- LW_Test (INCOMPLETE)
+- LW_Timing (INCOMPLETE)
