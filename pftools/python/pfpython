@@ -1,0 +1,7 @@
+#!/bin/bash
+export PARFLOW_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+VIRTUAL_ENV="$PARFLOW_DIR/py-env"
+
+[ ! -d "$VIRTUAL_ENV" ] && $PARFLOW_DIR/bin/py-setup
+
+$VIRTUAL_ENV/bin/python $@
