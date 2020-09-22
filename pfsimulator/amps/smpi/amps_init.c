@@ -42,10 +42,6 @@ int amps_mpi_initialized = FALSE;
 char amps_malloclog[MAXPATHLEN];
 #endif
 
-#ifndef AMPS_CPU_TICKS_PER_SEC
-long AMPS_CPU_TICKS_PER_SEC;
-#endif
-
 int amps_size;
 int amps_rank;
 int amps_node_rank;
@@ -240,19 +236,11 @@ int amps_EmbeddedInit(void)
   setbuf(stdout, NULL);
 #endif
 
-#ifdef CASC_HAVE_GETTIMEOFDAY
   amps_clock_init();
-#endif
 
 #ifdef AMPS_MALLOC_DEBUG
   dmalloc_logpath = amps_malloclog;
   sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
-#endif
-
-#ifdef TIMING
-#ifndef CRAY_TIME
-  AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
-#endif
 #endif
 
   return 0;
