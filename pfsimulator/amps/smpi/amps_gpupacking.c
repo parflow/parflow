@@ -24,13 +24,21 @@
 void amps_gpu_freebufs(){
 }
 
-char* amps_gpu_sendbuf(amps_Package package){
-  (void)package;
+char* amps_gpu_recvbuf_mpi(int size_total){
+  (void)size_total;
   return NULL;
 }
-  
-char* amps_gpu_recvbuf(int size_total){
-  (void)size_total;
+
+char* amps_gpu_recvbuf_packing(){
+  return NULL;
+}
+
+char* amps_gpu_sendbuf_mpi(){
+  return NULL;
+}
+
+char* amps_gpu_sendbuf_packing(amps_Package package){
+  (void)package;
   return NULL;
 }
 

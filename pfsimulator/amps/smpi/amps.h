@@ -262,11 +262,12 @@ extern int amps_size;
  * Amps device struct for global amps variables
  *--------------------------------------------------------------------------*/
 typedef struct amps_devicestruct {
-
   char *combuf_recv;
+  char *combuf_recv_host;
   char *combuf_send;
-  long combuf_recv_size;
-  long combuf_send_size;
+  char *combuf_send_host;
+  int combuf_recv_size;
+  int combuf_send_size;
 } amps_Devicestruct;
 
 extern amps_Devicestruct amps_device_globals;

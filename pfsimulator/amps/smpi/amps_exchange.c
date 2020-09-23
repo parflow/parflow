@@ -32,7 +32,7 @@
 
 int _amps_send_sizes(amps_Package package, int **sizes, int **tags)
 {
-  char *gpubuf = amps_gpu_sendbuf(package);
+  char *gpubuf = amps_gpu_sendbuf_packing(package);
   char *gpubuf_assert = gpubuf;
 
   *sizes = (int*)calloc(package->num_send, sizeof(int));
@@ -240,17 +240,17 @@ int _amps_recv_sizes(amps_Package package)
       size_total += sizes[i];
   }
 
-  gpubuf = amps_gpu_recvbuf(size_total);
+  gpubuf = amps_gpu_recvbuf_mpi(size_total);
 
   for (int i = 0; i < package->num_recv; i++)
   {
-    if(tags[i] == 0){
-      combuf = gpubuf;
-      gpubuf += sizes[i];
-    }
-    else{ 
+    if(gpubuf == NULL || tags[i]){
       combuf = package->recv_invoices[i]->combuf 
              = (char*)calloc(sizes[i], sizeof(char *));
+    }
+    else{ 
+      combuf = gpubuf;
+      gpubuf += sizes[i];
     }
  
     MPI_Recv_init(combuf, sizes[i], MPI_BYTE, package->src[i], 
@@ -276,12 +276,12 @@ void _amps_wait_exchange(amps_Handle handle)
   {
     if (handle->package->num_recv)
     {
-      char *gpubuf = amps_gpu_recvbuf(0);
+      char *gpubuf = amps_gpu_recvbuf_packing();
       for (i = 0; i < handle->package->num_recv; i++)
       {
-        //if GPU unpacking fails, switch to original method
-        if(amps_gpupacking(handle->package->recv_invoices[i], &gpubuf, 1)){
-          // printf("GPU unpacking failed at line: %d\n", gpufail);
+        int errchk = amps_gpupacking(handle->package->recv_invoices[i], &gpubuf, 1);       
+        if(errchk){ //if GPU unpacking fails, switch to original method
+          // printf("GPU unpacking failed at line: %d\n", errchk);
           amps_unpack(amps_CommWorld, handle->package->recv_invoices[i],
                     handle->package->recv_invoices[i]->combuf);
           AMPS_PACK_FREE_LETTER(amps_CommWorld,
@@ -354,7 +354,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   if (package->num_send)
   {
     char *combuf;
-    char *gpubuf = amps_gpu_sendbuf(package);
+    char *gpubuf = amps_gpu_sendbuf_mpi();
     for (i = 0; i < package->num_send; i++)
     {
       if(send_tags[i] == 0){

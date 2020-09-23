@@ -22,39 +22,83 @@ extern "C"{
 #include <string.h>
 #include "amps.h"
 
+// #define DISABLE_GPU_PACKING
+#define ENFORCE_HOST_STAGING
+
+#ifdef DISABLE_GPU_PACKING
+#include "amps_gpupacking.c"
+#else
+
 void amps_gpu_freebufs(){
+#ifdef ENFORCE_HOST_STAGING
+  if (amps_device_globals.combuf_recv_size != 0) free(amps_device_globals.combuf_recv_host);
+  if (amps_device_globals.combuf_send_size != 0) free(amps_device_globals.combuf_send_host);
+#endif
   if (amps_device_globals.combuf_recv_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_recv));
   if (amps_device_globals.combuf_send_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_send));
 }
 
-char* amps_gpu_sendbuf(amps_Package package){
+char* amps_gpu_recvbuf_mpi(int size_total){
+  /* check to see if enough space is already allocated */
+  if (amps_device_globals.combuf_recv_size < size_total)
+  {
+#ifdef ENFORCE_HOST_STAGING
+    if (amps_device_globals.combuf_recv_size != 0) free(amps_device_globals.combuf_recv_host);
+    amps_device_globals.combuf_recv_host = (char*)malloc(size_total);
+#endif
+    if (amps_device_globals.combuf_recv_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_recv));
+    CUDA_ERRCHK(cudaMalloc((void**)&amps_device_globals.combuf_recv, size_total));
+    amps_device_globals.combuf_recv_size = size_total;
+  }
+#ifdef ENFORCE_HOST_STAGING
+  return amps_device_globals.combuf_recv_host;
+#else
+  return amps_device_globals.combuf_recv;
+#endif
+}
+
+char* amps_gpu_recvbuf_packing(){
+#ifdef ENFORCE_HOST_STAGING
+  //copy host buffer to device
+  CUDA_ERRCHK(cudaMemcpy(amps_device_globals.combuf_recv,
+              amps_device_globals.combuf_recv_host,
+                amps_device_globals.combuf_recv_size,
+                  cudaMemcpyHostToDevice));
+#endif
+  return amps_device_globals.combuf_recv;
+}
+
+char* amps_gpu_sendbuf_mpi(){
+#ifdef ENFORCE_HOST_STAGING
+  //copy device buffer to host
+  CUDA_ERRCHK(cudaMemcpy(amps_device_globals.combuf_send_host,
+              amps_device_globals.combuf_send,
+                amps_device_globals.combuf_send_size,
+                  cudaMemcpyDeviceToHost));
+
+  return amps_device_globals.combuf_send_host;
+#else
+  return amps_device_globals.combuf_send;
+#endif
+}
+
+char* amps_gpu_sendbuf_packing(amps_Package package){
   int size_total = 0;
   for (int i = 0; i < package->num_send; i++){
     size_total += amps_sizeof_invoice(amps_CommWorld, package->send_invoices[i]);
   }
-
   /* check to see if enough space is already allocated            */
   if (amps_device_globals.combuf_send_size < size_total)
   {
+#ifdef ENFORCE_HOST_STAGING
+    if (amps_device_globals.combuf_send_size != 0) free(amps_device_globals.combuf_send_host);
+    amps_device_globals.combuf_send_host = (char*)malloc(size_total);
+#endif
     if (amps_device_globals.combuf_send_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_send));
-
     CUDA_ERRCHK(cudaMalloc((void**)&amps_device_globals.combuf_send, size_total));
     amps_device_globals.combuf_send_size = size_total;
   }
   return amps_device_globals.combuf_send;
-}
-
-char* amps_gpu_recvbuf(int size_total){
-
-  /* check to see if enough space is already allocated            */
-  if (amps_device_globals.combuf_recv_size < size_total)
-  {
-    if (amps_device_globals.combuf_recv_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_recv));
-
-    CUDA_ERRCHK(cudaMalloc((void**)&amps_device_globals.combuf_recv, size_total));
-    amps_device_globals.combuf_recv_size = size_total;
-  }
-  return amps_device_globals.combuf_recv;
 }
 
 int _amps_gpupack_invcheck_vector(int dim, int *len, int type)
@@ -211,5 +255,6 @@ int amps_gpupacking(amps_Invoice inv, char **buffer, int unpack){
   }
   return 0;
 } 
+#endif // DISABLE_GPU_PACKING
 }   
     

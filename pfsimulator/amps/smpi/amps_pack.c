@@ -25,17 +25,56 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
-
+ 
 #include "amps.h"
-
 #include <string.h>
 #include <stdarg.h>
 #include <limits.h>
 
-int amps_pack(comm, inv, buffer)
-amps_Comm comm;
-amps_Invoice inv;
-char **buffer;
+//these are currently here for testing purposes
+#ifdef PAFLOW_HAVE_CUDA
+#define MemPrefetchDeviceToHostA(ptr, size, stream)                       \
+{                                                                         \
+  struct cudaPointerAttributes attributes;                                \
+  cudaPointerGetAttributes(&attributes, (void *)ptr);                     \
+  if(cudaGetLastError() == cudaSuccess && attributes.type > 1){           \
+    CUDA_ERRCHK(cudaMemPrefetchAsync(ptr, size, cudaCpuDeviceId, stream));\
+    CUDA_ERRCHK(cudaStreamSynchronize(stream));                           \
+  }                                                                       \
+}
+
+#define MemPrefetchHostToDeviceA(ptr, size, stream)                       \
+{                                                                         \
+  struct cudaPointerAttributes attributes;                                \
+  cudaPointerGetAttributes(&attributes, (void *)ptr);                     \
+  if(cudaGetLastError() == cudaSuccess && attributes.type > 1){           \
+    int device;                                                           \
+    CUDA_ERRCHK(cudaGetDevice(&device));                                  \
+    CUDA_ERRCHK(cudaMemPrefetchAsync(ptr, size, device, stream));         \
+  }                                                                       \
+}
+
+#undef AMPS_CONVERT_OUT
+#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                       \
+{                                                                                                       \
+  type *ptr_src, *ptr_dest;                                                                             \
+  if ((char*)(src) != (char*)(dest))                                                                    \
+  {									                                                                                    \
+    if ((stride) == 1){                                                                                 \
+      MemPrefetchDeviceToHostA(src, (len) * sizeof(type), 0);                                           \
+      bcopy((src), (dest), (len) * sizeof(type));                                                       \
+    }                                                                                                   \
+    else                                                                                                \
+      for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride); \
+        ptr_src += (stride), ptr_dest++){                                                               \
+          MemPrefetchDeviceToHostA(ptr_src, sizeof(type), 0);                                           \
+          bcopy((ptr_src), (ptr_dest), sizeof(type));                                                   \
+        }                                                                                               \
+  }									                                                                                    \
+}
+#endif
+
+int amps_pack(amps_Comm comm, amps_Invoice inv, char **buffer)
 {
   amps_InvoiceEntry *ptr;
   char *cur_pos;
@@ -53,11 +92,11 @@ char **buffer;
   /* check to see if this was already allocated                            */
   if ((inv->combuf_flags & AMPS_INVOICE_ALLOCATED))
   {
-    *buffer = inv->combuf;
+    *buffer = (char*)inv->combuf;
   }
   else
   {
-    if ((*buffer = amps_new(comm, size)) == NULL)
+    if ((*buffer = (char*)amps_new(comm, size)) == NULL)
       amps_Error("amps_pack", OUT_OF_MEMORY, "malloc of letter", HALT);
     else
     {
@@ -87,7 +126,7 @@ char **buffer;
     if (ptr->data_type == AMPS_INVOICE_POINTER)
       data = *((char**)(ptr->data));
     else
-      data = ptr->data;
+      data = (char*)ptr->data;
 
     switch (ptr->type)
     {
@@ -170,10 +209,7 @@ char **buffer;
   return size;
 }
 
-
-void amps_create_mpi_type(comm, inv)
-amps_Comm comm;
-amps_Invoice inv;
+void amps_create_mpi_type(amps_Comm comm, amps_Invoice inv)
 {
   amps_InvoiceEntry *ptr;
   char *data;
@@ -197,9 +233,9 @@ amps_Invoice inv;
   MPI_Datatype *new_type;
 
 
-  mpi_types = calloc(inv->num, sizeof(MPI_Datatype));
-  mpi_block_len = malloc(sizeof(int) * inv->num);
-  mpi_displacements = calloc(inv->num, sizeof(MPI_Aint));
+  mpi_types = (MPI_Datatype*)calloc(inv->num, sizeof(MPI_Datatype));
+  mpi_block_len = (int*)malloc(sizeof(int) * inv->num);
+  mpi_displacements = (MPI_Aint*)calloc(inv->num, sizeof(MPI_Aint));
 
   /* for each entry in the invoice pack that entry into the letter         */
 
@@ -223,7 +259,7 @@ amps_Invoice inv;
     if (ptr->data_type == AMPS_INVOICE_POINTER)
       data = *((char**)(ptr->data));
     else
-      data = ptr->data;
+      data = (char*)ptr->data;
 
     switch (ptr->type)
     {
@@ -289,11 +325,11 @@ amps_Invoice inv;
 
         /* Temporary datatypes for constructing vectors */
         if (dim > 1)
-          base_type = calloc(1, sizeof(MPI_Datatype));
+          base_type = (MPI_Datatype*)calloc(1, sizeof(MPI_Datatype));
         else
           base_type = &mpi_types[element];
 
-        new_type = calloc(1, sizeof(MPI_Datatype));
+        new_type = (MPI_Datatype*)calloc(1, sizeof(MPI_Datatype));
 
         len = ptr->ptr_len[0];
         stride = ptr->ptr_stride[0];
@@ -402,4 +438,3 @@ amps_Invoice inv;
   free(mpi_displacements);
   free(mpi_types);
 }
-

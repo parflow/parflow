@@ -25,16 +25,56 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
+
+#include "amps.h"
 #include <string.h>
 #include <stdarg.h>
 
-#include "amps.h"
+//these are currently here for testing purposes
+#ifdef PAFLOW_HAVE_CUDA
+#define MemPrefetchDeviceToHostA(ptr, size, stream)                       \
+{                                                                         \
+  struct cudaPointerAttributes attributes;                                \
+  cudaPointerGetAttributes(&attributes, (void *)ptr);                     \
+  if(cudaGetLastError() == cudaSuccess && attributes.type > 1){           \
+    CUDA_ERRCHK(cudaMemPrefetchAsync(ptr, size, cudaCpuDeviceId, stream));\
+    CUDA_ERRCHK(cudaStreamSynchronize(stream));                           \
+  }                                                                       \
+}
 
+#define MemPrefetchHostToDeviceA(ptr, size, stream)                       \
+{                                                                         \
+  struct cudaPointerAttributes attributes;                                \
+  cudaPointerGetAttributes(&attributes, (void *)ptr);                     \
+  if(cudaGetLastError() == cudaSuccess && attributes.type > 1){           \
+    int device;                                                           \
+    CUDA_ERRCHK(cudaGetDevice(&device));                                  \
+    CUDA_ERRCHK(cudaMemPrefetchAsync(ptr, size, device, stream));         \
+  }                                                                       \
+}
 
-int amps_unpack(comm, inv, buffer)
-amps_Comm comm;
-amps_Invoice inv;
-char *buffer;
+#undef AMPS_CONVERT_IN
+#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)             \
+{                                                                            \
+  char *ptr_src, *ptr_dest;                                                  \
+  if ((src) != (dest))                                                       \
+  {									                                                         \
+    if ((stride) == 1){                                                      \
+      bcopy((src), (dest), (len) * sizeof(type));                            \
+      MemPrefetchHostToDeviceA(dest, (len) * sizeof(type), 0);               \
+    }                                                                        \
+    else                                                                     \
+      for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);               \
+        (ptr_dest) < (char*)(dest) + (len) * (stride) * sizeof(type);        \
+        (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (stride)){   \
+          bcopy((ptr_src), (ptr_dest), sizeof(type));                        \
+          MemPrefetchHostToDeviceA(ptr_dest, sizeof(type), 0);               \
+      }                                                                      \
+  }									                                                         \
+}
+#endif
+
+int amps_unpack(amps_Comm comm, amps_Invoice inv, char *buffer)
 {
   amps_InvoiceEntry *ptr;
   char *cur_pos;
@@ -234,7 +274,7 @@ char *buffer;
         if (ptr->data_type == AMPS_INVOICE_POINTER)
           data = *(char**)(ptr->data) = (char*)malloc(size);
         else
-          data = ptr->data;
+          data = (char*)ptr->data;
 
         temp_pos = cur_pos;
         amps_vector_in(comm, ptr->type - AMPS_INVOICE_LAST_CTYPE,
@@ -257,4 +297,3 @@ char *buffer;
   }
   return 0;
 }
-
