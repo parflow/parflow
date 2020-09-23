@@ -57,9 +57,10 @@ endif()
 
 if(${PARFLOW_HAVE_NETCDF})
   if(${PARFLOW_HAVE_HYPRE})
-    #This test is failing on several platforms
+    # This test is failing on several platforms
     list(APPEND TESTS
-    	default_richards_with_netcdf.tcl)
+      default_richards_with_netcdf.tcl
+      default_richards_with_netcdf_compressed.tcl)
   endif()
 endif()
 
