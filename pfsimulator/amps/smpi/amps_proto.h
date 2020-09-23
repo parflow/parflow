@@ -16,7 +16,7 @@ amps_CPUClock_t amps_CPUClock (void);
 int amps_CreateInvoice (amps_Comm comm, amps_Invoice inv);
 
 /* amps_exchange.c */
-int _amps_send_sizes (amps_Package package, int **sizes);
+int _amps_send_sizes (amps_Package package, int **sizes, int **tags);
 int _amps_recv_sizes (amps_Package package);
 void _amps_wait_exchange (amps_Handle handle);
 amps_Handle amps_IExchangePackage (amps_Package package);
@@ -32,6 +32,12 @@ void amps_FindPowers (int N, int *log, int *Nnext, int *Nprev);
 
 /* amps_fopen.c */
 amps_File amps_Fopen (char *filename, char *type);
+
+/* amps_gpupacking.cu */
+void amps_gpu_freebufs();
+char* amps_gpu_recvbuf(int size_total);
+char* amps_gpu_sendbuf(amps_Package package);
+int amps_gpupacking(amps_Invoice inv, char **buffer, int unpack);
 
 /* amps_init.c */
 int MAIN__ (void);
