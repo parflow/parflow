@@ -16,7 +16,7 @@ amps_CPUClock_t amps_CPUClock (void);
 int amps_CreateInvoice (amps_Comm comm, amps_Invoice inv);
 
 /* amps_exchange.c */
-int _amps_send_sizes (amps_Package package, int **sizes, int **tags);
+int _amps_send_sizes (amps_Package package, int **sizes);
 int _amps_recv_sizes (amps_Package package);
 void _amps_wait_exchange (amps_Handle handle);
 amps_Handle amps_IExchangePackage (amps_Package package);

@@ -30,33 +30,32 @@
 #include <sys/times.h>
 #include "amps.h"
 
-int _amps_send_sizes(amps_Package package, int **sizes, int **tags)
+int _amps_send_sizes(amps_Package package, int **sizes)
 {
   char *gpubuf = amps_gpu_sendbuf_packing(package);
   char *gpubuf_assert = gpubuf;
 
   *sizes = (int*)calloc(package->num_send, sizeof(int));
-  *tags = (int*)malloc(package->num_send * sizeof(int));
 
   for (int i = 0; i < package->num_send; i++)
   {
-    (*tags)[i] = 1;
-
+    int errchk = -1;
 	  if(gpubuf != NULL)
-      (*tags)[i] = amps_gpupacking(package->send_invoices[i], &gpubuf, 0);
+      errchk = amps_gpupacking(package->send_invoices[i], &gpubuf, 0);
 
-    if(gpubuf == NULL || (*tags)[i]){
-      // if((*tags)[i] > 0) printf("GPU packing failed at line: %d\n", (*tags)[i]);
+    if(gpubuf != NULL && errchk == 0){
+      //negative size indicates that GPU packing is used
+      (*sizes)[i] = -amps_sizeof_invoice(amps_CommWorld, package->send_invoices[i]);
+      gpubuf_assert += -(*sizes)[i];
+    }
+    else{
+      // if(errchk) printf("GPU packing failed at line: %d\n", errchk);
       (*sizes)[i] = amps_pack(amps_CommWorld, package->send_invoices[i], 
           (char**)&package->send_invoices[i]->combuf);
     }
-    else{
-      (*sizes)[i] = amps_sizeof_invoice(amps_CommWorld, package->send_invoices[i]);
-      gpubuf_assert += (*sizes)[i];
-    }
     
     MPI_Isend(&((*sizes)[i]), 1, MPI_INT, package->dest[i],
-              (*tags)[i], amps_CommWorld,
+              0, amps_CommWorld,
               &(package->send_requests[i]));
   }
   assert(gpubuf == gpubuf_assert);
@@ -213,7 +212,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
  * amps_Printf("IEX done %ld\n", tm.tv_sec);
  * fflush(NULL);
  */
-  return(amps_NewHandle(NULL, 0, NULL, package));
+  return(amps_NewHandle(amps_CommWorld, 0, NULL, package));
 }
 
 #else
@@ -223,41 +222,40 @@ int _amps_recv_sizes(amps_Package package)
   char *combuf;
   char *gpubuf;
   int *sizes;
-  int *tags;
   int size_total = 0;
 
   sizes = (int*)calloc(package->num_recv, sizeof(int));
-  tags = (int*)calloc(package->num_recv, sizeof(int));
 
   for (int i = 0; i < package->num_recv; i++)
   {
     MPI_Status status;
     MPI_Recv(&sizes[i], 1, MPI_INT, package->src[i],
-          MPI_ANY_TAG, amps_CommWorld, &status);
+             0, amps_CommWorld, &status);
     
-    tags[i] = status.MPI_TAG;
-    if(tags[i] == 0)
-      size_total += sizes[i];
+    //negative size indicates that GPU packing can be used
+    if(sizes[i] < 0)
+      size_total += -sizes[i];
   }
 
   gpubuf = amps_gpu_recvbuf_mpi(size_total);
 
   for (int i = 0; i < package->num_recv; i++)
   {
-    if(gpubuf == NULL || tags[i]){
-      combuf = package->recv_invoices[i]->combuf 
-             = (char*)calloc(sizes[i], sizeof(char *));
+    //negative size indicates that GPU packing can be used
+    if(gpubuf != NULL && sizes[i] < 0){
+      combuf = gpubuf;
+      sizes[i] = -sizes[i];
+      gpubuf += sizes[i];
     }
     else{ 
-      combuf = gpubuf;
-      gpubuf += sizes[i];
+      combuf = package->recv_invoices[i]->combuf 
+             = (char*)calloc(sizes[i], sizeof(char *));
     }
  
     MPI_Recv_init(combuf, sizes[i], MPI_BYTE, package->src[i], 
         1, amps_CommWorld, &(package->recv_requests[i]));
   }
   free(sizes);
-  free(tags);
 
   return(0);
 }
@@ -329,12 +327,11 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 {
   int i;
   int *send_sizes;
-  int *send_tags;
 
   MPI_Status *status_array;
 
   if (package->num_send)
-    _amps_send_sizes(package, &send_sizes, &send_tags);
+    _amps_send_sizes(package, &send_sizes);
 
   if (package->num_recv)
     _amps_recv_sizes(package);
@@ -357,8 +354,10 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     char *gpubuf = amps_gpu_sendbuf_mpi();
     for (i = 0; i < package->num_send; i++)
     {
-      if(send_tags[i] == 0){
+      //negative size indicates that GPU packing was used
+      if(gpubuf != NULL && send_sizes[i] < 0){
         combuf = gpubuf;
+        send_sizes[i] = -send_sizes[i];
         gpubuf += send_sizes[i];
       }
       else{ 
@@ -367,9 +366,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
       MPI_Send_init(combuf, send_sizes[i], MPI_BYTE, package->dest[i], 
                     1, amps_CommWorld, &(package->send_requests[i]));
     }
-
     free(send_sizes);
-    free(send_tags);
   }
 
   /*--------------------------------------------------------------------
