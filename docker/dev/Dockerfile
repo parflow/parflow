@@ -51,6 +51,7 @@ RUN apt-get update && \
         libopenmpi-dev \
         python3 \
         python3-pip \
+        python3-venv \
         tcl-dev \
         tk-dev
 
