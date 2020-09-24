@@ -33,7 +33,7 @@ set(PARALLEL_TESTS
 
 # The feature tested by test16 is not supported by the amps 'cuda' layer
 if(${PARFLOW_AMPS_LAYER} STREQUAL "cuda")
-  list(APPEND PARALLEL_TESTS test16)
+  list(REMOVE_ITEM PARALLEL_TESTS test16)
 endif(${PARFLOW_AMPS_LAYER} STREQUAL "cuda")
 
 # Add GPU test case (same as test15)

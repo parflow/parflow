@@ -23,7 +23,7 @@ extern "C"{
 #include "amps.h"
 
 // #define DISABLE_GPU_PACKING
-#define ENFORCE_HOST_STAGING
+// #define ENFORCE_HOST_STAGING
 
 #ifdef DISABLE_GPU_PACKING
 #include "amps_gpupacking.c"
