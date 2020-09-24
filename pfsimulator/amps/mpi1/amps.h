@@ -46,6 +46,7 @@
 #endif
 #endif
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <sys/times.h>
 
@@ -1049,7 +1050,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_Error(name, type, comment, operation) \
   printf("%s : %s\n", name, comment)
 
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
 /*--------------------------------------------------------------------------
  *  GPU error handling macros
  *--------------------------------------------------------------------------*/
@@ -1167,7 +1170,7 @@ static inline void _amps_tfree_cuda(void *ptr)
 /** Same as \ref amps_TFree but deallocates managed memory */
 #define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
 
-#endif // __CUDACC__
+#endif // PARFLOW_HAVE_CUDA
 
 #include "amps_proto.h"
 
