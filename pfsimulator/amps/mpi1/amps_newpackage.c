@@ -45,8 +45,10 @@ amps_Package amps_NewPackage(amps_Comm     comm,
 
   if (num_recv + num_send)
   {
-    package->requests = (MPI_Request*)calloc((num_recv + num_send),
-                                             sizeof(MPI_Request));
+    package->recv_requests = 
+      (MPI_Request*)calloc((num_recv + num_send), sizeof(MPI_Request));
+
+    package->send_requests = package->recv_requests + num_recv;
   }
 
   package->num_send = num_send;
@@ -64,7 +66,7 @@ void amps_FreePackage(amps_Package package)
 {
   if (package->num_recv + package->num_send)
   {
-    free(package->requests);
+    free(package->recv_requests);
   }
 
   free(package);

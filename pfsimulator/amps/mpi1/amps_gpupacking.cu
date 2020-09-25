@@ -89,7 +89,7 @@ static char* _amps_gpubuf_realloc(amps_GpuBuffer *gpubuf, int inv_num, int pos, 
   if (gpubuf->buf_size[inv_num] < size_total)
   {
     char *newbuf;
-    CUDA_ERRCHK(cudaMallocManaged((void**)&newbuf, size_total, cudaMemAttachGlobal));
+    CUDA_ERRCHK(cudaMalloc((void**)&newbuf, size_total));
     if(pos != 0){
       CUDA_ERRCHK(cudaMemcpy(newbuf,
         gpubuf->buf[inv_num], 

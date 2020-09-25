@@ -323,27 +323,6 @@ typedef struct amps_buffer {
 /* Invoices plus the src or dest rank.                                       */
 /*===========================================================================*/
 
-
-#ifdef AMPS_MPI_NOT_USE_PERSISTENT
-
-typedef struct {
-  int num_send;
-  int           *dest;
-  amps_Invoice  *send_invoices;
-
-  int num_recv;
-  int           *src;
-  amps_Invoice  *recv_invoices;
-
-  MPI_Request   *requests;
-
-  int recv_remaining;
-} amps_PackageStruct;
-
-typedef amps_PackageStruct *amps_Package;
-
-#else
-
 typedef struct {
   int num_send;
   int           *dest;
@@ -361,9 +340,6 @@ typedef struct {
 } amps_PackageStruct;
 
 typedef amps_PackageStruct *amps_Package;
-
-#endif
-
 
 typedef struct _amps_HandleObject {
   int type;
@@ -1057,6 +1033,8 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #ifdef PARFLOW_HAVE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+
+#define AMPS_MPI_NOT_USE_PERSISTENT
 
 /*--------------------------------------------------------------------------
  * Amps gpu structs for global amps variables
