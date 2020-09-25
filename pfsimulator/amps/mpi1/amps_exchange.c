@@ -27,7 +27,6 @@
  **********************************************************************EHEADER*/
 
 #include "amps.h"
-#include <assert.h>
 
 #ifdef AMPS_MPI_NOT_USE_PERSISTENT
 
@@ -112,8 +111,11 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 
 void _amps_wait_exchange(amps_Handle handle)
 {
+  char *combuf;
+  int errchk;
   int i;
   int num;
+  int size;
 
   num = handle->package->num_send + handle->package->num_recv;
 
@@ -125,11 +127,9 @@ void _amps_wait_exchange(amps_Handle handle)
     {
       for (i = 0; i < handle->package->num_recv; i++)
       {
-        char *combuf;
-        int size;
-        int errchk = amps_gpupacking(AMPS_UNPACK, 
-                                     handle->package->recv_invoices[i], 
-                                      i, &combuf, &size);
+        errchk = amps_gpupacking(AMPS_UNPACK, 
+                   handle->package->recv_invoices[i], 
+                     i, &combuf, &size);
         if(errchk){
           printf("GPU unpacking failed at line: %d\n", errchk);
         }
@@ -213,7 +213,12 @@ void _amps_wait_exchange(amps_Handle handle)
  */
 amps_Handle amps_IExchangePackage(amps_Package package)
 {
-  int num = package->num_send + package->num_recv;
+  char *combuf;
+  int errchk;
+  int num;
+  int size;
+
+  num = package->num_send + package->num_recv;
 
   /*-------------------------------------------------------------------
   * Check if we need to allocate the MPI types and requests
@@ -244,10 +249,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     {
       for (int i = 0; i < package->num_recv; i++)
       {
-        char *combuf;
-        int size;
-        int errchk = amps_gpupacking(AMPS_RECV, package->recv_invoices[i], 
-                                     i, &combuf, &size);
+        errchk = amps_gpupacking(AMPS_RECV, package->recv_invoices[i], 
+                   i, &combuf, &size);
         if(errchk == 0){    
           package->recv_invoices[i]->mpi_type = MPI_BYTE;
           MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
@@ -273,10 +276,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     {
       for (int i = 0; i < package->num_send; i++)
       {
-        char *combuf;
-        int size;
-        int errchk = amps_gpupacking(AMPS_PACK, package->send_invoices[i], 
-                                     i, &combuf, &size);
+        errchk = amps_gpupacking(AMPS_PACK, package->send_invoices[i], 
+                   i, &combuf, &size);
         if(errchk == 0){    
           package->send_invoices[i]->mpi_type = MPI_BYTE;
           MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
@@ -294,15 +295,14 @@ amps_Handle amps_IExchangePackage(amps_Package package)
                        package->dest[i], 0, MPI_COMM_WORLD, request_ptr);
       }
     }
-    if (num)
-    {
-      /*--------------------------------------------------------------------
-       * post send and receives
-       *--------------------------------------------------------------------*/
-      MPI_Startall(num, package->recv_requests);
-    }
   }
-
+  if (num)
+  {
+    /*--------------------------------------------------------------------
+     * post send and receives
+     *--------------------------------------------------------------------*/
+    MPI_Startall(num, package->recv_requests);
+  }
   return(amps_NewHandle(amps_CommWorld, 0, NULL, package));
 }
 

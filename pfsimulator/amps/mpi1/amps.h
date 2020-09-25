@@ -1063,6 +1063,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  *--------------------------------------------------------------------------*/
 typedef struct _amps_GpuBuffer {
   char **buf;
+  char **buf_host;
   int *buf_size;
   int num_bufs;
 } amps_GpuBuffer;
