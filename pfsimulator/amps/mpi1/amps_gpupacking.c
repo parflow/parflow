@@ -24,32 +24,11 @@
 void amps_gpu_freebufs(){
 }
 
-char* amps_gpu_recvbuf_mpi(int pos, int size){
-  (void)pos;
-  (void)size;
-  return NULL;
-}
-
-char* amps_gpu_recvbuf_packing(int pos, int size){
-  (void)pos;
-  (void)size;
-  return NULL;
-}
-
-char* amps_gpu_sendbuf_mpi(int pos, int size){
-  (void)pos;
-  (void)size;
-  return NULL;
-}
-
-char* amps_gpu_sendbuf_packing(amps_Package package){
-  (void)package;
-  return NULL;
-}
-
-int amps_gpupacking(amps_Invoice inv, char **buffer, int unpack){
+int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out){
+  (void)action;
   (void)inv;
-  (void)buffer;
-  (void)unpack;
+  (void)inv_num;
+  (void)buffer_out;
+  (void)size_out;
   return 1;
 }    

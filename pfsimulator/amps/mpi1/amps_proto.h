@@ -35,11 +35,7 @@ amps_File amps_Fopen(char *filename, char *type);
 
 /* amps_gpupacking.cu */
 void amps_gpu_freebufs();
-char* amps_gpu_recvbuf_mpi(amps_Package package);
-char* amps_gpu_recvbuf_packing(int pos, int size);
-char* amps_gpu_sendbuf_mpi(int pos, int size);
-char* amps_gpu_sendbuf_packing(amps_Package package);
-int amps_gpupacking(amps_Invoice inv, char **buffer, int unpack);
+int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out);
 
 /* amps_init.c */
 int amps_Init(int *argc, char **argv []);

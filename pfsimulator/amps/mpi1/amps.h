@@ -385,6 +385,10 @@ extern amps_Buffer *amps_BufferFreeList;
  *
  *****************************************************************************/
 
+#define AMPS_PACK 1
+#define AMPS_RECV 2
+#define AMPS_UNPACK 4
+
 #define AMPS_PACKED 2
 
 #define AMPS_IGNORE  -1
@@ -1055,16 +1059,13 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #include <cuda_runtime.h>
 
 /*--------------------------------------------------------------------------
- * Amps device struct for global amps variables
+ * Amps gpu structs for global amps variables
  *--------------------------------------------------------------------------*/
-typedef struct amps_devicestruct {
-  char *combuf_recv;
-  char *combuf_recv_host;
-  char *combuf_send;
-  char *combuf_send_host;
-  int combuf_recv_size;
-  int combuf_send_size;
-} amps_Devicestruct;
+typedef struct _amps_GpuBuffer {
+  char **buf;
+  int *buf_size;
+  int num_bufs;
+} amps_GpuBuffer;
 
 /*--------------------------------------------------------------------------
  *  GPU error handling macros
