@@ -6,6 +6,7 @@ set(AMPS_SRC_FILES
   amps_createinvoice.c
   amps_exchange.c
   amps_finalize.c
+  amps_gpupacking.c
   amps_init.c
   amps_invoice.c
   amps_irecv.c
@@ -19,3 +20,8 @@ set(AMPS_SRC_FILES
   amps_unpack.c
   amps_vector.c
   )
+
+if(${PARFLOW_HAVE_CUDA})
+  list(REMOVE_ITEM AMPS_SRC_FILES amps_gpupacking.c)
+  list(APPEND AMPS_SRC_FILES amps_gpupacking.cu)
+endif(${PARFLOW_HAVE_CUDA})

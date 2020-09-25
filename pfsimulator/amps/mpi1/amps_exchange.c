@@ -27,6 +27,7 @@
  **********************************************************************EHEADER*/
 
 #include "amps.h"
+#include <assert.h>
 
 #ifdef AMPS_MPI_NOT_USE_PERSISTENT
 
@@ -120,14 +121,20 @@ void _amps_wait_exchange(amps_Handle handle)
   {
     if (handle->package->num_recv)
     {
+          MPI_Waitall(num, handle->package->recv_requests,
+               handle->package->status);
+      // int pos = 0;
+      char *combuf = amps_gpu_recvbuf_mpi(handle->package);
       for (i = 0; i < handle->package->num_recv; i++)
       {
+        // int size = amps_sizeof_invoice(amps_CommWorld, handle->package->recv_invoices[i]);
+        // char *combuf = amps_gpu_recvbuf_packing(pos, size);
+        // pos += size;
+        int errchk = amps_gpupacking(handle->package->recv_invoices[i], &combuf, 1);       
+        if(errchk)printf("GPU unpacking failed at line: %d\n", errchk);
         AMPS_CLEAR_INVOICE(handle->package->recv_invoices[i]);
       }
     }
-
-    MPI_Waitall(num, handle->package->recv_requests,
-                handle->package->status);
   }
 
 #ifdef AMPS_MPI_PACKAGE_LOWSTORAGE
@@ -205,10 +212,7 @@ void _amps_wait_exchange(amps_Handle handle)
  */
 amps_Handle amps_IExchangePackage(amps_Package package)
 {
-  int i;
-  int num;
-
-  num = package->num_send + package->num_recv;
+  int num = package->num_send + package->num_recv;
 
   /*-------------------------------------------------------------------
   * Check if we need to allocate the MPI types and requests
@@ -237,18 +241,36 @@ amps_Handle amps_IExchangePackage(amps_Package package)
      *--------------------------------------------------------------------*/
     if (package->num_recv)
     {
-      for (i = 0; i < package->num_recv; i++)
+      char *combuf;
+      char *gpubuf = amps_gpu_recvbuf_mpi(package);
+      // int pos = 0;
+      int size;
+      for (int i = 0; i < package->num_recv; i++)
       {
-        amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
-        MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
+        // int size = amps_sizeof_invoice(amps_CommWorld, package->recv_invoices[i]);
+        // char *combuf = amps_gpu_recvbuf_mpi(pos, size);
 
-        // Temporaries needed by insure++
-        MPI_Datatype type = package->recv_invoices[i]->mpi_type;
+        if(gpubuf != NULL){
+          // size = amps_sizeof_invoice(amps_CommWorld, package->recv_invoices[i]);
+          combuf = gpubuf;
+          int errchk = amps_gpupacking(package->recv_invoices[i], &gpubuf, 2);
+          if(errchk) printf("GPU check failed at line: %d\n", errchk);
+          size = gpubuf - combuf;
+          package->recv_invoices[i]->mpi_type = MPI_BYTE;
+          MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
+        }
+        else{ 
+          printf("RECVBUF FAILED failed\n");
+          exit(1);
+          amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
+          MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
+          combuf = NULL;
+          size = 1;
+        }
+        // printf("Rank: %d, Recv size: %d, Msg: %d\n",amps_rank,size, i);
         MPI_Request *request_ptr = &(package->recv_requests[i]);
-        MPI_Recv_init(MPI_BOTTOM, 1,
-                      type,
-                      package->src[i], 0, MPI_COMM_WORLD,
-                      request_ptr);
+        MPI_Recv_init(combuf, size, package->recv_invoices[i]->mpi_type,
+                      package->src[i], 0, MPI_COMM_WORLD, request_ptr);
       }
     }
 
@@ -257,32 +279,50 @@ amps_Handle amps_IExchangePackage(amps_Package package)
      *--------------------------------------------------------------------*/
     if (package->num_send)
     {
-      for (i = 0; i < package->num_send; i++)
+      char *combuf;
+      char *gpubuf = amps_gpu_sendbuf_packing(package);
+      // int pos = 0;
+      for (int i = 0; i < package->num_send; i++)
       {
-        amps_create_mpi_type(MPI_COMM_WORLD,
-                             package->send_invoices[i]);
-
-        MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
-
-        // Temporaries needed by insure++
-        MPI_Datatype type = package->send_invoices[i]->mpi_type;
+        int errchk = -1;
+        int size; 
+	      if(gpubuf != NULL){
+          combuf = gpubuf;
+          errchk = amps_gpupacking(package->send_invoices[i], &gpubuf, 0);
+        }
+    
+        if(gpubuf != NULL && errchk == 0){
+          // size = amps_sizeof_invoice(amps_CommWorld, package->send_invoices[i]);
+          size = gpubuf - combuf;
+          // combuf = amps_gpu_sendbuf_mpi(pos, size);
+          package->send_invoices[i]->mpi_type = MPI_BYTE;
+          MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
+          // pos += size;
+          // assert(gpubuf == combuf + size);
+        }
+        else{
+          if(errchk) printf("GPU packing failed at line: %d\n", errchk);
+          amps_create_mpi_type(MPI_COMM_WORLD,
+                               package->send_invoices[i]);
+  
+          MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
+          combuf = NULL;
+          size = 1;
+        }
+        // printf("Rank: %d, Send size: %d, Msg: %d\n",amps_rank,size, i);
         MPI_Request* request_ptr = &(package->send_requests[i]);
-        MPI_Ssend_init(MPI_BOTTOM, 1,
-                       type,
-                       package->dest[i], 0, MPI_COMM_WORLD,
-                       request_ptr);
+        MPI_Ssend_init(combuf, size, package->send_invoices[i]->mpi_type,
+                       package->dest[i], 0, MPI_COMM_WORLD, request_ptr);
       }
     }
+    if (num)
+    {
+      /*--------------------------------------------------------------------
+       * post send and receives
+       *--------------------------------------------------------------------*/
+      MPI_Startall(num, package->recv_requests);
+    }
   }
-
-  if (num)
-  {
-    /*--------------------------------------------------------------------
-     * post send and receives
-     *--------------------------------------------------------------------*/
-    MPI_Startall(num, package->recv_requests);
-  }
-
 
   return(amps_NewHandle(amps_CommWorld, 0, NULL, package));
 }
