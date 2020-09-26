@@ -199,8 +199,7 @@ static int _amps_gpupack_check_inv_vector(int dim, int *len, int type)
   if (dim == 0){
     switch (type){
       case AMPS_INVOICE_DOUBLE_CTYPE:
-          return 0; //This case is supported
-        break;
+        return 0; //This case is supported
       default:
         printf("ERROR at %s:%d: Only \"AMPS_INVOICE_DOUBLE_CTYPE\" is supported.", __FILE__, __LINE__);
         return __LINE__;
