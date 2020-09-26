@@ -1049,7 +1049,7 @@ typedef struct _amps_GpuBuffer {
 
 #define AMPS_GPU_MAX_STREAMS 10
 typedef struct _amps_GpuStreams {
-  cudaStream_t stream[AMPS_GPU_MAX_STREAMS];
+  cudaStream_t *stream;
   int num_streams;
 } amps_GpuStreams;
 
