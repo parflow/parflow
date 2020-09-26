@@ -1826,6 +1826,7 @@ void    RichardsJacobianEval(
                                  /*north term */
                                  np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
                                }
+                               (void)im;
                              }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
