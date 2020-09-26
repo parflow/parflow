@@ -17,6 +17,10 @@
  *  USA
  ***********************************************************************/
 
+ /* TODO 
+  * -make gpu bufs contiguous
+  */
+
 extern "C"{
 
 #include <string.h>
@@ -204,7 +208,7 @@ static int _amps_gpupack_check_inv_vector(int dim, int *len, int type)
   }
   else{
     for (int i = 0; i < len[dim]; i++){
-      if(int error = _amps_gpupack_invcheck_vector(dim - 1, len, type))
+      if(int error = _amps_gpupack_check_inv_vector(dim - 1, len, type))
         return error;
     }
     return 0;
@@ -238,7 +242,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     /* Make sure all needed invoice vector cases are supported */
     int dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ? *(ptr->ptr_dim) : ptr->dim;
     int error = _amps_gpupack_check_inv_vector(dim - 1, ptr->ptr_len, ptr->type - AMPS_INVOICE_LAST_CTYPE);
-    if(int error) return error;
+    if(error) return error;
   
     /* Preparations for the kernel launch */
     int blocksize_x = 1;

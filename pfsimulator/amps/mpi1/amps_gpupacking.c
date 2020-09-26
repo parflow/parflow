@@ -21,8 +21,9 @@
 #include "amps.h"
 
 //Dummy definitions if no CUDA
-void amps_gpu_freebufs(){
-}
+void amps_gpu_free_bufs(){}
+
+void amps_gpu_destroy_streams(){}
 
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out){
   (void)action;
