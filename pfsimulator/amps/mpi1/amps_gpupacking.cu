@@ -36,7 +36,8 @@ amps_GpuBuffer amps_gpu_sendbuf = {.buf = NULL,
                                    .buf_size = NULL,
                                    .num_bufs = 0};
 
-amps_GpuStreams amps_gpu_streams = {.num_streams = 0};
+amps_GpuStreams amps_gpu_streams = {.stream = NULL,
+                                    .num_streams = 0};
 
 // #define DISABLE_GPU_PACKING
 // #define ENFORCE_HOST_STAGING
@@ -49,16 +50,30 @@ void amps_gpu_destroy_streams(){
   for(int i = 0; i < amps_gpu_streams.num_streams; i++){
     CUDA_ERRCHK(cudaStreamDestroy(amps_gpu_streams.stream[i]));
   }
+  free(amps_gpu_streams.stream);
 }
 
 cudaStream_t amps_gpu_get_stream(int stream){
-  if(amps_gpu_streams.num_streams < stream + 1)
+  if(stream > amps_gpu_streams.num_streams - 1)
   {
     if(amps_gpu_streams.num_streams < AMPS_GPU_MAX_STREAMS)
-      {
-        CUDA_ERRCHK(cudaStreamCreate(&(amps_gpu_streams.stream[stream])));
-        amps_gpu_streams.num_streams++;
+    {
+      int new_num_streams = stream + 1;
+      if(stream >= AMPS_GPU_MAX_STREAMS)
+        new_num_streams = AMPS_GPU_MAX_STREAMS;
+
+      cudaStream_t *newstream = (cudaStream_t*)malloc(new_num_streams * sizeof(cudaStream_t));
+      if(amps_gpu_streams.num_streams != 0){
+        memcpy(newstream, 
+          amps_gpu_streams.stream, 
+            amps_gpu_streams.num_streams * sizeof(cudaStream_t));
+        free(amps_gpu_streams.stream);
       }
+      amps_gpu_streams.stream = newstream;
+      for(int i = amps_gpu_streams.num_streams; i < new_num_streams; i++)
+        CUDA_ERRCHK(cudaStreamCreate(&(amps_gpu_streams.stream[i])));
+      amps_gpu_streams.num_streams = new_num_streams;
+    }
   }
   return amps_gpu_streams.stream[(stream) % AMPS_GPU_MAX_STREAMS];
 }
