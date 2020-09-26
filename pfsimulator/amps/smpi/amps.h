@@ -42,8 +42,8 @@
 #endif
 #endif
 
-#include <strings.h>
 #include <stdbool.h>
+#include <strings.h>
 #include <stdio.h>
 #include <sys/times.h>
 
@@ -258,20 +258,6 @@ extern int amps_tid;
 extern int amps_rank;
 extern int amps_size;
 
-/*--------------------------------------------------------------------------
- * Amps device struct for global amps variables
- *--------------------------------------------------------------------------*/
-typedef struct amps_devicestruct {
-  char *combuf_recv;
-  char *combuf_recv_host;
-  char *combuf_send;
-  char *combuf_send_host;
-  int combuf_recv_size;
-  int combuf_send_size;
-} amps_Devicestruct;
-
-extern amps_Devicestruct amps_device_globals;
-
 /* This structure is used to keep track of the entries in an invoice         */
 typedef struct amps_invoicestruct {
   long flags;          /* some flags for this invoice */
@@ -465,14 +451,14 @@ extern amps_Buffer *amps_BufferFreeList;
   {                                                                                                       \
     type *ptr_src, *ptr_dest;                                                                             \
     if ((char*)(src) != (char*)(dest))                                                                    \
-    {									                                                                                    \
+    {									                                  \
       if ((stride) == 1)                                                                                  \
         bcopy((src), (dest), (len) * sizeof(type));                                                       \
       else                                                                                                \
         for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride); \
              ptr_src += (stride), ptr_dest++)                                                             \
           bcopy((ptr_src), (ptr_dest), sizeof(type));                                                     \
-    }									                                                                                    \
+    }									                                  \
   }
 
 #define AMPS_CALL_BYTE_OUT(_comm, _src, _dest, _len, _stride) \
@@ -500,7 +486,7 @@ extern amps_Buffer *amps_BufferFreeList;
   {                                                                            \
     char *ptr_src, *ptr_dest;                                                  \
     if ((src) != (dest))                                                       \
-    {									                                                         \
+    {									       \
       if ((stride) == 1)                                                       \
         bcopy((src), (dest), (len) * sizeof(type));                            \
       else                                                                     \
@@ -508,7 +494,7 @@ extern amps_Buffer *amps_BufferFreeList;
              (ptr_dest) < (char*)(dest) + (len) * (stride) * sizeof(type);     \
              (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (stride)) \
           bcopy((ptr_src), (ptr_dest), sizeof(type));                          \
-    }									                                                         \
+    }									       \
   }
 
 #define AMPS_CALL_BYTE_IN(_comm, _src, _dest, _len, _stride) \
@@ -1075,6 +1061,26 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #ifdef PARFLOW_HAVE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+
+/* Do not use persistent communication with CUDA */
+#define AMPS_MPI_NOT_USE_PERSISTENT
+
+/*--------------------------------------------------------------------------
+ * Amps gpu structs for global amps variables
+ *--------------------------------------------------------------------------*/
+typedef struct _amps_GpuBuffer {
+  char **buf;
+  char **buf_host;
+  int *buf_size;
+  int num_bufs;
+} amps_GpuBuffer;
+
+#define AMPS_GPU_MAX_STREAMS 10
+typedef struct _amps_GpuStreams {
+  cudaStream_t stream[AMPS_GPU_MAX_STREAMS];
+  int num_streams;
+} amps_GpuStreams;
+
 /*--------------------------------------------------------------------------
  *  GPU error handling macros
  *--------------------------------------------------------------------------*/
@@ -1192,78 +1198,6 @@ static inline void _amps_tfree_cuda(void *ptr)
 /** Same as \ref amps_TFree but deallocates managed memory */
 #define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
 
-
-/*--------------------------------------------------------------------------
- * Define amps GPU kernels
- *--------------------------------------------------------------------------*/
-#define BLOCKSIZE_MAX 1024
-
-#ifdef __CUDACC__
-extern "C++"{
-template <typename T>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-StridedCopyKernel(T * __restrict__ dest, const int stride_dest, 
-                                  T * __restrict__ src, const int stride_src, const int len) 
-{
-  const int tid = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    
-  if(tid < len)
-  { 
-    const int idx_dest = tid * stride_dest;
-    const int idx_src = tid * stride_src;
-
-    dest[idx_dest] = src[idx_src];
-  }
-}
-template <typename T>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data, 
-    const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
-{
-  const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
-  if(k < len_z)
-  {
-    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
-    if(j < len_y)
-    {
-      const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
-      if(i < len_x)
-      {
-        *(ptr_buf + k * len_y * len_x + j * len_x + i) = 
-          *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
-            j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);
-      }
-    }
-  }
-}
-
-template <typename T>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data, 
-    const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
-{
-  const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
-  if(k < len_z)
-  {
-    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
-    if(j < len_y)
-    {
-      const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
-      if(i < len_x)
-      {
-        *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
-          j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
-            *(ptr_buf + k * len_y * len_x + j * len_x + i);
-      }
-    }
-  }
-}
-}
-
-#endif // __CUDACC__
 #endif // PARFLOW_HAVE_CUDA
 
 #include "amps_proto.h"

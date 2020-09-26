@@ -55,13 +55,6 @@ int amps_write_size;
 MPI_Comm amps_CommNode = MPI_COMM_NULL;
 MPI_Comm amps_CommWrite = MPI_COMM_NULL;
 
-amps_Devicestruct amps_device_globals = {.combuf_recv = NULL, 
-                                         .combuf_recv_host = NULL, 
-                                         .combuf_send = NULL,
-                                         .combuf_send_host = NULL,
-                                         .combuf_recv_size = 0,
-                                         .combuf_send_size = 0};
-
 #ifdef AMPS_F2CLIB_FIX
 int MAIN__()
 {

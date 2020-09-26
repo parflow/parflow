@@ -83,6 +83,9 @@ void amps_ClearInvoice(amps_Invoice inv)
   /* if allocated then we deallocate                                       */
   if (inv->combuf_flags & AMPS_INVOICE_ALLOCATED)
   {
+/*
+ *    amps_Printf("Freeing buffer %x\n", inv -> combuf );
+ */
     amps_free(comm, inv->combuf);
   }
 

@@ -33,14 +33,6 @@ void amps_FindPowers (int N, int *log, int *Nnext, int *Nprev);
 /* amps_fopen.c */
 amps_File amps_Fopen (char *filename, char *type);
 
-/* amps_gpupacking.cu */
-void amps_gpu_freebufs();
-char* amps_gpu_recvbuf_mpi(int size_total);
-char* amps_gpu_recvbuf_packing();
-char* amps_gpu_sendbuf_mpi();
-char* amps_gpu_sendbuf_packing(amps_Package package);
-int amps_gpupacking(amps_Invoice inv, char **buffer, int unpack);
-
 /* amps_init.c */
 int MAIN__ (void);
 int amps_Init (int *argc, char **argv []);
