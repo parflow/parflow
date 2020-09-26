@@ -32,6 +32,8 @@ amps_GpuBuffer amps_gpu_sendbuf = {.buf = NULL,
                                    .buf_size = NULL,
                                    .num_bufs = 0};
 
+amps_GpuStreams amps_gpu_streams = {.num_streams = 0};
+
 // #define DISABLE_GPU_PACKING
 // #define ENFORCE_HOST_STAGING
 
@@ -39,6 +41,32 @@ amps_GpuBuffer amps_gpu_sendbuf = {.buf = NULL,
 #include "amps_gpupacking.c"
 #else
 
+void amps_gpu_destroy_streams(){
+  for(int i = 0; i < amps_gpu_streams.num_streams; i++){
+    CUDA_ERRCHK(cudaStreamDestroy(amps_gpu_streams.stream[i]));
+  }
+}
+
+cudaStream_t amps_gpu_get_stream(int stream){
+  if(amps_gpu_streams.num_streams < stream + 1)
+  {
+    if(amps_gpu_streams.num_streams < AMPS_GPU_MAX_STREAMS)
+      {
+        CUDA_ERRCHK(cudaStreamCreate(&(amps_gpu_streams.stream[stream])));
+        amps_gpu_streams.num_streams++;
+      }
+  }
+  return amps_gpu_streams.stream[(stream) % AMPS_GPU_MAX_STREAMS];
+}
+
+void amps_gpu_sync_streams(int num_streams){
+  for(int i = 0; i < num_streams; i++)
+  {
+    if(i < AMPS_GPU_MAX_STREAMS)
+      CUDA_ERRCHK(cudaStreamSynchronize(amps_gpu_streams.stream[i])); 
+  }
+}
+  
 static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
   if(gpubuf->num_bufs > 0){
     for(int i = 0; i < gpubuf->num_bufs; i++)
@@ -49,7 +77,7 @@ static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
   }
 }
 
-void amps_gpu_freebufs(){
+void amps_gpu_free_bufs(){
   _amps_gpubuf_free(&amps_gpu_recvbuf);
   _amps_gpubuf_free(&amps_gpu_sendbuf);
 }
@@ -162,7 +190,7 @@ static char* _amps_gpu_sendbuf_realloc(int inv_num, int pos, int size){
   return _amps_gpubuf_realloc(&amps_gpu_sendbuf, inv_num, pos, size);
 }
 
-static int _amps_gpupack_invcheck_vector(int dim, int *len, int type)
+static int _amps_gpupack_check_inv_vector(int dim, int *len, int type)
 {
   if (dim == 0){
     switch (type){
@@ -170,7 +198,7 @@ static int _amps_gpupack_invcheck_vector(int dim, int *len, int type)
           return 0; //This case is supported
         break;
       default:
-        // printf("ERROR at %s:%d: Only \"AMPS_INVOICE_DOUBLE_CTYPE\" is supported.", __FILE__, __LINE__);
+        printf("ERROR at %s:%d: Only \"AMPS_INVOICE_DOUBLE_CTYPE\" is supported.", __FILE__, __LINE__);
         return __LINE__;
     }
   }
@@ -183,72 +211,36 @@ static int _amps_gpupack_invcheck_vector(int dim, int *len, int type)
   }
 }
 
-static int _amps_gpupack_invcheck(amps_InvoiceEntry *ptr){
-    switch (ptr->type)
-    {
-      case AMPS_INVOICE_CHAR_CTYPE:
-        // printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
-        return __LINE__;
-        break;
-
-      case AMPS_INVOICE_SHORT_CTYPE:
-        // printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
-        return __LINE__;
-        break;
-
-      case AMPS_INVOICE_INT_CTYPE:
-        // printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
-        return __LINE__;
-        break;
-
-      case AMPS_INVOICE_LONG_CTYPE:
-        // printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
-        return __LINE__;
-        break;
-
-      case AMPS_INVOICE_FLOAT_CTYPE:
-        // printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
-        return __LINE__;
-        break;
-
-      case AMPS_INVOICE_DOUBLE_CTYPE:
-        // printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
-        return __LINE__;
-        break;
-
-      default:
-        int dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ? *(ptr->ptr_dim) : ptr->dim;
-        return _amps_gpupack_invcheck_vector(dim - 1, ptr->ptr_len, ptr->type - AMPS_INVOICE_LAST_CTYPE);
-    }
-}
-
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out){
-  amps_InvoiceEntry *ptr = inv->list;
+  
   char *buffer;
   int pos = 0;
+  int streams_hired = 0;
 
+  amps_InvoiceEntry *ptr = inv->list;
   while (ptr != NULL)
   {
     if (ptr->len_type != AMPS_INVOICE_POINTER){
-      // printf("ERROR at %s:%d: ptr->len_type must be a pointer.", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: ptr->len_type must be a pointer.", __FILE__, __LINE__);
       return __LINE__;
     }
   
     if (ptr->stride_type != AMPS_INVOICE_POINTER){
-      // printf("ERROR at %s:%d: ptr->stride_type must be a pointer.", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: ptr->stride_type must be a pointer.", __FILE__, __LINE__);
       return __LINE__;
     }
   
     if (ptr->data_type == AMPS_INVOICE_POINTER){
-      // printf("ERROR at %s:%d: Overlayed invoices not supported.", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: Overlayed invoices not supported.", __FILE__, __LINE__);
       return __LINE__;
     }
   
-    if(int error = _amps_gpupack_invcheck(ptr)){
-      return error;
-    }
+    /* Make sure all needed invoice vector cases are supported */
+    int dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ? *(ptr->ptr_dim) : ptr->dim;
+    int error = _amps_gpupack_check_inv_vector(dim - 1, ptr->ptr_len, ptr->type - AMPS_INVOICE_LAST_CTYPE);
+    if(int error) return error;
   
-    // Preparations for the kernel launch
+    /* Preparations for the kernel launch */
     int blocksize_x = 1;
     int blocksize_y = 1;
     int blocksize_z = 1;  
@@ -259,7 +251,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     int stride_y = 0;
     int stride_z = 0;
   
-    int dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ? *(ptr->ptr_dim) : ptr->dim;
     switch (dim)
     {
       case 3:
@@ -276,7 +267,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
         stride_x = ptr->ptr_stride[0];
         break;
       default:
-        // printf("ERROR at %s:%d: Only dimensions 1 - 3 are supported.", __FILE__, __LINE__);
+        printf("ERROR at %s:%d: Only dimensions 1 - 3 are supported.", __FILE__, __LINE__);
         return __LINE__;
     }  
     
@@ -287,7 +278,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
   
     /* Check that the data location (not MPI staging buffer) is accessible by the GPU */
     if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
-      // printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s).", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s).", __FILE__, __LINE__);
       return __LINE__;
     }
 
@@ -309,22 +300,26 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
 
     /* Check that the staging buffer is accessible by the GPU */
     if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
-      // printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s).", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s).", __FILE__, __LINE__);
       return __LINE__;
     }
 
+    /* Create a new gpu stream if no free streams available */
+    cudaStream_t new_stream = amps_gpu_get_stream(streams_hired++);
+
+    /* Run packing or unpacking kernel */
     dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);
     if(action == AMPS_PACK){
-      PackingKernel<<<grid, block, 0, 0>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+      PackingKernel<<<grid, block, 0, new_stream>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags |= AMPS_PACKED;
     }
     else if(action == AMPS_UNPACK){
-      UnpackingKernel<<<grid, block, 0, 0>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+      UnpackingKernel<<<grid, block, 0, new_stream>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags &= ~AMPS_PACKED;
     }
-    CUDA_ERRCHK(cudaPeekAtLastError()); 
-    CUDA_ERRCHK(cudaStreamSynchronize(0));
+    // CUDA_ERRCHK(cudaPeekAtLastError()); 
+    // CUDA_ERRCHK(cudaStreamSynchronize(0));
 
     pos += size;  
     ptr = ptr->next;
@@ -344,8 +339,10 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
 
   *size_out = pos;
 
+  //sync all gpu streams
+  amps_gpu_sync_streams(streams_hired);
+
   return 0;
 } 
 #endif // DISABLE_GPU_PACKING
 }   
-    

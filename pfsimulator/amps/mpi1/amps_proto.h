@@ -34,7 +34,8 @@ void amps_FindPowers(int N, int *log, int *Nnext, int *Nprev);
 amps_File amps_Fopen(char *filename, char *type);
 
 /* amps_gpupacking.cu */
-void amps_gpu_freebufs();
+void amps_gpu_free_bufs();
+void amps_gpu_destroy_streams();
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out);
 
 /* amps_init.c */

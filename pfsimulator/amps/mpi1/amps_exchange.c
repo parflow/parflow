@@ -50,12 +50,11 @@ void _amps_wait_exchange(amps_Handle handle)
       errchk = amps_gpupacking(AMPS_UNPACK, 
                  handle->package->recv_invoices[i], 
                    i, &combuf, &size);
-      if(errchk){
-        printf("GPU unpacking failed at line: %d\n", errchk);
-      }
+      // if(errchk) printf("GPU unpacking failed at line: %d\n", errchk);
       AMPS_CLEAR_INVOICE(handle->package->recv_invoices[i]);
     }
     free(status);
+    (void)errchk;
   }
 
   for (i = 0; i < handle->package->num_recv; i++)
@@ -92,10 +91,9 @@ amps_Handle amps_IExchangePackage(amps_Package package)
                    i, &combuf, &size);
     if(errchk == 0){    
       package->recv_invoices[i]->mpi_type = MPI_BYTE;
-      MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
     }
     else{ 
-      printf("GPU recv packing check failed at line: %d\n", errchk);
+      // printf("GPU recv packing check failed at line: %d\n", errchk);
       combuf = NULL;
       size = 1;
       amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
@@ -118,7 +116,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
       package->send_invoices[i]->mpi_type = MPI_BYTE;
     }
     else{
-      printf("GPU packing failed at line: %d\n", errchk);
+      // printf("GPU packing failed at line: %d\n", errchk);
       combuf = NULL;
       size = 1;
       amps_create_mpi_type(MPI_COMM_WORLD, package->send_invoices[i]);

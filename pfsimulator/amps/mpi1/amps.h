@@ -1034,6 +1034,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+/* Do not use persistent communication with CUDA */
 #define AMPS_MPI_NOT_USE_PERSISTENT
 
 /*--------------------------------------------------------------------------
@@ -1045,6 +1046,12 @@ typedef struct _amps_GpuBuffer {
   int *buf_size;
   int num_bufs;
 } amps_GpuBuffer;
+
+#define AMPS_GPU_MAX_STREAMS 10
+typedef struct _amps_GpuStreams {
+  cudaStream_t stream[AMPS_GPU_MAX_STREAMS];
+  int num_streams;
+} amps_GpuStreams;
 
 /*--------------------------------------------------------------------------
  *  GPU error handling macros
