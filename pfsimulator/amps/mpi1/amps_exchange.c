@@ -87,7 +87,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
    *--------------------------------------------------------------------*/
   for (i = 0; i < package->num_recv; i++)
   {
-    errchk = amps_gpupacking(AMPS_RECV, package->recv_invoices[i], 
+    errchk = amps_gpupacking(AMPS_GETRBUF, package->recv_invoices[i], 
                    i, &combuf, &size);
     if(errchk == 0){    
       package->recv_invoices[i]->mpi_type = MPI_BYTE;

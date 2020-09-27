@@ -361,9 +361,10 @@ extern amps_Buffer *amps_BufferFreeList;
  *
  *****************************************************************************/
 
-#define AMPS_PACK 1
-#define AMPS_RECV 2
-#define AMPS_UNPACK 4
+#define AMPS_GETRBUF 1
+#define AMPS_GETSBUF 2
+#define AMPS_PACK 4
+#define AMPS_UNPACK 8
 
 #define AMPS_PACKED 2
 

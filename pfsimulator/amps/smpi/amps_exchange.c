@@ -29,51 +29,7 @@
 #include <sys/times.h>
 #include "amps.h"
 
-int _amps_send_sizes(amps_Package package, int **sizes)
-{
-  int i;
-  char *buffer;
-
-  *sizes = (int*)calloc(package->num_send, sizeof(int));
-
-  for (i = 0; i < package->num_send; i++)
-  {
-    (*sizes)[i] = amps_pack(amps_CommWorld, package->send_invoices[i],
-                            &buffer);
-    MPI_Isend(&((*sizes)[i]), 1, MPI_INT, package->dest[i],
-              0, amps_CommWorld,
-              &(package->send_requests[i]));
-  }
-
-  return(0);
-}
-
 #ifdef AMPS_MPI_NOT_USE_PERSISTENT
-
-int _amps_recv_sizes(amps_Package package)
-{
-  int i;
-  int size;
-
-  MPI_Status status;
-
-  for (i = 0; i < package->num_recv; i++)
-  {
-    MPI_Recv(&size, 1, MPI_INT, package->src[i], 0,
-             amps_CommWorld, &status);
-
-    package->recv_invoices[i]->combuf =
-      (char*)calloc(size, sizeof(char *));
-
-    /* Post receives for incoming byte buffers */
-
-    MPI_Irecv(package->recv_invoices[i]->combuf, size,
-              MPI_BYTE, package->src[i], 1,
-              amps_CommWorld, &(package->recv_requests[i]));
-  }
-
-  return(0);
-}
 
 void _amps_wait_exchange(amps_Handle handle)
 {
@@ -199,6 +155,25 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 
 #else
 
+int _amps_send_sizes(amps_Package package, int **sizes)
+{
+  int i;
+  char *buffer;
+
+  *sizes = (int*)calloc(package->num_send, sizeof(int));
+
+  for (i = 0; i < package->num_send; i++)
+  {
+    (*sizes)[i] = amps_pack(amps_CommWorld, package->send_invoices[i],
+                            &buffer);
+    MPI_Isend(&((*sizes)[i]), 1, MPI_INT, package->dest[i],
+              0, amps_CommWorld,
+              &(package->send_requests[i]));
+  }
+
+  return(0);
+}
+
 int _amps_recv_sizes(amps_Package package)
 {
   int i;
@@ -247,6 +222,17 @@ void _amps_wait_exchange(amps_Handle handle)
  *         AMPS_CLEAR_INVOICE(handle -> package -> recv_invoices[i]);
  */
       }
+    }
+    
+    for (i = 0; i < handle->package->num_recv; i++)
+    {
+      if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+        MPI_Request_free(&(handle->package->recv_requests[i]));
+    }
+    for (i = 0; i < handle->package->num_send; i++)
+    {
+      if(handle->package->send_requests[i] != MPI_REQUEST_NULL)
+        MPI_Request_free(&(handle->package->send_requests[i]));
     }
   }
 }

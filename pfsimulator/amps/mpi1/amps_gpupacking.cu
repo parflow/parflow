@@ -216,7 +216,7 @@ static int _amps_gpupack_check_inv_vector(int dim, int *len, int type)
       case AMPS_INVOICE_DOUBLE_CTYPE:
         return 0; //This case is supported
       default:
-        printf("ERROR at %s:%d: Only \"AMPS_INVOICE_DOUBLE_CTYPE\" is supported.", __FILE__, __LINE__);
+        printf("ERROR at %s:%d: Only \"AMPS_INVOICE_DOUBLE_CTYPE\" is supported\n", __FILE__, __LINE__);
         return __LINE__;
     }
   }
@@ -229,6 +229,37 @@ static int _amps_gpupack_check_inv_vector(int dim, int *len, int type)
   }
 }
 
+/**
+*
+* The \Ref{amps_gpupacking} operates in 3 different modes:
+*
+* Mode 1: AMPS_GETRBUF / AMPS_GETSBUF
+* -determines the size of the invoice message in bytes
+* -allocates/reallocates the recv/send staging buffer if necessary
+* -*buffer_out is set to point to the recv/send staging buffer
+* -*size_out is set to the size of the invoice message in bytes
+*
+* Mode 2: AMPS_PACK
+* -determines the size of the invoice message in bytes
+* -allocates/reallocates the send staging buffer if necessary
+* -packs data to the send staging buffer parallel using a GPU
+* -*buffer_out is set to point to the send staging buffer
+* -*size_out is set to the size of invoice message in bytes (size of the packed data)
+*
+* Mode 3: AMPS_UNPACK
+* -determines the size of the invoice message in bytes
+* -allocates/reallocates the recv staging buffer if necessary
+* -unpacks data from the recv staging buffer parallel using a GPU
+* -*buffer_out is set to point to the recv staging buffer
+* -*size_out is set to the size of invoice message in bytes (size of the unpacked data)
+*
+* @param action either AMPS_GETRBUF, AMPS_GETSBUF, AMPS_PACK or AMPS_UNPACK [in]
+* @param inv amps invoice [in]
+* @param inv_num amps invoice order number [in]
+* @param buffer_out pointer to the pointer of the staging buffer [out]
+* @param size_out pointer to the invoice message size in bytes [out]
+* @return error code (line number), 0 if succesful
+*/
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out){
   
   char *buffer;
@@ -239,17 +270,17 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
   while (ptr != NULL)
   {
     if (ptr->len_type != AMPS_INVOICE_POINTER){
-      printf("ERROR at %s:%d: ptr->len_type must be a pointer.", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: ptr->len_type must be a pointer\n", __FILE__, __LINE__);
       return __LINE__;
     }
   
     if (ptr->stride_type != AMPS_INVOICE_POINTER){
-      printf("ERROR at %s:%d: ptr->stride_type must be a pointer.", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: ptr->stride_type must be a pointer\n", __FILE__, __LINE__);
       return __LINE__;
     }
   
     if (ptr->data_type == AMPS_INVOICE_POINTER){
-      printf("ERROR at %s:%d: Overlayed invoices not supported.", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: Overlayed invoices not supported\n", __FILE__, __LINE__);
       return __LINE__;
     }
   
@@ -285,7 +316,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
         stride_x = ptr->ptr_stride[0];
         break;
       default:
-        printf("ERROR at %s:%d: Only dimensions 1 - 3 are supported.", __FILE__, __LINE__);
+        printf("ERROR at %s:%d: Only dimensions 1 - 3 are supported\n", __FILE__, __LINE__);
         return __LINE__;
     }  
     
@@ -296,7 +327,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
   
     /* Check that the data location (not MPI staging buffer) is accessible by the GPU */
     if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
-      printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s).", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s)\n", __FILE__, __LINE__);
       return __LINE__;
     }
 
@@ -308,17 +339,23 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     }
 #endif
 
-    if(action == AMPS_PACK)
+    if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
       buffer = _amps_gpu_sendbuf_realloc(inv_num, pos, size);
-    else
+    }
+    else if((action == AMPS_GETRBUF) || (action == AMPS_UNPACK)){
       buffer = _amps_gpu_recvbuf_realloc(inv_num, pos, size);
+    }
+    else{
+      printf("ERROR at %s:%d: Unknown action argument (val = %d)\n", __FILE__, __LINE__, action);
+      return __LINE__;
+    }
 
     /* Get buffer location and its properties*/
     cudaPointerGetAttributes(&attributes, (void *)buffer);  
 
     /* Check that the staging buffer is accessible by the GPU */
     if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
-      printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s).", __FILE__, __LINE__);
+      printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s)\n", __FILE__, __LINE__);
       return __LINE__;
     }
 
@@ -345,15 +382,21 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
 
   /* Check that the size is calculated right (somewhat costly) */
   // if(pos != amps_sizeof_invoice(amps_CommWorld, inv)){
-    // printf("ERROR at %s:%d: The size does not match the invoice size.", __FILE__, __LINE__);
+    // printf("ERROR at %s:%d: The size does not match the invoice size\n", __FILE__, __LINE__);
     // return __LINE__;
   // }
 
   //set out values here if everything went fine
-  if(action == AMPS_PACK)
+  if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
     *buffer_out = _amps_gpu_sendbuf(inv_num, pos);
-  else
+  }
+  else if((action == AMPS_GETRBUF) || (action == AMPS_UNPACK)){
     *buffer_out = _amps_gpu_recvbuf(inv_num, pos);
+  }
+  else{
+    printf("ERROR at %s:%d: Unknown action argument (val = %d)\n", __FILE__, __LINE__, action);
+    return __LINE__;
+  }
 
   *size_out = pos;
 
