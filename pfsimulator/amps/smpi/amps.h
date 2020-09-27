@@ -1062,9 +1062,6 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-/* Do not use persistent communication with CUDA */
-#define AMPS_MPI_NOT_USE_PERSISTENT
-
 /*--------------------------------------------------------------------------
  * Amps gpu structs for global amps variables
  *--------------------------------------------------------------------------*/
