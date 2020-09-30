@@ -18,7 +18,7 @@
  ***********************************************************************/
 
  /* TODO 
-  * -make gpu bufs contiguous
+  * -make gpu bufs contiguous across invoices?
   */
 
 extern "C"{
@@ -26,27 +26,52 @@ extern "C"{
 #include <string.h>
 #include "amps.h"
 
-amps_GpuBuffer amps_gpu_recvbuf = {.buf = NULL, 
-                                   .buf_host = NULL,
-                                   .buf_size = NULL,
-                                   .num_bufs = 0};
-
-amps_GpuBuffer amps_gpu_sendbuf = {.buf = NULL, 
-                                   .buf_host = NULL,
-                                   .buf_size = NULL,
-                                   .num_bufs = 0};
-
-amps_GpuStreams amps_gpu_streams = {.stream = NULL,
-                                    .stream_id = NULL,
-                                    .num_streams = 0,
-                                    .reqs_since_sync = 0};
-
 // #define DISABLE_GPU_PACKING
 // #define ENFORCE_HOST_STAGING
 
 #ifdef DISABLE_GPU_PACKING
-#include "amps_gpupacking.c"
+//Dummy definitions if no GPU packing
+void amps_gpu_free_bufs(){}
+
+void amps_gpu_destroy_streams(){}
+
+void amps_gpu_sync_streams(int id){
+  (void)id;
+}
+
+int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out){
+  (void)action;
+  (void)inv;
+  (void)inv_num;
+  (void)buffer_out;
+  (void)size_out;
+  return 1;
+}    
 #else
+
+amps_GpuBuffer amps_gpu_recvbuf = 
+{
+  .buf = NULL, 
+  .buf_host = NULL,
+  .buf_size = NULL,
+  .num_bufs = 0
+};
+
+amps_GpuBuffer amps_gpu_sendbuf = 
+{
+  .buf = NULL, 
+  .buf_host = NULL,
+  .buf_size = NULL,
+  .num_bufs = 0
+};
+
+amps_GpuStreams amps_gpu_streams = 
+{
+  .stream = NULL,
+  .stream_id = NULL,
+  .num_streams = 0,
+  .reqs_since_sync = 0
+};
 
 /* Destroys all GPU streams */
 void amps_gpu_destroy_streams(){
@@ -387,16 +412,20 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     }
 
     /* Run packing or unpacking kernel */
-    dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
+    dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, 
+                      ((len_y - 1) + blocksize_y) / blocksize_y, 
+                       ((len_z - 1) + blocksize_z) / blocksize_z);
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);
     if(action == AMPS_PACK){
       cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
-      PackingKernel<<<grid, block, 0, new_stream>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+      PackingKernel<<<grid, block, 0, new_stream>>>(
+        (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags |= AMPS_PACKED;
     }
     else if(action == AMPS_UNPACK){
       cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
-      UnpackingKernel<<<grid, block, 0, new_stream>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+      UnpackingKernel<<<grid, block, 0, new_stream>>>(
+        (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags &= ~AMPS_PACKED;
     }
     // CUDA_ERRCHK(cudaPeekAtLastError()); 
@@ -406,13 +435,13 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     ptr = ptr->next;
   }
 
-  /* Check that the size is calculated right (somewhat costly) */
+  /* Check that the size is calculated right */
   // if(pos != amps_sizeof_invoice(amps_CommWorld, inv)){
     // printf("ERROR at %s:%d: The size does not match the invoice size\n", __FILE__, __LINE__);
     // return __LINE__;
   // }
 
-  //set out values here if everything went fine
+  //set the out values here if everything went fine
   if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
     *buffer_out = _amps_gpu_sendbuf(inv_num, pos);
   }
