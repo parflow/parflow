@@ -37,6 +37,7 @@ amps_GpuBuffer amps_gpu_sendbuf = {.buf = NULL,
                                    .num_bufs = 0};
 
 amps_GpuStreams amps_gpu_streams = {.stream = NULL,
+                                    .stream_id = NULL,
                                     .num_streams = 0,
                                     .reqs_since_sync = 0};
 
