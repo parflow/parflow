@@ -37,7 +37,8 @@ amps_GpuBuffer amps_gpu_sendbuf = {.buf = NULL,
                                    .num_bufs = 0};
 
 amps_GpuStreams amps_gpu_streams = {.stream = NULL,
-                                    .num_streams = 0};
+                                    .num_streams = 0,
+                                    .reqs_since_sync = 0};
 
 // #define DISABLE_GPU_PACKING
 // #define ENFORCE_HOST_STAGING
@@ -46,44 +47,70 @@ amps_GpuStreams amps_gpu_streams = {.stream = NULL,
 #include "amps_gpupacking.c"
 #else
 
+/* Destroys all GPU streams */
 void amps_gpu_destroy_streams(){
   for(int i = 0; i < amps_gpu_streams.num_streams; i++){
     CUDA_ERRCHK(cudaStreamDestroy(amps_gpu_streams.stream[i]));
   }
   free(amps_gpu_streams.stream);
+  free(amps_gpu_streams.stream_id);
 }
 
-cudaStream_t amps_gpu_get_stream(int stream){
-  if(stream > amps_gpu_streams.num_streams - 1)
+/* Marks a stream with the id and returns this stream (new streams is allocated if necessary) */
+cudaStream_t amps_gpu_get_stream(int id){
+  if(amps_gpu_streams.reqs_since_sync > amps_gpu_streams.num_streams - 1)
   {
     if(amps_gpu_streams.num_streams < AMPS_GPU_MAX_STREAMS)
     {
-      int new_num_streams = stream + 1;
-      if(stream >= AMPS_GPU_MAX_STREAMS)
+      int new_num_streams = amps_gpu_streams.reqs_since_sync + 1;
+      if(amps_gpu_streams.reqs_since_sync >= AMPS_GPU_MAX_STREAMS)
         new_num_streams = AMPS_GPU_MAX_STREAMS;
 
       cudaStream_t *newstream = (cudaStream_t*)malloc(new_num_streams * sizeof(cudaStream_t));
+      int *id_array = (int*)malloc(new_num_streams * sizeof(int));
       if(amps_gpu_streams.num_streams != 0){
         memcpy(newstream, 
           amps_gpu_streams.stream, 
             amps_gpu_streams.num_streams * sizeof(cudaStream_t));
+        memcpy(id_array, 
+          amps_gpu_streams.stream_id, 
+            amps_gpu_streams.num_streams * sizeof(int));
         free(amps_gpu_streams.stream);
+        free(amps_gpu_streams.stream_id);
       }
       amps_gpu_streams.stream = newstream;
-      for(int i = amps_gpu_streams.num_streams; i < new_num_streams; i++)
+      amps_gpu_streams.stream_id = id_array;
+      for(int i = amps_gpu_streams.num_streams; i < new_num_streams; i++){
         CUDA_ERRCHK(cudaStreamCreate(&(amps_gpu_streams.stream[i])));
+        amps_gpu_streams.stream_id[i] = AMPS_GPU_MAX_STREAMS; 
+      }
       amps_gpu_streams.num_streams = new_num_streams;
     }
   }
-  return amps_gpu_streams.stream[(stream) % AMPS_GPU_MAX_STREAMS];
+  int stream_index = amps_gpu_streams.reqs_since_sync % AMPS_GPU_MAX_STREAMS;
+  amps_gpu_streams.reqs_since_sync++;
+  if(id < amps_gpu_streams.stream_id[stream_index])
+    amps_gpu_streams.stream_id[stream_index] = id;
+  return amps_gpu_streams.stream[stream_index];
 }
 
-void amps_gpu_sync_streams(int num_streams){
-  for(int i = 0; i < num_streams; i++)
+/* Synchronizes GPU streams associated with the id */
+void amps_gpu_sync_streams(int id){
+  for(int i = 0; i < amps_gpu_streams.num_streams; i++)
   {
-    if(i < AMPS_GPU_MAX_STREAMS)
-      CUDA_ERRCHK(cudaStreamSynchronize(amps_gpu_streams.stream[i])); 
+    if(amps_gpu_streams.stream_id[i] < id){
+      printf("ERROR at %s:%d: The streams must be synced in ascending id order \n", __FILE__, __LINE__);
+      exit(1);
+    }
   }
+  for(int i = 0; i < amps_gpu_streams.num_streams; i++)
+  {
+    if(amps_gpu_streams.stream_id[i] == id){
+      CUDA_ERRCHK(cudaStreamSynchronize(amps_gpu_streams.stream[i])); 
+      amps_gpu_streams.stream_id[i] = AMPS_GPU_MAX_STREAMS;
+    }
+  }
+  amps_gpu_streams.reqs_since_sync = 0;
 }
   
 static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
@@ -239,14 +266,14 @@ static int _amps_gpupack_check_inv_vector(int dim, int *len, int type)
 * -*buffer_out is set to point to the recv/send staging buffer
 * -*size_out is set to the size of the invoice message in bytes
 *
-* Mode 2: AMPS_PACK
+* Mode 2: AMPS_PACK (requires calling amps_gpu_sync_streams() before the packed data is accessed)
 * -determines the size of the invoice message in bytes
 * -allocates/reallocates the send staging buffer if necessary
 * -packs data to the send staging buffer parallel using a GPU
 * -*buffer_out is set to point to the send staging buffer
 * -*size_out is set to the size of invoice message in bytes (size of the packed data)
 *
-* Mode 3: AMPS_UNPACK
+* Mode 3: AMPS_UNPACK (requires calling amps_gpu_sync_streams() before the unpacked data is accessed)
 * -determines the size of the invoice message in bytes
 * -allocates/reallocates the recv staging buffer if necessary
 * -unpacks data from the recv staging buffer parallel using a GPU
@@ -264,7 +291,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
   
   char *buffer;
   int pos = 0;
-  int streams_hired = 0;
 
   amps_InvoiceEntry *ptr = inv->list;
   while (ptr != NULL)
@@ -320,7 +346,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
         return __LINE__;
     }  
     
-    /* Get data location and its properties*/
+    /* Get data location and its properties */
     char *data = (char*)ptr->data;
     struct cudaPointerAttributes attributes;
     cudaPointerGetAttributes(&attributes, (void *)data);  
@@ -350,7 +376,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       return __LINE__;
     }
 
-    /* Get buffer location and its properties*/
+    /* Get buffer location and its properties */
     cudaPointerGetAttributes(&attributes, (void *)buffer);  
 
     /* Check that the staging buffer is accessible by the GPU */
@@ -359,17 +385,16 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       return __LINE__;
     }
 
-    /* Create a new gpu stream if no free streams available */
-    cudaStream_t new_stream = amps_gpu_get_stream(streams_hired++);
-
     /* Run packing or unpacking kernel */
     dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);
     if(action == AMPS_PACK){
+      cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
       PackingKernel<<<grid, block, 0, new_stream>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags |= AMPS_PACKED;
     }
     else if(action == AMPS_UNPACK){
+      cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
       UnpackingKernel<<<grid, block, 0, new_stream>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags &= ~AMPS_PACKED;
     }
@@ -399,9 +424,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
   }
 
   *size_out = pos;
-
-  //sync all gpu streams
-  amps_gpu_sync_streams(streams_hired);
 
   return 0;
 } 
