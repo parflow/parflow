@@ -83,7 +83,7 @@ cudaStream_t amps_gpu_get_stream(int id){
       amps_gpu_streams.stream_id = id_array;
       for(int i = amps_gpu_streams.num_streams; i < new_num_streams; i++){
         CUDA_ERRCHK(cudaStreamCreate(&(amps_gpu_streams.stream[i])));
-        amps_gpu_streams.stream_id[i] = AMPS_GPU_MAX_STREAMS; 
+        amps_gpu_streams.stream_id[i] = INT_MAX; 
       }
       amps_gpu_streams.num_streams = new_num_streams;
     }
@@ -108,7 +108,7 @@ void amps_gpu_sync_streams(int id){
   {
     if(amps_gpu_streams.stream_id[i] == id){
       CUDA_ERRCHK(cudaStreamSynchronize(amps_gpu_streams.stream[i])); 
-      amps_gpu_streams.stream_id[i] = AMPS_GPU_MAX_STREAMS;
+      amps_gpu_streams.stream_id[i] = INT_MAX;
     }
   }
   amps_gpu_streams.reqs_since_sync = 0;
