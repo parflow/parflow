@@ -81,52 +81,38 @@ Let's have another look at the in-line table from the usage example above:
     '''
 
 These tables can be formatted in a number of different ways. Here are several considerations:
+
 - Any blank rows or rows beginning with ``#`` are ignored in processing.
 - Delimiters can be either commas or spaces.
-- Table orientation does not matter (i.e., whether the field names are across the first row or
-down the first column). The only requirement is for that the top-left entry be ``key`` or one of its aliases.
+- Table orientation does not matter (i.e., whether the field names are across the first row or down the first column). The only requirement is for that the top-left entry be ``key`` or one of its aliases.
 - The table does not have to be completely filled. As shown here, blank property values must be designated by a hyphen.
-- To properly process the table and map to the correct keys, the field names (including ``key``) must be one of
-several possible aliases. The aliases are listed in a yaml file that is included in the Python PFTools, which
-can also be found `here. <https://github.com/grapp1/parflow/blob/py-input/pftools/python/parflow/tools/ref/table_keys.yaml>`_
-These aliases include the exact end of the key name (e.g., ``Perm.Value`` as opposed to the alias ``Perm``), so when in
-doubt, you can use the exact name.
+- To properly process the table and map to the correct keys, the field names (including ``key``) must be one of several possible aliases. The aliases are listed in `this yaml file <https://github.com/grapp1/parflow/blob/py-input/pftools/python/parflow/tools/ref/table_keys.yaml>`_ that is included in the Python PFTools. These aliases include the exact end of the key name (e.g., ``Perm.Value`` as opposed to the alias ``Perm``), so when in doubt, you can use the exact name.
 
 ================================================================================
 Default database loading
 ================================================================================
 
 We have added a database of commonly used parameters for different soil and geologic units to provide some helpful guidance.
-This table is from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_
-The table in the Python PFTools package can be found `here. <https://science.sciencemag.org/content/353/6297/377>`_
-To load this database, you can simply call the ``load_default_properties`` method on the ``SubsurfacePropertiesBuilder`` object.
+This table is from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_ The table in the Python PFTools package can be found `here. <https://github.com/grapp1/parflow/blob/py-input/pftools/python/parflow/tools/ref/default_subsurface.txt>`_ To load this database, you can simply call the ``load_default_properties`` method on the ``SubsurfacePropertiesBuilder`` object.
 
 ================================================================================
 Full API
 ================================================================================
 
-1. ``load_csv_file(tableFile, encoding='utf-8-sig')``: Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object.
-The default text encoding format is ``utf-8-sig``, which should translate files generated from Microsoft Excel.
-2. ``load_txt_file(tableFile, encoding='utf-8-sig')``: Loads a text file to your ``SubsurfacePropertiesBuilder`` object.
-The default text encoding format is ``utf-8-sig``.
+1. ``load_csv_file(tableFile, encoding='utf-8-sig')``: Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``, which should translate files generated from Microsoft Excel.
+2. ``load_txt_file(tableFile, encoding='utf-8-sig')``: Loads a text file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``.
 3. ``load_txt_content(txt_content)``: Loads in-line text to your ``SubsurfacePropertiesBuilder`` object.
 4. ``load_default_properties()``: Loads the table of the default subsurface properties from Maxwell et al. (2016).
-5. ``assign(new=None, old=None, mapping=None)``: Assigns properties to the ``new`` subsurface unit using the
-properties from the ``old`` subsurface unit. Alternatively, a dictionary (``mapping``) can be passed in as an argument, which
-should have the keys as the ``new`` units, and the values as the ``old`` units.
-6. ``apply(name_registration=True)``: Applies the loaded subsurface properties to the subsurface units. If
-``name_registration`` is set to ``True``, it will add the subsurface unit names (e.g., *s1*, *s2* from the
-example above) to the list of unit names for each property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set
-the ``addon`` keys not associated with a specific unit (e.g., ``Phase.RelPerm.Type``).
+5. ``assign(new=None, old=None, mapping=None)``: Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the ``new`` units, and the values as the ``old`` units.
+6. ``apply(name_registration=True)``: Applies the loaded subsurface properties to the subsurface units. If ``name_registration`` is set to ``True``, it will add the subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated with a specific unit (e.g., ``Phase.RelPerm.Type``).
 7. ``print()``: Prints out the subsurface parameters for all subsurface units in a hierarchical format.
-8. ``print_as_table(props_in_header=True, column_separator='  ')``: Prints out the subsurface parameters for all
-subsurface units in a table format. ``props_in_header`` will print the table with the property names as column headings
-if set to ``True``, or as row headings if set to ``False``.
+8. ``print_as_table(props_in_header=True, column_separator='  ')``: Prints out the subsurface parameters for all subsurface units in a table format. ``props_in_header`` will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
 
 ================================================================================
 Examples
 ================================================================================
 
 Full examples of the ``SubsurfacePropertiesBuilder`` can be found in the *new_features* subdirectory of the ParFlow Python tests.
+
 - *default_db*: Loading the default database and mapping the database units to subsurface units in the current run.
 - *tables_LW*: Showing multiple ways to load tables to replace the subsurface property definition keys in the Little Washita test script.
