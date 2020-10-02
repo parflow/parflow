@@ -12,15 +12,18 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath('../../pf-keys/generators/'))
 
 import sphinx_rtd_theme
+import subprocess
 
+# internally running doc generator to generate doc file
+subprocess.call(['python3', '../../pf-keys/generators/read_the_doc_rst.py'])
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'Python ParFlow Keys'
+project = 'Python PFTools'
 copyright = '2020, Garrett Rapp'
 author = 'Garrett Rapp'
 
