@@ -7,12 +7,10 @@ Tables for Subsurface Parameters
 Introduction
 ================================================================================
 
-ParFlow domains with complex geology often involve many lines in the input script, which lengthens the script and makes it more cumbersome to navigate.
-Wouldn't it be easier to load in a table of your subsurface properties?
-Wouldn't it also be nice to be able to load a database of common soil and geologic properties to set up your domain? Python-PFTools has a way to do it all.
+ParFlow domains with complex geology often involve many lines in the input script, which lengthens the script and makes it more cumbersome to navigate. Wouldn't it be easier to load in a table of your subsurface properties or export a table of the subsurface properties for your run? Wouldn't it also be nice to be able to load a database of common soil and geologic properties to set up your domain? Python-PFTools has a way to do it all.
 
 ================================================================================
-Usage
+Usage of ``SubsurfacePropertiesBuilder``
 ================================================================================
 
 First, we'll show some usage examples of loading tables of parameters within a ParFlow Python script:
@@ -58,10 +56,22 @@ We load the ``soil_properties`` text by calling the ``load_txt_content`` method 
 To load the geologic properties for the geometric units *g1*, *g2*, and *g3*, we call ``load_csv_file`` to load an external csv file.
 That now leaves one unit, *g4*, that needs properties. We use the ``assign`` method to assign properties to unit *g4* from the
 properties of unit *g3*. Now that all the geometric units have properties, we call ``apply`` to set the appropriate keys.
-The ``print_as_table`` method prints out the subsurface properties for each unit.
+The ``print_as_table`` method prints out the subsurface properties for each unit. Executing this example will result in a table that looks something like this:
+
+.. code-block:: bash
+
+    key  Perm  Porosity  RelPermAlpha  RelPermN  SatAlpha  SatN   SRes   SSat
+    s1   0.26  0.375     3.548         4.162     3.548     4.162  1e-06  1.0
+    s2   0.04  -         3.467         2.738     -         2.738  1e-06  1.0
+    s3   0.01  0.387     2.692         2.445     2.692     2.445  1e-06  1.0
+    s4   0.01  0.439     -             2.659     0.501     2.659  1e-06  1.0
+    g1   0.26  0.375     3.548         4.162     3.548     4.162  1e-06  1.0
+    g2   0.04  -         3.467         2.738     -         2.738  1e-06  1.0
+    g3   0.01  0.387     2.692         2.445     2.692     2.445  1e-06  1.0
+    g4   0.01  0.387     2.692         2.445     2.692     2.445  1e-06  1.0
 
 ================================================================================
-Table formatting
+Table formatting for importing
 ================================================================================
 
 Let's have another look at the in-line table from the usage example above:
@@ -94,9 +104,10 @@ Default database loading
 
 We have added a database of commonly used parameters for different soil and geologic units to provide some helpful guidance.
 This table is from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_ The table in the Python PFTools package can be found `here. <https://github.com/grapp1/parflow/blob/py-input/pftools/python/parflow/tools/ref/default_subsurface.txt>`_ To load this database, you can simply call the ``load_default_properties`` method on the ``SubsurfacePropertiesBuilder`` object.
+Note that these are all in the default ParFlow units of meters and hours.
 
 ================================================================================
-Full API
+Full API for ``SubsurfacePropertiesBuilder``
 ================================================================================
 
 1. ``load_csv_file(tableFile, encoding='utf-8-sig')``: Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``, which should translate files generated from Microsoft Excel.
@@ -107,6 +118,31 @@ Full API
 6. ``apply(name_registration=True)``: Applies the loaded subsurface properties to the subsurface units. If ``name_registration`` is set to ``True``, it will add the subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated with a specific unit (e.g., ``Phase.RelPerm.Type``).
 7. ``print()``: Prints out the subsurface parameters for all subsurface units in a hierarchical format.
 8. ``print_as_table(props_in_header=True, column_separator='  ')``: Prints out the subsurface parameters for all subsurface units in a table format. ``props_in_header`` will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
+
+================================================================================
+Exporting subsurface properties
+================================================================================
+
+It is often useful to have a table of the subsurface properties assigned to various subsurface units during a run. As mentioned in the `run script API <https://grapp1parflow.readthedocs.io/en/latest/python/run_script.html#full-api>`_,
+you can write out a table of the subsurface properties by calling the ``write_subsurface_table`` method on your ``Run`` object.
+
+----
+
+For example, try adding the following line just above the ``run()`` method call in the ``default_richards.py`` Python test:
+
+.. code-block:: python3
+
+    drich.write_subsurface_table()
+
+Execute the Python script, and you should see an output file called *default_richards_subsurface.csv* containing the following:
+
+.. code-block:: bash
+
+    key,Perm,Porosity,SpecStorage,RelPermAlpha,RelPermN,SatAlpha,SatN,SRes,SSat
+    domain,-,-,0.0001,0.005,2.0,0.005,2.0,0.2,0.99
+    background,4.0,1.0,-,-,-,-,-,-,-
+
+See that it only prints out the properties that are explicitly assigned to each of the subsurface units ``domain`` and ``background``.
 
 ================================================================================
 Examples

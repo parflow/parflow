@@ -253,11 +253,13 @@ Full API
 
 2. ``runobj.write(file_name=None, file_format='pfidb')`` - this will write the set of key/value pairs associated with the ``runobj`` in a specified format. The default ``file_name`` is the name of the ``Run`` object, and the default format is the ParFlow databse format. Other supported formats include *.yaml*, *.yml*, and *.json*.
 
-3. ``runobj.run(working_directory=None, skip_validation=False)`` - this calls the ``write()`` method to write the set of key/value pairs to a ParFlow binary file. It also calls the ``validate()`` method if ``skip_validation=False``. If ``skip_validation=True``, it will skip the validation. This is equivalent to the ``--skip-validation`` runtime argument. Finally, the method will attempt to execute ParFlow. If ``working_directory`` is not given, ``run()`` defaults to writing all files in the directory of the Python script. The ``working_directory`` argument is equivalent to the ``--working-directory`` runtime argument.
+3. ``runobj.write_subsurface_table(file_name=None)`` - this will write out a table with the subsurface properties assigned to each subsurface unit. If a file name is not specified, it will default to a *.csv* file using the name you set to your ``Run`` object at the top of the script, e.g., *default_richards_subsurface.csv*. More information is in the `subsurface property tutorial. <https://grapp1parflow.readthedocs.io/en/latest/tutorials/sub_tables.html#exporting-subsurface-properties>`_
 
-4. ``runobj.dist(pfb_file)`` - distributes a given ParFlow binary file using the ``parflowio`` library with the given ``Process.Topology.[P/Q/R]``  values. The topology that the ``dist()`` method uses can be overwritten as in the above example. This will be covered in more detail in Tutorial 4.
+4. ``runobj.run(working_directory=None, skip_validation=False)`` - this calls the ``write()`` method to write the set of key/value pairs to a ParFlow binary file. It also calls the ``validate()`` method if ``skip_validation=False``. If ``skip_validation=True``, it will skip the validation. This is equivalent to the ``--skip-validation`` runtime argument. Finally, the method will attempt to execute ParFlow. If ``working_directory`` is not given, ``run()`` defaults to writing all files in the directory of the Python script. The ``working_directory`` argument is equivalent to the ``--working-directory`` runtime argument.
 
-5. ``runobj.clone(name)`` - clones the object ``runobj`` to a new object ``name``. This makes it easy to develop ensembles of runs without having to reset all the keys and values.
+5. ``runobj.dist(pfb_file)`` - distributes a given ParFlow binary file using the ``parflowio`` library with the given ``Process.Topology.[P/Q/R]``  values. The topology that the ``dist()`` method uses can be overwritten as in the above example. This will be covered in more detail in Tutorial 4.
+
+6. ``runobj.clone(name)`` - clones the object ``runobj`` to a new object ``name``. This makes it easy to develop ensembles of runs without having to reset all the keys and values.
 
 ================================================================================
 Example
