@@ -32,3 +32,4 @@ ParFlow
    tutorials/fs
    tutorials/pfb
    tutorials/solid_files
+   tutorials/sub_tables
