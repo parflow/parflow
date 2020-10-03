@@ -141,10 +141,18 @@ void amps_gpu_sync_streams(int id){
   
 static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
   if(gpubuf->num_bufs > 0){
-    for(int i = 0; i < gpubuf->num_bufs; i++)
-      if(gpubuf->buf_size[i] > 0)
+    for(int i = 0; i < gpubuf->num_bufs; i++){
+      if(gpubuf->buf_size[i] > 0){
         CUDA_ERRCHK(cudaFree(gpubuf->buf[i]));
+#ifdef ENFORCE_HOST_STAGING
+        CUDA_ERRCHK(cudaFreeHost(gpubuf->buf_host[i]));
+#endif
+      }
+    }
     free(gpubuf->buf);
+#ifdef ENFORCE_HOST_STAGING
+    free(gpubuf->buf_host);
+#endif
     free(gpubuf->buf_size);
   }
 }
@@ -199,10 +207,12 @@ static char* _amps_gpubuf_realloc(amps_GpuBuffer *gpubuf, int inv_num, int pos, 
     gpubuf->buf[inv_num] = newbuf;
 #ifdef ENFORCE_HOST_STAGING
     char *newbuf_host;
-    newbuf_host = (char*)malloc(size_total);
+    CUDA_ERRCHK(cudaMallocHost((void**)&newbuf_host, size_total));
     if(pos != 0){
-      memcpy(newbuf_host, gpubuf->buf_host[inv_num], pos);
-      free(gpubuf->buf_host[inv_num]);
+      CUDA_ERRCHK(cudaMemcpy(newbuf_host,
+        gpubuf->buf_host[inv_num], 
+          pos, cudaMemcpyHostToHost));
+      CUDA_ERRCHK(cudaFreeHost(gpubuf->buf_host[inv_num]));
     }
     gpubuf->buf_host[inv_num] = newbuf_host;
 #endif
@@ -211,19 +221,14 @@ static char* _amps_gpubuf_realloc(amps_GpuBuffer *gpubuf, int inv_num, int pos, 
   return gpubuf->buf[inv_num] + pos;
 }
 
-static char* _amps_gpu_recvbuf(int inv_num, int size){
+static char* _amps_gpu_recvbuf(int inv_num){
   if(inv_num >= amps_gpu_recvbuf.num_bufs){
     printf("ERROR at %s:%d: Not enough space is allocated for recvbufs\n", __FILE__, __LINE__);
     exit(1);
   }
 #ifdef ENFORCE_HOST_STAGING
-  //copy device buffer to host
-  CUDA_ERRCHK(cudaMemcpy(amps_gpu_recvbuf.buf_host[inv_num],
-    amps_gpu_recvbuf.buf[inv_num],
-      size, cudaMemcpyDeviceToHost));
   return amps_gpu_recvbuf.buf_host[inv_num];
 #else
-  (void) size;
   return amps_gpu_recvbuf.buf[inv_num];
 #endif
 }
@@ -232,28 +237,14 @@ static char* _amps_gpu_recvbuf_realloc(int inv_num, int pos, int size){
   return _amps_gpubuf_realloc(&amps_gpu_recvbuf, inv_num, pos, size);
 }
 
-#ifdef ENFORCE_HOST_STAGING
-static void _amps_gpu_recvbuf_sync_device(int inv_num, int pos, int size){
-  //copy host buffer to device
-  CUDA_ERRCHK(cudaMemcpy(amps_gpu_recvbuf.buf[inv_num] + pos,
-    amps_gpu_recvbuf.buf_host[inv_num] + pos,
-      size, cudaMemcpyHostToDevice));
-}
-#endif
-
-static char* _amps_gpu_sendbuf(int inv_num, int size){
+static char* _amps_gpu_sendbuf(int inv_num){
   if(inv_num >= amps_gpu_sendbuf.num_bufs){
     printf("ERROR at %s:%d: Not enough space is allocated for sendbufs\n", __FILE__, __LINE__);
     exit(1);
   }
 #ifdef ENFORCE_HOST_STAGING
-  //copy device buffer to host
-  CUDA_ERRCHK(cudaMemcpy(amps_gpu_sendbuf.buf_host[inv_num],
-    amps_gpu_sendbuf.buf[inv_num],
-      size, cudaMemcpyDeviceToHost));
   return amps_gpu_sendbuf.buf_host[inv_num];
 #else
-  (void) size;
   return amps_gpu_sendbuf.buf[inv_num];
 #endif
 }
@@ -384,13 +375,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     }
 
     int size = len_x * len_y * len_z * sizeof(double);
-#ifdef ENFORCE_HOST_STAGING
-    if(action == AMPS_UNPACK){
-      //copy host staging buffer to device
-      _amps_gpu_recvbuf_sync_device(inv_num, pos, size);
-    }
-#endif
-
     if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
       buffer = _amps_gpu_sendbuf_realloc(inv_num, pos, size);
     }
@@ -416,14 +400,27 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
                       ((len_y - 1) + blocksize_y) / blocksize_y, 
                        ((len_z - 1) + blocksize_z) / blocksize_z);
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);
+
     if(action == AMPS_PACK){
       cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
       PackingKernel<<<grid, block, 0, new_stream>>>(
         (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+#ifdef ENFORCE_HOST_STAGING
+      //copy device buffer to host after packing
+      CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_sendbuf.buf_host[inv_num] + pos,
+                                    amps_gpu_sendbuf.buf[inv_num] + pos,
+                                      size, cudaMemcpyDeviceToHost, new_stream));
+#endif
       inv->flags |= AMPS_PACKED;
     }
     else if(action == AMPS_UNPACK){
       cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
+#ifdef ENFORCE_HOST_STAGING
+      //copy host buffer to device before unpacking
+      CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_recvbuf.buf[inv_num] + pos,
+                                    amps_gpu_recvbuf.buf_host[inv_num] + pos,
+                                      size, cudaMemcpyHostToDevice, new_stream));
+#endif
       UnpackingKernel<<<grid, block, 0, new_stream>>>(
         (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags &= ~AMPS_PACKED;
@@ -443,10 +440,10 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
 
   //set the out values here if everything went fine
   if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
-    *buffer_out = _amps_gpu_sendbuf(inv_num, pos);
+    *buffer_out = _amps_gpu_sendbuf(inv_num);
   }
   else if((action == AMPS_GETRBUF) || (action == AMPS_UNPACK)){
-    *buffer_out = _amps_gpu_recvbuf(inv_num, pos);
+    *buffer_out = _amps_gpu_recvbuf(inv_num);
   }
   else{
     printf("ERROR at %s:%d: Unknown action argument (val = %d)\n", __FILE__, __LINE__, action);
