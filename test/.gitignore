@@ -24,3 +24,4 @@ tcl/clm/t_grnd/
 python/test_output/
 !correct_output/clm_output/*
 !tcl/washita/tcl_scripts/correct_output/*
+!input/*
