@@ -204,11 +204,10 @@ void _amps_wait_exchange(amps_Handle handle)
 
   num = handle->package->num_send + handle->package->num_recv;
 
-  MPI_Waitall(num, handle->package->recv_requests,
-              handle->package->status);
-
   if (num)
   {
+    MPI_Waitall(num, handle->package->recv_requests,
+                handle->package->status);
     if (handle->package->num_recv)
     {
       for (i = 0; i < handle->package->num_recv; i++)
@@ -222,8 +221,7 @@ void _amps_wait_exchange(amps_Handle handle)
  *         AMPS_CLEAR_INVOICE(handle -> package -> recv_invoices[i]);
  */
       }
-    }
-    
+    } 
     for (i = 0; i < handle->package->num_recv; i++)
     {
       if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)

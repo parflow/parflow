@@ -360,12 +360,6 @@ extern amps_Buffer *amps_BufferFreeList;
  *   PACKING structures and defines
  *
  *****************************************************************************/
-
-#define AMPS_GETRBUF 1
-#define AMPS_GETSBUF 2
-#define AMPS_PACK 4
-#define AMPS_UNPACK 8
-
 #define AMPS_PACKED 2
 
 #define AMPS_IGNORE  -1
@@ -1035,24 +1029,19 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+/*--------------------------------------------------------------------------
+ * Amps defines with CUDA
+ *--------------------------------------------------------------------------*/
+#define AMPS_GETRBUF 1
+#define AMPS_GETSBUF 2
+#define AMPS_PACK 4
+#define AMPS_UNPACK 8
+
+#define AMPS_GPU_MAX_STREAMS 1024
+#define BLOCKSIZE_MAX 1024
+
 /* Do not use persistent communication with CUDA */
 #define AMPS_MPI_NOT_USE_PERSISTENT
-
-/*--------------------------------------------------------------------------
- * Amps gpu structs for global amps variables
- *--------------------------------------------------------------------------*/
-typedef struct _amps_GpuBuffer {
-  char **buf;
-  char **buf_host;
-  int *buf_size;
-  int num_bufs;
-} amps_GpuBuffer;
-
-#define AMPS_GPU_MAX_STREAMS 10
-typedef struct _amps_GpuStreams {
-  cudaStream_t *stream;
-  int num_streams;
-} amps_GpuStreams;
 
 /*--------------------------------------------------------------------------
  *  GPU error handling macros
@@ -1090,6 +1079,23 @@ static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
 	}
 }
 #endif
+
+/*--------------------------------------------------------------------------
+ * Amps gpu structs for global amps variables
+ *--------------------------------------------------------------------------*/
+typedef struct _amps_GpuBuffer {
+  char **buf;
+  char **buf_host;
+  int *buf_size;
+  int num_bufs;
+} amps_GpuBuffer;
+
+typedef struct _amps_GpuStreams {
+  cudaStream_t *stream;
+  int *stream_id;
+  int num_streams;
+  int reqs_since_sync;
+} amps_GpuStreams;
 
 /*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for CUDA
@@ -1174,7 +1180,6 @@ static inline void _amps_tfree_cuda(void *ptr)
 /*--------------------------------------------------------------------------
  * Define amps GPU kernels
  *--------------------------------------------------------------------------*/
-#define BLOCKSIZE_MAX 1024
 
 #ifdef __CUDACC__
 extern "C++"{
