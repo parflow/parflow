@@ -9,12 +9,13 @@ Building with CUDA may improve the performance significantly for large problems 
 
 ## CMake
 
-Building with GPU acceleration requires a [CUDA](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html) installation and a CUDA-Aware MPI library (if *mpi1* amps layer is used).  Examples of CUDA-Aware MPI libraries include MVAPICH2-GDR, OpenMPI, and ParaStationMPI. Moreover, pool allocation for Unified Memory can be activated by using [RMM v0.10](https://github.com/rapidsai/rmm/tree/branch-0.10) library and often leads to notably better performance. The GPU acceleration is activated by specifying *PARFLOW_ACCELERATOR_BACKEND=cuda* option to the CMake, e.g.,
+Building with GPU acceleration requires a [CUDA](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html) installation. However, the performance can be further improved by using pool allocation for Unified Memory (requires [RMM v0.10](https://github.com/rapidsai/rmm/tree/branch-0.10) installation) and direct communication between GPUs (requires a CUDA-Aware MPI library).
+The GPU acceleration is activated by specifying *PARFLOW_ACCELERATOR_BACKEND=cuda* option to the CMake, e.g.,
 
 ```shell
 cmake ../parflow -DPARFLOW_AMPS_LAYER=mpi1 -DCMAKE_BUILD_TYPE=Release -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} -DPARFLOW_ACCELERATOR_BACKEND=cuda
 ```
-where *DPARFLOW_AMPS_LAYER=mpi1* leverages GPU-based data packing and unpacking on pinned GPU staging buffers. Although the underlying MPI library must be CUDA-Aware, support for Unified Memory is not required because the pointers passed to the MPI library point to pinned GPU memory allocations. Using *DPARFLOW_AMPS_LAYER=smpi* typically results in significantly worse performance because GPU-based data packing and unpacking are not used, but the MPI library does not need to be CUDA-Aware, because the pointers passed to the MPI library point to standard host memory allocations.
+where *DPARFLOW_AMPS_LAYER=mpi1* leverages GPU-based data packing and unpacking. By default, the packed data is copied to a pinned host staging buffer which is then passed for MPI to avoid special requirements for the MPI library. Direct communication between GPUs (with [GPUDirect P2P/RDMA](https://developer.nvidia.com/gpudirect)) can be activated by specifying an environment variable *PARFLOW_USE_GPUDIRECT=1* during runtime in which case the memory copy between CPU and GPU is avoided and a GPU pointer is passed for MPI, but this requires a CUDA-Aware MPI library (support for Unified Memory is not required because the pointers passed to the MPI library point to pinned GPU memory allocations).
 
 Furthermore, RMM library can be activated by specifying the RMM root directory with *DRMM_ROOT=/path/to/rmm_root* as follows:
 ```shell
