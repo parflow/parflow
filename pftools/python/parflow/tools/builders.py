@@ -624,3 +624,382 @@ class SubsurfacePropertiesBuilder:
         """
         print(self.get_table(props_in_header, column_separator))
         return self
+
+# -----------------------------------------------------------------------------
+# Domain input builder - setting keys for various common problem definitions
+# -----------------------------------------------------------------------------
+
+def get_file_extension(file_name):
+    return file_name.split('.')[-1]
+
+class DomainBuilder:
+
+    def __init__(self, run, name='domain'):
+        self.run = run
+        self.run.Domain.GeomName = name
+
+
+    def __file_check(self, file_name, key_path):
+        """Checking files and setting keys for FileName keys
+        """
+        container = self.run.get_selection_from_location(key_path)[0]
+        container.FileName = file_name
+        if get_file_extension(file_name) == 'pfb':
+            container.Type = 'PFBFile'
+            return self
+        if get_file_extension(file_name) == 'nc':
+            container.Type = 'NCFile'
+            return self
+        else:
+            print(f'File extension {get_file_extension(file_name)} '
+                  f'for {file_name} is invalid')
+            return self
+
+    def water(self, geom_name=None):
+        """Setting keys for water properties and gravity
+        """
+        self.run.Gravity = 1.0
+        self.run.Phase.Names = 'water'
+        self.run.Phase.water.Density.Type = 'Constant'
+        self.run.Phase.water.Density.Value = 1.0
+        self.run.Phase.water.Viscosity.Type = 'Constant'
+        self.run.Phase.water.Viscosity.Value = 1.0
+        self.run.Phase.water.Mobility.Type = 'Constant'
+        self.run.Phase.water.Mobility.Value = 1.0
+        self.run.PhaseSources.water.Type = 'Constant'
+
+        if geom_name:
+            self.run.PhaseSources.water.GeomNames = geom_name
+            self.run.PhaseSources.water.Geom[geom_name].Value = 0.0
+
+        return self
+
+    def no_wells(self):
+        """Setting key with no wells
+        """
+        self.run.Wells.Names = ''
+
+        return self
+
+    def no_contaminants(self):
+        """Setting key with no contaminants
+        """
+        self.run.Contaminants.Names = ''
+
+        return self
+
+    def variably_saturated(self):
+        """Setting keys for variably saturated domain.
+        Solver settings taken from default_richards test case
+        """
+        self.run.Solver = 'Richards'
+        self.run.Solver.MaxIter = 5
+        self.run.Solver.Nonlinear.MaxIter = 10
+        self.run.Solver.Nonlinear.ResidualTol = 1e-9
+        self.run.Solver.Nonlinear.EtaChoice = 'EtaConstant'
+        self.run.Solver.Nonlinear.EtaValue = 1e-5
+        self.run.Solver.Nonlinear.UseJacobian = True
+        self.run.Solver.Nonlinear.DerivativeEpsilon = 1e-2
+        self.run.Solver.Linear.KrylovDimension = 10
+        self.run.Solver.Linear.Preconditioner = 'PFMG'
+
+        return self
+
+    def fully_saturated(self):
+        """Fully saturated solver settings (other than solver ='Impes')
+        taken from default_richards test case - need to change
+        """
+        self.run.Solver = 'Impes'
+        self.run.Solver.MaxIter = 5
+        self.run.Solver.Nonlinear.MaxIter = 10
+        self.run.Solver.Nonlinear.ResidualTol = 1e-9
+        self.run.Solver.Nonlinear.EtaChoice = 'EtaConstant'
+        self.run.Solver.Nonlinear.EtaValue = 1e-5
+        self.run.Solver.Nonlinear.UseJacobian = True
+        self.run.Solver.Nonlinear.DerivativeEpsilon = 1e-2
+        self.run.Solver.Linear.KrylovDimension = 10
+        self.run.Solver.Linear.Preconditioner = 'PFMG'
+
+        return self
+
+
+    def homogeneous_subsurface(self, domain_name, perm=None, porosity=None,
+                               specific_storage=None, rel_perm=None, saturation=None, isotropic=False):
+        """Setting constant parameters for homogeneous subsurface
+        """
+
+        if perm is not None:
+            if not self.run.Geom.Perm.Names:
+                self.run.Geom.Perm.Names = []
+
+            self.run.Geom.Perm._details_['Names']['history'] = []
+            self.run.Geom.Perm.Names += [domain_name]
+
+            # checking for Perm file
+            if isinstance(perm, str):
+                self.__file_check(perm, f'Geom/{domain_name}/Perm')
+            else:
+                self.run.Geom[domain_name].Perm.Type = 'Constant'
+                self.run.Geom[domain_name].Perm.Value = perm
+
+        if porosity is not None:
+            if not self.run.Geom.Porosity.GeomNames:
+                self.run.Geom.Porosity.GeomNames = []
+
+            self.run.Geom.Porosity._details_['GeomNames']['history'] = []
+            self.run.Geom.Porosity.GeomNames += [domain_name]
+
+            # checking for Porosity file
+            if isinstance(porosity, str):
+                self.__file_check(porosity, f'Geom/{domain_name}/Porosity')
+            else:
+                self.run.Geom[domain_name].Porosity.Type = 'Constant'
+                self.run.Geom[domain_name].Porosity.Value = porosity
+
+        if specific_storage is not None:
+            if not self.run.SpecificStorage.GeomNames:
+                self.run.SpecificStorage.GeomNames = []
+
+            self.run.SpecificStorage._details_['GeomNames']['history'] = []
+            self.run.SpecificStorage.GeomNames += [domain_name]
+            self.run.SpecificStorage.Type = 'Constant'
+            self.run.Geom[domain_name].SpecificStorage.Value = specific_storage
+
+        if rel_perm is not None:
+            if not self.run.Phase.RelPerm.GeomNames:
+                self.run.Phase.RelPerm.GeomNames = []
+
+            self.run.Phase.RelPerm.Type = rel_perm['Type']
+            self.run.Phase.RelPerm._details_['GeomNames']['history'] = []
+            self.run.Phase.RelPerm.GeomNames += [domain_name]
+            if rel_perm['Type'] == 'VanGenuchten':
+                self.run.Geom[domain_name].RelPerm.Alpha = rel_perm['Alpha']
+                self.run.Geom[domain_name].RelPerm.N = rel_perm['N']
+
+        if saturation is not None:
+            if not self.run.Phase.Saturation.GeomNames:
+                self.run.Phase.Saturation.GeomNames = []
+
+            self.run.Phase.Saturation.Type = saturation['Type']
+            self.run.Phase.Saturation._details_['GeomNames']['history'] = []
+            self.run.Phase.Saturation.GeomNames += [domain_name]
+            if saturation['Type'] == 'VanGenuchten':
+                self.run.Geom[domain_name].Saturation.Alpha = \
+                    saturation['Alpha'] if saturation['Alpha'] else rel_perm['Alpha'] # defaulting to RelPerm not working
+                self.run.Geom[domain_name].Saturation.N = \
+                    saturation['N'] if saturation['N'] else rel_perm['N']    # defaulting to RelPerm not working
+                self.run.Geom[domain_name].Saturation.SRes = saturation['SRes']
+                self.run.Geom[domain_name].Saturation.SSat = saturation['SSat']
+
+        if isotropic:
+            self.run.Perm.TensorType = 'TensorByGeom'
+
+            if not self.run.Geom.Perm.TensorByGeom.Names:
+                self.run.Geom.Perm.TensorByGeom.Names = []
+
+            self.run.Geom.Perm.TensorByGeom._details_['Names']['history'] = []
+            self.run.Geom.Perm.TensorByGeom.Names += [domain_name]
+            self.run.Geom[domain_name].Perm.TensorValX = 1.0
+            self.run.Geom[domain_name].Perm.TensorValY = 1.0
+            self.run.Geom[domain_name].Perm.TensorValZ = 1.0
+
+        return self
+
+    def box_domain(self, box_input, domain_geom_name, bounds=None, patches=None):
+        """Defining box domain and extents
+        """
+
+        if not self.run.GeomInput.Names:
+            self.run.GeomInput.Names = []
+
+        if box_input not in self.run.GeomInput.Names:
+            self.run.GeomInput._details_['Names']['history'] = []
+            self.run.GeomInput.Names += [box_input]
+
+        if not self.run.GeomInput[box_input].InputType:
+            self.run.GeomInput[box_input].InputType = 'Box'
+
+        if not self.run.GeomInput[box_input].GeomName:
+            self.run.GeomInput[box_input].GeomName = []
+
+        if domain_geom_name not in self.run.GeomInput[box_input].GeomName:
+            self.run.GeomInput[box_input]._details_['GeomName']['history'] = []
+            self.run.GeomInput[box_input].GeomName += [domain_geom_name]
+
+        if bounds is None:
+            self.run.Geom[domain_geom_name].Lower.X = 0.0
+            self.run.Geom[domain_geom_name].Lower.Y = 0.0
+            self.run.Geom[domain_geom_name].Lower.Z = 0.0
+            grid = self.run.ComputationalGrid
+            self.run.Geom[domain_geom_name].Upper.X = grid.DX * grid.NX
+            self.run.Geom[domain_geom_name].Upper.Y = grid.DY * grid.NY
+            self.run.Geom[domain_geom_name].Upper.Z = grid.DZ * grid.NZ
+
+        else:
+            self.run.Geom[domain_geom_name].Lower.X = bounds[0]
+            self.run.Geom[domain_geom_name].Upper.X = bounds[1]
+            self.run.Geom[domain_geom_name].Lower.Y = bounds[2]
+            self.run.Geom[domain_geom_name].Upper.Y = bounds[3]
+            self.run.Geom[domain_geom_name].Lower.Z = bounds[4]
+            self.run.Geom[domain_geom_name].Upper.Z = bounds[5]
+
+        if patches:
+            self.run.Geom[domain_geom_name].Patches = patches
+
+        return self
+
+
+    def slopes_mannings(self, domain_geom_name, slope_x=None,
+                        slope_y=None, mannings=None):
+        """Setting slopes and mannings coefficients as constant value
+        or from an external file
+        """
+        if slope_x is not None:
+            self.run.TopoSlopesX.GeomNames = domain_geom_name
+            if isinstance(slope_x, str):
+                self.__file_check(slope_x, 'TopoSlopesX')
+            else:
+                self.run.TopoSlopesX.Type = 'Constant'
+                self.run.TopoSlopesX.Geom[domain_geom_name].Value = slope_x
+        if slope_y is not None:
+            self.run.TopoSlopesY.GeomNames = domain_geom_name
+            if isinstance(slope_y, str):
+                self.__file_check(slope_y, 'TopoSlopesY')
+            else:
+                self.run.TopoSlopesY.Type = 'Constant'
+                self.run.TopoSlopesY.Geom[domain_geom_name].Value = slope_y
+        if mannings is not None:
+            self.run.Mannings.GeomNames = domain_geom_name
+            if isinstance(mannings, str):
+                self.__file_check(mannings, 'Mannings')
+            else:
+                self.run.Mannings.Type = 'Constant'
+                self.run.Mannings.Geom[domain_geom_name].Value = mannings
+
+        return self
+
+    def zero_flux(self, patches, cycle_name, interval_name):
+        """Setting zero-flux boundary condition for patch or patches
+        """
+        if not self.run.BCPressure.PatchNames:
+            self.run.BCPressure.PatchNames = []
+
+        for patch in patches.split():
+            self.run.BCPressure._details_['PatchNames']['history'] = []
+            self.run.BCPressure.PatchNames += [patch]
+            self.run.Patch[patch].BCPressure.Type = 'FluxConst'
+            self.run.Patch[patch].BCPressure.Cycle = cycle_name
+            self.run.Patch[patch].BCPressure[interval_name].Value = 0.0
+
+        return self
+
+    def ic_pressure(self, domain_geom_name, patch, pressure):
+        """Setting initial condition pressure from file or to constant value
+        """
+        self.run.ICPressure.GeomNames = domain_geom_name
+        self.run.Geom[domain_geom_name].ICPressure.RefPatch = patch
+
+        if isinstance(pressure, str) and get_file_extension(pressure) == 'pfb':
+            self.run.ICPressure.Type = 'PFBFile'
+            self.run.Geom.domain.ICPressure.FileName = pressure
+        elif isinstance(pressure, float) or isinstance(pressure, int):
+            self.run.ICPressure.Type = 'HydroStaticPatch'
+            self.run.Geom.domain.ICPressure.Value = pressure
+
+        return self
+
+    def clm(self, met_file_name, top_patch, cycle_name, interval_name):
+        """Setting keys associated with CLM
+        """
+        # ensure time step is hourly
+        self.run.TimeStep.Type = 'Constant'
+        self.run.TimeStep.Value = 1.0
+        # ensure OverlandFlow is the top boundary condition
+        self.run.Patch[top_patch].BCPressure.Type = 'OverlandFlow'
+        self.run.Patch[top_patch].BCPressure.Cycle = cycle_name
+        self.run.Patch[top_patch].BCPressure[interval_name].Value = 0.0
+        # set CLM keys
+        self.run.Solver.LSM = 'CLM'
+        self.run.Solver.CLM.CLMFileDir = "."
+        self.run.Solver.PrintCLM = True
+        self.run.Solver.CLM.Print1dOut = False
+        self.run.Solver.BinaryOutDir = False
+        self.run.Solver.CLM.DailyRST = True
+        self.run.Solver.CLM.SingleFile = True
+        self.run.Solver.CLM.CLMDumpInterval = 24
+        self.run.Solver.CLM.WriteLogs = False
+        self.run.Solver.CLM.WriteLastRST = True
+        self.run.Solver.CLM.MetForcing = '1D'
+        self.run.Solver.CLM.MetFileName = met_file_name
+        self.run.Solver.CLM.MetFilePath = "."
+        self.run.Solver.CLM.MetFileNT = 24
+        self.run.Solver.CLM.IstepStart = 1.0
+        self.run.Solver.CLM.EvapBeta = 'Linear'
+        self.run.Solver.CLM.VegWaterStress = 'Saturation'
+        self.run.Solver.CLM.ResSat = 0.1
+        self.run.Solver.CLM.WiltingPoint = 0.12
+        self.run.Solver.CLM.FieldCapacity = 0.98
+        self.run.Solver.CLM.IrrigationType = 'none'
+
+        return self
+
+    def well(self, name, type, x, y, z_upper, z_lower,
+                     cycle_name, interval_name, action='Extraction',
+                     saturation=1.0, phase='water', hydrostatic_pressure=None,
+                     value=None):
+        """Setting keys necessary to define a simple well
+        """
+
+        if not self.run.Wells.Names:
+            self.run.Wells.Names = []
+
+        self.run.Wells.Names += [name]
+        well = self.run.Wells[name]
+        well.InputType = 'Vertical'
+        well.Action = 'Extraction'
+        well.Type = type
+        well.X = x
+        well.Y = y
+        well.ZUpper = z_upper
+        well.ZLower = z_lower
+        well.Method = 'Standard'
+        well.Cycle = cycle_name
+        well[interval_name].Saturation[phase].Value = saturation
+
+        if action == 'Extraction':
+            well.Action = 'Extraction'
+            if type == 'Pressure':
+                well[interval_name].Pressure.Value = hydrostatic_pressure
+                if value is not None:
+                    well[interval_name].Extraction.Pressure.Value = value
+            elif type == 'Flux' and value is not None:
+                well[interval_name].Extraction.Flux[phase].Value = value
+
+        if action == 'Injection':
+            well.Action = 'Injection'
+            if type == 'Pressure':
+                well[interval_name].Pressure.Value = hydrostatic_pressure
+                if value is not None:
+                    well[interval_name].Injection.Pressure.Value = value
+            elif type == 'Flux' and value is not None:
+                well[interval_name].Injection.Flux[phase].Value = value
+
+        return self
+
+    def spinup_timing(self, initial_step, dump_interval):
+        """Setting keys to assist a spinup run
+        """
+
+        self.run.TimingInfo.BaseUnit = 1
+        self.run.TimingInfo.StartCount = 0
+        self.run.TimingInfo.StartTime = 0.0
+        self.run.TimingInfo.StopTime = 10000000
+        self.run.TimingInfo.DumpInterval = dump_interval
+        self.run.TimeStep.Type = 'Growth'
+        self.run.TimeStep.InitialStep = initial_step
+        self.run.TimeStep.GrowthFactor = 1.1
+        self.run.TimeStep.MaxStep = 1000000
+        self.run.TimeStep.MinStep = 0.1
+
+        return self
+
