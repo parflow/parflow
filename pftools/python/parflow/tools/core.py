@@ -136,6 +136,12 @@ def get_process_args():
                         dest="writeYAML",
                         action='store_true',
                         help="Enable config to be written as YAML file")
+
+    group.add_argument("--validation-error",
+                        default=False,
+                        dest="validation_error",
+                        action='store_true',
+                        help="Only print validation results for key/value pairs with errors")
     # ++++++++++++++++
     group = parser.add_argument_group('Parallel execution')
     group.add_argument("-p", type=int, default=0,
@@ -300,7 +306,8 @@ class Run(BaseRun):
         print()
         error_count = 0
         if not (skip_validation or self._process_args_.skipValidation):
-            error_count += self.validate()
+            skip_valid = True if self._process_args_.validation_error else False
+            error_count += self.validate(skip_valid=skip_valid)
             print()
 
         p = self.Process.Topology.P

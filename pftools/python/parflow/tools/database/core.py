@@ -379,7 +379,7 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def validate(self, indent=1, workdir=None):
+    def validate(self, indent=1, skip_valid=False, enable_print=True):
         """
         Method to validate sub hierarchy
         """
@@ -396,20 +396,27 @@ class PFDBObj:
                         value = obj._value_
                         add_errors, validation_string = validate_helper(
                             obj, '_value_', value, indent)
-                        print(f'{indent_str}{name}: {validation_string}')
-                        error_count += add_errors
-                    else:
-                        print(f'{indent_str}{name}:')
 
-                    error_count += obj.validate(indent + 1)
+                        if enable_print and (add_errors or not skip_valid):
+                            print(f'{indent_str}{name}: {validation_string}')
+
+                        error_count += add_errors
+                    elif enable_print:
+                        if not skip_valid or obj.validate(enable_print=False):
+                            print(f'{indent_str}{name}:')
+
+                    error_count += obj.validate(indent + 1,
+                                                skip_valid=skip_valid, enable_print=enable_print)
 
             elif hasattr(self, '_details_') and name in self._details_:
                 add_errors, validation_string = validate_helper(
                     self, name, obj, indent)
-                print(f'{indent_str}{name}: {validation_string}')
+                if enable_print and (not skip_valid or add_errors):
+                    print(f'{indent_str}{name}: {validation_string}')
                 error_count += add_errors
             elif obj is not None:
-                print(f'{indent_str}{name}: {obj}')
+                if enable_print and not skip_valid:
+                    print(f'{indent_str}{name}: {obj}')
 
         return error_count
 

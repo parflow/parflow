@@ -242,7 +242,7 @@ Other methods that can be called on a ``Run`` object are shown below:
 Full API
 ================================================================================
 
-1. ``runobj.validate()`` - validates the values set to each key. Validation checks for:
+1. ``runobj.validate(indent=1, skip_valid=False, enable_print=True)`` - validates the values set to each key. Validation checks for:
 
   - Data type (int, float, string)
   - Appropriate range of value (e.g. saturation can’t be less than zero!)
@@ -250,6 +250,8 @@ Full API
   - Duplicate values
   - Necessary module(s) installed
   - Key exists in working version of ParFlow
+
+  The three optional arguments deal with printing the validation messages. ``indent=1`` is the tab length for each level of the hierarchy. The number of spaces that each level is indented is two times ``indent`` (so default is two spaces). ``skip_valid=False``, if set to ``True``, will skip printing the valid key/value pairs and only print the ones with errors and their respective error messages. Otherwise, it will print the validation of every key/value pair. The runtime argument ``--validation-error`` is equivalent to setting ``skip_valid=True``. ``enable_print=True`` defaults to printing all the validation messages. If set to ``False``, no validation messages will be printed. 
 
 2. ``runobj.write(file_name=None, file_format='pfidb')`` - this will write the set of key/value pairs associated with the ``runobj`` in a specified format. The default ``file_name`` is the name of the ``Run`` object, and the default format is the ParFlow databse format. Other supported formats include *.yaml*, *.yml*, and *.json*.
 
