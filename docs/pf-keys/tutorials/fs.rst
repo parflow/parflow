@@ -89,7 +89,7 @@ Example
 ================================================================================
 
 If you want more examples on how to leverage those helper functions,
-you can look at `$PARFLOW_SOURCE/test/python/clm/clm/clm.py <https://github.com/grapp1/parflow/blob/py-pftools/test/python/clm/clm/clm.py#L32-L38>`_
+you can look at `$PARFLOW_SOURCE/test/python/clm/clm/clm.py <https://github.com/parflow/parflow/blob/master/test/python/clm/clm/clm.py#L32-L38>`_
 
 The syntax and usage is more compact than the ``os`` and ``shutil`` methods commonly used in Python.
 If you don't provide an absolute path to the file name, these functions will use ``get_absolute_path``

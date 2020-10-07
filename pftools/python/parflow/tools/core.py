@@ -20,6 +20,7 @@ from .io import write_dict
 from .terminal import Symbols as termSymbol
 
 from .database.generated import BaseRun, PFDBObj, PFDBObjListNumber
+from .export import SubsurfacePropertiesExporter
 
 def check_parflow_execution(out_file):
     """Helper function that can be used to parse ParFlow output file
@@ -227,6 +228,16 @@ class Run(BaseRun):
         write_dict(self.get_key_dict(), full_file_path)
         return full_file_path, full_file_path[:-(len(file_format)+1)]
 
+    def write_subsurface_table(self, file_name=None):
+        if file_name is None:
+            file_name = f'{self._name_}_subsurface.csv'
+        full_path = get_absolute_path(file_name)
+        exporter = SubsurfacePropertiesExporter(self)
+        if file_name.lower().endswith('.csv'):
+            exporter.write_csv(full_path)
+        else:
+            exporter.write_txt(full_path)
+
     def clone(self, name):
         """Method to generate a clone of a run (for generating
         run ensembles, etc.)
@@ -336,3 +347,4 @@ class Run(BaseRun):
         from parflowio.pyParflowio import PFData
         pfb_data = PFData(pfb_file_full_path)
         pfb_data.distFile(p, q, r, pfb_file_full_path)
+
