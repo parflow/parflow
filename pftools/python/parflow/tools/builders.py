@@ -6,6 +6,7 @@ import sys
 import numpy as np
 
 from .helper import sort_dict
+from .fs import exists
 
 try:
     from yaml import CDumper as YAMLDumper
@@ -168,6 +169,7 @@ class SubsurfacePropertiesBuilder:
         self.name_registration = {}
         self.column_index = {}
         self.props_in_row_header = True
+        self.table_comments = []
         yaml_key_def = os.path.join(
             os.path.dirname(__file__), 'ref/table_keys.yaml')
         with open(yaml_key_def, 'r') as file:
@@ -193,6 +195,8 @@ class SubsurfacePropertiesBuilder:
             raise Exception(f'Warning - duplicate alias name(s): {self.alias_duplicates}')
 
     def _process_data_line(self, tokens):
+        """Method to process lines of data in a table
+        """
         # Skip new lines or comments
         if len(tokens) == 0 or tokens[0] == '#':
             return
@@ -282,8 +286,13 @@ class SubsurfacePropertiesBuilder:
 
 
     def _process_first_line(self, first_line_tokens):
+        """Method to process first line in a table
+        """
         # Skip new lines or comments
-        if len(first_line_tokens) == 0 or first_line_tokens[0] == '#':
+        if len(first_line_tokens) == 0:
+            return False
+        if first_line_tokens[0] == '#':
+            self.table_comments.append(" ".join(first_line_tokens))
             return False
 
         self.props_in_row_header = None
@@ -319,6 +328,12 @@ class SubsurfacePropertiesBuilder:
         return True
 
     def load_csv_file(self, tableFile, encoding='utf-8-sig'):
+        """Method to load a .csv file of a table of subsurface parameters
+
+        Args:
+            tableFile (str): Path to the input .csv file.
+            encoding='utf-8-sig': encoding of input file.
+        """
         with open(get_absolute_path(tableFile), 'r', encoding=encoding) as csv_file:
             data_line = False
             for line in csv_file.readlines():
@@ -330,6 +345,12 @@ class SubsurfacePropertiesBuilder:
         return self
 
     def load_txt_file(self, tableFile, encoding='utf-8-sig'):
+        """Method to load a .txt file of a table of subsurface parameters
+
+        Args:
+            tableFile (str): Path to the input .txt file.
+            encoding='utf-8-sig': encoding of input file.
+        """
         with open(get_absolute_path(tableFile), 'r', encoding=encoding) as txt_file:
             data_line = False
             for line in txt_file.readlines():
@@ -342,6 +363,11 @@ class SubsurfacePropertiesBuilder:
         return self
 
     def load_txt_content(self, txt_content):
+        """Method to load an in-line text table of subsurface parameters
+
+        Args:
+            txt_content (str): In-line text string.
+        """
         data_line = False
         for line in txt_content.splitlines():
             tokens = _txt_line_tokenizer(line)
@@ -353,28 +379,76 @@ class SubsurfacePropertiesBuilder:
         return self
 
     def assign(self, old=None, new=None, mapping=None):
-        if old != new:
+        """Method to assigning subsurface properties of one unit to another
+
+        Args:
+            old=None (str): Source unit with existing parameters
+            new=None (str): Target unit to which the parameters from old will be mapped
+            mapping=None (dict): Dictionary that includes the old units as keys
+                and new units as values.
+        """
+        # assigning subsurface properties of one unit to another
+        if isinstance(new, list):
+            for item in new:
+                self.assign(old, item)
+
+        elif old != new:
             data = self.output[old]
             self.output[new] = data
 
         if mapping is not None:
             for old, new in mapping.items():
-                if isinstance(new, list):
-                    for item in new:
-                        self.assign(old, item)
-                else:
-                    self.assign(old, new)
+                self.assign(old, new)
 
         return self
 
-    def load_default_properties(self):
+    def load_default_properties(self, database='conus_1'):
+        """Method to load one of several default property databases.
+
+        Args:
+           database='conus_1': default database - options are:
+           'conus_1': soil/rock properties from Maxwell and Condon (2016)
+           'washita': soil/rock properties from Little Washita script
+           'freeze_cherry': soil/rock properties from Freeze and Cherry (1979)
+           Note: Freeze and Cherry only has permeability and porosity
+        """
+        database_file = 'ref/subsurface_' + database + '.txt'
+
         default_prop_file = os.path.join(
-            os.path.dirname(__file__), 'ref/default_subsurface.txt')
-        self.load_txt_file(default_prop_file)
+            os.path.dirname(__file__), database_file)
+
+        if exists(default_prop_file):
+            self.load_txt_file(default_prop_file)
+            print('#'*80)
+            print('# Loaded database:')
+            for item in self.table_comments:
+                print(item)
+            print('#' * 80)
+        else:
+            print('#' * 80)
+            print(f'# {database} database not found. Available databases include:')
+            for root, dirs, files in os.walk(os.path.dirname(__file__) + '/ref/'):
+                for name in files:
+                    if name.startswith('subsurface'):
+                        print(f'# - {name} (use argument "{name[11:-4]}")')
+            print('#' * 80)
+
 
         return self
 
     def apply(self, run=None, name_registration=True):
+        """Method to apply the loaded subsurface properties to a given
+           run object.
+
+        Args:
+            run=None (Run object): Run object to which the loaded subsurface
+                parameters will be applied. If run=None, then the run object
+                must be passed in as an argument when the
+                SubsurfacePropertiesBuilder is instantiated.
+            name_registration=True (bool): sets the auxiliary keys
+                (e.g., GeomNames) related to the loaded subsurface properties
+        """
+        # applying subsurface properties to run keys
         if run is None:
             if self.run is None:
                 print('No run object assigned')
@@ -409,7 +483,8 @@ class SubsurfacePropertiesBuilder:
         return self
 
     def print(self):
-        # printing in hierarchical format
+        """Method to print subsurface properties in hierarchical format
+        """
         output_to_print = {'Geom': {}}
         valid_geom_names = []
         for geom_name in self.output:
@@ -430,6 +505,17 @@ class SubsurfacePropertiesBuilder:
         return self
 
     def get_table(self, props_in_header=True, column_separator='  '):
+        """Method to convert loaded subsurface properties into a table
+
+        Args:
+            props_in_header=True (bool): Defaults to returning a table with
+                property values at the top of each column
+            column_separator='  ' (str): Defaults to returning a table that
+                is space-delimited.
+
+        Returns:
+            text block of table of subsurface units and parameter values
+        """
         entries = []
         prop_set = set()
         prop_sizes = {'key': 0}
@@ -534,5 +620,7 @@ class SubsurfacePropertiesBuilder:
         return '\n'.join(table_lines)
 
     def print_as_table(self, props_in_header=True, column_separator='  '):
+        """Method to print the table returned from the get_table method
+        """
         print(self.get_table(props_in_header, column_separator))
         return self
