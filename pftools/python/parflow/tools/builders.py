@@ -13,13 +13,18 @@ try:
 except ImportError:
     from yaml import Dumper as YAMLDumper
 
-from parflow.tools.io import write_patch_matrix_as_asc, write_patch_matrix_as_sa
+from parflow.tools.io import write_patch_matrix_as_asc
 from parflow.tools.fs import get_absolute_path
 
-# addressing alias printing when applying database properties to multiple keys
+
 class NoAliasDumper(yaml.SafeDumper):
+
     def ignore_aliases(self, data):
+        """addressing alias printing when applying database properties
+        to multiple keys
+        """
         return True
+
 
 class SolidFileBuilder:
 
@@ -34,41 +39,84 @@ class SolidFileBuilder:
         self.side_id = side
 
     def mask(self, mask_array):
+        """Setting mask array to SolidFileBuilder object
+
+        Args:
+            mask_array (array): Array of values to define the mask.
+        """
         self.mask_array = mask_array
         return self
 
     def top(self, patch_id):
+        """Overwriting top patch ID
+
+        Args:
+            patch_id (int): ID of top patch in mask array
+        """
         self.top_id = patch_id
         self.patch_ids_top = None
         return self
 
     def bottom(self, patch_id):
+        """Overwriting bottom patch ID
+
+        Args:
+            patch_id (int): ID of bottom patch in mask array
+        """
         self.bottom_id = patch_id
         self.patch_ids_top = None
         return self
 
     def side(self, patch_id):
+        """Overwriting side patch ID
+
+        Args:
+            patch_id (int): ID of side patch in mask array
+        """
         self.side_id = patch_id
         self.patch_ids_side = None
         return self
 
     def top_ids(self, top_patch_ids):
+        """Overwriting top patch ID with multiple IDs
+
+        Args:
+            top_patch_ids (array): array of top patch ids
+        """
         self.patch_ids_top = top_patch_ids
         return self
 
     def bottom_ids(self, bottom_patch_ids):
+        """Overwriting bottom patch ID with multiple IDs
+
+        Args:
+            bottom_patch_ids (array): array of bottom patch ids
+        """
         self.patch_ids_bottom = bottom_patch_ids
         return self
 
     def side_ids(self, side_patch_ids):
+        """Overwriting side patch ID with multiple IDs
+
+        Args:
+            side_patch_ids (array): array of side patch ids
+        """
         self.patch_ids_side = side_patch_ids
         return self
 
     def write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False):
+        """Writing out pfsol file with optional output to vtk
+
+        Args:
+            name (str): Name of solid file to write
+            xllcorner (int, float): coordinate of lower-left corner of x-axis
+            yllcorner (int, float): coordinate of lower-left corner of y-axis
+            cellsize (int): size of horizontal grid cell for solid file
+        """
         self.name = name
         output_file_path = get_absolute_path(name)
         if self.mask_array is None:
-            raise Exception('No mask were define')
+            raise Exception('No mask was defined')
 
         jSize, iSize = self.mask_array.shape
         leftMask = np.zeros((jSize, iSize), dtype=np.int16)
@@ -81,30 +129,39 @@ class SolidFileBuilder:
         for j in range(jSize):
             for i in range(iSize):
                 if self.mask_array[j, i] != 0:
-                    patch_value = 0 if self.patch_ids_side is None else self.patch_ids_side[j, i]
+                    patch_value = 0 if self.patch_ids_side is None \
+                        else self.patch_ids_side[j, i]
                     # Left (-x)
                     if i == 0 or self.mask_array[j, i-1] == 0:
-                        leftMask[j, i] = patch_value if patch_value else self.side_id
+                        leftMask[j, i] = patch_value if patch_value \
+                            else self.side_id
 
                     # Right (+x)
                     if i + 1 == iSize or self.mask_array[j, i+1] == 0:
-                        rightMask[j, i] = patch_value if patch_value else self.side_id
+                        rightMask[j, i] = patch_value if patch_value \
+                            else self.side_id
 
                     # Back (-y) (y flipped)
                     if j + 1 == jSize or self.mask_array[j+1, i] == 0:
-                        backMask[j, i] = patch_value if patch_value else self.side_id
+                        backMask[j, i] = patch_value if patch_value \
+                            else self.side_id
 
                     # Front (+y) (y flipped)
                     if j == 0 or self.mask_array[j-1, i] == 0:
-                        frontMask[j, i] = patch_value if patch_value else self.side_id
+                        frontMask[j, i] = patch_value if patch_value \
+                            else self.side_id
 
                     # Bottom (-z)
-                    patch_value = 0 if self.patch_ids_bottom is None else self.patch_ids_bottom[j, i]
-                    bottomMask[j, i] = patch_value if patch_value else self.bottom_id
+                    patch_value = 0 if self.patch_ids_bottom is None \
+                        else self.patch_ids_bottom[j, i]
+                    bottomMask[j, i] = patch_value if patch_value \
+                        else self.bottom_id
 
                     # Top (+z)
-                    patch_value = 0 if self.patch_ids_top is None else self.patch_ids_top[j, i]
-                    topMask[j, i] = patch_value if patch_value else self.top_id
+                    patch_value = 0 if self.patch_ids_top is None \
+                        else self.patch_ids_top[j, i]
+                    topMask[j, i] = patch_value if patch_value \
+                        else self.top_id
 
         # Generate asc / sa files
         writeFn = write_patch_matrix_as_asc
@@ -140,11 +197,24 @@ class SolidFileBuilder:
         if vtk:
             extra.append('--vtk')
             extra.append(f'{output_file_path[:-6]}.vtk')
-        os.system(f'$PARFLOW_DIR/bin/pfmask-to-pfsol --mask-top {top_file_path} --mask-bottom {bottom_file_path} --mask-left {left_file_path} --mask-right {right_file_path} --mask-front {front_file_path} --mask-back {back_file_path} --pfsol {output_file_path} {" ".join(extra)}')
+        os.system(f'$PARFLOW_DIR/bin/pfmask-to-pfsol '
+                  f'--mask-top {top_file_path} '
+                  f'--mask-bottom {bottom_file_path} '
+                  f'--mask-left {left_file_path} '
+                  f'--mask-right {right_file_path} '
+                  f'--mask-front {front_file_path} '
+                  f'--mask-back {back_file_path} '
+                  f'--pfsol {output_file_path} {" ".join(extra)}')
         print('=== pfmask-to-pfsol ===: END')
         return self
 
     def for_key(self, geomItem):
+        """Setting ParFlow keys associated with solid file
+
+        Args:
+            geomItem (str): Name of geometric unit in ParFlow run that will
+            bet used as a token for the ParFlow key.
+        """
         geomItem.InputType = 'SolidFile'
         geomItem.FileName = self.name
         return self
@@ -153,12 +223,15 @@ class SolidFileBuilder:
 # Subsurface hydraulic property input helper
 # -----------------------------------------------------------------------------
 
+
 # splitting csv and txt lines into tokens
 def _csv_line_tokenizer(line):
     return [token.strip() for token in line.split(',')]
 
+
 def _txt_line_tokenizer(line):
     return line.split()
+
 
 class SubsurfacePropertiesBuilder:
 
@@ -192,7 +265,8 @@ class SubsurfacePropertiesBuilder:
 
         # crashes if there are duplicate aliases
         if self.alias_duplicates:
-            raise Exception(f'Warning - duplicate alias name(s): {self.alias_duplicates}')
+            raise Exception(f'Warning - duplicate alias name(s):'
+                            f' {self.alias_duplicates}')
 
     def _process_data_line(self, tokens):
         """Method to process lines of data in a table
@@ -284,7 +358,6 @@ class SubsurfacePropertiesBuilder:
                 if registrations:
                     self.name_registration[geom_name].update(registrations)
 
-
     def _process_first_line(self, first_line_tokens):
         """Method to process first line in a table
         """
@@ -334,7 +407,8 @@ class SubsurfacePropertiesBuilder:
             tableFile (str): Path to the input .csv file.
             encoding='utf-8-sig': encoding of input file.
         """
-        with open(get_absolute_path(tableFile), 'r', encoding=encoding) as csv_file:
+        with open(get_absolute_path(tableFile), 'r',
+                  encoding=encoding) as csv_file:
             data_line = False
             for line in csv_file.readlines():
                 tokens = _csv_line_tokenizer(line)
@@ -351,7 +425,8 @@ class SubsurfacePropertiesBuilder:
             tableFile (str): Path to the input .txt file.
             encoding='utf-8-sig': encoding of input file.
         """
-        with open(get_absolute_path(tableFile), 'r', encoding=encoding) as txt_file:
+        with open(get_absolute_path(tableFile), 'r',
+                  encoding=encoding) as txt_file:
             data_line = False
             for line in txt_file.readlines():
                 tokens = _txt_line_tokenizer(line)
@@ -383,7 +458,8 @@ class SubsurfacePropertiesBuilder:
 
         Args:
             old=None (str): Source unit with existing parameters
-            new=None (str): Target unit to which the parameters from old will be mapped
+            new=None (str): Target unit to which the parameters
+                            from old will be mapped
             mapping=None (dict): Dictionary that includes the old units as keys
                 and new units as values.
         """
@@ -463,7 +539,6 @@ class SubsurfacePropertiesBuilder:
                 valid_geom_names.append(name)
             elif name_registration and type(self.output[name]) is not dict:
                 addon_keys[name] = self.output[name]
-
 
         # Run pfset on all geom sections
         for geom_name in valid_geom_names:
@@ -629,8 +704,10 @@ class SubsurfacePropertiesBuilder:
 # Domain input builder - setting keys for various common problem definitions
 # -----------------------------------------------------------------------------
 
+
 def get_file_extension(file_name):
     return file_name.split('.')[-1]
+
 
 class DomainBuilder:
 
@@ -722,12 +799,11 @@ class DomainBuilder:
 
         return self
 
-
     def homogeneous_subsurface(self, domain_name, perm=None, porosity=None,
-                               specific_storage=None, rel_perm=None, saturation=None, isotropic=False):
+                               specific_storage=None, rel_perm=None,
+                               saturation=None, isotropic=False):
         """Setting constant parameters for homogeneous subsurface
         """
-
         if perm is not None:
             if not self.run.Geom.Perm.Names:
                 self.run.Geom.Perm.Names = []
@@ -784,10 +860,12 @@ class DomainBuilder:
             self.run.Phase.Saturation._details_['GeomNames']['history'] = []
             self.run.Phase.Saturation.GeomNames += [domain_name]
             if saturation['Type'] == 'VanGenuchten':
+                # defaulting to RelPerm not working
                 self.run.Geom[domain_name].Saturation.Alpha = \
-                    saturation['Alpha'] if saturation['Alpha'] else rel_perm['Alpha'] # defaulting to RelPerm not working
+                    saturation['Alpha'] if saturation['Alpha'] \
+                    else rel_perm['Alpha']
                 self.run.Geom[domain_name].Saturation.N = \
-                    saturation['N'] if saturation['N'] else rel_perm['N']    # defaulting to RelPerm not working
+                    saturation['N'] if saturation['N'] else rel_perm['N']
                 self.run.Geom[domain_name].Saturation.SRes = saturation['SRes']
                 self.run.Geom[domain_name].Saturation.SSat = saturation['SSat']
 
@@ -805,7 +883,8 @@ class DomainBuilder:
 
         return self
 
-    def box_domain(self, box_input, domain_geom_name, bounds=None, patches=None):
+    def box_domain(self, box_input, domain_geom_name,
+                   bounds=None, patches=None):
         """Defining box domain and extents
         """
 
@@ -847,7 +926,6 @@ class DomainBuilder:
             self.run.Geom[domain_geom_name].Patches = patches
 
         return self
-
 
     def slopes_mannings(self, domain_geom_name, slope_x=None,
                         slope_y=None, mannings=None):

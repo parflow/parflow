@@ -11,14 +11,16 @@ from . import settings
 
 # -----------------------------------------------------------------------------
 
+
 def __map_env_variables(name):
     if name and name[0] == '$':
-      value = os.getenv(name[1:])
-      if value is not None:
-        return value
+        value = os.getenv(name[1:])
+        if value is not None:
+            return value
     return name
 
 # -----------------------------------------------------------------------------
+
 
 def get_absolute_path(file_path):
     """Helper function to resolve a file path while using the proper
@@ -32,6 +34,7 @@ def get_absolute_path(file_path):
     return os.path.abspath(os.path.join(settings.WORKING_DIRECTORY, file_path))
 
 # -----------------------------------------------------------------------------
+
 
 def cp(source, target_path='.'):
     """Copying file/directory within python script
@@ -50,10 +53,11 @@ def cp(source, target_path='.'):
     except PermissionError:
         print("Permission denied.")
     # For other errors
-    except:
-        print("Error occurred while copying file.")
+    except Exception:
+        print(f'Error occurred while copying {full_source_path}.')
 
 # -----------------------------------------------------------------------------
+
 
 def rm(path):
     """Deleting file/directory within python script
@@ -67,6 +71,7 @@ def rm(path):
 
 # -----------------------------------------------------------------------------
 
+
 def mkdir(dir_name):
     """mkdir within python script
     """
@@ -76,23 +81,26 @@ def mkdir(dir_name):
 
 # -----------------------------------------------------------------------------
 
-def get_text_file_content(file_path):
-  full_path = get_absolute_path(file_path)
-  file_content = ''
-  if os.path.exists(full_path):
-    with open(full_path, 'r') as txt_file:
-      file_content = txt_file.read()
 
-  return file_content
+def get_text_file_content(file_path):
+    full_path = get_absolute_path(file_path)
+    file_content = ''
+    if os.path.exists(full_path):
+        with open(full_path, 'r') as txt_file:
+            file_content = txt_file.read()
+
+    return file_content
 
 # -----------------------------------------------------------------------------
+
 
 def exists(file_path):
-  full_path = get_absolute_path(file_path)
-  return os.path.exists(full_path)
+    full_path = get_absolute_path(file_path)
+    return os.path.exists(full_path)
 
 # -----------------------------------------------------------------------------
 
+
 def chdir(directory_path):
-  full_path = get_absolute_path(directory_path)
-  os.chdir(full_path)
+    full_path = get_absolute_path(directory_path)
+    os.chdir(full_path)
