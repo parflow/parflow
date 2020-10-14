@@ -9,6 +9,7 @@ import json
 import yaml
 import numpy as np
 
+from .fs import get_absolute_path
 from .helper import sort_dict, get_or_create_dict
 
 try:
@@ -226,6 +227,23 @@ def write_dict(dict_obj, file_name):
 
 # -----------------------------------------------------------------------------
 
+def to_native_type(string):
+    """Converting a string to a value in native format.
+    Used for converting .pfidb files
+    """
+    try:
+        if type(json.loads(string)) is int:
+            converted_val = int(string)
+        elif type(json.loads(string)) is float:
+            converted_val = float(string)
+
+    except:
+        converted_val = string
+
+    return converted_val
+
+# -----------------------------------------------------------------------------
+
 def read_pfidb(file_path):
     """Load pfidb file into a Python dict
     """
@@ -235,15 +253,16 @@ def read_pfidb(file_path):
     key = ''
     value = ''
     string_type_count = 0
+    full_path = get_absolute_path(file_path)
 
-    with open(file_path, 'r') as input_file:
+    with open(full_path, 'r') as input_file:
         for line in input_file:
             if action == 'string':
                 if string_type_count % 2 == 0:
                     key = line[:size]
                 else:
                     value = line[:size]
-                    result_dict[key] = value
+                    result_dict[key] = to_native_type(value)
                 string_type_count += 1
                 action = 'size'
 

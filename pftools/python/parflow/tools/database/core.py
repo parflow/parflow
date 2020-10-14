@@ -14,6 +14,7 @@ from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
 from parflow.tools.helper import map_to_child, map_to_children_of_type, map_to_parent, map_to_self
 from parflow.tools.helper import sort_dict_by_priority
+from parflow.tools.io import read_pfidb
 
 from .domains import validate_value_to_string, validate_value_with_exception
 from .handlers import decorate_value
@@ -544,7 +545,8 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def pfset(self, key='', value=None, yamlFile=None, yamlContent=None,
-              hierarchical_map=None, flat_map=None, exit_if_undefined=False):
+              pfidbFile=None, hierarchical_map=None, flat_map=None,
+              exit_if_undefined=False):
         """
         Allow to define any parflow key so it can be exported.
         Many formats are supported:
@@ -565,6 +567,9 @@ class PFDBObj:
         if yamlContent:
             hierarchical_map = yaml.safe_load(yamlContent)
 
+        if pfidbFile:
+            flat_map = read_pfidb(pfidbFile)
+
         if hierarchical_map:
             flat_map = flatten_hierarchical_map(hierarchical_map)
 
@@ -576,8 +581,6 @@ class PFDBObj:
 
         if not key:
             return
-
-        # print(f'{key} = {value}')
 
         key_stored = False
         tokens = key.split('.')
