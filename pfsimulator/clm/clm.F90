@@ -315,7 +315,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
      !=== Initialize CLM and DIAG variables
      if (clm_write_logs==1) write(999,*) "Initialize CLM and DIAG variables"
      do t=1,drv%nch 
-        clm%kpatch = t
+        clm(t)%kpatch = t
         call drv_clmini (drv, grid, tile(t), clm(t), istep_pf) !Initialize CLM Variables
      enddo
 
@@ -392,8 +392,8 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
                     l1          = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k1-1))
                     total       = total + (drv%dz * pf_dz_mult(l1))
                  enddo
-                 clm%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
-		clm%zi(k)	= total + drv%dz * pf_dz_mult(l)! basile
+                 clm(t)%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
+		clm(t)%zi(k)	= total + drv%dz * pf_dz_mult(l)! basile
  
               endif
     
