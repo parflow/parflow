@@ -4,7 +4,7 @@
 
 add_custom_command(
   OUTPUT
-    "${CMAKE_CURRENT_SOURCE_DIR}/parflow_keys.rst"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/keys.rst"
   COMMAND
     ${PARFLOW_PYTHON} read_the_doc_rst.py
   DEPENDS
@@ -31,7 +31,7 @@ add_custom_target(
   GenerateKeysRST
   DEPENDS
     ${PARFLOW_PYTHON_DEPENDS}
-    "${CMAKE_CURRENT_SOURCE_DIR}/parflow_keys.rst"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/keys.rst"
 )
 
 # -----------------------------------------------------------------------------
@@ -66,7 +66,7 @@ add_custom_target(
   SOURCES
     conf.py
     index.rst
-    parflow_keys.rst
+    parflow/keys.rst
   # ensures that the output is continuously generated
   # when using ninja; avoids builder from timing out
   USES_TERMINAL

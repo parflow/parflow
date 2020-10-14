@@ -374,6 +374,22 @@ void CloseNC(int ncID)
 int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 {
 #ifdef PARFLOW_HAVE_NETCDF
+  // Read NetCDF compression configuration settings
+  int enable_netcdf_compression = 0;
+  {
+    char key[IDB_MAX_KEY_LEN];
+    sprintf(key, "NetCDF.Compression");
+    char *switch_name = GetStringDefault(key, "False");
+    char *default_val = "False";
+    enable_netcdf_compression = strcmp(switch_name, default_val);
+  }
+  int compression_level = 1;
+  {
+    char key[IDB_MAX_KEY_LEN];
+    sprintf(key, "NetCDF.CompressionLevel");
+    compression_level = GetIntDefault(key, 1);
+  }
+
   if (strcmp(varName, "time") == 0)
   {
     *myVarNCData = malloc(sizeof(varNCData));
@@ -423,6 +439,10 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], pressVarID, NC_CHUNKED, chunksize);
       }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],pressVarID,0,1,compression_level);
+      }
+
     }
     if (res == NC_ENAMEINUSE)
     {
@@ -430,6 +450,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     }
     return pressVarID;
   }
+
   if (strcmp(varName, "saturation") == 0)
   {
     *myVarNCData = malloc(sizeof(varNCData));
@@ -459,6 +480,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[2] = GetInt("NetCDF.ChunkY");
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], satVarID, NC_CHUNKED, chunksize);
+      }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],satVarID,0,1,compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -498,6 +522,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], maskVarID, NC_CHUNKED, chunksize);
       }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],maskVarID,0,1,compression_level);
+      }
     }
     if (res == NC_ENAMEINUSE)
     {
@@ -533,6 +560,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[1] = GetInt("NetCDF.ChunkY");
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], manningsVarID, NC_CHUNKED, chunksize);
+      }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],manningsVarID,0,1,compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -572,6 +602,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], perm_xVarID, NC_CHUNKED, chunksize);
       }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],perm_xVarID,0,1,compression_level);
+      }
     }
     if (res == NC_ENAMEINUSE)
     {
@@ -609,6 +642,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[2] = GetInt("NetCDF.ChunkY");
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], perm_yVarID, NC_CHUNKED, chunksize);
+      }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],perm_yVarID,0,1,compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -648,6 +684,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], perm_zVarID, NC_CHUNKED, chunksize);
       }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],perm_zVarID,0,1,compression_level);
+      }
     }
     if (res == NC_ENAMEINUSE)
     {
@@ -685,6 +724,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[2] = GetInt("NetCDF.ChunkY");
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], porosityVarID, NC_CHUNKED, chunksize);
+      }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],porosityVarID,0,1,compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -724,6 +766,10 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], specStorageVarID, NC_CHUNKED, chunksize);
       }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],specStorageVarID,0,1,compression_level);
+      }
+
     }
     if (res == NC_ENAMEINUSE)
     {
@@ -760,6 +806,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], slopexVarID, NC_CHUNKED, chunksize);
       }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],slopexVarID,0,1,compression_level);
+      }
     }
     if (res == NC_ENAMEINUSE)
     {
@@ -794,6 +843,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[1] = GetInt("NetCDF.ChunkY");
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], slopeyVarID, NC_CHUNKED, chunksize);
+      }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],slopeyVarID,0,1,compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -831,6 +883,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[2] = GetInt("NetCDF.ChunkY");
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], dzmultVarID, NC_CHUNKED, chunksize);
+      }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],dzmultVarID,0,1,compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -870,6 +925,10 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], evaptransVarID, NC_CHUNKED, chunksize);
       }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],evaptransVarID,0,1,compression_level);
+      }
+
     }
     if (res == NC_ENAMEINUSE)
     {
@@ -908,6 +967,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], evaptrans_sumVarID, NC_CHUNKED, chunksize);
       }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],evaptrans_sumVarID,0,1,compression_level);
+      }
     }
     if (res == NC_ENAMEINUSE)
     {
@@ -942,6 +1004,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[1] = GetInt("NetCDF.ChunkY");
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], overland_sumVarID, NC_CHUNKED, chunksize);
+      }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],overland_sumVarID,0,1,compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -978,6 +1043,9 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
         chunksize[1] = GetInt("NetCDF.ChunkY");
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(netCDFIDs[0], overland_bc_fluxVarID, NC_CHUNKED, chunksize);
+      }
+      if (enable_netcdf_compression) {
+        nc_def_var_deflate(netCDFIDs[0],overland_bc_fluxVarID,0,1,compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)

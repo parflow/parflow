@@ -18,6 +18,7 @@ add_custom_command(
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/__init__.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/builders.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/core.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/export.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/fs.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/helper.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/io.py"
@@ -27,7 +28,8 @@ add_custom_command(
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/core.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/domains.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/handlers.py"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/handlers.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/table_keys.yaml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/default_subsurface.txt"
     "${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
   COMMENT
