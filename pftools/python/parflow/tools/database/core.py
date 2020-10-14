@@ -176,12 +176,12 @@ def extract_keys_from_dict(dict_to_fill, dictObj, parent_namespace=''):
 
 # -----------------------------------------------------------------------------
 
-def flatten_hierarchical_map(hirearchical_map):
+def flatten_hierarchical_map(hierarchical_map):
     """Helper function that take a hierarchical map and return a flat
     version of it.
     """
     flat_map = {}
-    extract_keys_from_dict(flat_map, hirearchical_map, parent_namespace='')
+    extract_keys_from_dict(flat_map, hierarchical_map, parent_namespace='')
     return flat_map
 
 # -----------------------------------------------------------------------------
@@ -592,6 +592,42 @@ class PFDBObj:
             print(f"Caution: Using internal store of {rootPath if rootPath else 'run'} to save {fullkeyName} = {value}")
             if exit_if_undefined:
                 sys.exit(1)
+
+    # ---------------------------------------------------------------------------
+
+    def get(self, key='', skip_default=False):
+        value = None
+        tokens = key.split('.')
+        details = None
+        if len(tokens) > 1:
+            container = self.get_selection_from_location(
+                '/'.join(tokens[:-1]))[0]
+            if container is not None:
+                value = container[tokens[-1]] if tokens[-1] in container.__dict__ else None
+            if value is not None and not isinstance(value, PFDBObj):
+                details = container._details_[tokens[-1]]
+        elif len(tokens) == 1:
+            if len(tokens[0]) > 0:
+                value = self[tokens[0]] if tokens[0] in self.__dict__ else None
+                details = self._details_[tokens[0]] if tokens[0] in self._details_ else None
+            else:
+                value = self
+
+        if value is None:
+            return None
+
+        if isinstance(value, PFDBObj):
+            if skip_default:
+                details = value._details_['_value_']
+                if 'history' not in details or len(details['history']) == 0:
+                    return None
+            return value._value_
+
+        if skip_default and details:
+            if 'history' not in details or len(details['history']) == 0:
+                return None
+
+        return value
 
     # ---------------------------------------------------------------------------
 
