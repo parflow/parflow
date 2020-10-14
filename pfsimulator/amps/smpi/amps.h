@@ -1063,22 +1063,6 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #include <cuda_runtime.h>
 
 /*--------------------------------------------------------------------------
- * Amps gpu structs for global amps variables
- *--------------------------------------------------------------------------*/
-typedef struct _amps_GpuBuffer {
-  char **buf;
-  char **buf_host;
-  int *buf_size;
-  int num_bufs;
-} amps_GpuBuffer;
-
-#define AMPS_GPU_MAX_STREAMS 10
-typedef struct _amps_GpuStreams {
-  cudaStream_t stream[AMPS_GPU_MAX_STREAMS];
-  int num_streams;
-} amps_GpuStreams;
-
-/*--------------------------------------------------------------------------
  *  GPU error handling macros
  *--------------------------------------------------------------------------*/
 
