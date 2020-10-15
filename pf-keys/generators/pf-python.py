@@ -21,6 +21,7 @@ YAML_MODULES_TO_PROCESS = [
     'phase',
     'bconditions',
     'netcdf',
+    'metadata',
     'run'
 ]
 
@@ -381,6 +382,45 @@ def generate_module_from_definitions(definitions):
 
 
 # -----------------------------------------------------------------------------
+# API to generate CLM key translation dictionary
+# -----------------------------------------------------------------------------
+
+def find_paths_to_key(d, search_key):
+    """Recursively search a dict for a particular key
+       This returns a path to each key found
+    """
+    def _recursive_find(cur, cur_path, paths):
+        if isinstance(cur, dict):
+            for key, val in cur.items():
+                if key == search_key:
+                    paths.append(cur_path)
+                    continue
+                _recursive_find(val, cur_path + [key], paths)
+
+    result = []
+    _recursive_find(d, [], result)
+    return result
+
+def recursive_get(d, path):
+    """Get a value in a dictionary from a path
+    """
+    for entry in path:
+        d = d[entry]
+
+    return d
+
+def write_clm_dict(source_file, out_file):
+    with open(source_file, 'r') as rf:
+        data = yaml.safe_load(rf)
+
+    paths = find_paths_to_key(data, 'clm_key')
+
+    clm_key_dict = {recursive_get(data, x + ['clm_key']): x for x in paths}
+
+    with open(out_file, 'w') as output:
+        json.dump(clm_key_dict, fp=output, indent=4)
+
+# -----------------------------------------------------------------------------
 # CLI Main execution
 # -----------------------------------------------------------------------------
 
@@ -390,12 +430,15 @@ if __name__ == "__main__":
     definition_files = [
         def_path / f'{module}.yaml' for module in core_definitions]
     output_file_path = sys.argv[1]
+    clm_key_file_name = Path(def_path) / 'solver.yaml'
+    clm_dict_path = sys.argv[2]
 
     print('-' * 80)
     print('Generate Parflow database module')
     print('-' * 80)
     generated_module = generate_module_from_definitions(definition_files)
     print(generated_module.validation_summary.get_summary())
+    write_clm_dict(clm_key_file_name, clm_dict_path)
     print('-' * 80)
     generated_module.write(output_file_path)
 

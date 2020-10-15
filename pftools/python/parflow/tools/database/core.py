@@ -2,8 +2,10 @@ r"""
 This module aims to provide the core components that are required to build
 a Parflow input deck.
 """
-import yaml
+import json
+import os
 import sys
+import yaml
 
 from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
@@ -570,6 +572,57 @@ class PFDBObj:
 
     # -------------------------------------------------------------------------
 
+    def get_help(self, key_path):
+        """Gets help documentation from given key path
+        """
+        container = self
+        key_tokens = key_path.split('.')
+        key = key_tokens[-1]
+        if len(key_tokens) > 1:
+            parent_location = '/'.join(key_tokens[:-1])
+            container = self.get_selection_from_location(parent_location)[0]
+        if container is not None:
+            return container.help(key)
+        return None
+
+    # ---------------------------------------------------------------------------
+
+    def detail(self, key=None, sub_key=None):
+        """Helper function to return internal detail of a key
+        """
+        if hasattr(self, '_details_'):
+            if key is None:
+                return self._details_
+
+            if key in self._details_:
+                key_details = self._details_[key]
+                if sub_key is None:
+                    return key_details
+                elif sub_key in key_details:
+                    return key_details[sub_key]
+
+        return None
+
+    # ---------------------------------------------------------------------------
+
+    def get_detail(self, key_path, detail_key=None):
+        """Getting internal details of a given key and detail key
+        """
+        container = self
+        key_tokens = key_path.split('.')
+        key = key_tokens[-1]
+
+        if len(key_tokens) > 1:
+            parent_location = '/'.join(key_tokens[:-1])
+            container = self.get_selection_from_location(parent_location)[0]
+
+        if container is not None:
+            return container.detail(key, detail_key)
+
+        return None
+
+    # ---------------------------------------------------------------------------
+
     def pfset(self, key='', value=None, yaml_file=None, yaml_content=None,
               pfidb_file=None, hierarchical_map=None, flat_map=None,
               exit_if_undefined=False):
@@ -634,7 +687,30 @@ class PFDBObj:
             if exit_if_undefined:
                 sys.exit(1)
 
-    # -------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+
+    def set_clm_keys(self, clm_key_dict):
+        clm_ref_dict = os.path.join(
+            os.path.dirname(__file__), '../ref/clm_key_dict.txt')
+
+        with open(clm_ref_dict, 'r') as file:
+            ref_dict = json.load(file)
+
+        invalid_keys = []
+        for key, value in clm_key_dict.items():
+            if key in ref_dict.keys():
+                key_to_set = '.'.join(ref_dict[key])
+                self.pfset(key=key_to_set, value=value)
+            else:
+                invalid_keys.append(key)
+
+        if len(invalid_keys) > 0:
+            print('Warning: The following CLM variables could not be set to a key:')
+            for var in invalid_keys:
+                print(f'  - {var}')
+        pass
+
+    # ---------------------------------------------------------------------------
 
     def _process_dynamic(self):
         """

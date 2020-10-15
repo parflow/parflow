@@ -1,0 +1,37 @@
+# metadata.yaml
+# Adding metadata to ParFlow key library
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+
+Metadata:
+  __doc__: ''
+  __rst__:
+    skip:
+
+  Author:
+    help: >
+      [Type: string] Author name for ParFlow run.
+    domains:
+      AnyString:
+
+  Date:
+    help: >
+      [Type: string] This is the date that the user saved and/or executed the ParFlow run.
+    domains:
+      AnyString:
+
+  Latitude:
+    help: >
+      [Type: float] Latitude of the center of the ParFlow domain in decimal degrees.
+      Positive values indicate degrees north, negative numbers indicate degrees south.
+    domains:
+      DoubleValue:
+
+  Longitude:
+    help: >
+      [Type: float] Longitude of the center of the ParFlow domain in decimal degrees.
+      Positive values indicate degrees east, negative numbers indicate degrees west.
+    domains:
+      DoubleValue:
