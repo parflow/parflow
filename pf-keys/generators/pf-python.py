@@ -22,6 +22,7 @@ YAML_MODULES_TO_PROCESS = [
     'phase',
     'bconditions',
     'netcdf',
+    'metadata',
     'run'
 ]
 

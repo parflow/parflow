@@ -1084,3 +1084,56 @@ class DomainBuilder:
 
         return self
 
+    def clm_drv_file(self, StartDate, StartTime, StopDate, StopTime, 
+                     metf1d, outf1d, poutf1d, rstf,
+                     startcode=2, clm_ic=2, maxt=1, mina=0.05, udef=-9999, vclass=2,
+                     vegtf='drv_vegm.dat', vegpf='drv_vegp.dat', t_ini=300,
+                     h2osno_ini=0, surfind=2, soilind=1, snowind=0,
+                     forc_hgt_u=10.0, forc_hgt_t=2.0, forc_hgt_q=2.0,
+                     dewmx=0.1, qflx_tran_vegmx=-9999.0, rootfr=-9999.0,
+                     zlnd=0.01, zsno=0.0024, csoilc=0.0025, capr=0.34,
+                     cnfac=0.5, smpmin=-1.0e8, ssi=0.033, wimp=0.05):
+        """Setting metadata keys to build the CLM driver file
+        """
+
+        self.run.Metadata.CLM.StartDate = StartDate
+        self.run.Metadata.CLM.StartTime = StartTime
+        self.run.Metadata.CLM.StopDate = StopDate
+        self.run.Metadata.CLM.StopTime = StopTime
+        self.run.Metadata.CLM.File.metf1d = metf1d
+        self.run.Metadata.CLM.File.outf1d = outf1d
+        self.run.Metadata.CLM.File.poutf1d = poutf1d
+        self.run.Metadata.CLM.File.rstf = rstf
+        self.run.Metadata.CLM.clm_ic = clm_ic
+        self.run.Metadata.CLM.startcode = startcode
+        self.run.Metadata.CLM.Domain.maxt = maxt
+        self.run.Metadata.CLM.Domain.mina = mina
+        self.run.Metadata.CLM.Domain.udef = udef
+        self.run.Metadata.CLM.Domain.vclass = vclass
+        self.run.Metadata.CLM.File.vegtf = vegtf
+        self.run.Metadata.CLM.File.vegpf = vegpf
+        self.run.Metadata.CLM.t_ini = t_ini
+        self.run.Metadata.CLM.h2osno_ini = h2osno_ini
+        self.run.Metadata.CLM.surfind = surfind
+        self.run.Metadata.CLM.soilind = soilind
+        self.run.Metadata.CLM.snowind = snowind
+        self.run.Metadata.CLM.forc_hgt_u = forc_hgt_u
+        self.run.Metadata.CLM.forc_hgt_t = forc_hgt_t
+        self.run.Metadata.CLM.forc_hgt_q = forc_hgt_q
+        self.run.Metadata.CLM.dewmx = dewmx
+        self.run.Metadata.CLM.qflx_tran_vegmx = qflx_tran_vegmx
+        self.run.Metadata.CLM.rootfr = rootfr
+        self.run.Metadata.CLM.zlnd = zlnd
+        self.run.Metadata.CLM.zsno = zsno
+        self.run.Metadata.CLM.csoilc = csoilc
+        self.run.Metadata.CLM.capr = capr
+        self.run.Metadata.CLM.cnfac = cnfac
+        self.run.Metadata.CLM.smpmin = smpmin
+        self.run.Metadata.CLM.ssi = ssi
+        self.run.Metadata.CLM.wimp = wimp
+
+        return self
+
+
+
+

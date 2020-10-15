@@ -5,6 +5,7 @@ This module capture all core ParFlow exporters.
 """
 import os
 import yaml
+from .fs import cp, get_absolute_path
 
 try:
     from yaml import CDumper as YAMLDumper
@@ -98,3 +99,63 @@ class SubsurfacePropertiesExporter:
     def write_txt(self, file_path):
         with open(file_path, 'w', encoding='utf-8') as file:
             file.write(self.get_table_as_txt())
+
+def time_helper(name, time):
+    td_dict = {}
+    time_split = time.split('-')
+    if name == 'StartDate':
+        td_dict['syr'] = int(time_split[0])
+        td_dict['smo'] = int(time_split[1])
+        td_dict['sda'] = int(time_split[2])
+    if name == 'StartTime':
+        td_dict['shr'] = int(time_split[0])
+        td_dict['smn'] = int(time_split[1])
+        td_dict['sss'] = int(time_split[2])
+    if name == 'StopDate':
+        td_dict['eyr'] = int(time_split[0])
+        td_dict['emo'] = int(time_split[1])
+        td_dict['eda'] = int(time_split[2])
+    if name == 'StopTime':
+        td_dict['ehr'] = int(time_split[0])
+        td_dict['emn'] = int(time_split[1])
+        td_dict['ess'] = int(time_split[2])
+
+    return td_dict
+
+
+class CLMDriverExporter:
+
+    def __init__(self, run):
+        self.run = run
+
+    def export_drv_clmin(self, working_directory='.'):
+        clm_drv_keys = {}
+        drv_clmin_ref = os.path.join(
+            os.path.dirname(__file__), 'ref/drv_clmin.dat')
+        drv_key_dict = self.run.get_key_dict()
+
+        for key, value in drv_key_dict.items():
+            if key.startswith('Metadata.CLM'):
+                if key.split('.')[-1][0].isupper():
+                    clm_drv_keys.update(time_helper(key.split('.')[-1], value))
+                else:
+                    clm_drv_keys.update({key.split('.')[-1]: value})
+
+        cp(drv_clmin_ref, working_directory)
+        drv_clmin_file = os.path.join(get_absolute_path(working_directory), 'drv_clmin.dat')
+
+        with open(drv_clmin_ref, 'r') as fin:
+            with open(drv_clmin_file, 'w') as fout:
+                file_lines = fin.readlines()
+                for line in file_lines:
+                    if line[0].islower():
+                        clm_var_name = line.split()[0]
+                        extra_space = len(line.split()[1]) - len(str(clm_drv_keys[clm_var_name]))
+                        if extra_space > 0:
+                            fout.write(line.replace(f'{line.split()[1]}',
+                                                    f'{clm_drv_keys[clm_var_name]}'+' '*abs(extra_space)))
+                        else:
+                            fout.write(line.replace(f'{line.split()[1]}'+' '*abs(extra_space),
+                                                    f'{clm_drv_keys[clm_var_name]}'))
+                    else:
+                        fout.write(line)

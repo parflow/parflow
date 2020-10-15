@@ -1,0 +1,310 @@
+# metadata.yaml
+# Adding metadata to ParFlow key library
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+
+Metadata:
+  __doc__: ''
+  __rst__:
+    skip:
+
+  Author:
+    help: >
+      [Type: string] Author name for ParFlow run.
+    domains:
+      AnyString:
+
+  Date:
+    help: >
+      [Type: string] This is the date that the user saved and/or executed the ParFlow run.
+    domains:
+      AnyString:
+
+  Latitude:
+    help: >
+      [Type: float] Latitude of the center of the ParFlow domain in decimal degrees.
+      Positive values indicate degrees north, negative numbers indicate degrees south.
+    domains:
+      DoubleValue:
+
+  Longitude:
+    help: >
+      [Type: float] Longitude of the center of the ParFlow domain in decimal degrees.
+      Positive values indicate degrees east, negative numbers indicate degrees west.
+    domains:
+      DoubleValue:
+
+  CLM:
+    __class__: CLMDrvData
+    __doc__: ''
+    __rst__:
+      skip:
+
+    StartDate:
+      help: >
+        [Type: string] Starting date of CLM data (formatted in 'YYYY-MM-DD').
+      domains:
+        AnyString:
+
+    StartTime:
+      help: >
+        [Type: string] Starting time of CLM data (formatted in 'HH-MM-SS').
+      domains:
+        AnyString:
+
+    StopDate:
+      help: >
+        [Type: string] Ending date of CLM data (formatted in 'YYYY-MM-DD').
+      domains:
+        AnyString:
+
+    StopTime:
+      help: >
+        [Type: string] Ending time of CLM data (formatted in 'HH-MM-SS').
+      domains:
+        AnyString:
+
+    clm_ic:
+      help: >
+        [Type: string] Initial condition of CLM run. Must be either 'RestartFile' or 'Defined'.
+      domains:
+        AnyString:
+        EnumDomain:
+          enum_list:
+            - RestartFile
+            - Defined
+
+    startcode:
+      help: >
+        [Type: int] 1 = starting timing from a restart file, 2 = timing is defined in the script
+      default: 1
+      domains:
+        IntValue:
+
+    Domain:
+      __class__: CLMDrvDomainData
+      __doc__: ''
+      __rst__:
+        skip:
+
+      maxt:
+        help: >
+          [Type: int] Maximum tiles per grid (originally 3; changed it, because we have one type per cell)
+        default: 1
+        domains:
+          IntValue:
+
+      mina:
+        help: >
+          [Type: double] Min grid area for tile (%)
+        default: 0.05
+        domains:
+          DoubleValue:
+
+      udef:
+        help: >
+          [Type: int] Undefined value
+        default: -9999
+        domains:
+          IntValue:
+
+      vclass:
+        help: >
+          [Type: int] Vegetation Classification Scheme (1=UMD,2=IGBP,etc.) NOT the index
+        default: 2
+        domains:
+          IntValue:
+
+    File:
+      __doc__: ''
+      __rst__:
+        skip:
+
+      vegtf:
+        help: >
+          [Type: string] Vegetation Tile Specification File
+        default: 'drv_vegm.dat'
+        domains:
+          AnyString:
+
+      vegpf:
+        help: >
+          [Type: string] Vegetation Type Parameter File
+        default: 'drv_vegp.dat'
+        domains:
+          AnyString:
+
+      metf1d:
+        help: >
+          [Type: string] Meterologic input file- valdai 3 hr
+        domains:
+          AnyString:
+
+      outf1d:
+        help: >
+          [Type: string] CLM output file
+        domains:
+          AnyString:
+
+      poutf1d:
+        help: >
+          [Type: string] CLM 1D Parameter Output File
+        domains:
+          AnyString:
+
+      rstf:
+        help: >
+          [Type: string] CLM active restart file
+        domains:
+          AnyString:
+
+    # CLM initial conditions (1-D : used in drv_clmini.f90)
+
+    t_ini:
+      help: >
+        [Type: int] Initial temperature [K]
+      default: 300
+      domains:
+        IntValue:
+
+    h2osno_ini:
+      help: >
+        [Type: int]
+      default: Initial snow cover, water equivalent [mm]
+      domains:
+        IntValue:
+
+    # NOTE: The variables below are assigned to the ENTIRE grid domain,
+    #       and then are translated into tilespace.  To read in grid or
+    #       tilespace variable information, you must modify the driver code.
+
+    surfind:
+      help: >
+        [Type: int] Number of surface diagnostic variables to output
+      default: 2
+      domains:
+        IntValue:
+
+    soilind:
+      help: >
+        [Type: int] Number of soil layer diagnostic variables to output
+      default: 1
+      domains:
+        IntValue:
+
+    snowind:
+      help: >
+        [Type: int] Number of snow layer diagnostic variables to output
+      default: 0
+      domains:
+        IntValue:
+
+    # CLM Forcing parameters (read into 2-D grid module variables)
+
+    forc_hgt_u:
+      help: >
+        [Type: double] Observational height of wind [m]
+      default: 10.0
+      domains:
+        DoubleValue:
+
+    forc_hgt_t:
+      help: >
+        [Type: double] Observational height of temperature [m]
+      default: 2.0
+      domains:
+        DoubleValue:
+
+    forc_hgt_q:
+      help: >
+        [Type: double] Observational height of humidity [m]
+      default: 2.0
+      domains:
+        DoubleValue:
+
+    # CLM Vegetation parameters (read into 2-D grid module variables)
+
+    dewmx:
+      help: >
+        [Type: double] Maximum allowed dew [mm]
+      default: 0.1
+      domains:
+        DoubleValue:
+
+    qflx_tran_vegmx:
+      help: >
+        [Type: double] Maximum possible transpiration rate [mm/s]
+      default: -9999.0
+      domains:
+        DoubleValue:
+
+    rootfr:
+      help: >
+        [Type: double] Root Fraction (depth average)
+      default: -9999.0
+      domains:
+        DoubleValue:
+
+    # Roughness lengths (read into 2-D grid module variables)
+
+    zlnd:
+      help: >
+        [Type: double] Roughness length for soil [m]
+      default: 0.01
+      domains:
+        DoubleValue:
+
+    zsno:
+      help: >
+        [Type: double] Roughness length for snow [m]
+      default: 0.0024
+      domains:
+        DoubleValue:
+
+    csoilc:
+      help: >
+        [Type: double] Drag coefficient for soil under canopy [-]
+      default: 0.0025
+      domains:
+        DoubleValue:
+
+    # Numerical finite-difference parameters (read into 2-D grid module variables)
+
+    capr:
+      help: >
+        [Type: double] Tuning factor to turn first layer T into surface T
+      default: 0.34
+      domains:
+        DoubleValue:
+
+    cnfac:
+      help: >
+        [Type: double] Crank Nicholson factor between 0 and 1
+      default: 0.5
+      domains:
+        DoubleValue:
+          min_value: 0
+          max_value: 1
+
+    smpmin:
+      help: >
+        [Type: double] Restriction for min of soil poten. (mm)
+      default: -1.e8
+      domains:
+        DoubleValue:
+
+    ssi:
+      help: >
+        [Type: double] Irreducible water saturation of snow
+      default: 0.033
+      domains:
+        DoubleValue:
+
+    wimp:
+      help: >
+        [Type: double] Water impermeable if porosity < wimp
+      default: 0.05
+      domains:
+        DoubleValue:
