@@ -51,6 +51,8 @@ typedef struct {
   PFModule  *wells;
   PFModule  *bc_pressure;
   PFModule  *specific_storage;  //sk
+  PFModule  *van_genuchten;         //BB
+
   PFModule  *x_slope;  //sk
   PFModule  *y_slope;  //sk
   PFModule  *mann;  //sk
@@ -87,6 +89,7 @@ void          SetProblemData(
   PFModule      *wells = (instance_xtra->wells);
   PFModule      *bc_pressure = (instance_xtra->bc_pressure);
   PFModule      *specific_storage = (instance_xtra->specific_storage);    //sk
+  PFModule      *van_genuchten = (instance_xtra->van_genuchten);         //BB
   PFModule      *x_slope = (instance_xtra->x_slope);         //sk
   PFModule      *y_slope = (instance_xtra->y_slope);         //sk
   PFModule      *mann = (instance_xtra->mann);            //sk
@@ -121,6 +124,16 @@ void          SetProblemData(
     PFModuleInvokeType(SpecStorageInvoke, specific_storage,                   //sk
                        (problem_data,
                         ProblemDataSpecificStorage(problem_data)));
+
+    PFModuleInvokeType(VanGenuchtenInvoke, van_genuchten,                   //BB
+                       (
+                           ProblemDataAlpha(problem_data),
+                           ProblemDataN(problem_data),
+                           ProblemDataSres(problem_data),
+                           ProblemDataSsat(problem_data),
+                           problem_data
+                           ));
+
     PFModuleInvokeType(SlopeInvoke, x_slope,                   //sk
                        (problem_data,
                         ProblemDataTSlopeX(problem_data),
@@ -223,6 +236,10 @@ PFModule  *SetProblemDataInitInstanceXtra(
                               ProblemPorosity(problem), (grid, temp_data));
     (instance_xtra->specific_storage) =                                       //sk
                                         PFModuleNewInstance(ProblemSpecStorage(problem), ());
+
+    (instance_xtra->van_genuchten) =                                       //BB
+        PFModuleNewInstance(ProblemVanGenuchten(problem), (grid, temp_data));
+
     (instance_xtra->x_slope) =                                       //sk
                                PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke,
                                                        ProblemXSlope(problem), (grid, grid2d));
@@ -267,6 +284,9 @@ PFModule  *SetProblemDataInitInstanceXtra(
                               (instance_xtra->porosity),
                               (grid, temp_data));
     PFModuleReNewInstance((instance_xtra->specific_storage), ());        //sk
+
+    PFModuleReNewInstance((instance_xtra->van_genuchten), (grid, NULL));        //BB
+
     PFModuleReNewInstanceType(SlopeInitInstanceXtraInvoke,
                               (instance_xtra->x_slope), (grid, grid2d));        //sk
     PFModuleReNewInstanceType(SlopeInitInstanceXtraInvoke,
@@ -310,6 +330,7 @@ void  SetProblemDataFreeInstanceXtra()
     PFModuleFreeInstance(instance_xtra->porosity);
     PFModuleFreeInstance(instance_xtra->permeability);
     PFModuleFreeInstance(instance_xtra->specific_storage);       //sk
+    PFModuleFreeInstance(instance_xtra->van_genuchten);       //BB
     PFModuleFreeInstance(instance_xtra->x_slope);       //sk
     PFModuleFreeInstance(instance_xtra->y_slope);       //sk
     PFModuleFreeInstance(instance_xtra->mann);       //sk

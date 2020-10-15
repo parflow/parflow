@@ -87,6 +87,7 @@ set (SRC_FILES_CONST advect.F
   problem_richards_bc_internal.c
   problem_saturation_constitutive.c
   problem_spec_storage.c
+  problem_van_genuchten.c
   problem_thermal_conductivity.c
   problem_toposlope_x.c
   problem_toposlope_y.c

@@ -491,6 +491,24 @@ SetupRichards(PFModule * this_module)
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataSpecificStorage(problem_data));
 
+//    if (public_xtra->type == 1) {  // how to figure out if van genuchten is used?
+    strcpy(file_postfix, "alpha");  //BB
+    WritePFBinary(file_prefix, file_postfix,
+                  ProblemDataAlpha(problem_data));
+
+    strcpy(file_postfix, "n");  //BB
+    WritePFBinary(file_prefix, file_postfix,
+                  ProblemDataN(problem_data));
+
+    strcpy(file_postfix, "sres");  //BB
+    WritePFBinary(file_prefix, file_postfix,
+                  ProblemDataSres(problem_data));
+
+    strcpy(file_postfix, "ssat");  //BB
+    WritePFBinary(file_prefix, file_postfix,
+                   ProblemDataSsat(problem_data));
+//    }
+
     // Now add metadata entries:
     static const char* permeability_filenames[] = {
       "perm_x", "perm_y", "perm_z"

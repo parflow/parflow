@@ -714,6 +714,36 @@ PFModule *SpecStorageNewPublicXtra(void);
 void SpecStorageFreePublicXtra(void);
 int SpecStorageSizeOfTempData(void);
 
+
+
+
+
+typedef void (*SaturationInvoke) (Vector *phase_saturation, Vector *phase_pressure, Vector *phase_density, double gravity, ProblemData *problem_data, int fcn);
+typedef PFModule *(*SaturationInitInstanceXtraInvoke) (Grid *grid, double *temp_data);
+
+/* problem_saturation.c */
+void Saturation(Vector *phase_saturation, Vector *phase_pressure, Vector *phase_density, double gravity, ProblemData *problem_data, int fcn);
+PFModule *SaturationInitInstanceXtra(Grid *grid, double *temp_data);
+void SaturationFreeInstanceXtra(void);
+PFModule *SaturationNewPublicXtra(void);
+void SaturationFreePublicXtra(void);
+int SaturationSizeOfTempData(void);
+
+typedef void (*VanGenuchtenInvoke) (Vector *alphas, Vector *ns, Vector *sres, Vector *ssat, ProblemData *problem_data);
+
+/* problem_van_genuchten.c */
+void vanGenuchten(Vector *     pd_alpha, Vector *     pd_n, Vector *     pd_sres, Vector *     pd_ssat, ProblemData *problem_data);
+PFModule *vanGenuchtenInitInstanceXtra(Grid *grid, double *temp_data);
+void vanGenuchtenFreeInstanceXtra(void);
+PFModule *vanGenuchtenNewPublicXtra(void);
+void vanGenuchtenFreePublicXtra(void);
+int vanGenuchtenSizeOfTempData(void);
+
+
+
+
+
+
 /* @RMM new module for dz scaling factors */
 
 typedef void (*dzScaleInvoke) (ProblemData *problem_data, Vector *dz_mult);
