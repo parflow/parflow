@@ -204,7 +204,7 @@ LW_Test.Solver.Linear.MaxRestarts = 2
 def test_output(file_name):
   LW_Test.write(file_name, file_format='yaml')
   with open(get_absolute_path(f'{file_name}.yaml')) as new, \
-      open(get_absolute_path('../tables_LW/LW_test_ref.yaml.ref')) as ref:
+      open(get_absolute_path('$PF_SRC/test/correct_output/LW_test_ref.yaml.ref')) as ref:
     if new.read() == ref.read():
       print('Success we have the same file')
       return True

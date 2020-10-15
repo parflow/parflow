@@ -4,13 +4,11 @@
 
 import sys
 from parflow import Run
-from parflow.tools.fs import cp
-
-cp('$PF_SRC/test/python/new_features/write_check/dsingle.pfidb.ref')
+from parflow.tools.fs import get_absolute_path
 
 dsingle = Run("dsingle", __file__)
 
-dsingle.pfset(pfidbFile='dsingle.pfidb.ref')
+dsingle.pfset(pfidbFile=get_absolute_path('$PF_SRC/test/correct_output/dsingle.pfidb.ref'))
 
 
 #-----------------------------------------------------------------------------
@@ -20,7 +18,8 @@ dsingle.pfset(pfidbFile='dsingle.pfidb.ref')
 generatedFile, runArg = dsingle.write()
 
 # Prevent regression
-with open(generatedFile) as new, open(f'{generatedFile}.ref') as ref:
+with open(generatedFile) as new, \
+    open(get_absolute_path('$PF_SRC/test/correct_output/dsingle.pfidb.ref')) as ref:
   if new.read() == ref.read():
     print('Success we have the same file')
   else:

@@ -28,10 +28,11 @@ asc_write.GeomInput.domaininput.GeomNames = 'domain'
 sabino_mask = load_patch_matrix_from_sa_file(get_absolute_path('$PF_SRC/test/input/Sabino_Mask.sa'))
 # sabino_mask = load_patch_matrix_from_asc_file(get_absolute_path('Sabino_Mask.asc'))
 
-sabino_mask_written = write_patch_matrix_as_sa(sabino_mask, get_absolute_path('$PF_SRC/test/input/sabino_mask_written.sa'))
+sabino_mask_written = write_patch_matrix_as_sa(sabino_mask,
+                                               get_absolute_path('$PF_SRC/test/python/new_features/sabino_mask_written.sa'))
 
 with open(get_absolute_path('$PF_SRC/test/input/Sabino_Mask.sa'), "rt") as ref:
-    with open(get_absolute_path('$PF_SRC/test/input/sabino_mask_written.sa'), "rt") as new:
+    with open(get_absolute_path('$PF_SRC/test/python/new_features/sabino_mask_written.sa'), "rt") as new:
         if new.read() == ref.read():
             print('Success we have the same file')
         else:

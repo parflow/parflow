@@ -11,4 +11,7 @@ stats4.txt
 *.pfb
 *.tcl
 *.asc
+*.sa
 *.txt
+clm/*
+!clm/*.py
