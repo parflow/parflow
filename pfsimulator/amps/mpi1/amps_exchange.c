@@ -36,15 +36,11 @@ void _amps_wait_exchange(amps_Handle handle)
   char *combuf;
   int i;
   int size;
-  MPI_Status *status;
 
   if (handle->package->num_recv + handle->package->num_send)
   {
-    status = (MPI_Status*)calloc((handle->package->num_recv +
-                                  handle->package->num_send), sizeof(MPI_Status));
-
     MPI_Waitall(handle->package->num_recv + handle->package->num_send,
-                handle->package->recv_requests, status);
+                handle->package->recv_requests, handle->package->status);
     for (i = 0; i < handle->package->num_recv; i++)
     {
       amps_gpupacking(AMPS_UNPACK, 
@@ -56,7 +52,6 @@ void _amps_wait_exchange(amps_Handle handle)
       amps_gpu_sync_streams(i);
       AMPS_CLEAR_INVOICE(handle->package->recv_invoices[i]);
     }
-    free(status);
   }
 
   for (i = 0; i < handle->package->num_recv; i++)
@@ -120,7 +115,6 @@ amps_Handle amps_IExchangePackage(amps_Package package)
       package->send_invoices[i]->mpi_type = MPI_BYTE;
     }
     else{
-      // printf("GPU packing failed at line: %d\n", errchk);
       combuf[i] = NULL;
       size[i] = 1;
       amps_create_mpi_type(MPI_COMM_WORLD, package->send_invoices[i]);
@@ -146,18 +140,10 @@ void _amps_wait_exchange(amps_Handle handle)
 {
   int i;
 
-  MPI_Status *status;
-
   if (handle->package->num_recv + handle->package->num_send)
   {
-    status = (MPI_Status*)calloc((handle->package->num_recv +
-                                  handle->package->num_send), sizeof(MPI_Status));
-
     MPI_Waitall(handle->package->num_recv + handle->package->num_send,
-                handle->package->recv_requests,
-                status);
-
-    free(status);
+                handle->package->recv_requests, handle->package->status);
 
     for (i = 0; i < handle->package->num_recv; i++)
     {
