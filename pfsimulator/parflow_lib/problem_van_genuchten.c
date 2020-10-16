@@ -118,7 +118,7 @@ void     vanGenuchten(
     return;
   }
 
-  Type0         *dummy0;
+//  Type0         *dummy0;
   Type1         *dummy1;
 //  Type2         *dummy2;
 //  Type3         *dummy3;
@@ -128,18 +128,13 @@ void     vanGenuchten(
 //  Grid          *grid = VectorGrid(phase_saturation);
   Grid          *grid = VectorGrid(pd_alpha);  //BB
 
-  GrGeomSolid   *gr_solid, *gr_domain;
+  GrGeomSolid   *gr_solid;
 
-  Subvector     *ps_sub;
-  Subvector     *pp_sub;
-  Subvector     *pd_sub;
-  Subvector     *satRF_sub;
   Subvector     *n_values_sub;
   Subvector     *alpha_values_sub;
   Subvector     *s_res_values_sub;
   Subvector     *s_sat_values_sub;
 
-  double        *psdat, *ppdat, *pddat, *satRFdat;
   double        *n_values_dat, *alpha_values_dat;
   double        *s_res_values_dat, *s_sat_values_dat;
 
@@ -152,7 +147,7 @@ void     vanGenuchten(
   int ix, iy, iz, r;
   int nx, ny, nz;
 
-  int i, j, k, ind, ipRF;
+  int i, j, k, ind;
 
   int n_index, alpha_index, s_res_index, s_sat_index;
 
@@ -177,7 +172,7 @@ void     vanGenuchten(
 
   int data_from_file;
   double *alphas, *ns, *s_ress, *s_difs;
-  double head, alpha, n, s_res, s_dif, s_sat, m;
+  double alpha, n, s_res, s_sat;
 
   Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
 
@@ -460,14 +455,14 @@ PFModule   *vanGenuchtenNewPublicXtra()
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
 
-  Type0         *dummy0;
+  //Type0         *dummy0;
   Type1         *dummy1;
-  Type2         *dummy2;
-  Type3         *dummy3;
-  Type4         *dummy4;
+  //Type2         *dummy2;
+  //Type3         *dummy3;
+  //Type4         *dummy4;
   Type5         *dummy5;
 
-  int num_regions, ir, ic;
+  int num_regions, ir;
 
   char *switch_name;
   char *region;
@@ -575,14 +570,12 @@ void  vanGenuchtenFreePublicXtra()
   PFModule    *this_module = ThisPFModule;
   PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
-  Type0       *dummy0;
+  //Type0       *dummy0;
   Type1       *dummy1;
-  Type2       *dummy2;
-  Type3       *dummy3;
-  Type4       *dummy4;
-  Type5       *dummy5;
-
-  int num_regions, ir;
+  //Type2       *dummy2;
+  //Type3       *dummy3;
+  //Type4       *dummy4;
+  //Type5       *dummy5;
 
   if (public_xtra)
   {
