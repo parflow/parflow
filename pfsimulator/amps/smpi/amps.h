@@ -47,6 +47,14 @@
 #include <stdio.h>
 #include <sys/times.h>
 
+#ifdef PARFLOW_HAVE_CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
+#ifdef PARFLOW_HAVE_RMM
+#include <rmm/rmm_api.h>
+#endif
+#endif
+
 /*
  * Prevent inclusion of mpi C++ bindings in mpi.h includes.
  */
@@ -1059,9 +1067,6 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
   printf("%s : %s\n", name, comment)
 
 #ifdef PARFLOW_HAVE_CUDA
-#include <cuda.h>
-#include <cuda_runtime.h>
-
 /*--------------------------------------------------------------------------
  *  GPU error handling macros
  *--------------------------------------------------------------------------*/
@@ -1082,7 +1087,6 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line) 
 }
 
 #ifdef PARFLOW_HAVE_RMM
-#include <rmm/rmm_api.h>
 /**
  * @brief RMM error handling.
  * 
@@ -1170,13 +1174,19 @@ static inline void _amps_tfree_cuda(void *ptr)
 #endif
 }
 
-/** Same as \ref amps_TAlloc but allocates managed memory (CUDA required) */
+/** 
+ * Same as \ref amps_TAlloc but allocates managed memory (CUDA required) 
+ */
 #define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
-/** Same as \ref amps_CTAlloc but allocates managed memory */
+/** 
+ * Same as \ref amps_CTAlloc but allocates managed memory 
+ */
 #define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
-/** Same as \ref amps_TFree but deallocates managed memory */
+/** 
+ * Same as \ref amps_TFree but deallocates managed memory 
+ */
 #define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
 
 #endif // PARFLOW_HAVE_CUDA

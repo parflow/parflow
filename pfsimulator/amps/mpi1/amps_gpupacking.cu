@@ -23,10 +23,89 @@ extern "C"{
 #include <string.h>
 #include "amps.h"
 
+/**
+ * @brief The maximum number of GPU streams
+ *
+ * Here 1024 is an arbitrary number that should be larger than the sum 
+ * of amps_InvoiceEntries in all recv or send invoices of the current 
+ * communication package (ie, all packing/unpacking kernels should be 
+ * allowed to run in a separate stream for best performance).
+ * 
+ * If the number is smaller than the required packing/unpacking kernel launches,
+ * the kernels are queued in the available streams and run at least partially 
+ * sequentially (useful for debugging purposes).
+ */
+#define AMPS_GPU_MAX_STREAMS 1024
+
+/**
+ * @brief The maximum block size for a GPU kernel
+ *
+ * The largest blocksize ParFlow is using, but also the largest blocksize 
+ * supported by any currently available NVIDIA GPU architecture. This can 
+ * also differ between different architectures. It is used for informing 
+ * the compiler about how many registers should be available for the GPU 
+ * kernel during the compilation. Another option is to use 
+ * --maxrregcount 64 compiler flag, but NVIDIA recommends specifying 
+ * this kernel-by-kernel basis by __launch_bounds__() identifier.
+ */
+#define BLOCKSIZE_MAX 1024
+
+/* Disable GPU packing (useful for debugging) */
 // #define DISABLE_GPU_PACKING
 
+ /**
+ * @brief A global GPU staging buffer for amps_exchange
+ * 
+ * A separate instance is allocated for recv and send operations
+ * which are shared between all amps packages. The space is allocated
+ * according to the largest invoice size.
+ */
+ typedef struct _amps_GpuBuffer {
+  /** 
+  * A list of GPU pointers for the packed data for each recv/send invoice. 
+  */
+  char **buf;
+  /** 
+  * A list of CPU pointers for the packed data for each recv/send invoice. 
+  * Only allocated if host staging is used.
+  */
+  char **buf_host;
+  /** 
+  * A list of buf sizes for each invoice (applies to *buf and *host_buf).
+  */
+  int *buf_size;
+  /** 
+  * The number of buffers allocated (applies to *buf and *host_buf).
+  */
+  int num_bufs;
+} amps_GpuBuffer;
+
+ /**
+ * @brief Information about the global GPU packing/unpacking streams
+ */
+typedef struct _amps_GpuStreams {
+  /** 
+  * A list of GPU streams.
+  */
+  cudaStream_t *stream;
+  /** 
+  * The stream id can be used to associate a stream with 
+  * an id number (typically the invoice index).
+  */
+  int *stream_id;
+  /** 
+  * The number of streams created.
+  */
+  int num_streams;
+  /** 
+  * The number of requested streams since a synchronization (can be 
+  * larger than num_streams).
+  */
+  int reqs_since_sync;
+} amps_GpuStreams;
+
 #ifdef DISABLE_GPU_PACKING
-//Dummy definitions if no GPU packing
+/* Dummy definitions if no GPU packing */
 void amps_gpu_free_bufs(){}
 
 void amps_gpu_destroy_streams(){}
@@ -69,10 +148,24 @@ amps_GpuStreams amps_gpu_streams =
   .reqs_since_sync = 0
 };
 
-/* Use page-locked host staging buffer by default */
+/**
+ * @brief Defines whether host staging is used
+ *
+ * 0: Use page-locked device staging buffer and pass GPU pointer
+ * to MPI library
+ *
+ * 1: Use page-locked host staging buffer and pass CPU pointer
+ * to MPI library (default)
+ */
 static int ENFORCE_HOST_STAGING = 1;
 
-/* Check for GPUDirect environment variable */
+/**
+ * @brief Check for GPUDirect environment variable
+ * 
+ * If PARFLOW_USE_GPUDIRECT=1 environment variable is found,
+ * disable host staging.
+ *
+ */
 void amps_gpu_check_env(){
   if(getenv("PARFLOW_USE_GPUDIRECT") != NULL){
     if(atoi(getenv("PARFLOW_USE_GPUDIRECT")) == 1){
@@ -83,7 +176,9 @@ void amps_gpu_check_env(){
   }
 }
 
-/* Destroys all GPU streams */
+/**
+ * @brief Destroy all GPU streams and free allocations
+ */
 void amps_gpu_destroy_streams(){
   for(int i = 0; i < amps_gpu_streams.num_streams; i++){
     CUDA_ERRCHK(cudaStreamDestroy(amps_gpu_streams.stream[i]));
@@ -92,7 +187,14 @@ void amps_gpu_destroy_streams(){
   free(amps_gpu_streams.stream_id);
 }
 
-/* Marks a stream with the id and returns this stream (new streams is allocated if necessary) */
+/**
+ * @brief Get a new GPU stream
+ *
+ * Marks a stream with the id and returns this stream (new stream is allocated if necessary).
+ *
+ * @param id The integer id associated with the returned stream [IN]
+ * @return A GPU stream
+ */
 cudaStream_t amps_gpu_get_stream(int id){
   if(amps_gpu_streams.reqs_since_sync > amps_gpu_streams.num_streams - 1)
   {
@@ -130,7 +232,13 @@ cudaStream_t amps_gpu_get_stream(int id){
   return amps_gpu_streams.stream[stream_index];
 }
 
-/* Synchronizes GPU streams associated with the id */
+/**
+ * @brief Synchronizes GPU streams associated with the id
+ *
+ * The streams must be synchronized in ascending id order.
+ *
+ * @param id The integer id associated with the synchronized streams [IN]
+ */
 void amps_gpu_sync_streams(int id){
   for(int i = 0; i < amps_gpu_streams.num_streams; i++)
   {
@@ -149,6 +257,11 @@ void amps_gpu_sync_streams(int id){
   amps_gpu_streams.reqs_since_sync = 0;
 }
   
+/**
+ * @brief Free the staging buffers associated with gpubuf
+ *
+ * @param gpubuf A pointer to the amps_GpuBuffer [IN]
+ */
 static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
   if(gpubuf->num_bufs > 0){
     for(int i = 0; i < gpubuf->num_bufs; i++){
@@ -165,13 +278,28 @@ static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
   }
 }
 
+/**
+ * @brief Free the global recv and send staging buffers
+ */
 void amps_gpu_free_bufs(){
   _amps_gpubuf_free(&amps_gpu_recvbuf);
   _amps_gpubuf_free(&amps_gpu_sendbuf);
 }
 
+/**
+ * @brief Allocate/reallocate page-locked GPU/CPU staging buffers.
+ *
+ * Page-locked host memory allocation mirrors the GPU allocation
+ * if host staging is enabled.
+ *
+ * @param gpubuf A pointer to the amps_GpuBuffer [IN]
+ * @param id The id associated with the buffer (typically amps invoice index) [IN]
+ * @param pos The position in bytes up to which the buffer is already filled [IN]
+ * @param size The total required buffer size subtracted by pos [IN]
+ * @return A pointer to the allocated/reallocated GPU buffer
+ */
 static char* _amps_gpubuf_realloc(amps_GpuBuffer *gpubuf, int id, int pos, int size){
-  //check if arrays are big enough for id
+  /* Check if arrays are big enough for id */
   if(id >= gpubuf->num_bufs){
     if(gpubuf->num_bufs == 0){
       amps_gpu_check_env();
@@ -210,7 +338,7 @@ static char* _amps_gpubuf_realloc(amps_GpuBuffer *gpubuf, int id, int pos, int s
     gpubuf->num_bufs++;
   }
 
-  //check to see if enough space is allocated for id
+  /* Check to see if enough space is allocated for id */
   int size_total = pos + size;
   if (gpubuf->buf_size[id] < size_total)
   {
@@ -240,6 +368,12 @@ static char* _amps_gpubuf_realloc(amps_GpuBuffer *gpubuf, int id, int pos, int s
   return gpubuf->buf[id] + pos;
 }
 
+/**
+ * @brief Get recv buffer associated with id to be passed for MPI
+ *
+ * @param id The id of the recv buffer [IN]
+ * @return A pointer to the recv staging buffer
+ */
 static char* _amps_gpu_recvbuf(int id){
   if(id >= amps_gpu_recvbuf.num_bufs){
     printf("ERROR at %s:%d: Not enough space is allocated for recvbufs\n", __FILE__, __LINE__);
@@ -251,10 +385,24 @@ static char* _amps_gpu_recvbuf(int id){
     return amps_gpu_recvbuf.buf[id];
 }
 
+/**
+ * @brief Allocate/reallocate recv GPU/CPU staging buffers
+ *
+ * @param id The id associated with the buffer (typically amps invoice index) [IN]
+ * @param pos The position in bytes up to which the buffer is already filled [IN]
+ * @param size The total required buffer size subtracted by pos [IN]
+ * @return A pointer to the allocated/reallocated GPU recv buffer
+ */
 static char* _amps_gpu_recvbuf_realloc(int id, int pos, int size){
   return _amps_gpubuf_realloc(&amps_gpu_recvbuf, id, pos, size);
 }
 
+/**
+ * @brief Get send buffer associated with id to be passed for MPI
+ *
+ * @param id The id of the send buffer [IN]
+ * @return A pointer to the send staging buffer
+ */
 static char* _amps_gpu_sendbuf(int id){
   if(id >= amps_gpu_sendbuf.num_bufs){
     printf("ERROR at %s:%d: Not enough space is allocated for sendbufs\n", __FILE__, __LINE__);
@@ -266,33 +414,94 @@ static char* _amps_gpu_sendbuf(int id){
     return amps_gpu_sendbuf.buf[id];
 }
 
+/**
+ * @brief Allocate/reallocate send GPU/CPU staging buffers
+ *
+ * @param id The id associated with the buffer (typically amps invoice index) [IN]
+ * @param pos The position in bytes up to which the buffer is already filled [IN]
+ * @param size The total required buffer size subtracted by pos [IN]
+ * @return A pointer to the allocated/reallocated GPU send buffer
+ */
 static char* _amps_gpu_sendbuf_realloc(int id, int pos, int size){
   return _amps_gpubuf_realloc(&amps_gpu_sendbuf, id, pos, size);
 }
 
-static int _amps_gpupack_check_inv_vector(int dim, int *len, int type)
-{
-  if (dim == 0){
-    switch (type){
-      case AMPS_INVOICE_DOUBLE_CTYPE:
-        return 0; //This case is supported
-      default:
-        printf("ERROR at %s:%d: Only \"AMPS_INVOICE_DOUBLE_CTYPE\" is supported\n", __FILE__, __LINE__);
-        return __LINE__;
-    }
-  }
-  else{
-    for (int i = 0; i < len[dim]; i++){
-      if(int error = _amps_gpupack_check_inv_vector(dim - 1, len, type))
-        return error;
-    }
-    return 0;
-  }
-}
+ extern "C++"{
+/**
+ * @brief GPU packing kernel
+ *
+ * @param ptr_buf A pointer to the packing destination (GPU staging buffer) [IN/OUT]
+ * @param ptr_data A pointer to the source to be packed (Unified Memory) [IN]
+ * @param len_x The data length along x dimension [IN]
+ * @param len_y The data length along y dimension [IN]
+ * @param len_z The data length along z dimension [IN]
+ * @param stride_x The stride along x dimension [IN]
+ * @param stride_y The stride along y dimension [IN]
+ * @param stride_z The stride along z dimension [IN]
+ */
+ template <typename T>
+ __global__ static void 
+ __launch_bounds__(BLOCKSIZE_MAX)
+ _amps_packing_kernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data, 
+     const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
+ {
+   const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
+   if(k < len_z)
+   {
+     const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
+     if(j < len_y)
+     {
+       const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
+       if(i < len_x)
+       {
+         *(ptr_buf + k * len_y * len_x + j * len_x + i) = 
+           *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
+             j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);
+       }
+     }
+   }
+ }
+ 
+ /**
+ * @brief GPU unpacking kernel
+ *
+ * @param ptr_buf A pointer to the source to be unpacked (GPU staging buffer) [IN]
+ * @param ptr_data A pointer to the unpacking destination (Unified Memory) [IN/OUT]
+ * @param len_x The data length along x dimension [IN]
+ * @param len_y The data length along y dimension [IN]
+ * @param len_z The data length along z dimension [IN]
+ * @param stride_x The stride along x dimension [IN]
+ * @param stride_y The stride along y dimension [IN]
+ * @param stride_z The stride along z dimension [IN]
+ */
+ template <typename T>
+ __global__ static void 
+ __launch_bounds__(BLOCKSIZE_MAX)
+ _amps_unpacking_kernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data, 
+     const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
+ {
+   const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
+   if(k < len_z)
+   {
+     const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
+     if(j < len_y)
+     {
+       const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
+       if(i < len_x)
+       {
+         *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
+           j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
+             *(ptr_buf + k * len_y * len_x + j * len_x + i);
+       }
+     }
+   }
+ }
+ }
 
 /**
+* @brief The main amps GPU packing driver function
 *
-* The \Ref{amps_gpupacking} operates in 3 different modes:
+* Operates in 3 different modes:
 *
 * Mode 1: AMPS_GETRBUF / AMPS_GETSBUF
 * -determines the size of the invoice message in bytes
@@ -344,10 +553,11 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       return __LINE__;
     }
   
-    /* Make sure all needed invoice vector cases are supported */
-    int dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ? *(ptr->ptr_dim) : ptr->dim;
-    int error = _amps_gpupack_check_inv_vector(dim - 1, ptr->ptr_len, ptr->type - AMPS_INVOICE_LAST_CTYPE);
-    if(error) return error;
+    /* Make sure amps invoice vector type is supported */
+    if(ptr->type - AMPS_INVOICE_LAST_CTYPE != AMPS_INVOICE_DOUBLE_CTYPE){
+      printf("ERROR at %s:%d: Only \"AMPS_INVOICE_DOUBLE_CTYPE\" is supported\n", __FILE__, __LINE__);
+      return __LINE__;
+    }
   
     /* Preparations for the kernel launch */
     int blocksize_x = 1;
@@ -360,6 +570,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     int stride_y = 0;
     int stride_z = 0;
   
+    int dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ? *(ptr->ptr_dim) : ptr->dim;
     switch (dim)
     {
       case 3:
@@ -420,10 +631,10 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
 
     if(action == AMPS_PACK){
       cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
-      PackingKernel<<<grid, block, 0, new_stream>>>(
+      _amps_packing_kernel<<<grid, block, 0, new_stream>>>(
         (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       if(ENFORCE_HOST_STAGING){
-        //copy device buffer to host after packing
+        /* Copy device buffer to host after packing */
         CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_sendbuf.buf_host[inv_num] + pos,
                                       amps_gpu_sendbuf.buf[inv_num] + pos,
                                         size, cudaMemcpyDeviceToHost, new_stream));
@@ -433,12 +644,12 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     else if(action == AMPS_UNPACK){
       cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
       if(ENFORCE_HOST_STAGING){
-        //copy host buffer to device before unpacking
+        /* Copy host buffer to device before unpacking */
         CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_recvbuf.buf[inv_num] + pos,
                                       amps_gpu_recvbuf.buf_host[inv_num] + pos,
                                         size, cudaMemcpyHostToDevice, new_stream));
       }
-      UnpackingKernel<<<grid, block, 0, new_stream>>>(
+      _amps_unpacking_kernel<<<grid, block, 0, new_stream>>>(
         (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags &= ~AMPS_PACKED;
     }
@@ -455,7 +666,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     // return __LINE__;
   // }
 
-  //set the out values here if everything went fine
+  /* Set the out values here if everything went fine */
   if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
     *buffer_out = _amps_gpu_sendbuf(inv_num);
   }
