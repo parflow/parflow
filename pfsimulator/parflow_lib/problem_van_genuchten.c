@@ -172,7 +172,7 @@ void     vanGenuchten(
 
   int data_from_file;
   double *alphas, *ns, *s_ress, *s_difs;
-  double alpha, n, s_res, s_sat;
+  double alpha, n, s_res, s_sat, s_dif;
 
   Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
 
@@ -460,7 +460,7 @@ PFModule   *vanGenuchtenNewPublicXtra()
   //Type2         *dummy2;
   //Type3         *dummy3;
   //Type4         *dummy4;
-  Type5         *dummy5;
+  //Type5         *dummy5;
 
   int num_regions, ir;
 
