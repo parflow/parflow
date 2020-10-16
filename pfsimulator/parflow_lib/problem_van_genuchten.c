@@ -478,15 +478,15 @@ PFModule   *vanGenuchtenNewPublicXtra()
   switch_name = GetStringDefault("Phase.Saturation.Type", "Constant");  //BB Testing single_default error
   public_xtra->type = NA_NameToIndex(type_na, switch_name);
 
+  double s_sat;
+
+  dummy1 = ctalloc(Type1, 1);
+
   if ((public_xtra->type) == 1 || (public_xtra->type) == 5) {  // BB only do this if van_genuchten is used. What do we need PFBFile for??
     switch_name = GetString("Phase.Saturation.GeomNames");
     public_xtra->regions = NA_NewNameArray(switch_name);
 
     num_regions = NA_Sizeof(public_xtra->regions);
-
-    double s_sat;
-
-    dummy1 = ctalloc(Type1, 1);
 
     sprintf(key, "Phase.Saturation.VanGenuchten.File");
     dummy1->data_from_file = GetIntDefault(key, 0);
@@ -552,8 +552,8 @@ PFModule   *vanGenuchtenNewPublicXtra()
       dummy1->s_ress = NULL;
       dummy1->s_difs = NULL;
     }
-    (public_xtra->data) = (void*)dummy1;
   }
+  (public_xtra->data) = (void*)dummy1;
 
   NA_FreeNameArray(type_na);
 
