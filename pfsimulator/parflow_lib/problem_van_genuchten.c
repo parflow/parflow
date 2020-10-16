@@ -552,8 +552,8 @@ PFModule   *vanGenuchtenNewPublicXtra()
       dummy1->s_ress = NULL;
       dummy1->s_difs = NULL;
     }
+    (public_xtra->data) = (void*)dummy1;
   }
-  (public_xtra->data) = (void*)dummy1;
 
   NA_FreeNameArray(type_na);
 
