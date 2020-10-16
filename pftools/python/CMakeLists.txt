@@ -34,6 +34,7 @@ add_custom_command(
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/subsurface_washita.txt"
     "${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+    "${CMAKE_CURRENT_SOURCE_DIR}/MANIFEST.in"
   COMMENT
     "Copying Python pftools to the build directory"
 )

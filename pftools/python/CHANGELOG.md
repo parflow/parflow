@@ -1,10 +1,18 @@
 # Changelog for Python-PFTools (pftools package)
 
-## Unreleased [py_features branch](https://github.com/grapp1/parflow/tree/py_features):
+## Unreleased:
+
+- Metadata keys and processing
+
+## v0.0.5 (released 2020-10-16):
 
 - Domain builder to streamline run definition
 	- Use mainstream action to automatically set parflow keys
 	- A more natural problem definition that automatically sets ParFlow keys and values with appropriate defaults.
+- Updates to subsurface table builder
+    - Added more database options
+- Added `pfidbFile` argument in `pfset` method to set keys from a pfidb file 
+- Added several keys to Python ParFlow library
 
 ## v0.0.4 (released 2020-10-09):
 
