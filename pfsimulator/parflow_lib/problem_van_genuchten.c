@@ -172,7 +172,7 @@ void     vanGenuchten(
 
   int data_from_file;
   double *alphas, *ns, *s_ress, *s_difs;
-  double alpha, n, s_res, s_sat, s_dif;
+  double alpha, n, s_res, s_sat;
 
   Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
 
@@ -236,7 +236,7 @@ void     vanGenuchten(
                        n = ns[ir];
                        s_res = s_ress[ir];
                        s_sat = s_difs[ir] + s_ress[ir];  //new
-                       s_dif = s_difs[ir];
+                       //s_dif = s_difs[ir]; // BB not needed
 
                        pd_alpha_dat[ind] = alpha;  //BB
                        pd_n_dat[ind] = n;  //BB
