@@ -218,6 +218,19 @@ class Run(BaseRun):
         if basescript:
             settings.set_working_directory(os.path.dirname(basescript))
 
+    def set_name(self, new_name):
+        """Setting new name for a run
+
+        Args:
+            new_name (str): New name for run
+        """
+        self._name_ = new_name
+
+    def get_name(self):
+        """Returns name of run
+        """
+        return self._name_
+
     def write(self, file_name=None, file_format='pfidb'):
         """Method to write database file to disk
 
