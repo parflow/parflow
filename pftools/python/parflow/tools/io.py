@@ -298,6 +298,7 @@ def _read_clmin(file_name):
     with open(file_name, 'r') as fin:
         file_lines = fin.readlines()
         for line in file_lines:
+            # skip if first 15 are empty or exclamation
             if line[0].islower():
                 if len(line.split()[0]) > 15:
                     clm_vars[line.split()[0][0:14]] = line.split()[0][15:]

@@ -101,28 +101,6 @@ class SubsurfacePropertiesExporter:
         with open(file_path, 'w', encoding='utf-8') as file:
             file.write(self.get_table_as_txt())
 
-def time_helper(name, time):
-    td_dict = {}
-    time_split = time.split('-')
-    if name == 'StartDate':
-        td_dict['syr'] = int(time_split[0])
-        td_dict['smo'] = int(time_split[1])
-        td_dict['sda'] = int(time_split[2])
-    if name == 'StartTime':
-        td_dict['shr'] = int(time_split[0])
-        td_dict['smn'] = int(time_split[1])
-        td_dict['sss'] = int(time_split[2])
-    if name == 'StopDate':
-        td_dict['eyr'] = int(time_split[0])
-        td_dict['emo'] = int(time_split[1])
-        td_dict['eda'] = int(time_split[2])
-    if name == 'StopTime':
-        td_dict['ehr'] = int(time_split[0])
-        td_dict['emn'] = int(time_split[1])
-        td_dict['ess'] = int(time_split[2])
-
-    return td_dict
-
 
 class CLMExporter:
 
@@ -139,14 +117,15 @@ class CLMExporter:
         clm_drv_keys = {}
         drv_clmin_ref = os.path.join(
             os.path.dirname(__file__), 'ref/drv_clmin.dat')
-        drv_key_dict = self.run.get_key_dict()
 
-        for key, value in drv_key_dict.items():
-            if key.startswith('Metadata.CLM'):
-                if key.split('.')[-1][0].isupper():
-                    clm_drv_keys.update(time_helper(key.split('.')[-1], value))
-                else:
-                    clm_drv_keys.update({key.split('.')[-1]: value})
+        clm_dict = self.run.Metadata.CLM.get_key_dict()
+        for key in clm_dict.keys():
+            clm_key = self.run.Metadata.CLM.get_detail(key, 'clm_key')
+            clm_key_value = self.run.Metadata.CLM.get(key)
+            clm_drv_keys.update({clm_key: clm_key_value})
+
+        print(clm_drv_keys)
+
 
         cp(drv_clmin_ref, working_directory)
         drv_clmin_file = os.path.join(get_absolute_path(working_directory), 'drv_clmin.dat')

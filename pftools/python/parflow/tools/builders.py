@@ -1084,7 +1084,7 @@ class DomainBuilder:
 
         return self
 
-    def clm_drv_file(self, StartDate, StartTime, StopDate, StopTime, 
+    def clm_drv_file(self, StartDate, StartTime, EndDate, EndTime,
                      metf1d, outf1d, poutf1d, rstf,
                      startcode=2, clm_ic=2, maxt=1, mina=0.05, udef=-9999, vclass=2,
                      vegtf='drv_vegm.dat', vegpf='drv_vegp.dat', t_ini=300,
@@ -1096,41 +1096,49 @@ class DomainBuilder:
         """Setting metadata keys to build the CLM driver file
         """
 
-        self.run.Metadata.CLM.StartDate = StartDate
-        self.run.Metadata.CLM.StartTime = StartTime
-        self.run.Metadata.CLM.StopDate = StopDate
-        self.run.Metadata.CLM.StopTime = StopTime
-        self.run.Metadata.CLM.File.metf1d = metf1d
-        self.run.Metadata.CLM.File.outf1d = outf1d
-        self.run.Metadata.CLM.File.poutf1d = poutf1d
-        self.run.Metadata.CLM.File.rstf = rstf
-        self.run.Metadata.CLM.clm_ic = clm_ic
-        self.run.Metadata.CLM.startcode = startcode
-        self.run.Metadata.CLM.Domain.maxt = maxt
-        self.run.Metadata.CLM.Domain.mina = mina
-        self.run.Metadata.CLM.Domain.udef = udef
-        self.run.Metadata.CLM.Domain.vclass = vclass
-        self.run.Metadata.CLM.File.vegtf = vegtf
-        self.run.Metadata.CLM.File.vegpf = vegpf
-        self.run.Metadata.CLM.t_ini = t_ini
-        self.run.Metadata.CLM.h2osno_ini = h2osno_ini
-        self.run.Metadata.CLM.surfind = surfind
-        self.run.Metadata.CLM.soilind = soilind
-        self.run.Metadata.CLM.snowind = snowind
-        self.run.Metadata.CLM.forc_hgt_u = forc_hgt_u
-        self.run.Metadata.CLM.forc_hgt_t = forc_hgt_t
-        self.run.Metadata.CLM.forc_hgt_q = forc_hgt_q
-        self.run.Metadata.CLM.dewmx = dewmx
-        self.run.Metadata.CLM.qflx_tran_vegmx = qflx_tran_vegmx
-        self.run.Metadata.CLM.rootfr = rootfr
-        self.run.Metadata.CLM.zlnd = zlnd
-        self.run.Metadata.CLM.zsno = zsno
-        self.run.Metadata.CLM.csoilc = csoilc
-        self.run.Metadata.CLM.capr = capr
-        self.run.Metadata.CLM.cnfac = cnfac
-        self.run.Metadata.CLM.smpmin = smpmin
-        self.run.Metadata.CLM.ssi = ssi
-        self.run.Metadata.CLM.wimp = wimp
+        self.run.Metadata.CLM.Timing.StartYear = StartDate.split('-')[0]
+        self.run.Metadata.CLM.Timing.StartMonth = StartDate.split('-')[1]
+        self.run.Metadata.CLM.Timing.StartDay = StartDate.split('-')[2]
+        self.run.Metadata.CLM.Timing.StartHour = StartTime.split('-')[0]
+        self.run.Metadata.CLM.Timing.StartMinute = StartTime.split('-')[1]
+        self.run.Metadata.CLM.Timing.StartSecond = StartTime.split('-')[2]
+        self.run.Metadata.CLM.Timing.EndYear = EndDate.split('-')[0]
+        self.run.Metadata.CLM.Timing.EndMonth = EndDate.split('-')[1]
+        self.run.Metadata.CLM.Timing.EndDay = EndDate.split('-')[2]
+        self.run.Metadata.CLM.Timing.EndHour = EndTime.split('-')[0]
+        self.run.Metadata.CLM.Timing.EndMinute = EndTime.split('-')[1]
+        self.run.Metadata.CLM.Timing.EndSecond = EndTime.split('-')[2]
+        self.run.Metadata.CLM.File.MetInput = metf1d
+        self.run.Metadata.CLM.File.Output = outf1d
+        self.run.Metadata.CLM.File.ParamOutput = poutf1d
+        self.run.Metadata.CLM.File.ActiveRestart = rstf
+        self.run.Metadata.CLM.ICSource.Code = clm_ic
+        self.run.Metadata.CLM.Timing.RestartCode = startcode
+        self.run.Metadata.CLM.Domain.MaxTiles = maxt
+        self.run.Metadata.CLM.Domain.MinGridArea = mina
+        self.run.Metadata.CLM.Domain.UndefinedValue = udef
+        self.run.Metadata.CLM.Domain.VegClassification = vclass
+        self.run.Metadata.CLM.File.VegTileSpecification = vegtf
+        self.run.Metadata.CLM.File.VegTypeParameter = vegpf
+        self.run.Metadata.CLM.InitCond.Temperature = t_ini
+        self.run.Metadata.CLM.InitCond.SnowCover = h2osno_ini
+        self.run.Metadata.CLM.OutputVars.Surface = surfind
+        self.run.Metadata.CLM.OutputVars.Soil = soilind
+        self.run.Metadata.CLM.OutputVars.Snow = snowind
+        self.run.Metadata.CLM.Forcing.WindObsHeight = forc_hgt_u
+        self.run.Metadata.CLM.Forcing.TempObsHeight = forc_hgt_t
+        self.run.Metadata.CLM.Forcing.HumObsHeight = forc_hgt_q
+        self.run.Metadata.CLM.Vegetation.MaxDew = dewmx
+        self.run.Metadata.CLM.Vegetation.MaxTranspiration = qflx_tran_vegmx
+        self.run.Metadata.CLM.Vegetation.RootFraction = rootfr
+        self.run.Metadata.CLM.RoughnessLength.Soil = zlnd
+        self.run.Metadata.CLM.RoughnessLength.Snow = zsno
+        self.run.Metadata.CLM.RoughnessLength.DragCanopySoil = csoilc
+        self.run.Metadata.CLM.NumericalParams.TuningFactor = capr
+        self.run.Metadata.CLM.NumericalParams.CNFactor = cnfac
+        self.run.Metadata.CLM.NumericalParams.MinSoilPotential = smpmin
+        self.run.Metadata.CLM.NumericalParams.IrrSnowSat = ssi
+        self.run.Metadata.CLM.NumericalParams.WaterImpermeable = wimp
 
         return self
 

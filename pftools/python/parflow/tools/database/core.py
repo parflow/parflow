@@ -544,6 +544,28 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
+    def get_detail(self, key, detail_key):
+        """Returns the details of the given key.
+        """
+        tokens = key.split('.')
+        if len(tokens) > 1:
+            container = self.get_selection_from_location(
+                '/'.join(tokens[:-1]))[0]
+            if container is not None:
+                detail = container.__dict__['_details_'][tokens[-1]][detail_key] if \
+                    detail_key in container.__dict__['_details_'][tokens[-1]] else None
+
+        elif len(tokens) == 1:
+            if len(tokens[0]) > 0:
+                detail = self.__dict__['_details_'][tokens[0]][detail_key] if \
+                    detail_key in self.__dict__['_details_'][tokens[0]] else None
+            else:
+                detail = None
+
+        return detail
+
+    # ---------------------------------------------------------------------------
+
     def pfset(self, key='', value=None, yamlFile=None, yamlContent=None,
               pfidbFile=None, hierarchical_map=None, flat_map=None,
               exit_if_undefined=False):
