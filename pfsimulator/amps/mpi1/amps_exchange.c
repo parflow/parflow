@@ -79,8 +79,14 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   int errchk;
   int i;
 
-  combuf = (char**)malloc(package->num_send * sizeof(char*));
-  size = (int*)malloc(package->num_send * sizeof(int));
+  if(package->num_send > 0){
+    combuf = (char**)malloc(package->num_send * sizeof(char*));
+    size = (int*)malloc(package->num_send * sizeof(int));
+  }
+  else{
+    combuf = (char**)malloc(sizeof(char*));
+    size = (int*)malloc(sizeof(int));
+  }
 
   /*--------------------------------------------------------------------
    * post receives for data to get
