@@ -1039,7 +1039,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  *--------------------------------------------------------------------------*/
 
 /**
- * Operation modes for amps_gpupacking function (see function description).
+ * @brief Operation modes for amps_gpupacking function
+ *  
+ * @note See function description for amps_gpupacking.
  * 
  * @{
  */
@@ -1050,7 +1052,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 /** @} */
 
 /**
- * Activate non-persistent communication
+ * @brief Activate non-persistent communication
  */
 #define AMPS_MPI_NOT_USE_PERSISTENT
 
@@ -1059,7 +1061,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  *--------------------------------------------------------------------------*/
 
 /**
- * @brief CUDA error handling.
+ * @brief CUDA error handling
  * 
  * If error detected, print error message and exit.
  *
@@ -1075,7 +1077,7 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line) 
 
 #ifdef PARFLOW_HAVE_RMM
 /**
- * @brief RMM error handling.
+ * @brief RMM error handling
  * 
  * If error detected, print error message and exit.
  *
@@ -1095,7 +1097,7 @@ static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
  *--------------------------------------------------------------------------*/
 
 /**
- * @brief Allocates unified memory.
+ * @brief Allocates unified memory
  * 
  * If RMM library is available, pool allocation is used for better performance.
  * 
@@ -1119,7 +1121,7 @@ static inline void *_amps_talloc_cuda(size_t size)
 }
 
 /**
- * @brief Allocates unified memory initialized to 0.
+ * @brief Allocates unified memory initialized to 0
  * 
  * If RMM library is available, pool allocation is used for better performance.
  * 
@@ -1145,7 +1147,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 }
 
 /**
- * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda.
+ * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda
  * 
  * @note Should not be called directly.
  *
@@ -1167,12 +1169,12 @@ static inline void _amps_tfree_cuda(void *ptr)
 #define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /** 
- * Same as \ref amps_CTAlloc but allocates managed memory 
+ * Same as \ref amps_CTAlloc but allocates managed memory (CUDA required) 
  */
 #define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /** 
- * Same as \ref amps_TFree but deallocates managed memory 
+ * Same as \ref amps_TFree but deallocates managed memory (CUDA required) 
  */
 #define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
 

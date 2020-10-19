@@ -53,7 +53,7 @@ extern "C"{
 /* Disable GPU packing (useful for debugging) */
 // #define DISABLE_GPU_PACKING
 
- /**
+/**
  * @brief A global GPU staging buffer for amps_exchange
  * 
  * A separate instance is allocated for recv and send operations
@@ -80,7 +80,7 @@ extern "C"{
   int num_bufs;
 } amps_GpuBuffer;
 
- /**
+/**
  * @brief Information about the global GPU packing/unpacking streams
  */
 typedef struct _amps_GpuStreams {
@@ -523,11 +523,11 @@ static char* _amps_gpu_sendbuf_realloc(int id, int pos, int size){
 * -*buffer_out is set to point to the recv staging buffer
 * -*size_out is set to the size of invoice message in bytes (size of the unpacked data)
 *
-* @param action either AMPS_GETRBUF, AMPS_GETSBUF, AMPS_PACK or AMPS_UNPACK [in]
-* @param inv amps invoice [in]
-* @param inv_num amps invoice order number [in]
-* @param buffer_out pointer to the pointer of the staging buffer [out]
-* @param size_out pointer to the invoice message size in bytes [out]
+* @param action either AMPS_GETRBUF, AMPS_GETSBUF, AMPS_PACK or AMPS_UNPACK [IN]
+* @param inv amps invoice [IN]
+* @param inv_num amps invoice order number [IN]
+* @param buffer_out pointer to the pointer of the staging buffer [OUT]
+* @param size_out pointer to the invoice message size in bytes [OUT]
 * @return error code (line number), 0 if succesful
 */
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out){
