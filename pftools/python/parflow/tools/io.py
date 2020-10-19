@@ -282,3 +282,95 @@ def read_yaml(file_path):
       return yaml.safe_load(txt_file.read())
 
   return {}
+
+# -----------------------------------------------------------------------------
+
+def _read_clmin(file_name):
+    """function to load in drv_clmin.dat files
+
+       Args:
+           - file_name: name of drv_clmin.dat file
+
+       Returns:
+           dictionary of key/value pairs of variables in file
+    """
+    clm_vars = {}
+    with open(file_name, 'r') as fin:
+        file_lines = fin.readlines()
+        for line in file_lines:
+            if line[0].islower():
+                if len(line.split()[0]) > 15:
+                    clm_vars[line.split()[0][0:14]] = line.split()[0][15:]
+                else:
+                    clm_vars[line.split()[0]] = line.split()[1]
+
+    return clm_vars
+
+# -----------------------------------------------------------------------------
+
+def _read_vegm(file_name):
+    """function to load in drv_vegm.dat files
+
+       Args:
+           - file_name: name of drv_vegm.dat file
+
+       Returns:
+           3D numpy array for domain, with 3rd dimension defining each column
+           in the vegm.dat file except for x/y
+    """
+    with open(file_name, 'r') as fin:
+        file_lines = fin.readlines()
+        x_dim = int(file_lines[-1].split()[0])
+        y_dim = int(file_lines[-1].split()[1])
+        z_dim = len(file_lines[-1].split())-2
+        vegm_array = np.zeros((x_dim, y_dim, z_dim))
+        for line in file_lines[2:]:
+            # assumes first two lines are comments
+            elements = line.split()
+            x = int(elements[0])
+            y = int(elements[1])
+            for i in range(z_dim):
+                vegm_array[x-1, y-1, i] = elements[i+2]
+
+    return vegm_array
+
+# -----------------------------------------------------------------------------
+
+def _read_vegp(file_name):
+    """function to load in drv_vegp.dat files
+
+       Args:
+           - file_name: name of drv_vegp.dat file
+
+       Returns:
+           Dictionary with keys as variables and values as lists of parameter
+           values for each of the 18 land cover types
+    """
+    vegp_data = {}
+    with open(file_name, 'r') as fin:
+        file_lines = fin.readlines()
+        for line in file_lines:
+            if line[0] == '!':
+                continue
+            elif line[0].islower():
+                var_name = line.split()[0]
+            elif var_name is not None:
+                vegp_data[var_name] = [to_native_type(i) for i in line.split()]
+                var_name = None
+
+    return vegp_data
+
+# -----------------------------------------------------------------------------
+
+def read_clm(file_name, type='clmin'):
+    if type == 'clmin':
+        clm_data = _read_clmin(get_absolute_path(file_name))
+
+    elif type == 'vegm':
+        clm_data = _read_vegm(get_absolute_path(file_name))
+
+    elif type == 'vegp':
+        clm_data = _read_vegp(get_absolute_path(file_name))
+
+    return clm_data
+

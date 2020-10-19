@@ -5,6 +5,7 @@ This module capture all core ParFlow exporters.
 """
 import os
 import yaml
+import numpy as np
 from .fs import cp, get_absolute_path
 
 try:
@@ -123,12 +124,18 @@ def time_helper(name, time):
     return td_dict
 
 
-class CLMDriverExporter:
+class CLMExporter:
 
     def __init__(self, run):
         self.run = run
 
     def export_drv_clmin(self, working_directory='.'):
+        """Method to export drv_clmin.dat file based on metadata
+
+        Args:
+            - working_directory='.': specifies where drv_climin.dat
+              file will be written
+        """
         clm_drv_keys = {}
         drv_clmin_ref = os.path.join(
             os.path.dirname(__file__), 'ref/drv_clmin.dat')
@@ -159,3 +166,56 @@ class CLMDriverExporter:
                                                     f'{clm_drv_keys[clm_var_name]}'))
                     else:
                         fout.write(line)
+
+        return self
+
+    def export_drv_vegm(self, vegm_array, working_directory='.'):
+        """Method to export drv_vegm.dat file based on 3D array of data
+
+        Args:
+            - working_directory='.': specifies where drv_vegm.dat
+              file will be written
+        """
+        drv_vegm_ref = os.path.join(
+            os.path.dirname(__file__), 'ref/drv_vegm.dat')
+
+        drv_vegm_file = os.path.join(get_absolute_path(working_directory), 'drv_vegm.dat')
+
+        with open(drv_vegm_ref, 'r') as fin:
+            with open(drv_vegm_file, 'w') as fout:
+                file_lines = fin.readlines()
+                fout.write(file_lines[0])
+                fout.write(file_lines[1])
+                for i in range(vegm_array.shape[0]):
+                    for j in range(vegm_array.shape[1]):
+                        line_elements = [str(i+1), str(j+1)]
+                        for k in range(vegm_array.shape[2]):
+                            line_elements.append(str(vegm_array[i, j, k]))
+                        fout.write('   ' + '  '.join(line_elements[:]) + '\n')
+
+        return self
+
+    def export_drv_vegp(self, vegp_data, working_directory='.'):
+        """Method to export drv_vegp.dat file based on dictionary of data
+
+        Args:
+            - working_directory='.': specifies where drv_vegp.dat
+              file will be written
+        """
+        drv_vegp_ref = os.path.join(
+            os.path.dirname(__file__), 'ref/drv_vegp.dat')
+
+        drv_vegp_file = os.path.join(get_absolute_path(working_directory), 'drv_vegp.dat')
+        var_name = None
+
+        with open(drv_vegp_ref, 'r') as fin:
+            with open(drv_vegp_file, 'w') as fout:
+                for line in fin.readlines():
+                    if line[0].islower():
+                        var_name = line.split()[0]
+                    elif var_name is not None and line[0] != '!':
+                        line = ' '.join(list(map(str, vegp_data[var_name]))) + '\n'
+                        var_name = None
+                    fout.write(line)
+
+        return self
