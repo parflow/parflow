@@ -105,4 +105,3 @@ def get_or_create_dict(root, keyPath, overriden_keys):
 
     return currentContainer
 
-# -----------------------------------------------------------------------------

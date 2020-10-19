@@ -4523,6 +4523,18 @@ pfset NetCDF.ChunkY    50
 pfset NetCDF.ChunkZ    30
 \end{verbatim}\end{display}
 
+\pfkey{integer}{NetCDF.Compression}{False}
+{This key enables in-transit deflate compression for all NetCDF variables using zlib. To use this feature, NetCDF4 v4.7.4 must be available, which supports the necessary parallel zlib compression. The compression quality can be influenced by the chunk sizes and the overall data distribution. Compressed variables in NetCDF files can be opened in serial mode also within older versions of NetCDF4.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Compression True
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.CompressionLevel}{1}
+{This key sets the deflate compression level (if NetCDF.Compression is enabled), which influence the overall compression quality. zlib supports values between 0 (no compression), 1 (fastest compression) - 9 (slowest compression,smallest files). }
+\begin{display}\begin{verbatim}
+pfset NetCDF.CompressionLevel 1
+\end{verbatim}\end{display}
+
 \subsection{ROMIO Hints}
 ROMIO is a poratable MPI-IO implementation developed at Argonne National Laboratory, USA. Currently it is released as a part of MPICH. ROMIO sets hints to optimize I/O operations for MPI-IO layer through MPI\_Info object. This object is passed on to NetCDF4 while creating a file. ROMIO hints are set in a text file in "key" and "value" pair. \textit{For correct settings contact your HPC site administrator}. As in chunking, ROMIO hints can have significant performance impact on I/O.
 

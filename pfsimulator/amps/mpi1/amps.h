@@ -50,6 +50,14 @@
 #include <stdio.h>
 #include <sys/times.h>
 
+#ifdef PARFLOW_HAVE_CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
+#ifdef PARFLOW_HAVE_RMM
+#include <rmm/rmm_api.h>
+#endif
+#endif
+
 /*
  * Prevent inclusion of mpi C++ bindings in mpi.h includes.
  */
@@ -1026,21 +1034,26 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
   printf("%s : %s\n", name, comment)
 
 #ifdef PARFLOW_HAVE_CUDA
-#include <cuda.h>
-#include <cuda_runtime.h>
-
 /*--------------------------------------------------------------------------
  * Amps defines with CUDA
  *--------------------------------------------------------------------------*/
+
+/**
+ * @brief Operation modes for amps_gpupacking function
+ *  
+ * @note See function description for amps_gpupacking.
+ * 
+ * @{
+ */
 #define AMPS_GETRBUF 1
 #define AMPS_GETSBUF 2
 #define AMPS_PACK 4
 #define AMPS_UNPACK 8
+/** @} */
 
-#define AMPS_GPU_MAX_STREAMS 1024
-#define BLOCKSIZE_MAX 1024
-
-/* Do not use persistent communication with CUDA */
+/**
+ * @brief Activate non-persistent communication
+ */
 #define AMPS_MPI_NOT_USE_PERSISTENT
 
 /*--------------------------------------------------------------------------
@@ -1048,7 +1061,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  *--------------------------------------------------------------------------*/
 
 /**
- * @brief CUDA error handling.
+ * @brief CUDA error handling
  * 
  * If error detected, print error message and exit.
  *
@@ -1063,9 +1076,8 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line) 
 }
 
 #ifdef PARFLOW_HAVE_RMM
-#include <rmm/rmm_api.h>
 /**
- * @brief RMM error handling.
+ * @brief RMM error handling
  * 
  * If error detected, print error message and exit.
  *
@@ -1081,28 +1093,11 @@ static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
 #endif
 
 /*--------------------------------------------------------------------------
- * Amps gpu structs for global amps variables
- *--------------------------------------------------------------------------*/
-typedef struct _amps_GpuBuffer {
-  char **buf;
-  char **buf_host;
-  int *buf_size;
-  int num_bufs;
-} amps_GpuBuffer;
-
-typedef struct _amps_GpuStreams {
-  cudaStream_t *stream;
-  int *stream_id;
-  int num_streams;
-  int reqs_since_sync;
-} amps_GpuStreams;
-
-/*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for CUDA
  *--------------------------------------------------------------------------*/
 
 /**
- * @brief Allocates unified memory.
+ * @brief Allocates unified memory
  * 
  * If RMM library is available, pool allocation is used for better performance.
  * 
@@ -1126,7 +1121,7 @@ static inline void *_amps_talloc_cuda(size_t size)
 }
 
 /**
- * @brief Allocates unified memory initialized to 0.
+ * @brief Allocates unified memory initialized to 0
  * 
  * If RMM library is available, pool allocation is used for better performance.
  * 
@@ -1152,7 +1147,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 }
 
 /**
- * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda.
+ * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda
  * 
  * @note Should not be called directly.
  *
@@ -1168,85 +1163,20 @@ static inline void _amps_tfree_cuda(void *ptr)
 #endif
 }
 
-/** Same as \ref amps_TAlloc but allocates managed memory (CUDA required) */
+/** 
+ * Same as \ref amps_TAlloc but allocates managed memory (CUDA required) 
+ */
 #define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
-/** Same as \ref amps_CTAlloc but allocates managed memory */
+/** 
+ * Same as \ref amps_CTAlloc but allocates managed memory (CUDA required) 
+ */
 #define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
-/** Same as \ref amps_TFree but deallocates managed memory */
+/** 
+ * Same as \ref amps_TFree but deallocates managed memory (CUDA required) 
+ */
 #define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
-
-/*--------------------------------------------------------------------------
- * Define amps GPU kernels
- *--------------------------------------------------------------------------*/
-
-#ifdef __CUDACC__
-extern "C++"{
-template <typename T>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-StridedCopyKernel(T * __restrict__ dest, const int stride_dest, 
-                                  T * __restrict__ src, const int stride_src, const int len) 
-{
-  const int tid = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    
-  if(tid < len)
-  { 
-    const int idx_dest = tid * stride_dest;
-    const int idx_src = tid * stride_src;
-
-    dest[idx_dest] = src[idx_src];
-  }
-}
-template <typename T>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data, 
-    const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
-{
-  const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
-  if(k < len_z)
-  {
-    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
-    if(j < len_y)
-    {
-      const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
-      if(i < len_x)
-      {
-        *(ptr_buf + k * len_y * len_x + j * len_x + i) = 
-          *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
-            j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);
-      }
-    }
-  }
-}
-
-template <typename T>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data, 
-    const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
-{
-  const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
-  if(k < len_z)
-  {
-    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
-    if(j < len_y)
-    {
-      const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
-      if(i < len_x)
-      {
-        *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
-          j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
-            *(ptr_buf + k * len_y * len_x + j * len_x + i);
-      }
-    }
-  }
-}
-}
-
-#endif // __CUDACC__
 
 #endif // PARFLOW_HAVE_CUDA
 
