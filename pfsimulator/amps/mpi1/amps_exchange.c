@@ -28,44 +28,143 @@
 
 #include "amps.h"
 
-#ifdef AMPS_MPI_NOT_USE_PERSISTENT
+/* This CUDA stuff could be combined with AMPS_MPI_NOT_USE_PERSISTENT case */
+#ifdef PARFLOW_HAVE_CUDA
 
 void _amps_wait_exchange(amps_Handle handle)
 {
-  int notdone;
+  char *combuf;
   int i;
-
-  MPI_Status *status;
+  int size;
 
   if (handle->package->num_recv + handle->package->num_send)
   {
-    status = (MPI_Status*)calloc((handle->package->num_recv +
-                                  handle->package->num_send), sizeof(MPI_Status));
-
     MPI_Waitall(handle->package->num_recv + handle->package->num_send,
-                handle->package->requests,
-                status);
+                handle->package->recv_requests, handle->package->status);
+    for (i = 0; i < handle->package->num_recv; i++)
+    {
+      amps_gpupacking(AMPS_UNPACK, 
+                      handle->package->recv_invoices[i], 
+                      i, &combuf, &size);
+    }
+    for (i = 0; i < handle->package->num_recv; i++)
+    {
+      amps_gpu_sync_streams(i);
+      AMPS_CLEAR_INVOICE(handle->package->recv_invoices[i]);
+    }
+  }
 
-    free(status);
+  for (i = 0; i < handle->package->num_recv; i++)
+  {
+    MPI_Datatype type = handle->package->recv_invoices[i]->mpi_type;
+    if (type != MPI_DATATYPE_NULL && type != MPI_BYTE)
+      MPI_Type_free(&(handle->package->recv_invoices[i]->mpi_type));
+    if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+      MPI_Request_free(&(handle->package->recv_requests[i]));
+  }
+  for (i = 0; i < handle->package->num_send; i++)
+  {
+    MPI_Datatype type = handle->package->send_invoices[i]->mpi_type;
+    if (type != MPI_DATATYPE_NULL && type != MPI_BYTE)
+      MPI_Type_free(&handle->package->send_invoices[i]->mpi_type);
+    if(handle->package->send_requests[i] != MPI_REQUEST_NULL)
+      MPI_Request_free(&(handle->package->send_requests[i]));
+  }
+}
+
+amps_Handle amps_IExchangePackage(amps_Package package)
+{
+  char **combuf;
+  int *size;
+  int errchk;
+  int i;
+
+  if(package->num_send > 0){
+    combuf = (char**)malloc(package->num_send * sizeof(char*));
+    size = (int*)malloc(package->num_send * sizeof(int));
+  }
+  else{
+    combuf = (char**)malloc(sizeof(char*));
+    size = (int*)malloc(sizeof(int));
+  }
+
+  /*--------------------------------------------------------------------
+   * post receives for data to get
+   *--------------------------------------------------------------------*/
+  for (i = 0; i < package->num_recv; i++)
+  {
+    errchk = amps_gpupacking(AMPS_GETRBUF, package->recv_invoices[i], 
+                   i, &combuf[0], &size[0]);
+    if(errchk == 0){    
+      package->recv_invoices[i]->mpi_type = MPI_BYTE;
+    }
+    else{ 
+      combuf[0] = NULL;
+      size[0] = 1;
+      amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
+      MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
+    }
+
+    MPI_Irecv(combuf[0], size[0], package->recv_invoices[i]->mpi_type,
+              package->src[i], 0, MPI_COMM_WORLD,
+              &(package->recv_requests[i]));
+  }
+
+  /*--------------------------------------------------------------------
+   * send out the data we have
+   *--------------------------------------------------------------------*/
+  for (i = 0; i < package->num_send; i++)
+  {
+    errchk = amps_gpupacking(AMPS_PACK, package->send_invoices[i], 
+                   i, &combuf[i], &size[i]);
+    if(errchk == 0){    
+      package->send_invoices[i]->mpi_type = MPI_BYTE;
+    }
+    else{
+      combuf[i] = NULL;
+      size[i] = 1;
+      amps_create_mpi_type(MPI_COMM_WORLD, package->send_invoices[i]);
+      MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
+    }
+  }
+  for (i = 0; i < package->num_send; i++)
+  {
+    amps_gpu_sync_streams(i);
+    MPI_Isend(combuf[i], size[i], package->send_invoices[i]->mpi_type,
+              package->dest[i], 0, MPI_COMM_WORLD,
+              &(package->send_requests[i]));
+  }
+  free(combuf);
+  free(size);
+
+  return(amps_NewHandle(amps_CommWorld, 0, NULL, package));
+}
+
+#elif defined(AMPS_MPI_NOT_USE_PERSISTENT)
+
+void _amps_wait_exchange(amps_Handle handle)
+{
+  int i;
+
+  if (handle->package->num_recv + handle->package->num_send)
+  {
+    MPI_Waitall(handle->package->num_recv + handle->package->num_send,
+                handle->package->recv_requests, handle->package->status);
 
     for (i = 0; i < handle->package->num_recv; i++)
     {
       if (handle->package->recv_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
-      {
         MPI_Type_free(&(handle->package->recv_invoices[i]->mpi_type));
-      }
-
-      MPI_Request_free(&handle->package->requests[i]);
+      if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+        MPI_Request_free(&handle->package->recv_requests[i]);
     }
 
     for (i = 0; i < handle->package->num_send; i++)
     {
       if (handle->package->send_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
-      {
         MPI_Type_free(&handle->package->send_invoices[i]->mpi_type);
-      }
-
-      MPI_Request_free(&handle->package->requests[handle->package->num_recv + i]);
+      if(handle->package->send_requests[i] != MPI_REQUEST_NULL)
+        MPI_Request_free(&handle->package->send_requests[i]);
     }
   }
 }
@@ -77,8 +176,6 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   /*--------------------------------------------------------------------
    * post receives for data to get
    *--------------------------------------------------------------------*/
-  package->recv_remaining = 0;
-
   for (i = 0; i < package->num_recv; i++)
   {
     amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
@@ -87,7 +184,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 
     MPI_Irecv(MPI_BOTTOM, 1, package->recv_invoices[i]->mpi_type,
               package->src[i], 0, MPI_COMM_WORLD,
-              &(package->requests[i]));
+              &(package->recv_requests[i]));
   }
 
   /*--------------------------------------------------------------------
@@ -101,10 +198,10 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 
     MPI_Isend(MPI_BOTTOM, 1, package->send_invoices[i]->mpi_type,
               package->dest[i], 0, MPI_COMM_WORLD,
-              &(package->requests[package->num_recv + i]));
+              &(package->send_requests[i]));
   }
 
-  return(amps_NewHandle(NULL, 0, NULL, package));
+  return(amps_NewHandle(amps_CommWorld, 0, NULL, package));
 }
 
 #else

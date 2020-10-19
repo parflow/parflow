@@ -42,9 +42,34 @@
 #endif
 #endif
 
+#include <stdbool.h>
 #include <strings.h>
 #include <stdio.h>
 #include <sys/times.h>
+
+#ifdef PARFLOW_HAVE_CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
+#ifdef PARFLOW_HAVE_RMM
+#include <rmm/rmm_api.h>
+#endif
+#endif
+
+/*
+ * Prevent inclusion of mpi C++ bindings in mpi.h includes.
+ */
+#ifndef MPI_NO_CPPBIND
+#define MPI_NO_CPPBIND
+#endif
+
+#ifndef MPICH_SKIP_MPICXX
+#define MPICH_SKIP_MPICXX
+#endif
+
+#ifndef OMPI_SKIP_MPICXX
+#define OMPI_SKIP_MPICXX
+#endif
+
 #include <mpi.h>
 
 #define AMPS_EXCHANGE_SPECIALIZED
@@ -56,13 +81,6 @@
 
 #ifndef TRUE
 #define TRUE  1
-#endif
-
-#ifndef max
-#define max(a, b)  (((a) < (b)) ? (b) : (a))
-#endif
-#ifndef min
-#define min(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
 
 /*===========================================================================*/
@@ -1048,6 +1066,130 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_Error(name, type, comment, operation) \
   printf("%s : %s\n", name, comment)
 
+#ifdef PARFLOW_HAVE_CUDA
+/*--------------------------------------------------------------------------
+ *  GPU error handling macros
+ *--------------------------------------------------------------------------*/
+
+/**
+ * @brief CUDA error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr CUDA error (of type cudaError_t) [IN]
+ */
+#define CUDA_ERRCHK( err ) (amps_cuda_error( err, __FILE__, __LINE__ ))
+static inline void amps_cuda_error(cudaError_t err, const char *file, int line) {
+	if (err != cudaSuccess) {
+		printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
+		exit(1);
+	}
+}
+
+#ifdef PARFLOW_HAVE_RMM
+/**
+ * @brief RMM error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr RMM error (of type rmmError_t) [IN]
+ */
+#define RMM_ERRCHK( err ) (amps_rmm_error( err, __FILE__, __LINE__ ))
+static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
+	if (err != RMM_SUCCESS) {
+		printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), file, line);
+		exit(1);
+	}
+}
+#endif
+
+/*--------------------------------------------------------------------------
+ * Define static unified memory allocation routines for CUDA
+ *--------------------------------------------------------------------------*/
+
+/**
+ * @brief Allocates unified memory.
+ * 
+ * If RMM library is available, pool allocation is used for better performance.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
+static inline void *_amps_talloc_cuda(size_t size)
+{
+  void *ptr = NULL;  
+  
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));  
+#endif
+  
+  return ptr;
+}
+
+/**
+ * @brief Allocates unified memory initialized to 0.
+ * 
+ * If RMM library is available, pool allocation is used for better performance.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
+static inline void *_amps_ctalloc_cuda(size_t size)
+{
+  void *ptr = NULL;  
+
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+#endif  
+  // memset(ptr, 0, size);
+  CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
+  
+  return ptr;
+}
+
+/**
+ * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param ptr a void pointer to the allocated dataspace [IN]
+ */
+static inline void _amps_tfree_cuda(void *ptr)
+{
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmFree(ptr,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaFree(ptr));
+  // CUDA_ERRCHK(cudaFreeHost(ptr));
+#endif
+}
+
+/** 
+ * Same as \ref amps_TAlloc but allocates managed memory (CUDA required) 
+ */
+#define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+
+/** 
+ * Same as \ref amps_CTAlloc but allocates managed memory 
+ */
+#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+
+/** 
+ * Same as \ref amps_TFree but deallocates managed memory 
+ */
+#define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
+
+#endif // PARFLOW_HAVE_CUDA
 
 #include "amps_proto.h"
 

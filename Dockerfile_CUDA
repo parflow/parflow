@@ -129,7 +129,7 @@ RUN mkdir -p build && \
     CC=mpicc CXX=mpicxx FC=mpif90 && \
     cmake ../parflow \
        -DCMAKE_C_FLAGS=-lcuda \
-       -DPARFLOW_AMPS_LAYER=cuda \
+       -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
        -DHYPRE_ROOT=$PARFLOW_DIR \
        -DSILO_ROOT=$PARFLOW_DIR \

@@ -70,6 +70,10 @@ int amps_Finalize()
 
     MPI_Finalize();
   }
+#ifdef PARFLOW_HAVE_CUDA
+  amps_gpu_free_bufs();
+  amps_gpu_destroy_streams();
+#endif
 
 #ifdef AMPS_MALLOC_DEBUG
   /* check out the heap and shut everything down if we are in debug mode */
