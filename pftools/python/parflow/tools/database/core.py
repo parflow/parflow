@@ -303,23 +303,21 @@ class PFDBObj:
         Dynamic help function for runtime evaluation
         """
         if key is not None:
-            if key in self._details_:
+            if hasattr(self, '_details_') and key in self._details_:
                 if 'help' in self._details_[key]:
-                    print(self._details_[key]['help'])
+                    return self._details_[key]['help']
             else:
                 obj = self.__dict__[key]
                 if hasattr(obj, '__doc__'):
-                    print(obj.__doc__)
-
+                    return obj.__doc__
                 if hasattr(obj, '_details_') and '_value_' in obj._details_ \
                         and 'help' in obj._details_['_value_']:
-                    print(obj._details_['_value_']['help'])
-
+                    return obj._details_['_value_']['help']
         elif hasattr(self, '__doc__'):
-            print(self.__doc__)
+            return self.__doc__
             if hasattr(self, '_details_') and '_value_' in self._details_ \
                     and 'help' in self._details_['_value_']:
-                print(self._details_['_value_']['help'])
+                return self._details_['_value_']['help']
 
     # ---------------------------------------------------------------------------
 
@@ -545,55 +543,54 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def get_help(self, key_path):
-        try:
-            if self.get_detail(key_path, 'help') is not None:
-                    help_doc = self.get_detail(key_path, 'help')
-            else:
-                help_doc = None
-        except KeyError:
-            tokens = key_path.split('.')
-            if len(tokens) > 1:
-                container = self.get_selection_from_location(
-                    '/'.join(tokens[:-1]))[0]
-                if container is not None:
-                    help_doc = container.__dict__[tokens[-1]].__doc__
-
-            elif len(tokens) == 1:
-                if len(tokens[0]) > 0:
-                    help_doc = self.__dict__[tokens[0]].__doc__
-                else:
-                    help_doc = None
-
-        return help_doc
+        """Gets help documentation from given key path
+        """
+        container = self
+        key_tokens = key_path.split('.')
+        key = key_tokens[-1]
+        if len(key_tokens) > 1:
+            parent_location = '/'.join(key_tokens[:-1])
+            container = self.get_selection_from_location(parent_location)[0]
+        if container is not None:
+            return container.help(key)
+        return None
 
 
     # ---------------------------------------------------------------------------
 
-    def get_detail(self, key_path, detail_key=None):
-        """Returns the details of the given key.
+    def detail(self, key=None, sub_key=None):
+        """Helper function to return internal detail of a key
         """
-        tokens = key_path.split('.')
-        if len(tokens) > 1:
-            container = self.get_selection_from_location(
-                '/'.join(tokens[:-1]))[0]
-            if container is not None:
-                if detail_key is not None:
-                    detail = container.__dict__['_details_'][tokens[-1]][detail_key] if \
-                        detail_key in container.__dict__['_details_'][tokens[-1]] else None
-                else:
-                    detail = container.__dict__['_details_'][tokens[-1]]
+        if hasattr(self, '_details_'):
+            if key is None:
+                return self._details_
 
-        elif len(tokens) == 1:
-            if len(tokens[0]) > 0:
-                if detail_key is not None:
-                    detail = self.__dict__['_details_'][tokens[0]][detail_key] if \
-                        detail_key in self.__dict__['_details_'][tokens[0]] else None
-                else:
-                    detail = self.__dict__['_details_'][tokens[0]]
-            else:
-                detail = None
+            if key in self._details_:
+                key_details = self._details_[key]
+                if sub_key is None:
+                    return key_details
+                elif sub_key in key_details:
+                    return key_details[sub_key]
 
-        return detail
+        return None
+
+    # ---------------------------------------------------------------------------
+
+    def get_detail(self, key_path, detail_key=None):
+        """Getting internal details of a given key and detail key
+        """
+        container = self
+        key_tokens = key_path.split('.')
+        key = key_tokens[-1]
+
+        if len(key_tokens) > 1:
+            parent_location = '/'.join(key_tokens[:-1])
+            container = self.get_selection_from_location(parent_location)[0]
+
+        if container is not None:
+            return container.detail(key, detail_key)
+
+        return None
 
     # ---------------------------------------------------------------------------
 
