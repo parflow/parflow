@@ -544,21 +544,52 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def get_detail(self, key, detail_key):
+    def get_help(self, key_path):
+        try:
+            if self.get_detail(key_path, 'help') is not None:
+                    help_doc = self.get_detail(key_path, 'help')
+            else:
+                help_doc = None
+        except KeyError:
+            tokens = key_path.split('.')
+            if len(tokens) > 1:
+                container = self.get_selection_from_location(
+                    '/'.join(tokens[:-1]))[0]
+                if container is not None:
+                    help_doc = container.__dict__[tokens[-1]].__doc__
+
+            elif len(tokens) == 1:
+                if len(tokens[0]) > 0:
+                    help_doc = self.__dict__[tokens[0]].__doc__
+                else:
+                    help_doc = None
+
+        return help_doc
+
+
+    # ---------------------------------------------------------------------------
+
+    def get_detail(self, key_path, detail_key=None):
         """Returns the details of the given key.
         """
-        tokens = key.split('.')
+        tokens = key_path.split('.')
         if len(tokens) > 1:
             container = self.get_selection_from_location(
                 '/'.join(tokens[:-1]))[0]
             if container is not None:
-                detail = container.__dict__['_details_'][tokens[-1]][detail_key] if \
-                    detail_key in container.__dict__['_details_'][tokens[-1]] else None
+                if detail_key is not None:
+                    detail = container.__dict__['_details_'][tokens[-1]][detail_key] if \
+                        detail_key in container.__dict__['_details_'][tokens[-1]] else None
+                else:
+                    detail = container.__dict__['_details_'][tokens[-1]]
 
         elif len(tokens) == 1:
             if len(tokens[0]) > 0:
-                detail = self.__dict__['_details_'][tokens[0]][detail_key] if \
-                    detail_key in self.__dict__['_details_'][tokens[0]] else None
+                if detail_key is not None:
+                    detail = self.__dict__['_details_'][tokens[0]][detail_key] if \
+                        detail_key in self.__dict__['_details_'][tokens[0]] else None
+                else:
+                    detail = self.__dict__['_details_'][tokens[0]]
             else:
                 detail = None
 

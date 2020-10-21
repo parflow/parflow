@@ -168,7 +168,7 @@ Metadata:
 
       Code:
         help: >
-          [Type: string] Initial condition specification (1) restart file, (2) drv_clmin.dat file
+          [Type: int] Initial condition specification (1) restart file, (2) drv_clmin.dat file
         clm_key: clm_ic
         domains:
           IntValue:
@@ -177,7 +177,7 @@ Metadata:
 
     Domain:
       __class__: CLMDrvDomainData
-      __doc__: ''
+      __doc__: 'CLM Domain (Read into 1D drv_module variables)'
       __rst__:
         skip:
 

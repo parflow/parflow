@@ -115,35 +115,41 @@ class CLMExporter:
               file will be written
         """
         clm_drv_keys = {}
-        drv_clmin_ref = os.path.join(
-            os.path.dirname(__file__), 'ref/drv_clmin.dat')
-
+        header_doc = ''
         clm_dict = self.run.Metadata.CLM.get_key_dict()
+        drv_clmin_file = os.path.join(get_absolute_path(working_directory),
+                                      'drv_clmin.dat')
+
         for key in clm_dict.keys():
+            old_header_doc = header_doc
+            container_key = '.'.join([str(elem)
+                                      for elem in key.split('.')[:-1]])
+            header_doc = self.run.Metadata.CLM.get_help(container_key)
             clm_key = self.run.Metadata.CLM.get_detail(key, 'clm_key')
             clm_key_value = self.run.Metadata.CLM.get(key)
-            clm_drv_keys.update({clm_key: clm_key_value})
+            clm_key_help = self.run.Metadata.CLM.get_help(key)
+            if header_doc == old_header_doc:
+                clm_drv_keys[container_key].update({clm_key: [clm_key_value,
+                                                              clm_key_help]})
+            else:
+                clm_drv_keys.update({container_key: {
+                                        'doc': header_doc,
+                                         clm_key: [clm_key_value,
+                                                   clm_key_help]}})
 
-        print(clm_drv_keys)
-
-
-        cp(drv_clmin_ref, working_directory)
-        drv_clmin_file = os.path.join(get_absolute_path(working_directory), 'drv_clmin.dat')
-
-        with open(drv_clmin_ref, 'r') as fin:
-            with open(drv_clmin_file, 'w') as fout:
-                file_lines = fin.readlines()
-                for line in file_lines:
-                    if line[0].islower():
-                        clm_var_name = line.split()[0]
-                        extra_space = len(line.split()[1]) - len(str(clm_drv_keys[clm_var_name]))
-                        if extra_space > 0:
-                            fout.write(line.replace(f'{line.split()[1]}',
-                                                    f'{clm_drv_keys[clm_var_name]}'+' '*abs(extra_space)))
-                        else:
-                            fout.write(line.replace(f'{line.split()[1]}'+' '*abs(extra_space),
-                                                    f'{clm_drv_keys[clm_var_name]}'))
-                    else:
+        with open(drv_clmin_file, 'w') as fout:
+            fout.write(f'! CLM input file for {self.run.get_name()} '
+                       f'ParFlow run' + '\n')
+            for key, value in clm_drv_keys.items():
+                fout.write('!' + '\n')
+                fout.write('! ' + str(clm_drv_keys[key]["doc"])
+                           .strip(' \n\t') + '\n')
+                fout.write('!' + '\n')
+                for sub_key, sub_value in value.items():
+                    if sub_key != 'doc':
+                        line = sub_key.ljust(15, ' ')
+                        line += str(sub_value[0]).ljust(40, ' ')
+                        line += str(sub_value[1])
                         fout.write(line)
 
         return self
