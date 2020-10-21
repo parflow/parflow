@@ -40,7 +40,7 @@ class SubsurfacePropertiesExporter:
         entry = {'key': name}
         has_data = False
         for key in self.pfkey_to_alias:
-            value = geomItem.get(key, skip_default=True)
+            value = geomItem.get_value(key, skip_default=True)
             if value is not None:
                 has_data = True
                 alias = self.pfkey_to_alias[key]
@@ -126,7 +126,7 @@ class CLMExporter:
                                       for elem in key.split('.')[:-1]])
             header_doc = self.run.Metadata.CLM.get_help(container_key)
             clm_key = self.run.Metadata.CLM.get_detail(key, 'clm_key')
-            clm_key_value = self.run.Metadata.CLM.get(key)
+            clm_key_value = self.run.Metadata.CLM.get_value(key)
             clm_key_help = self.run.Metadata.CLM.get_help(key)
             if header_doc == old_header_doc:
                 clm_drv_keys[container_key].update({clm_key: [clm_key_value,

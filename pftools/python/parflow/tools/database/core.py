@@ -664,7 +664,7 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def get(self, key='', skip_default=False):
+    def get_value(self, key='', skip_default=False):
         value = None
         tokens = key.split('.')
         details = None
