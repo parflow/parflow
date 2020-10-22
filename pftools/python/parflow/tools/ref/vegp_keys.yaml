@@ -28,6 +28,7 @@ key:
 # -----------------------------------------------------------------------------
 
 WaterType:
+  type: int
   alias:
     - WaterType
     - itypwat
@@ -58,7 +59,6 @@ RoughLength:
   register: Solver.CLM.VegParams.Names
 
 DispHeight:
-  type: int
   alias:
     - DispHeight
     - displa
@@ -143,9 +143,8 @@ BTranExp:
   register: Solver.CLM.VegParams.Names
 
 Irrig:
+  type: int
   alias:
     - Irrig
     - irrig
-  addon:
-    Phase.RelPerm.Type: Constant
-  register: Phase.RelPerm.GeomNames
+  register: Solver.CLM.VegParams.Names

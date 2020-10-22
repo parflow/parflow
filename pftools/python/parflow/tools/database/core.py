@@ -555,7 +555,6 @@ class PFDBObj:
             return container.help(key)
         return None
 
-
     # ---------------------------------------------------------------------------
 
     def detail(self, key=None, sub_key=None):
@@ -658,6 +657,13 @@ class PFDBObj:
                   f"to save {fullkeyName} = {value}")
             if exit_if_undefined:
                 sys.exit(1)
+
+    # ---------------------------------------------------------------------------
+
+    def set_clm_keys(self, clm_key_dict):
+        # TODO
+        from . import generated
+        pass
 
     # ---------------------------------------------------------------------------
 

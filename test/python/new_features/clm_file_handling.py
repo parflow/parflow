@@ -1,5 +1,5 @@
 from parflow import Run
-from parflow.tools.builders import DomainBuilder
+from parflow.tools.builders import DomainBuilder, VegParamBuilder
 from parflow.tools.export import CLMExporter
 from parflow.tools.io import read_clm
 import sys
@@ -20,25 +20,33 @@ DomainBuilder(clm) \
 # Testing clm data readers
 #---------------------------------------------------------
 
-clmin_data = read_clm('../../tcl/clm/drv_clmin.dat', type='clmin')
-# print(clmin_data)
+clmin_data = read_clm('/Users/grapp/Downloads/drv_clmin.dat.0', type='clmin')
+print(clmin_data)
+
+# TODO
+# clm.set_clm_keys(clmin_data)
 
 vegm_data = read_clm('../../tcl/clm/drv_vegm.dat', type='vegm')
 if not vegm_data[1, 1, 14] == 1:
     sys.exit(1)
 
 vegp_data = read_clm('../../tcl/clm/drv_vegp.dat', type='vegp')
-# print(vegp_data)
+print(vegp_data)
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Testing clm data writers
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
 CLMExporter(clm) \
     .export_drv_clmin() \
     .export_drv_vegm(vegm_data) \
     .export_drv_vegp(vegp_data)
 
+clm.Solver.CLM.VegParams.LandNames = 'forest_en forest_eb forest_dn forest_db'
+
+VegParamBuilder(clm) \
+    .load_default_properties() \
+    .print()
 
 
 

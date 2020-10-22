@@ -5,6 +5,7 @@ import yaml
 import sys
 import numpy as np
 
+from abc import ABC, abstractmethod
 from .helper import sort_dict
 from .fs import exists
 
@@ -232,7 +233,23 @@ def _csv_line_tokenizer(line):
 def _txt_line_tokenizer(line):
     return line.split()
 
-class TableToProperties:
+class TableToProperties(ABC):
+
+    @abstractmethod
+    def key_root(self):
+        pass
+
+    @abstractmethod
+    def unit_string(self):
+        pass
+
+    @abstractmethod
+    def default_db(self):
+        pass
+
+    @abstractmethod
+    def db_prefix(self):
+        pass
 
     def __init__(self, run=None):
         if run is not None:
@@ -243,7 +260,7 @@ class TableToProperties:
         self.props_in_row_header = True
         self.table_comments = []
         yaml_key_def = os.path.join(
-            os.path.dirname(__file__), 'ref/table_keys.yaml')
+            os.path.dirname(__file__), self.reference_file)
         with open(yaml_key_def, 'r') as file:
             self.definition = yaml.safe_load(file)
 
@@ -477,17 +494,23 @@ class TableToProperties:
 
         return self
 
-    def load_default_properties(self, database='conus_1'):
+    def load_default_properties(self, database=None):
         """Method to load one of several default property databases.
 
         Args:
-           database='conus_1': default database - options are:
-           'conus_1': soil/rock properties from Maxwell and Condon (2016)
-           'washita': soil/rock properties from Little Washita script
-           'freeze_cherry': soil/rock properties from Freeze and Cherry (1979)
-           Note: Freeze and Cherry only has permeability and porosity
+           database=self.default_db: default database - options are:
+           1) for SubsurfacePropertiesBuilder:
+             'conus_1': soil/rock properties from Maxwell and Condon (2016)
+             'washita': soil/rock properties from Little Washita script
+             'freeze_cherry': soil/rock properties from Freeze and Cherry (1979)
+               Note: Freeze and Cherry only has permeability and porosity
+           2) for VegParamBuilder:
+               'igbp': parameters from IGBP land cover veg classification
         """
-        database_file = 'ref/subsurface_' + database + '.txt'
+        if database is None:
+            database = self.default_db
+
+        database_file = f'ref/{self.db_prefix}{database}.txt'
 
         default_prop_file = os.path.join(
             os.path.dirname(__file__), database_file)
@@ -504,9 +527,8 @@ class TableToProperties:
             print(f'# {database} database not found. Available databases include:')
             for root, dirs, files in os.walk(os.path.dirname(__file__) + '/ref/'):
                 for name in files:
-                    if name.startswith('subsurface'):
-                        print(f'# - {name} (use argument '
-                              f'"{name[len("subsurface_"):-len(".txt")]}")')
+                    if name.startswith(self.db_prefix):
+                        print(f'# - {name} (use argument "{name[len(self.db_prefix):-4]}")')
             print('#' * 80)
 
         return self
@@ -534,14 +556,14 @@ class TableToProperties:
         valid_unit_names = []
         addon_keys = {}
         for name in self.output:
-            if name in self.run.Geom.__dict__.keys():
+            if name in self.key_root.__dict__.keys():
                 valid_unit_names.append(name)
             elif name_registration and type(self.output[name]) is not dict:
                 addon_keys[name] = self.output[name]
 
         # Run pfset on all unit sections
         for unit_name in valid_unit_names:
-            self.run.Geom[unit_name].pfset(flat_map=self.output[unit_name])
+            self.key_root[unit_name].pfset(flat_map=self.output[unit_name])
 
         # Handle names
         if name_registration:
@@ -559,10 +581,10 @@ class TableToProperties:
     def print(self):
         """Method to print subsurface properties in hierarchical format
         """
-        output_to_print = {'Geom': {}}
+        output_to_print = {self.unit_string: {}}
         valid_unit_names = []
         for unit_name in self.output:
-            if hasattr(self.run.Geom, unit_name):
+            if hasattr(self.key_root, unit_name):
                 valid_unit_names.append(unit_name)
 
         for unit_name in valid_unit_names:
@@ -573,7 +595,7 @@ class TableToProperties:
                     output_to_print[prop_name].append(unit_name)
 
         for unit_name in valid_unit_names:
-            output_to_print['Geom'][unit_name] = self.output[unit_name]
+            output_to_print[self.unit_string][unit_name] = self.output[unit_name]
 
         print(yaml.dump(sort_dict(output_to_print), Dumper=NoAliasDumper))
         return self
@@ -599,7 +621,7 @@ class TableToProperties:
         for unit_name, props in self.output.items():
             if not isinstance(props, dict):
                 continue
-            elif not hasattr(self.run.Geom, unit_name):
+            elif not hasattr(self.key_root, unit_name):
                 continue
 
             entry = {
@@ -706,47 +728,50 @@ class TableToProperties:
 class SubsurfacePropertiesBuilder(TableToProperties):
 
     def __init__(self, run=None):
-        if run is not None:
-            self.run = run
-        self.output = {}
-        self.name_registration = {}
-        self.column_index = {}
-        self.props_in_row_header = True
-        self.table_comments = []
-        yaml_key_def = os.path.join(
-            os.path.dirname(__file__), 'ref/table_keys.yaml')
-        with open(yaml_key_def, 'r') as file:
-            self.definition = yaml.safe_load(file)
+        self.reference_file = 'ref/table_keys.yaml'
+        super().__init__(run)
 
-        # Extract prop column names
-        self.prop_names = []
-        self.alias_to_pfkey = {}
-        self.pfkey_to_alias = {}
-        self.alias_duplicates = set()
-        for key, value in self.definition.items():
-            self.pfkey_to_alias[key] = value['alias'][0]
-            for alias in value['alias']:
-                # checking for duplicate aliases
-                if alias in self.prop_names:
-                    self.alias_duplicates.add(alias)
+    @property
+    def key_root(self):
+        return self.run.Geom
 
-                self.prop_names.append(alias)
-                self.alias_to_pfkey[alias] = key
+    @property
+    def unit_string(self):
+        return 'Geom'
 
-        # crashes if there are duplicate aliases
-        if self.alias_duplicates:
-            raise Exception(f'Warning - duplicate alias name(s):'
-                            f' {self.alias_duplicates}')
+    @property
+    def default_db(self):
+        return 'conus_1'
+
+    @property
+    def db_prefix(self):
+        return 'subsurface_'
 
 # -----------------------------------------------------------------------------
 # Vegetation parameter property input helper
 # -----------------------------------------------------------------------------
 
-class VegatationParameterBuilder(TableToProperties):
+class VegParamBuilder(TableToProperties):
 
     def __init__(self, run=None):
-        if run is not None:
-            self.run = run
+        self.reference_file = 'ref/vegp_keys.yaml'
+        super().__init__(run)
+
+    @property
+    def key_root(self):
+        return self.run.Solver.CLM.VegParams
+
+    @property
+    def unit_string(self):
+        return 'VegParams'
+
+    @property
+    def default_db(self):
+        return 'igbp'
+
+    @property
+    def db_prefix(self):
+        return 'vegp_'
 
 # -----------------------------------------------------------------------------
 # Domain input builder - setting keys for various common problem definitions
