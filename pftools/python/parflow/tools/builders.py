@@ -275,7 +275,7 @@ class TableToProperties:
             return
 
         if self.props_in_row_header:
-            # Key column contains geom_name
+            # Key column contains unit_name
             data = {}
             registrations = []
             for alias, col_idx in self.column_index.items():
@@ -292,26 +292,26 @@ class TableToProperties:
                 # setting related addon keys
                 if 'addon' in key_def.keys():
                     for key, value in key_def['addon'].items():
-                        # local keys (appending to geom item)
+                        # local keys (appending to unit item)
                         if key[0] == '.':
                             data.update({key[1:]: value})
                         # global keys
                         elif key not in self.output:
                             self.output.update({key: value})
 
-                # appending geom name to list for setting geom name keys
+                # appending unit name to list for setting unit name keys
                 if 'register' in key_def.keys():
                     registrations.append(key_def['register'])
 
-            # Extract geom_name
-            geom_name = data['key']
+            # Extract unit_name
+            unit_name = data['key']
             del data['key']
-            self.output[geom_name] = data
+            self.output[unit_name] = data
 
-            if not hasattr(self.name_registration, geom_name):
-                self.name_registration[geom_name] = set()
+            if not hasattr(self.name_registration, unit_name):
+                self.name_registration[unit_name] = set()
 
-            self.name_registration[geom_name].update(registrations)
+            self.name_registration[unit_name].update(registrations)
 
         else:
             # Key column contains property values
@@ -331,23 +331,23 @@ class TableToProperties:
             # setting related addon keys
             if 'addon' in key_def.keys():
                 for addon_key, addon_value in key_def['addon'].items():
-                    # local keys (appending to geom item)
+                    # local keys (appending to unit item)
                     if addon_key[0] == '.':
                         data.update({addon_key[1:]: addon_value})
                     # global keys
                     elif addon_key not in self.output:
                         self.output.update({addon_key: addon_value})
 
-            # appending geom name to list for setting geom name keys
+            # appending unit_name to list for setting unit name keys
             if 'register' in key_def.keys():
                 registrations.append(key_def['register'])
 
-            for geom_name in self.column_index:
-                if geom_name == main_key:
+            for unit_name in self.column_index:
+                if unit_name == main_key:
                     continue
 
-                container = self.output[geom_name]
-                value_str = tokens[self.column_index[geom_name]]
+                container = self.output[unit_name]
+                value_str = tokens[self.column_index[unit_name]]
                 if value_str == '-':
                     continue
 
@@ -355,7 +355,7 @@ class TableToProperties:
                 container[key] = value
                 container.update(data)
                 if registrations:
-                    self.name_registration[geom_name].update(registrations)
+                    self.name_registration[unit_name].update(registrations)
 
     def _process_first_line(self, first_line_tokens):
         """Method to process first line in a table
@@ -388,11 +388,11 @@ class TableToProperties:
             print(f' - Properties not found: {not_found}')
         elif len(found) == 1:
             self.props_in_row_header = False
-            # Prefill geo_name containers
-            for geom_name in self.column_index:
-                if geom_name not in self.definition['key']['alias']:
-                    self.output[geom_name] = {}
-                    self.name_registration[geom_name] = set()
+            # Prefill unit_name containers
+            for unit_name in self.column_index:
+                if unit_name not in self.definition['key']['alias']:
+                    self.output[unit_name] = {}
+                    self.name_registration[unit_name] = set()
 
         if self.props_in_row_header is None:
             raise Exception('Invalid table format')
@@ -400,7 +400,7 @@ class TableToProperties:
         return True
 
     def load_csv_file(self, tableFile, encoding='utf-8-sig'):
-        """Method to load a .csv file of a table of subsurface parameters
+        """Method to load a .csv file of a table of parameters
 
         Args:
             tableFile (str): Path to the input .csv file.
@@ -418,7 +418,7 @@ class TableToProperties:
         return self
 
     def load_txt_file(self, tableFile, encoding='utf-8-sig'):
-        """Method to load a .txt file of a table of subsurface parameters
+        """Method to load a .txt file of a table of parameters
 
         Args:
             tableFile (str): Path to the input .txt file.
@@ -437,7 +437,7 @@ class TableToProperties:
         return self
 
     def load_txt_content(self, txt_content):
-        """Method to load an in-line text table of subsurface parameters
+        """Method to load an in-line text table of parameters
 
         Args:
             txt_content (str): In-line text string.
@@ -509,18 +509,17 @@ class TableToProperties:
                               f'"{name[len("subsurface_"):-len(".txt")]}")')
             print('#' * 80)
 
-
         return self
 
     def apply(self, run=None, name_registration=True):
-        """Method to apply the loaded subsurface properties to a given
+        """Method to apply the loaded properties to a given
            run object.
 
         Args:
             run=None (Run object): Run object to which the loaded subsurface
                 parameters will be applied. If run=None, then the run object
                 must be passed in as an argument when the
-                SubsurfacePropertiesBuilder is instantiated.
+                TableToProperties is instantiated.
             name_registration=True (bool): sets the auxiliary keys
                 (e.g., GeomNames) related to the loaded subsurface properties
         """
@@ -532,27 +531,27 @@ class TableToProperties:
         else:
             self.run = run
 
-        valid_geom_names = []
+        valid_unit_names = []
         addon_keys = {}
         for name in self.output:
             if name in self.run.Geom.__dict__.keys():
-                valid_geom_names.append(name)
+                valid_unit_names.append(name)
             elif name_registration and type(self.output[name]) is not dict:
                 addon_keys[name] = self.output[name]
 
-        # Run pfset on all geom sections
-        for geom_name in valid_geom_names:
-            self.run.Geom[geom_name].pfset(flat_map=self.output[geom_name])
+        # Run pfset on all unit sections
+        for unit_name in valid_unit_names:
+            self.run.Geom[unit_name].pfset(flat_map=self.output[unit_name])
 
         # Handle names
         if name_registration:
             names_to_set = addon_keys
-            for geom_name in valid_geom_names:
-                if geom_name in self.name_registration.keys():
-                    for prop_name in self.name_registration[geom_name]:
+            for unit_name in valid_unit_names:
+                if unit_name in self.name_registration.keys():
+                    for prop_name in self.name_registration[unit_name]:
                         if prop_name not in names_to_set.keys():
                             names_to_set[prop_name] = []
-                        names_to_set[prop_name].append(geom_name)
+                        names_to_set[prop_name].append(unit_name)
             self.run.pfset(flat_map=names_to_set)
 
         return self
@@ -561,20 +560,20 @@ class TableToProperties:
         """Method to print subsurface properties in hierarchical format
         """
         output_to_print = {'Geom': {}}
-        valid_geom_names = []
-        for geom_name in self.output:
-            if hasattr(self.run.Geom, geom_name):
-                valid_geom_names.append(geom_name)
+        valid_unit_names = []
+        for unit_name in self.output:
+            if hasattr(self.run.Geom, unit_name):
+                valid_unit_names.append(unit_name)
 
-        for geom_name in valid_geom_names:
-            if hasattr(self.name_registration, geom_name):
-                for prop_name in self.name_registration[geom_name]:
+        for unit_name in valid_unit_names:
+            if hasattr(self.name_registration, unit_name):
+                for prop_name in self.name_registration[unit_name]:
                     if not hasattr(output_to_print, prop_name):
                         output_to_print[prop_name] = []
-                    output_to_print[prop_name].append(geom_name)
+                    output_to_print[prop_name].append(unit_name)
 
-        for geom_name in valid_geom_names:
-            output_to_print['Geom'][geom_name] = self.output[geom_name]
+        for unit_name in valid_unit_names:
+            output_to_print['Geom'][unit_name] = self.output[unit_name]
 
         print(yaml.dump(sort_dict(output_to_print), Dumper=NoAliasDumper))
         return self
@@ -589,25 +588,25 @@ class TableToProperties:
                 is space-delimited.
 
         Returns:
-            text block of table of subsurface units and parameter values
+            text block of table of units and parameter values
         """
         entries = []
         prop_set = set()
         prop_sizes = {'key': 0}
-        geom_sizes = {'key': 0}
+        unit_sizes = {'key': 0}
 
         # Fill entries headers
-        for geo_name, props in self.output.items():
+        for unit_name, props in self.output.items():
             if not isinstance(props, dict):
                 continue
-            elif not hasattr(self.run.Geom, geo_name):
+            elif not hasattr(self.run.Geom, unit_name):
                 continue
 
             entry = {
-                'key': geo_name,
+                'key': unit_name,
             }
-            prop_sizes['key'] = max(prop_sizes['key'], len(geo_name))
-            geom_sizes[geo_name] = len(geo_name)
+            prop_sizes['key'] = max(prop_sizes['key'], len(unit_name))
+            unit_sizes[unit_name] = len(unit_name)
             for prop in props:
                 if prop in self.pfkey_to_alias:
                     alias = self.pfkey_to_alias[prop]
@@ -616,8 +615,8 @@ class TableToProperties:
                     entry[alias] = value
                     prop_set.add(alias)
 
-                    # Find bigger size for geom
-                    geom_sizes[geo_name] = max(geom_sizes[geo_name], size)
+                    # Find bigger size for unit
+                    unit_sizes[unit_name] = max(unit_sizes[unit_name], size)
 
                     # Find bigger size for props
                     if alias not in prop_sizes:
@@ -625,7 +624,7 @@ class TableToProperties:
                     else:
                         prop_sizes[alias] = max(prop_sizes[alias], size)
 
-                    geom_sizes['key'] = max(geom_sizes['key'], len(alias))
+                    unit_sizes['key'] = max(unit_sizes['key'], len(alias))
 
             entries.append(entry)
 
@@ -634,9 +633,9 @@ class TableToProperties:
         for alias in prop_sizes:
             prop_header_width += prop_sizes[alias] + 2
 
-        geom_header_width = 0
-        for geom_name in geom_sizes:
-            geom_header_width += geom_sizes[geom_name] + 2
+        unit_header_width = 0
+        for unit_name in unit_sizes:
+            unit_header_width += unit_sizes[unit_name] + 2
 
         # Build table
         table_lines = []
@@ -663,13 +662,13 @@ class TableToProperties:
                 table_lines.append(column_separator.join(line))
 
         else:
-            sizes = geom_sizes
-            # Create table using geom name as header
+            sizes = unit_sizes
+            # Create table using unit name as header
             line = []
-            for geom in sizes:
-                header_keys.append(geom)
-                width = sizes[geom]
-                line.append(geom.ljust(width))
+            for unit in sizes:
+                header_keys.append(unit)
+                width = sizes[unit]
+                line.append(unit.ljust(width))
 
             # Add header
             table_lines.append(column_separator.join(line))
@@ -738,6 +737,16 @@ class SubsurfacePropertiesBuilder(TableToProperties):
         if self.alias_duplicates:
             raise Exception(f'Warning - duplicate alias name(s):'
                             f' {self.alias_duplicates}')
+
+# -----------------------------------------------------------------------------
+# Vegetation parameter property input helper
+# -----------------------------------------------------------------------------
+
+class VegatationParameterBuilder(TableToProperties):
+
+    def __init__(self, run=None):
+        if run is not None:
+            self.run = run
 
 # -----------------------------------------------------------------------------
 # Domain input builder - setting keys for various common problem definitions
