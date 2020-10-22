@@ -11,7 +11,7 @@ clm = Run("clm", __file__)
 #---------------------------------------------------------
 
 DomainBuilder(clm) \
-    .clm_drv_file(StartDate='2020-01-01', StartTime='00-00-00',
+    .clm_drv_input_file(StartDate='2020-01-01', StartTime='00-00-00',
                   EndDate='2020-12-31', EndTime='23-59-59',
                   metf1d='narr_1hr.sc3.txt', outf1d='washita.output.txt',
                   poutf1d='test.out.dat', rstf='washita.rst.')

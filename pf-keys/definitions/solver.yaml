@@ -301,8 +301,6 @@ Solver:
       domains:
         AnyString:
         RequiresModule: CLM
-#        ValidFile:
-#          path_prefix_source: /Solver/CLM/MetFilePath
 
     MetFilePath:
       help: >
@@ -456,6 +454,618 @@ Solver:
       domains:
         BoolDomain:
         RequiresModule: CLM
+
+    # -----------------------------------------------------------------------------
+    # CLM input variables to write drv_clmin.dat (Input) and drv_vegp.dat (VegParams) files
+    # -----------------------------------------------------------------------------
+
+    Input:
+      __class__: CLMDrvData
+      __doc__: ''
+      __rst__:
+        skip:
+
+      Timing:
+        __class__: CLMTiming
+        __doc__: 'Timing information for CLM run'
+        __rst__:
+          skip:
+
+        RestartCode:
+          help: >
+            [Type: int] 1 = starting timing from a restart file, 2 = timing is defined in the script
+          clm_key: startcode
+          domains:
+            IntValue:
+              min_value: 1
+              max_value: 2
+
+        StartYear:
+          help: >
+            [Type: int] Starting year of CLM data.
+          clm_key: syr
+          domains:
+            IntValue:
+
+        StartMonth:
+          help: >
+            [Type: int] Starting month of CLM data.
+          clm_key: smo
+          domains:
+            IntValue:
+              min_value: 1
+              max_value: 12
+
+        StartDay:
+          help: >
+            [Type: int] Starting day of CLM data.
+          clm_key: sda
+          domains:
+            IntValue:
+              min_value: 1
+              max_value: 31
+
+        StartHour:
+          help: >
+            [Type: int] Starting hour of CLM data.
+          clm_key: shr
+          domains:
+            IntValue:
+              min_value: 0
+              max_value: 24
+
+        StartMinute:
+          help: >
+            [Type: int] Starting minute of CLM data.
+          clm_key: smn
+          domains:
+            IntValue:
+              min_value: 0
+              max_value: 60
+
+        StartSecond:
+          help: >
+            [Type: int] Starting second of CLM data.
+          clm_key: sss
+          domains:
+            IntValue:
+              min_value: 0
+              max_value: 60
+
+        EndYear:
+          help: >
+            [Type: int] Ending year of CLM data.
+          clm_key: eyr
+          domains:
+            IntValue:
+
+        EndMonth:
+          help: >
+            [Type: int] Ending month of CLM data.
+          clm_key: emo
+          domains:
+            IntValue:
+              min_value: 1
+              max_value: 12
+
+        EndDay:
+          help: >
+            [Type: int] Ending day of CLM data.
+          clm_key: eda
+          domains:
+            IntValue:
+              min_value: 1
+              max_value: 31
+
+        EndHour:
+          help: >
+            [Type: int] Ending hour of CLM data.
+          clm_key: ehr
+          domains:
+            IntValue:
+              min_value: 0
+              max_value: 24
+
+        EndMinute:
+          help: >
+            [Type: int] Ending minute of CLM data.
+          clm_key: emn
+          domains:
+            IntValue:
+              min_value: 0
+              max_value: 60
+
+        EndSecond:
+          help: >
+            [Type: int] Ending second of CLM data.
+          clm_key: ess
+          domains:
+            IntValue:
+              min_value: 0
+              max_value: 60
+
+      ICSource:
+        __doc__: 'CLM Initial Condition Source'
+        __rst__:
+          skip:
+
+        Code:
+          help: >
+            [Type: int] Initial condition specification (1) restart file, (2) drv_clmin.dat file
+          clm_key: clm_ic
+          domains:
+            IntValue:
+              min_value: 1
+              max_value: 2
+
+      Domain:
+        __class__: CLMDrvDomainData
+        __doc__: 'CLM Domain (Read into 1D drv_module variables)'
+        __rst__:
+          skip:
+
+        MaxTiles:
+          help: >
+            [Type: int] Maximum tiles per grid (originally 3; changed it, because we have one type per cell)
+          default: 1
+          clm_key: maxt
+          domains:
+            IntValue:
+
+        MinGridArea:
+          help: >
+            [Type: double] Min grid area for tile (%)
+          default: 0.05
+          clm_key: mina
+          domains:
+            DoubleValue:
+
+        UndefinedValue:
+          help: >
+            [Type: int] Undefined value
+          default: -9999
+          clm_key: udef
+          domains:
+            IntValue:
+
+        VegClassification:
+          help: >
+            [Type: int] Vegetation Classification Scheme (1=UMD,2=IGBP,etc.) NOT the index
+          default: 2
+          clm_key: vclass
+          domains:
+            IntValue:
+
+      File:
+        __doc__: 'CLM Files (Read into 1D drv_module variables):'
+        __rst__:
+          skip:
+
+        VegTileSpecification:
+          help: >
+            [Type: string] Vegetation Tile Specification File
+          default: 'drv_vegm.dat'
+          clm_key: vegtf
+          domains:
+            AnyString:
+
+        VegTypeParameter:
+          help: >
+            [Type: string] Vegetation Type Parameter File
+          default: 'drv_vegp.dat'
+          clm_key: vegpf
+          domains:
+            AnyString:
+
+        MetInput:
+          help: >
+            [Type: string] Meterologic input file- valdai 3 hr
+          clm_key: metf1d
+          domains:
+            AnyString:
+
+        Output:
+          help: >
+            [Type: string] CLM output file
+          clm_key: outf1d
+          domains:
+            AnyString:
+
+        ParamOutput:
+          help: >
+            [Type: string] CLM 1D Parameter Output File
+          clm_key: poutf1d
+          domains:
+            AnyString:
+
+        ActiveRestart:
+          help: >
+            [Type: string] CLM active restart file
+          clm_key: rstf
+          domains:
+            AnyString:
+
+      InitCond:
+        __doc__: 'CLM initial conditions (1-D : used in drv_clmini.f90)'
+        __rst__:
+          skip:
+
+        Temperature:
+          help: >
+            [Type: int] Initial temperature [K]
+          default: 300
+          clm_key: t_ini
+          domains:
+            IntValue:
+
+        SnowCover:
+          help: >
+            [Type: int]
+          default: Initial snow cover, water equivalent [mm]
+          clm_key: h2osno_ini
+          domains:
+            IntValue:
+
+      OutputVars:
+        __doc__: Diagnostic CLM output variable specification
+        __rst__:
+          skip:
+
+        Surface:
+          help: >
+            [Type: int] Number of surface diagnostic variables to output
+          default: 2
+          clm_key: surfind
+          domains:
+            IntValue:
+
+        Soil:
+          help: >
+            [Type: int] Number of soil layer diagnostic variables to output
+          default: 1
+          clm_key: soilind
+          domains:
+            IntValue:
+
+        Snow:
+          help: >
+            [Type: int] Number of snow layer diagnostic variables to output
+          default: 0
+          clm_key: snowind
+          domains:
+            IntValue:
+
+      Forcing:
+        __doc__: >
+          CLM Forcing parameters (read into 2-D grid module variables).
+          The variables below are assigned to the ENTIRE grid domain,
+          and then are translated into tilespace. To read in grid or
+          tilespace variable information, you must modify the driver code.
+        __rst__:
+          skip:
+
+        WindObsHeight:
+          help: >
+            [Type: double] Observational height of wind [m]
+          default: 10.0
+          clm_key: forc_hgt_u
+          domains:
+            DoubleValue:
+
+        TempObsHeight:
+          help: >
+            [Type: double] Observational height of temperature [m]
+          default: 2.0
+          clm_key: forc_hgt_t
+          domains:
+            DoubleValue:
+
+        HumObsHeight:
+          help: >
+            [Type: double] Observational height of humidity [m]
+          default: 2.0
+          clm_key: forc_hgt_q
+          domains:
+            DoubleValue:
+
+      Vegetation:
+        __doc__: CLM Vegetation parameters (read into 2-D grid module variables)
+        __rst__:
+          skip:
+
+        MaxDew:
+          help: >
+            [Type: double] Maximum allowed dew [mm]
+          default: 0.1
+          clm_key: dewmx
+          domains:
+            DoubleValue:
+
+        MaxTranspiration:
+          help: >
+            [Type: double] Maximum possible transpiration rate [mm/s]
+          default: -9999.0
+          clm_key: qflx_tran_vegmx
+          domains:
+            DoubleValue:
+
+        RootFraction:
+          help: >
+            [Type: double] Root Fraction (depth average)
+          default: -9999.0
+          clm_key: rootfr
+          domains:
+            DoubleValue:
+
+      RoughnessLength:
+        __doc__: Roughness lengths (read into 2-D grid module variables)
+        __rst__:
+          skip:
+
+        Soil:
+          help: >
+            [Type: double] Roughness length for soil [m]
+          default: 0.01
+          clm_key: zlnd
+          domains:
+            DoubleValue:
+
+        Snow:
+          help: >
+            [Type: double] Roughness length for snow [m]
+          default: 0.0024
+          clm_key: zsno
+          domains:
+            DoubleValue:
+
+        DragCanopySoil:
+          help: >
+            [Type: double] Drag coefficient for soil under canopy [-]
+          default: 0.0025
+          clm_key: csoilc
+          domains:
+            DoubleValue:
+
+      NumericalParams:
+        __doc__: Numerical finite-difference parameters (read into 2-D grid module variables)
+        __rst__:
+          skip:
+
+        TuningFactor:
+          help: >
+            [Type: double] Tuning factor to turn first layer T into surface T
+          default: 0.34
+          clm_key: capr
+          domains:
+            DoubleValue:
+
+        CNFactor:
+          help: >
+            [Type: double] Crank Nicholson factor between 0 and 1
+          default: 0.5
+          clm_key: cnfac
+          domains:
+            DoubleValue:
+              min_value: 0
+              max_value: 1
+
+        MinSoilPotential:
+          help: >
+            [Type: double] Restriction for min of soil poten. (mm)
+          default: -1.e8
+          clm_key: smpmin
+          domains:
+            DoubleValue:
+
+        IrrSnowSat:
+          help: >
+            [Type: double] Irreducible water saturation of snow
+          default: 0.033
+          clm_key: ssi
+          domains:
+            DoubleValue:
+
+        WaterImpermeable:
+          help: >
+            [Type: double] Water impermeable if porosity < wimp
+          default: 0.05
+          clm_key: wimp
+          domains:
+            DoubleValue:
+
+    VegParams:
+      __class__: CLMVegP
+      __doc__: ''
+      __rst__:
+        skip:
+
+      LandNames:
+        help: >
+          [Type: string] List of names of land use cover types for building the drv_vegp.dat file.
+          Defaults to the 18 IGBP classification types.
+        default: 'forest_en forest_eb forest_dn forest_db forest_mixed shrub_closed shrub_open
+          sav_woody savannas grasslands wetlands_perm croplands urban crop_veg_m
+          snow_ice barren water bare_soil'
+        domains:
+          AnyString:
+          RequiresModule: CLM
+        handlers:
+          VegParameterUpdater:
+            type: ChildrenHandler
+            class_name: LandCoverItem
+            location: .
+
+      .{land_cover_name}:
+        __class__: LandCoverItem
+        __rst__:
+          name: VegParams.{land_cover_name}
+        __doc__: >
+          One of the user-defined names for land cover types for the drv_vegp.dat file
+
+        WaterType:
+          help: >
+            [Type: int] (1-soil, 2-land ice, 3-deep lake, 4-shallow lake, 5-wetland: swamp, marsh)
+          clm_key: itypwat
+          domains:
+            IntValue:
+              min_value: 1
+              max_value: 5
+            RequiresModule: CLM
+
+        MaxLAI:
+          help: >
+            [Type: double] Maximum leaf area index [-]
+          clm_key: lai
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        MinLAI:
+          help: >
+            [Type: double] Minimum leaf area index [-]
+          clm_key: lai0
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        StemAI:
+          help: >
+            [Type: double] Stem area index [-]
+          clm_key: sai
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        RoughLength:
+          help: >
+            [Type: double] Aerodynamic roughness length [m]
+          clm_key: z0m
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        DispHeight:
+          help: >
+            [Type: double] Displacement height [m]
+          clm_key: displa
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        LeafDim:
+          help: >
+            [Type: double] Leaf dimension [m]
+          clm_key: dleaf
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        RootA:
+          help: >
+            [Type: double] Fitted numerical index of rooting distribution
+          clm_key: roota
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        RootB:
+          help: >
+            [Type: double] Fitted numerical index of rooting distribution
+          clm_key: rootb
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        LeafRefVis:
+          help: >
+            [Type: double] leaf reflectance vis
+          clm_key: rhol_vis
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        LeafRefNir:
+          help: >
+            [Type: double] leaf reflectance nir
+          clm_key: rhol_nir
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        StemRefVis:
+          help: >
+            [Type: double] stem reflectance vis
+          clm_key: rhos_vis
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        StemRefNir:
+          help: >
+            [Type: double] stem reflectance nir
+          clm_key: rhos_nir
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        LeafTransVis:
+          help: >
+            [Type: double] leaf transmittance vis
+          clm_key: taul_vis
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        LeafTransNir:
+          help: >
+            [Type: double] leaf transmittance nir
+          clm_key: taul_nir
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        StemTransVis:
+          help: >
+            [Type: double] stem transmittance vis
+          clm_key: taus_vis
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        StemTransNir:
+          help: >
+            [Type: double] stem transmittance nir
+          clm_key: taus_nir
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        OrientIndex:
+          help: >
+            [Type: double] leaf/stem orientation index
+          clm_key: xl
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        BTranExp:
+          help: >
+            [Type: double] btran exponent:[(h2osoi_vol-watdry)/(watopt-watdry)]**vw
+          clm_key: vw
+          domains:
+            DoubleValue:
+            RequiresModule: CLM
+
+        Irrig:
+          help: >
+            [Type: int] (irrig=0 -> no irrigation, irrig=1 -> irrigate)
+          clm_key: irrig
+          default: 0
+          domains:
+            IntValue:
+              min_value: 0
+              max_value: 1
+            RequiresModule: CLM
 
   # -----------------------------------------------------------------------------
   # Other Solver Settings

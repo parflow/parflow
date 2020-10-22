@@ -220,7 +220,7 @@ class SolidFileBuilder:
         return self
 
 # -----------------------------------------------------------------------------
-# Subsurface hydraulic property input helper
+# Abstract table to property helper class
 # -----------------------------------------------------------------------------
 
 
@@ -232,8 +232,7 @@ def _csv_line_tokenizer(line):
 def _txt_line_tokenizer(line):
     return line.split()
 
-
-class SubsurfacePropertiesBuilder:
+class TableToProperties:
 
     def __init__(self, run=None):
         if run is not None:
@@ -702,6 +701,45 @@ class SubsurfacePropertiesBuilder:
         return self
 
 # -----------------------------------------------------------------------------
+# Subsurface hydraulic property input helper
+# -----------------------------------------------------------------------------
+
+class SubsurfacePropertiesBuilder(TableToProperties):
+
+    def __init__(self, run=None):
+        if run is not None:
+            self.run = run
+        self.output = {}
+        self.name_registration = {}
+        self.column_index = {}
+        self.props_in_row_header = True
+        self.table_comments = []
+        yaml_key_def = os.path.join(
+            os.path.dirname(__file__), 'ref/table_keys.yaml')
+        with open(yaml_key_def, 'r') as file:
+            self.definition = yaml.safe_load(file)
+
+        # Extract prop column names
+        self.prop_names = []
+        self.alias_to_pfkey = {}
+        self.pfkey_to_alias = {}
+        self.alias_duplicates = set()
+        for key, value in self.definition.items():
+            self.pfkey_to_alias[key] = value['alias'][0]
+            for alias in value['alias']:
+                # checking for duplicate aliases
+                if alias in self.prop_names:
+                    self.alias_duplicates.add(alias)
+
+                self.prop_names.append(alias)
+                self.alias_to_pfkey[alias] = key
+
+        # crashes if there are duplicate aliases
+        if self.alias_duplicates:
+            raise Exception(f'Warning - duplicate alias name(s):'
+                            f' {self.alias_duplicates}')
+
+# -----------------------------------------------------------------------------
 # Domain input builder - setting keys for various common problem definitions
 # -----------------------------------------------------------------------------
 
@@ -1084,7 +1122,7 @@ class DomainBuilder:
 
         return self
 
-    def clm_drv_file(self, StartDate, StartTime, EndDate, EndTime,
+    def clm_drv_input_file(self, StartDate, StartTime, EndDate, EndTime,
                      metf1d, outf1d, poutf1d, rstf,
                      startcode=2, clm_ic=2, maxt=1, mina=0.05, udef=-9999, vclass=2,
                      vegtf='drv_vegm.dat', vegpf='drv_vegp.dat', t_ini=300,
@@ -1093,52 +1131,56 @@ class DomainBuilder:
                      dewmx=0.1, qflx_tran_vegmx=-9999.0, rootfr=-9999.0,
                      zlnd=0.01, zsno=0.0024, csoilc=0.0025, capr=0.34,
                      cnfac=0.5, smpmin=-1.0e8, ssi=0.033, wimp=0.05):
-        """Setting metadata keys to build the CLM driver file
+        """Setting metadata keys to build the CLM driver input file
         """
+        syear, smonth, sday = StartDate.split('-')
+        shour, smin, ssec = StartTime.split('-')
+        eyear, emonth, eday = EndDate.split('-')
+        ehour, emin, esec = EndTime.split('-')
 
-        self.run.Metadata.CLM.Timing.StartYear = StartDate.split('-')[0]
-        self.run.Metadata.CLM.Timing.StartMonth = StartDate.split('-')[1]
-        self.run.Metadata.CLM.Timing.StartDay = StartDate.split('-')[2]
-        self.run.Metadata.CLM.Timing.StartHour = StartTime.split('-')[0]
-        self.run.Metadata.CLM.Timing.StartMinute = StartTime.split('-')[1]
-        self.run.Metadata.CLM.Timing.StartSecond = StartTime.split('-')[2]
-        self.run.Metadata.CLM.Timing.EndYear = EndDate.split('-')[0]
-        self.run.Metadata.CLM.Timing.EndMonth = EndDate.split('-')[1]
-        self.run.Metadata.CLM.Timing.EndDay = EndDate.split('-')[2]
-        self.run.Metadata.CLM.Timing.EndHour = EndTime.split('-')[0]
-        self.run.Metadata.CLM.Timing.EndMinute = EndTime.split('-')[1]
-        self.run.Metadata.CLM.Timing.EndSecond = EndTime.split('-')[2]
-        self.run.Metadata.CLM.File.MetInput = metf1d
-        self.run.Metadata.CLM.File.Output = outf1d
-        self.run.Metadata.CLM.File.ParamOutput = poutf1d
-        self.run.Metadata.CLM.File.ActiveRestart = rstf
-        self.run.Metadata.CLM.ICSource.Code = clm_ic
-        self.run.Metadata.CLM.Timing.RestartCode = startcode
-        self.run.Metadata.CLM.Domain.MaxTiles = maxt
-        self.run.Metadata.CLM.Domain.MinGridArea = mina
-        self.run.Metadata.CLM.Domain.UndefinedValue = udef
-        self.run.Metadata.CLM.Domain.VegClassification = vclass
-        self.run.Metadata.CLM.File.VegTileSpecification = vegtf
-        self.run.Metadata.CLM.File.VegTypeParameter = vegpf
-        self.run.Metadata.CLM.InitCond.Temperature = t_ini
-        self.run.Metadata.CLM.InitCond.SnowCover = h2osno_ini
-        self.run.Metadata.CLM.OutputVars.Surface = surfind
-        self.run.Metadata.CLM.OutputVars.Soil = soilind
-        self.run.Metadata.CLM.OutputVars.Snow = snowind
-        self.run.Metadata.CLM.Forcing.WindObsHeight = forc_hgt_u
-        self.run.Metadata.CLM.Forcing.TempObsHeight = forc_hgt_t
-        self.run.Metadata.CLM.Forcing.HumObsHeight = forc_hgt_q
-        self.run.Metadata.CLM.Vegetation.MaxDew = dewmx
-        self.run.Metadata.CLM.Vegetation.MaxTranspiration = qflx_tran_vegmx
-        self.run.Metadata.CLM.Vegetation.RootFraction = rootfr
-        self.run.Metadata.CLM.RoughnessLength.Soil = zlnd
-        self.run.Metadata.CLM.RoughnessLength.Snow = zsno
-        self.run.Metadata.CLM.RoughnessLength.DragCanopySoil = csoilc
-        self.run.Metadata.CLM.NumericalParams.TuningFactor = capr
-        self.run.Metadata.CLM.NumericalParams.CNFactor = cnfac
-        self.run.Metadata.CLM.NumericalParams.MinSoilPotential = smpmin
-        self.run.Metadata.CLM.NumericalParams.IrrSnowSat = ssi
-        self.run.Metadata.CLM.NumericalParams.WaterImpermeable = wimp
+        self.run.Solver.CLM.Input.Timing.StartYear = syear
+        self.run.Solver.CLM.Input.Timing.StartMonth = smonth
+        self.run.Solver.CLM.Input.Timing.StartDay = sday
+        self.run.Solver.CLM.Input.Timing.StartHour = shour
+        self.run.Solver.CLM.Input.Timing.StartMinute = smin
+        self.run.Solver.CLM.Input.Timing.StartSecond = ssec
+        self.run.Solver.CLM.Input.Timing.EndYear = eyear
+        self.run.Solver.CLM.Input.Timing.EndMonth = emonth
+        self.run.Solver.CLM.Input.Timing.EndDay = eday
+        self.run.Solver.CLM.Input.Timing.EndHour = ehour
+        self.run.Solver.CLM.Input.Timing.EndMinute = emin
+        self.run.Solver.CLM.Input.Timing.EndSecond = esec
+        self.run.Solver.CLM.Input.File.MetInput = metf1d
+        self.run.Solver.CLM.Input.File.Output = outf1d
+        self.run.Solver.CLM.Input.File.ParamOutput = poutf1d
+        self.run.Solver.CLM.Input.File.ActiveRestart = rstf
+        self.run.Solver.CLM.Input.ICSource.Code = clm_ic
+        self.run.Solver.CLM.Input.Timing.RestartCode = startcode
+        self.run.Solver.CLM.Input.Domain.MaxTiles = maxt
+        self.run.Solver.CLM.Input.Domain.MinGridArea = mina
+        self.run.Solver.CLM.Input.Domain.UndefinedValue = udef
+        self.run.Solver.CLM.Input.Domain.VegClassification = vclass
+        self.run.Solver.CLM.Input.File.VegTileSpecification = vegtf
+        self.run.Solver.CLM.Input.File.VegTypeParameter = vegpf
+        self.run.Solver.CLM.Input.InitCond.Temperature = t_ini
+        self.run.Solver.CLM.Input.InitCond.SnowCover = h2osno_ini
+        self.run.Solver.CLM.Input.OutputVars.Surface = surfind
+        self.run.Solver.CLM.Input.OutputVars.Soil = soilind
+        self.run.Solver.CLM.Input.OutputVars.Snow = snowind
+        self.run.Solver.CLM.Input.Forcing.WindObsHeight = forc_hgt_u
+        self.run.Solver.CLM.Input.Forcing.TempObsHeight = forc_hgt_t
+        self.run.Solver.CLM.Input.Forcing.HumObsHeight = forc_hgt_q
+        self.run.Solver.CLM.Input.Vegetation.MaxDew = dewmx
+        self.run.Solver.CLM.Input.Vegetation.MaxTranspiration = qflx_tran_vegmx
+        self.run.Solver.CLM.Input.Vegetation.RootFraction = rootfr
+        self.run.Solver.CLM.Input.RoughnessLength.Soil = zlnd
+        self.run.Solver.CLM.Input.RoughnessLength.Snow = zsno
+        self.run.Solver.CLM.Input.RoughnessLength.DragCanopySoil = csoilc
+        self.run.Solver.CLM.Input.NumericalParams.TuningFactor = capr
+        self.run.Solver.CLM.Input.NumericalParams.CNFactor = cnfac
+        self.run.Solver.CLM.Input.NumericalParams.MinSoilPotential = smpmin
+        self.run.Solver.CLM.Input.NumericalParams.IrrSnowSat = ssi
+        self.run.Solver.CLM.Input.NumericalParams.WaterImpermeable = wimp
 
         return self
 

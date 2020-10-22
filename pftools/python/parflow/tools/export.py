@@ -116,7 +116,7 @@ class CLMExporter:
         """
         clm_drv_keys = {}
         header_doc = ''
-        clm_dict = self.run.Metadata.CLM.get_key_dict()
+        clm_dict = self.run.Solver.CLM.Input.get_key_dict()
         drv_clmin_file = os.path.join(get_absolute_path(working_directory),
                                       'drv_clmin.dat')
 
@@ -124,10 +124,10 @@ class CLMExporter:
             old_header_doc = header_doc
             container_key = '.'.join([str(elem)
                                       for elem in key.split('.')[:-1]])
-            header_doc = self.run.Metadata.CLM.get_help(container_key)
-            clm_key = self.run.Metadata.CLM.get_detail(key, 'clm_key')
-            clm_key_value = self.run.Metadata.CLM.get_value(key)
-            clm_key_help = self.run.Metadata.CLM.get_help(key)
+            header_doc = self.run.Solver.CLM.Input.get_help(container_key)
+            clm_key = self.run.Solver.CLM.Input.get_detail(key, 'clm_key')
+            clm_key_value = self.run.Solver.CLM.Input.get_value(key)
+            clm_key_help = self.run.Solver.CLM.Input.get_help(key)
             if header_doc == old_header_doc:
                 clm_drv_keys[container_key].update({clm_key: [clm_key_value,
                                                               clm_key_help]})
