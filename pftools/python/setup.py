@@ -25,10 +25,10 @@ setup(
     extras_require={
         'all': [
             'imageio>=2.9.0',
-            'parflowio'
+            'parflowio>=0.0.4'
         ],
         'pfb': [
-            'parflowio'
+            'parflowio>=0.0.4'
         ],
         'pfsol': [
             'imageio>=2.9.0'
