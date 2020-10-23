@@ -79,9 +79,9 @@ Let's say you want to visualize some of your output data from the model you just
     FBx_press_out = PFData(get_absolute_path('richards_FBx.out.press.00010.pfb'))
     FBx_press_out.loadHeader()
     FBx_press_out.loadData()
-    FBx_press_out_data = FBx_press_out.getDataAsArray()
+    FBx_press_out_data = FBx_press_out.viewDataArray()
 
     print(f'Dimensions of output file: {FBx_press_out_data.shape}')
     print(FBx_press_out_data)
 
-The first line reads the PFB file of the output pressure field at time step = 10 and instantiates it as a ``PFData`` object. ``loadHeader()`` and ``loadData()`` load the header of the binary file (to figure out the dimensions of the file) and loads the data in the file, respectively. ``FBx_press_out_data = FBx_press_out.getDataAsArray()`` converts the data to a numpy array and sets it to ``FBx_press_out_data``. The ``print`` statements print the dimensions of the array and the data from the file. Save and run this script again to see the printed output. If you're savvy with ``matplotlib`` or other visualization packages in Python, feel free to visualize to your heart's content!
+The first line reads the PFB file of the output pressure field at time step = 10 and instantiates it as a ``PFData`` object. ``loadHeader()`` and ``loadData()`` load the header of the binary file (to figure out the dimensions of the file) and loads the data in the file, respectively. ``FBx_press_out_data = FBx_press_out.viewDataArray()`` converts the data to a numpy array and sets it to ``FBx_press_out_data``. The ``print`` statements print the dimensions of the array and the data from the file. Save and run this script again to see the printed output. If you're savvy with ``matplotlib`` or other visualization packages in Python, feel free to visualize to your heart's content!

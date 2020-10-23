@@ -1,2 +1,2 @@
 -r requirements.txt
-parflowio
+parflowio>=0.0.4

@@ -10,7 +10,7 @@ set(TESTS
   image-as-mask
   LW_table_domain
   os_function
-  pfb_mask
+  # pfb_mask
   pfidb_pfset
   pfset_test
   prefix_naming

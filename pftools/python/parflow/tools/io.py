@@ -24,7 +24,7 @@ def load_patch_matrix_from_pfb_file(file_name, layer=None):
     data = PFData(file_name)
     data.loadHeader()
     data.loadData()
-    data_array = data.getDataAsArray()
+    data_array = data.viewDataArray()
 
     if data_array.ndim == 3:
         nlayer, nrows, ncols = data_array.shape
