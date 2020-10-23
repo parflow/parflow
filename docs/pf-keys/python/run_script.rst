@@ -242,7 +242,7 @@ Other methods that can be called on a ``Run`` object are shown below:
 Full API
 ================================================================================
 
-1. ``runobj.validate(indent=1, skip_valid=False, enable_print=True)`` - validates the values set to each key. Validation checks for:
+1. ``runobj.validate(indent=1, verbose=False, enable_print=True)`` - validates the values set to each key. Validation checks for:
 
   - Data type (int, float, string)
   - Appropriate range of value (e.g. saturation can’t be less than zero!)
@@ -251,11 +251,11 @@ Full API
   - Necessary module(s) installed
   - Key exists in working version of ParFlow
 
-  The three optional arguments deal with printing the validation messages. ``indent=1`` is the tab length for each level of the hierarchy. The number of spaces that each level is indented is two times ``indent`` (so default is two spaces). ``skip_valid=False``, if set to ``True``, will skip printing the valid key/value pairs and only print the ones with errors and their respective error messages. Otherwise, it will print the validation of every key/value pair. The runtime argument ``--validation-error`` is equivalent to setting ``skip_valid=True``. ``enable_print=True`` defaults to printing all the validation messages. If set to ``False``, no validation messages will be printed. 
+  The three optional arguments deal with printing the validation messages. ``indent=1`` is the tab length for each level of the hierarchy. The number of spaces that each level is indented is two times ``indent`` (so default is two spaces). ``verbose=False``, if set to ``True``, will print all key/value pairs in the run. Otherwise, ``validate`` will only print the key/value pairs with errors and their respective error messages. The runtime argument ``--validation-verbose`` is equivalent to setting ``verbose=True``. ``enable_print=True`` defaults to printing all the validation messages. If set to ``False``, no validation messages will be printed.
 
 2. ``runobj.write(file_name=None, file_format='pfidb')`` - this will write the set of key/value pairs associated with the ``runobj`` in a specified format. The default ``file_name`` is the name of the ``Run`` object, and the default format is the ParFlow databse format. Other supported formats include *.yaml*, *.yml*, and *.json*.
 
-3. ``runobj.write_subsurface_table(file_name=None)`` - this will write out a table with the subsurface properties assigned to each subsurface unit. If a file name is not specified, it will default to a *.csv* file using the name you set to your ``Run`` object at the top of the script, e.g., *default_richards_subsurface.csv*. More information is in the `subsurface property tutorial. <https://grapp1parflow.readthedocs.io/en/latest/tutorials/sub_tables.html#exporting-subsurface-properties>`_
+3. ``runobj.write_subsurface_table(file_name=None)`` - this will write out a table with the subsurface properties assigned to each subsurface unit. If a file name is not specified, it will default to a *.csv* file using the name you set to your ``Run`` object at the top of the script, e.g., *default_richards_subsurface.csv*. More information is in the `subsurface property tutorial. <https://parflow.readthedocs.io/en/latest/tutorials/sub_tables.html#exporting-subsurface-properties>`_
 
 4. ``runobj.run(working_directory=None, skip_validation=False)`` - this calls the ``write()`` method to write the set of key/value pairs to a ParFlow binary file. It also calls the ``validate()`` method if ``skip_validation=False``. If ``skip_validation=True``, it will skip the validation. This is equivalent to the ``--skip-validation`` runtime argument. Finally, the method will attempt to execute ParFlow. If ``working_directory`` is not given, ``run()`` defaults to writing all files in the directory of the Python script. The ``working_directory`` argument is equivalent to the ``--working-directory`` runtime argument.
 

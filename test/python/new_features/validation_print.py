@@ -333,4 +333,4 @@ drich.Solver.Linear.Preconditioner = 'PFMG'
 # Run ParFlow
 #-----------------------------------------------------------------------------
 
-drich.validate(skip_valid=True)
+drich.validate(verbose=False)
