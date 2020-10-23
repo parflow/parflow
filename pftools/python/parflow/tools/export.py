@@ -36,11 +36,11 @@ class SubsurfacePropertiesExporter:
     def _extract_sub_surface_props(self, geomItem):
         name = geomItem.get_full_key_name().split('.')[-1]
         entry = {'key': name}
-        has_data = 0
+        has_data = False
         for key in self.pfkey_to_alias:
             value = geomItem.get(key, skip_default=True)
             if value is not None:
-                has_data += 1
+                has_data = True
                 alias = self.pfkey_to_alias[key]
                 self.props_found.add(alias)
                 entry[alias] = str(value)

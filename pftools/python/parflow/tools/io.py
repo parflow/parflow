@@ -231,16 +231,13 @@ def to_native_type(string):
     """Converting a string to a value in native format.
     Used for converting .pfidb files
     """
-    try:
-        if type(json.loads(string)) is int:
-            converted_val = int(string)
-        elif type(json.loads(string)) is float:
-            converted_val = float(string)
-
-    except:
-        converted_val = string
-
-    return converted_val
+    types_to_try = [int, float]
+    for t in types_to_try:
+        try:
+            return t(string)
+        except ValueError:
+            pass
+    return string
 
 # -----------------------------------------------------------------------------
 

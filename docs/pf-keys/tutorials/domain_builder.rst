@@ -304,10 +304,7 @@ The following examples of the method usage assume that the name of the ``Run`` o
       run.Solver.CLM.FieldCapacity = 0.98
       run.Solver.CLM.IrrigationType = 'none'
 
-13. ``well(name, type, x, y, z_upper, z_lower,
-                  cycle_name, interval_name, action='Extraction',
-                  saturation=1.0, phase='water', hydrostatic_pressure=None,
-                  value=None)``: Sets the following keys:
+13. ``well(name, type, x, y, z_upper, z_lower, cycle_name, interval_name, action='Extraction', saturation=1.0, phase='water', hydrostatic_pressure=None, value=None)``: Sets the following keys:
 
 .. code-block:: python3
 

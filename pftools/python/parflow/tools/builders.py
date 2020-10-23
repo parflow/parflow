@@ -410,7 +410,7 @@ class SubsurfacePropertiesBuilder:
         with open(get_absolute_path(tableFile), 'r',
                   encoding=encoding) as csv_file:
             data_line = False
-            for line in csv_file.readlines():
+            for line in csv_file:
                 tokens = _csv_line_tokenizer(line)
                 if data_line:
                     self._process_data_line(tokens)
@@ -428,7 +428,7 @@ class SubsurfacePropertiesBuilder:
         with open(get_absolute_path(tableFile), 'r',
                   encoding=encoding) as txt_file:
             data_line = False
-            for line in txt_file.readlines():
+            for line in txt_file:
                 tokens = _txt_line_tokenizer(line)
                 if data_line:
                     self._process_data_line(tokens)
@@ -506,7 +506,8 @@ class SubsurfacePropertiesBuilder:
             for root, dirs, files in os.walk(os.path.dirname(__file__) + '/ref/'):
                 for name in files:
                     if name.startswith('subsurface'):
-                        print(f'# - {name} (use argument "{name[11:-4]}")')
+                        print(f'# - {name} (use argument '
+                              f'"{name[len("subsurface_"):-len(".txt")]}")')
             print('#' * 80)
 
 
@@ -728,8 +729,8 @@ class DomainBuilder:
             container.Type = 'NCFile'
             return self
         else:
-            print(f'File extension {get_file_extension(file_name)} '
-                  f'for {file_name} is invalid')
+            raise Exception(f'File extension {get_file_extension(file_name)} '
+                            f'for {file_name} is invalid')
             return self
 
     def water(self, geom_name=None):
@@ -983,6 +984,8 @@ class DomainBuilder:
         elif isinstance(pressure, float) or isinstance(pressure, int):
             self.run.ICPressure.Type = 'HydroStaticPatch'
             self.run.Geom.domain.ICPressure.Value = pressure
+        else:
+            raise Exception(f'Incompatible type or file of {pressure}')
 
         return self
 

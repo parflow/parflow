@@ -343,5 +343,3 @@ db_test.Solver.Linear.KrylovDimension = 70
 db_test.Solver.Linear.MaxRestarts = 2
 
 db_test.Solver.Linear.Preconditioner = 'PFMG'
-
-sys.exit(0)

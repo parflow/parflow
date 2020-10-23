@@ -235,7 +235,7 @@ drich.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 
 DomainBuilder(drich) \
-    .pumping_well(name='pumping_well', type='Pressure', x=0, y=80,
+    .well(name='pumping_well', type='Pressure', x=0, y=80,
                   z_upper=3.0, z_lower=2.00, cycle_name='constant',
                   interval_name='alltime', saturation=1.0, phase='water',
                   hydrostatic_pressure=0.5, value=None)

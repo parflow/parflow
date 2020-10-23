@@ -328,8 +328,7 @@ class Run(BaseRun):
         print()
         error_count = 0
         if not (skip_validation or self._process_args_.skipValidation):
-            skip_valid = True if self._process_args_.validation_error \
-                else False
+            skip_valid = self._process_args_.validation_error
             error_count += self.validate(skip_valid=skip_valid)
             print()
 
