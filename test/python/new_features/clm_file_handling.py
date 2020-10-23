@@ -7,7 +7,7 @@ import sys
 clm = Run("clm", __file__)
 
 #---------------------------------------------------------
-# Testing clm data key setting
+# Testing clm data key setting with DomainBuilder
 #---------------------------------------------------------
 
 DomainBuilder(clm) \
@@ -20,16 +20,21 @@ DomainBuilder(clm) \
 # Testing clm data readers
 #---------------------------------------------------------
 
-clmin_data = read_clm('/Users/grapp/Downloads/drv_clmin.dat.0', type='clmin')
+# Reading drv_clmin.dat into dictionary
+# using old file that has more variables than CLM currently needs
+clmin_data = read_clm('../../input/drv_clmin.dat.old', type='clmin')
 print(clmin_data)
 
-# TODO
-# clm.set_clm_keys(clmin_data)
+# Setting dictionary to keys on Run object
+# Will generate warnings for keys that CLM doesn't need
+clm.set_clm_keys(clmin_data)
 
+# Reading drv_vegm.dat into 3D array
 vegm_data = read_clm('../../tcl/clm/drv_vegm.dat', type='vegm')
 if not vegm_data[1, 1, 14] == 1:
     sys.exit(1)
 
+# Reading drv_vegp.dat into dictionary
 vegp_data = read_clm('../../tcl/clm/drv_vegp.dat', type='vegp')
 print(vegp_data)
 

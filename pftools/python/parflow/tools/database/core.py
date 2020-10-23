@@ -2,8 +2,10 @@ r"""
 This module aims to provide the core components that are required to build
 a Parflow input deck.
 """
+import os
 import sys
 import yaml
+import json
 
 try:
     from yaml import CDumper as YAMLDumper
@@ -661,8 +663,24 @@ class PFDBObj:
     # ---------------------------------------------------------------------------
 
     def set_clm_keys(self, clm_key_dict):
-        # TODO
-        from . import generated
+        clm_ref_dict = os.path.join(
+            os.path.dirname(__file__), '../ref/clm_key_dict.txt')
+
+        with open(clm_ref_dict, 'r') as file:
+            ref_dict = json.load(file)
+
+        invalid_keys = []
+        for key, value in clm_key_dict.items():
+            if key in ref_dict.keys():
+                key_to_set = '.'.join(ref_dict[key])
+                self.pfset(key=key_to_set, value=value)
+            else:
+                invalid_keys.append(key)
+
+        if len(invalid_keys) > 0:
+            print('Warning: The following CLM variables could not be set to a key:')
+            for var in invalid_keys:
+                print(f'  - {var}')
         pass
 
     # ---------------------------------------------------------------------------
