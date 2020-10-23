@@ -140,9 +140,9 @@ def get_process_args():
                         action='store_true',
                         help="Enable config to be written as YAML file")
 
-    group.add_argument("--validation-error",
+    group.add_argument("--validation-verbose",
                         default=False,
-                        dest="validation_error",
+                        dest="validation_verbose",
                         action='store_true',
                         help="Only print validation results for "
                              "key/value pairs with errors")
@@ -328,8 +328,8 @@ class Run(BaseRun):
         print()
         error_count = 0
         if not (skip_validation or self._process_args_.skipValidation):
-            skip_valid = self._process_args_.validation_error
-            error_count += self.validate(skip_valid=skip_valid)
+            verbose = self._process_args_.validation_verbose
+            error_count += self.validate(verbose=verbose)
             print()
 
         p = self.Process.Topology.P

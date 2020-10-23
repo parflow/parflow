@@ -47,7 +47,7 @@ Usage:
 
     run_script.py [-h] [--parflow-directory PARFLOW_DIRECTORY] [--parflow-version PARFLOW_VERSION]
     [--working-directory WORKING_DIRECTORY] [--skip-validation] [--dry-run] [--show-line-error]
-    [--exit-on-error] [--write-yaml] [--validation-error] [-p P] [-q Q] [-r R]
+    [--exit-on-error] [--write-yaml] [--validation-verbose] [-p P] [-q Q] [-r R]
 
 Parflow run arguments:
 
@@ -93,7 +93,7 @@ Parflow run arguments:
 
       --write-yaml          Enable config to be written as YAML file
 
-      --validation-error    Only print validation results for key/value pairs with errors
+      --validation-verbose    Prints validation results for all key/value pairs
 
 - Parallel execution:
 

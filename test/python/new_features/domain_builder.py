@@ -168,7 +168,7 @@ drich.KnownSolution = 'NoKnownSolution'
 # Run ParFlow
 #-----------------------------------------------------------------------------
 
-drich.validate(skip_valid=True)
+drich.validate()
 
 drich.write(file_format='yaml')
 
