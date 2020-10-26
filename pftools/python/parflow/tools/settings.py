@@ -16,7 +16,7 @@ def get_working_directory():
 
 # ---------------------------------------------------------------------------
 
-def set_working_directory(new_working_directory):
+def set_working_directory(new_working_directory=None):
     """This will set the working directory to use for all the
     relative file path.
     """

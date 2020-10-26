@@ -215,8 +215,14 @@ class Run(BaseRun):
         super().__init__(None)
         self._process_args_ = get_process_args()
         self._name_ = name
-        if basescript:
-            settings.set_working_directory(os.path.dirname(basescript))
+        if basescript is not None:
+            full_path = get_absolute_path(basescript)
+            if os.path.isfile(full_path):
+                settings.set_working_directory(os.path.dirname(full_path))
+            else:
+                settings.set_working_directory(full_path)
+        else:
+            settings.set_working_directory()
 
     def set_name(self, new_name):
         """Setting new name for a run
