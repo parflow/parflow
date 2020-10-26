@@ -873,199 +873,495 @@ Solver:
           domains:
             DoubleValue:
 
-    VegParams:
-      __class__: CLMVegP
+    Vegetation:
+      __class__: CLMVeg
       __doc__: ''
       __rst__:
         skip:
 
-      LandNames:
-        help: >
-          [Type: string] List of names of land use cover types for building the drv_vegp.dat file.
-          Defaults to the 18 IGBP classification types.
-        default: 'forest_en forest_eb forest_dn forest_db forest_mixed shrub_closed shrub_open
-          sav_woody savannas grasslands wetlands_perm croplands urban crop_veg_m
-          snow_ice barren water bare_soil'
-        domains:
-          AnyString:
-          RequiresModule: CLM
-        handlers:
-          VegParameterUpdater:
-            type: ChildrenHandler
-            class_name: LandCoverItem
-            location: .
-
-      .{land_cover_name}:
-        __class__: LandCoverItem
+      Parameters:
+        __class__: CLMVegP
+        __doc__: ''
         __rst__:
-          name: VegParams.{land_cover_name}
-        __doc__: >
-          One of the user-defined names for land cover types for the drv_vegp.dat file
+          skip:
 
-        WaterType:
+        LandNames:
           help: >
-            [Type: int] (1-soil, 2-land ice, 3-deep lake, 4-shallow lake, 5-wetland: swamp, marsh)
-          clm_key: itypwat
+            [Type: string] List of names of land use cover types for building the drv_vegp.dat file.
+            Defaults to the 18 IGBP classification types.
+          default: 'forest_en forest_eb forest_dn forest_db forest_mixed shrub_closed shrub_open
+            sav_woody savannas grasslands wetlands_perm croplands urban crop_veg_m
+            snow_ice barren water bare_soil'
           domains:
-            IntValue:
-              min_value: 1
-              max_value: 5
+            AnyString:
             RequiresModule: CLM
+          handlers:
+            VegParameterUpdater:
+              type: ChildrenHandler
+              class_name: LandCoverParamItem
+              location: .
+            VegMapUpdater:
+              type: ChildrenHandler
+              class_name: LandCoverMapItem
+              location: ../Map
 
-        MaxLAI:
-          help: >
-            [Type: double] Maximum leaf area index [-]
-          clm_key: lai
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+        .{land_cover_name}:
+          __class__: LandCoverParamItem
+          __rst__:
+            name: VegParams.{land_cover_name}
+          __doc__: >
+            One of the user-defined names for land cover types for the drv_vegp.dat file
 
-        MinLAI:
-          help: >
-            [Type: double] Minimum leaf area index [-]
-          clm_key: lai0
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          WaterType:
+            help: >
+              [Type: int] (1-soil, 2-land ice, 3-deep lake, 4-shallow lake, 5-wetland: swamp, marsh)
+            clm_key: itypwat
+            domains:
+              IntValue:
+                min_value: 1
+                max_value: 5
+              RequiresModule: CLM
 
-        StemAI:
-          help: >
-            [Type: double] Stem area index [-]
-          clm_key: sai
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          MaxLAI:
+            help: >
+              [Type: double] Maximum leaf area index [-]
+            clm_key: lai
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        RoughLength:
-          help: >
-            [Type: double] Aerodynamic roughness length [m]
-          clm_key: z0m
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          MinLAI:
+            help: >
+              [Type: double] Minimum leaf area index [-]
+            clm_key: lai0
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        DispHeight:
-          help: >
-            [Type: double] Displacement height [m]
-          clm_key: displa
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          StemAI:
+            help: >
+              [Type: double] Stem area index [-]
+            clm_key: sai
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        LeafDim:
-          help: >
-            [Type: double] Leaf dimension [m]
-          clm_key: dleaf
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          RoughLength:
+            help: >
+              [Type: double] Aerodynamic roughness length [m]
+            clm_key: z0m
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        RootA:
-          help: >
-            [Type: double] Fitted numerical index of rooting distribution
-          clm_key: roota
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          DispHeight:
+            help: >
+              [Type: double] Displacement height [m]
+            clm_key: displa
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        RootB:
-          help: >
-            [Type: double] Fitted numerical index of rooting distribution
-          clm_key: rootb
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          LeafDim:
+            help: >
+              [Type: double] Leaf dimension [m]
+            clm_key: dleaf
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        LeafRefVis:
-          help: >
-            [Type: double] leaf reflectance vis
-          clm_key: rhol_vis
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          RootA:
+            help: >
+              [Type: double] Fitted numerical index of rooting distribution
+            clm_key: roota
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        LeafRefNir:
-          help: >
-            [Type: double] leaf reflectance nir
-          clm_key: rhol_nir
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          RootB:
+            help: >
+              [Type: double] Fitted numerical index of rooting distribution
+            clm_key: rootb
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        StemRefVis:
-          help: >
-            [Type: double] stem reflectance vis
-          clm_key: rhos_vis
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          LeafRefVis:
+            help: >
+              [Type: double] leaf reflectance vis
+            clm_key: rhol_vis
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        StemRefNir:
-          help: >
-            [Type: double] stem reflectance nir
-          clm_key: rhos_nir
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          LeafRefNir:
+            help: >
+              [Type: double] leaf reflectance nir
+            clm_key: rhol_nir
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        LeafTransVis:
-          help: >
-            [Type: double] leaf transmittance vis
-          clm_key: taul_vis
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          StemRefVis:
+            help: >
+              [Type: double] stem reflectance vis
+            clm_key: rhos_vis
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        LeafTransNir:
-          help: >
-            [Type: double] leaf transmittance nir
-          clm_key: taul_nir
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          StemRefNir:
+            help: >
+              [Type: double] stem reflectance nir
+            clm_key: rhos_nir
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        StemTransVis:
-          help: >
-            [Type: double] stem transmittance vis
-          clm_key: taus_vis
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          LeafTransVis:
+            help: >
+              [Type: double] leaf transmittance vis
+            clm_key: taul_vis
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        StemTransNir:
-          help: >
-            [Type: double] stem transmittance nir
-          clm_key: taus_nir
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          LeafTransNir:
+            help: >
+              [Type: double] leaf transmittance nir
+            clm_key: taul_nir
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        OrientIndex:
-          help: >
-            [Type: double] leaf/stem orientation index
-          clm_key: xl
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          StemTransVis:
+            help: >
+              [Type: double] stem transmittance vis
+            clm_key: taus_vis
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        BTranExp:
-          help: >
-            [Type: double] btran exponent:[(h2osoi_vol-watdry)/(watopt-watdry)]**vw
-          clm_key: vw
-          domains:
-            DoubleValue:
-            RequiresModule: CLM
+          StemTransNir:
+            help: >
+              [Type: double] stem transmittance nir
+            clm_key: taus_nir
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
 
-        Irrig:
-          help: >
-            [Type: int] (irrig=0 -> no irrigation, irrig=1 -> irrigate)
-          clm_key: irrig
-          default: 0
-          domains:
-            IntValue:
-              min_value: 0
-              max_value: 1
-            RequiresModule: CLM
+          OrientIndex:
+            help: >
+              [Type: double] leaf/stem orientation index
+            clm_key: xl
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
+
+          BTranExp:
+            help: >
+              [Type: double] btran exponent:[(h2osoi_vol-watdry)/(watopt-watdry)]**vw
+            clm_key: vw
+            domains:
+              DoubleValue:
+              RequiresModule: CLM
+
+          Irrig:
+            help: >
+              [Type: int] (irrig=0 -> no irrigation, irrig=1 -> irrigate)
+            clm_key: irrig
+            default: 0
+            domains:
+              IntValue:
+                min_value: 0
+                max_value: 1
+              RequiresModule: CLM
+
+      Map:
+        __class__: CLMVegM
+        __doc__: ''
+        __rst__:
+          skip:
+
+        .{land_cover_name}:
+          __class__: LandCoverMapItem
+          __rst__:
+            name: VegParams.{land_cover_name}
+          __doc__: >
+            One of the user-defined names for land cover types for the drv_vegp.dat file
+
+          LandFrac:
+            __doc__: ''
+            __rst__:
+              skip:
+
+            Type:
+              __class__: FracType
+              help: >
+                [Type: string] Specifies the type of latitude specification for CLM. Valid
+                types are 'Constant', 'PFBFile', and 'Linear'.
+              domains:
+                EnumDomain:
+                  enum_list:
+                    - Constant
+                    - PFBFile
+                    - Matrix
+
+            Value:
+              __class__: FracValue
+              help: >
+                [Type: double] Specifies the constant value of the land cover fraction for your domain, if
+                Solver.CLM.VegMap.{land_cover_name}.LandFrac.Type was set to 'Constant'. This should be a
+                double between 0.0 and 1.0.
+              domains:
+                DoubleValue:
+                  min_value: 0.0
+                  max_value: 1.0
+
+            FileName:
+              __class__: FracFile
+              help: >
+                [Type: string] Specifies the PFB filename of the latitude for your domain, if
+                Solver.CLM.Vegetation.Map.Latitude.Type was set to 'PFBFile'. This
+                file should be a gridded PFB file with the latitude values (in decimal degrees)
+                in each of the grid cells.
+              domains:
+                AnyString:
+                ValidFile:
+
+            Matrix:
+              __class__: FracMatrix
+              help: >
+                [Type: 2D array] Specifies the matrix of the land cover fraction for your domain, if
+                Solver.CLM.VegMap.{land_cover_name}.LandFrac.Type was set to 'Matrix'. This
+                file should be a 2D array spanning the size of your domain surface (i.e., dimensions
+                of ComputationalGrid.NX by ComputationalGrid.NY).
+
+        Latitude:
+          __doc__: ''
+          __rst__:
+            skip:
+
+          Type:
+            __class__: LatType
+            help: >
+              [Type: string] Specifies the type of latitude specification for CLM. Valid
+              types are 'Constant', 'PFBFile', and 'Linear'.
+            domains:
+              EnumDomain:
+                enum_list:
+                  - Constant
+                  - PFBFile
+                  - Linear
+
+          Value:
+            __class__: LatVal
+            help: >
+              [Type: string] Specifies the constant value (in decimal degrees) of the latitude for your domain, if
+              Solver.CLM.VegMap.Latitude.Type was set to 'Constant'.
+            domains:
+              DoubleValue:
+                min_value: -90.0
+                max_value: 90.0
+
+          FileName:
+            __class__: LatFile
+            help: >
+              [Type: string] Specifies the PFB filename of the latitude for your domain, if
+              Solver.CLM.VegMap.Latitude.Type was set to 'PFBFile'. This
+              file should be a gridded PFB file with the latitude values (in decimal degrees)
+              in each of the grid cells.
+            domains:
+              AnyString:
+              ValidFile:
+
+          Min:
+            __class__: MinLat
+            help: >
+              [Type: string] Specifies the value (in decimal degrees) of the minimum latitude for your domain, if
+              Solver.CLM.VegMap.Latitude.Type was set to 'Linear'.
+            domains:
+              DoubleValue:
+                min_value: -90.0
+                max_value: 90.0
+
+          Max:
+            __class__: MaxLat
+            help: >
+              [Type: string] Specifies the value (in decimal degrees) of the maximum latitude for your domain, if
+              Solver.CLM.VegMap.Latitude.Type was set to 'Linear'.
+            domains:
+              DoubleValue:
+                min_value: -90.0
+                max_value: 90.0
+
+        Longitude:
+          __doc__: ''
+          __rst__:
+            skip:
+
+          Type:
+            __class__: LongType
+            help: >
+              [Type: string] Specifies the type of longitude specification for CLM. Valid
+              types are 'Constant' and 'PFBFile'.
+            domains:
+              EnumDomain:
+                enum_list:
+                  - Constant
+                  - PFBFile
+
+          Value:
+            __class__: LongVal
+            help: >
+              [Type: string] Specifies the constant value (in decimal degrees) of the longitude for your domain, if
+              Solver.CLM.VegMap.Longitude.Type was set to 'Constant'.
+            domains:
+              DoubleValue:
+                min_value: -180.0
+                max_value: 180.0
+
+          FileName:
+            __class__: LongFile
+            help: >
+              [Type: string] Specifies the PFB filename of the longitude for your domain, if
+              Solver.CLM.VegMap.Longitude.Type was set to 'PFBFile'. This
+              file should be a gridded PFB file with the longitude values (in decimal degrees)
+              in each of the grid cells.
+            domains:
+              AnyString:
+              ValidFile:
+
+          Min:
+            __class__: MinLat
+            help: >
+              [Type: string] Specifies the value (in decimal degrees) of the minimum longitude for your domain, if
+              Solver.CLM.VegMap.Longitude.Type was set to 'Linear'.
+            domains:
+              DoubleValue:
+                min_value: -180.0
+                max_value: 180.0
+
+          Max:
+            __class__: MaxLat
+            help: >
+              [Type: string] Specifies the value (in decimal degrees) of the maximum longitude for your domain, if
+              Solver.CLM.VegMap.Longitude.Type was set to 'Linear'.
+            domains:
+              DoubleValue:
+                min_value: -180.0
+                max_value: 180.0
+
+        Sand:
+          __doc__: ''
+          __rst__:
+            skip:
+
+          Type:
+            __class__: SandType
+            help: >
+              [Type: string] Specifies the type of sand property specification for CLM. Valid
+              types are 'Constant' and 'PFBFile'.
+            domains:
+              EnumDomain:
+                enum_list:
+                  - Constant
+                  - PFBFile
+
+          Value:
+            __class__: SandVal
+            help: >
+              [Type: string] Specifies the constant value of the percentage of sand for your domain, if
+              Solver.CLM.VegMap.Sand.Type was set to 'Constant'.
+            domains:
+              DoubleValue:
+                min_value: 0.0
+                max_value: 1.0
+
+          FileName:
+            __class__: SandFile
+            help: >
+              [Type: string] Specifies the PFB filename of the sand properties for your domain, if
+              Solver.CLM.VegMap.Sand.Type was set to 'PFBFile'. This
+              file should be a gridded PFB file with the percentage of sand
+              in each of the grid cells.
+            domains:
+              AnyString:
+              ValidFile:
+
+        Clay:
+          __doc__: ''
+          __rst__:
+            skip:
+
+          Type:
+            __class__: ClayType
+            help: >
+              [Type: string] Specifies the type of clay property specification for CLM. Valid
+              types are 'Constant' and 'PFBFile'.
+            domains:
+              EnumDomain:
+                enum_list:
+                  - Constant
+                  - PFBFile
+
+          Value:
+            __class__: ClayVal
+            help: >
+              [Type: string] Specifies the constant value of the percentage of clay for your domain, if
+              Solver.CLM.VegMap.Clay.Type was set to 'Constant'.
+            domains:
+              DoubleValue:
+                min_value: 0.0
+                max_value: 1.0
+
+          FileName:
+            __class__: ClayFile
+            help: >
+              [Type: string] Specifies the PFB filename of the clay properties for your domain, if
+              Solver.CLM.VegMap.Clay.Type was set to 'PFBFile'. This
+              file should be a gridded PFB file with the longitude values (in decimal degrees)
+              in each of the grid cells.
+            domains:
+              AnyString:
+              ValidFile:
+
+        Color:
+          __doc__: ''
+          __rst__:
+            skip:
+
+          Type:
+            __class__: ColorType
+            help: >
+              [Type: string] Specifies the type of color property specification for CLM. Valid
+              types are 'Constant' and 'PFBFile'.
+            domains:
+              EnumDomain:
+                enum_list:
+                  - Constant
+                  - PFBFile
+
+          Value:
+            __class__: ColorVal
+            help: >
+              [Type: string] Specifies the constant value of the color for your domain, if
+              Solver.CLM.VegMap.Color.Type was set to 'Constant'.
+            domains:
+              IntValue:
+                min_value: 1
+                max_value: 8
+
+          FileName:
+            __class__: ColorFile
+            help: >
+              [Type: string] Specifies the PFB filename of the color properties for your domain, if
+              Solver.CLM.VegMap.Color.Type was set to 'PFBFile'. This
+              file should be a gridded PFB file with the longitude values (in decimal degrees)
+              in each of the grid cells.
+            domains:
+              AnyString:
+              ValidFile:
 
   # -----------------------------------------------------------------------------
   # Other Solver Settings

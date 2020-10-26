@@ -154,29 +154,129 @@ class CLMExporter:
 
         return self
 
-    def export_drv_vegm(self, vegm_array, working_directory='.'):
-        """Method to export drv_vegm.dat file based on 3D array of data
+    def _process_vegm(self, token, x, y, axis=None):
+        if isinstance(token, list) and len(token) > 1:
+            vegm_root_key = self.run.Solver.CLM.Vegetation.Map[token[0]]
+            for item in token[1:]:
+                vegm_root_key = vegm_root_key[item]
+        else:
+            vegm_root_key = self.run.Solver.CLM.Vegetation.Map[token]
+        array = np.zeros((x, y))
+        if vegm_root_key.Type == 'Constant':
+            array = np.full((x, y), vegm_root_key.Value)
+        if vegm_root_key.Type == 'Linear':
+            min_par = vegm_root_key.Min
+            max_par = vegm_root_key.Max
+            length = y if axis == 'y' else x
+            inc = (max_par - min_par) / (length - 1)
+            list_par = list(np.arange(min_par, max_par + inc, inc))
+            for i in range(len(list_par)):
+                if axis == 'y':
+                    array[:, i] = list_par[i]
+                elif axis == 'x':
+                    array[i, :] = list_par[i]
+                else:
+                    print('Axis specification error')
+        if vegm_root_key.Type == 'Matrix':
+            # used for veg mapping for land use
+            array = vegm_root_key.Matrix
+        if vegm_root_key.Type == 'PFBFile':
+            # TODO
+            pass
+
+        return array
+
+    def _process_vegm_loc(self, vegm_array, latitude=True, lat_axis='y',
+                          longitude=True, long_axis='x'):
+
+        # Need to better expose the options of which axis to use - maybe have it as an extra key?
+        z, y, x = vegm_array.shape
+        if latitude is True:
+            vegm_array[:, :, 0] = self._process_vegm('Latitude', x, y, lat_axis)
+
+        if longitude is True:
+            vegm_array[:, :, 1] = self._process_vegm('Longitude', x, y, long_axis)
+
+        return
+
+    def _process_vegm_soil(self, vegm_array, sand=True, sand_axis='y', clay=True,
+                           clay_axis='y', color=True, color_axis='y'):
+
+        # Need to better expose the options of which axis to use - maybe have it as an extra key?
+        z, y, x = vegm_array.shape
+        if sand is True:
+            vegm_array[:, :, 2] = self._process_vegm('Sand', x, y, sand_axis)
+
+        if clay is True:
+            vegm_array[:, :, 3] = self._process_vegm('Clay', x, y, clay_axis)
+
+        if color is True:
+            vegm_array[:, :, 4] = self._process_vegm('Color', x, y, color_axis).astype(int)
+
+        return
+
+    def export_drv_vegm(self, from_keys=True, vegm_array=None,
+                        out_file='drv_vegm.dat', working_directory='.', dec_round=3):
+        """Method to export drv_vegm.dat file based on keys or a 3D array of data
 
         Args:
+            - from_keys=True: will generate the vegetation parameters from
+              the keys set in the ParFlow run if set to True.
+            - vegm_array=None: optional full array with gridded properties
+              that needs to be passed in if from_keys is False.
+            - out_file='drv_vegm.dat': Name of the output vegetation mapping file.
             - working_directory='.': specifies where drv_vegm.dat
               file will be written
+            - dec_round=3: sets the maximum decimal rounding for the lat, long,
+              sand, and clay parameters.
         """
-        drv_vegm_ref = os.path.join(
-            os.path.dirname(__file__), 'ref/drv_vegm.dat')
 
-        drv_vegm_file = os.path.join(get_absolute_path(working_directory), 'drv_vegm.dat')
+        drv_vegm_file = os.path.join(get_absolute_path(working_directory), str(out_file))
+        first_line = ' x  y  lat    lon    sand clay color  fractional coverage' \
+                     ' of grid by vegetation class (Must/Should Add to 1.0)'
+        second_line = '       (Deg)	 (Deg)  (%/100)   index'
 
-        with open(drv_vegm_ref, 'r') as fin:
-            with open(drv_vegm_file, 'w') as fout:
-                file_lines = fin.readlines()
-                fout.write(file_lines[0])
-                fout.write(file_lines[1])
-                for i in range(vegm_array.shape[0]):
-                    for j in range(vegm_array.shape[1]):
-                        line_elements = [str(i+1), str(j+1)]
-                        for k in range(vegm_array.shape[2]):
-                            line_elements.append(str(vegm_array[i, j, k]))
-                        fout.write('   ' + '  '.join(line_elements[:]) + '\n')
+        if from_keys is True:
+            land_col_map = {'column': 'land cover type'}
+            x = self.run.ComputationalGrid.NX
+            y = self.run.ComputationalGrid.NY
+            vegm_array = np.zeros((x, y, 5))
+            self._process_vegm_loc(vegm_array)
+            self._process_vegm_soil(vegm_array)
+            land_covers = self.run.Solver.CLM.Vegetation.Parameters.LandNames
+            if len(land_covers) > 18:
+                print(f'WARNING: CLM must be recompiled to accommodate '
+                      f'{len(land_covers)} land cover types.')
+            for name in land_covers:
+                vegm_array = np.dstack((vegm_array,
+                          self._process_vegm([name, 'LandFrac'], x, y)))
+            print(vegm_array.shape)
+
+        with open(drv_vegm_file, 'w') as fout:
+            fout.write(first_line + '\n')
+            if vegm_array.shape[2] < 23:
+                print(f'{len(land_covers)} land cover types specified. '
+                      f'Filling in zeros for {23 - vegm_array.shape[2]} '
+                      f'land cover types.')
+            fout.write(second_line + '\n')
+            for i in range(vegm_array.shape[0]):
+                for j in range(vegm_array.shape[1]):
+                    line_elements = [str(i+1), str(j+1)]
+                    for k in range(max(vegm_array.shape[2], 23)):
+                        if k == 4:
+                            # dealing with color (needs to be int)
+                            line_elements.append(str(int(vegm_array[i, j, k])).ljust(7))
+                        elif k < vegm_array.shape[2]:
+                            line_elements.append(str(round(vegm_array[i, j, k], dec_round)).ljust(7))
+                            if k > 4:
+                                land_col_map.update({k-4: land_covers[k-5]})
+                        else:
+                            line_elements.append('0.0    ')
+                    fout.write('   ' + ' '.join(line_elements[:]) + '\n')
+
+            print('Land cover column mapping')
+            for key, value in land_col_map.items():
+                print(f'{str(key).ljust(6)}: {value}')
 
         return self
 
