@@ -237,7 +237,7 @@ class Run(BaseRun):
         """
         return self._name_
 
-    def write(self, file_name=None, file_format='pfidb'):
+    def write(self, file_name=None, file_format='pfidb', working_directory=None):
         """Method to write database file to disk
 
         Args:
@@ -253,6 +253,11 @@ class Run(BaseRun):
               given to ParFlow executable.
 
         """
+        # overwrite current working directory
+        prev_dir = settings.WORKING_DIRECTORY
+        if working_directory:
+            settings.set_working_directory(working_directory)
+
         f_name = os.path.join(settings.WORKING_DIRECTORY,
                               f'{self._name_}.{file_format}')
         if file_name:
@@ -260,9 +265,18 @@ class Run(BaseRun):
                                   f'{file_name}.{file_format}')
         full_file_path = os.path.abspath(f_name)
         write_dict(self.to_dict(), full_file_path)
+
+        # revert working directory to original directory
+        settings.set_working_directory(prev_dir)
+
         return full_file_path, full_file_path[:-(len(file_format)+1)]
 
-    def write_subsurface_table(self, file_name=None):
+    def write_subsurface_table(self, file_name=None, working_directory=None):
+        # overwrite current working directory
+        prev_dir = settings.WORKING_DIRECTORY
+        if working_directory:
+            settings.set_working_directory(working_directory)
+
         if file_name is None:
             file_name = f'{self._name_}_subsurface.csv'
         full_path = get_absolute_path(file_name)
@@ -271,6 +285,9 @@ class Run(BaseRun):
             exporter.write_csv(full_path)
         else:
             exporter.write_txt(full_path)
+
+        # revert working directory to original directory
+        settings.set_working_directory(prev_dir)
 
     def clone(self, name):
         """Method to generate a clone of a run (for generating
@@ -305,8 +322,11 @@ class Run(BaseRun):
               running the simulation.
 
         """
+        # overwrite current working directory
+        prev_dir = settings.WORKING_DIRECTORY
         if working_directory:
             settings.set_working_directory(working_directory)
+
         settings.set_parflow_version(get_current_parflow_version())
 
         # Any provided args should override the scripts ones
@@ -345,11 +365,19 @@ class Run(BaseRun):
 
         success = True
         if not self._process_args_.dry_run:
-            os.chdir(settings.WORKING_DIRECTORY)
-            os.system(f'sh $PARFLOW_DIR/bin/run {run_file} {num_procs}')
-            success = check_parflow_execution(f'{run_file}.out.txt')
+            prev_dir = os.getcwd()
+            try:
+                os.chdir(settings.WORKING_DIRECTORY)
+                os.system(f'sh $PARFLOW_DIR/bin/run {run_file} {num_procs}')
+                success = check_parflow_execution(f'{run_file}.out.txt')
+            finally:
+                os.chdir(prev_dir)
 
         print()
+
+        # revert working directory to original directory
+        settings.set_working_directory(prev_dir)
+
         if not success or error_count > 0:
             sys.exit(1)
 
