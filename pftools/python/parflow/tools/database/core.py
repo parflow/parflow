@@ -380,12 +380,17 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def validate(self, indent=1, verbose=False, enable_print=True):
+    def validate(self, indent=1, verbose=False, enable_print=True, working_directory=None):
         """
         Method to validate sub hierarchy
         """
         if len(self) == 0:
             return 0
+
+        # overwrite current working directory
+        prev_dir = settings.WORKING_DIRECTORY
+        if working_directory:
+            settings.set_working_directory(working_directory)
 
         error_count = 0
         indent_str = '  '*indent
@@ -419,6 +424,9 @@ class PFDBObj:
             elif obj is not None:
                 if enable_print and verbose:
                     print(f'{indent_str}{name}: {obj}')
+
+        # revert working directory to original directory
+        settings.set_working_directory(prev_dir)
 
         return error_count
 
