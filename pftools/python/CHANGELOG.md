@@ -2,7 +2,17 @@
 
 ## Unreleased:
 
-- Metadata keys and processing
+- Metadata keys and processing of CLM files
+
+## v0.0.6 (released 2020-10-28):
+
+- Added ``set_name`` and ``get_name`` methods for ``Run`` object
+- Changed validation printing to default to only print key/value 
+pairs with errors using ``verbose`` argument
+- Updated code to comport with API change in parflowio v0.0.4
+- Updated methods on ``Run`` object to revert to original directory after
+executing the method
+- Fixed bug for sorting .pfidb files
 
 ## v0.0.5 (released 2020-10-16):
 
