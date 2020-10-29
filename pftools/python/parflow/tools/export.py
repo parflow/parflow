@@ -155,6 +155,15 @@ class CLMExporter:
         return self
 
     def _process_vegm(self, token, x, y, axis=None):
+        """Method to convert veg mapping keys to array for drv_vegm.dat file
+
+        Args:
+            - token: string or list to get keys to process
+            - x: x-dimension of array
+            - y: y-dimension of array
+            - axis=None: axis direction of linear increase.
+              can be 'x' or 'y'
+        """
         if isinstance(token, list) and len(token) > 1:
             vegm_root_key = self.run.Solver.CLM.Vegetation.Map[token[0]]
             for item in token[1:]:
@@ -178,7 +187,7 @@ class CLMExporter:
                 else:
                     print('Axis specification error')
         if vegm_root_key.Type == 'Matrix':
-            # used for veg mapping for land use
+            # used only for veg mapping for land use
             array = vegm_root_key.Matrix
         if vegm_root_key.Type == 'PFBFile':
             # TODO
@@ -236,6 +245,7 @@ class CLMExporter:
                      ' of grid by vegetation class (Must/Should Add to 1.0)'
         second_line = '       (Deg)	 (Deg)  (%/100)   index'
 
+        # if building table from keys
         if from_keys is True:
             land_col_map = {'column': 'land cover type'}
             x = self.run.ComputationalGrid.NX
@@ -244,13 +254,13 @@ class CLMExporter:
             self._process_vegm_loc(vegm_array)
             self._process_vegm_soil(vegm_array)
             land_covers = self.run.Solver.CLM.Vegetation.Parameters.LandNames
+            # CLM handles exactly 18 land cover types as a default
             if len(land_covers) > 18:
                 print(f'WARNING: CLM must be recompiled to accommodate '
                       f'{len(land_covers)} land cover types.')
             for name in land_covers:
                 vegm_array = np.dstack((vegm_array,
                           self._process_vegm([name, 'LandFrac'], x, y)))
-            print(vegm_array.shape)
 
         with open(drv_vegm_file, 'w') as fout:
             fout.write(first_line + '\n')
@@ -287,6 +297,7 @@ class CLMExporter:
             - working_directory='.': specifies where drv_vegp.dat
               file will be written
         """
+        # TODO: add ability to convert from keys, remove use of reference file
         drv_vegp_ref = os.path.join(
             os.path.dirname(__file__), 'ref/drv_vegp.dat')
 
