@@ -1071,7 +1071,6 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  * @param ptr Pointer to dataspace to free
  * @return Error code
  */
-
 #define amps_TFree(ptr) if (ptr) free(ptr); else {}
 /* note: the `else' is required to guarantee termination of the `if' */
 
@@ -1087,4 +1086,3 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define AMPS_NEWPACKAGE_SPECIALIZED 1
 
 #endif
-

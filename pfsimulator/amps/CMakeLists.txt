@@ -12,6 +12,13 @@ string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SRC_FILES "${AMP
 
 add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
+# The order for the below libs is important
+target_link_libraries(amps /p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/lib/libpsmile.MPI1.a)
+target_link_libraries(amps /p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/lib/libmct.a)
+target_link_libraries(amps /p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/lib/libmpeu.a)
+target_link_libraries(amps /p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/lib/libscrip.a)
+target_include_directories(amps PUBLIC "/p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/build/lib/psmile.MPI1")
+
 if(${PARFLOW_HAVE_CUDA})
   target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
   if( ${PARFLOW_HAVE_RMM} )

@@ -35,9 +35,7 @@
 #include <unistd.h>
 #include <inttypes.h>
 
-MPI_Comm oas3Comm;
-int dummy1_oas3 = 0;
-
+/* Global flag indicating if AMPS has been initialized */
 int amps_mpi_initialized = FALSE;
 
 #ifdef AMPS_MALLOC_DEBUG
@@ -50,6 +48,15 @@ long AMPS_CPU_TICKS_PER_SEC;
 
 int amps_size;
 int amps_rank;
+int amps_node_rank;
+int amps_node_size;
+int amps_write_rank;
+int amps_write_size;
+MPI_Comm amps_CommNode = MPI_COMM_NULL;
+MPI_Comm amps_CommWrite = MPI_COMM_NULL;
+
+MPI_Comm oas3Comm;
+int dummy1_oas3 = 0;
 
 #ifdef AMPS_F2CLIB_FIX
 int MAIN__()
