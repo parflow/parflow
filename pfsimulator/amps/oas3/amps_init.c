@@ -44,6 +44,10 @@ int amps_mpi_initialized = FALSE;
 char amps_malloclog[MAXPATHLEN];
 #endif
 
+#ifndef CRAY_TIME
+long AMPS_CPU_TICKS_PER_SEC;
+#endif
+
 int amps_size;
 int amps_rank;
 
@@ -97,9 +101,8 @@ int amps_Init(int *argc, char **argv[])
 /*   MPI_Init(argc, argv);*/
   CALL_oas_pfl_init(&dummy1_oas3);
   amps_mpi_initialized = TRUE;
-//CPS get the local commnunicator handle
-//   oas3Comm = MPI_Comm_f2c(__oas_pfl_vardef_MOD_localcomm);//for GNU compioers
-  oas3Comm = MPI_Comm_f2c(oas_pfl_vardef_mp_localcomm_);   //for Intel Compilers
+  // oas3Comm = MPI_Comm_f2c(__oas_pfl_vardef_MOD_localcomm);//for GNU compilers
+  oas3Comm = MPI_Comm_f2c(oas_pfl_vardef_mp_localcomm_);   //for Intel compilers
 
   MPI_Comm_size(oas3Comm, &amps_size);
   MPI_Comm_rank(oas3Comm, &amps_rank);
@@ -108,7 +111,9 @@ int amps_Init(int *argc, char **argv[])
   setbuf(stdout, NULL);
 #endif
 
-  amps_clock_init();
+#ifdef CASC_HAVE_GETTIMEOFDAY
+   amps_clock_init();
+#endif
 
 #ifdef AMPS_MPI_SETHOME
   if (!amps_rank)
@@ -143,6 +148,12 @@ int amps_Init(int *argc, char **argv[])
 #ifdef AMPS_MALLOC_DEBUG
   dmalloc_logpath = amps_malloclog;
   sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
+#endif
+
+#ifdef TIMING
+#ifndef CRAY_TIME
+   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
+#endif
 #endif
 
 #ifdef AMPS_PRINT_HOSTNAME
@@ -187,11 +198,19 @@ int amps_EmbeddedInit(void)
   setbuf(stdout, NULL);
 #endif
 
-  amps_clock_init();
+#ifdef CASC_HAVE_GETTIMEOFDAY
+   amps_clock_init();
+#endif
 
 #ifdef AMPS_MALLOC_DEBUG
-  dmalloc_logpath = amps_malloclog;
-  sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
+    dmalloc_logpath = amps_malloclog;
+    sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
+#endif
+
+#ifdef TIMING
+#ifndef CRAY_TIME
+   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
+#endif
 #endif
 
   return 0;

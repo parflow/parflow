@@ -44,7 +44,7 @@ while getopts hpg: c
 do
 	case $c in
 	hp) 
-		echo "usage: $0 run runname"
+		echo "usage: $0 run runname process_group"
 		echo "Runs parflow on the allocated cube."
 	        exit 0;;
 	p) 

@@ -81,7 +81,9 @@ CHARACTER(len=19)                  :: foupname
  ALLOCATE( counter(nx,ny), stat=ierror)
  IF (ierror /= 0)  CALL prism_abort_proto( comp_id, 'send_fld_2clm', 'Failure in allocating counter' )
 
+
 ! Create the masking vector
+ topo_mask = 0 
  DO i = 1, nx
    DO j = 1, ny
      counter(i,j) = 0
@@ -95,12 +97,16 @@ CHARACTER(len=19)                  :: foupname
     ENDDO
  ENDDO
 
+ sat_snd = 0
+ psi_snd = 0
  DO i = 1, nx
    DO j = 1, ny
      DO k = 1, nlevsoil
+     IF (topo_mask(i,j) .gt. 0) THEN
        l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))  !
        sat_snd(i,j,k) = saturation(l)
        psi_snd(i,j,k) = pressure(l)*1000.0                            ! convert from [m] to [mm]
+     ENDIF
      ENDDO
    ENDDO
  ENDDO

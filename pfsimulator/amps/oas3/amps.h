@@ -30,7 +30,7 @@
 
 #include "parflow_config.h"
 
-#include "amps_common.h"
+//#include "amps_common.h"
 
 #ifdef AMPS_MALLOC_DEBUG
 #include <dmalloc.h>
@@ -136,9 +136,23 @@
  */
 extern MPI_Comm oas3Comm;
 #define amps_CommWorld oas3Comm
+#define amps_CommNode  nodeComm
+#define amps_CommWrite writeComm
 
+extern MPI_Comm nodeComm;
+extern MPI_Comm writeComm;
+
+/*Global ranks and size of MPI_COMM_WORLD*/
 extern int amps_rank;
 extern int amps_size;
+
+/*Node level ranks and size of nodeComm */
+extern int amps_node_rank;
+extern int amps_node_size;
+
+/*Writing proc ranks and size of writeComm */
+extern int amps_write_rank;
+extern int amps_write_size;
 
 /*===========================================================================*/
 /**
@@ -164,6 +178,8 @@ extern int amps_size;
  * @return current node's rank in the communication context
  */
 #define amps_Rank(comm) amps_rank
+#define amps_nodeRank(comm) amps_node_rank
+#define amps_writeRank(comm) amps_write_rank
 
 /*===========================================================================*/
 /**
@@ -235,6 +251,37 @@ extern int amps_size;
 #define AMPS_INVOICE_ALLOCATED 1
 #define AMPS_INVOICE_OVERLAYED 2
 #define AMPS_INVOICE_NON_OVERLAYED 4
+
+#ifdef CASC_HAVE_GETTIMEOFDAY
+typedef long amps_Clock_t;
+#define AMPS_TICKS_PER_SEC 10000
+typedef clock_t amps_CPUClock_t;
+extern long AMPS_CPU_TICKS_PER_SEC;
+#endif 
+
+#ifdef CRAY_TIME
+typedef long amps_Clock_t;
+typedef clock_t amps_CPUClock_t;
+#define amps_Clock() rtclock()
+#define amps_CPUClock() cpused()
+#define AMPS_TICKS_PER_SEC 1.5E8
+#define AMPS_CPU_TICKS_PER_SEC 1.5E8
+#endif
+
+#ifdef AMPS_NX_CLOCK
+typedef double amps_Clock_t;
+#define AMPS_TICKS_PER_SEC 1
+typedef double amps_CPUClock_t;
+#define AMPS_CPU_TICKS_PER_SEC 1
+#define amps_CPUClock() 1
+#endif
+
+/* Default case, if not using a more specialized clock */
+#ifndef AMPS_TICKS_PER_SEC
+typedef long amps_Clock_t;
+typedef clock_t amps_CPUClock_t;
+extern long AMPS_CPU_TICKS_PER_SEC;
+#endif
 
 typedef MPI_Comm amps_Comm;
 typedef FILE *amps_File;

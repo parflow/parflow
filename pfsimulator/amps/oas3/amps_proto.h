@@ -52,12 +52,14 @@ void amps_ScanInt(amps_File file, int *data, int len, int stride);
 void amps_ScanLong(amps_File file, long *data, int len, int stride);
 void amps_ScanFloat(amps_File file, float *data, int len, int stride);
 void amps_ScanDouble(amps_File file, double *data, int len, int stride);
+#ifndef CASC_HAVE_BIGENDIAN
 void amps_WriteDouble(amps_File file, double *ptr, int len);
 void amps_WriteInt(amps_File file, int *ptr, int len);
 void amps_ReadDouble(amps_File file, double *ptr, int len);
 void amps_ReadInt(amps_File file, int *ptr, int len);
 void amps_WriteInt(amps_File file, int *ptr, int len);
 void amps_ReadInt(amps_File file, int *ptr, int len);
+#endif
 
 /* amps_irecv.c */
 amps_Handle amps_IRecv(amps_Comm comm, int source, amps_Invoice invoice);

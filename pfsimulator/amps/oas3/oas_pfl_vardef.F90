@@ -26,7 +26,7 @@ MODULE oas_pfl_vardef
 
 !Modules Used 
 USE mpi
-USE mod_prism_proto
+USE mod_prism
 
 !==============================================================================
 
@@ -67,6 +67,8 @@ END TYPE FLD_CPL
 
  ! Define coupling fields
 TYPE(FLD_CPL), DIMENSION(nmaxlev)         :: trcv, psnd, wsnd      ! Coupling fields (HERE WE DEFINE §3 FIELDS)
+
+REAL(KIND=8),  ALLOCATABLE                ::   frcv(:,:,:)         ! all oaisis receive fields
 
 
 END MODULE oas_pfl_vardef

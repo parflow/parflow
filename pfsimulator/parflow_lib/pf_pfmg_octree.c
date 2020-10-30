@@ -377,7 +377,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     }
 
     /* Set the HYPRE grid */
-    HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, &(instance_xtra->hypre_grid));
+    HYPRE_StructGridCreate(amps_CommWorld, 3, &(instance_xtra->hypre_grid));
 
 
     grid = instance_xtra->grid;
@@ -450,7 +450,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     symmetric = MatrixSymmetric(pf_Bmat);
     if (!(instance_xtra->hypre_mat))
     {
-      HYPRE_StructMatrixCreate(MPI_COMM_WORLD, instance_xtra->hypre_grid,
+      HYPRE_StructMatrixCreate(amps_CommWorld, instance_xtra->hypre_grid,
                                instance_xtra->hypre_stencil,
                                &(instance_xtra->hypre_mat));
       HYPRE_StructMatrixSetNumGhost(instance_xtra->hypre_mat, full_ghosts);
@@ -461,7 +461,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     /* Set up new right-hand-side vector */
     if (!(instance_xtra->hypre_b))
     {
-      HYPRE_StructVectorCreate(MPI_COMM_WORLD,
+      HYPRE_StructVectorCreate(amps_CommWorld,
                                instance_xtra->hypre_grid,
                                &(instance_xtra->hypre_b));
       HYPRE_StructVectorSetNumGhost(instance_xtra->hypre_b, no_ghosts);
@@ -471,7 +471,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     /* Set up new solution vector */
     if (!(instance_xtra->hypre_x))
     {
-      HYPRE_StructVectorCreate(MPI_COMM_WORLD,
+      HYPRE_StructVectorCreate(amps_CommWorld,
                                instance_xtra->hypre_grid,
                                &(instance_xtra->hypre_x));
       HYPRE_StructVectorSetNumGhost(instance_xtra->hypre_x, full_ghosts);
@@ -1017,7 +1017,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     EndTiming(public_xtra->time_index_copy_hypre);
 
     /* Set up the PFMG preconditioner */
-    HYPRE_StructPFMGCreate(MPI_COMM_WORLD,
+    HYPRE_StructPFMGCreate(amps_CommWorld,
                            &(instance_xtra->hypre_pfmg_data));
 
     HYPRE_StructPFMGSetTol(instance_xtra->hypre_pfmg_data, 1.0e-30);
