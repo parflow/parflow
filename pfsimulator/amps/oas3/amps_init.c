@@ -26,15 +26,15 @@
  *  USA
  **********************************************************************EHEADER*/
 
+#include "amps.h"
+
 #include <stdio.h>
 #include <sys/param.h>
-#include <sys/param.h>
-#include <stdlib.h>
-
-#include <unistd.h>
 #include <sys/times.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <inttypes.h>
 
-#include "amps.h"
 MPI_Comm oas3Comm;
 int dummy1_oas3 = 0;
 
@@ -161,6 +161,9 @@ int amps_Init(int *argc, char **argv[])
 
   printf("Process %d on %s\n", amps_rank, processor_name);
 #endif
+
+  (void)namelen;
+  (void)processor_name;
 
   return 0;
 }

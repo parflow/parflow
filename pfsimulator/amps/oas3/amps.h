@@ -30,7 +30,7 @@
 
 #include "parflow_config.h"
 
-//#include "amps_common.h"
+#include "amps_common.h"
 
 #ifdef AMPS_MALLOC_DEBUG
 #include <dmalloc.h>
@@ -227,13 +227,14 @@ extern int amps_write_size;
 #define AMPS_PID 0
 
 /* These are the built-in types that are supported */
-#define AMPS_INVOICE_CHAR_CTYPE                1
-#define AMPS_INVOICE_SHORT_CTYPE               2
-#define AMPS_INVOICE_INT_CTYPE                 3
-#define AMPS_INVOICE_LONG_CTYPE                4
-#define AMPS_INVOICE_DOUBLE_CTYPE              5
-#define AMPS_INVOICE_FLOAT_CTYPE               6
-#define AMPS_INVOICE_LAST_CTYPE                7
+#define AMPS_INVOICE_BYTE_CTYPE                1
+#define AMPS_INVOICE_CHAR_CTYPE                2
+#define AMPS_INVOICE_SHORT_CTYPE               3
+#define AMPS_INVOICE_INT_CTYPE                 4
+#define AMPS_INVOICE_LONG_CTYPE                5
+#define AMPS_INVOICE_DOUBLE_CTYPE              6
+#define AMPS_INVOICE_FLOAT_CTYPE               7
+#define AMPS_INVOICE_LAST_CTYPE                8
 
 /* Flags for use with user-defined flag                                      */
 #define AMPS_INVOICE_OVERLAY                   1
@@ -289,6 +290,7 @@ typedef FILE *amps_File;
 extern int amps_tid;
 extern int amps_rank;
 extern int amps_size;
+
 
 /* This structure is used to keep track of the entries in an invoice         */
 typedef struct amps_invoicestruct {
@@ -411,7 +413,6 @@ extern amps_Buffer *amps_BufferFreeList;
  *   PACKING structures and defines
  *
  *****************************************************************************/
-
 #define AMPS_PACKED 2
 
 #define AMPS_IGNORE  -1
@@ -430,6 +431,10 @@ extern amps_Buffer *amps_BufferFreeList;
   ((sizeof(type) -                               \
     ((unsigned long)(dest) % sizeof(type)))      \
    % sizeof(type));
+
+
+#define AMPS_CALL_BYTE_ALIGN(_comm, _src, _dest, _len, _stride) \
+  AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_CHAR_ALIGN(_comm, _src, _dest, _len, _stride) \
   AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
@@ -454,6 +459,9 @@ extern amps_Buffer *amps_BufferFreeList;
 /*---------------------------------------------------------------------------*/
 #define AMPS_SIZEOF(len, stride, size) \
   (size_t)(len) * (size)
+
+#define AMPS_CALL_BYTE_SIZEOF(_comm, _src, _dest, _len, _stride)	\
+  AMPS_SIZEOF((_len), (_stride), sizeof(char))
 
 #define AMPS_CALL_CHAR_SIZEOF(_comm, _src, _dest, _len, _stride) \
   AMPS_SIZEOF((_len), (_stride), sizeof(char))
@@ -486,6 +494,9 @@ extern amps_Buffer *amps_BufferFreeList;
              ptr_src += (stride), ptr_dest++)                                                             \
           bcopy((ptr_src), (ptr_dest), sizeof(type));                                                     \
   }
+
+#define AMPS_CALL_BYTE_OUT(_comm, _src, _dest, _len, _stride) \
+  AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
@@ -527,6 +538,9 @@ extern amps_Buffer *amps_BufferFreeList;
     }                                                                                    \
   }
 
+#define AMPS_CALL_BYTE_IN(_comm, _src, _dest, _len, _stride) \
+  AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
+
 #define AMPS_CALL_CHAR_IN(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
 
@@ -546,6 +560,9 @@ extern amps_Buffer *amps_BufferFreeList;
   AMPS_CONVERT_IN(double, htocd, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CHECK_OVERLAY(_type, _comm) 0
+
+#define AMPS_BYTE_OVERLAY(_comm) \
+  AMPS_CHECK_OVERLAY(char, _comm)
 
 #define AMPS_CHAR_OVERLAY(_comm) \
   AMPS_CHECK_OVERLAY(char, _comm)
@@ -1013,7 +1030,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  * @param count Number of items of type to allocate
  * @return Pointer to the allocated dataspace
  */
-#define amps_TAlloc(type, count) ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc(type, count) ((count>0) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /*===========================================================================*/
 /**
