@@ -64,7 +64,25 @@ int MAIN__()
 }
 #endif
 
-/*===========================================================================*/
+/*Adler32 function to calculate hash based on node name and length */
+const int MOD_ADLER = 65521;
+
+uint32_t Adler32(unsigned char *data, size_t len) /* where data is the location of the data in physical memory and
+                                                   * len is the length of the data in bytes */
+{
+  uint32_t a = 1, b = 0;
+  size_t index;
+
+/* Process each byte of the data in order */
+  for (index = 0; index < len; ++index)
+  {
+    a = (a + data[index]) % MOD_ADLER;
+    b = (b + a) % MOD_ADLER;
+  }
+
+  return (b << 16) | a;
+}
+
 /**
  *
  * Every {\em AMPS} program must call this function to initialize the
@@ -102,20 +120,49 @@ int amps_Init(int *argc, char **argv[])
   int length;
 #endif
 
-  char processor_name[MPI_MAX_PROCESSOR_NAME];
-  int namelen;
-
-/*   MPI_Init(argc, argv);*/
   CALL_oas_pfl_init(&dummy1_oas3);
   amps_mpi_initialized = TRUE;
 #ifdef __GNUC__
-   oas3Comm = MPI_Comm_f2c(__oas_pfl_vardef_MOD_localcomm);//for GNU compilers
+   oas3Comm = MPI_Comm_f2c(__oas_pfl_vardef_MOD_localcomm); //for GNU compilers
 #else
-   oas3Comm = MPI_Comm_f2c(oas_pfl_vardef_mp_localcomm_);  //for Intel compilers
+   oas3Comm = MPI_Comm_f2c(oas_pfl_vardef_mp_localcomm_); //for Intel compilers
 #endif
 
   MPI_Comm_size(oas3Comm, &amps_size);
   MPI_Comm_rank(oas3Comm, &amps_rank);
+
+  /* Create communicator with one rank per compute node */
+#if MPI_VERSION >= 3
+  MPI_Comm_split_type(oas3Comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &amps_CommNode);
+#else
+  /* Split the node level communicator based on Adler32 hash keys of processor name */
+  char processor_name[MPI_MAX_PROCESSOR_NAME];
+  int namelen;
+  MPI_Get_processor_name(processor_name, &namelen);
+  uint32_t checkSum = Adler32((unsigned char*)processor_name, namelen);
+  /* Comm split only accepts non-negative numbers */
+  /* Not super great for hashing purposes but hoping MPI-3 code will be used on most cases */
+  checkSum &= INT_MAX;
+  MPI_Comm_split(oas3Comm, checkSum, amps_rank, &amps_CommNode);
+#endif
+
+  MPI_Comm_rank(amps_CommNode, &amps_node_rank);
+  MPI_Comm_size(amps_CommNode, &amps_node_size);
+  int color;
+  if (amps_node_rank == 0)
+  {
+    color = 0;
+  }
+  else
+  {
+    color = 1;
+  }
+  MPI_Comm_split(oas3Comm, color, amps_rank, &amps_CommWrite);
+  if (amps_node_rank == 0)
+  {
+    MPI_Comm_size(amps_CommWrite, &amps_write_size);
+  }
+
 
 #ifdef AMPS_STDOUT_NOBUFF
   setbuf(stdout, NULL);
@@ -172,14 +219,9 @@ int amps_Init(int *argc, char **argv[])
   printf("Process %d on %s\n", amps_rank, processor_name);
 #endif
 
-  (void)namelen;
-  (void)processor_name;
-
   return 0;
 }
 
-
-/*===========================================================================*/
 /**
  *
  * Initialization when ParFlow is being invoked by another application.

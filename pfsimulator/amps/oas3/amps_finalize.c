@@ -65,7 +65,8 @@ int amps_Finalize()
 {
   if (amps_mpi_initialized)
   {
-/*      MPI_Finalize();*/
+    MPI_Comm_free(&amps_CommNode);
+    MPI_Comm_free(&amps_CommWrite);
     CALL_oas_pfl_finalize(&dummy2_oas3);
   }
 

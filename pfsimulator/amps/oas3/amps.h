@@ -143,10 +143,11 @@
  *
  * @memo Global communication context
  */
-extern MPI_Comm oas3Comm;
 #define amps_CommWorld oas3Comm
-#define amps_CommNode  nodeComm
-#define amps_CommWrite writeComm
+
+extern MPI_Comm oas3Comm;
+extern MPI_Comm amps_CommNode;
+extern MPI_Comm amps_CommWrite;
 
 /* Communicators for I/O */
 extern MPI_Comm nodeComm;
