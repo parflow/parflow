@@ -12,14 +12,14 @@ string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SRC_FILES "${AMP
 
 add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
-target_link_directories(amps PUBLIC "/p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/lib")
-# The order for these libs is important
-target_link_libraries(amps psmile.MPI1 mct mpeu scrip)
-target_include_directories(amps PUBLIC "/p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/build/lib/psmile.MPI1")
+# target_link_directories(amps PUBLIC "/p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/lib")
+# # The order for these libs is important
+# target_link_libraries(amps psmile.MPI1 mct mpeu scrip)
+# target_include_directories(amps PUBLIC "/p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-pfl/JUWELS/build/lib/psmile.MPI1")
 
-target_link_directories(amps PUBLIC "/gpfs/software/juwels/stages/2019a/software/netCDF-Fortran/4.4.5-gpsmpi-2019a/lib")
-target_link_libraries(amps netcdff)
-target_include_directories(amps PUBLIC "/gpfs/software/juwels/stages/2019a/software/netCDF-Fortran/4.4.5-gpsmpi-2019a/include")
+# target_link_directories(amps PUBLIC "/gpfs/software/juwels/stages/2019a/software/netCDF-Fortran/4.4.5-gpsmpi-2019a/lib")
+# target_link_libraries(amps netcdff)
+# target_include_directories(amps PUBLIC "/gpfs/software/juwels/stages/2019a/software/netCDF-Fortran/4.4.5-gpsmpi-2019a/include")
 
 if(${PARFLOW_HAVE_CUDA})
   target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})

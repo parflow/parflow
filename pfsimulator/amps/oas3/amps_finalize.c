@@ -67,7 +67,8 @@ int amps_Finalize()
   {
     MPI_Comm_free(&amps_CommNode);
     MPI_Comm_free(&amps_CommWrite);
-    CALL_oas_pfl_finalize(&dummy2_oas3);
+    // CALL_oas_pfl_finalize(&dummy2_oas3);
+    MPI_Finalize();
   }
 
 #ifdef AMPS_MALLOC_DEBUG
