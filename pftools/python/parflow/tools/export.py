@@ -34,7 +34,7 @@ class SubsurfacePropertiesExporter:
         self._process()
 
     def _extract_sub_surface_props(self, geomItem):
-        name = geomItem.get_full_key_name().split('.')[-1]
+        name = geomItem.full_name().split('.')[-1]
         entry = {'key': name}
         has_data = False
         for key in self.pfkey_to_alias:

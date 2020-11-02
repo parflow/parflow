@@ -264,7 +264,7 @@ class Run(BaseRun):
             f_name = os.path.join(settings.WORKING_DIRECTORY,
                                   f'{file_name}.{file_format}')
         full_file_path = os.path.abspath(f_name)
-        write_dict(self.get_key_dict(), full_file_path)
+        write_dict(self.to_dict(), full_file_path)
 
         # revert working directory to original directory
         settings.set_working_directory(prev_dir)
@@ -302,7 +302,7 @@ class Run(BaseRun):
 
         """
         new_run = Run(name)
-        new_run.pfset(flat_map=self.get_key_dict())
+        new_run.pfset(flat_map=self.to_dict())
         return new_run
 
     def run(self, working_directory=None, skip_validation=False):

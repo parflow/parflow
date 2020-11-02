@@ -117,12 +117,12 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
         for key, value in instance._pfstore_.items():
             dict_to_fill[key] = convert_value_for_string_dict(value)
 
-    for key in instance.get_key_names(skip_default=True):
+    for key in instance.keys(skip_default=True):
         value = instance[key]
         if value is None:
             continue
 
-        full_qualified_key = instance.get_parflow_key(parent_namespace, key)
+        full_qualified_key = instance.to_pf_name(parent_namespace, key)
         if isinstance(value, PFDBObj):
             if hasattr(value, '_value_'):
                 has_details = hasattr(value, '_details_') \
@@ -258,7 +258,7 @@ class PFDBObj:
         if hasattr(self, '_value_') and self._value_ is not None:
             value_count += 1
 
-        for name in self.get_key_names(True):
+        for name in self.keys(True):
             obj = self.__dict__[name]
             if isinstance(obj, PFDBObj):
                 value_count += len(obj)
@@ -323,7 +323,7 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def get_key_dict(self):
+    def to_dict(self):
         """Method that will return a flat map of all the ParFlow keys.
 
         Returns:
@@ -336,7 +336,7 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def get_key_names(self, skip_default=False):
+    def keys(self, skip_default=False):
         """
         Gets the key names necessary for the run while skiping unset ones
         """
@@ -394,7 +394,7 @@ class PFDBObj:
 
         error_count = 0
         indent_str = '  '*indent
-        for name in self.get_key_names(skip_default=True):
+        for name in self.keys(skip_default=True):
             obj = self.__dict__[name]
             if isinstance(obj, PFDBObj):
                 if len(obj):
@@ -432,7 +432,7 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def get_full_key_name(self):
+    def full_name(self):
         """
         Helper method returning the full name of a given ParFlow key.
         """
@@ -458,7 +458,7 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def get_parflow_key(self, parent_namespace, key):
+    def to_pf_name(self, parent_namespace, key):
         """
         Helper method returning the key to use for Parflow on a given field key.
         This allow to handle differences between what can be defined in Python vs Parflow key.
@@ -606,11 +606,11 @@ class PFDBObj:
             # store key on the side
             if '_pfstore_' not in self.__dict__:
                 self.__dict__['_pfstore_'] = {}
-            parentNamespace = self.get_full_key_name()
+            parentNamespace = self.full_name()
             fullkeyName = f"{parentNamespace}" \
                           f"{'.' if parentNamespace else ''}{key}"
             self.__dict__['_pfstore_'][fullkeyName] = value
-            rootPath = self.get_full_key_name()
+            rootPath = self.full_name()
             print(f"Caution: Using internal store of "
                   f"{rootPath if rootPath else 'run'} "
                   f"to save {fullkeyName} = {value}")
@@ -694,7 +694,7 @@ class PFDBObjListNumber(PFDBObj):
 
         self.__dict__[key_str] = value
 
-    def get_parflow_key(self, parent_namespace, key):
+    def to_pf_name(self, parent_namespace, key):
         """Helper method returning the key to use for Parflow on
         a given field key. This allows handling of differences
         between what can be defined in Python vs Parflow key.
