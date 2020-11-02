@@ -5,19 +5,17 @@ a Parflow input deck.
 import sys
 import yaml
 
-try:
-    from yaml import CDumper as YAMLDumper
-except ImportError:
-    from yaml import Dumper as YAMLDumper
-
 from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
-from parflow.tools.helper import map_to_child, map_to_children_of_type, map_to_parent, map_to_self
+from parflow.tools.helper import (
+    map_to_child, map_to_children_of_type, map_to_parent, map_to_self
+)
 from parflow.tools.helper import sort_dict_by_priority
 from parflow.tools.io import read_pfidb
 
 from .domains import validate_value_to_string, validate_value_with_exception
 from .handlers import decorate_value
+
 
 # -----------------------------------------------------------------------------
 # Accessor helpers
@@ -60,6 +58,7 @@ def detail_helper(container, name, value):
 
     return domains, handlers, history, crosscheck
 
+
 # -----------------------------------------------------------------------------
 # Internal field name helpers
 # -----------------------------------------------------------------------------
@@ -71,6 +70,7 @@ def is_private_key(name):
     """
     return name[0] == '_' and name[-1] == '_'
 
+
 # -----------------------------------------------------------------------------
 
 def is_not_private_key(name):
@@ -79,6 +79,7 @@ def is_not_private_key(name):
     Return True if it is a key
     """
     return not is_private_key(name)
+
 
 # -----------------------------------------------------------------------------
 
@@ -92,6 +93,7 @@ def to_str_dict_format(value):
         return ' '.join([str(v) for v in value])
 
     return value
+
 
 # -----------------------------------------------------------------------------
 
@@ -118,7 +120,8 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
                 has_domain = has_details and 'domains' in details
                 is_mandatory = has_domain \
                     and 'MandatoryValue' in details['domains']
-                is_default = has_default and value._value_ == details['default']
+                is_default = has_default and \
+                    value._value_ == details['default']
                 is_set = has_details and details.get('history')
                 if is_mandatory or not is_default or is_set:
                     dict_to_fill[full_qualified_key] = \
@@ -126,6 +129,7 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
             extract_keys_from_object(dict_to_fill, value, full_qualified_key)
         else:
             dict_to_fill[full_qualified_key] = to_str_dict_format(value)
+
 
 # -----------------------------------------------------------------------------
 
@@ -141,7 +145,9 @@ def extract_keys_from_dict(dict_to_fill, dict_obj, parent_namespace=''):
         if value is None or is_private_key(key):
             continue
 
-        full_qualified_key = f'{parent_namespace}.{key}' if parent_namespace else key
+        full_qualified_key = (
+            f'{parent_namespace}.{key}' if parent_namespace else key
+        )
         if isinstance(value, dict):
             # Need to handle _value_ and $_
             if hasattr(value, '_value_'):
@@ -154,6 +160,7 @@ def extract_keys_from_dict(dict_to_fill, dict_obj, parent_namespace=''):
         else:
             dict_to_fill[full_qualified_key] = to_str_dict_format(value)
 
+
 # -----------------------------------------------------------------------------
 
 def flatten_hierarchical_map(hierarchical_map):
@@ -163,6 +170,7 @@ def flatten_hierarchical_map(hierarchical_map):
     flat_map = {}
     extract_keys_from_dict(flat_map, hierarchical_map, parent_namespace='')
     return flat_map
+
 
 # -----------------------------------------------------------------------------
 # Main DB Object
@@ -198,18 +206,19 @@ class PFDBObj:
             if name in self._details_:
                 domains, handlers, history, crosscheck = detail_helper(
                     self, name, value)
-            elif hasattr(self, name) and isinstance(self.__dict__[name], PFDBObj):
+            elif hasattr(self, name) and isinstance(self.__dict__[name],
+                                                    PFDBObj):
                 # Handle value object assignment
                 value_object_assignment = True
                 value_obj = self.__dict__[name]
                 domains, handlers, history, crosscheck = detail_helper(
                     value_obj, '_value_', value)
             else:
-                print(
-                    f'Field {name} is not part of the expected schema {self.__class__}')
+                msg = (f'Field {name} is not part of the expected '
+                       f'schema {self.__class__}')
+                print(msg)
                 if settings.EXIT_ON_ERROR:
-                    raise ValueError(
-                        f'Field "{name}" is not part of the expected schema {self.__class__}')
+                    raise ValueError(msg)
 
         # Run domain validation
         if settings.PRINT_LINE_ERROR:
@@ -355,7 +364,8 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def validate(self, indent=1, verbose=False, enable_print=True, working_directory=None):
+    def validate(self, indent=1, verbose=False, enable_print=True,
+                 working_directory=None):
         """
         Method to validate sub hierarchy
         """
@@ -435,8 +445,9 @@ class PFDBObj:
 
     def to_pf_name(self, parent_namespace, key):
         """
-        Helper method returning the key to use for Parflow on a given field key.
-        This allow to handle differences between what can be defined in Python vs Parflow key.
+        Helper method returning the key to use for Parflow on a given
+        field key. This allows us to handle differences between what
+        can be defined in Python vs Parflow key.
         """
         value = self.__dict__[key]
         prefix = ''
@@ -476,9 +487,11 @@ class PFDBObj:
         Return a PFDBObj object based on a location.
 
         i.e.:
-          run.Process.Topology.get_selection_from_location('.') => run.Process.Topology
+          run.Process.Topology.get_selection_from_location('.') =>
+              run.Process.Topology
           run.Process.Topology.get_selection_from_location('..') => run.Process
-          run.Process.Topology.get_selection_from_location('../../Geom') => run.Geom
+          run.Process.Topology.get_selection_from_location('../../Geom') =>
+              run.Geom
           run.Process.Topology.get_selection_from_location('/Geom') => run.Geom
         """
         current_location = self
@@ -502,7 +515,8 @@ class PFDBObj:
             elif path_item[0] == '{':
                 multi_list = map(map_to_children_of_type(
                     path_item[1:-1]), current_list)
-                next_list = [item for sublist in multi_list for item in sublist]
+                next_list = [item for sublist in multi_list
+                             for item in sublist]
             else:
                 next_list.extend(map(map_to_child(path_item), current_list))
                 if len(next_list) and isinstance(next_list[0], list):
@@ -644,10 +658,10 @@ class PFDBObj:
                 if name is not None:
                     self.__dict__[name] = klass(self)
 
+
 # -----------------------------------------------------------------------------
 # Main DB Object
 # -----------------------------------------------------------------------------
-
 
 class PFDBObjListNumber(PFDBObj):
     """Class for leaf list values"""
