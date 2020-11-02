@@ -154,7 +154,7 @@ def extract_keys_from_dict(dict_to_fill, dictObj, parent_namespace=''):
     a given PFDBObj inside dict_to_fill.
     """
     for key, value in dictObj.items():
-        if len(parent_namespace) and key == '$_' or key == '_value_':
+        if parent_namespace and key in ['$_', '_value_']:
             dict_to_fill[parent_namespace] = value
             continue
 
@@ -169,7 +169,7 @@ def extract_keys_from_dict(dict_to_fill, dictObj, parent_namespace=''):
                     value._value_)
             if hasattr(value, '$_'):
                 dict_to_fill[full_qualified_key] = convert_value_for_string_dict(
-                    value._value_)
+                    getattr(value, '$_'))
             extract_keys_from_dict(dict_to_fill, value, full_qualified_key)
         else:
             dict_to_fill[full_qualified_key] = convert_value_for_string_dict(
@@ -444,7 +444,7 @@ class PFDBObj:
             parent = current_location._parent_
             for name in parent.__dict__:
                 value = parent.__dict__[name]
-                if value == current_location:
+                if value is current_location:
                     if current_location._prefix_:
                         full_path.append(name[len(current_location._prefix_):])
                     else:
