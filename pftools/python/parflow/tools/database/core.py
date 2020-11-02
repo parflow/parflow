@@ -23,24 +23,24 @@ from .handlers import decorate_value
 # Accessor helpers
 # -----------------------------------------------------------------------------
 
-def validate_helper(container_obj, name, value, indent):
+def validate_helper(container, name, value, indent):
     """Helper function for validating a value
     """
-    nbErrors = 0
+    num_errors = 0
     validation_string = ''
-    details = container_obj._details_[name]
+    details = container._details_[name]
     has_default = 'default' in details
     history = details.get('history')
     if (has_default and value == details['default'] and
             'MandatoryValue' not in details['domains']):
         pass
     else:
-        nbErrors, validation_string = \
+        num_errors, validation_string = \
             validate_value_to_string(
-                container_obj, value, has_default, details['domains'],
-                container_obj.get_context_settings(), history, indent)
+                container, value, has_default, details['domains'],
+                container.get_context_settings(), history, indent)
 
-    return nbErrors, validation_string
+    return num_errors, validation_string
 
 # -----------------------------------------------------------------------------
 
@@ -129,11 +129,11 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
 
 # -----------------------------------------------------------------------------
 
-def extract_keys_from_dict(dict_to_fill, dictObj, parent_namespace=''):
+def extract_keys_from_dict(dict_to_fill, dict_obj, parent_namespace=''):
     """Helper function to extract a flat key/value dictionary for
     a given PFDBObj inside dict_to_fill.
     """
-    for key, value in dictObj.items():
+    for key, value in dict_obj.items():
         if parent_namespace and key in ['$_', '_value_']:
             dict_to_fill[parent_namespace] = value
             continue
@@ -500,9 +500,9 @@ class PFDBObj:
             elif path_item == '.':
                 next_list.extend(map(map_to_self, current_list))
             elif path_item[0] == '{':
-                multiList = map(map_to_children_of_type(
+                multi_list = map(map_to_children_of_type(
                     path_item[1:-1]), current_list)
-                next_list = [item for sublist in multiList for item in sublist]
+                next_list = [item for sublist in multi_list for item in sublist]
             else:
                 next_list.extend(map(map_to_child(path_item), current_list))
                 if len(next_list) and isinstance(next_list[0], list):
@@ -581,14 +581,14 @@ class PFDBObj:
             # store key on the side
             if '_pfstore_' not in self.__dict__:
                 self.__dict__['_pfstore_'] = {}
-            parentNamespace = self.full_name()
-            fullkeyName = f"{parentNamespace}" \
-                          f"{'.' if parentNamespace else ''}{key}"
-            self.__dict__['_pfstore_'][fullkeyName] = value
-            rootPath = self.full_name()
+            parent_namespace = self.full_name()
+            full_key_name = f"{parent_namespace}" \
+                            f"{'.' if parent_namespace else ''}{key}"
+            self.__dict__['_pfstore_'][full_key_name] = value
+            root_path = self.full_name()
             print(f"Caution: Using internal store of "
-                  f"{rootPath if rootPath else 'run'} "
-                  f"to save {fullkeyName} = {value}")
+                  f"{root_path if root_path else 'run'} "
+                  f"to save {full_key_name} = {value}")
             if exit_if_undefined:
                 sys.exit(1)
 
