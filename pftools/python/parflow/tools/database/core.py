@@ -304,22 +304,25 @@ class PFDBObj:
         """
         Dynamic help function for runtime evaluation
         """
+        ret = ''
         if key is not None:
             if hasattr(self, '_details_') and key in self._details_:
                 if 'help' in self._details_[key]:
-                    return self._details_[key]['help']
+                    ret += self._details_[key]['help'] + '\n'
             else:
                 obj = self.__dict__[key]
                 if hasattr(obj, '__doc__'):
-                    return obj.__doc__
+                    ret += obj.__doc__ + '\n'
                 if hasattr(obj, '_details_') and '_value_' in obj._details_ \
                         and 'help' in obj._details_['_value_']:
-                    return obj._details_['_value_']['help']
+                    ret += obj._details_['_value_']['help'] + '\n'
         elif hasattr(self, '__doc__'):
-            return self.__doc__
+            ret += self.__doc__ + '\n'
             if hasattr(self, '_details_') and '_value_' in self._details_ \
                     and 'help' in self._details_['_value_']:
-                return self._details_['_value_']['help']
+                ret += self._details_['_value_']['help'] + '\n'
+
+        return ret if ret else None
 
     # ---------------------------------------------------------------------------
 
