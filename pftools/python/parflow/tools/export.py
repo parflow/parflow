@@ -36,7 +36,7 @@ class SubsurfacePropertiesExporter:
         self._process()
 
     def _extract_sub_surface_props(self, geomItem):
-        name = geomItem.get_full_key_name().split('.')[-1]
+        name = geomItem.full_name().split('.')[-1]
         entry = {'key': name}
         has_data = False
         for key in self.pfkey_to_alias:
@@ -116,7 +116,7 @@ class CLMExporter:
         """
         clm_drv_keys = {}
         header_doc = ''
-        clm_dict = self.run.Solver.CLM.Input.get_key_dict()
+        clm_dict = self.run.Solver.CLM.Input.to_dict()
         drv_clmin_file = os.path.join(get_absolute_path(working_directory),
                                       'drv_clmin.dat')
 
