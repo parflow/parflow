@@ -106,9 +106,10 @@ These tables can be formatted in a number of different ways. Here are several co
 Default database loading
 ================================================================================
 
-We have added a database of commonly used parameters for different soil and geologic units to provide some helpful guidance.
-This table is from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_ The table in the Python PFTools package can be found `here. <https://github.com/grapp1/parflow/blob/py-input/pftools/python/parflow/tools/ref/default_subsurface.txt>`_ To load this database, you can simply call the ``load_default_properties`` method on the ``SubsurfacePropertiesBuilder`` object.
-Note that these are all in the default ParFlow units of meters and hours.
+We have added several databases of commonly used parameters for different soil and geologic units to provide some helpful guidance. To load these database, you can simply call the ``load_default_properties`` method on the ``SubsurfacePropertiesBuilder`` object.
+The available databases in the Python PFTools package can be found `in the "subsurface_*.txt" files here. <https://github.com/parflow/parflow/tree/master/pftools/python/parflow/tools/ref>`_
+You can load any of the databases into your ``SubsurfacePropertiesBuilder`` object by passing in the ``database`` argument, which is the latter part of the database file name (e.g. "subsurface_conus_1.txt" can be loaded by calling ``load_default_properties('conus_1')``).
+The default database is from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_ Note that the parameters in the databases are all in the default ParFlow units of meters and hours.
 
 ----
 
@@ -157,7 +158,7 @@ Full API for ``SubsurfacePropertiesBuilder``
 2. ``load_csv_file(tableFile, encoding='utf-8-sig')``: Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``, which should translate files generated from Microsoft Excel.
 3. ``load_txt_file(tableFile, encoding='utf-8-sig')``: Loads a text file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``.
 4. ``load_txt_content(txt_content)``: Loads in-line text to your ``SubsurfacePropertiesBuilder`` object.
-5. ``load_default_properties()``: Loads the table of the default subsurface properties from Maxwell et al. (2016).
+5. ``load_default_properties(database='conus_1')``: Loads one of several databases of subsurface properties. The default, ``conus_1``, is from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_
 6. ``assign(old=None, new=None, mapping=None)``: Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the ``old`` units, and the values as the ``new`` units. If an ``old`` unit will apply to multiple ``new`` units, the ``new`` units need to be passed in as a list.
 7. ``apply(run=None, name_registration=True)``: Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated with a specific unit (e.g., ``Phase.RelPerm.Type``).
 8. ``print()``: Prints out the subsurface parameters for all subsurface units in a hierarchical format.
@@ -197,4 +198,3 @@ Full examples of the ``SubsurfacePropertiesBuilder`` can be found in the *new_fe
 
 - *default_db*: Loading the default database and mapping the database units to subsurface units in the current run.
 - *tables_LW*: Showing multiple ways to load tables to replace the subsurface property definition keys in the Little Washita test script.
-

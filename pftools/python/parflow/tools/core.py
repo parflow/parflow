@@ -11,8 +11,6 @@ This module provide the core objects for controlling ParFlow.
 import os
 import sys
 import argparse
-import shutil
-import subprocess
 
 from . import settings
 from .fs import get_absolute_path
@@ -21,6 +19,7 @@ from .terminal import Symbols as termSymbol
 
 from .database.generated import BaseRun, PFDBObj, PFDBObjListNumber
 from .export import SubsurfacePropertiesExporter
+
 
 def check_parflow_execution(out_file):
     """Helper function that can be used to parse ParFlow output file
@@ -45,7 +44,8 @@ def check_parflow_execution(out_file):
             else:
                 emoji = f'{termSymbol.x} '
                 print(
-                    f'# ParFlow run failed. {emoji*3} Contents of error output file:')
+                    f'# ParFlow run failed. {emoji*3} '
+                    f'Contents of error output file:')
                 print("-"*80)
                 print(contents)
                 print("-"*80)
@@ -55,6 +55,7 @@ def check_parflow_execution(out_file):
     return execute_success
 
 # -----------------------------------------------------------------------------
+
 
 def get_current_parflow_version():
     """Helper function to extract ParFlow version
@@ -77,10 +78,12 @@ def get_current_parflow_version():
                 print(f'Cannot find version in {version_file}')
     else:
         print(
-            f'Cannot find environment file in {os.path.abspath(version_file)}.')
+            f'Cannot find environment file in '
+            f'{os.path.abspath(version_file)}.')
     return version
 
 # -----------------------------------------------------------------------------
+
 
 def get_process_args():
     """
@@ -136,22 +139,33 @@ def get_process_args():
                         dest="writeYAML",
                         action='store_true',
                         help="Enable config to be written as YAML file")
+
+    group.add_argument("--validation-verbose",
+                        default=False,
+                        dest="validation_verbose",
+                        action='store_true',
+                        help="Only print validation results for "
+                             "key/value pairs with errors")
     # ++++++++++++++++
     group = parser.add_argument_group('Parallel execution')
     group.add_argument("-p", type=int, default=0,
                         dest="p",
-                        help="P allocates the number of processes to the grid-cells in x")
+                        help="P allocates the number of processes "
+                             "to the grid-cells in x")
     group.add_argument("-q", type=int, default=0,
                         dest="q",
-                        help="Q allocates the number of processes to the grid-cells in y")
+                        help="Q allocates the number of processes "
+                             "to the grid-cells in y")
     group.add_argument("-r", type=int, default=0,
                         dest="r",
-                        help="R allocates the number of processes to the grid-cells in z")
+                        help="R allocates the number of processes "
+                             "to the grid-cells in z")
 
     args, unknown = parser.parse_known_args()
     return args
 
 # -----------------------------------------------------------------------------
+
 
 def update_run_from_args(run, args):
     """
@@ -184,6 +198,7 @@ def update_run_from_args(run, args):
 
 # -----------------------------------------------------------------------------
 
+
 class Run(BaseRun):
     """Main object that can be used to define a ParFlow simulation
 
@@ -200,10 +215,29 @@ class Run(BaseRun):
         super().__init__(None)
         self._process_args_ = get_process_args()
         self._name_ = name
-        if basescript:
-            settings.set_working_directory(os.path.dirname(basescript))
+        if basescript is not None:
+            full_path = get_absolute_path(basescript)
+            if os.path.isfile(full_path):
+                settings.set_working_directory(os.path.dirname(full_path))
+            else:
+                settings.set_working_directory(full_path)
+        else:
+            settings.set_working_directory()
 
-    def write(self, file_name=None, file_format='pfidb'):
+    def set_name(self, new_name):
+        """Setting new name for a run
+
+        Args:
+            new_name (str): New name for run
+        """
+        self._name_ = new_name
+
+    def get_name(self):
+        """Returns name of run
+        """
+        return self._name_
+
+    def write(self, file_name=None, file_format='pfidb', working_directory=None):
         """Method to write database file to disk
 
         Args:
@@ -219,6 +253,11 @@ class Run(BaseRun):
               given to ParFlow executable.
 
         """
+        # overwrite current working directory
+        prev_dir = settings.WORKING_DIRECTORY
+        if working_directory:
+            settings.set_working_directory(working_directory)
+
         f_name = os.path.join(settings.WORKING_DIRECTORY,
                               f'{self._name_}.{file_format}')
         if file_name:
@@ -226,9 +265,18 @@ class Run(BaseRun):
                                   f'{file_name}.{file_format}')
         full_file_path = os.path.abspath(f_name)
         write_dict(self.get_key_dict(), full_file_path)
+
+        # revert working directory to original directory
+        settings.set_working_directory(prev_dir)
+
         return full_file_path, full_file_path[:-(len(file_format)+1)]
 
-    def write_subsurface_table(self, file_name=None):
+    def write_subsurface_table(self, file_name=None, working_directory=None):
+        # overwrite current working directory
+        prev_dir = settings.WORKING_DIRECTORY
+        if working_directory:
+            settings.set_working_directory(working_directory)
+
         if file_name is None:
             file_name = f'{self._name_}_subsurface.csv'
         full_path = get_absolute_path(file_name)
@@ -237,6 +285,9 @@ class Run(BaseRun):
             exporter.write_csv(full_path)
         else:
             exporter.write_txt(full_path)
+
+        # revert working directory to original directory
+        settings.set_working_directory(prev_dir)
 
     def clone(self, name):
         """Method to generate a clone of a run (for generating
@@ -271,8 +322,11 @@ class Run(BaseRun):
               running the simulation.
 
         """
+        # overwrite current working directory
+        prev_dir = settings.WORKING_DIRECTORY
         if working_directory:
             settings.set_working_directory(working_directory)
+
         settings.set_parflow_version(get_current_parflow_version())
 
         # Any provided args should override the scripts ones
@@ -300,7 +354,8 @@ class Run(BaseRun):
         print()
         error_count = 0
         if not (skip_validation or self._process_args_.skipValidation):
-            error_count += self.validate()
+            verbose = self._process_args_.validation_verbose
+            error_count += self.validate(verbose=verbose)
             print()
 
         p = self.Process.Topology.P
@@ -308,17 +363,21 @@ class Run(BaseRun):
         r = self.Process.Topology.R
         num_procs = p * q * r
 
-        # subprocess.run(
-        #     ['/bin/sh', '$PARFLOW_DIR/bin/run', run_file, str(num_procs)],
-        #     cwd=PFDBObj.working_directory
-        # )
         success = True
         if not self._process_args_.dry_run:
-            os.chdir(settings.WORKING_DIRECTORY)
-            os.system(f'sh $PARFLOW_DIR/bin/run {run_file} {num_procs}')
-            success = check_parflow_execution(f'{run_file}.out.txt')
+            prev_dir = os.getcwd()
+            try:
+                os.chdir(settings.WORKING_DIRECTORY)
+                os.system(f'sh $PARFLOW_DIR/bin/run {run_file} {num_procs}')
+                success = check_parflow_execution(f'{run_file}.out.txt')
+            finally:
+                os.chdir(prev_dir)
 
         print()
+
+        # revert working directory to original directory
+        settings.set_working_directory(prev_dir)
+
         if not success or error_count > 0:
             sys.exit(1)
 
@@ -347,4 +406,3 @@ class Run(BaseRun):
         from parflowio.pyParflowio import PFData
         pfb_data = PFData(pfb_file_full_path)
         pfb_data.distFile(p, q, r, pfb_file_full_path)
-

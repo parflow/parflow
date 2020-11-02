@@ -179,11 +179,9 @@ rich_fby.Geom.domain.FBy.FileName = 'Flow_Barrier_Y.pfb'
 
 ## write flow barrier file
 FBy_data = np.full((20, 20, 20), 1.0)
-for i in range(20):
-    for j in range(20):
-        # from cell 10 (index 9) to cell 11
-        # reduction of 1E-3
-        FBy_data[i, 9, j] = 0.001
+# from cell 10 (index 9) to cell 11
+# reduction of 1E-3
+FBy_data[:, 9, :] = 0.001
 
 FBy_data_pfb = PFData(FBy_data)
 FBy_data_pfb.writeFile(get_absolute_path('Flow_Barrier_Y.pfb'))

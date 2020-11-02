@@ -2,11 +2,13 @@
 # Map function Helper functions
 # -----------------------------------------------------------------------------
 
+
 def map_to_parent(pfdbObj):
     """Helper function to extract the parent of a pfdbObj"""
     return pfdbObj._parent_
 
 # -----------------------------------------------------------------------------
+
 
 def map_to_self(pfdbObj):
     """Helper function to extract self of self (noop)"""
@@ -14,12 +16,15 @@ def map_to_self(pfdbObj):
 
 # -----------------------------------------------------------------------------
 
+
 def map_to_child(name):
     """Helper function that return a function for extracting a field name
     """
-    return lambda pfdbObj: getattr(pfdbObj, name) if hasattr(pfdbObj, name) else None
+    return lambda pfdbObj: getattr(pfdbObj, name) if hasattr(pfdbObj, name) \
+        else None
 
 # -----------------------------------------------------------------------------
+
 
 def map_to_children_of_type(class_name):
     """Helper function that return a function for extracting children
@@ -32,6 +37,7 @@ def map_to_children_of_type(class_name):
 # -----------------------------------------------------------------------------
 # Key dictionary helpers
 # -----------------------------------------------------------------------------
+
 
 def get_key_priority(key_name):
     """Return number that can be used to sort keys in term of priority
@@ -58,6 +64,7 @@ def get_key_priority(key_name):
 # Sort helpers
 # -----------------------------------------------------------------------------
 
+
 def sort_dict(input):
     """Create a key sorted dict
     """
@@ -70,6 +77,7 @@ def sort_dict(input):
     return output
 
 # -----------------------------------------------------------------------------
+
 
 def sort_dict_by_priority(input):
     """Create a key sorted dict
@@ -90,6 +98,7 @@ def sort_dict_by_priority(input):
 # Dictionary helpers
 # -----------------------------------------------------------------------------
 
+
 def get_or_create_dict(root, keyPath, overriden_keys):
     """Helper function to get/create a container dict for a given key path
     """
@@ -104,4 +113,3 @@ def get_or_create_dict(root, keyPath, overriden_keys):
         currentContainer = currentContainer[keyPath[i]]
 
     return currentContainer
-

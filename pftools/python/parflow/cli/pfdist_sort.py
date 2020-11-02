@@ -2,7 +2,8 @@ import os
 import sys
 import argparse
 
-from parflow.tools.database.core import load_pfidb, write_dict_as_pfidb, sort_dict
+from parflow.tools.io import read_pfidb, write_dict_as_pfidb
+from parflow.tools.helper import sort_dict
 
 def writeSortedPFIDB(input_file, output_file=None):
   if not os.path.exists(input_file):
@@ -12,7 +13,7 @@ def writeSortedPFIDB(input_file, output_file=None):
   if output_file is None:
     output_file = input_file
 
-  write_dict_as_pfidb(sort_dict(load_pfidb(input_file)), output_file)
+  write_dict_as_pfidb(sort_dict(read_pfidb(input_file)), output_file)
 
 
 if __name__ == "__main__":

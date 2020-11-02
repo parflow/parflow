@@ -2,9 +2,6 @@ r"""
 This module aims to provide the core components that are required to build
 a Parflow input deck.
 """
-import json
-import os
-import re
 import sys
 import yaml
 
@@ -17,6 +14,7 @@ from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
 from parflow.tools.helper import map_to_child, map_to_children_of_type, map_to_parent, map_to_self
 from parflow.tools.helper import sort_dict_by_priority
+from parflow.tools.io import read_pfidb
 
 from .domains import validate_value_to_string, validate_value_with_exception
 from .handlers import decorate_value
@@ -39,8 +37,10 @@ def validate_helper(container_obj, name, value, indent):
             and 'MandatoryValue' not in container_obj._details_[name]['domains']:
         pass
     else:
-        nbErrors, validation_string = validate_value_to_string(container_obj, value, has_default, container_obj._details_[name]['domains'],
-                                                               container_obj.get_context_settings(), history, indent)
+        nbErrors, validation_string = \
+            validate_value_to_string(
+                container_obj, value, has_default, container_obj._details_[name]['domains'],
+                container_obj.get_context_settings(), history, indent)
 
     return nbErrors, validation_string
 
@@ -48,7 +48,8 @@ def validate_helper(container_obj, name, value, indent):
 
 
 def detail_helper(container, name, value):
-    """Helper function that extract elements of the field's detail"""
+    """Helper function that extract elements of the field's detail
+    """
     domains = None
     handlers = None
     history = None
@@ -379,12 +380,17 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def validate(self, indent=1, workdir=None):
+    def validate(self, indent=1, verbose=False, enable_print=True, working_directory=None):
         """
         Method to validate sub hierarchy
         """
         if len(self) == 0:
             return 0
+
+        # overwrite current working directory
+        prev_dir = settings.WORKING_DIRECTORY
+        if working_directory:
+            settings.set_working_directory(working_directory)
 
         error_count = 0
         indent_str = '  '*indent
@@ -396,20 +402,31 @@ class PFDBObj:
                         value = obj._value_
                         add_errors, validation_string = validate_helper(
                             obj, '_value_', value, indent)
-                        print(f'{indent_str}{name}: {validation_string}')
-                        error_count += add_errors
-                    else:
-                        print(f'{indent_str}{name}:')
 
-                    error_count += obj.validate(indent + 1)
+                        if enable_print and (add_errors or verbose):
+                            print(f'{indent_str}{name}: {validation_string}')
+
+                        error_count += add_errors
+                    elif enable_print:
+                        if verbose or obj.validate(enable_print=False):
+                            print(f'{indent_str}{name}:')
+
+                    error_count += obj.validate(indent + 1,
+                                                verbose=verbose,
+                                                enable_print=enable_print)
 
             elif hasattr(self, '_details_') and name in self._details_:
                 add_errors, validation_string = validate_helper(
                     self, name, obj, indent)
-                print(f'{indent_str}{name}: {validation_string}')
+                if enable_print and (verbose or add_errors):
+                    print(f'{indent_str}{name}: {validation_string}')
                 error_count += add_errors
             elif obj is not None:
-                print(f'{indent_str}{name}: {obj}')
+                if enable_print and verbose:
+                    print(f'{indent_str}{name}: {obj}')
+
+        # revert working directory to original directory
+        settings.set_working_directory(prev_dir)
 
         return error_count
 
@@ -535,9 +552,12 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def pfset(self, key='', value=None, yamlFile=None, yamlContent=None, hierarchical_map=None, flat_map=None, exit_if_undefined=False):
+    def pfset(self, key='', value=None, yamlFile=None, yamlContent=None,
+              pfidbFile=None, hierarchical_map=None, flat_map=None,
+              exit_if_undefined=False):
         """
-        Allow to define any parflow key so it can be exported. Many format are supported:
+        Allow to define any parflow key so it can be exported.
+        Many formats are supported:
             - key/value: To set a single value relative to our current
                 PFDBObj.
             - yamlFile: YAML file path to load and import using the
@@ -555,6 +575,9 @@ class PFDBObj:
         if yamlContent:
             hierarchical_map = yaml.safe_load(yamlContent)
 
+        if pfidbFile:
+            flat_map = read_pfidb(pfidbFile)
+
         if hierarchical_map:
             flat_map = flatten_hierarchical_map(hierarchical_map)
 
@@ -566,8 +589,6 @@ class PFDBObj:
 
         if not key:
             return
-
-        # print(f'{key} = {value}')
 
         key_stored = False
         tokens = key.split('.')
@@ -586,10 +607,13 @@ class PFDBObj:
             if '_pfstore_' not in self.__dict__:
                 self.__dict__['_pfstore_'] = {}
             parentNamespace = self.get_full_key_name()
-            fullkeyName = f"{parentNamespace}{'.' if parentNamespace else ''}{key}"
+            fullkeyName = f"{parentNamespace}" \
+                          f"{'.' if parentNamespace else ''}{key}"
             self.__dict__['_pfstore_'][fullkeyName] = value
             rootPath = self.get_full_key_name()
-            print(f"Caution: Using internal store of {rootPath if rootPath else 'run'} to save {fullkeyName} = {value}")
+            print(f"Caution: Using internal store of "
+                  f"{rootPath if rootPath else 'run'} "
+                  f"to save {fullkeyName} = {value}")
             if exit_if_undefined:
                 sys.exit(1)
 
@@ -603,13 +627,15 @@ class PFDBObj:
             container = self.get_selection_from_location(
                 '/'.join(tokens[:-1]))[0]
             if container is not None:
-                value = container[tokens[-1]] if tokens[-1] in container.__dict__ else None
+                value = container[tokens[-1]] if \
+                    tokens[-1] in container.__dict__ else None
             if value is not None and not isinstance(value, PFDBObj):
                 details = container._details_[tokens[-1]]
         elif len(tokens) == 1:
             if len(tokens[0]) > 0:
                 value = self[tokens[0]] if tokens[0] in self.__dict__ else None
-                details = self._details_[tokens[0]] if tokens[0] in self._details_ else None
+                details = self._details_[tokens[0]] if \
+                    tokens[0] in self._details_ else None
             else:
                 value = self
 
@@ -647,12 +673,12 @@ class PFDBObj:
 # Main DB Object
 # -----------------------------------------------------------------------------
 
+
 class PFDBObjListNumber(PFDBObj):
     """Class for leaf list values"""
 
     def __setattr__(self, name, value):
-        """
-        Helper method that aims to streamline dot notation assignment
+        """Helper method that aims to streamline dot notation assignment
         """
         key_str = str(name)
         if is_private_key(key_str):
@@ -669,9 +695,9 @@ class PFDBObjListNumber(PFDBObj):
         self.__dict__[key_str] = value
 
     def get_parflow_key(self, parent_namespace, key):
-        """
-        Helper method returning the key to use for Parflow on a given field key.
-        This allow to handle differences between what can be defined in Python vs Parflow key.
+        """Helper method returning the key to use for Parflow on
+        a given field key. This allows handling of differences
+        between what can be defined in Python vs Parflow key.
         """
         prefix = self._prefix_ if self._prefix_ else ''
 

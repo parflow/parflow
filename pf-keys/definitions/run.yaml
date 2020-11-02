@@ -118,3 +118,17 @@ BaseRun:
     domains:
       DoubleValue:
         min_value: 0.0
+
+  # -----------------------------------------------------------------------------
+  # Diffusive overland flow calculation - need more description
+  # -----------------------------------------------------------------------------
+
+  OverlandFlowDiffusive:
+    help: >
+      [Type: int] Changes the overland flow formulation to diffusive wave if set to 1.
+
+    default: 0
+    domains:
+      IntValue:
+        min_value: 0
+        max_value: 1
