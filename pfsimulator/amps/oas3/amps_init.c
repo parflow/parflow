@@ -173,7 +173,7 @@ int amps_Init(int *argc, char **argv[])
 #endif
 
 #ifdef CASC_HAVE_GETTIMEOFDAY
-   amps_clock_init();
+  amps_clock_init();
 #endif
 
 #ifdef AMPS_MPI_SETHOME
@@ -258,17 +258,17 @@ int amps_EmbeddedInit(void)
 #endif
 
 #ifdef CASC_HAVE_GETTIMEOFDAY
-   amps_clock_init();
+  amps_clock_init();
 #endif
 
 #ifdef AMPS_MALLOC_DEBUG
-    dmalloc_logpath = amps_malloclog;
-    sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
+  dmalloc_logpath = amps_malloclog;
+  sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
 #endif
 
 #ifdef TIMING
 #ifndef CRAY_TIME
-   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
+  AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
 #endif
 #endif
 
