@@ -235,18 +235,22 @@ def _txt_line_tokenizer(line):
 
 class TableToProperties(ABC):
 
+    @property
     @abstractmethod
     def key_root(self):
         pass
 
+    @property
     @abstractmethod
     def unit_string(self):
         pass
 
+    @property
     @abstractmethod
     def default_db(self):
         pass
 
+    @property
     @abstractmethod
     def db_prefix(self):
         pass
