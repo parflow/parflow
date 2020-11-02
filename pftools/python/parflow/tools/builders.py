@@ -237,6 +237,11 @@ class TableToProperties(ABC):
 
     @property
     @abstractmethod
+    def reference_file(self):
+        pass
+
+    @property
+    @abstractmethod
     def key_root(self):
         pass
 
@@ -732,8 +737,11 @@ class TableToProperties(ABC):
 class SubsurfacePropertiesBuilder(TableToProperties):
 
     def __init__(self, run=None):
-        self.reference_file = 'ref/table_keys.yaml'
         super().__init__(run)
+
+    @property
+    def reference_file(self):
+        return 'ref/table_keys.yaml'
 
     @property
     def key_root(self):
@@ -758,8 +766,11 @@ class SubsurfacePropertiesBuilder(TableToProperties):
 class VegParamBuilder(TableToProperties):
 
     def __init__(self, run=None):
-        self.reference_file = 'ref/vegp_keys.yaml'
         super().__init__(run)
+
+    @property
+    def reference_file(self):
+        return 'ref/vegp_keys.yaml'
 
     @property
     def key_root(self):
