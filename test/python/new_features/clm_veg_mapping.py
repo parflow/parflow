@@ -84,8 +84,4 @@ if not vegm_data[1, 1, 14] == 1:
 # ---------------------------------------------------------
 
 CLMExporter(clm) \
-    .export_drv_vegm()
-
-
-
-
+    .write_map()

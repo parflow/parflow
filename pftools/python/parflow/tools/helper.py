@@ -1,5 +1,8 @@
+from functools import wraps
 import os
 import re
+
+from .fs import get_absolute_path
 
 # -----------------------------------------------------------------------------
 # Map function Helper functions
@@ -135,11 +138,26 @@ def normalize_location(func):
         .Geom.Perm => Geom/Perm
 
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         args = list(args)
         for i, arg in enumerate(args):
             if isinstance(arg, str):
                 args[i] = _normalize_location(arg)
+                break
+
+        return func(*args, **kwargs)
+    return wrapper
+
+
+def with_absolute_path(func):
+    """Assume the first string argument is a path and resolve it."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        args = list(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, str):
+                args[i] = get_absolute_path(arg)
                 break
 
         return func(*args, **kwargs)

@@ -2,6 +2,9 @@ include(ParflowTest)
 
 set(TESTS
   asc_write
+  clm_file_handling
+  clm_build_export
+  clm_veg_mapping
   default_db
   domain_builder
   enum_versioning

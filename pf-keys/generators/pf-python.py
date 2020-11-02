@@ -252,7 +252,7 @@ class PythonModule:
 
             if (any([class_members, field_members, class_instances,
                     field_with_prefix, class_dynamic]) or
-                has_prefix(class_name, class_definition)):
+                    has_prefix(class_name, class_definition)):
                 '''
                   def __init__(self, parent=None):
                     super().__init__(parent)
@@ -350,6 +350,15 @@ class PythonModule:
             self.add_line(f'{str_indent}{line}')
         self.add_line(f"{str_indent}'''")
 
+    def add_dict(self, name, d):
+        # Adds a dict at file scope
+        self.add_separator()
+        json_data = json.dumps(d, indent=2)
+        line_start = f'{name} = '
+        for line in json_data.splitlines():
+            self.add_line(json_to_python(f'{line_start}{line}'))
+            line_start = ''
+
     def get_content(self, line_separator='\n'):
         self.content[self.SUMMARY_INDEX] = (
             self.validation_summary.get_summary(line_separator))
@@ -401,6 +410,9 @@ def find_paths_to_key(d, search_key):
     _recursive_find(d, [], result)
     return result
 
+
+# -----------------------------------------------------------------------------
+
 def recursive_get(d, path):
     """Get a value in a dictionary from a path
     """
@@ -409,16 +421,17 @@ def recursive_get(d, path):
 
     return d
 
-def write_clm_dict(source_file, out_file):
+
+# -----------------------------------------------------------------------------
+
+def generate_clm_key_dict(source_file):
     with open(source_file, 'r') as rf:
         data = yaml.safe_load(rf)
 
     paths = find_paths_to_key(data, 'clm_key')
 
-    clm_key_dict = {recursive_get(data, x + ['clm_key']): x for x in paths}
+    return {recursive_get(data, x + ['clm_key']): x for x in paths}
 
-    with open(out_file, 'w') as output:
-        json.dump(clm_key_dict, fp=output, indent=4)
 
 # -----------------------------------------------------------------------------
 # CLI Main execution
@@ -429,16 +442,17 @@ if __name__ == "__main__":
     def_path = Path(__file__).resolve().parent.parent / 'definitions'
     definition_files = [
         def_path / f'{module}.yaml' for module in core_definitions]
-    output_file_path = sys.argv[1]
+    output_file_path = Path(sys.argv[1]).resolve()
     clm_key_file_name = Path(def_path) / 'solver.yaml'
-    clm_dict_path = sys.argv[2]
 
     print('-' * 80)
     print('Generate Parflow database module')
     print('-' * 80)
     generated_module = generate_module_from_definitions(definition_files)
     print(generated_module.validation_summary.get_summary())
-    write_clm_dict(clm_key_file_name, clm_dict_path)
+    # Write out the clm dict as well
+    clm_key_dict = generate_clm_key_dict(clm_key_file_name)
+    generated_module.add_dict('CLM_KEY_DICT', clm_key_dict)
     print('-' * 80)
     generated_module.write(output_file_path)
 

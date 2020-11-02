@@ -11,8 +11,9 @@ from abc import ABC, abstractmethod
 from .helper import sort_dict
 from .fs import exists
 
-from parflow.tools.io import write_patch_matrix_as_asc
+from parflow.tools.io import write_patch_matrix_as_asc, read_clm
 from parflow.tools.fs import get_absolute_path
+from parflow.tools.helper import remove_prefix, with_absolute_path
 
 
 class NoAliasDumper(yaml.SafeDumper):
@@ -237,20 +238,30 @@ def _csv_line_tokenizer(line):
 def _txt_line_tokenizer(line):
     return line.split()
 
+
 class TableToProperties(ABC):
 
+    @property
+    @abstractmethod
+    def reference_file(self):
+        pass
+
+    @property
     @abstractmethod
     def key_root(self):
         pass
 
+    @property
     @abstractmethod
     def unit_string(self):
         pass
 
+    @property
     @abstractmethod
     def default_db(self):
         pass
 
+    @property
     @abstractmethod
     def db_prefix(self):
         pass
@@ -502,7 +513,8 @@ class TableToProperties(ABC):
            1) for SubsurfacePropertiesBuilder:
              'conus_1': soil/rock properties from Maxwell and Condon (2016)
              'washita': soil/rock properties from Little Washita script
-             'freeze_cherry': soil/rock properties from Freeze and Cherry (1979)
+             'freeze_cherry': soil/rock properties from Freeze and
+               Cherry (1979)
                Note: Freeze and Cherry only has permeability and porosity
            2) for VegParamBuilder:
                'igbp': parameters from IGBP land cover veg classification
@@ -527,7 +539,8 @@ class TableToProperties(ABC):
             for root, dirs, files in os.walk(Path(__file__).parent / 'ref'):
                 for name in files:
                     if name.startswith(self.db_prefix):
-                        print(f'# - {name} (use argument "{name[len(self.db_prefix):-4]}")')
+                        print(f'# - {name} (use argument '
+                              f'"{remove_prefix(name, self.db_prefix)}")')
             print('#' * 80)
 
         return self
@@ -592,7 +605,8 @@ class TableToProperties(ABC):
                     output_to_print.setdefault(prop_name, []).append(unit_name)
 
         for unit_name in valid_unit_names:
-            output_to_print[self.unit_string][unit_name] = self.output[unit_name]
+            s = self.unit_string
+            output_to_print[s][unit_name] = self.output[unit_name]
 
         print(yaml.dump(sort_dict(output_to_print), Dumper=NoAliasDumper))
         return self
@@ -718,6 +732,7 @@ class TableToProperties(ABC):
         print(self.get_table(props_in_header, column_separator))
         return self
 
+
 # -----------------------------------------------------------------------------
 # Subsurface hydraulic property input helper
 # -----------------------------------------------------------------------------
@@ -725,8 +740,11 @@ class TableToProperties(ABC):
 class SubsurfacePropertiesBuilder(TableToProperties):
 
     def __init__(self, run=None):
-        self.reference_file = 'ref/table_keys.yaml'
         super().__init__(run)
+
+    @property
+    def reference_file(self):
+        return 'ref/table_keys.yaml'
 
     @property
     def key_root(self):
@@ -744,6 +762,7 @@ class SubsurfacePropertiesBuilder(TableToProperties):
     def db_prefix(self):
         return 'subsurface_'
 
+
 # -----------------------------------------------------------------------------
 # Vegetation parameter property input helper
 # -----------------------------------------------------------------------------
@@ -751,12 +770,15 @@ class SubsurfacePropertiesBuilder(TableToProperties):
 class VegParamBuilder(TableToProperties):
 
     def __init__(self, run=None):
-        self.reference_file = 'ref/vegp_keys.yaml'
         super().__init__(run)
 
     @property
+    def reference_file(self):
+        return 'ref/vegp_keys.yaml'
+
+    @property
     def key_root(self):
-        return self.run.Solver.CLM.VegParams
+        return self.run.Solver.CLM.Vegetation.Parameters
 
     @property
     def unit_string(self):
@@ -1148,15 +1170,16 @@ class DomainBuilder:
 
         return self
 
-    def clm_drv_input_file(self, StartDate, StartTime, EndDate, EndTime,
-                     metf1d, outf1d, poutf1d, rstf,
-                     startcode=2, clm_ic=2, maxt=1, mina=0.05, udef=-9999, vclass=2,
-                     vegtf='drv_vegm.dat', vegpf='drv_vegp.dat', t_ini=300,
-                     h2osno_ini=0, surfind=2, soilind=1, snowind=0,
-                     forc_hgt_u=10.0, forc_hgt_t=2.0, forc_hgt_q=2.0,
-                     dewmx=0.1, qflx_tran_vegmx=-9999.0, rootfr=-9999.0,
-                     zlnd=0.01, zsno=0.0024, csoilc=0.0025, capr=0.34,
-                     cnfac=0.5, smpmin=-1.0e8, ssi=0.033, wimp=0.05):
+    def clm_input(self, StartDate, StartTime, EndDate, EndTime,
+                  metf1d, outf1d, poutf1d, rstf, startcode=2,
+                  clm_ic=2, maxt=1, mina=0.05, udef=-9999, vclass=2,
+                  vegtf='drv_vegm.dat', vegpf='drv_vegp.dat',
+                  t_ini=300, h2osno_ini=0, surfind=2, soilind=1,
+                  snowind=0, forc_hgt_u=10.0, forc_hgt_t=2.0,
+                  forc_hgt_q=2.0, dewmx=0.1, qflx_tran_vegmx=-9999.0,
+                  rootfr=-9999.0, zlnd=0.01, zsno=0.0024,
+                  csoilc=0.0025, capr=0.34, cnfac=0.5, smpmin=-1.0e8,
+                  ssi=0.033, wimp=0.05):
         """Setting metadata keys to build the CLM driver input file
         """
         syear, smonth, sday = StartDate.split('-')
@@ -1209,3 +1232,111 @@ class DomainBuilder:
         self.run.Solver.CLM.Input.NumericalParams.WaterImpermeable = wimp
 
         return self
+
+
+class CLMImporter:
+    def __init__(self, run):
+        self.run = run
+
+    def files(self, input='drv_clmin.dat', map='drv_vegm.dat',
+              parameters='drv_vegp.dat'):
+        self.input_file(input)
+        self.map_file(map)
+        self.parameters_file(parameters)
+        return self
+
+    @with_absolute_path
+    def input_file(self, path='drv_clmin.dat'):
+        clm_key_dict = read_clm(path, type='clmin')
+        return self.input(clm_key_dict)
+
+    def input(self, clm_key_dict):
+        from .database.generated import CLM_KEY_DICT as ref_dict
+
+        invalid_keys = []
+        for key, value in clm_key_dict.items():
+            if key not in ref_dict:
+                invalid_keys.append(key)
+                continue
+
+            key_to_set = '.'.join(ref_dict[key])
+            self.run.pfset(key=key_to_set, value=value)
+
+        if invalid_keys:
+            print('Warning: The following CLM variables could not be set:')
+            for var in invalid_keys:
+                print(f'  - {var}')
+
+        return self
+
+    @with_absolute_path
+    def parameters_file(self, path='drv_vegp.dat'):
+        vegp_data = read_clm(path, type='vegp')
+        return self.parameters(vegp_data)
+
+    def parameters(self, vegp_data):
+        from .database.generated import CLM_KEY_DICT as ref_dict
+
+        self._ensure_land_covers_set()
+
+        land_cover_items = self._veg_params.select('{LandCoverParamItem}')
+        for key, values in vegp_data.items():
+            if key not in ref_dict:
+                raise Exception(f'Unknown vegp key: {key}')
+
+            name = ref_dict[key][-1]
+            for item, val in zip(land_cover_items, values):
+                item[name] = val
+
+        return self
+
+    @with_absolute_path
+    def map_file(self, path='drv_vegm.dat'):
+        vegm_data = read_clm(path, type='vegm')
+        return self.map(vegm_data)
+
+    def map(self, vegm_data):
+        self._ensure_land_covers_set()
+
+        land_names = self._land_names
+        all_tokens = [
+            'Latitude',
+            'Longitude',
+            'Sand',
+            'Clay',
+            'Color'
+        ] + land_names
+
+        # Slice the tokens so they match the shape of the data
+        num_tokens = vegm_data.shape[2]
+        all_tokens = all_tokens[:num_tokens]
+
+        for i, token in enumerate(all_tokens):
+            item, = self._veg_map.select(token)
+            if token in land_names:
+                item, = item.select('LandFrac')
+
+            item.Type = 'Matrix'
+            item.Matrix = vegm_data[:, :, i]
+
+        return self
+
+    @property
+    def _veg_map(self):
+        return self.run.Solver.CLM.Vegetation.Map
+
+    @property
+    def _veg_params(self):
+        return self.run.Solver.CLM.Vegetation.Parameters
+
+    @property
+    def _land_names(self):
+        names = self._veg_params.LandNames
+        return names if isinstance(names, list) else names.split()
+
+    def _ensure_land_covers_set(self):
+        land_param_items = self._veg_params.select('{LandCoverParamItem}')
+        land_map_items = self._veg_map.select('{LandCoverMapItem}')
+        if (not land_param_items or not land_map_items or
+                any(x is None for x in land_param_items + land_map_items)):
+            raise Exception('Land cover items are not set')

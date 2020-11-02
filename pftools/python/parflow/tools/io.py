@@ -299,6 +299,7 @@ def read_yaml(file_path):
 
     return yaml.safe_load(path.read_text())
 
+
 # -----------------------------------------------------------------------------
 
 def _read_clmin(file_name):
@@ -311,17 +312,18 @@ def _read_clmin(file_name):
            dictionary of key/value pairs of variables in file
     """
     clm_vars = {}
-    with open(file_name, 'r') as fin:
-        file_lines = fin.readlines()
-        for line in file_lines:
+    with open(file_name, 'r') as rf:
+        for line in rf:
             # skip if first 15 are empty or exclamation
-            if line[0].islower():
-                if len(line.split()[0]) > 15:
-                    clm_vars[line.split()[0][0:14]] = line.split()[0][15:]
+            if line and line[0].islower():
+                first_word = line.split()[0]
+                if len(first_word) > 15:
+                    clm_vars[first_word[:14]] = first_word[15:]
                 else:
-                    clm_vars[line.split()[0]] = line.split()[1]
+                    clm_vars[first_word] = line.split()[1]
 
     return clm_vars
+
 
 # -----------------------------------------------------------------------------
 
@@ -335,21 +337,24 @@ def _read_vegm(file_name):
            3D numpy array for domain, with 3rd dimension defining each column
            in the vegm.dat file except for x/y
     """
-    with open(file_name, 'r') as fin:
-        file_lines = fin.readlines()
-        x_dim = int(file_lines[-1].split()[0])
-        y_dim = int(file_lines[-1].split()[1])
-        z_dim = len(file_lines[-1].split())-2
-        vegm_array = np.zeros((x_dim, y_dim, z_dim))
-        for line in file_lines[2:]:
-            # assumes first two lines are comments
-            elements = line.split()
-            x = int(elements[0])
-            y = int(elements[1])
-            for i in range(z_dim):
-                vegm_array[x-1, y-1, i] = elements[i+2]
+    with open(file_name, 'r') as rf:
+        lines = rf.readlines()
+
+    last_line_split = lines[-1].split()
+    x_dim = int(last_line_split[0])
+    y_dim = int(last_line_split[1])
+    z_dim = len(last_line_split) - 2
+    vegm_array = np.zeros((x_dim, y_dim, z_dim))
+    # Assume first two lines are comments
+    for line in lines[2:]:
+        elements = line.split()
+        x = int(elements[0])
+        y = int(elements[1])
+        for i in range(z_dim):
+            vegm_array[x-1, y-1, i] = elements[i + 2]
 
     return vegm_array
+
 
 # -----------------------------------------------------------------------------
 
@@ -364,29 +369,32 @@ def _read_vegp(file_name):
            values for each of the 18 land cover types
     """
     vegp_data = {}
-    with open(file_name, 'r') as fin:
-        file_lines = fin.readlines()
-        for line in file_lines:
-            if line[0] == '!':
+    current_var = None
+    with open(file_name, 'r') as rf:
+        for line in rf:
+            if not line or line[0] == '!':
                 continue
+
+            split = line.split()
+            if current_var is not None:
+                vegp_data[current_var] = [to_native_type(i) for i in split]
+                current_var = None
             elif line[0].islower():
-                var_name = line.split()[0]
-            elif var_name is not None:
-                vegp_data[var_name] = [to_native_type(i) for i in line.split()]
-                var_name = None
+                current_var = split[0]
 
     return vegp_data
+
 
 # -----------------------------------------------------------------------------
 
 def read_clm(file_name, type='clmin'):
-    if type == 'clmin':
-        clm_data = _read_clmin(get_absolute_path(file_name))
+    type_map = {
+        'clmin': _read_clmin,
+        'vegm': _read_vegm,
+        'vegp': _read_vegp
+    }
 
-    elif type == 'vegm':
-        clm_data = _read_vegm(get_absolute_path(file_name))
+    if type not in type_map:
+        raise Exception(f'Unknown clm type: {type}')
 
-    elif type == 'vegp':
-        clm_data = _read_vegp(get_absolute_path(file_name))
-
-    return clm_data
+    return type_map[type](get_absolute_path(file_name))

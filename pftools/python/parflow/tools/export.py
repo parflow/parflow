@@ -3,10 +3,21 @@
 
 This module capture all core ParFlow exporters.
 """
+import copy
+import json
 from pathlib import Path
-import yaml
+import re
+
 import numpy as np
-from .fs import cp, get_absolute_path
+import yaml
+
+from .fs import get_absolute_path
+
+from parflow.tools.database.generated import LandCoverParamItem, CLM_KEY_DICT
+
+
+# For instance: [Type: double]
+TYPE_INFO_RE = re.compile(r'(^\[\w+: \w+\] )')
 
 
 class SubsurfacePropertiesExporter:
@@ -97,50 +108,63 @@ class CLMExporter:
     def __init__(self, run):
         self.run = run
 
-    def export_drv_clmin(self, working_directory='.'):
+    def write(self, working_directory='.', **kwargs):
+        """Method to export all clm files based on metadata
+
+        Args:
+            - working_directory='.': specifies where the files
+              will be written
+        """
+        kwargs['working_directory'] = working_directory
+        self.write_input(**kwargs)
+        self.write_map(**kwargs)
+        self.write_parameters(**kwargs)
+
+    def write_input(self, working_directory='.'):
         """Method to export drv_clmin.dat file based on metadata
 
         Args:
             - working_directory='.': specifies where drv_climin.dat
               file will be written
         """
+        working_directory = get_absolute_path(working_directory)
         clm_drv_keys = {}
         header_doc = ''
-        clm_dict = self.run.Solver.CLM.Input.get_key_dict()
-        drv_clmin_file = os.path.join(get_absolute_path(working_directory),
-                                      'drv_clmin.dat')
+        clm_dict = self.run.Solver.CLM.Input.to_dict()
 
-        for key in clm_dict.keys():
+        for key in clm_dict:
             old_header_doc = header_doc
-            container_key = '.'.join([str(elem)
-                                      for elem in key.split('.')[:-1]])
-            header_doc = self.run.Solver.CLM.Input.get_help(container_key)
-            clm_key = self.run.Solver.CLM.Input.get_detail(key, 'clm_key')
-            clm_key_value = self.run.Solver.CLM.Input.get_value(key)
-            clm_key_help = self.run.Solver.CLM.Input.get_help(key)
+            container_key = '.'.join(map(str, key.split('.')[:-1]))
+            header_doc = self.run.Solver.CLM.Input.doc(container_key)
+            clm_key = self.run.Solver.CLM.Input.details(key).get('clm_key')
+            clm_key_value = self.run.Solver.CLM.Input.value(key)
+            clm_key_help = self.run.Solver.CLM.Input.doc(key)
+            item = {'value': clm_key_value, 'help': clm_key_help}
             if header_doc == old_header_doc:
-                clm_drv_keys[container_key].update({clm_key: [clm_key_value,
-                                                              clm_key_help]})
+                clm_drv_keys[container_key][clm_key] = item
             else:
-                clm_drv_keys.update({container_key: {
-                                        'doc': header_doc,
-                                         clm_key: [clm_key_value,
-                                                   clm_key_help]}})
+                clm_drv_keys[container_key] = {
+                    'doc': header_doc,
+                    clm_key: item
+                }
 
-        with open(drv_clmin_file, 'w') as fout:
-            fout.write(f'! CLM input file for {self.run.get_name()} '
-                       f'ParFlow run' + '\n')
+        output_file = Path(working_directory) / 'drv_clmin.dat'
+        with open(output_file, 'w') as wf:
+            wf.write(f'! CLM input file for {self.run.get_name()} '
+                     f'ParFlow run' + '\n')
             for key, value in clm_drv_keys.items():
-                fout.write('!' + '\n')
-                fout.write('! ' + str(clm_drv_keys[key]["doc"])
-                           .strip(' \n\t') + '\n')
-                fout.write('!' + '\n')
+                doc = str(clm_drv_keys[key]['doc']).strip()
+                wf.write('!\n')
+                wf.write(f'! {doc}\n')
+                wf.write('!\n')
                 for sub_key, sub_value in value.items():
-                    if sub_key != 'doc':
-                        line = sub_key.ljust(15, ' ')
-                        line += str(sub_value[0]).ljust(40, ' ')
-                        line += str(sub_value[1])
-                        fout.write(line)
+                    if sub_key == 'doc':
+                        continue
+
+                    line = f'{sub_key:<15}'
+                    line += f'{sub_value["value"]:<40}'
+                    line += f'{sub_value["help"]}'
+                    wf.write(line)
 
         return self
 
@@ -163,145 +187,250 @@ class CLMExporter:
         array = np.zeros((x, y))
         if vegm_root_key.Type == 'Constant':
             array = np.full((x, y), vegm_root_key.Value)
-        if vegm_root_key.Type == 'Linear':
+        elif vegm_root_key.Type == 'Linear':
             min_par = vegm_root_key.Min
             max_par = vegm_root_key.Max
             length = y if axis == 'y' else x
             inc = (max_par - min_par) / (length - 1)
             list_par = list(np.arange(min_par, max_par + inc, inc))
-            for i in range(len(list_par)):
+            for i, v in enumerate(list_par):
                 if axis == 'y':
-                    array[:, i] = list_par[i]
+                    array[:, i] = v
                 elif axis == 'x':
-                    array[i, :] = list_par[i]
+                    array[i, :] = v
                 else:
-                    print('Axis specification error')
-        if vegm_root_key.Type == 'Matrix':
+                    raise Exception(f'Axis specification error: {axis}')
+        elif vegm_root_key.Type == 'Matrix':
             # used only for veg mapping for land use
             array = vegm_root_key.Matrix
-        if vegm_root_key.Type == 'PFBFile':
+        elif vegm_root_key.Type == 'PFBFile':
             # TODO
-            pass
+            raise NotImplementedError(f'{vegm_root_key.Type} not implemented')
 
         return array
 
     def _process_vegm_loc(self, vegm_array, latitude=True, lat_axis='y',
                           longitude=True, long_axis='x'):
 
-        # Need to better expose the options of which axis to use - maybe have it as an extra key?
+        # Need to better expose the options of which axis to use
+        # Maybe have it as an extra key?
         z, y, x = vegm_array.shape
-        if latitude is True:
-            vegm_array[:, :, 0] = self._process_vegm('Latitude', x, y, lat_axis)
+        if latitude:
+            vegm_array[:, :, 0] = self._process_vegm('Latitude', x, y,
+                                                     lat_axis)
 
-        if longitude is True:
-            vegm_array[:, :, 1] = self._process_vegm('Longitude', x, y, long_axis)
+        if longitude:
+            vegm_array[:, :, 1] = self._process_vegm('Longitude', x, y,
+                                                     long_axis)
 
-        return
+    def _process_vegm_soil(self, vegm_array, sand=True, sand_axis='y',
+                           clay=True, clay_axis='y', color=True,
+                           color_axis='y'):
 
-    def _process_vegm_soil(self, vegm_array, sand=True, sand_axis='y', clay=True,
-                           clay_axis='y', color=True, color_axis='y'):
-
-        # Need to better expose the options of which axis to use - maybe have it as an extra key?
+        # Need to better expose the options of which axis to use
+        # Maybe have it as an extra key?
         z, y, x = vegm_array.shape
-        if sand is True:
+        if sand:
             vegm_array[:, :, 2] = self._process_vegm('Sand', x, y, sand_axis)
 
-        if clay is True:
+        if clay:
             vegm_array[:, :, 3] = self._process_vegm('Clay', x, y, clay_axis)
 
-        if color is True:
-            vegm_array[:, :, 4] = self._process_vegm('Color', x, y, color_axis).astype(int)
+        if color:
+            vegm_array[:, :, 4] = self._process_vegm('Color', x, y,
+                                                     color_axis).astype(int)
 
-        return
-
-    def export_drv_vegm(self, from_keys=True, vegm_array=None,
-                        out_file='drv_vegm.dat', working_directory='.', dec_round=3):
-        """Method to export drv_vegm.dat file based on keys or a 3D array of data
+    def write_map(self, vegm_array=None, out_file='drv_vegm.dat',
+                        working_directory='.', dec_round=3):
+        """Method to export drv_vegm.dat file based on keys or a 3D array of
+           data
 
         Args:
-            - from_keys=True: will generate the vegetation parameters from
-              the keys set in the ParFlow run if set to True.
             - vegm_array=None: optional full array with gridded properties
-              that needs to be passed in if from_keys is False.
-            - out_file='drv_vegm.dat': Name of the output vegetation mapping file.
+              to export. If None, the array will be generated automatically
+              from the run object.
+            - out_file='drv_vegm.dat': Name of the output vegetation mapping
+                                       file.
             - working_directory='.': specifies where drv_vegm.dat
               file will be written
             - dec_round=3: sets the maximum decimal rounding for the lat, long,
               sand, and clay parameters.
         """
-
-        drv_vegm_file = os.path.join(get_absolute_path(working_directory), str(out_file))
-        first_line = ' x  y  lat    lon    sand clay color  fractional coverage' \
-                     ' of grid by vegetation class (Must/Should Add to 1.0)'
+        working_directory = get_absolute_path(working_directory)
+        output_file = Path(working_directory) / str(out_file)
+        first_line = (' x  y  lat    lon    sand clay color  fractional '
+                      'coverage of grid by vegetation class (Must/Should Add '
+                      'to 1.0)')
         second_line = '       (Deg)	 (Deg)  (%/100)   index'
 
-        # if building table from keys
-        if from_keys is True:
-            land_col_map = {'column': 'land cover type'}
+        land_col_map = {'column': 'land cover type'}
+        land_covers = self._veg_params.LandNames
+        if vegm_array is None:
             x = self.run.ComputationalGrid.NX
             y = self.run.ComputationalGrid.NY
+            if x is None or y is None:
+                raise Exception('Computational grid has not been set')
+
             vegm_array = np.zeros((x, y, 5))
             self._process_vegm_loc(vegm_array)
             self._process_vegm_soil(vegm_array)
-            land_covers = self.run.Solver.CLM.Vegetation.Parameters.LandNames
             # CLM handles exactly 18 land cover types as a default
             if len(land_covers) > 18:
                 print(f'WARNING: CLM must be recompiled to accommodate '
                       f'{len(land_covers)} land cover types.')
             for name in land_covers:
-                vegm_array = np.dstack((vegm_array,
-                          self._process_vegm([name, 'LandFrac'], x, y)))
+                vegm_array = np.dstack(
+                    (vegm_array, self._process_vegm([name, 'LandFrac'], x, y)))
 
-        with open(drv_vegm_file, 'w') as fout:
-            fout.write(first_line + '\n')
+        with open(output_file, 'w') as wf:
+            wf.write(first_line + '\n')
             if vegm_array.shape[2] < 23:
                 print(f'{len(land_covers)} land cover types specified. '
                       f'Filling in zeros for {23 - vegm_array.shape[2]} '
                       f'land cover types.')
-            fout.write(second_line + '\n')
+            wf.write(second_line + '\n')
             for i in range(vegm_array.shape[0]):
                 for j in range(vegm_array.shape[1]):
-                    line_elements = [str(i+1), str(j+1)]
+                    elements = [str(i + 1), str(j + 1)]
                     for k in range(max(vegm_array.shape[2], 23)):
                         if k == 4:
                             # dealing with color (needs to be int)
-                            line_elements.append(str(int(vegm_array[i, j, k])).ljust(7))
+                            elements.append(f'{int(vegm_array[i, j, k]):<7}')
                         elif k < vegm_array.shape[2]:
-                            line_elements.append(str(round(vegm_array[i, j, k], dec_round)).ljust(7))
+                            s = f'{round(vegm_array[i, j, k], dec_round):<7}'
+                            elements.append(s)
                             if k > 4:
-                                land_col_map.update({k-4: land_covers[k-5]})
+                                land_col_map.update(
+                                    {k - 4: land_covers[k - 5]})
                         else:
-                            line_elements.append('0.0    ')
-                    fout.write('   ' + ' '.join(line_elements[:]) + '\n')
+                            elements.append('0.0    ')
+                    wf.write('   ' + ' '.join(elements[:]) + '\n')
 
             print('Land cover column mapping')
             for key, value in land_col_map.items():
-                print(f'{str(key).ljust(6)}: {value}')
+                print(f'{key:<6}: {value}')
 
         return self
 
-    def export_drv_vegp(self, vegp_data, working_directory='.'):
+    def _land_cover_docs(self, clm_keys):
+        # Get the help for the land cover without type info
+        item = LandCoverParamItem()
+        path_to_item = self._veg_params_path + ['.{land_cover_name}']
+        relative_start_ind = len(path_to_item)
+        doc_strings = {}
+        for key in clm_keys:
+            relative_path = '.'.join(CLM_KEY_DICT[key][relative_start_ind:])
+            doc = item.details(relative_path).get('help', '').strip()
+            # Remove the type information from the front
+            doc = re.sub(TYPE_INFO_RE, '', doc)
+            doc_strings[key] = doc
+
+        return doc_strings
+
+    @property
+    def _land_cover_descriptions(self):
+        path = '/'.join(self._veg_params_path)
+        ret = {}
+        for name in self._land_names:
+            desc = self.run.value(f'{path}/{name}/Description')
+            ret[name] = desc if desc else ''
+        return ret
+
+    def write_parameters(self, vegp_data=None, working_directory='.'):
         """Method to export drv_vegp.dat file based on dictionary of data
 
         Args:
+            - vegp_data=None: optional full dict to export. If None, it will
+              automatically be generated from the run object.
             - working_directory='.': specifies where drv_vegp.dat
               file will be written
         """
-        # TODO: add ability to convert from keys, remove use of reference file
-        drv_vegp_ref = os.path.join(
-            os.path.dirname(__file__), 'ref/drv_vegp.dat')
+        working_directory = get_absolute_path(working_directory)
+        output_file = Path(working_directory) / 'drv_vegp.dat'
 
-        drv_vegp_file = os.path.join(get_absolute_path(working_directory), 'drv_vegp.dat')
-        var_name = None
+        if vegp_data is None:
+            # Extract the vegp data from the run object
+            vegp_data = self._generate_vegp_data()
 
-        with open(drv_vegp_ref, 'r') as fin:
-            with open(drv_vegp_file, 'w') as fout:
-                for line in fin.readlines():
-                    if line[0].islower():
-                        var_name = line.split()[0]
-                    elif var_name is not None and line[0] != '!':
-                        line = ' '.join(list(map(str, vegp_data[var_name]))) + '\n'
-                        var_name = None
-                    fout.write(line)
+        doc_strings = self._land_cover_docs(vegp_data.keys())
+        descriptions = self._land_cover_descriptions
 
+        # This will make sure there are at least 18 values for
+        # everything.
+        vegp_data = copy.deepcopy(vegp_data)
+        self._resize_vegp_data(vegp_data)
+
+        output = self._vegp_header
+
+        # Make the header based upon the land names
+        for i, name in enumerate(self._land_names, 1):
+            description = descriptions[name]
+            output += f'! {i:>2} {name} {description}\n'
+
+        # Fill in not set values
+        for i in range(len(self._land_names), self._min_num_land_covers):
+            output += f'! {i + 1:>2} not_set\n'
+
+        output += '!' + '=' * 72 + '\n'
+
+        for key, val in vegp_data.items():
+            doc = doc_strings[key]
+            output += '!\n'
+            output += f'{key:<15}{doc}\n'
+            output += f'{" ".join(map(str, val))}\n'
+
+        Path(output_file).write_text(output)
         return self
+
+    def _resize_vegp_data(self, data):
+        defaults = self._default_vegp_values
+        for key, val in data.items():
+            num_to_fill = self._min_num_land_covers - len(val)
+            val.extend([defaults[key]] * num_to_fill)
+
+    @property
+    def _min_num_land_covers(self):
+        return 18
+
+    @property
+    def _veg_params_path(self):
+        return ['Solver', 'CLM', 'Vegetation', 'Parameters']
+
+    @property
+    def _veg_params(self):
+        return self.run.Solver.CLM.Vegetation.Parameters
+
+    @property
+    def _land_names(self):
+        names = self._veg_params.LandNames
+        return names if isinstance(names, list) else names.split()
+
+    @property
+    def _vegp_header_file(self):
+        return Path(__file__).parent / 'ref/vegp_header.txt'
+
+    @property
+    def _default_vegp_values_file(self):
+        return Path(__file__).parent / 'ref/default_vegp_values.json'
+
+    @property
+    def _vegp_header(self):
+        return self._vegp_header_file.read_text()
+
+    @property
+    def _default_vegp_values(self):
+        if not hasattr(self, '_default_vegp_values_data'):
+            with open(self._default_vegp_values_file, 'r') as rf:
+                self._default_vegp_values_data = json.load(rf)
+        return copy.deepcopy(self._default_vegp_values_data)
+
+    def _generate_vegp_data(self):
+        # Get the keys from the default values
+        keys = list(self._default_vegp_values.keys())
+        land_items = self._veg_params.select('{LandCoverParamItem}')
+
+        result = {}
+        for key in keys:
+            name = CLM_KEY_DICT[key][-1]
+            result[key] = [item[name] for item in land_items]
+        return result
