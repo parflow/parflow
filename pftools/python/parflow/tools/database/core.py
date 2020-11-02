@@ -734,7 +734,7 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def process_dynamic(self):
+    def _process_dynamic(self):
         """
         Processing the dynamically defined (user-defined) key names
         """

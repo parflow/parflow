@@ -312,7 +312,7 @@ class PythonModule:
             for line in dynamicLines[1:]:
                 line_with_indent = f'{self.str_indent * 2}{line}'
                 self.add_line(json_to_python(line_with_indent))
-            self.add_line(f'{self.str_indent * 2}self.process_dynamic()')
+            self.add_line(f'{self.str_indent * 2}self._process_dynamic()')
 
     def add_field(self, field_name, field_definition, class_details):
         self.validationSummary.add_field(field_name)
