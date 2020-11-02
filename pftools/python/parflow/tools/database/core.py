@@ -30,18 +30,16 @@ def validate_helper(container_obj, name, value, indent):
     """
     nbErrors = 0
     validation_string = ''
-    has_default = True if 'default' in container_obj._details_[name] else False
-    history = None
-    if 'history' in container_obj._details_[name] and len(container_obj._details_[name]['history']):
-        history = container_obj._details_[name]['history']
-    if 'default' in container_obj._details_[name] \
-            and value == container_obj._details_[name]['default'] \
-            and 'MandatoryValue' not in container_obj._details_[name]['domains']:
+    details = container_obj._details_[name]
+    has_default = 'default' in details
+    history = details.get('history')
+    if (has_default and value == details['default'] and
+            'MandatoryValue' not in details['domains']):
         pass
     else:
         nbErrors, validation_string = \
             validate_value_to_string(
-                container_obj, value, has_default, container_obj._details_[name]['domains'],
+                container_obj, value, has_default, details['domains'],
                 container_obj.get_context_settings(), history, indent)
 
     return nbErrors, validation_string
@@ -52,27 +50,15 @@ def validate_helper(container_obj, name, value, indent):
 def detail_helper(container, name, value):
     """Helper function that extract elements of the field's detail
     """
-    domains = None
-    handlers = None
-    history = None
-    crosscheck = None
-    if name in container._details_:
-        if 'domains' in container._details_[name]:
-            domains = container._details_[name]['domains']
-
-        if 'handlers' in container._details_[name]:
-            handlers = container._details_[name]['handlers']
-
-        if 'history' in container._details_[name]:
-            history = container._details_[name]['history']
-
-        else:
-            history = []
-            container._details_[name]['history'] = history
+    details = container._details_.get(name, {})
+    domains = details.get('domains')
+    handlers = details.get('handlers')
+    crosscheck = details.get('crosscheck')
+    if details:
+        history = details.setdefault('history', [])
         history.append(value)
-
-        if 'crosscheck' in container._details_[name]:
-            crosscheck = container._details_[name]['crosscheck']
+    else:
+        history = None
 
     return domains, handlers, history, crosscheck
 
@@ -98,7 +84,7 @@ def is_not_private_key(name):
 
 # -----------------------------------------------------------------------------
 
-def convert_value_for_string_dict(value):
+def to_str_dict_format(value):
     """Ensure that the output value is a valid string
     """
     if isinstance(value, str):
@@ -117,7 +103,7 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
     """
     if hasattr(instance, '_pfstore_'):
         for key, value in instance._pfstore_.items():
-            dict_to_fill[key] = convert_value_for_string_dict(value)
+            dict_to_fill[key] = to_str_dict_format(value)
 
     for key in instance.keys(skip_default=True):
         value = instance[key]
@@ -129,25 +115,19 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
             if hasattr(value, '_value_'):
                 has_details = hasattr(value, '_details_') \
                     and '_value_' in value._details_
-                has_default = has_details \
-                    and 'default' in value._details_['_value_']
-                has_domain = has_details \
-                    and 'domains' in value._details_['_value_']
+                details = value._details_['_value_'] if has_details else None
+                has_default = has_details and 'default' in details
+                has_domain = has_details and 'domains' in details
                 is_mandatory = has_domain \
-                    and 'MandatoryValue' in value._details_['_value_']['domains']
-                is_default = has_default \
-                    and value._value_ == value._details_['_value_']['default']
-                is_set = has_details \
-                    and 'history' in value._details_['_value_'] \
-                    and len(value._details_['_value_']['history']) > 0
-
+                    and 'MandatoryValue' in details['domains']
+                is_default = has_default and value._value_ == details['default']
+                is_set = has_details and details.get('history')
                 if is_mandatory or not is_default or is_set:
                     dict_to_fill[full_qualified_key] = \
-                        convert_value_for_string_dict(value._value_)
+                        to_str_dict_format(value._value_)
             extract_keys_from_object(dict_to_fill, value, full_qualified_key)
         else:
-            dict_to_fill[full_qualified_key] = \
-                convert_value_for_string_dict(value)
+            dict_to_fill[full_qualified_key] = to_str_dict_format(value)
 
 # -----------------------------------------------------------------------------
 
@@ -167,15 +147,14 @@ def extract_keys_from_dict(dict_to_fill, dictObj, parent_namespace=''):
         if isinstance(value, dict):
             # Need to handle _value_ and $_
             if hasattr(value, '_value_'):
-                dict_to_fill[full_qualified_key] = convert_value_for_string_dict(
+                dict_to_fill[full_qualified_key] = to_str_dict_format(
                     value._value_)
             if hasattr(value, '$_'):
-                dict_to_fill[full_qualified_key] = convert_value_for_string_dict(
+                dict_to_fill[full_qualified_key] = to_str_dict_format(
                     getattr(value, '$_'))
             extract_keys_from_dict(dict_to_fill, value, full_qualified_key)
         else:
-            dict_to_fill[full_qualified_key] = convert_value_for_string_dict(
-                value)
+            dict_to_fill[full_qualified_key] = to_str_dict_format(value)
 
 # -----------------------------------------------------------------------------
 
@@ -359,17 +338,13 @@ class PFDBObj:
             else:
                 has_details = hasattr(self, '_details_') \
                     and name in self._details_
-                has_default = has_details \
-                    and 'default' in self._details_[name]
-                has_domain = has_details \
-                    and 'domains' in self._details_[name]
+                details = self._details_[name] if has_details else None
+                has_default = has_details and 'default' in details
+                has_domain = has_details and 'domains' in details
                 is_mandatory = has_domain \
-                    and 'MandatoryValue' in self._details_[name]['domains']
-                is_default = has_default \
-                    and obj == self._details_[name]['default']
-                is_set = has_details \
-                    and 'history' in self._details_[name] \
-                    and len(self._details_[name]['history']) > 0
+                    and 'MandatoryValue' in details['domains']
+                is_default = has_default and obj == details['default']
+                is_set = has_details and details.get('history')
 
                 if obj is not None:
                     if skip_default:
@@ -517,7 +492,7 @@ class PFDBObj:
 
         next_list = [current_location]
         for path_item in path_items:
-            if path_item == '':
+            if not path_item:
                 continue
 
             current_list = next_list
