@@ -118,14 +118,8 @@ void     vanGenuchten(
     return;
   }
 
-//  Type0         *dummy0;
   Type1         *dummy1;
-//  Type2         *dummy2;
-//  Type3         *dummy3;
-//  Type4         *dummy4;
-//  Type5         *dummy5;
 
-//  Grid          *grid = VectorGrid(phase_saturation);
   Grid          *grid = VectorGrid(pd_alpha);  //BB
 
   GrGeomSolid   *gr_solid;
@@ -147,9 +141,7 @@ void     vanGenuchten(
   int ix, iy, iz, r;
   int nx, ny, nz;
 
-  int i, j, k, ind;
-
-  int n_index, alpha_index, s_res_index, s_sat_index;
+  int i, j, k;
 
   int            *region_indices, num_regions, ir;
 
@@ -172,7 +164,6 @@ void     vanGenuchten(
 
   int data_from_file;
   double *alphas, *ns, *s_ress, *s_difs;
-  double alpha, n, s_res, s_sat;
 
   Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
 
@@ -196,9 +187,6 @@ void     vanGenuchten(
       ForSubgridI(sg, subgrids)
       {
         subgrid = SubgridArraySubgrid(subgrids, sg);
-//        ps_sub = VectorSubvector(phase_saturation, sg);
-//        pp_sub = VectorSubvector(phase_pressure, sg);
-//        pd_sub = VectorSubvector(phase_density, sg);
 
         pd_alpha_sub = VectorSubvector(pd_alpha, sg);   //BB
         pd_n_sub = VectorSubvector(pd_n, sg);           //BB
@@ -215,28 +203,19 @@ void     vanGenuchten(
 
         r = SubgridRX(subgrid);
 
-//        psdat = SubvectorData(ps_sub);
-//        ppdat = SubvectorData(pp_sub);
-//        pddat = SubvectorData(pd_sub);
-
         pd_alpha_dat = SubvectorData(pd_alpha_sub);   //BB
         pd_n_dat = SubvectorData(pd_n_sub);           //BB
         pd_sres_dat = SubvectorData(pd_sres_sub);     //BB
         pd_ssat_dat = SubvectorData(pd_ssat_sub);     //BB
 
         GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-
-//                       ips = SubvectorEltIndex(ps_sub, i, j, k);
-//                       ipp = SubvectorEltIndex(pp_sub, i, j, k);
-//                       ipd = SubvectorEltIndex(pd_sub, i, j, k);
-                     {ind = SubvectorEltIndex(pd_alpha_sub, i, j, k);
+                     {int ind = SubvectorEltIndex(pd_alpha_sub, i, j, k);
 
 
-                       alpha = alphas[ir];
-                       n = ns[ir];
-                       s_res = s_ress[ir];
-                       s_sat = s_difs[ir] + s_ress[ir];  //new
-                       //s_dif = s_difs[ir]; // BB not needed
+                       double alpha = alphas[ir];
+                       double n = ns[ir];
+                       double s_res = s_ress[ir];
+                       double s_sat = s_difs[ir] + s_ress[ir];  //new
 
                        pd_alpha_dat[ind] = alpha;  //BB
                        pd_n_dat[ind] = n;  //BB
@@ -257,9 +236,6 @@ void     vanGenuchten(
     ForSubgridI(sg, subgrids)
     {
       subgrid = SubgridArraySubgrid(subgrids, sg);
-//      ps_sub = VectorSubvector(phase_saturation, sg);
-//      pp_sub = VectorSubvector(phase_pressure, sg);
-//      pd_sub = VectorSubvector(phase_density, sg);
 
       n_values_sub = VectorSubvector(n_values, sg);
       alpha_values_sub = VectorSubvector(alpha_values, sg);
@@ -281,10 +257,6 @@ void     vanGenuchten(
 
       r = SubgridRX(subgrid);
 
-//      psdat = SubvectorData(ps_sub);
-//      ppdat = SubvectorData(pp_sub);
-//      pddat = SubvectorData(pd_sub);
-
       n_values_dat = SubvectorData(n_values_sub);
       alpha_values_dat = SubvectorData(alpha_values_sub);
       s_res_values_dat = SubvectorData(s_res_values_sub);
@@ -297,20 +269,17 @@ void     vanGenuchten(
 
       GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                    {
-//                     ips = SubvectorEltIndex(ps_sub, i, j, k);
-//                   ipp = SubvectorEltIndex(pp_sub, i, j, k);
-//                   ipd = SubvectorEltIndex(pd_sub, i, j, k);
-                     ind = SubvectorEltIndex(pd_alpha_sub, i, j, k);
+                     int ind = SubvectorEltIndex(pd_alpha_sub, i, j, k);
 
-                     n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-                     alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
-                     s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
-                     s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
+                     int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+                     int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+                     int s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
+                     int s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
 
-                     alpha = alpha_values_dat[alpha_index];
-                     n = n_values_dat[n_index];
-                     s_res = s_res_values_dat[s_res_index];
-                     s_sat = s_sat_values_dat[s_sat_index];
+                     double alpha = alpha_values_dat[alpha_index];
+                     double n = n_values_dat[n_index];
+                     double s_res = s_res_values_dat[s_res_index];
+                     double s_sat = s_sat_values_dat[s_sat_index];
 
                      pd_alpha_dat[ind] = alpha;  //BB
                      pd_n_dat[ind] = n;  //BB
@@ -482,12 +451,7 @@ PFModule   *vanGenuchtenNewPublicXtra()
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
 
-  //Type0         *dummy0;
   Type1         *dummy1;
-  //Type2         *dummy2;
-  //Type3         *dummy3;
-  //Type4         *dummy4;
-  //Type5         *dummy5;
 
   int num_regions, ir;
 
@@ -597,17 +561,13 @@ void  vanGenuchtenFreePublicXtra()
   PFModule    *this_module = ThisPFModule;
   PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
-  //Type0       *dummy0;
   Type1       *dummy1;
-  //Type2       *dummy2;
-  //Type3       *dummy3;
-  //Type4       *dummy4;
   Type5       *dummy5;
 
   if (public_xtra)
   {
     if ((public_xtra->type) == 1)
-    {  // BB only do this if van_genuchten is used. What do we need PFBFile for??
+    {
       NA_FreeNameArray(public_xtra->regions);
       dummy1 = (Type1 *) (public_xtra->data);
       if (dummy1->data_from_file == 0)
@@ -642,8 +602,10 @@ int  vanGenuchtenSizeOfTempData()
 
   int sz = 0;
   dummy1 = (Type1*)(public_xtra->data);
-  if ((public_xtra->type) == 1 || (public_xtra->type) == 5) {  // BB only do this if van_genuchten is used. What do we need PFBFile for??
-    if ((dummy1->data_from_file) == 1) {
+  if ((public_xtra->type) == 1 || (public_xtra->type) == 5)
+  {
+    if ((dummy1->data_from_file) == 1)
+    {
       /* add local TempData size to `sz' */
       sz += SizeOfVector(dummy1->n_values);
       sz += SizeOfVector(dummy1->alpha_values);
