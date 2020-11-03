@@ -113,3 +113,14 @@ def get_or_create_dict(root, keyPath, overriden_keys):
         currentContainer = currentContainer[keyPath[i]]
 
     return currentContainer
+
+
+# -----------------------------------------------------------------------------
+# String helpers
+# -----------------------------------------------------------------------------
+
+def remove_prefix(s, prefix):
+    if not s or not prefix or not s.startswith(prefix):
+        return s
+
+    return s[len(prefix):]

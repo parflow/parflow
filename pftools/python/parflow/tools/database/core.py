@@ -8,7 +8,8 @@ import yaml
 from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
 from parflow.tools.helper import (
-    map_to_child, map_to_children_of_type, map_to_parent, map_to_self
+    map_to_child, map_to_children_of_type, map_to_parent, map_to_self,
+    remove_prefix
 )
 from parflow.tools.helper import sort_dict_by_priority
 from parflow.tools.io import read_pfidb
@@ -430,10 +431,8 @@ class PFDBObj:
             for name in parent.__dict__:
                 value = parent.__dict__[name]
                 if value is current_location:
-                    if current_location._prefix_:
-                        full_path.append(name[len(current_location._prefix_):])
-                    else:
-                        full_path.append(name)
+                    prefix = current_location._prefix_
+                    full_path.append(remove_prefix(name, prefix))
             current_location = parent
             if count > len(full_path):
                 return f'not found {count}: {".".join(full_path)}'
@@ -460,10 +459,8 @@ class PFDBObj:
                 if '_prefix_' in detail:
                     prefix = detail["_prefix_"]
 
-        if parent_namespace:
-            return f'{parent_namespace}.{key[len(prefix):]}'
-
-        return key[len(prefix):]
+        start = f'{parent_namespace}.' if parent_namespace else ''
+        return start + remove_prefix(key, prefix)
 
     # ---------------------------------------------------------------------------
 
@@ -688,9 +685,5 @@ class PFDBObjListNumber(PFDBObj):
         a given field key. This allows handling of differences
         between what can be defined in Python vs Parflow key.
         """
-        prefix = self._prefix_ if self._prefix_ else ''
-
-        if parent_namespace:
-            return f'{parent_namespace}.{key[len(prefix):]}'
-
-        return key[len(prefix):]
+        start = f'{parent_namespace}.' if parent_namespace else ''
+        return start + remove_prefix(key, self._prefix_)
