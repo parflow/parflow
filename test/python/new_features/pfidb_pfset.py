@@ -8,7 +8,7 @@ from parflow.tools.fs import get_absolute_path
 
 dsingle = Run("dsingle", __file__)
 
-dsingle.pfset(pfidbFile=get_absolute_path('$PF_SRC/test/correct_output/dsingle.pfidb.ref'))
+dsingle.pfset(pfidb_file=get_absolute_path('$PF_SRC/test/correct_output/dsingle.pfidb.ref'))
 
 
 #-----------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 ## v0.0.6 (released 2020-10-28):
 
 - Added ``set_name`` and ``get_name`` methods for ``Run`` object
-- Changed validation printing to default to only print key/value 
+- Changed validation printing to default to only print key/value
 pairs with errors using ``verbose`` argument
 - Updated code to comport with API change in parflowio v0.0.4
 - Updated methods on ``Run`` object to revert to original directory after
@@ -21,7 +21,7 @@ executing the method
 	- A more natural problem definition that automatically sets ParFlow keys and values with appropriate defaults.
 - Updates to subsurface table builder
     - Added more database options
-- Added `pfidbFile` argument in `pfset` method to set keys from a pfidb file 
+- Added `pfidb_file` argument in `pfset` method to set keys from a pfidb file
 - Added several keys to Python ParFlow library
 
 ## v0.0.4 (released 2020-10-09):

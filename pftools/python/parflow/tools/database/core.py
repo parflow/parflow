@@ -538,31 +538,31 @@ class PFDBObj:
 
     # ---------------------------------------------------------------------------
 
-    def pfset(self, key='', value=None, yamlFile=None, yamlContent=None,
-              pfidbFile=None, hierarchical_map=None, flat_map=None,
+    def pfset(self, key='', value=None, yaml_file=None, yaml_content=None,
+              pfidb_file=None, hierarchical_map=None, flat_map=None,
               exit_if_undefined=False):
         """
         Allow to define any parflow key so it can be exported.
         Many formats are supported:
             - key/value: To set a single value relative to our current
                 PFDBObj.
-            - yamlFile: YAML file path to load and import using the
+            - yaml_file: YAML file path to load and import using the
                 current PFDBObj as root.
-            - yamlContent: YAML string to load and import using the
+            - yaml_content: YAML string to load and import using the
                 current PFDBObj as root.
             - hierarchical_map: Nested dict containing several key/value
                 pair using the current PFDBObj as root.
             - flat_map: Flat dict with parflow key/value pair to set
                 using the current PFDBObj as root.
         """
-        if yamlFile:
-            yamlContent = get_text_file_content(yamlFile)
+        if yaml_file:
+            yaml_content = get_text_file_content(yaml_file)
 
-        if yamlContent:
-            hierarchical_map = yaml.safe_load(yamlContent)
+        if yaml_content:
+            hierarchical_map = yaml.safe_load(yaml_content)
 
-        if pfidbFile:
-            flat_map = read_pfidb(pfidbFile)
+        if pfidb_file:
+            flat_map = read_pfidb(pfidb_file)
 
         if hierarchical_map:
             flat_map = flatten_hierarchical_map(hierarchical_map)

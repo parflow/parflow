@@ -80,7 +80,7 @@ These will all write the key in the ParFlow database file in the correct format.
 ================================================================================
 Setting keys and values with ``pfset()``
 ================================================================================
-The ``pfset()`` method does more than just allow you to set an individual key. You can set groups of keys at a time using the ``hierarchical_map``, ``flat_map``, or ``yamlContent`` arguments in the ``pfset`` method, as shown in the test file ``$PARFLOW_SOURCE/test/python/new_features/pfset_test/pfset_test.py``:
+The ``pfset()`` method does more than just allow you to set an individual key. You can set groups of keys at a time using the ``hierarchical_map``, ``flat_map``, or ``yaml_content`` arguments in the ``pfset`` method, as shown in the test file ``$PARFLOW_SOURCE/test/python/new_features/pfset_test/pfset_test.py``:
 
 .. code-block:: python3
 
@@ -115,10 +115,10 @@ The ``pfset()`` method does more than just allow you to set an individual key. Y
    })
 
    #---------------------------------------------------------
-   # pfset: yamlContent
+   # pfset: yaml_content
    #---------------------------------------------------------
 
-   pfset_test.Geom.source_region.pfset(yamlContent='''
+   pfset_test.Geom.source_region.pfset(yaml_content='''
    Lower:
        X: 65.56
        Y: 79.34
@@ -129,7 +129,7 @@ The ``pfset()`` method does more than just allow you to set an individual key. Y
        Z: 5.5
    ''')
 
-   pfset_test.Geom.concen_region.pfset(yamlContent='''
+   pfset_test.Geom.concen_region.pfset(yaml_content='''
    Lower:
        X: 60.0
        Y: 80.0
@@ -140,17 +140,17 @@ The ``pfset()`` method does more than just allow you to set an individual key. Y
        Z: 6.0
    ''')
 
-Or, if you have a yaml file, you can use the ``yamlFile`` argument to read in a yaml file to set the keys:
+Or, if you have a yaml file, you can use the ``yaml_file`` argument to read in a yaml file to set the keys:
 
 .. code-block:: python3
 
    #---------------------------------------------------------
-   # pfset: yamlFile
+   # pfset: yaml_file
    #---------------------------------------------------------
 
-   pfset_test.pfset(yamlFile='./BasicSettings.yaml')
-   pfset_test.pfset(yamlFile='./ComputationalGrid.yaml')
-   pfset_test.Geom.pfset(yamlFile='./GeomChildren.yaml')
+   pfset_test.pfset(yaml_file='./BasicSettings.yaml')
+   pfset_test.pfset(yaml_file='./ComputationalGrid.yaml')
+   pfset_test.Geom.pfset(yaml_file='./GeomChildren.yaml')
 
 This can make your run scripts more compact and readable.
 
