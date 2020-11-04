@@ -44,7 +44,7 @@ add_custom_target(DockerTestPyDevelopment
 )
 
 add_custom_target(DockerTestRuntime
-  docker run --rm -v "${CMAKE_CURRENT_SOURCE_DIR}/../test/python:/tests" -it parflow-runtime  /tests/new_features/full_clone/full_clone.py
+  docker run --rm -v "${CMAKE_CURRENT_SOURCE_DIR}/../test/python:/tests" -v "${CMAKE_CURRENT_SOURCE_DIR}/..:/PF_SRC" -e PF_SRC=/PF_SRC -it parflow-runtime  /tests/new_features/full_clone.py
   DEPENDS
     DockerBuildRuntime
   USES_TERMINAL
