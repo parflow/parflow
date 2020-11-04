@@ -574,7 +574,7 @@ void     Saturation(
 
     case 4: /* Polynomial function of pressure saturation curve */
     {
-      int     *degrees, dg;
+      int     *degrees;
       double **coefficients, *region_coeffs;
 
       dummy4 = (Type4*)(public_xtra->data);
@@ -622,7 +622,7 @@ void     Saturation(
               else
               {
                 psdat[ips] = 0.0;
-                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   psdat[ips] += region_coeffs[dg] * pow(ppdat[ipp], dg);
                 }
@@ -641,7 +641,7 @@ void     Saturation(
               else
               {
                 psdat[ips] = 0.0;
-                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   psdat[ips] += region_coeffs[dg] * dg
                                 * pow(ppdat[ipp], (dg - 1));
