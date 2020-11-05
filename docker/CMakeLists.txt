@@ -26,7 +26,7 @@ add_custom_target(DockerBuildRuntime
 )
 
 add_custom_target(DockerTestDevelopment
-  docker run --rm --workdir /home/ubuntu/parflow/build parflow-development /home/ubuntu/parflow/dependencies/cmake/bin/ctest
+  docker run --rm --workdir /home/ubuntu/parflow/build parflow-development /home/ubuntu/parflow/dependencies/cmake/bin/ctest --output-on-failure
   DEPENDS
     DockerBuildDevelopment
   USES_TERMINAL
@@ -35,7 +35,7 @@ add_custom_target(DockerTestDevelopment
 )
 
 add_custom_target(DockerTestPyDevelopment
-  docker run --rm --workdir /home/ubuntu/parflow/build parflow-development /home/ubuntu/parflow/dependencies/cmake/bin/ctest -R py
+  docker run --rm --workdir /home/ubuntu/parflow/build parflow-development /home/ubuntu/parflow/dependencies/cmake/bin/ctest -R py --output-on-failure
   DEPENDS
     DockerBuildDevelopment
   USES_TERMINAL
