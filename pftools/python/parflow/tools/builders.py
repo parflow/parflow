@@ -8,11 +8,6 @@ import numpy as np
 from .helper import sort_dict
 from .fs import exists
 
-try:
-    from yaml import CDumper as YAMLDumper
-except ImportError:
-    from yaml import Dumper as YAMLDumper
-
 from parflow.tools.io import write_patch_matrix_as_asc
 from parflow.tools.fs import get_absolute_path
 
@@ -502,14 +497,15 @@ class SubsurfacePropertiesBuilder:
             print('#' * 80)
         else:
             print('#' * 80)
-            print(f'# {database} database not found. Available databases include:')
-            for root, dirs, files in os.walk(os.path.dirname(__file__) + '/ref/'):
+            print(f'# {database} database not found. Available databases '
+                  f'include:')
+            for root, dirs, files in os.walk(os.path.dirname(__file__) +
+                                             '/ref/'):
                 for name in files:
                     if name.startswith('subsurface'):
                         print(f'# - {name} (use argument '
                               f'"{name[len("subsurface_"):-len(".txt")]}")')
             print('#' * 80)
-
 
         return self
 
@@ -715,7 +711,6 @@ class DomainBuilder:
     def __init__(self, run, name='domain'):
         self.run = run
         self.run.Domain.GeomName = name
-
 
     def __file_check(self, file_name, key_path):
         """Checking files and setting keys for FileName keys
@@ -1025,9 +1020,9 @@ class DomainBuilder:
         return self
 
     def well(self, name, type, x, y, z_upper, z_lower,
-                     cycle_name, interval_name, action='Extraction',
-                     saturation=1.0, phase='water', hydrostatic_pressure=None,
-                     value=None):
+             cycle_name, interval_name, action='Extraction',
+             saturation=1.0, phase='water', hydrostatic_pressure=None,
+             value=None):
         """Setting keys necessary to define a simple well
         """
 
@@ -1083,4 +1078,3 @@ class DomainBuilder:
         self.run.TimeStep.MinStep = 0.1
 
         return self
-

@@ -21,15 +21,19 @@ class ValueHandlerException(Exception):
     """
     pass
 
+
 # -----------------------------------------------------------------------------
 
 class ChildHandler:
     """
-    This class takes creates new key from user-defined name input (e.g. GeomName)
+    This class takes creates new key from user-defined name input
+    (e.g. GeomName)
     """
-    def decorate(self, value, container, class_name=None, location='.', eager=None, **kwargs):
+    def decorate(self, value, container, class_name=None, location='.',
+                 eager=None, **kwargs):
         klass = getattr(generated, class_name)
-        destination_containers = container.get_selection_from_location(location)
+        destination_containers = container.get_selection_from_location(
+            location)
         valid_name = value.strip()
 
         if len(valid_name) == 0:
@@ -38,40 +42,46 @@ class ChildHandler:
         for destination_container in destination_containers:
             if destination_container is not None:
                 if valid_name not in destination_container.__dict__:
-                    destination_container.__dict__[valid_name] = klass(destination_container)
+                    destination_container.__dict__[valid_name] = (
+                        klass(destination_container))
                 elif eager:
                     print(f'Error no selection for {location}')
 
         return valid_name
 
+
 # -----------------------------------------------------------------------------
 
 class ChildrenHandler:
     """
-    This class takes creates new keys from user-defined name inputs (e.g. GeomNames)
+    This class takes creates new keys from user-defined name inputs
+    (e.g. GeomNames)
     """
     def __init__(self):
         self.childHandler = ChildHandler()
 
-    def decorate(self, value, container, class_name=None, location='.', eager=None, **kwargs):
+    def decorate(self, value, container, class_name=None, location='.',
+                 eager=None, **kwargs):
         if isinstance(value, str):
             names = value.split(' ')
             valid_names = []
             for name in names:
                 valid_name = self.childHandler.decorate(
-                    name, container, class_name,location, eager)
+                    name, container, class_name, location, eager)
                 if valid_name is not None:
                     valid_names.append(valid_name)
 
             return valid_names
 
-        # for handling variable DZ setting and BCPressure/BCSaturation NumPoints (and possibly others)
+        # for handling variable DZ setting and BCPressure/BCSaturation
+        # NumPoints (and possibly others)
         elif isinstance(value, int):
             valid_names = []
             for i in range(value):
-                name = f'_{i}' # FIXME should use prefix instead
+                name = f'_{i}'  # FIXME should use prefix instead
                 valid_names.append(
-                    self.childHandler.decorate(name, container, class_name,location, eager))
+                    self.childHandler.decorate(name, container, class_name,
+                                               location, eager))
 
             return valid_names
 
@@ -79,7 +89,7 @@ class ChildrenHandler:
             valid_names = []
             for name in value:
                 valid_name = self.childHandler.decorate(
-                    name, container, class_name,location, eager)
+                    name, container, class_name, location, eager)
                 if valid_name is not None:
                     valid_names.append(valid_name)
 
@@ -88,11 +98,13 @@ class ChildrenHandler:
         raise ValueHandlerException(
             f'{value} is not of the expected type for GeometryNameHandler')
 
+
 # -----------------------------------------------------------------------------
 # Helper map with an instance of each Value handler
 # -----------------------------------------------------------------------------
 
 AVAILABLE_HANDLERS = {}
+
 
 def get_handler(class_name, print_error=True):
     """Return a handler instance from a handler class name
@@ -113,10 +125,11 @@ def get_handler(class_name, print_error=True):
         return instance
 
     if print_error:
-        print(
-            f'{term.FAIL}{term_symbol.ko}{term.ENDC} Could not find handler: "{class_name}"')
+        print(f'{term.FAIL}{term_symbol.ko}{term.ENDC} Could not find '
+              f'handler: "{class_name}"')
 
     return None
+
 
 # -----------------------------------------------------------------------------
 # API meant to be used outside of this module

@@ -8,7 +8,8 @@ README = (HERE / "README.md").read_text()
 setup(
     name='pftools',
     version="0.0.6",
-    description='A Python package creating an interface with the ParFlow hydrologic model.',
+    description=('A Python package creating an interface with the ParFlow '
+                 'hydrologic model.'),
     long_description=README,
     long_description_content_type='text/markdown',
     url='https://github.com/parflow/parflow/tree/master/pftools/python',

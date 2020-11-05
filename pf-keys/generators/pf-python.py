@@ -6,7 +6,6 @@ be used to query the help and constraints associated to each key.
 
 import os
 import sys
-import traceback
 import json
 import yaml
 from datetime import datetime
@@ -24,6 +23,7 @@ YAML_MODULES_TO_PROCESS = [
     'netcdf',
     'run'
 ]
+
 
 # -----------------------------------------------------------------------------
 
@@ -43,6 +43,7 @@ def is_field(key, definition):
         return True
 
     return False
+
 
 # -----------------------------------------------------------------------------
 
@@ -66,6 +67,7 @@ def is_class(key, definition):
 
     return True
 
+
 # -----------------------------------------------------------------------------
 
 def has_value(key, definition):
@@ -73,6 +75,7 @@ def has_value(key, definition):
         return False
 
     return '__value__' in definition
+
 
 # -----------------------------------------------------------------------------
 
@@ -82,6 +85,7 @@ def has_prefix(key, definition):
 
     return '__prefix__' in definition
 
+
 # -----------------------------------------------------------------------------
 
 def is_class_item(key, definition):
@@ -90,16 +94,27 @@ def is_class_item(key, definition):
 
     return False
 
+
 # -----------------------------------------------------------------------------
 
 def is_dynamic(key, definition):
     item = definition[key]
     return '__class__' in item and '__from__' in item
 
+
 # -----------------------------------------------------------------------------
 
 def json_to_python(txt):
-    return txt.replace(' true,', ' True,').replace(' false,', ' False,').replace(' null', ' None').replace(': true', ': True')
+    replacements = [
+        (' true,', ' True,'),
+        (' false,', ' False,'),
+        (' null', ' None'),
+        (': true', ': True')
+    ]
+    for r in replacements:
+        txt = txt.replace(*r)
+    return txt
+
 
 # -----------------------------------------------------------------------------
 
@@ -111,6 +126,7 @@ def yaml_value(yval):
             return yval
 
     return yval
+
 
 # -----------------------------------------------------------------------------
 
@@ -158,18 +174,19 @@ class ValidationSummary:
             content.append(' => No class name duplication found')
         else:
             self.has_duplicate = True
-            content.append(
-                f' => We found overlapping class_names ({self.class_count - len(self.class_name_count)})')
+            content.append(f' => We found overlapping class_names ('
+                           f'{self.class_count - len(self.class_name_count)})')
             for name in self.class_name_count:
                 if self.class_name_count[name] > 1:
-                    content.append(
-                        f'   + {name} was defined {self.class_name_count[name]} times')
+                    content.append(f'   + {name} was defined '
+                                   f'{self.class_name_count[name]} times')
 
         content.append(f'Defined {self.field_count} fields were found')
         return line_separator.join(content)
 
     def print_summary(self):
         print(self.get_summary())
+
 
 # -----------------------------------------------------------------------------
 
@@ -213,9 +230,10 @@ class PythonModule:
 
             self.add_separator()
 
-            dedup_class_name = self.validationSummary.get_deduplicate_class_name(
+            validation_summary = self.validationSummary
+            dedup_class_name = validation_summary.get_deduplicate_class_name(
                 class_name, class_definition)
-            self.validationSummary.add_class(self.validationSummary.get_class_name(
+            validation_summary.add_class(validation_summary.get_class_name(
                 class_name, class_definition))
 
             inheritance = 'PFDBObj'
@@ -238,13 +256,16 @@ class PythonModule:
                     class_items.append(class_definition[key])
                     if '__prefix__' in class_definition[key]:
                         field_with_prefix += 1
-                        field_prefix_value = class_definition[key]['__prefix__']
+                        field_prefix_value = \
+                            class_definition[key]['__prefix__']
                 if is_dynamic(key, class_definition):
-                    class_dynamic[class_definition[key]['__class__']] = class_definition[key]['__from__']
+                    class_dynamic[class_definition[key]['__class__']] = \
+                        class_definition[key]['__from__']
 
-            if len(class_members) + len(field_members) + len(class_instances) + field_with_prefix > 0 \
-                or len(class_dynamic) \
-                or has_prefix(class_name, class_definition):
+            if (len(class_members) + len(field_members) + len(class_instances)
+                    + field_with_prefix > 0
+                    or len(class_dynamic)
+                    or has_prefix(class_name, class_definition)):
                 '''
                   def __init__(self, parent=None):
                     super().__init__(parent)
@@ -255,23 +276,29 @@ class PythonModule:
                 self.add_line(f'{self.str_indent*2}super().__init__(parent)')
 
                 if has_value(class_name, class_definition):
-                    self.add_field(
-                        '_value_', class_definition['__value__'], class_details)
+                    self.add_field('_value_', class_definition['__value__'],
+                                   class_details)
 
                 if has_prefix(class_name, class_definition):
-                    self.add_line(f"{self.str_indent * 2}self._prefix_ = '{class_definition['__prefix__']}'")
+                    self.add_line(f"{self.str_indent * 2}self._prefix_ = "
+                                  f"'{class_definition['__prefix__']}'")
                     if inheritance == 'PFDBObjListNumber':
-                        self.add_line(f"{self.str_indent * 2}self._details_ = ""{}")
+                        self.add_line(f"{self.str_indent * 2}"
+                                      f"self._details_ = ""{}")
 
                 for instance in class_members:
-                    self.add_line(
-                        f'{self.str_indent*2}self.{instance} = {self.validationSummary.get_deduplicate_class_name(instance, class_definition[instance])}(self)')
+                    name = validation_summary.get_deduplicate_class_name(
+                        instance, class_definition[instance])
+                    self.add_line(f'{self.str_indent*2}self.{instance} = '
+                                  f'{name}(self)')
 
                 for instance in class_instances:
-                    self.add_class_instance(instance) # class_definition[instance]
+                    # class_definition[instance]
+                    self.add_class_instance(instance)
 
                 for field in field_members:
-                    self.add_field(field, class_definition[field], class_details)
+                    self.add_field(field, class_definition[field],
+                                   class_details)
 
                 if field_with_prefix:
                     class_details['_prefix_'] = field_prefix_value
@@ -282,8 +309,8 @@ class PythonModule:
             for classMember in class_members:
                 # Catch error
                 if classMember == 'help':
-                    print(
-                        f'Invalid syntax: {class_name} must use __doc__ rather than help')
+                    print(f'Invalid syntax: {class_name} must use __doc__ '
+                          f'rather than help')
                     sys.exit(1)
                 self.add_class(classMember, class_definition[classMember])
 
@@ -321,14 +348,17 @@ class PythonModule:
             field_definition['default'] = field_val
 
         if isinstance(field_val, str):
-            self.add_line(f"{self.str_indent*2}self.{field_name} = '{field_val}'")
+            self.add_line(f"{self.str_indent*2}self.{field_name} = "
+                          f"'{field_val}'")
         else:
-            self.add_line(f"{self.str_indent * 2}self.{field_name} = {field_val}")
+            self.add_line(f"{self.str_indent * 2}self.{field_name} = "
+                          f"{field_val}")
         class_details[field_name] = field_definition
 
     def add_class_instance(self, field_name, instance_definition=None):
-        self.add_line(
-            f"{self.str_indent*2}self.{field_name} = {self.validationSummary.get_class_name(field_name, instance_definition)}(self)")
+        name = self.validationSummary.get_class_name(field_name,
+                                                     instance_definition)
+        self.add_line(f"{self.str_indent*2}self.{field_name} = {name}(self)")
 
     def add_comment(self, docContent, str_indent):
         self.add_line(f"{str_indent}'''")
@@ -348,6 +378,7 @@ class PythonModule:
         with open(file_path, 'w') as output:
             output.write(self.get_content(line_separator))
 
+
 # -----------------------------------------------------------------------------
 # API to generate library module
 # -----------------------------------------------------------------------------
@@ -363,6 +394,7 @@ def generate_module_from_definitions(definitions):
                 generated_module.add_class(root_key, yaml_dict[root_key])
 
     return generated_module
+
 
 # -----------------------------------------------------------------------------
 # CLI Main execution

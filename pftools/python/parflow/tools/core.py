@@ -17,7 +17,7 @@ from .fs import get_absolute_path
 from .io import write_dict
 from .terminal import Symbols as termSymbol
 
-from .database.generated import BaseRun, PFDBObj, PFDBObjListNumber
+from .database.generated import BaseRun
 from .export import SubsurfacePropertiesExporter
 
 
@@ -104,62 +104,62 @@ def get_process_args():
     # ++++++++++++++++
     group = parser.add_argument_group('Execution settings')
     group.add_argument("--working-directory",
-                        default=None,
-                        dest="working_directory",
-                        help="Path to execution working directory")
+                       default=None,
+                       dest="working_directory",
+                       help="Path to execution working directory")
 
     group.add_argument("--skip-validation",
-                        default=False,
-                        dest="skipValidation",
-                        action='store_true',
-                        help="Disable validation pass")
+                       default=False,
+                       dest="skipValidation",
+                       action='store_true',
+                       help="Disable validation pass")
 
     group.add_argument("--dry-run",
-                        default=False,
-                        action='store_true',
-                        dest="dry_run",
-                        help="Prevent execution")
+                       default=False,
+                       action='store_true',
+                       dest="dry_run",
+                       help="Prevent execution")
     # ++++++++++++++++
     group = parser.add_argument_group('Error handling settings')
     group.add_argument("--show-line-error",
-                        default=False,
-                        dest="show_line_error",
-                        action='store_true',
-                        help="Show line error")
+                       default=False,
+                       dest="show_line_error",
+                       action='store_true',
+                       help="Show line error")
 
     group.add_argument("--exit-on-error",
-                        default=False,
-                        dest="exit_on_error",
-                        action='store_true',
-                        help="Exit at error")
+                       default=False,
+                       dest="exit_on_error",
+                       action='store_true',
+                       help="Exit at error")
     # ++++++++++++++++
     group = parser.add_argument_group('Additional output')
     group.add_argument("--write-yaml",
-                        default=False,
-                        dest="writeYAML",
-                        action='store_true',
-                        help="Enable config to be written as YAML file")
+                       default=False,
+                       dest="writeYAML",
+                       action='store_true',
+                       help="Enable config to be written as YAML file")
 
     group.add_argument("--validation-verbose",
-                        default=False,
-                        dest="validation_verbose",
-                        action='store_true',
-                        help="Only print validation results for "
-                             "key/value pairs with errors")
+                       default=False,
+                       dest="validation_verbose",
+                       action='store_true',
+                       help="Only print validation results for "
+                            "key/value pairs with errors")
     # ++++++++++++++++
     group = parser.add_argument_group('Parallel execution')
     group.add_argument("-p", type=int, default=0,
-                        dest="p",
-                        help="P allocates the number of processes "
-                             "to the grid-cells in x")
+                       dest="p",
+                       help="P allocates the number of processes "
+                            "to the grid-cells in x")
     group.add_argument("-q", type=int, default=0,
-                        dest="q",
-                        help="Q allocates the number of processes "
-                             "to the grid-cells in y")
+                       dest="q",
+                       help="Q allocates the number of processes "
+                            "to the grid-cells in y")
     group.add_argument("-r", type=int, default=0,
-                        dest="r",
-                        help="R allocates the number of processes "
-                             "to the grid-cells in z")
+                       dest="r",
+                       help="R allocates the number of processes "
+                            "to the grid-cells in z")
 
     args, unknown = parser.parse_known_args()
     return args
@@ -237,7 +237,8 @@ class Run(BaseRun):
         """
         return self._name_
 
-    def write(self, file_name=None, file_format='pfidb', working_directory=None):
+    def write(self, file_name=None, file_format='pfidb',
+              working_directory=None):
         """Method to write database file to disk
 
         Args:
@@ -336,13 +337,13 @@ class Run(BaseRun):
 
         print()
         print(f'# {"="*78}')
-        print(f'# ParFlow directory')
+        print('# ParFlow directory')
         print(f'#  - {os.getenv("PARFLOW_DIR")}')
-        print(f'# ParFlow version')
+        print('# ParFlow version')
         print(f'#  - {settings.PARFLOW_VERSION}')
-        print(f'# Working directory')
+        print('# Working directory')
         print(f'#  - {os.path.dirname(file_name)}')
-        print(f'# ParFlow database')
+        print('# ParFlow database')
         print(f'#  - {os.path.basename(file_name)}')
         print(f'# {"="*78}')
 

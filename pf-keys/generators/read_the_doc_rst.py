@@ -32,6 +32,7 @@ LEVELS = [
     '"',
 ]
 
+
 # -----------------------------------------------------------------------------
 
 def handle_domain(name, definition):
@@ -50,31 +51,30 @@ def handle_domain(name, definition):
         lines.append(f'{indent_str}The value must be an Integer')
         if definition and 'min_value' in definition:
             list_count += 1
-            lines.append(
-                f'{indent_str}  - with a value greater than or equal to {definition["min_value"]}')
+            lines.append(f'{indent_str}  - with a value greater than or equal '
+                         f'to {definition["min_value"]}')
         if definition and 'max_value' in definition:
             list_count += 1
-            lines.append(
-                f'{indent_str}  - with a value less than or equal to {definition["max_value"]}')
+            lines.append(f'{indent_str}  - with a value less than or equal to '
+                         f'{definition["max_value"]}')
 
     if name == 'DoubleValue':
         lines.append(f'{indent_str}The value must be a Double')
         if definition and 'min_value' in definition:
             list_count += 1
-            lines.append(
-                f'{indent_str}  - with a value greater than or equal to {definition["min_value"]}')
+            lines.append(f'{indent_str}  - with a value greater than or equal '
+                         f'to {definition["min_value"]}')
         if definition and 'max_value' in definition:
             list_count += 1
-            lines.append(
-                f'{indent_str}  - with a value less than or equal to {definition["max_value"]}')
+            lines.append(f'{indent_str}  - with a value less than or equal to '
+                         f'{definition["max_value"]}')
         if definition and 'neg_int' in definition:
             list_count += 1
-            lines.append(
-                f'{indent_str}  - must be an integer if less than 0')
+            lines.append(f'{indent_str}  - must be an integer if less than 0')
 
     if name == 'EnumDomain':
-        lines.append(
-            f'{indent_str}The value must be one of the following options: {(", ".join(definition["enum_list"]))}')
+        lines.append(f'{indent_str}The value must be one of the following '
+                     f'options: {(", ".join(definition["enum_list"]))}')
 
     if name == 'AnyString':
         lines.append(f'{indent_str}The value must be a string')
@@ -83,8 +83,8 @@ def handle_domain(name, definition):
         lines.append(f'{indent_str}The value must be True or False')
 
     if name == 'RequiresModule':
-        lines.append(
-            f'{indent_str}This key requires the availability of the following module(s) in ParFlow: {definition}')
+        lines.append(f'{indent_str}This key requires the availability of the '
+                     f'following module(s) in ParFlow: {definition}')
 
     if name == 'Deprecated':
         lines.append('')
@@ -100,6 +100,7 @@ def handle_domain(name, definition):
         lines.append('')
 
     return '\n'.join(lines)
+
 
 # -----------------------------------------------------------------------------
 
@@ -190,6 +191,7 @@ class RST_module:
         with open(file_path, 'w') as output:
             output.write(self.get_content(line_separator))
 
+
 # -----------------------------------------------------------------------------
 # Expected API to use
 # -----------------------------------------------------------------------------
@@ -202,9 +204,11 @@ def generate_module_from_definitions(definitions):
             yaml_struct = yaml.safe_load(file)
 
             for root_key in yaml_struct.keys():
-                generated_RST.add_section(0, '', root_key, yaml_struct[root_key])
+                generated_RST.add_section(0, '', root_key,
+                                          yaml_struct[root_key])
 
     return generated_RST
+
 
 # -----------------------------------------------------------------------------
 # CLI Main execution
@@ -217,7 +221,8 @@ if __name__ == "__main__":
     defPath = os.path.join(base_path, '../definitions')
     definition_files = [os.path.join(
         defPath, f'{module}.yaml') for module in core_definitions]
-    output_file_path = os.path.join(base_path, '../../docs/pf-keys/parflow/keys.rst')
+    output_file_path = os.path.join(base_path,
+                                    '../../docs/pf-keys/parflow/keys.rst')
 
     print('-'*80)
     print('Generate ParFlow database documentation')

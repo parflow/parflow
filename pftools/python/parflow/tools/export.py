@@ -6,11 +6,6 @@ This module capture all core ParFlow exporters.
 import os
 import yaml
 
-try:
-    from yaml import CDumper as YAMLDumper
-except ImportError:
-    from yaml import Dumper as YAMLDumper
-
 
 class SubsurfacePropertiesExporter:
 

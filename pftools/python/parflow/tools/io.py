@@ -4,6 +4,7 @@
 Helper functions to load or write files
 """
 
+from functools import partial
 import os
 import json
 import yaml
@@ -16,6 +17,7 @@ try:
     from yaml import CDumper as YAMLDumper
 except ImportError:
     from yaml import Dumper as YAMLDumper
+
 
 # -----------------------------------------------------------------------------
 
@@ -40,9 +42,11 @@ def load_patch_matrix_from_pfb_file(file_name, layer=None):
 
     return
 
+
 # -----------------------------------------------------------------------------
 
-def load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_id=0):
+def load_patch_matrix_from_image_file(file_name, color_to_patch=None,
+                                      fall_back_id=0):
     import imageio
     im = imageio.imread(file_name)
     height, width, color = im.shape
@@ -57,9 +61,13 @@ def load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_
         size2 = set()
         size3 = set()
         colors = []
-        to_key_1 = lambda c: f'{c[0]}'
-        to_key_2 = lambda c: f'{c[0]},{c[1]}'
-        to_key_3 = lambda c: f'{c[0]},{c[1]},{c[2]}'
+
+        def _to_key(c, num):
+            return ','.join([f'{c[i]}' for i in range(num)])
+
+        to_key_1 = partial(_to_key, num=1)
+        to_key_2 = partial(_to_key, num=2)
+        to_key_3 = partial(_to_key, num=3)
 
         for key, value in color_to_patch.items():
             hexColor = key.lstrip('#')
@@ -77,7 +85,8 @@ def load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_
         if len(colors) == len(size1):
             to_key = to_key_1
 
-        print(f'Sizes: colors({len(colors)}), 1({len(size1)}), 2({len(size2)}), 3({len(size3)})')
+        print(f'Sizes: colors({len(colors)}), 1({len(size1)}), '
+              f'2({len(size2)}), 3({len(size3)})')
 
         if to_key is None:
             raise Exception('You have duplicate colors')
@@ -91,10 +100,11 @@ def load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_
                 key = to_key(im[j, i])
                 try:
                     matrix[j, i] = fast_map[key]
-                except:
+                except Exception:
                     matrix[j, i] = fall_back_id
 
     return np.flip(matrix, 0)
+
 
 # -----------------------------------------------------------------------------
 
@@ -109,7 +119,7 @@ def load_patch_matrix_from_asc_file(file_name):
             try:
                 int(line)
                 in_header = False
-            except:
+            except Exception:
                 key, value = line.split()
                 if key == 'ncols':
                     ncols = int(value)
@@ -121,6 +131,7 @@ def load_patch_matrix_from_asc_file(file_name):
     matrix.shape = (nrows, ncols)
 
     return np.flip(matrix, 0)
+
 
 # -----------------------------------------------------------------------------
 
@@ -135,9 +146,11 @@ def load_patch_matrix_from_sa_file(file_name):
     matrix.shape = (jSize, iSize)
     return matrix
 
+
 # -----------------------------------------------------------------------------
 
-def write_patch_matrix_as_asc(matrix, file_name, xllcorner=0.0, yllcorner=0.0, cellsize=1.0, NODATA_value=0, **kwargs):
+def write_patch_matrix_as_asc(matrix, file_name, xllcorner=0.0, yllcorner=0.0,
+                              cellsize=1.0, NODATA_value=0, **kwargs):
     """Write asc for pfsol"""
     height, width = matrix.shape
     with open(file_name, 'w') as out:
@@ -152,6 +165,7 @@ def write_patch_matrix_as_asc(matrix, file_name, xllcorner=0.0, yllcorner=0.0, c
             for i in range(width):
                 out.write(f'{matrix[height - j - 1, i]}\n')
 
+
 # -----------------------------------------------------------------------------
 
 def write_patch_matrix_as_sa(matrix, file_name, **kwargs):
@@ -162,6 +176,7 @@ def write_patch_matrix_as_sa(matrix, file_name, **kwargs):
         it = np.nditer(matrix)
         for value in it:
             out.write(f'{value}\n')
+
 
 # -----------------------------------------------------------------------------
 
@@ -177,6 +192,7 @@ def write_dict_as_pfidb(dict_obj, file_name):
             out.write(f'{len(str(value))}\n')
             out.write(f'{str(value)}\n')
 
+
 # -----------------------------------------------------------------------------
 
 def write_dict_as_yaml(dict_obj, file_name):
@@ -191,12 +207,13 @@ def write_dict_as_yaml(dict_obj, file_name):
 
     # Push value back to yaml
     for key, value in overriden_keys.items():
-      keys_path = key.split('.')
-      valueObj = get_or_create_dict(yamlObj, keys_path, {})
-      valueObj['$_'] = value
+        keys_path = key.split('.')
+        valueObj = get_or_create_dict(yamlObj, keys_path, {})
+        valueObj['$_'] = value
 
     with open(file_name, 'w') as out:
         out.write(yaml.dump(sort_dict(yamlObj), Dumper=YAMLDumper))
+
 
 # -----------------------------------------------------------------------------
 
@@ -205,6 +222,7 @@ def write_dict_as_json(dict_obj, file_name):
     """
     with open(file_name, 'w') as out:
         out.write(json.dumps(dict_obj, indent=2))
+
 
 # -----------------------------------------------------------------------------
 
@@ -225,6 +243,7 @@ def write_dict(dict_obj, file_name):
     else:
         print(f'Could not find writer for {file_name}')
 
+
 # -----------------------------------------------------------------------------
 
 def to_native_type(string):
@@ -238,6 +257,7 @@ def to_native_type(string):
         except ValueError:
             pass
     return string
+
 
 # -----------------------------------------------------------------------------
 
@@ -272,13 +292,14 @@ def read_pfidb(file_path):
 
     return result_dict
 
+
 # -----------------------------------------------------------------------------
 
 def read_yaml(file_path):
-  """Load yaml file into a Python dict
-  """
-  if os.path.exists(file_path):
-    with open(file_path, 'r') as txt_file:
-      return yaml.safe_load(txt_file.read())
+    """Load yaml file into a Python dict
+    """
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as txt_file:
+            return yaml.safe_load(txt_file.read())
 
-  return {}
+    return {}

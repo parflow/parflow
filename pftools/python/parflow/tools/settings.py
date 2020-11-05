@@ -9,10 +9,12 @@ PRINT_LINE_ERROR = False
 EXIT_ON_ERROR = False
 PARFLOW_VERSION = '3.6.0'
 
+
 # ---------------------------------------------------------------------------
 
 def get_working_directory():
-  return WORKING_DIRECTORY
+    return WORKING_DIRECTORY
+
 
 # ---------------------------------------------------------------------------
 
@@ -27,6 +29,7 @@ def set_working_directory(new_working_directory=None):
     else:
         WORKING_DIRECTORY = os.getcwd()
 
+
 # ---------------------------------------------------------------------------
 
 def enable_line_error():
@@ -36,12 +39,14 @@ def enable_line_error():
     global PRINT_LINE_ERROR
     PRINT_LINE_ERROR = True
 
+
 def disable_line_error():
     """Calling that method will disable line feedback on validation
     error
     """
     global EXIT_ON_ERROR
     EXIT_ON_ERROR = False
+
 
 def enable_exit_error():
     """Calling that method will force the program to exit on
@@ -57,6 +62,7 @@ def disable_exit_error():
     """
     global EXIT_ON_ERROR
     EXIT_ON_ERROR = False
+
 
 def set_parflow_version(version):
     """Globally store the ParFlow version to test against

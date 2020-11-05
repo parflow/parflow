@@ -14,7 +14,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('../../pf-keys/generators/'))
 
-import sphinx_rtd_theme
+import sphinx_rtd_theme  # noqa: F401
 import subprocess
 
 # internally running doc generator to generate doc file
