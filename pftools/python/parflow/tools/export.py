@@ -3,7 +3,7 @@
 
 This module capture all core ParFlow exporters.
 """
-import os
+from pathlib import Path
 import yaml
 
 
@@ -13,42 +13,37 @@ class SubsurfacePropertiesExporter:
         self.run = run
         self.props_found = set()
         self.entries = []
-        yaml_key_def = os.path.join(
-            os.path.dirname(__file__), 'ref/table_keys.yaml')
+        yaml_key_def = Path(__file__).parent / 'ref/table_keys.yaml'
         with open(yaml_key_def, 'r') as file:
             self.definition = yaml.safe_load(file)
 
         self.pfkey_to_alias = {}
         self.alias_to_priority = {}
-        priority = 0
-        for key, value in self.definition.items():
-            priority += 1
+        for i, (key, value) in enumerate(self.definition.items()):
             self.pfkey_to_alias[key] = value['alias'][0]
-            self.alias_to_priority[value['alias'][0]] = priority
+            self.alias_to_priority[value['alias'][0]] = i
 
         self._process()
 
-    def _extract_sub_surface_props(self, geomItem):
-        name = geomItem.full_name().split('.')[-1]
+    def _extract_sub_surface_props(self, geom_item):
+        name = Path(geom_item.full_name()).suffix[1:]
         entry = {'key': name}
         has_data = False
         for key in self.pfkey_to_alias:
-            value = geomItem.get(key, skip_default=True)
+            value = geom_item.get(key, skip_default=True)
             if value is not None:
                 has_data = True
                 alias = self.pfkey_to_alias[key]
                 self.props_found.add(alias)
                 entry[alias] = str(value)
 
-        if has_data:
-            return entry
-        return None
+        return entry if has_data else None
 
     def _process(self):
         self.entries = []
         self.props_found.clear()
-        geomItems = self.run.Geom.get_selection_from_location('{GeomItem}')
-        for item in geomItems:
+        geom_items = self.run.Geom.get_selection_from_location('{GeomItem}')
+        for item in geom_items:
             entry = self._extract_sub_surface_props(item)
             if entry is not None:
                 self.entries.append(entry)
@@ -86,10 +81,10 @@ class SubsurfacePropertiesExporter:
         return '\n'.join(lines)
 
     def write_csv(self, file_path):
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(self.get_table_as_txt(column_separator=',',
-                                             columns_justify=False))
+        data = self.get_table_as_txt(column_separator=',',
+                                     columns_justify=False)
+        Path(file_path).write_text(data, encoding='utf-8')
 
     def write_txt(self, file_path):
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(self.get_table_as_txt())
+        data = self.get_table_as_txt()
+        Path(file_path).write_text(data, encoding='utf-8')

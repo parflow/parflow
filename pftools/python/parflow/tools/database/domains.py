@@ -3,9 +3,10 @@ This module aims to gather all kind of value validation you would like to
 enable inside Parflow run.
 """
 
+import os
+from pathlib import Path
 import sys
 import traceback
-import os
 
 from ..terminal import Colors as term
 from ..terminal import Symbols as term_symbol
@@ -17,12 +18,7 @@ from ..terminal import Symbols as term_symbol
 
 def filter_errors_by_type(msg_type, errors):
     """Extract decorated message for a given type"""
-    filter_list = []
-    for error in errors:
-        if error['type'] == msg_type:
-            filter_list.append(error['message'])
-
-    return filter_list
+    return list(filter(lambda e: e['type'] == msg_type, errors))
 
 
 # -----------------------------------------------------------------------------
@@ -58,8 +54,8 @@ def get_comparable_version(version):
 
     """
     c_version = 0
-    validVersionNumber = version[1:] if version[0] == 'v' else version
-    version_tokens = validVersionNumber.split('.')
+    valid_version_number = version[1:] if version[0] == 'v' else version
+    version_tokens = valid_version_number.split('.')
     for version_token in version_tokens:
         c_version *= 1000
         c_version += int(version_token)
@@ -79,16 +75,15 @@ def get_installed_parflow_module(module):
         bool: Return True if the provided module was found.
 
     """
-    module_file = f'{os.getenv("PARFLOW_DIR")}/config/Makefile.config'
+    module_file = Path(f'{os.getenv("PARFLOW_DIR")}/config/Makefile.config')
     has_module_installed = False
-    if os.path.exists(os.path.abspath(module_file)):
-        with open(module_file, "rt") as f:
-            for line in f.readlines():
+    if module_file.resolve().exists():
+        with open(module_file, "r") as f:
+            for line in f:
                 if f'PARFLOW_HAVE_{module}' in line and 'yes' in line:
                     has_module_installed = True
     else:
-        print(
-            f'Cannot find Makefile.config in {os.path.abspath(module_file)}.')
+        print(f'Cannot find Makefile.config in {str(module_file.resolve())}.')
     return has_module_installed
 
 
@@ -115,10 +110,8 @@ class MandatoryValue:
     """
     def validate(self, value, **kwargs):
         errors = []
-
         if value is None:
             errors.append(error('Needs to be set'))
-            return errors
 
         return errors
 
@@ -166,7 +159,7 @@ class DoubleValue:
         if value is None:
             return errors
 
-        if not (isinstance(value, float) or isinstance(value, int)):
+        if not isinstance(value, (float, int)):
             errors.append(error('Needs to be a double'))
 
         if min_value is not None and value < min_value:
@@ -195,25 +188,25 @@ class EnumDomain:
         if isinstance(value, list) and len(value) == 1:
             value = value[0]
 
-        lookupList = []
+        lookup_list = []
         if isinstance(enum_list, list):
-            lookupList = enum_list
+            lookup_list = enum_list
 
         if isinstance(enum_list, dict):
             # We need to find the matching version
-            sortedVersions = [
+            sorted_versions = [
                 (get_comparable_version(v), v) for v in enum_list.keys()]
-            sortedVersions.sort(key=lambda t: t[0])
-            versionToUse = sortedVersions[0]
-            currentVersion = get_comparable_version(pf_version)
-            for version in sortedVersions:
-                if currentVersion >= version[0]:
-                    versionToUse = version
+            sorted_versions.sort(key=lambda t: t[0])
+            version_to_use = sorted_versions[0]
+            current_version = get_comparable_version(pf_version)
+            for version in sorted_versions:
+                if current_version >= version[0]:
+                    version_to_use = version
 
-            lookupList = enum_list[versionToUse[1]]
+            lookup_list = enum_list[version_to_use[1]]
 
-        if value not in lookupList:
-            str_list = ', '.join(lookupList)
+        if value not in lookup_list:
+            str_list = ', '.join(lookup_list)
             errors.append(error(f'{value} must be one of [{str_list}]'))
 
         return errors
@@ -231,7 +224,7 @@ class AnyString:
         if value is None:
             return errors
 
-        if isinstance(value, list) or isinstance(value, str):
+        if isinstance(value, (list, str)):
             return errors
 
         errors.append(error(f'{value} ({type(value)} must be a string'))
@@ -279,11 +272,11 @@ class ValidFile:
             path_prefix = container.get_selection_from_location(
                 path_prefix_source)[0]
 
-        path = os.path.join(working_directory, path_prefix, value)
-        if os.path.exists(path):
+        path = Path(working_directory) / path_prefix / value
+        if path.exists():
             return errors
 
-        errors.append(error(f'Could not locate file {os.path.abspath(path)}'))
+        errors.append(error(f'Could not locate file {str(path.resolve())}'))
         return errors
 
 
@@ -407,8 +400,8 @@ def get_domain(class_name):
     if class_name in AVAILABLE_DOMAINS:
         return AVAILABLE_DOMAINS[class_name]
 
-    if hasattr(sys.modules[__name__], class_name):
-        klass = getattr(sys.modules[__name__], class_name)
+    klass = getattr(sys.modules[__name__], class_name, None)
+    if klass is not None:
         instance = klass()
         AVAILABLE_DOMAINS[class_name] = instance
         return instance
@@ -500,7 +493,7 @@ def validate_value_with_exception(value, domain_definition=None,
         value, domain_definition, domain_add_on_kwargs)
     errors = filter_errors_by_type('ERROR', all_messages)
 
-    if len(errors):
+    if errors:
         print()
         try:
             raise ValidationException()
@@ -560,7 +553,7 @@ def validate_value_to_string(container, value, has_default=False,
     warnings = filter_errors_by_type('WARNING', all_messages)
     validation_string = []
 
-    if len(errors):
+    if errors:
         validation_string.append(
             f'{value} {term.FAIL}{term_symbol.ko}{term.ENDC}')
         for error in errors:
@@ -570,12 +563,12 @@ def validate_value_to_string(container, value, has_default=False,
     elif value is not None:
         # checking for duplicates and changing print statement
         if history is not None:
-            dup_count = len(history)-1 if has_default is True else len(history)
+            dup_count = len(history) - 1 if has_default else len(history)
             if dup_count > 1:
                 dup_str = '('
-                for val in range(dup_count-1):
+                for val in range(dup_count - 1):
                     dup_str += str(history[val]) + ' => '
-                dup_str += str(history[dup_count-1]) + ')'
+                dup_str += str(history[dup_count - 1]) + ')'
                 validation_string.append(f'{term.MAGENTA}{term_symbol.warning}'
                                          f'{term.ENDC} {value}  '
                                          f'{term.MAGENTA}{dup_str}{term.ENDC}')
@@ -586,7 +579,7 @@ def validate_value_to_string(container, value, has_default=False,
             validation_string.append(f'{value} {term.OKGREEN}{term_symbol.ok}'
                                      f'{term.ENDC}')
 
-    if len(warnings):
+    if warnings:
         for warning in warnings:
             validation_string.append(f'{indent_str}    {term.CYAN}'
                                      f'{term_symbol.warning}{term.ENDC} '

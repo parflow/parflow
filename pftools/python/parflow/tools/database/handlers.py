@@ -26,7 +26,7 @@ class ValueHandlerException(Exception):
 
 class ChildHandler:
     """
-    This class takes creates new key from user-defined name input
+    This class creates new keys from user-defined name input
     (e.g. GeomName)
     """
     def decorate(self, value, container, class_name=None, location='.',
@@ -36,7 +36,7 @@ class ChildHandler:
             location)
         valid_name = value.strip()
 
-        if len(valid_name) == 0:
+        if not valid_name:
             return None
 
         for destination_container in destination_containers:
@@ -54,19 +54,19 @@ class ChildHandler:
 
 class ChildrenHandler:
     """
-    This class takes creates new keys from user-defined name inputs
+    This class creates new keys from user-defined name inputs
     (e.g. GeomNames)
     """
     def __init__(self):
-        self.childHandler = ChildHandler()
+        self.child_handler = ChildHandler()
 
     def decorate(self, value, container, class_name=None, location='.',
                  eager=None, **kwargs):
         if isinstance(value, str):
-            names = value.split(' ')
+            names = value.split()
             valid_names = []
             for name in names:
-                valid_name = self.childHandler.decorate(
+                valid_name = self.child_handler.decorate(
                     name, container, class_name, location, eager)
                 if valid_name is not None:
                     valid_names.append(valid_name)
@@ -80,15 +80,15 @@ class ChildrenHandler:
             for i in range(value):
                 name = f'_{i}'  # FIXME should use prefix instead
                 valid_names.append(
-                    self.childHandler.decorate(name, container, class_name,
-                                               location, eager))
+                    self.child_handler.decorate(name, container, class_name,
+                                                location, eager))
 
             return valid_names
 
         if hasattr(value, '__iter__'):
             valid_names = []
             for name in value:
-                valid_name = self.childHandler.decorate(
+                valid_name = self.child_handler.decorate(
                     name, container, class_name, location, eager)
                 if valid_name is not None:
                     valid_names.append(valid_name)
@@ -110,7 +110,7 @@ def get_handler(class_name, print_error=True):
     """Return a handler instance from a handler class name
 
     Args:
-        class_name (str): Class name to instansiate.
+        class_name (str): Class name to instantiate.
         print_error (bool): By default will print error if class not found
     Returns:
         handler: Instance of that given class or None
@@ -118,8 +118,8 @@ def get_handler(class_name, print_error=True):
     if class_name in AVAILABLE_HANDLERS:
         return AVAILABLE_HANDLERS[class_name]
 
-    if hasattr(sys.modules[__name__], class_name):
-        klass = getattr(sys.modules[__name__], class_name)
+    klass = getattr(sys.modules[__name__], class_name, None)
+    if klass is not None:
         instance = klass()
         AVAILABLE_HANDLERS[class_name] = instance
         return instance
@@ -148,16 +148,16 @@ def decorate_value(value, container=None, handlers=None):
             {
                 GeomInputUpdater: {
                   type: 'ChildrenHandler',
-                  className: 'GeomInputItemValue',
+                  class_name: 'GeomInputItemValue',
                   location: '../..'
                 },
                 GeomUpdater: {
                   type: 'ChildrenHandler',
-                  className: 'GeomItem',
+                  class_name: 'GeomItem',
                   location: '../../Geom'
                 },
                 ChildrenHandler: {
-                  className: 'GeomInputLocal'
+                  class_name: 'GeomInputLocal'
                 }
             }
     Returns:
@@ -172,7 +172,7 @@ def decorate_value(value, container=None, handlers=None):
     for handler_classname in handlers:
         handler = get_handler(handler_classname, False)
 
-        if not handler and 'type' in handlers[handler_classname]:
+        if handler is None and 'type' in handlers[handler_classname]:
             handler = get_handler(handlers[handler_classname]['type'])
         else:
             get_handler(handler_classname)

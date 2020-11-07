@@ -3,7 +3,7 @@ This module provide the infrastructure to load and generate the Parflow
 database structure as documentation files for Read The Docs.
 '''
 
-import os
+from pathlib import Path
 import yaml
 
 # -----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ def handle_domain(name, definition):
     This method will extract information from a domain and present it
     for the documentation.
     '''
-    indent_str = ' '*4
+    indent_str = ' ' * 4
     lines = []
     list_count = 0
 
@@ -110,9 +110,9 @@ class RST_module:
     '''
     def __init__(self, title):
         self.content = [
-            '*'*80,
+            '*' * 80,
             title,
-            '*'*80,
+            '*' * 80,
         ]
 
     def add_line(self, content=''):
@@ -135,14 +135,14 @@ class RST_module:
                 warning = sub_section['__rst__']['warning']
             if 'skip' in sub_section['__rst__']:
                 for sub_key in sub_section:
-                    if sub_key[0] != '_' or sub_key == '__value__':
+                    if not sub_key.startswith('_') or sub_key == '__value__':
                         self.add_section(level, title, sub_key,
                                          sub_section[sub_key])
                 return
 
         self.add_line()
         self.add_line(title)
-        self.add_line(LEVELS[level]*80)
+        self.add_line(LEVELS[level] * 80)
         self.add_line()
         if warning:
             self.add_line('.. warning::')
@@ -168,28 +168,26 @@ class RST_module:
 
             if 'domains' in sub_section:
                 self.add_line('.. note::')
-                for domain in sub_section['domains']:
-                    self.add_line(handle_domain(
-                        domain, sub_section['domains'][domain]))
+                for domain, val in sub_section['domains'].items():
+                    self.add_line(handle_domain(domain, val))
                 self.add_line()
 
         else:
             # Keep adding sections
-            for sub_key in sub_section:
-                if sub_key[0] != '_' or sub_key == '__value__':
-                    self.add_section(level + 1, title, sub_key,
-                                     sub_section[sub_key])
+            for sub_key, val in sub_section.items():
+                if not sub_key.startswith('_') or sub_key == '__value__':
+                    self.add_section(level + 1, title, sub_key, val)
 
     def get_content(self,  line_separator='\n'):
         # Ensure new line at the end
-        if len(self.content[-1]):
+        if self.content[-1]:
             self.content.append('')
 
         return line_separator.join(self.content)
 
     def write(self, file_path, line_separator='\n'):
-        with open(file_path, 'w') as output:
-            output.write(self.get_content(line_separator))
+        content = self.get_content(line_separator)
+        Path(file_path).write_text(content)
 
 
 # -----------------------------------------------------------------------------
@@ -203,9 +201,8 @@ def generate_module_from_definitions(definitions):
         with open(yaml_file) as file:
             yaml_struct = yaml.safe_load(file)
 
-            for root_key in yaml_struct.keys():
-                generated_RST.add_section(0, '', root_key,
-                                          yaml_struct[root_key])
+        for key, val in yaml_struct.items():
+            generated_RST.add_section(0, '', key, val)
 
     return generated_RST
 
@@ -216,17 +213,16 @@ def generate_module_from_definitions(definitions):
 
 if __name__ == "__main__":
     core_definitions = YAML_MODULES_TO_PROCESS
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    print(base_path)
-    defPath = os.path.join(base_path, '../definitions')
-    definition_files = [os.path.join(
-        defPath, f'{module}.yaml') for module in core_definitions]
-    output_file_path = os.path.join(base_path,
-                                    '../../docs/pf-keys/parflow/keys.rst')
+    base_path = Path(__file__).resolve().parent
+    def_path = base_path.parent / 'definitions'
+    definition_files = [
+        def_path / f'{module}.yaml' for module in core_definitions]
+    output_file_path = (
+        base_path.parent.parent / 'docs/pf-keys/parflow/keys.rst')
 
-    print('-'*80)
+    print('-' * 80)
     print('Generate ParFlow database documentation')
-    print('-'*80)
+    print('-' * 80)
     generated_module = generate_module_from_definitions(definition_files)
-    print('-'*80)
+    print('-' * 80)
     generated_module.write(output_file_path)

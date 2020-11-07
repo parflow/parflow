@@ -9,13 +9,14 @@ This module provide the core objects for controlling ParFlow.
 
 """
 import os
+from pathlib import Path
 import sys
 import argparse
 
 from . import settings
 from .fs import get_absolute_path
 from .io import write_dict
-from .terminal import Symbols as termSymbol
+from .terminal import Symbols as TermSymbol
 
 from .database.generated import BaseRun
 from .export import SubsurfacePropertiesExporter
@@ -31,24 +32,23 @@ def check_parflow_execution(out_file):
         bool: True for success, False otherwise.
 
     """
-    print(f'# {"="*78}')
+    print(f'# {"=" * 78}')
     execute_success = False
-    if os.path.exists(out_file):
-        with open(out_file, "rt") as f:
+    if Path(out_file).exists():
+        with open(out_file, 'r') as f:
             contents = f.read()
             if 'Problem solved' in contents:
-                emoji = f'{termSymbol.splash} '
+                emoji = f'{TermSymbol.splash} '
                 print(
-                    f'# ParFlow ran successfully {emoji*3}')
+                    f'# ParFlow ran successfully {emoji * 3}')
                 execute_success = True
             else:
-                emoji = f'{termSymbol.x} '
-                print(
-                    f'# ParFlow run failed. {emoji*3} '
-                    f'Contents of error output file:')
-                print("-"*80)
+                emoji = f'{TermSymbol.x} '
+                print(f'# ParFlow run failed. {emoji * 3} '
+                      f'Contents of error output file:')
+                print("-" * 80)
                 print(contents)
-                print("-"*80)
+                print("-" * 80)
     else:
         print(f'# Cannot find {out_file} in {os.getcwd()}')
     print(f'# {"=" * 78}')
@@ -69,17 +69,16 @@ def get_current_parflow_version():
     """
     version = '3.6.0'
     version_file = f'{os.getenv("PARFLOW_DIR")}/config/pf-cmake-env.sh'
-    if os.path.exists(os.path.abspath(version_file)):
-        with open(version_file, "rt") as f:
-            for line in f.readlines():
+    if Path(version_file).resolve().exists():
+        with open(version_file, 'r') as f:
+            for line in f:
                 if 'PARFLOW_VERSION=' in line:
                     version = line[17:22]
             if not version:
                 print(f'Cannot find version in {version_file}')
     else:
-        print(
-            f'Cannot find environment file in '
-            f'{os.path.abspath(version_file)}.')
+        print(f'Cannot find environment file in '
+              f'{str(Path(version_file).resolve())}.')
     return version
 
 # -----------------------------------------------------------------------------
@@ -110,7 +109,7 @@ def get_process_args():
 
     group.add_argument("--skip-validation",
                        default=False,
-                       dest="skipValidation",
+                       dest="skip_validation",
                        action='store_true',
                        help="Disable validation pass")
 
@@ -136,7 +135,7 @@ def get_process_args():
     group = parser.add_argument_group('Additional output')
     group.add_argument("--write-yaml",
                        default=False,
-                       dest="writeYAML",
+                       dest="write_yaml",
                        action='store_true',
                        help="Enable config to be written as YAML file")
 
@@ -214,15 +213,20 @@ class Run(BaseRun):
     def __init__(self, name, basescript=None):
         super().__init__(None)
         self._process_args_ = get_process_args()
-        self._name_ = name
+        self.set_name(name)
         if basescript is not None:
             full_path = get_absolute_path(basescript)
-            if os.path.isfile(full_path):
-                settings.set_working_directory(os.path.dirname(full_path))
+            if Path(full_path).is_file():
+                settings.set_working_directory(str(Path(full_path).parent))
             else:
                 settings.set_working_directory(full_path)
         else:
             settings.set_working_directory()
+
+    def get_name(self):
+        """Returns name of run
+        """
+        return self._name_
 
     def set_name(self, new_name):
         """Setting new name for a run
@@ -231,11 +235,6 @@ class Run(BaseRun):
             new_name (str): New name for run
         """
         self._name_ = new_name
-
-    def get_name(self):
-        """Returns name of run
-        """
-        return self._name_
 
     def write(self, file_name=None, file_format='pfidb',
               working_directory=None):
@@ -336,7 +335,7 @@ class Run(BaseRun):
         file_name, run_file = self.write()
 
         print()
-        print(f'# {"="*78}')
+        print(f'# {"=" * 78}')
         print('# ParFlow directory')
         print(f'#  - {os.getenv("PARFLOW_DIR")}')
         print('# ParFlow version')
@@ -345,16 +344,16 @@ class Run(BaseRun):
         print(f'#  - {os.path.dirname(file_name)}')
         print('# ParFlow database')
         print(f'#  - {os.path.basename(file_name)}')
-        print(f'# {"="*78}')
+        print(f'# {"=" * 78}')
 
         # Only write YAML in run()
-        if self._process_args_.writeYAML:
+        if self._process_args_.write_yaml:
             full_path, no_extension = self.write(file_format='yaml')
             print(f'YAML output: "{full_path}"')
 
         print()
         error_count = 0
-        if not (skip_validation or self._process_args_.skipValidation):
+        if not (skip_validation or self._process_args_.skip_validation):
             verbose = self._process_args_.validation_verbose
             error_count += self.validate(verbose=verbose)
             print()
@@ -393,16 +392,9 @@ class Run(BaseRun):
         update_run_from_args(self, self._process_args_)
 
         pfb_file_full_path = get_absolute_path(pfb_file)
-        p = self.Process.Topology.P
-        q = self.Process.Topology.Q
-        r = self.Process.Topology.R
-
-        if 'P' in kwargs:
-            p = kwargs['P']
-        if 'Q' in kwargs:
-            q = kwargs['Q']
-        if 'R' in kwargs:
-            r = kwargs['R']
+        p = kwargs.get('P', self.Process.Topology.P)
+        q = kwargs.get('Q', self.Process.Topology.Q)
+        r = kwargs.get('R', self.Process.Topology.R)
 
         from parflowio.pyParflowio import PFData
         pfb_data = PFData(pfb_file_full_path)

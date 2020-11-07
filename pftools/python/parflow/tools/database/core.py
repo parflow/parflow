@@ -139,7 +139,7 @@ def extract_keys_from_dict(dict_to_fill, dict_obj, parent_namespace=''):
     a given PFDBObj inside dict_to_fill.
     """
     for key, value in dict_obj.items():
-        if parent_namespace and key in ['$_', '_value_']:
+        if parent_namespace and key == '_value_':
             dict_to_fill[parent_namespace] = value
             continue
 
@@ -150,13 +150,10 @@ def extract_keys_from_dict(dict_to_fill, dict_obj, parent_namespace=''):
             f'{parent_namespace}.{key}' if parent_namespace else key
         )
         if isinstance(value, dict):
-            # Need to handle _value_ and $_
+            # Need to handle _value_
             if hasattr(value, '_value_'):
                 dict_to_fill[full_qualified_key] = to_str_dict_format(
                     value._value_)
-            if hasattr(value, '$_'):
-                dict_to_fill[full_qualified_key] = to_str_dict_format(
-                    getattr(value, '$_'))
             extract_keys_from_dict(dict_to_fill, value, full_qualified_key)
         else:
             dict_to_fill[full_qualified_key] = to_str_dict_format(value)
@@ -279,10 +276,10 @@ class PFDBObj:
             prefix = self._details_['_prefix_']
 
         key_str = f'{prefix}{key_str}'
-        if hasattr(self, key_str):
-            return getattr(self, key_str)
+        if not hasattr(self, key_str):
+            print(f'Could not find key {key}/{key_str} in '
+                  f'{list(self.__dict__.keys())}')
 
-        print(f'Could not find key {key}/{key_str} in {self.__dict__.keys()}')
         return getattr(self, key_str)
 
     # ---------------------------------------------------------------------------
@@ -453,11 +450,10 @@ class PFDBObj:
         if isinstance(value, PFDBObj):
             if value._prefix_ and key.startswith(value._prefix_):
                 prefix = value._prefix_
-        else:
-            if key in self._details_:
-                detail = self._details_[key]
-                if '_prefix_' in detail:
-                    prefix = detail["_prefix_"]
+        elif key in self._details_:
+            detail = self._details_[key]
+            if '_prefix_' in detail:
+                prefix = detail['_prefix_']
 
         start = f'{parent_namespace}.' if parent_namespace else ''
         return start + remove_prefix(key, prefix)
@@ -648,7 +644,7 @@ class PFDBObj:
         Processing the dynamically defined (user-defined) key names
         """
         from . import generated
-        for (class_name, selection) in self._dynamic_.items():
+        for class_name, selection in self._dynamic_.items():
             klass = getattr(generated, class_name)
             names = self.get_selection_from_location(selection)
             for name in names:

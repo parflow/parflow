@@ -1,8 +1,10 @@
 # builders.py
 # functions for helping build ParFlow scripts
 import os
-import yaml
+from pathlib import Path
 import sys
+import yaml
+
 import numpy as np
 
 from .helper import sort_dict
@@ -113,53 +115,55 @@ class SolidFileBuilder:
         if self.mask_array is None:
             raise Exception('No mask was defined')
 
-        jSize, iSize = self.mask_array.shape
-        leftMask = np.zeros((jSize, iSize), dtype=np.int16)
-        rightMask = np.zeros((jSize, iSize), dtype=np.int16)
-        backMask = np.zeros((jSize, iSize), dtype=np.int16)
-        frontMask = np.zeros((jSize, iSize), dtype=np.int16)
-        bottomMask = np.zeros((jSize, iSize), dtype=np.int16)
-        topMask = np.zeros((jSize, iSize), dtype=np.int16)
+        shape = self.mask_array.shape
+        dtype = np.int16
+        left_mask = np.zeros(shape, dtype=dtype)
+        right_mask = np.zeros(shape, dtype=dtype)
+        back_mask = np.zeros(shape, dtype=dtype)
+        front_mask = np.zeros(shape, dtype=dtype)
+        bottom_mask = np.zeros(shape, dtype=dtype)
+        top_mask = np.zeros(shape, dtype=dtype)
 
-        for j in range(jSize):
-            for i in range(iSize):
+        j_size, i_size = shape
+        for j in range(j_size):
+            for i in range(i_size):
                 if self.mask_array[j, i] != 0:
                     patch_value = 0 if self.patch_ids_side is None \
                         else self.patch_ids_side[j, i]
                     # Left (-x)
-                    if i == 0 or self.mask_array[j, i-1] == 0:
-                        leftMask[j, i] = patch_value if patch_value \
+                    if i == 0 or self.mask_array[j, i - 1] == 0:
+                        left_mask[j, i] = patch_value if patch_value \
                             else self.side_id
 
                     # Right (+x)
-                    if i + 1 == iSize or self.mask_array[j, i+1] == 0:
-                        rightMask[j, i] = patch_value if patch_value \
+                    if i + 1 == i_size or self.mask_array[j, i + 1] == 0:
+                        right_mask[j, i] = patch_value if patch_value \
                             else self.side_id
 
                     # Back (-y) (y flipped)
-                    if j + 1 == jSize or self.mask_array[j+1, i] == 0:
-                        backMask[j, i] = patch_value if patch_value \
+                    if j + 1 == j_size or self.mask_array[j + 1, i] == 0:
+                        back_mask[j, i] = patch_value if patch_value \
                             else self.side_id
 
                     # Front (+y) (y flipped)
-                    if j == 0 or self.mask_array[j-1, i] == 0:
-                        frontMask[j, i] = patch_value if patch_value \
+                    if j == 0 or self.mask_array[j - 1, i] == 0:
+                        front_mask[j, i] = patch_value if patch_value \
                             else self.side_id
 
                     # Bottom (-z)
                     patch_value = 0 if self.patch_ids_bottom is None \
                         else self.patch_ids_bottom[j, i]
-                    bottomMask[j, i] = patch_value if patch_value \
+                    bottom_mask[j, i] = patch_value if patch_value \
                         else self.bottom_id
 
                     # Top (+z)
                     patch_value = 0 if self.patch_ids_top is None \
                         else self.patch_ids_top[j, i]
-                    topMask[j, i] = patch_value if patch_value \
+                    top_mask[j, i] = patch_value if patch_value \
                         else self.top_id
 
         # Generate asc / sa files
-        writeFn = write_patch_matrix_as_asc
+        write_func = write_patch_matrix_as_asc
         settings = {
             'xllcorner': xllcorner,
             'yllcorner': yllcorner,
@@ -169,22 +173,22 @@ class SolidFileBuilder:
         short_name = name[:-6]
 
         left_file_path = get_absolute_path(f'{short_name}_left.asc')
-        writeFn(leftMask, left_file_path, **settings)
+        write_func(left_mask, left_file_path, **settings)
 
         right_file_path = get_absolute_path(f'{short_name}_right.asc')
-        writeFn(rightMask, right_file_path, **settings)
+        write_func(right_mask, right_file_path, **settings)
 
         front_file_path = get_absolute_path(f'{short_name}_front.asc')
-        writeFn(frontMask, front_file_path, **settings)
+        write_func(front_mask, front_file_path, **settings)
 
         back_file_path = get_absolute_path(f'{short_name}_back.asc')
-        writeFn(backMask, back_file_path, **settings)
+        write_func(back_mask, back_file_path, **settings)
 
         top_file_path = get_absolute_path(f'{short_name}_top.asc')
-        writeFn(topMask, top_file_path, **settings)
+        write_func(top_mask, top_file_path, **settings)
 
         bottom_file_path = get_absolute_path(f'{short_name}_bottom.asc')
-        writeFn(bottomMask, bottom_file_path, **settings)
+        write_func(bottom_mask, bottom_file_path, **settings)
 
         # Trigger conversion
         print('=== pfmask-to-pfsol ===: BEGIN')
@@ -192,26 +196,31 @@ class SolidFileBuilder:
         if vtk:
             extra.append('--vtk')
             extra.append(f'{output_file_path[:-6]}.vtk')
-        os.system(f'$PARFLOW_DIR/bin/pfmask-to-pfsol '
-                  f'--mask-top {top_file_path} '
-                  f'--mask-bottom {bottom_file_path} '
-                  f'--mask-left {left_file_path} '
-                  f'--mask-right {right_file_path} '
-                  f'--mask-front {front_file_path} '
-                  f'--mask-back {back_file_path} '
-                  f'--pfsol {output_file_path} {" ".join(extra)}')
+
+        exe_path = get_absolute_path('$PARFLOW_DIR/bin/pfmask-to-pfsol')
+        args = [
+            f'--mask-top {top_file_path}',
+            f'--mask-bottom {bottom_file_path}',
+            f'--mask-left {left_file_path}',
+            f'--mask-right {right_file_path}',
+            f'--mask-front {front_file_path}',
+            f'--mask-back {back_file_path}',
+            f'--pfsol {output_file_path}'
+        ] + extra
+        os.system(f'{exe_path} ' + ' '.join(args))
+
         print('=== pfmask-to-pfsol ===: END')
         return self
 
-    def for_key(self, geomItem):
+    def for_key(self, geom_item):
         """Setting ParFlow keys associated with solid file
 
         Args:
-            geomItem (str): Name of geometric unit in ParFlow run that will
+            geom_item (str): Name of geometric unit in ParFlow run that will
             bet used as a token for the ParFlow key.
         """
-        geomItem.InputType = 'SolidFile'
-        geomItem.FileName = self.name
+        geom_item.InputType = 'SolidFile'
+        geom_item.FileName = self.name
         return self
 
 # -----------------------------------------------------------------------------
@@ -231,15 +240,13 @@ def _txt_line_tokenizer(line):
 class SubsurfacePropertiesBuilder:
 
     def __init__(self, run=None):
-        if run is not None:
-            self.run = run
+        self.run = run
         self.output = {}
         self.name_registration = {}
         self.column_index = {}
         self.props_in_row_header = True
         self.table_comments = []
-        yaml_key_def = os.path.join(
-            os.path.dirname(__file__), 'ref/table_keys.yaml')
+        yaml_key_def = Path(__file__).parent / 'ref/table_keys.yaml'
         with open(yaml_key_def, 'r') as file:
             self.definition = yaml.safe_load(file)
 
@@ -267,7 +274,7 @@ class SubsurfacePropertiesBuilder:
         """Method to process lines of data in a table
         """
         # Skip new lines or comments
-        if len(tokens) == 0 or tokens[0] == '#':
+        if not tokens or tokens[0] == '#':
             return
 
         if self.props_in_row_header:
@@ -286,17 +293,17 @@ class SubsurfacePropertiesBuilder:
                 data[key] = value
 
                 # setting related addon keys
-                if 'addon' in key_def.keys():
+                if 'addon' in key_def:
                     for key, value in key_def['addon'].items():
                         # local keys (appending to geom item)
-                        if key[0] == '.':
-                            data.update({key[1:]: value})
+                        if key.startswith('.'):
+                            data[key[1:]] = value
                         # global keys
                         elif key not in self.output:
-                            self.output.update({key: value})
+                            self.output[key] = value
 
                 # appending geom name to list for setting geom name keys
-                if 'register' in key_def.keys():
+                if 'register' in key_def:
                     registrations.append(key_def['register'])
 
             # Extract geom_name
@@ -325,17 +332,17 @@ class SubsurfacePropertiesBuilder:
             value_type = key_def.get('type', 'float')
             value_convert = __builtins__[value_type]
             # setting related addon keys
-            if 'addon' in key_def.keys():
+            if 'addon' in key_def:
                 for addon_key, addon_value in key_def['addon'].items():
                     # local keys (appending to geom item)
-                    if addon_key[0] == '.':
-                        data.update({addon_key[1:]: addon_value})
+                    if addon_key.startswith('.'):
+                        data[addon_key[1:]] = addon_value
                     # global keys
                     elif addon_key not in self.output:
-                        self.output.update({addon_key: addon_value})
+                        self.output[addon_key] = addon_value
 
             # appending geom name to list for setting geom name keys
-            if 'register' in key_def.keys():
+            if 'register' in key_def:
                 registrations.append(key_def['register'])
 
             for geom_name in self.column_index:
@@ -357,19 +364,17 @@ class SubsurfacePropertiesBuilder:
         """Method to process first line in a table
         """
         # Skip new lines or comments
-        if len(first_line_tokens) == 0:
+        if not first_line_tokens:
             return False
         if first_line_tokens[0] == '#':
-            self.table_comments.append(" ".join(first_line_tokens))
+            self.table_comments.append(' '.join(first_line_tokens))
             return False
 
         self.props_in_row_header = None
         found = []
         not_found = []
-        index = 0
-        for token in first_line_tokens:
-            self.column_index[token] = index
-            index += 1
+        for i, token in enumerate(first_line_tokens):
+            self.column_index[token] = i
 
             if token in self.alias_to_pfkey:
                 found.append(token)
@@ -395,14 +400,14 @@ class SubsurfacePropertiesBuilder:
 
         return True
 
-    def load_csv_file(self, tableFile, encoding='utf-8-sig'):
+    def load_csv_file(self, table_file, encoding='utf-8-sig'):
         """Method to load a .csv file of a table of subsurface parameters
 
         Args:
-            tableFile (str): Path to the input .csv file.
+            table_file (str): Path to the input .csv file.
             encoding='utf-8-sig': encoding of input file.
         """
-        with open(get_absolute_path(tableFile), 'r',
+        with open(get_absolute_path(table_file), 'r',
                   encoding=encoding) as csv_file:
             data_line = False
             for line in csv_file:
@@ -413,14 +418,14 @@ class SubsurfacePropertiesBuilder:
                     data_line = self._process_first_line(tokens)
         return self
 
-    def load_txt_file(self, tableFile, encoding='utf-8-sig'):
+    def load_txt_file(self, table_file, encoding='utf-8-sig'):
         """Method to load a .txt file of a table of subsurface parameters
 
         Args:
-            tableFile (str): Path to the input .txt file.
+            table_file (str): Path to the input .txt file.
             encoding='utf-8-sig': encoding of input file.
         """
-        with open(get_absolute_path(tableFile), 'r',
+        with open(get_absolute_path(table_file), 'r',
                   encoding=encoding) as txt_file:
             data_line = False
             for line in txt_file:
@@ -483,14 +488,12 @@ class SubsurfacePropertiesBuilder:
            'freeze_cherry': soil/rock properties from Freeze and Cherry (1979)
            Note: Freeze and Cherry only has permeability and porosity
         """
-        database_file = 'ref/subsurface_' + database + '.txt'
-
-        default_prop_file = os.path.join(
-            os.path.dirname(__file__), database_file)
+        database_file = f'ref/subsurface_{database}.txt'
+        default_prop_file = str(Path(__file__).parent / database_file)
 
         if exists(default_prop_file):
             self.load_txt_file(default_prop_file)
-            print('#'*80)
+            print('#' * 80)
             print('# Loaded database:')
             for item in self.table_comments:
                 print(item)
@@ -499,8 +502,7 @@ class SubsurfacePropertiesBuilder:
             print('#' * 80)
             print(f'# {database} database not found. Available databases '
                   f'include:')
-            for root, dirs, files in os.walk(os.path.dirname(__file__) +
-                                             '/ref/'):
+            for root, dirs, files in os.walk(Path(__file__).parent / 'ref'):
                 for name in files:
                     if name.startswith('subsurface'):
                         print(f'# - {name} (use argument '
@@ -532,9 +534,9 @@ class SubsurfacePropertiesBuilder:
         valid_geom_names = []
         addon_keys = {}
         for name in self.output:
-            if name in self.run.Geom.__dict__.keys():
+            if name in self.run.Geom.__dict__:
                 valid_geom_names.append(name)
-            elif name_registration and type(self.output[name]) is not dict:
+            elif name_registration and not isinstance(self.output[name], dict):
                 addon_keys[name] = self.output[name]
 
         # Run pfset on all geom sections
@@ -545,9 +547,9 @@ class SubsurfacePropertiesBuilder:
         if name_registration:
             names_to_set = addon_keys
             for geom_name in valid_geom_names:
-                if geom_name in self.name_registration.keys():
+                if geom_name in self.name_registration:
                     for prop_name in self.name_registration[geom_name]:
-                        if prop_name not in names_to_set.keys():
+                        if prop_name not in names_to_set:
                             names_to_set[prop_name] = []
                         names_to_set[prop_name].append(geom_name)
             self.run.pfset(flat_map=names_to_set)
@@ -566,9 +568,7 @@ class SubsurfacePropertiesBuilder:
         for geom_name in valid_geom_names:
             if hasattr(self.name_registration, geom_name):
                 for prop_name in self.name_registration[geom_name]:
-                    if not hasattr(output_to_print, prop_name):
-                        output_to_print[prop_name] = []
-                    output_to_print[prop_name].append(geom_name)
+                    output_to_print.setdefault(prop_name, []).append(geom_name)
 
         for geom_name in valid_geom_names:
             output_to_print['Geom'][geom_name] = self.output[geom_name]
@@ -702,10 +702,6 @@ class SubsurfacePropertiesBuilder:
 # -----------------------------------------------------------------------------
 
 
-def get_file_extension(file_name):
-    return file_name.split('.')[-1]
-
-
 class DomainBuilder:
 
     def __init__(self, run, name='domain'):
@@ -717,16 +713,15 @@ class DomainBuilder:
         """
         container = self.run.get_selection_from_location(key_path)[0]
         container.FileName = file_name
-        if get_file_extension(file_name) == 'pfb':
+        ext = Path(file_name).suffix
+        if ext == '.pfb':
             container.Type = 'PFBFile'
-            return self
-        if get_file_extension(file_name) == 'nc':
+        elif ext == '.nc':
             container.Type = 'NCFile'
-            return self
         else:
-            raise Exception(f'File extension {get_file_extension(file_name)} '
-                            f'for {file_name} is invalid')
-            return self
+            raise Exception(f'File extension {ext} for {file_name} is invalid')
+
+        return self
 
     def water(self, geom_name=None):
         """Setting keys for water properties and gravity
@@ -857,11 +852,11 @@ class DomainBuilder:
             self.run.Phase.Saturation.GeomNames += [domain_name]
             if saturation['Type'] == 'VanGenuchten':
                 # defaulting to RelPerm not working
-                self.run.Geom[domain_name].Saturation.Alpha = \
-                    saturation['Alpha'] if saturation['Alpha'] \
-                    else rel_perm['Alpha']
-                self.run.Geom[domain_name].Saturation.N = \
-                    saturation['N'] if saturation['N'] else rel_perm['N']
+                self.run.Geom[domain_name].Saturation.Alpha = (
+                    saturation['Alpha'] if saturation['Alpha']
+                    else rel_perm['Alpha'])
+                self.run.Geom[domain_name].Saturation.N = (
+                    saturation['N'] if saturation['N'] else rel_perm['N'])
                 self.run.Geom[domain_name].Saturation.SRes = saturation['SRes']
                 self.run.Geom[domain_name].Saturation.SSat = saturation['SSat']
 
@@ -891,35 +886,36 @@ class DomainBuilder:
             self.run.GeomInput._details_['Names']['history'] = []
             self.run.GeomInput.Names += [box_input]
 
-        if not self.run.GeomInput[box_input].InputType:
-            self.run.GeomInput[box_input].InputType = 'Box'
+        box_input_obj = self.run.GeomInput[box_input]
+        if not box_input_obj.InputType:
+            box_input_obj.InputType = 'Box'
 
-        if not self.run.GeomInput[box_input].GeomName:
-            self.run.GeomInput[box_input].GeomName = []
+        if not box_input_obj.GeomName:
+            box_input_obj.GeomName = []
 
-        if domain_geom_name not in self.run.GeomInput[box_input].GeomName:
-            self.run.GeomInput[box_input]._details_['GeomName']['history'] = []
-            self.run.GeomInput[box_input].GeomName += [domain_geom_name]
+        if domain_geom_name not in box_input_obj.GeomName:
+            box_input_obj._details_['GeomName']['history'] = []
+            box_input_obj.GeomName += [domain_geom_name]
 
+        domain_geom = self.run.Geom[domain_geom_name]
         if bounds is None:
-            self.run.Geom[domain_geom_name].Lower.X = 0.0
-            self.run.Geom[domain_geom_name].Lower.Y = 0.0
-            self.run.Geom[domain_geom_name].Lower.Z = 0.0
+            domain_geom.Lower.X = 0.0
+            domain_geom.Lower.Y = 0.0
+            domain_geom.Lower.Z = 0.0
             grid = self.run.ComputationalGrid
-            self.run.Geom[domain_geom_name].Upper.X = grid.DX * grid.NX
-            self.run.Geom[domain_geom_name].Upper.Y = grid.DY * grid.NY
-            self.run.Geom[domain_geom_name].Upper.Z = grid.DZ * grid.NZ
-
+            domain_geom.Upper.X = grid.DX * grid.NX
+            domain_geom.Upper.Y = grid.DY * grid.NY
+            domain_geom.Upper.Z = grid.DZ * grid.NZ
         else:
-            self.run.Geom[domain_geom_name].Lower.X = bounds[0]
-            self.run.Geom[domain_geom_name].Upper.X = bounds[1]
-            self.run.Geom[domain_geom_name].Lower.Y = bounds[2]
-            self.run.Geom[domain_geom_name].Upper.Y = bounds[3]
-            self.run.Geom[domain_geom_name].Lower.Z = bounds[4]
-            self.run.Geom[domain_geom_name].Upper.Z = bounds[5]
+            domain_geom.Lower.X = bounds[0]
+            domain_geom.Upper.X = bounds[1]
+            domain_geom.Lower.Y = bounds[2]
+            domain_geom.Upper.Y = bounds[3]
+            domain_geom.Lower.Z = bounds[4]
+            domain_geom.Upper.Z = bounds[5]
 
         if patches:
-            self.run.Geom[domain_geom_name].Patches = patches
+            domain_geom.Patches = patches
 
         return self
 
@@ -973,10 +969,10 @@ class DomainBuilder:
         self.run.ICPressure.GeomNames = domain_geom_name
         self.run.Geom[domain_geom_name].ICPressure.RefPatch = patch
 
-        if isinstance(pressure, str) and get_file_extension(pressure) == 'pfb':
+        if isinstance(pressure, str) and Path(pressure).suffix == '.pfb':
             self.run.ICPressure.Type = 'PFBFile'
             self.run.Geom.domain.ICPressure.FileName = pressure
-        elif isinstance(pressure, float) or isinstance(pressure, int):
+        elif isinstance(pressure, (float, int)):
             self.run.ICPressure.Type = 'HydroStaticPatch'
             self.run.Geom.domain.ICPressure.Value = pressure
         else:

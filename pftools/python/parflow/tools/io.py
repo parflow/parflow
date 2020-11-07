@@ -5,8 +5,8 @@ Helper functions to load or write files
 """
 
 from functools import partial
-import os
 import json
+from pathlib import Path
 import yaml
 import numpy as np
 
@@ -32,15 +32,11 @@ def load_patch_matrix_from_pfb_file(file_name, layer=None):
         nlayer, nrows, ncols = data_array.shape
         if layer:
             nlayer = layer
-        return data_array[nlayer-1, :, :]
-
+        return data_array[nlayer - 1, :, :]
     elif data_array.ndim == 2:
         return data_array
-
     else:
-        print(f'invalid PFB file: {file_name}')
-
-    return
+        raise Exception(f'invalid PFB file: {file_name}')
 
 
 # -----------------------------------------------------------------------------
@@ -70,8 +66,8 @@ def load_patch_matrix_from_image_file(file_name, color_to_patch=None,
         to_key_3 = partial(_to_key, num=3)
 
         for key, value in color_to_patch.items():
-            hexColor = key.lstrip('#')
-            color = tuple(int(hexColor[i:i+2], 16) for i in (0, 2, 4))
+            hex_color = key.lstrip('#')
+            color = tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
             colors.append((color, value))
             size1.add(to_key_1(color))
             size2.add(to_key_2(color))
@@ -136,14 +132,14 @@ def load_patch_matrix_from_asc_file(file_name):
 # -----------------------------------------------------------------------------
 
 def load_patch_matrix_from_sa_file(file_name):
-    iSize = -1
-    jSize = -1
-    kSize = -1
+    i_size = -1
+    j_size = -1
+    k_size = -1
     with open(file_name) as f:
-        iSize, jSize, kSize = map(int, f.readline().split())
+        i_size, j_size, k_size = map(int, f.readline().split())
 
     matrix = np.loadtxt(file_name, skiprows=1, dtype=np.int16)
-    matrix.shape = (jSize, iSize)
+    matrix.shape = (j_size, i_size)
     return matrix
 
 
@@ -198,21 +194,21 @@ def write_dict_as_pfidb(dict_obj, file_name):
 def write_dict_as_yaml(dict_obj, file_name):
     """Write a Python dict in a pfidb format inside the provided file_name
     """
-    yamlObj = {}
+    yaml_obj = {}
     overriden_keys = {}
     for key, value in dict_obj.items():
         keys_path = key.split('.')
         get_or_create_dict(
-            yamlObj, keys_path[:-1], overriden_keys)[keys_path[-1]] = value
+            yaml_obj, keys_path[:-1], overriden_keys)[keys_path[-1]] = value
 
     # Push value back to yaml
     for key, value in overriden_keys.items():
         keys_path = key.split('.')
-        valueObj = get_or_create_dict(yamlObj, keys_path, {})
-        valueObj['$_'] = value
+        value_obj = get_or_create_dict(yaml_obj, keys_path, {})
+        value_obj['_value_'] = value
 
-    with open(file_name, 'w') as out:
-        out.write(yaml.dump(sort_dict(yamlObj), Dumper=YAMLDumper))
+    output = yaml.dump(sort_dict(yaml_obj), Dumper=YAMLDumper)
+    Path(file_name).write_text(output)
 
 
 # -----------------------------------------------------------------------------
@@ -220,8 +216,7 @@ def write_dict_as_yaml(dict_obj, file_name):
 def write_dict_as_json(dict_obj, file_name):
     """Write a Python dict in a json format inside the provided file_name
     """
-    with open(file_name, 'w') as out:
-        out.write(json.dumps(dict_obj, indent=2))
+    Path(file_name).write_text(json.dumps(dict_obj, indent=2))
 
 
 # -----------------------------------------------------------------------------
@@ -233,7 +228,7 @@ def write_dict(dict_obj, file_name):
     # Always write a sorted dictionary
     sorted_dict = sort_dict(dict_obj)
 
-    ext = file_name.split('.').pop().lower()
+    ext = Path(file_name).suffix[1:].lower()
     if ext in ['yaml', 'yml']:
         write_dict_as_yaml(sorted_dict, file_name)
     elif ext == 'pfidb':
@@ -241,7 +236,7 @@ def write_dict(dict_obj, file_name):
     elif ext == 'json':
         write_dict_as_json(sorted_dict, file_name)
     else:
-        print(f'Could not find writer for {file_name}')
+        raise Exception(f'Could not find writer for {file_name}')
 
 
 # -----------------------------------------------------------------------------
@@ -265,7 +260,7 @@ def read_pfidb(file_path):
     """Load pfidb file into a Python dict
     """
     result_dict = {}
-    action = 'nb_lines'  # nbLines, size, string
+    action = 'nb_lines'  # nb_lines, size, string
     size = 0
     key = ''
     value = ''
@@ -298,8 +293,8 @@ def read_pfidb(file_path):
 def read_yaml(file_path):
     """Load yaml file into a Python dict
     """
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as txt_file:
-            return yaml.safe_load(txt_file.read())
+    path = Path(file_path)
+    if not path.exists():
+        return {}
 
-    return {}
+    return yaml.safe_load(path.read_text())

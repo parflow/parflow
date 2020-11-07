@@ -6,7 +6,7 @@ from parflow.tools.io import read_pfidb, write_dict_as_pfidb
 from parflow.tools.helper import sort_dict
 
 
-def writeSortedPFIDB(input_file, output_file=None):
+def write_sorted_pfidb(input_file, output_file=None):
     if not os.path.exists(input_file):
         print(f'Input file does not exist: {input_file}')
         return
@@ -33,4 +33,4 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(0)
 
-    writeSortedPFIDB(args.input, args.output)
+    write_sorted_pfidb(args.input, args.output)
