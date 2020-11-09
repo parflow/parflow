@@ -67,8 +67,7 @@ int amps_Finalize()
   {
     MPI_Comm_free(&amps_CommNode);
     MPI_Comm_free(&amps_CommWrite);
-    // CALL_oas_pfl_finalize(&dummy2_oas3);
-    MPI_Finalize();
+    CALL_oas_pfl_finalize(&dummy2_oas3);
   }
 #ifdef PARFLOW_HAVE_CUDA
   amps_gpu_free_bufs();
