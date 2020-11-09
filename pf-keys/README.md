@@ -49,6 +49,7 @@ The following is a list of the keys that are currently missing from the manual b
  - Geom.*geometry_name*.contaminant_name.Retardation.Rate
  - Geom.*geometry_name*.Porosity.FileName
  - GeomInput.geom_input_name.GeomName
+ - OverlandFlowDiffusive
  - Phase.*phase_name*.Geom.*geom_name*.HeatCapacity.Value
  - Phase.*phase_name*.HeatCapacity.GeomNames
  - Phase.*phase_name*.HeatCapacity.Type
@@ -72,6 +73,8 @@ The following is a list of the keys that are currently missing from the manual b
  - Solver.PrintSubsurfData
  - Solver.PrintTop
  - Solver.RAPType
+ - Solver.WritePfbMannings
+ - Solver.WritePfbSlopes
  - Solver.WriteSiloCLM
  - Solver.WriteSiloDZMultiplier
  - Solver.WriteSiloOverlandBCFlux

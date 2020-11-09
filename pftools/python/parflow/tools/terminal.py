@@ -5,6 +5,7 @@ This module provides colors and symbols for generating nice terminal output.
 
 """
 
+
 class Colors:
     """Terminal color helper
     """

@@ -33,3 +33,4 @@ ParFlow
    tutorials/pfb
    tutorials/solid_files
    tutorials/sub_tables
+   tutorials/domain_builder
