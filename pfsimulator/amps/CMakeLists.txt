@@ -25,12 +25,10 @@ if (${PARFLOW_HAVE_MPI})
 endif (${PARFLOW_HAVE_MPI})
 
 if(${PARFLOW_HAVE_OAS3})
-  target_link_directories(amps PUBLIC "${OASIS_Fortran_LIBDIR}")
-  # The order for these libs is important
-  target_link_libraries(amps psmile.MPI1 mct mpeu scrip)
+  target_link_libraries(amps ${OASIS_Fortran_LIBRARY} ${MCT_Fortran_LIBRARY} ${MPEU_Fortran_LIBRARY} ${SCRIP_Fortran_LIBRARY})
   target_include_directories(amps PUBLIC "${OASIS_Fortran_INCLUDES}")
   
-  target_link_libraries(amps netcdff)
+  target_link_libraries(amps ${NETCDF_Fortran_LIBRARY})
   target_include_directories(amps PUBLIC "${NETCDF_Fortran_INCLUDES}")
 endif(${PARFLOW_HAVE_OAS3})
 
