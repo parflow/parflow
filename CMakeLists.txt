@@ -140,12 +140,16 @@ else ()
 endif ()
 
 # OAS3
-option(PARFLOW_HAVE_OAS3 "Build with OAS3" "no")
-
-if (PARFLOW_HAVE_OAS3)
+if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
+  if (NOT OAS3_ROOT)
+    message(FATAL_ERROR "ERROR: OAS3_ROOT variable for OASIS is required when compiling with PARFLOW_AMPS_LAYER=oas3")
+  endif (NOT OAS3_ROOT)
+  if (NOT OAS3_NETCDFF_ROOT)
+    message(FATAL_ERROR "ERROR: OAS3_NETCDFF_ROOT variable for NetCDF-Fortran is required when compiling with PARFLOW_AMPS_LAYER=oas3")
+  endif (NOT OAS3_NETCDFF_ROOT)
   set (PARFLOW_HAVE_OAS3 "yes")
   set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
-endif ()
+endif (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
 
 set (PARFLOW_AMPS_LAYER_REQUIRE_MPI cuda mpi1 smpi oas3)
 set (PARFLOW_TEST_PARALLEL cuda mpi1 smpi)

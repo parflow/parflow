@@ -12,15 +12,6 @@ string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SRC_FILES "${AMP
 
 add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
-target_link_directories(amps PUBLIC "/p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-cos-pfl/JUWELS/lib")
-# The order for these libs is important
-target_link_libraries(amps psmile.MPI1 mct mpeu scrip)
-target_include_directories(amps PUBLIC "/p/project/cesmtst/hokkanen1/TSMP/oasis3-mct_JUWELS_3.1.0MCT_clm-cos-pfl/JUWELS/build/lib/psmile.MPI1")
-
-target_link_directories(amps PUBLIC "/p/software/juwels/stages/Devel-2020/software/netCDF-Fortran/4.5.3-ipsmpi-2020/lib")
-target_link_libraries(amps netcdff)
-target_include_directories(amps PUBLIC "/p/software/juwels/stages/Devel-2020/software/netCDF-Fortran/4.5.3-ipsmpi-2020/include")
-
 if(${PARFLOW_HAVE_CUDA})
   target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
   if( ${PARFLOW_HAVE_RMM} )
@@ -32,6 +23,18 @@ endif(${PARFLOW_HAVE_CUDA})
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (amps PUBLIC "${MPI_C_INCLUDE_PATH}")
 endif (${PARFLOW_HAVE_MPI})
+
+if(${PARFLOW_HAVE_OAS3})
+  target_link_directories(amps PUBLIC "${OAS3_ROOT}/lib")
+  # The order for these libs is important
+  target_link_libraries(amps psmile.MPI1 mct mpeu scrip)
+  target_include_directories(amps PUBLIC "${OAS3_ROOT}/build/lib/psmile.MPI1")
+  
+  target_link_directories(amps PUBLIC "${OAS3_NETCDFF_ROOT}/lib")
+  target_link_libraries(amps netcdff)
+  target_include_directories(amps PUBLIC "${OAS3_NETCDFF_ROOT}/include")
+endif(${PARFLOW_HAVE_OAS3})
+
 
 install(TARGETS amps DESTINATION lib)
 
