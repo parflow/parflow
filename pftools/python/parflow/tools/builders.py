@@ -758,17 +758,15 @@ class DomainBuilder:
 
     def variably_saturated(self):
         """Setting keys for variably saturated domain.
-        Solver settings taken from default_richards test case
+        Common solver settings
         """
         self.run.Solver = 'Richards'
-        self.run.Solver.MaxIter = 5
         self.run.Solver.Nonlinear.MaxIter = 10
-        self.run.Solver.Nonlinear.ResidualTol = 1e-9
+        self.run.Solver.Nonlinear.ResidualTol = 1e-5
         self.run.Solver.Nonlinear.EtaChoice = 'EtaConstant'
         self.run.Solver.Nonlinear.EtaValue = 1e-5
         self.run.Solver.Nonlinear.UseJacobian = True
         self.run.Solver.Nonlinear.DerivativeEpsilon = 1e-2
-        self.run.Solver.Linear.KrylovDimension = 10
         self.run.Solver.Linear.Preconditioner = 'PFMG'
 
         return self
@@ -778,16 +776,6 @@ class DomainBuilder:
         taken from default_richards test case - need to change
         """
         self.run.Solver = 'Impes'
-        self.run.Solver.MaxIter = 5
-        self.run.Solver.Nonlinear.MaxIter = 10
-        self.run.Solver.Nonlinear.ResidualTol = 1e-9
-        self.run.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-        self.run.Solver.Nonlinear.EtaValue = 1e-5
-        self.run.Solver.Nonlinear.UseJacobian = True
-        self.run.Solver.Nonlinear.DerivativeEpsilon = 1e-2
-        self.run.Solver.Linear.KrylovDimension = 10
-        self.run.Solver.Linear.Preconditioner = 'PFMG'
-
         return self
 
     def homogeneous_subsurface(self, domain_name, perm=None, porosity=None,
