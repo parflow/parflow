@@ -1,3 +1,2 @@
-*.pfidb
+*.pfidb.*
 *.yaml
-!LW_test_data*

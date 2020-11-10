@@ -72,12 +72,11 @@ PhaseSources:
       background:
         Value: 0.0
 Solver:
-  $_: Richards
   LSM: none
   Linear:
-    $_: PCG
     KrylovDimension: 10
     Preconditioner: PFMG
+    _value_: PCG
   MaxIter: 5
   Nonlinear:
     DerivativeEpsilon: 0.01
@@ -87,6 +86,7 @@ Solver:
     ResidualTol: 1.0e-09
     UseJacobian: true
   TerrainFollowingGrid: false
+  _value_: Richards
 TimeStep:
   Type: Constant
   Value: 0.001

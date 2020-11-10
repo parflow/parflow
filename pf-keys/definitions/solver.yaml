@@ -808,6 +808,22 @@ Solver:
     domains:
       BoolDomain:
 
+  # WritePfbSlopes is missing from the manual.
+  WritePfbSlopes:
+    help: >
+      [Type: boolean/string] This key is used to turn on collection and printing of the slopes into a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
+  # WritePfbMannings is missing from the manual.
+  WritePfbMannings:
+    help: >
+      [Type: boolean/string] This key is used to turn on collection and printing of the mannings coefficients into a PFB file.
+    default: True
+    domains:
+      BoolDomain:
+
   # missing from manual - maybe only included as Linear.Preconditioner.PFMG.RAPType
   RAPType:
     help: >
