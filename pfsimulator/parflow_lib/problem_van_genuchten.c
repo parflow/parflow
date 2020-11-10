@@ -29,29 +29,38 @@
 #include "parflow.h"
 
 /*--------------------------------------------------------------------------
- * Structures
+ * Structures; for reference see problem_saturation.c
  *--------------------------------------------------------------------------*/
-
+/**
+ * @param type input type
+ * @param data pointer to Type structure
+ * @param regions names of the regions
+ */
 typedef struct {
-    int type;     /* input type */
-    void  *data;  /* pointer to Type structure */
+    int type;
+    void  *data;
 
     NameArray regions;
 } PublicXtra;
 
 typedef struct {
     Grid    *grid;
-
     double  *temp_data;
 } InstanceXtra;
 
+/**
+ * constant regions
+ */
 typedef struct {
   NameArray regions;
   int num_regions;
   int     *region_indices;
   double  *values;
-} Type0;                       /* constant regions */
+} Type0;
 
+/**
+ * Van Genuchten Saturation Curve
+ */
 typedef struct {
     int num_regions;
     int    *region_indices;
@@ -68,8 +77,11 @@ typedef struct {
     Vector *n_values;
     Vector *s_res_values;
     Vector *s_sat_values;
-} Type1;                      /* Van Genuchten Saturation Curve */
+} Type1;
 
+/**
+ * Haverkamp et.al. Saturation Curve
+ */
 typedef struct {
     int num_regions;
     int    *region_indices;
@@ -77,37 +89,51 @@ typedef struct {
     double *betas;
     double *s_ress;
     double *s_difs;
-} Type2;                      /* Haverkamp et.al. Saturation Curve */
+} Type2;
 
+/**
+ * Data points for Saturation Curve
+ */
 typedef struct {
     int num_regions;
     int    *region_indices;
-} Type3;                      /* Data points for Saturation Curve */
+} Type3;
 
+/**
+ * Polynomial function for Saturation Curve
+ */
 typedef struct {
     int num_regions;
     int     *region_indices;
     int     *degrees;
     double **coefficients;
-} Type4;                      /* Polynomial function for Saturation Curve */
+} Type4;
 
+/**
+ * Spatially varying field over entire domain
+ * read from a file
+ */
 typedef struct {
     char    *filename;
 
     Vector  *satRF;
-} Type5;                      /* Spatially varying field over entire domain
-                               * read from a file */
+} Type5;
 
-/*--------------------------------------------------------------------------
- * Saturation van genuchten write values into problemdata
- *--------------------------------------------------------------------------*/
+/**
+ * @brief This routine writes the van genuchten parameters into problemdata.
+ * @param pd_alpha Alpha vector of ProblemData
+ * @param pd_n N vector of ProblemData
+ * @param pd_sres SRES vector of ProblemData
+ * @param pd_ssat SSAT vector of ProblemData
+ * @param problem_data Contains geometry info. for the problem
+ */
 void     vanGenuchten(
     Vector *     pd_alpha,
     Vector *     pd_n,
     Vector *     pd_sres,
     Vector *     pd_ssat,
 
-    ProblemData *problem_data /* Contains geometry info. for the problem */
+    ProblemData *problem_data
 )
 {
   PFModule      *this_module = ThisPFModule;
@@ -290,11 +316,12 @@ void     vanGenuchten(
   }         /* End if data_from_file */
 }
 
-
-/*--------------------------------------------------------------------------
- * VanGenuchtenInitInstanceXtra
- *--------------------------------------------------------------------------*/
-
+/**
+ * @brief initialises InstanceXtra of ThisPFModule
+ * @param grid
+ * @param temp_data
+ * @return ThisPFModule
+ */
 PFModule  *vanGenuchtenInitInstanceXtra(
     Grid *  grid,
     double *temp_data
@@ -399,10 +426,10 @@ PFModule  *vanGenuchtenInitInstanceXtra(
   return this_module;
 }
 
-/*-------------------------------------------------------------------------
- * VanGenuchtenFreeInstanceXtra
- *-------------------------------------------------------------------------*/
 
+/**
+ * @brief frees memory of InstanceXtra of ThisPFModule
+ */
 void  vanGenuchtenFreeInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
@@ -442,10 +469,10 @@ void  vanGenuchtenFreeInstanceXtra()
   }
 }
 
-/*--------------------------------------------------------------------------
- * VanGenuchtenNewPublicXtra
- *--------------------------------------------------------------------------*/
-
+/**
+ * @brief initialises a new PublicXtra based on the entries in the ParFlow Database
+ * @return ThisPFModule
+ */
 PFModule   *vanGenuchtenNewPublicXtra()
 {
   PFModule      *this_module = ThisPFModule;
@@ -552,10 +579,9 @@ PFModule   *vanGenuchtenNewPublicXtra()
   return this_module;
 }
 
-/*--------------------------------------------------------------------------
- * VanGenuchtenFreePublicXtra
- *--------------------------------------------------------------------------*/
-
+/**
+ * @brief frees memory of PublicXtra of ThisPFModule
+ */
 void  vanGenuchtenFreePublicXtra()
 {
   PFModule    *this_module = ThisPFModule;
@@ -589,10 +615,9 @@ void  vanGenuchtenFreePublicXtra()
   }
 }
 
-/*--------------------------------------------------------------------------
- * VanGenuchtenSizeOfTempData
- *--------------------------------------------------------------------------*/
-
+/**
+ * @return the total size of the vanGenuchten parameters.
+ */
 int  vanGenuchtenSizeOfTempData()
 {
   PFModule      *this_module = ThisPFModule;
