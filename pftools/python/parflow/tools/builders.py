@@ -773,7 +773,7 @@ class DomainBuilder:
 
     def fully_saturated(self):
         """Fully saturated solver settings (other than solver ='Impes')
-        taken from default_richards test case - need to change
+        Taken from default Impes examples - need to change
         """
         self.run.Solver = 'Impes'
         return self
