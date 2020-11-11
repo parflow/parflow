@@ -269,8 +269,7 @@ class ValidFile:
             return errors
 
         if path_prefix_source:
-            path_prefix = container.get_selection_from_location(
-                path_prefix_source)[0]
+            path_prefix, = container.select(path_prefix_source)
 
         path = Path(working_directory) / path_prefix / value
         if path.exists():
