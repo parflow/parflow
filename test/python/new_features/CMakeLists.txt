@@ -5,6 +5,7 @@ set(TESTS
   default_db
   domain_builder
   enum_versioning
+  from_definition
   full_clone
   hyphen_test
   image-as-mask
