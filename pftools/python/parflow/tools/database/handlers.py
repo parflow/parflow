@@ -32,8 +32,7 @@ class ChildHandler:
     def decorate(self, value, container, class_name=None, location='.',
                  eager=None, **kwargs):
         klass = getattr(generated, class_name)
-        destination_containers = container.get_selection_from_location(
-            location)
+        destination_containers = container.select(location)
         valid_name = value.strip()
 
         if not valid_name:

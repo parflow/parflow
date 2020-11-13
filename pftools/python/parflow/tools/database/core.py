@@ -2,8 +2,8 @@ r"""
 This module aims to provide the core components that are required to build
 a Parflow input deck.
 """
-import sys
 import yaml
+import sys
 
 from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
@@ -11,7 +11,7 @@ from parflow.tools.helper import (
     map_to_child, map_to_children_of_type, map_to_parent, map_to_self,
     remove_prefix
 )
-from parflow.tools.helper import sort_dict_by_priority
+from parflow.tools.helper import normalize_location, sort_dict_by_priority
 from parflow.tools.io import read_pfidb
 
 from .domains import validate_value_to_string, validate_value_with_exception
@@ -20,7 +20,7 @@ from .handlers import decorate_value
 
 # -----------------------------------------------------------------------------
 # Accessor helpers
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
 def validate_helper(container, name, value, indent):
     """Helper function for validating a value
@@ -184,13 +184,13 @@ class PFDBObj:
         self._parent_ = parent
         self._prefix_ = None
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def __setitem__(self, key, value):
         """Allow a[x] for assignment as well"""
         self.__setattr__(key, value)
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def __setattr__(self, name, value):
         """
@@ -230,7 +230,7 @@ class PFDBObj:
             # Decorate value if need be (i.e. Geom.names: 'a b c')
             self.__dict__[name] = decorate_value(value, self, handlers)
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def __len__(self):
         """
@@ -257,7 +257,7 @@ class PFDBObj:
 
         return value_count
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def __getitem__(self, key):
         """
@@ -282,32 +282,7 @@ class PFDBObj:
 
         return getattr(self, key_str)
 
-    # ---------------------------------------------------------------------------
-
-    def help(self, key=None):
-        """
-        Dynamic help function for runtime evaluation
-        """
-        if key is not None:
-            if key in self._details_:
-                if 'help' in self._details_[key]:
-                    print(self._details_[key]['help'])
-            else:
-                obj = self.__dict__[key]
-                if hasattr(obj, '__doc__'):
-                    print(obj.__doc__)
-
-                if hasattr(obj, '_details_') and '_value_' in obj._details_ \
-                        and 'help' in obj._details_['_value_']:
-                    print(obj._details_['_value_']['help'])
-
-        elif hasattr(self, '__doc__'):
-            print(self.__doc__)
-            if hasattr(self, '_details_') and '_value_' in self._details_ \
-                    and 'help' in self._details_['_value_']:
-                print(self._details_['_value_']['help'])
-
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def to_dict(self):
         """Method that will return a flat map of all the ParFlow keys.
@@ -320,7 +295,7 @@ class PFDBObj:
         extract_keys_from_object(key_dict, self)
         return key_dict
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def keys(self, skip_default=False):
         """
@@ -360,7 +335,7 @@ class PFDBObj:
                 elif is_mandatory:
                     yield name
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def validate(self, indent=1, verbose=False, enable_print=True,
                  working_directory=None):
@@ -413,7 +388,7 @@ class PFDBObj:
 
         return error_count
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def full_name(self):
         """
@@ -437,7 +412,7 @@ class PFDBObj:
         full_path.reverse()
         return '.'.join(full_path)
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def to_pf_name(self, parent_namespace, key):
         """
@@ -458,7 +433,7 @@ class PFDBObj:
         start = f'{parent_namespace}.' if parent_namespace else ''
         return start + remove_prefix(key, prefix)
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_children_of_type(self, class_name):
         """Return a list of PFDBObj of a given type that are part of
@@ -473,23 +448,22 @@ class PFDBObj:
 
         return results
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
-    def get_selection_from_location(self, location='.'):
+    @normalize_location
+    def select(self, location='.'):
         """
         Return a PFDBObj object based on a location.
 
         i.e.:
-          run.Process.Topology.get_selection_from_location('.') =>
-              run.Process.Topology
-          run.Process.Topology.get_selection_from_location('..') => run.Process
-          run.Process.Topology.get_selection_from_location('../../Geom') =>
-              run.Geom
-          run.Process.Topology.get_selection_from_location('/Geom') => run.Geom
+          run.Process.Topology.select('.') => run.Process.Topology
+          run.Process.Topology.select('..') => run.Process
+          run.Process.Topology.select('../../Geom') => run.Geom
+          run.Process.Topology.select('/Geom') => run.Geom
         """
         current_location = self
         path_items = location.split('/')
-        if location[0] == '/':
+        if location.startswith('/'):
             while current_location._parent_ is not None:
                 current_location = current_location._parent_
 
@@ -505,20 +479,82 @@ class PFDBObj:
                 next_list.extend(map(map_to_parent, current_list))
             elif path_item == '.':
                 next_list.extend(map(map_to_self, current_list))
-            elif path_item[0] == '{':
+            elif path_item.startswith('{'):
                 multi_list = map(map_to_children_of_type(
                     path_item[1:-1]), current_list)
-                next_list = [item for sublist in multi_list
-                             for item in sublist]
+                next_list = [x for sublist in multi_list for x in sublist]
             else:
                 next_list.extend(map(map_to_child(path_item), current_list))
-                if len(next_list) and isinstance(next_list[0], list):
-                    next_list = [
-                        item for sublist in next_list for item in sublist]
+                if next_list and isinstance(next_list[0], list):
+                    next_list = [x for sublist in next_list for x in sublist]
 
         return next_list
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+
+    @normalize_location
+    def value(self, location='.', skip_default=False):
+        """
+        Return a value based on a location.
+
+        e.g.:
+          run.ComputationalGrid.value('DX') => 8.88
+          run.value('ComputationalGrid/DX') => 8.88
+          run.value('/ComputationalGrid/DX') => 8.88
+          run.Perm.value('../ComputationalGrid/DX') => 8.88
+          run.Solver.value() => 'Richards'
+        """
+        value, *_ = self._value(location)
+
+        if skip_default:
+            details = self.details(location)
+            if not details.get('history'):
+                return
+
+        return value
+
+    # -------------------------------------------------------------------------
+
+    @normalize_location
+    def details(self, location='.'):
+        """
+        Return details based on a location.
+        """
+        value, container, key = self._value(location)
+
+        if key and isinstance(getattr(container, key, None), PFDBObj):
+            value = container[key]
+
+        if isinstance(value, PFDBObj):
+            return getattr(value, '_details_', {}).get('_value_', {})
+
+        key = '_value_' if key is None else key
+        return getattr(container, '_details_', {}).get(key, {})
+
+    # -------------------------------------------------------------------------
+
+    @normalize_location
+    def doc(self, location='.'):
+        """
+        Return docs based on a location.
+        """
+        value, container, key = self._value(location)
+        details = self.details(location)
+
+        if key and isinstance(getattr(container, key, None), PFDBObj):
+            value = container[key]
+
+        if not value and isinstance(container, PFDBObj):
+            value = container
+
+        ret = ''
+        if isinstance(value, PFDBObj) and getattr(value, '__doc__', None):
+            ret += value.__doc__ + '\n'
+        if details.get('help'):
+            ret += details['help'] + '\n'
+        return ret
+
+    # -------------------------------------------------------------------------
 
     def get_context_settings(self):
         """
@@ -532,7 +568,7 @@ class PFDBObj:
             'pf_version': settings.PARFLOW_VERSION
         }
 
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def pfset(self, key='', value=None, yaml_file=None, yaml_content=None,
               pfidb_file=None, hierarchical_map=None, flat_map=None,
@@ -575,8 +611,7 @@ class PFDBObj:
         key_stored = False
         tokens = key.split('.')
         if len(tokens) > 1:
-            container = self.get_selection_from_location(
-                '/'.join(tokens[:-1]))[0]
+            container, = self.select('/'.join(tokens[:-1]))
             if container is not None:
                 container[tokens[-1]] = value
                 key_stored = True
@@ -599,45 +634,7 @@ class PFDBObj:
             if exit_if_undefined:
                 sys.exit(1)
 
-    # ---------------------------------------------------------------------------
-
-    def get(self, key='', skip_default=False):
-        value = None
-        tokens = key.split('.')
-        details = None
-        if len(tokens) > 1:
-            container = self.get_selection_from_location(
-                '/'.join(tokens[:-1]))[0]
-            if container is not None:
-                value = container[tokens[-1]] if \
-                    tokens[-1] in container.__dict__ else None
-            if value is not None and not isinstance(value, PFDBObj):
-                details = container._details_[tokens[-1]]
-        elif len(tokens) == 1:
-            if len(tokens[0]) > 0:
-                value = self[tokens[0]] if tokens[0] in self.__dict__ else None
-                details = self._details_[tokens[0]] if \
-                    tokens[0] in self._details_ else None
-            else:
-                value = self
-
-        if value is None:
-            return None
-
-        if isinstance(value, PFDBObj):
-            if skip_default:
-                details = value._details_['_value_']
-                if 'history' not in details or len(details['history']) == 0:
-                    return None
-            return value._value_
-
-        if skip_default and details:
-            if 'history' not in details or len(details['history']) == 0:
-                return None
-
-        return value
-
-    # ---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def _process_dynamic(self):
         """
@@ -646,10 +643,54 @@ class PFDBObj:
         from . import generated
         for class_name, selection in self._dynamic_.items():
             klass = getattr(generated, class_name)
-            names = self.get_selection_from_location(selection)
+            names = self.select(selection)
             for name in names:
                 if name is not None:
                     self.__dict__[name] = klass(self)
+
+    # -------------------------------------------------------------------------
+
+    @normalize_location
+    def _value(self, location='.'):
+        """
+        Internal function to get the value, container and key from location
+        """
+        container, key = self._get_container_and_key(location)
+
+        if key is None:
+            value = container
+        else:
+            value = getattr(container, key, None)
+
+        if isinstance(value, PFDBObj):
+            value = getattr(value, '_value_', None)
+
+        return value, container, key
+
+    # -------------------------------------------------------------------------
+
+    @normalize_location
+    def _get_container_and_key(self, location):
+        """
+        Internal function to get the container and key from location
+        """
+        split = location.split('/')
+        path, key = '/'.join(split[:-1]), split[-1]
+
+        if key == '.':
+            return self, None
+
+        parent = self
+        while key == '..' and getattr(parent, '_parent_', None):
+            parent = parent._parent_
+            split = path.split('/')
+            path, key = '/'.join(split[:-1]), split[-1]
+
+        if parent is not self:
+            # We went through the loop above. Return...
+            return parent, None
+
+        return self.select(path)[0], key
 
 
 # -----------------------------------------------------------------------------

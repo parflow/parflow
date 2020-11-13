@@ -4,6 +4,16 @@
 
 - Metadata keys and processing of CLM files
 
+## v1.0.0 (released 2020-11-12):
+
+- Cleaned up code and API
+- Added new selection methods to get attributes at arbitrary
+locations. This includes `details()`, `doc()`, and `value()`.
+- Selection methods (including `select()`) can use either dot
+notation or slash notation now.
+- Added ``from_definition`` class method to automatically create
+a ``Run`` object from a file path.
+
 ## v0.0.6 (released 2020-10-28):
 
 - Added ``set_name`` and ``get_name`` methods for ``Run`` object
