@@ -223,6 +223,39 @@ class Run(BaseRun):
         else:
             settings.set_working_directory()
 
+    @classmethod
+    def from_definition(cls, file_path):
+        """Method to generate a Run object from a file.
+
+        Currently accepts the following input file types:
+            yaml
+            pfidb
+
+        Args:
+            file_path (str): path to the file to read in
+
+        Returns:
+            A new Run object
+        """
+        # Reset working directory to cwd for the file path
+        settings.set_working_directory()
+        file_path = Path(get_absolute_path(file_path))
+        name, ext = file_path.stem, file_path.suffix[1:]
+
+        ext_map = {
+            'yaml': 'yaml_file',
+            'yml': 'yaml_file',
+            'pfidb': 'pfidb_file'
+        }
+
+        if ext not in ext_map:
+            raise Exception(f'Unknown extension: {ext}')
+
+        new_run = cls(name, file_path)
+        kwargs = {ext_map[ext]: file_path}
+        new_run.pfset(**kwargs)
+        return new_run
+
     def get_name(self):
         """Returns name of run
         """

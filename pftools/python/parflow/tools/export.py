@@ -30,7 +30,7 @@ class SubsurfacePropertiesExporter:
         entry = {'key': name}
         has_data = False
         for key in self.pfkey_to_alias:
-            value = geom_item.get(key, skip_default=True)
+            value = geom_item.value(key, skip_default=True)
             if value is not None:
                 has_data = True
                 alias = self.pfkey_to_alias[key]
@@ -42,7 +42,7 @@ class SubsurfacePropertiesExporter:
     def _process(self):
         self.entries = []
         self.props_found.clear()
-        geom_items = self.run.Geom.get_selection_from_location('{GeomItem}')
+        geom_items = self.run.Geom.select('{GeomItem}')
         for item in geom_items:
             entry = self._extract_sub_surface_props(item)
             if entry is not None:

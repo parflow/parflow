@@ -1,3 +1,6 @@
+import os
+import re
+
 # -----------------------------------------------------------------------------
 # Map function Helper functions
 # -----------------------------------------------------------------------------
@@ -104,3 +107,40 @@ def remove_prefix(s, prefix):
         return s
 
     return s[len(prefix):]
+
+
+# First column is the regex. Second column is the replacement.
+INVALID_DOT_REGEX_SUBS = [
+    (re.compile(r'^\.([a-zA-Z]+)'), '\\1'),
+    (re.compile(r'([a-zA-Z]+)\.'), '\\1/')
+]
+
+
+def _normalize_location(s):
+    s = os.path.normpath(s)
+    for regex, sub in INVALID_DOT_REGEX_SUBS:
+        s = re.sub(regex, sub, s)
+    return s
+
+
+# -----------------------------------------------------------------------------
+# Decorators
+# -----------------------------------------------------------------------------
+
+def normalize_location(func):
+    """Assume the first string argument is location and normalize it.
+
+    Normalizing it replaces dot notation with slash notation. For instance:
+
+        .Geom.Perm => Geom/Perm
+
+    """
+    def wrapper(*args, **kwargs):
+        args = list(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, str):
+                args[i] = _normalize_location(arg)
+                break
+
+        return func(*args, **kwargs)
+    return wrapper

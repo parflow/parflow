@@ -711,7 +711,7 @@ class DomainBuilder:
     def __file_check(self, file_name, key_path):
         """Checking files and setting keys for FileName keys
         """
-        container = self.run.get_selection_from_location(key_path)[0]
+        container, = self.run.select(key_path)
         container.FileName = file_name
         ext = Path(file_name).suffix
         if ext == '.pfb':
