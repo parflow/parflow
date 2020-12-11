@@ -13,6 +13,7 @@ import yaml
 
 from .fs import get_absolute_path
 
+from parflow.tools.io import read_array
 from parflow.tools.database.generated import LandCoverParamItem, CLM_KEY_DICT
 
 
@@ -200,12 +201,13 @@ class CLMExporter:
                     array[i, :] = v
                 else:
                     raise Exception(f'Axis specification error: {axis}')
-        elif vegm_root_key.Type == 'Matrix':
-            # used only for veg mapping for land use
-            array = vegm_root_key.Matrix
         elif vegm_root_key.Type == 'PFBFile':
-            # TODO
-            raise NotImplementedError(f'{vegm_root_key.Type} not implemented')
+            array = read_array(vegm_root_key.FileName)
+            while array.ndim > 2:
+                # PFB files return 3D arrays, but the data is actually 2D
+                array = array[0]
+        else:
+            raise Exception(f'Unknown vegm type: {vegm_root_key.Type}')
 
         return array
 
@@ -241,7 +243,7 @@ class CLMExporter:
                                                      color_axis).astype(int)
 
     def write_map(self, vegm_array=None, out_file='drv_vegm.dat',
-                        working_directory='.', dec_round=3):
+                  working_directory='.', dec_round=3):
         """Method to export drv_vegm.dat file based on keys or a 3D array of
            data
 

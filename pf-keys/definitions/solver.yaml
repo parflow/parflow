@@ -1106,13 +1106,12 @@ Solver:
               __class__: FracType
               help: >
                 [Type: string] Specifies the type of latitude specification for CLM. Valid
-                types are 'Constant', 'PFBFile', and 'Matrix'.
+                types are 'Constant' and 'PFBFile'.
               domains:
                 EnumDomain:
                   enum_list:
                     - Constant
                     - PFBFile
-                    - Matrix
 
             Value:
               __class__: FracValue
@@ -1136,14 +1135,6 @@ Solver:
                 AnyString:
                 ValidFile:
 
-            Matrix:
-              __class__: FracMatrix
-              help: >
-                [Type: 2D array] Specifies the matrix of the land cover fraction for your domain, if
-                Solver.CLM.Vegetation.Map.{land_cover_name}.LandFrac.Type was set to 'Matrix'. This
-                file should be a 2D array spanning the size of your domain surface (i.e., dimensions
-                of ComputationalGrid.NX by ComputationalGrid.NY).
-
         Latitude:
           __doc__: ''
           __rst__:
@@ -1153,13 +1144,12 @@ Solver:
             __class__: LatType
             help: >
               [Type: string] Specifies the type of latitude specification for CLM. Valid
-              types are 'Constant', 'Linear', 'Matrix', and 'PFBFile'.
+              types are 'Constant', 'Linear', and 'PFBFile'.
             domains:
               EnumDomain:
                 enum_list:
                   - Constant
                   - Linear
-                  - Matrix
                   - PFBFile
 
           Value:
@@ -1203,13 +1193,6 @@ Solver:
                 min_value: -90.0
                 max_value: 90.0
 
-          Matrix:
-            __class__: LatMatrix
-            help: >
-              [Type: 2D array] Specifies the matrix of the latitudes for your domain, if
-              Solver.CLM.Vegetation.Map.Latitude.Type was set to 'Matrix'. This should be a 2D array spanning the
-              size of your domain surface (i.e., dimensions of ComputationalGrid.NX by ComputationalGrid.NY).
-
         Longitude:
           __doc__: ''
           __rst__:
@@ -1219,13 +1202,12 @@ Solver:
             __class__: LongType
             help: >
               [Type: string] Specifies the type of longitude specification for CLM. Valid
-              types are 'Constant', 'Linear', 'Matrix', and 'PFBFile'.
+              types are 'Constant', 'Linear', and 'PFBFile'.
             domains:
               EnumDomain:
                 enum_list:
                   - Constant
                   - Linear
-                  - Matrix
                   - PFBFile
 
           Value:
@@ -1269,13 +1251,6 @@ Solver:
                 min_value: -180.0
                 max_value: 180.0
 
-          Matrix:
-            __class__: LongMatrix
-            help: >
-              [Type: 2D array] Specifies the matrix of the longitudes for your domain, if
-              Solver.CLM.Vegetation.Map.Longitude.Type was set to 'Matrix'. This should be a 2D array spanning the
-              size of your domain surface (i.e., dimensions of ComputationalGrid.NX by ComputationalGrid.NY).
-
         Sand:
           __doc__: ''
           __rst__:
@@ -1285,12 +1260,11 @@ Solver:
             __class__: SandType
             help: >
               [Type: string] Specifies the type of sand property specification for CLM. Valid
-              types are 'Constant', 'Matrix', and 'PFBFile'.
+              types are 'Constant' and 'PFBFile'.
             domains:
               EnumDomain:
                 enum_list:
                   - Constant
-                  - Matrix
                   - PFBFile
 
           Value:
@@ -1314,13 +1288,6 @@ Solver:
               AnyString:
               ValidFile:
 
-          Matrix:
-            __class__: SandMatrix
-            help: >
-              [Type: 2D array] Specifies the matrix of the sand properties for your domain, if
-              Solver.CLM.Vegetation.Map.Sand.Type was set to 'Matrix'. This should be a 2D array spanning the
-              size of your domain surface (i.e., dimensions of ComputationalGrid.NX by ComputationalGrid.NY).
-
         Clay:
           __doc__: ''
           __rst__:
@@ -1330,12 +1297,11 @@ Solver:
             __class__: ClayType
             help: >
               [Type: string] Specifies the type of clay property specification for CLM. Valid
-              types are 'Constant', 'Matrix' and 'PFBFile'.
+              types are 'Constant' and 'PFBFile'.
             domains:
               EnumDomain:
                 enum_list:
                   - Constant
-                  - Matrix
                   - PFBFile
 
           Value:
@@ -1359,13 +1325,6 @@ Solver:
               AnyString:
               ValidFile:
 
-          Matrix:
-            __class__: ClayMatrix
-            help: >
-              [Type: 2D array] Specifies the matrix of the clay properties for your domain, if
-              Solver.CLM.Vegetation.Map.Clay.Type was set to 'Matrix'. This should be a 2D array spanning the
-              size of your domain surface (i.e., dimensions of ComputationalGrid.NX by ComputationalGrid.NY).
-
         Color:
           __doc__: ''
           __rst__:
@@ -1375,12 +1334,11 @@ Solver:
             __class__: ColorType
             help: >
               [Type: string] Specifies the type of color property specification for CLM. Valid
-              types are 'Constant', 'Matrix' and 'PFBFile'.
+              types are 'Constant' and 'PFBFile'.
             domains:
               EnumDomain:
                 enum_list:
                   - Constant
-                  - Matrix
                   - PFBFile
 
           Value:
@@ -1403,13 +1361,6 @@ Solver:
             domains:
               AnyString:
               ValidFile:
-
-          Matrix:
-            __class__: ColorMatrix
-            help: >
-              [Type: 2D array] Specifies the matrix of the color properties for your domain, if
-              Solver.CLM.Vegetation.Map.Color.Type was set to 'Matrix'. This should be a 2D array spanning the
-              size of your domain surface (i.e., dimensions of ComputationalGrid.NX by ComputationalGrid.NY).
 
   # -----------------------------------------------------------------------------
   # Other Solver Settings

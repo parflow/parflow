@@ -6,7 +6,7 @@ from parflow import Run
 from parflow.tools.builders import CLMImporter, DomainBuilder
 from parflow.tools.export import CLMExporter
 from parflow.tools.fs import get_absolute_path
-from parflow.tools.io import read_clm
+from parflow.tools.io import read_array, read_clm
 
 clmin_file = '../../input/drv_clmin.dat.old'
 vegm_file = '../../tcl/clm/drv_vegm.dat'
@@ -226,7 +226,8 @@ def verify_vegm_data(clm):
         if key not in properties:
             item = item.LandFrac
 
-        assert item.Matrix.shape == shape
+        array = read_array(item.FileName).squeeze()
+        assert array.shape == shape
 
     # Check a few individual ones
     const_values = {
@@ -237,12 +238,16 @@ def verify_vegm_data(clm):
         'Color': 2
     }
     for name, val in const_values.items():
-        assert np.array_equal(veg_map[name].Matrix, np.full(shape, val))
+        array = read_array(veg_map[name].FileName).squeeze()
+        assert np.array_equal(array, np.full(shape, val))
 
-    assert np.array_equal(veg_map.forest_en.LandFrac.Matrix,
-                          np.full(shape, 0.0))
-    assert np.array_equal(veg_map.grasslands.LandFrac.Matrix,
-                          np.full(shape, 1.0))
+    land_fracs = {
+        'forest_en': np.full(shape, 0.0),
+        'grasslands': np.full(shape, 1.0),
+    }
+    for name, val in land_fracs.items():
+        array = read_array(veg_map[name].LandFrac.FileName).squeeze()
+        assert np.array_equal(array, val)
 
 
 def verify_vegp_data(clm):

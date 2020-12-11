@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from .helper import sort_dict
 from .fs import exists
 
-from parflow.tools.io import write_patch_matrix_as_asc, read_clm
+from parflow.tools.io import read_clm, write_array, write_patch_matrix_as_asc
 from parflow.tools.fs import get_absolute_path
 from parflow.tools.helper import remove_prefix, with_absolute_path
 
@@ -1313,11 +1313,14 @@ class CLMImporter:
 
         for i, token in enumerate(all_tokens):
             item, = self._veg_map.select(token)
+            file_name = f'clm_{token.lower()}.pfb'
             if token in land_names:
                 item, = item.select('LandFrac')
+                file_name = f'clm_{token}_landfrac.pfb'
 
-            item.Type = 'Matrix'
-            item.Matrix = vegm_data[:, :, i]
+            write_array(file_name, vegm_data[:, :, i])
+            item.Type = 'PFBFile'
+            item.FileName = file_name
 
         return self
 

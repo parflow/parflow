@@ -21,13 +21,62 @@ except ImportError:
 
 # -----------------------------------------------------------------------------
 
-def load_patch_matrix_from_pfb_file(file_name, layer=None):
+def read_array(file_name):
+    ext = Path(file_name).suffix[1:]
+    funcs = {
+        'pfb': read_array_pfb,
+    }
+
+    if ext not in funcs:
+        raise Exception(f'Unknown extension: {file_name}')
+
+    return funcs[ext](file_name)
+
+
+# -----------------------------------------------------------------------------
+
+def write_array(file_name, array):
+    ext = Path(file_name).suffix[1:]
+    funcs = {
+        'pfb': write_array_pfb,
+    }
+
+    if ext not in funcs:
+        raise Exception(f'Unknown extension: {file_name}')
+
+    return funcs[ext](file_name, array)
+
+
+# -----------------------------------------------------------------------------
+
+def read_array_pfb(file_name):
     from parflowio.pyParflowio import PFData
     data = PFData(file_name)
     data.loadHeader()
     data.loadData()
-    data_array = data.viewDataArray()
+    return data.moveDataArray()
 
+
+# -----------------------------------------------------------------------------
+
+def write_array_pfb(file_name, array):
+    # Ensure this is 3 dimensions, since parflowio requires 3 dimensions.
+    while array.ndim < 3:
+        array = array[np.newaxis, :]
+
+    if array.ndim > 3:
+        raise Exception(f'Too many dimensions: {array.ndim}')
+
+    from parflowio.pyParflowio import PFData
+    data = PFData()
+    data.setDataArray(array)
+    return data.writeFile(file_name)
+
+
+# -----------------------------------------------------------------------------
+
+def load_patch_matrix_from_pfb_file(file_name, layer=None):
+    data_array = read_array_pfb(file_name)
     if data_array.ndim == 3:
         nlayer, nrows, ncols = data_array.shape
         if layer:

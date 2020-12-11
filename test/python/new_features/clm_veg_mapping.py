@@ -1,7 +1,7 @@
 from parflow import Run
 from parflow.tools.builders import VegParamBuilder
 from parflow.tools.export import CLMExporter
-from parflow.tools.io import read_clm
+from parflow.tools.io import read_clm, write_array
 import sys
 import numpy as np
 
@@ -60,9 +60,11 @@ clm.Solver.CLM.Vegetation.Map.forest_en.LandFrac.Value = 0.0
 
 forest_eb_mat = np.zeros((clm.ComputationalGrid.NX, clm.ComputationalGrid.NY))
 forest_eb_mat[1, :] = 1.0
+file_name = 'forest_eb_mat.pfb'
+write_array(file_name, forest_eb_mat)
 
-clm.Solver.CLM.Vegetation.Map.forest_eb.LandFrac.Type = 'Matrix'
-clm.Solver.CLM.Vegetation.Map.forest_eb.LandFrac.Matrix = forest_eb_mat
+clm.Solver.CLM.Vegetation.Map.forest_eb.LandFrac.Type = 'PFBFile'
+clm.Solver.CLM.Vegetation.Map.forest_eb.LandFrac.FileName = file_name
 
 clm.Solver.CLM.Vegetation.Map.forest_dn.LandFrac.Type = 'Constant'
 clm.Solver.CLM.Vegetation.Map.forest_dn.LandFrac.Value = 0.5
