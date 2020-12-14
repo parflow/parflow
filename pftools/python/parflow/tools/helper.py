@@ -150,6 +150,8 @@ def normalize_location(func):
     return wrapper
 
 
+# -----------------------------------------------------------------------------
+
 def with_absolute_path(func):
     """Assume the first string argument is a path and resolve it."""
     @wraps(func)

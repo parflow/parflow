@@ -1,9 +1,13 @@
+from pathlib import Path
+import sys
+
+import numpy as np
+
 from parflow import Run
 from parflow.tools.builders import VegParamBuilder
 from parflow.tools.export import CLMExporter
+from parflow.tools.fs import get_absolute_path
 from parflow.tools.io import read_clm, write_array
-import sys
-import numpy as np
 
 clm = Run("clm", __file__)
 
@@ -84,6 +88,10 @@ if not vegm_data[1, 1, 14] == 1:
 # ---------------------------------------------------------
 # Testing clm data writers
 # ---------------------------------------------------------
+
+path = get_absolute_path('drv_vegm.dat')
+if Path(path).exists():
+    Path(path).unlink()
 
 CLMExporter(clm) \
     .write_map()

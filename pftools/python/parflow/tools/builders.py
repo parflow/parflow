@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 from .helper import sort_dict
 from .fs import exists
 
+from parflow.tools.database.core import PFDBObj
 from parflow.tools.io import read_clm, write_array, write_patch_matrix_as_asc
 from parflow.tools.fs import get_absolute_path
 from parflow.tools.helper import remove_prefix, with_absolute_path
@@ -1240,15 +1241,26 @@ class CLMImporter:
 
     def files(self, input='drv_clmin.dat', map='drv_vegm.dat',
               parameters='drv_vegp.dat'):
-        self.input_file(input)
-        self.map_file(map)
-        self.parameters_file(parameters)
+        func_map = {
+            'input_file': input,
+            'map_file': map,
+            'parameters_file': parameters,
+        }
+
+        for func_name, arg in func_map.items():
+            func = getattr(self, func_name)
+            try:
+                func(arg)
+            except FileNotFoundError:
+                raise Exception(f'Could not find CLM driver file {arg}')
         return self
 
     @with_absolute_path
     def input_file(self, path='drv_clmin.dat'):
         clm_key_dict = read_clm(path, type='clmin')
-        return self.input(clm_key_dict)
+        self.input(clm_key_dict)
+        self._import_paths['input'] = path
+        return self
 
     def input(self, clm_key_dict):
         from .database.generated import CLM_KEY_DICT as ref_dict
@@ -1262,6 +1274,9 @@ class CLMImporter:
             key_to_set = '.'.join(ref_dict[key])
             self.run.pfset(key=key_to_set, value=value)
 
+        # Clear all histories at the root clm input object
+        self._clear_all_histories(self.run.Solver.CLM.Input)
+
         if invalid_keys:
             print('Warning: The following CLM variables could not be set:')
             for var in invalid_keys:
@@ -1272,7 +1287,9 @@ class CLMImporter:
     @with_absolute_path
     def parameters_file(self, path='drv_vegp.dat'):
         vegp_data = read_clm(path, type='vegp')
-        return self.parameters(vegp_data)
+        self.parameters(vegp_data)
+        self._import_paths['parameters'] = path
+        return self
 
     def parameters(self, vegp_data):
         from .database.generated import CLM_KEY_DICT as ref_dict
@@ -1288,12 +1305,17 @@ class CLMImporter:
             for item, val in zip(land_cover_items, values):
                 item[name] = val
 
+                # Clear the history
+                item._details_[name]['history'] = []
+
         return self
 
     @with_absolute_path
     def map_file(self, path='drv_vegm.dat'):
         vegm_data = read_clm(path, type='vegm')
-        return self.map(vegm_data)
+        self.map(vegm_data)
+        self._import_paths['map'] = path
+        return self
 
     def map(self, vegm_data):
         self._ensure_land_covers_set()
@@ -1310,19 +1332,64 @@ class CLMImporter:
         # Slice the tokens so they match the shape of the data
         num_tokens = vegm_data.shape[2]
         all_tokens = all_tokens[:num_tokens]
+        run_name = self.run.get_name()
 
         for i, token in enumerate(all_tokens):
             item, = self._veg_map.select(token)
-            file_name = f'clm_{token.lower()}.pfb'
+            file_name = f'{run_name}_clm_{token.lower()}.pfb'
             if token in land_names:
                 item, = item.select('LandFrac')
-                file_name = f'clm_{token}_landfrac.pfb'
+                file_name = f'{run_name}_clm_{token}_landfrac.pfb'
 
             write_array(file_name, vegm_data[:, :, i])
             item.Type = 'PFBFile'
             item.FileName = file_name
 
+            # Clear the histories
+            for details in item._details_.values():
+                details['history'] = []
+
         return self
+
+    def set_default_land_names(self):
+        veg_params = self.run.Solver.CLM.Vegetation.Parameters
+        veg_params.LandNames = self._default_land_names
+        # Erase the history on the land names
+        veg_params.details('LandNames')['history'] = []
+        return self
+
+    def import_if_needed(self):
+        """Imports driver files if needed
+
+        If CLM is in use and driver file data has not yet been set, then
+        the driver files will be imported.
+
+        The default land names will be set if no land names have been
+        set yet.
+        """
+        if not self._using_clm:
+            return self
+
+        if self._driver_data_appears_to_be_set:
+            return self
+
+        self._set_default_land_names_if_missing()
+        return self.files()
+
+    @property
+    def _default_land_names(self):
+        path = 'Solver.CLM.Vegetation.Parameters.LandNames'
+        return self.run.details(path).get('default')
+
+    @property
+    def _using_clm(self):
+        # We can add other checks here if needed
+        return self.run.Solver.LSM == 'CLM'
+
+    @property
+    def _driver_data_appears_to_be_set(self):
+        # Just pick one property to check. We can also check multiple ones.
+        return self.run.Solver.CLM.Vegetation.Map.Sand.Type is not None
 
     @property
     def _veg_map(self):
@@ -1332,14 +1399,55 @@ class CLMImporter:
     def _veg_params(self):
         return self.run.Solver.CLM.Vegetation.Parameters
 
+    def _set_default_land_names_if_missing(self):
+        if not self._land_covers_are_set:
+            self.set_default_land_names()
+
     @property
     def _land_names(self):
         names = self._veg_params.LandNames
         return names if isinstance(names, list) else names.split()
 
-    def _ensure_land_covers_set(self):
+    @property
+    def _land_covers_are_set(self):
         land_param_items = self._veg_params.select('{LandCoverParamItem}')
         land_map_items = self._veg_map.select('{LandCoverMapItem}')
-        if (not land_param_items or not land_map_items or
-                any(x is None for x in land_param_items + land_map_items)):
+        return (land_param_items and land_map_items and
+                all(x is not None for x in land_param_items + land_map_items))
+
+    def _ensure_land_covers_set(self):
+        if not self._land_covers_are_set:
             raise Exception('Land cover items are not set')
+
+    @property
+    def _import_paths(self):
+        return self.run.__dict__.setdefault('_import_paths_', {})
+
+    @staticmethod
+    def _clear_all_histories(root):
+        # Clear all histories recursively starting from the root PFDBObj
+        if not isinstance(root, PFDBObj):
+            return
+
+        def recursive_clear_histories(parent):
+            for key in parent.keys():
+                item = parent[key]
+                if not isinstance(item, PFDBObj):
+                    continue
+
+                for details in item._details_.values():
+                    if 'history' in details:
+                        details['history'] = []
+
+                recursive_clear_histories(item)
+
+        recursive_clear_histories(root)
+
+
+class MetadataBuilder:
+    def __init__(self, run):
+        self.run = run
+
+    def build(self):
+        CLMImporter(self.run).import_if_needed()
+        return self

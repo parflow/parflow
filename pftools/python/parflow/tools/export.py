@@ -14,6 +14,7 @@ import yaml
 from .fs import get_absolute_path
 
 from parflow.tools.io import read_array
+from parflow.tools.database.core import PFDBObj
 from parflow.tools.database.generated import LandCoverParamItem, CLM_KEY_DICT
 
 
@@ -121,6 +122,30 @@ class CLMExporter:
         self.write_map(**kwargs)
         self.write_parameters(**kwargs)
 
+    def write_allowed(self, working_directory='.', **kwargs):
+        """Export files we are allowed to overwrite
+
+        Args:
+            - working_directory='.': specifies where the files
+              will be written
+        """
+        kwargs['working_directory'] = working_directory
+        to_write = [
+            'input',
+            'map',
+            'parameters',
+        ]
+
+        for name in to_write:
+            func = getattr(self, f'write_{name}')
+            try:
+                func(**kwargs)
+            except NotOverwritableException:
+                if self._changes_detected(working_directory, name):
+                    # print a warning that changes will not be reflected
+                    # in the calculation
+                    self._print_not_written_warning(working_directory, name)
+
     def write_input(self, working_directory='.'):
         """Method to export drv_clmin.dat file based on metadata
 
@@ -128,18 +153,21 @@ class CLMExporter:
             - working_directory='.': specifies where drv_climin.dat
               file will be written
         """
-        working_directory = get_absolute_path(working_directory)
+        output_file = self._file(working_directory, 'input')
+
+        # Make sure we don't overwrite pre-existing data
+        self._ensure_writable(output_file, 'input')
+
         clm_drv_keys = {}
         header_doc = ''
-        clm_dict = self.run.Solver.CLM.Input.to_dict()
-
+        clm_dict = self._clm_solver.Input.to_dict()
         for key in clm_dict:
             old_header_doc = header_doc
             container_key = '.'.join(map(str, key.split('.')[:-1]))
-            header_doc = self.run.Solver.CLM.Input.doc(container_key)
-            clm_key = self.run.Solver.CLM.Input.details(key).get('clm_key')
-            clm_key_value = self.run.Solver.CLM.Input.value(key)
-            clm_key_help = self.run.Solver.CLM.Input.doc(key)
+            header_doc = self._clm_solver.Input.doc(container_key)
+            clm_key = self._clm_solver.Input.details(key).get('clm_key')
+            clm_key_value = self._clm_solver.Input.value(key)
+            clm_key_help = self._clm_solver.Input.doc(key)
             item = {'value': clm_key_value, 'help': clm_key_help}
             if header_doc == old_header_doc:
                 clm_drv_keys[container_key][clm_key] = item
@@ -149,8 +177,8 @@ class CLMExporter:
                     clm_key: item
                 }
 
-        output_file = Path(working_directory) / 'drv_clmin.dat'
         with open(output_file, 'w') as wf:
+            wf.write(f'! {self._auto_generated_file_string}\n')
             wf.write(f'! CLM input file for {self.run.get_name()} '
                      f'ParFlow run' + '\n')
             for key, value in clm_drv_keys.items():
@@ -180,11 +208,11 @@ class CLMExporter:
               can be 'x' or 'y'
         """
         if isinstance(token, list) and len(token) > 1:
-            vegm_root_key = self.run.Solver.CLM.Vegetation.Map[token[0]]
+            vegm_root_key = self._clm_solver.Vegetation.Map[token[0]]
             for item in token[1:]:
                 vegm_root_key = vegm_root_key[item]
         else:
-            vegm_root_key = self.run.Solver.CLM.Vegetation.Map[token]
+            vegm_root_key = self._clm_solver.Vegetation.Map[token]
         array = np.zeros((x, y))
         if vegm_root_key.Type == 'Constant':
             array = np.full((x, y), vegm_root_key.Value)
@@ -242,8 +270,7 @@ class CLMExporter:
             vegm_array[:, :, 4] = self._process_vegm('Color', x, y,
                                                      color_axis).astype(int)
 
-    def write_map(self, vegm_array=None, out_file='drv_vegm.dat',
-                  working_directory='.', dec_round=3):
+    def write_map(self, vegm_array=None, working_directory='.', dec_round=3):
         """Method to export drv_vegm.dat file based on keys or a 3D array of
            data
 
@@ -251,18 +278,19 @@ class CLMExporter:
             - vegm_array=None: optional full array with gridded properties
               to export. If None, the array will be generated automatically
               from the run object.
-            - out_file='drv_vegm.dat': Name of the output vegetation mapping
-                                       file.
             - working_directory='.': specifies where drv_vegm.dat
               file will be written
             - dec_round=3: sets the maximum decimal rounding for the lat, long,
               sand, and clay parameters.
         """
-        working_directory = get_absolute_path(working_directory)
-        output_file = Path(working_directory) / str(out_file)
+        output_file = self._file(working_directory, 'map')
+
+        # Make sure we don't overwrite pre-existing data
+        self._ensure_writable(output_file, 'map')
+
         first_line = (' x  y  lat    lon    sand clay color  fractional '
                       'coverage of grid by vegetation class (Must/Should Add '
-                      'to 1.0)')
+                      f'to 1.0) -- {self._auto_generated_file_string}')
         second_line = '       (Deg)	 (Deg)  (%/100)   index'
 
         land_col_map = {'column': 'land cover type'}
@@ -347,8 +375,10 @@ class CLMExporter:
             - working_directory='.': specifies where drv_vegp.dat
               file will be written
         """
-        working_directory = get_absolute_path(working_directory)
-        output_file = Path(working_directory) / 'drv_vegp.dat'
+        output_file = self._file(working_directory, 'parameters')
+
+        # Make sure we don't overwrite pre-existing data
+        self._ensure_writable(output_file, 'parameters')
 
         if vegp_data is None:
             # Extract the vegp data from the run object
@@ -362,7 +392,8 @@ class CLMExporter:
         vegp_data = copy.deepcopy(vegp_data)
         self._resize_vegp_data(vegp_data)
 
-        output = self._vegp_header
+        output = f'! {self._auto_generated_file_string}\n'
+        output += self._vegp_header
 
         # Make the header based upon the land names
         for i, name in enumerate(self._land_names, 1):
@@ -399,8 +430,12 @@ class CLMExporter:
         return ['Solver', 'CLM', 'Vegetation', 'Parameters']
 
     @property
+    def _clm_solver(self):
+        return self.run.Solver.CLM
+
+    @property
     def _veg_params(self):
-        return self.run.Solver.CLM.Vegetation.Parameters
+        return self._clm_solver.Vegetation.Parameters
 
     @property
     def _land_names(self):
@@ -436,3 +471,123 @@ class CLMExporter:
             name = CLM_KEY_DICT[key][-1]
             result[key] = [item[name] for item in land_items]
         return result
+
+    @property
+    def _auto_generated_file_string(self):
+        # This will be placed in the first line of every file that
+        # was automatically generated by us.
+        return 'Automatically generated by pftools python'
+
+    def _contains_auto_generated_string(self, file_name):
+        # Check if the file was automatically generated by us
+        with open(file_name, 'r') as rf:
+            return self._auto_generated_file_string in next(rf)
+
+    def _writable(self, file_name, type):
+        # Make sure we are allowed to overwrite this file
+        if not Path(file_name).exists():
+            # We don't need to worry about overwriting anything...
+            return True
+
+        # If the file contains the auto generated string, it is okay to
+        # write over it.
+        if self._contains_auto_generated_string(file_name):
+            return True
+
+        # Otherwise, check the settings
+        key = self._overwrite_settings_map[type]
+        return getattr(self._clm_solver, key)
+
+    @property
+    def _overwrite_settings_map(self):
+        return {
+            'input': 'OverwriteDrvClmin',
+            'parameters': 'OverwriteDrvVegp',
+            'map': 'OverwriteDrvVegm',
+        }
+
+    def _ensure_writable(self, file_name, type):
+        # Make sure we can write to this file.
+        if not self._writable(file_name, type):
+            key = self._overwrite_settings_map[type]
+            msg = (f'{file_name} already exists, and {key} is false. '
+                   'Cannot overwrite.')
+            raise NotOverwritableException(msg)
+
+    def _changes_detected(self, working_directory, type):
+        # Check the history, and if there are changes, return True.
+        items_to_check = {
+            'input': self._clm_solver.Input,
+            'map': self._clm_solver.Vegetation.Map,
+            'parameters': self._clm_solver.Vegetation.Parameters,
+        }
+        if self._has_changes(items_to_check[type]):
+            return True
+
+        # Check the import path vs the write path. If they are different,
+        # return True.
+        import_path = self._import_paths.get(type)
+        write_path = str(self._file(working_directory, type))
+        return import_path != write_path
+
+    def _file(self, working_directory, type):
+        # Get a full path to the file of the specified type
+        file_map = {
+            'input': 'drv_clmin.dat',
+            'parameters': self._clm_solver.Input.File.VegTypeParameter,
+            'map': self._clm_solver.Input.File.VegTileSpecification,
+        }
+        working_directory = get_absolute_path(working_directory)
+        return Path(working_directory) / file_map[type]
+
+    def _print_not_written_warning(self, working_directory, type):
+        # Print a warning that the file was not written.
+        write_path = self._file(working_directory, type)
+        key_name = self._overwrite_settings_map[type]
+        print(f'Warning: {write_path} will not be overwritten unless '
+              f'{key_name} is set to True. Changes to the file may not '
+              'be reflected in the calculation')
+
+    @property
+    def _import_paths(self):
+        return self.run.__dict__.setdefault('_import_paths_', {})
+
+    @staticmethod
+    def _has_changes(root):
+        if not isinstance(root, PFDBObj):
+            return False
+
+        for key in root.keys():
+            item = root[key]
+
+            if not isinstance(item, PFDBObj):
+                continue
+
+            if hasattr(item, '_details_'):
+                for details in item._details_.values():
+                    if details.get('history'):
+                        return True
+
+            if CLMExporter._has_changes(item):
+                return True
+
+        return False
+
+
+class MetadataExporter:
+    def __init__(self, run):
+        self.run = run
+
+    def write(self):
+        if self._using_clm:
+            CLMExporter(self.run).write_allowed()
+
+        return self
+
+    @property
+    def _using_clm(self):
+        return self.run.Solver.LSM == 'CLM'
+
+
+class NotOverwritableException(Exception):
+    pass

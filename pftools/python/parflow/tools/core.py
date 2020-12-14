@@ -19,7 +19,8 @@ from .io import write_dict
 from .terminal import Symbols as TermSymbol
 
 from .database.generated import BaseRun
-from .export import SubsurfacePropertiesExporter
+from .export import MetadataExporter, SubsurfacePropertiesExporter
+from .builders import MetadataBuilder
 
 
 def check_parflow_execution(out_file):
@@ -145,6 +146,13 @@ def get_process_args():
                        action='store_true',
                        help="Only print validation results for "
                             "key/value pairs with errors")
+
+    group.add_argument("--overwrite-clm-driver-files",
+                       default=False,
+                       dest="overwrite_clm_driver_files",
+                       action='store_true',
+                       help="Allow old clm driver files to be overwritten")
+
     # ++++++++++++++++
     group = parser.add_argument_group('Parallel execution')
     group.add_argument("-p", type=int, default=0,
@@ -194,6 +202,17 @@ def update_run_from_args(run, args):
 
     if args.r and run.Process.Topology.R != args.r:
         run.Process.Topology.R = args.r
+
+    if args.overwrite_clm_driver_files:
+        clm_solver = run.Solver.CLM
+        keys = [
+            'OverwriteDrvClmin',
+            'OverwriteDrvVegp',
+            'OverwriteDrvVegm',
+        ]
+        for key in keys:
+            if getattr(clm_solver, key) is False:
+                setattr(clm_solver, key, True)
 
 # -----------------------------------------------------------------------------
 
@@ -254,6 +273,11 @@ class Run(BaseRun):
         new_run = cls(name, file_path)
         kwargs = {ext_map[ext]: file_path}
         new_run.pfset(**kwargs)
+
+        if ext == 'pfidb':
+            # Try to load metadata as well
+            new_run.import_metadata()
+
         return new_run
 
     def get_name(self):
@@ -391,6 +415,9 @@ class Run(BaseRun):
             error_count += self.validate(verbose=verbose)
             print()
 
+        # Write metadata
+        self.write_metadata()
+
         p = self.Process.Topology.P
         q = self.Process.Topology.Q
         r = self.Process.Topology.R
@@ -432,3 +459,19 @@ class Run(BaseRun):
         from parflowio.pyParflowio import PFData
         pfb_data = PFData(pfb_file_full_path)
         pfb_data.distFile(p, q, r, pfb_file_full_path)
+
+    def import_metadata(self):
+        """Imports any applicable metadata for the current run
+
+        For instance, if CLM is in use, the CLM driver files will be
+        imported.
+        """
+        MetadataBuilder(self).build()
+
+    def write_metadata(self):
+        """Writes any applicable metadata for the current run
+
+        For instance, if CLM is in use, the CLM driver files will be
+        written out.
+        """
+        MetadataExporter(self).write()
