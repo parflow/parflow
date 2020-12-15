@@ -205,13 +205,13 @@ def verify_clmin_data(clm):
     input = clm.Solver.CLM.Input
     timing = input.Timing
 
-    assert timing.StartYear == '1998'
-    assert timing.StartMonth == '09'
-    assert timing.StartDay == '01'
-    assert timing.EndYear == '2001'
-    assert input.Domain.MaxTiles == '1'
-    assert input.InitCond.SnowCover == '0.'
-    assert input.Forcing.WindObsHeight == '10.0'
+    assert timing.StartYear == 1998
+    assert timing.StartMonth == 9
+    assert timing.StartDay == 1
+    assert timing.EndYear == 2001
+    assert input.Domain.MaxTiles == 1
+    assert input.InitCond.SnowCover == 0
+    assert input.Forcing.WindObsHeight == 10
 
 
 def verify_vegm_data(clm):
@@ -226,8 +226,10 @@ def verify_vegm_data(clm):
         if key not in properties:
             item = item.LandFrac
 
-        array = read_array(item.FileName).squeeze()
-        assert array.shape == shape
+        assert item.Type in ('PFBFile', 'Constant')
+        if item.Type == 'PFBFile':
+            array = read_array(item.FileName).squeeze()
+            assert array.shape == shape
 
     # Check a few individual ones
     const_values = {
@@ -238,16 +240,16 @@ def verify_vegm_data(clm):
         'Color': 2
     }
     for name, val in const_values.items():
-        array = read_array(veg_map[name].FileName).squeeze()
-        assert np.array_equal(array, np.full(shape, val))
+        assert veg_map[name].Type == 'Constant'
+        assert veg_map[name].Value == val
 
-    land_fracs = {
-        'forest_en': np.full(shape, 0.0),
-        'grasslands': np.full(shape, 1.0),
+    const_land_fracs = {
+        'forest_en': 0.0,
+        'grasslands': 1.0,
     }
-    for name, val in land_fracs.items():
-        array = read_array(veg_map[name].LandFrac.FileName).squeeze()
-        assert np.array_equal(array, val)
+    for name, val in const_land_fracs.items():
+        assert veg_map[name].LandFrac.Type == 'Constant'
+        assert veg_map[name].LandFrac.Value == val
 
 
 def verify_vegp_data(clm):

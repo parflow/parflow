@@ -161,6 +161,22 @@ class CLMExporter:
         clm_drv_keys = {}
         header_doc = ''
         clm_dict = self._clm_solver.Input.to_dict()
+
+        required_input_keys = [
+            'File.VegTileSpecification',
+            'File.VegTypeParameter',
+        ]
+
+        # Ensure required input keys are set
+        for key in required_input_keys:
+            if key in clm_dict:
+                continue
+
+            # Set the default for this key
+            default = self._clm_solver.Input.details(key).get('default')
+            clm_dict[key] = default
+
+        # Gather doc information to print out
         for key in clm_dict:
             old_header_doc = header_doc
             container_key = '.'.join(map(str, key.split('.')[:-1]))
@@ -169,20 +185,17 @@ class CLMExporter:
             clm_key_value = self._clm_solver.Input.value(key)
             clm_key_help = self._clm_solver.Input.doc(key)
             item = {'value': clm_key_value, 'help': clm_key_help}
-            if header_doc == old_header_doc:
-                clm_drv_keys[container_key][clm_key] = item
-            else:
-                clm_drv_keys[container_key] = {
-                    'doc': header_doc,
-                    clm_key: item
-                }
+
+            clm_drv_keys.setdefault(container_key, {})[clm_key] = item
+            if header_doc != old_header_doc:
+                clm_drv_keys[container_key]['doc'] = header_doc
 
         with open(output_file, 'w') as wf:
             wf.write(f'! {self._auto_generated_file_string}\n')
             wf.write(f'! CLM input file for {self.run.get_name()} '
                      f'ParFlow run' + '\n')
             for key, value in clm_drv_keys.items():
-                doc = str(clm_drv_keys[key]['doc']).strip()
+                doc = str(clm_drv_keys[key]['doc']).strip().replace('\n', ' ')
                 wf.write('!\n')
                 wf.write(f'! {doc}\n')
                 wf.write('!\n')
@@ -190,9 +203,11 @@ class CLMExporter:
                     if sub_key == 'doc':
                         continue
 
+                    value = sub_value['value']
+                    help = sub_value['help'].replace('\n', ' ')
                     line = f'{sub_key:<15}'
-                    line += f'{sub_value["value"]:<40}'
-                    line += f'{sub_value["help"]}'
+                    line += f'{value:<40}'
+                    line += f'{help}\n\n'
                     wf.write(line)
 
         return self
@@ -244,7 +259,7 @@ class CLMExporter:
 
         # Need to better expose the options of which axis to use
         # Maybe have it as an extra key?
-        z, y, x = vegm_array.shape
+        x, y, z = vegm_array.shape
         if latitude:
             vegm_array[:, :, 0] = self._process_vegm('Latitude', x, y,
                                                      lat_axis)
@@ -259,7 +274,7 @@ class CLMExporter:
 
         # Need to better expose the options of which axis to use
         # Maybe have it as an extra key?
-        z, y, x = vegm_array.shape
+        x, y, z = vegm_array.shape
         if sand:
             vegm_array[:, :, 2] = self._process_vegm('Sand', x, y, sand_axis)
 
@@ -549,6 +564,11 @@ class CLMExporter:
               'be reflected in the calculation')
 
     @property
+    def _using_clm(self):
+        # We can add other checks here if needed
+        return self.run.Solver.LSM == 'CLM'
+
+    @property
     def _import_paths(self):
         return self.run.__dict__.setdefault('_import_paths_', {})
 
@@ -572,21 +592,6 @@ class CLMExporter:
                 return True
 
         return False
-
-
-class MetadataExporter:
-    def __init__(self, run):
-        self.run = run
-
-    def write(self):
-        if self._using_clm:
-            CLMExporter(self.run).write_allowed()
-
-        return self
-
-    @property
-    def _using_clm(self):
-        return self.run.Solver.LSM == 'CLM'
 
 
 class NotOverwritableException(Exception):

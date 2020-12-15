@@ -30,3 +30,5 @@ set(TESTS
 foreach(inputfile ${TESTS})
   pf_add_py_test(${inputfile})
 endforeach()
+
+add_subdirectory(clm)

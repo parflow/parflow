@@ -1272,6 +1272,8 @@ class CLMImporter:
                 continue
 
             key_to_set = '.'.join(ref_dict[key])
+            # Ensure the value is the right type...
+            value = self._convert_to_domain_type(key_to_set, value)
             self.run.pfset(key=key_to_set, value=value)
 
         # Clear all histories at the root clm input object
@@ -1341,9 +1343,19 @@ class CLMImporter:
                 item, = item.select('LandFrac')
                 file_name = f'{run_name}_clm_{token}_landfrac.pfb'
 
-            write_array(file_name, vegm_data[:, :, i])
-            item.Type = 'PFBFile'
-            item.FileName = file_name
+            array = vegm_data[:, :, i]
+            if token == 'Color':
+                # This one needs to be an integer
+                array = array.astype(np.int)
+
+            if array.min() == array.max():
+                # All the values are the same
+                item.Type = 'Constant'
+                item.Value = array[0, 0].item()
+            else:
+                write_array(file_name, vegm_data[:, :, i])
+                item.Type = 'PFBFile'
+                item.FileName = file_name
 
             # Clear the histories
             for details in item._details_.values():
@@ -1443,11 +1455,23 @@ class CLMImporter:
 
         recursive_clear_histories(root)
 
+    def _convert_to_domain_type(self, key, value):
+        conversion_map = {
+            'IntValue': lambda x: int(float(x)),
+            'DoubleValue': float,
+        }
 
-class MetadataBuilder:
-    def __init__(self, run):
-        self.run = run
+        try:
+            domain_type = 'AnyString'
+            for domain_key in self.run.details(key)['domains']:
+                if domain_key in conversion_map:
+                    domain_type = domain_key
+                    break
+        except Exception:
+            # For whatever reason, it failed. Just return the value...
+            return value
 
-    def build(self):
-        CLMImporter(self.run).import_if_needed()
-        return self
+        if domain_type not in conversion_map:
+            return value
+
+        return conversion_map[domain_type](value)

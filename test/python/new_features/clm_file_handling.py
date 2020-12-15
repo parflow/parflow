@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import numpy as np
 
@@ -77,6 +78,17 @@ print(f'{vegp_data=}')
 # ---------------------------------------------------------
 # Testing clm data writers
 # ---------------------------------------------------------
+
+# Remove any leftover driver files...
+paths = [
+    'drv_clmin.dat',
+    'drv_vegm.dat',
+    'drv_vegp.dat',
+]
+for path in paths:
+    path = Path(path)
+    if path.exists():
+        path.unlink()
 
 CLMExporter(clm) \
     .write_input() \

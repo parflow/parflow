@@ -19,8 +19,8 @@ from .io import write_dict
 from .terminal import Symbols as TermSymbol
 
 from .database.generated import BaseRun
-from .export import MetadataExporter, SubsurfacePropertiesExporter
-from .builders import MetadataBuilder
+from .export import CLMExporter, SubsurfacePropertiesExporter
+from .builders import CLMImporter
 
 
 def check_parflow_execution(out_file):
@@ -275,8 +275,8 @@ class Run(BaseRun):
         new_run.pfset(**kwargs)
 
         if ext == 'pfidb':
-            # Try to load metadata as well
-            new_run.import_metadata()
+            # Import CLM files if we need to
+            CLMImporter(new_run).import_if_needed()
 
         return new_run
 
@@ -322,6 +322,10 @@ class Run(BaseRun):
                                   f'{file_name}.{file_format}')
         full_file_path = os.path.abspath(f_name)
         write_dict(self.to_dict(), full_file_path)
+
+        if CLMExporter(self)._using_clm:
+            # If we are using CLM, write out any other files we need
+            CLMExporter(self).write_allowed(settings.WORKING_DIRECTORY)
 
         # revert working directory to original directory
         settings.set_working_directory(prev_dir)
@@ -415,9 +419,6 @@ class Run(BaseRun):
             error_count += self.validate(verbose=verbose)
             print()
 
-        # Write metadata
-        self.write_metadata()
-
         p = self.Process.Topology.P
         q = self.Process.Topology.Q
         r = self.Process.Topology.R
@@ -459,19 +460,3 @@ class Run(BaseRun):
         from parflowio.pyParflowio import PFData
         pfb_data = PFData(pfb_file_full_path)
         pfb_data.distFile(p, q, r, pfb_file_full_path)
-
-    def import_metadata(self):
-        """Imports any applicable metadata for the current run
-
-        For instance, if CLM is in use, the CLM driver files will be
-        imported.
-        """
-        MetadataBuilder(self).build()
-
-    def write_metadata(self):
-        """Writes any applicable metadata for the current run
-
-        For instance, if CLM is in use, the CLM driver files will be
-        written out.
-        """
-        MetadataExporter(self).write()
