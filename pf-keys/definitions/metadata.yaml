@@ -10,28 +10,66 @@ Metadata:
   __rst__:
     skip:
 
-  Author:
+  Title:
     help: >
-      [Type: string] Author name for ParFlow run.
+      [Type: string] Summary explaining that run
     domains:
       AnyString:
 
-  Date:
+  Description:
     help: >
-      [Type: string] This is the date that the user saved and/or executed the ParFlow run.
+      [Type: string] More details on that run
     domains:
       AnyString:
 
-  Latitude:
+  DOI:
     help: >
-      [Type: float] Latitude of the center of the ParFlow domain in decimal degrees.
-      Positive values indicate degrees north, negative numbers indicate degrees south.
+      [Type: string] Digital Object Identifier System code
     domains:
-      DoubleValue:
+      AnyString:
 
-  Longitude:
-    help: >
-      [Type: float] Longitude of the center of the ParFlow domain in decimal degrees.
-      Positive values indicate degrees east, negative numbers indicate degrees west.
-    domains:
-      DoubleValue:
+  Authors:
+    __class__: MetadataAuthors
+    __doc__: ''
+    __rst__:
+      skip:
+
+    Names:
+      __help__: >
+        [Type: string] List of short names to reference a list of authors
+      handlers:
+        AuthorUpdater:
+          type: ChildrenHandler
+          class_name: MetadataAuthorItem
+          location: .
+
+    .{author_name}:
+      __class__: MetadataAuthorItem
+      __rst__:
+        name: Metadata.Authors.{author_name}
+      __doc__: >
+        An author
+
+      Name:
+        help: >
+          [Type: string] Author full name like {first_name} {last_name}
+        domains:
+          AnyString:
+
+      Email:
+        help: >
+          [Type: string] E-mail address
+        domains:
+          AnyString:
+
+      Organization:
+        help: >
+          [Type: string] Name of the company or research institute
+        domains:
+          AnyString:
+
+      URL:
+        help: >
+          [Type: string] Link to web site or social media
+        domains:
+          AnyString:

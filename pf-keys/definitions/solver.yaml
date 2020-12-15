@@ -1136,7 +1136,6 @@ Solver:
               One of the user-defined names for land cover types for the drv_vegp.dat file
 
             Type:
-              __class__: FracType
               help: >
                 [Type: string] Specifies the type of land cover fraction specification for CLM.
                 Valid types are 'Constant' and 'PFBFile'.
@@ -1148,7 +1147,6 @@ Solver:
                     - PFBFile
 
             Value:
-              __class__: FracValue
               help: >
                 [Type: double] Specifies the constant value of the land cover
                 fraction for your domain, if
@@ -1161,10 +1159,10 @@ Solver:
                   max_value: 1.0
 
             FileName:
-              __class__: FracFile
               help: >
                 [Type: string] Specifies the PFB filename of the land cover
-                fraction for your domain, if Solver.CLM.Vegetation.Map.LandFrac.Type
+                fraction for your domain, if
+                Solver.CLM.Vegetation.Map.LandFrac.{land_cover_name}.Type
                 was set to 'PFBFile'. This file should be a gridded PFB file
                 with the land cover fraction values (in decimal degrees)
                 in each of the grid cells.
@@ -1178,7 +1176,6 @@ Solver:
             skip:
 
           Type:
-            __class__: LatType
             help: >
               [Type: string] Specifies the type of latitude specification for CLM. Valid
               types are 'Constant', 'Linear', and 'PFBFile'.
@@ -1190,7 +1187,6 @@ Solver:
                   - PFBFile
 
           Value:
-            __class__: LatVal
             help: >
               [Type: string] Specifies the constant value (in decimal degrees) of the latitude for your domain, if
               Solver.CLM.Vegetation.Map.Latitude.Type was set to 'Constant'.
@@ -1200,7 +1196,6 @@ Solver:
                 max_value: 90.0
 
           FileName:
-            __class__: LatFile
             help: >
               [Type: string] Specifies the PFB filename of the latitude for your domain, if
               Solver.CLM.Vegetation.Map.Latitude.Type was set to 'PFBFile'. This
@@ -1211,7 +1206,6 @@ Solver:
               ValidFile:
 
           Min:
-            __class__: MinLat
             help: >
               [Type: string] Specifies the value (in decimal degrees) of the minimum latitude for your domain, if
               Solver.CLM.Vegetation.Map.Latitude.Type was set to 'Linear'.
@@ -1221,7 +1215,6 @@ Solver:
                 max_value: 90.0
 
           Max:
-            __class__: MaxLat
             help: >
               [Type: string] Specifies the value (in decimal degrees) of the maximum latitude for your domain, if
               Solver.CLM.Vegetation.Map.Latitude.Type was set to 'Linear'.
@@ -1236,7 +1229,6 @@ Solver:
             skip:
 
           Type:
-            __class__: LongType
             help: >
               [Type: string] Specifies the type of longitude specification for CLM. Valid
               types are 'Constant', 'Linear', and 'PFBFile'.
@@ -1248,7 +1240,6 @@ Solver:
                   - PFBFile
 
           Value:
-            __class__: LongVal
             help: >
               [Type: string] Specifies the constant value (in decimal degrees) of the longitude for your domain, if
               Solver.CLM.Vegetation.Map.Longitude.Type was set to 'Constant'.
@@ -1258,7 +1249,6 @@ Solver:
                 max_value: 180.0
 
           FileName:
-            __class__: LongFile
             help: >
               [Type: string] Specifies the PFB filename of the longitude for your domain, if
               Solver.CLM.Vegetation.Map.Longitude.Type was set to 'PFBFile'. This
@@ -1269,7 +1259,6 @@ Solver:
               ValidFile:
 
           Min:
-            __class__: MinLong
             help: >
               [Type: string] Specifies the value (in decimal degrees) of the minimum longitude for your domain, if
               Solver.CLM.Vegetation.Map.Longitude.Type was set to 'Linear'.
@@ -1279,7 +1268,6 @@ Solver:
                 max_value: 180.0
 
           Max:
-            __class__: MaxLong
             help: >
               [Type: string] Specifies the value (in decimal degrees) of the maximum longitude for your domain, if
               Solver.CLM.Vegetation.Map.Longitude.Type was set to 'Linear'.
@@ -1294,7 +1282,6 @@ Solver:
             skip:
 
           Type:
-            __class__: SandType
             help: >
               [Type: string] Specifies the type of sand property specification for CLM. Valid
               types are 'Constant' and 'PFBFile'.
@@ -1305,7 +1292,6 @@ Solver:
                   - PFBFile
 
           Value:
-            __class__: SandVal
             help: >
               [Type: string] Specifies the constant value of the percentage of sand for your domain, if
               Solver.CLM.Vegetation.Map.Sand.Type was set to 'Constant'.
@@ -1315,7 +1301,6 @@ Solver:
                 max_value: 1.0
 
           FileName:
-            __class__: SandFile
             help: >
               [Type: string] Specifies the PFB filename of the sand properties for your domain, if
               Solver.CLM.Vegetation.Map.Sand.Type was set to 'PFBFile'. This
@@ -1331,7 +1316,6 @@ Solver:
             skip:
 
           Type:
-            __class__: ClayType
             help: >
               [Type: string] Specifies the type of clay property specification for CLM. Valid
               types are 'Constant' and 'PFBFile'.
@@ -1342,7 +1326,6 @@ Solver:
                   - PFBFile
 
           Value:
-            __class__: ClayVal
             help: >
               [Type: string] Specifies the constant value of the percentage of clay for your domain, if
               Solver.CLM.Vegetation.Map.Clay.Type was set to 'Constant'.
@@ -1352,7 +1335,6 @@ Solver:
                 max_value: 1.0
 
           FileName:
-            __class__: ClayFile
             help: >
               [Type: string] Specifies the PFB filename of the clay properties for your domain, if
               Solver.CLM.Vegetation.Map.Clay.Type was set to 'PFBFile'. This
@@ -1368,7 +1350,6 @@ Solver:
             skip:
 
           Type:
-            __class__: ColorType
             help: >
               [Type: string] Specifies the type of color property specification for CLM. Valid
               types are 'Constant' and 'PFBFile'.
@@ -1379,7 +1360,6 @@ Solver:
                   - PFBFile
 
           Value:
-            __class__: ColorVal
             help: >
               [Type: string] Specifies the constant value of the color for your domain, if
               Solver.CLM.Vegetation.Map.Color.Type was set to 'Constant'.
@@ -1389,7 +1369,6 @@ Solver:
                 max_value: 8
 
           FileName:
-            __class__: ColorFile
             help: >
               [Type: string] Specifies the PFB filename of the color properties for your domain, if
               Solver.CLM.Vegetation.Map.Color.Type was set to 'PFBFile'. This
