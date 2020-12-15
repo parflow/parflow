@@ -162,10 +162,10 @@ def test_fewer_land_names(clm):
     assert 'water' not in veg_params.keys()
     assert 'water' not in veg_map.keys()
 
-    veg_map.forest_en.LandFrac.Value = 0.6
-    veg_map.forest_eb.LandFrac.Value = 0.4
-    veg_map.forest_en.LandFrac.Type = 'Constant'
-    veg_map.forest_eb.LandFrac.Type = 'Constant'
+    veg_map.LandFrac.forest_en.Value = 0.6
+    veg_map.LandFrac.forest_eb.Value = 0.4
+    veg_map.LandFrac.forest_en.Type = 'Constant'
+    veg_map.LandFrac.forest_eb.Type = 'Constant'
 
     new_clm.ComputationalGrid.NX = 5
     new_clm.ComputationalGrid.NY = 5
@@ -218,18 +218,24 @@ def verify_vegm_data(clm):
     veg_map = clm.Solver.CLM.Vegetation.Map
 
     shape = (5, 5)
-    properties = ['Latitude', 'Longitude', 'Sand', 'Clay', 'Color']
+    properties = ['Latitude', 'Longitude', 'Sand', 'Clay', 'Color', 'LandFrac']
 
     # Check to see that all matrices got set
     for key in veg_map.keys():
         item = veg_map[key]
-        if key not in properties:
-            item = item.LandFrac
 
-        assert item.Type in ('PFBFile', 'Constant')
-        if item.Type == 'PFBFile':
-            array = read_array(item.FileName).squeeze()
-            assert array.shape == shape
+        if key == 'LandFrac':
+            for land_frac_name in item.keys():
+                land_frac = item[land_frac_name]
+                assert land_frac.Type in ('PFBFile', 'Constant')
+                if land_frac.Type == 'PFBFile':
+                    array = read_array(land_frac.FileName).squeeze()
+                    assert array.shape == shape
+        else:
+            assert item.Type in ('PFBFile', 'Constant')
+            if item.Type == 'PFBFile':
+                array = read_array(item.FileName).squeeze()
+                assert array.shape == shape
 
     # Check a few individual ones
     const_values = {
@@ -248,8 +254,8 @@ def verify_vegm_data(clm):
         'grasslands': 1.0,
     }
     for name, val in const_land_fracs.items():
-        assert veg_map[name].LandFrac.Type == 'Constant'
-        assert veg_map[name].LandFrac.Value == val
+        assert veg_map.LandFrac[name].Type == 'Constant'
+        assert veg_map.LandFrac[name].Value == val
 
 
 def verify_vegp_data(clm):

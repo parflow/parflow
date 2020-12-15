@@ -210,7 +210,9 @@ class SolidFileBuilder:
             f'--mask-back {back_file_path}',
             f'--pfsol {output_file_path}'
         ] + extra
-        os.system(f'{exe_path} ' + ' '.join(args))
+        cmd_line = f'{exe_path} ' + ' '.join(args)
+        print(f'$ {cmd_line}')
+        os.system(cmd_line)
 
         print('=== pfmask-to-pfsol ===: END')
         return self
@@ -1337,11 +1339,12 @@ class CLMImporter:
         run_name = self.run.get_name()
 
         for i, token in enumerate(all_tokens):
-            item, = self._veg_map.select(token)
             file_name = f'{run_name}_clm_{token.lower()}.pfb'
             if token in land_names:
-                item, = item.select('LandFrac')
+                item, = self._veg_map.select(f'LandFrac/{token}')
                 file_name = f'{run_name}_clm_{token}_landfrac.pfb'
+            else:
+                item, = self._veg_map.select(token)
 
             array = vegm_data[:, :, i]
             if token == 'Color':
@@ -1353,7 +1356,7 @@ class CLMImporter:
                 item.Type = 'Constant'
                 item.Value = array[0, 0].item()
             else:
-                write_array(file_name, vegm_data[:, :, i])
+                write_array(get_absolute_path(file_name), vegm_data[:, :, i])
                 item.Type = 'PFBFile'
                 item.FileName = file_name
 
@@ -1423,7 +1426,7 @@ class CLMImporter:
     @property
     def _land_covers_are_set(self):
         land_param_items = self._veg_params.select('{LandCoverParamItem}')
-        land_map_items = self._veg_map.select('{LandCoverMapItem}')
+        land_map_items = self._veg_map.select('LandFrac/{LandFracCoverMapItem}')
         return (land_param_items and land_map_items and
                 all(x is not None for x in land_param_items + land_map_items))
 

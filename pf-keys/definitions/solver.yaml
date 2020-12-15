@@ -935,8 +935,8 @@ Solver:
               location: .
             VegMapUpdater:
               type: ChildrenHandler
-              class_name: LandCoverMapItem
-              location: ../Map
+              class_name: LandFracCoverMapItem
+              location: ../Map/LandFrac
 
         .{land_cover_name}:
           __class__: LandCoverParamItem
@@ -1123,23 +1123,24 @@ Solver:
         __rst__:
           skip:
 
-        .{land_cover_name}:
-          __class__: LandCoverMapItem
+        LandFrac:
+          __doc__: ''
           __rst__:
-            name: Vegetation.Parameters.{land_cover_name}
-          __doc__: >
-            One of the user-defined names for land cover types for the drv_vegp.dat file
+            skip:
 
-          LandFrac:
-            __doc__: ''
+          .{land_cover_name}:
+            __class__: LandFracCoverMapItem
             __rst__:
-              skip:
+              name: Vegetation.Map.LandFrac.{land_cover_name}
+            __doc__: >
+              One of the user-defined names for land cover types for the drv_vegp.dat file
 
             Type:
               __class__: FracType
               help: >
-                [Type: string] Specifies the type of latitude specification for CLM. Valid
-                types are 'Constant' and 'PFBFile'.
+                [Type: string] Specifies the type of land cover fraction specification for CLM.
+                Valid types are 'Constant' and 'PFBFile'.
+              default: Constant
               domains:
                 EnumDomain:
                   enum_list:
@@ -1149,9 +1150,11 @@ Solver:
             Value:
               __class__: FracValue
               help: >
-                [Type: double] Specifies the constant value of the land cover fraction for your domain, if
-                Solver.CLM.Vegetation.Map.{land_cover_name}.LandFrac.Type was set to 'Constant'. This should be a
-                double between 0.0 and 1.0.
+                [Type: double] Specifies the constant value of the land cover
+                fraction for your domain, if
+                Solver.CLM.Vegetation.Map.LandFrac.{land_cover_name}.Type was
+                set to 'Constant'. This should be a double between 0.0 and 1.0.
+              default: 0
               domains:
                 DoubleValue:
                   min_value: 0.0
@@ -1160,9 +1163,10 @@ Solver:
             FileName:
               __class__: FracFile
               help: >
-                [Type: string] Specifies the PFB filename of the latitude for your domain, if
-                Solver.CLM.Vegetation.Map.Latitude.Type was set to 'PFBFile'. This
-                file should be a gridded PFB file with the latitude values (in decimal degrees)
+                [Type: string] Specifies the PFB filename of the land cover
+                fraction for your domain, if Solver.CLM.Vegetation.Map.LandFrac.Type
+                was set to 'PFBFile'. This file should be a gridded PFB file
+                with the land cover fraction values (in decimal degrees)
                 in each of the grid cells.
               domains:
                 AnyString:

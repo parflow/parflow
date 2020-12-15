@@ -59,22 +59,22 @@ clm.Solver.CLM.Vegetation.Map.Color.Value = 2
 # Setting land use fractions
 #---------------------------------------------------------
 
-clm.Solver.CLM.Vegetation.Map.forest_en.LandFrac.Type = 'Constant'
-clm.Solver.CLM.Vegetation.Map.forest_en.LandFrac.Value = 0.0
+clm.Solver.CLM.Vegetation.Map.LandFrac.forest_en.Type = 'Constant'
+clm.Solver.CLM.Vegetation.Map.LandFrac.forest_en.Value = 0.0
 
 forest_eb_mat = np.zeros((clm.ComputationalGrid.NX, clm.ComputationalGrid.NY))
 forest_eb_mat[1, :] = 1.0
 file_name = 'forest_eb_mat.pfb'
-write_array(file_name, forest_eb_mat)
+write_array(get_absolute_path(file_name), forest_eb_mat)
 
-clm.Solver.CLM.Vegetation.Map.forest_eb.LandFrac.Type = 'PFBFile'
-clm.Solver.CLM.Vegetation.Map.forest_eb.LandFrac.FileName = file_name
+clm.Solver.CLM.Vegetation.Map.LandFrac.forest_eb.Type = 'PFBFile'
+clm.Solver.CLM.Vegetation.Map.LandFrac.forest_eb.FileName = file_name
 
-clm.Solver.CLM.Vegetation.Map.forest_dn.LandFrac.Type = 'Constant'
-clm.Solver.CLM.Vegetation.Map.forest_dn.LandFrac.Value = 0.5
+clm.Solver.CLM.Vegetation.Map.LandFrac.forest_dn.Type = 'Constant'
+clm.Solver.CLM.Vegetation.Map.LandFrac.forest_dn.Value = 0.5
 
-clm.Solver.CLM.Vegetation.Map.forest_db.LandFrac.Type = 'Constant'
-clm.Solver.CLM.Vegetation.Map.forest_db.LandFrac.Value = 0.0
+clm.Solver.CLM.Vegetation.Map.LandFrac.forest_db.Type = 'Constant'
+clm.Solver.CLM.Vegetation.Map.LandFrac.forest_db.Value = 0.0
 
 #---------------------------------------------------------
 # Testing clm data reader for veg mapping

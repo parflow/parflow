@@ -245,7 +245,7 @@ class CLMExporter:
                 else:
                     raise Exception(f'Axis specification error: {axis}')
         elif vegm_root_key.Type == 'PFBFile':
-            array = read_array(vegm_root_key.FileName)
+            array = read_array(get_absolute_path(vegm_root_key.FileName))
             while array.ndim > 2:
                 # PFB files return 3D arrays, but the data is actually 2D
                 array = array[0]
@@ -325,7 +325,7 @@ class CLMExporter:
                       f'{len(land_covers)} land cover types.')
             for name in land_covers:
                 vegm_array = np.dstack(
-                    (vegm_array, self._process_vegm([name, 'LandFrac'], x, y)))
+                    (vegm_array, self._process_vegm(['LandFrac', name], x, y)))
 
         with open(output_file, 'w') as wf:
             wf.write(first_line + '\n')
