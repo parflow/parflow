@@ -513,6 +513,20 @@ Solver:
               min_value: 1
               max_value: 2
 
+        StartDate:
+          help: >
+            [Type: string] Helper property that will set StartYear/StartMonth/StartDay
+          ignore: _not_exported_
+          handlers:
+            FieldsUpdater:
+              type: SplitHandler
+              separator: /
+              convert: int
+              fields:
+                - StartYear
+                - StartMonth
+                - StartDay
+
         StartYear:
           help: >
             [Type: int] Starting year of CLM data.
@@ -538,6 +552,20 @@ Solver:
               min_value: 1
               max_value: 31
 
+        StartTime:
+          help: >
+            [Type: string] Helper property that will set StartHour:StartMinute:StartSecond
+          ignore: _not_exported_
+          handlers:
+            FieldsUpdater:
+              type: SplitHandler
+              separator: ':'
+              convert: int
+              fields:
+                - StartHour
+                - StartMinute
+                - StartSecond
+
         StartHour:
           help: >
             [Type: int] Starting hour of CLM data.
@@ -554,7 +582,7 @@ Solver:
           domains:
             IntValue:
               min_value: 0
-              max_value: 60
+              max_value: 59
 
         StartSecond:
           help: >
@@ -563,7 +591,21 @@ Solver:
           domains:
             IntValue:
               min_value: 0
-              max_value: 60
+              max_value: 59
+
+        EndDate:
+          help: >
+            [Type: string] Helper property that will set EndYear/EndMonth/EndDay
+          ignore: _not_exported_
+          handlers:
+            FieldsUpdater:
+              type: SplitHandler
+              separator: /
+              convert: int
+              fields:
+                - EndYear
+                - EndMonth
+                - EndDay
 
         EndYear:
           help: >
@@ -590,6 +632,20 @@ Solver:
               min_value: 1
               max_value: 31
 
+        EndTime:
+          help: >
+            [Type: string] Helper property that will set EndHour:EndMinute:EndSecond
+          ignore: _not_exported_
+          handlers:
+            FieldsUpdater:
+              type: SplitHandler
+              separator: ':'
+              convert: int
+              fields:
+                - EndHour
+                - EndMinute
+                - EndSecond
+
         EndHour:
           help: >
             [Type: int] Ending hour of CLM data.
@@ -597,7 +653,7 @@ Solver:
           domains:
             IntValue:
               min_value: 0
-              max_value: 24
+              max_value: 23
 
         EndMinute:
           help: >
@@ -606,7 +662,7 @@ Solver:
           domains:
             IntValue:
               min_value: 0
-              max_value: 60
+              max_value: 59
 
         EndSecond:
           help: >
@@ -615,7 +671,7 @@ Solver:
           domains:
             IntValue:
               min_value: 0
-              max_value: 60
+              max_value: 59
 
       ICSource:
         __doc__: 'CLM Initial Condition Source'
@@ -1179,6 +1235,7 @@ Solver:
             help: >
               [Type: string] Specifies the type of latitude specification for CLM. Valid
               types are 'Constant', 'Linear', and 'PFBFile'.
+            default: Constant
             domains:
               EnumDomain:
                 enum_list:
@@ -1232,6 +1289,7 @@ Solver:
             help: >
               [Type: string] Specifies the type of longitude specification for CLM. Valid
               types are 'Constant', 'Linear', and 'PFBFile'.
+            default: Constant
             domains:
               EnumDomain:
                 enum_list:
@@ -1285,6 +1343,7 @@ Solver:
             help: >
               [Type: string] Specifies the type of sand property specification for CLM. Valid
               types are 'Constant' and 'PFBFile'.
+            default: Constant
             domains:
               EnumDomain:
                 enum_list:
@@ -1319,6 +1378,7 @@ Solver:
             help: >
               [Type: string] Specifies the type of clay property specification for CLM. Valid
               types are 'Constant' and 'PFBFile'.
+            default: Constant
             domains:
               EnumDomain:
                 enum_list:
@@ -1353,6 +1413,7 @@ Solver:
             help: >
               [Type: string] Specifies the type of color property specification for CLM. Valid
               types are 'Constant' and 'PFBFile'.
+            default: Constant
             domains:
               EnumDomain:
                 enum_list:

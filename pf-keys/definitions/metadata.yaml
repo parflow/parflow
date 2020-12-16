@@ -35,8 +35,10 @@ Metadata:
       skip:
 
     Names:
-      __help__: >
+      help: >
         [Type: string] List of short names to reference a list of authors
+      domains:
+        AnyString:
       handlers:
         AuthorUpdater:
           type: ChildrenHandler

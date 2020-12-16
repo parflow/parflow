@@ -320,10 +320,14 @@ class PFDBObj:
                 details = self._details_[name] if has_details else None
                 has_default = has_details and 'default' in details
                 has_domain = has_details and 'domains' in details
+                is_ignored = has_details and 'ignore' in details
                 is_mandatory = has_domain \
                     and 'MandatoryValue' in details['domains']
                 is_default = has_default and obj == details['default']
                 is_set = has_details and details.get('history')
+
+                if is_ignored:
+                    continue
 
                 if obj is not None:
                     if skip_default:
