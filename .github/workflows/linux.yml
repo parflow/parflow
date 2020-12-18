@@ -202,7 +202,9 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -nv https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+          # wget -nv https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+          # Use mirror for reliablity
+          wget -nv https://raw.githubusercontent.com/parflow/parflow-dependencies/master/silo-4.10.2.tar.gz
           tar -xf silo-4.10.2.tar.gz
           cd silo-4.10.2
           ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
