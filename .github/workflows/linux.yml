@@ -1,0 +1,246 @@
+name: ParFlow CI Test
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      # fail-fast: true
+      matrix:
+        config:
+        - {
+            name: "Ubuntu 20.04",
+            os: ubuntu-20.04,
+            cudaos: 'ubuntu2004',
+            python: "false",
+            backend: "none",
+          }
+        - {
+            name: "Ubuntu 18.04",
+            os: ubuntu-18.04,
+            cudaos: 'ubuntu1804',
+            python: "false",
+            backend: "none",
+          }
+        - {
+            name: "Ubuntu 18.04 Python",
+            os: ubuntu-18.04,
+            cudaos: 'ubuntu1804',
+            python: "true",
+            backend: "none"     
+          }
+        - {
+            name: "Ubuntu 18.04 OMP",
+            os: ubuntu-18.04,
+            cudaos: 'ubuntu1804',
+            python: "false",
+            backend: "omp"     
+          }
+        - {
+            name: "Ubuntu 18.04 CUDA Build",
+            os: ubuntu-18.04,
+            cc: "gcc", cxx: "g++",
+            python: "false",
+            backend: "cuda",
+            cudaos: 'ubuntu1804'
+          }
+        - {
+            name: "Ubuntu 16.04",
+            os: ubuntu-16.04,
+            cudaos: 'ubuntu1604',
+            python: "false",
+            backend: "none",
+          }
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Package Install 20.04
+      if: matrix.config.os == 'ubuntu-20.04'
+      run: |
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev
+        sudo apt-get -qq update
+
+    - name: Package Install 18.04 CUDA
+      if: matrix.config.backend == 'cuda' && matrix.config.os == 'ubuntu-18.04'
+      run: |
+        sudo apt-get -qq install -y software-properties-common
+        sudo add-apt-repository -y main
+        sudo add-apt-repository -y universe
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157
+
+    - name: Package Install 18.04
+      if: matrix.config.os == 'ubuntu-18.04'
+      run: |
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers tcl-dev tk-dev
+        sudo apt-get -qq update
+
+    - name: Package Install 16.04
+      if: matrix.config.os == 'ubuntu-16.04'
+      run: |
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-10 hdf5-helpers tcl-dev tk-dev
+        sudo apt-get -qq update
+
+    - name: Python Package Install
+      if: matrix.config.python == 'true'
+      run: |
+        sudo apt -qq install python3 python3-venv
+
+# Cache dependencies so don't have to rebuild on each test.
+# Can flush caches by resetting the CACHE_VERSION secret on GitHub
+# settings for the project (using date-timestamp for secret).
+
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      id: cache-parflow-dependencies
+      env:
+        cache-name: cache-parflow-dependencies
+        cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      with:
+        path: "~/depend"
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}
+
+    - name: Directory Setup
+      run: |
+        mkdir -p $HOME/install
+        echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
+        echo "Setting PARFLOW_DIR=$HOME/install"
+        mkdir -p $HOME/depend
+        echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+        echo "Setting PARFLOW_DEP_DIR=$HOME/depend"
+        echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+        echo "$HOME/depend/bin" >> $GITHUB_PATH
+        export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+
+    - name: CMake Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+       if [[ "$CACHE_HIT" != 'true' ]]; then
+          echo "Installing"
+          cd ~/depend
+          echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
+          wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.0-Linux-x86_64.tar.gz
+          tar -xf cmake-3.14.0-Linux-x86_64.tar.gz
+          ~/depend/cmake-3.14.0-Linux-x86_64/bin/cmake --version
+        fi
+        echo "$HOME/depend/cmake-3.14.0-Linux-x86_64/bin" >> $GITHUB_PATH
+
+    - name: NVidia Driver Install
+      if: matrix.config.backend == 'cuda'
+      run: |
+        sudo add-apt-repository -y ppa:graphics-drivers
+        sudo apt-get update -qq
+        sudo apt-get install -y nvidia-driver-440
+
+    - name: CUDA Install
+      if: matrix.config.backend == 'cuda'
+      run: |
+        CUDA_SHORT=10.1
+        CUDA_VER=10.1.105-1
+        wget -nv http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/cuda-repo-${{ matrix.config.cudaos }}_${CUDA_VER}_amd64.deb
+        sudo dpkg -i cuda-repo-${{ matrix.config.cudaos }}_${CUDA_VER}_amd64.deb;
+        sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/7fa2af80.pub
+        sudo apt update -qq
+        sudo apt install -qq -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-}
+        export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
+        echo "CUDA_HOME=${CUDA_HOME}" >> $GITHUB_ENV
+        export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        export LIBRARY_PATH=${CUDA_HOME}/lib64/stubs
+        echo "LIBRARY_PATH=${LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "${CUDA_HOME}/bin" >> $GITHUB_PATH
+
+    - name: UCX
+      if: matrix.config.backend == 'cuda'
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          sudo apt install -qq -y autoconf automake libtool
+          wget -nv https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz
+          tar -xf ucx-1.8.0.tar.gz
+          cd ucx-1.8.0
+          ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --disable-numa --prefix=$PARFLOW_DEP_DIR 
+          make -j 2 install
+        fi
+
+    - name: RMM Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.backend == 'cuda'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+          cd rmm
+          cmake . -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
+          make -j 2 install
+        fi
+        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV     
+
+    - name: OpenMPI Install for CUDA
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.backend == 'cuda'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          wget -nv https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz
+          tar -xf openmpi-4.0.3.tar.gz
+          cd openmpi-4.0.3
+          ./configure --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DEP_DIR --prefix=$PARFLOW_DEP_DIR
+          sudo make -j 2 install
+          cd ..
+        fi
+        sudo ldconfig
+
+    - name: SILO Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          # wget -nv https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+          # Use mirror for reliablity
+          wget -nv https://raw.githubusercontent.com/parflow/parflow-dependencies/master/silo-4.10.2.tar.gz
+          tar -xf silo-4.10.2.tar.gz
+          cd silo-4.10.2
+          ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
+          make -j 2 install
+        fi
+
+    - name: HYPRE Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          wget -nv https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz
+          tar -xf v2.18.2.tar.gz 
+          cd hypre-2.18.2/src 
+          ./configure --prefix=$PARFLOW_DEP_DIR
+          make -j 2 install
+        fi
+
+    - name: ParFlow CMake Configure
+      run: |
+        cat ~/depend/cache-key
+        printenv PATH
+        which mpicc
+        which cmake
+        export OMPI_MCA_rmaps_base_oversubscribe=1
+        export OMP_NUM_THREADS=1
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=mpi1 -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
+
+    - name: ParFlow CMake Build
+      run: (cd build; make -j 2 install)
+
+    # Can't test with CUDA since have no CUDA hardware on testing nodes, CUDA test is build only
+    - name: ParFlow CTest
+      if: matrix.config.backend != 'cuda'
+      run: |
+        export OMPI_MCA_rmaps_base_oversubscribe=1
+        export OMP_NUM_THREADS=1
+        (cd build; ctest)
+
