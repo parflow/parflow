@@ -13,7 +13,7 @@ from parflow.tools.io import read_clm
 def verify_clmin_data(data):
     assert data
 
-    path = get_absolute_path('../../correct_output/clmin_data.ref.json')
+    path = get_absolute_path('$PF_SRC/test/correct_output/clmin_data.ref.json')
     with open(path, 'r') as rf:
         ref_data = json.load(rf)
 
@@ -28,7 +28,7 @@ def verify_vegm_data(data):
     assert data[1, 2, 3] == 0.265
 
     # Now test the whole array
-    path = get_absolute_path('../../correct_output/drv_vegm.ref.npy')
+    path = get_absolute_path('$PF_SRC/test/correct_output/drv_vegm.ref.npy')
     ref_data = np.load(path)
     assert np.array_equal(data, ref_data)
 
@@ -36,7 +36,7 @@ def verify_vegm_data(data):
 def verify_vegp_data(data):
     assert data
 
-    path = get_absolute_path('../../correct_output/vegp_data.ref.json')
+    path = get_absolute_path('$PF_SRC/test/correct_output/vegp_data.ref.json')
     with open(path, 'r') as rf:
         ref_data = json.load(rf)
 
@@ -61,17 +61,17 @@ clm = Run("clm", __file__)
 
 # Reading drv_clmin.dat into dictionary
 # using old file that has more variables than CLM currently needs
-clmin_data = read_clm('../../input/drv_clmin.dat.old', type='clmin')
+clmin_data = read_clm('$PF_SRC/test/input/drv_clmin.dat.old', type='clmin')
 verify_clmin_data(clmin_data)
 print(f'{clmin_data=}')
 
 # Reading drv_vegm.dat into 3D array
-vegm_data = read_clm('../../tcl/clm/drv_vegm.dat', type='vegm')
+vegm_data = read_clm('$PF_SRC/test/tcl/clm/drv_vegm.dat', type='vegm')
 verify_vegm_data(vegm_data)
 print(f'{vegm_data.shape=}')
 
 # Reading drv_vegp.dat into dictionary
-vegp_data = read_clm('../../tcl/clm/drv_vegp.dat', type='vegp')
+vegp_data = read_clm('$PF_SRC/test/tcl/clm/drv_vegp.dat', type='vegp')
 verify_vegp_data(vegp_data)
 print(f'{vegp_data=}')
 
