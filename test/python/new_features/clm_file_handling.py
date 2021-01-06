@@ -63,17 +63,17 @@ clm = Run("clm", __file__)
 # using old file that has more variables than CLM currently needs
 clmin_data = read_clm('$PF_SRC/test/input/drv_clmin.dat.old', type='clmin')
 verify_clmin_data(clmin_data)
-print(f'{clmin_data=}')
+print(f'clmin_data = {clmin_data}')
 
 # Reading drv_vegm.dat into 3D array
 vegm_data = read_clm('$PF_SRC/test/tcl/clm/drv_vegm.dat', type='vegm')
 verify_vegm_data(vegm_data)
-print(f'{vegm_data.shape=}')
+print(f'vegm_data.shape = {vegm_data.shape}')
 
 # Reading drv_vegp.dat into dictionary
 vegp_data = read_clm('$PF_SRC/test/tcl/clm/drv_vegp.dat', type='vegp')
 verify_vegp_data(vegp_data)
-print(f'{vegp_data=}')
+print(f'vegp_data = {vegp_data}')
 
 # ---------------------------------------------------------
 # Testing clm data writers
