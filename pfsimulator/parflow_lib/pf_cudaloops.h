@@ -1017,6 +1017,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   ix, iy, iz, nx, ny, nz, locals, setup,                                            \
   f_left, f_right, f_down, f_up, f_back, f_front, finalize)                         \
 {                                                                                   \
+  int n_ival = 0;                                                                   \
   for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
   {                                                                                 \
     BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);               \
@@ -1045,7 +1046,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       for (int idx = 0; idx < nx_bxs * ny_bxs * nz_bxs; idx++)                      \
         ptr_ival[idx] = -1;                                                         \
                                                                                     \
-      int n_ival = 0;                                                               \
       for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                  \
       {                                                                             \
         Box box = BoxArrayGetBox(boxes, PV_box);                                    \
