@@ -19,7 +19,8 @@ from .io import write_dict
 from .terminal import Symbols as TermSymbol
 
 from .database.generated import BaseRun
-from .export import SubsurfacePropertiesExporter
+from .export import CLMExporter, SubsurfacePropertiesExporter
+from .builders import CLMImporter
 
 
 def check_parflow_execution(out_file):
@@ -145,6 +146,13 @@ def get_process_args():
                        action='store_true',
                        help="Only print validation results for "
                             "key/value pairs with errors")
+
+    group.add_argument("--overwrite-clm-driver-files",
+                       default=False,
+                       dest="overwrite_clm_driver_files",
+                       action='store_true',
+                       help="Allow old clm driver files to be overwritten")
+
     # ++++++++++++++++
     group = parser.add_argument_group('Parallel execution')
     group.add_argument("-p", type=int, default=0,
@@ -194,6 +202,17 @@ def update_run_from_args(run, args):
 
     if args.r and run.Process.Topology.R != args.r:
         run.Process.Topology.R = args.r
+
+    if args.overwrite_clm_driver_files:
+        clm_solver = run.Solver.CLM
+        keys = [
+            'OverwriteDrvClmin',
+            'OverwriteDrvVegp',
+            'OverwriteDrvVegm',
+        ]
+        for key in keys:
+            if getattr(clm_solver, key) is False:
+                setattr(clm_solver, key, True)
 
 # -----------------------------------------------------------------------------
 
@@ -254,6 +273,11 @@ class Run(BaseRun):
         new_run = cls(name, file_path)
         kwargs = {ext_map[ext]: file_path}
         new_run.pfset(**kwargs)
+
+        if ext == 'pfidb':
+            # Import CLM files if we need to
+            CLMImporter(new_run).import_if_needed()
+
         return new_run
 
     def get_name(self):
@@ -298,6 +322,10 @@ class Run(BaseRun):
                                   f'{file_name}.{file_format}')
         full_file_path = os.path.abspath(f_name)
         write_dict(self.to_dict(), full_file_path)
+
+        if CLMExporter(self)._using_clm:
+            # If we are using CLM, write out any other files we need
+            CLMExporter(self).write_allowed(settings.WORKING_DIRECTORY)
 
         # revert working directory to original directory
         settings.set_working_directory(prev_dir)
