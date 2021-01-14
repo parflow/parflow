@@ -79,3 +79,54 @@ function (pf_add_amps_sequential_test test loops)
   endif()
   pf_add_amps_parallel_test(${test} ${ranks} ${loops})
 endfunction()
+
+
+# Add parflow testing of all Python files in a folder
+function (pf_add_python_tests group_name)
+
+  file(GLOB test_names RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/${group_name}" *)
+
+  foreach(test_name ${test_names})
+    add_test(
+      NAME "py_${group_name}_${test_name}"
+      COMMAND ${PARFLOW_PYTHON} "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.py"
+    )
+    set_tests_properties(
+      "py_${group_name}_${test_name}"
+      PROPERTIES
+        ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/pftools/python:$ENV{PYTHONPATH};PF_SRC=${PROJECT_SOURCE_DIR}"
+    )
+  endforeach()
+
+endfunction()
+
+
+# Add parflow testing of a single Python file
+function (pf_add_py_test test_name)
+
+  add_test(
+    NAME "py_${test_name}"
+    COMMAND ${PARFLOW_PYTHON} "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.py"
+  )
+  set_tests_properties(
+    "py_${test_name}"
+    PROPERTIES
+      ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/pftools/python:$ENV{PYTHONPATH};PF_SRC=${PROJECT_SOURCE_DIR}"
+  )
+
+endfunction()
+
+# Add parflow testing in parallel of a single Python file
+function (pf_add_py_parallel_test test_name topology_P topology_Q topology_R)
+
+  add_test(
+    NAME "py_${test_name}_${topology_P}_${topology_Q}_${topology_R}"
+    COMMAND ${PARFLOW_PYTHON} "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.py" -p ${topology_P} -q ${topology_Q} -r ${topology_R}
+  )
+  set_tests_properties(
+    "py_${test_name}_${topology_P}_${topology_Q}_${topology_R}"
+    PROPERTIES
+      ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/pftools/python:$ENV{PYTHONPATH};PF_SRC=${PROJECT_SOURCE_DIR}"
+  )
+
+endfunction()
