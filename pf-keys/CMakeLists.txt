@@ -34,6 +34,7 @@ add_custom_command(
     "${CMAKE_CURRENT_SOURCE_DIR}/definitions/phase.yaml"
     "${CMAKE_CURRENT_SOURCE_DIR}/definitions/run.yaml"
     "${CMAKE_CURRENT_SOURCE_DIR}/definitions/solver.yaml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/definitions/metadata.yaml"
   WORKING_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/generators/"
   COMMENT

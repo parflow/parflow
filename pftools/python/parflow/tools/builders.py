@@ -7,11 +7,14 @@ import yaml
 
 import numpy as np
 
+from abc import ABC, abstractmethod
 from .helper import sort_dict
 from .fs import exists
 
-from parflow.tools.io import write_patch_matrix_as_asc
+from parflow.tools.database.core import PFDBObj
+from parflow.tools.io import read_clm, write_array, write_patch_matrix_as_asc
 from parflow.tools.fs import get_absolute_path
+from parflow.tools.helper import remove_prefix, with_absolute_path
 
 
 class NoAliasDumper(yaml.SafeDumper):
@@ -207,7 +210,9 @@ class SolidFileBuilder:
             f'--mask-back {back_file_path}',
             f'--pfsol {output_file_path}'
         ] + extra
-        os.system(f'{exe_path} ' + ' '.join(args))
+        cmd_line = f'{exe_path} ' + ' '.join(args)
+        print(f'$ {cmd_line}')
+        os.system(cmd_line)
 
         print('=== pfmask-to-pfsol ===: END')
         return self
@@ -224,7 +229,7 @@ class SolidFileBuilder:
         return self
 
 # -----------------------------------------------------------------------------
-# Subsurface hydraulic property input helper
+# Abstract table to property helper class
 # -----------------------------------------------------------------------------
 
 
@@ -237,7 +242,32 @@ def _txt_line_tokenizer(line):
     return line.split()
 
 
-class SubsurfacePropertiesBuilder:
+class TableToProperties(ABC):
+
+    @property
+    @abstractmethod
+    def reference_file(self):
+        pass
+
+    @property
+    @abstractmethod
+    def key_root(self):
+        pass
+
+    @property
+    @abstractmethod
+    def unit_string(self):
+        pass
+
+    @property
+    @abstractmethod
+    def default_db(self):
+        pass
+
+    @property
+    @abstractmethod
+    def db_prefix(self):
+        pass
 
     def __init__(self, run=None):
         self.run = run
@@ -246,7 +276,7 @@ class SubsurfacePropertiesBuilder:
         self.column_index = {}
         self.props_in_row_header = True
         self.table_comments = []
-        yaml_key_def = Path(__file__).parent / 'ref/table_keys.yaml'
+        yaml_key_def = Path(__file__).parent / self.reference_file
         with open(yaml_key_def, 'r') as file:
             self.definition = yaml.safe_load(file)
 
@@ -278,7 +308,7 @@ class SubsurfacePropertiesBuilder:
             return
 
         if self.props_in_row_header:
-            # Key column contains geom_name
+            # Key column contains unit_name
             data = {}
             registrations = []
             for alias, col_idx in self.column_index.items():
@@ -306,15 +336,15 @@ class SubsurfacePropertiesBuilder:
                 if 'register' in key_def:
                     registrations.append(key_def['register'])
 
-            # Extract geom_name
-            geom_name = data['key']
+            # Extract unit_name
+            unit_name = data['key']
             del data['key']
-            self.output[geom_name] = data
+            self.output[unit_name] = data
 
-            if not hasattr(self.name_registration, geom_name):
-                self.name_registration[geom_name] = set()
+            if not hasattr(self.name_registration, unit_name):
+                self.name_registration[unit_name] = set()
 
-            self.name_registration[geom_name].update(registrations)
+            self.name_registration[unit_name].update(registrations)
 
         else:
             # Key column contains property values
@@ -345,12 +375,12 @@ class SubsurfacePropertiesBuilder:
             if 'register' in key_def:
                 registrations.append(key_def['register'])
 
-            for geom_name in self.column_index:
-                if geom_name == main_key:
+            for unit_name in self.column_index:
+                if unit_name == main_key:
                     continue
 
-                container = self.output[geom_name]
-                value_str = tokens[self.column_index[geom_name]]
+                container = self.output[unit_name]
+                value_str = tokens[self.column_index[unit_name]]
                 if value_str == '-':
                     continue
 
@@ -358,7 +388,7 @@ class SubsurfacePropertiesBuilder:
                 container[key] = value
                 container.update(data)
                 if registrations:
-                    self.name_registration[geom_name].update(registrations)
+                    self.name_registration[unit_name].update(registrations)
 
     def _process_first_line(self, first_line_tokens):
         """Method to process first line in a table
@@ -389,11 +419,11 @@ class SubsurfacePropertiesBuilder:
             print(f' - Properties not found: {not_found}')
         elif len(found) == 1:
             self.props_in_row_header = False
-            # Prefill geo_name containers
-            for geom_name in self.column_index:
-                if geom_name not in self.definition['key']['alias']:
-                    self.output[geom_name] = {}
-                    self.name_registration[geom_name] = set()
+            # Prefill unit_name containers
+            for unit_name in self.column_index:
+                if unit_name not in self.definition['key']['alias']:
+                    self.output[unit_name] = {}
+                    self.name_registration[unit_name] = set()
 
         if self.props_in_row_header is None:
             raise Exception('Invalid table format')
@@ -401,7 +431,7 @@ class SubsurfacePropertiesBuilder:
         return True
 
     def load_csv_file(self, table_file, encoding='utf-8-sig'):
-        """Method to load a .csv file of a table of subsurface parameters
+        """Method to load a .csv file of a table of parameters
 
         Args:
             table_file (str): Path to the input .csv file.
@@ -419,7 +449,7 @@ class SubsurfacePropertiesBuilder:
         return self
 
     def load_txt_file(self, table_file, encoding='utf-8-sig'):
-        """Method to load a .txt file of a table of subsurface parameters
+        """Method to load a .txt file of a table of parameters
 
         Args:
             table_file (str): Path to the input .txt file.
@@ -438,7 +468,7 @@ class SubsurfacePropertiesBuilder:
         return self
 
     def load_txt_content(self, txt_content):
-        """Method to load an in-line text table of subsurface parameters
+        """Method to load an in-line text table of parameters
 
         Args:
             txt_content (str): In-line text string.
@@ -478,17 +508,24 @@ class SubsurfacePropertiesBuilder:
 
         return self
 
-    def load_default_properties(self, database='conus_1'):
+    def load_default_properties(self, database=None):
         """Method to load one of several default property databases.
 
         Args:
-           database='conus_1': default database - options are:
-           'conus_1': soil/rock properties from Maxwell and Condon (2016)
-           'washita': soil/rock properties from Little Washita script
-           'freeze_cherry': soil/rock properties from Freeze and Cherry (1979)
-           Note: Freeze and Cherry only has permeability and porosity
+           database=self.default_db: default database - options are:
+           1) for SubsurfacePropertiesBuilder:
+             'conus_1': soil/rock properties from Maxwell and Condon (2016)
+             'washita': soil/rock properties from Little Washita script
+             'freeze_cherry': soil/rock properties from Freeze and
+               Cherry (1979)
+               Note: Freeze and Cherry only has permeability and porosity
+           2) for VegParamBuilder:
+               'igbp': parameters from IGBP land cover veg classification
         """
-        database_file = f'ref/subsurface_{database}.txt'
+        if database is None:
+            database = self.default_db
+
+        database_file = f'ref/{self.db_prefix}{database}.txt'
         default_prop_file = str(Path(__file__).parent / database_file)
 
         if exists(default_prop_file):
@@ -504,22 +541,22 @@ class SubsurfacePropertiesBuilder:
                   f'include:')
             for root, dirs, files in os.walk(Path(__file__).parent / 'ref'):
                 for name in files:
-                    if name.startswith('subsurface'):
+                    if name.startswith(self.db_prefix):
                         print(f'# - {name} (use argument '
-                              f'"{name[len("subsurface_"):-len(".txt")]}")')
+                              f'"{remove_prefix(name, self.db_prefix)}")')
             print('#' * 80)
 
         return self
 
     def apply(self, run=None, name_registration=True):
-        """Method to apply the loaded subsurface properties to a given
+        """Method to apply the loaded properties to a given
            run object.
 
         Args:
             run=None (Run object): Run object to which the loaded subsurface
                 parameters will be applied. If run=None, then the run object
                 must be passed in as an argument when the
-                SubsurfacePropertiesBuilder is instantiated.
+                TableToProperties is instantiated.
             name_registration=True (bool): sets the auxiliary keys
                 (e.g., GeomNames) related to the loaded subsurface properties
         """
@@ -531,27 +568,27 @@ class SubsurfacePropertiesBuilder:
         else:
             self.run = run
 
-        valid_geom_names = []
+        valid_unit_names = []
         addon_keys = {}
         for name in self.output:
-            if name in self.run.Geom.__dict__:
-                valid_geom_names.append(name)
+            if name in self.key_root.__dict__:
+                valid_unit_names.append(name)
             elif name_registration and not isinstance(self.output[name], dict):
                 addon_keys[name] = self.output[name]
 
-        # Run pfset on all geom sections
-        for geom_name in valid_geom_names:
-            self.run.Geom[geom_name].pfset(flat_map=self.output[geom_name])
+        # Run pfset on all unit sections
+        for unit_name in valid_unit_names:
+            self.key_root[unit_name].pfset(flat_map=self.output[unit_name])
 
         # Handle names
         if name_registration:
             names_to_set = addon_keys
-            for geom_name in valid_geom_names:
-                if geom_name in self.name_registration:
-                    for prop_name in self.name_registration[geom_name]:
+            for unit_name in valid_unit_names:
+                if unit_name in self.name_registration:
+                    for prop_name in self.name_registration[unit_name]:
                         if prop_name not in names_to_set:
                             names_to_set[prop_name] = []
-                        names_to_set[prop_name].append(geom_name)
+                        names_to_set[prop_name].append(unit_name)
             self.run.pfset(flat_map=names_to_set)
 
         return self
@@ -559,19 +596,20 @@ class SubsurfacePropertiesBuilder:
     def print(self):
         """Method to print subsurface properties in hierarchical format
         """
-        output_to_print = {'Geom': {}}
-        valid_geom_names = []
-        for geom_name in self.output:
-            if hasattr(self.run.Geom, geom_name):
-                valid_geom_names.append(geom_name)
+        output_to_print = {self.unit_string: {}}
+        valid_unit_names = []
+        for unit_name in self.output:
+            if hasattr(self.key_root, unit_name):
+                valid_unit_names.append(unit_name)
 
-        for geom_name in valid_geom_names:
-            if hasattr(self.name_registration, geom_name):
-                for prop_name in self.name_registration[geom_name]:
-                    output_to_print.setdefault(prop_name, []).append(geom_name)
+        for unit_name in valid_unit_names:
+            if hasattr(self.name_registration, unit_name):
+                for prop_name in self.name_registration[unit_name]:
+                    output_to_print.setdefault(prop_name, []).append(unit_name)
 
-        for geom_name in valid_geom_names:
-            output_to_print['Geom'][geom_name] = self.output[geom_name]
+        for unit_name in valid_unit_names:
+            s = self.unit_string
+            output_to_print[s][unit_name] = self.output[unit_name]
 
         print(yaml.dump(sort_dict(output_to_print), Dumper=NoAliasDumper))
         return self
@@ -586,25 +624,25 @@ class SubsurfacePropertiesBuilder:
                 is space-delimited.
 
         Returns:
-            text block of table of subsurface units and parameter values
+            text block of table of units and parameter values
         """
         entries = []
         prop_set = set()
         prop_sizes = {'key': 0}
-        geom_sizes = {'key': 0}
+        unit_sizes = {'key': 0}
 
         # Fill entries headers
-        for geo_name, props in self.output.items():
+        for unit_name, props in self.output.items():
             if not isinstance(props, dict):
                 continue
-            elif not hasattr(self.run.Geom, geo_name):
+            elif not hasattr(self.key_root, unit_name):
                 continue
 
             entry = {
-                'key': geo_name,
+                'key': unit_name,
             }
-            prop_sizes['key'] = max(prop_sizes['key'], len(geo_name))
-            geom_sizes[geo_name] = len(geo_name)
+            prop_sizes['key'] = max(prop_sizes['key'], len(unit_name))
+            unit_sizes[unit_name] = len(unit_name)
             for prop in props:
                 if prop in self.pfkey_to_alias:
                     alias = self.pfkey_to_alias[prop]
@@ -613,8 +651,8 @@ class SubsurfacePropertiesBuilder:
                     entry[alias] = value
                     prop_set.add(alias)
 
-                    # Find bigger size for geom
-                    geom_sizes[geo_name] = max(geom_sizes[geo_name], size)
+                    # Find bigger size for unit
+                    unit_sizes[unit_name] = max(unit_sizes[unit_name], size)
 
                     # Find bigger size for props
                     if alias not in prop_sizes:
@@ -622,7 +660,7 @@ class SubsurfacePropertiesBuilder:
                     else:
                         prop_sizes[alias] = max(prop_sizes[alias], size)
 
-                    geom_sizes['key'] = max(geom_sizes['key'], len(alias))
+                    unit_sizes['key'] = max(unit_sizes['key'], len(alias))
 
             entries.append(entry)
 
@@ -631,9 +669,9 @@ class SubsurfacePropertiesBuilder:
         for alias in prop_sizes:
             prop_header_width += prop_sizes[alias] + 2
 
-        geom_header_width = 0
-        for geom_name in geom_sizes:
-            geom_header_width += geom_sizes[geom_name] + 2
+        unit_header_width = 0
+        for unit_name in unit_sizes:
+            unit_header_width += unit_sizes[unit_name] + 2
 
         # Build table
         table_lines = []
@@ -660,13 +698,13 @@ class SubsurfacePropertiesBuilder:
                 table_lines.append(column_separator.join(line))
 
         else:
-            sizes = geom_sizes
-            # Create table using geom name as header
+            sizes = unit_sizes
+            # Create table using unit name as header
             line = []
-            for geom in sizes:
-                header_keys.append(geom)
-                width = sizes[geom]
-                line.append(geom.ljust(width))
+            for unit in sizes:
+                header_keys.append(unit)
+                width = sizes[unit]
+                line.append(unit.ljust(width))
 
             # Add header
             table_lines.append(column_separator.join(line))
@@ -696,6 +734,66 @@ class SubsurfacePropertiesBuilder:
         """
         print(self.get_table(props_in_header, column_separator))
         return self
+
+
+# -----------------------------------------------------------------------------
+# Subsurface hydraulic property input helper
+# -----------------------------------------------------------------------------
+
+class SubsurfacePropertiesBuilder(TableToProperties):
+
+    def __init__(self, run=None):
+        super().__init__(run)
+
+    @property
+    def reference_file(self):
+        return 'ref/table_keys.yaml'
+
+    @property
+    def key_root(self):
+        return self.run.Geom
+
+    @property
+    def unit_string(self):
+        return 'Geom'
+
+    @property
+    def default_db(self):
+        return 'conus_1'
+
+    @property
+    def db_prefix(self):
+        return 'subsurface_'
+
+
+# -----------------------------------------------------------------------------
+# Vegetation parameter property input helper
+# -----------------------------------------------------------------------------
+
+class VegParamBuilder(TableToProperties):
+
+    def __init__(self, run=None):
+        super().__init__(run)
+
+    @property
+    def reference_file(self):
+        return 'ref/vegp_keys.yaml'
+
+    @property
+    def key_root(self):
+        return self.run.Solver.CLM.Vegetation.Parameters
+
+    @property
+    def unit_string(self):
+        return 'VegParams'
+
+    @property
+    def default_db(self):
+        return 'igbp'
+
+    @property
+    def db_prefix(self):
+        return 'vegp_'
 
 # -----------------------------------------------------------------------------
 # Domain input builder - setting keys for various common problem definitions
@@ -1062,3 +1160,309 @@ class DomainBuilder:
         self.run.TimeStep.MinStep = 0.1
 
         return self
+
+    def clm_input(self, StartDate, StartTime, EndDate, EndTime,
+                  metf1d, outf1d, poutf1d, rstf, startcode=2,
+                  clm_ic=2, maxt=1, mina=0.05, udef=-9999, vclass=2,
+                  vegtf='drv_vegm.dat', vegpf='drv_vegp.dat',
+                  t_ini=300, h2osno_ini=0, surfind=2, soilind=1,
+                  snowind=0, forc_hgt_u=10.0, forc_hgt_t=2.0,
+                  forc_hgt_q=2.0, dewmx=0.1, qflx_tran_vegmx=-9999.0,
+                  rootfr=-9999.0, zlnd=0.01, zsno=0.0024,
+                  csoilc=0.0025, capr=0.34, cnfac=0.5, smpmin=-1.0e8,
+                  ssi=0.033, wimp=0.05):
+        """Setting metadata keys to build the CLM driver input file
+        """
+        syear, smonth, sday = StartDate.split('-')
+        shour, smin, ssec = StartTime.split('-')
+        eyear, emonth, eday = EndDate.split('-')
+        ehour, emin, esec = EndTime.split('-')
+
+        self.run.Solver.CLM.Input.Timing.StartYear = syear
+        self.run.Solver.CLM.Input.Timing.StartMonth = smonth
+        self.run.Solver.CLM.Input.Timing.StartDay = sday
+        self.run.Solver.CLM.Input.Timing.StartHour = shour
+        self.run.Solver.CLM.Input.Timing.StartMinute = smin
+        self.run.Solver.CLM.Input.Timing.StartSecond = ssec
+        self.run.Solver.CLM.Input.Timing.EndYear = eyear
+        self.run.Solver.CLM.Input.Timing.EndMonth = emonth
+        self.run.Solver.CLM.Input.Timing.EndDay = eday
+        self.run.Solver.CLM.Input.Timing.EndHour = ehour
+        self.run.Solver.CLM.Input.Timing.EndMinute = emin
+        self.run.Solver.CLM.Input.Timing.EndSecond = esec
+        self.run.Solver.CLM.Input.File.MetInput = metf1d
+        self.run.Solver.CLM.Input.File.Output = outf1d
+        self.run.Solver.CLM.Input.File.ParamOutput = poutf1d
+        self.run.Solver.CLM.Input.File.ActiveRestart = rstf
+        self.run.Solver.CLM.Input.ICSource.Code = clm_ic
+        self.run.Solver.CLM.Input.Timing.RestartCode = startcode
+        self.run.Solver.CLM.Input.Domain.MaxTiles = maxt
+        self.run.Solver.CLM.Input.Domain.MinGridArea = mina
+        self.run.Solver.CLM.Input.Domain.UndefinedValue = udef
+        self.run.Solver.CLM.Input.Domain.VegClassification = vclass
+        self.run.Solver.CLM.Input.File.VegTileSpecification = vegtf
+        self.run.Solver.CLM.Input.File.VegTypeParameter = vegpf
+        self.run.Solver.CLM.Input.InitCond.Temperature = t_ini
+        self.run.Solver.CLM.Input.InitCond.SnowCover = h2osno_ini
+        self.run.Solver.CLM.Input.OutputVars.Surface = surfind
+        self.run.Solver.CLM.Input.OutputVars.Soil = soilind
+        self.run.Solver.CLM.Input.OutputVars.Snow = snowind
+        self.run.Solver.CLM.Input.Forcing.WindObsHeight = forc_hgt_u
+        self.run.Solver.CLM.Input.Forcing.TempObsHeight = forc_hgt_t
+        self.run.Solver.CLM.Input.Forcing.HumObsHeight = forc_hgt_q
+        self.run.Solver.CLM.Input.Vegetation.MaxDew = dewmx
+        self.run.Solver.CLM.Input.Vegetation.MaxTranspiration = qflx_tran_vegmx
+        self.run.Solver.CLM.Input.Vegetation.RootFraction = rootfr
+        self.run.Solver.CLM.Input.RoughnessLength.Soil = zlnd
+        self.run.Solver.CLM.Input.RoughnessLength.Snow = zsno
+        self.run.Solver.CLM.Input.RoughnessLength.DragCanopySoil = csoilc
+        self.run.Solver.CLM.Input.NumericalParams.TuningFactor = capr
+        self.run.Solver.CLM.Input.NumericalParams.CNFactor = cnfac
+        self.run.Solver.CLM.Input.NumericalParams.MinSoilPotential = smpmin
+        self.run.Solver.CLM.Input.NumericalParams.IrrSnowSat = ssi
+        self.run.Solver.CLM.Input.NumericalParams.WaterImpermeable = wimp
+
+        return self
+
+
+class CLMImporter:
+    def __init__(self, run):
+        self.run = run
+
+    def files(self, input='drv_clmin.dat', map='drv_vegm.dat',
+              parameters='drv_vegp.dat'):
+        func_map = {
+            'input_file': input,
+            'map_file': map,
+            'parameters_file': parameters,
+        }
+
+        for func_name, arg in func_map.items():
+            func = getattr(self, func_name)
+            try:
+                func(arg)
+            except FileNotFoundError:
+                raise Exception(f'Could not find CLM driver file {arg}')
+        return self
+
+    @with_absolute_path
+    def input_file(self, path='drv_clmin.dat'):
+        clm_key_dict = read_clm(path, type='clmin')
+        self.input(clm_key_dict)
+        self._import_paths['input'] = path
+        return self
+
+    def input(self, clm_key_dict):
+        from .database.generated import CLM_KEY_DICT as ref_dict
+
+        invalid_keys = []
+        for key, value in clm_key_dict.items():
+            if key not in ref_dict:
+                invalid_keys.append(key)
+                continue
+
+            key_to_set = '.'.join(ref_dict[key])
+            # Ensure the value is the right type...
+            value = self._convert_to_domain_type(key_to_set, value)
+            self.run.pfset(key=key_to_set, value=value)
+
+        # Clear all histories at the root clm input object
+        self._clear_all_histories(self.run.Solver.CLM.Input)
+
+        if invalid_keys:
+            print('Warning: The following CLM variables could not be set:')
+            for var in invalid_keys:
+                print(f'  - {var}')
+
+        return self
+
+    @with_absolute_path
+    def parameters_file(self, path='drv_vegp.dat'):
+        vegp_data = read_clm(path, type='vegp')
+        self.parameters(vegp_data)
+        self._import_paths['parameters'] = path
+        return self
+
+    def parameters(self, vegp_data):
+        from .database.generated import CLM_KEY_DICT as ref_dict
+
+        self._ensure_land_covers_set()
+
+        land_cover_items = self._veg_params.select('{LandCoverParamItem}')
+        for key, values in vegp_data.items():
+            if key not in ref_dict:
+                raise Exception(f'Unknown vegp key: {key}')
+
+            name = ref_dict[key][-1]
+            for item, val in zip(land_cover_items, values):
+                item[name] = val
+
+                # Clear the history
+                item._details_[name]['history'] = []
+
+        return self
+
+    @with_absolute_path
+    def map_file(self, path='drv_vegm.dat'):
+        vegm_data = read_clm(path, type='vegm')
+        self.map(vegm_data)
+        self._import_paths['map'] = path
+        return self
+
+    def map(self, vegm_data):
+        self._ensure_land_covers_set()
+
+        land_names = self._land_names
+        all_tokens = [
+            'Latitude',
+            'Longitude',
+            'Sand',
+            'Clay',
+            'Color'
+        ] + land_names
+
+        # Slice the tokens so they match the shape of the data
+        num_tokens = vegm_data.shape[2]
+        all_tokens = all_tokens[:num_tokens]
+        run_name = self.run.get_name()
+
+        for i, token in enumerate(all_tokens):
+            file_name = f'{run_name}_clm_{token.lower()}.pfb'
+            if token in land_names:
+                item, = self._veg_map.select(f'LandFrac/{token}')
+                file_name = f'{run_name}_clm_{token}_landfrac.pfb'
+            else:
+                item, = self._veg_map.select(token)
+
+            array = vegm_data[:, :, i]
+            if token == 'Color':
+                # This one needs to be an integer
+                array = array.astype(np.int)
+
+            if array.min() == array.max():
+                # All the values are the same
+                item.Type = 'Constant'
+                item.Value = array[0, 0].item()
+            else:
+                write_array(get_absolute_path(file_name), vegm_data[:, :, i])
+                item.Type = 'PFBFile'
+                item.FileName = file_name
+
+            # Clear the histories
+            for details in item._details_.values():
+                details['history'] = []
+
+        return self
+
+    def set_default_land_names(self):
+        veg_params = self.run.Solver.CLM.Vegetation.Parameters
+        veg_params.LandNames = self._default_land_names
+        # Erase the history on the land names
+        veg_params.details('LandNames')['history'] = []
+        return self
+
+    def import_if_needed(self):
+        """Imports driver files if needed
+
+        If CLM is in use and driver file data has not yet been set, then
+        the driver files will be imported.
+
+        The default land names will be set if no land names have been
+        set yet.
+        """
+        if not self._using_clm:
+            return self
+
+        if self._driver_data_appears_to_be_set:
+            return self
+
+        self._set_default_land_names_if_missing()
+        return self.files()
+
+    @property
+    def _default_land_names(self):
+        path = 'Solver.CLM.Vegetation.Parameters.LandNames'
+        return self.run.details(path).get('default')
+
+    @property
+    def _using_clm(self):
+        # We can add other checks here if needed
+        return self.run.Solver.LSM == 'CLM'
+
+    @property
+    def _driver_data_appears_to_be_set(self):
+        # Just pick one property to check. We can also check multiple ones.
+        return self.run.Solver.CLM.Vegetation.Map.Sand.Type is not None
+
+    @property
+    def _veg_map(self):
+        return self.run.Solver.CLM.Vegetation.Map
+
+    @property
+    def _veg_params(self):
+        return self.run.Solver.CLM.Vegetation.Parameters
+
+    def _set_default_land_names_if_missing(self):
+        if not self._land_covers_are_set:
+            self.set_default_land_names()
+
+    @property
+    def _land_names(self):
+        names = self._veg_params.LandNames
+        return names if isinstance(names, list) else names.split()
+
+    @property
+    def _land_covers_are_set(self):
+        land_param_items = self._veg_params.select('{LandCoverParamItem}')
+        land_map_items = self._veg_map.select('LandFrac/{LandFracCoverMapItem}')
+        return (land_param_items and land_map_items and
+                all(x is not None for x in land_param_items + land_map_items))
+
+    def _ensure_land_covers_set(self):
+        if not self._land_covers_are_set:
+            raise Exception('Land cover items are not set')
+
+    @property
+    def _import_paths(self):
+        return self.run.__dict__.setdefault('_import_paths_', {})
+
+    @staticmethod
+    def _clear_all_histories(root):
+        # Clear all histories recursively starting from the root PFDBObj
+        if not isinstance(root, PFDBObj):
+            return
+
+        def recursive_clear_histories(parent):
+            for key in parent.keys():
+                item = parent[key]
+                if not isinstance(item, PFDBObj):
+                    continue
+
+                for details in item._details_.values():
+                    if 'history' in details:
+                        details['history'] = []
+
+                recursive_clear_histories(item)
+
+        recursive_clear_histories(root)
+
+    def _convert_to_domain_type(self, key, value):
+        conversion_map = {
+            'IntValue': lambda x: int(float(x)),
+            'DoubleValue': float,
+        }
+
+        try:
+            domain_type = 'AnyString'
+            for domain_key in self.run.details(key)['domains']:
+                if domain_key in conversion_map:
+                    domain_type = domain_key
+                    break
+        except Exception:
+            # For whatever reason, it failed. Just return the value...
+            return value
+
+        if domain_type not in conversion_map:
+            return value
+
+        return conversion_map[domain_type](value)

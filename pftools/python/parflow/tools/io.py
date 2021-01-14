@@ -21,13 +21,62 @@ except ImportError:
 
 # -----------------------------------------------------------------------------
 
-def load_patch_matrix_from_pfb_file(file_name, layer=None):
+def read_array(file_name):
+    ext = Path(file_name).suffix[1:]
+    funcs = {
+        'pfb': read_array_pfb,
+    }
+
+    if ext not in funcs:
+        raise Exception(f'Unknown extension: {file_name}')
+
+    return funcs[ext](file_name)
+
+
+# -----------------------------------------------------------------------------
+
+def write_array(file_name, array):
+    ext = Path(file_name).suffix[1:]
+    funcs = {
+        'pfb': write_array_pfb,
+    }
+
+    if ext not in funcs:
+        raise Exception(f'Unknown extension: {file_name}')
+
+    return funcs[ext](file_name, array)
+
+
+# -----------------------------------------------------------------------------
+
+def read_array_pfb(file_name):
     from parflowio.pyParflowio import PFData
     data = PFData(file_name)
     data.loadHeader()
     data.loadData()
-    data_array = data.viewDataArray()
+    return data.moveDataArray()
 
+
+# -----------------------------------------------------------------------------
+
+def write_array_pfb(file_name, array):
+    # Ensure this is 3 dimensions, since parflowio requires 3 dimensions.
+    while array.ndim < 3:
+        array = array[np.newaxis, :]
+
+    if array.ndim > 3:
+        raise Exception(f'Too many dimensions: {array.ndim}')
+
+    from parflowio.pyParflowio import PFData
+    data = PFData()
+    data.setDataArray(array)
+    return data.writeFile(file_name)
+
+
+# -----------------------------------------------------------------------------
+
+def load_patch_matrix_from_pfb_file(file_name, layer=None):
+    data_array = read_array_pfb(file_name)
     if data_array.ndim == 3:
         nlayer, nrows, ncols = data_array.shape
         if layer:
@@ -298,3 +347,103 @@ def read_yaml(file_path):
         return {}
 
     return yaml.safe_load(path.read_text())
+
+
+# -----------------------------------------------------------------------------
+
+def _read_clmin(file_name):
+    """function to load in drv_clmin.dat files
+
+       Args:
+           - file_name: name of drv_clmin.dat file
+
+       Returns:
+           dictionary of key/value pairs of variables in file
+    """
+    clm_vars = {}
+    with open(file_name, 'r') as rf:
+        for line in rf:
+            # skip if first 15 are empty or exclamation
+            if line and line[0].islower():
+                first_word = line.split()[0]
+                if len(first_word) > 15:
+                    clm_vars[first_word[:14]] = first_word[15:]
+                else:
+                    clm_vars[first_word] = line.split()[1]
+
+    return clm_vars
+
+
+# -----------------------------------------------------------------------------
+
+def _read_vegm(file_name):
+    """function to load in drv_vegm.dat files
+
+       Args:
+           - file_name: name of drv_vegm.dat file
+
+       Returns:
+           3D numpy array for domain, with 3rd dimension defining each column
+           in the vegm.dat file except for x/y
+    """
+    with open(file_name, 'r') as rf:
+        lines = rf.readlines()
+
+    last_line_split = lines[-1].split()
+    x_dim = int(last_line_split[0])
+    y_dim = int(last_line_split[1])
+    z_dim = len(last_line_split) - 2
+    vegm_array = np.zeros((x_dim, y_dim, z_dim))
+    # Assume first two lines are comments
+    for line in lines[2:]:
+        elements = line.split()
+        x = int(elements[0])
+        y = int(elements[1])
+        for i in range(z_dim):
+            vegm_array[x-1, y-1, i] = elements[i + 2]
+
+    return vegm_array
+
+
+# -----------------------------------------------------------------------------
+
+def _read_vegp(file_name):
+    """function to load in drv_vegp.dat files
+
+       Args:
+           - file_name: name of drv_vegp.dat file
+
+       Returns:
+           Dictionary with keys as variables and values as lists of parameter
+           values for each of the 18 land cover types
+    """
+    vegp_data = {}
+    current_var = None
+    with open(file_name, 'r') as rf:
+        for line in rf:
+            if not line or line[0] == '!':
+                continue
+
+            split = line.split()
+            if current_var is not None:
+                vegp_data[current_var] = [to_native_type(i) for i in split]
+                current_var = None
+            elif line[0].islower():
+                current_var = split[0]
+
+    return vegp_data
+
+
+# -----------------------------------------------------------------------------
+
+def read_clm(file_name, type='clmin'):
+    type_map = {
+        'clmin': _read_clmin,
+        'vegm': _read_vegm,
+        'vegp': _read_vegp
+    }
+
+    if type not in type_map:
+        raise Exception(f'Unknown clm type: {type}')
+
+    return type_map[type](get_absolute_path(file_name))

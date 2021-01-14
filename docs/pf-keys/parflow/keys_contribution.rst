@@ -149,6 +149,31 @@ dynamic token. In this example, ``PhaseNameItem`` is the ``__class__`` of the dy
 the location of the token referenced in ``class_name``. In this example, the Names token in ``Phase.Names`` is on the same
 level as the ``.{phase_name}`` in ``Phase.phase_name``. This can also be an absolute path.
 
+^^^^^^^^^^^^^^^^^
+``ignore``
+^^^^^^^^^^^^^^^^^
+
+Skip field exportation but allow to set other keys from it in a more convinient manner using some handler.
+
+.. code-block:: yaml
+    Solver:
+        CLM:
+            Input:
+                Timing:
+                    StartDate:
+                      help: >
+                        [Type: string] Helper property that will set StartYear/StartMonth/StartDay
+                      ignore: _not_exported_
+                      handlers:
+                        FieldsUpdater:
+                          type: SplitHandler
+                          separator: /
+                          convert: int
+                          fields:
+                            - StartYear
+                            - StartMonth
+                            - StartDay
+
 
 ===================================================
 Steps to add a new key
