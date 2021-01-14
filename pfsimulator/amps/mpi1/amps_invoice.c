@@ -74,7 +74,7 @@ int amps_FreeInvoice(amps_Invoice inv)
   /* Delete any storage associated with this invoice */
   amps_ClearInvoice(inv);
 
-  if (inv->mpi_type != MPI_DATATYPE_NULL)
+  if (inv->mpi_type != MPI_DATATYPE_NULL && inv->mpi_type != MPI_BYTE)
   {
     MPI_Type_free(&inv->mpi_type);
   }

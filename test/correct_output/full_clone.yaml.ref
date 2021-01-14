@@ -188,7 +188,6 @@ Process:
     Q: 3
     R: 4
 Solver:
-  $_: Richards
   Linear:
     Preconditioner: PFMG
   MaxIter: 5
@@ -199,6 +198,7 @@ Solver:
     MaxIter: 10
     ResidualTol: 1.0e-09
     UseJacobian: true
+  _value_: Richards
 SpecificStorage:
   GeomNames: domain
   Type: Constant

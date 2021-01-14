@@ -1,14 +1,15 @@
-import pathlib
+from pathlib import Path
 from setuptools import find_packages, setup
 
 # reading the README file
-HERE = pathlib.Path(__file__).parent
+HERE = Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 setup(
     name='pftools',
-    version="0.0.3",
-    description='A Python package creating an interface with the ParFlow hydrologic model.',
+    version="1.0.0",
+    description=('A Python package creating an interface with the ParFlow '
+                 'hydrologic model.'),
     long_description=README,
     long_description_content_type='text/markdown',
     url='https://github.com/parflow/parflow/tree/master/pftools/python',
@@ -21,13 +22,14 @@ setup(
     keywords=['ParFlow', 'groundwater model', 'surface water model'],
     packages=find_packages(),
     install_requires=['pyyaml==5.3.1'],
+    include_package_data=True,
     extras_require={
         'all': [
             'imageio>=2.9.0',
-            'parflowio'
+            'parflowio>=0.0.4'
         ],
         'pfb': [
-            'parflowio'
+            'parflowio>=0.0.4'
         ],
         'pfsol': [
             'imageio>=2.9.0'

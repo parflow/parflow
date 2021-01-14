@@ -46,8 +46,17 @@
 #endif
 #endif
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <sys/times.h>
+
+#ifdef PARFLOW_HAVE_CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
+#ifdef PARFLOW_HAVE_RMM
+#include <rmm/rmm_api.h>
+#endif
+#endif
 
 /*
  * Prevent inclusion of mpi C++ bindings in mpi.h includes.
@@ -323,27 +332,6 @@ typedef struct amps_buffer {
 /* Invoices plus the src or dest rank.                                       */
 /*===========================================================================*/
 
-
-#ifdef AMPS_MPI_NOT_USE_PERSISTENT
-
-typedef struct {
-  int num_send;
-  int           *dest;
-  amps_Invoice  *send_invoices;
-
-  int num_recv;
-  int           *src;
-  amps_Invoice  *recv_invoices;
-
-  MPI_Request   *requests;
-
-  int recv_remaining;
-} amps_PackageStruct;
-
-typedef amps_PackageStruct *amps_Package;
-
-#else
-
 typedef struct {
   int num_send;
   int           *dest;
@@ -361,9 +349,6 @@ typedef struct {
 } amps_PackageStruct;
 
 typedef amps_PackageStruct *amps_Package;
-
-#endif
-
 
 typedef struct _amps_HandleObject {
   int type;
@@ -384,7 +369,6 @@ extern amps_Buffer *amps_BufferFreeList;
  *   PACKING structures and defines
  *
  *****************************************************************************/
-
 #define AMPS_PACKED 2
 
 #define AMPS_IGNORE  -1
@@ -1050,13 +1034,35 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_Error(name, type, comment, operation) \
   printf("%s : %s\n", name, comment)
 
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
+/*--------------------------------------------------------------------------
+ * Amps defines with CUDA
+ *--------------------------------------------------------------------------*/
+
+/**
+ * @brief Operation modes for amps_gpupacking function
+ *  
+ * @note See function description for amps_gpupacking.
+ * 
+ * @{
+ */
+#define AMPS_GETRBUF 1
+#define AMPS_GETSBUF 2
+#define AMPS_PACK 4
+#define AMPS_UNPACK 8
+/** @} */
+
+/**
+ * @brief Activate non-persistent communication
+ */
+#define AMPS_MPI_NOT_USE_PERSISTENT
+
 /*--------------------------------------------------------------------------
  *  GPU error handling macros
  *--------------------------------------------------------------------------*/
 
 /**
- * @brief CUDA error handling.
+ * @brief CUDA error handling
  * 
  * If error detected, print error message and exit.
  *
@@ -1071,9 +1077,8 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line) 
 }
 
 #ifdef PARFLOW_HAVE_RMM
-#include <rmm/rmm_api.h>
 /**
- * @brief RMM error handling.
+ * @brief RMM error handling
  * 
  * If error detected, print error message and exit.
  *
@@ -1093,7 +1098,7 @@ static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
  *--------------------------------------------------------------------------*/
 
 /**
- * @brief Allocates unified memory.
+ * @brief Allocates unified memory
  * 
  * If RMM library is available, pool allocation is used for better performance.
  * 
@@ -1117,7 +1122,7 @@ static inline void *_amps_talloc_cuda(size_t size)
 }
 
 /**
- * @brief Allocates unified memory initialized to 0.
+ * @brief Allocates unified memory initialized to 0
  * 
  * If RMM library is available, pool allocation is used for better performance.
  * 
@@ -1143,7 +1148,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 }
 
 /**
- * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda.
+ * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda
  * 
  * @note Should not be called directly.
  *
@@ -1159,16 +1164,22 @@ static inline void _amps_tfree_cuda(void *ptr)
 #endif
 }
 
-/** Same as \ref amps_TAlloc but allocates managed memory (CUDA required) */
+/** 
+ * Same as \ref amps_TAlloc but allocates managed memory (CUDA required) 
+ */
 #define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
-/** Same as \ref amps_CTAlloc but allocates managed memory */
+/** 
+ * Same as \ref amps_CTAlloc but allocates managed memory (CUDA required) 
+ */
 #define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
-/** Same as \ref amps_TFree but deallocates managed memory */
+/** 
+ * Same as \ref amps_TFree but deallocates managed memory (CUDA required) 
+ */
 #define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
 
-#endif // __CUDACC__
+#endif // PARFLOW_HAVE_CUDA
 
 #include "amps_proto.h"
 

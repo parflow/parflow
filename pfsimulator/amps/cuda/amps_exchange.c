@@ -138,6 +138,16 @@ void _amps_wait_exchange(amps_Handle handle)
           CUDA_ERRCHK(cudaStreamSynchronize(amps_device_globals.stream[i])); 
       }
     }
+    for (i = 0; i < handle->package->num_recv; i++)
+    {
+      if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+        MPI_Request_free(&(handle->package->recv_requests[i]));
+    }
+    for (i = 0; i < handle->package->num_send; i++)
+    {
+      if(handle->package->send_requests[i] != MPI_REQUEST_NULL)
+        MPI_Request_free(&(handle->package->send_requests[i]));
+    }
   }
 }
 

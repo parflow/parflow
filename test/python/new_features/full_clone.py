@@ -9,7 +9,7 @@ from parflow.tools.fs import get_absolute_path
 
 test = Run('full_clone', __file__)
 
-test.pfset(yamlFile='$PF_SRC/test/correct_output/full_clone.yaml.ref', exit_if_undefined=True)
+test.pfset(yaml_file='$PF_SRC/test/correct_output/full_clone.yaml.ref', exit_if_undefined=True)
 
 #-----------------------------------------------------------------------------
 

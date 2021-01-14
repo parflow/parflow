@@ -1,5 +1,6 @@
 # SCRIPT TO RUN LITTLE WASHITA DOMAIN WITH TERRAIN-FOLLOWING GRID
 
+from pathlib import Path
 import sys
 
 from parflow import Run
@@ -317,6 +318,12 @@ LW_Test.Solver.Linear.MaxRestarts = 2
 
 LW_Test.Solver.Linear.Preconditioner = 'PFMG'
 
+def test_subsurface_table(file_name):
+    path = '$PF_SRC/test/correct_output/tables_LW_subsurface.txt.ref'
+    ref = Path(get_absolute_path(path)).read_text()
+    new = Path(get_absolute_path(file_name)).read_text()
+    assert ref == new
+
 #-----------------------------------------------------------------------------
 # Comparing written key/value pairs
 #-----------------------------------------------------------------------------
@@ -335,7 +342,10 @@ def test_output(file_name):
 # testing inline text
 print('+'*40)
 print('Comparing inline text to ref:')
+
 LW_Test.write_subsurface_table('inline_input.txt')
+test_subsurface_table('inline_input.txt')
+
 if not test_output('inline_input_yaml'):
   sys.exit(1)
 print('')

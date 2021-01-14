@@ -196,12 +196,11 @@ Process:
       PathFromTopology: 6
     Seb: 5
 Solver:
-  $_: Richards
   LSM: none
   Linear:
-    $_: PCG
     KrylovDimension: 10
     Preconditioner: PFMG
+    _value_: PCG
   MaxIter: 5
   Nonlinear:
     DerivativeEpsilon: 0.01
@@ -211,6 +210,7 @@ Solver:
     ResidualTol: 1.0e-09
     UseJacobian: true
   TerrainFollowingGrid: false
+  _value_: Richards
 SpecificStorage:
   GeomNames: domain
   Type: Constant

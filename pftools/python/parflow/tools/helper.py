@@ -1,37 +1,43 @@
+import os
+import re
+
 # -----------------------------------------------------------------------------
 # Map function Helper functions
 # -----------------------------------------------------------------------------
 
-def map_to_parent(pfdbObj):
-    """Helper function to extract the parent of a pfdbObj"""
-    return pfdbObj._parent_
+
+def map_to_parent(pfdb_obj):
+    """Helper function to extract the parent of a pfdb_obj"""
+    return pfdb_obj._parent_
 
 # -----------------------------------------------------------------------------
 
-def map_to_self(pfdbObj):
+
+def map_to_self(pfdb_obj):
     """Helper function to extract self of self (noop)"""
-    return pfdbObj
+    return pfdb_obj
 
 # -----------------------------------------------------------------------------
+
 
 def map_to_child(name):
     """Helper function that return a function for extracting a field name
     """
-    return lambda pfdbObj: getattr(pfdbObj, name) if hasattr(pfdbObj, name) else None
+    return lambda pfdb_obj: getattr(pfdb_obj, name, None)
 
 # -----------------------------------------------------------------------------
+
 
 def map_to_children_of_type(class_name):
     """Helper function that return a function for extracting children
     of a given type (class_name).
     """
-    def get_children_of_type(pfdbObj):
-        return pfdbObj.get_children_of_type(class_name)
-    return get_children_of_type
+    return lambda pfdb_obj: pfdb_obj.get_children_of_type(class_name)
 
 # -----------------------------------------------------------------------------
 # Key dictionary helpers
 # -----------------------------------------------------------------------------
+
 
 def get_key_priority(key_name):
     """Return number that can be used to sort keys in term of priority
@@ -58,50 +64,83 @@ def get_key_priority(key_name):
 # Sort helpers
 # -----------------------------------------------------------------------------
 
-def sort_dict(input):
+
+def sort_dict(d, key=None):
     """Create a key sorted dict
     """
-    output = {}
-    keys = list(input.keys())
-    keys.sort()
-    for key in keys:
-        output[key] = input[key]
-
-    return output
+    return {k: d[k] for k in sorted(d, key=key)}
 
 # -----------------------------------------------------------------------------
 
-def sort_dict_by_priority(input):
+
+def sort_dict_by_priority(d):
     """Create a key sorted dict
     """
-    key_list = []
-    for key, value in input.items():
-        key_list.append((key, value, get_key_priority(key)))
-
-    key_list.sort(key=lambda t: t[2])
-
-    output = {}
-    for item in key_list:
-        output[item[0]] = item[1]
-
-    return output
+    return sort_dict(d, key=get_key_priority)
 
 # -----------------------------------------------------------------------------
 # Dictionary helpers
 # -----------------------------------------------------------------------------
 
-def get_or_create_dict(root, keyPath, overriden_keys):
+
+def get_or_create_dict(root, key_path, overriden_keys):
     """Helper function to get/create a container dict for a given key path
     """
-    currentContainer = root
-    for i in range(len(keyPath)):
-        if keyPath[i] not in currentContainer:
-            currentContainer[keyPath[i]] = {}
-        elif not isinstance(currentContainer[keyPath[i]], dict):
-            overriden_keys['.'.join(keyPath[:i+1])
-                           ] = currentContainer[keyPath[i]]
-            currentContainer[keyPath[i]] = {}
-        currentContainer = currentContainer[keyPath[i]]
+    current_container = root
+    for i, key in enumerate(key_path):
+        if key not in current_container:
+            current_container[key] = {}
+        elif not isinstance(current_container[key], dict):
+            overriden_keys['.'.join(key_path[:i+1])] = current_container[key]
+            current_container[key] = {}
+        current_container = current_container[key]
 
-    return currentContainer
+    return current_container
 
+
+# -----------------------------------------------------------------------------
+# String helpers
+# -----------------------------------------------------------------------------
+
+def remove_prefix(s, prefix):
+    if not s or not prefix or not s.startswith(prefix):
+        return s
+
+    return s[len(prefix):]
+
+
+# First column is the regex. Second column is the replacement.
+INVALID_DOT_REGEX_SUBS = [
+    (re.compile(r'^\.([a-zA-Z]+)'), '\\1'),
+    (re.compile(r'([a-zA-Z]+)\.'), '\\1/')
+]
+
+
+def _normalize_location(s):
+    s = os.path.normpath(s)
+    for regex, sub in INVALID_DOT_REGEX_SUBS:
+        s = re.sub(regex, sub, s)
+    return s
+
+
+# -----------------------------------------------------------------------------
+# Decorators
+# -----------------------------------------------------------------------------
+
+def normalize_location(func):
+    """Assume the first string argument is location and normalize it.
+
+    Normalizing it replaces dot notation with slash notation. For instance:
+
+        .Geom.Perm => Geom/Perm
+
+    """
+    def wrapper(*args, **kwargs):
+        args = list(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, str):
+                args[i] = _normalize_location(arg)
+                break
+
+        return func(*args, **kwargs)
+    return wrapper
