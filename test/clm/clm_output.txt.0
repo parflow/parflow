@@ -1,0 +1,31 @@
+ clm.F90: rank =           0    istep =           1
+ INITIALIZATION
+ Allocate arrays -- using NCH =          10
+ Check soi_z           7           7           7           7           7           7           7           7           7           7
+ Call clm_typini
+ DIMENSIONS:
+ local NX:           2  NX with ghost:           4  IX:           0
+ local NY:           5  NY with ghost:           7  IY:           0
+ PF    NZ:          10 NZ with ghost:          12
+ global  NX:           5  global NY:           5
+ DRV-NC:           2  DRV-NR:           5 DRV-NCH:          10
+  Processor Number:           0  local vector start:          33
+ Read in vegetation data and set tile information accordingly
+ Transfer grid variables to tile space           10
+ Read vegetation parameter data file for IGBP classification
+ Initialize CLM and DIAG variables
+ Initialize the CLM topography mask
+ End of time advance:
+ time =   0.0000000000000000      gmt =   7.0000000000000000      endtime =           0
+ clm.F90: rank =           0    istep =           2
+ End of time advance:
+ time =   1.0000000000000000      gmt =   8.0000000000000000      endtime =           0
+ clm.F90: rank =           0    istep =           3
+ End of time advance:
+ time =   2.0000000000000000      gmt =   9.0000000000000000      endtime =           0
+ clm.F90: rank =           0    istep =           4
+ End of time advance:
+ time =   3.0000000000000000      gmt =   10.000000000000000      endtime =           0
+ clm.F90: rank =           0    istep =           5
+ End of time advance:
+ time =   4.0000000000000000      gmt =   11.000000000000000      endtime =           0

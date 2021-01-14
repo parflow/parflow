@@ -1,0 +1,31 @@
+ ******************************
+  CLM log basic output
+
+ CLM starting istep =           1
+ CLM startcode for date (1=restart, 2=defined):           2
+ CLM IC (1=restart, 2=defined):           2
+
+ CLM starting time =   0.0000000000000000      gmt =   7.0000000000000000      istep_pf =           1
+ CLM day =           1 month =           9 year =        1998
+ End of time advance:
+ time =   0.0000000000000000      gmt =   7.0000000000000000      endtime =           0
+
+ CLM starting time =   1.0000000000000000      gmt =   8.0000000000000000      istep_pf =           2
+ CLM day =           1 month =           9 year =        1998
+ End of time advance:
+ time =   1.0000000000000000      gmt =   8.0000000000000000      endtime =           0
+
+ CLM starting time =   2.0000000000000000      gmt =   9.0000000000000000      istep_pf =           3
+ CLM day =           1 month =           9 year =        1998
+ End of time advance:
+ time =   2.0000000000000000      gmt =   9.0000000000000000      endtime =           0
+
+ CLM starting time =   3.0000000000000000      gmt =   10.000000000000000      istep_pf =           4
+ CLM day =           1 month =           9 year =        1998
+ End of time advance:
+ time =   3.0000000000000000      gmt =   10.000000000000000      endtime =           0
+
+ CLM starting time =   4.0000000000000000      gmt =   11.000000000000000      istep_pf =           5
+ CLM day =           1 month =           9 year =        1998
+ End of time advance:
+ time =   4.0000000000000000      gmt =   11.000000000000000      endtime =           0

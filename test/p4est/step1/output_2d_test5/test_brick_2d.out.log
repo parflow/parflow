@@ -1,0 +1,200 @@
+*****************************************************************************
+ParFlow Output Log
+	Version         : v3.7.0-adapt-4-ga46818f3
+	Compiled on     : Sep 16 2020 13:43:41
+*****************************************************************************
+==============================================
+BEGIN Log Info (SolverRichards)
+
+Transient Problem Solved.
+-------------------------
+
+Total Timesteps: 1
+
+-------------------------
+Sequence #       Time         \Delta t         Dumpfile #   Recompute?
+----------   ------------   ------------ -     ----------   ----------
+  000000     0.000000e+00   0.000000e+00 i       000000          n
+  000001     1.000000e+00   1.000000e+00 f       000001          y
+
+Overland flow Results
+  000000     0.000000e+00   0.000000e+00
+  000001     1.000000e+00   1.000000e+00
+
+END Log Info
+==============================================
+==============================================
+BEGIN Log Info (Globals)
+
+Run Name: test_brick_2d
+Logging Level = 1
+Num processes = 16
+Process grid = (4,4,1)
+
+END Log Info
+==============================================
+==============================================
+BEGIN Log Info (Timing)
+
+Solver Setup:
+  wall clock time   = 0.724600 seconds
+  wall MFLOPS = 0.000000 (0)
+Solver:
+  wall clock time   = 11.911600 seconds
+  wall MFLOPS = 0.006554 (78069)
+Richards Exclude 1st Time Step:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Solver Cleanup:
+  wall clock time   = 0.002900 seconds
+  wall MFLOPS = 0.000000 (0)
+Matvec:
+  wall clock time   = 0.415400 seconds
+  wall MFLOPS = 0.072104 (29952)
+PFSB I/O:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+PFB I/O:
+  wall clock time   = 0.735100 seconds
+  wall MFLOPS = 0.000000 (0)
+CLM:
+  wall clock time   = 0.031900 seconds
+  wall MFLOPS = 0.000000 (0)
+PFSOL Read:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Clustering:
+  wall clock time   = 0.574600 seconds
+  wall MFLOPS = 0.000000 (0)
+P4EST_Setup:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+PF_P4EST_Setup:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+PF_P4EST_Solve:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+PF_P4EST_Cleanup:
+  wall clock time   = 0.000100 seconds
+  wall MFLOPS = 0.000000 (0)
+Permeability Face:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Godunov Advection:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Geometries:
+  wall clock time   = 0.575200 seconds
+  wall MFLOPS = 0.000000 (0)
+SubsrfSim:
+  wall clock time   = 0.095800 seconds
+  wall MFLOPS = 0.000000 (0)
+Porosity:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+PhaseRelPerm:
+  wall clock time   = 0.000200 seconds
+  wall MFLOPS = 0.105000 (21)
+PFMG:
+  wall clock time   = 5.185100 seconds
+  wall MFLOPS = 0.000000 (0)
+HYPRE_Copies:
+  wall clock time   = 0.163200 seconds
+  wall MFLOPS = 0.000000 (0)
+NL_F_Eval:
+  wall clock time   = 0.145500 seconds
+  wall MFLOPS = 0.000034 (5)
+KINSol:
+  wall clock time   = 10.115400 seconds
+  wall MFLOPS = 0.007718 (78069)
+
+END Log Info
+==============================================
+==============================================
+BEGIN Log Info (ParFlow Total Time)
+
+Total Run Time: 12.694700 seconds
+
+Maximum memory used on processor 0 : 8 MB
+Maximum memory used on processor 1 : 8 MB
+Maximum memory used on processor 2 : 8 MB
+Maximum memory used on processor 3 : 8 MB
+Maximum memory used on processor 4 : 8 MB
+Maximum memory used on processor 5 : 9 MB
+Maximum memory used on processor 6 : 9 MB
+Maximum memory used on processor 7 : 8 MB
+Maximum memory used on processor 8 : 8 MB
+Maximum memory used on processor 9 : 9 MB
+Maximum memory used on processor 10 : 9 MB
+Maximum memory used on processor 11 : 8 MB
+Maximum memory used on processor 12 : 8 MB
+Maximum memory used on processor 13 : 8 MB
+Maximum memory used on processor 14 : 8 MB
+Maximum memory used on processor 15 : 8 MB
+
+
+BEGIN(Contents of /proc/24521/status)
+Name:	parflow
+Umask:	0022
+State:	R (running)
+Tgid:	24521
+Ngid:	0
+Pid:	24521
+PPid:	24520
+TracerPid:	0
+Uid:	1001	1001	1001	1001
+Gid:	104	104	104	104
+FDSize:	64
+Groups:	4 24 27 30 46 104 118 126 
+NStgid:	24521
+NSpid:	24521
+NSpgid:	24521
+NSsid:	24521
+VmPeak:	  599420 kB
+VmSize:	  599420 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	   26020 kB
+VmRSS:	   26020 kB
+RssAnon:	   10140 kB
+RssFile:	   14620 kB
+RssShmem:	    1260 kB
+VmData:	  296948 kB
+VmStk:	     140 kB
+VmExe:	    3256 kB
+VmLib:	   98784 kB
+VmPTE:	     492 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+Threads:	8
+SigQ:	0/62593
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000101000
+SigCgt:	0000000180000602
+CapInh:	0000000000000000
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	0000003fffffffff
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	0
+Speculation_Store_Bypass:	thread vulnerable
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+Mems_allowed:	00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	6
+nonvoluntary_ctxt_switches:	754
+
+
+END(Contents of /proc/24521/status)
+
+Memory in use : 6 MB in 258 allocs, 3 MB reserved ( 2 unused)
+
+
+END Log Info
+==============================================

@@ -1,0 +1,59 @@
+[libsc] This is libsc 2.8.74-23f6
+[libsc] CPP                      /home/alberto/externlibs/install/mpich/3.3/bin/mpicc -E
+[libsc] CPPFLAGS                 
+[libsc] CC                       /home/alberto/externlibs/install/mpich/3.3/bin/mpicc
+[libsc] CFLAGS                   -O2 -Wall -Wno-unused-but-set-variable
+[libsc] LDFLAGS                  
+[libsc] LIBS                     -llapack -lblas -lz -lm   
+[libsc] Shared memory node communicator size: 1
+Opened configuration file default_richards_wells.pfidb length 6001
+Node 0: Using process grid (1,1,1)
+Node 0: Well Information
+Node 0: Time Cycle InformationNode 0:  Number Of Cycles = 1
+Node 0:  Interval Divisions :
+Node 0:   id[00] = 1
+Node 0:  Interval Data
+Node 0:   d[00][000] = 1
+Node 0:  Repeat Counts :
+Node 0:   r[00] = -1
+Node 0:  Cycle Lengths :
+Node 0:   l[00] = 1
+Node 0: No Flux Wells.
+Node 0: Info on Pressure Wells :
+Node 0:  Pressure Well Number :  0
+Node 0:   Well Physical Data :
+Node 0:    sequence number =  0
+Node 0:    name = pumping_well
+Node 0:    x_lower, y_lower, z_lower = 0.000000 80.000000 2.000000
+Node 0:    x_upper, y_upper, z_upper = 0.000000 80.000000 3.000000
+Node 0:    diameter = 8.888889
+Node 0:    (ix, iy, iz) = (1, 6, 1)
+Node 0:    (nx, ny, nz) = (1, 1, 2)
+Node 0:    (rx, ry, rz) = (0, 0, 0)
+Node 0:    process = 0
+Node 0:    size = 189.629630
+Node 0:    action = 1
+Node 0:    method = 0
+Node 0:   Well Values :
+Node 0:   Value[ 0] :
+Node 0:    value for phase 0 = 0.500000
+Node 0:    no relevant component values present.
+Node 0: Well Information
+Node 0: Time Cycle InformationNode 0:  Number Of Cycles = 1
+Node 0:  Interval Divisions :
+Node 0:   id[00] = 1
+Node 0:  Interval Data
+Node 0:   d[00][000] = 1
+Node 0:  Repeat Counts :
+Node 0:   r[00] = -1
+Node 0:  Cycle Lengths :
+Node 0:   l[00] = 1
+Node 0: No Flux Wells.
+Node 0: Info on Pressure Wells :
+Node 0:  Pressure Well Number :  0
+Node 0:   Well Stats :
+Node 0:   delta_p[0] = 0.000000
+Node 0:   phase[0] = 0.000000
+Node 0:   delta_s[0] = 0.000000
+Node 0:   saturation[0] = 0.000000
+Node 0: Problem solved 

@@ -840,55 +840,175 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
             hypre_BoxDestroy(set_box);
           });
-          /* Now add surface contributions.
-           * We need to loop separately over this since the above
+
+	  hypre_BoxDestroy(value_box);
+        }
+      }     /* End subgrid loop */
+
+      ForSubgridI(sg, GridSubgrids(mat_grid))
+      {
+	double *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
+	double *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL;
+	
+        subgrid = GridSubgrid(mat_grid, sg);
+
+        pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
+        pfC_sub = MatrixSubmatrix(pf_Cmat, sg);
+
+        top_sub = VectorSubvector(top, sg);
+
+        if (symmetric)
+        {
+          /* Pull off upper diagonal coeffs here for symmetric part */
+          ep = SubmatrixStencilData(pfB_sub, 2);
+          np = SubmatrixStencilData(pfB_sub, 4);
+          up = SubmatrixStencilData(pfB_sub, 6);
+
+          cp_c = SubmatrixStencilData(pfC_sub, 0);
+          wp_c = SubmatrixStencilData(pfC_sub, 1);
+          ep_c = SubmatrixStencilData(pfC_sub, 2);
+          sop_c = SubmatrixStencilData(pfC_sub, 3);
+          np_c = SubmatrixStencilData(pfC_sub, 4);
+          top_dat = SubvectorData(top_sub);
+        }
+        else
+        {
+          wp = SubmatrixStencilData(pfB_sub, 1);
+          ep = SubmatrixStencilData(pfB_sub, 2);
+          sop = SubmatrixStencilData(pfB_sub, 3);
+          np = SubmatrixStencilData(pfB_sub, 4);
+          lp = SubmatrixStencilData(pfB_sub, 5);
+          up = SubmatrixStencilData(pfB_sub, 6);
+
+          cp_c = SubmatrixStencilData(pfC_sub, 0);
+          wp_c = SubmatrixStencilData(pfC_sub, 1);
+          ep_c = SubmatrixStencilData(pfC_sub, 2);
+          sop_c = SubmatrixStencilData(pfC_sub, 3);
+          np_c = SubmatrixStencilData(pfC_sub, 4);
+          top_dat = SubvectorData(top_sub);
+        }
+
+        ix = SubgridIX(subgrid);
+        iy = SubgridIY(subgrid);
+        iz = SubgridIZ(subgrid);
+
+        nx = SubgridNX(subgrid);
+        ny = SubgridNY(subgrid);
+        nz = SubgridNZ(subgrid);
+
+        nx_m = SubmatrixNX(pfB_sub);
+        ny_m = SubmatrixNY(pfB_sub);
+        nz_m = SubmatrixNZ(pfB_sub);
+
+	int sy_v = SubvectorNX(top_sub);
+
+        im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
+
+        if (symmetric)
+        {
+	  /* 
+	   * Loop in 2D over top points for surface contributions
+	   * We need to loop separately over this since the above
            * box loop does not allow us to loop over the individual
            * top cells. For nonsymmetric, we need to include the
            * diagonal, east, west, north, and south terms - DOK
-           */
+	   */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
 
-            if (ktop >= 0)
+	    if (ktop >= 0)
             {
-              io = SubmatrixEltIndex(pfC_sub, i, j, iz);
-
+	      io = SubmatrixEltIndex(pfC_sub, i, j, 0);
+	      int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
+	      
               /* update diagonal coeff */
-              coeffs[0] = cp_c[io];                               //cp[im] is zero
-              /* update west coeff */
-              //k1 = (int)top_dat[itop-1];
-              //if(k1 == ktop)
-              coeffs[1] = 0.0;                                  //wp_c[io] ; //wp[im] is zero
+              coeffs_symm[0] = cp_c[io];               //cp[im] is zero
               /* update east coeff */
-              //k1 = (int)top_dat[itop+1];
-              //if(k1 == ktop)
-              coeffs[2] = 0.0;                                  //ep_c[io] ; //ep[im] is zero
-              /* update south coeff */
-              //k1 = (int)top_dat[itop-sy_v];
-              //if(k1 == ktop)
-              coeffs[3] = 0.0;                                  //sop_c[io] ; //sop[im] is zero
+              coeffs_symm[1] = ep[ioB];
               /* update north coeff */
-              //k1 = (int)top_dat[itop+sy_v];
-              //if(k1 == ktop)
-              coeffs[4] = 0.0;                                  //np_c[io] ; //np[im] is zero
+              coeffs_symm[2] = np[ioB];
+              /* update upper coeff */
+              coeffs_symm[3] = up[ioB];               // JB keeps upper term on surface. This should be zero
+	      
+	      index[0] = i;
+	      index[1] = j;
+	      index[2] = ktop;
+	      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+					  index,
+					  stencil_size,
+					  stencil_indices_symm,
+					  coeffs_symm);
+	    }
+	    
+	  }); // BoxLoop
+        } // symmetric 
+        else
+        {
+	  /* 
+	   * Loop in 2D over top points for surface contributions
+	   * We need to loop separately over this since the above
+           * box loop does not allow us to loop over the individual
+           * top cells. For nonsymmetric, we need to include the
+           * diagonal, east, west, north, and south terms - DOK
+	   */
+          BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
+                    im, nx_m, ny_m, nz_m, 1, 1, 1,
+          {
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
+            ktop = (int)top_dat[itop];
 
-              index[0] = i;
-              index[1] = j;
-              index[2] = ktop;
-              HYPRE_StructMatrixAddToValues(instance_xtra->hypre_mat,
-                                            index,
-                                            stencil_size,
-                                            stencil_indices,
-                                            coeffs);
-            }
-          });
+	    if (ktop >= 0)
+            {
+	      io = SubmatrixEltIndex(pfC_sub, i, j, 0);
+	      int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
+	      
+              /* update diagonal coeff */
+              coeffs[0] = cp_c[io];               //cp[ioB] is zero
+              /* update west coeff */
+              int k1 = (int)top_dat[itop - 1];
+              if (k1 == ktop)
+                coeffs[1] = wp_c[io];                  //wp[ioB] is zero
+              else
+                coeffs[1] = wp[ioB];
+              /* update east coeff */
+              k1 = (int)top_dat[itop + 1];
+              if (k1 == ktop)
+                coeffs[2] = ep_c[io];                  //ep[ioB] is zero
+              else
+                coeffs[2] = ep[ioB];
+              /* update south coeff */
+              k1 = (int)top_dat[itop - sy_v];
+              if (k1 == ktop)
+                coeffs[3] = sop_c[io];                  //sop[ioB] is zero
+              else
+                coeffs[3] = sop[ioB];
+              /* update north coeff */
+              k1 = (int)top_dat[itop + sy_v];
+              if (k1 == ktop)
+                coeffs[4] = np_c[io];                  //np[ioB] is zero
+              else
+                coeffs[4] = np[ioB];
+              /* update upper coeff */
+              coeffs[5] = lp[ioB];               // JB keeps lower term on surface.
+              /* update upper coeff */
+              coeffs[6] = up[ioB];               // JB keeps upper term on surface. This should be zero
 
-          hypre_BoxDestroy(value_box);
-        }
-      }     /* End subgrid loop */
+	      index[0] = i;
+	      index[1] = j;
+	      index[2] = ktop;
+	      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+					  index,
+					  stencil_size,
+					  stencil_indices, coeffs);
+	    }
+
+	  }); // BoxLoop
+        } // non symmetric
+      }   /* End subgrid loop */
+      
     }  /* end if pf_Cmat==NULL */
 
 

@@ -1,0 +1,180 @@
+*****************************************************************************
+ParFlow Output Log
+	Version         : v3.7.0-adapt-4-ga46818f3
+	Compiled on     : Sep 16 2020 13:43:41
+*****************************************************************************
+==============================================
+BEGIN Log Info (SolverRichards)
+
+Transient Problem Solved.
+-------------------------
+
+Total Timesteps: 1
+
+-------------------------
+Sequence #       Time         \Delta t         Dumpfile #   Recompute?
+----------   ------------   ------------ -     ----------   ----------
+  000000     0.000000e+00   0.000000e+00 i       000000          n
+  000001     2.500000e-01   2.500000e-01 f       000001          y
+
+Overland flow Results
+  000000     0.000000e+00   0.000000e+00
+  000001     2.500000e-01   2.500000e-01
+
+END Log Info
+==============================================
+==============================================
+BEGIN Log Info (Globals)
+
+Run Name: test_brick_3d_with_p4est
+Logging Level = 1
+Num processes = 1
+Process grid = (4,4,1)
+
+END Log Info
+==============================================
+==============================================
+BEGIN Log Info (Timing)
+
+Solver Setup:
+  wall clock time   = 0.656700 seconds
+  wall MFLOPS = 0.000000 (0)
+Solver:
+  wall clock time   = 0.763500 seconds
+  wall MFLOPS = 1.563442 (1.19369e+06)
+Richards Exclude 1st Time Step:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Solver Cleanup:
+  wall clock time   = 0.012600 seconds
+  wall MFLOPS = 0.000000 (0)
+Matvec:
+  wall clock time   = 0.002600 seconds
+  wall MFLOPS = 101.316923 (263424)
+PFSB I/O:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+PFB I/O:
+  wall clock time   = 0.001400 seconds
+  wall MFLOPS = 0.000000 (0)
+CLM:
+  wall clock time   = 0.000200 seconds
+  wall MFLOPS = 0.000000 (0)
+PFSOL Read:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Clustering:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+P4EST_Setup:
+  wall clock time   = 0.002200 seconds
+  wall MFLOPS = 0.000000 (0)
+PF_P4EST_Setup:
+  wall clock time   = 0.442600 seconds
+  wall MFLOPS = 0.000000 (0)
+PF_P4EST_Solve:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+PF_P4EST_Cleanup:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Permeability Face:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Godunov Advection:
+  wall clock time   = 0.000000 seconds
+  wall MFLOPS = 0.000000 (0)
+Geometries:
+  wall clock time   = 0.010000 seconds
+  wall MFLOPS = 0.000000 (0)
+SubsrfSim:
+  wall clock time   = 0.000800 seconds
+  wall MFLOPS = 0.000000 (0)
+Porosity:
+  wall clock time   = 0.000100 seconds
+  wall MFLOPS = 0.000000 (0)
+PhaseRelPerm:
+  wall clock time   = 0.011600 seconds
+  wall MFLOPS = 0.004138 (48)
+NL_F_Eval:
+  wall clock time   = 0.546600 seconds
+  wall MFLOPS = 0.000077 (42)
+KINSol:
+  wall clock time   = 0.633800 seconds
+  wall MFLOPS = 1.883383 (1.19369e+06)
+
+END Log Info
+==============================================
+==============================================
+BEGIN Log Info (ParFlow Total Time)
+
+Total Run Time: 2.048900 seconds
+
+Maximum memory used by a processor: 55 MB
+Minimum memory used by a processor: 55 MB
+
+
+BEGIN(Contents of /proc/24067/status)
+Name:	parflow
+Umask:	0022
+State:	R (running)
+Tgid:	24067
+Ngid:	0
+Pid:	24067
+PPid:	24066
+TracerPid:	0
+Uid:	1001	1001	1001	1001
+Gid:	104	104	104	104
+FDSize:	64
+Groups:	4 24 27 30 46 104 118 126 
+NStgid:	24067
+NSpid:	24067
+NSpgid:	24067
+NSsid:	24067
+VmPeak:	  569180 kB
+VmSize:	  569124 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	   71348 kB
+VmRSS:	   71344 kB
+RssAnon:	   56872 kB
+RssFile:	   14472 kB
+RssShmem:	       0 kB
+VmData:	  347572 kB
+VmStk:	     140 kB
+VmExe:	    3256 kB
+VmLib:	   98784 kB
+VmPTE:	     496 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+Threads:	8
+SigQ:	0/62593
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000101000
+SigCgt:	0000000180000602
+CapInh:	0000000000000000
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	0000003fffffffff
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	0
+Speculation_Store_Bypass:	thread vulnerable
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+Mems_allowed:	00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	10
+nonvoluntary_ctxt_switches:	107
+
+
+END(Contents of /proc/24067/status)
+
+Memory in use : 13 MB in 343 allocs, 48 MB reserved ( 44 unused)
+
+
+END Log Info
+==============================================

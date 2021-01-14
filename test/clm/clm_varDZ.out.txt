@@ -1,0 +1,9 @@
+Node 0: Using process grid (4,1,1)
+Node 0: Well Information
+Node 0: No Wells.
+ Using drv_clmin.dat start time    1998.6664383561645     
+ CLM Start Time:         1998           9           1           6           0           0
+
+Node 0: Well Information
+Node 0: No Wells.
+Node 0: Problem solved 

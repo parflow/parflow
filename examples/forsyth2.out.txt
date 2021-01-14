@@ -1,0 +1,35 @@
+[libsc] This is libsc 2.8.74-23f6
+[libsc] CPP                      /home/alberto/externlibs/install/mpich/3.3/bin/mpicc -E
+[libsc] CPPFLAGS                 
+[libsc] CC                       /home/alberto/externlibs/install/mpich/3.3/bin/mpicc
+[libsc] CFLAGS                   -O2 -Wall -Wno-unused-but-set-variable
+[libsc] LDFLAGS                  
+[libsc] LIBS                     -llapack -lblas -lz -lm   
+[libsc] Shared memory node communicator size: 1
+Opened configuration file forsyth2.pfidb length 9674
+Node 0: Using process grid (1,1,1)
+Node 0: Well Information
+Node 0: No Wells.
+[mpiexec@mephisto] Sending Ctrl-C to processes as requested
+[mpiexec@mephisto] Press Ctrl-C again to force abort
+[libsc 0] Caught signal INT
+[libsc 0] Abort: Obtained 19 stack frames
+[libsc 0] Stack 0: libsc-2.8.74-23f6.so(+0xc372) [0x7f87dd377372]
+[libsc 0] Stack 1: libsc-2.8.74-23f6.so(sc_abort+0xa) [0x7f87dd3765aa]
+[libsc 0] Stack 2: libsc-2.8.74-23f6.so(+0xc1bd) [0x7f87dd3771bd]
+[libsc 0] Stack 3: libc.so.6(+0x3efd0) [0x7f87dbf4cfd0]
+[libsc 0] Stack 4: libm.so.6(+0x885e7) [0x7f87dc8eb5e7]
+[libsc 0] Stack 5: libm.so.6(pow+0x14) [0x7f87dc871b14]
+[libsc 0] Stack 6: parflow(+0x110644) [0x55e0edc89644]
+[libsc 0] Stack 7: parflow(+0x1171cd) [0x55e0edc901cd]
+[libsc 0] Stack 8: parflow(+0x116c44) [0x55e0edc8fc44]
+[libsc 0] Stack 9: parflow(+0x2edb88) [0x55e0ede66b88]
+[libsc 0] Stack 10: parflow(+0x2ece06) [0x55e0ede65e06]
+[libsc 0] Stack 11: parflow(+0x2eb143) [0x55e0ede64143]
+[libsc 0] Stack 12: parflow(+0x59ab3) [0x55e0edbd2ab3]
+[libsc 0] Stack 13: parflow(+0x1531e) [0x55e0edb8e31e]
+[libsc 0] Stack 14: parflow(+0x1eea0) [0x55e0edb97ea0]
+[libsc 0] Stack 15: parflow(+0xaef5) [0x55e0edb83ef5]
+[libsc 0] Stack 16: parflow(+0x894e) [0x55e0edb8194e]
+[libsc 0] Stack 17: libc.so.6(__libc_start_main+0xe7) [0x7f87dbf2fb97]
+[libsc 0] Stack 18: parflow(+0x8c4a) [0x55e0edb81c4a]

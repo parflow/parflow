@@ -547,7 +547,13 @@ int PFMGOctreeSizeOfTempData(void);
 
 /* pf_smg.c */
 void SMG(Vector *soln, Vector *rhs, double tol, int zero);
-PFModule *SMGInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, Matrix *pf_matrix, double *temp_data);
+PFModule  *SMGInitInstanceXtra(
+                               Problem *    problem,
+                               Grid *       grid,
+                               ProblemData *problem_data,
+			       Matrix *     pf_Bmat,
+			       Matrix *     pf_Cmat,
+                               double *     temp_data);
 void SMGFreeInstanceXtra(void);
 PFModule *SMGNewPublicXtra(char *name);
 void SMGFreePublicXtra(void);

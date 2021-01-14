@@ -1,0 +1,106 @@
+
+KINSOL starting step for time 0.001000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+KINSolInit nni=    0  fnorm=          3.605551275463989  nfe=     1 
+KINSol nni=    1 fnorm=       0.002560987601856341 nfe=     2
+KINSol nni=    2 fnorm=        5.8827214499601e-07 nfe=     3
+KINSol nni=    3 fnorm=      2.775685078196025e-12 nfe=     4
+KINSol return value 1
+---KINSOL_SUCCESS
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               3                 3
+Lin. Its.:                 12                12
+Func. Evals.:               4                 4
+PC Evals.:                  3                 3
+PC Solves:                 15                15
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                 0                 0
+-------------------------------------------------- 
+
+KINSOL starting step for time 0.002000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+KINSolInit nni=    0  fnorm=        0.04415778455694856  nfe=     1 
+KINSol nni=    1 fnorm=      0.0001431077752359806 nfe=     2
+KINSol nni=    2 fnorm=      2.456094017772471e-09 nfe=     3
+KINSol return value 1
+---KINSOL_SUCCESS
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               2                 5
+Lin. Its.:                  9                21
+Func. Evals.:               3                 7
+PC Evals.:                  2                 5
+PC Solves:                 11                26
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                 0                 0
+-------------------------------------------------- 
+
+KINSOL starting step for time 0.003000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+KINSolInit nni=    0  fnorm=         0.0141665853072099  nfe=     1 
+KINSol nni=    1 fnorm=      4.230941996603656e-05 nfe=     2
+KINSol nni=    2 fnorm=      3.313452489854614e-10 nfe=     3
+KINSol return value 1
+---KINSOL_SUCCESS
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               2                 7
+Lin. Its.:                 10                31
+Func. Evals.:               3                10
+PC Evals.:                  2                 7
+PC Solves:                 12                38
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                 0                 0
+-------------------------------------------------- 
+
+KINSOL starting step for time 0.004000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+KINSolInit nni=    0  fnorm=       0.008758045204073207  nfe=     1 
+KINSol nni=    1 fnorm=      2.186308954819709e-05 nfe=     2
+KINSol nni=    2 fnorm=      7.638180013959487e-11 nfe=     3
+KINSol return value 1
+---KINSOL_SUCCESS
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               2                 9
+Lin. Its.:                 10                41
+Func. Evals.:               3                13
+PC Evals.:                  2                 9
+PC Solves:                 12                50
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                 0                 0
+-------------------------------------------------- 
+
+KINSOL starting step for time 0.005000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+KINSolInit nni=    0  fnorm=       0.006468554125210345  nfe=     1 
+KINSol nni=    1 fnorm=      1.147885847411522e-05 nfe=     2
+KINSol nni=    2 fnorm=      2.332813045827994e-11 nfe=     3
+KINSol return value 1
+---KINSOL_SUCCESS
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               2                11
+Lin. Its.:                 10                51
+Func. Evals.:               3                16
+PC Evals.:                  2                11
+PC Solves:                 12                62
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                 0                 0
+-------------------------------------------------- 

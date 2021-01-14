@@ -1,0 +1,60 @@
+
+KINSOL starting step for time 1.000000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+KINSolInit nni=    0  fnorm=      3.592788207334838e+54  nfe=     1 
+KINSol nni=    1 fnorm=      3.592788207334838e+54 nfe=    14
+KINSol return value 3
+---KINSOL_STEP_LT_STPTOL
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               1                 1
+Lin. Its.:                  1                 1
+Func. Evals.:              14                14
+PC Evals.:                  0                 0
+PC Solves:                  0                 0
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                12                12
+-------------------------------------------------- 
+
+KINSOL starting step for time 0.500000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+KINSolInit nni=    0  fnorm=      1.796394103667419e+54  nfe=     1 
+KINSol nni=    1 fnorm=      1.796394103667419e+54 nfe=    14
+KINSol return value 3
+---KINSOL_STEP_LT_STPTOL
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               1                 2
+Lin. Its.:                  1                 2
+Func. Evals.:              14                28
+PC Evals.:                  0                 0
+PC Solves:                  0                 0
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                12                24
+-------------------------------------------------- 
+
+KINSOL starting step for time 0.250000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+KINSolInit nni=    0  fnorm=      8.981970518337096e+53  nfe=     1 
+KINSol nni=    1 fnorm=      8.981970518337096e+53 nfe=    14
+KINSol return value 3
+---KINSOL_STEP_LT_STPTOL
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               1                 3
+Lin. Its.:                  1                 3
+Func. Evals.:              14                42
+PC Evals.:                  0                 0
+PC Solves:                  0                 0
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                12                36
+-------------------------------------------------- 
