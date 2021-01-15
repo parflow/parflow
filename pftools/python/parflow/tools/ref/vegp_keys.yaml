@@ -1,0 +1,150 @@
+# -----------------------------------------------------------------------------
+# Definition anatomy
+# -----------------------------------------------------------------------------
+#
+# run.Geom.{name}.{PARFLOW_KEY}:
+#   alias:
+#     - Short names that can be used inside your table definition
+#   addon:
+#     If provided those other key/value will be set under
+#       Geom.{name}.{KEY_1} = {VALUE_1}
+#       Geom.{name}.{KEY_2} = {VALUE_2}
+#   register:
+#     If provided the {name} will be added to a set() with the name
+#     run.{VALUE} = [] + {name}.
+#
+# -----------------------------------------------------------------------------
+
+key:
+  type: str
+  alias:
+    - key
+    - name
+    - Name
+    - Key
+
+# -----------------------------------------------------------------------------
+# Vegetation Parameters
+# -----------------------------------------------------------------------------
+
+WaterType:
+  type: int
+  alias:
+    - WaterType
+    - itypwat
+  register: Solver.CLM.VegParams.Names
+
+MaxLAI:
+  alias:
+    - MaxLAI
+    - lai
+  register: Solver.CLM.VegParams.Names
+
+MinLAI:
+  alias:
+    - MinLAI
+    - lai0
+  register: Solver.CLM.VegParams.Names
+
+StemAI:
+  alias:
+    - StemAI
+    - sai
+  register: Solver.CLM.VegParams.Names
+
+RoughLength:
+  alias:
+    - RoughLength
+    - z0m
+  register: Solver.CLM.VegParams.Names
+
+DispHeight:
+  alias:
+    - DispHeight
+    - displa
+  register: Solver.CLM.VegParams.Names
+
+LeafDim:
+  alias:
+    - LeafDim
+    - dleaf
+  register: Solver.CLM.VegParams.Names
+
+RootA:
+  alias:
+    - RootA
+    - roota
+  register: Solver.CLM.VegParams.Names
+
+RootB:
+  alias:
+    - RootB
+    - rootb
+  register: Solver.CLM.VegParams.Names
+
+LeafRefVis:
+  alias:
+    - LeafRefVis
+    - rhol_vis
+  register: Solver.CLM.VegParams.Names
+
+LeafRefNir:
+  alias:
+    - LeafRefNir
+    - rhol_nir
+  register: Solver.CLM.VegParams.Names
+
+StemRefVis:
+  alias:
+    - StemRefVis
+    - rhos_vis
+  register: Solver.CLM.VegParams.Names
+
+StemRefNir:
+  alias:
+    - StemRefNir
+    - rhos_nir
+  register: Solver.CLM.VegParams.Names
+
+LeafTransVis:
+  alias:
+    - LeafTransVis
+    - taul_vis
+  register: Solver.CLM.VegParams.Names
+
+LeafTransNir:
+  alias:
+    - LeafTransNir
+    - taul_nir
+  register: Solver.CLM.VegParams.Names
+
+StemTransVis:
+  alias:
+    - StemTransVis
+    - taus_vis
+  register: Solver.CLM.VegParams.Names
+
+StemTransNir:
+  alias:
+    - StemTransNir
+    - taus_nir
+  register: Solver.CLM.VegParams.Names
+
+OrientIndex:
+  alias:
+    - OrientIndex
+    - xl
+  register: Solver.CLM.VegParams.Names
+
+BTranExp:
+  alias:
+    - BTranExp
+    - vw
+  register: Solver.CLM.VegParams.Names
+
+Irrig:
+  type: int
+  alias:
+    - Irrig
+    - irrig
+  register: Solver.CLM.VegParams.Names

@@ -7,6 +7,7 @@
 
 from parflow import Run
 from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path
+from parflow.tools import settings
 
 forsyth2 = Run("forsyth2", __file__)
 
@@ -17,6 +18,7 @@ forsyth2 = Run("forsyth2", __file__)
 dir_name = get_absolute_path('test_output/forsyth2')
 mkdir(dir_name)
 chdir(dir_name)
+settings.set_working_directory()
 
 cp('$PF_SRC/test/input/fors2_hf.pfsol')
 

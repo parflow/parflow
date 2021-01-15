@@ -89,14 +89,12 @@ The following examples of the method usage assume that the name of the ``Run`` o
 .. code-block:: python3
 
       run.Solver = 'Richards'
-      run.Solver.MaxIter = 5
       run.Solver.Nonlinear.MaxIter = 10
-      run.Solver.Nonlinear.ResidualTol = 1e-9
+      run.Solver.Nonlinear.ResidualTol = 1e-5
       run.Solver.Nonlinear.EtaChoice = 'EtaConstant'
       run.Solver.Nonlinear.EtaValue = 1e-5
       run.Solver.Nonlinear.UseJacobian = True
       run.Solver.Nonlinear.DerivativeEpsilon = 1e-2
-      run.Solver.Linear.KrylovDimension = 10
       run.Solver.Linear.Preconditioner = 'PFMG'
 
 6. ``fully_saturated()``: Sets the following keys:
@@ -104,15 +102,6 @@ The following examples of the method usage assume that the name of the ``Run`` o
 .. code-block:: python3
 
       run.Solver = 'Impes'
-      run.Solver.MaxIter = 5
-      run.Solver.Nonlinear.MaxIter = 10
-      run.Solver.Nonlinear.ResidualTol = 1e-9
-      run.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-      run.Solver.Nonlinear.EtaValue = 1e-5
-      run.Solver.Nonlinear.UseJacobian = True
-      run.Solver.Nonlinear.DerivativeEpsilon = 1e-2
-      run.Solver.Linear.KrylovDimension = 10
-      run.Solver.Linear.Preconditioner = 'PFMG'
 
 7. ``homogeneous_subsurface(domain_name, perm=None, porosity=None, specific_storage=None, rel_perm=None, saturation=None, isotropic=False)``: Sets the following keys:
 

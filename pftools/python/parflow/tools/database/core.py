@@ -2,8 +2,8 @@ r"""
 This module aims to provide the core components that are required to build
 a Parflow input deck.
 """
-import yaml
 import sys
+import yaml
 
 from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
@@ -320,10 +320,14 @@ class PFDBObj:
                 details = self._details_[name] if has_details else None
                 has_default = has_details and 'default' in details
                 has_domain = has_details and 'domains' in details
+                is_ignored = has_details and 'ignore' in details
                 is_mandatory = has_domain \
                     and 'MandatoryValue' in details['domains']
                 is_default = has_default and obj == details['default']
                 is_set = has_details and details.get('history')
+
+                if is_ignored:
+                    continue
 
                 if obj is not None:
                     if skip_default:
@@ -568,7 +572,7 @@ class PFDBObj:
             'pf_version': settings.PARFLOW_VERSION
         }
 
-    # -------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
 
     def pfset(self, key='', value=None, yaml_file=None, yaml_content=None,
               pfidb_file=None, hierarchical_map=None, flat_map=None,
@@ -634,7 +638,7 @@ class PFDBObj:
             if exit_if_undefined:
                 sys.exit(1)
 
-    # -------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
 
     def _process_dynamic(self):
         """
