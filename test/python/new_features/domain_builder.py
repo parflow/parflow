@@ -173,7 +173,7 @@ drich.validate()
 drich.write(file_format='yaml')
 
 with open(get_absolute_path('drich.yaml')) as new, \
-    open(get_absolute_path('../../correct_output/default_richards.yaml.ref')) as ref:
+    open(get_absolute_path('../../correct_output/domain_builder.yaml.ref')) as ref:
   if new.read() == ref.read():
     print('Success we have the same file')
   else:
