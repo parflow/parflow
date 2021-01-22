@@ -32,8 +32,7 @@ class ChildHandler:
     def decorate(self, value, container, class_name=None, location='.',
                  eager=None, **kwargs):
         klass = getattr(generated, class_name)
-        destination_containers = container.get_selection_from_location(
-            location)
+        destination_containers = container.select(location)
         valid_name = value.strip()
 
         if not valid_name:
@@ -96,8 +95,29 @@ class ChildrenHandler:
             return valid_names
 
         raise ValueHandlerException(
-            f'{value} is not of the expected type for GeometryNameHandler')
+            f'{value} is not of the expected type for ChildrenHandler')
 
+# -----------------------------------------------------------------------------
+
+class SplitHandler:
+    """
+    This class will split the provided key using the separator convert
+    each tocken using a type converter and set the field list.
+    """
+    def decorate(self, value, container, separator='/', convert='int', fields=None, **kwargs):
+        if isinstance(value, str):
+            tokens = value.split(separator)
+            index = 0
+            for token in tokens:
+                field_name = fields[index]
+                value = __builtins__[convert](token)
+                container[field_name] = value
+                index += 1
+
+            return value
+
+        raise ValueHandlerException(
+            f'{value} is not of the expected type for SplitHandler')
 
 # -----------------------------------------------------------------------------
 # Helper map with an instance of each Value handler
