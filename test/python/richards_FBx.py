@@ -179,11 +179,9 @@ rich_fbx.Geom.domain.FBx.FileName = 'Flow_Barrier_X.pfb'
 
 ## write flow boundary file
 FBx_data = np.full((20, 20, 20), 1.0)
-for i in range(20):
-    for j in range(20):
-        # from cell 10 (index 9) to cell 11
-        # reduction of 1E-3
-        FBx_data[i, j, 9] = 0.001
+# from cell 10 (index 9) to cell 11
+# reduction of 1E-3
+FBx_data[:, :, 9] = 0.001
 
 FBx_data_pfb = PFData(FBx_data)
 FBx_data_pfb.writeFile(get_absolute_path('Flow_Barrier_X.pfb'))

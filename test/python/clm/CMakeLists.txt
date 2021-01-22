@@ -1,7 +1,4 @@
 include(ParflowTest)
-include(ProcessorCount)
-
-ProcessorCount(N)
 
 if(PARFLOW_HAVE_CLM OR DEFINED ENV{PARFLOW_DIR})
   set(CLM_TESTS
@@ -25,23 +22,11 @@ endforeach()
 
 foreach(inputfile ${CLM_2D_TESTS})
   pf_add_py_parallel_test(${inputfile} 1 1 1)
-
-  if(N GREATER_EQUAL 2)
-    pf_add_py_parallel_test(${inputfile} 1 2 1)
-    pf_add_py_parallel_test(${inputfile} 2 1 1)
-  endif()
-
-  if(N GREATER_EQUAL 4)
-    pf_add_py_parallel_test(${inputfile} 1 4 1)
-    pf_add_py_parallel_test(${inputfile} 4 1 1)
-    pf_add_py_parallel_test(${inputfile} 2 2 1)
-  endif()
-
-  if(N GREATER_EQUAL 9)
-    pf_add_py_parallel_test(${inputfile} 3 3 1)
-  endif()
-
-  if(N GREATER_EQUAL 16)
-    pf_add_py_parallel_test(${inputfile} 4 4 1)
-  endif()
+  pf_add_py_parallel_test(${inputfile} 1 2 1)
+  pf_add_py_parallel_test(${inputfile} 2 1 1)
+  pf_add_py_parallel_test(${inputfile} 1 4 1)
+  pf_add_py_parallel_test(${inputfile} 4 1 1)
+  pf_add_py_parallel_test(${inputfile} 2 2 1)
+  pf_add_py_parallel_test(${inputfile} 3 3 1)
+  pf_add_py_parallel_test(${inputfile} 4 4 1)
 endforeach()

@@ -3,12 +3,14 @@ This module aims to gather all kind of value validation you would like to
 enable inside Parflow run.
 """
 
+import os
+from pathlib import Path
 import sys
 import traceback
-import os
 
 from ..terminal import Colors as term
 from ..terminal import Symbols as term_symbol
+
 
 # -----------------------------------------------------------------------------
 # Validation helper functions
@@ -16,12 +18,8 @@ from ..terminal import Symbols as term_symbol
 
 def filter_errors_by_type(msg_type, errors):
     """Extract decorated message for a given type"""
-    filter_list = []
-    for error in errors:
-        if error['type'] == msg_type:
-            filter_list.append(error['message'])
+    return list(filter(lambda e: e['type'] == msg_type, errors))
 
-    return filter_list
 
 # -----------------------------------------------------------------------------
 
@@ -32,6 +30,7 @@ def error(message):
         'message': message
     }
 
+
 # -----------------------------------------------------------------------------
 
 def warning(message):
@@ -40,6 +39,7 @@ def warning(message):
         'type': 'WARNING',
         'message': message
     }
+
 
 # -----------------------------------------------------------------------------
 
@@ -54,12 +54,13 @@ def get_comparable_version(version):
 
     """
     c_version = 0
-    validVersionNumber = version[1:] if version[0] == 'v' else version
-    version_tokens = validVersionNumber.split('.')
+    valid_version_number = version[1:] if version[0] == 'v' else version
+    version_tokens = valid_version_number.split('.')
     for version_token in version_tokens:
         c_version *= 1000
         c_version += int(version_token)
     return c_version
+
 
 # -----------------------------------------------------------------------------
 
@@ -74,17 +75,17 @@ def get_installed_parflow_module(module):
         bool: Return True if the provided module was found.
 
     """
-    module_file = f'{os.getenv("PARFLOW_DIR")}/config/Makefile.config'
+    module_file = Path(f'{os.getenv("PARFLOW_DIR")}/config/Makefile.config')
     has_module_installed = False
-    if os.path.exists(os.path.abspath(module_file)):
-        with open(module_file, "rt") as f:
-            for line in f.readlines():
+    if module_file.resolve().exists():
+        with open(module_file, "r") as f:
+            for line in f:
                 if f'PARFLOW_HAVE_{module}' in line and 'yes' in line:
                     has_module_installed = True
     else:
-        print(
-            f'Cannot find Makefile.config in {os.path.abspath(module_file)}.')
+        print(f'Cannot find Makefile.config in {str(module_file.resolve())}.')
     return has_module_installed
+
 
 # -----------------------------------------------------------------------------
 # Validation classes
@@ -96,8 +97,8 @@ class ValidationException(Exception):
     """
     pass
 
-# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 
 class MandatoryValue:
     """
@@ -109,10 +110,8 @@ class MandatoryValue:
     """
     def validate(self, value, **kwargs):
         errors = []
-
         if value is None:
             errors.append(error('Needs to be set'))
-            return errors
 
         return errors
 
@@ -160,7 +159,7 @@ class DoubleValue:
         if value is None:
             return errors
 
-        if not (isinstance(value, float) or isinstance(value, int)):
+        if not isinstance(value, (float, int)):
             errors.append(error('Needs to be a double'))
 
         if min_value is not None and value < min_value:
@@ -189,24 +188,25 @@ class EnumDomain:
         if isinstance(value, list) and len(value) == 1:
             value = value[0]
 
-        lookupList = []
+        lookup_list = []
         if isinstance(enum_list, list):
-          lookupList = enum_list
+            lookup_list = enum_list
 
         if isinstance(enum_list, dict):
-          # We need to find the matching version
-          sortedVersions = [(get_comparable_version(v), v) for v in enum_list.keys()]
-          sortedVersions.sort(key=lambda t: t[0])
-          versionToUse = sortedVersions[0]
-          currentVersion = get_comparable_version(pf_version)
-          for version in sortedVersions:
-            if currentVersion >= version[0]:
-              versionToUse = version
+            # We need to find the matching version
+            sorted_versions = [
+                (get_comparable_version(v), v) for v in enum_list.keys()]
+            sorted_versions.sort(key=lambda t: t[0])
+            version_to_use = sorted_versions[0]
+            current_version = get_comparable_version(pf_version)
+            for version in sorted_versions:
+                if current_version >= version[0]:
+                    version_to_use = version
 
-          lookupList = enum_list[versionToUse[1]]
+            lookup_list = enum_list[version_to_use[1]]
 
-        if value not in lookupList:
-            str_list = ', '.join(lookupList)
+        if value not in lookup_list:
+            str_list = ', '.join(lookup_list)
             errors.append(error(f'{value} must be one of [{str_list}]'))
 
         return errors
@@ -224,7 +224,7 @@ class AnyString:
         if value is None:
             return errors
 
-        if isinstance(value, list) or isinstance(value, str):
+        if isinstance(value, (list, str)):
             return errors
 
         errors.append(error(f'{value} ({type(value)} must be a string'))
@@ -256,7 +256,8 @@ class ValidFile:
     """
     ValidFile domain checks the working directory to find the specified file.
     """
-    def validate(self, value, working_directory=None, path_prefix_source=None, container=None, **kwargs):
+    def validate(self, value, working_directory=None, path_prefix_source=None,
+                 container=None, **kwargs):
         errors = []
         path_prefix = ''
 
@@ -268,13 +269,13 @@ class ValidFile:
             return errors
 
         if path_prefix_source:
-            path_prefix = container.get_selection_from_location(path_prefix_source)[0]
+            path_prefix, = container.select(path_prefix_source)
 
-        if os.path.exists(os.path.join(working_directory, path_prefix, value)):
+        path = Path(working_directory) / path_prefix / value
+        if path.exists():
             return errors
 
-        errors.append(error(
-            f'Could not locate file {os.path.abspath(os.path.join(working_directory, path_prefix, value))}'))
+        errors.append(error(f'Could not locate file {str(path.resolve())}'))
         return errors
 
 
@@ -282,9 +283,10 @@ class ValidFile:
 
 class AddedInVersion:
     """
-    AddedInVersion domain deals with keys that were added to the ParFlow code in
-    recent versions. It will check your version of ParFlow with the added version
-    and print an error if your ParFlow version does not have the given key.
+    AddedInVersion domain deals with keys that were added to the ParFlow code
+    in recent versions. It will check your version of ParFlow with the added
+    version and print an error if your ParFlow version does not have the given
+    key.
     """
     def validate(self, value, arg, pf_version=None, **kwargs):
         errors = []
@@ -296,20 +298,20 @@ class AddedInVersion:
         current_version = get_comparable_version(pf_version)
 
         if version > current_version:
-            errors.append(error(f'Not valid in ParFlow versions before v{arg}'))
+            errors.append(
+                error(f'Not valid in ParFlow versions before v{arg}'))
 
         return errors
 
 
-
 # -----------------------------------------------------------------------------
-
 
 class DeprecatedInVersion:
     """
-    DeprecatedInVersion domain deals with keys that have been or will be deprecated. It
-    will check your version of ParFlow with the deprecated version and print
-    an error or warning depending on whether the key has been deprecated.
+    DeprecatedInVersion domain deals with keys that have been or will be
+    deprecated. It will check your version of ParFlow with the deprecated
+    version and print an error or warning depending on whether the key has
+    been deprecated.
     """
     def validate(self, value, arg, pf_version=None, **kwargs):
         errors = []
@@ -333,10 +335,10 @@ class DeprecatedInVersion:
 
 class RemovedInVersion:
     """
-    RemovedInVersion domain deals with keys that have been or will be removed from the
-    ParFlow code. It will check your version of ParFlow with the removed version
-    and print an error or warning depending on whether the key has been or will
-    be removed.
+    RemovedInVersion domain deals with keys that have been or will be removed
+    from the ParFlow code. It will check your version of ParFlow with the
+    removed version and print an error or warning depending on whether the key
+    has been or will be removed.
     """
     def validate(self, value, arg, pf_version=None, **kwargs):
         errors = []
@@ -360,10 +362,10 @@ class RemovedInVersion:
 
 class RequiresModule:
     """
-    RequiresModule domain deals with keys that require specific modules associated
-    with ParFlow (e.g. CLM, SILO, NetCDF, etc.). It will check to see whether the
-    required modules are installed with ParFlow and will print an error message
-    if the required module is missing.
+    RequiresModule domain deals with keys that require specific modules
+    associated with ParFlow (e.g. CLM, SILO, NetCDF, etc.). It will check to
+    see whether the required modules are installed with ParFlow and will print
+    an error message if the required module is missing.
     """
     def validate(self, value, arg, **kwargs):
         errors = []
@@ -379,11 +381,13 @@ class RequiresModule:
 
         return errors
 
+
 # -----------------------------------------------------------------------------
 # Helper map with an instance of each domain type
 # -----------------------------------------------------------------------------
 
 AVAILABLE_DOMAINS = {}
+
 
 def get_domain(class_name):
     """Return a domain instance based on its class_name or None if
@@ -395,22 +399,24 @@ def get_domain(class_name):
     if class_name in AVAILABLE_DOMAINS:
         return AVAILABLE_DOMAINS[class_name]
 
-    if hasattr(sys.modules[__name__], class_name):
-        klass = getattr(sys.modules[__name__], class_name)
+    klass = getattr(sys.modules[__name__], class_name, None)
+    if klass is not None:
         instance = klass()
         AVAILABLE_DOMAINS[class_name] = instance
         return instance
 
-    print(f'{term.FAIL}{term_symbol.ko}{term.ENDC} Could not find domain: "{class_name}"')
+    print(f'{term.FAIL}{term_symbol.ko}{term.ENDC} Could not find domain: '
+          f'"{class_name}"')
 
     return None
+
 
 # -----------------------------------------------------------------------------
 # API meant to be used outside of this module
 # -----------------------------------------------------------------------------
 
-
-def validate_value_with_errors(value, domain_definitions=None, domain_add_on_kwargs=None):
+def validate_value_with_errors(value, domain_definitions=None,
+                               domain_add_on_kwargs=None):
     """This method validates the value set to a key using the domains
     provided in the key definition files.
 
@@ -458,7 +464,9 @@ def validate_value_with_errors(value, domain_definitions=None, domain_add_on_kwa
 # -----------------------------------------------------------------------------
 
 
-def validate_value_with_exception(value, domain_definition=None, domain_add_on_kwargs=None, exit_on_error=False):
+def validate_value_with_exception(value, domain_definition=None,
+                                  domain_add_on_kwargs=None,
+                                  exit_on_error=False):
     """This method validates the value set to a key using the domains
     provided in the key definition files. But it will print information
     on where the error was detected (line number).
@@ -484,7 +492,7 @@ def validate_value_with_exception(value, domain_definition=None, domain_add_on_k
         value, domain_definition, domain_add_on_kwargs)
     errors = filter_errors_by_type('ERROR', all_messages)
 
-    if len(errors):
+    if errors:
         print()
         try:
             raise ValidationException()
@@ -504,9 +512,12 @@ def validate_value_with_exception(value, domain_definition=None, domain_add_on_k
         if exit_on_error:
             sys.exit(1)
 
+
 # -----------------------------------------------------------------------------
 
-def validate_value_to_string(container, value, has_default=False, domain_definition=None, domain_add_on_kwargs=None, history=None, indent=1):
+def validate_value_to_string(container, value, has_default=False,
+                             domain_definition=None, domain_add_on_kwargs=None,
+                             history=None, indent=1):
     """This method validates the value set to a key using the domains
     provided in the key definition files. But it will return a string
     that could be used for printing information.
@@ -541,33 +552,36 @@ def validate_value_to_string(container, value, has_default=False, domain_definit
     warnings = filter_errors_by_type('WARNING', all_messages)
     validation_string = []
 
-    if len(errors):
+    if errors:
         validation_string.append(
             f'{value} {term.FAIL}{term_symbol.ko}{term.ENDC}')
         for error in errors:
-            validation_string.append(
-                f'{indent_str}    {term.WARNING}{term_symbol.errorItem}{term.ENDC} {error}')
+            validation_string.append(f'{indent_str}    {term.WARNING}'
+                                     f'{term_symbol.errorItem}{term.ENDC} '
+                                     f'{error}')
     elif value is not None:
         # checking for duplicates and changing print statement
         if history is not None:
-            dup_count = len(history)-1 if has_default is True else len(history)
+            dup_count = len(history) - 1 if has_default else len(history)
             if dup_count > 1:
                 dup_str = '('
-                for val in range(dup_count-1):
+                for val in range(dup_count - 1):
                     dup_str += str(history[val]) + ' => '
-                dup_str += str(history[dup_count-1]) + ')'
-                validation_string.append(
-                    f'{term.MAGENTA}{term_symbol.warning}{term.ENDC} {value}  {term.MAGENTA}{dup_str}{term.ENDC}')
+                dup_str += str(history[dup_count - 1]) + ')'
+                validation_string.append(f'{term.MAGENTA}{term_symbol.warning}'
+                                         f'{term.ENDC} {value}  '
+                                         f'{term.MAGENTA}{dup_str}{term.ENDC}')
             else:
-                validation_string.append(
-                    f'{value} {term.OKGREEN}{term_symbol.ok}{term.ENDC}')
+                validation_string.append(f'{value} {term.OKGREEN}'
+                                         f'{term_symbol.ok}{term.ENDC}')
         else:
-            validation_string.append(
-                f'{value} {term.OKGREEN}{term_symbol.ok}{term.ENDC}')
+            validation_string.append(f'{value} {term.OKGREEN}{term_symbol.ok}'
+                                     f'{term.ENDC}')
 
-    if len(warnings):
+    if warnings:
         for warning in warnings:
-            validation_string.append(
-                f'{indent_str}    {term.CYAN}{term_symbol.warning}{term.ENDC} {warning}')
+            validation_string.append(f'{indent_str}    {term.CYAN}'
+                                     f'{term_symbol.warning}{term.ENDC} '
+                                     f'{warning}')
 
     return len(all_messages), '\n'.join(validation_string)

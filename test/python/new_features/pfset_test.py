@@ -82,18 +82,18 @@ pfset_test.Phase.water.Density.pfset(hierarchical_map=constOne)
 pfset_test.Phase.water.Viscosity.pfset(flat_map=constOne)
 
 #---------------------------------------------------------
-# pfset: yamlFile
+# pfset: yaml_file
 #---------------------------------------------------------
 
-pfset_test.pfset(yamlFile='$PF_SRC/test/input/BasicSettings.yaml')
-pfset_test.pfset(yamlFile='$PF_SRC/test/input/ComputationalGrid.yaml')
-pfset_test.Geom.pfset(yamlFile='$PF_SRC/test/input/GeomChildren.yaml')
+pfset_test.pfset(yaml_file='$PF_SRC/test/input/BasicSettings.yaml')
+pfset_test.pfset(yaml_file='$PF_SRC/test/input/ComputationalGrid.yaml')
+pfset_test.Geom.pfset(yaml_file='$PF_SRC/test/input/GeomChildren.yaml')
 
 #---------------------------------------------------------
-# pfset: yamlContent
+# pfset: yaml_content
 #---------------------------------------------------------
 
-pfset_test.Geom.source_region.pfset(yamlContent='''
+pfset_test.Geom.source_region.pfset(yaml_content='''
 Lower:
   X: 65.56
   Y: 79.34
@@ -105,7 +105,7 @@ Upper:
 ''')
 
 
-pfset_test.Geom.concen_region.pfset(yamlContent='''
+pfset_test.Geom.concen_region.pfset(yaml_content='''
 Lower:
   X: 60.0
   Y: 80.0

@@ -29,9 +29,16 @@ add_custom_command(
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/domains.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/database/handlers.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/table_keys.yaml"
-    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/default_subsurface.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/vegp_keys.yaml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/subsurface_conus_1.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/subsurface_freeze_cherry.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/subsurface_washita.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/vegp_igbp.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/vegp_header.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/tools/ref/default_vegp_values.json"
     "${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+    "${CMAKE_CURRENT_SOURCE_DIR}/MANIFEST.in"
   COMMENT
     "Copying Python pftools to the build directory"
 )

@@ -355,7 +355,6 @@ Process:
     Q: 1
     R: 1
 Solver:
-  $_: Richards
   AbsTol: 1.0e-08
   Drop: 1.0e-20
   Linear:
@@ -379,6 +378,7 @@ Solver:
   PrintSaturation: true
   PrintSubsurfData: false
   TerrainFollowingGrid: true
+  _value_: Richards
 SpecificStorage:
   GeomNames: domain
   Type: Constant
