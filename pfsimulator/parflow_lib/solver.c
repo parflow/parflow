@@ -107,7 +107,6 @@ NewSolver()
    * Initialize SAMRAI hierarchy
    *-----------------------------------------------------------------------*/
   // SGS FIXME is this a good place for this?  need UserGrid
-
 #ifdef HAVE_SAMRAI
   // SGS FIXME is this correct for restarts?
   double time = 0.0;
@@ -121,6 +120,13 @@ NewSolver()
     solver = NA_NameToIndex(solver_na, switch_name);
     NA_FreeNameArray(solver_na);
   }
+
+  /*-----------------------------------------------------------------------
+   * Copy Globals struct to GPU (does not copy all unneccessary data)
+   *-----------------------------------------------------------------------*/
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+  CopyGlobalsToDevice();
+#endif
 
   switch (solver)
   {

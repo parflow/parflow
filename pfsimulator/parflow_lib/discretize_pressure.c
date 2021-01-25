@@ -736,84 +736,87 @@ void          DiscretizePressure(
       tmz_pvec[phase] = SubvectorData(tmz_sub[phase]);
     }
 
-    for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
+    ForBCStructNumPatches(ipatch, bc_struct)
     {
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
+      ForPatchCellsPerFace(DirichletBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int iv, im, phase;
+                                  double ff, d, o_temp, f_temp;
+                                  double *tm_p;),
+                           CellSetup({
+                               iv = SubvectorEltIndex(f_sub, i, j, k);
+                               im = SubmatrixEltIndex(A_sub, i, j, k);
+                             }),
+                           FACE(LeftFace, {
+                               ff = ffx;
+                               d = dx;
+                               tt_p = ttx_p;
+                             }),
+                           FACE(RightFace, {
+                               ff = ffx;
+                               d = dx;
+                               tt_p = ttx_p;
+                             }),
+                           FACE(DownFace, {
+                               ff = ffy;
+                               d = dy;
+                               tt_p = tty_p;
+                             }),
+                           FACE(UpFace, {
+                               ff = ffy;
+                               d = dy;
+                               tt_p = tty_p;
+                             }),
+                           FACE(BackFace, {
+                               ff = ffz;
+                               d = dz;
+                               tt_p = ttz_p;
 
-      switch (BCStructBCType(bc_struct, ipatch))
-      {
-        case DirichletBC:
-        {
-          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-          {
-            if (fdir[0])
-            {
-              ff = ffx;
-              d = dx;
-              tt_p = ttx_p;
-            }
-            else if (fdir[1])
-            {
-              ff = ffy;
-              d = dy;
-              tt_p = tty_p;
-            }
-            else if (fdir[2])
-            {
-              ff = ffz;
-              d = dz;
-              tt_p = ttz_p;
-            }
+                               for (phase = 0; phase < num_phases; phase++)
+                               {
+                                 tm_p = tmz_pvec[phase];
+                                 f_temp = ff * tm_p[iv] *
+                                          (phase_density[phase] * gravity);
+                                 fp[iv] += (-f_temp);
+                               }
+                             }),
+                           FACE(FrontFace, {
+                               ff = ffz;
+                               d = dz;
+                               tt_p = ttz_p;
 
-            iv = SubvectorEltIndex(f_sub, i, j, k);
-            im = SubmatrixEltIndex(A_sub, i, j, k);
+                               for (phase = 0; phase < num_phases; phase++)
+                               {
+                                 tm_p = tmz_pvec[phase];
+                                 f_temp = ff * tm_p[iv] *
+                                          (phase_density[phase] * gravity);
+                                 fp[iv] += f_temp;
+                               }
+                             }),
+                           CellFinalize({
+                               o_temp = -ff * 2.0 * tt_p[iv] / d;
+                               cp[im] -= o_temp;
+                               fp[iv] -= o_temp * bc_patch_values[ival];
+                             }),
+                           AfterAllCells(DoNothing)
+        );
 
-            o_temp = -ff * 2.0 * tt_p[iv] / d;
-            cp[im] -= o_temp;
-            fp[iv] -= o_temp * bc_patch_values[ival];
-
-            for (phase = 0; phase < num_phases; phase++)
-            {
-              /* RDF todo: put in capillary boundary contribution */
-
-              if (fdir[2])
-              {
-                tm_p = tmz_pvec[phase];
-                f_temp = ff * tm_p[iv] *
-                         (phase_density[phase] * gravity);
-                fp[iv] += fdir[2] * f_temp;
-              }
-            }
-          });
-
-          break;
-        }
-
-        case FluxBC:
-        {
-          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-          {
-            if (fdir[0])
-            {
-              ff = ffx;
-            }
-            else if (fdir[1])
-            {
-              ff = ffy;
-            }
-            else if (fdir[2])
-            {
-              ff = ffz;
-            }
-
-            iv = SubvectorEltIndex(f_sub, i, j, k);
-
-            fp[iv] -= ff * bc_patch_values[ival];
-          });
-
-          break;
-        }
-      }
+      ForPatchCellsPerFace(FluxBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int iv; double ff;),
+                           CellSetup({ iv = SubvectorEltIndex(f_sub, i, j, k); }),
+                           FACE(LeftFace,  { ff = ffx; }),
+                           FACE(RightFace, { ff = ffx; }),
+                           FACE(DownFace,  { ff = ffy; }),
+                           FACE(UpFace,    { ff = ffy; }),
+                           FACE(BackFace,  { ff = ffz; }),
+                           FACE(FrontFace, { ff = ffz; }),
+                           CellFinalize({ fp[iv] -= ff * bc_patch_values[ival]; }),
+                           AfterAllCells(DoNothing)
+        );
     }
   }
 

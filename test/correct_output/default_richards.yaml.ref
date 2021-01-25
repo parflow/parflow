@@ -1,0 +1,231 @@
+BCPressure:
+  PatchNames: left right front back bottom top
+ComputationalGrid:
+  DX: 8.88888888888889
+  DY: 10.666666666666666
+  DZ: 1.0
+  Lower:
+    X: -10.0
+    Y: 10.0
+    Z: 1.0
+  NX: 10
+  NY: 10
+  NZ: 8
+Contaminants:
+  Names: ''
+Cycle:
+  Names: constant
+  constant:
+    Names: alltime
+    Repeat: -1
+    alltime:
+      Length: 1
+Domain:
+  GeomName: domain
+FileVersion: 4
+Geom:
+  Perm:
+    Names: background
+    TensorByGeom:
+      Names: background
+  Porosity:
+    GeomNames: background
+  Retardation:
+    GeomNames: ''
+  background:
+    Lower:
+      X: -99999999.0
+      Y: -99999999.0
+      Z: -99999999.0
+    Perm:
+      TensorValX: 1.0
+      TensorValY: 1.0
+      TensorValZ: 1.0
+      Type: Constant
+      Value: 4.0
+    Porosity:
+      Type: Constant
+      Value: 1.0
+    Upper:
+      X: 99999999.0
+      Y: 99999999.0
+      Z: 99999999.0
+  concen_region:
+    Lower:
+      X: 60.0
+      Y: 80.0
+      Z: 4.0
+    Upper:
+      X: 80.0
+      Y: 100.0
+      Z: 6.0
+  domain:
+    ICPressure:
+      RefGeom: domain
+      RefPatch: bottom
+      Value: 3.0
+    Lower:
+      X: -10.0
+      Y: 10.0
+      Z: 1.0
+    Patches: left right front back bottom top
+    RelPerm:
+      Alpha: 0.005
+      N: 2.0
+    Saturation:
+      Alpha: 0.005
+      N: 2.0
+      SRes: 0.2
+      SSat: 0.99
+    SpecificStorage:
+      Value: 0.0001
+    Upper:
+      X: 150.0
+      Y: 170.0
+      Z: 9.0
+  source_region:
+    Lower:
+      X: 65.56
+      Y: 79.34
+      Z: 4.5
+    Upper:
+      X: 74.44
+      Y: 89.99
+      Z: 5.5
+GeomInput:
+  Names: domain_input background_input source_region_input concen_region_input
+  background_input:
+    GeomName: background
+    InputType: Box
+  concen_region_input:
+    GeomName: concen_region
+    InputType: Box
+  domain_input:
+    GeomName: domain
+    InputType: Box
+  source_region_input:
+    GeomName: source_region
+    InputType: Box
+Gravity: 1.0
+ICPressure:
+  GeomNames: domain
+  Type: HydroStaticPatch
+KnownSolution: NoKnownSolution
+Mannings:
+  Geom:
+    domain:
+      Value: 0.0
+  GeomNames: domain
+  Type: Constant
+Patch:
+  back:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  bottom:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  front:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  left:
+    BCPressure:
+      Cycle: constant
+      RefGeom: domain
+      RefPatch: bottom
+      Type: DirEquilRefPatch
+      alltime:
+        Value: 5.0
+  right:
+    BCPressure:
+      Cycle: constant
+      RefGeom: domain
+      RefPatch: bottom
+      Type: DirEquilRefPatch
+      alltime:
+        Value: 3.0
+  top:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+Perm:
+  TensorType: TensorByGeom
+Phase:
+  Names: water
+  RelPerm:
+    GeomNames: domain
+    Type: VanGenuchten
+  Saturation:
+    GeomNames: domain
+    Type: VanGenuchten
+  water:
+    Density:
+      Type: Constant
+      Value: 1.0
+    Mobility:
+      Type: Constant
+      Value: 1.0
+    Viscosity:
+      Type: Constant
+      Value: 1.0
+PhaseSources:
+  water:
+    Geom:
+      background:
+        Value: 0.0
+    GeomNames: background
+    Type: Constant
+Process:
+  Topology:
+    P: 1
+    Q: 1
+    R: 1
+Solver:
+  Linear:
+    KrylovDimension: 10
+    Preconditioner: PFMG
+  MaxIter: 5
+  Nonlinear:
+    DerivativeEpsilon: 0.01
+    EtaChoice: EtaConstant
+    EtaValue: 1.0e-05
+    MaxIter: 10
+    ResidualTol: 1.0e-09
+    UseJacobian: true
+  _value_: Richards
+SpecificStorage:
+  GeomNames: domain
+  Type: Constant
+TimeStep:
+  Type: Constant
+  Value: 0.001
+TimingInfo:
+  BaseUnit: 1.0
+  DumpInterval: -1
+  StartCount: 0
+  StartTime: 0.0
+  StopTime: 0.01
+TopoSlopesX:
+  Geom:
+    domain:
+      Value: 0.0
+  GeomNames: domain
+  Type: Constant
+TopoSlopesY:
+  Geom:
+    domain:
+      Value: 0.0
+  GeomNames: domain
+  Type: Constant
+Wells:
+  Names: ''

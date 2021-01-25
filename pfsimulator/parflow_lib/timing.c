@@ -52,6 +52,7 @@ void  NewTiming()
 
   RegisterTiming("Solver Setup");
   RegisterTiming("Solver");
+  RegisterTiming("Richards Exclude 1st Time Step");
   RegisterTiming("Solver Cleanup");
   RegisterTiming("Matvec");
   RegisterTiming("PFSB I/O");

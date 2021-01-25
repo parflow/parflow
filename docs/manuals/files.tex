@@ -4402,6 +4402,16 @@ pfset Solver.CLM.RootZoneNZ      4
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.SoiLayer      4
 \end{verbatim}\end{display}
+%====
+% @JSS CLM Slope Keys here
+%=====
+\pfkey{string}{Solver.CLM.UseSlopeAspect}{False}
+{This key specifies whether or not \code{CLM} allows for the inclusion of slopes when determining solar zenith angles.
+ Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.UseSlopeAspect True
+\end{verbatim}\end{display}
 
 %=============================================================================
 %=============================================================================
@@ -4511,6 +4521,18 @@ pfset NetCDF.ChunkY    50
 {This key sets chunking size in z-direction.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.ChunkZ    30
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.Compression}{False}
+{This key enables in-transit deflate compression for all NetCDF variables using zlib. To use this feature, NetCDF4 v4.7.4 must be available, which supports the necessary parallel zlib compression. The compression quality can be influenced by the chunk sizes and the overall data distribution. Compressed variables in NetCDF files can be opened in serial mode also within older versions of NetCDF4.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Compression True
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.CompressionLevel}{1}
+{This key sets the deflate compression level (if NetCDF.Compression is enabled), which influence the overall compression quality. zlib supports values between 0 (no compression), 1 (fastest compression) - 9 (slowest compression,smallest files). }
+\begin{display}\begin{verbatim}
+pfset NetCDF.CompressionLevel 1
 \end{verbatim}\end{display}
 
 \subsection{ROMIO Hints}

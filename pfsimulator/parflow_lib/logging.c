@@ -130,15 +130,23 @@ int  CloseLogFile(FILE *log_file)
  */
 void PrintVersionInfo(FILE *log_file)
 {
-  fprintf(log_file, "\tVersion        : %s\n", PARFLOW_VERSION_STRING);
-  fprintf(log_file, "\tCompiled on    : %s %s\n", __DATE__, __TIME__);
+  fprintf(log_file, "\tVersion         : %s\n", PARFLOW_VERSION_STRING);
+  fprintf(log_file, "\tCompiled on     : %s %s\n", __DATE__, __TIME__);
+  
 #ifdef CFLAGS
-  fprintf(log_file, "\tWith C flags   : %s\n", CFLAGS);
+  fprintf(log_file, "\tWith C flags    : %s\n", CFLAGS);
 #endif
 
 #ifdef FFLAGS
-  fprintf(log_file, "\tWith F77 flags : %s\n", FFLAGS);
+  fprintf(log_file, "\tWith F77 flags  : %s\n", FFLAGS);
 #endif
+
+#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && !defined(PARFLOW_HAVE_RMM)
+  fprintf(log_file, "\tWith acc backend: CUDA\n");
+#elif (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(PARFLOW_HAVE_RMM)
+  fprintf(log_file, "\tWith acc backend: CUDA+RMM\n");
+#elif (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_OMP)
+  fprintf(log_file, "\tWith acc backend: OMP\n");
+#endif
+
 }
-
-

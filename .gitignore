@@ -102,3 +102,13 @@
 ### Emacs ###
 *~
 \#*\#
+
+# VS Code
+.vscode/
+
+### Python ###
+__pycache__
+*.pyc
+
+# PyCharm
+.idea

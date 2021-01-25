@@ -45,8 +45,13 @@ amps_Package amps_NewPackage(amps_Comm     comm,
 
   if (num_recv + num_send)
   {
-    package->requests = (MPI_Request*)calloc((num_recv + num_send),
-                                             sizeof(MPI_Request));
+    package->recv_requests = 
+      (MPI_Request*)calloc((num_recv + num_send), sizeof(MPI_Request));
+
+    package->send_requests = package->recv_requests + num_recv;
+
+    package->status = 
+      (MPI_Status*)calloc((num_recv + num_send), sizeof(MPI_Status));
   }
 
   package->num_send = num_send;
@@ -64,7 +69,8 @@ void amps_FreePackage(amps_Package package)
 {
   if (package->num_recv + package->num_send)
   {
-    free(package->requests);
+    free(package->recv_requests);
+    free(package->status);
   }
 
   free(package);
@@ -100,6 +106,7 @@ amps_Package amps_NewPackage(amps_Comm     comm,
 void amps_FreePackage(amps_Package package)
 {
   int i;
+  MPI_Datatype type;
 
   if (package)
   {
@@ -107,7 +114,8 @@ void amps_FreePackage(amps_Package package)
     {
       for (i = 0; i < package->num_recv; i++)
       {
-        if (package->recv_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
+        type = package->recv_invoices[i]->mpi_type;
+        if (type != MPI_DATATYPE_NULL && type != MPI_BYTE)
         {
           MPI_Type_free(&(package->recv_invoices[i]->mpi_type));
         }
@@ -118,7 +126,8 @@ void amps_FreePackage(amps_Package package)
 
       for (i = 0; i < package->num_send; i++)
       {
-        if (package->send_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
+        type = package->send_invoices[i]->mpi_type;
+        if (type != MPI_DATATYPE_NULL && type != MPI_BYTE)
         {
           MPI_Type_free(&package->send_invoices[i]->mpi_type);
         }

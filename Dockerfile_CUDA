@@ -1,0 +1,149 @@
+#Dockerfile for ParFlow GPU version
+
+### IMPORTANT NOTES FOR GPU CONTAINER USAGE ###
+# Prerequisites:
+#  -NVIDIA drivers, GPU with CUDA compute capability >=6.0, and "nvidia-container-toolkit" package
+#  -The container must be created with "--gpus all" flag, ie, "docker run -it --gpus all image_hash"
+
+#-----------------------------------------------------------------------------
+# Start by building the basic CUDA container
+#-----------------------------------------------------------------------------
+FROM nvidia/cuda:10.2-devel-ubuntu18.04
+MAINTAINER Jaro Hokkanen <j.hokkanen@fz-juelich.de>
+
+#-----------------------------------------------------------------------------
+# Set environment vars
+#-----------------------------------------------------------------------------
+ENV DEBIAN_FRONTEND noninteractive
+ENV CMAKE_DIR /home/parflow/cmake-3.14.0-Linux-x86_64
+ENV CUDA_HOME /usr/local/cuda
+ENV PARFLOW_DIR /usr/local
+ENV LD_LIBRARY_PATH $PARFLOW_DIR/openmpi-cuda/lib:$LD_LIBRARY_PATH
+ENV PATH $CMAKE_DIR/bin:$PARFLOW_DIR/openmpi-cuda/bin:$PARFLOW_DIR/bin:$PATH
+
+#-----------------------------------------------------------------------------
+#  Package dependencies
+#-----------------------------------------------------------------------------
+RUN apt-get update && \
+    apt-get install -y  \
+    autoconf \
+    automake \
+    curl \
+    gcc  \
+    g++  \
+    gfortran \
+    git \
+    hdf5-helpers \
+    libhdf5-openmpi-100 \
+    libhdf5-openmpi-dev \
+    libtool \
+    m4 \
+    make \
+    tcl-dev \
+    tk-dev \
+    wget && mkdir -p /home/parflow
+
+#-----------------------------------------------------------------------------
+# Install CMake
+#-----------------------------------------------------------------------------
+WORKDIR /home/parflow
+RUN wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.0-Linux-x86_64.tar.gz && \
+    tar -xvf cmake-3.14.0-Linux-x86_64.tar.gz && \
+    rm -fr cmake-3.14.0-Linux-x86_64.tar.gz
+
+#-----------------------------------------------------------------------------
+# Install UCX and OpenMPI
+#-----------------------------------------------------------------------------
+WORKDIR /home/parflow
+RUN wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && \
+    tar -xvf ucx-1.8.0.tar.gz && \
+    cd ucx-1.8.0 && \
+    ./contrib/configure-release --prefix=$PARFLOW_DIR/ucx-cuda --with-cuda=$CUDA_HOME --with-java=no --disable-numa && \
+    make -j8 install && \
+    cd .. && \
+    rm -fr ucx-1.8.0 ucx-1.8.0.tar.gz
+
+WORKDIR /home/parflow
+RUN wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && \
+    tar -xvf openmpi-4.0.3.tar.gz && \
+    cd openmpi-4.0.3 && \
+    ./configure --prefix=$PARFLOW_DIR/openmpi-cuda --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DIR/ucx-cuda && \
+    make -j8 install && \
+    ldconfig && \
+    cd .. && \
+    rm -fr openmpi-4.0.3 openmpi-4.0.3.tar.gz
+
+#-----------------------------------------------------------------------------
+# Build libraries
+#-----------------------------------------------------------------------------
+
+#
+# SILO
+#
+WORKDIR /home/parflow
+RUN curl "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" -o "silo-4.10.2.tar.gz" && \
+    tar -xf silo-4.10.2.tar.gz && \
+    cd silo-4.10.2 && \
+    ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && \
+    make install && \
+    cd .. && \
+    rm -fr silo-4.10.2 silo-4.10.2.tar.gz
+
+#
+# Hypre
+#
+WORKDIR /home/parflow
+RUN wget -q https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz && \
+   tar -xvf v2.18.2.tar.gz && \
+   cd hypre-2.18.2/src && \
+   ./configure --prefix=$PARFLOW_DIR && \
+   make install && \
+   cd ../.. && \
+   rm -fr hypre-2.18.2 v2.18.2.tar.gz
+
+#
+# RMM
+#
+WORKDIR /home/parflow
+RUN git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git && \
+    cd rmm && \
+    cmake . -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR && \
+    make -j && \
+    make install && \
+    cd .. && \
+    rm -fr rmm
+
+#-----------------------------------------------------------------------------
+# Parflow configure and build
+#-----------------------------------------------------------------------------
+ENV UCX_MEMTYPE_CACHE n
+ENV OMPI_ALLOW_RUN_AS_ROOT 1
+ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM 1
+ENV OMPI_MCA_rmaps_base_oversubscribe 1
+
+WORKDIR /home/parflow
+
+RUN git clone -b master --single-branch https://github.com/parflow/parflow.git parflow
+RUN mkdir -p build && \
+    cd build && \
+    CC=mpicc CXX=mpicxx FC=mpif90 && \
+    cmake ../parflow \
+       -DCMAKE_C_FLAGS=-lcuda \
+       -DPARFLOW_AMPS_LAYER=mpi1 \
+       -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
+       -DHYPRE_ROOT=$PARFLOW_DIR \
+       -DSILO_ROOT=$PARFLOW_DIR \
+       -DPARFLOW_ENABLE_HDF5=TRUE \
+       -DPARFLOW_ENABLE_TIMING=TRUE \
+       -DPARFLOW_HAVE_CLM=TRUE \
+       -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+       -DPARFLOW_ACCELERATOR_BACKEND=cuda \
+       -DRMM_ROOT=$PARFLOW_DIR && \
+     make install
+
+RUN cd .. && \
+    rm -fr parflow build
+
+WORKDIR /data
+
+ENTRYPOINT ["tclsh"]

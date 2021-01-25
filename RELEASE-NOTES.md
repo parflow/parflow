@@ -1,87 +1,123 @@
-# ParFlow Release Notes
+# ParFlow Release Notes 3.7.0
 ---
 
-## IMPORTANT NOTE
-
-```
-Support for GNU Autoconf will be removed in the next release of
-ParFlow.  Future releases will only support configuration using CMake.
-```
+ParFlow improvements and bug-fixes would not be possible without
+contributions of the ParFlow community.  Thank you for all the great
+work.
 
 ## Overview of Changes
 
-* New overland flow boundary conditions
-* Flow barrier added
-* Support for metadata file
-* Boundary condition refactoring
-* Bug fixes
-* Coding style update
+* Autoconf support has been removed.
+* Support for on-node parallelism using OpenMP and CUDA
+* New overland flow formulations
+* Utility for writing PFB file from R
+* Additional solid file utilities in TCL
+* NetCDF and HDF5 added to Docker instance
 
 ## User Visible Changes
 
-## New overland flow boundary conditions
+### Autoconf support has been removed
 
-Three new boundary conditions as modules - OverlandKinematic,
-OverlandDiffusive and Seepage.
+The GNU Autoconf (e.g. configure) support has been dropped.  Use CMake
+to build ParFlow.  See the README.md file for information on building
+with CMake.
 
-OverlandKinematic is similar to the original OverlandFlow boundary
-condition but uses a slightly modified flux formulation that uses the
-slope magnitude and it is developed to use face centered slopes (as
-opposed to grid centered) and does the upwinding internally.x.  See user
-manual for additional information on the new boundary conditions.
+### Support for on-node parallelism using OpenMP and CUDA
 
-New test cases were added exercising the new boundary conditions:
-overland_slopingslab_DWE.tcl, overland_slopingslab_KWE.tcl,
-overland_tiltedv_DWE.tcl, overland_tiltedV_KWE.tcl,
-Overland_FlatICP.tcl
+ParFlow now has an option so support on-node parallelism in addition to
+using MPI.   OpenMP and CUDA backends are currently supported.
 
-Two new options were added to the terrain following grid formulation
-to be consistent with the upwinding approach used in the new overland
-flow formulation these are specified with the new
-TFGUpwindFormullation keys documented in the manual.
+See the README-CUDA.md and README-OPENMP.md files for information on
+how to compile with support for CUDA and OpenMP.
 
-For both OverlandDiffusive and OverlandKinematic analytical jacobians
-were implemented in the new modules and these were tested and can be
-verified in the new test cases noted above.
+Big thank you goes to Michael Burke and Jaro Hokkanen and the teams at
+Boise State, U of Arizona, and FZ-Juelich for their hard work on
+adding OpenMP and CUDA support.
 
-### Flow barrier added
+### CMake dependency on version 3.14
 
-Ability to create a flow barrier capability equivalent to the
-hydraulic flow barrier (HFB) or flow and transport parameters at
-interfaces. The flow barriers are placed at the fluxes as scalar
-multipliers between cells (at cell interfaces).
+ParFlow now requires CMake version 3.14 or better.
 
-Flow barriers are set using a PFB file, see user manual for additional
-information.  The flow barrier is turned off by default.
+###  New overland flow formulations
 
-### Support for metadata file
+Overland flow saw significant work:
 
-A metadata file is written in JSON format summarizing the inputs to a
-run and its output files. This file provides ParaView and other
-post-processing tools a simple way to aggregate data for
-visualizations and analyses.
+* OverlandKinematic and OverlandDiffusive BCs per LEC
+* Add OverlandKinematic as a Module
+* Adding new diffusive module
+* Added TFG slope upwind options to Richards Jacobian
+* Added overland eval diffusive module to new OverlandDiffusive BC condition
+* Adding Jacobian terms for diffusive module
+* Updating OverlandDiffusive boundary condition Jacobian
+* Updated documentation for new boundary conditions
 
-Metadata is collected during simulation startup and updated to include
-timestep information with each step the simulation takes.  It is
-rewritten with each timestep so that separate processes may observe
-simulation progress by watching the file for changes.
+### Utility for writing PFB file from R
 
-### Bug Fixes
+A function to take array inputs and write them as pfbs.  See the file:
+pftools/prepostproc/PFB-WriteFcn.R
 
-Fixed segmentation fault when unitialized variable was referenced in
-cases with processors is outside of the active domain.
+### Additional solid file utilities in TCL
+
+A new PF tools for creating solid files with irregular top and bottom
+surfaces and conversion utilities to/from ascii or binary solid
+files. See user-manual documentation on pfpatchysolid and
+pfsolidfmtconver for information on the new TCL commands.
+
+### NetCDF and HDF5 added to Docker instance
+
+The ParFlow Docker instance now includes support for NetCDF and HDF5.
+
+## Bug Fixes
+
+### Fixed compilation issue with NetCDF
+
+CMake support for NetCDF compilation has been improved.
+
+### Memory leaks
+
+Several memory leaks were addressed in ParFlow and PFTools.
+
+### Parallel issue with overland flow boundary conditions
+
+Fixed bug in nl_function_eval.c that caused MPI error for some
+overland BCs with processors outside computational grid.
+
+### pfdist/undist issues
+ 
+Fixed pfdist/undist issues when using the sequential I/O model.
 
 ## Internal Changes
 
 ### Boundary condition refactoring
 
-The framework for boundary conditions was significantly refactored to provide a
-macro system to simplify adding new boundary conditions. See
-bc_pressure.h for additional documentation.
+The loops for boundary conditions were refactored to provide a higher
+level of abstraction and be more self-documenting (removed magic
+numbers).  ForPatchCellsPerFace is a new macro for looping over patch
+faces.  See nl_function_eval.c for example usage and problem_bc.h for
+documentation on the new macros.
 
-### Coding style update
+### PVCopy extended to include boundary cells.
 
-The Uncrustify coding style was updated and code was reformated.
+PVCopy now includes boundary cells in the copy.
+
+### DockerHub Test
+
+A simple automated test of generated DockerHub instances was added.
+
+### Etrace support was added
+
+Support for generating function call traces with Etrace was added.  Add
+-DPARFLOW_ENABLE_TRACE to CMake configure line.
+
+See https://github.com/elcritch/etrace for additional information.
+
+### Compiler warnings treated as errors
+
+Our development process now requires code compile cleanly with the
+-Wall option on GCC.  Code submissions will not be accepted that do
+not cleanly compile. 
 
 ## Known Issues
+
+See https://github.com/parflow/parflow/issues for current bug/issue reports.
 

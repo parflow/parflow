@@ -1,0 +1,92 @@
+/** @name Introduction
+{\em AMPS} (Another Message Passing System) is a message-passing system
+that was designed to be used by the {\em NMG} group at Lawrence
+Livermore National Laboratory.  {\em AMPS} is a small porting layer
+designed to maintain independence from any specific message-passing
+system.
+
+Why develop this when other systems already exist?  We were in a
+situation were we had implemented our code on using {\em Zipcode} 
+\cite{SkLe90,skjellum.smith.ea.93,smith.falgout.ea.93} but
+were looking to move to {\em MPI}.  Unfortunately, {\em MPI} was not
+yet available, support was lacking from several computer vendors, and we
+were not prepared to implement {\em MPI} ourselves.  This lead to the
+birth of {\em AMPS}.  It contains the subset of features from
+{\em Zipcode} that we needed.  By creating this subset we hoped to
+achieve greater portability than attempting to implement all of
+{\em Zipcode}.  We decided not to use any of the other message passing
+systems since most take a least common denominator approach and thus do
+not have the power of {\em Zipcode} or {\em MPI}.
+
+You will find that, by-in-large, {\em AMPS} is very similar to most
+other message passing systems.  The major difference is in how the
+content of messages is specified.  In addition to the standard message
+passing functions, {\em AMPS} provides I/O functions to provide
+portable parallel file operations. 
+
+{\em AMPS} has features to enable multi-threaded programs to be
+written.  Macros are provided for creating and accessing "thread local"
+data and the {\em AMPS} primitives can be used for inter-thread
+communication.  The potential advantage of using threads is cheaper
+communication primitives on {\em SMP} systems.  This capability is
+offset by the limitations imposed by threads.  Since the Standard C
+Library was designed before threads came into widespread use, extra
+synchronization around the Standard C Library needs to be imposed.  In
+several case studies we have found that using threads actually produce
+codes that run slower than multi-process versions.  We continue to
+experiment with different libraries and techniques to see if we can
+improve this.  In order to use threaded versions of {\em AMPS} you will
+have to ensure that you program is thread safe.  The implies careful
+use of global and static variables.  The macros provided by {\em AMPS} 
+enable declarations and use of "thread local" variables.  These should
+be used whenever you wish to have global data or static data that needs
+to be specific to a particular node.  Of course redesign an application
+specifically for a multi-threaded environment would yield better
+performance, however, we were looking at getting some advantages of
+threads while maintaining the message passing programming style.
+
+Another feature that {\em AMPS} contains which many MP systems do not
+is persistent communication objects.  The advantage of persistent
+communication objects can be clearly seen in figure (ref).  On the T3D
+we can communicate the remote locations where data is to be stored
+once and push the data across the network to the remote node using
+shared memory operations.  This is currently the fastest mechanism
+available for communication on the T3D and without persistent
+communication objects there would be additional overhead involved with
+each data exchange.  On shared memory multiprocessor machines (such as
+the SGI Power series) one can achieve similar performance to true
+shared memory operations with the additional portability that message
+passing brings.
+
+{\em AMPS} is a work in progress so there are "hooks" in place for
+future expansion.  For example, all send/receive calls have a "context"
+in their argument lists, however, the current implementation contains
+only one global context.  Hence contexts can be added, if needed, with
+little or minor modification of existing {\em AMPS} codes.
+
+{\em AMPS} is based on a SPMD model of computation.  There is a single
+node program which is executed on all the nodes of a multi-computer.
+There are no commands for creating or destroying processes other than
+the initial program load.  Process creation features may be added in the
+future (the {\em MPI} API also currently lacks process control).
+
+{\em AMPS} is currently running on top of the {\em Chameleon}, {\em
+PVM} and {\em CE/RK} message passing APIs.  The {\em CRAY T3D} port
+utilizes the {\em SHMEM} library to achieve better performance for key
+communication routines.  A multi-threaded port for Win32 is currently
+running under Microsoft Windows 95 and Microsoft Windows NT 3.51.
+This version has not yet been tested on a multi-processor machine; it
+will probably show the same performance problems as the {\em IRIX}
+multi-threaded version. A shared memory port exists for {\em IRIX}.  A
+multi-threaded port exists under {\em IRIX}, however this version is
+currently not used due to the single threaded nature of the standard C
+libraries.  How to overcome this is currently being investigated.
+
+A port to {\em MPI} is currently planed.  {\em AMPS} will hopefully be
+replaced by {\em MPI} if this proposed standard is adopted by all
+vendors (this does now appear to be happening).  There is a fairly
+direct mapping of {\em AMPS} calls to {\em MPI} and, when possible,
+function names are similar.  The major conversion issue will be the
+\Ref{amps_Invoice} features.
+
+*/

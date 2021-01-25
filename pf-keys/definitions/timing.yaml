@@ -1,0 +1,203 @@
+# timing.yaml
+# Definitions of timing components of ParFlow
+# Includes Cycles, Timing
+
+# -----------------------------------------------------------------------------
+# Timing Info
+# -----------------------------------------------------------------------------
+
+TimingInfo:
+  __doc__: >
+    Setting timing parameters
+
+  BaseUnit:
+    help: >
+      [Type: double] This key is used to indicate the base unit of time for entering time values. All time should be expressed as a
+      multiple of this value. This should be set to the smallest interval of time to be used in the problem. For example, a
+      base unit of “1” means that all times will be integer valued. A base unit of “0.5” would allow integers and fractions
+      of 0.5 to be used for time input values.
+      The rationale behind this restriction is to allow time to be discretized on some interval to enable integer arithmetic
+      to be used when computing/comparing times. This avoids the problems associated with real value comparisons which
+      can lead to events occurring at different timesteps on different architectures or compilers.
+      This value is also used when describing “time cycling data” in, currently, the well and boundary condition sections.
+      The lengths of the cycles in those sections will be integer multiples of this value, therefore it needs to be the smallest
+      divisor which produces an integral result for every “real time” cycle interval length needed.
+    domains:
+      DoubleValue:
+        min_value: 0.0
+
+  StartCount:
+    help: >
+      [Type: int] This key is used to indicate the time step number that will be associated with the first advection cycle in a
+      transient problem. The value -1 indicates that advection is not to be done. The value 0 indicates that advection
+      should begin with the given initial conditions. Values greater than 0 are intended to mean “restart” from some
+      previous “checkpoint” time-step, but this has not yet been implemented.
+    domains:
+      IntValue:
+        min_value: -1
+        max_value: 0
+
+  StartTime:
+    help: >
+      [Type: double] This key is used to indicate the starting time for the simulation.
+    domains:
+      MandatoryValue:
+      DoubleValue:
+
+  StopTime:
+    help: >
+      [Type: double] This key is used to indicate the stopping time for the simulation.
+    domains:
+      MandatoryValue:
+      DoubleValue:
+
+  DumpInterval:
+    help: >
+      [Type: double] This key is the real time interval at which time-dependent output should be written. A value of 0 will produce
+      undefined behavior. If the value is negative, output will be dumped out every n time steps, where n is the absolute
+      value of the integer part of the value.
+    domains:
+      MandatoryValue:
+      DoubleValue:
+
+  DumpIntervalExecutionTimeLimit:
+    help: >
+      [Type: int] This key is used to indicate a wall clock time to halt the execution of a run. At the end of each dump interval
+      the time remaining in the batch job is compared with the user supplied value, if remaining time is less than or equal
+      to the supplied value the execution is halted. Typically used when running on batch systems with time limits to force
+      a clean shutdown near the end of the batch job. Time units is seconds, a value of 0 (the default) disables the check.
+      Currently only supported on SLURM based systems, “–with-slurm” must be specified at configure time to enable.
+    default: 0
+    domains:
+      IntValue:
+
+  DumpAtEnd:
+    help: >
+      [Type: boolean] Not in manual, but found in indicator_field.tcl test
+    domains:
+      BoolDomain:
+
+TimeStep:
+  __doc__: >
+    Setting parameters for modeled time steps
+
+  Type:
+    help: >
+      [Type: string] This key must be one of: Constant or Growth. The value Constant defines a constant time step. The value
+      Growth defines a time step that starts as dt0 and is defined for other steps as dtnew = gamma*dtold such that
+      dtnew is less than or equal to dtmax and dtnew is greater than or equal to dtmin.
+    domains:
+      EnumDomain:
+        enum_list:
+          - Constant
+          - Growth
+
+  Value:
+    help: >
+      [Type: double] This key is used only if a constant time step is selected and indicates the value of the time step for all steps
+      taken.
+    domains:
+      DoubleValue:
+    crosscheck:
+      MandatoryIf:
+        TimeStep.Type: Constant
+
+  InitialStep:
+    help: >
+      [Type: double] This key specifies the initial time step dt0 if the Growth type time step is selected.
+    domains:
+      DoubleValue:
+
+  GrowthFactor:
+    help: >
+      [Type: double] This key specifies the growth factor gamma by which a time step will be multiplied to get the new time step when the
+      Growth type time step is selected.
+    domains:
+      DoubleValue:
+
+  MaxStep:
+    help: >
+      [Type: double] This key specifies the maximum time step allowed, dtmax, when the Growth type time step is selected.
+    domains:
+      DoubleValue:
+        min_value: 0.0
+
+  MinStep:
+    help: >
+      [Type: double] This key specifies the minimum time step allowed, dtmin, when the Growth type time step is selected.
+    domains:
+      DoubleValue:
+        min_value: 0.0
+
+# -----------------------------------------------------------------------------
+# Cycles
+# -----------------------------------------------------------------------------
+
+Cycle:
+  __doc__: >
+    Setting properties for cycles and intervals within those cycles.
+
+  # IMPORTANT typo in manual: key is Cycle.Names, but in manual as CycleNames
+  Names:
+    help: >
+      [Type: string] This key is used to specify the named time cycles to be used in a simulation. It is a list of names and each name
+      defines a time cycle and the number of items determines the total number of time cycles specified. Each named cycle
+      is described using a number of keys defined under Cycle.
+    domains:
+      AnyString:
+    handlers:
+      CycleUpdater:
+        type: ChildrenHandler
+        class_name: CycleItem
+        location: .
+
+  .{cycle_name}:
+    __class__: CycleItem
+    __rst__:
+      name: Cycle.{cycle_name}
+    __doc__: ''
+
+    Names:
+      help: >
+        [Type: string] This key is used to specify the named time intervals for each cycle. It is a list of names and each name defines a
+        time interval when a specific boundary condition is applied and the number of items determines the total number of
+        intervals in that time cycle.
+      domains:
+        AnyString:
+      handlers:
+        CycleUpdater:
+          type: ChildrenHandler
+          class_name: CycleIntItem
+          location: .
+        WellIntervalItemUpdater:
+          type: ChildrenHandler
+          class_name: WellIntervalItem
+          location: /Wells/{WellItem}
+        BCPressureIntervalItemUpdater:
+          type: ChildrenHandler
+          class_name: BCPressureIntervalItem
+          location: /Patch/{BCItem}/BCPressure
+
+    Repeat:
+      help: >
+        [Type: int] This key is used to specify the how many times a named time interval repeats. A positive value specifies a
+        number of repeat cycles a value of -1 specifies that the cycle repeat for the entire simulation.
+      domains:
+        MandatoryValue:
+        IntValue:
+          min_value: -1
+
+    .{interval_name}:
+      __class__: CycleIntItem
+      __rst__:
+        name: Cycle.{cycle_name}.{interval_name}
+      __doc__: ''
+
+      Length:
+        help: >
+          [Type: int] This key is used to specify the length of a named time intervals. It is an integer multiplier of the value set for the
+          TimingInfo.BaseUnit key described above. The total length of a given time cycle is the sum of all the intervals
+          multiplied by the base unit.
+        domains:
+          IntValue:
+            min_value: 1

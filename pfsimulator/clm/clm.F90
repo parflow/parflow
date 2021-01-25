@@ -3,10 +3,11 @@
 subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,           &
 start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx,gny,rank,sw_pf,lw_pf,    &
 prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,                               &
+slope_x_pf,slope_y_pf,                                                                                 &
 eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,                                                     &
 qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
-write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
+write_CLM_binary,slope_accounting_CLM,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
 clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
@@ -54,7 +55,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
 
   ! basic indices, counters
   integer  :: t                                   ! tile space counter
-  integer  :: l                                   ! layer counter 
+  integer  :: l,ll                                   ! layer counter 
   integer  :: r,c                                 ! row,column indices
   integer  :: ierr                                ! error output 
 
@@ -115,13 +116,17 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   real(r8) :: qirr_pf((nx+2)*(ny+2)*3)           ! irrigation applied above ground -- spray or drip (2D)
   real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(pf_nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
 
+  real(r8) :: slope_x_pf((nx+2)*(ny+2)*3)        ! Slope in x-direction from PF
+  real(r8) :: slope_y_pf((nx+2)*(ny+2)*3)        ! Slope in y-direction from PF
+
   ! output keys
-  real(r8) :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
+  integer :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
   integer  :: clm_forc_veg                       ! BH: whether vegetation (LAI, SAI, z0m, displa) is being forced 0=no, 1=yes
   integer  :: clm_output_dir_length              ! for output directory
   integer  :: clm_bin_output_dir                 ! output directory
   integer  :: write_CLM_binary                   ! whether to write CLM output as binary 
+  integer  :: slope_accounting_CLM               ! account for slope is solar zenith angle calculations
   character (LEN=clm_output_dir_length) :: clm_output_dir ! output dir location
 
   ! ET keys
@@ -310,7 +315,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
      !=== Initialize CLM and DIAG variables
      if (clm_write_logs==1) write(999,*) "Initialize CLM and DIAG variables"
      do t=1,drv%nch 
-        clm%kpatch = t
+        clm(t)%kpatch = t
         call drv_clmini (drv, grid, tile(t), clm(t), istep_pf) !Initialize CLM Variables
      enddo
 
@@ -367,7 +372,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
 
         i = tile(t)%col
         j = tile(t)%row
-		
+
 		!!!! BH: modification of the interfaces depths and layers thicknesses to match PF definitions
 	    clm(t)%zi(0)            = 0.   
     
@@ -387,9 +392,11 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
                     l1          = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k1-1))
                     total       = total + (drv%dz * pf_dz_mult(l1))
                  enddo
-                 clm%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
-		clm%zi(k)	= total + drv%dz * pf_dz_mult(l)! basile
+                 clm(t)%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
+		clm(t)%zi(k)	= total + drv%dz * pf_dz_mult(l)! basile
+ 
               endif
+    
            enddo
 
 
@@ -447,7 +454,22 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
 		   endif ! active/inactive
 
      enddo !t 
-           
+   
+   !! Loop over the tile space to assign slopes
+
+      do t=1,drv%nch
+
+        i=tile(t)%col
+        j=tile(t)%row
+      ll =  (1+i) + (nx+2)*(j) + (nx+2)*(ny+2)
+      if (slope_accounting_CLM==1) then
+      clm(t)%slope_x = slope_x_pf(ll)
+      clm(t)%slope_y = slope_y_pf(ll)
+      else
+      clm(t)%slope_x = 0.0d0
+      clm(t)%slope_y = 0.0d0
+      end if
+      end do ! t
 
      !=== Loop over CLM tile space to set keys/constants from PF
      !    (watsat, residual sat, irrigation keys)
@@ -515,7 +537,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   write(9919,*) "CLM day =", drv%da, "month =", drv%mo,"year =", drv%yr
   end if ! CLM log
 
-
+  
   !=== Read in the atmospheric forcing for off-line run
   !    (values no longer read by drv_getforce, passed from PF)
   !    (drv_getforce is modified to convert arrays from PF input to CLM space)
@@ -524,7 +546,8 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   !BH: this replaces values from clm_dynvegpar called previously from drv_clmini and 
   !BH: replaces values from drv_readvegpf
   call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
-	patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg)
+  patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg)
+
   !=== Actual time loop
   !    (loop over CLM tile space, call 1D CLM at each point)
   do t = 1, drv%nch     
@@ -545,7 +568,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   !=== Call 2D output routine
   !     Only call for clm_dump_interval steps (not time units, integer units)
   !     Only call if write_CLM_binary is True
-  if (mod(dble(istep_pf),clm_dump_interval)==0)  then
+  if (mod((istep_pf),clm_dump_interval)==0)  then
      if (write_CLM_binary==1) then
 
         ! Call subroutine to open (2D-) output files
@@ -559,7 +582,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
 
      end if ! write_CLM_binary
   end if ! mod of istep and dump_interval
-
+  
 
   !=== Copy values from 2D CLM arrays to PF arrays for printing from PF (as Silo)
   do t=1,drv%nch

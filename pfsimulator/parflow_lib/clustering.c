@@ -31,6 +31,8 @@
 #include "index_space.h"
 #include "llnlmath.h"
 
+#include <string.h>
+
 /**
  * This implementation is derived from the SAMRAI Berger-Rigoutsos
  * implementation developed by LLNL.
@@ -47,6 +49,17 @@
  * Sys, Man, and Cyber (21)5:1278-1286.
  */
 
+/**
+ * Tag count.
+ *
+ * The __managed__ keyword makes this variable to automatically migrate
+ * between host and device, but unfortunately requires global scope.
+ * 
+ * @TODO Find a better way to do this, some options:
+ *  - Put this variable into heap
+ *  - Use parallel reduction loops (currently not compatible with GrGeomLoops) 
+ */
+__managed__ static int tag_count;
 
 /**
  * Maximum number of ghost layers.
@@ -100,7 +113,8 @@ void HistogramBoxAddTags(HistogramBox *histogram_box, int dim, int global_index,
  */
 HistogramBox* NewHistogramBox(Box *box)
 {
-  HistogramBox* histogram_box = ctalloc(HistogramBox, 1);
+  HistogramBox* histogram_box = talloc(HistogramBox, 1);
+  memset(histogram_box, 0, sizeof(HistogramBox));
 
   BoxCopy(&(histogram_box->box), box);
 
@@ -108,7 +122,8 @@ HistogramBox* NewHistogramBox(Box *box)
 
   for (int dim = 0; dim < DIM; dim++)
   {
-    histogram_box->histogram[dim] = ctalloc(int, size);
+    histogram_box->histogram[dim] = talloc(int, size);
+    memset(histogram_box->histogram[dim], 0, size * sizeof(int));
   }
 
   return histogram_box;
@@ -240,7 +255,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
 
   for (int ic_sb = ilo; ic_sb <= ihi; ic_sb++)
   {
-    int tag_count = 0;
+    tag_count = 0;
 
     Box src_box;
     BoxClear(&src_box);
@@ -308,12 +323,12 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
                 ((src_box.lo[1] <= j) && (j <= src_box.up[1])) &&
                 ((src_box.lo[2] <= k) && (k <= src_box.up[2])))
             {
-              tag_count++;
+              PlusEquals(tag_count, 1);
             }
           }
         });
       }
-
+      MemPrefetchDeviceToHost(&tag_count, sizeof(int), 0);
       HistogramBoxAddTags(histogram_box, dim, ic_sb, tag_count);
     }
   }
@@ -799,15 +814,13 @@ void ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
 
     Subvector   *d_sub;
 
-    int ip;
-
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
 
     double *dp;
 
-    int tag_count = 0;
+    tag_count = 0;
 
     ForSubgridI(is, GridSubgrids(grid))
     {
@@ -832,14 +845,15 @@ void ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
       GrGeomPatchLoop(i, j, k, fdir, geom_solid, patch,
                       r, ix, iy, iz, nx, ny, nz,
       {
-        ip = SubvectorEltIndex(d_sub, i, j, k);
-
+        int ip = SubvectorEltIndex(d_sub, i, j, k);
         int this_face_tag = 1 << PV_f;
-        tag.as_double = dp[ip];
-        tag.as_tags = tag.as_tags | this_face_tag;
-        dp[ip] = tag.as_double;
+        
+        DoubleTags v;
+        v.as_double = dp[ip];
+        v.as_tags = v.as_tags | this_face_tag;
+        dp[ip] = v.as_double;
 
-        tag_count++;
+        PlusEquals(tag_count, 1);
       });
     }
   }
@@ -900,15 +914,13 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
 
     Subvector   *d_sub;
 
-    int ip;
-
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
 
     double *dp;
 
-    int tag_count = 0;
+    tag_count = 0;
 
     ForSubgridI(is, GridSubgrids(grid))
     {
@@ -932,14 +944,15 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
       int *fdir;
       GrGeomSurfLoop(i, j, k, fdir, geom_solid, r, ix, iy, iz, nx, ny, nz,
       {
-        ip = SubvectorEltIndex(d_sub, i, j, k);
-
+        int ip = SubvectorEltIndex(d_sub, i, j, k);
         int this_face_tag = 1 << PV_f;
-        tag.as_double = dp[ip];
-        tag.as_tags = tag.as_tags | this_face_tag;
-        dp[ip] = tag.as_double;
+        
+        DoubleTags v;
+        v.as_double = dp[ip];
+        v.as_tags = v.as_tags | this_face_tag;
+        dp[ip] = v.as_double;
 
-        tag_count++;
+        PlusEquals(tag_count, 1);
       });
     }
   }
@@ -1000,15 +1013,13 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
 
     Subvector   *d_sub;
 
-    int ip;
-
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
 
     double *dp;
 
-    int tag_count = 0;
+    tag_count = 0;
 
     ForSubgridI(is, GridSubgrids(grid))
     {
@@ -1031,10 +1042,10 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
 
       GrGeomInLoop(i, j, k, geom_solid, r, ix, iy, iz, nx, ny, nz,
       {
-        ip = SubvectorEltIndex(d_sub, i, j, k);
+        int ip = SubvectorEltIndex(d_sub, i, j, k);
 
         dp[ip] = tag.as_double;
-        tag_count++;
+        PlusEquals(tag_count, 1);
       });
     }
   }
@@ -1079,4 +1090,3 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 
   EndTiming(ClusteringTimingIndex);
 }
-

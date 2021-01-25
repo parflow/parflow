@@ -198,7 +198,7 @@ CharVector  *NewCharVector(
 
 
   new_char_vector = NewTempCharVector(grid, nc, num_ghost);
-  data = amps_CTAlloc(char, SizeOfCharVector(new_char_vector));
+  data = ctalloc_amps(char, SizeOfCharVector(new_char_vector));
   SetTempCharVectorData(new_char_vector, data);
 
   return new_char_vector;
@@ -238,7 +238,7 @@ void FreeTempCharVector(
 void     FreeCharVector(
                         CharVector *charvector)
 {
-  amps_TFree(CharVectorData(charvector));
+  tfree_amps(CharVectorData(charvector));
   FreeTempCharVector(charvector);
 }
 
