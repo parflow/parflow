@@ -120,6 +120,7 @@ typedef struct {
 #define OverlandFlowKMax 4
 
 extern char* OverlandFlowFaceName[4];
+extern char* OverlandFlowFaceDirectionName[4];
 
 typedef struct {
   /* geometry information */
@@ -177,6 +178,8 @@ typedef struct {
   Vector *overlandflow_cell_outflow;
 
   Vector *overlandflow_face_flow[OverlandFlowKMax];
+
+  Vector *KE, *KW, *KN, *KS;
   
 } ProblemData;
 

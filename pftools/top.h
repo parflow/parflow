@@ -34,13 +34,69 @@
 extern "C" {
 #endif
 
-/*-----------------------------------------------------------------------
- * function prototypes
- *-----------------------------------------------------------------------*/
-
+/**
+ * Compute indices of the top of the domain.
+ *
+ * Computes a 2D top Databox with integer values that are the indices
+ * in Z of the top of the domain.   Each (i,j,0) is the z index of
+ * the top of the domain.
+ * 
+ * The 3D Mask input is one of the optional outputs from a ParFlow
+ * run.  The mask has values 0 outside of domain so top most non-zero
+ * entry in each (i,j) column is the top of the domain.
+ * 
+ * @param [in] mask 3D mask Databox from the ParFlow run.
+ * @param [out] top 2D Databox with z indices 
+ */
 void ComputeTop(Databox *mask, Databox  *top);
+
+/**
+ * Compute indices of the bottom of the domain.
+ *
+ * Computes a 2D bottom Databox with integer values that are the indices
+ * in Z of the bottom of the domain.   Each (i,j,0) is the z index of
+ * the bottom of the domain.
+ * 
+ * The 3D Mask input is one of the optional outputs from a ParFlow
+ * run.  The mask has values 0 outside of domain so bottom most
+ * non-zero entry in each (i,j) column is the bottom of the domain.
+ * 
+ * @param [in] mask 3D mask Databox from the ParFlow run.
+ * @param [out] bottom 2D Databox with z indices 
+ */
 void ComputeBottom(Databox *mask, Databox  *bottom);
-void ExtractTop(Databox *v1, Databox *v2, Databox *v3);
+
+/**
+ * Extracts the top domain surface values of a dataset.
+ *
+ * Returns 2D DataBox from a 3D Databox with data
+ * that lies on the top domain surface boundary.
+ *
+ * The top is defined by the z indices in the provided 2D top databox
+ * which can be computed with ComputeTop.
+ *
+ * @param [in] top 2D Databox with z index values that define the top of the domain
+ * @param [in] data 3D Databox with data that should be sampled
+ * @param [out] topdata 2D Databox extracted from the data input on top of the domain
+ */
+void ExtractTop(Databox *top, Databox *data, Databox *topdata);
+
+/**
+ * Extracts the boundary values of a dataset.
+ *
+ * Returns 2D DataBox from a 2D Databox with data that lies along the
+ * domain boundary in X/Y.  This could be used in sequence with
+ * ExtractTop to for a 3D dataset.  First extract the top and then
+ * extract the boundary.
+ *
+ * The domain boundary is defined using a 2D top Databox which can 
+ * be computed with ComputeTop.
+ *
+ * @param [in] top 2D Databox with z index values that define the top of the domain
+ * @param [in] data 2D Databox 
+ * @param [out] boundarydata 2D Databox sampled from the data input that lies on X/Y boundaries.
+ */
+void ExtractTopBoundary(Databox *top, Databox *data, Databox *boundarydata);
 
 #ifdef __cplusplus
 }

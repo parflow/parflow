@@ -1404,6 +1404,15 @@ void EvapTransSum(ProblemData *problem_data, double dt, Vector *evap_trans_sum, 
  */
 void ComputeOverlandFlowRunningSums(Vector* overlandflow_face_flow[],
 				    Vector* overlandflow_cell_outflow,
-				    Vector *KE, Vector *KW, Vector *KN, Vector *KS, BCStruct *bc_struct);
+				    double dt,
+				    Vector *KE, Vector *KW, Vector *KN, Vector *KS,
+				    BCStruct *bc_struct);
+
+
+void OverlandSum(ProblemData *problem_data,
+                 Vector *     pressure,       /* Current pressure values */
+                 double       dt,
+		 Vector *     overland_sum);
+
 
 Grid      *ReadProcessGrid();

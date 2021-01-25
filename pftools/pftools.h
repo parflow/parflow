@@ -145,6 +145,7 @@ int Extract2DDomainCommand(ClientData clientData, Tcl_Interp *interp, int argc, 
 int BuildDomainCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 int PFDistOnDomainCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 int ExtractTopCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
+int ExtractTopBoundaryCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 int SurfaceStorageCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 int SubsurfaceStorageCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 int GWStorageCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);

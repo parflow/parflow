@@ -29,33 +29,19 @@
 
 #include <stdio.h>
 #include <math.h>
-
-
-/*-----------------------------------------------------------------------
- * ComputeTop:
- *
- * Computes the top indices of the computation domain as defined by
- * the mask values.  * Mask has values 0 outside of domain so first
- * non-zero entry is the top.
- *
- * Returns a top Databox with (z) indices of the top surface for each
- * i,j location.
- *
- *-----------------------------------------------------------------------*/
+#include <stdbool.h>
 
 void ComputeTop(Databox *mask, Databox  *top)
 {
-  int i, j, k;
-  int nx, ny, nz;
+  int nx = DataboxNx(mask);
+  int ny = DataboxNy(mask);
+  int nz = DataboxNz(mask);
 
-  nx = DataboxNx(mask);
-  ny = DataboxNy(mask);
-  nz = DataboxNz(mask);
-
-  for (j = 0; j < ny; j++)
+  for (int j = 0; j < ny; j++)
   {
-    for (i = 0; i < nx; i++)
+    for (int i = 0; i < nx; i++)
     {
+      int k;
       for (k = nz - 1; k >= 0; --k)
       {
         if (*(DataboxCoeff(mask, i, j, k)) > 0.0)
@@ -78,17 +64,15 @@ void ComputeTop(Databox *mask, Databox  *top)
 
 void ComputeBottom(Databox *mask, Databox  *bottom)
 {
-  int i, j, k;
-  int nx, ny, nz;
+  int nx = DataboxNx(mask);
+  int ny = DataboxNy(mask);
+  int nz = DataboxNz(mask);
 
-  nx = DataboxNx(mask);
-  ny = DataboxNy(mask);
-  nz = DataboxNz(mask);
-
-  for (j = 0; j < ny; j++)
+  for (int j = 0; j < ny; j++)
   {
-    for (i = 0; i < nx; i++)
+    for (int i = 0; i < nx; i++)
     {
+      int k;
       for (k = 0; k < nz; ++k)
       {
         if (*(DataboxCoeff(mask, i, j, k)) > 0.0)
@@ -109,18 +93,7 @@ void ComputeBottom(Databox *mask, Databox  *bottom)
   }
 }
 
-
-/*-----------------------------------------------------------------------
- * ExtractTop:
- *
- * Extracts the top values of a dataset based on a top dataset (which contains the
- * z indices that define the top of the domain).
- *
- * Returns a Databox with top values extracted for each i,j location.
- *
- *-----------------------------------------------------------------------*/
-
-void ExtractTop(Databox *top, Databox  *data, Databox *top_values_of_data)
+void ExtractTop(Databox *top, Databox  *data, Databox *top_data)
 {
   int i, j;
   int nx, ny, nz;
@@ -137,16 +110,58 @@ void ExtractTop(Databox *top, Databox  *data, Databox *top_values_of_data)
       if (k < 0)
       {
         /* outside domain what value? */
-        *(DataboxCoeff(top_values_of_data, i, j, 0)) = 0.0;
+        *(DataboxCoeff(top_data, i, j, 0)) = 0.0;
       }
       else if (k < nz)
       {
-        *(DataboxCoeff(top_values_of_data, i, j, 0)) = *(DataboxCoeff(data, i, j, k));
+        *(DataboxCoeff(top_data, i, j, 0)) = *(DataboxCoeff(data, i, j, k));
       }
       else
       {
         printf("Error: Index in top (k=%d) is outside of data (nz=%d)\n", k, nz);
       }
+    }
+  }
+}
+
+void ExtractTopBoundary(Databox *top, Databox  *data, Databox *boundary_data)
+{
+  int nx = DataboxNx(data);
+  int ny = DataboxNy(data);
+
+  for (int j = 0; j < ny; j++)
+  {
+    bool inside = false;
+
+    for (int i = 0; i < nx; i++)
+    {
+      int k = *(DataboxCoeff(top, i, j, 0));
+
+      if (inside)
+      {
+	if (k < 0)
+	{
+	  /* inside transition to outside */
+	  *(DataboxCoeff(boundary_data, i-1, j, 0)) = *(DataboxCoeff(data, i, j, 0));
+	  inside = false;
+	}
+      }
+      else
+      {
+	if ( k >= 0)
+	{
+	  /* outside transition to inside */
+	  *(DataboxCoeff(boundary_data, i, j, 0)) = *(DataboxCoeff(data, i, j, 0));
+	  inside = true;
+	}
+      }
+    } // for i
+
+    /* Take care of domain that ends along index space boundary, will be no final 
+       transition inside to outside in this case */
+    if (inside)
+    {
+      *(DataboxCoeff(boundary_data, nx-1, j, 0)) = *(DataboxCoeff(data, nx-1, j, 0));
     }
   }
 }

@@ -250,10 +250,19 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   handle = InitVectorUpdate(pressure, VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 
+#if 0
   KW = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   KE = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   KN = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   KS = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+#else
+
+  KE = problem_data -> KE;
+  KW = problem_data -> KW;
+  KN = problem_data -> KN;
+  KS = problem_data -> KS;
+  
+#endif
   qx = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   qy = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
@@ -2117,8 +2126,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           {
             ip = SubvectorEltIndex(p_sub, i, j, k);
             value = bc_patch_values[ival];
-// SGS FIXME why is this needed?
-//#undef max
             pp[ip + fdir[0] * 1 + fdir[1] * sy_p + fdir[2] * sz_p] = -FLT_MAX;
             fp[ip + fdir[0] * 1 + fdir[1] * sy_p + fdir[2] * sz_p] = 0.0;
           });
@@ -2129,15 +2136,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   }            /* End subgrid loop */
 
 
-  // Compute running sum of overland flow
-
-  if (ProblemDataOverlandCellOutflow(problem_data) || ProblemDataOverlandFaceFlow(problem_data)[0])
-  {
-    ComputeOverlandFlowRunningSums(ProblemDataOverlandFaceFlow(problem_data),
-				   ProblemDataOverlandCellOutflow(problem_data),
-				   KE, KW, KN, KS, bc_struct);
-  }
-
   FreeBCStruct(bc_struct);
 
   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, fval, NULL,
@@ -2145,10 +2143,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   EndTiming(public_xtra->time_index);
 
+#if 0
   FreeVector(KW);
   FreeVector(KE);
   FreeVector(KN);
   FreeVector(KS);
+#endif
   FreeVector(qx);
   FreeVector(qy);
 

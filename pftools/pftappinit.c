@@ -210,6 +210,8 @@ EXPORT(int, Parflow_Init)(Tcl_Interp * interp)
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
   Tcl_CreateCommand(interp, "Parflow::pfextracttop", (Tcl_CmdProc*)ExtractTopCommand,
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
+  Tcl_CreateCommand(interp, "Parflow::pfextracttopboundary", (Tcl_CmdProc*)ExtractTopBoundaryCommand,
+                    (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
   Tcl_CreateCommand(interp, "Parflow::pfcomputedomain", (Tcl_CmdProc*)ComputeDomainCommand,
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
   Tcl_CreateCommand(interp, "Parflow::pfprintdomain", (Tcl_CmdProc*)PrintDomainCommand,

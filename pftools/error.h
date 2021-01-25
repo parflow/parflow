@@ -151,6 +151,7 @@ static char *PFEXTRACT2DDOMAINUSAGE = "Usage: pfexctract2Ddomain subgrid_array\n
 static char *PFBUILDDOMAINUSAGE = "Usage: pfbuilddomain\n";
 static char *PFDISTONDOMAINUSAGE = "Usage: pfdistondomain filename subgrid_array\n";
 static char *PFEXTRACTTOPUSAGE = "Usage: pfextracttop top dataset\n";
+static char *PFEXTRACTTOPBOUNDARYUSAGE = "Usage: pfextracttopboundary top dataset\n";
 static char *PFSURFACESTORAGEUSAGE = "Usage: pfsuracestorge top pressure\n";
 static char *PFSUBSURFACESTORAGEUSAGE = "Usage: pfsubsuracestorge mask porosity pressure saturation specific_storage\n";
 static char *PFGWSTORAGEUSAGE = "Usage: pfgwstorge mask porosity pressure saturation specific_storage\n";

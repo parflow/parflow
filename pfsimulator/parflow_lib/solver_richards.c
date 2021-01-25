@@ -215,6 +215,8 @@ typedef struct {
   PFModule *select_time_step;
   PFModule *l2_error_norm;
   PFModule *nonlin_solver;
+  
+  PFModule          *bc_pressure;
 
   Grid *grid;
   Grid *grid2d;
@@ -807,6 +809,16 @@ SetupRichards(PFModule * this_module)
       ProblemDataOverlandCellOutflow(problem_data) =
 	NewVectorType(grid2d, 1, 1, vector_cell_centered);
       InitVectorAll(ProblemDataOverlandCellOutflow(problem_data), 0.0);
+
+      problem_data -> KW = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      problem_data -> KE = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      problem_data -> KN = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+      problem_data -> KS = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+
+      InitVectorAll(problem_data -> KW , 0.0);
+      InitVectorAll(problem_data -> KE , 0.0);
+      InitVectorAll(problem_data -> KN , 0.0);
+      InitVectorAll(problem_data -> KS , 0.0);
     }
 
     if (public_xtra->write_silo_overland_face_flow
@@ -1626,6 +1638,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   Loopcount = 0;
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
+
+  Grid *grid2d = (instance_xtra->grid2d);
+  Vector* overland_sum =
+    NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  InitVectorAll(overland_sum, 0.0);
 
   //CPS oasis definition phase
 #ifdef HAVE_OAS3
@@ -2883,6 +2900,39 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
     }
 
+    /***************************************************************
+     * Compute running sum of overland outflow for water balance
+     **************************************************************/
+    // SGS old stuff.
+    if(1)
+    {
+     
+      OverlandSum(problem_data,
+                  instance_xtra->pressure,
+                  dt, overland_sum);
+    }
+
+    // Compute running sum of overland flow
+    if (ProblemDataOverlandCellOutflow(problem_data) || ProblemDataOverlandFaceFlow(problem_data)[0])
+    {
+
+      PFModule *bc_pressure = (instance_xtra->bc_pressure);
+      GrGeomSolid    *gr_domain = ProblemDataGrDomain(problem_data);
+      BCStruct *bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
+						  (problem_data, grid, gr_domain, t));
+
+
+
+      ComputeOverlandFlowRunningSums(ProblemDataOverlandFaceFlow(problem_data),
+				     ProblemDataOverlandCellOutflow(problem_data),
+				     dt,
+				     problem_data -> KE,
+				     problem_data -> KW,
+				     problem_data -> KN,
+				     problem_data -> KS,
+				     bc_struct);
+    }
+
     /***************************************************************/
     /*                 Print the pressure and saturation           */
     /***************************************************************/
@@ -3188,30 +3238,21 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	    any_file_dumped = 1;
 	  }
 
-#ifdef NOT_DONE_YET
 	  if (public_xtra->write_silo_overland_face_flow)
 	  {
 	    sprintf(file_postfix, "%05d", instance_xtra->file_number);
-	    sprintf(file_type, "overland_face_flow");
+	    sprintf(file_type, "overland_face_flow_%s", face_name);
+
+	    char variable_name[2048];
+	    sprintf(variable_name, "OverlandFaceFlow%s", OverlandFlowFaceDirectionName[face]);
+	    
 	    WriteSilo(file_prefix, file_type, file_postfix,
-		      ProblemDataOverlandFlowCellFaceFlow(problem_data)[face], t, instance_xtra->file_number,
-		      "OverlandCellFaceFlow");
+		      ProblemDataOverlandFaceFlow(problem_data)[face], t, instance_xtra->file_number,
+		      variable_name);
 
 	    any_file_dumped = 1;
 	  }
 
-	  if (public_xtra->write_silopmpio_overland_face_flow)
-	  {
-	    sprintf(file_postfix, "%05d", instance_xtra->file_number);
-	    sprintf(file_type, "overland_face_flow");
-	    WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-			   ProblemDataOverlandFlowCellFaceFlow(problem_data)[face], t, instance_xtra->file_number,
-			   "OverlandCellFaceFlow");
-
-	    any_file_dumped = 1;
-	  }
-#endif
-	  
 	  /* reset sum after output */
 	  PFVConstInit(0.0, ProblemDataOverlandFaceFlow(problem_data)[face]);
 	}
@@ -3892,11 +3933,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	|| public_xtra->write_silo_overland_face_flow
 	|| public_xtra->write_netcdf_overland_face_flow)
     {
-
+      
       for(int face = 0; face < OverlandFlowKMax; face++)
       {
 	char *face_name = OverlandFlowFaceName[face];
-
+	
 #ifdef NOT_DONE_YET	  
 	if (public_xtra->write_netcdf_overland_face_flow)
 	{
@@ -3907,7 +3948,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  any_file_dumped = 1;
 	}
 #endif
-
+	
 	if (public_xtra->print_overland_face_flow)
 	{
 	  sprintf(file_postfix, "overland_face_flow_%s.%05d",
@@ -3917,38 +3958,27 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  
 	  any_file_dumped = 1;
 	}
-
-#ifdef NOT_DONE_YET
+	
 	if (public_xtra->write_silo_overland_face_flow)
 	{
 	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
-	  sprintf(file_type, "overland_face_flow");
-	  WriteSilo(file_prefix, file_type, file_postfix,
-		    ProblemDataOverlandFlowCellFaceFlow(problem_data)[face], t, instance_xtra->file_number,
-		    "OverlandCellFaceFlow");
-
-	  any_file_dumped = 1;
-	}
-
-	if (public_xtra->write_silopmpio_overland_face_flow)
-	{
-	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
-	  sprintf(file_type, "overland_face_flow");
-	  WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-			 ProblemDataOverlandFlowCellFaceFlow(problem_data)[face], t, instance_xtra->file_number,
-			 "OverlandCellFaceFlow");
-
-	  any_file_dumped = 1;
-	}
-#endif
+	  sprintf(file_type, "overland_face_flow_%s", face_name);
 	  
+	  char variable_name[2048];
+	  sprintf(variable_name, "OverlandFaceFlow%s", OverlandFlowFaceDirectionName[face]);
+	  
+	  WriteSilo(file_prefix, file_type, file_postfix,
+		    ProblemDataOverlandFaceFlow(problem_data)[face], t, instance_xtra->file_number,
+		    variable_name);
+	  
+	  any_file_dumped = 1;
+	}
+	
 	/* reset sum after output */
 	PFVConstInit(0.0, ProblemDataOverlandFaceFlow(problem_data)[face]);
-      }
+      } // for face
 
-    } // for face
-
-    
+    } // if write overland_face_flow
 
     if (public_xtra->print_overland_bc_flux)
     {
@@ -4202,9 +4232,16 @@ SolverRichardsInitInstanceXtra()
   int i;
 
   if (PFModuleInstanceXtra(this_module) == NULL)
+  {
     instance_xtra = ctalloc(InstanceXtra, 1);
+
+    (instance_xtra->bc_pressure) =
+      PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke, ProblemBCPressure(problem), (problem));
+  }
   else
+  {
     instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
+  }
 
   /*-------------------------------------------------------------------
    * Create the grids

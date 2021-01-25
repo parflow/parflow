@@ -110,6 +110,7 @@ namespace eval Parflow {
     namespace export pfcomputetop
     namespace export pfcomputebottom
     namespace export pfextracttop
+    namespace export pfextracttopboundary
     namespace export pfcomputedomain
     namespace export pfprintdomain
     namespace export pfextract2Ddomain

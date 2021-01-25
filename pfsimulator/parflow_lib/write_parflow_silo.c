@@ -251,7 +251,8 @@ void     WriteSiloInit(char *file_prefix)
     sprintf(filename, "%s", file_prefix);
     pf_mk_dir(filename);
     /*
-     * SGS This is very hacky
+     * This is ugly, create directories for everything that will 
+     * be written out.
      */
     char* output_types[] = { "perm_x",
                              "perm_y",
@@ -265,8 +266,8 @@ void     WriteSiloInit(char *file_prefix)
                              "mannings",
                              "specific_storage",
                              "mask",
-                             "dz_mult",             // IMF -- added...
-                             "top",                 // IMF -- added...
+                             "dz_mult",
+                             "top",
                              "eflx_lh_tot",
                              "eflx_lwrad_out",
                              "eflx_sh_tot",
@@ -284,11 +285,15 @@ void     WriteSiloInit(char *file_prefix)
                              "qflx_qirr_inst",
                              "evaptrans",
                              "evaptranssum",
-                             "overland_cell_outflux",
+                             "overland_cell_outflow",
+			     "overland_face_flow_ke",
+			     "overland_face_flow_kw",
+			     "overland_face_flow_kn",
+			     "overland_face_flow_ks",
                              "overland_bc_flux", };
 
-    // IMF -- added second '+2' to next line...
-    for (i = 0; i < 31 + 2; i++)
+    int size = sizeof(output_types) / sizeof(output_types[0]);
+    for (i = 0; i < size; i++)
     {
       sprintf(filename, "%s/%s", file_prefix, output_types[i]);
       pf_mk_dir(filename);
@@ -311,13 +316,13 @@ void     WriteSiloInit(char *file_prefix)
  * Silo files can store additinal metadata such as name of variable,
  * simulation time etc.  These should be added.
  */
-void     WriteSilo(char *  file_prefix,
-                   char *  file_type,
-                   char *  file_suffix,
-                   Vector *v,
-                   double  time,
-                   int     step,
-                   char *  variable_name)
+void WriteSilo(char *  file_prefix,
+	       char *  file_type,
+	       char *  file_suffix,
+	       Vector *v,
+	       double  time,
+	       int     step,
+	       char *  variable_name)
 {
 
 #ifdef HAVE_SILO

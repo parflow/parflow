@@ -37,7 +37,8 @@
 #include "parflow.h"
 #include "problem.h"
 
-char* OverlandFlowFaceName[4] = {"KE","KW","KN","KS"};
+char* OverlandFlowFaceName[4] = {"ke","kw","kn","ks"};
+char* OverlandFlowFaceDirectionName[4] = {"E","W","K","S"};
 
 /*--------------------------------------------------------------------------
  * NewProblem
