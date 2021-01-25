@@ -340,40 +340,5 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 pfrun $runname
 pfundist $runname
 
-if $doTest {
-    #
-    # Tests 
-    #
-    source pftest.tcl
-    
-    set sig_digits 4
-    
-    set passed 1
-    
-    if ![pftestFile $runname.out.press.00000.pfb "Max difference in Pressure" $sig_digits] {
-	set passed 0
-    }
-    
-    if ![pftestFile $runname.out.satur.00000.pfb "Max difference in Pressure" $sig_digits] {
-	set passed 0
-    }
-    
-    if ![pftestFile $runname.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
-	set passed 0
-    }
-    if ![pftestFile $runname.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
-	set passed 0
-    }
-    if ![pftestFile $runname.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
-	set passed 0
-    }
-    
-    
-    if $passed {
-	puts "$runname : PASSED"
-    } {
-	puts "$runname : FAILED"
-    }
-}
 
 
