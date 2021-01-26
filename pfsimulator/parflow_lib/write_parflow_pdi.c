@@ -137,7 +137,7 @@ void     WritePDI(
     PDI_expose("data_space_disp",        &data_space_disp, PDI_OUT);
     PDI_expose("size_disp",              &size_disp, PDI_OUT);
     
-    PDI_expose("vector_data", v, PDI_OUT);
+    PDI_expose("sparse_vector_data", v, PDI_OUT);
     
     // finalize PDI
     PDI_finalize();

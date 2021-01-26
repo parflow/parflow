@@ -99,7 +99,7 @@ metadata:
   DZ:                     double
   num_subgrids:           int
 data:
-  vector_data:
+  sparse_vector_data:
     type: record
     buffersize: $vector_pdi_buffer_size
     members:
@@ -127,7 +127,10 @@ data:
         disp: $size_disp
         type: int
 plugins:
+  serialize:
+    sparse_vector_data: vector_data
   decl_hdf5:
 #  - file: ${filename}.${parflowrank}.h5
   - file: ${filename}.h5
     write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, file_number, num_subgrids, drop_tolerance, with_tolerance, vector_data ]
+#    write: [ X, Y, Z, NX, NY, NZ, DX, DY, DZ, file_number, num_subgrids, drop_tolerance, with_tolerance, sparse_vector_data ]
