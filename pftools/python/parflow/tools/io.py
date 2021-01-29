@@ -300,6 +300,12 @@ def to_native_type(string):
             return t(string)
         except ValueError:
             pass
+
+    # Handle boolean type
+    lower_str = string.lower()
+    if lower_str in ['true', 'false']:
+        return lower_str[0] == 't'
+
     return string
 
 
