@@ -47,6 +47,7 @@ static int samrai_vector_ids[5][2048];
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 /*--------------------------------------------------------------------------
  * NewVectorCommPkg:
@@ -169,7 +170,8 @@ VectorUpdateCommHandle  *InitVectorUpdate(
 #endif
   }
 
-  VectorUpdateCommHandle *vector_update_comm_handle = ctalloc(VectorUpdateCommHandle, 1);
+  VectorUpdateCommHandle *vector_update_comm_handle = talloc(VectorUpdateCommHandle, 1);
+  memset(vector_update_comm_handle, 0, sizeof(VectorUpdateCommHandle));
   vector_update_comm_handle->vector = vector;
   vector_update_comm_handle->comm_handle = amps_com_handle;
 
@@ -237,18 +239,21 @@ static Vector  *NewTempVector(
 
   (void)nc;
 
-  new_vector = ctalloc(Vector, 1);  /*address of storage is assigned to the ptr "new_" of type Vector, which is also
-                                     *                      the return value of this function */
+  new_vector = talloc(Vector, 1);        /* address of storage is assigned to the ptr "new_" of type Vector,
+                                          *   which is also the return value of this function                */
+  memset(new_vector, 0, sizeof(Vector));
 
-  (new_vector->subvectors) = ctalloc(Subvector *, GridNumSubgrids(grid));    /* 1st arg.: variable type;
-                                                                              *                                                               2nd arg.: # of elements to be allocated*/
+  (new_vector->subvectors) = talloc(Subvector *, GridNumSubgrids(grid));    /* 1st arg.: variable type;
+                                                                              * 2nd arg.: # of elements to be allocated*/
+  memset(new_vector->subvectors, 0, GridNumSubgrids(grid) * sizeof(Subvector *));
 
   data_size = 0;
 
   VectorDataSpace(new_vector) = NewSubgridArray();
   ForSubgridI(i, GridSubgrids(grid))
   {
-    new_sub = ctalloc(Subvector, 1);
+    new_sub = talloc(Subvector, 1);
+    memset(new_sub, 0, sizeof(Subvector));
 
     subgrid = GridSubgrid(grid, i);
 
@@ -313,7 +318,7 @@ static void     AllocateVectorData(
 
     SubvectorDataSize(subvector) = data_size;
 
-    double  *data = amps_CTAlloc(double, data_size);
+    double  *data = ctalloc_amps(double, data_size);
     VectorSubvector(vector, i)->allocated = TRUE;
 
     SubvectorData(VectorSubvector(vector, i)) = data;
@@ -633,7 +638,7 @@ void FreeSubvector(Subvector *subvector)
 {
   if (subvector->allocated)
   {
-    tfree(SubvectorData(subvector));
+    tfree_amps(SubvectorData(subvector));
   }
   tfree(subvector);
 }
@@ -919,8 +924,11 @@ void    InitVectorRandom(
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+      vp[iv] = dev_drand48();
+#else
       vp[iv] = drand48();
+#endif
     });
   }
 }
-

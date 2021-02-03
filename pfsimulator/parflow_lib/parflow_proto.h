@@ -200,6 +200,9 @@ void IntersectLineWithTriangle(unsigned int line_direction, double coord_0, doub
 void NewGlobals(char *run_name);
 void FreeGlobals(void);
 void LogGlobals(void);
+#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+  void CopyGlobalsToDevice(void);
+#endif
 
 /* grgeom_list.c */
 ListMember *NewListMember(double value, int normal_component, int triangle_id);
@@ -530,7 +533,13 @@ int PFMGOctreeSizeOfTempData(void);
 
 /* pf_smg.c */
 void SMG(Vector *soln, Vector *rhs, double tol, int zero);
-PFModule *SMGInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, Matrix *pf_matrix, double *temp_data);
+PFModule  *SMGInitInstanceXtra(
+                               Problem *    problem,
+                               Grid *       grid,
+                               ProblemData *problem_data,
+			       Matrix *     pf_Bmat,
+			       Matrix *     pf_Cmat,
+                               double *     temp_data);
 void SMGFreeInstanceXtra(void);
 PFModule *SMGNewPublicXtra(char *name);
 void SMGFreePublicXtra(void);
@@ -903,6 +912,7 @@ int ICPhaseSaturSizeOfTempData(void);
 typedef void (*PhaseDensityInvoke) (int phase, Vector *phase_pressure, Vector *density_v, double *pressure_d, double *density_d, int fcn);
 typedef PFModule *(*PhaseDensityNewPublicXtraInvoke) (int num_phases);
 
+void PhaseDensityConstants(int phase, int fcn, int *phase_type, double *constant, double *ref_den, double *comp_const);
 void PhaseDensity(int phase, Vector *phase_pressure, Vector *density_v, double *pressure_d, double *density_d, int fcn);
 PFModule *PhaseDensityInitInstanceXtra(void);
 void PhaseDensityFreeInstanceXtra(void);

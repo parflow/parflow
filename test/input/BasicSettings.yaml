@@ -1,0 +1,112 @@
+Cycle:
+  Names: constant
+  constant:
+    Names: alltime
+    Repeat: -1
+    alltime:
+      Length: 1
+BCPressure:
+  PatchNames: left right front back bottom top
+Contaminants:
+  Names: ''
+FileVersion: 4
+Gravity: 1.0
+ICPressure:
+  GeomNames: domain
+  Type: HydroStaticPatch
+KnownSolution: NoKnownSolution
+Mannings:
+  GeomNames: domain
+  Type: Constant
+  Geom:
+    domain:
+      Value: 0.0
+Patch:
+  back:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  bottom:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  front:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  left:
+    BCPressure:
+      Cycle: constant
+      RefGeom: domain
+      RefPatch: bottom
+      Type: DirEquilRefPatch
+      alltime:
+        Value: 5.0
+  right:
+    BCPressure:
+      Cycle: constant
+      RefGeom: domain
+      RefPatch: bottom
+      Type: DirEquilRefPatch
+      alltime:
+        Value: 3.0
+  top:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+Perm:
+  TensorType: TensorByGeom
+PhaseSources:
+  water:
+    GeomNames: background
+    Type: Constant
+    Geom:
+      background:
+        Value: 0.0
+Solver:
+  LSM: none
+  Linear:
+    KrylovDimension: 10
+    Preconditioner: PFMG
+    _value_: PCG
+  MaxIter: 5
+  Nonlinear:
+    DerivativeEpsilon: 0.01
+    EtaChoice: EtaConstant
+    EtaValue: 1.0e-05
+    MaxIter: 10
+    ResidualTol: 1.0e-09
+    UseJacobian: true
+  TerrainFollowingGrid: false
+  _value_: Richards
+TimeStep:
+  Type: Constant
+  Value: 0.001
+TimingInfo:
+  BaseUnit: 1.0
+  DumpInterval: -1
+  StartCount: 0
+  StartTime: 0.0
+  StopTime: 0.01
+TopoSlopesX:
+  GeomNames: domain
+  Type: Constant
+  Geom:
+    domain:
+      Value: 0.0
+TopoSlopesY:
+  GeomNames: domain
+  Type: Constant
+  Geom:
+    domain:
+      Value: 0.0
+Wells:
+  Names: ''

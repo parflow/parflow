@@ -1,0 +1,135 @@
+BaseRun:
+  __rst__:
+    skip:
+
+  __class_instances__:
+    - Process
+    - ComputationalGrid
+    - GeomInput
+    - Geom
+    - dzScale
+    - Cell
+    - Solver
+    - TimingInfo
+    - TimeStep
+    - Cycle
+    - Perm
+    - SpecificStorage
+    - Phase
+    - PhaseSources
+    - PhaseConcen
+    - Contaminants
+    - Domain
+    - Wells
+    - TopoSlopesX
+    - TopoSlopesY
+    - Mannings
+    - ICPressure
+    - InternalBC
+    - BCSaturation
+    - BCPressure
+    - Patch
+    - NetCDF
+    - FBx
+    - FBy
+    - FBz
+    - KnownSolution
+    - Metadata
+
+  # -----------------------------------------------------------------------------
+  # FileVersion
+  # -----------------------------------------------------------------------------
+
+  FileVersion:
+    help: >
+      [Type: int] This gives the value of the input file version number that this
+      file fits. As development of the ParFlow code continues, the input file format
+      may vary. We have thus included an input file format number as a way of verifying
+      that the correct format type is being used. The user can check in the
+      parflow/config/file_versions.h file to verify that the format number specified
+      in the input file matches the defined value of PFIN_VERSION.
+    default: 4
+    domains:
+      MandatoryValue:
+      IntValue:
+#      DeprecatedInVersion: '3.6.0'
+#      RemovedInVersion: '5.1.0'
+
+  # -----------------------------------------------------------------------------
+  # Gravity
+  # -----------------------------------------------------------------------------
+
+  Gravity:
+    help: >
+      [Type: double] Specifies the gravity constant to be used.
+    domains:
+      MandatoryValue:
+      DoubleValue:
+        min_value: 0.0
+
+  # -----------------------------------------------------------------------------
+  # UseClustering
+  # -----------------------------------------------------------------------------
+
+  UseClustering:
+    help: >
+      [Type: string/boolean] Run a clustering algorithm to create boxes in index space for iteration. By default an octree representation
+      is used for iteration, this may result in iterating over many nodes in the octree. Th UseClustering key will run a
+      clustering algorithm to build a set of boxes for iteration.
+      This does not always have a significant impact on performance and the clustering algorithm can be expensive to
+      compute. For small problems and short running problems clustering is not recommended. Long running problems
+      may or may not see a benefit. The result varies significantly based on the geometries in the problem.
+      The Berger-Rigoutsos algorithm is currently used for clustering.
+    default: False
+    domains:
+      BoolDomain:
+
+  # -----------------------------------------------------------------------------
+  # Spinup Options (Overland Flow)
+  # -----------------------------------------------------------------------------
+
+  OverlandFlowSpinUp:
+    help: >
+      [Type: int] This key specifies that a simplified form of the overland flow boundary condition (Equation 5.17) be used in place
+      of the full equation. This formulation removes lateral flow and drives and ponded water pressures to zero using a
+      SeepageFace boundary condition. While this can be helpful in spinning up the subsurface, this is no longer coupled
+      subsurface-surface flow. If set to zero (the default) this key behaves normally.
+
+    default: 0
+    domains:
+      IntValue:
+        min_value: 0
+        max_value: 1
+
+  ## equation is the same between P1 and P2 - need to check whether these should be different
+  OverlandFlowSpinUpDampP1:
+    help: >
+      This key sets P1 and provides exponential dampening to the pressure relationship in the overland flow equation
+      by adding the following term: P2*exp[(pressure)*P2]
+    default: 0.0
+    domains:
+      DoubleValue:
+        min_value: 0.0
+
+  OverlandFlowSpinUpDampP2:
+    help: >
+      This key sets P2 and provides exponential dampening to the pressure relationship in the overland flow equation
+      by adding the following term: P2*exp[(pressure)*P2]
+    default: 0.0
+    domains:
+      DoubleValue:
+        min_value: 0.0
+
+  # -----------------------------------------------------------------------------
+  # Diffusive overland flow calculation - need more description
+  # -----------------------------------------------------------------------------
+
+  OverlandFlowDiffusive:
+    help: >
+      [Type: int] Changes the overland flow formulation to diffusive wave if set to 1.
+
+    default: 0
+    domains:
+      IntValue:
+        min_value: 0
+        max_value: 1

@@ -1,0 +1,403 @@
+BCPressure:
+  PatchNames: x_lower x_upper y_lower y_upper z_lower z_upper
+ComputationalGrid:
+  DX: 1000.0
+  DY: 1000.0
+  DZ: 2.0
+  Lower:
+    X: 0.0
+    Y: 0.0
+    Z: 0.0
+  NX: 41
+  NY: 41
+  NZ: 50
+Contaminants:
+  Names: ''
+Cycle:
+  Names: constant rainrec
+  constant:
+    Names: alltime
+    Repeat: -1
+    alltime:
+      Length: 1
+  rainrec:
+    Names: rain rec
+    Repeat: -1
+    rain:
+      Length: 10
+    rec:
+      Length: 150
+Domain:
+  GeomName: domain
+FileVersion: 4
+Geom:
+  Perm:
+    Names: domain s1 s2 s3 s4 s5 s6 s7 s8 s9 g2 g3 g6 g8
+    TensorByGeom:
+      Names: domain
+  Porosity:
+    GeomNames: domain s1 s2 s3 s4 s5 s6 s7 s8 s9
+  domain:
+    ICPressure:
+      FileName: press.init.pfb
+      RefPatch: z_upper
+    Lower:
+      X: 0.0
+      Y: 0.0
+      Z: 0.0
+    Patches: x_lower x_upper y_lower y_upper z_lower z_upper
+    Perm:
+      TensorValX: 1.0
+      TensorValY: 1.0
+      TensorValZ: 1.0
+      Type: Constant
+      Value: 0.2
+    Porosity:
+      Type: Constant
+      Value: 0.4
+    RelPerm:
+      Alpha: 3.5
+      N: 2.0
+    Saturation:
+      Alpha: 3.5
+      N: 2.0
+      SRes: 0.2
+      SSat: 1.0
+    SpecificStorage:
+      Value: 1.0e-05
+    Upper:
+      X: 41000.0
+      Y: 41000.0
+      Z: 100.0
+  g2:
+    Perm:
+      Type: Constant
+      Value: 0.025
+  g3:
+    Perm:
+      Type: Constant
+      Value: 0.059
+  g6:
+    Perm:
+      Type: Constant
+      Value: 0.2
+  g8:
+    Perm:
+      Type: Constant
+      Value: 0.68
+  indi_input:
+    FileName: IndicatorFile_Gleeson.50z.pfb
+  s1:
+    Perm:
+      Type: Constant
+      Value: 0.269022595
+    Porosity:
+      Type: Constant
+      Value: 0.375
+    RelPerm:
+      Alpha: 3.548
+      N: 4.162
+    Saturation:
+      Alpha: 3.548
+      N: 4.162
+      SRes: 1.0e-06
+      SSat: 1.0
+  s2:
+    Perm:
+      Type: Constant
+      Value: 0.043630356
+    Porosity:
+      Type: Constant
+      Value: 0.39
+    RelPerm:
+      Alpha: 3.467
+      N: 2.738
+    Saturation:
+      Alpha: 3.467
+      N: 2.738
+      SRes: 1.0e-06
+      SSat: 1.0
+  s3:
+    Perm:
+      Type: Constant
+      Value: 0.015841225
+    Porosity:
+      Type: Constant
+      Value: 0.387
+    RelPerm:
+      Alpha: 2.692
+      N: 2.445
+    Saturation:
+      Alpha: 2.692
+      N: 2.445
+      SRes: 1.0e-06
+      SSat: 1.0
+  s4:
+    Perm:
+      Type: Constant
+      Value: 0.007582087
+    Porosity:
+      Type: Constant
+      Value: 0.439
+    RelPerm:
+      Alpha: 0.501
+      N: 2.659
+    Saturation:
+      Alpha: 0.501
+      N: 2.659
+      SRes: 1.0e-06
+      SSat: 1.0
+  s5:
+    Perm:
+      Type: Constant
+      Value: 0.01818816
+    Porosity:
+      Type: Constant
+      Value: 0.489
+    RelPerm:
+      Alpha: 0.661
+      N: 2.659
+    Saturation:
+      Alpha: 0.661
+      N: 2.659
+      SRes: 1.0e-06
+      SSat: 1.0
+  s6:
+    Perm:
+      Type: Constant
+      Value: 0.005009435
+    Porosity:
+      Type: Constant
+      Value: 0.399
+    RelPerm:
+      Alpha: 1.122
+      N: 2.479
+    Saturation:
+      Alpha: 1.122
+      N: 2.479
+      SRes: 1.0e-06
+      SSat: 1.0
+  s7:
+    Perm:
+      Type: Constant
+      Value: 0.005492736
+    Porosity:
+      Type: Constant
+      Value: 0.384
+    RelPerm:
+      Alpha: 2.089
+      N: 2.318
+    Saturation:
+      Alpha: 2.089
+      N: 2.318
+      SRes: 1.0e-06
+      SSat: 1.0
+  s8:
+    Perm:
+      Type: Constant
+      Value: 0.004675077
+    Porosity:
+      Type: Constant
+      Value: 0.482
+    RelPerm:
+      Alpha: 0.832
+      N: 2.514
+    Saturation:
+      Alpha: 0.832
+      N: 2.514
+      SRes: 1.0e-06
+      SSat: 1.0
+  s9:
+    Perm:
+      Type: Constant
+      Value: 0.003386794
+    Porosity:
+      Type: Constant
+      Value: 0.442
+    RelPerm:
+      Alpha: 1.585
+      N: 2.413
+    Saturation:
+      Alpha: 1.585
+      N: 2.413
+      SRes: 1.0e-06
+      SSat: 1.0
+GeomInput:
+  Names: box_input indi_input
+  box_input:
+    GeomName: domain
+    InputType: Box
+  g1:
+    Value: 21
+  g2:
+    Value: 22
+  g3:
+    Value: 23
+  g4:
+    Value: 24
+  g5:
+    Value: 25
+  g6:
+    Value: 26
+  g7:
+    Value: 27
+  g8:
+    Value: 28
+  indi_input:
+    GeomNames: s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 g1 g2 g3 g4 g5 g6 g7 g8
+    InputType: IndicatorField
+  s1:
+    Value: 1
+  s10:
+    Value: 10
+  s11:
+    Value: 11
+  s12:
+    Value: 12
+  s13:
+    Value: 13
+  s2:
+    Value: 2
+  s3:
+    Value: 3
+  s4:
+    Value: 4
+  s5:
+    Value: 5
+  s6:
+    Value: 6
+  s7:
+    Value: 7
+  s8:
+    Value: 8
+  s9:
+    Value: 9
+Gravity: 1.0
+ICPressure:
+  GeomNames: domain
+  Type: PFBFile
+KnownSolution: NoKnownSolution
+Mannings:
+  Geom:
+    domain:
+      Value: 5.52e-06
+  GeomNames: domain
+  Type: Constant
+Patch:
+  x_lower:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  x_upper:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  y_lower:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  y_upper:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  z_lower:
+    BCPressure:
+      Cycle: constant
+      Type: FluxConst
+      alltime:
+        Value: 0.0
+  z_upper:
+    BCPressure:
+      Cycle: rainrec
+      Type: OverlandFlow
+      rain:
+        Value: -0.1
+      rec:
+        Value: 0.0
+Perm:
+  TensorType: TensorByGeom
+Phase:
+  Names: water
+  RelPerm:
+    GeomNames: domain s1 s2 s3 s4 s5 s6 s7 s8 s9
+    Type: VanGenuchten
+  Saturation:
+    GeomNames: domain s1 s2 s3 s4 s5 s6 s7 s8 s9
+    Type: VanGenuchten
+  water:
+    Density:
+      Type: Constant
+      Value: 1.0
+    Mobility:
+      Type: Constant
+      Value: 1.0
+    Viscosity:
+      Type: Constant
+      Value: 1.0
+PhaseSources:
+  water:
+    Geom:
+      domain:
+        Value: 0.0
+    GeomNames: domain
+    Type: Constant
+Process:
+  Topology:
+    P: 1
+    Q: 1
+    R: 1
+Solver:
+  AbsTol: 1.0e-08
+  Drop: 1.0e-20
+  Linear:
+    KrylovDimension: 70
+    MaxRestarts: 2
+    Preconditioner: PFMG
+  MaxConvergenceFailures: 8
+  MaxIter: 25000
+  Nonlinear:
+    DerivativeEpsilon: 1.0e-16
+    EtaChoice: EtaConstant
+    EtaValue: 0.001
+    Globalization: LineSearch
+    MaxIter: 80
+    ResidualTol: 1.0e-06
+    StepTol: 1.0e-30
+    UseJacobian: true
+    VariableDz: false
+  PrintMask: true
+  PrintPressure: true
+  PrintSaturation: true
+  PrintSubsurfData: false
+  TerrainFollowingGrid: true
+  _value_: Richards
+SpecificStorage:
+  GeomNames: domain
+  Type: Constant
+TimeStep:
+  Type: Constant
+  Value: 1.0
+TimingInfo:
+  BaseUnit: 1.0
+  DumpInterval: 1.0
+  StartCount: 0
+  StartTime: 0.0
+  StopTime: 1000.0
+TopoSlopesX:
+  FileName: LW.slopex.pfb
+  GeomNames: domain
+  Type: PFBFile
+TopoSlopesY:
+  FileName: LW.slopey.pfb
+  GeomNames: domain
+  Type: PFBFile
+Wells:
+  Names: ''

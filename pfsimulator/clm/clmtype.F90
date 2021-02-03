@@ -193,6 +193,9 @@ module clmtype
      real(r8) :: fsr            ! solar radiation reflected (W/m**2)
      real(r8) :: ndvi           ! Normalized Difference Vegetation Index (diagnostic)
 
+     real(r8) :: slope_x        ! Slope in x-direction from PF
+     real(r8) :: slope_y        ! Slope in y-direction from PF
+
 ! surfacealbedo 
 
      real(r8) :: parsun         ! average absorbed PAR for sunlit leaves (W/m**2)
