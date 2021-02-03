@@ -21,6 +21,10 @@ Using `cmake`, add the following flag `-DPDI_ROOT=$PDI_HOME`.
 FC=mpif90 CC=mpicc CXX=mpic++ cmake ../ -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR/ -DHDF5_ROOT=$HDF5_HOME -DSILO_ROOT=$SILO_HOME -DPARFLOW_ENABLE_NETCDF=ON -DNETCDF_DIR=$NETCDF_HOME -DHYPRE_ROOT=$HYPRE_HOME -DPDI_ROOT=$PDI_HOME
 ```
 
+```
+make install
+```
+
 ## Solvers
 
 ### Impec solver

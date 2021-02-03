@@ -53,9 +53,6 @@
 #cmakedefine PARFLOW_HAVE_HDF5
 #cmakedefine HAVE_HDF5
 
-#cmakedefine PARFLOW_HAVE_PDI
-#cmakedefine HAVE_PDI
-
 #cmakedefine PARFLOW_HAVE_OAS3
 #cmakedefine HAVE_OAS3
 
@@ -66,3 +63,22 @@
 #cmakedefine HAVE_MALLINFO
 
 #cmakedefine PARFLOW_HAVE_ETRACE
+
+#cmakedefine PARFLOW_HAVE_CUDA
+
+/* PARFLOW_HAVE_RMM is not defined here because because it is only set
+   for the compilation of parflow_exe, parflow_lib, and kinsol sources.
+   RMM must be initialized before it is used, so, for example,
+   the amps tests would fail if used across all compiles.              */
+
+#cmakedefine PARFLOW_HAVE_OMP
+
+#define PARFLOW_BACKEND_NONE 0
+#define PARFLOW_BACKEND_CUDA 1
+#define PARFLOW_BACKEND_OMP 2
+#define PARFLOW_ACC_BACKEND @PARFLOW_ACC_BACKEND@
+
+#cmakedefine PARFLOW_HAVE_PDI
+#cmakedefine HAVE_PDI
+
+#endif // PARFLOW_CONFIG_H
