@@ -44,6 +44,7 @@ static bool is3Ddefined = false;
 static bool isTdefined = false;
 #endif
 
+
 void     WritePDI(
                        char *  file_prefix,
                        char *  file_suffix,
@@ -52,6 +53,7 @@ void     WritePDI(
                        int     with_tolerance,
                        double  drop_tolerance)
 {
+#ifdef HAVE_PDI
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
@@ -144,5 +146,5 @@ void     WritePDI(
   // }
   
   EndTiming(PFBTimingIndex);
-  
+#endif 
 }
