@@ -77,7 +77,7 @@ run wget -q https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz && \
 WORKDIR /home/parflow
 RUN wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.5-Linux-x86_64.tar.gz && \
     tar -xvf cmake-3.14.5-Linux-x86_64.tar.gz && \
-    curl "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" -o "silo-4.10.2.tar.gz" && \
+    curl "https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz" -o "silo-4.10.2.tar.gz" && \
     tar -xf silo-4.10.2.tar.gz && \
     cd silo-4.10.2 && \
     ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && \

@@ -81,7 +81,7 @@ RUN wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.g
 # SILO
 #
 WORKDIR /home/parflow
-RUN curl "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz" -o "silo-4.10.2.tar.gz" && \
+RUN curl "https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz" -o "silo-4.10.2.tar.gz" && \
     tar -xf silo-4.10.2.tar.gz && \
     cd silo-4.10.2 && \
     ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && \

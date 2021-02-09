@@ -70,7 +70,7 @@ cd ../..
 sudo rm -fr hypre-2.17.0 v2.17.0.tar.gz
 
 #Install Silo
-wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz && tar -xvf silo-4.10.2.tar.gz
+wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz && tar -xvf silo-4.10.2.tar.gz
 cd silo-4.10.2
 ./configure --prefix=$PFDIR/silo --disable-silex --disable-hzip --disable-fpzip && make install
 cd ..
