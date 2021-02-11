@@ -242,7 +242,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
   P = amps_Size(amps_CommWorld);
   numGroups = s_num_silo_files;
 
-  bat = PMPIO_Init(numGroups, PMPIO_WRITE, MPI_COMM_WORLD, 1,
+  bat = PMPIO_Init(numGroups, PMPIO_WRITE, amps_CommWorld, 1,
                    CreateSiloFile, OpenSiloFile, CloseSiloFile, &driver);
 //    if (numGroups > 1) {
   if (strlen(file_suffix))

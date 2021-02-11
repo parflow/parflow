@@ -199,7 +199,7 @@ PFModule  *SMGInitInstanceXtra(
     EndTiming(public_xtra->time_index_copy_hypre);
 
     /* Set up the SMG preconditioner */
-    HYPRE_StructSMGCreate(MPI_COMM_WORLD,
+    HYPRE_StructSMGCreate(amps_CommWorld,
                           &(instance_xtra->hypre_smg_data));
 
     /* Set SMG to recompute rather than save data */

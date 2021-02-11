@@ -74,7 +74,7 @@ int amps_FreeInvoice(amps_Invoice inv)
   /* Delete any storage associated with this invoice */
   amps_ClearInvoice(inv);
 
-  if (inv->mpi_type != MPI_DATATYPE_NULL)
+  if (inv->mpi_type != MPI_DATATYPE_NULL && inv->mpi_type != MPI_BYTE)
   {
     MPI_Type_free(&inv->mpi_type);
   }
@@ -444,7 +444,6 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
   int dim = 0;
   void *ptr_data;
   int ptr_data_type;
-  int ret;
   int type;
   int num = 0;
   amps_Invoice inv;
@@ -455,7 +454,6 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
   inv = NULL;
 
   fmt = (char*)fmt0;
-  ret = 0;
 
   for (;;)
   {
@@ -554,6 +552,10 @@ reswitch:
         while (isdigit(ch));
         len = n;
         goto reswitch;
+
+      case 'b':
+        type = AMPS_INVOICE_BYTE_CTYPE;
+        break;
 
       case 'c':
         type = AMPS_INVOICE_CHAR_CTYPE;
@@ -670,6 +672,3 @@ int amps_num_package_items(amps_Invoice inv)
 
   return num;
 }
-
-
-

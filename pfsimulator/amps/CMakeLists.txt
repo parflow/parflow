@@ -24,6 +24,15 @@ if (${PARFLOW_HAVE_MPI})
   target_include_directories (amps PUBLIC "${MPI_C_INCLUDE_PATH}")
 endif (${PARFLOW_HAVE_MPI})
 
+if(${PARFLOW_HAVE_OAS3})
+  target_link_libraries(amps ${OASIS_Fortran_LIBRARY} ${MCT_Fortran_LIBRARY} ${MPEU_Fortran_LIBRARY} ${SCRIP_Fortran_LIBRARY})
+  target_include_directories(amps PUBLIC "${OASIS_Fortran_INCLUDES}")
+  
+  target_link_libraries(amps ${NETCDF_Fortran_LIBRARY})
+  target_include_directories(amps PUBLIC "${NETCDF_Fortran_INCLUDES}")
+endif(${PARFLOW_HAVE_OAS3})
+
+
 install(TARGETS amps DESTINATION lib)
 
 # Install the AMPS transport layer specific scripts

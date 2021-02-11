@@ -203,7 +203,7 @@ PFModule  *PFMGInitInstanceXtra(
     EndTiming(public_xtra->time_index_copy_hypre);
 
     /* Set up the PFMG preconditioner */
-    HYPRE_StructPFMGCreate(MPI_COMM_WORLD,
+    HYPRE_StructPFMGCreate(amps_CommWorld,
                            &(instance_xtra->hypre_pfmg_data));
 
     HYPRE_StructPFMGSetTol(instance_xtra->hypre_pfmg_data, 1.0e-30);

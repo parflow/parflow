@@ -85,6 +85,23 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
 
     switch (ptr->type)
     {
+      case AMPS_INVOICE_BYTE_CTYPE:
+        cur_pos += AMPS_CALL_BYTE_ALIGN(comm, NULL, cur_pos, len, stride);
+        if (ptr->data_type == AMPS_INVOICE_POINTER)
+        {
+          if (stride == 1)
+          {
+            *((void**)(ptr->data)) = cur_pos;
+          }
+          else
+          {
+            *((void**)(ptr->data)) =
+              malloc(sizeof(char) * (size_t)(len * stride));
+          }
+        }
+        cur_pos += AMPS_CALL_BYTE_SIZEOF(comm, cur_pos, NULL, len, stride);
+        break;
+	
       case AMPS_INVOICE_CHAR_CTYPE:
         cur_pos += AMPS_CALL_CHAR_ALIGN(comm, NULL, cur_pos, len, stride);
         if (ptr->data_type == AMPS_INVOICE_POINTER)

@@ -16,6 +16,8 @@ SUBROUTINE oas_pfl_define(nx,ny,pdx,pdy,ix,iy, &
 ! Version    Date       Name
 ! ---------- ---------- ----
 ! 1.00       2011/10/19 Prabhakar Shrestha
+! 2.00       2013/09/27 Prabhakar Shrestha
+! Added read of LANDMASK from CLM fracdata.nc,
 ! Usage of prism libraries
 ! prism_start_grids_writing, prism_write_grid, prism_write_corner, prism_write_mask
 ! prism_terminate_grids_writing, prism_def_partition_proto, 
@@ -31,8 +33,8 @@ SUBROUTINE oas_pfl_define(nx,ny,pdx,pdy,ix,iy, &
 
 ! Modules used:
 USE oas_pfl_vardef
-USE mod_prism_def_partition_proto
-USE mod_prism_grids_writing
+
+
 USE netcdf
 
 !==============================================================================
@@ -72,12 +74,17 @@ REAL(KIND=8), ALLOCATABLE                  :: lclon(:,:,:),      &!
                                               lclat(:,:,:)        ! Global Grid Corners 
 
 REAL                                       ::  dlat, dlon
-!
-INTEGER                                    ::  readclm = 1        ! 1 or 0 to read clm grid
+!CPS PARFLOW HAS NO GRID INFORMATION
+!CPS #ifdef READCLM
+INTEGER                         :: readclm = 1         ! 1 or 0 to read clm mask
+!CPS #else
+!INTEGER                         :: readclm = 0         ! 1 or 0 to read clm mask
+!CPS #endif
+
 REAL(KIND=8), ALLOCATABLE                  ::  clmlon(:,:),        &! 
                                                clmlat(:,:)          ! Global Grid Centres
 INTEGER                                    ::  status, pflncid,  &!
-                                               pflvarid(2)        ! Debug netcdf output
+                                               pflvarid(3)        ! CPS increased to 3,Debug netcdf output
 !------------------------------------------------------------------------------
 !- End of header
 !------------------------------------------------------------------------------
@@ -118,13 +125,17 @@ INTEGER                                    ::  status, pflncid,  &!
 
  IF (readclm == 1) THEN
    ALLOCATE( clmlon(nlon,nlat), stat = ierror )
+   IF (ierror >0) CALL prism_abort_proto(comp_id, 'oas_pfl_define', 'Failure in allocating clmlon')
    ALLOCATE( clmlat(nlon,nlat), stat = ierror )
+   IF (ierror >0) CALL prism_abort_proto(comp_id, 'oas_pfl_define', 'Failure in allocating clmlat')
 
-   status = nf90_open("clmgrid.nc", NF90_WRITE, pflncid)
+   status = nf90_open("clmgrid.nc", NF90_NOWRITE, pflncid)
    status = nf90_inq_varid(pflncid, "LONGXY" , pflvarid(1))
    status = nf90_inq_varid(pflncid, "LATIXY" , pflvarid(2))
+   status = nf90_inq_varid(pflncid, "LANDMASK" , pflvarid(3))
    status = nf90_get_var(pflncid, pflvarid(1), clmlon) 
    status = nf90_get_var(pflncid, pflvarid(2), clmlat)
+   status = nf90_get_var(pflncid, pflvarid(3), mask_land)
    status = nf90_close(pflncid)
 
    ! Define centers
@@ -134,6 +145,10 @@ INTEGER                                    ::  status, pflncid,  &!
     lglat(ii,jj) = clmlat(ii,jj) 
    END DO
    END DO
+
+!CPS assuming regular grids
+ dlon = ABS(lglon(2,1) - lglon(1,1))
+ dlat = ABS(lglat(1,2) - lglat(1,1))
 
  ELSE IF (readclm == 0) THEN
 
@@ -170,8 +185,12 @@ INTEGER                                    ::  status, pflncid,  &!
  END DO
 !
  clgrd = 'gpfl'
- mask_land = 0          !opposite convention to OASIS4
- !
+
+!!Create the mask
+ mask_land = ABS(mask_land - 1)
+!CPS read from clm fracdata.nc file  mask_land = 0          !opposite convention to OASIS4
+
+  !
  CALL prism_start_grids_writing(il_flag)
  CALL prism_write_grid(clgrd, nlon, nlat, lglon, lglat)
  CALL prism_write_corner(clgrd, nlon, nlat, 4, lclon, lclat)
@@ -290,6 +309,13 @@ INTEGER                                    ::  status, pflncid,  &!
  !
  ALLOCATE( bufz(vshape(1,1):vshape(2,1), vshape(1,2):vshape(2,2)), stat = ierror )
  IF (ierror > 0) CALL prism_abort_proto(comp_id, 'oas_pfl_define', 'Failure in allocating bufz' )
+
+ ! Allocate array to store received fields between two coupling steps
+   ALLOCATE( frcv(nx, ny, nlevsoil), stat = ierror )
+   IF ( ierror > 0 ) THEN
+     CALL prism_abort_proto( comp_id, 'oas_pfl_define', 'Failure in allocating frcv' )
+     RETURN
+   ENDIF
 
  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  !  Termination of definition phase 

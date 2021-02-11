@@ -151,9 +151,9 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
 
 #ifdef PARFLOW_HAVE_MPI
   /* Optimization would be to make this a single reduction operation */
-  MPI_Reduce(idivs, gidivs, ni, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(jdivs, gjdivs, nj, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(kdivs, gkdivs, nk, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce(idivs, gidivs, ni, MPI_INT, MPI_SUM, 0, amps_CommWorld);
+  MPI_Reduce(jdivs, gjdivs, nj, MPI_INT, MPI_SUM, 0, amps_CommWorld);
+  MPI_Reduce(kdivs, gkdivs, nk, MPI_INT, MPI_SUM, 0, amps_CommWorld);
 #else
   /* This is broken for parallel layers other than MPI.  AMPS does not
    * have a Reduce operation; only ReduceAll */

@@ -152,7 +152,7 @@ void HypreAssembleGrid(
     }
 
     /* Set the HYPRE grid */
-    HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, hypre_grid);
+    HYPRE_StructGridCreate(amps_CommWorld, 3, hypre_grid);
 
     /* Set local grid extents as global grid values */
     ForSubgridI(sg, GridSubgrids(pf_grid))
@@ -205,7 +205,7 @@ void HypreInitialize(Matrix* pf_Bmat,
   int symmetric = MatrixSymmetric(pf_Bmat);
   if (!(*hypre_mat))
   {
-    HYPRE_StructMatrixCreate(MPI_COMM_WORLD, *hypre_grid,
+    HYPRE_StructMatrixCreate(amps_CommWorld, *hypre_grid,
                              *hypre_stencil,
                              hypre_mat);
     HYPRE_StructMatrixSetNumGhost(*hypre_mat, full_ghosts);
@@ -216,7 +216,7 @@ void HypreInitialize(Matrix* pf_Bmat,
   /* Set up new right-hand-side vector */
   if (!(*hypre_b))
   {
-    HYPRE_StructVectorCreate(MPI_COMM_WORLD,
+    HYPRE_StructVectorCreate(amps_CommWorld,
                              *hypre_grid,
                              hypre_b);
     HYPRE_StructVectorSetNumGhost(*hypre_b, no_ghosts);
@@ -226,7 +226,7 @@ void HypreInitialize(Matrix* pf_Bmat,
   /* Set up new solution vector */
   if (!(*hypre_x))
   {
-    HYPRE_StructVectorCreate(MPI_COMM_WORLD,
+    HYPRE_StructVectorCreate(amps_CommWorld,
                              *hypre_grid,
                              hypre_x);
     HYPRE_StructVectorSetNumGhost(*hypre_x, full_ghosts);
