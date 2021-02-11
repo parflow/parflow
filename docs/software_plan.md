@@ -468,15 +468,12 @@ questions from the listserve (below) and the user community to provide
 extended answers, how-to type tutorials and additional code information 
 (including discussion of recent papers, etc).  There is also a ParFlow 
 website under development that will be located at: <http://www.parflow.org>.
-The website will be hosted by the Juelich Research Centre.  
+The website will be hosted by the Juelich Research Centre.
 
-Lastly, the team maintains a user email list where questions or concerns can 
-be posted.  The list is available here: 
-<https://mailman.mines.edu/mailman/listinfo/parflow-users>.  The list is archived 
-here: <https://mailman.mines.edu/pipermail/parflow-users/>.  The listserve 
-is available to all users and provides a community 
-resource for answering common ParFlow questions.  
-
+Lastly, the team maintains a user email list where questions or
+concerns can be posted.  The list is available here:
+[Parflow-Users](https://groups.google.com/g/parflow).  The list is
+archived on the Google Groups site for searching pevious questions.
 
 ## 7. ParFlow Developer Training
 

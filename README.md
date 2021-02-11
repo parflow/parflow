@@ -44,9 +44,10 @@ two additional papers that describe the coupled model physics:
 The ParFlow website has additional information on the project:
 - [Parflow Web Site](https://parflow.org/)
 
-You can join the Parflow mailing list to communicate with the Parflow
-developers and users.  Join our mailing list over via:
-- [Parflow-Users](https://mailman.mines.edu/mailman/listinfo/parflow-users)
+You can join the Parflow Google Group/mailing list to communicate with
+the Parflow developers and users.  In order to post you will have to
+join the group, old posts are visible without joining:
+- [Parflow-Users](https://groups.google.com/g/parflow)
 
 A Parflow blog is available with notes from users on how to compile and use Parflow:
 - [Parflow Blog](http://parflow.blogspot.com/)
