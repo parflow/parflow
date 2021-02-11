@@ -93,6 +93,7 @@ def load_patch_matrix_from_pfb_file(file_name, layer=None):
 def load_patch_matrix_from_image_file(file_name, color_to_patch=None,
                                       fall_back_id=0):
     import imageio
+
     im = imageio.imread(file_name)
     height, width, color = im.shape
     matrix = np.zeros((height, width), dtype=np.int16)
@@ -453,3 +454,395 @@ def read_clm(file_name, type='clmin'):
         raise Exception(f'Unknown clm type: {type}')
 
     return type_map[type](get_absolute_path(file_name))
+
+# -----------------------------------------------------------------------------
+
+
+class DataAccessor:
+    """Helper for extracting numpy array from a given run"""
+    def __init__(self, run, selector=None):
+        """Create DataAccessor from a Run instance"""
+        self._run = run
+        self._name = run.get_name()
+        self._selector = selector
+        self._t_padding = 5
+        self._time = None
+        self._ts = None
+        # CLM
+        self._forcing_time = 0
+        self._process_id = 0
+        # Initialize time
+        self.time = 0
+
+    # ---------------------------------------------------------------------------
+
+    def _pfb_to_array(self, file_path):
+        from parflowio.pyParflowio import PFData
+
+        array = None
+        if file_path:
+            full_path = get_absolute_path(file_path)
+            # FIXME do something with selector inside parflow-io
+            pfb_data = PFData(full_path)
+            pfb_data.loadHeader()
+            pfb_data.loadData()
+            array = pfb_data.moveDataArray()
+
+        return array
+
+    # ---------------------------------------------------------------------------
+    # time
+    # ---------------------------------------------------------------------------
+
+    @property
+    def time(self):
+        return self._time
+
+    @time.setter
+    def time(self, t):
+        self._time = int(t)
+        self._ts = f'{self._time:0>{self._t_padding}}'
+
+    @property
+    def times(self):
+        t0 = self._run.TimingInfo.StartCount
+        t_start = self._run.TimingInfo.StartTime
+        t_end = self._run.TimingInfo.StopTime
+        t_step = self._run.TimeStep.Value
+        t = t0 + t_start
+        time_values = []
+        while t <= t_end:
+            time_values.append(int(t))
+            t += t_step
+
+        return time_values
+
+    # ---------------------------------------------------------------------------
+    # forcing time
+    # ---------------------------------------------------------------------------
+
+    @property
+    def forcing_time(self):
+        return self._forcing_time
+
+    @forcing_time.setter
+    def forcing_time(self, t):
+        self._forcing_time = int(t)
+
+    # ---------------------------------------------------------------------------
+    # Process id
+    # ---------------------------------------------------------------------------
+
+    @property
+    def process_id(self):
+        return self._process_id
+
+    @process_id.setter
+    def process_id(self, t):
+        self._process_id = int(t)
+
+    # ---------------------------------------------------------------------------
+    # Region selector
+    # ---------------------------------------------------------------------------
+
+    @property
+    def selector(self):
+        return self._selector
+
+    @selector.setter
+    def selector(self, selector):
+        self._selector = selector
+
+    # ---------------------------------------------------------------------------
+    # Grid information
+    # ---------------------------------------------------------------------------
+
+    @property
+    def shape(self):
+        # FIXME do something with selector
+        return (
+            self._run.ComputationalGrid.NZ,
+            self._run.ComputationalGrid.NY,
+            self._run.ComputationalGrid.NX
+        )
+
+    # ---------------------------------------------------------------------------
+    # Mannings Roughness Coef
+    # ---------------------------------------------------------------------------
+
+    @property
+    def mannings(self):
+        return self._pfb_to_array(f'{self._name}.out.mannings.pfb')
+
+    # ---------------------------------------------------------------------------
+    # Slopes X Y
+    # ---------------------------------------------------------------------------
+
+    @property
+    def slope_x(self):
+        if self._run.TopoSlopesX.FileName is None:
+            return self._pfb_to_array(f'{self._name}.out.slope_x.pfb')
+        else:
+            return self._pfb_to_array(self._run.TopoSlopesX.FileName)
+
+    @property
+    def slope_y(self):
+        if self._run.TopoSlopesY.FileName is None:
+            return self._pfb_to_array(f'{self._name}.out.slope_y.pfb')
+        else:
+            return self._pfb_to_array(self._run.TopoSlopesY.FileName)
+
+    # ---------------------------------------------------------------------------
+    # Elevation
+    # ---------------------------------------------------------------------------
+
+    @property
+    def elevation(self):
+        if self._run.TopoSlopes.Elevation.FileName is None:
+            return self._pfb_to_array(f'{self._name}.DEM.pfb')
+        else:
+            return self._pfb_to_array(self._run.TopoSlopes.Elevation.FileName)
+
+    # ---------------------------------------------------------------------------
+    # Computed Porosity
+    # ---------------------------------------------------------------------------
+
+    @property
+    def computed_porosity(self):
+        return self._pfb_to_array(f'{self._name}.out.porosity.pfb')
+
+    # ---------------------------------------------------------------------------
+    # Computed Permeability
+    # ---------------------------------------------------------------------------
+
+    @property
+    def computed_permeability_x(self):
+        return self._pfb_to_array(f'{self._name}.out.perm_x.pfb')
+
+    @property
+    def computed_permeability_y(self):
+        return self._pfb_to_array(f'{self._name}.out.perm_y.pfb')
+
+    @property
+    def computed_permeability_z(self):
+        return self._pfb_to_array(f'{self._name}.out.perm_z.pfb')
+
+    # ---------------------------------------------------------------------------
+    # Pressures
+    # ---------------------------------------------------------------------------
+
+    @property
+    def pressure_initial_condition(self):
+        press_type = self._run.ICPressure.Type
+        if press_type == 'PFBFile':
+            geom_name = self._run.ICPressure.GeomNames
+            if len(geom_name) > 1:
+                msg = f'ICPressure.GeomNames are set to {geom_name}'
+                raise Exception(msg)
+            file_name = self._run.Geom[geom_name[0]].ICPressure.FileName
+            return self._pfb_to_array(file_name)
+        else:
+            # HydroStaticPatch, ... ?
+            msg = f'Initial pressure of type {press_type} is not supported'
+            raise Exception(msg)
+
+    # ---------------------------------------------------------------------------
+
+    @property
+    def pressure_boundary_conditions(self):
+        # Extract all BC names (bc[{patch_name}__{cycle_name}] = value)
+        bc = {}
+        patch_names = []
+
+        # Handle patch names
+        main_name = self._run.Domain.GeomName
+        all_names = self._run.Geom[main_name].Patches
+        patch_names.extend(all_names)
+
+        # Extract cycle names for each patch
+        for p_name in patch_names:
+            cycle_name = self._run.Patch[p_name].BCPressure.Cycle
+            cycle_names = self._run.Cycle[cycle_name].Names
+            for c_name in cycle_names:
+                key = f'{p_name}__{c_name}'
+                bc[key] = self._run.Patch[p_name].BCPressure[c_name].Value
+
+        return bc
+
+    # ---------------------------------------------------------------------------
+
+    @property
+    def pressure(self):
+        file_name = get_absolute_path(f'{self._name}.out.press.{self._ts}.pfb')
+        return self._pfb_to_array(file_name)
+
+    # ---------------------------------------------------------------------------
+    # Saturations
+    # ---------------------------------------------------------------------------
+
+    @property
+    def saturation(self):
+        file_name = get_absolute_path(f'{self._name}.out.satur.{self._ts}.pfb')
+        return self._pfb_to_array(file_name)
+
+    # ---------------------------------------------------------------------------
+    # CLM
+    # ---------------------------------------------------------------------------
+
+    def _clm_output_filepath(self, directory, prefix, ext):
+        file_name = f'{prefix}.{self._ts}.{ext}.{self._process_id}'
+        base_path = f'{self._run.Solver.CLM.CLMFileDir}/{directory}'
+        return get_absolute_path(f'{base_path}/{file_name}')
+
+    def _clm_output_bin(self, field, dtype):
+        fp = self._clm_output_filepath(field, field, 'bin')
+        return np.fromfile(fp, dtype=dtype, count=-1, sep='', offset=0)
+
+    @property
+    def clm_output_diagnostics(self):
+        return self._clm_output_filepath('diag_out', 'diagnostics', 'dat')
+
+    @property
+    def clm_output_eflx_lh_tot(self):
+        return self._clm_output_bin('eflx_lh_tot', float)
+
+    @property
+    def clm_output_eflx_lwrad_out(self):
+        return self._clm_output_bin('eflx_lwrad_out', float)
+
+    @property
+    def clm_output_eflx_sh_tot(self):
+        return self._clm_output_bin('eflx_sh_tot', float)
+
+    @property
+    def clm_output_eflx_soil_grnd(self):
+        return self._clm_output_bin('eflx_soil_grnd', float)
+
+    @property
+    def clm_output_qflx_evap_grnd(self):
+        return self._clm_output_bin('qflx_evap_grnd', float)
+
+    @property
+    def clm_output_qflx_evap_soi(self):
+        return self._clm_output_bin('qflx_evap_soi', float)
+
+    @property
+    def clm_output_qflx_evap_tot(self):
+        return self._clm_output_bin('qflx_evap_tot', float)
+
+    @property
+    def clm_output_qflx_evap_veg(self):
+        return self._clm_output_bin('qflx_evap_veg', float)
+
+    @property
+    def clm_output_qflx_infl(self):
+        return self._clm_output_bin('qflx_infl', float)
+
+    @property
+    def clm_output_qflx_top_soil(self):
+        return self._clm_output_bin('qflx_top_soil', float)
+
+    @property
+    def clm_output_qflx_tran_veg(self):
+        return self._clm_output_bin('qflx_tran_veg', float)
+
+    @property
+    def clm_output_swe_out(self):
+        return self._clm_output_bin('swe_out', float)
+
+    @property
+    def clm_output_t_grnd(self):
+        return self._clm_output_bin('t_grnd', float)
+
+    def _clm_forcing(self, name):
+        time_slice = self._run.Solver.CLM.MetFileNT
+        prefix = self._run.Solver.CLM.MetFileName
+        directory = self._run.Solver.CLM.MetFilePath
+        file_index = int(self._forcing_time / time_slice)
+        t0 = f'{file_index * time_slice + 1:0>6}'
+        t1 = f'{(file_index + 1) * time_slice:0>6}'
+        file_name = get_absolute_path(
+            f'{directory}/{prefix}.{name}.{t0}_to_{t1}.pfb')
+
+        return self._pfb_to_array(file_name)[self._forcing_time % time_slice]
+
+    @property
+    def clm_forcing_dswr(self):
+        """Downward Visible or Short-Wave radiation [W/m2]"""
+        return self._clm_forcing('DSWR')
+
+    @property
+    def clm_forcing_dlwr(self):
+        """Downward Infa-Red or Long-Wave radiation [W/m2]"""
+        return self._clm_forcing('DLWR')
+
+    @property
+    def clm_forcing_apcp(self):
+        """Precipitation rate [mm/s]"""
+        return self._clm_forcing('APCP')
+
+    @property
+    def clm_forcing_temp(self):
+        """Air temperature [K]"""
+        return self._clm_forcing('Temp')
+
+    @property
+    def clm_forcing_ugrd(self):
+        """West-to-East or U-component of wind [m/s]"""
+        return self._clm_forcing('UGRD')
+
+    @property
+    def clm_forcing_vgrd(self):
+        """South-to-North or V-component of wind [m/s]"""
+        return self._clm_forcing('VGRD')
+
+    @property
+    def clm_forcing_press(self):
+        """Atmospheric Pressure [pa]"""
+        return self._clm_forcing('Press')
+
+    @property
+    def clm_forcing_spfh(self):
+        """Water-vapor specific humidity [kg/kg]"""
+        return self._clm_forcing('SPFH')
+
+    def _clm_map(self, root):
+        if root.Type == 'Constant':
+            return root.Value
+
+        if root.Type == 'Linear':
+            return (root.Min, root.Max)
+
+        if root.Type == 'PFBFile':
+            return self._pfb_to_array(root.FileName)
+
+        return None
+
+    def clm_map_land_fraction(self, name):
+        root = self._run.Solver.CLM.Vegetation.Map.LandFrac[name]
+        return self._clm_map(root)
+
+    @property
+    def clm_map_latitude(self):
+        root = self._run.Solver.CLM.Vegetation.Map.Latitude
+        return self._clm_map(root)
+
+    @property
+    def clm_map_longitude(self):
+        root = self._run.Solver.CLM.Vegetation.Map.Longitude
+        return self._clm_map(root)
+
+    @property
+    def clm_map_sand(self):
+        root = self._run.Solver.CLM.Vegetation.Map.Sand
+        return self._clm_map(root)
+
+    @property
+    def clm_map_clay(self):
+        root = self._run.Solver.CLM.Vegetation.Map.Clay
+        return self._clm_map(root)
+
+    @property
+    def clm_map_color(self):
+        root = self._run.Solver.CLM.Vegetation.Map.Color
+        return self._clm_map(root)
