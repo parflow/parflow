@@ -4,7 +4,7 @@ add_custom_target(DockerBuildDevelopment
     # --build-arg "CMAKE_URL=https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz"
     # --build-arg "HDF5_URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
     # --build-arg "NETCDF_URL=https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz"
-    # --build-arg "SILO_URL=https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz"
+    # --build-arg "SILO_URL=https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz"
     # --build-arg "HYPRE_VERSION=v2.19.0"
     -f "${CMAKE_CURRENT_SOURCE_DIR}/dev/Dockerfile"
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
