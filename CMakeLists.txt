@@ -2,10 +2,33 @@ cmake_minimum_required (VERSION 3.14)
 
 project (PARFLOW LANGUAGES C Fortran CXX)
 
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
+#-----------------------------------------------------------------------------
+# Set standard compiler flagsx
+#-----------------------------------------------------------------------------
 set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_C_STANDARD 11)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+include (CheckCCompilerFlag)
+include (CheckCXXCompilerFlag)
+
+# Check if compiler supports extra debugging flags
+foreach (DEBUG_FLAG "-ggdb" "-g3")
+  check_C_compiler_flag(${DEBUG_FLAG} FOUND)
+  if(${FOUND})
+    set(CMAKE_C_FLAGS_DEBUG ${DEBUG_FLAG})
+    break ()
+  endif ()
+endforeach ()
+
+foreach (DEBUG_FLAG "-ggdb" "-g3")
+  check_CXX_compiler_flag(${DEBUG_FLAG} FOUND)
+  if(${FOUND})
+    set(CMAKE_CXX_FLAGS_DEBUG ${DEBUG_FLAG})
+    break ()
+  endif ()
+endforeach ()
 
 #-----------------------------------------------------------------------------
 # Set accelerator backend
@@ -140,12 +163,20 @@ else ()
 endif ()
 
 # OAS3
-option(PARFLOW_HAVE_OAS3 "Build with OAS3" "no")
-
-if (PARFLOW_HAVE_OAS3)
-  set (PARFLOW_HAVE_OAS3 "yes")
-  set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
-endif ()
+if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
+  find_package(OASIS)
+  if (OASIS_FOUND)
+    find_package(NetCDF-Fortran)
+    if (NetCDF-Fortran_FOUND)
+      set (PARFLOW_HAVE_OAS3 "yes")
+      set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
+    else (NetCDF-Fortran_FOUND)
+      message(FATAL_ERROR "ERROR: NetCDF-Fortran is required when compiling with PARFLOW_AMPS_LAYER=oas3 (check NETCDF_Fortran_ROOT variable)")
+    endif (NetCDF-Fortran_FOUND)
+  else (OASIS_FOUND)
+    message(FATAL_ERROR "ERROR: OASIS is required when compiling with PARFLOW_AMPS_LAYER=oas3 (check OAS3_ROOT variable)")
+  endif (OASIS_FOUND)
+endif (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
 
 set (PARFLOW_AMPS_LAYER_REQUIRE_MPI cuda mpi1 smpi oas3)
 set (PARFLOW_TEST_PARALLEL cuda mpi1 smpi)

@@ -1229,20 +1229,26 @@ class CLMImporter:
     def __init__(self, run):
         self.run = run
 
-    def files(self, input='drv_clmin.dat', map='drv_vegm.dat',
-              parameters='drv_vegp.dat'):
-        func_map = {
-            'input_file': input,
-            'map_file': map,
-            'parameters_file': parameters,
-        }
+    def files(self, input='drv_clmin.dat', map=None, parameters=None):
 
-        for func_name, arg in func_map.items():
+        def load_file(func_name, file_name):
             func = getattr(self, func_name)
             try:
-                func(arg)
+                func(file_name)
             except FileNotFoundError:
-                raise Exception(f'Could not find CLM driver file {arg}')
+                raise Exception(f'Could not find CLM driver file {file_name}')
+
+        # Load the clmin file first to determine the driver file names.
+        load_file('input_file', input)
+
+        if map is None:
+            map = self._map_file_name
+
+        if parameters is None:
+            parameters = self._parameters_file_name
+
+        load_file('map_file', map)
+        load_file('parameters_file', parameters)
         return self
 
     @with_absolute_path
@@ -1391,8 +1397,15 @@ class CLMImporter:
 
     @property
     def _driver_data_appears_to_be_set(self):
-        # Just pick one property to check. We can also check multiple ones.
-        return self.run.Solver.CLM.Vegetation.Map.Sand.Type is not None
+        return self._land_covers_are_set
+
+    @property
+    def _map_file_name(self):
+        return self.run.Solver.CLM.Input.File.VegTileSpecification
+
+    @property
+    def _parameters_file_name(self):
+        return self.run.Solver.CLM.Input.File.VegTypeParameter
 
     @property
     def _veg_map(self):

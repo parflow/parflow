@@ -111,6 +111,6 @@ contained within the main ParFlow repo (see https://github.com/parflow/parflow)
 If you have any issues or questions about the code, please refer to one of the
 following options:
 
-   - User mailing list: https://mailman.mines.edu/mailman/listinfo/parflow-users
-   - ParFlow blog: http://parflow.blogspot.com
-   - GitHub repo (for tracking issues and requesting features): https://github.com/parflow/parflow
+   - User mailing list: [Parflow-Users](https://groups.google.com/g/parflow)
+   - ParFlow blog: [Parflow Blog](http://parflow.blogspot.com/)
+   - GitHub repo (for tracking issues and requesting features): [Parflow Issue Tracker](https://github.com/parflow/parflow/issues)

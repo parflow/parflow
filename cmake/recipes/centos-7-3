@@ -25,7 +25,7 @@ sudo yum install -y hdf5-openmpi hdf5-openmpi-devel
 sudo yum install -y zlib zlib-devel
 
 # Build SILO
-wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
 tar xf silo-4.10.2.tar.gz
 cd silo-4.10.2
 #CC=mpicc CXX=mpicxx ./configure --prefix=/usr/local --with-hdf5=/usr/include/openmpi-x86_64/,/usr/lib64/openmpi/lib

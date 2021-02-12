@@ -15,7 +15,7 @@ import argparse
 
 from . import settings
 from .fs import get_absolute_path
-from .io import write_dict
+from .io import write_dict, DataAccessor
 from .terminal import Symbols as TermSymbol
 
 from .database.generated import BaseRun
@@ -231,6 +231,7 @@ class Run(BaseRun):
     """
     def __init__(self, name, basescript=None):
         super().__init__(None)
+        self._accessor_ = None
         self._process_args_ = get_process_args()
         self.set_name(name)
         if basescript is not None:
@@ -292,6 +293,15 @@ class Run(BaseRun):
             new_name (str): New name for run
         """
         self._name_ = new_name
+
+    @property
+    def data_accessor(self):
+        """Return a DataAccessor to streamline access to
+        numpy array of the various field this run is linked to.
+        """
+        if self._accessor_ is None:
+            self._accessor_ = DataAccessor(self)
+        return self._accessor_
 
     def write(self, file_name=None, file_format='pfidb',
               working_directory=None):

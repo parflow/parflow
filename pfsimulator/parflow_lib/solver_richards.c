@@ -1586,7 +1586,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   int rank;
   int any_file_dumped;
   int clm_file_dumped;
-  int dump_files;
+  int dump_files = 0;
   int clm_dump_files;
   int retval;
   int converged;
