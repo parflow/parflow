@@ -45,9 +45,9 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
   if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
     set(CMAKE_CUDA_STANDARD 14)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
-      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_80,code=sm_80")
+      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS}")
     endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
     set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
     set(CMAKE_CUDA_FLAGS_RELEASE "-Xptxas ${CMAKE_CUDA_FLAGS_RELEASE}")
@@ -92,6 +92,8 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
 else()
   message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
 endif()
+
+find_package(Kokkos REQUIRED HINTS /p/project/cesmtst/hokkanen1/kokkos_test/kokkos_install)
 
 #-----------------------------------------------------------------------------
 # Version number

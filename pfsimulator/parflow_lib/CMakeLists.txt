@@ -132,7 +132,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     grgeometry.cpp
   )
   set (SRC_FILES_ARCH_TYPE_1
-    axpy.cpp
     copy.cpp
     innerprod.cpp
     matrix.cpp
@@ -162,6 +161,10 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     region.cpp
   )
 
+  set (SRC_FILES_ARCH_TYPE_KOKKOS
+    axpy.cpp
+  )
+
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
 	#  ------------------------------------------------------------
   #  CUDA
@@ -180,6 +183,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   set_source_files_properties(${SRC_FILES_ARCH_TYPE_0} PROPERTIES COMPILE_DEFINITIONS "PF_COMP_UNIT_TYPE=0")
   set_source_files_properties(${SRC_FILES_ARCH_TYPE_1} PROPERTIES COMPILE_DEFINITIONS "PF_COMP_UNIT_TYPE=1")
   set_source_files_properties(${SRC_FILES_ARCH_TYPE_2} PROPERTIES COMPILE_DEFINITIONS "PF_COMP_UNIT_TYPE=2")
+  set_source_files_properties(${SRC_FILES_ARCH_TYPE_KOKKOS} PROPERTIES COMPILE_DEFINITIONS "PF_COMP_UNIT_TYPE=1")
 
   set (SRC_FILES_ARCH ${SRC_FILES_ARCH_TYPE_0} ${SRC_FILES_ARCH_TYPE_1} ${SRC_FILES_ARCH_TYPE_2})
 
@@ -207,7 +211,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH
-    axpy.c
+    axpy.cpp
     calc_elevations.c
     clustering.c
     copy.c
@@ -240,6 +244,10 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
+
+# Kokkos
+target_link_libraries(pfsimulator Kokkos::kokkos)
+target_include_directories(pfsimulator PUBLIC /p/project/cesmtst/hokkanen1/kokkos_test/kokkos_install/include)
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
