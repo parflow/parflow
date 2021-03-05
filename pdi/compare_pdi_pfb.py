@@ -194,7 +194,7 @@ def compare_files(name):
         position = 3*(8 + 4 + 8)
 
         (numgrids,) = struct.unpack(">i", content[position:position+4]); position += 4;
-        numgrids_per_file = numgrids / len(files)
+        numgrids_per_file = int(numgrids / len(files))
 
         print(" Total number of subgrids: {}".format(numgrids))
         print(" Local number of subgrids: {}".format(numgrids_per_file))
