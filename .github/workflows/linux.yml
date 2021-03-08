@@ -85,7 +85,7 @@ jobs:
         sudo apt-get -qq update
         sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-10 hdf5-helpers tcl-dev tk-dev
 
-- name: Python Package Install
+    - name: Python Package Install
       if: matrix.config.python == 'true'
       run: |
         sudo apt-get -qq update
