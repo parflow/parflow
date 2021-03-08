@@ -1,3 +1,14 @@
+# ParFlow Contributors
+
+ParFlow is a community effort, thank you for all the great work.
+
+Contributors may be found in this file and the 
+[contributors](https://github.com/parflow/parflow/graphs/contributors)
+page maintained on GitHub.
+
+Since ParFlow existed in several repositories GitHub has not chaptured
+all of the contributors.
+
 **Reed M. Maxwell** 
 Department of Geology and Geologic Engineering
 Colorado School of Mines
