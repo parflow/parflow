@@ -319,7 +319,7 @@ proc Parflow::pfundist { runname } {
 	append filelist [glob -nocomplain $root.perm_y.*$postfix] " "
 	append filelist [glob -nocomplain $root.perm_z.*$postfix] " "
 	append filelist [glob -nocomplain $root.porosity.*$postfix] " "
-  append filelist [glob -nocomplain $root.specific_storage.*$postfix] " "
+        append filelist [glob -nocomplain $root.specific_storage.*$postfix] " "
 
 	append filelist [glob -nocomplain $root.press.*$postfix] " "
 	append filelist [glob -nocomplain $root.density.?????.*$postfix] " "
@@ -336,9 +336,9 @@ proc Parflow::pfundist { runname } {
 	append filelist [glob -nocomplain $root.mask.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.mask.*$postfix] " "
 
-  append filelist [glob -nocomplain $root.velx.*$postfix] " "
-  append filelist [glob -nocomplain $root.vely.*$postfix] " "
-  append filelist [glob -nocomplain $root.velz.*$postfix] " "
+	append filelist [glob -nocomplain $root.velx.*$postfix] " "
+	append filelist [glob -nocomplain $root.vely.*$postfix] " "
+	append filelist [glob -nocomplain $root.velz.*$postfix] " "
     }
 
     foreach i $filelist {
