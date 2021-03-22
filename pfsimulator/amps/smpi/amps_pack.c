@@ -345,7 +345,7 @@ amps_Invoice inv;
         {
           if (i == dim - 1)
           {
-            MPI_Type_hvector(ptr->ptr_len[i], 1,
+            MPI_Type_create_hvector(ptr->ptr_len[i], 1,
                              base_size +
                              (ptr->ptr_stride[i] - 1) * element_size,
                              *base_type, &mpi_types[element]);
@@ -356,7 +356,7 @@ amps_Invoice inv;
           }
           else
           {
-            MPI_Type_hvector(ptr->ptr_len[i], 1,
+            MPI_Type_create_hvector(ptr->ptr_len[i], 1,
                              base_size +
                              (ptr->ptr_stride[i] - 1) * element_size,
                              *base_type, new_type);
@@ -380,14 +380,14 @@ amps_Invoice inv;
         break;
     }
 
-    MPI_Address(data, &mpi_displacements[element]);
+    MPI_Get_address(data, &mpi_displacements[element]);
 
     mpi_block_len[element] = 1;
     element++;
     ptr = ptr->next;
   }
 
-  MPI_Type_struct(inv->num,
+  MPI_Type_create_struct(inv->num,
                   mpi_block_len,
                   mpi_displacements,
                   mpi_types,

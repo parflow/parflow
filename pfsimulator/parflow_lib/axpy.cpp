@@ -18,6 +18,6 @@
 // #define PF_COMP_UNIT_TYPE 1
 
 /* extern "C" is required for the C source files when compiled with CPP compiler */
-// extern "C"{
+extern "C"{
 #include "axpy.c"
-// }
+}

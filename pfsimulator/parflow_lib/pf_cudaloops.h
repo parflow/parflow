@@ -34,6 +34,8 @@ extern "C++"{
 
 #include <tuple>
 #include "cub.cuh"
+#include <Kokkos_Core.hpp>
+// #define ALL -1 // Must be redefined after Kokkos header
 
 /*--------------------------------------------------------------------------
  * CUDA blocksize definitions
@@ -733,10 +735,17 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   (void)i;(void)j;(void)k;                                                          \
 }
 
+extern int Kokkos_initd;
  /** Loop definition for CUDA. */
 #define GrGeomInLoopBoxes_cuda(i, j, k,                                             \
   grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
 {                                                                                   \
+  if(Kokkos_initd == 0){                                                            \
+    Kokkos::InitArguments args;                                                     \
+    args.ndevices = 1;                                                              \
+    Kokkos::initialize(args);                                                       \
+    Kokkos_initd = 1;                                                               \
+  }                                                                                 \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
   int ix_bxs = BoxArrayMinCell(boxes, 0);                                           \
   int iy_bxs = BoxArrayMinCell(boxes, 1);                                           \
@@ -812,7 +821,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
       char *inflag = GrGeomSolidCellFlagData(grgeom);                               \
       auto lambda_body =                                                            \
-        GPU_LAMBDA(int i, int j, int k)                                             \
+        KOKKOS_LAMBDA(int i, int j, int k)                                             \
         {                                                                           \
           i += ixl_gpu;                                                             \
           j += iyl_gpu;                                                             \
@@ -824,7 +833,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           }                                                                         \
         };                                                                          \
                                                                                     \
-      BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);              \
+      /*BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);*/              \
+      using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+      MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});                       \
+      Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \

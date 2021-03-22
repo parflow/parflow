@@ -94,6 +94,8 @@ else()
 endif()
 
 find_package(Kokkos REQUIRED HINTS /p/project/cesmtst/hokkanen1/kokkos_test/kokkos_install)
+set(PARFLOW_HAVE_CUDA "yes")
+set(PARFLOW_ACC_BACKEND 1)
 
 #-----------------------------------------------------------------------------
 # Version number
