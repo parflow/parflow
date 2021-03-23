@@ -279,6 +279,10 @@ void HBT_scanf(FILE *file, HBT *tree);
 /* infinity_norm.c */
 double InfinityNorm(Vector *x);
 
+/* init_acc_arch.cpp */
+void init_acc_arch();
+void finalize_acc_arch();
+
 /* innerprod.c */
 double InnerProd(Vector *x, Vector *y);
 

@@ -33,6 +33,7 @@ set (SRC_FILES_CONST advect.F
   hbt.c
   index_space.c
   infinity_norm.c
+  init_acc_arch.cpp
   inputRF.c
   input_checks.c
   input_database.c
@@ -173,8 +174,8 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 	#  ------------------------------------------------------------
   #  OpenMP
 	#  ------------------------------------------------------------
-  #  1:     CXX compiler, Unified Memory allocation, Parallel loops on CPU
-	#  2:     CXX compiler, Unified Memory allocation, Sequential loops on CPU
+  #  1:     CXX compiler, Standard heap allocation, Parallel loops on CPU
+	#  2:     CXX compiler, Standard heap allocation, Sequential loops on CPU
 	#  Other: CXX compiler, Standard heap allocation, Sequential loops on CPU
 
   set_source_files_properties(${SRC_FILES_ARCH_TYPE_0} PROPERTIES COMPILE_DEFINITIONS "PF_COMP_UNIT_TYPE=0")
@@ -183,11 +184,11 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH ${SRC_FILES_ARCH_TYPE_0} ${SRC_FILES_ARCH_TYPE_1} ${SRC_FILES_ARCH_TYPE_2})
 
-  if ( ${PARFLOW_HAVE_CUDA} )
+  if ( ${PARFLOW_HAVE_CUDA} AND (NOT ${PARFLOW_HAVE_KOKKOS}))
+    set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CUDA)
+  else ( ${PARFLOW_HAVE_CUDA} AND (NOT ${PARFLOW_HAVE_KOKKOS}))
     set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CXX)
-  else ( ${PARFLOW_HAVE_CUDA} )
-    set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CXX)
-  endif ( ${PARFLOW_HAVE_CUDA} )
+  endif ( ${PARFLOW_HAVE_CUDA} AND (NOT ${PARFLOW_HAVE_KOKKOS}))
 
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
@@ -197,6 +198,11 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     target_include_directories(pfsimulator PUBLIC "../third_party/cub")
     target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
   endif ( ${PARFLOW_HAVE_CUDA} )
+
+  if( ${PARFLOW_HAVE_KOKKOS} )
+    target_link_libraries(pfsimulator Kokkos::kokkos)
+    target_include_directories(pfsimulator PUBLIC ${KOKKOS_INCLUDE})
+  endif( ${PARFLOW_HAVE_KOKKOS} )
 
   if( ${PARFLOW_HAVE_RMM} )
     target_link_libraries(pfsimulator rmm)
@@ -240,10 +246,6 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
-
-# Kokkos
-target_link_libraries(pfsimulator Kokkos::kokkos)
-target_include_directories(pfsimulator PUBLIC /p/project/cesmtst/hokkanen1/kokkos_test/kokkos_install/include)
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")

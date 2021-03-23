@@ -20,6 +20,11 @@ if(${PARFLOW_HAVE_CUDA})
   endif( ${PARFLOW_HAVE_RMM} )
 endif(${PARFLOW_HAVE_CUDA})
 
+if( ${PARFLOW_HAVE_KOKKOS} )
+  target_link_libraries(amps Kokkos::kokkos)
+  target_include_directories(amps PUBLIC ${KOKKOS_INCLUDE})
+endif( ${PARFLOW_HAVE_KOKKOS} )
+
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (amps PUBLIC "${MPI_C_INCLUDE_PATH}")
 endif (${PARFLOW_HAVE_MPI})

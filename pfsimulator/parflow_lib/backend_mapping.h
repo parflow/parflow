@@ -33,8 +33,8 @@
 ------------------------------------------------------------
    OpenMP: PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_OMP
 ------------------------------------------------------------
-   1:     CXX compiler, Unified Memory allocation, Parallel loops on CPU
-   2:     CXX compiler, Unified Memory allocation, Sequential loops on CPU
+   1:     CXX compiler, Standard heap allocation, Parallel loops on CPU
+   2:     CXX compiler, Standard heap allocation, Sequential loops on CPU
    Other: CXX compiler, Standard heap allocation, Sequential loops on CPU
 */
 
@@ -46,7 +46,11 @@
   #include "pf_cudamain.h"
 
   #if PF_COMP_UNIT_TYPE == 1
-    #include "pf_cudaloops.h"
+    #ifdef PARFLOW_HAVE_KOKKOS
+      #include "pf_kokkosloops.h"
+    #else
+      #include "pf_cudaloops.h"
+    #endif
   #elif PF_COMP_UNIT_TYPE == 2
     #include "pf_cudamalloc.h"
   #endif

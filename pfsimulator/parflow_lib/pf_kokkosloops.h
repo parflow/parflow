@@ -34,6 +34,8 @@ extern "C++"{
 
 #include <tuple>
 #include "cub.cuh"
+#include <Kokkos_Core.hpp>
+// #define ALL -1 // Must be redefined after Kokkos header
 
 /*--------------------------------------------------------------------------
  * CUDA blocksize definitions
@@ -519,7 +521,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     const auto &ref_i1 = i1;                                                        \
                                                                                     \
     auto lambda_body =                                                              \
-      GPU_LAMBDA(int i, int j, int k)                                               \
+      KOKKOS_LAMBDA(int i, int j, int k)                                            \
       {                                                                             \
         const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
           + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
@@ -531,7 +533,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                            \
+    /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                            \
+    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
+    Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
     CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
@@ -560,7 +565,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     const auto &ref_i2 = i2;                                                        \
                                                                                     \
     auto lambda_body =                                                              \
-      GPU_LAMBDA(int i, int j, int k)                                               \
+      KOKKOS_LAMBDA(int i, int j, int k)                                            \
       {                                                                             \
         const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
           + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
@@ -574,7 +579,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                            \
+    /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                            \
+    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
+    Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
     CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
@@ -606,7 +614,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     const auto &ref_i3 = i3;                                                        \
                                                                                     \
     auto lambda_body =                                                              \
-      GPU_LAMBDA(int i, int j, int k)                                               \
+      KOKKOS_LAMBDA(int i, int j, int k)                                            \
       {                                                                             \
         const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
           + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
@@ -622,7 +630,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                            \
+    /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                            \
+    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
+    Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
     CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
@@ -771,7 +782,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         FindDims(grid, block, PV_nx, PV_ny, PV_nz, 1);                              \
                                                                                     \
         auto lambda_body =                                                          \
-          GPU_LAMBDA(int i, int j, int k)                                           \
+          KOKKOS_LAMBDA(int i, int j, int k)                                        \
           {                                                                         \
             i += PV_ixl;                                                            \
             j += PV_iyl;                                                            \
@@ -789,7 +800,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             }                                                                       \
           };                                                                        \
                                                                                     \
-        BoxKernel<<<grid, block>>>(lambda_body, PV_nx, PV_ny, PV_nz);               \
+        /*BoxKernel<<<grid, block>>>(lambda_body, PV_nx, PV_ny, PV_nz);*/           \
+        using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+        MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_nx, PV_ny, PV_nz}});          \
+        Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -812,7 +826,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
       char *inflag = GrGeomSolidCellFlagData(grgeom);                               \
       auto lambda_body =                                                            \
-        GPU_LAMBDA(int i, int j, int k)                                             \
+        KOKKOS_LAMBDA(int i, int j, int k)                                          \
         {                                                                           \
           i += ixl_gpu;                                                             \
           j += iyl_gpu;                                                             \
@@ -824,7 +838,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           }                                                                         \
         };                                                                          \
                                                                                     \
-      BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);              \
+      /*BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);*/              \
+      using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+      MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});         \
+      Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
@@ -878,7 +895,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           const int _fdir2 = fdir[2];                                               \
                                                                                     \
           auto lambda_body =                                                        \
-            GPU_LAMBDA(int i, int j, int k)                                         \
+            KOKKOS_LAMBDA(int i, int j, int k)                                      \
             {                                                                       \
               i += PV_ixl;                                                          \
               j += PV_iyl;                                                          \
@@ -898,7 +915,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
               }                                                                     \
             };                                                                      \
                                                                                     \
-          BoxKernel<<<grid, block>>>(lambda_body, PV_nx, PV_ny, PV_nz);             \
+          /*BoxKernel<<<grid, block>>>(lambda_body, PV_nx, PV_ny, PV_nz);*/             \
+          using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+          MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_nx, PV_ny, PV_nz}});        \
+          Kokkos::parallel_for(mdpolicy_3d, lambda_body);                           \
           CUDA_ERR(cudaPeekAtLastError());                                          \
           CUDA_ERR(cudaStreamSynchronize(0));                                       \
         }                                                                           \
@@ -926,7 +946,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         const int _fdir2 = fdir[2];                                                 \
                                                                                     \
         auto lambda_body =                                                          \
-          GPU_LAMBDA(int i, int j, int k)                                           \
+          KOKKOS_LAMBDA(int i, int j, int k)                                        \
           {                                                                         \
             i += ixl_gpu;                                                           \
             j += iyl_gpu;                                                           \
@@ -941,7 +961,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             }                                                                       \
           };                                                                        \
                                                                                     \
-        BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);            \
+        /*BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);*/            \
+        using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+        MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});       \
+        Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -989,7 +1012,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         const int _fdir2 = fdir[2];                                                 \
                                                                                     \
         auto lambda_body =                                                          \
-          GPU_LAMBDA(int i, int j, int k)                                           \
+          KOKKOS_LAMBDA(int i, int j, int k)                                        \
           {                                                                         \
             const int fdir[3] = {_fdir0, _fdir1, _fdir2};                           \
             int ival = n_prev + k * ny * nx + j * nx + i;                           \
@@ -1003,7 +1026,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           };                                                                        \
         n_prev += nz * ny * nx;                                                     \
                                                                                     \
-        BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                        \
+        /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                        \
+        using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+        MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                   \
+        Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -1092,7 +1118,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                           \
                                                                                     \
         auto lambda_body =                                                          \
-          GPU_LAMBDA(int i, int j, int k)                                           \
+          KOKKOS_LAMBDA(int i, int j, int k)                                        \
           {                                                                         \
             i += ixl_gpu;                                                           \
             j += iyl_gpu;                                                           \
@@ -1117,7 +1143,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             }                                                                       \
           };                                                                        \
                                                                                     \
-        BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);            \
+        /*BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);*/            \
+        using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+        MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});       \
+        Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
         CUDA_ERR(cudaPeekAtLastError());                                            \
         CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
@@ -1169,7 +1198,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       FindDims(grid, block, PV_diff_x, PV_diff_y, PV_diff_z, 1);                    \
                                                                                     \
       auto lambda_body =                                                            \
-        GPU_LAMBDA(int i, int j, int k)                                             \
+        KOKKOS_LAMBDA(int i, int j, int k)                                          \
         {                                                                           \
           i += PV_ixl;                                                              \
           j += PV_iyl;                                                              \
@@ -1178,7 +1207,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           loop_body;                                                                \
         };                                                                          \
                                                                                     \
-      (BoxKernel<<<grid, block>>>(lambda_body, PV_diff_x, PV_diff_y, PV_diff_z));   \
+      /*(BoxKernel<<<grid, block>>>(lambda_body, PV_diff_x, PV_diff_y, PV_diff_z));*/   \
+      using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+      MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_diff_x, PV_diff_y, PV_diff_z}});\
+      Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
@@ -1224,7 +1256,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
       char *outflag = GrGeomSolidCellFlagData(grgeom);                              \
       auto lambda_body =                                                            \
-        GPU_LAMBDA(int i, int j, int k)                                             \
+        KOKKOS_LAMBDA(int i, int j, int k)                                          \
         {                                                                           \
           i += ix;                                                                  \
           j += iy;                                                                  \
@@ -1236,7 +1268,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           }                                                                         \
         };                                                                          \
                                                                                     \
-      BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);                          \
+      /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                          \
+      using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+      MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                     \
+      Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
       CUDA_ERR(cudaPeekAtLastError());                                              \
       CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \

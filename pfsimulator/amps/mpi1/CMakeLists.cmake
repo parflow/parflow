@@ -21,5 +21,5 @@ set(AMPS_SRC_FILES
   )
 
 if(${PARFLOW_HAVE_CUDA})
-  list(APPEND AMPS_SRC_FILES amps_gpupacking.cu)
+  list(APPEND AMPS_SRC_FILES amps_gpupacking.cpp)
 endif(${PARFLOW_HAVE_CUDA})
