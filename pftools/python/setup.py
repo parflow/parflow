@@ -21,7 +21,7 @@ setup(
     ],
     keywords=['ParFlow', 'groundwater model', 'surface water model'],
     packages=find_packages(),
-    install_requires=['pyyaml==5.3.1', 'numpy'],
+    install_requires=['pyyaml==5.4', 'numpy'],
     include_package_data=True,
     extras_require={
         'all': [
