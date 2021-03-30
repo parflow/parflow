@@ -1,8 +1,4 @@
 /* Header.c */
-
-double *kokkos_alloc(int count);
-void kokkos_free(double *ptr);
-
 typedef void (*AdvectionConcentrationInvoke) (ProblemData *problem_data, int phase, int concentration, Vector *old_concentration, Vector *new_concentration, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, Vector *solid_mass_factor, double time, double deltat, int order);
 typedef PFModule *(*AdvectionConcentrationInitInstanceXtraType) (Problem *problem, Grid *grid, double *temp_data);
 
@@ -202,7 +198,7 @@ void IntersectLineWithTriangle(unsigned int line_direction, double coord_0, doub
 void NewGlobals(char *run_name);
 void FreeGlobals(void);
 void LogGlobals(void);
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
   void CopyGlobalsToDevice(void);
 #endif
 
@@ -353,6 +349,12 @@ int KinsolPCSizeOfTempData(void);
 
 
 typedef void (*L2ErrorNormInvoke) (double time, Vector *pressure, ProblemData *problem_data, double *l2_error_norm);
+
+/* kokkos.cpp */
+// void* kokkosAlloc(size_t size);
+// void kokkosFree(void *ptr);
+void kokkosInit();
+void kokkosFinalize();
 
 /* l2_error_norm.c */
 void L2ErrorNorm(double time, Vector *pressure, ProblemData *problem_data, double *l2_error_norm);

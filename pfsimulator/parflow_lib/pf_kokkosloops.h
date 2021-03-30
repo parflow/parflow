@@ -18,69 +18,26 @@
  ***********************************************************************/
 
 /* @file
- * @brief Contains macros, functions, and structs for CUDA compute kernels.
+ * @brief Contains macros, functions, and structs for Kokkos compute kernels.
  */
 
-#ifndef PF_CUDALOOPS_H
-#define PF_CUDALOOPS_H
+#ifndef PF_KOKKOSLOOPS_H
+#define PF_KOKKOSLOOPS_H
 
 /*--------------------------------------------------------------------------
- * Include CUDA headers
+ * Include headers
  *--------------------------------------------------------------------------*/
-#include "pf_cudamain.h"
-#include "pf_cudamalloc.h"
+#include "pf_devices.h"
+#include "pf_kokkosmalloc.h"
 
 extern "C++"{
 
 #include <tuple>
-#include "cub.cuh"
 #include <Kokkos_Core.hpp>
 // #define ALL -1 // Must be redefined after Kokkos header
 
 /*--------------------------------------------------------------------------
- * CUDA blocksize definitions
- *--------------------------------------------------------------------------*/
-
-/**
- * The largest blocksize ParFlow is using, but also the largest blocksize 
- * supported by any currently available NVIDIA GPU architecture. This can 
- * also differ between different architectures. It is used for informing 
- * the compiler about how many registers should be available for the GPU 
- * kernel during the compilation. Another option is to use 
- * --maxrregcount 64 compiler flag, but NVIDIA recommends specifying 
- * this kernel-by-kernel basis by __launch_bounds__() identifier.
- */
-#define BLOCKSIZE_MAX 1024
-
-/**
- * The blocksize for the x-dimension. This is is set to 32, 
- * because the warp size for the current NVIDIA architectures is 32. 
- * Therefore, letting each thread in a warp access consecutive memory 
- * locations along the x-dimension results in best memory coalescence. 
- * It is also important that the total blocksize (the product of x, y, 
- * and z-blocksizes) is divisible by the warp size (32).
- */
-#define BLOCKSIZE_X 32
-
-/**
- * The default blocksize for the y-dimension. Blocksizes along y and 
- * z-dimensions are less important compared to the x-dimension. 
- */
-#define BLOCKSIZE_Y 8
-
-/**
- * The default blocksize for the z-dimension. Blocksizes along y and 
- * z-dimensions are less important compared to the x-dimension. 
- */
-#define BLOCKSIZE_Z 4
-
-/*--------------------------------------------------------------------------
- * CUDA lambda definition (visible for host and device functions)
- *--------------------------------------------------------------------------*/
-#define GPU_LAMBDA [=] __host__ __device__
-
-/*--------------------------------------------------------------------------
- * CUDA helper macros and functions
+ * Helper macros and functions
  *--------------------------------------------------------------------------*/
 #define RAND48_SEED_0   (0x330e)
 #define RAND48_SEED_1   (0xabcd)
@@ -116,8 +73,8 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
     };
 };
 
-/** Device-callable dorand48() function for CUDA compute kernels. */
-__host__ __device__ __forceinline__ static void dev_dorand48(unsigned short xseed[3])
+/** Device-callable dorand48() function for Kokkos compute kernels. */
+KOKKOS_FORCEINLINE_FUNCTION static void dev_dorand48(unsigned short xseed[3])
 {
   unsigned long accu;
   
@@ -143,8 +100,8 @@ __host__ __device__ __forceinline__ static void dev_dorand48(unsigned short xsee
   xseed[2] = (unsigned short)accu;
 }
 
-/** Device-callable erand48() function for CUDA compute kernels. */
-__host__ __device__ __forceinline__ static double dev_erand48(unsigned short xseed[3])
+/** Device-callable erand48() function for Kokkos compute kernels. */
+KOKKOS_FORCEINLINE_FUNCTION static double dev_erand48(unsigned short xseed[3])
 {
   dev_dorand48(xseed);
   return ldexp((double)xseed[0], -48) +
@@ -152,8 +109,8 @@ __host__ __device__ __forceinline__ static double dev_erand48(unsigned short xse
          ldexp((double)xseed[2], -16);
 }
 
-/** Device-callable drand48() function for CUDA compute kernels. */
-__host__ __device__ __forceinline__ static double dev_drand48(void)
+/** Device-callable drand48() function for Kokkos compute kernels. */
+KOKKOS_FORCEINLINE_FUNCTION static double dev_drand48(void)
 {
   unsigned short _rand48_seed[3] = {
     RAND48_SEED_0,
@@ -163,9 +120,9 @@ __host__ __device__ __forceinline__ static double dev_drand48(void)
   return dev_erand48(_rand48_seed);
 }
 
-/** Device-callable RPowerR() function for CUDA compute kernels. */
+/** Device-callable RPowerR() function for Kokkos compute kernels. */
 template <typename T>
-__host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
+KOKKOS_FORCEINLINE_FUNCTION static T RPowerR(T base, T exponent)
 {
   if (base <= 0.0)
     return(0.0);
@@ -173,134 +130,29 @@ __host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
   return((T)pow((double)base, (double)exponent));
 }
 
-/**
- * Thread-safe function to find minimum value in compute kernels.
- * The function definition depends whether called from host or device code.
- *
- * @note Not for direct use!
- *
- * @param address pointer to first value [IN], pointer to min value [OUT]
- * @param val2 second value [IN]
- */
-__host__ __device__ __forceinline__ static void AtomicMin(int *address, int val2)
-{
-#ifdef __CUDA_ARCH__
-    atomicMin(address, val2);
-#else
-    if(*address > val2) *address = val2;
-#endif
-}
-
-/**
- * Thread-safe function to find maximum value in compute kernels.
- * The function definition depends whether called from host or device code.
- *
- * @note Not for direct use!
- *
- * @param address pointer to first value [IN], pointer to max value [OUT]
- * @param val2 second value [IN]
- */
-__host__ __device__ __forceinline__ static void AtomicMax(int *address, int val2)
-{
-#ifdef __CUDA_ARCH__
-    atomicMax(address, val2);
-#else
-    if(*address < val2) *address = val2;
-#endif
-}
-
-/**
- * Thread-safe function to find minimum value in compute kernels.
- * The function definition depends whether called from host or device code.
- *
- * @note Not for direct use!
- *
- * @param address pointer to first value [IN], pointer to min value [OUT]
- * @param val2 second value [IN]
- */
-__host__ __device__ __forceinline__ static void AtomicMin(double *address, double val2)
-{
-#ifdef __CUDA_ARCH__
-    unsigned long long ret = __double_as_longlong(*address);
-    while(val2 < __longlong_as_double(ret))
-    {
-        unsigned long long old = ret;
-        if((ret = atomicCAS((unsigned long long *)address, old, __double_as_longlong(val2))) == old)
-            break;
-    }
-    //return __longlong_as_double(ret);
-#else
-    if(*address > val2) *address = val2;
-#endif
-}
-
-/**
- * Thread-safe function to find maximum value in compute kernels.
- * The function definition depends whether called from host or device code.
- *
- * @note Not for direct use!
- *
- * @param address pointer to first value [IN], pointer to max value [OUT]
- * @param val2 second value [IN]
- */
-__host__ __device__ __forceinline__ static void AtomicMax(double *address, double val2)
-{
-#ifdef __CUDA_ARCH__
-    unsigned long long ret = __double_as_longlong(*address);
-    while(val2 > __longlong_as_double(ret))
-    {
-        unsigned long long old = ret;
-        if((ret = atomicCAS((unsigned long long *)address, old, __double_as_longlong(val2))) == old)
-            break;
-    }
-    //return __longlong_as_double(ret);
-#else
-    if(*address < val2) *address = val2;
-#endif
-}
-
-/**
- * Thread-safe addition assignment for compute kernels.
- * The function definition depends whether called from host or device code.
- *
- * @note Not for direct use!
- *
- * @param array_loc original value [IN], sum result [OUT]
- * @param value value to be added [IN]
- */
-template <typename T>
-__host__ __device__ __forceinline__ static void AtomicAdd(T *array_loc, T value)
-{
-    //Define this function depending on whether it runs on GPU or CPU
-#ifdef __CUDA_ARCH__
-    atomicAdd(array_loc, value);
-#else
-    *array_loc += value;
-#endif
-}
-
  /** Helper struct for type comparison. @note Not for direct use! */
 struct SkipParallelSync {const int dummy = 0;};
-#define SKIP_PARALLEL_SYNC_cuda struct SkipParallelSync sync_struct; return sync_struct;
+#define SKIP_PARALLEL_SYNC_kokkos struct SkipParallelSync sync_struct; return sync_struct;
 
-#define PARALLEL_SYNC_cuda CUDA_ERR(cudaStreamSynchronize(0)); 
+#define PARALLEL_SYNC_kokkos Kokkos::fence(); 
 
-#define PlusEquals_cuda(a, b) AtomicAdd(&(a), b)
+#define PlusEquals_kokkos(a, b) Kokkos::atomic_add(&(a), b)
 
  /** Helper struct for type comparison. @note Not for direct use! */
 template <typename T>
 struct ReduceMaxType {T value;};
-#define ReduceMax_cuda(a, b) struct ReduceMaxType<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
+#define ReduceMax_kokkos(a, b) if(lsum < b) { lsum = b; } struct ReduceMaxType<std::decay<decltype(a)>::type> reduce_struct; return reduce_struct;
 
  /** Helper struct for type comparison. @note Not for direct use! */
 template <typename T>
 struct ReduceMinType {T value;};
-#define ReduceMin_cuda(a, b) struct ReduceMinType<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
+#define ReduceMin_kokkos(a, b) if(lsum > b) { lsum = b; } struct ReduceMinType<std::decay<decltype(a)>::type> reduce_struct; return reduce_struct;
 
  /** Helper struct for type comparison. @note Not for direct use! */
 template <typename T>
 struct ReduceSumType {T value;};
-#define ReduceSum_cuda(a, b) struct ReduceSumType<std::decay<decltype(a)>::type> reduce_struct {.value = b}; return reduce_struct;
+#define ReduceSum_kokkos(a, b) lsum += b; struct ReduceSumType<std::decay<decltype(a)>::type> reduce_struct; return reduce_struct;
+
 
 /** A constant table for fdir (borrowed from OMP backend) */
 static const int FDIR_TABLE[6][3] = {
@@ -313,170 +165,8 @@ static const int FDIR_TABLE[6][3] = {
 };
 
 /*--------------------------------------------------------------------------
- * CUDA loop kernels
+ * Kokkos loop macro redefinitions
  *--------------------------------------------------------------------------*/
-
-/**
- * @brief CUDA basic compute kernel.
- *
- * @param loop_body A lambda function that evaluates the loop body [IN/OUT]
- * @param nx The size of the first dim [IN]
- * @param ny The size of the second dim [IN]
- * @param nz The size of the third dim [IN]
- */
-template <typename LambdaBody>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-BoxKernel(LambdaBody loop_body, const int nx, const int ny, const int nz)
-{
-
-    const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    if(i >= nx)return;
-    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
-    if(j >= ny)return;
-    const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
-    if(k >= nz)return;
-    
-    loop_body(i, j, k);
-}
-
-/**
- * @brief CUDA compute kernel for parallel reductions.
- *
- * @param loop_fun A lambda function that evaluates the loop body [IN/OUT]
- * @param init_val The initial value of the reduction variable [IN]
- * @param rslt A pointer to the result/sum variable [OUT]
- * @param nx The size of the first dim [IN]
- * @param ny The size of the second dim [IN]
- * @param nz The size of the third dim [IN]
- */
-template <typename ReduceOp, typename LambdaFun, typename T>
-__global__ static void 
-__launch_bounds__(BLOCKSIZE_MAX)
-DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt, 
-  const int nx, const int ny, const int nz)
-{
-    // Specialize BlockReduce for a 1D block of BLOCKSIZE_X * 1 * 1 threads on type T
-#ifdef __CUDA_ARCH__
-    typedef cub::BlockReduce<T, BLOCKSIZE_MAX, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, 1, 1, __CUDA_ARCH__> BlockReduce;
-#else
-    typedef cub::BlockReduce<T, BLOCKSIZE_MAX, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, 1, 1> BlockReduce;
-#endif
-
-    __shared__ typename BlockReduce::TempStorage temp_storage;
-
-    const int idx = ((blockIdx.x*blockDim.x)+threadIdx.x);
-
-    const int i = idx % nx;
-    const int j = (idx / nx) % ny;
-    const int k = idx / (nx * ny);
-    const int ntot = nx * ny * nz;
-
-    T thread_data;
-    
-    // Initialize thread_data depending on reduction operation
-    if(std::is_same<ReduceOp, struct ReduceSumType<T>>::value)
-      thread_data = 0;
-    else 
-      thread_data = init_val;
-
-    // Evaluate the loop body
-    if (idx < ntot)
-      thread_data = loop_fun(i, j, k).value;
-
-    // Perform reductions
-    if(std::is_same<ReduceOp, struct ReduceSumType<T>>::value)
-    {
-      // Compute the block-wide sum for thread0
-      T aggregate = BlockReduce(temp_storage).Sum(thread_data);
-
-      // Store aggregate
-      if(threadIdx.x == 0) 
-      {
-        atomicAdd(rslt, aggregate);
-      }
-    }
-    else if(std::is_same<ReduceOp, struct ReduceMaxType<T>>::value)
-    {
-      // Compute the block-wide sum for thread0
-      T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max());
-
-      // Store aggregate
-      if(threadIdx.x == 0) 
-      {
-        AtomicMax(rslt, aggregate);
-      }
-
-      // Write to global memory directly from all threads
-      // if (idx < ntot)
-      // {
-      //   AtomicMax(rslt, thread_data);
-      // }
-    }
-    else if(std::is_same<ReduceOp, struct ReduceMinType<T>>::value)
-    {
-      // Compute the block-wide sum for thread0
-      T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Min());
-
-      // Store aggregate
-      if(threadIdx.x == 0) 
-      {
-        AtomicMin(rslt, aggregate);
-      }
-      
-      // Write to global memory directly from all threads
-      // if (idx < ntot)
-      // {
-      //   AtomicMin(rslt, thread_data);
-      // }
-    }
-    else 
-    {
-      printf("ERROR at %s:%d: Invalid reduction identifier, likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);
-    }
-}
-
-/*--------------------------------------------------------------------------
- * CUDA loop macro redefinitions
- *--------------------------------------------------------------------------*/
-
-/**
- * @brief A macro for finding the 3D CUDA grid and block dimensions.
- * 
- * The runtime adjustment of y and z-blocksizes is based on a heuristic 
- * to improve the occupancy when launching a kernel with small grid size 
- * (does not have a very significant performance implications).
- *
- * @note Not for direct use!
- *
- * @param grid grid dimensions [OUT]
- * @param block block dimensions [OUT]
- * @param nx The size of the first dim [IN]
- * @param ny The size of the second dim [IN]
- * @param nz The size of the third dim [IN]
- * @param dyn_blocksize Runtime adjustment of y- and z-blocksizes [IN]
- */
-#define FindDims(grid, block, nx, ny, nz, dyn_blocksize)                            \
-{                                                                                   \
-  int blocksize_x = BLOCKSIZE_X;                                                    \
-  int blocksize_y = BLOCKSIZE_Y;                                                    \
-  int blocksize_z = BLOCKSIZE_Z;                                                    \
-  grid = dim3(((nx - 1) + blocksize_x) / blocksize_x,                               \
-      ((ny - 1) + blocksize_y) / blocksize_y,                                       \
-      ((nz - 1) + blocksize_z) / blocksize_z);                                      \
-  while(dyn_blocksize && (grid.x*grid.y*grid.z < 80)                                \
-          && ((blocksize_y * blocksize_z) >= 4 ))                                   \
-  {                                                                                 \
-      if ( blocksize_z >= 2 )                                                       \
-          blocksize_z /= 2;                                                         \
-      else                                                                          \
-          blocksize_y /= 2;                                                         \
-      grid = dim3(((nx - 1) + blocksize_x) / blocksize_x,                           \
-      ((ny - 1) + blocksize_y) / blocksize_y,                                       \
-      ((nz - 1) + blocksize_z) / blocksize_z);                                      \
-  }                                                                                 \
-  block = dim3(blocksize_x, blocksize_y, blocksize_z);                              \
-}
 
 /**
  * @brief A macro for checking if cell flag data array must be reallocated.
@@ -493,20 +183,20 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   int flagdata_size = sizeof(char) * (nz * ny * nx);                                \
   if(GrGeomSolidCellFlagDataSize(grgeom) < flagdata_size)                           \
   {                                                                                 \
-    char *flagdata = (char*)_ctalloc_cuda(flagdata_size);                           \
+    char *flagdata = (char*)_ctalloc_device(flagdata_size);                         \
                                                                                     \
     if(GrGeomSolidCellFlagDataSize(grgeom) > 0)                                     \
-      CUDA_ERR(cudaMemcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                \
-        GrGeomSolidCellFlagDataSize(grgeom), cudaMemcpyDeviceToDevice));            \
+      memcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                             \
+        GrGeomSolidCellFlagDataSize(grgeom));                                       \
                                                                                     \
-    _tfree_cuda(GrGeomSolidCellFlagData(grgeom));                                   \
+    _tfree_device(GrGeomSolidCellFlagData(grgeom));                                 \
     GrGeomSolidCellFlagData(grgeom) = flagdata;                                     \
     GrGeomSolidCellFlagDataSize(grgeom) = flagdata_size;                            \
   }                                                                                 \
 }
 
- /** Loop definition for CUDA. */
-#define BoxLoopI1_cuda(i, j, k,                                                     \
+ /** Loop definition for Kokkos. */
+#define BoxLoopI1_kokkos(i, j, k,                                                   \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   loop_body)                                                                        \
@@ -514,9 +204,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
-                                                                                    \
-    dim3 block, grid;                                                               \
-    FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
     const auto &ref_i1 = i1;                                                        \
                                                                                     \
@@ -533,21 +220,19 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                            \
     using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
-    CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
-      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+      Kokkos::fence();                                                              \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define BoxLoopI2_cuda(i, j, k,                                                     \
+ /** Loop definition for Kokkos. */
+#define BoxLoopI2_kokkos(i, j, k,                                                   \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
@@ -557,9 +242,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   {                                                                                 \
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
-                                                                                    \
-    dim3 block, grid;                                                               \
-    FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
     const auto &ref_i1 = i1;                                                        \
     const auto &ref_i2 = i2;                                                        \
@@ -579,21 +261,19 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                            \
     using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
-    CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
-      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+      Kokkos::fence();                                                              \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define BoxLoopI3_cuda(i, j, k,                                                     \
+ /** Loop definition for Kokkos. */
+#define BoxLoopI3_kokkos(i, j, k,                                                   \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
@@ -605,9 +285,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
     DeclareInc(PV_jinc_3, PV_kinc_3, nx, ny, nz, nx3, ny3, nz3, sx3, sy3, sz3);     \
-                                                                                    \
-    dim3 block, grid;                                                               \
-    FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
     const auto &ref_i1 = i1;                                                        \
     const auto &ref_i2 = i2;                                                        \
@@ -630,21 +307,19 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                            \
     using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
-    CUDA_ERR(cudaPeekAtLastError());                                                \
                                                                                     \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
-      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+      Kokkos::fence();                                                              \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define BoxLoopReduceI1_cuda(rslt, i, j, k,                                         \
+ /** Loop definition for Kokkos. */
+#define BoxLoopReduceI1_kokkos(rslt, i, j, k,                                       \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   loop_body)                                                                        \
@@ -653,16 +328,12 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   {                                                                                 \
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
                                                                                     \
-    int block = BLOCKSIZE_MAX;                                                      \
-    int grid = ((nx * ny * nz - 1) + block) / block;                                \
-                                                                                    \
     const auto &ref_rslt = rslt;                                                    \
     const auto &ref_i1 = i1;                                                        \
                                                                                     \
     auto lambda_body =                                                              \
-      GPU_LAMBDA(int i, int j, int k)                                               \
+      KOKKOS_LAMBDA(int i, int j, int k, double& lsum)                              \
       {                                                                             \
-        auto rslt = ref_rslt;                                                       \
         const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
           + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
                                                                                     \
@@ -673,26 +344,33 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_cuda(sizeof(decltype(rslt)));\
-    MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
-    *ptr_rslt = rslt;                                                               \
-    MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
-                                                                                    \
+    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     typedef function_traits<decltype(lambda_body)> traits;                          \
-    DotKernel<traits::result_type><<<grid, block>>>(lambda_body,                    \
-      rslt, ptr_rslt, nx, ny, nz);                                                  \
-    CUDA_ERR(cudaPeekAtLastError());                                                \
-    CUDA_ERR(cudaStreamSynchronize(0));                                             \
-                                                                                    \
-    MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
-    rslt = *ptr_rslt;                                                               \
-    _tfree_cuda(ptr_rslt);                                                          \
+    if(std::is_same<traits::result_type, struct ReduceSumType<double>>::value)      \
+    {                                                                               \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, rslt);                      \
+    }                                                                               \
+    else if(std::is_same<traits::result_type, struct ReduceMaxType<double>>::value) \
+    {                                                                               \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, Kokkos::Max<double>(rslt)); \
+    }                                                                               \
+    else if(std::is_same<traits::result_type, struct ReduceMinType<double>>::value) \
+    {                                                                               \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, Kokkos::Min<double>(rslt)); \
+    }                                                                               \
+    else                                                                            \
+    {                                                                               \
+      printf("ERROR at %s:%d: Invalid reduction identifier,                         \
+      likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);            \
+    }                                                                               \
+    Kokkos::fence();                                                                \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define BoxLoopReduceI2_cuda(rslt, i, j, k,                                         \
+ /** Loop definition for Kokkos. */
+#define BoxLoopReduceI2_kokkos(rslt, i, j, k,                                       \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
@@ -703,17 +381,13 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
                                                                                     \
-    int block = BLOCKSIZE_MAX;                                                      \
-    int grid = ((nx * ny * nz - 1) + block) / block;                                \
-                                                                                    \
     const auto &ref_rslt = rslt;                                                    \
     const auto &ref_i1 = i1;                                                        \
     const auto &ref_i2 = i2;                                                        \
                                                                                     \
     auto lambda_body =                                                              \
-      GPU_LAMBDA(int i, int j, int k)                                               \
+      KOKKOS_LAMBDA(int i, int j, int k, double& lsum)                              \
       {                                                                             \
-        auto rslt = ref_rslt;                                                       \
         const int i1 = k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                     \
           + (k * ny * nx + j * nx + i) * sx1 + ref_i1;                              \
         const int i2 = k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                     \
@@ -726,26 +400,33 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_cuda(sizeof(decltype(rslt)));\
-    MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
-    *ptr_rslt = rslt;                                                               \
-    MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
-                                                                                    \
+    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     typedef function_traits<decltype(lambda_body)> traits;                          \
-    DotKernel<traits::result_type><<<grid, block>>>(lambda_body,                    \
-      rslt, ptr_rslt, nx, ny, nz);                                                  \
-    CUDA_ERR(cudaPeekAtLastError());                                                \
-    CUDA_ERR(cudaStreamSynchronize(0));                                             \
-                                                                                    \
-    MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
-    rslt = *ptr_rslt;                                                               \
-    _tfree_cuda(ptr_rslt);                                                          \
+    if(std::is_same<traits::result_type, struct ReduceSumType<double>>::value)      \
+    {                                                                               \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, rslt);                      \
+    }                                                                               \
+    else if(std::is_same<traits::result_type, struct ReduceMaxType<double>>::value) \
+    {                                                                               \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, Kokkos::Max<double>(rslt)); \
+    }                                                                               \
+    else if(std::is_same<traits::result_type, struct ReduceMinType<double>>::value) \
+    {                                                                               \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, Kokkos::Min<double>(rslt)); \
+    }                                                                               \
+    else                                                                            \
+    {                                                                               \
+      printf("ERROR at %s:%d: Invalid reduction identifier,                         \
+      likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);            \
+    }                                                                               \
+    Kokkos::fence();                                                                \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define GrGeomInLoopBoxes_cuda(i, j, k,                                             \
+ /** Loop definition for Kokkos. */
+#define GrGeomInLoopBoxes_kokkos(i, j, k,                                           \
   grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
 {                                                                                   \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
@@ -778,9 +459,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         int PV_ny = PV_iyu - PV_iyl + 1;                                            \
         int PV_nz = PV_izu - PV_izl + 1;                                            \
                                                                                     \
-        dim3 block, grid;                                                           \
-        FindDims(grid, block, PV_nx, PV_ny, PV_nz, 1);                              \
-                                                                                    \
         auto lambda_body =                                                          \
           KOKKOS_LAMBDA(int i, int j, int k)                                        \
           {                                                                         \
@@ -800,12 +478,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             }                                                                       \
           };                                                                        \
                                                                                     \
-        /*BoxKernel<<<grid, block>>>(lambda_body, PV_nx, PV_ny, PV_nz);*/           \
         using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
         MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_nx, PV_ny, PV_nz}});          \
         Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
-        CUDA_ERR(cudaPeekAtLastError());                                            \
-        CUDA_ERR(cudaStreamSynchronize(0));                                         \
+        Kokkos::fence();                                                            \
       }                                                                             \
     }                                                                               \
     GrGeomSolidCellFlagInitialized(grgeom) |= 1;                                    \
@@ -821,9 +497,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
     if(nx_gpu > 0 && ny_gpu > 0 && nz_gpu > 0)                                      \
     {                                                                               \
-      dim3 block, grid;                                                             \
-      FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                             \
-                                                                                    \
       char *inflag = GrGeomSolidCellFlagData(grgeom);                               \
       auto lambda_body =                                                            \
         KOKKOS_LAMBDA(int i, int j, int k)                                          \
@@ -838,19 +511,17 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           }                                                                         \
         };                                                                          \
                                                                                     \
-      /*BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);*/              \
       using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
       MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});         \
       Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
-      CUDA_ERR(cudaPeekAtLastError());                                              \
-      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+      Kokkos::fence();                                                              \
     }                                                                               \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define GrGeomSurfLoopBoxes_cuda(i, j, k, fdir, grgeom,                             \
+ /** Loop definition for Kokkos. */
+#define GrGeomSurfLoopBoxes_kokkos(i, j, k, fdir, grgeom,                           \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
   for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
@@ -887,9 +558,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           int PV_ny = PV_iyu - PV_iyl + 1;                                          \
           int PV_nz = PV_izu - PV_izl + 1;                                          \
                                                                                     \
-          dim3 block, grid;                                                         \
-          FindDims(grid, block, PV_nx, PV_ny, PV_nz, 1);                            \
-                                                                                    \
           const int _fdir0 = fdir[0];                                               \
           const int _fdir1 = fdir[1];                                               \
           const int _fdir2 = fdir[2];                                               \
@@ -915,12 +583,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
               }                                                                     \
             };                                                                      \
                                                                                     \
-          /*BoxKernel<<<grid, block>>>(lambda_body, PV_nx, PV_ny, PV_nz);*/             \
           using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
           MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_nx, PV_ny, PV_nz}});        \
           Kokkos::parallel_for(mdpolicy_3d, lambda_body);                           \
-          CUDA_ERR(cudaPeekAtLastError());                                          \
-          CUDA_ERR(cudaStreamSynchronize(0));                                       \
+          Kokkos::fence();                                                          \
         }                                                                           \
       }                                                                             \
       GrGeomSolidCellFlagInitialized(grgeom) |= (1 << (2 + PV_f));                  \
@@ -936,9 +602,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
       if(nx_gpu > 0 && ny_gpu > 0 && nz_gpu > 0)                                    \
       {                                                                             \
-        dim3 block, grid;                                                           \
-        FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                           \
-                                                                                    \
         char *surfflag = GrGeomSolidCellFlagData(grgeom);                           \
                                                                                     \
         const int _fdir0 = fdir[0];                                                 \
@@ -961,20 +624,18 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             }                                                                       \
           };                                                                        \
                                                                                     \
-        /*BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);*/            \
         using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
         MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});       \
         Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
-        CUDA_ERR(cudaPeekAtLastError());                                            \
-        CUDA_ERR(cudaStreamSynchronize(0));                                         \
+        Kokkos::fence();                                                            \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define GrGeomPatchLoopBoxes_cuda(i, j, k, fdir, grgeom, patch_num,                 \
+ /** Loop definition for Kokkos. */
+#define GrGeomPatchLoopBoxes_kokkos(i, j, k, fdir, grgeom, patch_num,               \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
   for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
@@ -1000,9 +661,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         int PV_diff_y = PV_iyu - PV_iyl;                                            \
         int PV_diff_z = PV_izu - PV_izl;                                            \
                                                                                     \
-        dim3 block, grid;                                                           \
-        FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);      \
-                                                                                    \
         int nx = PV_diff_x + 1;                                                     \
         int ny = PV_diff_y + 1;                                                     \
         int nz = PV_diff_z + 1;                                                     \
@@ -1026,20 +684,18 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           };                                                                        \
         n_prev += nz * ny * nx;                                                     \
                                                                                     \
-        /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                        \
         using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
         MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                   \
         Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
-        CUDA_ERR(cudaPeekAtLastError());                                            \
-        CUDA_ERR(cudaStreamSynchronize(0));                                         \
+        Kokkos::fence();                                                            \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define GrGeomPatchLoopBoxesNoFdir_cuda(i, j, k, grgeom, patch_num, ovrlnd,         \
+ /** Loop definition for Kokkos. */
+#define GrGeomPatchLoopBoxesNoFdir_kokkos(i, j, k, grgeom, patch_num, ovrlnd,       \
   ix, iy, iz, nx, ny, nz, locals, setup,                                            \
   f_left, f_right, f_down, f_up, f_back, f_front, finalize)                         \
 {                                                                                   \
@@ -1066,7 +722,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     if(!(ptr_ival))                                                                 \
     {                                                                               \
       GrGeomSolidCellIval(grgeom, patch_loc, PV_f) =                                \
-        (int*)_talloc_cuda(sizeof(int) * nx_bxs * ny_bxs * nz_bxs);                 \
+        (int*)_talloc_device(sizeof(int) * nx_bxs * ny_bxs * nz_bxs);               \
                                                                                     \
       ptr_ival = GrGeomSolidCellIval(grgeom, patch_loc, PV_f);                      \
       for (int idx = 0; idx < nx_bxs * ny_bxs * nz_bxs; idx++)                      \
@@ -1114,9 +770,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
       if(nx_gpu > 0 && ny_gpu > 0 && nz_gpu > 0)                                    \
       {                                                                             \
-        dim3 block, grid;                                                           \
-        FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                           \
-                                                                                    \
         auto lambda_body =                                                          \
           KOKKOS_LAMBDA(int i, int j, int k)                                        \
           {                                                                         \
@@ -1143,20 +796,18 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             }                                                                       \
           };                                                                        \
                                                                                     \
-        /*BoxKernel<<<grid, block>>>(lambda_body, nx_gpu, ny_gpu, nz_gpu);*/            \
         using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
         MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});       \
         Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
-        CUDA_ERR(cudaPeekAtLastError());                                            \
-        CUDA_ERR(cudaStreamSynchronize(0));                                         \
+        Kokkos::fence();                                                            \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define GrGeomOctreeExteriorNodeLoop_cuda(i, j, k, node, octree, level,             \
+ /** Loop definition for Kokkos. */
+#define GrGeomOctreeExteriorNodeLoop_kokkos(i, j, k, node, octree, level,           \
   ix, iy, iz, nx, ny, nz, val_test, loop_body)                                      \
 {                                                                                   \
   int PV_i, PV_j, PV_k, PV_l;                                                       \
@@ -1193,10 +844,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       const int PV_diff_y = PV_iyu - PV_iyl;                                        \
       const int PV_diff_z = PV_izu - PV_izl;                                        \
                                                                                     \
-      dim3 block;                                                                   \
-      dim3 grid;                                                                    \
-      FindDims(grid, block, PV_diff_x, PV_diff_y, PV_diff_z, 1);                    \
-                                                                                    \
       auto lambda_body =                                                            \
         KOKKOS_LAMBDA(int i, int j, int k)                                          \
         {                                                                           \
@@ -1207,12 +854,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           loop_body;                                                                \
         };                                                                          \
                                                                                     \
-      /*(BoxKernel<<<grid, block>>>(lambda_body, PV_diff_x, PV_diff_y, PV_diff_z));*/   \
       using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
       MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_diff_x, PV_diff_y, PV_diff_z}});\
       Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
-      CUDA_ERR(cudaPeekAtLastError());                                              \
-      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+      Kokkos::fence();                                                              \
     }                                                                               \
     i = PV_ixu;                                                                     \
     j = PV_iyu;                                                                     \
@@ -1221,8 +866,8 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   (void)i;(void)j;(void)k;                                                          \
 }
 
- /** Loop definition for CUDA. */
-#define GrGeomOutLoop_cuda(i, j, k, grgeom, r,                                      \
+ /** Loop definition for Kokkos. */
+#define GrGeomOutLoop_kokkos(i, j, k, grgeom, r,                                    \
   ix, iy, iz, nx, ny, nz, body)                                                     \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
@@ -1251,9 +896,6 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     }                                                                               \
     else                                                                            \
     {                                                                               \
-      dim3 block, grid;                                                             \
-      FindDims(grid, block, nx, ny, nz, 1);                                         \
-                                                                                    \
       char *outflag = GrGeomSolidCellFlagData(grgeom);                              \
       auto lambda_body =                                                            \
         KOKKOS_LAMBDA(int i, int j, int k)                                          \
@@ -1268,16 +910,14 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           }                                                                         \
         };                                                                          \
                                                                                     \
-      /*BoxKernel<<<grid, block>>>(lambda_body, nx, ny, nz);*/                          \
       using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
       MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                     \
       Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
-      CUDA_ERR(cudaPeekAtLastError());                                              \
-      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+      Kokkos::fence();                                                              \
     }                                                                               \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
 
 }
-#endif // PF_CUDALOOPS_H
+#endif // PF_KOKKOSLOOPS_H

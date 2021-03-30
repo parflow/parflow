@@ -33,7 +33,6 @@ set (SRC_FILES_CONST advect.F
   hbt.c
   index_space.c
   infinity_norm.c
-  init_acc_arch.cpp
   inputRF.c
   input_checks.c
   input_database.c
@@ -125,7 +124,7 @@ set (SRC_FILES_CONST advect.F
   write_parflow_silo_pmpio.c
 )
 
-if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
+if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH_TYPE_0
     clustering.cpp
@@ -162,6 +161,10 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     problem_ic_phase_pressure.cpp
     region.cpp
   )
+
+if(${PARFLOW_HAVE_KOKKOS})
+  list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
+endif(${PARFLOW_HAVE_KOKKOS})
 
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
 	#  ------------------------------------------------------------
@@ -210,7 +213,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
   endif( ${PARFLOW_HAVE_RMM} )
 
-else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
+else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH
     axpy.cpp
@@ -245,7 +248,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
   )
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
-endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
+endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")

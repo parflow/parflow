@@ -24,6 +24,20 @@ extern "C"{
 #include "amps.h"
 
 /**
+ * @brief The maximum number of GPU streams
+ *
+ * Here 1024 is an arbitrary number that should be larger than the sum 
+ * of amps_InvoiceEntries in all recv or send invoices of the current 
+ * communication package (ie, all packing/unpacking kernels should be 
+ * allowed to run in a separate stream for best performance).
+ * 
+ * If the number is smaller than the required packing/unpacking kernel launches,
+ * the kernels are queued in the available streams and run at least partially 
+ * sequentially (useful for debugging purposes).
+ */
+#define AMPS_GPU_MAX_STREAMS 1024
+
+/**
  * @brief The maximum block size for a GPU kernel
  *
  * The largest blocksize ParFlow is using, but also the largest blocksize 
@@ -66,6 +80,30 @@ extern "C"{
   int num_bufs;
 } amps_GpuBuffer;
 
+/**
+ * @brief Information about the global GPU packing/unpacking streams
+ */
+typedef struct _amps_GpuStreams {
+  /** 
+  * A list of GPU streams.
+  */
+  cudaStream_t *stream;
+  /** 
+  * The stream id can be used to associate a stream with 
+  * an id number (typically the invoice index).
+  */
+  int *stream_id;
+  /** 
+  * The number of streams created.
+  */
+  int num_streams;
+  /** 
+  * The number of requested streams since a synchronization (can be 
+  * larger than num_streams).
+  */
+  int reqs_since_sync;
+} amps_GpuStreams;
+
 #ifdef DISABLE_GPU_PACKING
 /* Dummy definitions if no GPU packing */
 void amps_gpu_free_bufs(){}
@@ -102,6 +140,14 @@ amps_GpuBuffer amps_gpu_sendbuf =
   .num_bufs = 0
 };
 
+amps_GpuStreams amps_gpu_streams = 
+{
+  .stream = NULL,
+  .stream_id = NULL,
+  .num_streams = 0,
+  .reqs_since_sync = 0
+};
+
 /**
  * @brief Defines whether host staging is used
  *
@@ -124,7 +170,7 @@ void amps_gpu_check_env(){
   if(getenv("PARFLOW_USE_GPUDIRECT") != NULL){
     if(atoi(getenv("PARFLOW_USE_GPUDIRECT")) == 1){
       if(amps_rank == 0 && ENFORCE_HOST_STAGING != 0)
-        printf("Node %d: Using GPUDirect (GPU-Aware MPI required)\n", amps_rank);
+        printf("Node %d: Using GPUDirect (CUDA-Aware MPI required)\n", amps_rank);
       ENFORCE_HOST_STAGING = 0;
     }
   }
@@ -134,6 +180,56 @@ void amps_gpu_check_env(){
  * @brief Destroy all GPU streams and free allocations
  */
 void amps_gpu_destroy_streams(){
+  for(int i = 0; i < amps_gpu_streams.num_streams; i++){
+    CUDA_ERRCHK(cudaStreamDestroy(amps_gpu_streams.stream[i]));
+  }
+  free(amps_gpu_streams.stream);
+  free(amps_gpu_streams.stream_id);
+}
+
+/**
+ * @brief Get a new GPU stream
+ *
+ * Marks a stream with the id and returns this stream (new stream is allocated if necessary).
+ *
+ * @param id The integer id associated with the returned stream [IN]
+ * @return A GPU stream
+ */
+cudaStream_t amps_gpu_get_stream(int id){
+  if(amps_gpu_streams.reqs_since_sync > amps_gpu_streams.num_streams - 1)
+  {
+    if(amps_gpu_streams.num_streams < AMPS_GPU_MAX_STREAMS)
+    {
+      int new_num_streams = amps_gpu_streams.reqs_since_sync + 1;
+      if(amps_gpu_streams.reqs_since_sync >= AMPS_GPU_MAX_STREAMS)
+        new_num_streams = AMPS_GPU_MAX_STREAMS;
+
+      cudaStream_t *newstream = (cudaStream_t*)malloc(new_num_streams * sizeof(cudaStream_t));
+      int *id_array = (int*)malloc(new_num_streams * sizeof(int));
+      if(amps_gpu_streams.num_streams != 0){
+        memcpy(newstream, 
+          amps_gpu_streams.stream, 
+            amps_gpu_streams.num_streams * sizeof(cudaStream_t));
+        memcpy(id_array, 
+          amps_gpu_streams.stream_id, 
+            amps_gpu_streams.num_streams * sizeof(int));
+        free(amps_gpu_streams.stream);
+        free(amps_gpu_streams.stream_id);
+      }
+      amps_gpu_streams.stream = newstream;
+      amps_gpu_streams.stream_id = id_array;
+      for(int i = amps_gpu_streams.num_streams; i < new_num_streams; i++){
+        CUDA_ERRCHK(cudaStreamCreate(&(amps_gpu_streams.stream[i])));
+        amps_gpu_streams.stream_id[i] = INT_MAX; 
+      }
+      amps_gpu_streams.num_streams = new_num_streams;
+    }
+  }
+  int stream_index = amps_gpu_streams.reqs_since_sync % AMPS_GPU_MAX_STREAMS;
+  amps_gpu_streams.reqs_since_sync++;
+  if(id < amps_gpu_streams.stream_id[stream_index])
+    amps_gpu_streams.stream_id[stream_index] = id;
+  return amps_gpu_streams.stream[stream_index];
 }
 
 /**
@@ -144,6 +240,21 @@ void amps_gpu_destroy_streams(){
  * @param id The integer id associated with the synchronized streams [IN]
  */
 void amps_gpu_sync_streams(int id){
+  for(int i = 0; i < amps_gpu_streams.num_streams; i++)
+  {
+    if(amps_gpu_streams.stream_id[i] < id){
+      printf("ERROR at %s:%d: The streams must be synced in ascending id order \n", __FILE__, __LINE__);
+      exit(1);
+    }
+  }
+  for(int i = 0; i < amps_gpu_streams.num_streams; i++)
+  {
+    if(amps_gpu_streams.stream_id[i] == id){
+      CUDA_ERRCHK(cudaStreamSynchronize(amps_gpu_streams.stream[i])); 
+      amps_gpu_streams.stream_id[i] = INT_MAX;
+    }
+  }
+  amps_gpu_streams.reqs_since_sync = 0;
 }
   
 /**
@@ -519,29 +630,31 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);
 
     if(action == AMPS_PACK){
-      _amps_packing_kernel<<<grid, block>>>(
+      cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
+      _amps_packing_kernel<<<grid, block, 0, new_stream>>>(
         (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       if(ENFORCE_HOST_STAGING){
         /* Copy device buffer to host after packing */
         CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_sendbuf.buf_host[inv_num] + pos,
                                       amps_gpu_sendbuf.buf[inv_num] + pos,
-                                        size, cudaMemcpyDeviceToHost, 0));
+                                        size, cudaMemcpyDeviceToHost, new_stream));
       }
       inv->flags |= AMPS_PACKED;
     }
     else if(action == AMPS_UNPACK){
+      cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
       if(ENFORCE_HOST_STAGING){
         /* Copy host buffer to device before unpacking */
         CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_recvbuf.buf[inv_num] + pos,
                                       amps_gpu_recvbuf.buf_host[inv_num] + pos,
-                                        size, cudaMemcpyHostToDevice, 0));
+                                        size, cudaMemcpyHostToDevice, new_stream));
       }
-      _amps_unpacking_kernel<<<grid, block>>>(
+      _amps_unpacking_kernel<<<grid, block, 0, new_stream>>>(
         (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags &= ~AMPS_PACKED;
     }
-    CUDA_ERRCHK(cudaPeekAtLastError()); 
-    CUDA_ERRCHK(cudaStreamSynchronize(0));
+    // CUDA_ERRCHK(cudaPeekAtLastError()); 
+    // CUDA_ERRCHK(cudaStreamSynchronize(0));
 
     pos += size;  
     ptr = ptr->next;

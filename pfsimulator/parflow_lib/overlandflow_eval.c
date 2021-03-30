@@ -38,7 +38,7 @@
 
 #include "parflow.h"
 
-#if PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_CUDA
+#if !defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_KOKKOS)
 #include "llnlmath.h"
 //#include "llnltyps.h"
 #endif

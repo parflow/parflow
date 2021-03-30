@@ -18,12 +18,15 @@
  ***********************************************************************/
 
 /** @file
- * @brief Contains general CUDA related macros and functions.
+ * @brief Contains general device-related macros and functions.
  */
 
-#ifndef PF_CUDAMAIN_H
-#define PF_CUDAMAIN_H
+#ifndef PF_DEVICES_H
+#define PF_DEVICES_H
 
+#include <string.h>
+
+#ifdef PARFLOW_HAVE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <stdbool.h>
@@ -67,6 +70,7 @@
 }
 #endif
 
+#if !defined(PARFLOW_HAVE_KOKKOS)
 /*--------------------------------------------------------------------------
  * CUDA profiling macros
  *--------------------------------------------------------------------------*/
@@ -92,9 +96,24 @@
 /** Stop recording an NVTX range for NSYS if accelerator present. */
 #define POP_NVTX_cuda nvtxRangePop();
 
+#endif // !PARFLOW_HAVE_KOKKOS
+#endif // PARFLOW_HAVE_CUDA
+
 /*--------------------------------------------------------------------------
- * Define static unified memory allocation routines for CUDA
+ * Define static unified memory allocation routines for device
  *--------------------------------------------------------------------------*/
+
+/**
+ * @brief Kokkos C wrapper declaration for memory allocation.
+ */
+void* kokkosAlloc(size_t size);
+
+/**
+ * @brief Kokkos C wrapper declaration for memory deallocation.
+ */
+void kokkosFree(void *ptr);
+
+void kokkosMemCpy(char *dest, char *src, size_t size);
 
 /**
  * @brief Allocates unified memory.
@@ -106,13 +125,16 @@
  * @param size bytes to be allocated [IN]
  * @return a void pointer to the allocated dataspace
  */
-static inline void *_talloc_cuda(size_t size)
+
+static inline void *_talloc_device(size_t size)
 {
   void *ptr = NULL;  
   
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
-#else
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  ptr = kokkosAlloc(size);
+#elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));  
 #endif
@@ -130,37 +152,42 @@ static inline void *_talloc_cuda(size_t size)
  * @param size bytes to be allocated [IN]
  * @return a void pointer to the allocated dataspace
  */
-static inline void *_ctalloc_cuda(size_t size)
+static inline void *_ctalloc_device(size_t size)
 {
   void *ptr = NULL;  
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
-#else
+  CUDA_ERR(cudaMemset(ptr, 0, size));  
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  ptr = kokkosAlloc(size);
+  memset(ptr, 0, size);
+#elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
-#endif  
-  // memset(ptr, 0, size);
   CUDA_ERR(cudaMemset(ptr, 0, size));  
+#endif  
   
   return ptr;
 }
 
 /**
- * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda.
+ * @brief Frees unified memory allocated with \ref _talloc_device or \ref _ctalloc_device.
  * 
  * @note Should not be called directly.
  *
  * @param ptr a void pointer to the allocated dataspace [IN]
  */
-static inline void _tfree_cuda(void *ptr)
+static inline void _tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
-#else
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  kokkosFree(ptr);
+#elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERR(cudaFree(ptr));
   // CUDA_ERR(cudaFreeHost(ptr));
 #endif
 }
 
-#endif // PF_CUDAMAIN_H
+#endif // PF_DEVICES_H

@@ -61,8 +61,8 @@ using namespace SAMRAI;
 #include <cegdb.h>
 #endif
 
-#ifdef PARFLOW_HAVE_RMM
-#include "pf_cudamain.h"
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+#include "pf_devices.h"
 #endif
 
 #ifdef PARFLOW_HAVE_ETRACE
@@ -118,11 +118,68 @@ int main(int argc, char *argv [])
     cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
 #endif
 
+#ifndef NDEBUG
+    /*-----------------------------------------------------------------------
+    * Wait for debugger if PARFLOW_DEBUG_RANK environment variable is set
+    *-----------------------------------------------------------------------*/
+    if(getenv("PARFLOW_DEBUG_RANK") != NULL) {
+      const int mpi_debug = atoi(getenv("PARFLOW_DEBUG_RANK"));
+      if(mpi_debug == amps_Rank(amps_CommWorld)){
+        volatile int i = 0;
+        amps_Printf("PARFLOW_DEBUG_RANK environment variable found.\n");
+        amps_Printf("Attach debugger to PID %ld (MPI rank %d) and set var i = 1 to continue\n", (long)getpid(), mpi_debug);
+        while(i == 0) {/*  change 'i' in the  debugger  */}
+      }
+      amps_Sync(amps_CommWorld);
+    }
+#endif // !NDEBUG
+
     /*-----------------------------------------------------------------------
      * Initialize acceleration architectures
      *-----------------------------------------------------------------------*/
-    init_acc_arch();
+#ifdef PARFLOW_HAVE_KOKKOS   
+    kokkosInit();
+#endif
 
+#if defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_KOKKOS)
+
+    /*-----------------------------------------------------------------------
+    * Check CUDA compute capability, set device, and initialize RMM allocator
+    *-----------------------------------------------------------------------*/
+    {
+      // CUDA
+      if (!amps_Rank(amps_CommWorld))
+      {
+        CUDA_ERR(cudaSetDevice(0));  
+      }else{
+        int num_devices = 0;
+        CUDA_ERR(cudaGetDeviceCount(&num_devices));
+        CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
+      }
+    
+      int device;
+      CUDA_ERR(cudaGetDevice(&device));
+
+      struct cudaDeviceProp props;
+      CUDA_ERR(cudaGetDeviceProperties(&props, device));
+
+      // int value;
+      // CUDA_ERR(cudaDeviceGetAttribute(&value, cudaDevAttrCanUseHostPointerForRegisteredMem, device));
+      // printf("cudaDevAttrCanUseHostPointerForRegisteredMem: %d\n", value);
+
+      if (props.major < 6)
+      {
+        amps_Printf("\nError: The GPU compute capability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
+        amps_Printf("\nThe minimum required GPU compute capability is 6.0.\n");
+        exit(1);
+      }
+    }
+#endif // PARFLOW_HAVE_CUDA && !PARFLOW_HAVE_KOKKOS
+
+
+  /*-----------------------------------------------------------------------
+  * Initialize RMM pool allocator
+  *-----------------------------------------------------------------------*/
 #ifdef PARFLOW_HAVE_RMM
       // RMM
       rmmOptions_t rmmOptions;
@@ -437,6 +494,13 @@ int main(int argc, char *argv [])
   tbox::SAMRAIManager::shutdown();
   tbox::SAMRAIManager::finalize();
   tbox::SAMRAI_MPI::finalize();
+#endif
+
+  /*-----------------------------------------------------------------------
+  * Shutdown Kokkos
+  *-----------------------------------------------------------------------*/
+#ifdef PARFLOW_HAVE_KOKKOS
+  kokkosFinalize();
 #endif
 
   /*-----------------------------------------------------------------------
