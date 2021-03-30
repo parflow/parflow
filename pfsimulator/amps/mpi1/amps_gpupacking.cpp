@@ -17,6 +17,8 @@
  *  USA
  ***********************************************************************/
 
+#include <Kokkos_Core.hpp>
+
 extern "C"{
 
 #include <stdlib.h>
@@ -144,6 +146,51 @@ void amps_gpu_destroy_streams(){
  * @param id The integer id associated with the synchronized streams [IN]
  */
 void amps_gpu_sync_streams(int id){
+  Kokkos::fence();   
+}
+
+void* kokkosDeviceAlloc(size_t size){
+  return Kokkos::kokkos_malloc<Kokkos::CudaSpace>(size);
+}
+
+void kokkosDeviceFree(void *ptr){
+  Kokkos::kokkos_free<Kokkos::CudaSpace>(ptr);
+}
+
+void* kokkosHostAlloc(size_t size){
+  return Kokkos::kokkos_malloc<Kokkos::CudaHostPinnedSpace>(size);
+}
+
+void kokkosHostFree(void *ptr){
+  Kokkos::kokkos_free<Kokkos::CudaHostPinnedSpace>(ptr);
+}
+
+void kokkosMemCpyDeviceToDevice(char *dest, char *src, size_t size){
+  Kokkos::View<char*, Kokkos::CudaSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::CudaSpace> src_view(src, size);
+  Kokkos::deep_copy(dest_view, src_view);
+  Kokkos::fence();   
+}
+
+void kokkosMemCpyDeviceToHost(char *dest, char *src, size_t size){
+  Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::CudaSpace> src_view(src, size);
+  Kokkos::deep_copy(dest_view, src_view);
+  Kokkos::fence();   
+}
+
+void kokkosMemCpyHostToDevice(char *dest, char *src, size_t size){
+  Kokkos::View<char*, Kokkos::CudaSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> src_view(src, size);
+  Kokkos::deep_copy(dest_view, src_view);
+  Kokkos::fence();   
+}
+
+void kokkosMemCpyHostToHost(char *dest, char *src, size_t size){
+  Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> src_view(src, size);
+  Kokkos::deep_copy(dest_view, src_view);
+  Kokkos::fence();   
 }
   
 /**
@@ -155,9 +202,9 @@ static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
   if(gpubuf->num_bufs > 0){
     for(int i = 0; i < gpubuf->num_bufs; i++){
       if(gpubuf->buf_size[i] > 0){
-        CUDA_ERRCHK(cudaFree(gpubuf->buf[i]));
+        kokkosDeviceFree(gpubuf->buf[i]);
         if(ENFORCE_HOST_STAGING)
-          CUDA_ERRCHK(cudaFreeHost(gpubuf->buf_host[i]));
+          kokkosHostFree(gpubuf->buf_host[i]);
       }
     }
     free(gpubuf->buf);
@@ -231,24 +278,20 @@ static char* _amps_gpubuf_realloc(amps_GpuBuffer *gpubuf, int id, int pos, int s
   int size_total = pos + size;
   if (gpubuf->buf_size[id] < size_total)
   {
-    char *newbuf;
-    CUDA_ERRCHK(cudaMalloc((void**)&newbuf, size_total));
+    char *newbuf = (char*)kokkosDeviceAlloc(size_total);
     if(pos != 0){
-      CUDA_ERRCHK(cudaMemcpy(newbuf,
-        gpubuf->buf[id], 
-          pos, cudaMemcpyDeviceToDevice));
-      CUDA_ERRCHK(cudaFree(gpubuf->buf[id]));
+      kokkosMemCpyDeviceToDevice(newbuf,
+        gpubuf->buf[id], pos);
+      kokkosDeviceFree(gpubuf->buf[id]);
     }
     gpubuf->buf[id] = newbuf;
     
     if(ENFORCE_HOST_STAGING){
-      char *newbuf_host;
-      CUDA_ERRCHK(cudaMallocHost((void**)&newbuf_host, size_total));
+      char *newbuf_host = (char*)kokkosHostAlloc(size_total);
       if(pos != 0){
-        CUDA_ERRCHK(cudaMemcpy(newbuf_host,
-          gpubuf->buf_host[id], 
-            pos, cudaMemcpyHostToHost));
-        CUDA_ERRCHK(cudaFreeHost(gpubuf->buf_host[id]));
+        kokkosMemCpyHostToHost(newbuf_host,
+          gpubuf->buf_host[id], pos);
+        kokkosHostFree(gpubuf->buf_host[id]);
       }
       gpubuf->buf_host[id] = newbuf_host;
     }
@@ -419,10 +462,19 @@ static char* _amps_gpu_sendbuf_realloc(int id, int pos, int size){
 * @param size_out pointer to the invoice message size in bytes [OUT]
 * @return error code (line number), 0 if succesful
 */
+static int kokkos_init = 0;
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out){
   
   char *buffer;
   int pos = 0;
+
+  if(!kokkos_init){
+    Kokkos::InitArguments args;
+    args.device_id = amps_node_rank % Kokkos::Cuda::detect_device_count();
+    args.ndevices = 1;
+    Kokkos::initialize(args);  
+    kokkos_init = 1;  
+  }
 
   amps_InvoiceEntry *ptr = inv->list;
   while (ptr != NULL)
@@ -482,14 +534,14 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     
     /* Get data location and its properties */
     char *data = (char*)ptr->data;
-    struct cudaPointerAttributes attributes;
-    cudaPointerGetAttributes(&attributes, (void *)data);  
+    // struct cudaPointerAttributes attributes;
+    // cudaPointerGetAttributes(&attributes, (void *)data);  
   
     /* Check that the data location (not MPI staging buffer) is accessible by the GPU */
-    if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
-      printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s)\n", __FILE__, __LINE__);
-      return __LINE__;
-    }
+    // if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
+      // printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s)\n", __FILE__, __LINE__);
+      // return __LINE__;
+    // }
 
     int size = len_x * len_y * len_z * sizeof(double);
     if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
@@ -504,13 +556,13 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     }
 
     /* Get buffer location and its properties */
-    cudaPointerGetAttributes(&attributes, (void *)buffer);  
+    // cudaPointerGetAttributes(&attributes, (void *)buffer);  
 
     /* Check that the staging buffer is accessible by the GPU */
-    if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
-      printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s)\n", __FILE__, __LINE__);
-      return __LINE__;
-    }
+    // if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
+      // printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s)\n", __FILE__, __LINE__);
+      // return __LINE__;
+    // }
 
     /* Run packing or unpacking kernel */
     dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, 
@@ -519,26 +571,30 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);
 
     if(action == AMPS_PACK){
+      Kokkos::fence();   
       _amps_packing_kernel<<<grid, block>>>(
         (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+        Kokkos::fence();   
       if(ENFORCE_HOST_STAGING){
         /* Copy device buffer to host after packing */
-        CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_sendbuf.buf_host[inv_num] + pos,
-                                      amps_gpu_sendbuf.buf[inv_num] + pos,
-                                        size, cudaMemcpyDeviceToHost, 0));
+        kokkosMemCpyDeviceToHost(amps_gpu_sendbuf.buf_host[inv_num] + pos,
+                                    amps_gpu_sendbuf.buf[inv_num] + pos, size);
+                                    Kokkos::fence();   
       }
       inv->flags |= AMPS_PACKED;
     }
     else if(action == AMPS_UNPACK){
       if(ENFORCE_HOST_STAGING){
         /* Copy host buffer to device before unpacking */
-        CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_recvbuf.buf[inv_num] + pos,
-                                      amps_gpu_recvbuf.buf_host[inv_num] + pos,
-                                        size, cudaMemcpyHostToDevice, 0));
+        kokkosMemCpyHostToDevice(amps_gpu_recvbuf.buf[inv_num] + pos,
+                                    amps_gpu_recvbuf.buf_host[inv_num] + pos, size);
+                                    Kokkos::fence();   
       }
+      Kokkos::fence();   
       _amps_unpacking_kernel<<<grid, block>>>(
         (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
       inv->flags &= ~AMPS_PACKED;
+      Kokkos::fence();   
     }
     CUDA_ERRCHK(cudaPeekAtLastError()); 
     CUDA_ERRCHK(cudaStreamSynchronize(0));
