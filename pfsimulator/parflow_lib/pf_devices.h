@@ -113,6 +113,9 @@ void* kokkosAlloc(size_t size);
  */
 void kokkosFree(void *ptr);
 
+/**
+ * @brief Kokkos C wrapper declaration for memory copy.
+ */
 void kokkosMemCpy(char *dest, char *src, size_t size);
 
 /**

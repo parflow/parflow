@@ -106,9 +106,7 @@ typedef struct _amps_GpuStreams {
 
 #ifdef DISABLE_GPU_PACKING
 /* Dummy definitions if no GPU packing */
-void amps_gpu_free_bufs(){}
-
-void amps_gpu_destroy_streams(){}
+void amps_gpu_finalize(){}
 
 void amps_gpu_sync_streams(int id){
   (void)id;
@@ -284,6 +282,14 @@ static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
 void amps_gpu_free_bufs(){
   _amps_gpubuf_free(&amps_gpu_recvbuf);
   _amps_gpubuf_free(&amps_gpu_sendbuf);
+}
+
+/**
+ * @brief Finalize GPU resource usage
+ */
+ void amps_gpu_finalize(){
+  amps_gpu_free_bufs();
+  amps_gpu_destroy_streams();
 }
 
 /**

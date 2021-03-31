@@ -26,7 +26,7 @@ void kokkosInit(){
 }
 
 void kokkosFinalize(){
-  Kokkos::finalize();
+  if(Kokkos::is_initialized) Kokkos::finalize();
 }
 
 }
