@@ -80,6 +80,7 @@ set (SRC_FILES_CONST advect.F
   problem_phase_heat_capacity.c
   problem_phase_internal_energy.c
   problem_phase_mobility.c
+  problem_phase_source.c
   problem_phase_viscosity.c
   problem_porosity.c
   problem_real_space_z.c
@@ -146,7 +147,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     overlandflow_eval_Kin.cpp
     problem_phase_density.cpp
     problem_phase_rel_perm.cpp
-    problem_phase_source.cpp
     problem_saturation.cpp
     rb_GS_point.cpp
     richards_jacobian_eval.cpp
@@ -161,6 +161,11 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     problem_ic_phase_pressure.cpp
     region.cpp
   )
+
+if(${PARFLOW_HAVE_CUDA})
+  list(REMOVE_ITEM SRC_FILES_CONST problem_phase_source.c)
+  list(APPEND SRC_FILES_ARCH_TYPE_2 problem_phase_source.cpp)
+endif(${PARFLOW_HAVE_CUDA})
 
 if(${PARFLOW_HAVE_KOKKOS})
   list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
@@ -187,11 +192,11 @@ endif(${PARFLOW_HAVE_KOKKOS})
 
   set (SRC_FILES_ARCH ${SRC_FILES_ARCH_TYPE_0} ${SRC_FILES_ARCH_TYPE_1} ${SRC_FILES_ARCH_TYPE_2})
 
-  if ( ${PARFLOW_HAVE_CUDA} AND (NOT ${PARFLOW_HAVE_KOKKOS}))
+  if ( (${PARFLOW_HAVE_CUDA}) AND (NOT ${PARFLOW_HAVE_KOKKOS}))
     set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CUDA)
-  else ( ${PARFLOW_HAVE_CUDA} AND (NOT ${PARFLOW_HAVE_KOKKOS}))
+  else ( (${PARFLOW_HAVE_CUDA}) AND (NOT ${PARFLOW_HAVE_KOKKOS}))
     set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CXX)
-  endif ( ${PARFLOW_HAVE_CUDA} AND (NOT ${PARFLOW_HAVE_KOKKOS}))
+  endif ( (${PARFLOW_HAVE_CUDA}) AND (NOT ${PARFLOW_HAVE_KOKKOS}))
 
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 

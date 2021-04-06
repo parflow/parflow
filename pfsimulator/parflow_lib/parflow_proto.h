@@ -353,6 +353,7 @@ typedef void (*L2ErrorNormInvoke) (double time, Vector *pressure, ProblemData *p
 /* kokkos.cpp */
 // void* kokkosAlloc(size_t size);
 // void kokkosFree(void *ptr);
+// void kokkosMemSet(char *ptr, size_t size);
 void kokkosInit();
 void kokkosFinalize();
 

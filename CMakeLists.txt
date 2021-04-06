@@ -64,10 +64,18 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
       message(FATAL_ERROR "ERROR: CUDA installation not found")
     endif(CMAKE_CUDA_COMPILER)
   endif(NOT DEFINED KOKKOS_ROOT)
+elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
+  message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
+  # Enable C and CXX -fopenmp flag, enable ParFlow defines.
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+  set(PARFLOW_HAVE_OMP "yes")
+else()
+  message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
+endif()
 
-  # Include RapidsAI Memory Manager (RMM) for pool allocation
-  # @MCB 04/16/2020: This should probably be moved outside of the CUDA block at some point
-  #   so other accelerators have the option to use it as well.
+# Include RapidsAI Memory Manager (RMM) for pool allocation
+if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
   if(DEFINED RMM_ROOT)
     find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
     find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
@@ -84,19 +92,19 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     else(RMM_INCLUDE AND RMM_LIBRARY)
       message(FATAL_ERROR "ERROR: RMM installation not found")
     endif(RMM_INCLUDE AND RMM_LIBRARY)
-    message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
+    if(${PARFLOW_HAVE_CUDA}) 
+      message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
+    else(${PARFLOW_HAVE_CUDA}) 
+      message(STATUS "ACCELERATOR: Compiling with Kokkos and RMM")
+    endif(${PARFLOW_HAVE_CUDA}) 
   else(DEFINED RMM_ROOT)
-    message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
+    if(${PARFLOW_HAVE_CUDA}) 
+      message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
+    else(${PARFLOW_HAVE_CUDA}) 
+      message(STATUS "ACCELERATOR: Compiling with Kokkos (RMM not used)")
+    endif(${PARFLOW_HAVE_CUDA}) 
   endif(DEFINED RMM_ROOT)
-elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
-  message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
-  # Enable C and CXX -fopenmp flag, enable ParFlow defines.
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-  set(PARFLOW_HAVE_OMP "yes")
-else()
-  message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
-endif()
+endif((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
 
 #-----------------------------------------------------------------------------
 # Version number

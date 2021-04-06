@@ -143,7 +143,7 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
     in_buffer = (char*)malloc((size_t)(element_size * len));
     out_buffer = (char*)malloc((size_t)(element_size * len));
 
-#if defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_KOKKOS)
+#ifdef PARFLOW_HAVE_CUDA
     /* Prefetch device data into host memory */
     struct cudaPointerAttributes attributes;
     cudaPointerGetAttributes(&attributes, (void *)data);

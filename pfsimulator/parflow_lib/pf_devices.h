@@ -51,25 +51,6 @@
   }                                                                                    \
 }
 
-#ifdef PARFLOW_HAVE_RMM
-#include <rmm/rmm_api.h>
-/**
- * @brief RMM error handling.
- * 
- * If error detected, print error message and exit.
- *
- * @param expr RMM error (of type rmmError_t) [IN]
- */
-#define RMM_ERR(expr)                                                                  \
-{                                                                                      \
-  rmmError_t err = expr;                                                               \
-  if (err != RMM_SUCCESS) {                                                            \
-    printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), __FILE__, __LINE__);   \
-    exit(1);                                                                           \
-  }                                                                                    \
-}
-#endif
-
 #if !defined(PARFLOW_HAVE_KOKKOS)
 /*--------------------------------------------------------------------------
  * CUDA profiling macros
@@ -99,6 +80,25 @@
 #endif // !PARFLOW_HAVE_KOKKOS
 #endif // PARFLOW_HAVE_CUDA
 
+#ifdef PARFLOW_HAVE_RMM
+#include <rmm/rmm_api.h>
+/**
+ * @brief RMM error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr RMM error (of type rmmError_t) [IN]
+ */
+#define RMM_ERR(expr)                                                                  \
+{                                                                                      \
+  rmmError_t err = expr;                                                               \
+  if (err != RMM_SUCCESS) {                                                            \
+    printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), __FILE__, __LINE__);   \
+    exit(1);                                                                           \
+  }                                                                                    \
+}
+#endif
+
 /*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for device
  *--------------------------------------------------------------------------*/
@@ -117,6 +117,11 @@ void kokkosFree(void *ptr);
  * @brief Kokkos C wrapper declaration for memory copy.
  */
 void kokkosMemCpy(char *dest, char *src, size_t size);
+
+/**
+ * @brief Kokkos C wrapper declaration for memset.
+ */
+void kokkosMemSet(char *ptr, size_t size);
 
 /**
  * @brief Allocates unified memory.
@@ -141,7 +146,7 @@ static inline void *_talloc_device(size_t size)
   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));  
 #endif
-  
+
   return ptr;
 }
 
@@ -161,15 +166,20 @@ static inline void *_ctalloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
-  CUDA_ERR(cudaMemset(ptr, 0, size));  
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
-  memset(ptr, 0, size);
 #elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
-  CUDA_ERR(cudaMemset(ptr, 0, size));  
 #endif  
+
+#if defined(PARFLOW_HAVE_CUDA)
+  CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
+#else
+  // memset(ptr, 0, size);
+  // Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){((char*)ptr)[i] = 0;});
+  kokkosMemSet((char*)ptr, size);
+#endif
   
   return ptr;
 }

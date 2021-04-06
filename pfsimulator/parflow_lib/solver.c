@@ -124,7 +124,7 @@ NewSolver()
   /*-----------------------------------------------------------------------
    * Copy Globals struct to GPU (does not copy all unneccessary data)
    *-----------------------------------------------------------------------*/
-#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+#if defined(PARFLOW_HAVE_CUDA)
   CopyGlobalsToDevice();
 #endif
 

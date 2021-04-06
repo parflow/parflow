@@ -134,58 +134,183 @@ void amps_gpu_sync_streams(int id){
   if(id == 0) Kokkos::fence();   
 }
 
+/**
+ * @brief Allocate device memory with Kokkos
+ *
+ * @param size The size of the allocation in bytes
+ */
 void* kokkosDeviceAlloc(size_t size){
+#ifdef __CUDACC__
   return Kokkos::kokkos_malloc<Kokkos::CudaSpace>(size);
+#else
+  return Kokkos::kokkos_malloc<Kokkos::HostSpace>(size);
+#endif
 }
 
+/**
+ * @brief Free device memory with Kokkos
+ *
+ * @param ptr Freed pointer
+ */
 void kokkosDeviceFree(void *ptr){
+#ifdef __CUDACC__
   Kokkos::kokkos_free<Kokkos::CudaSpace>(ptr);
+#else
+  Kokkos::kokkos_free<Kokkos::HostSpace>(ptr);
+#endif
 }
 
+/**
+ * @brief Allocate pinned host memory with Kokkos
+ *
+ * @param size The size of the allocation in bytes
+ */
 void* kokkosHostAlloc(size_t size){
+#ifdef __CUDACC__
   return Kokkos::kokkos_malloc<Kokkos::CudaHostPinnedSpace>(size);
+#else
+  return Kokkos::kokkos_malloc<Kokkos::HostSpace>(size);
+#endif
 }
 
+/**
+ * @brief Free pinned host memory with Kokkos
+ *
+ * @param ptr Freed pointer
+ */
 void kokkosHostFree(void *ptr){
+#ifdef __CUDACC__
   Kokkos::kokkos_free<Kokkos::CudaHostPinnedSpace>(ptr);
+#else
+  Kokkos::kokkos_free<Kokkos::HostSpace>(ptr);
+#endif
 }
 
+/**
+ * @brief Allocate Unified Memory with Kokkos
+ *
+ * @param size The size of the allocation in bytes
+ */
 void* kokkosUVMAlloc(size_t size){
+#ifdef __CUDACC__
   return Kokkos::kokkos_malloc<Kokkos::CudaUVMSpace>(size);
+#else
+  return Kokkos::kokkos_malloc<Kokkos::HostSpace>(size);
+#endif
 }
 
+/**
+ * @brief Free Unified Memory with Kokkos
+ *
+ * @param ptr Freed pointer
+ */
 void kokkosUVMFree(void *ptr){
+#ifdef __CUDACC__
   Kokkos::kokkos_free<Kokkos::CudaUVMSpace>(ptr);
+#else
+  Kokkos::kokkos_free<Kokkos::HostSpace>(ptr);
+#endif
 }
 
+/**
+ * @brief Device-device memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
 void kokkosMemCpyDeviceToDevice(char *dest, char *src, size_t size){
+#ifdef __CUDACC__
   Kokkos::View<char*, Kokkos::CudaSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaSpace> src_view(src, size);
+#else
+  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+#endif
   Kokkos::deep_copy(dest_view, src_view);
 }
 
+
+/**
+ * @brief Device-host memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
 void kokkosMemCpyDeviceToHost(char *dest, char *src, size_t size){
+#ifdef __CUDACC__
   Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaSpace> src_view(src, size);
+#else
+  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+#endif
   Kokkos::deep_copy(dest_view, src_view);
 }
 
+/**
+ * @brief Host-device memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
 void kokkosMemCpyHostToDevice(char *dest, char *src, size_t size){
+#ifdef __CUDACC__
   Kokkos::View<char*, Kokkos::CudaSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> src_view(src, size);
+#else
+  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+#endif
   Kokkos::deep_copy(dest_view, src_view);
 }
 
+/**
+ * @brief Host-host memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
 void kokkosMemCpyHostToHost(char *dest, char *src, size_t size){
+#ifdef __CUDACC__
   Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> src_view(src, size);
+#else
+  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+#endif
   Kokkos::deep_copy(dest_view, src_view);
 }
 
+/**
+ * @brief UVM-UVM memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
 void kokkosMemCpyUVMToUVM(char *dest, char *src, size_t size){
+#ifdef __CUDACC__
   Kokkos::View<char*, Kokkos::CudaUVMSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaUVMSpace> src_view(src, size);
+#else
+  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+#endif
   Kokkos::deep_copy(dest_view, src_view);
+}
+
+/**
+ * @brief Kokkos memset
+ *
+ * @param ptr Pointer for the data to be set to zero
+ * @param size Bytes to be zeroed
+ */
+void kokkosMemSetAmps(char *ptr, size_t size){
+  Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){ptr[i] = 0;});
 }
   
 /**
@@ -465,14 +590,17 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     
     /* Get data location and its properties */
     char *data = (char*)ptr->data;
-    // struct cudaPointerAttributes attributes;
-    // cudaPointerGetAttributes(&attributes, (void *)data);  
+
+#ifdef PARFLOW_HAVE_CUDA
+    struct cudaPointerAttributes attributes;
+    cudaPointerGetAttributes(&attributes, (void *)data);  
   
     /* Check that the data location (not MPI staging buffer) is accessible by the GPU */
-    // if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
-      // printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s)\n", __FILE__, __LINE__);
-      // return __LINE__;
-    // }
+    if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
+      printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s)\n", __FILE__, __LINE__);
+      return __LINE__;
+    }
+#endif
 
     int size = len_x * len_y * len_z * sizeof(double);
     if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
@@ -486,14 +614,16 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       return __LINE__;
     }
 
+#ifdef PARFLOW_HAVE_CUDA
     /* Get buffer location and its properties */
-    // cudaPointerGetAttributes(&attributes, (void *)buffer);  
+    cudaPointerGetAttributes(&attributes, (void *)buffer);  
 
     /* Check that the staging buffer is accessible by the GPU */
-    // if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
-      // printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s)\n", __FILE__, __LINE__);
-      // return __LINE__;
-    // }
+    if(cudaGetLastError() != cudaSuccess || attributes.type < 2){
+      printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s)\n", __FILE__, __LINE__);
+      return __LINE__;
+    }
+#endif
 
     /* Run packing or unpacking kernel */
     using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;

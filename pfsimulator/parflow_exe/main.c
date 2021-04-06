@@ -137,11 +137,9 @@ int main(int argc, char *argv [])
     /*-----------------------------------------------------------------------
      * Initialize acceleration architectures
      *-----------------------------------------------------------------------*/
-#ifdef PARFLOW_HAVE_KOKKOS   
+#if defined(PARFLOW_HAVE_KOKKOS)
     kokkosInit();
-#endif
-
-#if defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_KOKKOS)
+#elif defined(PARFLOW_HAVE_CUDA)
 
     /*-----------------------------------------------------------------------
     * Check CUDA compute capability, set device, and initialize RMM allocator
@@ -174,7 +172,7 @@ int main(int argc, char *argv [])
         exit(1);
       }
     }
-#endif // PARFLOW_HAVE_CUDA && !PARFLOW_HAVE_KOKKOS
+#endif // PARFLOW_HAVE_KOKKOS
 
 
   /*-----------------------------------------------------------------------

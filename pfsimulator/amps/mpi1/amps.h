@@ -54,9 +54,9 @@
 #ifdef PARFLOW_HAVE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+#endif
 #ifdef PARFLOW_HAVE_RMM
 #include <rmm/rmm_api.h>
-#endif
 #endif
 
 /*
@@ -1076,6 +1076,7 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line) 
 		exit(1);
 	}
 }
+#endif // PARFLOW_HAVE_CUDA
 
 #ifdef PARFLOW_HAVE_RMM
 /**
@@ -1093,7 +1094,6 @@ static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
 	}
 }
 #endif // PARFLOW_HAVE_RMM
-#endif // PARFLOW_HAVE_CUDA
 
 /*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for devices
@@ -1113,6 +1113,11 @@ void kokkosUVMFree(void *ptr);
  * @brief Kokkos C wrapper declaration for memory copy.
  */
 void kokkosMemCpyUVMToUVM(char *dest, char *src, size_t size);
+
+/**
+ * @brief Kokkos C wrapper declaration for memset.
+ */
+void kokkosMemSetAmps(char *ptr, size_t size);
 
 /**
  * @brief Allocates unified memory
@@ -1156,15 +1161,20 @@ static inline void *_amps_ctalloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
-  CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
-  memset(ptr, 0, size);
 #elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
-  CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
 #endif  
+
+#if defined(PARFLOW_HAVE_CUDA)
+  CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
+#else
+  // memset(ptr, 0, size);
+  // Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){((char*)ptr)[i] = 0;});
+    kokkosMemSetAmps((char*)ptr, size);
+#endif
   
   return ptr;
 }
