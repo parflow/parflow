@@ -273,7 +273,26 @@ class Run(BaseRun):
 
         new_run = cls(name, file_path)
         kwargs = {ext_map[ext]: file_path}
-        new_run.pfset(**kwargs)
+        new_run.pfset(silence_if_undefined=True, **kwargs)
+
+        # Try to solve order sensitive property settings
+        while '_pfstore_' in new_run.__dict__:
+            invalid_props = new_run.__dict__['_pfstore_']
+            del new_run.__dict__['_pfstore_']
+            previous_size = len(invalid_props)
+            for key, value in invalid_props.items():
+                new_run.pfset(key, value, silence_if_undefined=True)
+
+            # Break if no key was able to be mapped outside pfstore
+            if '_pfstore_' in new_run.__dict__ and previous_size == len(new_run.__dict__['_pfstore_']):
+                break
+
+        # Print any remaining key with no mapping
+        if '_pfstore_' in new_run.__dict__:
+            invalid_props = new_run.__dict__['_pfstore_']
+            del new_run.__dict__['_pfstore_']
+            for key, value in invalid_props.items():
+                new_run.pfset(key, value)
 
         if ext == 'pfidb':
             # Import CLM files if we need to
