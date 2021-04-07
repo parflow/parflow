@@ -717,7 +717,7 @@ class PFDBObj:
             while root._parent_ is not None:
                 root = root._parent_
 
-            if container is not None:
+            if container is not None and key is not None:
                 full_key_name = '.'.join([container.full_name(), key])
                 if '_pfstore_' in root.__dict__:
                     store = root.__dict__['_pfstore_']
@@ -727,15 +727,15 @@ class PFDBObj:
             # no container were found need to start from root
             path_tokens = location.split('/')
 
-            if not path_tokens[0]:
+            if len(path_tokens[0]) == 0:
                 # We have abs_path
                 full_key_name = '.'.join(path_tokens[1:])
-            else:
+            elif len(path_tokens):
                 # relative path
                 local_root = self
-                while path_tokens[0] == '.':
+                while len(path_tokens) and path_tokens[0] == '.':
                     path_tokens.pop(0)
-                while path_tokens[0] == '..':
+                while len(path_tokens) and path_tokens[0] == '..':
                     local_root = local_root._parent_
                     path_tokens.pop(0)
 
