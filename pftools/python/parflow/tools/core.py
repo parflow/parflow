@@ -277,7 +277,10 @@ class Run(BaseRun):
 
         if ext == 'pfidb':
             # Import CLM files if we need to
-            CLMImporter(new_run).import_if_needed()
+            try:
+                CLMImporter(new_run).import_if_needed()
+            except:
+                print(' => Error during CLM import - CLM specific key have been skipped')
 
         return new_run
 
