@@ -722,7 +722,6 @@ class PFDBObj:
                 if '_pfstore_' in root.__dict__:
                     store = root.__dict__['_pfstore_']
                     if full_key_name in store:
-                        print('fast store path')
                         return store[full_key_name], root, full_key_name
 
             # no container were found need to start from root
