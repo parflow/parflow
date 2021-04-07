@@ -212,7 +212,7 @@ class PFDBObj:
                 domains, handlers, history, crosscheck = detail_helper(
                     value_obj, '_value_', value)
             else:
-                msg = (f'Field {name} is not part of the expected '
+                msg = (f'{self.full_name()}: Field {name} is not part of the expected '
                        f'schema {self.__class__}')
                 print(msg)
                 if settings.EXIT_ON_ERROR:
@@ -576,7 +576,7 @@ class PFDBObj:
 
     def pfset(self, key='', value=None, yaml_file=None, yaml_content=None,
               pfidb_file=None, hierarchical_map=None, flat_map=None,
-              exit_if_undefined=False):
+              exit_if_undefined=False, silence_if_undefined=False):
         """
         Allow to define any parflow key so it can be exported.
         Many formats are supported:
@@ -607,7 +607,7 @@ class PFDBObj:
             sorted_flat_map = sort_dict_by_priority(flat_map)
             for key, value in sorted_flat_map.items():
                 self.pfset(key=key, value=value,
-                           exit_if_undefined=exit_if_undefined)
+                           exit_if_undefined=exit_if_undefined, silence_if_undefined=silence_if_undefined)
 
         if not key:
             return
@@ -615,26 +615,68 @@ class PFDBObj:
         key_stored = False
         tokens = key.split('.')
         if len(tokens) > 1:
+            value_key = tokens[-1]
             container, = self.select('/'.join(tokens[:-1]))
+
+            if container is None:
+                # We need to maybe handle prefix
+                value_key = tokens.pop()
+                container = self
+                for name in tokens:
+                    if container is None:
+                        break
+
+                    if name in container.__dict__:
+                        container = container[name]
+                    else:
+                        # Extract available prefix
+                        known_prefixes = set('_')
+                        for child_name in container.keys():
+                            if isinstance(container[child_name], PFDBObj):
+                                prefix = getattr(container[child_name], '_prefix_', '')
+                                if prefix is not None:
+                                    known_prefixes.add(prefix)
+
+                        found = False
+
+                        # Test names with prefix
+                        for prefix in known_prefixes:
+                            if found:
+                                break
+                            name_w_prefix = f'{prefix}{name}'
+                            if name_w_prefix in container.__dict__:
+                                found = True
+                                container = container[name_w_prefix]
+
+                        # No matching prefix
+                        if not found:
+                            container = None
+
             if container is not None:
-                container[tokens[-1]] = value
+                container[value_key] = value
                 key_stored = True
         elif len(tokens) == 1:
             self[tokens[0]] = value
             key_stored = True
 
         if not key_stored:
+            # Only create a store at the root node
+            root = self
+            while root._parent_ is not None:
+               root = root._parent_
+
             # store key on the side
-            if '_pfstore_' not in self.__dict__:
-                self.__dict__['_pfstore_'] = {}
+            if '_pfstore_' not in root.__dict__:
+                root.__dict__['_pfstore_'] = {}
             parent_namespace = self.full_name()
             full_key_name = f"{parent_namespace}" \
                             f"{'.' if parent_namespace else ''}{key}"
-            self.__dict__['_pfstore_'][key] = value
+            root.__dict__['_pfstore_'][full_key_name] = value
             root_path = self.full_name()
-            print(f"Caution: Using internal store of "
-                  f"{root_path if root_path else 'run'} "
-                  f"to save {full_key_name} = {value}")
+            if not silence_if_undefined:
+                print(f"Caution: Using internal store of "
+                      f"{root_path if root_path else 'run'} "
+                      f"to save {full_key_name} = {value}")
             if exit_if_undefined:
                 sys.exit(1)
 
