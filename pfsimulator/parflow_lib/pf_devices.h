@@ -174,10 +174,9 @@ static inline void *_ctalloc_device(size_t size)
 #endif  
 
 #if defined(PARFLOW_HAVE_CUDA)
-  CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
+  CUDA_ERR(cudaMemset(ptr, 0, size));  
 #else
   // memset(ptr, 0, size);
-  // Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){((char*)ptr)[i] = 0;});
   kokkosMemSet((char*)ptr, size);
 #endif
   

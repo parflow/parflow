@@ -56,6 +56,7 @@ void kokkosMemCpy(char *dest, char *src, size_t size){
  */
 void kokkosMemSet(char *ptr, size_t size){
   Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){ptr[i] = 0;});
+  Kokkos::fence(); 
 }
 
 /**

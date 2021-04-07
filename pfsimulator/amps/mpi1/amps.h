@@ -1172,8 +1172,7 @@ static inline void *_amps_ctalloc_device(size_t size)
   CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
 #else
   // memset(ptr, 0, size);
-  // Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){((char*)ptr)[i] = 0;});
-    kokkosMemSetAmps((char*)ptr, size);
+  kokkosMemSetAmps((char*)ptr, size);
 #endif
   
   return ptr;
