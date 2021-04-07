@@ -630,7 +630,7 @@ class PFDBObj:
             parent_namespace = self.full_name()
             full_key_name = f"{parent_namespace}" \
                             f"{'.' if parent_namespace else ''}{key}"
-            self.__dict__['_pfstore_'][full_key_name] = value
+            self.__dict__['_pfstore_'][key] = value
             root_path = self.full_name()
             print(f"Caution: Using internal store of "
                   f"{root_path if root_path else 'run'} "
@@ -668,6 +668,59 @@ class PFDBObj:
 
         if isinstance(value, PFDBObj):
             value = getattr(value, '_value_', None)
+
+        # Try to do a store lookup
+        if value is None or container is None:
+            root = container if container else self
+            while root._parent_ is not None:
+                root = root._parent_
+
+            if container is not None:
+                full_key_name = '.'.join([container.full_name(), key])
+                if '_pfstore_' in root.__dict__:
+                    store = root.__dict__['_pfstore_']
+                    if full_key_name in store:
+                        print('fast store path')
+                        return store[full_key_name], root, full_key_name
+
+            # no container were found need to start from root
+            path_tokens = location.split('/')
+
+            if not path_tokens[0]:
+                # We have abs_path
+                full_key_name = '.'.join(path_tokens[1:])
+            else:
+                # relative path
+                local_root = self
+                while path_tokens[0] == '.':
+                    path_tokens.pop(0)
+                while path_tokens[0] == '..':
+                    local_root = local_root._parent_
+                    path_tokens.pop(0)
+
+                prefix_name = local_root.full_name()
+                if prefix_name:
+                    path_tokens.insert(0, prefix_name)
+
+                full_key_name = '.'.join(path_tokens)
+
+            # Resolve full_key_name from root
+            current_key = full_key_name
+            current_node = root
+            current_store = getattr(current_node, '_pfstore_', None)
+
+            # Find key in store
+            while len(current_key) and current_store is not None:
+                if current_key in current_store:
+                    return current_store[current_key], root, current_key
+
+                # Find child store
+                current_store = None
+                while len(current_key) > 0 and current_node is not None and current_store is None:
+                    tokens = current_key.split('.')
+                    current_node = current_node[tokens[0]]
+                    current_store = getattr(current_node, '_pfstore_', None)
+                    current_key = '.'.join(tokens[1:])
 
         return value, container, key
 
