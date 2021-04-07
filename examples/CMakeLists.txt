@@ -8,7 +8,7 @@ if((${PARFLOW_HAVE_HYPRE}) AND (${PARFLOW_HAVE_SILO}))
 endif()
 
 #This test is suspected to be too precision sensitive
-if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}))
+if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}))
   list(REMOVE_ITEM TESTS test_XPlusYPlusZ.tcl)
 endif()
 
