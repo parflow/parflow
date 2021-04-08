@@ -284,7 +284,8 @@ class Run(BaseRun):
                 new_run.pfset(key, value, silence_if_undefined=True)
 
             # Break if no key was able to be mapped outside pfstore
-            if '_pfstore_' in new_run.__dict__ and previous_size == len(new_run.__dict__['_pfstore_']):
+            if ('_pfstore_' in new_run.__dict__ and
+                    previous_size == len(new_run.__dict__['_pfstore_'])):
                 break
 
         # Print any remaining key with no mapping
@@ -298,8 +299,9 @@ class Run(BaseRun):
             # Import CLM files if we need to
             try:
                 CLMImporter(new_run).import_if_needed()
-            except:
-                print(' => Error during CLM import - CLM specific key have been skipped')
+            except Exception:
+                print(' => Error during CLM import - '
+                      'CLM specific key have been skipped')
 
         return new_run
 

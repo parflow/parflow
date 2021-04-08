@@ -212,8 +212,8 @@ class PFDBObj:
                 domains, handlers, history, crosscheck = detail_helper(
                     value_obj, '_value_', value)
             else:
-                msg = (f'{self.full_name()}: Field {name} is not part of the expected '
-                       f'schema {self.__class__}')
+                msg = (f'{self.full_name()}: Field {name} is not part of the '
+                       f'expected schema {self.__class__}')
                 print(msg)
                 if settings.EXIT_ON_ERROR:
                     raise ValueError(msg)
@@ -607,7 +607,8 @@ class PFDBObj:
             sorted_flat_map = sort_dict_by_priority(flat_map)
             for key, value in sorted_flat_map.items():
                 self.pfset(key=key, value=value,
-                           exit_if_undefined=exit_if_undefined, silence_if_undefined=silence_if_undefined)
+                           exit_if_undefined=exit_if_undefined,
+                           silence_if_undefined=silence_if_undefined)
 
         if not key:
             return
@@ -633,7 +634,8 @@ class PFDBObj:
                         known_prefixes = set('_')
                         for child_name in container.keys():
                             if isinstance(container[child_name], PFDBObj):
-                                prefix = getattr(container[child_name], '_prefix_', '')
+                                prefix = getattr(container[child_name],
+                                                 '_prefix_', '')
                                 if prefix is not None:
                                     known_prefixes.add(prefix)
 
@@ -663,7 +665,7 @@ class PFDBObj:
             # Only create a store at the root node
             root = self
             while root._parent_ is not None:
-               root = root._parent_
+                root = root._parent_
 
             # store key on the side
             if '_pfstore_' not in root.__dict__:
@@ -757,7 +759,8 @@ class PFDBObj:
 
                 # Find child store
                 current_store = None
-                while len(current_key) > 0 and current_node is not None and current_store is None:
+                while (len(current_key) > 0 and current_node is not None and
+                        current_store is None):
                     tokens = current_key.split('.')
                     current_node = current_node[tokens[0]]
                     current_store = getattr(current_node, '_pfstore_', None)
