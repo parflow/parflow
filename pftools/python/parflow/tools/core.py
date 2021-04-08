@@ -277,8 +277,7 @@ class Run(BaseRun):
 
         # Try to solve order sensitive property settings
         while '_pfstore_' in new_run.__dict__:
-            invalid_props = new_run.__dict__['_pfstore_']
-            del new_run.__dict__['_pfstore_']
+            invalid_props = new_run.__dict__.pop('_pfstore_')
             previous_size = len(invalid_props)
             for key, value in invalid_props.items():
                 new_run.pfset(key, value, silence_if_undefined=True)
@@ -290,8 +289,7 @@ class Run(BaseRun):
 
         # Print any remaining key with no mapping
         if '_pfstore_' in new_run.__dict__:
-            invalid_props = new_run.__dict__['_pfstore_']
-            del new_run.__dict__['_pfstore_']
+            invalid_props = new_run.__dict__.pop('_pfstore_')
             for key, value in invalid_props.items():
                 new_run.pfset(key, value)
 
