@@ -451,7 +451,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    if ( sz < zTop )
+    if ( zTop < sz )
     {
       cerr << "Top must be > bottom (top is " << zTop << " bottom " << sz<< "\n";
       exit(-2);
