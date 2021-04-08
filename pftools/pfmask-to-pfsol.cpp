@@ -436,22 +436,27 @@ int main(int argc, char **argv)
   dy = DataboxDy(databox[0]);
 
   // If user specifies Top/Bottom on command line override defaults
-  if(isnan(zTop))
+  if(isnan(zBot))
   {
     sz = 0.0;
   }
   else
   {
-    sz = zTop;
+    sz = zBot;
   }
 
-  if(isnan(zBot))
+  if(isnan(zTop))
   {
     dz = DataboxDz(databox[0]);
   }
   else
   {
-    dz = zBot - sz;
+    if ( zTop < sz )
+    {
+      cerr << "Top must be > bottom (top is " << zTop << " bottom " << sz<< "\n";
+      exit(-2);
+    }
+    dz = zTop - sz;
   }
 
   cout << "Domain Size = (" << nx << "," << ny << "," << nz << ")" << std::endl;
