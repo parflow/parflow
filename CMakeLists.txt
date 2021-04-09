@@ -34,13 +34,7 @@ endforeach ()
 # Set accelerator backend
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
-set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda omp)
-
-if(DEFINED KOKKOS_ROOT)
-  find_package(Kokkos REQUIRED HINTS ${KOKKOS_ROOT})
-  set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
-  set(PARFLOW_HAVE_KOKKOS "yes")
-endif(DEFINED KOKKOS_ROOT)
+set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda kokkos omp)
 
 if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
@@ -63,7 +57,18 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     else(CMAKE_CUDA_COMPILER)
       message(FATAL_ERROR "ERROR: CUDA installation not found")
     endif(CMAKE_CUDA_COMPILER)
+  elseif(NOT DEFINED KOKKOS_ROOT)
+    # Allow mixed use of CUDA and Kokkos for development purposes
+    find_package(Kokkos REQUIRED HINTS ${KOKKOS_ROOT})
+    set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
+    set(PARFLOW_HAVE_KOKKOS "yes")
   endif(NOT DEFINED KOKKOS_ROOT)
+elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "kokkos")
+  if(DEFINED KOKKOS_ROOT)
+    find_package(Kokkos REQUIRED HINTS ${KOKKOS_ROOT})
+    set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
+    set(PARFLOW_HAVE_KOKKOS "yes")
+  endif(DEFINED KOKKOS_ROOT)
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
   message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
   # Enable C and CXX -fopenmp flag, enable ParFlow defines.
