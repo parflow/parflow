@@ -7,7 +7,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name='pftools',
-    version="1.1.1",
+    version="1.1.2",
     description=('A Python package creating an interface with the ParFlow '
                  'hydrologic model.'),
     long_description=README,
@@ -21,7 +21,7 @@ setup(
     ],
     keywords=['ParFlow', 'groundwater model', 'surface water model'],
     packages=find_packages(),
-    install_requires=['pyyaml==5.3.1', 'numpy'],
+    install_requires=['pyyaml==5.4', 'numpy'],
     include_package_data=True,
     extras_require={
         'all': [
