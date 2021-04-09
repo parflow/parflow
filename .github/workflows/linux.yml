@@ -44,7 +44,8 @@ jobs:
             cc: "gcc", cxx: "g++",
             python: "false",
             backend: "cuda",
-            cudaos:
+            cudaos: 'ubuntu1804'
+          }
         - {
             name: "Ubuntu 18.04 Kokkos Build",
             os: ubuntu-18.04,
@@ -52,7 +53,6 @@ jobs:
             python: "false",
             backend: "kokkos",
             cudaos: 'ubuntu1804'
-          } 'ubuntu1804'
           }
         - {
             name: "Ubuntu 16.04",
