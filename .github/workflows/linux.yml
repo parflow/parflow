@@ -60,12 +60,13 @@ jobs:
     - name: Package Install 20.04
       if: matrix.config.os == 'ubuntu-20.04'
       run: |
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev
         sudo apt-get -qq update
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev
 
     - name: Package Install 18.04 CUDA
       if: matrix.config.backend == 'cuda' && matrix.config.os == 'ubuntu-18.04'
       run: |
+        sudo apt-get -qq update
         sudo apt-get -qq install -y software-properties-common
         sudo add-apt-repository -y main
         sudo add-apt-repository -y universe
@@ -75,18 +76,19 @@ jobs:
     - name: Package Install 18.04
       if: matrix.config.os == 'ubuntu-18.04'
       run: |
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers tcl-dev tk-dev
         sudo apt-get -qq update
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers tcl-dev tk-dev
 
     - name: Package Install 16.04
       if: matrix.config.os == 'ubuntu-16.04'
       run: |
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-10 hdf5-helpers tcl-dev tk-dev
         sudo apt-get -qq update
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-10 hdf5-helpers tcl-dev tk-dev
 
     - name: Python Package Install
       if: matrix.config.python == 'true'
       run: |
+        sudo apt-get -qq update
         sudo apt -qq install python3 python3-venv
 
 # Cache dependencies so don't have to rebuild on each test.
