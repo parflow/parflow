@@ -1,4 +1,3 @@
-
 set(AMPS_SRC_FILES
   amps_allreduce.c
   amps_bcast.c
