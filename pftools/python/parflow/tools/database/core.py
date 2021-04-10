@@ -212,8 +212,8 @@ class PFDBObj:
                 domains, handlers, history, crosscheck = detail_helper(
                     value_obj, '_value_', value)
             else:
-                msg = (f'Field {name} is not part of the expected '
-                       f'schema {self.__class__}')
+                msg = (f'{self.full_name()}: Field {name} is not part of the '
+                       f'expected schema {self.__class__}')
                 print(msg)
                 if settings.EXIT_ON_ERROR:
                     raise ValueError(msg)
@@ -576,7 +576,7 @@ class PFDBObj:
 
     def pfset(self, key='', value=None, yaml_file=None, yaml_content=None,
               pfidb_file=None, hierarchical_map=None, flat_map=None,
-              exit_if_undefined=False):
+              exit_if_undefined=False, silence_if_undefined=False):
         """
         Allow to define any parflow key so it can be exported.
         Many formats are supported:
@@ -607,7 +607,8 @@ class PFDBObj:
             sorted_flat_map = sort_dict_by_priority(flat_map)
             for key, value in sorted_flat_map.items():
                 self.pfset(key=key, value=value,
-                           exit_if_undefined=exit_if_undefined)
+                           exit_if_undefined=exit_if_undefined,
+                           silence_if_undefined=silence_if_undefined)
 
         if not key:
             return
@@ -615,26 +616,69 @@ class PFDBObj:
         key_stored = False
         tokens = key.split('.')
         if len(tokens) > 1:
+            value_key = tokens[-1]
             container, = self.select('/'.join(tokens[:-1]))
+
+            if container is None:
+                # We need to maybe handle prefix
+                value_key = tokens.pop()
+                container = self
+                for name in tokens:
+                    if container is None:
+                        break
+
+                    if name in container.__dict__:
+                        container = container[name]
+                    else:
+                        # Extract available prefix
+                        known_prefixes = set('_')
+                        for child_name in container.keys():
+                            if isinstance(container[child_name], PFDBObj):
+                                prefix = getattr(container[child_name],
+                                                 '_prefix_', '')
+                                if prefix is not None:
+                                    known_prefixes.add(prefix)
+
+                        found = False
+
+                        # Test names with prefix
+                        for prefix in known_prefixes:
+                            if found:
+                                break
+                            name_w_prefix = f'{prefix}{name}'
+                            if name_w_prefix in container.__dict__:
+                                found = True
+                                container = container[name_w_prefix]
+
+                        # No matching prefix
+                        if not found:
+                            container = None
+
             if container is not None:
-                container[tokens[-1]] = value
+                container[value_key] = value
                 key_stored = True
         elif len(tokens) == 1:
             self[tokens[0]] = value
             key_stored = True
 
         if not key_stored:
+            # Only create a store at the root node
+            root = self
+            while root._parent_ is not None:
+                root = root._parent_
+
             # store key on the side
-            if '_pfstore_' not in self.__dict__:
-                self.__dict__['_pfstore_'] = {}
+            if '_pfstore_' not in root.__dict__:
+                root.__dict__['_pfstore_'] = {}
             parent_namespace = self.full_name()
             full_key_name = f"{parent_namespace}" \
                             f"{'.' if parent_namespace else ''}{key}"
-            self.__dict__['_pfstore_'][full_key_name] = value
+            root.__dict__['_pfstore_'][full_key_name] = value
             root_path = self.full_name()
-            print(f"Caution: Using internal store of "
-                  f"{root_path if root_path else 'run'} "
-                  f"to save {full_key_name} = {value}")
+            if not silence_if_undefined:
+                print(f"Caution: Using internal store of "
+                      f"{root_path if root_path else 'run'} "
+                      f"to save {full_key_name} = {value}")
             if exit_if_undefined:
                 sys.exit(1)
 
@@ -668,6 +712,59 @@ class PFDBObj:
 
         if isinstance(value, PFDBObj):
             value = getattr(value, '_value_', None)
+
+        # Try to do a store lookup
+        if value is None or container is None:
+            root = container if container else self
+            while root._parent_ is not None:
+                root = root._parent_
+
+            if container is not None and key is not None:
+                full_key_name = '.'.join([container.full_name(), key])
+                if '_pfstore_' in root.__dict__:
+                    store = root.__dict__['_pfstore_']
+                    if full_key_name in store:
+                        return store[full_key_name], root, full_key_name
+
+            # no container were found need to start from root
+            path_tokens = location.split('/')
+
+            if len(path_tokens[0]) == 0:
+                # We have abs_path
+                full_key_name = '.'.join(path_tokens[1:])
+            elif len(path_tokens):
+                # relative path
+                local_root = self
+                while len(path_tokens) and path_tokens[0] == '.':
+                    path_tokens.pop(0)
+                while len(path_tokens) and path_tokens[0] == '..':
+                    local_root = local_root._parent_
+                    path_tokens.pop(0)
+
+                prefix_name = local_root.full_name()
+                if prefix_name:
+                    path_tokens.insert(0, prefix_name)
+
+                full_key_name = '.'.join(path_tokens)
+
+            # Resolve full_key_name from root
+            current_key = full_key_name
+            current_node = root
+            current_store = getattr(current_node, '_pfstore_', None)
+
+            # Find key in store
+            while len(current_key) and current_store is not None:
+                if current_key in current_store:
+                    return current_store[current_key], root, current_key
+
+                # Find child store
+                current_store = None
+                while (len(current_key) > 0 and current_node is not None and
+                        current_store is None):
+                    tokens = current_key.split('.')
+                    current_node = current_node[tokens[0]]
+                    current_store = getattr(current_node, '_pfstore_', None)
+                    current_key = '.'.join(tokens[1:])
 
         return value, container, key
 
