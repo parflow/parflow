@@ -307,6 +307,24 @@ dsingle.Mannings.Type = 'Constant'
 dsingle.Mannings.GeomNames = 'domain'
 dsingle.Mannings.Geom.domain.Value = 0.
 
+
+#---------------------------------------------------------
+# dzScale values
+#---------------------------------------------------------
+
+dsingle.Solver.Nonlinear.VariableDz = True
+dsingle.dzScale.Type = 'nzList'
+dsingle.dzScale.nzListNumber = 8
+dsingle.Cell._0.dzScale.Value = 0.5
+dsingle.Cell._1.dzScale.Value = 0.5
+dsingle.Cell._2.dzScale.Value = 0.5
+dsingle.Cell._3.dzScale.Value = 0.5
+dsingle.Cell._4.dzScale.Value = 0.5
+dsingle.Cell._5.dzScale.Value = 0.5
+dsingle.Cell._6.dzScale.Value = 0.5
+dsingle.Cell._7.dzScale.Value = 0.5
+
+
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
