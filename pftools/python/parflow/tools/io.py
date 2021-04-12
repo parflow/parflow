@@ -35,7 +35,7 @@ def read_array(file_name):
 
 # -----------------------------------------------------------------------------
 
-def write_array(file_name, array):
+def write_array(file_name, array, *args, **kwargs):
     ext = Path(file_name).suffix[1:]
     funcs = {
         'pfb': write_array_pfb,
@@ -44,7 +44,7 @@ def write_array(file_name, array):
     if ext not in funcs:
         raise Exception(f'Unknown extension: {file_name}')
 
-    return funcs[ext](file_name, array)
+    return funcs[ext](file_name, array, *args, **kwargs)
 
 
 # -----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ def read_array_pfb(file_name):
 
 # -----------------------------------------------------------------------------
 
-def write_array_pfb(file_name, array):
+def write_array_pfb(file_name, array, dx=1, dy=1, dz=1):
     # Ensure this is 3 dimensions, since parflowio requires 3 dimensions.
     while array.ndim < 3:
         array = array[np.newaxis, :]
@@ -70,6 +70,9 @@ def write_array_pfb(file_name, array):
     from parflowio.pyParflowio import PFData
     data = PFData()
     data.setDataArray(array)
+    data.setDX(dx)
+    data.setDY(dy)
+    data.setDZ(dz)
     return data.writeFile(file_name)
 
 
