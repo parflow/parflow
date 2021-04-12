@@ -55,10 +55,19 @@ void kokkosMemCpy(char *dest, char *src, size_t size){
  * @param size Bytes to be zeroed
  */
 void kokkosMemSet(char *ptr, size_t size){
-  /* Deep-copy style initialization (may become faster in the future) */
-  Kokkos::View<char*, Kokkos::CudaUVMSpace> ptr_view(ptr, size);
-  Kokkos::deep_copy(ptr_view, 0);
-  /* Loop style initialization */
+  if(size % sizeof(int))
+  {
+    /* Deep_copy style initialization for char* type is slow */
+    Kokkos::View<char*, Kokkos::CudaUVMSpace> ptr_view(ptr, size);
+    Kokkos::deep_copy(ptr_view, 0);
+  }
+  else
+  {
+    /* Deep_copy style initialization for int* type is faster */
+    Kokkos::View<int*, Kokkos::CudaUVMSpace> ptr_view((int*)ptr, size / sizeof(int));
+    Kokkos::deep_copy(ptr_view, 0);
+  }
+  /* Loop style initialization is slow */
   // Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){ptr[i] = 0;});
   // Kokkos::fence(); 
 }
