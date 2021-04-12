@@ -583,9 +583,12 @@ class DataAccessor:
 
     @property
     def dz(self):
-        # TODO: Calculate dz_scale when Solver.Nonlinear.VariableDz is set to True
         if self._run.Solver.Nonlinear.VariableDz:
-            raise NotImplementedError('Unable to compute dz when attribute Solver.Nonlinear.VariableDz == True')
+            assert self._run.dzScale.Type == 'nzList'
+            dz_scale = []
+            for i in range(self._run.dzScale.nzListNumber):
+                dz_scale.append(self._run.Cell[str(i)]['dzScale']['Value'])
+            dz_scale = np.array(dz_scale)
         else:
             dz_scale = np.ones((self._run.ComputationalGrid.NZ,))
 
