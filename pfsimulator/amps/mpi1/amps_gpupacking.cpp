@@ -310,21 +310,22 @@ void kokkosMemCpyUVMToUVM(char *dest, char *src, size_t size){
  * @param size Bytes to be zeroed
  */
 void kokkosMemSetAmps(char *ptr, size_t size){
+  /* Loop style initialization */
   if(size % sizeof(int))
   {
-    /* Deep_copy style initialization for char* type is slow */
-    Kokkos::View<char*, Kokkos::CudaUVMSpace> ptr_view(ptr, size);
-    Kokkos::deep_copy(ptr_view, 0);
+    /* Writing 1 byte / thread is slow */
+    Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){ptr[i] = 0;});
   }
   else
   {
-    /* Deep_copy style initialization for int* type is faster */
-    Kokkos::View<int*, Kokkos::CudaUVMSpace> ptr_view((int*)ptr, size / sizeof(int));
-    Kokkos::deep_copy(ptr_view, 0);
+    /* Writing 4 bytes / thread is fast */
+    Kokkos::parallel_for(size / sizeof(int), KOKKOS_LAMBDA(int i){((int*)ptr)[i] = 0;});
   }
-  /* Loop style initialization is slow */
-  // Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){ptr[i] = 0;});
-  // Kokkos::fence(); 
+  Kokkos::fence(); 
+
+  /* Deep_copy style initialization for char* should be fast in future Kokkos releases */
+  // Kokkos::View<char*, Kokkos::CudaUVMSpace> ptr_view(ptr, size);
+  // Kokkos::deep_copy(ptr_view, 0);
 }
   
 /**
