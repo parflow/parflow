@@ -737,27 +737,9 @@ class DataAccessor:
     @property
     def et(self):
         if self._run.Solver.PrintCLM:
-            # If CLM output is enabled, read single output file (.C.pfb) or flux timestep file
-            if self._run.Solver.CLM.SingleFile:
-                # Read multi-layer PFB: {run_name}.out.clm_output.{timestep:0>5}.C.pfb
-                # Holds 13 CLM variables of interest
-                # 4th index = Net veg. evaporation and transpiration and soil evaporation (mms-1)
-                nz_expected = 13 + self._run.Solver.CLM.RootZoneNZ
-                file_name = f'{self._name}.out.clm_output.{self._ts}.C.pfb'
-                base_path = f'{self._run.Solver.CLM.CLMFileDir}'
-
-                arr = self._pfb_to_array(f'{base_path}/{file_name}')
-                nz = arr.shape[0]
-                assert nz == nz_expected, 'Unexpected shape of CLM output, expected {nz_expected}, got {nz}'
-
-                # 4th index represents ET
-                et_index = 4
-                et_data = arr[et_index, :, :]
-            else:
-                # Read current timestep from series of flux PFB files
-                et_data = self._pfb_to_array(f'{self._name}.out.qflx_evap_tot.{self._ts}.pfb')
+            # Read ET from CLM output
+            return self.clm_output('qflx_evap_tot')
         else:
-            # CLM output not enabled
             # Assert that one and only one of Solver.EvapTransFile or Solver.EvapTransFileTransient is set
             assert self._run.Solver.EvapTransFile != self._run.Solver.EvapTransFileTransient, \
                 'Only one of Solver.EvapTrans.FileName, Solver.EvapTransFileTransient can be set in order to ' \
@@ -825,6 +807,50 @@ class DataAccessor:
     def _clm_output_bin(self, field, dtype):
         fp = self._clm_output_filepath(field, field, 'bin')
         return np.fromfile(fp, dtype=dtype, count=-1, sep='', offset=0)
+
+    def clm_output(self, field, layer=-1):
+        assert self._run.Solver.PrintCLM, 'CLM output must be enabled'
+        assert field in self.clm_output_variables, f'Unrecognized variable {field}'
+
+        if self._run.Solver.CLM.SingleFile:
+            nz_expected = len(self.clm_output_variables) + self._run.Solver.CLM.RootZoneNZ
+            file_name = f'{self._name}.out.clm_output.{self._ts}.C.pfb'
+            base_path = f'{self._run.Solver.CLM.CLMFileDir}'
+
+            arr = self._pfb_to_array(f'{base_path}/{file_name}')
+            nz = arr.shape[0]
+            assert nz == nz_expected, 'Unexpected shape of CLM output, expected {nz_expected}, got {nz}'
+
+            i = self.clm_output_variables.index(field)
+            if field == 't_soil':
+                if layer == -1:
+                    i = nz - 1
+                else:
+                    i += layer
+
+            return arr[i, :, :]
+        else:
+            arr = self._pfb_to_array(f'{self._name}.out.{field}.{self._ts}.pfb')
+            if field == 't_soil':
+                arr = arr[layer, :, :]
+
+            return np.squeeze(arr, axis=0)
+
+    @property
+    def clm_output_variables(self):
+        return ('eflx_lh_tot',
+                'eflx_lwrad_out',
+                'eflx_sh_tot',
+                'eflx_soil_grnd',
+                'qflx_evap_tot',
+                'qflx_evap_grnd',
+                'qflx_evap_soi',
+                'qflx_evap_veg',
+                'qflx_tran_veg',
+                'qflx_infl',
+                'swe_out',
+                't_grnd',
+                't_soil')
 
     @property
     def clm_output_diagnostics(self):
