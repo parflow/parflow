@@ -811,27 +811,32 @@ class DataAccessor:
     def clm_output(self, field, layer=-1):
         assert self._run.Solver.PrintCLM, 'CLM output must be enabled'
         assert field in self.clm_output_variables, f'Unrecognized variable {field}'
+        base_path = f'{self._run.Solver.CLM.CLMFileDir}'
 
         if self._run.Solver.CLM.SingleFile:
-            nz_expected = len(self.clm_output_variables) + self._run.Solver.CLM.RootZoneNZ
             file_name = f'{self._name}.out.clm_output.{self._ts}.C.pfb'
-            base_path = f'{self._run.Solver.CLM.CLMFileDir}'
-
             arr = self._pfb_to_array(f'{base_path}/{file_name}')
+
             nz = arr.shape[0]
-            assert nz == nz_expected, 'Unexpected shape of CLM output, expected {nz_expected}, got {nz}'
+            nz_expected = len(self.clm_output_variables) + self._run.Solver.CLM.RootZoneNZ
+            assert nz == nz_expected, f'Unexpected shape of CLM output, expected {nz_expected}, got {nz}'
 
             i = self.clm_output_variables.index(field)
             if field == 't_soil':
-                if layer == -1:
-                    i = nz - 1
+                if layer < 0:
+                    i = layer
                 else:
                     i += layer
 
             return arr[i, :, :]
         else:
-            arr = self._pfb_to_array(f'{self._name}.out.{field}.{self._ts}.pfb')
+            file_name = f'{self._name}.out.{field}.{self._ts}.pfb'
+            arr = self._pfb_to_array(f'{base_path}/{file_name}')
+
             if field == 't_soil':
+                nz = arr.shape[0]
+                assert nz == self._run.Solver.CLM.RootZoneNZ, f'Unexpected shape of CLM output, expected ' \
+                                                              f'{self._run.Solver.CLM.RootZoneNZ}, got {nz}'
                 arr = arr[layer, :, :]
 
             return np.squeeze(arr, axis=0)
