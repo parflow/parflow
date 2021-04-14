@@ -837,11 +837,10 @@ class DataAccessor:
                 nz = arr.shape[0]
                 assert nz == self._run.Solver.CLM.RootZoneNZ, f'Unexpected shape of CLM output, expected ' \
                                                               f'{self._run.Solver.CLM.RootZoneNZ}, got {nz}'
-
                 arr = arr[layer, :, :]
-                if arr.ndim == 3:
-                    arr = np.squeeze(arr, axis=0)
 
+        if arr.ndim == 3:
+            arr = np.squeeze(arr, axis=0)
         return arr
 
     @property
