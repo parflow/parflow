@@ -828,7 +828,7 @@ class DataAccessor:
                 else:
                     i += layer
 
-            return arr[i, :, :]
+            arr = arr[i, :, :]
         else:
             file_name = f'{self._name}.out.{field}.{self._ts}.pfb'
             arr = self._pfb_to_array(f'{base_path}/{file_name}')
@@ -842,7 +842,7 @@ class DataAccessor:
                 if arr.ndim == 3:
                     arr = np.squeeze(arr, axis=0)
 
-            return arr
+        return arr
 
     @property
     def clm_output_variables(self):
