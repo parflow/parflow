@@ -736,13 +736,39 @@ class DataAccessor:
 
     @property
     def et(self):
-        assert self._run.Solver.EvapTransFile != self._run.Solver.EvapTransFileTransient, \
-            'Only one of Solver.EvapTrans.FileName, Solver.EvapTransFileTransient can be set in order to calculate evapotranspiration'
+        if self._run.Solver.PrintCLM:
+            # If CLM output is enabled, read single output file (.C.pfb) or flux timestep file
+            if self._run.Solver.CLM.SingleFile:
+                # Read multi-layer PFB: {run_name}.out.clm_output.{timestep:0>5}.C.pfb
+                # Holds 13 CLM variables of interest
+                # 4th index = Net veg. evaporation and transpiration and soil evaporation (mms-1)
+                nz_expected = 13 + self._run.Solver.CLM.RootZoneNZ
+                file_name = f'{self._name}.out.clm_output.{self._ts}.C.pfb'
+                base_path = f'{self._run.Solver.CLM.CLMFileDir}'
 
-        if self._run.Solver.EvapTransFile:
-            et_data = self._pfb_to_array(self._run.Solver.EvapTrans.FileName)
+                arr = self._pfb_to_array(f'{base_path}/{file_name}')
+                nz = arr.shape[0]
+                assert nz == nz_expected, 'Unexpected shape of CLM output, expected {nz_expected}, got {nz}'
+
+                # 4th index represents ET
+                et_index = 4
+                et_data = arr[et_index, :, :]
+            else:
+                # Read current timestep from series of flux PFB files
+                et_data = self._pfb_to_array(f'{self._name}.out.qflx_evap_tot.{self._ts}.pfb')
         else:
-            et_data = self._pfb_to_array(f'{self._run.Solver.EvapTrans.FileName}.{self._ts}.pfb')
+            # CLM output not enabled
+            # Assert that one and only one of Solver.EvapTransFile or Solver.EvapTransFileTransient is set
+            assert self._run.Solver.EvapTransFile != self._run.Solver.EvapTransFileTransient, \
+                'Only one of Solver.EvapTrans.FileName, Solver.EvapTransFileTransient can be set in order to ' \
+                'calculate evapotranspiration'
+
+            if self._run.Solver.EvapTransFile:
+                # Read steady-state flux file
+                et_data = self._pfb_to_array(self._run.Solver.EvapTrans.FileName)
+            else:
+                # Read current timestep from series of flux PFB files
+                et_data = self._pfb_to_array(f'{self._run.Solver.EvapTrans.FileName}.{self._ts}.pfb')
 
         return calculate_evapotranspiration(et_data, self.dx, self.dy, self.dz)
 
