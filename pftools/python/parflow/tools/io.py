@@ -818,7 +818,7 @@ class DataAccessor:
             arr = self._pfb_to_array(f'{base_path}/{file_name}')
 
             nz = arr.shape[0]
-            nz_expected = len(self.clm_output_variables) + self._run.Solver.CLM.RootZoneNZ
+            nz_expected = len(self.clm_output_variables) + self._run.Solver.CLM.RootZoneNZ - 1
             assert nz == nz_expected, f'Unexpected shape of CLM output, expected {nz_expected}, got {nz}'
 
             i = self.clm_output_variables.index(field)
@@ -857,6 +857,7 @@ class DataAccessor:
                 'qflx_infl',
                 'swe_out',
                 't_grnd',
+                'qflx_qirr',
                 't_soil')
 
     @property
