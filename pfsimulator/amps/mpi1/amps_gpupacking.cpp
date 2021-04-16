@@ -140,10 +140,10 @@ void amps_gpu_sync_streams(int id){
  * @param size The size of the allocation in bytes
  */
 void* kokkosDeviceAlloc(size_t size){
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
   return Kokkos::kokkos_malloc<Kokkos::CudaSpace>(size);
 #else
-  return Kokkos::kokkos_malloc<Kokkos::HostSpace>(size);
+  return Kokkos::kokkos_malloc(size);
 #endif
 }
 
@@ -153,10 +153,10 @@ void* kokkosDeviceAlloc(size_t size){
  * @param ptr Freed pointer
  */
 void kokkosDeviceFree(void *ptr){
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
   Kokkos::kokkos_free<Kokkos::CudaSpace>(ptr);
 #else
-  Kokkos::kokkos_free<Kokkos::HostSpace>(ptr);
+  Kokkos::kokkos_free(ptr);
 #endif
 }
 
@@ -166,7 +166,7 @@ void kokkosDeviceFree(void *ptr){
  * @param size The size of the allocation in bytes
  */
 void* kokkosHostAlloc(size_t size){
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
   return Kokkos::kokkos_malloc<Kokkos::CudaHostPinnedSpace>(size);
 #else
   return Kokkos::kokkos_malloc<Kokkos::HostSpace>(size);
@@ -179,7 +179,7 @@ void* kokkosHostAlloc(size_t size){
  * @param ptr Freed pointer
  */
 void kokkosHostFree(void *ptr){
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
   Kokkos::kokkos_free<Kokkos::CudaHostPinnedSpace>(ptr);
 #else
   Kokkos::kokkos_free<Kokkos::HostSpace>(ptr);
@@ -192,11 +192,7 @@ void kokkosHostFree(void *ptr){
  * @param size The size of the allocation in bytes
  */
 void* kokkosUVMAlloc(size_t size){
-#ifdef __CUDACC__
-  return Kokkos::kokkos_malloc<Kokkos::CudaUVMSpace>(size);
-#else
-  return Kokkos::kokkos_malloc<Kokkos::HostSpace>(size);
-#endif
+  return Kokkos::kokkos_malloc(size);
 }
 
 /**
@@ -205,11 +201,7 @@ void* kokkosUVMAlloc(size_t size){
  * @param ptr Freed pointer
  */
 void kokkosUVMFree(void *ptr){
-#ifdef __CUDACC__
-  Kokkos::kokkos_free<Kokkos::CudaUVMSpace>(ptr);
-#else
-  Kokkos::kokkos_free<Kokkos::HostSpace>(ptr);
-#endif
+  Kokkos::kokkos_free(ptr);
 }
 
 /**
@@ -220,12 +212,12 @@ void kokkosUVMFree(void *ptr){
  * @param size Bytes to be copied
  */
 void kokkosMemCpyDeviceToDevice(char *dest, char *src, size_t size){
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
   Kokkos::View<char*, Kokkos::CudaSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaSpace> src_view(src, size);
 #else
-  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
-  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+  Kokkos::View<char*> dest_view(dest, size);
+  Kokkos::View<char*> src_view(src, size);
 #endif
   Kokkos::deep_copy(dest_view, src_view);
 }
@@ -239,12 +231,12 @@ void kokkosMemCpyDeviceToDevice(char *dest, char *src, size_t size){
  * @param size Bytes to be copied
  */
 void kokkosMemCpyDeviceToHost(char *dest, char *src, size_t size){
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
   Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaSpace> src_view(src, size);
 #else
   Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
-  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+  Kokkos::View<char*> src_view(src, size);
 #endif
   Kokkos::deep_copy(dest_view, src_view);
 }
@@ -257,11 +249,11 @@ void kokkosMemCpyDeviceToHost(char *dest, char *src, size_t size){
  * @param size Bytes to be copied
  */
 void kokkosMemCpyHostToDevice(char *dest, char *src, size_t size){
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
   Kokkos::View<char*, Kokkos::CudaSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> src_view(src, size);
 #else
-  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
+  Kokkos::View<char*> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
 #endif
   Kokkos::deep_copy(dest_view, src_view);
@@ -275,7 +267,7 @@ void kokkosMemCpyHostToDevice(char *dest, char *src, size_t size){
  * @param size Bytes to be copied
  */
 void kokkosMemCpyHostToHost(char *dest, char *src, size_t size){
-#ifdef __CUDACC__
+#ifdef PARFLOW_HAVE_CUDA
   Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> dest_view(dest, size);
   Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> src_view(src, size);
 #else
@@ -293,13 +285,8 @@ void kokkosMemCpyHostToHost(char *dest, char *src, size_t size){
  * @param size Bytes to be copied
  */
 void kokkosMemCpyUVMToUVM(char *dest, char *src, size_t size){
-#ifdef __CUDACC__
-  Kokkos::View<char*, Kokkos::CudaUVMSpace> dest_view(dest, size);
-  Kokkos::View<char*, Kokkos::CudaUVMSpace> src_view(src, size);
-#else
-  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
-  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
-#endif
+  Kokkos::View<char*> dest_view(dest, size);
+  Kokkos::View<char*> src_view(src, size);
   Kokkos::deep_copy(dest_view, src_view);
 }
 
@@ -324,7 +311,7 @@ void kokkosMemSetAmps(char *ptr, size_t size){
   Kokkos::fence(); 
 
   /* Deep_copy style initialization for char* should be fast in future Kokkos releases */
-  // Kokkos::View<char*, Kokkos::CudaUVMSpace> ptr_view(ptr, size);
+  // Kokkos::View<char*> ptr_view(ptr, size);
   // Kokkos::deep_copy(ptr_view, 0);
 }
   
@@ -372,7 +359,6 @@ void amps_gpu_finalize(){
 void amps_kokkos_initialization(){
   if(!Kokkos::is_initialized()){
     Kokkos::InitArguments args;
-    args.device_id = amps_node_rank % Kokkos::Cuda::detect_device_count();
     args.ndevices = 1;
     Kokkos::initialize(args);  
   }
@@ -653,7 +639,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
           *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
             j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);                                          
       });
-      Kokkos::fence();
       if(ENFORCE_HOST_STAGING){
         /* Copy device buffer to host after packing */
         kokkosMemCpyDeviceToHost(amps_gpu_sendbuf.buf_host[inv_num] + pos,
@@ -675,7 +660,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
           j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
             *(ptr_buf + k * len_y * len_x + j * len_x + i);
       });
-      Kokkos::fence();
       inv->flags &= ~AMPS_PACKED;
     }
 
