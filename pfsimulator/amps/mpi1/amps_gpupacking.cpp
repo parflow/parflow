@@ -126,12 +126,12 @@ void amps_gpu_destroy_streams(){
 /**
  * @brief Synchronizes GPU streams associated with the id
  *
- * Only used in amps_gpupacking.cu (CUDA backend option)
+ * Kokkos does not support multiple streams.
  *
  * @param id The integer id associated with the synchronized streams [IN]
  */
 void amps_gpu_sync_streams(int id){
-  // if(id == 0) Kokkos::fence();
+  if(id == 0) Kokkos::fence();
 }
 
 /**
@@ -639,7 +639,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
           *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
             j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);                                          
       });
-      Kokkos::fence(); 
       if(ENFORCE_HOST_STAGING){
         /* Copy device buffer to host after packing */
         kokkosMemCpyDeviceToHost(amps_gpu_sendbuf.buf_host[inv_num] + pos,
@@ -661,7 +660,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
           j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
             *(ptr_buf + k * len_y * len_x + j * len_x + i);
       });
-      Kokkos::fence(); 
       inv->flags &= ~AMPS_PACKED;
     }
 
