@@ -130,7 +130,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     clustering.cpp
     globals.cpp
     grgeometry.cpp
-    problem_phase_source.cpp
   )
   set (SRC_FILES_ARCH_TYPE_1
     axpy.cpp
@@ -147,6 +146,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     overlandflow_eval_Kin.cpp
     problem_phase_density.cpp
     problem_phase_rel_perm.cpp
+    problem_phase_source.cpp
     problem_saturation.cpp
     rb_GS_point.cpp
     richards_jacobian_eval.cpp
@@ -162,13 +162,10 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     region.cpp
   )
 
-if(${PARFLOW_HAVE_CUDA})
-  list(REMOVE_ITEM SRC_FILES_ARCH_TYPE_0 problem_phase_source.cpp)
-  list(APPEND SRC_FILES_ARCH_TYPE_1 problem_phase_source.cpp)
-endif(${PARFLOW_HAVE_CUDA})
-
 if(${PARFLOW_HAVE_KOKKOS})
   list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
+  list(REMOVE_ITEM SRC_FILES_ARCH_TYPE_1 problem_phase_source.cpp)
+  list(APPEND SRC_FILES_ARCH_TYPE_0 problem_phase_source.cpp)
 endif(${PARFLOW_HAVE_KOKKOS})
 
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
