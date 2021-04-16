@@ -121,13 +121,6 @@ NewSolver()
     NA_FreeNameArray(solver_na);
   }
 
-  /*-----------------------------------------------------------------------
-   * Copy Globals struct to GPU (does not copy all unneccessary data)
-   *-----------------------------------------------------------------------*/
-#if defined(PARFLOW_HAVE_CUDA)
-  CopyGlobalsToDevice();
-#endif
-
   switch (solver)
   {
     case 0:

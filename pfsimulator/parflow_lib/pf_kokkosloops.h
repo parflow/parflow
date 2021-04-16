@@ -458,6 +458,7 @@ static const int FDIR_TABLE[6][3] = {
         int PV_ny = PV_iyu - PV_iyl + 1;                                            \
         int PV_nz = PV_izu - PV_izl + 1;                                            \
                                                                                     \
+        Globals *globals = globals;                                                 \
         auto lambda_body =                                                          \
           KOKKOS_LAMBDA(int i, int j, int k)                                        \
           {                                                                         \
@@ -496,6 +497,7 @@ static const int FDIR_TABLE[6][3] = {
                                                                                     \
     if(nx_gpu > 0 && ny_gpu > 0 && nz_gpu > 0)                                      \
     {                                                                               \
+      Globals *globals = globals;                                                   \
       char *inflag = GrGeomSolidCellFlagData(grgeom);                               \
       auto lambda_body =                                                            \
         KOKKOS_LAMBDA(int i, int j, int k)                                          \

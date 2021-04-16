@@ -128,7 +128,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
 
   set (SRC_FILES_ARCH_TYPE_0
     clustering.cpp
-    globals.cpp
     grgeometry.cpp
   )
   set (SRC_FILES_ARCH_TYPE_1
@@ -155,6 +154,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
   )
   set (SRC_FILES_ARCH_TYPE_2
     calc_elevations.cpp
+    globals.cpp
     pf_module.cpp
     problem_bc.cpp
     problem_bc_pressure.cpp
@@ -164,8 +164,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
 
 if(${PARFLOW_HAVE_KOKKOS})
   list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
-  list(REMOVE_ITEM SRC_FILES_ARCH_TYPE_1 problem_phase_source.cpp)
-  list(APPEND SRC_FILES_ARCH_TYPE_0 problem_phase_source.cpp)
 endif(${PARFLOW_HAVE_KOKKOS})
 
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
@@ -199,7 +197,6 @@ endif(${PARFLOW_HAVE_KOKKOS})
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
   if ( ${PARFLOW_HAVE_CUDA} )
-    set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     target_link_libraries(pfsimulator nvToolsExt)
     target_include_directories(pfsimulator PUBLIC "../third_party/cub")
     target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
