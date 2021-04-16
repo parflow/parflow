@@ -1,6 +1,5 @@
 set (SRC_FILES_CONST advect.F
   advection_godunov.c
-  background.c
   bc_lb.c
   bc_pressure.c
   bc_pressure_package.c
@@ -153,6 +152,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     vector_utilities.cpp
   )
   set (SRC_FILES_ARCH_TYPE_2
+    background.cpp
     calc_elevations.cpp
     globals.cpp
     pf_module.cpp
@@ -217,6 +217,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
 
   set (SRC_FILES_ARCH
     axpy.c
+    background.c
     calc_elevations.c
     clustering.c
     copy.c

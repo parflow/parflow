@@ -770,7 +770,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         dim3 block, grid;                                                           \
         FindDims(grid, block, PV_nx, PV_ny, PV_nz, 1);                              \
                                                                                     \
-        Globals *globals = globals;                                                 \
+        Globals *globals = ::globals;                                               \
         auto lambda_body =                                                          \
           GPU_LAMBDA(int i, int j, int k)                                           \
           {                                                                         \
@@ -811,7 +811,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       dim3 block, grid;                                                             \
       FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                             \
                                                                                     \
-      Globals *globals = globals;                                                   \
+      Globals *globals = ::globals;                                                 \
       char *inflag = GrGeomSolidCellFlagData(grgeom);                               \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
