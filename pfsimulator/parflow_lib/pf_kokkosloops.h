@@ -34,7 +34,6 @@ extern "C++"{
 
 #include <tuple>
 #include <Kokkos_Core.hpp>
-// #define ALL -1 // Must be redefined after Kokkos header
 
 /*--------------------------------------------------------------------------
  * Helper macros and functions

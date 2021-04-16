@@ -63,10 +63,6 @@
 #include "lb.h"
 #include "globals.h"
 #include "time_cycle_data.h"
-
-// backend_mapping.h must be included as the last header
-#include "backend_mapping.h"
-
 #include "problem_bc.h"
 #include "problem_eval.h"
 #include "well.h"
@@ -80,5 +76,7 @@
 // SGS FIXME this should not be here, in fact this whole parflow.h file is dumb.
 #include <math.h>
 
+// backend_mapping.h must be included as the last header
+#include "backend_mapping.h"
 
 #endif

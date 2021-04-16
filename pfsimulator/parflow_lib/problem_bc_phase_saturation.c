@@ -150,7 +150,7 @@ void          BCPhaseSaturation(
         case 0:
         {
           double constant;
-          ForPatchCellsPerFace(ALL,
+          ForPatchCellsPerFace(BC_ALL,
                                BeforeAllCells({
                                    dummy0 = (Type0*)(public_xtra->data[indx + ipatch]);
                                    constant = (dummy0->constant);
@@ -181,7 +181,7 @@ void          BCPhaseSaturation(
         {
           double height, lower, upper, dz2;
 
-          ForPatchCellsPerFace(ALL,
+          ForPatchCellsPerFace(BC_ALL,
                                BeforeAllCells({
                                    dummy1 = (Type1*)(public_xtra->data[indx + ipatch]);
                                    height = (dummy1->height);
@@ -238,7 +238,7 @@ void          BCPhaseSaturation(
           double dx2, dy2, dz2;
           double unitx, unity, line_min, line_length;
 
-          ForPatchCellsPerFace(ALL,
+          ForPatchCellsPerFace(BC_ALL,
                                BeforeAllCells({
                                    dummy2 = (Type2*)(public_xtra->data[indx + ipatch]);
                                    num_points = (dummy2->num_points);

@@ -208,7 +208,7 @@ BCStruct    *BCPressure(
 
             dz2 = SubgridDZ(subgrid) * 0.5;
 
-            ForPatchCellsPerFace(ALL,
+            ForPatchCellsPerFace(BC_ALL,
                                  BeforeAllCells(DoNothing),
                                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                  Locals(int ips, iel, iterations, phase;
@@ -417,7 +417,7 @@ BCStruct    *BCPressure(
             line_min = DirEquilPLinearXLower(interval_data) * unitx
                        + DirEquilPLinearYLower(interval_data) * unity;
 
-            ForPatchCellsPerFace(ALL,
+            ForPatchCellsPerFace(BC_ALL,
                                  BeforeAllCells(DoNothing),
                                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                  Locals(int ips, iterations;
@@ -634,7 +634,7 @@ BCStruct    *BCPressure(
 
             area = 0.0;
             patch_values_size = 0;
-            ForPatchCellsPerFace(ALL,
+            ForPatchCellsPerFace(BC_ALL,
                                  BeforeAllCells(DoNothing),
                                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                  Locals(int ips;),
@@ -816,7 +816,7 @@ BCStruct    *BCPressure(
             {
               case 1:  /* p = x */
               {
-                ForPatchCellsPerFace(ALL,
+                ForPatchCellsPerFace(BC_ALL,
                                      BeforeAllCells(DoNothing),
                                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                      Locals(double x;),
@@ -833,7 +833,7 @@ BCStruct    *BCPressure(
 
               case 2:  /* p = x + y + z */
               {
-                ForPatchCellsPerFace(ALL,
+                ForPatchCellsPerFace(BC_ALL,
                                      BeforeAllCells(DoNothing),
                                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                      Locals(int ips;
@@ -858,7 +858,7 @@ BCStruct    *BCPressure(
 
               case 3:  /* p = x^3y^2 + sinxy + 1*/
               {
-                ForPatchCellsPerFace(ALL,
+                ForPatchCellsPerFace(BC_ALL,
                                      BeforeAllCells(DoNothing),
                                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                      Locals(double x, y;),
@@ -881,7 +881,7 @@ BCStruct    *BCPressure(
 
               case 4:  /* p = x^3 y^4 + x^2 + sinxy cosy + 1 */
               {
-                ForPatchCellsPerFace(ALL,
+                ForPatchCellsPerFace(BC_ALL,
                                      BeforeAllCells(DoNothing),
                                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                      Locals(double x, y;),
@@ -904,7 +904,7 @@ BCStruct    *BCPressure(
 
               case 5:  /* p = xyzt +1 */
               {
-                ForPatchCellsPerFace(ALL,
+                ForPatchCellsPerFace(BC_ALL,
                                      BeforeAllCells(DoNothing),
                                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                      Locals(int ips; double x, y, z;),
@@ -928,7 +928,7 @@ BCStruct    *BCPressure(
 
               case 6:  /* p = xyzt +1 */
               {
-                ForPatchCellsPerFace(ALL,
+                ForPatchCellsPerFace(BC_ALL,
                                      BeforeAllCells(DoNothing),
                                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                      Locals(int ips; double x, y, z;),
