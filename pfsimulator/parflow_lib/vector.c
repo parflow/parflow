@@ -319,7 +319,6 @@ static void     AllocateVectorData(
     SubvectorDataSize(subvector) = data_size;
 
     double  *data = ctalloc_amps(double, data_size);
-    // double  *data = kokkos_alloc(data_size);
     VectorSubvector(vector, i)->allocated = TRUE;
 
     SubvectorData(VectorSubvector(vector, i)) = data;
@@ -640,7 +639,6 @@ void FreeSubvector(Subvector *subvector)
   if (subvector->allocated)
   {
     tfree_amps(SubvectorData(subvector));
-    // kokkos_free(SubvectorData(subvector));
   }
   tfree(subvector);
 }

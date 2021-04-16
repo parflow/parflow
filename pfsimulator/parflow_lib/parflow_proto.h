@@ -198,7 +198,7 @@ void IntersectLineWithTriangle(unsigned int line_direction, double coord_0, doub
 void NewGlobals(char *run_name);
 void FreeGlobals(void);
 void LogGlobals(void);
-#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+#if defined(PARFLOW_HAVE_CUDA)
   void CopyGlobalsToDevice(void);
 #endif
 
@@ -275,10 +275,6 @@ void HBT_scanf(FILE *file, HBT *tree);
 /* infinity_norm.c */
 double InfinityNorm(Vector *x);
 
-/* init_acc_arch.cpp */
-void init_acc_arch();
-void finalize_acc_arch();
-
 /* innerprod.c */
 double InnerProd(Vector *x, Vector *y);
 
@@ -351,9 +347,6 @@ int KinsolPCSizeOfTempData(void);
 typedef void (*L2ErrorNormInvoke) (double time, Vector *pressure, ProblemData *problem_data, double *l2_error_norm);
 
 /* kokkos.cpp */
-// void* kokkosAlloc(size_t size);
-// void kokkosFree(void *ptr);
-// void kokkosMemSet(char *ptr, size_t size);
 void kokkosInit();
 void kokkosFinalize();
 

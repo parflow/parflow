@@ -40,8 +40,6 @@
 #include <sys/param.h>
 #endif
 
-
-
 #include "amps.h"
 
 #include "info_header.h"

@@ -80,7 +80,6 @@ set (SRC_FILES_CONST advect.F
   problem_phase_heat_capacity.c
   problem_phase_internal_energy.c
   problem_phase_mobility.c
-  problem_phase_source.c
   problem_phase_viscosity.c
   problem_porosity.c
   problem_real_space_z.c
@@ -131,6 +130,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     clustering.cpp
     globals.cpp
     grgeometry.cpp
+    problem_phase_source.cpp
   )
   set (SRC_FILES_ARCH_TYPE_1
     axpy.cpp
@@ -163,8 +163,8 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
   )
 
 if(${PARFLOW_HAVE_CUDA})
-  list(REMOVE_ITEM SRC_FILES_CONST problem_phase_source.c)
-  list(APPEND SRC_FILES_ARCH_TYPE_2 problem_phase_source.cpp)
+  list(REMOVE_ITEM SRC_FILES_ARCH_TYPE_0 problem_phase_source.cpp)
+  list(APPEND SRC_FILES_ARCH_TYPE_1 problem_phase_source.cpp)
 endif(${PARFLOW_HAVE_CUDA})
 
 if(${PARFLOW_HAVE_KOKKOS})
@@ -222,7 +222,7 @@ endif(${PARFLOW_HAVE_KOKKOS})
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH
-    axpy.cpp
+    axpy.c
     calc_elevations.c
     clustering.c
     copy.c
