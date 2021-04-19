@@ -126,7 +126,7 @@ void amps_gpu_destroy_streams(){
 /**
  * @brief Synchronizes GPU streams associated with the id
  *
- * Kokkos does not support multiple streams.
+ * Kokkos does not support multiple streams (only CUDA backend does).
  *
  * @param id The integer id associated with the synchronized streams [IN]
  */
