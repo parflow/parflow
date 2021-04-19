@@ -51,7 +51,6 @@
   }                                                                                    \
 }
 
-#if !defined(PARFLOW_HAVE_KOKKOS)
 /*--------------------------------------------------------------------------
  * CUDA profiling macros
  *--------------------------------------------------------------------------*/
@@ -77,7 +76,6 @@
 /** Stop recording an NVTX range for NSYS if accelerator present. */
 #define POP_NVTX_cuda nvtxRangePop();
 
-#endif // !PARFLOW_HAVE_KOKKOS
 #endif // PARFLOW_HAVE_CUDA
 
 #ifdef PARFLOW_HAVE_RMM

@@ -178,14 +178,14 @@
   #define ReduceSum ReduceSum_default
 #endif
 
-#if defined(PUSH_NVTX_cuda) || defined(PUSH_NVTX_kokkos) || defined(PUSH_NVTX_omp)
-  #define PUSH_NVTX CHOOSE_BACKEND(DEFER(PUSH_NVTX), ACC_ID)
+#if defined(PUSH_NVTX_cuda)
+  #define PUSH_NVTX PUSH_NVTX_cuda
 #else
   #define PUSH_NVTX PUSH_NVTX_default
 #endif
 
-#if defined(POP_NVTX_cuda) || defined(POP_NVTX_kokkos) || defined(POP_NVTX_omp)
-  #define POP_NVTX CHOOSE_BACKEND(DEFER(POP_NVTX), ACC_ID)
+#if defined(POP_NVTX_cuda)
+  #define POP_NVTX POP_NVTX_cuda
 #else
   #define POP_NVTX POP_NVTX_default
 #endif
