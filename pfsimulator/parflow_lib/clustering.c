@@ -321,7 +321,6 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
           }
         });
       }
-      MemPrefetchDeviceToHost(&tag_count, sizeof(int), 0);
       HistogramBoxAddTags(histogram_box, dim, ic_sb, tag_count);
     }
   }

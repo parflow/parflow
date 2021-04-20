@@ -58,7 +58,6 @@ Subregion  *NewSubregion(
   Subregion *new_subregion;
 
   new_subregion = talloc(Subregion, 1);
-  MemPrefetchDeviceToHost(new_subregion, sizeof(Subregion), 0);
 
   (new_subregion->ix) = ix;
   (new_subregion->iy) = iy;
