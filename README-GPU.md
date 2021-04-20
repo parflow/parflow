@@ -4,12 +4,12 @@
 
 The GPU acceleration is currently compatible only with NVIDIA GPUs either using CUDA directly or using CUDA through the Kokkos library. The minimum supported CUDA compute capability for the hardware is 6.0 (NVIDIA Pascal architecture).
 
-Building with CUDA or Kokkos may improve the performance significantly for large problems but is often slower for test cases and small problems due to initialization overhead associated with the GPU use. Currently, the only preconditioner resulting in a good performance is MGSemi. Installation reference can be found in [Ubuntu recipe](/cmake/recipes/ubuntu-18.10-CUDA), [Dockerfile](Dockerfile_CUDA), and [travis.yml](.travis.yml).
+Building with CUDA or Kokkos may improve the performance significantly for large problems but is often slower for test cases and small problems due to initialization overhead associated with the GPU use. Currently, the only preconditioner resulting in a good performance is MGSemi. Installation reference can be found in [Ubuntu recipe](/cmake/recipes/ubuntu-18.10-CUDA), [Dockerfile](Dockerfile_CUDA), and [linux.yml](/.github/workflows/linux.yml).
 
 
 ## CMake
 
-Building with GPU acceleration requires a [CUDA](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html) installation, and in case Kokkos is used, [Kokkos](https://github.com/kokkos/kokkos) installation. However, the performance can be further improved by using pool allocation for Unified Memory (requires [RMM v0.10](https://github.com/rapidsai/rmm/tree/branch-0.10) installation) and direct communication between GPUs (requires a CUDA-Aware MPI library).
+Building with GPU acceleration requires a [CUDA](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html) installation, and in case Kokkos is used, [Kokkos](https://github.com/kokkos/kokkos) installation. However, the performance can be further improved by using pool allocation for Unified Memory (requires [RMM v0.10](https://github.com/rapidsai/rmm/tree/branch-0.10) installation) and direct communication between GPUs (requires using a CUDA-Aware MPI library).
 The GPU acceleration is activated by specifying either *PARFLOW_ACCELERATOR_BACKEND=cuda* option to the CMake, i.e.,
 
 ```shell
@@ -19,7 +19,7 @@ or *PARFLOW_ACCELERATOR_BACKEND=kokkos* and *DKokkos_ROOT=/path/to/Kokkos* i.e.,
 ```shell
 cmake ../parflow -DPARFLOW_AMPS_LAYER=mpi1 -DCMAKE_BUILD_TYPE=Release -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} -DPARFLOW_ACCELERATOR_BACKEND=kokkos -DKokkos_ROOT=/path/to/Kokkos
 ```
-where *DPARFLOW_AMPS_LAYER=mpi1* leverages GPU-based data packing and unpacking. By default, the packed data is copied to a pinned host staging buffer which is then passed for MPI to avoid special requirements for the MPI library. Direct communication between GPUs (with [GPUDirect P2P/RDMA](https://developer.nvidia.com/gpudirect)) can be activated by specifying an environment variable *PARFLOW_USE_GPUDIRECT=1* during runtime in which case the memory copy between CPU and GPU is avoided and a GPU pointer is passed for MPI, but this requires a CUDA-Aware MPI library (support for Unified Memory is not required because the pointers passed to the MPI library point to pinned GPU memory allocations).
+where *DPARFLOW_AMPS_LAYER=mpi1* leverages GPU-based data packing and unpacking. By default, the packed data is copied to a host staging buffer which is then passed for MPI to avoid special requirements for the MPI library. Direct communication between GPUs (with [GPUDirect P2P/RDMA](https://developer.nvidia.com/gpudirect)) can be activated by specifying an environment variable *PARFLOW_USE_GPUDIRECT=1* during runtime in which case the memory copy between CPU and GPU is avoided and a GPU pointer is passed for MPI, but this requires a CUDA-Aware MPI library (support for Unified Memory is not required with the native CUDA backend because the pointers passed to the MPI library point to pinned GPU memory allocations, but is required with the Kokkos backend).
 
 Furthermore, RMM library can be activated by specifying the RMM root directory with *DRMM_ROOT=/path/to/rmm_root* as follows:
 ```shell
