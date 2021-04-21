@@ -355,7 +355,7 @@ class Run(BaseRun):
         full_file_path = os.path.abspath(f_name)
         write_dict(self.to_dict(), full_file_path)
 
-        if CLMExporter(self)._using_clm:
+        if CLMExporter(self).can_export:
             # If we are using CLM, write out any other files we need
             CLMExporter(self).write_allowed(settings.WORKING_DIRECTORY)
 
