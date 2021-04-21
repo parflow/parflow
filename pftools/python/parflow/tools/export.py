@@ -453,6 +453,10 @@ class CLMExporter:
         return self._clm_solver.Vegetation.Parameters
 
     @property
+    def _veg_map(self):
+        return self._clm_solver.Vegetation.Map
+
+    @property
     def _land_names(self):
         names = self._veg_params.LandNames
         return names if isinstance(names, list) else names.split()
@@ -567,6 +571,16 @@ class CLMExporter:
     def _using_clm(self):
         # We can add other checks here if needed
         return self.run.Solver.LSM == 'CLM'
+
+    @property
+    def can_export(self):
+        if self._using_clm:
+            land_param_items = self._veg_params.select('{LandCoverParamItem}')
+            land_map_items = self._veg_map.select('LandFrac/{LandFracCoverMapItem}')
+            return (land_param_items and land_map_items and
+                all(x is not None for x in land_param_items + land_map_items))
+
+        return False
 
     @property
     def _import_paths(self):
