@@ -343,20 +343,26 @@ static const int FDIR_TABLE[6][3] = {
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
+    auto lambda_outer =                                                             \
+      KOKKOS_LAMBDA(int i, int j, int k, double& lsum)                              \
+      {                                                                             \
+        lambda_body(i, j, k, lsum);                                                 \
+      };                                                                            \
+                                                                                    \
     using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     if(std::is_same<traits::result_type, struct ReduceSumType<double>>::value)      \
     {                                                                               \
-      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, rslt);                      \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, rslt);                     \
     }                                                                               \
     else if(std::is_same<traits::result_type, struct ReduceMaxType<double>>::value) \
     {                                                                               \
-      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, Kokkos::Max<double>(rslt)); \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Max<double>(rslt));\
     }                                                                               \
     else if(std::is_same<traits::result_type, struct ReduceMinType<double>>::value) \
     {                                                                               \
-      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, Kokkos::Min<double>(rslt)); \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Min<double>(rslt));\
     }                                                                               \
     else                                                                            \
     {                                                                               \
@@ -399,20 +405,26 @@ static const int FDIR_TABLE[6][3] = {
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
+    auto lambda_outer =                                                             \
+      KOKKOS_LAMBDA(int i, int j, int k, double& lsum)                              \
+      {                                                                             \
+        lambda_body(i, j, k, lsum);                                                 \
+      };                                                                            \
+                                                                                    \
     using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     if(std::is_same<traits::result_type, struct ReduceSumType<double>>::value)      \
     {                                                                               \
-      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, rslt);                      \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, rslt);                     \
     }                                                                               \
     else if(std::is_same<traits::result_type, struct ReduceMaxType<double>>::value) \
     {                                                                               \
-      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, Kokkos::Max<double>(rslt)); \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Max<double>(rslt));\
     }                                                                               \
     else if(std::is_same<traits::result_type, struct ReduceMinType<double>>::value) \
     {                                                                               \
-      Kokkos::parallel_reduce(mdpolicy_3d, lambda_body, Kokkos::Min<double>(rslt)); \
+      Kokkos::parallel_reduce(mdpolicy_3d, lambda_outer, Kokkos::Min<double>(rslt));\
     }                                                                               \
     else                                                                            \
     {                                                                               \
