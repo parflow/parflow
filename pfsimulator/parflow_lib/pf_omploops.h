@@ -25,7 +25,7 @@
  * @brief OpenMP functions and loop definitions
  */
 
-#ifdef PARFLOW_HAVE_OMP
+#ifndef PARFLOW_HAVE_OMP
 
 #define NO_OMP_PARALLEL
 
