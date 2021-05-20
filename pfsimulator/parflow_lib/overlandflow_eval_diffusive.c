@@ -36,7 +36,7 @@
 
 #include "parflow.h"
 
-#if PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_CUDA
+#if !defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_KOKKOS)
 #include "llnlmath.h"
 //#include "llnltyps.h"
 #endif
@@ -122,7 +122,7 @@ void    OverlandFlowEvalDiff(
 
   if (fcn == CALCFCN)
   {
-    ForPatchCellsPerFaceWithGhost(ALL,
+    ForPatchCellsPerFaceWithGhost(BC_ALL,
                                   BeforeAllCells(DoNothing),
                                   LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                                   Locals(int io, itop, ip=0, ipp1, ippsy;
@@ -226,7 +226,7 @@ void    OverlandFlowEvalDiff(
                                   AfterAllCells(DoNothing)
       );
 
-    ForPatchCellsPerFace(ALL,
+    ForPatchCellsPerFace(BC_ALL,
                          BeforeAllCells(DoNothing),
                          LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                          Locals(int io;),
@@ -249,7 +249,7 @@ void    OverlandFlowEvalDiff(
   }
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
-    ForPatchCellsPerFace(ALL,
+    ForPatchCellsPerFace(BC_ALL,
                          BeforeAllCells(DoNothing),
                          LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                          Locals(int io, itop, ip=0, ipp1, ippsy;

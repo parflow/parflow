@@ -29,7 +29,7 @@
 #include "amps.h"
 
 /* This CUDA stuff could be combined with AMPS_MPI_NOT_USE_PERSISTENT case */
-#ifdef PARFLOW_HAVE_CUDA
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
 
 void _amps_wait_exchange(amps_Handle handle)
 {

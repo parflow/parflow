@@ -66,16 +66,13 @@
 
 #cmakedefine PARFLOW_HAVE_CUDA
 
+#cmakedefine PARFLOW_HAVE_KOKKOS
+
 /* PARFLOW_HAVE_RMM is not defined here because because it is only set 
    for the compilation of parflow_exe, parflow_lib, and kinsol sources. 
    RMM must be initialized before it is used, so, for example, 
    the amps tests would fail if used across all compiles.              */
 
 #cmakedefine PARFLOW_HAVE_OMP
-
-#define PARFLOW_BACKEND_NONE 0
-#define PARFLOW_BACKEND_CUDA 1
-#define PARFLOW_BACKEND_OMP 2
-#define PARFLOW_ACC_BACKEND @PARFLOW_ACC_BACKEND@
 
 #endif // PARFLOW_CONFIG_H

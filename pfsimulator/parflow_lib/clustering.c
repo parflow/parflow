@@ -51,15 +51,8 @@
 
 /**
  * Tag count.
- *
- * The __managed__ keyword makes this variable to automatically migrate
- * between host and device, but unfortunately requires global scope.
- * 
- * @TODO Find a better way to do this, some options:
- *  - Put this variable into heap
- *  - Use parallel reduction loops (currently not compatible with GrGeomLoops) 
  */
-__managed__ static int tag_count;
+static int tag_count;
 
 /**
  * Maximum number of ghost layers.
@@ -328,7 +321,6 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
           }
         });
       }
-      MemPrefetchDeviceToHost(&tag_count, sizeof(int), 0);
       HistogramBoxAddTags(histogram_box, dim, ic_sb, tag_count);
     }
   }

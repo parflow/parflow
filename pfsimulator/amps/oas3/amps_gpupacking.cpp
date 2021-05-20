@@ -17,38 +17,13 @@
  *  USA
  ***********************************************************************/
 
+#include <Kokkos_Core.hpp>
+
 extern "C"{
 
 #include <stdlib.h>
 #include <string.h>
 #include "amps.h"
-
-/**
- * @brief The maximum number of GPU streams
- *
- * Here 1024 is an arbitrary number that should be larger than the sum 
- * of amps_InvoiceEntries in all recv or send invoices of the current 
- * communication package (ie, all packing/unpacking kernels should be 
- * allowed to run in a separate stream for best performance).
- * 
- * If the number is smaller than the required packing/unpacking kernel launches,
- * the kernels are queued in the available streams and run at least partially 
- * sequentially (useful for debugging purposes).
- */
-#define AMPS_GPU_MAX_STREAMS 1024
-
-/**
- * @brief The maximum block size for a GPU kernel
- *
- * The largest blocksize ParFlow is using, but also the largest blocksize 
- * supported by any currently available NVIDIA GPU architecture. This can 
- * also differ between different architectures. It is used for informing 
- * the compiler about how many registers should be available for the GPU 
- * kernel during the compilation. Another option is to use 
- * --maxrregcount 64 compiler flag, but NVIDIA recommends specifying 
- * this kernel-by-kernel basis by __launch_bounds__() identifier.
- */
-#define BLOCKSIZE_MAX 1024
 
 /* Disable GPU packing (useful for debugging) */
 // #define DISABLE_GPU_PACKING
@@ -79,30 +54,6 @@ extern "C"{
   */
   int num_bufs;
 } amps_GpuBuffer;
-
-/**
- * @brief Information about the global GPU packing/unpacking streams
- */
-typedef struct _amps_GpuStreams {
-  /** 
-  * A list of GPU streams.
-  */
-  cudaStream_t *stream;
-  /** 
-  * The stream id can be used to associate a stream with 
-  * an id number (typically the invoice index).
-  */
-  int *stream_id;
-  /** 
-  * The number of streams created.
-  */
-  int num_streams;
-  /** 
-  * The number of requested streams since a synchronization (can be 
-  * larger than num_streams).
-  */
-  int reqs_since_sync;
-} amps_GpuStreams;
 
 #ifdef DISABLE_GPU_PACKING
 /* Dummy definitions if no GPU packing */
@@ -138,14 +89,6 @@ amps_GpuBuffer amps_gpu_sendbuf =
   .num_bufs = 0
 };
 
-amps_GpuStreams amps_gpu_streams = 
-{
-  .stream = NULL,
-  .stream_id = NULL,
-  .num_streams = 0,
-  .reqs_since_sync = 0
-};
-
 /**
  * @brief Defines whether host staging is used
  *
@@ -168,7 +111,7 @@ void amps_gpu_check_env(){
   if(getenv("PARFLOW_USE_GPUDIRECT") != NULL){
     if(atoi(getenv("PARFLOW_USE_GPUDIRECT")) == 1){
       if(amps_rank == 0 && ENFORCE_HOST_STAGING != 0)
-        printf("Node %d: Using GPUDirect (CUDA-Aware MPI required)\n", amps_rank);
+        printf("Node %d: Using GPUDirect (GPU-Aware MPI required)\n", amps_rank);
       ENFORCE_HOST_STAGING = 0;
     }
   }
@@ -178,81 +121,198 @@ void amps_gpu_check_env(){
  * @brief Destroy all GPU streams and free allocations
  */
 void amps_gpu_destroy_streams(){
-  for(int i = 0; i < amps_gpu_streams.num_streams; i++){
-    CUDA_ERRCHK(cudaStreamDestroy(amps_gpu_streams.stream[i]));
-  }
-  free(amps_gpu_streams.stream);
-  free(amps_gpu_streams.stream_id);
-}
-
-/**
- * @brief Get a new GPU stream
- *
- * Marks a stream with the id and returns this stream (new stream is allocated if necessary).
- *
- * @param id The integer id associated with the returned stream [IN]
- * @return A GPU stream
- */
-cudaStream_t amps_gpu_get_stream(int id){
-  if(amps_gpu_streams.reqs_since_sync > amps_gpu_streams.num_streams - 1)
-  {
-    if(amps_gpu_streams.num_streams < AMPS_GPU_MAX_STREAMS)
-    {
-      int new_num_streams = amps_gpu_streams.reqs_since_sync + 1;
-      if(amps_gpu_streams.reqs_since_sync >= AMPS_GPU_MAX_STREAMS)
-        new_num_streams = AMPS_GPU_MAX_STREAMS;
-
-      cudaStream_t *newstream = (cudaStream_t*)malloc(new_num_streams * sizeof(cudaStream_t));
-      int *id_array = (int*)malloc(new_num_streams * sizeof(int));
-      if(amps_gpu_streams.num_streams != 0){
-        memcpy(newstream, 
-          amps_gpu_streams.stream, 
-            amps_gpu_streams.num_streams * sizeof(cudaStream_t));
-        memcpy(id_array, 
-          amps_gpu_streams.stream_id, 
-            amps_gpu_streams.num_streams * sizeof(int));
-        free(amps_gpu_streams.stream);
-        free(amps_gpu_streams.stream_id);
-      }
-      amps_gpu_streams.stream = newstream;
-      amps_gpu_streams.stream_id = id_array;
-      for(int i = amps_gpu_streams.num_streams; i < new_num_streams; i++){
-        CUDA_ERRCHK(cudaStreamCreate(&(amps_gpu_streams.stream[i])));
-        amps_gpu_streams.stream_id[i] = INT_MAX; 
-      }
-      amps_gpu_streams.num_streams = new_num_streams;
-    }
-  }
-  int stream_index = amps_gpu_streams.reqs_since_sync % AMPS_GPU_MAX_STREAMS;
-  amps_gpu_streams.reqs_since_sync++;
-  if(id < amps_gpu_streams.stream_id[stream_index])
-    amps_gpu_streams.stream_id[stream_index] = id;
-  return amps_gpu_streams.stream[stream_index];
 }
 
 /**
  * @brief Synchronizes GPU streams associated with the id
  *
- * The streams must be synchronized in ascending id order.
+ * Kokkos does not support multiple streams (only CUDA backend does).
  *
  * @param id The integer id associated with the synchronized streams [IN]
  */
 void amps_gpu_sync_streams(int id){
-  for(int i = 0; i < amps_gpu_streams.num_streams; i++)
+  if(id == 0) Kokkos::fence();
+}
+
+/**
+ * @brief Allocate device memory with Kokkos
+ *
+ * @param size The size of the allocation in bytes
+ */
+void* kokkosDeviceAlloc(size_t size){
+#ifdef PARFLOW_HAVE_CUDA
+  return Kokkos::kokkos_malloc<Kokkos::CudaSpace>(size);
+#else
+  return Kokkos::kokkos_malloc(size);
+#endif
+}
+
+/**
+ * @brief Free device memory with Kokkos
+ *
+ * @param ptr Freed pointer
+ */
+void kokkosDeviceFree(void *ptr){
+#ifdef PARFLOW_HAVE_CUDA
+  Kokkos::kokkos_free<Kokkos::CudaSpace>(ptr);
+#else
+  Kokkos::kokkos_free(ptr);
+#endif
+}
+
+/**
+ * @brief Allocate pinned host memory with Kokkos
+ *
+ * @param size The size of the allocation in bytes
+ */
+void* kokkosHostAlloc(size_t size){
+#ifdef PARFLOW_HAVE_CUDA
+  return Kokkos::kokkos_malloc<Kokkos::CudaHostPinnedSpace>(size);
+#else
+  return Kokkos::kokkos_malloc<Kokkos::HostSpace>(size);
+#endif
+}
+
+/**
+ * @brief Free pinned host memory with Kokkos
+ *
+ * @param ptr Freed pointer
+ */
+void kokkosHostFree(void *ptr){
+#ifdef PARFLOW_HAVE_CUDA
+  Kokkos::kokkos_free<Kokkos::CudaHostPinnedSpace>(ptr);
+#else
+  Kokkos::kokkos_free<Kokkos::HostSpace>(ptr);
+#endif
+}
+
+/**
+ * @brief Allocate Unified Memory with Kokkos
+ *
+ * @param size The size of the allocation in bytes
+ */
+void* kokkosUVMAlloc(size_t size){
+  return Kokkos::kokkos_malloc(size);
+}
+
+/**
+ * @brief Free Unified Memory with Kokkos
+ *
+ * @param ptr Freed pointer
+ */
+void kokkosUVMFree(void *ptr){
+  Kokkos::kokkos_free(ptr);
+}
+
+/**
+ * @brief Device-device memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
+void kokkosMemCpyDeviceToDevice(char *dest, char *src, size_t size){
+#ifdef PARFLOW_HAVE_CUDA
+  Kokkos::View<char*, Kokkos::CudaSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::CudaSpace> src_view(src, size);
+#else
+  Kokkos::View<char*> dest_view(dest, size);
+  Kokkos::View<char*> src_view(src, size);
+#endif
+  Kokkos::deep_copy(dest_view, src_view);
+}
+
+
+/**
+ * @brief Device-host memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
+void kokkosMemCpyDeviceToHost(char *dest, char *src, size_t size){
+#ifdef PARFLOW_HAVE_CUDA
+  Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::CudaSpace> src_view(src, size);
+#else
+  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
+  Kokkos::View<char*> src_view(src, size);
+#endif
+  Kokkos::deep_copy(dest_view, src_view);
+}
+
+/**
+ * @brief Host-device memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
+void kokkosMemCpyHostToDevice(char *dest, char *src, size_t size){
+#ifdef PARFLOW_HAVE_CUDA
+  Kokkos::View<char*, Kokkos::CudaSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> src_view(src, size);
+#else
+  Kokkos::View<char*> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+#endif
+  Kokkos::deep_copy(dest_view, src_view);
+}
+
+/**
+ * @brief Host-host memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
+void kokkosMemCpyHostToHost(char *dest, char *src, size_t size){
+#ifdef PARFLOW_HAVE_CUDA
+  Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::CudaHostPinnedSpace> src_view(src, size);
+#else
+  Kokkos::View<char*, Kokkos::HostSpace> dest_view(dest, size);
+  Kokkos::View<char*, Kokkos::HostSpace> src_view(src, size);
+#endif
+  Kokkos::deep_copy(dest_view, src_view);
+}
+
+/**
+ * @brief UVM-UVM memcopy
+ *
+ * @param dest Destination pointer
+ * @param src Source pointer
+ * @param size Bytes to be copied
+ */
+void kokkosMemCpyUVMToUVM(char *dest, char *src, size_t size){
+  Kokkos::View<char*> dest_view(dest, size);
+  Kokkos::View<char*> src_view(src, size);
+  Kokkos::deep_copy(dest_view, src_view);
+}
+
+/**
+ * @brief Kokkos memset
+ *
+ * @param ptr Pointer for the data to be set to zero
+ * @param size Bytes to be zeroed
+ */
+void kokkosMemSetAmps(char *ptr, size_t size){
+  /* Loop style initialization */
+  if(size % sizeof(int))
   {
-    if(amps_gpu_streams.stream_id[i] < id){
-      printf("ERROR at %s:%d: The streams must be synced in ascending id order \n", __FILE__, __LINE__);
-      exit(1);
-    }
+    /* Writing 1 byte / thread is slow */
+    Kokkos::parallel_for(size, KOKKOS_LAMBDA(int i){ptr[i] = 0;});
   }
-  for(int i = 0; i < amps_gpu_streams.num_streams; i++)
+  else
   {
-    if(amps_gpu_streams.stream_id[i] == id){
-      CUDA_ERRCHK(cudaStreamSynchronize(amps_gpu_streams.stream[i])); 
-      amps_gpu_streams.stream_id[i] = INT_MAX;
-    }
+    /* Writing 4 bytes / thread is fast */
+    Kokkos::parallel_for(size / sizeof(int), KOKKOS_LAMBDA(int i){((int*)ptr)[i] = 0;});
   }
-  amps_gpu_streams.reqs_since_sync = 0;
+  Kokkos::fence(); 
+
+  /* Deep_copy style initialization for char* should be fast in future Kokkos releases */
+  // Kokkos::View<char*> ptr_view(ptr, size);
+  // Kokkos::deep_copy(ptr_view, 0);
 }
   
 /**
@@ -264,9 +324,9 @@ static void _amps_gpubuf_free(amps_GpuBuffer *gpubuf){
   if(gpubuf->num_bufs > 0){
     for(int i = 0; i < gpubuf->num_bufs; i++){
       if(gpubuf->buf_size[i] > 0){
-        CUDA_ERRCHK(cudaFree(gpubuf->buf[i]));
+        kokkosDeviceFree(gpubuf->buf[i]);
         if(ENFORCE_HOST_STAGING)
-          CUDA_ERRCHK(cudaFreeHost(gpubuf->buf_host[i]));
+          kokkosHostFree(gpubuf->buf_host[i]);
       }
     }
     free(gpubuf->buf);
@@ -287,9 +347,21 @@ void amps_gpu_free_bufs(){
 /**
  * @brief Finalize GPU resource usage
  */
- void amps_gpu_finalize(){
+void amps_gpu_finalize(){
   amps_gpu_free_bufs();
   amps_gpu_destroy_streams();
+  if(Kokkos::is_initialized) Kokkos::finalize();
+}
+
+/**
+ * @brief Initialize Kokkos if not initialized
+ */
+void amps_kokkos_initialization(){
+  if(!Kokkos::is_initialized()){
+    Kokkos::InitArguments args;
+    args.ndevices = 1;
+    Kokkos::initialize(args);  
+  }
 }
 
 /**
@@ -348,24 +420,20 @@ static char* _amps_gpubuf_realloc(amps_GpuBuffer *gpubuf, int id, int pos, int s
   int size_total = pos + size;
   if (gpubuf->buf_size[id] < size_total)
   {
-    char *newbuf;
-    CUDA_ERRCHK(cudaMalloc((void**)&newbuf, size_total));
+    char *newbuf = (char*)kokkosDeviceAlloc(size_total);
     if(pos != 0){
-      CUDA_ERRCHK(cudaMemcpy(newbuf,
-        gpubuf->buf[id], 
-          pos, cudaMemcpyDeviceToDevice));
-      CUDA_ERRCHK(cudaFree(gpubuf->buf[id]));
+      kokkosMemCpyDeviceToDevice(newbuf,
+        gpubuf->buf[id], pos);
+      kokkosDeviceFree(gpubuf->buf[id]);
     }
     gpubuf->buf[id] = newbuf;
     
     if(ENFORCE_HOST_STAGING){
-      char *newbuf_host;
-      CUDA_ERRCHK(cudaMallocHost((void**)&newbuf_host, size_total));
+      char *newbuf_host = (char*)kokkosHostAlloc(size_total);
       if(pos != 0){
-        CUDA_ERRCHK(cudaMemcpy(newbuf_host,
-          gpubuf->buf_host[id], 
-            pos, cudaMemcpyHostToHost));
-        CUDA_ERRCHK(cudaFreeHost(gpubuf->buf_host[id]));
+        kokkosMemCpyHostToHost(newbuf_host,
+          gpubuf->buf_host[id], pos);
+        kokkosHostFree(gpubuf->buf_host[id]);
       }
       gpubuf->buf_host[id] = newbuf_host;
     }
@@ -432,78 +500,6 @@ static char* _amps_gpu_sendbuf_realloc(int id, int pos, int size){
   return _amps_gpubuf_realloc(&amps_gpu_sendbuf, id, pos, size);
 }
 
- extern "C++"{
-/**
- * @brief GPU packing kernel
- *
- * @param ptr_buf A pointer to the packing destination (GPU staging buffer) [IN/OUT]
- * @param ptr_data A pointer to the source to be packed (Unified Memory) [IN]
- * @param len_x The data length along x dimension [IN]
- * @param len_y The data length along y dimension [IN]
- * @param len_z The data length along z dimension [IN]
- * @param stride_x The stride along x dimension [IN]
- * @param stride_y The stride along y dimension [IN]
- * @param stride_z The stride along z dimension [IN]
- */
- template <typename T>
- __global__ static void 
- __launch_bounds__(BLOCKSIZE_MAX)
- _amps_packing_kernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data, 
-     const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
- {
-   const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
-   if(k < len_z)
-   {
-     const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
-     if(j < len_y)
-     {
-       const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
-       if(i < len_x)
-       {
-         *(ptr_buf + k * len_y * len_x + j * len_x + i) = 
-           *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
-             j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);
-       }
-     }
-   }
- }
- 
- /**
- * @brief GPU unpacking kernel
- *
- * @param ptr_buf A pointer to the source to be unpacked (GPU staging buffer) [IN]
- * @param ptr_data A pointer to the unpacking destination (Unified Memory) [IN/OUT]
- * @param len_x The data length along x dimension [IN]
- * @param len_y The data length along y dimension [IN]
- * @param len_z The data length along z dimension [IN]
- * @param stride_x The stride along x dimension [IN]
- * @param stride_y The stride along y dimension [IN]
- * @param stride_z The stride along z dimension [IN]
- */
- template <typename T>
- __global__ static void 
- __launch_bounds__(BLOCKSIZE_MAX)
- _amps_unpacking_kernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data, 
-     const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
- {
-   const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
-   if(k < len_z)
-   {
-     const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
-     if(j < len_y)
-     {
-       const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
-       if(i < len_x)
-       {
-         *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
-           j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
-             *(ptr_buf + k * len_y * len_x + j * len_x + i);
-       }
-     }
-   }
- }
- }
-
 /**
 * @brief The main amps GPU packing driver function
 *
@@ -541,6 +537,8 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
   char *buffer;
   int pos = 0;
 
+  amps_kokkos_initialization();
+
   amps_InvoiceEntry *ptr = inv->list;
   while (ptr != NULL)
   {
@@ -566,9 +564,6 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     }
   
     /* Preparations for the kernel launch */
-    int blocksize_x = 1;
-    int blocksize_y = 1;
-    int blocksize_z = 1;  
     int len_x = 1;
     int len_y = 1;
     int len_z = 1;  
@@ -580,15 +575,12 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     switch (dim)
     {
       case 3:
-        blocksize_z = 2;
         len_z = ptr->ptr_len[2];
         stride_z = ptr->ptr_stride[2];
       case 2:
-        blocksize_y = 8;
         len_y = ptr->ptr_len[1];
         stride_y = ptr->ptr_stride[1];
       case 1:
-        blocksize_x = 8;
         len_x = ptr->ptr_len[0];
         stride_x = ptr->ptr_stride[0];
         break;
@@ -599,6 +591,8 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
     
     /* Get data location and its properties */
     char *data = (char*)ptr->data;
+
+#ifdef PARFLOW_HAVE_CUDA
     struct cudaPointerAttributes attributes;
     cudaPointerGetAttributes(&attributes, (void *)data);  
   
@@ -607,6 +601,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       printf("ERROR at %s:%d: The data location (not MPI staging buffer) is not accessible by the GPU(s)\n", __FILE__, __LINE__);
       return __LINE__;
     }
+#endif
 
     int size = len_x * len_y * len_z * sizeof(double);
     if((action == AMPS_GETSBUF) || (action == AMPS_PACK)){
@@ -620,6 +615,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       return __LINE__;
     }
 
+#ifdef PARFLOW_HAVE_CUDA
     /* Get buffer location and its properties */
     cudaPointerGetAttributes(&attributes, (void *)buffer);  
 
@@ -628,39 +624,44 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       printf("ERROR at %s:%d: The MPI staging buffer location is not accessible by the GPU(s)\n", __FILE__, __LINE__);
       return __LINE__;
     }
+#endif
 
     /* Run packing or unpacking kernel */
-    dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, 
-                      ((len_y - 1) + blocksize_y) / blocksize_y, 
-                       ((len_z - 1) + blocksize_z) / blocksize_z);
-    dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);
+    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;
+    MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{len_x, len_y, len_z}});
 
     if(action == AMPS_PACK){
-      cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
-      _amps_packing_kernel<<<grid, block, 0, new_stream>>>(
-        (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+      Kokkos::parallel_for(mdpolicy_3d, KOKKOS_LAMBDA(int i, int j, int k)
+      {
+        double *ptr_buf = (double*)buffer;
+        double *ptr_data = (double*)data;
+        *(ptr_buf + k * len_y * len_x + j * len_x + i) = 
+          *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
+            j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);                                          
+      });
       if(ENFORCE_HOST_STAGING){
         /* Copy device buffer to host after packing */
-        CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_sendbuf.buf_host[inv_num] + pos,
-                                      amps_gpu_sendbuf.buf[inv_num] + pos,
-                                        size, cudaMemcpyDeviceToHost, new_stream));
+        kokkosMemCpyDeviceToHost(amps_gpu_sendbuf.buf_host[inv_num] + pos,
+                                    amps_gpu_sendbuf.buf[inv_num] + pos, size);
       }
       inv->flags |= AMPS_PACKED;
     }
     else if(action == AMPS_UNPACK){
-      cudaStream_t new_stream = amps_gpu_get_stream(inv_num);
       if(ENFORCE_HOST_STAGING){
         /* Copy host buffer to device before unpacking */
-        CUDA_ERRCHK(cudaMemcpyAsync(amps_gpu_recvbuf.buf[inv_num] + pos,
-                                      amps_gpu_recvbuf.buf_host[inv_num] + pos,
-                                        size, cudaMemcpyHostToDevice, new_stream));
+        kokkosMemCpyHostToDevice(amps_gpu_recvbuf.buf[inv_num] + pos,
+                                    amps_gpu_recvbuf.buf_host[inv_num] + pos, size);
       }
-      _amps_unpacking_kernel<<<grid, block, 0, new_stream>>>(
-        (double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+      Kokkos::parallel_for(mdpolicy_3d, KOKKOS_LAMBDA(int i, int j, int k)
+      {
+        double *ptr_buf = (double*)buffer;
+        double *ptr_data = (double*)data;
+        *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
+          j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
+            *(ptr_buf + k * len_y * len_x + j * len_x + i);
+      });
       inv->flags &= ~AMPS_PACKED;
     }
-    // CUDA_ERRCHK(cudaPeekAtLastError()); 
-    // CUDA_ERRCHK(cudaStreamSynchronize(0));
 
     pos += size;  
     ptr = ptr->next;

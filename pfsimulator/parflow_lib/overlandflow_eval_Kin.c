@@ -25,7 +25,7 @@
 
 #include "parflow.h"
 
-#if PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_CUDA
+#if !defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_KOKKOS)
 #include "llnlmath.h"
 #endif
 /*--------------------------------------------------------------------------
@@ -102,7 +102,7 @@ void    OverlandFlowEvalKin(
 
   if (fcn == CALCFCN)
   {
-    ForPatchCellsPerFaceWithGhost(ALL,
+    ForPatchCellsPerFaceWithGhost(BC_ALL,
                                   BeforeAllCells(DoNothing),
                                   LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                                   Locals(int io, itop, ip, ipp1, ippsy;
@@ -195,7 +195,7 @@ void    OverlandFlowEvalKin(
                                   AfterAllCells(DoNothing)
       );
 
-    ForPatchCellsPerFace(ALL,
+    ForPatchCellsPerFace(BC_ALL,
                          BeforeAllCells(DoNothing),
                          LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                          Locals(int io;),
@@ -217,7 +217,7 @@ void    OverlandFlowEvalKin(
   }
   else          //fcn = CALCDER calculates the derivs
   {
-    ForPatchCellsPerFaceWithGhost(ALL,
+    ForPatchCellsPerFaceWithGhost(BC_ALL,
                                   BeforeAllCells(DoNothing),
                                   LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                                   Locals(int io, itop, ip, ipp1, ippsy;
