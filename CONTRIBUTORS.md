@@ -10,10 +10,11 @@ Since ParFlow existed in several repositories GitHub has not chaptured
 all of the contributors.
 
 **Reed M. Maxwell** 
-Department of Geology and Geologic Engineering
-Colorado School of Mines
-Golden, CO, USA
-rmaxwell@mines.edu
+Department of Civil and Environmental Engineering 
+High Meadows Environmental Institute
+Princeton University 
+Princeton, NJ USA
+reedmaxwell@princeton.edu
 
 **Stefan J. Kollet**
 Meteorological Institute
@@ -26,6 +27,11 @@ Center for Applied Scientiﬁc Computing
 Lawrence Livermore National Laboratory
 Livermore, CA. USA
 sgsmith@llnl.gov
+
+**Laura E. Condon**
+Department of Hydrology and Atmospheric Sciences
+University of Arizona
+Tucson, AZ, USA
 
 **Carol S. Woodward**
 Center for Applied Scientiﬁc Computing
