@@ -201,28 +201,6 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * Modules are based on the idea the module has single method that
  * does the work of the algorithm.  A bit like the functor pattern in
  * C++.   
- * 
- * @param type Function type to invoke.
- * @param pf_module The module instance
- * @param args Arguments for the method to invoke.
- * @return The invoked method return
- *
- * @note
- * Rational: This was done so all PFModules would have the same
- * calling convention.
- */
-#define PFModuleInvoke(type, pf_module, args) \
-  (                                           \
-   ThisPFModule = pf_module,                  \
-   (*(type (*)())(ThisPFModule->call))args    \
-  )
-
-/**
- * Invoke the main algorithm method in the module.
- *
- * Modules are based on the idea the module has single method that
- * does the work of the algorithm.  A bit like the functor pattern in
- * C++.   
  *
  * @note
  * Rational: This was done so all PFModules would have the same
@@ -388,6 +366,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * This allocates the public/class data for the module
  * class.
  *
+ * @param type Type of the new public xtra method
  * @param name PFModule name
  * @param args Arguments for the module class constructor
  * @return The new module instance
@@ -413,33 +392,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * This allocates the public/class data for the module
  * class.
  *
- * @param name PFModule name
- * @param args Arguments for the module class constructor
- * @return The new module instance
- */
-#define PFModuleNewModuleExtended(name, args)                  \
-  (                                                            \
-   ThisPFModule = NewPFModuleExtended((void*)name,                     \
-                              (void*)name ## InitInstanceXtra, \
-                              (void*)name ## FreeInstanceXtra, \
-                              (void*)name ## NewPublicXtra,    \
-                              (void*)name ## FreePublicXtra,   \
-                              (void*)name ## SizeOfTempData,   \
-                              (void*)name ## Output,	       \
-                              (void*)name ## OutputStatic,     \
-			      NULL, NULL),		       \
-   (*(PFModule * (*)())(ThisPFModule->new_public_xtra))args    \
-  )
-
-/**
- * Create a class of extended module.
- * 
- * For use with modules that implement the Extended module API.
- * Currently this is the Output methods.
- *
- * This allocates the public/class data for the module
- * class.
- *
+ * @param type Type of the new public xtra method
  * @param name PFModule name
  * @param args Arguments for the module class constructor
  * @return The new module instance
@@ -473,13 +426,19 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
 
 /**
  * Return this size of the temporary data needed by this module instance.
+ *
+ * Temp date is a block of memory allocated in the solver and modules
+ * use this block.  Data use may be overlayed in this block.  The
+ * size of the block is the high water mark.
  * 
+ * Use of temp data has mostly been removed but some modules
+ * (e.g. advection_godunov) still use temp_data.  Modern memory
+ * allocators have removed much of the need for this mechanism.
+ *
  * @note
  * Rational: PF originally operated on very low memory compute nodes
  * (4MB-16MB) so had to carefully manage space for vectors.   This 
- * method was part of that mechanism.
- *
- * \TODO Believe this is deprecated.
+ * method is part of that mechanism.
  *
  * @param pf_module The module instance
  */
@@ -488,6 +447,5 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
    ThisPFModule = pf_module,                        \
    (*(int (*)())(ThisPFModule->sizeof_temp_data))() \
   )
-
 
 #endif
