@@ -224,10 +224,14 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * schemes.  This invokes the "init" method in the method which is a
  * ctor for the method instance.
  * 
- * @param type Function type to invoke.
+ * The method invoked is assumed to be of type 'PFModule * (*)()'.
+ * The PFModuleNewInstanceType can be used to specify the actual type
+ * of the method to invoke.  It is better to specify the type; PF
+ * started with KR style C with less type safety.
+ * 
  * @param pf_module The module instance
- * @param args Arguments for the method to invoke.
- * @return The new module instance pointer.
+ * @param args Arguments for the method to invoke
+ * @return The new module instance pointer
  */
 #define PFModuleNewInstance(pf_module, args)                   \
   (                                                            \
@@ -242,10 +246,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * schemes.  This invokes the "init" method in the method which is a
  * ctor for the method instance.
  *
- * @param type Function type to invoke.
+ * @param type Function type to invoke
  * @param pf_module The module instance
- * @param args Arguments for the method to invoke.
- * @return The new module instance pointer.
+ * @param args Arguments for the method to invoke
+ * @return The new module instance pointer
  */
 #define PFModuleNewInstanceType(type, pf_module, args) \
   (                                                    \
@@ -258,12 +262,18 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * 
  * 'ReNew'ing a module is done when the module has already been
  * constructed but some state may have changed.
+ *
+ * The method invoked is assumed to be of type 'PFModule * (*)()'.
+ * The PFModuleReNewInstanceType can be used to specify the actual
+ * type of the method to invoke.  It is better to specify the type; PF
+ * started with KR style C with less type safety.
  * 
- * \TODO this should be better documented.
+ * \TODO this should be better documented.  What do we mean by rewnew
+ * and when/how is it used.
  *
  * @param pf_module The module instance
- * @param args Arguments for the method to invoke.
- * @return The new module instance pointer.
+ * @param args Arguments for the method to invoke
+ * @return The new module instance pointer
  */
 #define PFModuleReNewInstance(pf_module, args)                 \
   (                                                            \
@@ -277,7 +287,8 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * 'ReNew'ing a module is done when the module has already been
  * constructed but some state may have changed.
  * 
- * TODO this should be better documented.
+ * \TODO this should be better documented.  What do we mean by rewnew
+ * and when/how is it used.
  *
  * @param pf_module The module instance
  * @param args Arguments for the method to invoke.
@@ -310,7 +321,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * the user input.  The method should write any vectors or other state
  * out for the current timestep.
  *
- * @param type Type of method to invoke for outputing
+ * @param type Type of the method to invoke for outputing
  * @param pf_module The module instance
  * @param args Arguments for the output method
  */
