@@ -70,9 +70,8 @@ int amps_Finalize()
 
     MPI_Finalize();
   }
-#ifdef PARFLOW_HAVE_CUDA
-  amps_gpu_free_bufs();
-  amps_gpu_destroy_streams();
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+  amps_gpu_finalize();
 #endif
 
 #ifdef AMPS_MALLOC_DEBUG

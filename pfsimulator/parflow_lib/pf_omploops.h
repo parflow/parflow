@@ -25,7 +25,7 @@
  * @brief OpenMP functions and loop definitions
  */
 
-#if PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_OMP
+#ifndef PARFLOW_HAVE_OMP
 
 #define NO_OMP_PARALLEL
 
@@ -711,5 +711,5 @@ static const int FDIR_TABLE[6][3] = {
     }                                                                   \
   }
 
-#endif // PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_OMP
+#endif // PARFLOW_HAVE_OMP
 #endif // _PF_OMPLOOPS_H_

@@ -55,6 +55,10 @@ assert run.value('./UseClustering', skip_default=True) is None
 assert run.value('./Geom/background/../.././Solver') == 'Richards'
 assert (run.value('Geom.background.Porosity.Value') ==
         run.Geom.background.Porosity.Value)
+assert (run.value('Cell/_0/dzScale/Value') == run.Cell._0.dzScale.Value)
+assert (run.value('./Cell/_0/dzScale/Value') == run.Cell._0.dzScale.Value)
+assert (run.Cell.value('_0/dzScale/Value') == run.Cell._0.dzScale.Value)
+assert (run.Cell._0.dzScale.value('Value') == run.Cell._0.dzScale.Value)
 
 # details() tests
 lower = run.Geom.background.Lower

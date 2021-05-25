@@ -34,8 +34,7 @@ void amps_FindPowers(int N, int *log, int *Nnext, int *Nprev);
 amps_File amps_Fopen(char *filename, char *type);
 
 /* amps_gpupacking.cu */
-void amps_gpu_free_bufs();
-void amps_gpu_destroy_streams();
+void amps_gpu_finalize();
 void amps_gpu_sync_streams(int id);
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out);
 
@@ -59,14 +58,12 @@ void amps_ScanInt(amps_File file, int *data, int len, int stride);
 void amps_ScanLong(amps_File file, long *data, int len, int stride);
 void amps_ScanFloat(amps_File file, float *data, int len, int stride);
 void amps_ScanDouble(amps_File file, double *data, int len, int stride);
-
 #ifndef CASC_HAVE_BIGENDIAN
 void amps_WriteDouble(amps_File file, double *ptr, int len);
 void amps_ReadDouble(amps_File file, double *ptr, int len);
 void amps_WriteInt(amps_File file, int *ptr, int len);
 void amps_ReadInt(amps_File file, int *ptr, int len);
 #endif
-
 
 /* amps_irecv.c */
 amps_Handle amps_IRecv(amps_Comm comm, int source, amps_Invoice invoice);

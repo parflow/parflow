@@ -10,6 +10,8 @@ from pathlib import Path
 import yaml
 import numpy as np
 
+from .hydrology import calculate_evapotranspiration, calculate_overland_flow, calculate_overland_flow_grid, \
+    calculate_subsurface_storage, calculate_surface_storage, calculate_water_table_depth
 from .fs import get_absolute_path
 from .helper import sort_dict, get_or_create_dict
 
@@ -35,7 +37,7 @@ def read_array(file_name):
 
 # -----------------------------------------------------------------------------
 
-def write_array(file_name, array):
+def write_array(file_name, array, *args, **kwargs):
     ext = Path(file_name).suffix[1:]
     funcs = {
         'pfb': write_array_pfb,
@@ -44,7 +46,7 @@ def write_array(file_name, array):
     if ext not in funcs:
         raise Exception(f'Unknown extension: {file_name}')
 
-    return funcs[ext](file_name, array)
+    return funcs[ext](file_name, array, *args, **kwargs)
 
 
 # -----------------------------------------------------------------------------
@@ -59,7 +61,7 @@ def read_array_pfb(file_name):
 
 # -----------------------------------------------------------------------------
 
-def write_array_pfb(file_name, array):
+def write_array_pfb(file_name, array, dx=1, dy=1, dz=1):
     # Ensure this is 3 dimensions, since parflowio requires 3 dimensions.
     while array.ndim < 3:
         array = array[np.newaxis, :]
@@ -70,6 +72,9 @@ def write_array_pfb(file_name, array):
     from parflowio.pyParflowio import PFData
     data = PFData()
     data.setDataArray(array)
+    data.setDX(dx)
+    data.setDY(dy)
+    data.setDZ(dz)
     return data.writeFile(file_name)
 
 
@@ -407,7 +412,7 @@ def _read_vegm(file_name):
         x = int(elements[0])
         y = int(elements[1])
         for i in range(z_dim):
-            vegm_array[x-1, y-1, i] = elements[i + 2]
+            vegm_array[x - 1, y - 1, i] = elements[i + 2]
 
     return vegm_array
 
@@ -455,11 +460,13 @@ def read_clm(file_name, type='clmin'):
 
     return type_map[type](get_absolute_path(file_name))
 
+
 # -----------------------------------------------------------------------------
 
 
 class DataAccessor:
     """Helper for extracting numpy array from a given run"""
+
     def __init__(self, run, selector=None):
         """Create DataAccessor from a Run instance"""
         self._run = run
@@ -566,6 +573,28 @@ class DataAccessor:
             self._run.ComputationalGrid.NX
         )
 
+    @property
+    def dx(self):
+        return self._run.ComputationalGrid.DX
+
+    @property
+    def dy(self):
+        return self._run.ComputationalGrid.DY
+
+    @property
+    def dz(self):
+        if self._run.Solver.Nonlinear.VariableDz:
+            assert self._run.dzScale.Type == 'nzList'
+            dz_scale = []
+            for i in range(self._run.dzScale.nzListNumber):
+                dz_scale.append(self._run.Cell[str(i)]['dzScale']['Value'])
+            dz_scale = np.array(dz_scale)
+        else:
+            dz_scale = np.ones((self._run.ComputationalGrid.NZ,))
+
+        dz_values = dz_scale * self._run.ComputationalGrid.DZ
+        return dz_values
+
     # ---------------------------------------------------------------------------
     # Mannings Roughness Coef
     # ---------------------------------------------------------------------------
@@ -573,6 +602,14 @@ class DataAccessor:
     @property
     def mannings(self):
         return self._pfb_to_array(f'{self._name}.out.mannings.pfb')
+
+    # ---------------------------------------------------------------------------
+    # Mask
+    # ---------------------------------------------------------------------------
+
+    @property
+    def mask(self):
+        return self._pfb_to_array(f'{self._name}.out.mask.pfb')
 
     # ---------------------------------------------------------------------------
     # Slopes X Y
@@ -686,6 +723,79 @@ class DataAccessor:
         return self._pfb_to_array(file_name)
 
     # ---------------------------------------------------------------------------
+    # Specific storage
+    # ---------------------------------------------------------------------------
+
+    @property
+    def specific_storage(self):
+        return self._pfb_to_array(f'{self._name}.out.specific_storage.pfb')
+
+    # ---------------------------------------------------------------------------
+    # Evapotranspiration
+    # ---------------------------------------------------------------------------
+
+    @property
+    def et(self):
+        if self._run.Solver.PrintCLM:
+            # Read ET from CLM output
+            return self.clm_output('qflx_evap_tot')
+        else:
+            # Assert that one and only one of Solver.EvapTransFile or Solver.EvapTransFileTransient is set
+            assert self._run.Solver.EvapTransFile != self._run.Solver.EvapTransFileTransient, \
+                'Only one of Solver.EvapTrans.FileName, Solver.EvapTransFileTransient can be set in order to ' \
+                'calculate evapotranspiration'
+
+            if self._run.Solver.EvapTransFile:
+                # Read steady-state flux file
+                et_data = self._pfb_to_array(self._run.Solver.EvapTrans.FileName)
+            else:
+                # Read current timestep from series of flux PFB files
+                et_data = self._pfb_to_array(f'{self._run.Solver.EvapTrans.FileName}.{self._ts}.pfb')
+
+        return calculate_evapotranspiration(et_data, self.dx, self.dy, self.dz)
+
+    # ---------------------------------------------------------------------------
+    # Overland Flow
+    # ---------------------------------------------------------------------------
+
+    def overland_flow(self, flow_method='OverlandKinematic', epsilon=1e-5):
+        return calculate_overland_flow(self.pressure, self.slope_x, self.slope_y, self.mannings,
+                                       self.dx, self.dy, flow_method=flow_method, epsilon=epsilon, mask=self.mask)
+
+    # ---------------------------------------------------------------------------
+    # Overland Flow Grid
+    # ---------------------------------------------------------------------------
+
+    def overland_flow_grid(self, flow_method='OverlandKinematic', epsilon=1e-5):
+        return calculate_overland_flow_grid(self.pressure, self.slope_x, self.slope_y, self.mannings,
+                                            self.dx, self.dy, flow_method=flow_method, epsilon=epsilon, mask=self.mask)
+
+    # ---------------------------------------------------------------------------
+    # Subsurface Storage
+    # ---------------------------------------------------------------------------
+
+    @property
+    def subsurface_storage(self):
+        return calculate_subsurface_storage(self.computed_porosity, self.pressure, self.saturation,
+                                            self.specific_storage, self.dx, self.dy, self.dz, mask=self.mask)
+
+    # ---------------------------------------------------------------------------
+    # Surface Storage
+    # ---------------------------------------------------------------------------
+
+    @property
+    def surface_storage(self):
+        return calculate_surface_storage(self.pressure, self.dx, self.dy, mask=self.mask)
+
+    # ---------------------------------------------------------------------------
+    # Water Table Depth
+    # ---------------------------------------------------------------------------
+
+    @property
+    def wtd(self):
+        return calculate_water_table_depth(self.pressure, self.saturation, self.dz)
+
+    # ---------------------------------------------------------------------------
     # CLM
     # ---------------------------------------------------------------------------
 
@@ -697,6 +807,57 @@ class DataAccessor:
     def _clm_output_bin(self, field, dtype):
         fp = self._clm_output_filepath(field, field, 'bin')
         return np.fromfile(fp, dtype=dtype, count=-1, sep='', offset=0)
+
+    def clm_output(self, field, layer=-1):
+        assert self._run.Solver.PrintCLM, 'CLM output must be enabled'
+        assert field in self.clm_output_variables, f'Unrecognized variable {field}'
+
+        if self._run.Solver.CLM.SingleFile:
+            file_name = f'{self._name}.out.clm_output.{self._ts}.C.pfb'
+            arr = self._pfb_to_array(f'{file_name}')
+
+            nz = arr.shape[0]
+            nz_expected = len(self.clm_output_variables) + self._run.Solver.CLM.RootZoneNZ - 1
+            assert nz == nz_expected, f'Unexpected shape of CLM output, expected {nz_expected}, got {nz}'
+
+            i = self.clm_output_variables.index(field)
+            if field == 't_soil':
+                if layer < 0:
+                    i = layer
+                else:
+                    i += layer
+
+            arr = arr[i, :, :]
+        else:
+            file_name = f'{self._name}.out.{field}.{self._ts}.pfb'
+            arr = self._pfb_to_array(f'{file_name}')
+
+            if field == 't_soil':
+                nz = arr.shape[0]
+                assert nz == self._run.Solver.CLM.RootZoneNZ, f'Unexpected shape of CLM output, expected ' \
+                                                              f'{self._run.Solver.CLM.RootZoneNZ}, got {nz}'
+                arr = arr[layer, :, :]
+
+        if arr.ndim == 3:
+            arr = np.squeeze(arr, axis=0)
+        return arr
+
+    @property
+    def clm_output_variables(self):
+        return ('eflx_lh_tot',
+                'eflx_lwrad_out',
+                'eflx_sh_tot',
+                'eflx_soil_grnd',
+                'qflx_evap_tot',
+                'qflx_evap_grnd',
+                'qflx_evap_soi',
+                'qflx_evap_veg',
+                'qflx_tran_veg',
+                'qflx_infl',
+                'swe_out',
+                't_grnd',
+                'qflx_qirr',
+                't_soil')
 
     @property
     def clm_output_diagnostics(self):
@@ -754,7 +915,7 @@ class DataAccessor:
     def clm_output_t_grnd(self):
         return self._clm_output_bin('t_grnd', float)
 
-    def _clm_forcing(self, name):
+    def clm_forcing(self, name):
         time_slice = self._run.Solver.CLM.MetFileNT
         prefix = self._run.Solver.CLM.MetFileName
         directory = self._run.Solver.CLM.MetFilePath
@@ -769,42 +930,42 @@ class DataAccessor:
     @property
     def clm_forcing_dswr(self):
         """Downward Visible or Short-Wave radiation [W/m2]"""
-        return self._clm_forcing('DSWR')
+        return self.clm_forcing('DSWR')
 
     @property
     def clm_forcing_dlwr(self):
         """Downward Infa-Red or Long-Wave radiation [W/m2]"""
-        return self._clm_forcing('DLWR')
+        return self.clm_forcing('DLWR')
 
     @property
     def clm_forcing_apcp(self):
         """Precipitation rate [mm/s]"""
-        return self._clm_forcing('APCP')
+        return self.clm_forcing('APCP')
 
     @property
     def clm_forcing_temp(self):
         """Air temperature [K]"""
-        return self._clm_forcing('Temp')
+        return self.clm_forcing('Temp')
 
     @property
     def clm_forcing_ugrd(self):
         """West-to-East or U-component of wind [m/s]"""
-        return self._clm_forcing('UGRD')
+        return self.clm_forcing('UGRD')
 
     @property
     def clm_forcing_vgrd(self):
         """South-to-North or V-component of wind [m/s]"""
-        return self._clm_forcing('VGRD')
+        return self.clm_forcing('VGRD')
 
     @property
     def clm_forcing_press(self):
         """Atmospheric Pressure [pa]"""
-        return self._clm_forcing('Press')
+        return self.clm_forcing('Press')
 
     @property
     def clm_forcing_spfh(self):
         """Water-vapor specific humidity [kg/kg]"""
-        return self._clm_forcing('SPFH')
+        return self.clm_forcing('SPFH')
 
     def _clm_map(self, root):
         if root.Type == 'Constant':

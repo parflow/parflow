@@ -273,11 +273,33 @@ class Run(BaseRun):
 
         new_run = cls(name, file_path)
         kwargs = {ext_map[ext]: file_path}
-        new_run.pfset(**kwargs)
+        new_run.pfset(silence_if_undefined=True, **kwargs)
+
+        # Try to solve order sensitive property settings
+        while '_pfstore_' in new_run.__dict__:
+            invalid_props = new_run.__dict__.pop('_pfstore_')
+            previous_size = len(invalid_props)
+            for key, value in invalid_props.items():
+                new_run.pfset(key, value, silence_if_undefined=True)
+
+            # Break if no key was able to be mapped outside pfstore
+            if ('_pfstore_' in new_run.__dict__ and
+                    previous_size == len(new_run.__dict__['_pfstore_'])):
+                break
+
+        # Print any remaining key with no mapping
+        if '_pfstore_' in new_run.__dict__:
+            invalid_props = new_run.__dict__.pop('_pfstore_')
+            for key, value in invalid_props.items():
+                new_run.pfset(key, value)
 
         if ext == 'pfidb':
             # Import CLM files if we need to
-            CLMImporter(new_run).import_if_needed()
+            try:
+                CLMImporter(new_run).import_if_needed()
+            except Exception:
+                print(' => Error during CLM import - '
+                      'CLM specific key have been skipped')
 
         return new_run
 
@@ -333,7 +355,7 @@ class Run(BaseRun):
         full_file_path = os.path.abspath(f_name)
         write_dict(self.to_dict(), full_file_path)
 
-        if CLMExporter(self)._using_clm:
+        if CLMExporter(self).can_export:
             # If we are using CLM, write out any other files we need
             CLMExporter(self).write_allowed(settings.WORKING_DIRECTORY)
 

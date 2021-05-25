@@ -47,6 +47,14 @@ jobs:
             cudaos: 'ubuntu1804'
           }
         - {
+            name: "Ubuntu 18.04 Kokkos Build",
+            os: ubuntu-18.04,
+            cc: "gcc", cxx: "g++",
+            python: "false",
+            backend: "kokkos",
+            cudaos: 'ubuntu1804'
+          }
+        - {
             name: "Ubuntu 16.04",
             os: ubuntu-16.04,
             cudaos: 'ubuntu1604',
@@ -64,7 +72,7 @@ jobs:
         sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev
 
     - name: Package Install 18.04 CUDA
-      if: matrix.config.backend == 'cuda' && matrix.config.os == 'ubuntu-18.04'
+      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.os == 'ubuntu-18.04'
       run: |
         sudo apt-get -qq update
         sudo apt-get -qq install -y software-properties-common
@@ -133,14 +141,14 @@ jobs:
         echo "$HOME/depend/cmake-3.14.0-Linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: NVidia Driver Install
-      if: matrix.config.backend == 'cuda'
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         sudo add-apt-repository -y ppa:graphics-drivers
         sudo apt-get update -qq
         sudo apt-get install -y nvidia-driver-440
 
     - name: CUDA Install
-      if: matrix.config.backend == 'cuda'
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         CUDA_SHORT=10.1
         CUDA_VER=10.1.105-1
@@ -158,7 +166,7 @@ jobs:
         echo "${CUDA_HOME}/bin" >> $GITHUB_PATH
 
     - name: UCX
-      if: matrix.config.backend == 'cuda'
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
@@ -174,7 +182,7 @@ jobs:
     - name: RMM Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-      if: matrix.config.backend == 'cuda'
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
@@ -182,12 +190,27 @@ jobs:
           cmake . -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
-        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV     
+        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV  
+
+    - name: Kokkos Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.backend == 'kokkos'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          wget -nv https://github.com/kokkos/kokkos/archive/refs/tags/3.3.01.tar.gz
+          tar -xf 3.3.01.tar.gz
+          cd kokkos-3.3.01
+          mkdir build && cd build
+          cmake .. -DCMAKE_CXX_COMPILER=$(pwd)/../bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DKokkos_ENABLE_CUDA=On -DKokkos_ENABLE_CUDA_LAMBDA=On -DKokkos_ENABLE_CUDA_UVM=On -DKokkos_ARCH_VOLTA70=On  
+          make -j 2 install
+        fi
+        echo "KOKKOS_FLAGS=-DKOKKOS_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV     
 
     - name: OpenMPI Install for CUDA
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-      if: matrix.config.backend == 'cuda'
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           wget -nv https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz
@@ -233,14 +256,14 @@ jobs:
         which cmake
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
-        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=mpi1 -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=mpi1 -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)
 
-    # Can't test with CUDA since have no CUDA hardware on testing nodes, CUDA test is build only
+    # Can't test with GPU since have no GPU hardware on testing nodes, GPU test is build only
     - name: ParFlow CTest
-      if: matrix.config.backend != 'cuda'
+      if: matrix.config.backend != 'cuda' && matrix.config.backend != 'kokkos'
       run: |
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1

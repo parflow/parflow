@@ -844,7 +844,7 @@ void    RichardsJacobianEval(
 
       ForBCStructNumPatches(ipatch, bc_struct)
       {
-        ForPatchCellsPerFace(ALL,
+        ForPatchCellsPerFace(BC_ALL,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                              Locals(int ip, im;

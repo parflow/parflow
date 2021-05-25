@@ -87,7 +87,7 @@ char *argv[];
   stride[0] = size + 2;
   stride[1] = (size + 2);
 
-  a = amps_CTAlloc_managed(double, (size + 2) * (size + 2) * (size + 2));
+  a = amps_TAlloc_managed(double, (size + 2) * (size + 2) * (size + 2));
 
   if (me == 0)
   {

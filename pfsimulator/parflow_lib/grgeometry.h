@@ -59,7 +59,7 @@ typedef struct {
   GrGeomOctree **patches;
   int num_patches;
 
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
   /* Cell flags for 3 GrGeomLoops (0: do not evaluate cell, 1 = evaluate cell)
    *  Bit 0: GrGeomInLoop
    *  Bit 1: GrGeomOutLoop

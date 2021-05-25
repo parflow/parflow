@@ -1,4 +1,3 @@
-
 set(AMPS_SRC_FILES
   amps_allreduce.c
   amps_bcast.c
@@ -20,6 +19,10 @@ set(AMPS_SRC_FILES
   amps_vector.c
   )
 
-if(${PARFLOW_HAVE_CUDA})
+if((${PARFLOW_HAVE_CUDA}) AND (NOT (${PARFLOW_HAVE_KOKKOS})))
   list(APPEND AMPS_SRC_FILES amps_gpupacking.cu)
-endif(${PARFLOW_HAVE_CUDA})
+endif((${PARFLOW_HAVE_CUDA}) AND (NOT (${PARFLOW_HAVE_KOKKOS})))
+
+if(${PARFLOW_HAVE_KOKKOS})
+  list(APPEND AMPS_SRC_FILES amps_gpupacking.cpp)
+endif(${PARFLOW_HAVE_KOKKOS})
