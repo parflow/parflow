@@ -25,11 +25,12 @@ setup input files.  A quick start is included below.
 
 ### Citing Parflow
 
-The latest release [![DOI](https://zenodo.org/badge/59628298.svg)](https://zenodo.org/badge/latestdoi/59628298)
+The most current release can be cited using
+[![DOI](https://zenodo.org/badge/59628298.svg)](https://zenodo.org/badge/latestdoi/59628298)
 
-If you want the DOI for a previous release search the
-[Zendo](https://zenodo.org)] for ParFlow.  DOI # for 3.8.0 and greater
-are listed.
+Note this will always show the most recent release version.  If you
+want the DOI for a specific version see
+[Zendo](https://zenodo.org/search?page=1&size=20&q=parflow)
 
 To cite Parflow, please use the following reference.
 
