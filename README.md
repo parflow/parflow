@@ -28,7 +28,7 @@ setup input files.  A quick start is included below.
 If you want the DOI for a specific release see:
 [Zendo](https://zenodo.org/search?page=1&size=20&q=parflow&version)
 
-A generic DOI that always link to the most current release :
+A generic DOI that always links to the most current release :
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4816884.svg)](https://doi.org/10.5281/zenodo.4816884)
 
 If you use ParFlow in a publication and wish to cite a paper reference
