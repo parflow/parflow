@@ -12,10 +12,11 @@ multi-institutional development history and is now a collaborative
 effort between CSM, LLNL, UniBonn and UCB. ParFlow has been coupled to
 the mesoscale, meteorological code ARPS and the NCAR code WRF.
 
-For an overview of the major features and capabilities see the following paper:
-[Simulating coupled surface–subsurface flows with ParFlow v3.5.0:
-capabilities, applications, and ongoing development of an
-open-source, massively parallel, integrated hydrologic model](https://www.geosci-model-dev.net/13/1373/2020/gmd-13-1373-2020.pdf).
+For an overview of the major features and capabilities see the
+following paper: [Simulating coupled surface–subsurface flows with
+ParFlow v3.5.0: capabilities, applications, and ongoing development of
+an open-source, massively parallel, integrated hydrologic
+model](https://www.geosci-model-dev.net/13/1373/2020/gmd-13-1373-2020.pdf).
 
 The Parflow User Manual is available at [Parflow Users
 Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf).
@@ -24,9 +25,16 @@ setup input files.  A quick start is included below.
 
 ### Citing Parflow
 
+The latest release [![DOI](https://zenodo.org/badge/59628298.svg)](https://zenodo.org/badge/latestdoi/59628298)
+
+If you want the DOI for a previous release search the
+[Zendo](https://zenodo.org)] for ParFlow.  DOI # for 3.8.0 and greater
+are listed.
+
 To cite Parflow, please use the following reference.
 
-If you use ParFlow in a publication, please cite the these papers that describe model physics:
+If you use ParFlow in a publication, please cite the these papers that
+describe model physics:
 
 * Ashby S.F. and R.D. Falgout, Nuclear Science and Engineering 124:145-159, 1996
 * Jones, J.E. and C.S. Woodward, Advances in Water Resources 24:763-774, 2001
