@@ -25,17 +25,15 @@ setup input files.  A quick start is included below.
 
 ### Citing Parflow
 
-The most current release can be cited using
+The most current release can be cited using: 
 [![DOI](https://zenodo.org/badge/59628298.svg)](https://zenodo.org/badge/latestdoi/59628298)
 
-Note this will always show the most recent release version.  If you
-want the DOI for a specific version see
+Note this DOI will always show the most recent release version.  If you
+want the DOI for a specific version see:
 [Zendo](https://zenodo.org/search?page=1&size=20&q=parflow)
 
-To cite Parflow, please use the following reference.
-
-If you use ParFlow in a publication, please cite the these papers that
-describe model physics:
+If you use ParFlow in a publication and wish to cite a paper reference
+please use the following that describe model physics:
 
 * Ashby S.F. and R.D. Falgout, Nuclear Science and Engineering 124:145-159, 1996
 * Jones, J.E. and C.S. Woodward, Advances in Water Resources 24:763-774, 2001
