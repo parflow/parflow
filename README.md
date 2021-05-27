@@ -30,7 +30,7 @@ The most current release can be cited using:
 
 Note this DOI will always show the most recent release version.  If you
 want the DOI for a specific version see:
-[Zendo](https://zenodo.org/search?page=1&size=20&q=parflow version)
+[Zendo](https://zenodo.org/search?page=1&size=20&q='parflow version')
 
 If you use ParFlow in a publication and wish to cite a paper reference
 please use the following that describe model physics:
