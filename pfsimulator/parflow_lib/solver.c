@@ -53,7 +53,7 @@ void Solve()
   EndTiming(SolverSetupTimingIndex);
 
   BeginTiming(SolverTimingIndex);
-  PFModuleInvoke(void, solver, ());
+  PFModuleInvokeType(void (*)(void), solver, ());
   EndTiming(SolverTimingIndex);
 
   BeginTiming(SolverCleanupTimingIndex);

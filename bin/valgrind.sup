@@ -1,22 +1,4 @@
 # -*- text -*-
-#
-# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
-#                         University Research and Technology
-#                         Corporation.  All rights reserved.
-# Copyright (c) 2004-2005 The University of Tennessee and The University
-#                         of Tennessee Research Foundation.  All rights
-#                         reserved.
-# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
-#                         University of Stuttgart.  All rights reserved.
-# Copyright (c) 2004-2005 The Regents of the University of California.
-#                         All rights reserved.
-# $COPYRIGHT$
-#
-# Additional copyrights may follow
-#
-# $HEADER$
-#
-
 ###############################################################
 #
 # OPAL suppressions
@@ -60,6 +42,38 @@
   fun:poll_dispatch
 }
 
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   fun:OPAL_MCA_PMIX3X_pmix_ptl_base_send_handler
+   fun:event_persist_closure
+   fun:event_process_active_single_queue
+   fun:event_process_active
+   fun:opal_libevent2022_event_base_loop
+   fun:progress_engine
+   fun:start_thread
+   fun:clone
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
 
 ###############################################################
 #
@@ -97,6 +111,16 @@
   fun:mca_btl_tcp_frag_send
   fun:mca_btl_tcp_endpoint_send
 }
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:ompi_mpi_init
+}
+
 
 ###############################################################
 #
@@ -320,5 +344,3 @@
    fun:Solve
    fun:main
 }
-
-

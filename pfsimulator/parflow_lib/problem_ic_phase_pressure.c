@@ -838,7 +838,7 @@ PFModule  *ICPhasePressureInitInstanceXtra(
   if (PFModuleInstanceXtra(this_module) == NULL)
   {
     (instance_xtra->phase_density) =
-      PFModuleNewInstance(ProblemPhaseDensity(problem), ());
+      PFModuleNewInstanceType(NewDefault, ProblemPhaseDensity(problem), ());
   }
   else
   {
