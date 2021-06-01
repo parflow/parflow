@@ -323,7 +323,7 @@ Here are some common packages:
 - __SZLIB__: builds ParFlow with SZlib compression library
 - __ZLIB__: builds ParFlow with Zlib compression library
 
-### How to specify command to run MPI applications
+### How to specify the launcher command used to run MPI applications
 
 There are multiple ways to run MPI applications such as mpiexec,
 mpirun, srun, and aprun.  The command used is dependent on the job
