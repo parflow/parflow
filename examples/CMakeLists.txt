@@ -24,7 +24,7 @@ foreach(inputfile ${PARALLEL_TESTS})
   pf_add_parallel_test(${inputfile} "2 1 1")
 endforeach()
 
-install(FILES default_single.tcl DESTINATION examples)
+install(FILES default_single.tcl pftest.tcl DESTINATION examples)
 install(FILES
   correct_output/default_single.out.concen.0.00.00000.pfsb
   correct_output/default_single.out.concen.0.00.00001.pfsb
