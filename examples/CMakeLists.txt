@@ -24,5 +24,19 @@ foreach(inputfile ${PARALLEL_TESTS})
   pf_add_parallel_test(${inputfile} "2 1 1")
 endforeach()
 
+install(FILES default_single.tcl DESTINATION examples)
+install(FILES
+  correct_output/default_single.out.concen.0.00.00000.pfsb
+  correct_output/default_single.out.concen.0.00.00001.pfsb
+  correct_output/default_single.out.concen.0.00.00002.pfsb
+  correct_output/default_single.out.concen.0.00.00003.pfsb
+  correct_output/default_single.out.concen.0.00.00004.pfsb
+  correct_output/default_single.out.concen.0.00.00005.pfsb
+  correct_output/default_single.out.perm_x.pfb
+  correct_output/default_single.out.perm_y.pfb
+  correct_output/default_single.out.perm_z.pfb
+  correct_output/default_single.out.press.00000.pfb
+  DESTINATION examples/correct_output)
+
 
 
