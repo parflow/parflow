@@ -104,7 +104,7 @@ class SolidFileBuilder:
         self.patch_ids_side = side_patch_ids
         return self
 
-    def write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False):
+    def write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False, extra=None):
         """Writing out pfsol file with optional output to vtk
 
         Args:
@@ -112,6 +112,8 @@ class SolidFileBuilder:
             xllcorner (int, float): coordinate of lower-left corner of x-axis
             yllcorner (int, float): coordinate of lower-left corner of y-axis
             cellsize (int): size of horizontal grid cell for solid file
+            extra (list of strings): Any extra arguments to pass to
+                pfmask-to-pfsol for solid file generation; Default None
         """
         self.name = name
         output_file_path = get_absolute_path(name)
@@ -195,7 +197,8 @@ class SolidFileBuilder:
 
         # Trigger conversion
         print('=== pfmask-to-pfsol ===: BEGIN')
-        extra = []
+        if extra is None:
+            extra = []
         if vtk:
             extra.append('--vtk')
             extra.append(f'{output_file_path[:-6]}.vtk')
