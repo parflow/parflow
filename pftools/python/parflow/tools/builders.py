@@ -114,7 +114,7 @@ class SolidFileBuilder:
             yllcorner (int, float): coordinate of lower-left corner of y-axis
             cellsize (int): size of horizontal grid cell for solid file
             extra (list of strings): Any extra arguments to pass to
-                pfmask-to-pfsol for solid file generation
+                pfmask-to-pfsol for solid file generation; Default None
             generate_asc_files (bool): whether to generate .asc files for top/bottom/side patch matrices.
                 Setting this to True results in calling the underlying pfmask-to-pfsol with individual 'mask-*' flags
                     for top/bottom/sides, each pointing to a .asc file
