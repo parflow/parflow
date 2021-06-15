@@ -1,9 +1,15 @@
-# ParFlow Release Notes 3.8.0
+# ParFlow Release Notes 3.9.0
 -----------------------------
 
 ParFlow improvements and bug-fixes would not be possible without
 contributions of the ParFlow community.  Thank you for all the great
 contributions.
+
+Note : Version 3.9.0 is a minor update to v3.8.0.  These release notes cover 
+changes made in both 3.8.0 and 3.9.0.   In 3.9.0, we are improving our Spack
+support and added a smoke test for running under Spack and creating a release tag 
+for Spack to download.   If you have version 3.8.0 installed the 3.9.0 update
+does NOT add any significant features or bug fixes.
 
 ## Overview of Changes
 
@@ -29,6 +35,7 @@ contributions.
 * Sponsors acknowledgment 
 * PFModule extended to support output methods
 * Hypre SMG and PFMG
+* Installation of example for smoke test
 
 ## User Visible Changes
 
@@ -129,6 +136,10 @@ improvements and bugfixes have been made.
 * New feature to only show validation results for errors
 * Table builder update: adding databases, cleanup
 * Domain builder helper with examples, docs
+
+### Installation of example for smoke testing
+
+The simple single phase test default_single.tcl is installed for smoke testing an installation.
 
 ## Bug Fixes
 
