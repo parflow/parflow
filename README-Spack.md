@@ -44,7 +44,7 @@ compile the GNU compiler suite under Spack and avoid using Clang.
 Building GCC will take considerable amount of time.
 
 ```shell
-spack install gcc@10.3.0 languages="fortran,c,c++"
+spack install gcc@10.3.0
 ```
 
 Add the compiler to the set of compilers Spack can use:
@@ -111,7 +111,7 @@ echo "Using mpirun      : `which mpirun`"
 
 ### Quick test
 
-A quick test to see if the build is working can be run with the Spack:
+A quick test to see if the build is working can be run with the Spack test command:
 
 ```shell
 spack test run parflow
