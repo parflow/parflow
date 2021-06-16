@@ -1,7 +1,6 @@
 # Building ParFlow with Spack
 
-This document covers building ParFlow with Spack.  This feature is
-experimental and under development.  Building with Spack may be useful
+This document covers building ParFlow with Spack.  Building with Spack may be useful
 in some situations since Spack builds a complete dependency tree and
 thus may have fewer compiling and linking issues.  Spack is a
 multi-platform package manager that builds and installs multiple
