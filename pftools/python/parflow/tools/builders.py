@@ -105,7 +105,7 @@ class SolidFileBuilder:
         self.patch_ids_side = side_patch_ids
         return self
 
-    def write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False, extra=None, generate_asc_files=True):
+    def write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False, extra=None, generate_asc_files=False):
         """Writing out pfsol file with optional output to vtk
 
         Args:
@@ -116,10 +116,9 @@ class SolidFileBuilder:
             extra (list of strings): Any extra arguments to pass to
                 pfmask-to-pfsol for solid file generation; Default None
             generate_asc_files (bool): whether to generate .asc files for top/bottom/side patch matrices.
-                Setting this to True results in calling the underlying pfmask-to-pfsol with individual 'mask-*' flags
-                    for top/bottom/sides, each pointing to a .asc file
-                Setting this to False results in calling the underlying pfmask-to-pfsol with a single 'mask'
-                    flag pointing to a temporary .pfb mask file.
+                Setting generate_asc_files to True results in 6 mask files being generated for top/bottom/sides:
+                <name>_top.asc, <name>_bottom.asc, <name>_front.asc, <name>_back.asc, <name>_left.asc, <name>_right.asc
+                When False (the default), asc mask files are not generated.
         """
         self.name = name
         output_file_path = get_absolute_path(name)
@@ -214,7 +213,7 @@ class SolidFileBuilder:
             ]
 
         else:
-            temp_pfb_file = tempfile.NamedTemporaryFile(suffix='.pfb', delete=False)
+            temp_pfb_file = tempfile.NamedTemporaryFile(suffix='.pfb')
             write_array_pfb(temp_pfb_file.name, self.mask_array)
             args = [
                 f'--mask {temp_pfb_file.name}',
@@ -239,7 +238,7 @@ class SolidFileBuilder:
 
         print('=== pfmask-to-pfsol ===: END')
 
-        if temp_pfb_file:
+        if temp_pfb_file is not None:
             temp_pfb_file.close()
 
         return self
