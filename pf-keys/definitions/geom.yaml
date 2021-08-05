@@ -63,9 +63,13 @@ ICSaturation:
       [Type: string] This key specifies the geometries on which an initial condition will be given if the type is set to Constant.
       Note that geometries listed later “overlay” geometries listed earlier.
     domains:
-      AnyString:
-
-
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler                       
 
 # Setting ICPressure Type and GeomNames
 ICPressure:
@@ -79,7 +83,14 @@ ICPressure:
       comprise the entire domain. Note that conditions for regions that overlap other regions will have unpredictable
       results. The regions given must be disjoint.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler
+
 
   Type:
     help: >
@@ -251,7 +262,13 @@ SpecificStorage:
       [Type: string] This key specifies all of the geometries on which a different specific storage value will be
       assigned. These geometries must cover the entire computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler
 
   Type:
     help: >
@@ -279,7 +296,13 @@ dzScale:
       [Type: string] This key specifies which problem domain is being applied a variable dz subsurface. These
       geometries must cover the entire computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler
 
   Type:
     help: >
@@ -354,7 +377,13 @@ Geom:
         permeability field will be assigned. These geometries must cover the
         entire computational domain.
       domains:
-        AnyString:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        NamesToListConverter:
+          type: ListHandler
 
     TensorByGeom:
       __doc__: >
@@ -366,8 +395,14 @@ Geom:
           entries will be assigned. These geometries must cover the entire
           computational domain.
         domains:
-          AnyString:
-
+          EnumDomain:
+            locations: 
+              - /GeomInput/{GeomInputItem}/GeomNames
+              - /GeomInput/{GeomInputItem}/GeomName
+        handlers:
+          NamesToListConverter:
+            type: ListHandler
+  
   Porosity:
     __doc__: >
       run.Geom.Porosity input options are: GeomNames
@@ -378,7 +413,13 @@ Geom:
         porosity will be assigned. These geometries must cover the
         entire computational domain.
       domains:
-        AnyString:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        NamesToListConverter:
+          type: ListHandler                       
 
   Retardation:
     __doc__: >
@@ -389,12 +430,16 @@ Geom:
         [Type: string] This key specifies all of the geometries to which the
         contaminants will have a retardation function applied.
       domains:
-        AnyString:
+        EnumDomain:
+          locations:
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
       handlers:
         ContRetNameUpdater:
           type: ChildrenHandler
           class_name: GeomItem
           location: ..
+
 
   # GeomItems: for keys in the form Geom.geom_name.[]
 
@@ -1312,7 +1357,10 @@ TopoSlopesX:
       slopes may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper surface of the
       computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
     handlers:
       TopoSlopesXUpdater:
         type: ChildrenHandler
@@ -1368,7 +1416,10 @@ TopoSlopesY:
       slopes may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper surface of the
       computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
     handlers:
       TopoSlopesYUpdater:
         type: ChildrenHandler
@@ -1444,7 +1495,13 @@ CapPressurePhaseItem:
       Regions listed later “overlay” regions listed earlier. Any geometries not listed will be assigned 0:0 capillary pressure
       by ParFlow.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler
 
 # -----------------------------------------------------------------------------
 # Mannings
@@ -1460,7 +1517,10 @@ Mannings:
       values may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper
       surface of the computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
     handlers:
       ManningsGeomUpdater:
         type: ChildrenHandler

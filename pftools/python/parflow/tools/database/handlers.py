@@ -31,8 +31,12 @@ class ChildHandler:
     """
     def decorate(self, value, container, class_name=None, location='.',
                  eager=None, **kwargs):
-        klass = getattr(generated, class_name)
-        destination_containers = container.select(location)
+
+        klass = None
+        destination_containers = []
+        if class_name:
+            klass = getattr(generated, class_name)
+            destination_containers = container.select(location)
         valid_name = value.strip()
 
         if not valid_name:
@@ -96,6 +100,17 @@ class ChildrenHandler:
 
         raise ValueHandlerException(
             f'{value} is not of the expected type for ChildrenHandler')
+
+# -----------------------------------------------------------------------------
+class ListHandler:
+    """
+    This class ensures the output is not a single string but a list of trimmed string.
+    """
+    def __init__(self):
+        self.children_handler = ChildrenHandler()
+
+    def decorate(self, value, container, **kwargs):
+        return self.children_handler.decorate(value, container)
 
 # -----------------------------------------------------------------------------
 

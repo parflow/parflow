@@ -133,6 +133,7 @@ endforeach()
 
 add_subdirectory (new_features)
 # add_subdirectory (scenarios)
+add_subdirectory (key_validation)
 
 if (${PARFLOW_HAVE_CLM})
   add_subdirectory (clm)

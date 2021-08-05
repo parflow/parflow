@@ -415,6 +415,6 @@ Wells:
       help: >
         [Type: string] This key specifies the time cycles to which data for the well well_name corresponds.
       domains:
-        AnyString:
-
-
+        EnumDomain:
+          locations: 
+            - /Cycle/Names
