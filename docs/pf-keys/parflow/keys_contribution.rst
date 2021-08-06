@@ -129,7 +129,7 @@ to the file (e.g. ``Solver.CLM.MetFile``). If no arguments are provided, it will
 ``handlers``
 ^^^^^^^^^^^^^^^^^
 
-This will help generate dynamically defined tokens within other keys based on the provided value for the key. Each
+This will transform inputs or help generate dynamically defined tokens within other keys based on the provided value for the key. Each
 argument is an updater that specifies where and how the value is used to create other tokens. An example from phase.yaml
 is below:
 
@@ -144,10 +144,10 @@ is below:
                             location: .
 
 ``PhaseUpdater`` is the name of the handler. The arguments for the handler include ``type``, ``class_name``, and ``location``.
-The only current option for ``type`` is ``ChildrenHandler``. ``class_name`` corresponds to the ``__class__`` annotation of the
+The most common option for ``type`` is ``ChildrenHandler``. ``class_name`` corresponds to the ``__class__`` annotation of the
 dynamic token. In this example, ``PhaseNameItem`` is the ``__class__`` of the dynamic token ``.{phase_name}``. ``location`` is
 the location of the token referenced in ``class_name``. In this example, the Names token in ``Phase.Names`` is on the same
-level as the ``.{phase_name}`` in ``Phase.phase_name``. This can also be an absolute path.
+level as the ``.{phase_name}`` in ``Phase.phase_name``. This can also be an absolute path. See ``handlers.py`` for more on the other handlers.
 
 ^^^^^^^^^^^^^^^^^
 ``ignore``
