@@ -36,13 +36,13 @@ int *size;
 
   MPI_Status status;
 
-  MPI_Probe(src, 0, MPI_COMM_WORLD, &status);
+  MPI_Probe(src, 0, amps_CommWorld, &status);
 
   MPI_Get_count(&status, MPI_BYTE, size);
 
   buf = malloc(*size);
 
-  MPI_Recv(buf, *size, MPI_BYTE, src, 0, MPI_COMM_WORLD, &status);
+  MPI_Recv(buf, *size, MPI_BYTE, src, 0, amps_CommWorld, &status);
 
   return buf;
 }
@@ -91,7 +91,7 @@ int amps_Recv(amps_Comm comm, int source, amps_Invoice invoice)
 
   AMPS_CLEAR_INVOICE(invoice);
 
-  MPI_Probe(source, 0, MPI_COMM_WORLD, &status);
+  MPI_Probe(source, 0, amps_CommWorld, &status);
 
   MPI_Get_count(&status, MPI_BYTE, &size);
 
@@ -101,7 +101,7 @@ int amps_Recv(amps_Comm comm, int source, amps_Invoice invoice)
  * amps_Printf("Recv buffer: %x from node %d\n", buffer, source);
  */
 
-  MPI_Recv(buffer, size, MPI_BYTE, source, 0, MPI_COMM_WORLD, &status);
+  MPI_Recv(buffer, size, MPI_BYTE, source, 0, amps_CommWorld, &status);
 
   amps_unpack(comm, invoice, buffer);
 

@@ -37,6 +37,7 @@ amps_File amps_Fopen (char *filename, char *type);
 int MAIN__ (void);
 int amps_Init (int *argc, char **argv []);
 int amps_EmbeddedInit(void);
+int amps_EmbeddedInitComm(MPI_Comm com);
 
 /* amps_invoice.c */
 void amps_AppendInvoice (amps_Invoice *invoice, amps_Invoice append_invoice);
