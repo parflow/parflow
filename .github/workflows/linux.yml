@@ -80,12 +80,6 @@ jobs:
         sudo apt-get -qq update
         sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers tcl-dev tk-dev
 
-    - name: Package Install 16.04
-      if: matrix.config.os == 'ubuntu-16.04'
-      run: |
-        sudo apt-get -qq update
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-10 hdf5-helpers tcl-dev tk-dev
-
     - name: Python Package Install
       if: matrix.config.python == 'true'
       run: |
