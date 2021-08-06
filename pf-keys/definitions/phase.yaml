@@ -42,6 +42,10 @@ Phase:
         type: ChildrenHandler
         class_name: InjectionConcentrationPhaseItem
         location: /Wells/{WellItem}/{WellIntervalItem}/Injection/Concentration
+      WellIntervalConcentrationPhaseItemUpdater:
+        type: ChildrenHandler
+        class_name: ConcentrationPhaseItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Concentration
       WellIntervalSaturationPhaseItemUpdater:
         type: ChildrenHandler
         class_name: WellIntervalSaturationPhaseItem
@@ -50,7 +54,14 @@ Phase:
         type: ChildrenHandler
         class_name: GeomICSaturationPhaseItem
         location: /Geom/{GeomItem}/ICSaturation
-
+      BCSaturationPhaseUpdater:
+        type: ChildrenHandler
+        class_name: BCSatPhaseItem
+        location: /Patch/{BCItem}/BCSaturation
+      BCPressureIntervalPhaseUpdater:
+        type: ChildrenHandler
+        class_name: BCPressIntPhaseItem
+        location: /Patch/{BCItem}/BCPressure/{BCPressureIntervalItem}
 
   RelPerm:
     __doc__: >
@@ -563,6 +574,10 @@ Contaminants:
         type: ChildrenHandler
         class_name: GeomContItem
         location: /Geom/{GeomItem}/
+      ConcentrationPhaseContaminantUpdater:
+        type: ChildrenHandler
+        class_name: ConcentrationPhaseContItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Concentration/{ConcentrationPhaseItem}
       InjectionConcentrationPhaseContaminantUpdater:
         type: ChildrenHandler
         class_name: InjectionConcentrationPhaseContaminantItem

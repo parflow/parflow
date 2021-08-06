@@ -109,12 +109,14 @@ Wells:
         # Setting key Wells.{well_name}.{interval_name}.Concentration.{phase_name}.{contaminant_name}.Value
         .{phase_name}:
           __class__: ConcentrationPhaseItem
+          __from__: /Phase/Names
           __rst__:
             skip:
           __doc__: ''
 
           .{contaminant_name}:
             __class__: ConcentrationPhaseContItem
+            __from__: /Contaminants/Names
             __rst__:
               skip:
             __doc__: ''
