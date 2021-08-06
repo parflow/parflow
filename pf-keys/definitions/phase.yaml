@@ -190,6 +190,8 @@ Phase:
     __rst__:
       skip:
     __doc__: ''
+    __simput__:
+      type: VariableTable
 
     Density:
       __rst__:
@@ -353,6 +355,8 @@ Phase:
         __rst__:
           skip:
         __doc__: ''
+        __simput__:
+          type: VariableTable
 
         HeatCapacity:
           __rst__:
@@ -379,6 +383,8 @@ PhaseConcen:
     __rst__:
       skip:
     __doc__: ''
+    __simput__: 
+      type: VariableTable
 
     .{contaminant_name}:
       __class__: PhaseConcenContaminantItem
@@ -386,6 +392,9 @@ PhaseConcen:
       __rst__:
         skip:
       __doc__: ''
+      __simput__: 
+        type: VariableTable
+
 
       GeomNames:
         help: >
@@ -414,6 +423,9 @@ PhaseConcen:
           __rst__:
             skip:
           __doc__: ''
+          __simput__: 
+            type: VariableTable
+
 
           Value:
             help: >
@@ -458,6 +470,8 @@ PhaseSources:
     __rst__:
       skip:
     __doc__: ''
+    __simput__: 
+      type: VariableTable
 
     Type:
       help: >
@@ -513,6 +527,8 @@ PhaseSources:
         __rst__:
           skip:
         __doc__: ''
+        __simput__:
+          type: VariableTable
 
         Value:
           help: >
@@ -546,6 +562,8 @@ PhaseSources:
       __rst__:
         skip:
       __doc__: ''
+      __simput__: 
+        type: VariableTable
 
       Value:
         help: >
@@ -592,6 +610,8 @@ Contaminants:
     __rst__:
       skip:
     __doc__: ''
+    __simput__: 
+      type: VariableTable
 
     Degradation:
       __rst__:

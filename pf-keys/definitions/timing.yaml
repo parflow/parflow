@@ -156,6 +156,11 @@ Cycle:
     __rst__:
       name: Cycle.{cycle_name}
     __doc__: ''
+    __simput__: 
+      type: VariableTable
+      table_label: Cycles
+
+
 
     Names:
       help: >
@@ -164,6 +169,9 @@ Cycle:
         intervals in that time cycle.
       domains:
         AnyString:
+      __simput__:
+        table_label: Names for Intervals
+        table_column_order: 2
       handlers:
         CycleUpdater:
           type: ChildrenHandler
@@ -186,11 +194,17 @@ Cycle:
         MandatoryValue:
         IntValue:
           min_value: -1
+      __simput__:
+        table_label: Repititions
+        table_column_order: 1
 
     .{interval_name}:
       __class__: CycleIntItem
       __rst__:
         name: Cycle.{cycle_name}.{interval_name}
+      __simput__:
+        type: VariableTable
+        table_label: Intervals
       __doc__: ''
 
       Length:
@@ -201,3 +215,5 @@ Cycle:
         domains:
           IntValue:
             min_value: 1
+        __simput__: 
+          table_label: Interval Length
