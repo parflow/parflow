@@ -54,13 +54,6 @@ jobs:
             backend: "kokkos",
             cudaos: 'ubuntu1804'
           }
-        - {
-            name: "Ubuntu 16.04",
-            os: ubuntu-16.04,
-            cudaos: 'ubuntu1604',
-            python: "false",
-            backend: "none",
-          }
 
     steps:
     - uses: actions/checkout@v2
@@ -86,12 +79,6 @@ jobs:
       run: |
         sudo apt-get -qq update
         sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers tcl-dev tk-dev
-
-    - name: Package Install 16.04
-      if: matrix.config.os == 'ubuntu-16.04'
-      run: |
-        sudo apt-get -qq update
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-10 hdf5-helpers tcl-dev tk-dev
 
     - name: Python Package Install
       if: matrix.config.python == 'true'
