@@ -82,6 +82,7 @@ void amps_create_mpi_type(amps_Comm comm, amps_Invoice inv);
 int amps_pack(amps_Comm comm, amps_Invoice inv, char *buffer, int *streams_hired);
 
 /* amps_print.c */
+FILE* amps_SetConsole(FILE* stream);
 void amps_Printf(const char *fmt, ...);
 
 /* amps_recv.c */

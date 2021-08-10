@@ -116,8 +116,6 @@ _declspec(thread) extern int amps_rank;
 #define amps_Fprintf fprintf
 #define amps_Fscanf fscanf
 
-#define amps_Printf printf
-
 #define amps_FFclose(file)  fclose((file))
 
 #define amps_Clock() GetTickCount()
