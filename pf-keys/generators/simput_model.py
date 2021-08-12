@@ -250,7 +250,7 @@ def _create_parameters(path, id, data):
         param["domain"] = {"dynamic": True, "external": external_key}
         external[external_key] = {
             "columns": data.get("table_params"),
-            "row_kinds": data.get("row_kinds"),
+            "variable_columns": data.get("variable_columns"),
             "table_labels": data.get("table_labels"),
             "table_order": data.get("table_order"),
         }
@@ -423,7 +423,7 @@ def make_tables(path, id, data, dynamic_tokens=None, table_labels=None):
         "table_labels": table_labels,
         "table_order": table_order,
         "table_params": table_params,
-        "row_kinds": {
+        "variable_columns": {
             f"{clean_dynamic_tokens(path)}/{clean_dynamic_tokens(token)}": []
             for token in dynamic_tokens
         },
