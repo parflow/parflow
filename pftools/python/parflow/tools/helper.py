@@ -26,7 +26,7 @@ def map_to_self(pfdb_obj):
 def map_to_child(name):
     """Helper function that return a function for extracting a field name
     """
-    return lambda pfdb_obj: getattr(pfdb_obj, name, None)
+    return lambda pfdb_obj: pfdb_obj.__getitem__(name)
 
 # -----------------------------------------------------------------------------
 
