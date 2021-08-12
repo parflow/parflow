@@ -42,6 +42,10 @@ Phase:
         type: ChildrenHandler
         class_name: InjectionConcentrationPhaseItem
         location: /Wells/{WellItem}/{WellIntervalItem}/Injection/Concentration
+      WellIntervalConcentrationPhaseItemUpdater:
+        type: ChildrenHandler
+        class_name: ConcentrationPhaseItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Concentration
       WellIntervalSaturationPhaseItemUpdater:
         type: ChildrenHandler
         class_name: WellIntervalSaturationPhaseItem
@@ -50,7 +54,14 @@ Phase:
         type: ChildrenHandler
         class_name: GeomICSaturationPhaseItem
         location: /Geom/{GeomItem}/ICSaturation
-
+      BCSaturationPhaseUpdater:
+        type: ChildrenHandler
+        class_name: BCSatPhaseItem
+        location: /Patch/{BCItem}/BCSaturation
+      BCPressureIntervalPhaseUpdater:
+        type: ChildrenHandler
+        class_name: BCPressIntPhaseItem
+        location: /Patch/{BCItem}/BCPressure/{BCPressureIntervalItem}
 
   RelPerm:
     __doc__: >
@@ -79,7 +90,13 @@ Phase:
         [Type: string] This key specifies the geometries on which relative permeability will be given. The union of these geometries
         must cover the entire computational domain.
       domains:
-        AnyString:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        NamesToListConverter:
+          type: ListHandler                       
 
     VanGenuchten:
       __class__: PhaseRelPermVanGenuchten
@@ -127,7 +144,14 @@ Phase:
         [Type: string] This key specifies the geometries on which saturation will be given. The union of these geometries
         must cover the entire computational domain.
       domains:
-        AnyString:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        NamesToListConverter:
+          type: ListHandler                       
+
 
     VanGenuchten:
       __class__: PhaseSaturationVanGenuchten
@@ -283,7 +307,10 @@ Phase:
         help: >
           [Type: string] This specifies the geometry names for setting the heat capacity.
         domains:
-          AnyString:
+          EnumDomain:
+            locations: 
+              - /GeomInput/{GeomInputItem}/GeomNames
+              - /GeomInput/{GeomInputItem}/GeomName
         handlers:
           PhaseNameHeatGeomItemUpdater:
             type: ChildrenHandler
@@ -365,7 +392,10 @@ PhaseConcen:
           [Type: string] This key specifies the geometries on which an initial condition will be given, if the type was set to Constant.
           Note that geometries listed later “overlay” geometries listed earlier.
         domains:
-          AnyString:
+          EnumDomain:
+            locations: 
+              - /GeomInput/{GeomInputItem}/GeomNames
+              - /GeomInput/{GeomInputItem}/GeomName
         handlers:
           PhaseConcenContaminantGeomItemUpdater:
             type: ChildrenHandler
@@ -447,7 +477,10 @@ PhaseSources:
         [Type: string] This key specifies the names of the geometries on which source terms will be specified. This is used only for
         Constant type phase sources. Regions listed later “overlay” regions listed earlier.
       domains:
-        AnyString:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
       handlers:
         PhaseSourceGeomUpdater:
           type: ChildrenHandler
@@ -486,6 +519,21 @@ PhaseSources:
             [Type: double] This key specifies the value of a constant source term applied to phase phase _name on geometry geom_name.
           domains:
             DoubleValue:
+
+  GeomNames:
+    help: > 
+      [Type: string] This key specifies the names of the geometries on which source terms will be specified. This is used only for
+      Constant type phase sources. Regions listed later "overlay" regions listed earlier.
+    domains: 
+      EnumDomain:
+        locations:
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      PhaseSourceGeomUpdater:
+        type: ChildrenHandler
+        class_name: PhaseSourceGeomItem
+        location: ./Geom
 
   Geom:
     __class__: PhaseSourcesGeom
@@ -526,6 +574,10 @@ Contaminants:
         type: ChildrenHandler
         class_name: GeomContItem
         location: /Geom/{GeomItem}/
+      ConcentrationPhaseContaminantUpdater:
+        type: ChildrenHandler
+        class_name: ConcentrationPhaseContItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Concentration/{ConcentrationPhaseItem}
       InjectionConcentrationPhaseContaminantUpdater:
         type: ChildrenHandler
         class_name: InjectionConcentrationPhaseContaminantItem

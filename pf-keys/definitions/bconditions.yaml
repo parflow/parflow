@@ -202,6 +202,7 @@ Patch:
 
         .{phase_name}:
           __class__: BCPressIntPhaseItem
+          __from__: /Phase/Names
           __rst__:
             skip:
           __doc__: ''
@@ -330,6 +331,7 @@ Patch:
 
       .{phase_name}:
         __class__: BCSatPhaseItem
+        __from__: /Phase/Names
         __rst__:
           skip:
         __doc__: ''
