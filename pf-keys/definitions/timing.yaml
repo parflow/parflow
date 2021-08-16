@@ -195,7 +195,7 @@ Cycle:
         IntValue:
           min_value: -1
       __simput__:
-        table_label: Repititions
+        table_label: Repetitions
         table_column_order: 1
 
     .{interval_name}:
