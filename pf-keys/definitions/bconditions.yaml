@@ -129,6 +129,9 @@ Patch:
         __rst__:
           skip:
         __doc__: ''
+        __simput__:
+          type: VariableTable
+
 
         Value:
           help: >
@@ -206,6 +209,8 @@ Patch:
           __rst__:
             skip:
           __doc__: ''
+          __simput__:
+            type: VariableTable
 
           IntValue:
             help: >
@@ -221,6 +226,9 @@ Patch:
           __rst__:
             skip:
           __doc__: ''
+          __simput__:
+            type: VariableTable
+
 
           Location:
             help: >
@@ -335,6 +343,9 @@ Patch:
         __rst__:
           skip:
         __doc__: ''
+        __simput__:
+          type: VariableTable
+
 
         Type:
           help: >
@@ -406,6 +417,9 @@ Patch:
           __doc__: ''
           __rst__:
             skip:
+          __simput__:
+            type: VariableTable
+
 
           Location:
             help: >

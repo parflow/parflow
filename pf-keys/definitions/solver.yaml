@@ -1000,6 +1000,8 @@ Solver:
             name: Vegetation.Parameters.{land_cover_name}
           __doc__: >
             One of the user-defined names for land cover types for the drv_vegp.dat file
+          __simput__:
+            type: VariableTable
 
           Description:
             help: >
@@ -1190,6 +1192,8 @@ Solver:
               name: Vegetation.Map.LandFrac.{land_cover_name}
             __doc__: >
               One of the user-defined names for land cover types for the drv_vegp.dat file
+            __simput__: 
+              type: VariableTable
 
             Type:
               help: >
@@ -2026,6 +2030,8 @@ Solver:
         __class__: PrecondMethodItem
         __doc__: >
           Setting Solver.Linear.Preconditioner.{precond_method} keys
+        __simput__: 
+          type: VariableTable
 
         MaxIter:
           help: >
