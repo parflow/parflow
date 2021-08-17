@@ -54,12 +54,7 @@ using namespace SAMRAI;
 
 #endif
 
-
 #include "Parflow.hxx"
-
-#ifdef HAVE_CEGDB
-#include <cegdb.h>
-#endif
 
 #if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
 #include "pf_devices.h"
@@ -114,9 +109,8 @@ int main(int argc, char *argv [])
     }
 #endif
 
-#ifdef HAVE_CEGDB
-    cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
-#endif
+    /* Set the destination stream for PF output/logging */
+    amps_SetConsole(stdout);
 
 #ifndef NDEBUG
     /*-----------------------------------------------------------------------
@@ -174,7 +168,6 @@ int main(int argc, char *argv [])
     }
 #endif // PARFLOW_HAVE_KOKKOS
 
-
   /*-----------------------------------------------------------------------
   * Initialize RMM pool allocator
   *-----------------------------------------------------------------------*/
@@ -192,7 +185,6 @@ int main(int argc, char *argv [])
     /*-----------------------------------------------------------------------
      * Command line arguments
      *-----------------------------------------------------------------------*/
-
 
     char *restart_read_dirname = NULL;
     int is_from_restart = FALSE;
@@ -418,7 +410,6 @@ int main(int argc, char *argv [])
      *-----------------------------------------------------------------------*/
 
     wall_clock_time = amps_Clock() - wall_clock_time;
-
 
     IfLogging(0)
     {

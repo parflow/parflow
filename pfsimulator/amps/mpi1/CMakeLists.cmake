@@ -10,7 +10,6 @@ set(AMPS_SRC_FILES
   amps_irecv.c
   amps_newpackage.c
   amps_pack.c
-  amps_print.c
   amps_recv.c
   amps_send.c
   amps_sizeofinvoice.c
