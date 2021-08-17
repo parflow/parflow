@@ -26,6 +26,9 @@ Wells:
       name: Wells.{well_name}
     __doc__: >
       Specifying properties for wells
+    __simput__:
+      type: VariableTable
+      table_label: Well
 
     # Setting key Wells.{well_name}.{interval_name}...
     .{interval_name}:
@@ -35,6 +38,13 @@ Wells:
         skip:
       __doc__: >
         This is to set properties for named wells within specified cycles.
+      __simput__:
+        type: VariableTable
+        table_label: Interval
+        match_condition: 
+          siblingParamKey: Wells/well_name_/Cycle
+          foreignNameKey: Cycle/cycle_name_
+
 
       Pressure:
         __class__: WellIntervalItemPressure
@@ -65,6 +75,9 @@ Wells:
           __rst__:
             skip:
           __doc__: ''
+          __simput__: 
+            type: VariableTable
+            table_label: Phase
 
           Value:
             __rst__:
@@ -89,6 +102,9 @@ Wells:
           __rst__:
             skip:
           __doc__: ''
+          __simput__:
+            type: VariableTable
+            table_label: Phase
 
           # typos in the description - vertical, assign
           Value:
@@ -113,6 +129,9 @@ Wells:
           __rst__:
             skip:
           __doc__: ''
+          __simput__: 
+            type: VariableTable
+            table_label: Phase
 
           .{contaminant_name}:
             __class__: ConcentrationPhaseContItem
@@ -120,6 +139,10 @@ Wells:
             __rst__:
               skip:
             __doc__: ''
+            __simput__: 
+              type: VariableTable
+              table_label: Contaminant
+
 
             Value:
               help: >
@@ -161,6 +184,9 @@ Wells:
             __rst__:
               skip:
             __doc__: ''
+            __simput__: 
+              type: VariableTable
+              table_label: Phase
             # typos in the description - assign
             Value:
               __rst__:
@@ -206,6 +232,9 @@ Wells:
             __rst__:
               skip:
             __doc__: ''
+            __simput__: 
+              type: VariableTable
+              table_label: Phase
             # typos in the description - assign
             Value:
               __rst__:
@@ -230,6 +259,9 @@ Wells:
             __rst__:
               skip:
             __doc__: ''
+            __simput__:
+              type: VariableTable
+              table_label: Phase
 
             .{contaminant_name}:
               __class__: InjectionConcentrationPhaseContaminantItem
@@ -237,6 +269,9 @@ Wells:
               __rst__:
                 skip:
               __doc__: ''
+              __simput__:
+                type: VariableTable
+                table_label: Phase
               Fraction:
                 help: >
                   [Type: double] This key specifies the fraction of the extracted contaminant which gets resupplied to the injection well.
@@ -420,3 +455,5 @@ Wells:
         EnumDomain:
           locations: 
             - /Cycle/Names
+      __simput__: 
+        table_column_order: 1

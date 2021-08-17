@@ -70,6 +70,8 @@ ICSaturation:
     handlers:
       NamesToListConverter:
         type: ListHandler                       
+    __simput__: 
+      type: MultiSelect
 
 # Setting ICPressure Type and GeomNames
 ICPressure:
@@ -342,6 +344,9 @@ Cell:
       warning: >
         This should be set in the Python script in the format l#, where # is the integer number of the layer. Example:
         Cell.l0.dzScale.Value
+    __simput__:
+      type: VariableTable
+
     dzScale:
       __class__: CellNzItemDzScale
       __doc__: >
@@ -1275,6 +1280,8 @@ Geom:
         __rst__:
           name: Geom.{geom_name}.ICSaturation.{phase_name}
         __doc__: ''
+        __simput__: 
+          type: VariableTable
 
         Value:
           help: >
@@ -1292,6 +1299,8 @@ Geom:
 
       __doc__: >
         Setting retardation properties for specific contaminants and specific geometries
+      __simput__:
+        type: VariableTable
 
       Retardation:
         __class__: GeomContItemRetardation
@@ -1399,6 +1408,9 @@ TopoSlopesX:
         name: TopoSlopesX.Geom.{geom_name}
       __doc__: >
         Setting value for slopes in the X direction
+      __simput__:
+        type: VariableTable
+
       Value:
         help: >
           [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
@@ -1458,6 +1470,8 @@ TopoSlopesY:
         name: TopoSlopesY.Geom.{geom_name}
       __doc__: >
         Setting value for slopes in the Y direction
+      __simput__:
+        type: VariableTable
       Value:
         help: >
           [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
@@ -1556,6 +1570,8 @@ Mannings:
       __rst__:
         skip:
       __doc__: ''
+      __simput__:
+        type: VariableTable
       Value:
         help: >
           [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
