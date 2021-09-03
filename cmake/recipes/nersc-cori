@@ -113,8 +113,11 @@ then
    echo "*****************************************************************************"
    echo "Building in Silo"
    echo "*****************************************************************************"
-   
-   wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
+
+   if [ ! -f silo-4.10.2.tgz ]
+   then
+      wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
+   fi
    tar xf silo-4.10.2.tgz
    pushd silo-4.10.2
    CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} ./configure --prefix=$PARFLOW_DIR \
@@ -141,7 +144,11 @@ then
 
    pushd hypre
 
-   wget https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz
+   if [ ! v2.18.2.tar.gz ]
+   then
+      wget https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz
+   fi
+
    tar xf v2.18.2.tar.gz 
 
    pushd hypre-2.18.2/src
