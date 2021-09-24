@@ -15,7 +15,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         drop_variables=None,
         name='parflow_variable',
         meta_yaml=None,
-        read_inputs=True,
+        read_inputs=False, # TODO: This is currently broken!
         read_outputs=True,
     ):
 
