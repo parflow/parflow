@@ -1,10 +1,16 @@
+import contextlib
 import numpy as np
 import xarray as xr
 import yaml
 import json
 
 from parflowio.pyParflowio import PFData
-from xarray.backends  import BackendEntrypoint
+from xarray.backends  import BackendEntrypoint, BackendArray
+from xarray.backends.locks import SerializableLock
+from xarray.core import indexing
+
+PARFLOW_LOCK = SerializableLock()
+NO_LOCK = contextlib.nullcontext()
 
 class ParflowBackendEntrypoint(BackendEntrypoint):
 
@@ -100,6 +106,11 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 (f"Mismatch in dims and coord names on file {filename_or_obj}!",
                  f"dims: {dims}, coords: {coords}")
 
+        shape = tuple(len(c) for c in coords.values())
+        backend_array = ParflowBackendArray(shape=shape)
+        data = indexing.LazilyIndexedArray(backend_array)
+        var = xr.Variable(dims, data, )#attrs={}, encoding=self.encoding)
+        da = xr.DataArray(var, coords=coords, name=name)
         da = xr.DataArray(arr, coords=coords, dims=dims, name=name)
         return da
 
@@ -152,6 +163,35 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                   'y': dy * np.arange(0, ny) + y_start,
                   'z': dz * np.arange(0, nz) + z_start, }
         return coords
+
+
+class ParflowBackendArray(BackendArray):
+
+    def __init__(self, shape=None, dtype=np.int64, lock=None):
+        self.shape = shape
+        self.dtype = dtype
+
+        if lock in (True, None):
+            lock = PARFLOW_LOCK
+        elif lock is False:
+            lock = NO_LOCK
+        self.lock = lock
+
+    def __getitem__(
+            self, key: xr.core.indexing.ExplicitIndexer
+    ) -> np.typing.ArrayLike:
+        return indexing.explicit_indexing_adapter(
+            key,
+            self.shape,
+            indexing.IndexingSupport.BASIC,
+            self._raw_indexing_method,
+        )
+
+    def _raw_indexing_method(self, key: tuple) -> np.typing.ArrayLike:
+        with self.lock:
+            #TODO: Need to implement pfb reading here rather
+            #      than inside of the `ParflowBackendEntrypoint`
+            return None
 
 
 @xr.register_dataset_accessor("parflow")

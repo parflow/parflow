@@ -1,1 +1,1 @@
-from .pf_backend import ParflowBackendEntrypoint, ParflowAccessor
+from .pf_backend import ParflowBackendEntrypoint, ParflowAccessor, ParflowBackendArray
