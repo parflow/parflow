@@ -166,8 +166,27 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
 
 class ParflowBackendArray(BackendArray):
+    """
+    This is a note to myself: ParflowBackendArray's are
+    inherently spatial and of a single time slice. If we
+    are interested in lazily loading and allowing for out
+    of core computation we'll need to map time slices to
+    file names in the higher level components.
+    (ParflowBackendEntrypoint, most likely)
 
-    def __init__(self, shape=None, dtype=np.int64, lock=None):
+    That means that in the constructor the filename will be
+    required. I'm not sure if that means that we can interpret
+    the shape internally here though, but that might clean up
+    the higher level code.
+    """
+
+    def __init__(
+            self,
+            shape=None,
+            dtype=np.int64,
+            lock=None,
+            filename_or_obj=None
+    ):
         self.shape = shape
         self.dtype = dtype
 
@@ -192,6 +211,65 @@ class ParflowBackendArray(BackendArray):
             #TODO: Need to implement pfb reading here rather
             #      than inside of the `ParflowBackendEntrypoint`
             return None
+
+    def load_single_pfb(
+            self,
+            filename_or_obj,
+    ) -> np.typing.ArrayLike
+        """
+        Load a `pfb` file directly as an xr.DataArray
+        """
+        pfd = PFData(filename_or_obj)
+        stat = pfd.loadHeader()
+        assert stat == 0
+        stat = pfd.loadData()
+        assert stat == 0
+        arr = pfd.viewDataArray()
+        if not dims:
+            dims = list(pfd.getIndexOrder())
+        if not coords:
+            coords = self.decode_coords(pfd)
+        assert sorted(dims) == sorted(list(coords.keys())), \
+                (f"Mismatch in dims and coord names on file {filename_or_obj}!",
+                 f"dims: {dims}, coords: {coords}")
+
+        shape = tuple(len(c) for c in coords.values())
+        backend_array = ParflowBackendArray(shape=shape)
+        data = indexing.LazilyIndexedArray(backend_array)
+        var = xr.Variable(dims, data, )#attrs={}, encoding=self.encoding)
+        da = xr.DataArray(var, coords=coords, name=name)
+        da = xr.DataArray(arr, coords=coords, dims=dims, name=name)
+        return da
+
+
+class PFBHelper:
+    """
+    This class will abstract away some of the access patterns
+    from a PFData class object in a way that  makes sense for
+    me to implement further functionality onto
+    """
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.pfd = PFData(self.filename)
+        self.status = 'uninitialized'
+
+    def load_header(self):
+        stat = pfd.loadHeader()
+        assert stat == 0
+        self.status = 'loaded_header'
+
+    def get_dims(self):
+        return None
+
+    def get_coords(self):
+        return None
+
+    def get_data(self):
+        return None
+
+    def status(self):
+        return None
 
 
 @xr.register_dataset_accessor("parflow")
