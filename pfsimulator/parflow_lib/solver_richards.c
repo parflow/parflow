@@ -715,18 +715,21 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->print_top)
   {
-    printf("PrintTop -- not yet implemented\n");
-    // strcpy(file_postfix, "top");
-    // WritePFBinary(file_prefix, file_postfix, XXXXXXXXXXXXXXXX(problem_data));
+    strcpy(file_postfix, "top_zindex");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataIndexOfDomainTop(problem_data));
+    strcpy(file_postfix, "top_patch");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data));
   }
 
   if (public_xtra->write_silo_top)
   {
-    printf("WriteSiloTop -- not yet implemented\n");
-    // strcpy(file_postfix, "");
-    // strcpy(file_type, "top");
-    // WriteSilo(file_prefix, file_type, file_postfix, XXXXXXXXXXXXXXXXXXXXX(problem_data),
-    //          t, 0, "Top");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "top_zindex");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataIndexOfDomainTop(problem_data),
+              t, 0, "TopZIndex");
+    strcpy(file_type, "top_patch");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data),
+              t, 0, "TopPatch");
   }
 
   if (!amps_Rank(amps_CommWorld))

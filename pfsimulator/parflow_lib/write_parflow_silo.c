@@ -265,8 +265,9 @@ void     WriteSiloInit(char *file_prefix)
                              "mannings",
                              "specific_storage",
                              "mask",
-                             "dz_mult",             // IMF -- added...
-                             "top",                 // IMF -- added...
+                             "dz_mult",
+                             "top_zindex",
+                             "top_patch",
                              "eflx_lh_tot",
                              "eflx_lwrad_out",
                              "eflx_sh_tot",
