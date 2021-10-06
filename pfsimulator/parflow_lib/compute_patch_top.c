@@ -44,7 +44,7 @@ void ComputePatchTop(Problem *    problem,      /* General problem information *
 		     ProblemData *problem_data  /* Contains geometry information for the problem */
 		     )
 {
-  GrGeomSolid   *gr_solid = ProblemDataGrDomain(problem_data);
+
   Vector        *index_top = ProblemDataIndexOfDomainTop(problem_data);
   Vector        *patch_top = ProblemDataPatchIndexOfDomainTop(problem_data);
   Vector        *perm_x = ProblemDataPermeabilityX(problem_data);
@@ -89,22 +89,11 @@ void ComputePatchTop(Problem *    problem,      /* General problem information *
     ForSubgridI(is, grid3d_subgrids)
     {
       Subgrid       *grid2d_subgrid = SubgridArraySubgrid(grid2d_subgrids, is);
-      Subgrid       *grid3d_subgrid = SubgridArraySubgrid(grid3d_subgrids, is);
       
       Subvector     *patch_top_subvector = VectorSubvector(patch_top, is);
       Subvector     *index_top_subvector = VectorSubvector(index_top, is);
       
-      int grid3d_ix = SubgridIX(grid3d_subgrid);
-      int grid3d_iy = SubgridIY(grid3d_subgrid);
-      int grid3d_iz = SubgridIZ(grid3d_subgrid);
-      
       int grid2d_iz = SubgridIZ(grid2d_subgrid);
-      
-      int grid3d_nx = SubgridNX(grid3d_subgrid);
-      int grid3d_ny = SubgridNY(grid3d_subgrid);
-      int grid3d_nz = SubgridNZ(grid3d_subgrid);
-      
-      int grid3d_r = SubgridRX(grid3d_subgrid);
       
       patch_top_data = SubvectorData(patch_top_subvector);
       index_top_data = SubvectorData(index_top_subvector);
