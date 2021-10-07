@@ -1,8 +1,10 @@
 import contextlib
+import json
 import numpy as np
+import os
+import warnings
 import xarray as xr
 import yaml
-import json
 
 from parflowio.pyParflowio import PFData
 from xarray.backends  import BackendEntrypoint, BackendArray
@@ -21,16 +23,20 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         drop_variables=None,
         name='parflow_variable',
         meta_yaml=None,
-        read_inputs=False, # TODO: This is currently broken!
+        read_inputs=False,
         read_outputs=True,
     ):
 
         filetype = self.is_meta_or_pfb(filename_or_obj)
         if filetype == 'pfb':
+            # Reads a single pfb
             da = self.load_single_pfb(filename_or_obj, name=name)
             ds = da.to_dataset()
         elif filetype == 'pfmetadata':
+            # Reads full simulation input/output from pfmetadata
+            self.base_dir = os.path.dirname(filename_or_obj)
             ds = xr.Dataset()
+            ds.attrs['pf_metadata_file'] = filename_or_obj
             ds.attrs['parflow_version'] = self.pf_meta['parflow']['build']['version']
             if read_outputs:
                 for var, var_meta in self.pf_meta['outputs'].items():
@@ -105,46 +111,46 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         var_meta: dict
             A dictionary which tells us how to read the data
         """
-        assert var_meta['type'] == 'pfb', "Can't load non-pfb data!"
+        ALLOWED_TYPES = ['pfb', 'pfb 2d timeseries']
+        pfb_type = var_meta['type']
+        assert pfb_type in ALLOWED_TYPES, "Can't load non-pfb data!"
         if var_meta.get('time-varying', None):
             # Note: The way that var_meta['data'] is aranged is idiosyncratic:
             #       It is a list with a single dictionary inside - check if this
             #       is always the case
-            time_idx = np.arange(*var_meta['data'][0]['time-range'])
             file_template = var_meta['data'][0]['file-series']
-            pad, fmt = file_template.split('.')[-2:]
-            basepath = '.'.join(file_template.split('.')[:-2])
-            all_files = [f'{basepath}.{pad%n}.{fmt}' for n in time_idx]
+            if pfb_type == 'pfb':
+                time_idx = np.arange(*var_meta['data'][0]['time-range'])
+                pad, fmt = file_template.split('.')[-2:]
+                basename = '.'.join(file_template.split('.')[:-2])
+                all_files = sorted([f'{basename}.{pad%n}.{fmt}' for n in time_idx])
+            elif pfb_type == 'pfb 2d timeseries':
+                time_start = np.arange(*var_meta['data'][0]['times-between'])
+                time_end = time_start + var_meta['data'][0]['times-between'][-1] - 1
+                file_template = var_meta['data'][0]['file-series']
+                pad, fmt = file_template.split('.')[-2:]
+                basename = '.'.join(file_template.split('.')[:-2])
+                all_files = [f'{basename}.{pad%(s,e)}.{fmt}'
+                             for s, e in zip(time_start, time_end)]
+
+            # Check if basname contains any of the files if not,
+            # fall back to `self.base_dir` from the pfmetadata file
+            if not os.path.exists(all_files[0]):
+                all_files = sorted([f'{self.base_dir}/{af}' for af in all_files])
+
+            # Put it all together
             base_da = xr.concat([self.load_single_pfb(f) for f in all_files], dim='time')
+            if pfb_type == 'pfb 2d timeseries':
+                base_da = (base_da.rename({'time':'junk'})
+                                  .stack(time=['junk', 'z'])
+                                  )
+                base_da = base_da.assign_coords({'time': np.arange(len(base_da['time']))})
+
             base_da.attrs['units'] = var_meta.get('units', 'not_specified')
             return base_da
         else:
-            raise NotImplementedError('Currently only support for reading time-varying data!')
-
-    def decode_coords(self, pfd: PFData):
-        """
-        Decodes coordinates.
-
-        Parameters
-        ----------
-        pfd: PFData
-            The Parflow Data object
-        dims: list (unused currently)
-            A list of dimensions to decode
-
-        Returns
-        -------
-        coords: dict
-            Coorinates to pass to the xarray
-            datastructure constructor
-        """
-        x_start, y_start, z_start = pfd.getX(), pfd.getY(), pfd.getZ()
-        nx, ny, nz = pfd.getNX(), pfd.getNY(), pfd.getNZ()
-        dx, dy, dz = pfd.getDX(), pfd.getDY(), pfd.getDZ()
-        coords = {'x': dx * np.arange(0, nx) + x_start,
-                  'y': dy * np.arange(0, ny) + y_start,
-                  'z': dz * np.arange(0, nz) + z_start, }
-        return coords
+            warnings.warn(
+                f'Currently only support for reading time-varying data! Skipping {var_meta}')
 
 
 class ParflowBackendArray(BackendArray):
@@ -216,6 +222,9 @@ class ParflowBackendArray(BackendArray):
             pfd.close()
         return self._shape
 
+    @property
+    def dtype(self):
+        return np.float64
 
 
 @xr.register_dataset_accessor("parflow")
