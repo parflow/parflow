@@ -6,6 +6,7 @@ import warnings
 import xarray as xr
 import yaml
 
+from parflow.tools import hydrology
 from parflowio.pyParflowio import PFData
 from xarray.backends  import BackendEntrypoint, BackendArray
 from xarray.backends.locks import SerializableLock
@@ -23,7 +24,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         drop_variables=None,
         name='parflow_variable',
         meta_yaml=None,
-        read_inputs=False,
+        read_inputs=True,
         read_outputs=True,
     ):
 
@@ -45,7 +46,12 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 for var, var_meta in self.pf_meta['inputs'].items():
                     if var == 'configuration':
                         continue # TODO: Determine what to do with this
-                    ds[var] = self.load_pfb_from_meta(var_meta)
+                    if len(var_meta['data']) == 1:
+                        ds[var] = self.load_pfb_from_meta(var_meta)
+                    else:
+                        for sub_dict in var_meta['data']:
+                            component = sub_dict['component']
+                            ds[f'{var}_{component}'] = self.load_pfb_from_meta(var_meta, component)
 
         #TODO : Set name and other stuff as necessary (maybe coordinate transforms)?
         if meta_yaml:
@@ -102,7 +108,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         da = xr.DataArray(var, name=name)
         return da
 
-    def load_pfb_from_meta(self, var_meta):
+    def load_pfb_from_meta(self, var_meta, component=None):
         """
         Load a pfb file or set of pfb files from the metadata
 
@@ -110,7 +116,10 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         ----------
         var_meta: dict
             A dictionary which tells us how to read the data
+        component: Optional[str]
+            An optional component for anisotropic fields
         """
+        base_da = xr.DataArray()
         ALLOWED_TYPES = ['pfb', 'pfb 2d timeseries']
         pfb_type = var_meta['type']
         assert pfb_type in ALLOWED_TYPES, "Can't load non-pfb data!"
@@ -139,18 +148,43 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 all_files = sorted([f'{self.base_dir}/{af}' for af in all_files])
 
             # Put it all together
-            base_da = xr.concat([self.load_single_pfb(f) for f in all_files], dim='time')
+            # NOTE: This will have to be changed to support lazy loading/indexing
+            # See here for discussion: https://github.com/pydata/xarray/issues/4628
+            base_da = xr.concat([self.load_single_pfb(f) for f in all_files],
+                                dim='time', coords='minimal',  compat='override')
+
             if pfb_type == 'pfb 2d timeseries':
                 base_da = (base_da.rename({'time':'junk'})
-                                  .stack(time=['junk', 'z'])
-                                  )
+                                  .stack(time=['junk', 'z']))
                 base_da = base_da.assign_coords({'time': np.arange(len(base_da['time']))})
 
-            base_da.attrs['units'] = var_meta.get('units', 'not_specified')
-            return base_da
+        elif component:
+            for sub_dict in var_meta['data']:
+                if sub_dict['component'] == component:
+                    file = sub_dict['file']
+                    if not os.path.exists(file):
+                        file = f'{self.base_dir}/{file}'
+                    base_da = self.load_single_pfb(file).squeeze()
+                    break
+        elif 'data' in var_meta:
+            file = var_meta['data'][0]['file']
+            if not os.path.exists(file):
+                file = f'{self.base_dir}/{file}'
+            base_da = self.load_single_pfb(file).squeeze()
         else:
-            warnings.warn(
-                f'Currently only support for reading time-varying data! Skipping {var_meta}')
+            msg = f"Currently can't support for reading for {var_meta}"
+            warnings.warn(msg)
+
+        base_da.attrs['units'] = var_meta.get('units', 'not_specified')
+        return base_da
+
+
+    def guess_can_open(self, filename_or_obj):
+        openable_extensions = ['pfb', 'pfmetadata', 'pbidb']
+        for ext in openable_extensions:
+            if filename_or_obj.endswith(ext):
+                return True
+        return False
 
 
 class ParflowBackendArray(BackendArray):
@@ -231,6 +265,7 @@ class ParflowBackendArray(BackendArray):
 class ParflowAccessor:
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
+        self.hydrology = hydrology
 
     def to_pfb(self):
         raise NotImplementedError('coming soon!')
