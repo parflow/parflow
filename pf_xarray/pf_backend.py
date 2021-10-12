@@ -17,17 +17,28 @@ NO_LOCK = contextlib.nullcontext()
 
 class ParflowBackendEntrypoint(BackendEntrypoint):
 
+    open_dataset_parameters = [
+            "filename_or_obj",
+            "drop_variables",
+            "name",
+            "meta_yaml",
+            "read_inputs",
+            "read_outputs",
+            "parallel"
+    ]
+
     def open_dataset(
         self,
         filename_or_obj,
         *,
+        base_dir=None,
         drop_variables=None,
         name='parflow_variable',
         meta_yaml=None,
         read_inputs=True,
         read_outputs=True,
+        parallel=False,
     ):
-
         filetype = self.is_meta_or_pfb(filename_or_obj)
         if filetype == 'pfb':
             # Reads a single pfb
@@ -35,23 +46,29 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             ds = da.to_dataset()
         elif filetype == 'pfmetadata':
             # Reads full simulation input/output from pfmetadata
-            self.base_dir = os.path.dirname(filename_or_obj)
+            if base_dir:
+                self.base_dir = base_dir
+            else:
+                self.base_dir = os.path.dirname(filename_or_obj)
             ds = xr.Dataset()
             ds.attrs['pf_metadata_file'] = filename_or_obj
             ds.attrs['parflow_version'] = self.pf_meta['parflow']['build']['version']
             if read_outputs:
                 for var, var_meta in self.pf_meta['outputs'].items():
-                    ds[var] = self.load_pfb_from_meta(var_meta)
+                    if read_outputs is True or var in read_outputs:
+                        ds[var] = self.load_pfb_from_meta(var_meta, parallel=parallel)
             if read_inputs:
                 for var, var_meta in self.pf_meta['inputs'].items():
                     if var == 'configuration':
                         continue # TODO: Determine what to do with this
-                    if len(var_meta['data']) == 1:
-                        ds[var] = self.load_pfb_from_meta(var_meta)
-                    else:
-                        for sub_dict in var_meta['data']:
-                            component = sub_dict['component']
-                            ds[f'{var}_{component}'] = self.load_pfb_from_meta(var_meta, component)
+                    if read_inputs is True or var in read_inputs:
+                        if len(var_meta['data']) == 1:
+                            ds[var] = self.load_pfb_from_meta(var_meta)
+                        else:
+                            for sub_dict in var_meta['data']:
+                                component = sub_dict['component']
+                                ds[f'{var}_{component}'] = self.load_pfb_from_meta(
+                                        var_meta, component, parallel=parallel)
 
         #TODO : Set name and other stuff as necessary (maybe coordinate transforms)?
         if meta_yaml:
@@ -108,7 +125,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         da = xr.DataArray(var, name=name)
         return da
 
-    def load_pfb_from_meta(self, var_meta, component=None):
+    def load_pfb_from_meta(self, var_meta, component=None, parallel=False):
         """
         Load a pfb file or set of pfb files from the metadata
 
@@ -132,7 +149,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 time_idx = np.arange(*var_meta['data'][0]['time-range'])
                 pad, fmt = file_template.split('.')[-2:]
                 basename = '.'.join(file_template.split('.')[:-2])
-                all_files = sorted([f'{basename}.{pad%n}.{fmt}' for n in time_idx])
+                all_files = [f'{basename}.{pad%n}.{fmt}' for n in time_idx]
             elif pfb_type == 'pfb 2d timeseries':
                 time_start = np.arange(*var_meta['data'][0]['times-between'])
                 time_end = time_start + var_meta['data'][0]['times-between'][-1] - 1
@@ -145,18 +162,26 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             # Check if basname contains any of the files if not,
             # fall back to `self.base_dir` from the pfmetadata file
             if not os.path.exists(all_files[0]):
-                all_files = sorted([f'{self.base_dir}/{af}' for af in all_files])
+                all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
             # Put it all together
             # NOTE: This will have to be changed to support lazy loading/indexing
             # See here for discussion: https://github.com/pydata/xarray/issues/4628
             base_da = xr.open_mfdataset(
-                    all_files, concat_dim='time', combine='nested')['parflow_variable']
+                    all_files,
+                    engine='parflow',
+                    concat_dim='time',
+                    combine='nested',
+                    decode_cf=False,
+                    #coords='minimal',
+                    #compat='override',
+                    #parallel=parallel
+                    )['parflow_variable']
 
             if pfb_type == 'pfb 2d timeseries':
                 base_da = (base_da.rename({'time':'junk'})
-                                  .stack(time=['junk', 'z']))
-                base_da = base_da.assign_coords({'time': np.arange(len(base_da['time']))})
+                                  .stack(time=['junk', 'z'])
+                                  .drop('time'))
 
         elif component:
             for sub_dict in var_meta['data']:
@@ -249,10 +274,10 @@ class ParflowBackendArray(BackendArray):
             pfd = PFData(self.filename_or_obj)
             stat = pfd.loadHeader()
             assert stat == 0, 'Failed to load header in ParflowBackendArray!'
-            accessor_mapping = {'x': pfd.getNX(),
-                                'y': pfd.getNY(),
-                                'z': pfd.getNZ() }
-            self._shape = [accessor_mapping[d] for d in self.dims]
+            accessor_mapping = {'x': pfd.getNX,
+                                'y': pfd.getNY,
+                                'z': pfd.getNZ}
+            self._shape = [accessor_mapping[d]() for d in self.dims]
             pfd.close()
         return self._shape
 
