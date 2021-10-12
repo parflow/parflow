@@ -150,8 +150,8 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             # Put it all together
             # NOTE: This will have to be changed to support lazy loading/indexing
             # See here for discussion: https://github.com/pydata/xarray/issues/4628
-            base_da = xr.concat([self.load_single_pfb(f) for f in all_files],
-                                dim='time', coords='minimal',  compat='override')
+            base_da = xr.open_mfdataset(
+                    all_files, concat_dim='time', combine='nested')['parflow_variable']
 
             if pfb_type == 'pfb 2d timeseries':
                 base_da = (base_da.rename({'time':'junk'})

@@ -28,10 +28,10 @@ the functionality to read Parflow data with:
 import xarray as xr
 
 # Read a single 'pfb' file
-da = xr.open_dataarray(path_to_pfb, engine='parflow', name=varname)
+da = xr.open_dataarray(path_to_pfb, name=varname)
 
 # Read several 'pfb' files given a 'pfmetadata' file
-ds = xr.open_dataset(path_to_pfmetadata, engine='parflow')
+ds = xr.open_dataset(path_to_pfmetadata)
 ```
 
 ## Writing data
