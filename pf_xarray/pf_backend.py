@@ -24,7 +24,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             "meta_yaml",
             "read_inputs",
             "read_outputs",
-            "parallel"
+            "parallel",
+            "inferred_dims",
+            "inferred_shape"
     ]
 
     def open_dataset(
@@ -38,11 +40,17 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         read_inputs=True,
         read_outputs=True,
         parallel=False,
+        inferred_dims=None,
+        inferred_shape=None,
     ):
         filetype = self.is_meta_or_pfb(filename_or_obj)
         if filetype == 'pfb':
             # Reads a single pfb
-            da = self.load_single_pfb(filename_or_obj, name=name)
+            da = self.load_single_pfb(
+                    filename_or_obj,
+                    name=name,
+                    dims=inferred_dims,
+                    shape=inferred_shape)
             ds = da.to_dataset()
         elif filetype == 'pfmetadata':
             # Reads full simulation input/output from pfmetadata
@@ -111,15 +119,31 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             self.meta_yaml = yaml.load(f)
         raise NotImplementedError('')
 
+    def _infer_dims_and_shape(self, file, type, time_idx=None):
+        # TODO: Figure out how to use this
+        pfd = self.load_single_pfb(file).to_dataset()
+        dims = list(pfd.dims.keys())
+        shape = list(pfd.dims.values())
+        #if type == 'pfb':
+        #    if time_idx:
+        #        # Time goes first in this case
+        #        dims = ['time'] + dims
+        #elif type == 'pfb 2d timeseries':
+        #    # Time goes last in this case
+        #    dims = [d for d in dims if d != 'z'] + ['time']
+        return dims, shape
+
     def load_single_pfb(
             self,
             filename_or_obj,
             name='parflow_variable',
+            dims=None,
+            shape=None
     ) -> xr.DataArray:
         """
         Load a `pfb` file directly as an xr.DataArray
         """
-        backend_array = ParflowBackendArray(filename_or_obj)
+        backend_array = ParflowBackendArray(filename_or_obj, dims=dims, shape=shape)
         data = indexing.LazilyIndexedArray(backend_array)
         var = xr.Variable(backend_array.dims, data)
         da = xr.DataArray(var, name=name)
@@ -145,19 +169,23 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             #       It is a list with a single dictionary inside - check if this
             #       is always the case
             file_template = var_meta['data'][0]['file-series']
+            n_time = 0
             if pfb_type == 'pfb':
                 time_idx = np.arange(*var_meta['data'][0]['time-range'])
+                n_time = time_idx[-1]
                 pad, fmt = file_template.split('.')[-2:]
                 basename = '.'.join(file_template.split('.')[:-2])
                 all_files = [f'{basename}.{pad%n}.{fmt}' for n in time_idx]
             elif pfb_type == 'pfb 2d timeseries':
                 time_start = np.arange(*var_meta['data'][0]['times-between'])
                 time_end = time_start + var_meta['data'][0]['times-between'][-1] - 1
+                ntime = time_end[-1]
                 file_template = var_meta['data'][0]['file-series']
                 pad, fmt = file_template.split('.')[-2:]
                 basename = '.'.join(file_template.split('.')[:-2])
                 all_files = [f'{basename}.{pad%(s,e)}.{fmt}'
                              for s, e in zip(time_start, time_end)]
+
 
             # Check if basname contains any of the files if not,
             # fall back to `self.base_dir` from the pfmetadata file
@@ -167,12 +195,15 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             # Put it all together
             # NOTE: This will have to be changed to support lazy loading/indexing
             # See here for discussion: https://github.com/pydata/xarray/issues/4628
+            inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0], pfb_type, n_time)
             base_da = xr.open_mfdataset(
                     all_files,
                     engine='parflow',
                     concat_dim='time',
                     combine='nested',
                     decode_cf=False,
+                    inferred_dims=inf_dims,
+                    inferred_shape=inf_shape,
                     #coords='minimal',
                     #compat='override',
                     #parallel=parallel
@@ -227,15 +258,15 @@ class ParflowBackendArray(BackendArray):
     the higher level code.
     """
 
-    def __init__(self, filename_or_obj, lock=None):
+    def __init__(self, filename_or_obj, lock=None, dims=None, shape=None):
         if lock in (True, None):
             lock = PARFLOW_LOCK
         elif lock is False:
             lock = NO_LOCK
         self.lock = lock
         self.filename_or_obj = filename_or_obj
-        self._shape = None
-        self._dims = None
+        self._shape = shape
+        self._dims = dims
 
     def __getitem__(
             self, key: xr.core.indexing.ExplicitIndexer
@@ -261,6 +292,7 @@ class ParflowBackendArray(BackendArray):
     @property
     def dims(self):
         if self._dims is None:
+            print('needed to hit disk')
             pfd = PFData(self.filename_or_obj)
             stat = pfd.loadHeader()
             assert stat == 0, 'Failed to load header in ParflowBackendArray!'
