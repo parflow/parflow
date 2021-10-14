@@ -138,6 +138,8 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         elif lock is False:
             lock = NO_LOCK
         manager = CachingFileManager(ParflowData, filename_or_obj)
+        if not dims:
+            dims = ('z', 'y', 'x')
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(manager, lock=lock, dims=dims, shape=shape))
         var = xr.Variable(dims, data)
@@ -308,6 +310,7 @@ class ParflowBackendArray(BackendArray):
             stat = f.pfd.loadData()
             assert stat == 0, 'Failed to load data in ParflowBackendArray!'
             sub = f.pfd.copyDataArray()[key]
+            f.pfd.unloadData()
             return sub
 
     @property
