@@ -8,7 +8,7 @@ import yaml
 
 from parflow.tools import hydrology
 from parflowio.pyParflowio import PFData
-from xarray.backends  import BackendEntrypoint, BackendArray
+from xarray.backends  import BackendEntrypoint, BackendArray, CachingFileManager
 from xarray.backends.locks import SerializableLock
 from xarray.core import indexing
 
@@ -48,7 +48,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             # Reads a single pfb
             data = self.load_single_pfb(
                       filename_or_obj,
-                      name=name,
                       dims=inferred_dims,
                       shape=inferred_shape)
             ds = xr.DataArray(data, name=name).to_dataset()
@@ -92,11 +91,8 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
         if isinstance(filename_or_obj, str):
             try:
-                pfd = PFData(filename_or_obj)
-                stat = pfd.loadHeader()
-                assert stat == 0
-                pfd.close()
-                del pfd
+                f = ParflowData(filename_or_obj)
+                f.close()
                 return 'pfb'
             except AssertionError:
                 with open(filename_or_obj, 'r') as f:
@@ -124,22 +120,27 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         pfd = xr.DataArray(self.load_single_pfb(file), name='_').to_dataset()
         dims = list(pfd.dims.keys())
         shape = list(pfd.dims.values())
+        del pfd
         return dims, shape
 
     def load_single_pfb(
             self,
             filename_or_obj,
-            name='parflow_variable',
+            lock=None,
             dims=None,
             shape=None
     ) -> xr.DataArray:
         """
         Load a `pfb` file directly as an xr.DataArray
         """
-        backend_array = ParflowBackendArray(filename_or_obj, dims=dims, shape=shape)
-        data = indexing.LazilyIndexedArray(backend_array)
-        var = xr.Variable(backend_array.dims, data)
-        #da = xr.DataArray(var, name=name)
+        if lock in (True, None):
+            lock = PARFLOW_LOCK
+        elif lock is False:
+            lock = NO_LOCK
+        manager = CachingFileManager(ParflowData, filename_or_obj)
+        data = indexing.LazilyIndexedArray(
+            ParflowBackendArray(manager, lock=lock, dims=dims, shape=shape))
+        var = xr.Variable(dims, data)
         return var
 
     def load_pfb_from_meta(self, var_meta, component=None, parallel=False):
@@ -196,9 +197,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                     decode_cf=False,
                     inferred_dims=inf_dims,
                     inferred_shape=inf_shape,
-                    #coords='minimal',
-                    #compat='override',
-                    #parallel=parallel
                     )['parflow_variable']
 
             if pfb_type == 'pfb 2d timeseries':
@@ -234,6 +232,39 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         return False
 
 
+class ParflowData:
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.pfd = PFData(self.filename)
+        stat = self.pfd.loadHeader()
+        assert stat == 0, 'Failed to load header in ParflowData!'
+        self.dims = self.get_dims()
+        self.shape = self.get_shape()
+
+    def __enter__(self):
+        return self.pfd
+
+    def __exit__(self):
+        self.pfd.unloadData()
+        self.pfd.close()
+        del self.pfd
+
+    def close(self):
+        self.pfd.unloadData()
+        self.pfd.close()
+        del self.pfd
+
+    def get_dims(self):
+        return list(self.pfd.getIndexOrder())
+
+    def get_shape(self):
+        accessor_mapping = {'x': self.pfd.getNX,
+                            'y': self.pfd.getNY,
+                            'z': self.pfd.getNZ}
+        return  [accessor_mapping[d]() for d in self.get_dims()]
+
+
 class ParflowBackendArray(BackendArray):
     """
     This is a note to myself: ParflowBackendArray's are
@@ -249,13 +280,15 @@ class ParflowBackendArray(BackendArray):
     the higher level code.
     """
 
-    def __init__(self, filename_or_obj, lock=None, dims=None, shape=None):
-        if lock in (True, None):
-            lock = PARFLOW_LOCK
-        elif lock is False:
-            lock = NO_LOCK
+    def __init__(
+         self,
+         manager,
+         lock,
+         dims=None,
+         shape=None
+    ):
+        self.manager = manager
         self.lock = lock
-        self.filename_or_obj = filename_or_obj
         self._shape = shape
         self._dims = dims
 
@@ -265,58 +298,28 @@ class ParflowBackendArray(BackendArray):
         return indexing.explicit_indexing_adapter(
             key,
             self.shape,
-            indexing.IndexingSupport.BASIC,
+            indexing.IndexingSupport.OUTER,
             self._raw_indexing_method,
         )
 
     def _raw_indexing_method(self, key: tuple) -> np.typing.ArrayLike:
         with self.lock:
-            pfd = PFData(self.filename_or_obj)
-            stat = pfd.loadHeader()
-            assert stat == 0, 'Failed to load header in ParflowBackendArray!'
-            stat = pfd.loadData()
+            f = self.manager.acquire(needs_lock=False)
+            stat = f.pfd.loadData()
             assert stat == 0, 'Failed to load data in ParflowBackendArray!'
-            sub = pfd.copyDataArray()[key]
-            pfd.close()
-            del pfd
+            sub = f.pfd.copyDataArray()[key]
             return sub
-
-    def _is_all_none_slices(self, key: tuple) -> bool:
-        for k in key:
-            all_none_slices = True
-            if isinstance(k, slice):
-                all_none = np.all([s is None for s in (k.start, k.stop, k.step)])
-            else:
-                all_none_slices = False
-                break
-            if not all_none:
-                all_none_slices = False
-                break
-        return all_none_slices
 
     @property
     def dims(self):
         if self._dims is None:
-            pfd = PFData(self.filename_or_obj)
-            stat = pfd.loadHeader()
-            assert stat == 0, 'Failed to load header in ParflowBackendArray!'
-            self._dims = list(pfd.getIndexOrder())
-            pfd.close()
-            del pfd
+            self._dims = self.manager.acquire().dims
         return self._dims
 
     @property
     def shape(self):
         if self._shape is None:
-            pfd = PFData(self.filename_or_obj)
-            stat = pfd.loadHeader()
-            assert stat == 0, 'Failed to load header in ParflowBackendArray!'
-            accessor_mapping = {'x': pfd.getNX,
-                                'y': pfd.getNY,
-                                'z': pfd.getNZ}
-            self._shape = [accessor_mapping[d]() for d in self.dims]
-            pfd.close()
-            del pfd
+            self._shape = self.manager.acquire().shape
         return self._shape
 
     @property
