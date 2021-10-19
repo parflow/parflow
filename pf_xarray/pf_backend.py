@@ -129,7 +129,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
     def _infer_dims_and_shape(self, file):
         # TODO: Figure out how to use this
-        pfd = xr.DataArray(self.load_single_pfb(file), name='_').to_dataset()
+        pfd = xr.Dataset({'_': self.load_single_pfb(file)})
         dims = list(pfd.dims.keys())
         shape = list(pfd.dims.values())
         del pfd
