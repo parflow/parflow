@@ -246,10 +246,26 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
 @delayed
 def _getitem_no_state(filename, key):
+    z_key, y_key, x_key = key
     pfd = PFData(filename)
-    sub = np.copy(pfd.xCopyDataArray())[key]
+    sub = np.copy(pfd.xCopyClipOfDataArray(
+        x_key.start,
+        y_key.start,
+        x_key.stop,
+        y_key.stop
+    ))[z_key, ::y_key.step, ::x_key.step]
     pfd.close()
     return sub
+
+
+def _check_key_is_empty(key):
+    for k in key:
+        all_none = np.all([k.start is None,
+                           k.stop is None,
+                           k.step is None])
+        if all_none:
+            return True
+    return False
 
 
 class ParflowData:
@@ -269,16 +285,30 @@ class ParflowData:
         return 0
 
     def getitem(self, key):
-        sub = delayed(_getitem_no_state)(self.filename, key)
         size = self._size_from_key(key)
+        key = self._explicit_indices_from_keys(size, key)
+        sub = delayed(_getitem_no_state)(self.filename, key)
         sub = dask.array.from_delayed(sub, size, dtype=np.float64)
         return sub
+
+    def _explicit_indices_from_keys(self, size , key):
+        ret_key = []
+        for dim_size, dim_key in zip(size, key):
+            if isinstance(dim_key, slice):
+                start = dim_key.start if dim_key.start is not None else 0
+                stop = dim_key.stop if dim_key.stop is not None else dim_size
+                step = dim_key.step if dim_key.step is not None else 1
+                ret_key.append(slice(start, stop, step))
+            else:
+                # Do nothing here
+                ret_key.append(dim_key)
+        return tuple(ret_key)
 
     def _size_from_key(self, key):
         ret_size = []
         for i, k in enumerate(key):
             if isinstance(k, slice):
-                if self._check_key_is_empty([k]):
+                if _check_key_is_empty([k]):
                     ret_size.append(self.shape[i])
                 else:
                     ret_size.append(len(np.arange(k.start, k.stop, k.step)))
@@ -287,15 +317,6 @@ class ParflowData:
             else:
                 ret_size.append(1)
         return ret_size
-
-    def _check_key_is_empty(self, key):
-        for k in key:
-            all_none = np.all([k.start is None,
-                               k.stop is None,
-                               k.step is None])
-            if all_none:
-                return True
-        return False
 
     def get_dims(self):
         pfd = self._open_file()
