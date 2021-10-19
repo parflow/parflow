@@ -1,4 +1,9 @@
+#delete
+import time
+#delete
+
 import contextlib
+import dask
 import json
 import numpy as np
 import os
@@ -6,6 +11,8 @@ import warnings
 import xarray as xr
 import yaml
 
+from collections.abc import Iterable
+from dask import delayed
 from parflow.tools import hydrology
 from parflowio.pyParflowio import PFData
 from xarray.backends  import BackendEntrypoint, BackendArray, CachingFileManager
@@ -50,7 +57,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                       filename_or_obj,
                       dims=inferred_dims,
                       shape=inferred_shape)
-            ds = xr.DataArray(data, name=name).to_dataset()
+            ds = xr.Dataset({name: data})
         elif filetype == 'pfmetadata':
             # Reads full simulation input/output from pfmetadata
             if base_dir:
@@ -91,10 +98,15 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
         if isinstance(filename_or_obj, str):
             try:
-                f = ParflowData(filename_or_obj)
-                f.close()
+                pfd = PFData(filename_or_obj)
+                s = pfd.loadHeader()
+                assert s == 0
+                s = pfd.loadClipOfData(0,0,1,1)
+                assert s == 0
+                pfd.close()
                 return 'pfb'
             except AssertionError:
+                pfd.close()
                 with open(filename_or_obj, 'r') as f:
                     pf_meta = json.load(f)
                     _check_dict_is_valid_meta(pf_meta)
@@ -182,24 +194,22 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 all_files = [f'{basename}.{pad%(s,e)}.{fmt}'
                              for s, e in zip(time_start, time_end)]
 
-            # Check if basname contains any of the files if not,
+            # Check if basename contains any of the files if not,
             # fall back to `self.base_dir` from the pfmetadata file
             if not os.path.exists(all_files[0]):
                 all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
             # Put it all together
-            # NOTE: This will have to be changed to support lazy loading/indexing
-            # See here for discussion: https://github.com/pydata/xarray/issues/4628
             inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
             base_da = xr.open_mfdataset(
-                    all_files,
-                    engine='parflow',
-                    concat_dim='time',
-                    combine='nested',
-                    decode_cf=False,
-                    inferred_dims=inf_dims,
-                    inferred_shape=inf_shape,
-                    )['parflow_variable']
+                          all_files,
+                          engine='parflow',
+                          concat_dim='time',
+                          combine='nested',
+                          decode_cf=False,
+                          inferred_dims=inf_dims,
+                          inferred_shape=inf_shape,
+                      )['parflow_variable']
 
             if pfb_type == 'pfb 2d timeseries':
                 base_da = (base_da.rename({'time':'junk'})
@@ -234,37 +244,76 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         return False
 
 
+@delayed
+def _getitem_no_state(filename, key):
+    pfd = PFData(filename)
+    sub = np.copy(pfd.xCopyDataArray())[key]
+    pfd.close()
+    return sub
+
+
 class ParflowData:
 
     def __init__(self, filename):
         self.filename = filename
-        self.pfd = PFData(self.filename)
-        stat = self.pfd.loadHeader()
-        assert stat == 0, 'Failed to load header in ParflowData!'
         self.dims = self.get_dims()
         self.shape = self.get_shape()
 
-    def __enter__(self):
-        return self.pfd
-
-    def __exit__(self):
-        self.pfd.unloadData()
-        self.pfd.close()
-        del self.pfd
+    def _open_file(self):
+        pfd = PFData(self.filename)
+        stat = pfd.loadHeader()
+        assert stat == 0, 'Failed to load header in ParflowData!'
+        return pfd
 
     def close(self):
-        self.pfd.unloadData()
-        self.pfd.close()
-        del self.pfd
+        return 0
+
+    def getitem(self, key):
+        sub = delayed(_getitem_no_state)(self.filename, key)
+        size = self._size_from_key(key)
+        sub = dask.array.from_delayed(sub, size, dtype=np.float64)
+        return sub
+
+    def _size_from_key(self, key):
+        ret_size = []
+        for i, k in enumerate(key):
+            if isinstance(k, slice):
+                if self._check_key_is_empty([k]):
+                    ret_size.append(self.shape[i])
+                else:
+                    ret_size.append(len(np.arange(k.start, k.stop, k.step)))
+            elif isinstance(k, Iterable):
+                ret_size.append(len(k))
+            else:
+                ret_size.append(1)
+        return ret_size
+
+    def _check_key_is_empty(self, key):
+        for k in key:
+            all_none = np.all([k.start is None,
+                               k.stop is None,
+                               k.step is None])
+            if all_none:
+                return True
+        return False
 
     def get_dims(self):
-        return list(self.pfd.getIndexOrder())
+        pfd = self._open_file()
+        dims = list(pfd.getIndexOrder())
+        pfd.close()
+        del pfd
+        return dims
 
     def get_shape(self):
-        accessor_mapping = {'x': self.pfd.getNX,
-                            'y': self.pfd.getNY,
-                            'z': self.pfd.getNZ}
-        return  [accessor_mapping[d]() for d in self.get_dims()]
+        pfd = self._open_file()
+        accessor_mapping = {'x': pfd.getNX,
+                            'y': pfd.getNY,
+                            'z': pfd.getNZ}
+        base_shape = [accessor_mapping[d]() for d in self.get_dims()]
+        pfd.close()
+        del pfd
+        # Add some logic for automatically squeezing here?
+        return base_shape
 
 
 class ParflowBackendArray(BackendArray):
@@ -300,29 +349,28 @@ class ParflowBackendArray(BackendArray):
         return indexing.explicit_indexing_adapter(
             key,
             self.shape,
-            indexing.IndexingSupport.OUTER,
-            self._raw_indexing_method,
+            indexing.IndexingSupport.BASIC,
+            self._getitem,
         )
 
-    def _raw_indexing_method(self, key: tuple) -> np.typing.ArrayLike:
+    def _getitem(self, key: tuple) -> np.typing.ArrayLike:
         with self.lock:
             f = self.manager.acquire(needs_lock=False)
-            stat = f.pfd.loadData()
-            assert stat == 0, 'Failed to load data in ParflowBackendArray!'
-            sub = f.pfd.copyDataArray()[key]
-            f.pfd.unloadData()
+            sub = f.getitem(key)
             return sub
 
     @property
     def dims(self):
-        if self._dims is None:
-            self._dims = self.manager.acquire().dims
+        with self.lock:
+            if self._dims is None:
+                self._dims = self.manager.acquire(needs_lock=False).dims
         return self._dims
 
     @property
     def shape(self):
-        if self._shape is None:
-            self._shape = self.manager.acquire().shape
+        with self.lock:
+            if self._shape is None:
+                self._shape = self.manager.acquire(needs_lock=False).shape
         return self._shape
 
     @property
