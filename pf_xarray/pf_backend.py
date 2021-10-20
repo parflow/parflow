@@ -1,7 +1,3 @@
-#delete
-import time
-#delete
-
 import contextlib
 import dask
 import json
@@ -250,16 +246,11 @@ def _getitem_no_state(filename, key):
     accessor = {d: _key_to_explicit_accessor(k)
                 for d, k in zip(['z','y','x'], key)}
     pfd = PFData(filename)
-    pprint(accessor)
-    pprint([accessor['x']['start'],
-           accessor['y']['start'],
-           accessor['x']['stop'],
-           accessor['y']['stop']])
     sub = np.copy(pfd.xCopyClipOfDataArray(
-        accessor['x']['start'],
-        accessor['y']['start'],
-        accessor['x']['stop'],
-        accessor['y']['stop'],
+        int(accessor['x']['start']),
+        int(accessor['y']['start']),
+        int(accessor['x']['stop']),
+        int(accessor['y']['stop']),
     ))[
         accessor['z']['indices'],
         accessor['y']['indices'],
@@ -295,7 +286,7 @@ def _key_to_explicit_accessor(key):
     elif isinstance(key, Iterable):
         return {
             'start': np.min(key),
-            'stop': np.max(key),
+            'stop': np.max(key)+1,
             'indices': key - np.min(key)
         }
 
