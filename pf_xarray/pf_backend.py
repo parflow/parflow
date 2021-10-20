@@ -243,17 +243,28 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 return True
         return False
 
+from pprint import pprint
 
 @delayed
 def _getitem_no_state(filename, key):
-    z_key, y_key, x_key = key
+    accessor = {d: _key_to_explicit_accessor(k)
+                for d, k in zip(['z','y','x'], key)}
     pfd = PFData(filename)
+    pprint(accessor)
+    pprint([accessor['x']['start'],
+           accessor['y']['start'],
+           accessor['x']['stop'],
+           accessor['y']['stop']])
     sub = np.copy(pfd.xCopyClipOfDataArray(
-        x_key.start,
-        y_key.start,
-        x_key.stop,
-        y_key.stop
-    ))[z_key, ::y_key.step, ::x_key.step]
+        accessor['x']['start'],
+        accessor['y']['start'],
+        accessor['x']['stop'],
+        accessor['y']['stop'],
+    ))[
+        accessor['z']['indices'],
+        accessor['y']['indices'],
+        accessor['x']['indices']
+    ]
     pfd.close()
     return sub
 
@@ -266,6 +277,27 @@ def _check_key_is_empty(key):
         if all_none:
             return True
     return False
+
+
+def _key_to_explicit_accessor(key):
+    if isinstance(key, slice):
+        return {
+            'start': key.start,
+            'stop': key.stop,
+            'indices': slice(None, None, key.step)
+        }
+    elif isinstance(key, int):
+        return {
+            'start': key,
+            'stop': key+1,
+            'indices': [0]
+        }
+    elif isinstance(key, Iterable):
+        return {
+            'start': np.min(key),
+            'stop': np.max(key),
+            'indices': key - np.min(key)
+        }
 
 
 class ParflowData:
@@ -370,7 +402,7 @@ class ParflowBackendArray(BackendArray):
         return indexing.explicit_indexing_adapter(
             key,
             self.shape,
-            indexing.IndexingSupport.BASIC,
+            indexing.IndexingSupport.OUTER,
             self._getitem,
         )
 
