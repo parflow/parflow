@@ -45,6 +45,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         parallel=False,
         inferred_dims=None,
         inferred_shape=None,
+        chunks=None,
     ):
         filetype = self.is_meta_or_pfb(filename_or_obj)
         if filetype == 'pfb':
@@ -53,7 +54,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                       filename_or_obj,
                       dims=inferred_dims,
                       shape=inferred_shape)
-            ds = xr.Dataset({name: data})
+            ds = xr.Dataset({name: data}).chunk(chunks)
         elif filetype == 'pfmetadata':
             # Reads full simulation input/output from pfmetadata
             if base_dir:
@@ -200,17 +201,14 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             base_da = xr.open_mfdataset(
                           all_files,
                           engine='parflow',
-                          concat_dim='time',
+                          concat_dim='z',
                           combine='nested',
                           decode_cf=False,
                           inferred_dims=inf_dims,
                           inferred_shape=inf_shape,
                       )['parflow_variable']
-
             if pfb_type == 'pfb 2d timeseries':
-                base_da = (base_da.rename({'time':'junk'})
-                                  .stack(time=['junk', 'z'])
-                                  .drop('time'))
+                base_da = base_da.rename({'z':'time'})
 
         elif component:
             for sub_dict in var_meta['data']:
@@ -239,7 +237,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 return True
         return False
 
-from pprint import pprint
 
 @delayed
 def _getitem_no_state(filename, key):
