@@ -60,6 +60,11 @@ Back   +Y
 Each mask file should be the same dimensions in X and Y and have
 number of points in Z = 1.
 
+Note that the axis alignment is based on the standard PF axis
+alignment used inside the code and in PF file formats.  Other file
+formats, such as the ASC format, use different alignments.  In the
+ASC format the Y axis is inverted.
+
 #### Setting Top/Bottom of domain
 
 The mask file is typically coming from a 2D file so does not have any
@@ -67,7 +72,18 @@ depth information.  By default the top is 1000.0 and bottom is 0.0.  The
 top and bottom can be set using the "--z-top" and "--z-bottom" flags:
 
 ```shell
-pfmask-to-pfsol --z-top 200.0 --z-bottom 10.0
+pfmask-to-pfsol --z-top 200.0 --z-bottom 10.0 <other args>
+```
+
+#### Setting DX/DY
+
+The simple PF file formats do not include DX/DY/DZ information, this
+information may be set using the top, bottom, dx, and dy flags.  The
+dx/dy flags have priority over information coming from from the input
+file (such as the cellsize value from an ASC file).
+
+```shell
+pfmask-to-pfsol --z-top 200.0 --z-bottom 10.0 --dy 1.0 --dx 1.0 <other args>
 ```
 
 ### Mask ASC file format
