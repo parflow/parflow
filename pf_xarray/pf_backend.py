@@ -45,9 +45,10 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         parallel=False,
         inferred_dims=None,
         inferred_shape=None,
-        chunks=None,
+        chunks={},
+        strict_ext_check=True,
     ):
-        filetype = self.is_meta_or_pfb(filename_or_obj)
+        filetype = self.is_meta_or_pfb(filename_or_obj, strict=strict_ext_check)
         if filetype == 'pfb':
             # Reads a single pfb
             data = self.load_single_pfb(
@@ -86,19 +87,22 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             meta = self.process_meta(ds, yaml)
         return ds
 
-    def is_meta_or_pfb(self, filename_or_obj):
+    def is_meta_or_pfb(self, filename_or_obj, strict=True):
 
         def _check_dict_is_valid_meta(meta):
             assert 'parflow' in meta.keys(), \
                 ('Metadata file missing "parflow" key - ',
                  'are you sure this is a valid Parflow metadata file?')
+        if not strict:
+            ext = filename_or_obj.split('.')[-1]
+            return ext
 
         if isinstance(filename_or_obj, str):
             try:
                 pfd = PFData(filename_or_obj)
                 s = pfd.loadHeader()
                 assert s == 0
-                s = pfd.loadClipOfData(0,0,1,1)
+                s = pfd.loadClipOfData(0,0,0,0)
                 assert s == 0
                 pfd.close()
                 return 'pfb'
@@ -176,12 +180,14 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             file_template = var_meta['data'][0]['file-series']
             n_time = 0
             if pfb_type == 'pfb':
+                concat_dim = 'time'
                 time_idx = np.arange(*var_meta['data'][0]['time-range'])
                 n_time = time_idx[-1]
                 pad, fmt = file_template.split('.')[-2:]
                 basename = '.'.join(file_template.split('.')[:-2])
                 all_files = [f'{basename}.{pad%n}.{fmt}' for n in time_idx]
             elif pfb_type == 'pfb 2d timeseries':
+                concat_dim = 'z' # z is time here
                 time_start = np.arange(*var_meta['data'][0]['times-between'])
                 time_end = time_start + var_meta['data'][0]['times-between'][-1] - 1
                 ntime = time_end[-1]
@@ -201,11 +207,12 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             base_da = xr.open_mfdataset(
                           all_files,
                           engine='parflow',
-                          concat_dim='z',
+                          concat_dim=concat_dim,
                           combine='nested',
                           decode_cf=False,
                           inferred_dims=inf_dims,
                           inferred_shape=inf_shape,
+                          strict_ext_check=False,
                       )['parflow_variable']
             if pfb_type == 'pfb 2d timeseries':
                 base_da = base_da.rename({'z':'time'})
