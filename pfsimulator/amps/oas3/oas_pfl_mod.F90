@@ -190,8 +190,8 @@ contains
     integer                     :: isecs                              ! Parflow model time in seconds
     integer                     :: j_incr, k_incr                     ! convert 1D vector to 3D i,j,k array
     integer, allocatable        :: counter(:,:),                    & !
-                                   topo_mask(:,:),                  & ! Mask for active parflow cells
-                                   et_rcv(:,:,:)                      ! ET fluxes from eCLM
+                                   topo_mask(:,:)                     ! Mask for active parflow cells
+    real(kind=8), allocatable   :: et_rcv(:,:,:)                      ! ET fluxes from eCLM
 
     isecs= nint(pstep*3600.d0)
     j_incr = nx_f
