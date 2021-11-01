@@ -1,8 +1,8 @@
-import dask.array as da
 import itertools
 from numba import jit
 import numpy as np
 import struct
+
 
 def read_pfb(file, mode='full'):
     pfb = ParflowBinary(file)
@@ -144,7 +144,7 @@ class ParflowBinary:
         denoted by the 'x' marks.
         """
         if not nz:
-            nz= self.header['nz']
+            nz = self.header['nz']
         end_x = start_x + nx
         end_y = start_y + ny
         end_z = start_z + nz
@@ -166,14 +166,67 @@ class ParflowBinary:
         for r_end, zc in enumerate(self.coords['z']):
             if end_z in zc: break
 
+        print(p_start, p_end)
+        print(q_start, q_end)
+        print(r_start, r_end)
+
+        # Mind the strides here
         p_subgrids = np.arange(p_start, p_end+1, 1)
         q_subgrids = np.arange(q_start, (q_end+1) * p, p)
         r_subgrids = np.arange(r_start, (r_end+1) * p * q, p * q)
-        for (xsg, ysg, zsg) in itertools.product(p_subgrids, q_subgrids, r_subgrids):
-            sg_idx = self.loc_subgrid(xsg, ysg, zsg)
+        print(p_subgrids)
+        print(q_subgrids)
+        print(r_subgrids)
 
-        #TODO: Read all of these subgrids, figure out the padding and return the array
-        raise NotImplementedError('Coming soon!')
+        # Determine the coordinates of these subgrids
+        x_coords = np.array(self.coords['x'], dtype=object)[p_subgrids]
+        y_coords = np.array(self.coords['y'], dtype=object)[q_subgrids % p]
+        z_coords = np.array(self.coords['z'], dtype=object)[r_subgrids % (p * q)]
+        #print(x_coords)
+        print(np.unique(np.hstack(y_coords)))
+        #print(z_coords)
+
+        # Min values will be used to align in the bounding data
+        x_min = np.min(np.hstack(x_coords))
+        y_min = np.min(np.hstack(y_coords))
+        z_min = np.min(np.hstack(z_coords))
+
+        # Make an array which can fit all of the subgrids
+        #x_size_full = np.sum(self.subgrid_shapes[p_subgrids][:, 0])
+        #y_size_full = np.sum(self.subgrid_shapes[q_subgrids][:, 1])
+        #z_size_full = np.sum(self.subgrid_shapes[r_subgrids][:, 2])
+        x_size_full = len(np.unique(np.hstack(x_coords)))
+        y_size_full = len(np.unique(np.hstack(y_coords)))
+        z_size_full = len(np.unique(np.hstack(z_coords)))
+
+        bounding_data = np.empty((x_size_full, y_size_full, z_size_full), dtype=np.float64)
+        print('full_data size is : ', bounding_data.shape)
+        print()
+        subgrid_data = []
+        ix, iy, iz = 0, 0, 0
+        subgrid_iter = itertools.product(p_subgrids, q_subgrids, r_subgrids)
+        print('-------------------------------------------------------------------------')
+        for (xsg, ysg, zsg) in subgrid_iter:
+            i = xsg + ysg + zsg
+            xcrd = self.coords['x'][xsg]
+            ycrd = self.coords['y'][ysg % p]
+            zcrd = self.coords['z'][zsg % (p*q)]
+            print('Starting subgrid : ', xsg, ysg, zsg, ' - index is :', i)
+            print('Size is : ', len(xcrd), len(ycrd), len(zcrd))
+            x0, y0, z0 = self.subgrid_start_indices[i]
+            dx, dy, dz = self.subgrid_shapes[i]
+            #x0 -= x_min
+            #y0 -= y_min
+            #z0 -= z_min
+            x1, y1, z1 = x0 + dx, y0 + dy, z0+ dz
+            print(x0, y0, z0)
+            print(x1, y1, z1)
+            #x0, x1 = xcrd[[0, -1]] - x_min
+            #y0, y1 = ycrd[[0, -1]] - y_min
+            #z0, z1 = zcrd[[0, -1]] - z_min
+            bounding_data[x0:x1+1, y0:y1+1, z0:z1+1] = self.iloc_subgrid(i)
+        return bounding_data
+
 
     def loc_subgrid(self, pp, qq, rr):
         p, q, r = self.header['p'], self.header['q'], self.header['r']
@@ -205,7 +258,7 @@ class ParflowBinary:
             for i in range(self.header['n_subgrids']):
                 all_data.append(self.iloc_subgrid(i))
             if mode == 'tiled':
-                tiled_shape = (self.header[dim] for dim in ['p', 'q', 'r'])
+                tiled_shape = tuple(self.header[dim] for dim in ['p', 'q', 'r'])
                 all_data = np.array(all_data, dtype=object).reshape(tiled_shape)
         elif mode == 'full':
             full_shape = tuple(self.header[dim] for dim in ['nx', 'ny', 'nz'])
