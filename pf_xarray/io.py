@@ -59,6 +59,12 @@ class ParflowBinaryReader:
     def close(self):
         self.f.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.f.close()
+
     def compute_subgrid_info(self):
         sg_offs, sg_locs, sg_starts, sg_shapes = precalculate_subgrid_info(
                 self.header['nx'],
@@ -148,7 +154,7 @@ class ParflowBinaryReader:
             x0 = np.flatnonzero(start == coords)
             x0 = 0 if not x0 else x0[0]
             x1 = np.flatnonzero(end == coords)
-            x1 = -1 if not x1 else x1[0]
+            x1 = None if not x1 else x1[0]
             return slice(x0, x1)
 
         def _get_needed_subgrids(start, end, coords):

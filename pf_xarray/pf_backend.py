@@ -7,6 +7,7 @@ import warnings
 import xarray as xr
 import yaml
 
+from . import util
 from .io import ParflowBinaryReader
 from collections.abc import Iterable
 from dask import delayed
@@ -249,54 +250,22 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 @delayed
 def _getitem_no_state(filename, key):
     # TODO: Fix this so that we squeeze out dimensions
-    accessor = {d: _key_to_explicit_accessor(k)
+    accessor = {d: util._key_to_explicit_accessor(k)
                 for d, k in zip(['x','y','z'], key)}
-    pfd = ParflowBinaryReader(filename)
-    sub = pfd.read_subarray(
-        start_x=int(accessor['x']['start']),
-        start_y=int(accessor['y']['start']),
-        nx=int(accessor['x']['stop']),
-        ny=int(accessor['y']['stop']),
-    )
-
-    sub = sub[
-        accessor['x']['indices'],
-        accessor['y']['indices'],
-        accessor['z']['indices']
-    ]
-    pfd.close()
+    with ParflowBinaryReader(filename) as pfd:
+        sub = pfd.read_subarray(
+            start_x=int(accessor['x']['start']),
+            start_y=int(accessor['y']['start']),
+            start_z=int(accessor['z']['start']),
+            nx=int(accessor['x']['stop']),
+            ny=int(accessor['y']['stop']),
+            nz=int(accessor['z']['stop']),
+        )[
+            accessor['x']['indices'],
+            accessor['y']['indices'],
+            accessor['z']['indices']
+        ].squeeze()
     return sub
-
-
-def _check_key_is_empty(key):
-    for k in key:
-        all_none = np.all([k.start is None,
-                           k.stop is None,
-                           k.step is None])
-        if all_none:
-            return True
-    return False
-
-
-def _key_to_explicit_accessor(key):
-    if isinstance(key, slice):
-        return {
-            'start': key.start,
-            'stop': key.stop,
-            'indices': slice(None, None, key.step)
-        }
-    elif isinstance(key, int):
-        return {
-            'start': key,
-            'stop': key+1,
-            'indices': [0]
-        }
-    elif isinstance(key, Iterable):
-        return {
-            'start': np.min(key),
-            'stop': np.max(key)+1,
-            'indices': key - np.min(key)
-        }
 
 
 class ParflowData:
@@ -325,7 +294,7 @@ class ParflowData:
         for dim_size, dim_key in zip(size, key):
             if isinstance(dim_key, slice):
                 start = dim_key.start if dim_key.start is not None else 0
-                stop = dim_key.stop if dim_key.stop is not None else dim_size
+                stop = dim_key.stop+1 if dim_key.stop is not None else dim_size+1
                 step = dim_key.step if dim_key.step is not None else 1
                 ret_key.append(slice(start, stop, step))
             else:
@@ -337,7 +306,7 @@ class ParflowData:
         ret_size = []
         for i, k in enumerate(key):
             if isinstance(k, slice):
-                if _check_key_is_empty([k]):
+                if util._check_key_is_empty([k]):
                     ret_size.append(self.shape[i])
                 else:
                     ret_size.append(len(np.arange(k.start, k.stop, k.step)))
