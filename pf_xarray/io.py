@@ -155,77 +155,82 @@ class ParflowBinary:
             if start_x in xc: break
         for p_end, xc in enumerate(self.coords['x']):
             if end_x in xc: break
-
         for q_start, yc in enumerate(self.coords['y']):
             if start_y in yc: break
         for q_end, yc in enumerate(self.coords['y']):
             if end_y in yc: break
-
         for r_start, zc in enumerate(self.coords['z']):
             if start_z in zc: break
         for r_end, zc in enumerate(self.coords['z']):
             if end_z in zc: break
-
-        print(p_start, p_end)
-        print(q_start, q_end)
-        print(r_start, r_end)
-
-        # Mind the strides here
-        p_subgrids = np.arange(p_start, p_end+1, 1)
-        q_subgrids = np.arange(q_start, (q_end+1) * p, p)
-        r_subgrids = np.arange(r_start, (r_end+1) * p * q, p * q)
-        print(p_subgrids)
-        print(q_subgrids)
-        print(r_subgrids)
+        p_subgrids = np.arange(p_start, p_end+1)
+        q_subgrids = np.arange(q_start, q_end+1)
+        r_subgrids = np.arange(r_start, r_end+1)
 
         # Determine the coordinates of these subgrids
-        x_coords = np.array(self.coords['x'], dtype=object)[p_subgrids]
-        y_coords = np.array(self.coords['y'], dtype=object)[q_subgrids % p]
-        z_coords = np.array(self.coords['z'], dtype=object)[r_subgrids % (p * q)]
-        #print(x_coords)
-        print(np.unique(np.hstack(y_coords)))
-        #print(z_coords)
+        x_coords = np.unique(np.hstack(np.array(self.coords['x'], dtype=object)[p_subgrids]))
+        y_coords = np.unique(np.hstack(np.array(self.coords['y'], dtype=object)[q_subgrids]))
+        z_coords = np.unique(np.hstack(np.array(self.coords['z'], dtype=object)[r_subgrids]))
 
         # Min values will be used to align in the bounding data
-        x_min = np.min(np.hstack(x_coords))
-        y_min = np.min(np.hstack(y_coords))
-        z_min = np.min(np.hstack(z_coords))
-
+        x_min = np.min(x_coords)
+        y_min = np.min(y_coords)
+        z_min = np.min(z_coords)
         # Make an array which can fit all of the subgrids
-        #x_size_full = np.sum(self.subgrid_shapes[p_subgrids][:, 0])
-        #y_size_full = np.sum(self.subgrid_shapes[q_subgrids][:, 1])
-        #z_size_full = np.sum(self.subgrid_shapes[r_subgrids][:, 2])
-        x_size_full = len(np.unique(np.hstack(x_coords)))
-        y_size_full = len(np.unique(np.hstack(y_coords)))
-        z_size_full = len(np.unique(np.hstack(z_coords)))
+        x_size_full = len(x_coords)
+        y_size_full = len(y_coords)
+        z_size_full = len(z_coords)
 
         bounding_data = np.empty((x_size_full, y_size_full, z_size_full), dtype=np.float64)
-        print('full_data size is : ', bounding_data.shape)
-        print()
         subgrid_data = []
         ix, iy, iz = 0, 0, 0
         subgrid_iter = itertools.product(p_subgrids, q_subgrids, r_subgrids)
-        print('-------------------------------------------------------------------------')
         for (xsg, ysg, zsg) in subgrid_iter:
-            i = xsg + ysg + zsg
-            xcrd = self.coords['x'][xsg]
-            ycrd = self.coords['y'][ysg % p]
-            zcrd = self.coords['z'][zsg % (p*q)]
-            print('Starting subgrid : ', xsg, ysg, zsg, ' - index is :', i)
-            print('Size is : ', len(xcrd), len(ycrd), len(zcrd))
+            # Subgrid index
+            i = xsg + (p * ysg) + (p * q * zsg)
+            # Start location
             x0, y0, z0 = self.subgrid_start_indices[i]
             dx, dy, dz = self.subgrid_shapes[i]
-            #x0 -= x_min
-            #y0 -= y_min
-            #z0 -= z_min
+            # Subtract off the minimum so we can insert into bounding_data
+            x0 -= x_min
+            y0 -= y_min
+            z0 -= z_min
+            # End location
             x1, y1, z1 = x0 + dx, y0 + dy, z0+ dz
-            print(x0, y0, z0)
-            print(x1, y1, z1)
-            #x0, x1 = xcrd[[0, -1]] - x_min
-            #y0, y1 = ycrd[[0, -1]] - y_min
-            #z0, z1 = zcrd[[0, -1]] - z_min
-            bounding_data[x0:x1+1, y0:y1+1, z0:z1+1] = self.iloc_subgrid(i)
-        return bounding_data
+            bounding_data[x0:x1, y0:y1, z0:z1] = self.iloc_subgrid(i)
+
+        # Now clip out the exact part from the bounding box
+        # TODO: Fix this jank
+        try:
+            x1 = np.argwhere(start_x == x_coords).flatten()[0]
+        except:
+            x1 = 0
+        try:
+            x2 = np.argwhere(end_x == x_coords).flatten()[0]
+        except:
+            x2 = -1
+        clip_x = slice(x1, x2)
+
+        try:
+            y1 = np.argwhere(start_y == y_coords).flatten()[0]
+        except:
+            y1 = 0
+        try:
+            y2 = np.argwhere(end_y == y_coords).flatten()[0]
+        except:
+            y2 = -1
+        clip_y = slice(y1, y2)
+
+        try:
+            z1 = np.argwhere(start_z == z_coords).flatten()[0]
+        except:
+            z1 = 0
+        try:
+            z2 = np.argwhere(end_z == z_coords).flatten()[0]
+        except:
+            z2 = 0
+        clip_z = slice(z1, z2)
+        return bounding_data[clip_x, clip_y, clip_z]
 
 
     def loc_subgrid(self, pp, qq, rr):

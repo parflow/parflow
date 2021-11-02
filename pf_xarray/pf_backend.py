@@ -7,6 +7,7 @@ import warnings
 import xarray as xr
 import yaml
 
+from .io import ParflowBinary
 from collections.abc import Iterable
 from dask import delayed
 from parflow.tools import hydrology
@@ -152,7 +153,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             lock = NO_LOCK
         manager = CachingFileManager(ParflowData, filename_or_obj)
         if not dims:
-            dims = ('z', 'y', 'x')
+            dims = ('x', 'y', 'z')
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(manager, lock=lock, dims=dims, shape=shape))
         var = xr.Variable(dims, data)
@@ -247,18 +248,21 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
 @delayed
 def _getitem_no_state(filename, key):
+    # TODO: Fix this so that we squeeze out dimensions
     accessor = {d: _key_to_explicit_accessor(k)
-                for d, k in zip(['z','y','x'], key)}
-    pfd = PFData(filename)
-    sub = np.copy(pfd.xCopyClipOfDataArray(
-        int(accessor['x']['start']),
-        int(accessor['y']['start']),
-        int(accessor['x']['stop']),
-        int(accessor['y']['stop']),
-    ))[
-        accessor['z']['indices'],
+                for d, k in zip(['x','y','z'], key)}
+    pfd = ParflowBinary(filename)
+    sub = pfd.read_subarray(
+        start_x=int(accessor['x']['start']),
+        start_y=int(accessor['y']['start']),
+        nx=int(accessor['x']['stop']),
+        ny=int(accessor['y']['stop']),
+    )
+
+    sub = sub[
+        accessor['x']['indices'],
         accessor['y']['indices'],
-        accessor['x']['indices']
+        accessor['z']['indices']
     ]
     pfd.close()
     return sub
@@ -303,13 +307,11 @@ class ParflowData:
         self.shape = self.get_shape()
 
     def _open_file(self):
-        pfd = PFData(self.filename)
-        stat = pfd.loadHeader()
-        assert stat == 0, 'Failed to load header in ParflowData!'
-        return pfd
+        self.pfd = ParflowBinary(self.filename)
+        return self.pfd
 
     def close(self):
-        return 0
+        return self.pfd.close()
 
     def getitem(self, key):
         size = self._size_from_key(key)
@@ -346,20 +348,16 @@ class ParflowData:
         return ret_size
 
     def get_dims(self):
-        pfd = self._open_file()
-        dims = list(pfd.getIndexOrder())
-        pfd.close()
-        del pfd
+        dims = ('x', 'y', 'z')
         return dims
 
     def get_shape(self):
         pfd = self._open_file()
-        accessor_mapping = {'x': pfd.getNX,
-                            'y': pfd.getNY,
-                            'z': pfd.getNZ}
-        base_shape = [accessor_mapping[d]() for d in self.get_dims()]
+        accessor_mapping = {'x': pfd.header['nx'],
+                            'y': pfd.header['ny'],
+                            'z': pfd.header['nz']}
+        base_shape = [accessor_mapping[d] for d in self.get_dims()]
         pfd.close()
-        del pfd
         # Add some logic for automatically squeezing here?
         return base_shape
 
