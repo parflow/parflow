@@ -7,7 +7,7 @@ import warnings
 import xarray as xr
 import yaml
 
-from .io import ParflowBinary
+from .io import ParflowBinaryReader
 from collections.abc import Iterable
 from dask import delayed
 from parflow.tools import hydrology
@@ -251,7 +251,7 @@ def _getitem_no_state(filename, key):
     # TODO: Fix this so that we squeeze out dimensions
     accessor = {d: _key_to_explicit_accessor(k)
                 for d, k in zip(['x','y','z'], key)}
-    pfd = ParflowBinary(filename)
+    pfd = ParflowBinaryReader(filename)
     sub = pfd.read_subarray(
         start_x=int(accessor['x']['start']),
         start_y=int(accessor['y']['start']),
@@ -307,7 +307,7 @@ class ParflowData:
         self.shape = self.get_shape()
 
     def _open_file(self):
-        self.pfd = ParflowBinary(self.filename)
+        self.pfd = ParflowBinaryReader(self.filename)
         return self.pfd
 
     def close(self):
