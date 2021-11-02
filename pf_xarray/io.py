@@ -1,40 +1,49 @@
+from collections.abc import Iterable
 import itertools
 from numba import jit
 import numpy as np
 import struct
+from typing import Mapping, List, Number, Union
 
 
 def read_pfb(file, mode='full'):
-    pfb = ParflowBinaryReader(file)
-    data = pfb.read_all_subgrids(mode=mode)
-    pfb.close()
+    with ParflowBinaryReader(file) as pfb:
+        data = pfb.read_all_subgrids(mode=mode)
     return data
 
 
 def read_stack_of_pfbs(file_seq):
-    pfb_init = ParflowBinaryReader(file_seq[0])
-    base_header = pfb_init.header
-    base_sg_offsets = pfb_init.subgrid_offsets
-    base_sg_locations = pfb_init.subgrid_locations
-    base_sg_indices = pfb_init.subgrid_start_indices
-    base_sg_shapes = pfb_init.subgrid_shapes
-    pfb_init.close()
+    with ParflowBinaryReader(file_seq[0]) as pfb_init:
+        base_header = pfb_init.header
+        base_sg_offsets = pfb_init.subgrid_offsets
+        base_sg_locations = pfb_init.subgrid_locations
+        base_sg_indices = pfb_init.subgrid_start_indices
+        base_sg_shapes = pfb_init.subgrid_shapes
     stack_size= (len(file_seq), base_header['nx'], base_header['ny'], base_header['nz'])
     pfb_stack = np.empty(stack_size, dtype=np.float64)
     for i, f in enumerate(file_seq):
-        pfb = ParflowBinaryReader(f, precompute_subgrid_info=False, header=base_header)
-        pfb.subgrid_offsets = base_sg_offsets
-        pfb.subgrid_locations = base_sg_locations
-        pfb.subgrid_start_indices = base_sg_indices
-        pfb.subgrid_shapes = base_sg_shapes
-        pfb_stack[i, :, : ,:] = pfb.read_all_subgrids(mode='full')
-        pfb.close()
+        with ParflowBinaryReader(
+            f, precompute_subgrid_info=False, header=base_header
+        ) as pfb:
+            pfb.subgrid_offsets = base_sg_offsets
+            pfb.subgrid_locations = base_sg_locations
+            pfb.subgrid_start_indices = base_sg_indices
+            pfb.subgrid_shapes = base_sg_shapes
+            pfb_stack[i, :, : ,:] = pfb.read_all_subgrids(mode='full')
     return pfb_stack
 
 
 class ParflowBinaryReader:
 
-    def __init__(self, file, precompute_subgrid_info=True, p=None, q=None, r=None, header=None):
+    def __init__(
+            self,
+            file: str,
+            precompute_subgrid_info: bool=True,
+            p: int=None,
+            q: int=None,
+            r: int=None,
+            header: Mapping[str, Number]=None
+    ):
         self.filename = file
         self.f = open(self.filename, 'rb')
         if not header:
@@ -113,7 +122,7 @@ class ParflowBinaryReader:
         header['n_subgrids'] = struct.unpack('>i', self.f.read(4))[0]
         return header
 
-    def read_subgrid_header(self, skip_bytes=64):
+    def read_subgrid_header(self, skip_bytes: int=64):
         self.f.seek(skip_bytes)
         sg_header = {}
         sg_header['ix'] = struct.unpack('>i', self.f.read(4))[0]
@@ -128,7 +137,15 @@ class ParflowBinaryReader:
         sg_header['sg_size'] = np.prod([sg_header[n] for n in ['nx', 'ny', 'nz']])
         return sg_header
 
-    def read_subarray(self, start_x, start_y, start_z=0, nx=1, ny=1, nz=None):
+    def read_subarray(
+            self,
+            start_x: int,
+            start_y: int,
+            start_z: int=0,
+            nx: int=1,
+            ny: int=1,
+            nz: int=None
+        ):
         """
         mirroring parflowio loadclipofdata
         determine which subgrid start is in
@@ -210,17 +227,17 @@ class ParflowBinaryReader:
         return bounding_data[clip_x, clip_y, clip_z]
 
 
-    def loc_subgrid(self, pp, qq, rr):
+    def loc_subgrid(self, pp: int, qq: int, rr: int):
         p, q, r = self.header['p'], self.header['q'], self.header['r']
         subgrid_idx = pp + (p * qq) + (q * rr)
         return self.iloc_subgrid(subgrid_idx)
 
-    def iloc_subgrid(self, idx):
+    def iloc_subgrid(self, idx: int):
         offset = self.subgrid_offsets[idx]
         shape = self.subgrid_shapes[idx]
         return self._backend_iloc_subgrid(offset, shape)
 
-    def _backend_iloc_subgrid(self, offset, shape):
+    def _backend_iloc_subgrid(self, offset: int, shape: Iterable[int]):
         mm = np.memmap(
             self.f,
             dtype=np.float64,
@@ -232,7 +249,7 @@ class ParflowBinaryReader:
         data = np.array(mm)
         return data
 
-    def read_all_subgrids(self, mode='full'):
+    def read_all_subgrids(self, mode: str='full'):
         if mode not in ['flat', 'tiled', 'full']:
             raise Exception('mode must be one of flat, tiled, or full')
         if mode in ['flat', 'tiled']:

@@ -13,6 +13,7 @@ from collections.abc import Iterable
 from dask import delayed
 from parflow.tools import hydrology
 from parflowio.pyParflowio import PFData
+from typing import Mapping, List, Union
 from xarray.backends  import BackendEntrypoint, BackendArray, CachingFileManager
 from xarray.backends.locks import SerializableLock
 from xarray.core import indexing
