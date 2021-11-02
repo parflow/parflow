@@ -6,13 +6,35 @@ import struct
 from typing import Mapping, List, Number, Union
 
 
-def read_pfb(file, mode='full'):
+def read_pfb(file: str, mode: str='full'):
+    """
+    Read a single pfb file, and return the data therein
+
+    :param file:
+        The file to read.
+    :param mode:
+        The mode for the reader. See ``ParflowBinaryReader::read_all_subgrids``
+        for more information about what modes are available.
+    :return:
+        An nd array containing the data from the pfb file.
+    """
     with ParflowBinaryReader(file) as pfb:
         data = pfb.read_all_subgrids(mode=mode)
     return data
 
 
-def read_stack_of_pfbs(file_seq):
+def read_stack_of_pfbs(file_seq: Iterable[str]):
+    """
+    An efficient wrapper to read a stack of pfb files. This
+    approach is faster than looping over the ``read_pfb`` function
+    because it caches the subgrid information from the first
+    pfb file and then uses that to initialize all other readers.
+
+    :param file_seq:
+       An iterable sequence of file names to be read.
+    :return:
+        An nd array containing the data from the files.
+    """
     with ParflowBinaryReader(file_seq[0]) as pfb_init:
         base_header = pfb_init.header
         base_sg_offsets = pfb_init.subgrid_offsets
@@ -34,6 +56,42 @@ def read_stack_of_pfbs(file_seq):
 
 
 class ParflowBinaryReader:
+    """
+    The ParflowBinaryReader, unsurprisingly, provides functionality
+    for reading parflow binary files. It is designed to separate the
+    header reading and metadata from subgrids from the reading of the
+    underlying subgrid data in an efficient and flexible way. The
+    ParflowBinaryReader only ever stores state about the header and/or
+    subgrid headers. When reading data it is immediately returned to the
+    user in the form of a numpy array. The ParflowBinaryReader implements
+    a simple `Context Manager <https://book.pythontips.com/en/latest/context_managers.html>`_
+    so it is recommended to use with the standard idiom:
+
+        ::
+        with ParflowBinaryReader(file) as pfb:
+            data = pfb.read_all_subgrids()
+
+    :param file:
+        The pfb file to read
+    :param precompute_subgrid_info:
+        Whether or not to precompute subgrid information. This defaults to
+        ``True`` but can be turned off for reading multiple pfb files to
+        reduce the amount of IO overhead when reading a sequence of pfb files.
+        This computes the subgrid offset bytes, subgrid locations, subgrid
+        indices, subgrid shapes, as well as subgrid coordinates and chunk sizes
+    :param p:
+        The number of subgrids along the x dimension. This is an optional input,
+        if it is not given we will try to precompute it.
+    :param q:
+        The number of subgrids along the y dimension. This is an optional input,
+        if it is not given we will try to precompute it.
+    :param r:
+        The number of subgrids along the z dimension. This is an optional input,
+        if it is not given we will try to precompute it.
+    :param header:
+        A dictionary representing the header of the pfb file. This is an optional
+        input, if it is not given we will read it from the pfb file directly.
+    """
 
     def __init__(
             self,
@@ -56,6 +114,7 @@ class ParflowBinaryReader:
 
         # If p, q, and r aren't given we can precompute them
         if not np.all([p, q, r]):
+            # NOTE: This is a bit of a fallback and may not always work
             eps = 1 - 1e-6
             first_sg_head = self.read_subgrid_header()
             self.header['p'] = int((self.header['nx'] / first_sg_head['nx']) + eps)
@@ -75,6 +134,7 @@ class ParflowBinaryReader:
         self.f.close()
 
     def compute_subgrid_info(self):
+        """ Computes the subgrid information """
         sg_offs, sg_locs, sg_starts, sg_shapes = precalculate_subgrid_info(
                 self.header['nx'],
                 self.header['ny'],
@@ -91,14 +151,42 @@ class ParflowBinaryReader:
         self.chunks = self._compute_chunks()
         self.coords = self._compute_coords()
 
-    def _compute_chunks(self):
+    def _compute_chunks(self) -> Mapping[str, tuple]:
+        """
+        This computes the chunk sizes of the subgrids. Note that it does
+        not return a list of length ``n_subgrids`` but rather breaks each
+        of the chunks along their primary coordinate axis. Thus you get a
+        dictionary full of tuples which looks like:
+
+            ::
+            {'x': tuple_with_len_p,
+             'y': tuple_with_len_q,
+             'z': tuple_with_len_r}
+        """
         p, q, r = self.header['p'], self.header['q'], self.header['r'],
         x_chunks = tuple(self.subgrid_shapes[:,0][0:p].flatten())
         y_chunks = tuple(self.subgrid_shapes[:,1][0:p*q:p].flatten())
         z_chunks = tuple(self.subgrid_shapes[:,2][0:p*q*r:p*q].flatten())
         return {'x': x_chunks, 'y': y_chunks, 'z': z_chunks}
 
-    def _compute_coords(self):
+    def _compute_coords(self) -> Mapping[str, Iterable[Iterable[int]]]:
+        """
+        This computes the coordinates of each chunk of the subgrids. Note
+        that just like the ``_compute_chunks`` method this returns information
+        along the primary coordinate axes. You get a dictionary full of lists
+        of coordinate values, which looks like:
+
+            ::
+            {'x': [(1,2,...n1),
+                   (n1+1, n1+2, ... n1+n2),
+                    ... for ni in self.chunks['x']],
+             'y': [(1,2,...n1),
+                   (n1+1, n1+2, ... n1+n2),
+                    ... for ni in self.chunks['y']],
+             'z': [(1,2,...n1),
+                   (n1+1, n1+2, ... n1+n2),
+                    ... for ni in self.chunks['z']],
+        """
         coords = {'x': [], 'y': [], 'z': []}
         for c in ['x', 'y', 'z']:
             chunk_start = 0
@@ -108,6 +196,7 @@ class ParflowBinaryReader:
         return coords
 
     def read_header(self):
+        """Reads the header"""
         self.f.seek(0)
         header = {}
         header['x'] = struct.unpack('>d', self.f.read(8))[0]
@@ -123,6 +212,7 @@ class ParflowBinaryReader:
         return header
 
     def read_subgrid_header(self, skip_bytes: int=64):
+        """Reads a subgrid header at the position ``skip_bytes``"""
         self.f.seek(skip_bytes)
         sg_header = {}
         sg_header['ix'] = struct.unpack('>i', self.f.read(4))[0]
@@ -145,26 +235,44 @@ class ParflowBinaryReader:
             nx: int=1,
             ny: int=1,
             nz: int=None
-        ):
+    ) -> np.typing.ArrayLike:
         """
-        mirroring parflowio loadclipofdata
-        determine which subgrid start is in
-        determine which subgrid end is in
-        determine padding from the subgrids
+        Read a subsection of the full pfb file. For an example of what happens
+        here consider the following image:
 
-        As an example of what needs to happen here is
-        the following image:
-        +-------+-------+
-        |       |       |
-        |      x|xx     |
-        +-------+-------+
-        |      x|xx     |
-        |      x|xx     |
-        +-------+-------+
+            ::
+            +-------+-------+
+            |       |       |
+            |      x|xx     |
+            +-------+-------+
+            |      x|xx     |
+            |      x|xx     |
+            +-------+-------+
+
         Where each of the borders of the big grid are the
         four subgrids (2,2) that we are trying to index data from.
         The data to be selected falls in each of these subgrids, as
         denoted by the 'x' marks.
+
+        :param start_x:
+            The index to start at in the x dimension.
+        :param start_y:
+            The index to start at in the y dimension.
+        :param start_z:
+            The index to start at in the z dimension.
+            This is optional, and if not provided is 0.
+        :param nx:
+            The number of values to read in the x dimension.
+            This is optional, and if not provided is 1.
+        :param ny:
+            The number of values to read in the y dimension.
+            This is optional, and if not provided is 1.
+        :param nz:
+            The number of values to read in the z dimension.
+            This is optional, and if not provided is None,
+            which indicates to read all of the values.
+        :returns:
+            A nd array with shape (nx, ny, nz).
         """
         def _get_final_clip(start, end, coords):
             """ Helper to clean up code at the end of this """
@@ -227,17 +335,49 @@ class ParflowBinaryReader:
         return bounding_data[clip_x, clip_y, clip_z]
 
 
-    def loc_subgrid(self, pp: int, qq: int, rr: int):
+    def loc_subgrid(self, pp: int, qq: int, rr: int) -> np.typing.ArrayLike:
+        """
+        Read a subgrid given it's (pp, qq, rr) coordinate in the subgrid-grid.
+
+        :param pp:
+            Index in the p subgrid to read.
+        :param qq:
+            Index in the q subgrid to read.
+        :param rr:
+            Index in the r subgrid to read.
+        :returns:
+            The data from the (pp, qq, rr)'th subgrid.
+        """
         p, q, r = self.header['p'], self.header['q'], self.header['r']
-        subgrid_idx = pp + (p * qq) + (q * rr)
+        subgrid_idx = pp + (p * qq) + (q * p * rr)
         return self.iloc_subgrid(subgrid_idx)
 
-    def iloc_subgrid(self, idx: int):
+    def iloc_subgrid(self, idx: int) -> np.typing.ArrayLike:
+        """
+        Read a subgrid at some scalar index.
+
+        :param idx:
+            The index of the subgrid to read
+        :returns:
+            The data from the idx'th subgrid.
+        """
         offset = self.subgrid_offsets[idx]
         shape = self.subgrid_shapes[idx]
         return self._backend_iloc_subgrid(offset, shape)
 
-    def _backend_iloc_subgrid(self, offset: int, shape: Iterable[int]):
+    def _backend_iloc_subgrid(
+            self, offset: int, shape: Iterable[int]
+    ) -> np.typing.ArrayLike:
+        """
+        Backend function for memory mapping data from the pfb file on disk.
+
+        :param offset:
+            The byte offset to begin reading the sugrid data at.
+        :param shape:
+            A tuple representing the resulting shape of the subgrid array.
+        :returns:
+            The data from the subgrid at ``offset` bytes into the file.
+        """
         mm = np.memmap(
             self.f,
             dtype=np.float64,
@@ -249,7 +389,24 @@ class ParflowBinaryReader:
         data = np.array(mm)
         return data
 
-    def read_all_subgrids(self, mode: str='full'):
+    def read_all_subgrids(
+            self, mode: str='full'
+    ) -> Union[Iterable[np.typing.ArrayLike], np.typing.ArrayLike]:
+        """
+        Read all of the subgrids in the file.
+
+        :param mode:
+            Specifies how to arange the data from the subgrids before returning.
+
+        :returns:
+            A numpy array or iterable of numpy arrays, depending on how ``mode`` is set.
+            If ``full`` the returned array will be of dimensions (nx, ny, nz).
+            If ``flat`` the returned data will be a list of each fo the subgrid arrays.
+            If ``tiled`` the returned data will be a numpy array with dimensions
+            (p, q, r) where each index of the array contains the subgrid data which
+            also will be numpy array of floats with dimensions (pp_nx, qq_ny, rr_nz) where
+            each of pp_nx, qq_ny, and rr_nz are the size of the subgrid array.
+        """
         if mode not in ['flat', 'tiled', 'full']:
             raise Exception('mode must be one of flat, tiled, or full')
         if mode in ['flat', 'tiled']:
@@ -269,6 +426,7 @@ class ParflowBinaryReader:
                 all_data[ix:ix+nx, iy:iy+ny, iz:iz+nz] = self.iloc_subgrid(i)
         return all_data
 
+
 @jit(nopython=True)
 def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
     nnx = int(np.ceil(nx / p))
@@ -279,6 +437,7 @@ def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
     lz = (nz % r)
     return nnx, nny, nnz, lx, ly, lz
 
+
 @jit(nopython=True)
 def get_subgrid_loc(sel_subgrid, p, q, r):
     rr = int(np.floor(sel_subgrid / (p * q)))
@@ -286,6 +445,7 @@ def get_subgrid_loc(sel_subgrid, p, q, r):
     pp = int(sel_subgrid - rr * (p * q) - (qq * p))
     subgrid_loc = (pp, qq, rr)
     return subgrid_loc
+
 
 @jit(nopython=True)
 def subgrid_lower_left(
@@ -298,6 +458,7 @@ def subgrid_lower_left(
     iz = max(0, rr * (nnz-1) + min(rr, lz))
     return ix, iy, iz
 
+
 @jit(nopython=True)
 def subgrid_size(
     nnx, nny, nnz,
@@ -308,6 +469,7 @@ def subgrid_size(
     sny = nny-1 if qq >= max(ly, 1) else nny
     snz = nnz-1 if rr >= max(lz, 1) else nnz
     return snx, sny, snz
+
 
 @jit(nopython=True)
 def precalculate_subgrid_info(nx, ny, nz, p, q, r, n_subgrids):
