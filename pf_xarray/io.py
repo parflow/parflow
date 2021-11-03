@@ -3,7 +3,8 @@ import itertools
 from numba import jit
 import numpy as np
 import struct
-from typing import Mapping, List, Number, Union
+from typing import Mapping, List, Union
+from numbers import Number
 
 
 def read_pfb(file: str, mode: str='full'):
@@ -23,7 +24,7 @@ def read_pfb(file: str, mode: str='full'):
     return data
 
 
-def read_stack_of_pfbs(file_seq: Iterable[str]):
+def read_stack_of_pfbs(file_seq: Iterable[str], keys=None):
     """
     An efficient wrapper to read a stack of pfb files. This
     approach is faster than looping over the ``read_pfb`` function
@@ -31,7 +32,17 @@ def read_stack_of_pfbs(file_seq: Iterable[str]):
     pfb file and then uses that to initialize all other readers.
 
     :param file_seq:
-       An iterable sequence of file names to be read.
+        An iterable sequence of file names to be read.
+    :param keys:
+        A set of keys for indexing subarrays of the full pfb. Optional.
+        This is mainly a trick for interfacing with xarray, but the format
+        of the keys is:
+
+            ::
+            {'x': {'start': start_x, 'stop': end_x},
+             'y': {'start': start_y, 'stop': end_y},
+             'z': {'start': start_z, 'stop': end_z}}
+
     :return:
         An nd array containing the data from the files.
     """
@@ -41,7 +52,16 @@ def read_stack_of_pfbs(file_seq: Iterable[str]):
         base_sg_locations = pfb_init.subgrid_locations
         base_sg_indices = pfb_init.subgrid_start_indices
         base_sg_shapes = pfb_init.subgrid_shapes
-    stack_size= (len(file_seq), base_header['nx'], base_header['ny'], base_header['nz'])
+    if not keys:
+        nx, ny, nz = base_header['nx'], base_header['ny'], base_header['nz']
+    else:
+        start_x = keys['x']['start']
+        start_y = keys['y']['start']
+        start_z = keys['z']['start']
+        nx = keys['x']['stop'] - start_x
+        ny = keys['y']['stop'] - keys['y']['start']
+        nz = keys['z']['stop'] - keys['z']['start']
+    stack_size = (len(file_seq), nx, ny, nz)
     pfb_stack = np.empty(stack_size, dtype=np.float64)
     for i, f in enumerate(file_seq):
         with ParflowBinaryReader(
@@ -51,7 +71,12 @@ def read_stack_of_pfbs(file_seq: Iterable[str]):
             pfb.subgrid_locations = base_sg_locations
             pfb.subgrid_start_indices = base_sg_indices
             pfb.subgrid_shapes = base_sg_shapes
-            pfb_stack[i, :, : ,:] = pfb.read_all_subgrids(mode='full')
+            if not keys:
+                substack_data = pfb.read_all_subgrids(mode='full')
+            else:
+                substack_data = pfb.read_subarray(
+                        start_x, start_y, start_z, nx, ny, nz)
+            pfb_stack[i, :, : ,:] = substack_data
     return pfb_stack
 
 
