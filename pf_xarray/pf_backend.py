@@ -7,10 +7,13 @@ import warnings
 import xarray as xr
 import yaml
 
+from . import util
+from .io import ParflowBinaryReader
 from collections.abc import Iterable
 from dask import delayed
 from parflow.tools import hydrology
 from parflowio.pyParflowio import PFData
+from typing import Mapping, List, Union
 from xarray.backends  import BackendEntrypoint, BackendArray, CachingFileManager
 from xarray.backends.locks import SerializableLock
 from xarray.core import indexing
@@ -152,7 +155,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             lock = NO_LOCK
         manager = CachingFileManager(ParflowData, filename_or_obj)
         if not dims:
-            dims = ('z', 'y', 'x')
+            dims = ('x', 'y', 'z')
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(manager, lock=lock, dims=dims, shape=shape))
         var = xr.Variable(dims, data)
@@ -247,52 +250,23 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
 @delayed
 def _getitem_no_state(filename, key):
-    accessor = {d: _key_to_explicit_accessor(k)
-                for d, k in zip(['z','y','x'], key)}
-    pfd = PFData(filename)
-    sub = np.copy(pfd.xCopyClipOfDataArray(
-        int(accessor['x']['start']),
-        int(accessor['y']['start']),
-        int(accessor['x']['stop']),
-        int(accessor['y']['stop']),
-    ))[
-        accessor['z']['indices'],
-        accessor['y']['indices'],
-        accessor['x']['indices']
-    ]
-    pfd.close()
+    # TODO: Fix this so that we squeeze out dimensions
+    accessor = {d: util._key_to_explicit_accessor(k)
+                for d, k in zip(['x','y','z'], key)}
+    with ParflowBinaryReader(filename) as pfd:
+        sub = pfd.read_subarray(
+            start_x=int(accessor['x']['start']),
+            start_y=int(accessor['y']['start']),
+            start_z=int(accessor['z']['start']),
+            nx=int(accessor['x']['stop']),
+            ny=int(accessor['y']['stop']),
+            nz=int(accessor['z']['stop']),
+        )[
+            accessor['x']['indices'],
+            accessor['y']['indices'],
+            accessor['z']['indices']
+        ].squeeze()
     return sub
-
-
-def _check_key_is_empty(key):
-    for k in key:
-        all_none = np.all([k.start is None,
-                           k.stop is None,
-                           k.step is None])
-        if all_none:
-            return True
-    return False
-
-
-def _key_to_explicit_accessor(key):
-    if isinstance(key, slice):
-        return {
-            'start': key.start,
-            'stop': key.stop,
-            'indices': slice(None, None, key.step)
-        }
-    elif isinstance(key, int):
-        return {
-            'start': key,
-            'stop': key+1,
-            'indices': [0]
-        }
-    elif isinstance(key, Iterable):
-        return {
-            'start': np.min(key),
-            'stop': np.max(key)+1,
-            'indices': key - np.min(key)
-        }
 
 
 class ParflowData:
@@ -303,13 +277,11 @@ class ParflowData:
         self.shape = self.get_shape()
 
     def _open_file(self):
-        pfd = PFData(self.filename)
-        stat = pfd.loadHeader()
-        assert stat == 0, 'Failed to load header in ParflowData!'
-        return pfd
+        self.pfd = ParflowBinaryReader(self.filename)
+        return self.pfd
 
     def close(self):
-        return 0
+        return self.pfd.close()
 
     def getitem(self, key):
         size = self._size_from_key(key)
@@ -323,7 +295,7 @@ class ParflowData:
         for dim_size, dim_key in zip(size, key):
             if isinstance(dim_key, slice):
                 start = dim_key.start if dim_key.start is not None else 0
-                stop = dim_key.stop if dim_key.stop is not None else dim_size
+                stop = dim_key.stop+1 if dim_key.stop is not None else dim_size+1
                 step = dim_key.step if dim_key.step is not None else 1
                 ret_key.append(slice(start, stop, step))
             else:
@@ -335,7 +307,7 @@ class ParflowData:
         ret_size = []
         for i, k in enumerate(key):
             if isinstance(k, slice):
-                if _check_key_is_empty([k]):
+                if util._check_key_is_empty([k]):
                     ret_size.append(self.shape[i])
                 else:
                     ret_size.append(len(np.arange(k.start, k.stop, k.step)))
@@ -346,20 +318,16 @@ class ParflowData:
         return ret_size
 
     def get_dims(self):
-        pfd = self._open_file()
-        dims = list(pfd.getIndexOrder())
-        pfd.close()
-        del pfd
+        dims = ('x', 'y', 'z')
         return dims
 
     def get_shape(self):
         pfd = self._open_file()
-        accessor_mapping = {'x': pfd.getNX,
-                            'y': pfd.getNY,
-                            'z': pfd.getNZ}
-        base_shape = [accessor_mapping[d]() for d in self.get_dims()]
+        accessor_mapping = {'x': pfd.header['nx'],
+                            'y': pfd.header['ny'],
+                            'z': pfd.header['nz']}
+        base_shape = [accessor_mapping[d] for d in self.get_dims()]
         pfd.close()
-        del pfd
         # Add some logic for automatically squeezing here?
         return base_shape
 
