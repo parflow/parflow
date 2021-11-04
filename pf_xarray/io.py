@@ -52,15 +52,17 @@ def read_stack_of_pfbs(file_seq: Iterable[str], keys=None):
         base_sg_locations = pfb_init.subgrid_locations
         base_sg_indices = pfb_init.subgrid_start_indices
         base_sg_shapes = pfb_init.subgrid_shapes
+        base_sg_chunks = pfb_init.chunks
+        base_sg_coords = pfb_init.coords
     if not keys:
         nx, ny, nz = base_header['nx'], base_header['ny'], base_header['nz']
     else:
         start_x = keys['x']['start']
         start_y = keys['y']['start']
         start_z = keys['z']['start']
-        nx = keys['x']['stop'] - start_x
-        ny = keys['y']['stop'] - keys['y']['start']
-        nz = keys['z']['stop'] - keys['z']['start']
+        nx = np.max([keys['x']['stop'] - start_x - 1, 1])
+        ny = np.max([keys['y']['stop'] - keys['y']['start'] - 1, 1])
+        nz = np.max([keys['z']['stop'] - keys['z']['start'] - 1, 1])
     stack_size = (len(file_seq), nx, ny, nz)
     pfb_stack = np.empty(stack_size, dtype=np.float64)
     for i, f in enumerate(file_seq):
@@ -71,6 +73,8 @@ def read_stack_of_pfbs(file_seq: Iterable[str], keys=None):
             pfb.subgrid_locations = base_sg_locations
             pfb.subgrid_start_indices = base_sg_indices
             pfb.subgrid_shapes = base_sg_shapes
+            pfb.coords = base_sg_coords
+            pfb.chunks = base_sg_chunks
             if not keys:
                 substack_data = pfb.read_all_subgrids(mode='full')
             else:

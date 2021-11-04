@@ -42,14 +42,13 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         base_dir=None,
         drop_variables=None,
         name='parflow_variable',
-        meta_yaml=None,
         read_inputs=True,
         read_outputs=True,
         parallel=False,
         inferred_dims=None,
         inferred_shape=None,
         chunks={},
-        strict_ext_check=True,
+        strict_ext_check=False,
     ):
         filetype = self.is_meta_or_pfb(filename_or_obj, strict=strict_ext_check)
         if filetype == 'pfb':
@@ -84,10 +83,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                                 component = sub_dict['component']
                                 ds[f'{var}_{component}'] = self.load_pfb_from_meta(
                                         var_meta, component, parallel=parallel)
-
-        #TODO : Set name and other stuff as necessary (maybe coordinate transforms)?
-        if meta_yaml:
-            meta = self.process_meta(ds, yaml)
         return ds
 
     def is_meta_or_pfb(self, filename_or_obj, strict=True):
@@ -98,6 +93,11 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                  'are you sure this is a valid Parflow metadata file?')
         if not strict:
             ext = filename_or_obj.split('.')[-1]
+            if ext == 'pfmetadata':
+                with open(filename_or_obj, 'r') as f:
+                    pf_meta = json.load(f)
+                    _check_dict_is_valid_meta(pf_meta)
+                    self.pf_meta = pf_meta
             return ext
 
         if isinstance(filename_or_obj, str):
@@ -152,6 +152,19 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         var = xr.Variable(dims, data)
         return var
 
+    def load_stack_of_pfb(
+        self,
+        filenames,
+        dims=None,
+        shape=None
+    ):
+        if not dims:
+            dims = ('time', 'x', 'y', 'z')
+        data = indexing.LazilyIndexedArray(
+            ParflowBackendArray(filenames, dims=dims, shape=shape))
+        var = xr.Variable(dims, data)
+        return var
+
     def load_pfb_from_meta(self, var_meta, component=None, parallel=False):
         """
         Load a pfb file or set of pfb files from the metadata
@@ -198,17 +211,20 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
             # Put it all together
             inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
-            # NOTE: This is where we finally go in and call
-            base_da = xr.open_mfdataset(
-                          all_files,
-                          engine='parflow',
-                          concat_dim=concat_dim,
-                          combine='nested',
-                          decode_cf=False,
-                          inferred_dims=inf_dims,
-                          inferred_shape=inf_shape,
-                          strict_ext_check=False,
-                      )['parflow_variable']
+            inf_dims = ('time', *inf_dims)
+            inf_shape = (len(all_files), *inf_shape)
+            base_da = self.load_stack_of_pfb(
+                    all_files, dims=inf_dims, shape=inf_shape)
+            #base_da = xr.open_mfdataset(
+            #              all_files,
+            #              engine='parflow',
+            #              concat_dim=concat_dim,
+            #              combine='nested',
+            #              decode_cf=False,
+            #              inferred_dims=inf_dims,
+            #              inferred_shape=inf_shape,
+            #              strict_ext_check=False,
+            #          )['parflow_variable']
             if pfb_type == 'pfb 2d timeseries':
                 base_da = base_da.rename({'z':'time'})
 
@@ -241,21 +257,36 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
 
 @delayed
-def _getitem_no_state(file_or_seq, key):
+def _getitem_no_state(file_or_seq, key, mode):
     # TODO: Fix this so that we squeeze out dimensions
-    accessor = {d: util._key_to_explicit_accessor(k)
-                for d, k in zip(['x','y','z'], key)}
-    with ParflowBinaryReader(file_or_seq) as pfd:
-        sub = pfd.read_subarray(
-            start_x=int(accessor['x']['start']),
-            start_y=int(accessor['y']['start']),
-            start_z=int(accessor['z']['start']),
-            nx=int(accessor['x']['stop']),
-            ny=int(accessor['y']['stop']),
-            nz=int(accessor['z']['stop']),
-        )[accessor['x']['indices'],
-          accessor['y']['indices'],
-          accessor['z']['indices']].squeeze()
+    if mode == 'single':
+        accessor = {d: util._key_to_explicit_accessor(k)
+                    for d, k in zip(['x','y','z'], key)}
+        with ParflowBinaryReader(file_or_seq) as pfd:
+            sub = pfd.read_subarray(
+                start_x=int(accessor['x']['start']),
+                start_y=int(accessor['y']['start']),
+                start_z=int(accessor['z']['start']),
+                nx=int(accessor['x']['stop']),
+                ny=int(accessor['y']['stop']),
+                nz=int(accessor['z']['stop']),
+            )
+        sub = sub[accessor['x']['indices'],
+                  accessor['y']['indices'],
+                  accessor['z']['indices']].squeeze()
+    elif mode == 'sequence':
+        accessor = {d: util._key_to_explicit_accessor(k)
+                    for d, k in zip(['time', 'x','y','z'], key)}
+        t_start = accessor['time']['start']
+        t_end = accessor['time']['stop'] - 1
+        sub = read_stack_of_pfbs(
+            file_or_seq[t_start:t_end],
+            accessor
+        )
+        sub = sub[accessor['time']['indices'],
+                  accessor['x']['indices'],
+                  accessor['y']['indices'],
+                  accessor['z']['indices']].squeeze()
     return sub
 
 
@@ -276,11 +307,17 @@ class ParflowBackendArray(BackendArray):
 
     def __init__(
          self,
-         filename_or_obj,
+         file_or_seq,
          dims=None,
          shape=None,
     ):
-        self.filename_or_obj = filename_or_obj
+        self.file_or_seq = file_or_seq
+        if isinstance(self.file_or_seq, str):
+            self.mode = 'single'
+            self.header_file = self.file_or_seq
+        elif isinstance(self.file_or_seq, Iterable):
+            self.mode = 'sequence'
+            self.header_file = self.file_or_seq[0]
         self._shape = shape
         self._dims = dims
 
@@ -297,15 +334,24 @@ class ParflowBackendArray(BackendArray):
     @property
     def dims(self):
         if self._dims is None:
-            self._dims = ('x', 'y', 'z')
+            if self.mode == 'single':
+                self._dims = ('x', 'y', 'z')
+            elif self.mode == 'sequence':
+                self._dims = ('time', 'x', 'y', 'z')
         return self._dims
 
     @property
     def shape(self):
         if self._shape is None:
-            with ParflowBinaryReader(self.filename_or_obj) as pfb:
-                header = pfb.header
-                self._shape = (header['nx'], header['ny'], header['nz'])
+            with ParflowBinaryReader(
+                self.header_file,
+                precompute_subgrid_info=False
+            ) as pfd:
+                base_shape = (pfd.header['nx'], pfd.header['ny'], pfd.header['nz'])
+            if self.mode == 'sequence':
+                base_shape = (len(self.file_or_seq), *base_shape)
+            # Add some logic for automatically squeezing here?
+            self._shape = base_shape
         return self._shape
 
     @property
@@ -315,7 +361,7 @@ class ParflowBackendArray(BackendArray):
     def _getitem(self, key: tuple) -> np.typing.ArrayLike:
         size = self._size_from_key(key)
         key = self._explicit_indices_from_keys(size, key)
-        sub = delayed(_getitem_no_state)(self.filename_or_obj, key)
+        sub = delayed(_getitem_no_state)(self.file_or_seq, key, self.mode)
         sub = dask.array.from_delayed(sub, size, dtype=np.float64)
         return sub
 
