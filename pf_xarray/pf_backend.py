@@ -215,6 +215,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             inf_shape = (len(all_files), *inf_shape)
             base_da = self.load_stack_of_pfb(
                     all_files, dims=inf_dims, shape=inf_shape)
+            base_da = xr.Dataset({'_': base_da})['_']
             #base_da = xr.open_mfdataset(
             #              all_files,
             #              engine='parflow',
