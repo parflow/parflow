@@ -165,6 +165,34 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         var = xr.Variable(dims, data)
         return var
 
+    def load_component_pfb(self):
+        """
+        These filetypes have dimensions (component, x, y, z)
+        where component represents an anisotropy
+        """
+
+    def load_time_varying_pfb(self):
+        """
+        THese filetypes have dimensions (time, x, y, z)
+        where a each file represents an individual time
+        """
+        pass
+
+    def load_time_varying_2d_ts_pfb(self):
+        """
+        These filetypes have dimensions (time_stride, x, y, time_slice)
+        where the time dimension will be strided along separate files
+        and each individual file contains time_slice number of timesteps
+        """
+
+    def load_clm_output_pfb(self):
+        """
+        These filetypes have dimensions (time, x, y, variable)
+        where the variable ordering is fixed and each file represents an
+        individual timestep
+        """
+        pass
+
     def load_pfb_from_meta(self, var_meta, component=None, parallel=False):
         """
         Load a pfb file or set of pfb files from the metadata
@@ -216,16 +244,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             base_da = self.load_stack_of_pfb(
                     all_files, dims=inf_dims, shape=inf_shape)
             base_da = xr.Dataset({'_': base_da})['_']
-            #base_da = xr.open_mfdataset(
-            #              all_files,
-            #              engine='parflow',
-            #              concat_dim=concat_dim,
-            #              combine='nested',
-            #              decode_cf=False,
-            #              inferred_dims=inf_dims,
-            #              inferred_shape=inf_shape,
-            #              strict_ext_check=False,
-            #          )['parflow_variable']
             if pfb_type == 'pfb 2d timeseries':
                 base_da = base_da.rename({'z':'time'})
 
@@ -259,7 +277,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
 @delayed
 def _getitem_no_state(file_or_seq, key, mode):
-    # TODO: Fix this so that we squeeze out dimensions
     if mode == 'single':
         accessor = {d: util._key_to_explicit_accessor(k)
                     for d, k in zip(['x','y','z'], key)}
@@ -280,6 +297,8 @@ def _getitem_no_state(file_or_seq, key, mode):
                     for d, k in zip(['time', 'x','y','z'], key)}
         t_start = accessor['time']['start']
         t_end = accessor['time']['stop'] - 1
+        if t_start == t_end:
+            t_end += 1
         sub = read_stack_of_pfbs(
             file_or_seq[t_start:t_end],
             accessor
@@ -292,19 +311,6 @@ def _getitem_no_state(file_or_seq, key, mode):
 
 
 class ParflowBackendArray(BackendArray):
-    """
-    This is a note to myself: ParflowBackendArray's are
-    inherently spatial and of a single time slice. If we
-    are interested in lazily loading and allowing for out
-    of core computation we'll need to map time slices to
-    file names in the higher level components.
-    (ParflowBackendEntrypoint, most likely)
-
-    That means that in the constructor the filename will be
-    required. I'm not sure if that means that we can interpret
-    the shape internally here though, but that might clean up
-    the higher level code.
-    """
 
     def __init__(
          self,
@@ -407,11 +413,11 @@ class ParflowBackendArray(BackendArray):
         return base_shape
 
 
-@xr.register_dataset_accessor("parflow")
-class ParflowAccessor:
-    def __init__(self, xarray_obj):
-        self._obj = xarray_obj
-        self.hydrology = hydrology
-
-    def to_pfb(self):
-        raise NotImplementedError('coming soon!')
+#@xr.register_dataset_accessor("parflow")
+#class ParflowAccessor:
+#    def __init__(self, xarray_obj):
+#        self._obj = xarray_obj
+#        self.hydrology = hydrology
+#
+#    def to_pfb(self):
+#        raise NotImplementedError('coming soon!')
