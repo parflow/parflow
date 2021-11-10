@@ -120,18 +120,18 @@ contains
                                 
 
     ! Local variables                            
-    integer                   :: i, j, k, l
+    integer                   :: i, j, k, l, g
     integer                   :: isecs                               ! Parflow model time in seconds
     integer                   :: j_incr, k_incr                      ! convert 1D vector to 3D i,j,k array
     integer, allocatable      :: counter(:,:), topo_mask(:,:)        ! Mask for active parflow cells
-    real(kind=8), allocatable :: sat_snd(:,:,:) , psi_snd(:,:,:)     ! temporary array
+    real(kind=8), allocatable :: sat_snd(:,:) , psi_snd(:,:)     ! temporary array
 
     isecs= nint(pstep*3600.d0)
     j_incr = nx_f
     k_incr = nx_f*ny_f
 
-    allocate(sat_snd(nx,ny,nlevsoil))
-    allocate(psi_snd(nx,ny,nlevsoil))
+    allocate(sat_snd(nx*ny,nlevsoil))
+    allocate(psi_snd(nx*ny,nlevsoil))
     allocate(topo_mask(nx,ny))
     allocate(counter(nx,ny))
 
@@ -140,7 +140,7 @@ contains
     do i = 1, nx
       do j = 1, ny
         counter(i,j) = 0
-        do k = nz, 1, -1                                                  ! PF loop over z
+        do k = nz, 1, -1                                             ! PF loop over z
             l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
             if (topo(l) > 0) then
               counter(i,j) = counter(i,j) + 1
@@ -156,19 +156,19 @@ contains
       do j = 1, ny
         do k = 1, nlevsoil
           if (topo_mask(i,j) > 0) then
-            l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))  !
-            sat_snd(i,j,k) = saturation(l)
-            psi_snd(i,j,k) = pressure(l)*1000.0                            ! convert from [m] to [mm]
+            l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))     !
+            g = (i-1)*ny + j
+            sat_snd(g,k) = saturation(l)
+            psi_snd(g,k) = pressure(l)*1000.0                      ! convert from [m] to [mm]
           end if
         end do
       end do
     end do
 
     !Send the fields
+
     call oasis_put(sat_id, isecs, sat_snd, ierror)
-    write(6,*) 'oaspfl: sat_snd status = ', ierror
     call oasis_put(psi_id, isecs, psi_snd, ierror)
-    write(6,*) 'oaspfl: psi_snd status = ', ierror
 
     deallocate(sat_snd)
     deallocate(psi_snd)
@@ -186,12 +186,12 @@ contains
     real(kind=8), intent(inout) :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! source/sink (1/T)
 
     ! Local variables
-    integer                     :: i, j, k, l
+    integer                     :: i, j, k, l, g
     integer                     :: isecs                              ! Parflow model time in seconds
     integer                     :: j_incr, k_incr                     ! convert 1D vector to 3D i,j,k array
     integer, allocatable        :: counter(:,:),                    & !
                                    topo_mask(:,:)                     ! Mask for active parflow cells
-    real(kind=8), allocatable   :: et_rcv(:,:,:)                      ! ET fluxes from eCLM
+    real(kind=8), allocatable   :: et_rcv(:,:)                        ! ET fluxes from eCLM
 
     isecs= nint(pstep*3600.d0)
     j_incr = nx_f
@@ -200,7 +200,7 @@ contains
 
     allocate(topo_mask(nx,ny))
     allocate(counter(nx,ny))
-    allocate(et_rcv(nx,ny,nlevsoil))
+    allocate(et_rcv(nx*ny,nlevsoil))
 
     topo_mask = 0
     ! Create the masking vector
@@ -218,15 +218,15 @@ contains
     end do
     
     call oasis_get(et_id, isecs, et_rcv, ierror)
-    write(6,*) 'oaspfl: et_rcv status = ', ierror
 
     evap_trans = 0.
     do i = 1, nx
       do j = 1, ny
         do k = 1, nlevsoil 
           if (topo_mask(i,j) > 0) then
+            g = (i-1)*ny + j
             l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))
-            evap_trans(l) = et_rcv(i,j,k)
+            evap_trans(l) = et_rcv(g,k)
           end if
         end do
       end do
