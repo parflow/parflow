@@ -7,7 +7,7 @@ from typing import Mapping, List, Union
 from numbers import Number
 
 
-def read_pfb(file: str, mode: str='full'):
+def read_pfb(file: str, mode: str='full', z_first: bool=True):
     """
     Read a single pfb file, and return the data therein
 
@@ -20,11 +20,16 @@ def read_pfb(file: str, mode: str='full'):
         An nd array containing the data from the pfb file.
     """
     with ParflowBinaryReader(file) as pfb:
-        data = pfb.read_all_subgrids(mode=mode)
+        data = pfb.read_all_subgrids(mode=mode, z_first=z_first)
     return data
 
 
-def read_stack_of_pfbs(file_seq: Iterable[str], keys=None):
+def read_stack_of_pfbs(
+    file_seq: Iterable[str],
+    keys=None,
+    z_first: bool=True,
+    z_is: str='z'
+):
     """
     An efficient wrapper to read a stack of pfb files. This
     approach is faster than looping over the ``read_pfb`` function
@@ -43,6 +48,13 @@ def read_stack_of_pfbs(file_seq: Iterable[str], keys=None):
              'y': {'start': start_y, 'stop': end_y},
              'z': {'start': start_z, 'stop': end_z}}
 
+    :param z_first:
+        Whether the z dimension should be first. If true returned arrays have
+        dimensions ('z', 'y', 'x') else ('x', 'y', 'z')
+    :param z_is:
+        A descriptor of what the z axis represents. Can be one of
+        'z', 'time', 'variable'. Default is 'z'.
+
     :return:
         An nd array containing the data from the files.
     """
@@ -59,11 +71,14 @@ def read_stack_of_pfbs(file_seq: Iterable[str], keys=None):
     else:
         start_x = keys['x']['start']
         start_y = keys['y']['start']
-        start_z = keys['z']['start']
+        start_z = keys[z_is]['start']
         nx = np.max([keys['x']['stop'] - start_x - 1, 1])
         ny = np.max([keys['y']['stop'] - keys['y']['start'] - 1, 1])
-        nz = np.max([keys['z']['stop'] - keys['z']['start'] - 1, 1])
-    stack_size = (len(file_seq), nx, ny, nz)
+        nz = np.max([keys[z_is]['stop'] - keys[z_is]['start'] - 1, 1])
+    if z_first:
+        stack_size = (len(file_seq), nz, ny, nx)
+    else:
+        stack_size = (len(file_seq), nx, ny, nz)
     pfb_stack = np.empty(stack_size, dtype=np.float64)
     for i, f in enumerate(file_seq):
         with ParflowBinaryReader(
@@ -79,8 +94,13 @@ def read_stack_of_pfbs(file_seq: Iterable[str], keys=None):
                 substack_data = pfb.read_all_subgrids(mode='full')
             else:
                 substack_data = pfb.read_subarray(
-                        start_x, start_y, start_z, nx, ny, nz)
+                        start_x, start_y, start_z, nx, ny, nz, z_first)
             pfb_stack[i, :, : ,:] = substack_data
+    if z_is == 'time':
+        if z_first:
+            pfb_stack = np.concatenate(pfb_stack, axis=0)
+        else:
+            pfb_stack = np.concatenate(pfb_stack, axis=-1)
     return pfb_stack
 
 
@@ -137,9 +157,9 @@ class ParflowBinaryReader:
             self.header = self.read_header()
         else:
             self.header = header
-            p = self.header.get('p', p)
-            q = self.header.get('q', q)
-            r = self.header.get('r', r)
+        self.header['p'] = self.header.get('p', p)
+        self.header['q'] = self.header.get('q', q)
+        self.header['r'] = self.header.get('r', r)
 
         # If p, q, and r aren't given we can precompute them
         if not np.all([p, q, r]):
@@ -263,7 +283,8 @@ class ParflowBinaryReader:
             start_z: int=0,
             nx: int=1,
             ny: int=1,
-            nz: int=None
+            nz: int=None,
+            z_first: bool=True
     ) -> np.typing.ArrayLike:
         """
         Read a subsection of the full pfb file. For an example of what happens
@@ -300,6 +321,10 @@ class ParflowBinaryReader:
             The number of values to read in the z dimension.
             This is optional, and if not provided is None,
             which indicates to read all of the values.
+        :param z_first:
+            Whether the z dimension should be first. If true returned arrays have
+            dimensions ('z', 'y', 'x') else ('x', 'y', 'z')
+
         :returns:
             A nd array with shape (nx, ny, nz).
         """
@@ -361,7 +386,11 @@ class ParflowBinaryReader:
         clip_x = _get_final_clip(start_x, end_x, x_sg_coords)
         clip_y = _get_final_clip(start_y, end_y, y_sg_coords)
         clip_z = _get_final_clip(start_z, end_z, z_sg_coords)
-        return bounding_data[clip_x, clip_y, clip_z]
+        if z_first:
+            ret_data = bounding_data[clip_x, clip_y, clip_z].T
+        else:
+            ret_data = bounding_data[clip_x, clip_y, clip_z]
+        return ret_data
 
 
     def loc_subgrid(self, pp: int, qq: int, rr: int) -> np.typing.ArrayLike:
@@ -419,13 +448,16 @@ class ParflowBinaryReader:
         return data
 
     def read_all_subgrids(
-            self, mode: str='full'
+            self, mode: str='full', z_first: bool=True
     ) -> Union[Iterable[np.typing.ArrayLike], np.typing.ArrayLike]:
         """
         Read all of the subgrids in the file.
 
         :param mode:
             Specifies how to arange the data from the subgrids before returning.
+        :param z_first:
+            Whether the z dimension should be first. If true returned arrays have
+            dimensions ('z', 'y', 'x') else ('x', 'y', 'z')
 
         :returns:
             A numpy array or iterable of numpy arrays, depending on how ``mode`` is set.
@@ -441,19 +473,33 @@ class ParflowBinaryReader:
         if mode in ['flat', 'tiled']:
             all_data = []
             for i in range(self.header['n_subgrids']):
-                all_data.append(self.iloc_subgrid(i))
+                if z_first:
+                    all_data.append(self.iloc_subgrid(i).T)
+                else:
+                    all_data.append(self.iloc_subgrid(i))
             if mode == 'tiled':
-                tiled_shape = tuple(self.header[dim] for dim in ['p', 'q', 'r'])
-                all_data = np.array(all_data, dtype=object).reshape(tiled_shape)
+                if z_first:
+                    tiled_shape = tuple(self.header[dim] for dim in ['r', 'q', 'p'])
+                    all_data = np.array(all_data, dtype=object).reshape(tiled_shape)
+                else:
+                    tiled_shape = tuple(self.header[dim] for dim in ['p', 'q', 'r'])
+                    all_data = np.array(all_data, dtype=object).reshape(tiled_shape)
         elif mode == 'full':
-            full_shape = tuple(self.header[dim] for dim in ['nx', 'ny', 'nz'])
+            if z_first:
+                full_shape = tuple(self.header[dim] for dim in ['nz', 'ny', 'nx'])
+            else:
+                full_shape = tuple(self.header[dim] for dim in ['nx', 'ny', 'nz'])
             chunks = self.chunks['x'], self.chunks['y'], self.chunks['z']
             all_data = np.empty(full_shape, dtype=np.float64)
             for i in range(self.header['n_subgrids']):
                 nx, ny, nz = self.subgrid_shapes[i]
                 ix, iy, iz = self.subgrid_start_indices[i]
-                all_data[ix:ix+nx, iy:iy+ny, iz:iz+nz] = self.iloc_subgrid(i)
+                if z_first:
+                    all_data[iz:iz+nz, iy:iy+ny, ix:ix+nx] = self.iloc_subgrid(i).T
+                else:
+                    all_data[ix:ix+nx, iy:iy+ny, iz:iz+nz] = self.iloc_subgrid(i)
         return all_data
+
 
 
 @jit(nopython=True)
