@@ -71,6 +71,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                     read_outputs=read_outputs,
                     parallel=parallel
             )
+        return ds
 
     def load_pfmetadata(
         self,
@@ -86,22 +87,17 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         if read_outputs:
             for var, var_meta in self.pf_meta['outputs'].items():
                 if read_outputs is True or var in read_outputs:
-                    var_type = ''
-                    ds[var] = self.load_pfb_from_meta(var_meta, parallel=parallel)
+                    das = self.load_pfb_from_meta(var_meta, name=var, parallel=parallel)
+                    for k, v in das.items():
+                        ds[k] = v
         if read_inputs:
             for var, var_meta in self.pf_meta['inputs'].items():
                 if var == 'configuration':
                     continue # TODO: Determine what to do with this
                 if read_inputs is True or var in read_inputs:
-                    var_type = ''
-                    if len(var_meta['data']) == 1:
-                        v = self.load_pfb_from_meta(var_meta)
-                        ds[var] = v
-                    else:
-                        for sub_dict in var_meta['data']:
-                            component = sub_dict['component']
-                            ds[f'{var}_{component}'] = self.load_pfb_from_meta(
-                                    var_meta, component, parallel=parallel)
+                    das = self.load_pfb_from_meta(var_meta, name=var, parallel=parallel)
+                    for k, v in das.items():
+                        ds[k] = v
         return ds
 
     def is_meta_or_pfb(self, filename_or_obj, strict=True):
@@ -167,147 +163,126 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         self,
         filenames,
         dims=None,
-        shape=None
+        shape=None,
+        z_first=False,
+        z_is='z',
     ):
         if not dims:
             dims = ('time', 'x', 'y', 'z')
         data = indexing.LazilyIndexedArray(
-            ParflowBackendArray(filenames, dims=dims, shape=shape))
+            ParflowBackendArray(
+                filenames,
+                dims=dims,
+                shape=shape,
+                z_first=z_first,
+                z_is=z_is,
+        ))
         var = xr.Variable(dims, data)
         return var
 
-    def load_component_pfb(self):
+    def load_component_pfb(self, var_meta, name):
         """
         These filetypes have dimensions (component, x, y, z)
         where component represents an anisotropy
         """
-        pass
+        all_da = {}
+        if var_meta['domain'] == 'surface':
+            dims = ('x', 'y')
+        elif var_meta['domain'] == 'subsurface':
+            dims = ('x', 'y', 'z')
+        for sub_dict in var_meta['data']:
+            component = sub_dict['component']
+            comp_name = f'{name}_{component}'
+            file = sub_dict['file']
+            if not os.path.exists(file):
+                file = f'{self.base_dir}/{file}'
+            v = self.load_single_pfb(file).squeeze()
+            all_da[comp_name] = xr.Dataset({comp_name: v})[comp_name]
+        return all_da
 
-    def load_time_varying_pfb(self):
+    def load_time_varying_pfb(self, var_meta, name):
         """
         THese filetypes have dimensions (time, x, y, z)
         where a each file represents an individual time
         """
-        pass
+        file_template = var_meta['data'][0]['file-series']
+        n_time = 0
+        concat_dim = 'time'
+        time_idx = np.arange(*var_meta['data'][0]['time-range'])
+        n_time = time_idx[-1]
+        pad, fmt = file_template.split('.')[-2:]
+        basename = '.'.join(file_template.split('.')[:-2])
+        all_files = [f'{basename}.{pad%n}.{fmt}' for n in time_idx]
+        # Check if basename contains any of the files if not,
+        # fall back to `self.base_dir` from the pfmetadata file
+        if not os.path.exists(all_files[0]):
+            all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
-    def load_time_varying_2d_ts_pfb(self):
+        # Put it all together
+        inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
+        inf_dims = ('time', *inf_dims)
+        inf_shape = (len(all_files), *inf_shape)
+        base_da = self.load_stack_of_pfb(
+                all_files, dims=inf_dims, shape=inf_shape)
+        base_da = xr.Dataset({name: base_da})[name]
+        return {name: base_da}
+
+    def load_time_varying_2d_ts_pfb(self, var_meta, name):
         """
         These filetypes have dimensions (time_stride, x, y, time_slice)
         where the time dimension will be strided along separate files
         and each individual file contains time_slice number of timesteps
         """
-        pass
+        concat_dim = 'z' # z is time here
+        time_start = np.arange(*var_meta['data'][0]['times-between'])
+        time_end = time_start + var_meta['data'][0]['times-between'][-1] - 1
+        ntime = time_end[-1]
+        file_template = var_meta['data'][0]['file-series']
+        pad, fmt = file_template.split('.')[-2:]
+        basename = '.'.join(file_template.split('.')[:-2])
+        all_files = [f'{basename}.{pad%(s,e)}.{fmt}'
+                     for s, e in zip(time_start, time_end)]
+        # Check if basename contains any of the files if not,
+        # fall back to `self.base_dir` from the pfmetadata file
+        if not os.path.exists(all_files[0]):
+            all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
-    def load_clm_output_pfb(self):
+        # Put it all together
+        _, inf_shape = self._infer_dims_and_shape(all_files[0])
+        inf_dims = ('time', 'x', 'y')
+        inf_shape = (len(all_files)*inf_shape[-1], *inf_shape[:-1])
+        base_da = self.load_stack_of_pfb(
+                all_files, dims=inf_dims, shape=inf_shape,
+                z_first=True, z_is='time'
+        )
+        base_da = xr.Dataset({name: base_da})[name]
+        return {name: base_da}
+
+    def load_clm_output_pfb(self, var_meta, name):
         """
         These filetypes have dimensions (time, x, y, variable)
         where the variable ordering is fixed and each file represents an
         individual timestep
         """
-        pass
+        raise NotImplementedError('CLM output loading not supported. Coming soon!')
 
-
-    def load_pfb_from_meta(self, var_meta, parallel=False):
-        type_to_loader_fun = {
-            'pfb': self.load_time_varying_pfb,
-            'pfb 2d timeseries': self.load_time_varying_2d_ts_pfb,
-            'pfb_components': self.load_component_pfb,
-            'clm output': self.load_clm_output_pfb,
-        }
-        ALLOWED_TYPES = list(type_to_loader_fun.keys())
+    def load_pfb_from_meta(self, var_meta, name='_', parallel=False):
         base_type = var_meta['type']
         if base_type == 'pfb':
             # Is it component?
             if len(var_meta['data']) > 1 and 'component' in var_meta['data'][0]:
-                ret_das = self.load_component_pfb(var_meta)
-            # Is it clm output?
-            elif var_meta['data']:
-                ret_das = self.load_clm_output_pfb(var_meta)
+                ret_das = self.load_component_pfb(var_meta, name)
             # Is it normal?
-            else:
-                ret_das = self.load_time_varying_pfb(var_meta)
+            elif var_meta.get('time-varying', None):
+                ret_das = self.load_time_varying_pfb(var_meta, name)
+        elif base_type == 'clm output':
+            ret_das = self.load_clm_output_pfb(var_meta, name)
         elif base_type == 'pfb 2d timeseries':
-            ret_das = self.load_time_varying_2d_ts_pfb(var_meta)
+            ret_das = self.load_time_varying_2d_ts_pfb(var_meta, name)
         return ret_das
 
-
-
-    def load_pfb_from_meta_old(self, var_meta, component=None, parallel=False):
-        """
-        Load a pfb file or set of pfb files from the metadata
-
-        Parameters
-        ----------
-        var_meta: dict
-            A dictionary which tells us how to read the data
-        component: Optional[str]
-            An optional component for anisotropic fields
-        """
-        base_da = xr.DataArray()
-        ALLOWED_TYPES = ['pfb', 'pfb 2d timeseries']
-        pfb_type = var_meta['type']
-        assert pfb_type in ALLOWED_TYPES, "Can't load non-pfb data!"
-        if var_meta.get('time-varying', None):
-            # Note: The way that var_meta['data'] is aranged is idiosyncratic:
-            #       It is a list with a single dictionary inside - check if this
-            #       is always the case
-            file_template = var_meta['data'][0]['file-series']
-            n_time = 0
-            if pfb_type == 'pfb':
-                concat_dim = 'time'
-                time_idx = np.arange(*var_meta['data'][0]['time-range'])
-                n_time = time_idx[-1]
-                pad, fmt = file_template.split('.')[-2:]
-                basename = '.'.join(file_template.split('.')[:-2])
-                all_files = [f'{basename}.{pad%n}.{fmt}' for n in time_idx]
-            elif pfb_type == 'pfb 2d timeseries':
-                concat_dim = 'z' # z is time here
-                time_start = np.arange(*var_meta['data'][0]['times-between'])
-                time_end = time_start + var_meta['data'][0]['times-between'][-1] - 1
-                ntime = time_end[-1]
-                file_template = var_meta['data'][0]['file-series']
-                pad, fmt = file_template.split('.')[-2:]
-                basename = '.'.join(file_template.split('.')[:-2])
-                all_files = [f'{basename}.{pad%(s,e)}.{fmt}'
-                             for s, e in zip(time_start, time_end)]
-
-            # Check if basename contains any of the files if not,
-            # fall back to `self.base_dir` from the pfmetadata file
-            if not os.path.exists(all_files[0]):
-                all_files = [f'{self.base_dir}/{af}' for af in all_files]
-
-            # Put it all together
-            inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
-            inf_dims = ('time', *inf_dims)
-            inf_shape = (len(all_files), *inf_shape)
-            base_da = self.load_stack_of_pfb(
-                    all_files, dims=inf_dims, shape=inf_shape)
-            base_da = xr.Dataset({'_': base_da})['_']
-            if pfb_type == 'pfb 2d timeseries':
-                base_da = base_da.stack({'time':['time', 'z']})
-
-        elif component:
-            for sub_dict in var_meta['data']:
-                if sub_dict['component'] == component:
-                    file = sub_dict['file']
-                    if not os.path.exists(file):
-                        file = f'{self.base_dir}/{file}'
-                    base_da = self.load_single_pfb(file).squeeze()
-                    break
-        elif 'data' in var_meta:
-            file = var_meta['data'][0]['file']
-            if not os.path.exists(file):
-                file = f'{self.base_dir}/{file}'
-            base_da = self.load_single_pfb(file).squeeze()
-        else:
-            msg = f"Currently can't support for reading for {var_meta}"
-            warnings.warn(msg)
-
-        base_da.attrs['units'] = var_meta.get('units', 'not_specified')
-        return base_da
-
     def guess_can_open(self, filename_or_obj):
-        openable_extensions = ['pfb', 'pfmetadata', 'pbidb']
+        openable_extensions = ['pfb', 'pfmetadata']#, 'pbidb']
         for ext in openable_extensions:
             if filename_or_obj.endswith(ext):
                 return True
@@ -336,7 +311,7 @@ def _getitem_no_state(file_or_seq, key, mode, z_first=False, z_is='z'):
             )
         sub = sub[accessor[d[0]]['indices'],
                   accessor[d[1]]['indices'],
-                  accessor[d[2]]['indices']]#.squeeze()
+                  accessor[d[2]]['indices']].squeeze()
     elif mode == 'sequence':
         accessor = {d: util._key_to_explicit_accessor(k)
                     for d, k in zip(['time', 'x','y','z'], key)}
@@ -346,24 +321,26 @@ def _getitem_no_state(file_or_seq, key, mode, z_first=False, z_is='z'):
             t_end += 1
         sub = read_stack_of_pfbs(
             file_or_seq[t_start:t_end],
-            key=accessor,
+            keys=accessor,
             z_first=z_first,
+            z_is=z_is,
         )
-        sub = sub[accessor['time']['indices'],
-                  accessor['x']['indices'],
-                  accessor['y']['indices'],
-                  accessor['z']['indices']]
         if z_is == 'time':
-            if z_first:
-                sub = np.concatenate(sub, axis=0)
-            else:
-                sub = np.concatenate(sub, axis=-1)
+            sub = sub[accessor['time']['indices'],
+                      accessor['x']['indices'],
+                      accessor['y']['indices']]
+        elif z_first:
+            sub = sub[accessor['time']['indices'],
+                      accessor['z']['indices'],
+                      accessor['y']['indices'],
+                      accessor['x']['indices']]
+        else:
+            sub = sub[accessor['time']['indices'],
+                      accessor['x']['indices'],
+                      accessor['y']['indices'],
+                      accessor['y']['indices']]
         sub = sub.squeeze()
     return sub
-
-@delayed
-def _get_item_no_state_2d_timeseries(file_or_seq, key, mode):
-    pass
 
 
 class ParflowBackendArray(BackendArray):
@@ -373,6 +350,8 @@ class ParflowBackendArray(BackendArray):
          file_or_seq,
          dims=None,
          shape=None,
+         z_first=False,
+         z_is='z'
     ):
         self.file_or_seq = file_or_seq
         if isinstance(self.file_or_seq, str):
@@ -383,6 +362,8 @@ class ParflowBackendArray(BackendArray):
             self.header_file = self.file_or_seq[0]
         self._shape = shape
         self._dims = dims
+        self.z_first=z_first
+        self.z_is=z_is
         # Weird hack here, have to pull the dtype like this
         # to have valid `nbytes` attribute
         self.dtype = np.dtype(np.float64)
@@ -423,7 +404,9 @@ class ParflowBackendArray(BackendArray):
     def _getitem(self, key: tuple) -> np.typing.ArrayLike:
         size = self._size_from_key(key)
         key = self._explicit_indices_from_keys(size, key)
-        sub = delayed(_getitem_no_state)(self.file_or_seq, key, self.mode)
+        sub = delayed(_getitem_no_state)(
+                self.file_or_seq, key, self.mode,
+                self.z_first, self.z_is)
         sub = dask.array.from_delayed(sub, size, dtype=np.float64)
         return sub
 
