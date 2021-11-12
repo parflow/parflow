@@ -504,9 +504,9 @@ class ParflowBinaryReader:
 
 @jit(nopython=True)
 def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
-    nnx = int(np.ceil(nx / p))
-    nny = int(np.ceil(ny / q))
-    nnz = int(np.ceil(nz / r))
+    nnx = int(nx / p)
+    nny = int(ny / q)
+    nnz = int(nz / r)
     lx = (nx % p)
     ly = (ny % q)
     lz = (nz % r)
@@ -528,9 +528,9 @@ def subgrid_lower_left(
     pp, qq, rr,
     lx, ly, lz
 ):
-    ix = max(0, pp * (nnx-1) + min(pp, lx))
-    iy = max(0, qq * (nny-1) + min(qq, ly))
-    iz = max(0, rr * (nnz-1) + min(rr, lz))
+    ix = pp * nnx + min(pp, lx)
+    iy = qq * nny + min(qq, ly)
+    iz = rr * nnz + min(rr, lz)
     return ix, iy, iz
 
 
@@ -540,9 +540,9 @@ def subgrid_size(
     pp, qq, rr,
     lx, ly, lz
 ):
-    snx = nnx-1 if pp >= max(lx, 1) else nnx
-    sny = nny-1 if qq >= max(ly, 1) else nny
-    snz = nnz-1 if rr >= max(lz, 1) else nnz
+    snx = nnx if pp >= lx else nnx+1
+    sny = nny if qq >= ly else nny+1
+    snz = nnz if rr >= lz else nnz+1
     return snx, sny, snz
 
 
