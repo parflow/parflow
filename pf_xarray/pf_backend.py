@@ -264,6 +264,36 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         where the variable ordering is fixed and each file represents an
         individual timestep
         """
+        warnings.warn("""
+            Reading CLM output is not officially supported,
+            at this time. We'll try our best to load the data,
+            but this may break in the future!
+            """
+        )
+        file_template = var_meta['data'][0]['file-series']
+        n_time = 0
+        concat_dim = 'time'
+        time_idx = np.arange(*var_meta['data'][0]['time-range'])
+        n_time = time_idx[-1]
+        pad, filler, fmt = file_template.split('.')[-3:]
+        basename = '.'.join(file_template.split('.')[:-3])
+        all_files = [f'{basename}.{pad%n}.{filler}.{fmt}' for n in time_idx]
+        print(all_files[0])
+        # Check if basename contains any of the files if not,
+        # fall back to `self.base_dir` from the pfmetadata file
+        if not os.path.exists(all_files[0]):
+            all_files = [f'{self.base_dir}/{af}' for af in all_files]
+
+        # Put it all together
+        inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
+        inf_dims = ('time', *inf_dims)
+        inf_shape = (len(all_files), *inf_shape)
+        base_da = self.load_stack_of_pfb(
+                all_files, dims=inf_dims, shape=inf_shape)
+        base_da = xr.Dataset({name: base_da})[name].rename({'z': 'clm_out_var'})
+        return {name: base_da}
+
+
         raise NotImplementedError('CLM output loading not supported. Coming soon!')
 
     def load_pfb_from_meta(self, var_meta, name='_', parallel=False):
@@ -275,7 +305,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             # Is it normal?
             elif var_meta.get('time-varying', None):
                 ret_das = self.load_time_varying_pfb(var_meta, name)
-        elif base_type == 'clm output':
+        elif base_type == 'clm_output':
             ret_das = self.load_clm_output_pfb(var_meta, name)
         elif base_type == 'pfb 2d timeseries':
             ret_das = self.load_time_varying_2d_ts_pfb(var_meta, name)
