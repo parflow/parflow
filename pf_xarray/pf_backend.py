@@ -11,8 +11,8 @@ from . import util
 from .io import ParflowBinaryReader, read_stack_of_pfbs, read_pfb
 from collections.abc import Iterable
 from dask import delayed
-from parflow.tools import hydrology
-from parflowio.pyParflowio import PFData
+#from parflow.tools import hydrology
+#from parflowio.pyParflowio import PFData
 from typing import Mapping, List, Union
 from xarray.backends  import BackendEntrypoint, BackendArray, CachingFileManager
 from xarray.backends.locks import SerializableLock
@@ -156,7 +156,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             dims = ('x', 'y', 'z')
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(filename_or_obj, dims=dims, shape=shape))
-        var = xr.Variable(dims, data, )
+        var = xr.Variable(dims, data, ).squeeze()
         return var
 
     def load_stack_of_pfb(
@@ -278,7 +278,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         pad, filler, fmt = file_template.split('.')[-3:]
         basename = '.'.join(file_template.split('.')[:-3])
         all_files = [f'{basename}.{pad%n}.{filler}.{fmt}' for n in time_idx]
-        print(all_files[0])
         # Check if basename contains any of the files if not,
         # fall back to `self.base_dir` from the pfmetadata file
         if not os.path.exists(all_files[0]):
