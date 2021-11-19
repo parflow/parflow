@@ -58,6 +58,8 @@ def read_stack_of_pfbs(
     :return:
         An nd array containing the data from the files.
     """
+    # Filter out unique files only
+    file_seq = list(set(file_seq))
     with ParflowBinaryReader(file_seq[0]) as pfb_init:
         base_header = pfb_init.header
         base_sg_offsets = pfb_init.subgrid_offsets
@@ -91,10 +93,10 @@ def read_stack_of_pfbs(
             pfb.coords = base_sg_coords
             pfb.chunks = base_sg_chunks
             if not keys:
-                substack_data = pfb.read_all_subgrids(mode='full')
+                substack_data = pfb.read_all_subgrids(mode='full', z_first=z_first)
             else:
                 substack_data = pfb.read_subarray(
-                        start_x, start_y, start_z, nx, ny, nz, z_first)
+                        start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
             pfb_stack[i, :, : ,:] = substack_data
     if z_is == 'time':
         if z_first:

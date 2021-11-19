@@ -7,6 +7,7 @@ import warnings
 import xarray as xr
 import yaml
 
+from pprint import pprint
 from . import util
 from .io import ParflowBinaryReader, read_stack_of_pfbs, read_pfb
 from collections.abc import Iterable
@@ -204,7 +205,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         if var_meta['domain'] == 'surface':
             dims = ('x', 'y')
         elif var_meta['domain'] == 'subsurface':
-            dims = ('x', 'y', 'z')
+            dims = ('z', 'y', 'x')
         for sub_dict in var_meta['data']:
             component = sub_dict['component']
             comp_name = f'{name}_{component}'
@@ -334,10 +335,10 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
 
 @delayed
-def _getitem_no_state(file_or_seq, key, mode, z_first=True, z_is='z'):
+def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
     if mode == 'single':
         accessor = {d: util._key_to_explicit_accessor(k)
-                    for d, k in zip(['x','y','z'], key)}
+                    for d, k in zip(dims, key)}
         if z_first:
             d = ['z', 'y', 'x']
         else:
@@ -358,7 +359,7 @@ def _getitem_no_state(file_or_seq, key, mode, z_first=True, z_is='z'):
                   accessor[d[2]]['indices']].squeeze()
     elif mode == 'sequence':
         accessor = {d: util._key_to_explicit_accessor(k)
-                    for d, k in zip(['time', 'x','y','z'], key)}
+                    for d, k in zip(dims, key)}
         t_start = accessor['time']['start']
         t_end = accessor['time']['stop'] - 1
         if t_start == t_end:
@@ -369,6 +370,8 @@ def _getitem_no_state(file_or_seq, key, mode, z_first=True, z_is='z'):
             z_first=z_first,
             z_is=z_is,
         )
+        # TODO: This can probably be cleaned up now with just
+        # sub = sub[accessor[d]['indices'] for d in dims]
         if z_is == 'time':
             sub = sub[accessor['time']['indices'],
                       accessor['x']['indices'],
@@ -404,6 +407,12 @@ class ParflowBackendArray(BackendArray):
         elif isinstance(self.file_or_seq, Iterable):
             self.mode = 'sequence'
             self.header_file = self.file_or_seq[0]
+            # TODO: Should this be done in `load_time_varying_2d_ts_pfb`?
+            if z_is == 'time':
+                time_idx = np.nonzero(np.array(dims) == 'time')[0][0]
+                ntime = np.array(shape)[time_idx]
+                ts_per_file = int(ntime / len(self.file_or_seq))
+                self.file_or_seq = np.repeat(self.file_or_seq, ts_per_file)
         self._shape = shape
         self._dims = dims
         self.z_first=z_first
@@ -458,7 +467,7 @@ class ParflowBackendArray(BackendArray):
         size = self._size_from_key(key)
         key = self._explicit_indices_from_keys(size, key)
         sub = delayed(_getitem_no_state)(
-                self.file_or_seq, key, self.mode,
+                self.file_or_seq, key, self.dims, self.mode,
                 self.z_first, self.z_is)
         sub = dask.array.from_delayed(sub, size, dtype=np.float64)
         return sub
