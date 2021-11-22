@@ -363,6 +363,7 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
         t_start = accessor['time']['start']
         t_end = accessor['time']['stop'] - 1
         if z_is == 'time':
+            # WARNING:  This is pretty hacky, accounting for first timestep offset
             file_start_time = int(file_or_seq[t_start].split('.')[-2].split('_')[0])
             accessor['time']['start'] -= file_start_time
             accessor['time']['stop'] -= file_start_time
