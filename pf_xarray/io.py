@@ -77,6 +77,7 @@ def read_stack_of_pfbs(
         nx = np.max([keys['x']['stop'] - start_x - 1, 1])
         ny = np.max([keys['y']['stop'] - keys['y']['start'] - 1, 1])
         nz = np.max([keys[z_is]['stop'] - keys[z_is]['start'] - 1, 1])
+
     if z_first:
         stack_size = (len(file_seq), nz, ny, nx)
     else:
@@ -366,7 +367,6 @@ class ParflowBinaryReader:
         x_sg_coords = np.unique(np.hstack(x_coords[p_subgrids]))
         y_sg_coords = np.unique(np.hstack(y_coords[q_subgrids]))
         z_sg_coords = np.unique(np.hstack(z_coords[r_subgrids]))
-
         # Min values will be used to align in the bounding data
         x_min = np.min(x_sg_coords)
         y_min = np.min(y_sg_coords)

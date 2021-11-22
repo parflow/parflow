@@ -362,6 +362,10 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
                     for d, k in zip(dims, key)}
         t_start = accessor['time']['start']
         t_end = accessor['time']['stop'] - 1
+        if z_is == 'time':
+            file_start_time = int(file_or_seq[t_start].split('.')[-2].split('_')[0])
+            accessor['time']['start'] -= file_start_time
+            accessor['time']['stop'] -= file_start_time
         if t_start == t_end:
             t_end += 1
         sub = read_stack_of_pfbs(
@@ -408,7 +412,7 @@ class ParflowBackendArray(BackendArray):
             self.mode = 'sequence'
             self.header_file = self.file_or_seq[0]
             # TODO: Should this be done in `load_time_varying_2d_ts_pfb`?
-            if z_is == 'time':
+            if z_is == 'time' and shape is not None:
                 time_idx = np.nonzero(np.array(dims) == 'time')[0][0]
                 ntime = np.array(shape)[time_idx]
                 ts_per_file = int(ntime / len(self.file_or_seq))
