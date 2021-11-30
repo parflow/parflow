@@ -5,6 +5,7 @@ import numpy as np
 import struct
 from typing import Mapping, List, Union
 from numbers import Number
+from pprint import pprint
 
 
 def read_pfb(file: str, mode: str='full', z_first: bool=True):
@@ -58,6 +59,8 @@ def read_stack_of_pfbs(
     :return:
         An nd array containing the data from the files.
     """
+    # Filter out unique files only
+    file_seq = list(set(file_seq))
     with ParflowBinaryReader(file_seq[0]) as pfb_init:
         base_header = pfb_init.header
         base_sg_offsets = pfb_init.subgrid_offsets
@@ -75,6 +78,8 @@ def read_stack_of_pfbs(
         nx = np.max([keys['x']['stop'] - start_x - 1, 1])
         ny = np.max([keys['y']['stop'] - keys['y']['start'] - 1, 1])
         nz = np.max([keys[z_is]['stop'] - keys[z_is]['start'] - 1, 1])
+    #pprint(keys)
+
     if z_first:
         stack_size = (len(file_seq), nz, ny, nx)
     else:
@@ -91,10 +96,10 @@ def read_stack_of_pfbs(
             pfb.coords = base_sg_coords
             pfb.chunks = base_sg_chunks
             if not keys:
-                substack_data = pfb.read_all_subgrids(mode='full')
+                substack_data = pfb.read_all_subgrids(mode='full', z_first=z_first)
             else:
                 substack_data = pfb.read_subarray(
-                        start_x, start_y, start_z, nx, ny, nz, z_first)
+                        start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
             pfb_stack[i, :, : ,:] = substack_data
     if z_is == 'time':
         if z_first:
@@ -364,7 +369,6 @@ class ParflowBinaryReader:
         x_sg_coords = np.unique(np.hstack(x_coords[p_subgrids]))
         y_sg_coords = np.unique(np.hstack(y_coords[q_subgrids]))
         z_sg_coords = np.unique(np.hstack(z_coords[r_subgrids]))
-
         # Min values will be used to align in the bounding data
         x_min = np.min(x_sg_coords)
         y_min = np.min(y_sg_coords)
