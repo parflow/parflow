@@ -5,6 +5,7 @@ import numpy as np
 import struct
 from typing import Mapping, List, Union
 from numbers import Number
+from pprint import pprint
 
 
 def read_pfb(file: str, mode: str='full', z_first: bool=True):
@@ -77,6 +78,7 @@ def read_stack_of_pfbs(
         nx = np.max([keys['x']['stop'] - start_x - 1, 1])
         ny = np.max([keys['y']['stop'] - keys['y']['start'] - 1, 1])
         nz = np.max([keys[z_is]['stop'] - keys[z_is]['start'] - 1, 1])
+    #pprint(keys)
 
     if z_first:
         stack_size = (len(file_seq), nz, ny, nx)

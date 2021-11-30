@@ -161,6 +161,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 dims = ('z', 'y', 'x')
             else:
                 dims = ('x', 'y', 'z')
+        print(filename_or_obj)
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(
                 filename_or_obj,
@@ -286,6 +287,20 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             but this may break in the future!
             """
         )
+        varnames = [
+            'latent_heat_flux',
+            'outgoing_longwave',
+            'sensible_heat_flux',
+            'ground_heat_flux',
+            'total_evapotranspiration',
+            'ground_evaporation',
+            'soil_evaporation',
+            'transpiration',
+            'swe',
+            't_ground',
+            'irrigation', # TODO: This may not exist?
+            't_soil_layer_i' # TODO: Need a way to determine the number of layers
+        ]
         file_template = var_meta['data'][0]['file-series']
         n_time = 0
         concat_dim = 'time'
@@ -320,10 +335,18 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             # Is it normal?
             elif var_meta.get('time-varying', None):
                 ret_das = self.load_time_varying_pfb(var_meta, name)
+            else:
+                filename = var_meta['data'][0]['file']
+                if not os.path.exists(filename):
+                    filename = f'{self.base_dir}/{filename}'
+                v = self.load_single_pfb(filename).squeeze()
+                ret_das = {name: xr.Dataset({name: v})[name]}
         elif base_type == 'clm_output':
             ret_das = self.load_clm_output_pfb(var_meta, name)
         elif base_type == 'pfb 2d timeseries':
             ret_das = self.load_time_varying_2d_ts_pfb(var_meta, name)
+        else:
+            raise ValueError(f'Could not find meta type for {base_type}')
         return ret_das
 
     def guess_can_open(self, filename_or_obj):
@@ -364,7 +387,7 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
         t_end = accessor['time']['stop'] - 1
         if z_is == 'time':
             # WARNING:  This is pretty hacky, accounting for first timestep offset
-            file_start_time = int(file_or_seq[t_start].split('.')[-2].split('_')[0])
+            file_start_time = int(file_or_seq[t_start].split('.')[-2].split('_')[0]) - 1
             accessor['time']['start'] -= file_start_time
             accessor['time']['stop'] -= file_start_time
         if t_start == t_end:
