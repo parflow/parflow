@@ -161,7 +161,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 dims = ('z', 'y', 'x')
             else:
                 dims = ('x', 'y', 'z')
-        print(filename_or_obj)
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(
                 filename_or_obj,
@@ -295,11 +294,11 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             'total_evapotranspiration',
             'ground_evaporation',
             'soil_evaporation',
+            'veg_evaporation',
             'transpiration',
+            'infiltration',
             'swe',
             't_ground',
-            'irrigation', # TODO: This may not exist?
-            't_soil_layer_i' # TODO: Need a way to determine the number of layers
         ]
         file_template = var_meta['data'][0]['file-series']
         n_time = 0
@@ -319,9 +318,10 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         inf_dims = ('time', *inf_dims)
         inf_shape = (len(all_files), *inf_shape)
         base_da = self.load_stack_of_pfb(
-                all_files, dims=inf_dims, shape=inf_shape)
-        base_da = xr.Dataset({name: base_da})[name].rename({'z': 'clm_out_var'})
-        return {name: base_da}
+                all_files, dims=inf_dims, shape=inf_shape,)
+        base_da = xr.Dataset({name: base_da})[name]
+        clm_das = [base_da.isel(z=i).rename(v) for i,v in enumerate(varnames)]
+        return xr.merge(clm_das)
 
 
         raise NotImplementedError('CLM output loading not supported. Coming soon!')
@@ -387,7 +387,12 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
         t_end = accessor['time']['stop'] - 1
         if z_is == 'time':
             # WARNING:  This is pretty hacky, accounting for first timestep offset
-            file_start_time = int(file_or_seq[t_start].split('.')[-2].split('_')[0]) - 1
+            try:
+                # Parflow files end with TIMESTEP.pfb
+                file_start_time = int(file_or_seq[t_start].split('.')[-2].split('_')[0]) - 1
+            except:
+                # CLM output files end with TIMESTEP.C.pfb
+                file_start_time = int(file_or_seq[t_start].split('.')[-3].split('_')[0]) - 1
             accessor['time']['start'] -= file_start_time
             accessor['time']['stop'] -= file_start_time
         if t_start == t_end:

@@ -60,7 +60,7 @@ def read_stack_of_pfbs(
         An nd array containing the data from the files.
     """
     # Filter out unique files only
-    file_seq = list(set(file_seq))
+    file_seq = sorted(list(set(file_seq)))
     with ParflowBinaryReader(file_seq[0]) as pfb_init:
         base_header = pfb_init.header
         base_sg_offsets = pfb_init.subgrid_offsets
