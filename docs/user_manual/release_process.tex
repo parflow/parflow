@@ -1,0 +1,71 @@
+%=============================================================================
+% Chapter: Release Process
+%=============================================================================
+
+\chapter{Release Process}
+\label{Release Process}
+
+The release process for \parflow{} follows the a standard GitHub
+release process.  The following steps should be followed for creating a new
+\parflow{} release.
+
+\begin{enumerate}
+	\item Create branch/fork for generating the release
+	\item Edit the RELEASE-NOTES.md file
+	\item Regenerate the \parflow{} User Manual
+        \item Commit release file changes
+        \item Create a pull request for the branch/fork
+        \item Merge the pull request
+        \item Generate a release on GitHub
+\end{enumerate}
+
+
+\section{Create branch}
+
+Use standard Git/GitHub commands to create a branch for editing some files for the release.
+
+\section{Edit files}
+
+Edit the RELEASE-NOTES.md file to add notes about what was changed in
+this release.  Old release notes should be deleted, we do not keep a
+running account of release information.
+
+Edit VERSION file with current version.
+
+\section{Regenerate the \parflow{} User Manual}
+
+The repository contains a PDF of the User Manaul.  This should be
+regenerated for the release so it is up-to-date.  This step requires
+a Latex install to perform.
+
+\begin{display}\begin{verbatim}
+  cd <directory with ParFlow source>
+  mkdir build
+  cd build
+  cmake -DPARFLOW_ENABLE_LATEX=TRUE ../parflow/
+  make
+  cp ./docs/manuals/user_manual.pdf ../parflow/
+\end{verbatim}\end{display}
+  
+\section{Commit release file changes}
+
+Use standard git add and git commit commands to add the modified files
+to the release branch/fork.
+
+\section{Create a pull request for the branch/fork}
+
+Use GitHub to create a pull request for the release branch.
+  
+\section{Merge the pull request}
+
+Use GitHub to create a pull request for the release branch.
+  
+\section{Generate a release on GitHub}
+
+On the GitHub \code{https://github.com/parflow/parflow/releases} page use
+``Draft a new release'' to create the release.
+
+Version tag should have format of ``vX.Z.Z'' version.  Release title
+should have format of ``ParFlow Version X.Y.Z''.  The GitHub release
+description can be copied from the release notes markdown file that
+was created in a proir step.

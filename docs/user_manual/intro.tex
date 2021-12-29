@@ -1,0 +1,92 @@
+%=============================================================================
+% Chapter: Introduction
+%=============================================================================
+
+\chapter{Introduction}
+\label{Introduction}
+
+\parflow{} (\emph{PARallel FLOW}) is an integrated hydrology 
+model that simulates surface and subsurface flow.
+\parflow{} \cite{Ashby-Falgout90, Jones-Woodward01, KM06, M13} 
+is a parallel simulation platform that operates in three modes:\begin{enumerate}
+\item
+steady-state saturated; 
+\item
+variably saturated; 
+\item
+and integrated-watershed flow.
+\end{enumerate}
+\parflow{} is especially suitable for large scale problems on a range
+of single and multi-processor computing platforms. \parflow{}
+simulates saturated and variably saturated
+subsurface flow in heterogeneous porous media in three spatial
+dimensions using a mulitgrid-preconditioned conjugate gradient solver
+\cite{Ashby-Falgout90} and a Newton-Krylov nonlinear solver
+\cite{Jones-Woodward01}. \parflow{} has recently been extended to
+coupled surface-subsurface flow to enable the simulation of hillslope
+runoff and channel routing in a truly integrated fashion
+\cite{KM06}. \parflow{} is also fully-coupled with the land surface
+model \code{CLM} \cite{Dai03} as described in \cite{MM05,KM08a}.  The
+development and application of \parflow{} has been on-going for more
+than 20 years \cite{Meyerhoff14a, Meyerhoff14b, Meyerhoff11, Mikkelson13,
+RMC10, Shrestha14, SNSMM10, Siirila12a,
+Siirila12b, SMPMPK10, Williams11, Williams13, FM10, Keyes13, 
+KRM10, Condon13a, Condon13b, M13, KRM10, KRM10, SNSMM10, DMC10, AM10,
+MLMSWT10, M10, FM10, KMWSVVS10, SMPMPK10, FFKM09, KCSMMB09, MTK09, dBRM08, 
+MK08b, KM08b, KM08a, MK08a, MCT08,MCK07,MWH07,
+  KM06, MM05, TMCZPS05, MWT03, Teal02, WGM02, Jones-Woodward01, MCT00,
+  TCRM99, TBP99, TFSBA98, Ashby-Falgout90} and resulted in some of the
+most advanced numerical solvers and multigrid preconditioners for
+massively parallel computer environments that are available
+today. Many of the numerical tools developed within the \parflow{}
+platform have been turned into or are from libraries that are now
+distributed and maintained at LLNL ({\em Hypre} and {\em SUNDIALS},
+for example).  An additional advantage of \parflow{} is the use of a
+sophisticated octree-space partitioning algorithm to depict complex
+structures in three-space, such as topography, different hydrologic
+facies, and watershed boundaries. All these components implemented
+into \parflow{} enable large scale, high resolution watershed
+simulations. 
+
+\parflow{} is primarily written in \emph{C}, uses a modular
+architecture and contains a flexible communications layer to
+encapsulate parallel process interaction on a range of platforms.
+\code{CLM} is fully-integrated into \parflow{} as a module and has
+been parallelized (including I/O) and is written in \emph{FORTRAN
+  90/95}.  \parflow{} is organized into a main executable
+\file{\emph{pfdir}/pfsimulator/parflow_exe} and a library
+\file{\emph{pfdir}/pfsimulator/parflow\_lib} (where \file{\emph{pfdir}} is
+the main directory location) and is comprised of more than 190
+separate source files.  \parflow{} is structured to allow it to be
+called from within another application (\emph{e.g.} WRF, the Weather Research 
+and Forecasting atmospheric model) or as a
+stand-alone application.  There is also a directory structure for the
+message-passing layer \file{\emph{pfdir}/pfsimulator/amps} for the
+associated tools \file{\emph{pfdir}/pftools} for \code{CLM}
+\file{\emph{pfdir}/pfsimulator/clm} and a directory of test cases
+\file{\emph{pfdir}/test}.
+
+\section{How to use this manual}
+\label{how to}
+This manual describes how to use \parflow{}, and is intended for
+hydrologists, geoscientists, environmental scientists and engineers. 
+This manual is written assuming the reader has a basic understanding
+of Linux / UNIX environments, how to compose and execute scripts in various 
+programming languages (e.g. TCL), and is familiar with groundwater and 
+surface water hydrology, parallel computing, and numerical modeling in general.
+In Chapter~\ref{Getting Started}, we describe how to install \parflow{}, including
+building the code and associated libraries. Then, we lead the user through a simple
+\parflow{} run and discuss the automated test suite.  In
+Chapter~\ref{The ParFlow System}, we describe the \parflow{} system in
+more detail.  This chapter contains a lot of useful information regarding how a run is 
+constructed and most importantly contains two detailed, annotated scripts that run two
+classical \parflow{} problems, a fully saturated, heterogeneous aquifer and a variably 
+saturated, transient, coupled watershed.  Both test cases are published in the literature
+and are a terrific initial starting point for a new \parflow{} user.
+
+Chapter~\ref{Manipulating Data} describes data analysis and processing. Chapter~\ref{Model_Equations} provides the basic equations solved
+by \parflow{}.  Chapter~\ref{ParFlow Files} describes the formats of the
+various files used by \parflow{}.  These chapters are really intended to be used as reference material. 
+This manual provides some overview of \parflow{}
+some information on building the code, examples of scripts that solve certain classes of
+problems and a compendium of keys that are set for code options. 

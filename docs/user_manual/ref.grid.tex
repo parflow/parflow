@@ -1,0 +1,1143 @@
+%=============================================================================
+% Reference Section: Grid Reference
+%=============================================================================
+
+\newpage
+\section{Grid Reference}
+\label{Grid Reference}
+
+%=============================================================================
+% Reference: Grid Structures
+%=============================================================================
+
+\subsection{Grid Structures}
+\label{Grid Structures}
+
+Many of the components in the following structures relate intuitively
+to the discussion in \ref{Gridding}.
+We will discuss here only those components which need explanation.
+
+\begin{display}\begin{verbatim}
+typedef struct
+{
+   double   X,  Y,  Z;    /* Bottom-lower-left corner in real-space */
+   int      NX, NY, NZ;   /* Size in each coordinate direction */
+   double   DX, DY, DZ;   /* Spacing in each coordinate direction */
+
+} Background;
+\end{verbatim}\end{display}
+
+There is only one \code{Background} structure currently in \parflow{}.
+It is currently global.
+
+\begin{display}\begin{verbatim}
+typedef struct
+{
+   int  ix, iy, iz;      /* Bottom-lower-left corner in index-space */
+   int  nx, ny, nz;      /* Size */
+   int  sx, sy, sz;      /* Striding factors */
+   int  rx, ry, rz;      /* Refinement over the background grid */
+   int  level;           /* Refinement level = rx + ry + rz */
+
+   int  process;         /* Process containing this subgrid */
+
+} Subregion;
+\end{verbatim}\end{display}
+
+The \code{process} component of the \code{Subregion} structure is
+intended to associate a subregion with a particular process.
+However, it is often times not used, and may be replaced in the
+future by some other mechanism for achieving this task.
+
+\begin{display}\begin{verbatim}
+typedef struct
+{
+   Subregion  **subregions;   /* Array of pointers to subregions */
+   int          size;         /* Size of subgregion array */
+
+} SubregionArray;
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+typedef struct
+{
+   SubregionArray  **subregion_arrays;   /* Array of pointers to
+                                          * subregion arrays */
+   int               size;               /* Size of region */
+
+} Region;
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+typedef Subregion  Subgrid;
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+typedef SubregionArray  SubgridArray;
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+typedef struct
+{
+   SubgridArray  *subgrids;     /* Array of subgrids in this process */
+
+   SubgridArray  *all_subgrids; /* Array of all subgrids in the grid */
+
+   int            size;         /* Total number of grid points */
+
+   ComputePkg   **compute_pkgs;
+
+} Grid;
+\end{verbatim}\end{display}
+
+The \code{subgrids} component of the \code{Grid} structure above, is a
+subgrid-array of subgrids associated with my process.
+The \code{all_subgrids} component is a subgrid-array of all subgrids
+in the grid.
+It is important to note that \code{subgrids} contains pointers into
+\code{all_subgrids}.
+The \code{compute_pkgs} component is an array of pointers to
+\code{ComputePkg} structures.
+This structure is related to communications within \parflow{} and
+really should not appear in the \code{Grid} structures.
+Hopefully, this we be fixed at some point in the future.
+
+%=============================================================================
+% Reference: Grid Accessors
+%=============================================================================
+
+\subsection{Grid Accessors}
+\label{Grid Accessors}
+
+Ignore the format of this section; it is currently in debate.
+
+\begin{display}\begin{verbatim}
+Background      *background;
+Subregion       *subregion;
+SubregionArray  *subregion_array;
+Region          *region;
+Subgrid         *subgrid;
+SubgridArray    *subgrid_array;
+Grid            *grid;
+int              i;
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+
+BackgroundX(background)   background -> X
+BackgroundY(background)   background -> Y
+BackgroundZ(background)   background -> Z
+BackgroundNX(background)  background -> NX
+BackgroundNY(background)  background -> NY
+BackgroundNZ(background)  background -> NZ
+BackgroundDX(background)  background -> DX
+BackgroundDY(background)  background -> DY
+BackgroundDZ(background)  background -> DZ
+
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+
+SubregionIX(subregion)      subregion -> ix
+SubregionIY(subregion)      subregion -> iy
+SubregionIZ(subregion)      subregion -> iz
+SubregionNX(subregion)      subregion -> nx
+SubregionNY(subregion)      subregion -> ny
+SubregionNZ(subregion)      subregion -> nz
+SubregionSX(subregion)      subregion -> sx
+SubregionSY(subregion)      subregion -> sy
+SubregionSZ(subregion)      subregion -> sz
+SubregionRX(subregion)      subregion -> rx
+SubregionRY(subregion)      subregion -> ry
+SubregionRZ(subregion)      subregion -> rz
+SubregionLevel(subregion)   subregion -> level
+SubregionProcess(subregion) subregion -> process
+
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+
+SubregionArraySubregion(subregion_array, i)  subregion_array -> subregions[i]
+SubregionArraySize(subregion_array)          subregion_array -> size
+
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+
+RegionSubregionArray(region, i)  region -> subregion_arrays[i]
+RegionSize(region)               region -> size
+
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+
+SubgridIX(subgrid)       SubregionIX(subgrid)
+SubgridIY(subgrid)       SubregionIY(subgrid)
+SubgridIZ(subgrid)       SubregionIZ(subgrid)
+SubgridNX(subgrid)       SubregionNX(subgrid)
+SubgridNY(subgrid)       SubregionNY(subgrid)
+SubgridNZ(subgrid)       SubregionNZ(subgrid)
+SubgridRX(subgrid)       SubregionRX(subgrid)
+SubgridRY(subgrid)       SubregionRY(subgrid)
+SubgridRZ(subgrid)       SubregionRZ(subgrid)
+SubgridLevel(subgrid)    SubregionLevel(subgrid)
+SubgridProcess(subgrid)  SubregionProcess(subgrid)
+
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+
+SubgridArraySubgrid(subgrid_array, i)  SubregionArraySubregion(subgrid_array, i)
+SubgridArraySize(subgrid_array)        SubregionArraySize(subgrid_array)
+
+\end{verbatim}\end{display}
+
+\begin{display}\begin{verbatim}
+
+GridSubgrids(grid)       grid -> subgrids
+GridAllSubgrids(grid)    grid -> all_subgrids
+GridSize(grid)           grid -> size
+GridComputePkgs(grid)    grid -> compute_pkgs
+GridComputePkg(grid, i)  grid -> compute_pkgs[i]
+GridSubgrid(grid, i)     SubgridArraySubgrid(GridSubgrids(grid), i)
+GridNumSubgrids(grid)    SubgridArraySize(GridSubgrids(grid))
+
+\end{verbatim}\end{display}
+
+%=============================================================================
+% Reference: ReadBackground
+%=============================================================================
+
+\newpage
+\subsection{ReadBackground}
+\label{ReadBackground}
+
+\index{\findex{ReadBackground}}
+
+\begin{deftypefn}{Function}{Background *}{ReadBackground}(amps_File \var{file})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Reads in a background description from \var{file}, then
+creates and returns a new \code{Background} structure.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: NewSubregion
+%=============================================================================
+
+\newpage
+\subsection{NewSubregion}
+\label{NewSubregion}
+
+\index{\findex{NewSubregion}}
+
+\begin{deftypefn}{Function}{Subregion *}{NewSubregion}(int \var{ix}, int \var{iy}, int \var{iz}, int \var{nx}, int \var{ny}, int \var{nz}, int \var{sx}, int \var{sy}, int \var{sz}, int \var{rx}, int \var{ry}, int \var{rz}, int \var{process})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Creates and returns a pointer to a new \code{Subregion} structure.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: NewSubregionArray
+%=============================================================================
+
+\newpage
+\subsection{NewSubregionArray}
+\label{NewSubregionArray}
+
+\index{\findex{NewSubregionArray}}
+
+\begin{deftypefn}{Function}{SubregionArray *}{NewSubregionArray}()
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Creates and returns a pointer to a new \code{SubregionArray} structure
+of size 0.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{AppendSubregion}{AppendSubregion}\\
+\vref{AppendSubregionArray}{AppendSubregionArray}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: NewRegion
+%=============================================================================
+
+\newpage
+\subsection{NewRegion}
+\label{NewRegion}
+
+\index{\findex{NewRegion}}
+
+\begin{deftypefn}{Function}{Region *}{NewRegion}(int \var{size})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Creates and returns a pointer to a new \code{Region} structure
+containing \var{size} pointers to new \code{SubregionArray} structures.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{NewSubregionArray}{NewSubregionArray}\\
+\vref{AppendSubregion}{AppendSubregion}\\
+\vref{AppendSubregionArray}{AppendSubregionArray}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: NewSubgrid
+%=============================================================================
+
+\newpage
+\subsection{NewSubgrid}
+\label{NewSubgrid}
+
+\index{\findex{NewSubgrid}}
+
+\begin{deftypefn}{Function}{Subgrid *}{NewSubgrid}(int \var{ix}, int \var{iy}, int \var{iz}, int \var{nx}, int \var{ny}, int \var{nz}, int \var{rx}, int \var{ry}, int \var{rz}, int \var{process})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Creates and returns a pointer to a new \code{Subgrid} structure.
+
+%=========================== NOTES
+\NOTES
+This is currently a macro (\ref{NewSubregion}).
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: NewSubgridArray
+%=============================================================================
+
+\newpage
+\subsection{NewSubgridArray}
+\label{NewSubgridArray}
+
+\index{\findex{NewSubgridArray}}
+
+\begin{deftypefn}{Function}{SubgridArray *}{NewSubgridArray}()
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Creates and returns a pointer to a new \code{SubgridArray} structure
+of size 0.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{AppendSubgrid}{AppendSubgrid}\\
+\vref{AppendSubgridArray}{AppendSubgridArray}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: NewGrid
+%=============================================================================
+
+\newpage
+\subsection{NewGrid}
+\label{NewGrid}
+
+\index{\findex{NewGrid}}
+
+\begin{deftypefn}{Function}{Grid *}{NewGrid}({SubgridArray *} \var{subgrids}, {SubgridArray *} \var{all\_subgrids})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Creates and returns a pointer to a new \code{Grid} structure.
+The \code{size} component is computed and the \code{compute_pkgs}
+component is set to \code{NULL}.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: FreeBackground
+%=============================================================================
+
+\newpage
+\subsection{FreeBackground}
+\label{FreeBackground}
+
+\index{\findex{FreeBackground}}
+
+\begin{deftypefn}{Function}{void}{FreeBackground}({Background *} \var{background})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Frees a \code{Background} structure.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: FreeSubregion
+%=============================================================================
+
+\newpage
+\subsection{FreeSubregion}
+\label{FreeSubregion}
+
+\index{\findex{FreeSubregion}}
+
+\begin{deftypefn}{Function}{void}{FreeSubregion}({Subregion *} \var{subregion})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Frees a \code{Subregion} structure.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: FreeSubregionArray
+%=============================================================================
+
+\newpage
+\subsection{FreeSubregionArray}
+\label{FreeSubregionArray}
+
+\index{\findex{FreeSubregionArray}}
+
+\begin{deftypefn}{Function}{void}{FreeSubregionArray}({SubregionArray *} \var{subregion\_array})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Frees a \code{SubregionArray} structure, and all \code{Subregion}
+structures pointed to by it.
+Often times one may want to free up the \code{SubregionArray} structure
+without freeing its \code{Subregion} structures.
+This is easily achieved as in the following example.
+
+%=========================== EXAMPLES
+\EXAMPLE
+\mbox{}
+\begin{display}\begin{verbatim}
+SubregionArray  *subregion_array;
+
+   ...
+
+SubregionArraySize(subregion_array) = 0;
+FreeSubregionArray(subregion_array);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{FreeSubregion}{FreeSubregion}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: FreeRegion
+%=============================================================================
+
+\newpage
+\subsection{FreeRegion}
+\label{FreeRegion}
+
+\index{\findex{FreeRegion}}
+
+\begin{deftypefn}{Function}{void}{FreeRegion}({Region *} \var{region})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Frees a \code{Region} structure and all \code{SubregionArray}
+structures pointed to by it.
+Sometimes one may want to free up the \code{Region} structure
+without freeing its \code{SubregionArray} structures.
+This is easily achieved as in the following example.
+
+%=========================== EXAMPLES
+\EXAMPLE
+\mbox{}
+\begin{display}\begin{verbatim}
+Region  *region;
+
+   ...
+
+RegionSize(region) = 0;
+FreeRegion(region);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{FreeSubregionArray}{FreeSubregionArray}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: FreeSubgrid
+%=============================================================================
+
+\newpage
+\subsection{FreeSubgrid}
+\label{FreeSubgrid}
+
+\index{\findex{FreeSubgrid}}
+
+\begin{deftypefn}{Function}{void}{FreeSubgrid}({Subgrid *} \var{subgrid})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Frees a \code{Subgrid} structure.
+
+%=========================== NOTES
+\NOTES
+This is currently a macro (\ref{FreeSubregion}).
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: FreeSubgridArray
+%=============================================================================
+
+\newpage
+\subsection{FreeSubgridArray}
+\label{FreeSubgridArray}
+
+\index{\findex{FreeSubgridArray}}
+
+\begin{deftypefn}{Function}{void}{FreeSubgridArray}({SubgridArray *} \var{subgrid\_array})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Frees a \code{SubgridArray} structure, and all \code{Subgrid}
+structures pointed to by it.
+Often times one may want to free up the \code{SubgridArray} structure
+without freeing its \code{Subgrid} structures.
+This is easily achieved as in the following example.
+
+%=========================== EXAMPLES
+\EXAMPLE
+\mbox{}
+\begin{display}\begin{verbatim}
+SubgridArray  *subgrid_array;
+
+   ...
+
+SubgridArraySize(subgrid_array) = 0;
+FreeSubgridArray(subgrid_array);
+\end{verbatim}\end{display}
+
+%=========================== NOTES
+\NOTES
+This is currently a macro (\ref{FreeSubregionArray}).
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{FreeSubgrid}{FreeSubgrid}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: FreeGrid
+%=============================================================================
+
+\newpage
+\subsection{FreeGrid}
+\label{FreeGrid}
+
+\index{\findex{FreeGrid}}
+
+\begin{deftypefn}{Function}{void}{FreeGrid}({Grid *} \var{grid})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Frees a \code{Grid} structure and all structures contained therein.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{FreeSubgridArray}{FreeSubgridArray}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: ForSubregionI
+%=============================================================================
+
+\newpage
+\subsection{ForSubregionI}
+\label{ForSubregionI}
+
+\index{\findex{ForSubregionI}}
+
+\begin{defmac} ForSubregionI (int \var{i}, {SubregionArray *} \var{subregion\_array})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Loops over all subregion indices in \var{subregion\_array}, setting
+\var{i} to each index.
+
+%=========================== EXAMPLES
+\EXAMPLE
+\mbox{}
+\begin{display}\begin{verbatim}
+SubregionArray  *subregion_array;
+Subregion       *subregion;
+int              i;
+
+ForSubregionI(i, subregion_array)
+{
+   subregion = SubregionArraySubregion(subregion_array, i);
+
+   ...
+}
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{defmac}
+
+%=============================================================================
+% Reference: ForSubregionArrayI
+%=============================================================================
+
+\newpage
+\subsection{ForSubregionArrayI}
+\label{ForSubregionArrayI}
+
+\index{\findex{ForSubregionArrayI}}
+
+\begin{defmac} ForSubregionArrayI (int \var{i}, {Region *} \var{region})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Loops over all subregion-array indices in \var{region}, setting
+\var{i} to each index.
+
+%=========================== EXAMPLES
+\EXAMPLE
+\mbox{}
+\begin{display}\begin{verbatim}
+Region          *region;
+SubregionArray  *subregion_array;
+int              i;
+
+ForSubregionArrayI(i, region)
+{
+   subregion_array = RegionSubregionArray(region, i);
+
+   ...
+}
+\end{verbatim}\end{display}
+
+%=========================== NOTES
+%\NOTES
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{defmac}
+
+%=============================================================================
+% Reference: ForSubgridI
+%=============================================================================
+
+\newpage
+\subsection{ForSubgridI}
+\label{ForSubgridI}
+
+\index{\findex{ForSubgridI}}
+
+\begin{defmac} ForSubgridI (int \var{i}, {SubgridArray *} \var{subgrid\_array})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Loops over all subgrid indices in \var{subgrid\_array}, setting
+\var{i} to each index.
+
+%=========================== EXAMPLES
+\EXAMPLE
+\mbox{}
+\begin{display}\begin{verbatim}
+SubgridArray *subgrid_array;
+Subgrid      *subgrid;
+int           i;
+
+ForSubgridI(i, subgrid_array)
+{
+   subgrid = SubgridArraySubgrid(subgrid_array, i);
+
+   ...
+}
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{defmac}
+
+%=============================================================================
+% Reference: SubregionXYZ
+%=============================================================================
+
+\newpage
+\subsection{SubregionXYZ}
+\label{SubregionXYZ}
+
+\index{\findex{SubregionXYZ}}
+
+\begin{deftypefn}{Function}{double}{SubregionX}({Subregion *} \var{subregion})
+\end{deftypefn}
+\begin{deftypefn}{Function}{double}{SubregionY}({Subregion *} \var{subregion})
+\end{deftypefn}
+\begin{deftypefn}{Function}{double}{SubregionZ}({Subregion *} \var{subregion})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Returns the real-space coordinates corresponding to the
+\code{ix}, \code{iy}, and \code{iz} components of \var{subregion}.
+
+%=========================== NOTES
+\NOTES
+This is actually a macro.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: SubgridXYZ
+%=============================================================================
+
+\newpage
+\subsection{SubgridXYZ}
+\label{SubgridXYZ}
+
+\index{\findex{SubgridXYZ}}
+
+\begin{deftypefn}{Function}{double}{SubgridX}({Subgrid *} \var{subgrid})
+\end{deftypefn}
+\begin{deftypefn}{Function}{double}{SubgridY}({Subgrid *} \var{subgrid})
+\end{deftypefn}
+\begin{deftypefn}{Function}{double}{SubgridZ}({Subgrid *} \var{subgrid})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Returns the real-space coordinates corresponding to the
+\code{ix}, \code{iy}, and \code{iz} components of \var{subgrid}.
+
+%=========================== NOTES
+\NOTES
+This is actually a macro.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: DuplicateSubregion
+%=============================================================================
+
+\newpage
+\subsection{DuplicateSubregion}
+\label{DuplicateSubregion}
+
+\index{\findex{DuplicateSubregion}}
+
+\begin{deftypefn}{Function}{Subregion *}{DuplicateSubregion}({Subregion *} \var{subregion})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Returns a duplicate of \var{subregion}.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: AppendSubregion
+%=============================================================================
+
+\newpage
+\subsection{AppendSubregion}
+\label{AppendSubregion}
+
+\index{\findex{AppendSubregion}}
+
+\begin{deftypefn}{Function}{void}{AppendSubregion}({Subregion *} \var{subregion}, {SubregionArray *} \var{subregion\_array})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Appends \var{subregion} to \var{subregion\_array}.
+
+%=========================== NOTES
+\NOTES
+{\bf Important:}
+No new \code{Subregion} structure is created; only the pointer
+is copied into \var{subregion\_array}.
+If one is not careful, it is easy to free \code{Subregion} structures
+accidentally.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: AppendSubregionArray
+%=============================================================================
+
+\newpage
+\subsection{AppendSubregionArray}
+\label{AppendSubregionArray}
+
+\index{\findex{AppendSubregionArray}}
+
+\begin{deftypefn}{Function}{void}{AppendSubregionArray}({SubregionArray *} \var{subregion\_array\_0}, {SubregionArray *} \var{subregion\_array\_1})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Appends \var{subregion\_array\_0} to \var{subregion\_array\_1}.
+
+%=========================== NOTES
+\NOTES
+{\bf Important:}
+No new \code{Subregion} structures are created; only pointers
+are copied into the \var{subregion\_array\_1}.
+If one is not careful, it is easy to free \code{Subregion} structures
+accidentally.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: DuplicateSubgrid
+%=============================================================================
+
+\newpage
+\subsection{DuplicateSubgrid}
+\label{DuplicateSubgrid}
+
+\index{\findex{DuplicateSubgrid}}
+
+\begin{deftypefn}{Function}{Subgrid *}{DuplicateSubgrid}({Subgrid *} \var{subgrid})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Returns a duplicate of \var{subgrid}.
+
+%=========================== NOTES
+\NOTES
+This is currently a macro (\ref{DuplicateSubregion}).
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: AppendSubgrid
+%=============================================================================
+
+\newpage
+\subsection{AppendSubgrid}
+\label{AppendSubgrid}
+
+\index{\findex{AppendSubgrid}}
+
+\begin{deftypefn}{Function}{void}{AppendSubgrid}({Subgrid *} \var{subgrid}, {SubgridArray *} \var{subgrid\_array})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Appends \var{subgrid} to \var{subgrid\_array}.
+
+%=========================== NOTES
+\NOTES
+This is currently a macro (\ref{AppendSubregion}).
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: AppendSubgridArray
+%=============================================================================
+
+\newpage
+\subsection{AppendSubgridArray}
+\label{AppendSubgridArray}
+
+\index{\findex{AppendSubgridArray}}
+
+\begin{deftypefn}{Function}{void}{AppendSubgridArray}({SubgridArray *} \var{subgrid\_array\_0}, {SubgridArray *} \var{subgrid\_array\_1})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Appends \var{subgrid\_array\_0} to \var{subgrid\_array\_1}.
+
+%=========================== NOTES
+\NOTES
+This is currently a macro (\ref{AppendSubregionArray}).
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: ConvertToSubregion
+%=============================================================================
+
+\newpage
+\subsection{ConvertToSubregion}
+\label{ConvertToSubregion}
+
+\index{\findex{ConvertToSubregion}}
+
+\begin{deftypefn}{Function}{Subregion *}{ConvertToSubregion}({Subgrid *} \var{subgrid})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Converts \var{subgrid} to a \code{Subregion *} and returns it.
+
+%=========================== NOTES
+\NOTES
+This is currently a macro which simply does a cast.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{ConvertToSubgrid}{ConvertToSubgrid}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: ConvertToSubgrid
+%=============================================================================
+
+\newpage
+\subsection{ConvertToSubgrid}
+\label{ConvertToSubgrid}
+
+\index{\findex{ConvertToSubgrid}}
+
+\begin{deftypefn}{Function}{Subgrid *}{ConvertToSubgrid}({Subregion *} \var{subregion})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Converts \var{subregion} to a \code{Subgrid *} if possible,
+and returns it.
+\var{subregion} is not duplicated, it is modified.
+If a conversion cannot be made, \code{NULL} is returned.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{ConvertToSubregion}{ConvertToSubregion}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: ProjectSubgrid
+%=============================================================================
+
+\newpage
+\subsection{ProjectSubgrid}
+\label{ProjectSubgrid}
+
+\index{\findex{ProjectSubgrid}}
+
+\begin{deftypefn}{Function}{Subregion *}{ProjectSubgrid}({Subgrid *} \var{subgrid}, int \var{sx}, int \var{sy}, int \var{sz}, int \var{ix}, int \var{iy}, int \var{iz})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Projects \var{subgrid} onto an {\em index-region}.
+The index-region is the collection of index-space indices with
+strides \var{sx}, \var{sy}, \var{sz}, and containing
+the indices \var{ix}, \var{iy}, \var{iz}.
+The base index-space is determined by the \var{subgrid}.
+\var{subgrid} is not modified.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: ExtractSubgrid
+%=============================================================================
+
+\newpage
+\subsection{ExtractSubgrid}
+\label{ExtractSubgrid}
+
+\index{\findex{ExtractSubgrid}}
+
+\begin{deftypefn}{Function}{Subgrid *}{ExtractSubgrid}(int \var{rx}, int \var{ry}, int \var{rz}, {Subgrid *} \var{subgrid})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Returns, if possible, the largest subgrid with resolution
+\var{rx}, \var{ry}, \var{rz},
+contained in \var{subgrid}
+
+%=========================== NOTES
+\NOTES
+This routine is currently used in only one place and is very similar
+to \code{ProjectSubgrid}, so can probably be eliminated at some point.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{ProjectSubgrid}{ProjectSubgrid}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: IntersectSubgrids
+%=============================================================================
+
+\newpage
+\subsection{IntersectSubgrids}
+\label{IntersectSubgrids}
+
+\index{\findex{IntersectSubgrids}}
+
+\begin{deftypefn}{Function}{Subgrid *}{IntersectSubgrids}({Subgrid *} \var{subgrid1}, {Subgrid *} \var{subgrid2})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Returns the intersection of \var{subgrid1} and \var{subgrid2}.
+Returns \code{NULL} if none.
+
+%=========================== NOTES
+\NOTES
+Assumes the index spaces for the two subgrids are legally nested
+(\ref{Gridding}.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: SubtractSubgrids
+%=============================================================================
+
+\newpage
+\subsection{SubtractSubgrids}
+\label{SubtractSubgrids}
+
+\index{\findex{SubtractSubgrids}}
+
+\begin{deftypefn}{Function}{SubgridArray *}{SubtractSubgrids}({Subgrid *} \var{subgrid1}, {Subgrid *} \var{subgrid2})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Subtracts the intersection of \var{subgrid1} and \var{subgrid2}
+from \var{subgrid1}.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: UnionSubgridArray
+%=============================================================================
+
+\newpage
+\subsection{UnionSubgridArray}
+\label{UnionSubgridArray}
+
+\index{\findex{UnionSubgridArray}}
+
+\begin{deftypefn}{Function}{SubgridArray *}{UnionSubgridArray}({SubgridArray *} \var{subgrid\_array})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Unions the subgrids in \var{subgrid\_array}.
+This involves removing any duplication of grid points, resulting in
+a subgrid-array of disjoint subgrids.
+The routine also tries to agglomerate subgrids into bigger subgrids.
+
+%=========================== NOTES
+\NOTES
+{\bf Important:} This routine ignores process numbers, and currently
+sets all process values in the returned union to 0.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+

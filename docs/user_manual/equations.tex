@@ -1,0 +1,281 @@
+%=============================================================================
+% Chapter: Equations
+%=============================================================================
+
+\chapter{Equations}
+\label{Equations}
+
+In this chapter we discuss the equations solved in \parflow{}.
+In section \ref{Multi-Phase Flow Equations} we describe the multi-phase
+flow equations, and in section \ref{Transport Equations} we describe
+the transport equations.
+
+\section{Multi-Phase Flow Equations}
+\label{Multi-Phase Flow Equations}
+
+The flow equations are a set of {\em mass balance} and
+{\em momentum balance} (Darcy's Law) equations, given respectively by,
+\begin{equation} \label{eqn-mass-balance}
+\frac{\partial}{\partial t} ( \Xpor \XSi )
+  ~+~ \Xgrad \cdot \XVi
+  ~-~ \XQi ~=~ 0 ,
+\end{equation}
+\begin{equation} \label{eqn-darcy}
+\XVi ~+~ \Xmobi \cdot ( \Xgrad \Xpi ~-~ \Xdeni \Xg ) ~=~ 0 ,
+\end{equation}
+for $i = 0, \ldots , \Xnphases - 1$ $(\Xnphases \in \{1,2,3\})$, where
+\begin{eqnarray} \label{eqn-phase-mobility}
+\Xmobi & = & \frac{\Xk \Xkri}{\Xvisi} , \\
+\Xg    & = & [ 0, 0, -g ]^T ,
+\end{eqnarray}
+Table \ref{table-flow-units} defines the symbols in the above equations,
+and outlines the symbol dependencies and units.
+\begin{table} \center
+\caption{Notation and units for flow equations.}
+\smallskip
+\begin{tabular}{||c||c|c||}
+\hline
+symbol & quantity & units \\
+\hline\hline
+$\Xpor (\Xx,t)$ & porosity                      & []                  \\ \hline
+$\XSi (\Xx,t)$  & saturation                    & []                  \\ \hline
+$\XVi (\Xx,t)$  & Darcy velocity vector         & [$L T^{-1}$]        \\ \hline
+$\XQi (\Xx,t)$  & source/sink                   & [$T^{-1}$]          \\ \hline
+$\Xmobi$        & mobility                      & [$L^{3} T M^{-1}$]  \\ \hline
+$\Xpi (\Xx,t)$  & pressure                      & [$M L^{-1} T^{-2}$] \\ \hline
+$\Xdeni$        & mass density                  & [$M L^{-3}$]        \\ \hline
+$\Xg$           & gravity vector                & [$L T^{-2}$]        \\ \hline
+$\Xk (\Xx,t)$   & intrinsic permeability tensor & [$L^{2}$]           \\ \hline
+$\Xkri (\Xx,t)$ & relative permeability         & []                  \\ \hline
+$\Xvisi$        & viscosity                     & [$M L^{-1} T^{-1}$] \\ \hline
+$g$             & gravitational acceleration    & [$L T^{-2}$]        \\ \hline
+\end{tabular}
+\label{table-flow-units}
+\end{table}
+Here, $\Xpor$ describes the fluid capacity of the porous medium,
+and $\XSi$ describes the content of phase $i$ in the porous medium,
+where we have that $0 \le \Xpor \le 1$ and $0 \le \XSi \le 1$.
+The coefficient $\Xk$ is a $3 \times 3$ tensor in general.
+We assume that it is a scalar here, but should reformulate the
+equations so that it is assumed to be diagonal at the very least.
+We also assume that $\Xdeni$ and $\Xvisi$ are constant.
+Also note that in \parflow{}, we assume that the relative permeability
+is given as $\Xkri (\XSi)$.
+The Darcy velocity vector is related to the {\em velocity vector}, $\Xvi$,
+by the following:
+\begin{equation} \label{eqn-Dvec-vs-vvec}
+\XVi = \Xpor \XSi \Xvi .
+\end{equation}
+
+To complete the formulation, we have the following
+$\Xnphases$ {\em consititutive relations}
+\begin{equation} \label{eqn-constitutive-sum}
+\sum_i \XSi = 1 ,
+\end{equation}
+\begin{equation} \label{eqn-constitutive-capillary}
+\Xp_{i0} ~=~ \Xp_{i0} ( \XS_0 ) ,
+~~~~~~ i = 1 , \ldots , \Xnphases - 1 .
+\end{equation}
+where, $\Xp_{ij} = \Xp_i - \Xp_j$ is the {\em capillary pressure} between
+phase $i$ and phase $j$.
+We now have the $3 \Xnphases$ equations,
+(\ref{eqn-mass-balance}), (\ref{eqn-darcy}),
+(\ref{eqn-constitutive-sum}), and (\ref{eqn-constitutive-capillary}),
+in the $3 \Xnphases$ unknowns,
+$\XSi, \XVi$, and $\Xpi$.
+
+For technical reasons, we want to rewrite the above equations.
+First, we define the {\em total mobility}, $\XmobT$,
+and the {\em total velocity}, $\XVT$, by the relations
+\begin{eqnarray}
+\XmobT ~=~ \sum_{i} \Xmobi , \label{eqn-total-mob} \\
+\XVT ~=~ \sum_{i} \XVi .     \label{eqn-total-vel}
+\end{eqnarray}
+After doing a bunch of algebra, we get the following equation
+for $\Xp_0$:
+\begin{equation} \label{eqn-pressure}
+-~ \sum_{i}
+  \left \{
+    \Xgrad \cdot \Xmobi
+      \left ( \Xgrad ( \Xp_0 ~+~ \Xp_{i0} ) ~-~ \Xdeni \Xg \right )
+    ~+~
+    \XQi
+  \right \}
+~=~ 0 .
+\end{equation}
+After doing some more algebra, we get the following $\Xnphases - 1$
+equations for $\XSi$:
+\begin{equation} \label{eqn-saturation}
+\frac{\partial}{\partial t} ( \Xpor \XSi )
+~+~
+\Xgrad \cdot
+  \left (
+     \frac{\Xmobi}{\XmobT} \XVT ~+~
+     \sum_{j \neq i} \frac{\Xmobi \Xmob_j}{\XmobT} ( \Xden_i - \Xden_j ) \Xg
+  \right )
+~+~
+\sum_{j \neq i} \Xgrad \cdot
+    \frac{\Xmobi \Xmob_j}{\XmobT} \Xgrad \Xp_{ji}
+~-~ \XQi
+~=~ 0 .
+\end{equation}
+The capillary pressures $\Xp_{ji}$ in (\ref{eqn-saturation}) are
+rewritten in terms of the constitutive relations in
+(\ref{eqn-constitutive-capillary}) so that we have
+\begin{equation} \label{eqn-derived-capillary}
+\Xp_{ji} ~=~ \Xp_{j0} ~-~ \Xp_{i0} ,
+\end{equation}
+where by definition, $\Xp_{ii} = 0$.
+Note that equations (\ref{eqn-saturation}) are analytically the
+same equations as in (\ref{eqn-mass-balance}).
+The reason we rewrite them in this latter form is because
+of the numerical scheme we are using.
+We now have the $3 \Xnphases$ equations,
+(\ref{eqn-pressure}), (\ref{eqn-saturation}),
+(\ref{eqn-total-vel}), (\ref{eqn-darcy}), and
+(\ref{eqn-constitutive-capillary}),
+in the $3 \Xnphases$ unknowns,
+$\XSi, \XVi$, and $\Xpi$.
+
+
+\section{Transport Equations}
+\label{Transport Equations}
+
+The transport equations in \parflow{} are currently defined as follows:
+\begin{eqnarray} \label{eqn-transport}
+\left ( \frac{\partial}{\partial t} (\Xpor \Xcij) ~+~ \Xdegj ~ \Xpor \Xcij \right ) & + & \Xgrad \cdot \left ( \Xcij \XVi \right ) \nonumber \\
+& = & \\
+-\left ( \frac{\partial}{\partial t} ((1 - \Xpor) \Xsolidden \XFij) ~+~  \Xdegj ~ (1 - \Xpor) \Xsolidden \XFij \right ) & + & \sum_{k}^{\XnI} \XwellrateIik \chi_{\XindIk} \left ( \Xcij - \Xcbarkij \right ) ~-~ \sum_{k}^{\XnE} \XwellrateEik \chi_{\XindEk} \Xcij \nonumber
+\end{eqnarray}
+where $i = 0, \ldots , \Xnphases - 1$ $(\Xnphases \in \{1,2,3\})$
+is the number of phases,
+$j = 0, \ldots , \Xnc - 1$ is the number of contaminants, and where
+$\Xcij$ is the concentration of contaminant $j$ in phase $i$.  Recall also,
+that $\chi_A$ is the characteristic function of set $A$, i.e. $\chi_A(x) = 1$
+if $x \in A$ and $\chi_A(x) = 0$ if $x \not\in A$.
+Table \ref{table-transport-units} defines the symbols in the above equation,
+and outlines the symbol dependencies and units.  The equation is basically
+a statement of mass conservation in a convective flow (no diffusion) with
+adsorption and degradation effects incorporated along with the addition of
+injection and extraction wells.
+\begin{table} \center
+\caption{Notation and units for transport equation.}
+\smallskip
+\begin{tabular}{||c||c|c||}
+\hline
+symbol & quantity & units \\
+\hline\hline
+$\Xpor (\Xx)$       & porosity                        & []               \\ \hline
+$\Xcij (\Xx,t)$     & concentration fraction          & []               \\ \hline
+$\XVi (\Xx,t)$      & Darcy velocity vector           & [$L T^{-1}$]     \\ \hline
+$\Xdegj$            & degradation rate                & [$T^{-1}$]       \\ \hline
+$\Xsolidden (\Xx)$  & density of the solid mass       & [$M L^{-3}$]]    \\ \hline
+$\XFij  (\Xx, t)$   & mass concentration              & [$L^{3} M^{-1}$] \\ \hline
+$\XnI$              & number of injection wells       & []               \\ \hline
+$\XwellrateIik (t)$ & injection rate                  & [$T^{-1}$]       \\ \hline
+$\XindIk (\Xx)$     & injection well region           & []               \\ \hline
+$\Xcbarkij ()$      & injected concentration fraction & []               \\ \hline
+$\XnE$              & number of extraction wells      & []               \\ \hline
+$\XwellrateEik (t)$ & extraction rate                 & [$T^{-1}$]       \\ \hline
+$\XindEk (\Xx)$     & extraction well region          & []               \\ \hline
+\end{tabular}
+\label{table-transport-units}
+\end{table}
+These equations will soon have to be generalized to include a diffusion term.
+At the present time, as an adsorption model, we take the mass concentration
+term ($\XFij$) to be instantaneous in time and a linear function of contaminant
+concentration :
+\begin{equation} \label{eqn-linear-retardation}
+\XFij = \XKdj \Xcij,
+\end{equation}
+where $\XKdj$ is the distribution coefficient of the component
+([$L^{3} M^{-1}$]).
+If \ref{eqn-linear-retardation} is substituted into \ref{eqn-transport}
+the following equation results (which is the current model used in \parflow{}) :
+\begin{eqnarray} \label{eqn-transport2}
+(\Xpor + (1 - \Xpor) \Xsolidden \XKdj) \frac{\partial}{\partial t} \Xcij & + & \Xgrad \cdot \left ( \Xcij \XVi \right ) \nonumber \\
+& = & \nonumber \\
+-~(\Xpor + (1 - \Xpor) \Xsolidden \XKdj) \Xdegj \Xcij & + & \sum_{k}^{\XnI} \XwellrateIik \chi_{\XindIk} \left ( \Xcij - \Xcbarkij \right ) ~-~ \sum_{k}^{\XnE} \XwellrateEik \chi_{\XindEk} \Xcij
+\end{eqnarray}
+
+\section{Notation and Units}
+\label{Notation and Units}
+
+In this section, we discuss other common formulations of the flow
+and transport equations, and how they relate to the equations solved
+by \parflow{}.
+
+We can rewrite equation (\ref{eqn-darcy}) as
+\begin{equation} \label{eqn-darcy-b}
+\XVi ~+~ \XKi \cdot ( \Xgrad \Xhi ~-~ \frac{\Xdeni}{\Xscale} \Xg ) ~=~ 0 ,
+\end{equation}
+where
+\begin{eqnarray} \label{eqn-cond-phead}
+\XKi & = & \Xscale \Xmobi , \\
+\Xhi & = & ( \Xpi ~-~ \Xgp ) / \Xscale .
+\end{eqnarray}
+Table \ref{table-flow-units-b} defines the symbols and their units.
+\begin{table} \center
+\caption{Notation and units for reformulated flow equations.}
+\smallskip
+\begin{tabular}{||c||c|c||}
+\hline
+symbol & quantity & units \\
+\hline\hline
+$\XVi$      & Darcy velocity vector         & [$L T^{-1}$]        \\ \hline
+$\XKi$      & hydraulic conductivity tensor & [$L T^{-1}$]        \\ \hline
+$\Xhi$      & pressure head                 & [$L$]               \\ \hline
+$\Xscale$   & constant scale factor         & [$M L^{-2} T^{-2}$] \\ \hline
+$\Xg$       & gravity vector                & [$L T^{-2}$]        \\ \hline
+\end{tabular}
+\label{table-flow-units-b}
+\end{table}
+We can then rewrite equations (\ref{eqn-pressure}) and
+(\ref{eqn-saturation}) as
+\begin{equation} \label{eqn-pressure-b}
+-~ \sum_{i}
+  \left \{
+    \Xgrad \cdot \XKi
+      \left ( \Xgrad ( \Xh_0 ~+~ \Xh_{i0} ) ~-~
+        \frac{\Xdeni}{\Xscale} \Xg \right )
+    ~+~
+    \XQi
+  \right \}
+~=~ 0 ,
+\end{equation}
+\begin{equation} \label{eqn-saturation-b}
+\frac{\partial}{\partial t} ( \Xpor \XSi )
+~+~
+\Xgrad \cdot
+  \left (
+     \frac{\XKi}{\XKT} \XVT ~+~
+     \sum_{j \neq i} \frac{\XKi \XK_j}{\XKT}
+       \left ( \frac{\Xden_i}{\Xscale} - \frac{\Xden_j}{\Xscale} \right ) \Xg
+  \right )
+~+~
+\sum_{j \neq i} \Xgrad \cdot
+    \frac{\XKi \XK_j}{\XKT} \Xgrad \Xh_{ji}
+~-~ \XQi
+~=~ 0 .
+\end{equation}
+
+Note that $\XKi$ is supposed to be a tensor, but we treat it as
+a scalar here.
+Also, note that by carefully defining the input to \parflow{}, we can
+use the units of equations (\ref{eqn-pressure-b}) and
+(\ref{eqn-saturation-b}).
+To be more precise, let us denote \parflow{} input symbols by appending
+the symbols in table \ref{table-flow-units} with $(I)$, and
+let $\Xscale = \Xden_0 g$ (this is a typical definition).
+Then, we want:
+\begin{eqnarray} \label{eqn-parflow-input}
+\Xk (I)    & = & \Xscale \Xk / \Xvis_0 ; \\
+\Xvisi (I) & = & \Xvisi / \Xvis_0 ; \\
+\Xpi (I)   & = & \Xhi ; \\
+\Xdeni (I) & = & \Xdeni / \Xden_0 ; \\
+g (I)      & = & 1 .
+\end{eqnarray}
+By doing this, $\Xk (I)$ represents hydraulic conductivity of the base
+phase $\XK_0$ (e.g. water) under saturated conditions (i.e. $k_{r0} = 1$).
+Though \parflow{} input has been defined this way in the past, this is not
+the recommended procedure since it may lead to confusion and mistakes.

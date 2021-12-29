@@ -1,0 +1,115 @@
+%=============================================================================
+% Chapter: Gridding
+%=============================================================================
+
+\chapter{Gridding}
+\label{Gridding}
+
+The Applied Mathematics Group has extensive experience with adaptive
+mesh refinement techniques, or {\em AMR}.
+In an effort to utilize this knowledge, and keep coherent the various
+efforts within the {\em CCSE}, the gridding within \parflow{} is
+a parallel adaptation of {\em AMR}.
+The differences between the two approaches are mostly a consequence
+of parallel computing.
+
+See also, \ref{Grid Reference}.
+
+%=============================================================================
+% Section: Terminology
+%=============================================================================
+
+\section{Terminology}
+\label{Terminology}
+
+The \dfn{background} is a uniform grid with position in
+real-space given by the quantities
+$x_0$, $y_0$, $z_0$, $N_x$, $N_y$, $N_z$, $\Delta x$, $\Delta y$, $\Delta z$
+(see Figure~\ref{fig-grid}).
+
+An \dfn{index-space} defines a specific correspondance between
+integer index triples and real-space coordinates.
+This correspondance is defined in terms of the background
+(for index-space $l$)
+by the resolutions, $(r_{l,x}, r_{l,y}, r_{l,z})$,
+and an alignment convention (which would differ for cell-centered
+gridding; we are doing vertex-centered gridding at this time).
+
+Specifically, the real-space coordinate, $(x_{i,l}, y_{j,l}, z_{k,l})$,
+associated with the integer index triple, $(i, j, k)$,
+on index-space $l$ is given by:
+\begin{eqnarray}
+x_{i,l} & = & x_0 + i \left( {{\Delta x} \over {2^{r_{l,x}}}} \right) \\
+y_{j,l} & = & y_0 + j \left( {{\Delta y} \over {2^{r_{l,y}}}} \right) \\
+z_{k,l} & = & z_0 + k \left( {{\Delta z} \over {2^{r_{l,z}}}} \right)
+\end{eqnarray}
+Note: the resolutions may be negative, indicating coarser spacing.
+Each index-space is associated with a unique \dfn{refinement level}.
+These levels are labeled by the sum $r_{l,x} + r_{l,y} + r_{l,z}$.
+Note that since levels are unique, this means that for any two
+levels, $l$ and $m$,
+\begin{eqnarray}
+r_{l,x} & >= & r_{m,x}, \\
+r_{l,y} & >= & r_{m,y}, \\
+r_{l,z} & >= & r_{m,z},
+\end{eqnarray}
+where strict inequality must hold for at least one of the above
+equations.
+
+A \dfn{subregion} is a collection of indices on index-space
+$l$, described by the quantities
+$i_{l,x}$, $i_{l,y}$, $i_{l,z}$,
+$n_{l,x}$, $n_{l,y}$, $n_{l,z}$,
+$s_{l,x}$, $s_{l,y}$, $s_{l,z}$.
+Specifically, a subregion is defined by
+(see Figure~\ref{fig-grid})
+\begin{eqnarray}
+& & \{ i_{l,x} + i s_{l,x} : i = 0, 1, \ldots, (n_{l,x}-1) \} \otimes \\
+& & \{ i_{l,y} + i s_{l,y} : i = 0, 1, \ldots, (n_{l,y}-1) \} \otimes \\
+& & \{ i_{l,z} + i s_{l,z} : i = 0, 1, \ldots, (n_{l,z}-1) \} .
+\end{eqnarray}
+The striding factors allow one to define things
+like ``red points'' or ``black points'' for red/black iterative methods,
+or ``coarse points'' and ``fine points'' for multigrid methods.
+
+A \dfn{subregion-array} is just an array of subregions.
+
+A \dfn{region} is an array of subregion-arrays.
+
+A \dfn{subgrid} is a subregion with striding factors equal 1.
+
+A \dfn{subgrid-array} is an array of subgrids.
+
+A \dfn{grid} is also an array of subgrids.
+
+%=============================================================================
+% Section: Gridding Requirements
+%=============================================================================
+
+\section{Gridding Requirements}
+\label{Gridding Requirements}
+
+\begin{itemize}
+
+\item
+The union of subgrids at level 0 must cover the entire problem domain.
+The union of subgrids at a refined level $l > 0$
+may only cover a portion of the problem domain.
+ 
+\item
+Subgrids may overlap.
+ 
+\item
+The computed solution at a point $P$
+in the problem domain
+is defined to be the value at the point on the finest subgrid containing it.
+(note: we use ``vertex centered'' gridding, not ``cell centered'')
+
+\item
+The region of the domain covered by level $m > l$ subgrids
+must be contained in the region covered by level $l$ subgrids.
+This containment is not required to be proper (since we have vertex
+centered grids).
+ 
+\end{itemize}
+

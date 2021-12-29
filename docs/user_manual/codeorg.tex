@@ -1,0 +1,245 @@
+%=============================================================================
+% Chapter: Code Organization
+%=============================================================================
+
+\chapter{Code Organization}
+\label{Code Organization}
+
+In this chapter, we describe various organizational issues
+regarding the \parflow{} code.
+
+%=============================================================================
+%=============================================================================
+
+\section{The Developer's Environment}
+\label{The Developer's Environment}
+
+This section assumes that the developer is working on the workstation
+cluster at LLNL.  No procedures have yet been devised for developers
+working elsewhere (there currently are no such developers).
+
+The \parflow{} repository (central location for all of the \parflow{}
+source) is located in \file{/home/casc/repository/parflow}.  Online
+documentation, WWW information, and data for many \parflow{} runs, are
+all located in a \kbd{parflow} account (directory \file{~parflow}) on
+the local workstation cluster.  Developers work on their own local
+versions of the code, which gets ``checked'' in and out of the
+repository as changes are made.  The source code control system that
+is being used is the CVS system.  The following steps describe how to
+check out a ``clean'' version of the code.
+
+\begin{enumerate}
+
+%------------------------------
+\item
+The following environment variables should be set up in your \file{.profile}
+file (or similar shell resource file):
+
+\begin{display}\begin{verbatim}
+CVSROOT=/home/casc/repository
+PARFLOW_SRC=~/parflow/src
+PARFLOW_DIR=~/parflow/exe
+PARFLOW_HELP=~parflow/docs
+export CVSROOT PARFLOW_SRC PARFLOW_DIR PARFLOW_HELP
+
+\end{verbatim}\end{display}
+
+You also need to add \code{\$PARFLOW_DIR/bin} to your 
+\code{\$PATH} environment variable.
+
+The variable \code{CVSROOT} specifies the location of the parflow
+repository and other \code{CVS} repositories.
+The variable \code{PARFLOW_DIR} specifies the location of
+the installed version of \parflow{}.
+To allow more than one binary version of the code to be installed in
+your directory at a time, set
+\begin{display}\begin{verbatim}
+PARFLOW_DIR=~/parflow/exe.`uname`
+\end{verbatim}\end{display}
+This will, for example,
+install Sun binaries in \file{~/parflow/exe.SunOS}
+and SGI binaries in \file{~/parflow/exe.IRIX}.
+\code{PARFLOW_SRC} is the location of the source code for \parflow{}
+and affiliated tools.
+\code{PARFLOW_HELP} is the location of the online help files.
+We will use the \file{~/parflow} directory as the root directory for
+building \parflow{} in this manual; you may use a different directory
+if you wish.
+
+
+%------------------------------
+\item
+Get the source code out of the repository and run the post checkout
+script.
+
+\begin{display}\begin{verbatim}
+mkdir ~/parflow
+cvs checkout -P parflow
+(cd ~/parflow/; ./post_checkout)
+\end{verbatim}\end{display}
+
+This creates a local \parflow{} directory tree from the sources in 
+the repository.
+
+%------------------------------
+\item
+To build and run the code, refer to the {\em ParFlow User's Manual}.
+
+\end{enumerate}
+
+%=============================================================================
+%=============================================================================
+
+\section{Building Code}
+\label{Building Code}
+
+All code and documentation are ``built'' with a \file{build} script.
+When writing new \file{build} scripts, the following \file{build}
+command conventions should be followed:
+
+\begin{itemize}
+\item
+\kbd{build all} --- builds things
+\item
+\kbd{build install} --- builds and installs exe's and support files.
+Installation usually involves copying of files into the
+\code{\$PARFLOW_DIR} and \code{\$PARFLOW_HELP} directories.
+However, in some cases, files are installed elsewhere.
+\item
+\kbd{build clean} --- clean object files (and some other temp stuff)
+\item
+\kbd{build veryclean} --- cleans object files and exe's within
+the \code{\$PARFLOW_SRC} directory (i.e., does not remove ``installed''
+files).
+\end{itemize}
+
+This build technology contains some ``smarts''.
+For example, it detects when you change platforms (say you log into the
+SGI) and will delete object files and remake everything.
+
+\noindent
+{\bf Notes:}
+
+\begin{itemize}
+\item
+Because code is ``copied'' when installed (as opposed to using
+soft links, for example), when changes are made to any source,
+help files, input files, etc., you {\em must} do a \kbd{build install}
+to update the changes in the ``install'' directory.
+
+\item
+You can safely ignore this item if you run parflow out of your
+home directory.
+Also, I believe that this only impacts the Chameleon port so you
+can probably safely ignore all this.
+
+\noindent
+Due to some NFS temp mount problems there are some limitations to how
+we can run things.
+The problem is attempting to get the ``virtual'' current directory
+rather than the ``real'' directory name.
+For example, if you do a \kbd{pwd}, you will sometimes see
+\file{/home/mercury0/ssmith/blah/foo} or
+\file{/export/home/mercury0/ssmith/blah/foo}
+(if you are on the machine where your home directory is),
+and other times you will see 
+\file{/tmp_mnt/home/mercury0/ssmith/blah/foo}
+(if you are on a remote machine).
+This is a problem when running some of the different
+models since they need to see the {\em same} directory
+(\file{/home/mercury0/ssmith/blah/foo} is the ``correct'' name).
+To handle this, everything is based off of the \code{AMPS_ROOT_DIR}
+environment variable.
+By default this is set to your home directory.
+If the directory that you are running from is in your \code{\$HOME}
+directory, then you are fine.
+If you want to run from somewhere else (say \file{/scratch/parflow/exe})
+you need to either put a softlink in your home directory or explicitly set
+\code{AMPS_ROOT_DIR} to \file{/scratch}.
+You do {\em not} have to worry about this if you run \parflow{} out of
+your home directory.
+
+\end{itemize}
+
+%=============================================================================
+%=============================================================================
+
+\section{Checking out code}
+\label{Checking out code}
+
+Use the \code{cvs edit} command to check code out from the \parflow{} source
+code repository.
+
+%=============================================================================
+%=============================================================================
+
+\section{Checking in code}
+\label{Checking in code}
+
+Use the \code{cvs commit} utility to check in your changes to the
+\parflow{} repository.  If you add new code you will have to use
+the \code{cvs add} to add it.
+
+%=============================================================================
+%=============================================================================
+
+\section{Installing a new version of ParFlow}
+\label{Installing a new version of ParFlow}
+
+This section discusses how to install a new version of \parflow 
+for general users; this is refered to by the \parflow team as the
+``installed'' version of \parflow.
+
+This will describe the steps need to install the version on the CASC
+machines (which currently consist of the Sparc Cluster and the SGI
+Onyx).
+
+The first thing to do is install on the Sparc Cluster:
+
+\begin{enumerate}
+\item
+Log in to the parflow account on the Sparc Sun Cluster
+\item
+Execute the script to build and install parflow.  This will take 
+a rather long time.
+\begin{display}\begin{verbatim}
+(cd /home/casc/parflow/;./install.SunOS)
+\end{verbatim}\end{display}
+\item
+Execute the test program to make sure things are running OK
+\begin{display}\begin{verbatim}
+(cd /home/casc/parflow/exe.`uname`/test/; tclsh default\_single.pftcl)
+\end{verbatim}\end{display}
+\item
+ParFlow should run on the default\_single problem
+\end{enumerate}
+
+If that worked, install on the SGI:
+
+\begin{enumerate}
+\item
+Log into nyx (as the parflow user)
+\begin{display}\begin{verbatim}
+rlogin nyx
+\end{verbatim}\end{display}
+\item
+Build and install parflow
+\begin{display}\begin{verbatim}
+(cd /home/casc/parflow/; ./install.IRIX64)
+\end{verbatim}\end{display}
+\item
+Execute the test program to make sure things are running OK
+\begin{display}\begin{verbatim}
+(cd /home/casc/parflow/exe.`uname`/test/; tclsh default\_single.pftcl)
+\end{verbatim}\end{display}
+\item
+ParFlow should run
+\end{enumerate}
+
+Things should be good to go.  Email ``pfusers'' to tell everyone
+that you have installed a new version of parflow.
+
+===========================================================================
+
+
+

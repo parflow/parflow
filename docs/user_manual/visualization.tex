@@ -1,0 +1,339 @@
+%=============================================================================
+% Chapter: Visualization
+%=============================================================================
+
+\chapter{Visualization}
+\label{Visualization}
+
+This chapter discusses visualization of \parflow{} data.
+In \S~\ref{AVS} we discuss AVS,
+in \S~\ref{AVS/Express} we discuss AVS/Express, and
+in \S~\ref{Explorer}, we discuss Explorer.
+
+%=============================================================================
+% Section: AVS
+%=============================================================================
+
+\section{AVS}
+\label{AVS}
+
+This section disusses the AVS visualization system.
+In \S~\ref{Writing AVS Modules} we describe how to write AVS modules, and
+in \S~\ref{Writing AVS Coroutines} we describe how to write AVS coroutines.
+
+%=============================================================================
+% SubSection: Writing AVS Modules
+%=============================================================================
+
+\subsection{Writing AVS Modules}
+\label{Writing AVS Modules}
+
+Before continuing, see the note in \S~\ref{Writing AVS Module Help}
+on naming conventions.
+Now suppose we want to create the module ``foo~bar''.
+We then do the following:
+\begin{enumerate}
+
+\item
+In file \file{foo_bar.c}, write the functions \code{FooBar} and
+\code{FooBar_compute}.
+Use the examples in the \file{avs/modules} directory as a guide.
+
+\item
+In \file{pf_modules.c}, add the lines:
+\begin{display}\begin{verbatim}
+int FooBar();
+AVSmodule_from_desc(FooBar);
+\end{verbatim}\end{display}
+
+\item
+In \file{Makefile}, add \code{foo_bar.c} to the \code{SRC} string definition.
+
+\item
+Type
+\begin{display}\begin{verbatim}
+build install
+\end{verbatim}\end{display}
+This installs the module library in the directory
+\file{\$PARFLOW_DIR/avs/mod_lib}.
+
+\item
+Test the module library by using the \file{pfavs} script.
+
+\end{enumerate}
+
+%=============================================================================
+% SubSection: Writing AVS Coroutines
+%=============================================================================
+
+\subsection{Writing AVS Coroutines}
+\label{Writing AVS Coroutines}
+
+Before continuing, see the note in \S~\ref{Writing AVS Module Help}
+on naming conventions.
+Now suppose we want to create the coroutine ``foo~bar''.
+We then do the following:
+\begin{enumerate}
+
+\item
+In file \file{foo_bar.c}, write the function \code{FooBar}
+and a \code{main} routine.
+Use the examples in the \file{avs/modules} directory as a guide.
+
+\item
+In \file{Makefile}, add \code{foo_bar} to the \code{COROUTINES}
+string definition, and define a rule for compiling \code{foo_bar}
+(use \code{rotate_geom} as an example).
+
+\item
+In \file{ParFlow_source}, add the line
+\begin{display}\begin{verbatim}
+file foo_bar
+\end{verbatim}\end{display}
+
+\item
+Type
+\begin{display}\begin{verbatim}
+build install
+\end{verbatim}\end{display}
+This installs the coroutine in the directory
+\file{\$PARFLOW_DIR/avs/mod_lib}.
+
+\item
+Test the coroutine by using the \file{pfavs} script.
+
+\end{enumerate}
+
+
+%=============================================================================
+% Section: AVS/Express
+%=============================================================================
+
+\section{AVS/Express}
+\label{AVS/Express}
+
+This section disusses the AVS/Express visualization system.
+In \S~\ref{Existing AVS/Express Modules} we describe the aspects of the
+AVS/Express applications written for \parflow{} that are relevant to
+developers.
+In \S~\ref{Writing AVS/Express Modules} we describe how to write additional
+modules and applications.
+
+%=============================================================================
+% SubSection: Existing AVS/Express Modules
+%=============================================================================
+
+\subsection{Existing AVS/Express Modules}
+\label{Existing AVS/Express Modules}
+
+There are a number of details relevant to the existing applications that
+should be mentioned for the benefit of anyone who might modify the code.  The
+first of these is about the structure of the applications.  Each is primarily
+split up into three separate macros; one for reading in the data, one for the
+user interface, and one for displaying the data.  This seems to be an
+effective and logical way to organize the complexity of the networks.  It
+should be noted though that the macros for reading the data and displaying it
+provide many of the auxiliary user interface panels under the module stack.
+
+Of the modules in the \menu{Library Workspaces}, the most useful to
+developers of new applications will probably be \code{PF_Grid_from_File},
+\code{Load_File_Frame}, \code{FileDialog_button}, and the modules in the
+\code{string functions} library.  The \code{PF_Grid_from_File} module, which
+will be mentioned later, contains some of the other modules in the library,
+including the \code{read_parflow} module.  The \code{Load_File_Frame} module
+is the top frame in all of the application user interfaces.  You should be
+able to reuse it simply by putting it in your network and connecting it to
+the UImod\_panel or other UI container.  The \code{FileDialog_button} module
+is used to easily get a filename string into an application before a ``real''
+user interface is built.  It simply displays a window with a button that
+pops up a file dialog window when pressed.  The filename is the output of the
+module.  The modules in the \code{string functions} library provide some
+useful string manipulation operations.
+
+The \code{PF_Grid_from_File} module
+is the primary module used to read a \file{.pfb} or \file{.pfsb} file
+into an AVS/Express field.  It should work ``out of the box'' and not need
+modification in other networks, other than to change the default grid scaling
+or downsizing.  The \code{merge_hack} and \code{Hack} groups in this module
+are workarounds for bugs in the downsize module.  Without them, it is
+impossible to get a field of type \code{Field_Unif} out of either the
+\code{downsize} or \code{scale_grid} modules.  (The \code{Field_Unif} type is
+needed for input to many of the modules in the applications).
+
+It should be noted what is happening in the \code{PF_Grid_from_File} module
+for \file{.pfsb} fields, as this is not totally straightforward.  After being
+read into a structured field, they are converted to a uniform field of the
+original grid size in the \code{sparse_to_unif} module.  The \code{ReadPFSB}
+module has added an \code{orig_dims} array variable to the structured field,
+so that the \code{sparse_to_unif} module knows how big to make the uniform
+field.  If the \code{orig_dims} array is not present in the structured field,
+\code{sparse_to_unif} prints a warning and assumes a $10\times10\times10$
+grid.  This new uniform field is an input to the \code{Field_Chooser} module
+which decides whether to output the \file{.pfb} or \file{.pfsb} field.
+
+%=============================================================================
+% SubSection: Writing AVS/Express Modules
+%=============================================================================
+
+\subsection{Writing AVS/Express Modules}
+\label{Writing AVS/Express Modules}
+
+%=============================================================================
+% SubSubSection: Writing the Modules
+%=============================================================================
+
+\subsubsection{Writing the Modules}
+\label{Writing the Modules}
+
+Writing modules and applications for AVS/Express seems to be a good deal
+easier than it is for AVS5.  It seems to require a lot less C code, and
+creating user interfaces can even be done ``online.''  The best way to learn
+how to write AVS/Express applications and modules is to read the {\it Getting
+Started} manual and do the associated tasks in it.  This will take you
+step-by-step through writing and running a small application.
+
+%=============================================================================
+% SubSubSection: Compiling AVS/Express Modules
+%=============================================================================
+
+\subsubsection{Compiling AVS/Express Modules}
+\label{Compiling AVS/Express Modules}
+
+The compilation process in AVS/Express compiles all source code specified
+in the user library, so when you compile you are in effect compiling the
+entire user library.
+To compile from within Express, click on the library version of a module with
+source code, and select \menu{Compile} from the \menu{Project} pulldown
+menu.  (N.B. delete any active applications that contain your library modules
+before doing so, or you will likely get an error).
+To compile from the command prompt, use
+\begin{display}\begin{verbatim}vxp -proj project_dir -compile -exit [-none]\end{verbatim}\end{display}
+Using \kbd{-none} keeps Express from popping up any windows (you still need a
+valid \code{DISPLAY} variable set though!).
+
+This seems to work fine on
+Solaris machines, but there seems to be bugs in the compilation process for
+SGI machines.
+
+To compile on an SGI you need to follow these steps:
+\begin{enumerate}
+
+\item Remove all the \code{-lsunmath} occurrences in the \file{v/templ.v}
+file in the project directory.  Tip: run
+\begin{display}\begin{verbatim}perl -pi.bak -e s/-lsunmath// v/templ.v\end{verbatim}\end{display}
+in the project directory.  (This should be done {\em before}
+loading Express).
+
+\item Do one of the following.
+    
+    \begin{enumerate}
+    \item Use the \menu{Compile} option within Express as described above,
+	  ignoring the error message.
+    \item From the command line run
+\begin{display}\begin{verbatim}vxp -path "proj_dir global_express_dir" -generate -exit [-none]\end{verbatim}\end{display}
+    \end{enumerate}
+
+\item In the project directory run \kbd{make -f user.mk}.  This should
+compile successfully despite a number of warnings.
+
+\end{enumerate}
+
+%=============================================================================
+% SubSubSection: Tips and Tricks
+%=============================================================================
+
+\subsubsection{Tips and Tricks}
+\label{Tips and Tricks}
+
+If you are testing a module and it locks up Express, kill the \code{user}
+process first, and if that does not fix it, kill the \code{express} process.
+Often killing the user process will fix the situation and still leave
+Express running, thus avoiding having to rerun it from the prompt.
+
+To scroll the modules in the Network Editor, use shift-middle mouse button,
+clicking on the background.  Use control-middle mouse button to scale the
+modules.
+
+If you are recompiling, and have not made major modifications to the
+project (i.e. adding/deleting link files or source files, changing C
+function names, etc.), you can save time by running \kbd{make -f user.mk} in
+the project directory instead of using the \menu{Compile} option under the
+\menu{Project} menu.
+
+
+%=============================================================================
+% SubSubSection: AVS/Express Bugs
+%=============================================================================
+
+\subsubsection{AVS/Express Bugs}
+\label{AVS/Express Bugs}
+
+AVS/Express 3.0 seems to have a good number of both bugs and ``unhelpful
+features'' that are not quite bugs but act like them.  Outright bugs can be
+found in the file \file{bugs.txt}, and some of the ``features'' are described
+here.
+
+In the \code{UIdial} module is one annoying feature.  If the \code{min}
+variable becomes greater than or equal to the \code{max} variable,
+\code{UIdial} resets one or both variables (usually only \code{min}) to some
+outlandish value (like -99).  In doing so, it also breaks any connection that
+the initial \code{min} (and/or \code{max}) variable upstream had.  This bites
+you when you have the \code{min} and \code{max} values of the data from a
+field connected to the \code{UIdial}.  If the \code{min} and \code{max}
+values get out of sync, \code{UIdial} winds up breaking connections in the
+field which automatically calculate the \code{min} and \code{max}.  Once this
+is done, \code{min} or \code{max} become set to -99 or something similar, and
+reloading the \parflow{} file does not reset it to the correct value.  The net
+effect is that your display, \code{UIdial}, and colorbar all get hosed.  The
+workaround:  use \code{copy_on_change} modules to protect the \code{min} and
+\code{max} values of the field.  If you do it right, this protects everything
+but the \code{UIdial} from getting hosed, and gives you some chance of
+correcting the problem by reloading the \parflow{} file.  A better workaround:
+create a group wrapper around the \code{UIdial} module, and write a method
+which ensures that the \code{min} and \code{max} values being fed to the
+\code{UIdial} module are in sync.
+
+Being unable to connect an output port to an input port that look like they
+should be connected is another common problem.  This is usually caused by one
+of two things; either
+\begin{itemize}
+\item the input port already has a connection that is not visible, or
+\item the output port type is not the same type or a supertype of the input port type.
+\end{itemize}
+These are not really unhelpful features so much as quirks of the AVS/Express
+design and interface.  The first is easiest to correct; just open the input
+port's variable and delete the contents, then try again to connect the two.
+The second is generally more difficult.  First, try connecting the inputs of
+the upstream module before connecting it to the downstream module.  Sometimes
+this works when the output of the upstream module becomes the type of its
+input.  If that doesn't work, you can sometimes hack something together using
+the built-in merge operator to get the necessary components into the upstream
+module output field.  (See the \code{merge_hack} and \code{Hack} modules in
+\code{PF_Grid_from_File} for an example of this).
+
+If modifying a library module does not produce the desired effect in an
+application, it may be because the application is defining the module itself
+instead of referencing the library module.  This can be easily checked by
+looking for the module in the \file{.v} file for the application.  It will say
+something like \code{group modulename} or \code{module modulename} if the
+module is defined in the file.
+
+See also the Common Problems section, 6.2, in {\it Visualizing Your Data with
+AVS/Express} for other problems.  It's not great, but does give some useful
+solutions.
+
+
+%=============================================================================
+% Section: Explorer
+%=============================================================================
+
+\section{Explorer}
+\label{Explorer}
+
+%=============================================================================
+% SubSection: Writing Explorer Modules
+%=============================================================================
+
+\subsection{Writing Explorer Modules}
+\label{Writing Explorer Modules}
+
