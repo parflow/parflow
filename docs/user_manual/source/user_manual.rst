@@ -502,7 +502,7 @@ follow this procedure :
 
    -  Take the last pressure output file before the restart with the
       sequence number from above and format them for regular input using
-      the keys detailed in § `6.1.28 <#Initial Conditions: Pressure>`__
+      the keys detailed in § `6.1.27 <#Initial Conditions: Pressure>`__
       and possibly the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       ``pfdist utility in the input script.``
 
@@ -1088,7 +1088,7 @@ associate them with the boundary conditions that follow.
 
 These are Dirichlet BCs (i.e. constant head over cell so the pressure
 head is set to hydrostatic– *see*
-§ `6.1.25 <#Boundary Conditions: Pressure>`__). There is no time
+§ `6.1.24 <#Boundary Conditions: Pressure>`__). There is no time
 dependence, so use the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 ``constant time cycle we defined previously. ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 RefGeom links this to the established domain geometry and tells ParFlow what to use for a datum when calculating hydrostatic head conditions.``
 
@@ -1993,7 +1993,7 @@ Following the same approach as we did for ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=1
    pfset Geom.s9.RelPerm.Alpha        1.585
    pfset Geom.s9.RelPerm.N            2.413
 
-Next we do the same thing for saturation (§ `6.1.23 <#Saturation>`__)
+Next we do the same thing for saturation (§ `6.1.22 <#Saturation>`__)
 again using the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 ``VanGenuchten parameters Note that every geometry listed in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Porosity.GeomNames must have values assigned.``
 
@@ -2158,7 +2158,7 @@ specify that we would like to write out ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
    pfset Solver.WriteSiloCLM                             False
 
 Next we specify the solver settings for the ParFlow
-(§ `6.1.34 <#RE Solver Parameters>`__). First we turn on solver Richards
+(§ `6.1.33 <#RE Solver Parameters>`__). First we turn on solver Richards
 and the terrain following grid. We turn off variable dz.
 
 ::
@@ -4379,7 +4379,7 @@ The flow equations are a set of *mass balance* and *momentum balance*
    \label{eqn-darcy}
    {\vec V}_i~+~ {\lambda}_i\cdot ( \nabla p_i~-~ \rho_i{\vec g}) ~=~ 0 ,
 
-for :math:`i = 0, \ldots , n_p- 1` :math:`(n_p\in \{1,2,3\})`, where
+for :math:`i = 0, \ldots , \nu- 1` :math:`(\nu\in \{1,2,3\})`, where
 
 .. math::
 
@@ -4451,7 +4451,7 @@ following:
    \label{eqn-Dvec-vs-vvec}
    {\vec V}_i= \phi S_i{\vec v}_i.
 
-To complete the formulation, we have the following :math:`n_p`
+To complete the formulation, we have the following :math:`\nu`
 *consititutive relations*
 
 .. math::
@@ -4463,15 +4463,15 @@ To complete the formulation, we have the following :math:`n_p`
 
    \label{eqn-constitutive-capillary}
    p_{i0} ~=~ p_{i0} ( S_0 ) ,
-   ~~~~~~ i = 1 , \ldots , n_p- 1 .
+   ~~~~~~ i = 1 , \ldots , \nu- 1 .
 
 where, :math:`p_{ij} = p_i - p_j` is the *capillary pressure* between
-phase :math:`i` and phase :math:`j`. We now have the :math:`3 n_p`
+phase :math:`i` and phase :math:`j`. We now have the :math:`3 \nu`
 equations, (`[eqn-mass-balance] <#eqn-mass-balance>`__),
 (`[eqn-darcy] <#eqn-darcy>`__),
 (`[eqn-constitutive-sum] <#eqn-constitutive-sum>`__), and
 (`[eqn-constitutive-capillary] <#eqn-constitutive-capillary>`__), in the
-:math:`3 n_p` unknowns, :math:`S_i, {\vec V}_i`, and :math:`p_i`.
+:math:`3 \nu` unknowns, :math:`S_i, {\vec V}_i`, and :math:`p_i`.
 
 For technical reasons, we want to rewrite the above equations. First, we
 define the *total mobility*, :math:`{\lambda}_T`, and the *total
@@ -4498,7 +4498,7 @@ After doing a bunch of algebra, we get the following equation for
      \right \}
    ~=~ 0 .
 
-After doing some more algebra, we get the following :math:`n_p- 1`
+After doing some more algebra, we get the following :math:`\nu- 1`
 equations for :math:`S_i`:
 
 .. math::
@@ -4532,12 +4532,12 @@ where by definition, :math:`p_{ii} = 0`. Note that equations
 (`[eqn-saturation] <#eqn-saturation>`__) are analytically the same
 equations as in (`[eqn-mass-balance] <#eqn-mass-balance>`__). The reason
 we rewrite them in this latter form is because of the numerical scheme
-we are using. We now have the :math:`3 n_p` equations,
+we are using. We now have the :math:`3 \nu` equations,
 (`[eqn-pressure] <#eqn-pressure>`__),
 (`[eqn-saturation] <#eqn-saturation>`__),
 (`[eqn-total-vel] <#eqn-total-vel>`__), (`[eqn-darcy] <#eqn-darcy>`__),
 and (`[eqn-constitutive-capillary] <#eqn-constitutive-capillary>`__), in
-the :math:`3 n_p` unknowns, :math:`S_i, {\vec V}_i`, and :math:`p_i`.
+the :math:`3 \nu` unknowns, :math:`S_i, {\vec V}_i`, and :math:`p_i`.
 
 .. _Transport Equations:
 
@@ -4554,7 +4554,7 @@ The transport equations in ParFlow are currently defined as follows:
    & = & \\
    -\left ( \frac{\partial}{\partial t} ((1 - \phi) \rho_{s}F_{i,j}) ~+~  \lambda_j~ (1 - \phi) \rho_{s}F_{i,j}\right ) & + & \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\nonumber\end{aligned}
 
-where :math:`i = 0, \ldots , n_p- 1` :math:`(n_p\in \{1,2,3\})` is the
+where :math:`i = 0, \ldots , \nu- 1` :math:`(\nu\in \{1,2,3\})` is the
 number of phases, :math:`j = 0, \ldots , n_c- 1` is the number of
 contaminants, and where :math:`c_{i,j}` is the concentration of
 contaminant :math:`j` in phase :math:`i`. Recall also, that
@@ -4919,7 +4919,7 @@ ParFlow. For an example of input files you can look at the ‘#=12 ‘$=12
 
 Each key’s entry has the form:
 
-Description Example Useage:
+*type* **KeyName** default value Description
 
 The “type” is one of integer, double, string, list. Integer and double
 are IEEE numbers. String is a text string (for example, a filename).
@@ -4944,8 +4944,8 @@ all specifications are indeed consistent.
 Input File Format Number
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-This gives the value of the input file version number that this file
-fits. Example Useage:
+*integer* **FileVersion** no default This gives the value of the input
+file version number that this file fits.
 
 .. container:: list
 
@@ -4972,7 +4972,8 @@ Please note “R” should always be 1 if you are running with Solver
 Richards :raw-latex:`\cite{Jones-Woodward01}` unless you’re running a
 totally saturated domain (solver IMPES).
 
-This assigns the process splits in the *x* direction. Example Useage:
+*integer* **Process.Topology.P** no default This assigns the process
+splits in the *x* direction.
 
 .. container:: list
 
@@ -4980,7 +4981,8 @@ This assigns the process splits in the *x* direction. Example Useage:
 
       pfset Process.Topology.P        2
 
-This assigns the process splits in the *y* direction. Example Useage:
+*integer* **Process.Topology.Q** no default This assigns the process
+splits in the *y* direction.
 
 .. container:: list
 
@@ -4988,7 +4990,8 @@ This assigns the process splits in the *y* direction. Example Useage:
 
       pfset Process.Topology.Q        1
 
-This assigns the process splits in the *z* direction. Example Useage:
+*integer* **Process.Topology.P** no default This assigns the process
+splits in the *z* direction.
 
 .. container:: list
 
@@ -5027,8 +5030,8 @@ be the points designated in the computational grid. The user can also
 assign the *x*, *y* and *z* location to correspond to a specific
 coordinate system (i.e. UTM).
 
-This assigns the lower *x* coordinate location for the computational
-grid. Example Useage:
+*double* **ComputationalGrid.Lower.X** no default This assigns the lower
+*x* coordinate location for the computational grid.
 
 .. container:: list
 
@@ -5036,8 +5039,8 @@ grid. Example Useage:
 
       pfset   ComputationalGrid.Lower.X  0.0
 
-This assigns the lower *y* coordinate location for the computational
-grid. Example Useage:
+*double* **ComputationalGrid.Lower.Y** no default This assigns the lower
+*y* coordinate location for the computational grid.
 
 .. container:: list
 
@@ -5045,8 +5048,8 @@ grid. Example Useage:
 
       pfset   ComputationalGrid.Lower.Y  0.0
 
-This assigns the lower *z* coordinate location for the computational
-grid. Example Useage:
+*double* **ComputationalGrid.Lower.Z** no default This assigns the lower
+*z* coordinate location for the computational grid.
 
 .. container:: list
 
@@ -5054,62 +5057,62 @@ grid. Example Useage:
 
       pfset   ComputationalGrid.Lower.Z  0.0
 
-This assigns the number of grid cells in the *x* direction for the
-computational grid. Example Useage:
+*integer* **ComputationalGrid.NX** no default This assigns the number of
+grid cells in the *x* direction for the computational grid.
 
 .. container:: list
 
    ::
 
-      pfset  ComputationalGrid.NX  10
+      pfset  ComputationalGrid.NX  10 
 
-This assigns the number of grid cells in the *y* direction for the
-computational grid. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset  ComputationalGrid.NY  10
-
-This assigns the number of grid cells in the *z* direction for the
-computational grid. Example Useage:
+*integer* **ComputationalGrid.NY** no default This assigns the number of
+grid cells in the *y* direction for the computational grid.
 
 .. container:: list
 
    ::
 
-      pfset  ComputationalGrid.NZ  10
+      pfset  ComputationalGrid.NY  10 
 
-This defines the size of grid cells in the *x* direction. Units are *L*
-and are defined by the units of the hydraulic conductivity used in the
-problem. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset  ComputationalGrid.DX  10.0
-
-This defines the size of grid cells in the *y* direction. Units are *L*
-and are defined by the units of the hydraulic conductivity used in the
-problem. Example Useage:
+*integer* **ComputationalGrid.NZ** no default This assigns the number of
+grid cells in the *z* direction for the computational grid.
 
 .. container:: list
 
    ::
 
-      pfset  ComputationalGrid.DY  10.0
+      pfset  ComputationalGrid.NZ  10 
 
-This defines the size of grid cells in the *z* direction. Units are *L*
-and are defined by the units of the hydraulic conductivity used in the
-problem. Example Useage:
+*real* **ComputationalGrid.DX** no default This defines the size of grid
+cells in the *x* direction. Units are *L* and are defined by the units
+of the hydraulic conductivity used in the problem.
 
 .. container:: list
 
    ::
 
-      pfset  ComputationalGrid.DZ  1.0
+      pfset  ComputationalGrid.DX  10.0 
+
+*real* **ComputationalGrid.DY** no default This defines the size of grid
+cells in the *y* direction. Units are *L* and are defined by the units
+of the hydraulic conductivity used in the problem.
+
+.. container:: list
+
+   ::
+
+      pfset  ComputationalGrid.DY  10.0 
+
+*real* **ComputationalGrid.DZ** no default This defines the size of grid
+cells in the *z* direction. Units are *L* and are defined by the units
+of the hydraulic conductivity used in the problem.
+
+.. container:: list
+
+   ::
+
+      pfset  ComputationalGrid.DZ  1.0 
 
 Example Usage:
 
@@ -5130,26 +5133,6 @@ Example Usage:
    pfset ComputationalGrid.DY		10.0
    pfset ComputationalGrid.DZ		1.0
 
-Run a clustering algorithm to create boxes in index space for iteration.
-By default an octree representation is used for iteration, this may
-result in iterating over many nodes in the octree. Th UseClustering key
-will run a clustering algorithm to build a set of boxes for iteration.
-
-This does not always have a signiciant impact on performance and the
-clustering algorithm can be expensive to compute. For small problems and
-short running problems clustering is not recommended. Long running
-problems may or may not see a benifit. The result varies significantly
-based on the geometries in the problem.
-
-The Berger-Rigoutsos algorithm is currently used for clustering. Example
-Useage:
-
-.. container:: list
-
-   ::
-
-      pfset  UseClustering  False
-
 .. _Geometries:
 
 Geometries
@@ -5167,8 +5150,9 @@ more than one geometry. A geometry input of type Box has a single
 geometry (the square box defined by the extants of the two points). A
 SolidFile input type can contain several geometries.
 
-This is a list of the geometry input names which define the containers
-for all of the geometries defined for this problem. Example Useage:
+*list* **GeomInput.Names** no default This is a list of the geometry
+input names which define the containers for all of the geometries
+defined for this problem.
 
 .. container:: list
 
@@ -5176,9 +5160,9 @@ for all of the geometries defined for this problem. Example Useage:
 
       pfset GeomInput.Names    "solidinput indinput boxinput"
 
-This defines the input type for the geometry input with
-*geom_input_name*. This key must be one of: **SolidFile,
-IndicatorField**, **Box**. Example Useage:
+*string* **GeomInput.\ *geom_input_name*.InputType** no default This
+defines the input type for the geometry input with *geom_input_name*.
+This key must be one of: **SolidFile, IndicatorField**, **Box**.
 
 .. container:: list
 
@@ -5186,14 +5170,14 @@ IndicatorField**, **Box**. Example Useage:
 
       pfset GeomInput.solidinput.InputType  SolidFile
 
-This is a list of the names of the geometries defined by the geometry
-input. For a geometry input type of Box, the list should contain a
-single geometry name. For the SolidFile geometry type this should
-contain a list with the same number of gemetries as were defined using
-GMS. The order of geometries in the SolidFile should match the names.
-For IndicatorField types you need to specify the value in the input
-field which matches the name using GeomInput.\ *geom_input_name*.Value.
-Example Useage:
+*list* **GeomInput.\ *geom_input_name*.GeomNames** no default This is a
+list of the names of the geometries defined by the geometry input. For a
+geometry input type of Box, the list should contain a single geometry
+name. For the SolidFile geometry type this should contain a list with
+the same number of gemetries as were defined using GMS. The order of
+geometries in the SolidFile should match the names. For IndicatorField
+types you need to specify the value in the input field which matches the
+name using GeomInput.\ *geom_input_name*.Value.
 
 .. container:: list
 
@@ -5202,9 +5186,9 @@ Example Useage:
       pfset GeomInput.solidinput.GeomNames "domain bottomlayer \
                                             middlelayer toplayer"
 
-For IndicatorField and SolidFile geometry inputs this key specifies the
-input filename which contains the field or solid information. Example
-Useage:
+*string* **GeomInput.\ *geom_input_name*.Filename** no default For
+IndicatorField and SolidFile geometry inputs this key specifies the
+input filename which contains the field or solid information.
 
 .. container:: list
 
@@ -5212,10 +5196,10 @@ Useage:
 
       pfset GeomInput.solidinput.FileName   ocwd.pfsol
 
-For IndicatorField geometry inputs you need to specify the mapping
-between values in the input file and the geometry names. The named
-geometry will be defined whereever the input file is equal to the
-specifed value. Example Useage:
+*integer* **GeomInput.\ *geometry_input_name*.Value** no default For
+IndicatorField geometry inputs you need to specify the mapping between
+values in the input file and the geometry names. The named geometry will
+be defined whereever the input file is equal to the specifed value.
 
 .. container:: list
 
@@ -5226,8 +5210,9 @@ specifed value. Example Useage:
 For box geometries you need to specify the location of the box. This is
 done by defining two corners of the the box.
 
-This gives the lower X real space coordinate value of the previously
-specified box geometry of name *box_geom_name*. Example Useage:
+*double* **Geom.\ *box_geom_name*.Lower.X** no default This gives the
+lower X real space coordinate value of the previously specified box
+geometry of name *box_geom_name*.
 
 .. container:: list
 
@@ -5235,8 +5220,9 @@ specified box geometry of name *box_geom_name*. Example Useage:
 
       pfset Geom.background.Lower.X   -1.0
 
-This gives the lower Y real space coordinate value of the previously
-specified box geometry of name *box_geom_name*. Example Useage:
+*double* **Geom.\ *box_geom_name*.Lower.Y** no default This gives the
+lower Y real space coordinate value of the previously specified box
+geometry of name *box_geom_name*.
 
 .. container:: list
 
@@ -5244,8 +5230,9 @@ specified box geometry of name *box_geom_name*. Example Useage:
 
       pfset Geom.background.Lower.Y   -1.0
 
-This gives the lower Z real space coordinate value of the previously
-specified box geometry of name *box_geom_name*. Example Useage:
+*double* **Geom.\ *box_geom_name*.Lower.Z** no default This gives the
+lower Z real space coordinate value of the previously specified box
+geometry of name *box_geom_name*.
 
 .. container:: list
 
@@ -5253,8 +5240,9 @@ specified box geometry of name *box_geom_name*. Example Useage:
 
       pfset Geom.background.Lower.Z   -1.0
 
-This gives the upper X real space coordinate value of the previously
-specified box geometry of name *box_geom_name*. Example Useage:
+*double* **Geom.\ *box_geom_name*.Upper.X** no default This gives the
+upper X real space coordinate value of the previously specified box
+geometry of name *box_geom_name*.
 
 .. container:: list
 
@@ -5262,8 +5250,9 @@ specified box geometry of name *box_geom_name*. Example Useage:
 
       pfset Geom.background.Upper.X   151.0
 
-This gives the upper Y real space coordinate value of the previously
-specified box geometry of name *box_geom_name*. Example Useage:
+*double* **Geom.\ *box_geom_name*.Upper.Y** no default This gives the
+upper Y real space coordinate value of the previously specified box
+geometry of name *box_geom_name*.
 
 .. container:: list
 
@@ -5271,8 +5260,9 @@ specified box geometry of name *box_geom_name*. Example Useage:
 
       pfset Geom.background.Upper.Y   171.0
 
-This gives the upper Z real space coordinate value of the previously
-specified box geometry of name *box_geom_name*. Example Useage:
+*double* **Geom.\ *box_geom_name*.Upper.Z** no default This gives the
+upper Z real space coordinate value of the previously specified box
+geometry of name *box_geom_name*.
 
 .. container:: list
 
@@ -5280,13 +5270,14 @@ specified box geometry of name *box_geom_name*. Example Useage:
 
       pfset Geom.background.Upper.Z   11.0
 
-Patches are defined on the surfaces of geometries. Currently you can
-only define patches on Box geometries and on the the first geometry in a
-SolidFile. For a Box the order is fixed (left right front back bottom
-top) but you can name the sides anything you want.
+*list* **Geom.\ *geom_name*.Patches** no default Patches are defined on
+the surfaces of geometries. Currently you can only define patches on Box
+geometries and on the the first geometry in a SolidFile. For a Box the
+order is fixed (left right front back bottom top) but you can name the
+sides anything you want.
 
 For SolidFiles the order is printed by the conversion routine that
-converts GMS to SolidFile format. Example Useage:
+converts GMS to SolidFile format.
 
 .. container:: list
 
@@ -5313,7 +5304,7 @@ inputs.
       pfset GeomInput.solidinput.InputType	SolidFile
 
       # The names of the geometries contained in the solid file. Order is
-      # important and defines the mapping. First geometry gets the first name.
+      # important and defines the mapping. First geometry gets the first name. 
       pfset GeomInput.solidinput.GeomNames	"domain"
       #
       # Filename that contains the geometry
@@ -5322,8 +5313,8 @@ inputs.
       pfset GeomInput.solidinput.FileName 	ocwd.pfsol
 
       #
-      # An indicator field is a 3D field of values.
-      # The values within the field can be mapped
+      # An indicator field is a 3D field of values. 
+      # The values within the field can be mapped 
       # to ParFlow geometries. Indicator fields must match the
       # computation grid exactly!
       #
@@ -5334,7 +5325,7 @@ inputs.
 
       #
       # Within the indicator.pfb file, assign the values to each GeomNames
-      #
+      # 
       pfset GeomInput.sourceregion.Value 	11
       pfset GeomInput.concenregion.Value 	12
 
@@ -5352,8 +5343,8 @@ inputs.
       pfset Geom.background.Upper.Z 		11.0
 
       #
-      # The patch order is fixed in the .pfsol file, but you
-      # can call the patch name anything you
+      # The patch order is fixed in the .pfsol file, but you 
+      # can call the patch name anything you 
       # want (i.e. left right front back bottom top)
       #
 
@@ -5371,12 +5362,13 @@ units for later sections, sequence iterations in time, indicate actual
 starting and stopping values and give instructions on when data is
 printed out.
 
-This key is used to indicate the base unit of time for entering time
-values. All time should be expressed as a multiple of this value. This
-should be set to the smallest interval of time to be used in the
-problem. For example, a base unit of “1” means that all times will be
-integer valued. A base unit of “0.5” would allow integers and fractions
-of 0.5 to be used for time input values.
+*double* **TimingInfo.BaseUnit** no default This key is used to indicate
+the base unit of time for entering time values. All time should be
+expressed as a multiple of this value. This should be set to the
+smallest interval of time to be used in the problem. For example, a base
+unit of “1” means that all times will be integer valued. A base unit of
+“0.5” would allow integers and fractions of 0.5 to be used for time
+input values.
 
 The rationale behind this restriction is to allow time to be discretized
 on some interval to enable integer arithmetic to be used when
@@ -5388,8 +5380,7 @@ This value is also used when describing “time cycling data” in,
 currently, the well and boundary condition sections. The lengths of the
 cycles in those sections will be integer multiples of this value,
 therefore it needs to be the smallest divisor which produces an integral
-result for every “real time” cycle interval length needed. Example
-Useage:
+result for every “real time” cycle interval length needed.
 
 .. container:: list
 
@@ -5397,13 +5388,13 @@ Useage:
 
       pfset TimingInfo.BaseUnit      1.0
 
-This key is used to indicate the time step number that will be
-associated with the first advection cycle in a transient problem. The
-value **-1** indicates that advection is not to be done. The value **0**
-indicates that advection should begin with the given initial conditions.
-Values greater than **0** are intended to mean “restart” from some
-previous “checkpoint” time-step, but this has not yet been implemented.
-Example Useage:
+*integer* **TimingInfo.StartCount** no default This key is used to
+indicate the time step number that will be associated with the first
+advection cycle in a transient problem. The value **-1** indicates that
+advection is not to be done. The value **0** indicates that advection
+should begin with the given initial conditions. Values greater than
+**0** are intended to mean “restart” from some previous “checkpoint”
+time-step, but this has not yet been implemented.
 
 .. container:: list
 
@@ -5411,8 +5402,8 @@ Example Useage:
 
       pfset TimingInfo.StartCount    0
 
-This key is used to indicate the starting time for the simulation.
-Example Useage:
+*double* **TimingInfo.StartTime** no default This key is used to
+indicate the starting time for the simulation.
 
 .. container:: list
 
@@ -5420,8 +5411,8 @@ Example Useage:
 
       pfset TimingInfo.StartTime     0.0
 
-This key is used to indicate the stopping time for the simulation.
-Example Useage:
+*double* **TimingInfo.StopTime** no default This key is used to indicate
+the stopping time for the simulation.
 
 .. container:: list
 
@@ -5429,11 +5420,11 @@ Example Useage:
 
       pfset TimingInfo.StopTime      100.0
 
-This key is the real time interval at which time-dependent output should
-be written. A value of **0** will produce undefined behavior. If the
-value is negative, output will be dumped out every :math:`n` time steps,
-where :math:`n` is the absolute value of the integer part of the value.
-Example Useage:
+*double* **TimingInfo.DumpInterval** no default This key is the real
+time interval at which time-dependent output should be written. A value
+of **0** will produce undefined behavior. If the value is negative,
+output will be dumped out every :math:`n` time steps, where :math:`n` is
+the absolute value of the integer part of the value.
 
 .. container:: list
 
@@ -5441,16 +5432,17 @@ Example Useage:
 
       pfset TimingInfo.DumpInterval  10.0
 
-This key is used to indicate a wall clock time to halt the execution of
-a run. At the end of each dump interval the time remaining in the batch
-job is compared with the user supplied value, if remaining time is less
-than or equal to the supplied value the execution is halted. Typically
-used when running on batch systems with time limits to force a clean
-shutdown near the end of the batch job. Time units is seconds, a value
-of **0** (the default) disables the check.
+*integer* **TimingInfo.DumpIntervalExecutionTimeLimit** 0 This key is
+used to indicate a wall clock time to halt the execution of a run. At
+the end of each dump interval the time remaining in the batch job is
+compared with the user supplied value, if remaining time is less than or
+equal to the supplied value the execution is halted. Typically used when
+running on batch systems with time limits to force a clean shutdown near
+the end of the batch job. Time units is seconds, a value of **0** (the
+default) disables the check.
 
 Currently only supported on SLURM based systems, “–with-slurm” must be
-specified at configure time to enable. Example Useage:
+specified at configure time to enable.
 
 .. container:: list
 
@@ -5461,11 +5453,12 @@ specified at configure time to enable. Example Useage:
 For *Richards’ equation cases only* input is collected for time step
 selection. Input for this section is given as follows:
 
-This key must be one of: **Constant** or **Growth**. The value
-**Constant** defines a constant time step. The value **Growth** defines
-a time step that starts as :math:`dt_0` and is defined for other steps
-as :math:`dt^{new} = \gamma dt^{old}` such that :math:`dt^{new} \leq
-dt_{max}` and :math:`dt^{new} \geq dt_{min}`. Example Useage:
+*list* **TimeStep.Type** no default This key must be one of:
+**Constant** or **Growth**. The value **Constant** defines a constant
+time step. The value **Growth** defines a time step that starts as
+:math:`dt_0` and is defined for other steps as
+:math:`dt^{new} = \gamma dt^{old}` such that :math:`dt^{new} \leq 
+dt_{max}` and :math:`dt^{new} \geq dt_{min}`.
 
 .. container:: list
 
@@ -5473,8 +5466,9 @@ dt_{max}` and :math:`dt^{new} \geq dt_{min}`. Example Useage:
 
       pfset TimeStep.Type      Constant
 
-This key is used only if a constant time step is selected and indicates
-the value of the time step for all steps taken. Example Useage:
+*double* **TimeStep.Value** no default This key is used only if a
+constant time step is selected and indicates the value of the time step
+for all steps taken.
 
 .. container:: list
 
@@ -5482,8 +5476,9 @@ the value of the time step for all steps taken. Example Useage:
 
       pfset TimeStep.Value      0.001
 
-This key specifies the initial time step :math:`dt_0` if the **Growth**
-type time step is selected. Example Useage:
+*double* **TimeStep.InitialStep** no default This key specifies the
+initial time step :math:`dt_0` if the **Growth** type time step is
+selected.
 
 .. container:: list
 
@@ -5491,9 +5486,9 @@ type time step is selected. Example Useage:
 
       pfset TimeStep.InitialStep    0.001
 
-This key specifies the growth factor :math:`\gamma` by which a time step
-will be multiplied to get the new time step when the **Growth** type
-time step is selected. Example Useage:
+*double* **TimeStep.GrowthFactor** no default This key specifies the
+growth factor :math:`\gamma` by which a time step will be multiplied to
+get the new time step when the **Growth** type time step is selected.
 
 .. container:: list
 
@@ -5501,8 +5496,9 @@ time step is selected. Example Useage:
 
       pfset TimeStep.GrowthFactor      1.5
 
-This key specifies the maximum time step allowed, :math:`dt_{max}`, when
-the **Growth** type time step is selected. Example Useage:
+*double* **TimeStep.MaxStep** no default This key specifies the maximum
+time step allowed, :math:`dt_{max}`, when the **Growth** type time step
+is selected.
 
 .. container:: list
 
@@ -5510,8 +5506,9 @@ the **Growth** type time step is selected. Example Useage:
 
       pfset TimeStep.MaxStep      86400
 
-This key specifies the minimum time step allowed, :math:`dt_{min}`, when
-the **Growth** type time step is selected. Example Useage:
+*double* **TimeStep.MinStep** no default This key specifies the minimum
+time step allowed, :math:`dt_{min}`, when the **Growth** type time step
+is selected.
 
 .. container:: list
 
@@ -5558,11 +5555,11 @@ information needed by ParFlow. All the time cycles are synched to the
 **TimingInfo.BaseUnit** key described above and are *integer
 multipliers* of that value.
 
-This key is used to specify the named time cycles to be used in a
-simulation. It is a list of names and each name defines a time cycle and
-the number of items determines the total number of time cycles
-specified. Each named cycle is described using a number of keys defined
-below. Example Useage:
+*list* **CycleNames** no default This key is used to specify the named
+time cycles to be used in a simulation. It is a list of names and each
+name defines a time cycle and the number of items determines the total
+number of time cycles specified. Each named cycle is described using a
+number of keys defined below.
 
 .. container:: list
 
@@ -5570,10 +5567,11 @@ below. Example Useage:
 
       pfset Cycle.Names constant onoff
 
-This key is used to specify the named time intervals for each cycle. It
-is a list of names and each name defines a time interval when a specific
-boundary condition is applied and the number of items determines the
-total number of intervals in that time cycle. Example Useage:
+*list* **Cycle.\ *cycle_name*.Names** no default This key is used to
+specify the named time intervals for each cycle. It is a list of names
+and each name defines a time interval when a specific boundary condition
+is applied and the number of items determines the total number of
+intervals in that time cycle.
 
 .. container:: list
 
@@ -5581,10 +5579,11 @@ total number of intervals in that time cycle. Example Useage:
 
       pfset Cycle.onoff.Names "on off"
 
-This key is used to specify the length of a named time intervals. It is
-an *integer multiplier* of the value set for the **TimingInfo.BaseUnit**
+*integer* **Cycle.\ *cycle_name.interval_name*.Length** no default This
+key is used to specify the length of a named time intervals. It is an
+*integer multiplier* of the value set for the **TimingInfo.BaseUnit**
 key described above. The total length of a given time cycle is the sum
-of all the intervals multiplied by the base unit. Example Useage:
+of all the intervals multiplied by the base unit.
 
 .. container:: list
 
@@ -5592,10 +5591,10 @@ of all the intervals multiplied by the base unit. Example Useage:
 
       pfset Cycle.onoff.on.Length             10
 
-This key is used to specify the how many times a named time interval
-repeats. A positive value specifies a number of repeat cycles a value of
--1 specifies that the cycle repeat for the entire simulation. Example
-Useage:
+*integer* **Cycle.\ *cycle_name*.Repeat** no default This key is used to
+specify the how many times a named time interval repeats. A positive
+value specifies a number of repeat cycles a value of -1 specifies that
+the cycle repeat for the entire simulation.
 
 .. container:: list
 
@@ -5633,14 +5632,14 @@ Domain
 The domain may be represented by any of the solid types in
 § `6.1.4 <#Geometries>`__ above that allow the definition of surface
 patches. These surface patches are used to define boundary conditions in
-§ `6.1.25 <#Boundary Conditions: Pressure>`__ and
-§ `6.1.26 <#Boundary Conditions: Saturation>`__ below. Subsequently, it
+§ `6.1.24 <#Boundary Conditions: Pressure>`__ and
+§ `6.1.25 <#Boundary Conditions: Saturation>`__ below. Subsequently, it
 is required that the union (or combination) of the defined surface
 patches equal the entire domain surface. NOTE: This requirement is NOT
 checked in the code.
 
-This key specifies which of the named geometries is the problem domain.
-Example Useage:
+*string* **Domain.GeomName** no default This key specifies which of the
+named geometries is the problem domain.
 
 .. container:: list
 
@@ -5653,8 +5652,8 @@ Example Useage:
 Phases and Contaminants
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-This specifies the names of phases to be modeled. Currently only 1 or 2
-phases may be modeled. Example Useage:
+*list* **Phase.Names** no default This specifies the names of phases to
+be modeled. Currently only 1 or 2 phases may be modeled.
 
 .. container:: list
 
@@ -5662,7 +5661,8 @@ phases may be modeled. Example Useage:
 
       pfset Phase.Names    "water"
 
-This specifies the names of contaminants to be advected. Example Useage:
+*list* **Contaminant.Names** no default This specifies the names of
+contaminants to be advected.
 
 .. container:: list
 
@@ -5675,7 +5675,8 @@ This specifies the names of contaminants to be advected. Example Useage:
 Gravity, Phase Density and Phase Viscosity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Specifies the gravity constant to be used. Example Useage:
+*double* **Gravity** no default Specifies the gravity constant to be
+used.
 
 .. container:: list
 
@@ -5683,11 +5684,12 @@ Specifies the gravity constant to be used. Example Useage:
 
       pfset Gravity	1.0
 
-This key specifies whether density will be a constant value or if it
-will be given by an equation of state of the form :math:`(rd)exp(cP)`,
-where :math:`P` is pressure, :math:`rd` is the density at atmospheric
+*string* **Phase.\ *phase_name*.Density.Type** no default This key
+specifies whether density will be a constant value or if it will be
+given by an equation of state of the form :math:`(rd)exp(cP)`, where
+:math:`P` is pressure, :math:`rd` is the density at atmospheric
 pressure, and :math:`c` is the phase compressibility constant. This key
-must be either **Constant** or **EquationOfState**. Example Useage:
+must be either **Constant** or **EquationOfState**.
 
 .. container:: list
 
@@ -5695,8 +5697,9 @@ must be either **Constant** or **EquationOfState**. Example Useage:
 
       pfset Phase.water.Density.Type	 Constant
 
-This specifies the value of density if this phase was specified to have
-a constant density value for the phase *phase_name*. Example Useage:
+*double* **Phase.\ *phase_name*.Density.Value** no default This
+specifies the value of density if this phase was specified to have a
+constant density value for the phase *phase_name*.
 
 .. container:: list
 
@@ -5704,8 +5707,9 @@ a constant density value for the phase *phase_name*. Example Useage:
 
       pfset Phase.water.Density.Value   1.0
 
+*double* **Phase.\ *phase_name*.Density.ReferenceDensity** no default
 This key specifies the reference density if an equation of state density
-function is specified for the phase *phase_name*. Example Useage:
+function is specified for the phase *phase_name*.
 
 .. container:: list
 
@@ -5713,9 +5717,10 @@ function is specified for the phase *phase_name*. Example Useage:
 
       pfset Phase.water.Density.ReferenceDensity   1.0
 
-This key specifies the phase compressibility constant if an equation of
-state density function is specified for the phase *phase|-name*. Example
-Useage:
+*double* **Phase.\ *phase_name*.Density.CompressibilityConstant** no
+default This key specifies the phase compressibility constant if an
+equation of state density function is specified for the phase
+*phase|-name*.
 
 .. container:: list
 
@@ -5723,8 +5728,9 @@ Useage:
 
       pfset Phase.water.Density.CompressibilityConstant   1.0
 
-This key specifies whether viscosity will be a constant value.
-Currently, the only choice for this key is **Constant**. Example Useage:
+*string* **Phase.\ *phase_name*.Viscosity.Type** Constant This key
+specifies whether viscosity will be a constant value. Currently, the
+only choice for this key is **Constant**.
 
 .. container:: list
 
@@ -5732,8 +5738,9 @@ Currently, the only choice for this key is **Constant**. Example Useage:
 
       pfset Phase.water.Viscosity.Type   Constant
 
-This specifies the value of viscosity if this phase was specified to
-have a constant viscosity value. Example Useage:
+*double* **Phase.\ *phase_name*.Viscosity.Value** no default This
+specifies the value of viscosity if this phase was specified to have a
+constant viscosity value.
 
 .. container:: list
 
@@ -5746,10 +5753,11 @@ have a constant viscosity value. Example Useage:
 Chemical Reactions
 ~~~~~~~~~~~~~~~~~~
 
-This key specifies the half-life decay rate of the named contaminant,
-*contaminant_name*. At present only first order decay reactions are
-implemented and it is assumed that one contaminant cannot decay into
-another. Example Useage:
+*double* **Contaminants.\ *contaminant_name*.Degradation.Value** no
+default This key specifies the half-life decay rate of the named
+contaminant, *contaminant_name*. At present only first order decay
+reactions are implemented and it is assumed that one contaminant cannot
+decay into another.
 
 .. container:: list
 
@@ -5769,12 +5777,12 @@ be a diagonal tensor with entries given as,
 
 .. math::
 
-   \left(
+   \left( 
    \begin{array}{ccc}
    k_x({\bf x}) & 0 & 0 \\
    0 & k_y({\bf x}) & 0 \\
-   0 & 0 & k_z({\bf x})
-   \end{array} \right)
+   0 & 0 & k_z({\bf x}) 
+   \end{array} \right) 
    K({\bf x}),
 
 where :math:`K({\bf x})` is the permeability field given below.
@@ -5786,9 +5794,9 @@ conditioning data if the user so desires. It is not necessary to use
 conditioning as ParFlow automatically defaults to not use conditioning
 data, but if conditioning is desired, the following key should be set:
 
-This key specifies the name of the file that contains the conditioning
-data. The default string **NA** indicates that conditioning data is not
-applicable. Example Useage:
+*string* **Perm.Conditioning.FileName** “NA” This key specifies the name
+of the file that contains the conditioning data. The default string
+**NA** indicates that conditioning data is not applicable.
 
 .. container:: list
 
@@ -5834,9 +5842,9 @@ taken care of in the algorithms.
 
 The general format for the permeability input is as follows:
 
-This key specifies all of the geometries to which a permeability field
-will be assigned. These geometries must cover the entire computational
-domain. Example Useage:
+*list* **Geom.Perm.Names** no default This key specifies all of the
+geometries to which a permeability field will be assigned. These
+geometries must cover the entire computational domain.
 
 .. container:: list
 
@@ -5844,19 +5852,20 @@ domain. Example Useage:
 
       pfset GeomInput.Names   "background domain concen_region"
 
-This key specifies which method is to be used to assign permeability
-data to the named geometry, *geometry_name*. It must be either
-**Constant**, **TurnBands**, **ParGuass**, or **PFBFile**. The
-**Constant** value indicates that a constant is to be assigned to all
-grid cells within a geometry. The **TurnBand** value indicates that
-Tompson’s Turning Bands method is to be used to assign permeability data
-to all grid cells within a geometry :raw-latex:`\cite{TAG89}`. The
-**ParGauss** value indicates that a Parallel Gaussian Simulator method
-is to be used to assign permeability data to all grid cells within a
-geometry. The **PFBFile** value indicates that premeabilities are to be
-read from the “ParFlow Binary” file. Both the Turning Bands and Parallel
-Gaussian Simulators generate a random field with correlation lengths in
-the :math:`3` spatial directions given by :math:`\lambda_x`,
+*string* **Geom.geometry_name.Perm.Type** no default This key specifies
+which method is to be used to assign permeability data to the named
+geometry, *geometry_name*. It must be either **Constant**,
+**TurnBands**, **ParGuass**, or **PFBFile**. The **Constant** value
+indicates that a constant is to be assigned to all grid cells within a
+geometry. The **TurnBand** value indicates that Tompson’s Turning Bands
+method is to be used to assign permeability data to all grid cells
+within a geometry :raw-latex:`\cite{TAG89}`. The **ParGauss** value
+indicates that a Parallel Gaussian Simulator method is to be used to
+assign permeability data to all grid cells within a geometry. The
+**PFBFile** value indicates that premeabilities are to be read from the
+“ParFlow Binary” file. Both the Turning Bands and Parallel Gaussian
+Simulators generate a random field with correlation lengths in the
+:math:`3` spatial directions given by :math:`\lambda_x`,
 :math:`\lambda_y`, and :math:`\lambda_z` with the geometric mean of the
 log normal field given by :math:`\mu` and the standard deviation of the
 normal field given by :math:`\sigma`. In generating the field both of
@@ -5868,7 +5877,7 @@ of the process can be changed as well as the maximum normalized
 frequency :math:`K_{\rm max}` and the normalized frequency increment
 :math:`\delta K`. The Parallel Gaussian Simulator uses a search
 neighborhood, the number of simulated points and the number of
-conditioning points can be changed. Example Useage:
+conditioning points can be changed.
 
 .. container:: list
 
@@ -5876,9 +5885,9 @@ conditioning points can be changed. Example Useage:
 
       pfset Geom.background.Perm.Type   Constant
 
-This key specifies the value assigned to all points in the named
-geometry, *geometry_name*, if the type was set to constant. Example
-Useage:
+*double* **Geom.\ *geometry_name*.Perm.Value** no default This key
+specifies the value assigned to all points in the named geometry,
+*geometry_name*, if the type was set to constant.
 
 .. container:: list
 
@@ -5886,9 +5895,10 @@ Useage:
 
       pfset Geom.domain.Perm.Value   1.0
 
-This key specifies the x correlation length, :math:`\lambda_x`, of the
-field generated for the named geometry, *geometry_name*, if either the
-Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.LambdaX** no default This key
+specifies the x correlation length, :math:`\lambda_x`, of the field
+generated for the named geometry, *geometry_name*, if either the Turning
+Bands or Parallel Gaussian Simulator are chosen.
 
 .. container:: list
 
@@ -5896,9 +5906,10 @@ Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
 
       pfset Geom.domain.Perm.LambdaX   200.0
 
-This key specifies the y correlation length, :math:`\lambda_y`, of the
-field generated for the named geometry, *geometry_name*, if either the
-Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.LambdaY** no default This key
+specifies the y correlation length, :math:`\lambda_y`, of the field
+generated for the named geometry, *geometry_name*, if either the Turning
+Bands or Parallel Gaussian Simulator are chosen.
 
 .. container:: list
 
@@ -5906,9 +5917,10 @@ Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
 
       pfset Geom.domain.Perm.LambdaY   200.0
 
-This key specifies the z correlation length, :math:`\lambda_z`, of the
-field generated for the named geometry, *geometry_name*, if either the
-Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.LambdaZ** no default This key
+specifies the z correlation length, :math:`\lambda_z`, of the field
+generated for the named geometry, *geometry_name*, if either the Turning
+Bands or Parallel Gaussian Simulator are chosen.
 
 .. container:: list
 
@@ -5916,9 +5928,10 @@ Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
 
       pfset Geom.domain.Perm.LambdaZ   10.0
 
-This key specifies the geometric mean, :math:`\mu`, of the log normal
-field generated for the named geometry, *geometry_name*, if either the
-Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.GeomMean** no default This key
+specifies the geometric mean, :math:`\mu`, of the log normal field
+generated for the named geometry, *geometry_name*, if either the Turning
+Bands or Parallel Gaussian Simulator are chosen.
 
 .. container:: list
 
@@ -5926,9 +5939,10 @@ Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
 
       pfset Geom.domain.Perm.GeomMean   4.56
 
-This key specifies the standard deviation, :math:`\sigma`, of the normal
-field generated for the named geometry, *geometry_name*, if either the
-Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.Sigma** no default This key
+specifies the standard deviation, :math:`\sigma`, of the normal field
+generated for the named geometry, *geometry_name*, if either the Turning
+Bands or Parallel Gaussian Simulator are chosen.
 
 .. container:: list
 
@@ -5936,10 +5950,10 @@ Turning Bands or Parallel Gaussian Simulator are chosen. Example Useage:
 
       pfset Geom.domain.Perm.Sigma   2.08
 
-This key specifies the initial seed for the random number generator used
-to generate the field for the named geometry, *geometry_name*, if either
-the Turning Bands or Parallel Gaussian Simulator are chosen. This number
-must be positive. Example Useage:
+*integer* **Geom.\ *geometry_name*.Perm.Seed** 1 This key specifies the
+initial seed for the random number generator used to generate the field
+for the named geometry, *geometry_name*, if either the Turning Bands or
+Parallel Gaussian Simulator are chosen. This number must be positive.
 
 .. container:: list
 
@@ -5947,8 +5961,9 @@ must be positive. Example Useage:
 
       pfset Geom.domain.Perm.Seed   1
 
-This key specifies the number of lines to be used in the Turning Bands
-algorithm for the named geometry, *geometry_name*. Example Useage:
+*integer* **Geom.\ *geometry_name*.Perm.NumLines** 100 This key
+specifies the number of lines to be used in the Turning Bands algorithm
+for the named geometry, *geometry_name*.
 
 .. container:: list
 
@@ -5956,10 +5971,10 @@ algorithm for the named geometry, *geometry_name*. Example Useage:
 
       pfset Geom.domain.Perm.NumLines   100
 
-This key specifies the resolution of the line processes, in terms of the
-minimum grid spacing, to be used in the Turning Bands algorithm for the
-named geometry, *geometry_name*. Large values imply high resolution.
-Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.RZeta** 5.0 This key specifies
+the resolution of the line processes, in terms of the minimum grid
+spacing, to be used in the Turning Bands algorithm for the named
+geometry, *geometry_name*. Large values imply high resolution.
 
 .. container:: list
 
@@ -5967,9 +5982,9 @@ Example Useage:
 
       pfset Geom.domain.Perm.RZeta   5.0
 
-This key specifies the the maximum normalized frequency,
-:math:`K_{\rm max}`, to be used in the Turning Bands algorithm for the
-named geometry, *geometry_name*. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.KMax** 100.0 This key specifies
+the the maximum normalized frequency, :math:`K_{\rm max}`, to be used in
+the Turning Bands algorithm for the named geometry, *geometry_name*.
 
 .. container:: list
 
@@ -5977,9 +5992,9 @@ named geometry, *geometry_name*. Example Useage:
 
       pfset Geom.domain.Perm.KMax   100.0
 
-This key specifies the normalized frequency increment, :math:`\delta K`,
-to be used in the Turning Bands algorithm for the named geometry,
-*geometry_name*. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.DelK** 0.2 This key specifies the
+normalized frequency increment, :math:`\delta K`, to be used in the
+Turning Bands algorithm for the named geometry, *geometry_name*.
 
 .. container:: list
 
@@ -5987,9 +6002,10 @@ to be used in the Turning Bands algorithm for the named geometry,
 
       pfset Geom.domain.Perm.DelK   0.2
 
-This key sets limits on the number of simulated points in the search
-neighborhood to be used in the Parallel Gaussian Simulator for the named
-geometry, *geometry_name*. Example Useage:
+*integer* **Geom.\ *geometry_name*.Perm.MaxNPts** no default This key
+sets limits on the number of simulated points in the search neighborhood
+to be used in the Parallel Gaussian Simulator for the named geometry,
+*geometry_name*.
 
 .. container:: list
 
@@ -5997,9 +6013,10 @@ geometry, *geometry_name*. Example Useage:
 
       pfset Geom.domain.Perm.MaxNPts   5
 
-This key sets limits on the number of external conditioning points in
-the search neighborhood to be used in the Parallel Gaussian Simulator
-for the named geometry, *geometry_name*. Example Useage:
+*integer* **Geom.\ *geometry_name*.Perm.MaxCpts** no default This key
+sets limits on the number of external conditioning points in the search
+neighborhood to be used in the Parallel Gaussian Simulator for the named
+geometry, *geometry_name*.
 
 .. container:: list
 
@@ -6007,11 +6024,12 @@ for the named geometry, *geometry_name*. Example Useage:
 
       pfset Geom.domain.Perm.MaxCpts   200
 
-The key specifies when a normal, log normal, truncated normal or
-truncated log normal field is to be generated by the method for the
-named geometry, *geometry_name*. This value must be one of **Normal**,
+*string* **Geom.\ *geometry_name*.Perm.LogNormal** "LogTruncated" The
+key specifies when a normal, log normal, truncated normal or truncated
+log normal field is to be generated by the method for the named
+geometry, *geometry_name*. This value must be one of **Normal**,
 **Log**, **NormalTruncated** or **LogTruncate** and can be used with
-either Turning Bands or the Parallel Gaussian Simulator. Example Useage:
+either Turning Bands or the Parallel Gaussian Simulator.
 
 .. container:: list
 
@@ -6019,11 +6037,11 @@ either Turning Bands or the Parallel Gaussian Simulator. Example Useage:
 
       pfset Geom.domain.Perm.LogNormal   "LogTruncated"
 
-This key specifies the stratification of the permeability field
-generated by the method for the named geometry, *geometry_name*. The
-value must be one of **Horizontal**, **Bottom** or **Top** and can be
-used with either the Turning Bands or the Parallel Gaussian Simulator.
-Example Useage:
+*string* **Geom.\ *geometry_name*.Perm.StratType** "Bottom" This key
+specifies the stratification of the permeability field generated by the
+method for the named geometry, *geometry_name*. The value must be one of
+**Horizontal**, **Bottom** or **Top** and can be used with either the
+Turning Bands or the Parallel Gaussian Simulator.
 
 .. container:: list
 
@@ -6031,9 +6049,10 @@ Example Useage:
 
       pfset Geom.domain.Perm.StratType  "Bottom"
 
-This key specifies the low cutoff value for truncating the generated
-field for the named geometry, *geometry_name*, when either the
-NormalTruncated or LogTruncated values are chosen. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.LowCutoff** no default This key
+specifies the low cutoff value for truncating the generated field for
+the named geometry, *geometry_name*, when either the NormalTruncated or
+LogTruncated values are chosen.
 
 .. container:: list
 
@@ -6041,9 +6060,10 @@ NormalTruncated or LogTruncated values are chosen. Example Useage:
 
       pfset Geom.domain.Perm.LowCutoff   0.0
 
-This key specifies the high cutoff value for truncating the generated
-field for the named geometry, *geometry_name*, when either the
-NormalTruncated or LogTruncated values are chosen. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.HighCutoff** no default This key
+specifies the high cutoff value for truncating the generated field for
+the named geometry, *geometry_name*, when either the NormalTruncated or
+LogTruncated values are chosen.
 
 .. container:: list
 
@@ -6051,7 +6071,8 @@ NormalTruncated or LogTruncated values are chosen. Example Useage:
 
       pfset Geom.domain.Perm.HighCutoff   100.0
 
-This key specifies that permeability values for the specified geometry,
+*string* **Geom.\ *geometry_name*.Perm.FileName** no default This key
+specifies that permeability values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
 the “ParFlow Binary” file whose filename is given as the value. For a
 description of the ParFlow Binary file format, see
@@ -6076,7 +6097,7 @@ must be represented in precisely the same configuration as the
 computational grid. Then, the same file could be specified for each
 geounit in the input file. Or, the computational domain could be
 described as a single geouint (in the ParFlow input file) in which case
-the permeability values would be read in only once. Example Useage:
+the permeability values would be read in only once.
 
 .. container:: list
 
@@ -6084,11 +6105,11 @@ the permeability values would be read in only once. Example Useage:
 
       pfset Geom.domain.Perm.FileName "domain_perm.pfb"
 
-This key specifies whether the permeability tensor entries
-:math:`k_x, k_y` and :math:`k_z` will be specified as three constants
-within a set of regions covering the domain or whether the entries will
-be specified cell-wise by files. The choices for this key are
-**TensorByGeom** and **TensorByFile**. Example Useage:
+*string* **Perm.TensorType** no default This key specifies whether the
+permeability tensor entries :math:`k_x, k_y` and :math:`k_z` will be
+specified as three constants within a set of regions covering the domain
+or whether the entries will be specified cell-wise by files. The choices
+for this key are **TensorByGeom** and **TensorByFile**.
 
 .. container:: list
 
@@ -6096,18 +6117,19 @@ be specified cell-wise by files. The choices for this key are
 
       pfset Perm.TensorType     TensorByGeom
 
-This key specifies all of the geometries to which permeability tensor
-entries will be assigned. These geometries must cover the entire
-computational domain. Example Useage:
+*string* **Geom.Perm.TensorByGeom.Names** no default This key specifies
+all of the geometries to which permeability tensor entries will be
+assigned. These geometries must cover the entire computational domain.
 
 .. container:: list
 
    ::
 
-      pfset Geom.Perm.TensorByGeom.Names   "background domain"
+      pfset Geom.Perm.TensorByGeom.Names   "background domain" 
 
-This key specifies the value of :math:`k_x` for the geometry given by
-*geometry_name*. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.TensorValX** no default This key
+specifies the value of :math:`k_x` for the geometry given by
+*geometry_name*.
 
 .. container:: list
 
@@ -6115,8 +6137,9 @@ This key specifies the value of :math:`k_x` for the geometry given by
 
       pfset Geom.domain.Perm.TensorValX   1.0
 
-This key specifies the value of :math:`k_y` for the geometry given by
-*geom_name*. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.TensorValY** no default This key
+specifies the value of :math:`k_y` for the geometry given by
+*geom_name*.
 
 .. container:: list
 
@@ -6124,8 +6147,9 @@ This key specifies the value of :math:`k_y` for the geometry given by
 
       pfset Geom.domain.Perm.TensorValY   1.0
 
-This key specifies the value of :math:`k_z` for the geometry given by
-*geom_name*. Example Useage:
+*double* **Geom.\ *geometry_name*.Perm.TensorValZ** no default This key
+specifies the value of :math:`k_z` for the geometry given by
+*geom_name*.
 
 .. container:: list
 
@@ -6133,10 +6157,11 @@ This key specifies the value of :math:`k_z` for the geometry given by
 
       pfset Geom.domain.Perm.TensorValZ   1.0
 
-This key specifies that :math:`k_x` values for the specified geometry,
+*string* **Geom.\ *geometry_name*.Perm.TensorFileX** no default This key
+specifies that :math:`k_x` values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
 the “ParFlow Binary” file whose filename is given as the value. The only
-choice for the value of *geometry_name* is “domain”. Example Useage:
+choice for the value of *geometry_name* is “domain”.
 
 .. container:: list
 
@@ -6144,10 +6169,11 @@ choice for the value of *geometry_name* is “domain”. Example Useage:
 
       pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"
 
-This key specifies that :math:`k_y` values for the specified geometry,
+*string* **Geom.\ *geometry_name*.Perm.TensorFileY** no default This key
+specifies that :math:`k_y` values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
 the “ParFlow Binary” file whose filename is given as the value. The only
-choice for the value of *geometry_name* is “domain”. Example Useage:
+choice for the value of *geometry_name* is “domain”.
 
 .. container:: list
 
@@ -6155,10 +6181,11 @@ choice for the value of *geometry_name* is “domain”. Example Useage:
 
       pfset Geom.domain.Perm.TensorByFileY   "perm_y.pfb"
 
-This key specifies that :math:`k_z` values for the specified geometry,
+*string* **Geom.\ *geometry_name*.Perm.TensorFileZ** no default This key
+specifies that :math:`k_z` values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
 the “ParFlow Binary” file whose filename is given as the value. The only
-choice for the value of *geometry_name* is “domain”. Example Useage:
+choice for the value of *geometry_name* is “domain”.
 
 .. container:: list
 
@@ -6177,9 +6204,9 @@ below.
 
 The format for this section of input is:
 
-This key specifies all of the geometries on which a porosity will be
-assigned. These geometries must cover the entire computational domain.
-Example Useage:
+*list* **Geom.Porosity.GeomNames** no default This key specifies all of
+the geometries on which a porosity will be assigned. These geometries
+must cover the entire computational domain.
 
 .. container:: list
 
@@ -6187,10 +6214,11 @@ Example Useage:
 
       pfset Geom.Porosity.GeomNames   "background"
 
-This key specifies which method is to be used to assign porosity data to
-the named geometry, *geometry_name*. The only choice currently available
-is **Constant** which indicates that a constant is to be assigned to all
-grid cells within a geometry. Example Useage:
+*string* **Geom.\ *geometry_name*.Porosity.Type** no default This key
+specifies which method is to be used to assign porosity data to the
+named geometry, *geometry_name*. The only choice currently available is
+**Constant** which indicates that a constant is to be assigned to all
+grid cells within a geometry.
 
 .. container:: list
 
@@ -6198,9 +6226,9 @@ grid cells within a geometry. Example Useage:
 
       pfset Geom.background.Porosity.Type   Constant
 
-This key specifies the value assigned to all points in the named
-geometry, *geometry_name*, if the type was set to constant. Example
-Useage:
+*double* **Geom.\ *geometry_name*.Porosity.Value** no default This key
+specifies the value assigned to all points in the named geometry,
+*geometry_name*, if the type was set to constant.
 
 .. container:: list
 
@@ -6220,9 +6248,9 @@ described below.
 
 The format for this section of input is:
 
-This key specifies all of the geometries on which a different specific
-storage value will be assigned. These geometries must cover the entire
-computational domain. Example Useage:
+*list* **Specific Storage.GeomNames** no default This key specifies all
+of the geometries on which a different specific storage value will be
+assigned. These geometries must cover the entire computational domain.
 
 .. container:: list
 
@@ -6230,10 +6258,10 @@ computational domain. Example Useage:
 
       pfset SpecificStorage.GeomNames       "domain"
 
-This key specifies which method is to be used to assign specific storage
-data. The only choice currently available is **Constant** which
-indicates that a constant is to be assigned to all grid cells within a
-geometry. Example Useage:
+*string* **SpecificStorage.Type** no default This key specifies which
+method is to be used to assign specific storage data. The only choice
+currently available is **Constant** which indicates that a constant is
+to be assigned to all grid cells within a geometry.
 
 .. container:: list
 
@@ -6241,9 +6269,9 @@ geometry. Example Useage:
 
       pfset SpecificStorage.Type            Constant
 
+*double* **Geom.\ *geometry_name*.SpecificStorage.Value** no default
 This key specifies the value assigned to all points in the named
-geometry, *geometry_name*, if the type was set to constant. Example
-Useage:
+geometry, *geometry_name*, if the type was set to constant.
 
 .. container:: list
 
@@ -6262,9 +6290,10 @@ methods described below.
 
 The format for this section of input is:
 
-This key specifies whether dZ multipliers are to be used, the default is
-False. The default indicates a false or non-active variable dz and each
-layer thickness is 1.0 [L]. Example Useage:
+*string* **Solver.Nonlinear.VariableDz** False This key specifies
+whether dZ multipliers are to be used, the default is False. The default
+indicates a false or non-active variable dz and each layer thickness is
+1.0 [L].
 
 .. container:: list
 
@@ -6272,9 +6301,9 @@ layer thickness is 1.0 [L]. Example Useage:
 
       pfset Solver.Nonlinear.VariableDz     True
 
-This key specifies which problem domain is being applied a variable dz
-subsurface. These geometries must cover the entire computational domain.
-Example Useage:
+*list* **dzScale.GeomNames** no default This key specifies which problem
+domain is being applied a variable dz subsurface. These geometries must
+cover the entire computational domain.
 
 .. container:: list
 
@@ -6282,12 +6311,12 @@ Example Useage:
 
       pfset dzScale.GeomNames domain
 
-This key specifies which method is to be used to assign variable
-vertical grid spacing. The choices currently available are **Constant**
-which indicates that a constant is to be assigned to all grid cells
-within a geometry, **nzList** which assigns all layers of a given model
-to a list value, and **PFBFile** which reads in values from a
-distributed pfb file. Example Useage:
+*string* **dzScale.Type** no default This key specifies which method is
+to be used to assign variable vertical grid spacing. The choices
+currently available are **Constant** which indicates that a constant is
+to be assigned to all grid cells within a geometry, **nzList** which
+assigns all layers of a given model to a list value, and **PFBFile**
+which reads in values from a distributed pfb file.
 
 .. container:: list
 
@@ -6295,9 +6324,9 @@ distributed pfb file. Example Useage:
 
       pfset dzScale.Type            Constant
 
-This key specifies all of the geometries on which a different dz scaling
-value will be assigned. These geometries must cover the entire
-computational domain. Example Useage:
+*list* **Specific dzScale.GeomNames** no default This key specifies all
+of the geometries on which a different dz scaling value will be
+assigned. These geometries must cover the entire computational domain.
 
 .. container:: list
 
@@ -6305,9 +6334,9 @@ computational domain. Example Useage:
 
       pfset dzScale.GeomNames       "domain"
 
-This key specifies the value assigned to all points in the named
-geometry, *geometry_name*, if the type was set to constant. Example
-Useage:
+*double* **Geom.\ *geometry_name*.dzScale.Value** no default This key
+specifies the value assigned to all points in the named geometry,
+*geometry_name*, if the type was set to constant.
 
 .. container:: list
 
@@ -6315,9 +6344,9 @@ Useage:
 
       pfset Geom.domain.dzScale.Value 1.0
 
-This key specifies file to be read in for variable dz values for the
-given geometry, *geometry_name*, if the type was set to **PFBFile**.
-Example Useage:
+*string* **Geom.\ *geometry_name*.dzScale.FileName** no default This key
+specifies file to be read in for variable dz values for the given
+geometry, *geometry_name*, if the type was set to **PFBFile**.
 
 .. container:: list
 
@@ -6325,9 +6354,9 @@ Example Useage:
 
       pfset Geom.domain.dzScale.FileName  vardz.pfb
 
-This key indicates the number of layers with variable dz in the
-subsurface. This value is the same as the *ComputationalGrid.NZ* key.
-Example Useage:
+*integer* **dzScale.nzListNumber** no default This key indicates the
+number of layers with variable dz in the subsurface. This value is the
+same as the *ComputationalGrid.NZ* key.
 
 .. container:: list
 
@@ -6335,12 +6364,12 @@ Example Useage:
 
       pfset dzScale.nzListNumber  10
 
-This key assigns the thickness of each layer defined by nzListNumber.
-ParFlow assigns the layers from the bottom-up (i.e. the bottom of the
-domain is layer 0, the top is layer NZ-1). The total domain depth
+*double* **Cell.\ *nzListNumber*.dzScale.Value** no default This key
+assigns the thickness of each layer defined by nzListNumber. ParFlow
+assigns the layers from the bottom-up (i.e. the bottom of the domain is
+layer 0, the top is layer NZ-1). The total domain depth
 (*Geom.domain.Upper.Z*) does not change with variable dz. The layer
-thickness is calculated by *ComputationalGrid.DZ \*dZScale*. Example
-Useage:
+thickness is calculated by *ComputationalGrid.DZ \*dZScale*.
 
 .. container:: list
 
@@ -6360,7 +6389,7 @@ Example Usage:
       #------------------------------------------
       # Set VariableDz to be true
       # Indicate number of layers (nzlistnumber), which is the same as nz
-      # (1) There is nz*dz = total depth to allocate,
+      # (1) There is nz*dz = total depth to allocate,  
       # (2) Each layer’s thickness is dz*dzScale, and
       # (3) Assign the layer thickness from the bottom up.
       # In this example nz = 5; dz = 10; total depth 40;
@@ -6368,7 +6397,7 @@ Example Usage:
       # 0 		15 			Bottom layer
       # 1		15
       # 2		5
-      # 3		4.5
+      # 3		4.5			
       # 4 		0.5			Top layer
       pfset Solver.Nonlinear.VariableDz     True
       pfset dzScale.GeomNames            domain
@@ -6379,113 +6408,6 @@ Example Usage:
       pfset Cell.2.dzScale.Value 0.5
       pfset Cell.3.dzScale.Value 0.45
       pfset Cell.4.dzScale.Value 0.05
-
-.. _Flow Barrier Keys:
-
-Flow Barriers
-~~~~~~~~~~~~~
-
-Here, the values for Flow Barriers described in `5.4 <#FB>`__ can be
-input. These are only available with Solver **Richards** and can be
-specified in X, Y or Z directions independently using PFB files. These
-barriers are appied at the cell face at the location :math:`i+1/2`. That
-is a value of :math:`FB_x` specified at :math:`i` will be applied to the
-cell face at :math:`i+1/2` or /em between cells :math:`i` and
-:math:`i+1`. The same goes for :math:`FB_y` (:math:`j+1/2`) and
-:math:`FB_z` (:math:`k+1/2`). The flow barrier values are unitless and
-mulitply the flux equation as shown in `[eq:qFBx] <#eq:qFBx>`__.
-
-The format for this section of input is:
-
-This key specifies whether Flow Barriers are to be used in the X
-direction, the default is False. The default indicates a false or
-:math:`FB_x` value of one [-] everywhere in the domain. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Solver.Nonlinear.FlowBarrierX     True
-
-This key specifies whether Flow Barriers are to be used in the Y
-direction, the default is False. The default indicates a false or
-:math:`FB_y` value of one [-] everywhere in the domain. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Solver.Nonlinear.FlowBarrierY     True
-
-This key specifies whether Flow Barriers are to be used in the Z
-direction, the default is False. The default indicates a false or
-:math:`FB_z` value of one [-] everywhere in the domain. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Solver.Nonlinear.FlowBarrierZ     True
-
-This key specifies which method is to be used to assign flow barriers in
-X. The only choice currently available is **PFBFile** which reads in
-values from a distributed pfb file. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset FBx.Type            PFBFile
-
-This key specifies which method is to be used to assign flow barriers in
-Y. The only choice currently available is **PFBFile** which reads in
-values from a distributed pfb file. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset FBy.Type            PFBFile
-
-This key specifies which method is to be used to assign flow barriers in
-Z. The only choice currently available is **PFBFile** which reads in
-values from a distributed pfb file. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset FBz.Type            PFBFile
-
-The Flow Barrier values may be read in from a PFB file over the entire
-domain. This is done as follows:
-
-This key specifies file to be read in for the X flow barrier values for
-the domain, if the type was set to **PFBFile**. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Geom.domain.FBx.FileName  Flow_Barrier_X.pfb
-
-This key specifies file to be read in for the Y flow barrier values for
-the domain, if the type was set to **PFBFile**. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Geom.domain.FBy.FileName  Flow_Barrier_Y.pfb
-
-This key specifies file to be read in for the Z flow barrier values for
-the domain, if the type was set to **PFBFile**. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Geom.domain.FBz.FileName  Flow_Barrier_Z.pfb
 
 .. _Manning's Roughness Values:
 
@@ -6499,10 +6421,11 @@ of the domain using one of the methods described below.
 
 The format for this section of input is:
 
-This key specifies all of the geometries on which a different Mannings
-roughness value will be assigned. Mannings values may be assigned by
-**PFBFile** or as **Constant** by geometry. These geometries must cover
-the entire upper surface of the computational domain. Example Useage:
+*list* **Mannings.GeomNames** no default This key specifies all of the
+geometries on which a different Mannings roughness value will be
+assigned. Mannings values may be assigned by **PFBFile** or as
+**Constant** by geometry. These geometries must cover the entire upper
+surface of the computational domain.
 
 .. container:: list
 
@@ -6510,11 +6433,12 @@ the entire upper surface of the computational domain. Example Useage:
 
       pfset Mannings.GeomNames       "domain"
 
-This key specifies which method is to be used to assign Mannings
-roughness data. The choices currently available are **Constant** which
-indicates that a constant is to be assigned to all grid cells within a
-geometry and **PFBFile** which indicates that all values are read in
-from a distributed, grid-based ParFlow binary file. Example Useage:
+*string* **Mannings.Type** no default This key specifies which method is
+to be used to assign Mannings roughness data. The choices currently
+available are **Constant** which indicates that a constant is to be
+assigned to all grid cells within a geometry and **PFBFile** which
+indicates that all values are read in from a distributed, grid-based
+ParFlow binary file.
 
 .. container:: list
 
@@ -6522,9 +6446,9 @@ from a distributed, grid-based ParFlow binary file. Example Useage:
 
       pfset Mannings.Type "Constant"
 
-This key specifies the value assigned to all points in the named
-geometry, *geometry_name*, if the type was set to constant. Example
-Useage:
+*double* **Mannings.Geom.\ *geometry_name*.Value** no default This key
+specifies the value assigned to all points in the named geometry,
+*geometry_name*, if the type was set to constant.
 
 .. container:: list
 
@@ -6532,8 +6456,8 @@ Useage:
 
       pfset Mannings.Geom.domain.Value 5.52e-6
 
-This key specifies the value assigned to all points be read in from a
-ParFlow binary file. Example Useage:
+*double* **Mannings.FileName** no default This key specifies the value
+assigned to all points be read in from a ParFlow binary file.
 
 .. container:: list
 
@@ -6567,11 +6491,11 @@ That is, negative slopes point "downhill" and positive slopes "uphill".
 
 The format for this section of input is:
 
-This key specifies all of the geometries on which a different :math:`x`
-topographic slope values will be assigned. Topographic slopes may be
-assigned by **PFBFile** or as **Constant** by geometry. These geometries
-must cover the entire upper surface of the computational domain. Example
-Useage:
+*list* **ToposlopesX.GeomNames** no default This key specifies all of
+the geometries on which a different :math:`x` topographic slope values
+will be assigned. Topographic slopes may be assigned by **PFBFile** or
+as **Constant** by geometry. These geometries must cover the entire
+upper surface of the computational domain.
 
 .. container:: list
 
@@ -6579,11 +6503,11 @@ Useage:
 
       pfset ToposlopesX.GeomNames       "domain"
 
-This key specifies all of the geometries on which a different :math:`y`
-topographic slope values will be assigned. Topographic slopes may be
-assigned by **PFBFile** or as **Constant** by geometry. These geometries
-must cover the entire upper surface of the computational domain. Example
-Useage:
+*list* **ToposlopesY.GeomNames** no default This key specifies all of
+the geometries on which a different :math:`y` topographic slope values
+will be assigned. Topographic slopes may be assigned by **PFBFile** or
+as **Constant** by geometry. These geometries must cover the entire
+upper surface of the computational domain.
 
 .. container:: list
 
@@ -6591,11 +6515,12 @@ Useage:
 
       pfset ToposlopesY.GeomNames       "domain"
 
-This key specifies which method is to be used to assign topographic
-slopes. The choices currently available are **Constant** which indicates
-that a constant is to be assigned to all grid cells within a geometry
-and **PFBFile** which indicates that all values are read in from a
-distributed, grid-based ParFlow binary file. Example Useage:
+*string* **ToposlopesX.Type** no default This key specifies which method
+is to be used to assign topographic slopes. The choices currently
+available are **Constant** which indicates that a constant is to be
+assigned to all grid cells within a geometry and **PFBFile** which
+indicates that all values are read in from a distributed, grid-based
+ParFlow binary file.
 
 .. container:: list
 
@@ -6603,9 +6528,9 @@ distributed, grid-based ParFlow binary file. Example Useage:
 
       pfset ToposlopesX.Type "Constant"
 
-This key specifies the value assigned to all points in the named
-geometry, *geometry_name*, if the type was set to constant. Example
-Useage:
+*double* **ToposlopeX.Geom.\ *geometry_name*.Value** no default This key
+specifies the value assigned to all points in the named geometry,
+*geometry_name*, if the type was set to constant.
 
 .. container:: list
 
@@ -6613,8 +6538,8 @@ Useage:
 
       pfset ToposlopeX.Geom.domain.Value 0.001
 
-This key specifies the value assigned to all points be read in from a
-ParFlow binary file. Example Useage:
+*double* **ToposlopesX.FileName** no default This key specifies the
+value assigned to all points be read in from a ParFlow binary file.
 
 .. container:: list
 
@@ -6622,8 +6547,8 @@ ParFlow binary file. Example Useage:
 
       pfset TopoSlopesX.FileName lw.1km.slope_x.pfb
 
-This key specifies the value assigned to all points be read in from a
-ParFlow binary file. Example Useage:
+*double* **ToposlopesY.FileName** no default This key specifies the
+value assigned to all points be read in from a ParFlow binary file.
 
 .. container:: list
 
@@ -6668,8 +6593,9 @@ Here, retardation values are assigned for contaminants within geounits
 (specified in § `6.1.4 <#Geometries>`__ above) using one of the
 functions described below. The format for this section of input is:
 
-This key specifies all of the geometries to which the contaminants will
-have a retardation function applied. Example Useage:
+*list* **Geom.Retardation.GeomNames** no default This key specifies all
+of the geometries to which the contaminants will have a retardation
+function applied.
 
 .. container:: list
 
@@ -6677,11 +6603,13 @@ have a retardation function applied. Example Useage:
 
       pfset GeomInput.Names   "background"
 
-This key specifies which function is to be used to compute the
+*string*
+**Geom.\ *geometry_name*.\ *contaminant_name*.Retardation.Type** no
+default This key specifies which function is to be used to compute the
 retardation for the named contaminant, *contaminant_name*, in the named
 geometry, *geometry_name*. The only choice currently available is
 **Linear** which indicates that a simple linear retardation function is
-to be used to compute the retardation. Example Useage:
+to be used to compute the retardation.
 
 .. container:: list
 
@@ -6689,11 +6617,12 @@ to be used to compute the retardation. Example Useage:
 
       pfset Geom.background.tce.Retardation.Type   Linear
 
-This key specifies the distribution coefficient for the linear function
-used to compute the retardation of the named contaminant,
+*double*
+**Geom.\ *geometry_name*.\ *contaminant_name*.Retardation.Value** no
+default This key specifies the distribution coefficient for the linear
+function used to compute the retardation of the named contaminant,
 *contaminant_name*, in the named geometry, *geometry_name*. The value
-should be scaled by the density of the material in the geometry. Example
-Useage:
+should be scaled by the density of the material in the geometry.
 
 .. container:: list
 
@@ -6710,11 +6639,12 @@ being specified. For full multi-phase problems, the following input keys
 are used. See the next section for the correct Richards’ equation input
 format.
 
-This key specifies whether the mobility for *phase_name* will be a given
-constant or a polynomial of the form, :math:`(S - S_0)^{a}`, where
-:math:`S` is saturation, :math:`S_0` is irreducible saturation, and
-:math:`a` is some exponent. The possibilities for this key are
-**Constant** and **Polynomial**. Example Useage:
+*string* **Phase.\ *phase_name*.Mobility.Type** no default This key
+specifies whether the mobility for *phase_name* will be a given constant
+or a polynomial of the form, :math:`(S - S_0)^{a}`, where :math:`S` is
+saturation, :math:`S_0` is irreducible saturation, and :math:`a` is some
+exponent. The possibilities for this key are **Constant** and
+**Polynomial**.
 
 .. container:: list
 
@@ -6722,8 +6652,8 @@ constant or a polynomial of the form, :math:`(S - S_0)^{a}`, where
 
       pfset Phase.water.Mobility.Type   Constant
 
-This key specifies the constant mobility value for phase *phase_name*.
-Example Useage:
+*double* **Phase.\ *phase_name*.Mobility.Value** no default This key
+specifies the constant mobility value for phase *phase_name*.
 
 .. container:: list
 
@@ -6731,9 +6661,10 @@ Example Useage:
 
       pfset Phase.water.Mobility.Value   1.0
 
-This key specifies the exponent used in a polynomial representation of
-the relative permeability. Currently, only a value of :math:`2.0` is
-allowed for this key. Example Useage:
+*double* **Phase.\ *phase_name*.Mobility.Exponent** 2.0 This key
+specifies the exponent used in a polynomial representation of the
+relative permeability. Currently, only a value of :math:`2.0` is allowed
+for this key.
 
 .. container:: list
 
@@ -6741,9 +6672,10 @@ allowed for this key. Example Useage:
 
       pfset Phase.water.Mobility.Exponent   2.0
 
+*double* **Phase.\ *phase_name*.Mobility.IrreducibleSaturation** 0.0
 This key specifies the irreducible saturation used in a polynomial
 representation of the relative permeability. Currently, only a value of
-0.0 is allowed for this key. Example Useage:
+0.0 is allowed for this key.
 
 .. container:: list
 
@@ -6760,16 +6692,17 @@ The following keys are used to describe relative permeability input for
 the Richards’ equation implementation. They will be ignored if a full
 two-phase formulation is used.
 
-This key specifies the type of relative permeability function that will
-be used on all specified geometries. Note that only one type of relative
-permeability may be used for the entire problem. However, parameters may
-be different for that type in different geometries. For instance, if the
-problem consists of three geometries, then **VanGenuchten** may be
-specified with three different sets of parameters for the three
-different goemetries. However, once **VanGenuchten** is specified, one
-geometry cannot later be specified to have **Data** as its relative
-permeability. The possible values for this key are **Constant,
-VanGenuchten, Haverkamp, Data,** and **Polynomial**. Example Useage:
+*string* **Phase.RelPerm.Type** no default This key specifies the type
+of relative permeability function that will be used on all specified
+geometries. Note that only one type of relative permeability may be used
+for the entire problem. However, parameters may be different for that
+type in different geometries. For instance, if the problem consists of
+three geometries, then **VanGenuchten** may be specified with three
+different sets of parameters for the three different goemetries.
+However, once **VanGenuchten** is specified, one geometry cannot later
+be specified to have **Data** as its relative permeability. The possible
+values for this key are **Constant, VanGenuchten, Haverkamp, Data,** and
+**Polynomial**.
 
 .. container:: list
 
@@ -6811,9 +6744,9 @@ a polynomial relative permeability function for each region of the form,
    \begin{aligned}
    k_r(p) = \sum_{i=0}^{degree} c_ip^i.\end{aligned}
 
-This key specifies the geometries on which relative permeability will be
-given. The union of these geometries must cover the entire computational
-domain. Example Useage:
+*list* **Phase.RelPerm.GeomNames** no default This key specifies the
+geometries on which relative permeability will be given. The union of
+these geometries must cover the entire computational domain.
 
 .. container:: list
 
@@ -6821,8 +6754,9 @@ domain. Example Useage:
 
       pfset Phase.RelPerm.Geonames   domain
 
-This key specifies the constant relative permeability value on the
-specified geometry. Example Useage:
+*double* **Geom.\ *geom_name*.RelPerm.Value** no default This key
+specifies the constant relative permeability value on the specified
+geometry.
 
 .. container:: list
 
@@ -6830,12 +6764,13 @@ specified geometry. Example Useage:
 
       pfset Geom.domain.RelPerm.Value    0.5
 
-This key specifies whether soil parameters for the VanGenuchten function
-are specified in a pfb file or by region. The options are either 0 for
-specification by region, or 1 for specification in a file. Note that
-either all parameters are specified in files (each has their own input
-file) or none are specified by files. Parameters specified by files are:
-:math:`\alpha` and N. Example Useage:
+*integer* **Phase.RelPerm.VanGenuchten.File** 0 This key specifies
+whether soil parameters for the VanGenuchten function are specified in a
+pfb file or by region. The options are either 0 for specification by
+region, or 1 for specification in a file. Note that either all
+parameters are specified in files (each has their own input file) or
+none are specified by files. Parameters specified by files are:
+:math:`\alpha` and N.
 
 .. container:: list
 
@@ -6843,9 +6778,10 @@ file) or none are specified by files. Parameters specified by files are:
 
       pfset Phase.RelPerm.VanGenuchten.File   1
 
-This key specifies a pfb filename containing the alpha parameters for
-the VanGenuchten function cell-by-cell. The ONLY option for *geom_name*
-is “domain”. Example Useage:
+*string* **Geom.\ *geom_name*.RelPerm.Alpha.Filename** no default This
+key specifies a pfb filename containing the alpha parameters for the
+VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
+“domain”.
 
 .. container:: list
 
@@ -6853,9 +6789,10 @@ is “domain”. Example Useage:
 
       pfset Geom.domain.RelPerm.Alpha.Filename   alphas.pfb
 
-This key specifies a pfb filename containing the N parameters for the
+*string* **Geom.\ *geom_name*.RelPerm.N.Filename** no default This key
+specifies a pfb filename containing the N parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
-“domain”. Example Useage:
+“domain”.
 
 .. container:: list
 
@@ -6863,8 +6800,9 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
       pfset Geom.domain.RelPerm.N.Filename   Ns.pfb
 
-This key specifies the :math:`\alpha` parameter for the Van Genuchten
-function specified on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.RelPerm.Alpha** no default This key
+specifies the :math:`\alpha` parameter for the Van Genuchten function
+specified on *geom_name*.
 
 .. container:: list
 
@@ -6872,8 +6810,9 @@ function specified on *geom_name*. Example Useage:
 
       pfset Geom.domain.RelPerm.Alpha  0.005
 
-This key specifies the :math:`N` parameter for the Van Genuchten
-function specified on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.RelPerm.N** no default This key specifies
+the :math:`N` parameter for the Van Genuchten function specified on
+*geom_name*.
 
 .. container:: list
 
@@ -6881,11 +6820,11 @@ function specified on *geom_name*. Example Useage:
 
       pfset Geom.domain.RelPerm.N   2.0
 
-This key specifies the number of sample points for a spline base
-interpolation table for the Van Genuchten function specified on
-*geom_name*. If this number is 0 (the default) then the function is
-evaluated directly. Using the interpolation table is faster but is less
-accurate. Example Useage:
+*int* **Geom.\ *geom_name*.RelPerm.NumSamplePoints** 0 This key
+specifies the number of sample points for a spline base interpolation
+table for the Van Genuchten function specified on *geom_name*. If this
+number is 0 (the default) then the function is evaluated directly. Using
+the interpolation table is faster but is less accurate.
 
 .. container:: list
 
@@ -6893,10 +6832,11 @@ accurate. Example Useage:
 
       pfset Geom.domain.RelPerm.NumSamplePoints  20000
 
-This key specifies the lower value for a spline base interpolation table
-for the Van Genuchten function specified on *geom_name*. The upper value
-of the range is 0. This value is used only when the table lookup method
-is used (*NumSamplePoints* is greater than 0). Example Useage:
+*int* **Geom.\ *geom_name*.RelPerm.MinPressureHead** no default This key
+specifies the lower value for a spline base interpolation table for the
+Van Genuchten function specified on *geom_name*. The upper value of the
+range is 0. This value is used only when the table lookup method is used
+(*NumSamplePoints* is greater than 0).
 
 .. container:: list
 
@@ -6904,8 +6844,9 @@ is used (*NumSamplePoints* is greater than 0). Example Useage:
 
       pfset Geom.domain.RelPerm.MinPressureHead -300
 
-This key specifies the :math:`A` parameter for the Haverkamp relative
-permeability on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.RelPerm.A** no default This key specifies
+the :math:`A` parameter for the Haverkamp relative permeability on
+*geom_name*.
 
 .. container:: list
 
@@ -6913,8 +6854,9 @@ permeability on *geom_name*. Example Useage:
 
       pfset Geom.domain.RelPerm.A  1.0
 
-This key specifies the the :math:`\gamma` parameter for the Haverkamp
-relative permeability on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.RelPerm.Gamma** no default This key
+specifies the the :math:`\gamma` parameter for the Haverkamp relative
+permeability on *geom_name*.
 
 .. container:: list
 
@@ -6922,8 +6864,9 @@ relative permeability on *geom_name*. Example Useage:
 
       pfset Geom.domain.RelPerm.Gamma  1.0
 
-This key specifies the degree of the polynomial for the Polynomial
-relative permeability given on *geom_name*. Example Useage:
+*integer* **Geom.\ *geom_name*.RelPerm.Degree** no default This key
+specifies the degree of the polynomial for the Polynomial relative
+permeability given on *geom_name*.
 
 .. container:: list
 
@@ -6931,8 +6874,9 @@ relative permeability given on *geom_name*. Example Useage:
 
       pfset Geom.domain.RelPerm.Degree  1
 
-This key specifies the *coeff_number*\ th coefficient of the Polynomial
-relative permeability given on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.RelPerm.Coeff.\ *coeff_number*** no
+default This key specifies the *coeff_number*\ th coefficient of the
+Polynomial relative permeability given on *geom_name*.
 
 .. container:: list
 
@@ -6958,15 +6902,15 @@ this rate to the proper units by dividing by the volume of the enclosing
 region. For *Richards’ equation* input, the source term must be given as
 a flux multiplied by density.
 
-This key specifies the type of source to use for phase *phase_name*.
-Possible values for this key are **Constant** and
-**PredefinedFunction**. **Constant** type phase sources specify a
-constant phase source value for a given set of regions.
-**PredefinedFunction** type phase sources use a preset function (choices
-are listed below) to specify the source. Note that the
-**PredefinedFunction** type can only be used to set a single source over
-the entire domain and not separate sources over different regions.
-Example Useage:
+*string* **PhaseSources.\ *phase_name*.Type** no default This key
+specifies the type of source to use for phase *phase_name*. Possible
+values for this key are **Constant** and **PredefinedFunction**.
+**Constant** type phase sources specify a constant phase source value
+for a given set of regions. **PredefinedFunction** type phase sources
+use a preset function (choices are listed below) to specify the source.
+Note that the **PredefinedFunction** type can only be used to set a
+single source over the entire domain and not separate sources over
+different regions.
 
 .. container:: list
 
@@ -6974,10 +6918,10 @@ Example Useage:
 
       pfset PhaseSources.water.Type   Constant
 
-This key specifies the names of the geometries on which source terms
-will be specified. This is used only for **Constant** type phase
-sources. Regions listed later “overlay” regions listed earlier. Example
-Useage:
+*list* **PhaseSources.\ *phase_name*.GeomNames** no default This key
+specifies the names of the geometries on which source terms will be
+specified. This is used only for **Constant** type phase sources.
+Regions listed later “overlay” regions listed earlier.
 
 .. container:: list
 
@@ -6985,8 +6929,9 @@ Useage:
 
       pfset PhaseSources.water.GeomNames   "bottomlayer middlelayer toplayer"
 
-This key specifies the value of a constant source term applied to phase
-*phase \_name* on geometry *geom_name*. Example Useage:
+*double* **PhaseSources.\ *phase_name*.Geom.\ *geom_name*.Value** no
+default This key specifies the value of a constant source term applied
+to phase *phase \_name* on geometry *geom_name*.
 
 .. container:: list
 
@@ -6994,9 +6939,10 @@ This key specifies the value of a constant source term applied to phase
 
       pfset PhaseSources.water.Geom.toplayer.Value   1.0
 
+*string* **PhaseSources.\ *phase_name*.PredefinedFunction** no default
 This key specifies which of the predefined functions will be used for
 the source. Possible values for this key are **X, XPlusYPlusZ,
-X3Y2PlusSinXYPlus1,** and **XYZTPlus1PermTensor**. Example Useage:
+X3Y2PlusSinXYPlus1,** and **XYZTPlus1PermTensor**.
 
 .. container:: list
 
@@ -7013,7 +6959,7 @@ The choices for this key correspond to sources as follows:
    :math:`{\rm source}\; = 0.0`
 
 **X3Y2PlusSinXYPlus1**:
-   | :math:`{\rm source}\; = -(3x^2 y^2 + y\cos(xy))^2 - (2x^3 y + x\cos(xy))^2
+   | :math:`{\rm source}\; = -(3x^2 y^2 + y\cos(xy))^2 - (2x^3 y + x\cos(xy))^2 
      - (x^3 y^2 + \sin(xy) + 1) (6x y^2 + 2x^3 -(x^2 +y^2) \sin(xy))`
    | This function type specifies that the source applied over the
      entire domain is as noted above. This corresponds to
@@ -7021,10 +6967,10 @@ The choices for this key correspond to sources as follows:
      :math:`-\nabla\cdot (p\nabla p)=f`.
 
 **X3Y4PlusX2PlusSinXYCosYPlus1**:
-   | :math:`{\rm source}\; = -(3x^22 y^4 + 2x + y\cos(xy)\cos(y))^2
-     - (4x^3 y^3 + x\cos(xy)\cos(y) - \sin(xy)\sin(y))^2
+   | :math:`{\rm source}\; = -(3x^22 y^4 + 2x + y\cos(xy)\cos(y))^2 
+     - (4x^3 y^3 + x\cos(xy)\cos(y) - \sin(xy)\sin(y))^2 
      - (x^3 y^4 + x^2 + \sin(xy)\cos(y) + 1)
-     (6xy^4 + 2 - (x^2 + y^2 + 1)\sin(xy)\cos(y)
+     (6xy^4 + 2 - (x^2 + y^2 + 1)\sin(xy)\cos(y) 
      + 12x^3 y^2 - 2x\cos(xy)\sin(y))`
    | This function type specifies that the source applied over the
      entire domain is as noted above. This corresponds to
@@ -7056,10 +7002,10 @@ defined *only* for multi-phase flow and should not be defined for single
 phase and Richards’ equation cases. The format for this section of input
 is:
 
-This key specifies the capillary pressure between phase :math:`0` and
-the named phase, *phase_name*. The only choice available is **Constant**
-which indicates that a constant capillary pressure exists between the
-phases. Example Useage:
+*string* **CapPressure.\ *phase_name*.Type** "Constant" This key
+specifies the capillary pressure between phase :math:`0` and the named
+phase, *phase_name*. The only choice available is **Constant** which
+indicates that a constant capillary pressure exists between the phases.
 
 .. container:: list
 
@@ -7067,10 +7013,11 @@ phases. Example Useage:
 
       pfset CapPressure.water.Type   Constant
 
-This key specifies the geometries that capillary pressures will be
-computed for in the named phase, *phase_name*. Regions listed later
-“overlay” regions listed earlier. Any geometries not listed will be
-assigned :math:`0.0` capillary pressure by ParFlow. Example Useage:
+*list* **CapPressure.\ *phase_name*.GeomNames** no default This key
+specifies the geometries that capillary pressures will be computed for
+in the named phase, *phase_name*. Regions listed later “overlay” regions
+listed earlier. Any geometries not listed will be assigned :math:`0.0`
+capillary pressure by ParFlow.
 
 .. container:: list
 
@@ -7078,9 +7025,9 @@ assigned :math:`0.0` capillary pressure by ParFlow. Example Useage:
 
       pfset CapPressure.water.GeomNames   "domain"
 
+*double* **Geom.\ *geometry_name*.CapPressure.\ *phase_name*.Value** 0.0
 This key specifies the value of the capillary pressure in the named
-geometry, *geometry_name*, for the named phase, *phase_name*. Example
-Useage:
+geometry, *geometry_name*, for the named phase, *phase_name*.
 
 .. container:: list
 
@@ -7100,16 +7047,16 @@ This section is *only* relevant to the Richards’ equation cases. All
 keys relating to this section will be ignored for other cases. The
 following keys are used to define the saturation-pressure curve.
 
-This key specifies the type of saturation function that will be used on
-all specified geometries. Note that only one type of saturation may be
-used for the entire problem. However, parameters may be different for
-that type in different geometries. For instance, if the problem consists
-of three geometries, then **VanGenuchten** may be specified with three
-different sets of parameters for the three different goemetries.
-However, once **VanGenuchten** is specified, one geometry cannot later
-be specified to have **Data** as its saturation. The possible values for
-this key are **Constant, VanGenuchten, Haverkamp, Data, Polynomial** and
-**PFBFile**. Example Useage:
+*string* **Phase.Saturation.Type** no default This key specifies the
+type of saturation function that will be used on all specified
+geometries. Note that only one type of saturation may be used for the
+entire problem. However, parameters may be different for that type in
+different geometries. For instance, if the problem consists of three
+geometries, then **VanGenuchten** may be specified with three different
+sets of parameters for the three different goemetries. However, once
+**VanGenuchten** is specified, one geometry cannot later be specified to
+have **Data** as its saturation. The possible values for this key are
+**Constant, VanGenuchten, Haverkamp, Data, Polynomial** and **PFBFile**.
 
 .. container:: list
 
@@ -7155,9 +7102,9 @@ The **PFBFile** specification means that the saturation will be taken as
 a spatially varying but constant in pressure function given by data in a
 ParFlow binary (.pfb) file.
 
-This key specifies the geometries on which saturation will be given. The
-union of these geometries must cover the entire computational domain.
-Example Useage:
+*list* **Phase.Saturation.GeomNames** no default This key specifies the
+geometries on which saturation will be given. The union of these
+geometries must cover the entire computational domain.
 
 .. container:: list
 
@@ -7165,8 +7112,8 @@ Example Useage:
 
       pfset Phase.Saturation.Geonames   domain
 
-This key specifies the constant saturation value on the *geom_name*
-region. Example Useage:
+*double* **Geom.\ *geom_name*.Saturation.Value** no default This key
+specifies the constant saturation value on the *geom_name* region.
 
 .. container:: list
 
@@ -7174,12 +7121,13 @@ region. Example Useage:
 
       pfset Geom.domain.Saturation.Value    0.5
 
-This key specifies whether soil parameters for the VanGenuchten function
-are specified in a pfb file or by region. The options are either 0 for
-specification by region, or 1 for specification in a file. Note that
-either all parameters are specified in files (each has their own input
-file) or none are specified by files. Parameters specified by files are
-:math:`\alpha`, N, SRes, and SSat. Example Useage:
+*integer* **Phase.Saturation.VanGenuchten.File** 0 This key specifies
+whether soil parameters for the VanGenuchten function are specified in a
+pfb file or by region. The options are either 0 for specification by
+region, or 1 for specification in a file. Note that either all
+parameters are specified in files (each has their own input file) or
+none are specified by files. Parameters specified by files are
+:math:`\alpha`, N, SRes, and SSat.
 
 .. container:: list
 
@@ -7187,9 +7135,10 @@ file) or none are specified by files. Parameters specified by files are
 
       pfset Phase.Saturation.VanGenuchten.File   1
 
+*string* **Geom.\ *geom_name*.Saturation.Alpha.Filename** no default
 This key specifies a pfb filename containing the alpha parameters for
 the VanGenuchten function cell-by-cell. The ONLY option for *geom_name*
-is “domain”. Example Useage:
+is “domain”.
 
 .. container:: list
 
@@ -7197,9 +7146,10 @@ is “domain”. Example Useage:
 
       pfset Geom.domain.Saturation.Filename   alphas.pfb
 
-This key specifies a pfb filename containing the N parameters for the
+*string* **Geom.\ *geom_name*.Saturation.N.Filename** no default This
+key specifies a pfb filename containing the N parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
-“domain”. Example Useage:
+“domain”.
 
 .. container:: list
 
@@ -7207,9 +7157,10 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
       pfset Geom.domain.Saturation.N.Filename   Ns.pfb
 
-This key specifies a pfb filename containing the SRes parameters for the
+*string* **Geom.\ *geom_name*.Saturation.SRes.Filename** no default This
+key specifies a pfb filename containing the SRes parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
-“domain”. Example Useage:
+“domain”.
 
 .. container:: list
 
@@ -7217,9 +7168,10 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
       pfset Geom.domain.Saturation.SRes.Filename   SRess.pfb
 
-This key specifies a pfb filename containing the SSat parameters for the
+*string* **Geom.\ *geom_name*.Saturation.SSat.Filename** no default This
+key specifies a pfb filename containing the SSat parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
-“domain”. Example Useage:
+“domain”.
 
 .. container:: list
 
@@ -7227,8 +7179,9 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
       pfset Geom.domain.Saturation.SSat.Filename   SSats.pfb
 
-This key specifies the :math:`\alpha` parameter for the Van Genuchten
-function specified on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.Saturation.Alpha** no default This key
+specifies the :math:`\alpha` parameter for the Van Genuchten function
+specified on *geom_name*.
 
 .. container:: list
 
@@ -7236,8 +7189,9 @@ function specified on *geom_name*. Example Useage:
 
       pfset Geom.domain.Saturation.Alpha  0.005
 
-This key specifies the :math:`N` parameter for the Van Genuchten
-function specified on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.Saturation.N** no default This key
+specifies the :math:`N` parameter for the Van Genuchten function
+specified on *geom_name*.
 
 .. container:: list
 
@@ -7249,8 +7203,8 @@ Note that if both a Van Genuchten saturation and relative permeability
 are specified, then the soil parameters should be the same for each in
 order to have a consistent problem.
 
-This key specifies the residual saturation on *geom_name*. Example
-Useage:
+*double* **Geom.\ *geom_name*.Saturation.SRes** no default This key
+specifies the residual saturation on *geom_name*.
 
 .. container:: list
 
@@ -7258,8 +7212,8 @@ Useage:
 
       pfset Geom.domain.Saturation.SRes   0.0
 
-This key specifies the saturation at saturated conditions on
-*geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.Saturation.SSat** no default This key
+specifies the saturation at saturated conditions on *geom_name*.
 
 .. container:: list
 
@@ -7267,8 +7221,9 @@ This key specifies the saturation at saturated conditions on
 
       pfset Geom.domain.Saturation.SSat   1.0
 
-This key specifies the :math:`A` parameter for the Haverkamp saturation
-on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.Saturation.A** no default This key
+specifies the :math:`A` parameter for the Haverkamp saturation on
+*geom_name*.
 
 .. container:: list
 
@@ -7276,8 +7231,9 @@ on *geom_name*. Example Useage:
 
       pfset Geom.domain.Saturation.A   1.0
 
-This key specifies the the :math:`\gamma` parameter for the Haverkamp
-saturation on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.Saturation.Gamma** no default This key
+specifies the the :math:`\gamma` parameter for the Haverkamp saturation
+on *geom_name*.
 
 .. container:: list
 
@@ -7285,8 +7241,9 @@ saturation on *geom_name*. Example Useage:
 
       pfset Geom.domain.Saturation.Gamma   1.0
 
-This key specifies the degree of the polynomial for the Polynomial
-saturation given on *geom_name*. Example Useage:
+*integer* **Geom.\ *geom_name*.Saturation.Degree** no default This key
+specifies the degree of the polynomial for the Polynomial saturation
+given on *geom_name*.
 
 .. container:: list
 
@@ -7294,8 +7251,9 @@ saturation given on *geom_name*. Example Useage:
 
       pfset Geom.domain.Saturation.Degree   1
 
-This key specifies the *coeff_number*\ th coefficient of the Polynomial
-saturation given on *geom_name*. Example Useage:
+*double* **Geom.\ *geom_name*.Saturation.Coeff.\ *coeff_number*** no
+default This key specifies the *coeff_number*\ th coefficient of the
+Polynomial saturation given on *geom_name*.
 
 .. container:: list
 
@@ -7304,9 +7262,9 @@ saturation given on *geom_name*. Example Useage:
       pfset Geom.domain.Saturation.Coeff.0   0.5
       pfset Geom.domain.Saturation.Coeff.1   1.0
 
-This key specifies the name of the file containing saturation values for
-the domain. It is assumed that *geom_name* is “domain” for this key.
-Example Useage:
+*string* **Geom.\ *geom_name*.Saturation.FileName** no default This key
+specifies the name of the file containing saturation values for the
+domain. It is assumed that *geom_name* is “domain” for this key.
 
 .. container:: list
 
@@ -7323,16 +7281,17 @@ In this section, we define internal Dirichlet boundary conditions by
 setting the pressure at points in the domain. The format for this
 section of input is:
 
-This key specifies the names for the internal boundary conditions. At
-each named point, :math:`{\rm x}`, :math:`{\rm y}` and :math:`{\rm z}`
-will specify the coordinate locations and :math:`{\rm h}` will specify
-the hydraulic head value of the condition. This real location is
-“snapped” to the nearest gridpoint in ParFlow.
+*string* **InternalBC.Names** no default This key specifies the names
+for the internal boundary conditions. At each named point,
+:math:`{\rm x}`, :math:`{\rm y}` and :math:`{\rm z}` will specify the
+coordinate locations and :math:`{\rm h}` will specify the hydraulic head
+value of the condition. This real location is “snapped” to the nearest
+gridpoint in ParFlow.
 
 NOTE: Currently, ParFlow assumes that internal boundary conditions and
 pressure wells are separated by at least one cell from any external
 boundary. The user should be careful of this when defining the input
-file and grid. Example Useage:
+file and grid.
 
 .. container:: list
 
@@ -7340,8 +7299,9 @@ file and grid. Example Useage:
 
       pfset InternalBC.Names   "fixedvalue"
 
-This key specifies the x-coordinate, :math:`{\rm x}`, of the named,
-*internal_bc_name*, condition. Example Useage:
+*double* **InternalBC.\ *internal_bc_name*.X** no default This key
+specifies the x-coordinate, :math:`{\rm x}`, of the named,
+*internal_bc_name*, condition.
 
 .. container:: list
 
@@ -7349,8 +7309,9 @@ This key specifies the x-coordinate, :math:`{\rm x}`, of the named,
 
       pfset InternalBC.fixedheadvalue.X   40.0
 
-This key specifies the y-coordinate, :math:`{\rm y}`, of the named,
-*internal_bc_name*, condition. Example Useage:
+*double* **InternalBC.\ *internal_bc_name*.Y** no default This key
+specifies the y-coordinate, :math:`{\rm y}`, of the named,
+*internal_bc_name*, condition.
 
 .. container:: list
 
@@ -7358,8 +7319,9 @@ This key specifies the y-coordinate, :math:`{\rm y}`, of the named,
 
       pfset InternalBC.fixedheadvalue.Y   65.2
 
-This key specifies the z-coordinate, :math:`{\rm z}`, of the named,
-*internal_bc_name*, condition. Example Useage:
+*double* **InternalBC.\ *internal_bc_name*.Z** no default This key
+specifies the z-coordinate, :math:`{\rm z}`, of the named,
+*internal_bc_name*, condition.
 
 .. container:: list
 
@@ -7367,8 +7329,8 @@ This key specifies the z-coordinate, :math:`{\rm z}`, of the named,
 
       pfset InternalBC.fixedheadvalue.Z   12.1
 
-This key specifies the value of the named, *internal_bc_name*,
-condition. Example Useage:
+*double* **InternalBC.\ *internal_bc_name*.Value** no default This key
+specifies the value of the named, *internal_bc_name*, condition.
 
 .. container:: list
 
@@ -7391,10 +7353,10 @@ Boundary condition input is associated with domain patches (see
 § `6.1.7 <#Domain>`__). Note that different patches may have different
 types of boundary conditions on them.
 
-This key specifies the names of patches on which pressure boundary
-conditions will be specified. Note that these must all be patches on the
-external boundary of the domain and these patches must “cover” that
-external boundary. Example Useage:
+*list* **BCPressure.PatchNames** no default This key specifies the names
+of patches on which pressure boundary conditions will be specified. Note
+that these must all be patches on the external boundary of the domain
+and these patches must “cover” that external boundary.
 
 .. container:: list
 
@@ -7402,11 +7364,11 @@ external boundary. Example Useage:
 
       pfset BCPressure.PatchNames    "left right front back top bottom"
 
-This key specifies the type of boundary condition data given for patch
+*string* **Patch.\ *patch_name*.BCPressure.Type** no default This key
+specifies the type of boundary condition data given for patch
 *patch_name*. Possible values for this key are **DirEquilRefPatch,
 DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile,
-OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic,
-OverlandDiffusive** and **ExactSolution**. The choice
+OverlandFow, OverlandFlowPFB** and **ExactSolution**. The choice
 **DirEquilRefPatch** specifies that the pressure on the specified patch
 will be in hydrostatic equilibrium with a constant reference pressure
 given on a reference patch. The choice **DirEquilPLinear** specifies
@@ -7434,7 +7396,7 @@ The key **OverlandFlow** corresponds to a **Value** key with a positive
 or negative value, to indicate uniform fluxes (such as rainfall or
 evapotranspiration) over the entire domain while the key
 **OverlandFlowPFB** allows a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file to contain grid-based, spatially-variable fluxes. The OverlandKinematic and OverlandDiffusive both turn on an kinematic and diffusive wave overland flow routing boundary that solve equation [eq:manningsnew] and do the upwinding internally (i.e. assuming that the user provides cell face slopes, as opposed to the traditional cell centered slopes). The key SeepageFace simulates a boundary that allows flow to exit but keeps the surface pressure at zero. The choice ExactSolution specifies that an exact known solution is to be applied as a Dirichlet boundary condition on the respective patch. Note that this does not change according to any cycle. Instead, time dependence is handled by evaluating at the time the boundary condition value is desired. The solution is specified by using a predefined function (choices are described below). NOTE: These last six types of boundary condition input is for Richards’ equation cases only! Example Useage:``
+``.pfb file to contain grid-based, spatially-variable fluxes. The choice ExactSolution specifies that an exact known solution is to be applied as a Dirichlet boundary condition on the respective patch. Note that this does not change according to any cycle. Instead, time dependence is handled by evaluating at the time the boundary condition value is desired. The solution is specified by using a predefined function (choices are described below). NOTE: These last three types of boundary condition input is for Richards’ equation cases only!``
 
 .. container:: list
 
@@ -7442,8 +7404,9 @@ evapotranspiration) over the entire domain while the key
 
       pfset Patch.top.BCPressure.Type  DirEquilRefPatch
 
-This key specifies the time cycle to which boundary condition data for
-patch *patch_name* corresponds. Example Useage:
+*string* **Patch.\ *patch_name*.BCPressure.Cycle** no default This key
+specifies the time cycle to which boundary condition data for patch
+*patch_name* corresponds.
 
 .. container:: list
 
@@ -7451,10 +7414,11 @@ patch *patch_name* corresponds. Example Useage:
 
       pfset Patch.top.BCPressure.Cycle   Constant
 
-This key specifies the name of the solid on which the reference patch
-for the **DirEquilRefPatch** boundary condition data is given. Care
-should be taken to make sure the correct solid is specified in cases of
-layered domains. Example Useage:
+*string* **Patch.\ *patch_name*.BCPressure.RefGeom** no default This key
+specifies the name of the solid on which the reference patch for the
+**DirEquilRefPatch** boundary condition data is given. Care should be
+taken to make sure the correct solid is specified in cases of layered
+domains.
 
 .. container:: list
 
@@ -7462,10 +7426,10 @@ layered domains. Example Useage:
 
       pfset Patch.top.BCPressure.RefGeom   domain
 
-This key specifies the reference patch on which the **DirEquilRefPatch**
+*string* **Patch.\ *patch_name*.BCPressure.RefPatch** no default This
+key specifies the reference patch on which the **DirEquilRefPatch**
 boundary condition data is given. This patch must be on the reference
 solid specified by the Patch.\ *patch_name*.BCPressure.RefGeom key.
-Example Useage:
 
 .. container:: list
 
@@ -7473,10 +7437,11 @@ Example Useage:
 
       pfset Patch.top.BCPressure.RefPatch    bottom
 
-This key specifies the reference pressure value for the
+*double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.Value** no
+default This key specifies the reference pressure value for the
 **DirEquilRefPatch** boundary condition or the constant flux value for
 the **FluxConst** boundary condition, or the constant volumetric flux
-for the **FluxVolumetric** boundary condition. Example Useage:
+for the **FluxVolumetric** boundary condition.
 
 .. container:: list
 
@@ -7484,10 +7449,12 @@ for the **FluxVolumetric** boundary condition. Example Useage:
 
       pfset Patch.top.BCPressure.alltime.Value  -14.0
 
-Note that the reference conditions for types **DirEquilPLinear** and
-**DirEquilRefPatch** boundary conditions are for phase 0 *only*. This
-key specifies the constant pressure value along the interface with phase
-*phase_name* for cases with two phases present. Example Useage:
+*double*
+**Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *phase_name*.IntValue**
+no default Note that the reference conditions for types
+**DirEquilPLinear** and **DirEquilRefPatch** boundary conditions are for
+phase 0 *only*. This key specifies the constant pressure value along the
+interface with phase *phase_name* for cases with two phases present.
 
 .. container:: list
 
@@ -7495,8 +7462,9 @@ key specifies the constant pressure value along the interface with phase
 
       pfset Patch.top.BCPressure.alltime.water.IntValue   -13.0
 
-This key specifies the lower :math:`x` coordinate of a line in the
-xy-plane. Example Useage:
+*double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.XLower** no
+default This key specifies the lower :math:`x` coordinate of a line in
+the xy-plane.
 
 .. container:: list
 
@@ -7504,8 +7472,9 @@ xy-plane. Example Useage:
 
       pfset Patch.top.BCPressure.alltime.XLower  0.0
 
-This key specifies the lower :math:`y` coordinate of a line in the
-xy-plane. Example Useage:
+*double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.YLower** no
+default This key specifies the lower :math:`y` coordinate of a line in
+the xy-plane.
 
 .. container:: list
 
@@ -7513,8 +7482,9 @@ xy-plane. Example Useage:
 
       pfset Patch.top.BCPressure.alltime.YLower  0.0
 
-This key specifies the upper :math:`x` coordinate of a line in the
-xy-plane. Example Useage:
+*double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.XUpper** no
+default This key specifies the upper :math:`x` coordinate of a line in
+the xy-plane.
 
 .. container:: list
 
@@ -7522,8 +7492,9 @@ xy-plane. Example Useage:
 
       pfset Patch.top.BCPressure.alltime.XUpper  1.0
 
-This key specifies the upper :math:`y` coordinate of a line in the
-xy-plane. Example Useage:
+*double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.YUpper** no
+default This key specifies the upper :math:`y` coordinate of a line in
+the xy-plane.
 
 .. container:: list
 
@@ -7531,9 +7502,11 @@ xy-plane. Example Useage:
 
       pfset Patch.top.BCPressure.alltime.YUpper  1.0
 
-This key specifies the number of points on which pressure data is given
-along the line used in the type **DirEquilPLinear** boundary conditions.
-Example Useage:
+*integer*
+**Patch.\ *patch_name*.BCPressure.\ *interval_name*.NumPoints** no
+default This key specifies the number of points on which pressure data
+is given along the line used in the type **DirEquilPLinear** boundary
+conditions.
 
 .. container:: list
 
@@ -7541,10 +7514,12 @@ Example Useage:
 
       pfset Patch.top.BCPressure.alltime.NumPoints   2
 
-This key specifies a number between 0 and 1 which represents the
-location of a point on the line on which data is given for type
+*double*
+**Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *point_number*.Location**
+no default This key specifies a number between 0 and 1 which represents
+the location of a point on the line on which data is given for type
 **DirEquilPLinear** boundary conditions. Here 0 corresponds to the lower
-end of the line, and 1 corresponds to the upper end. Example Useage:
+end of the line, and 1 corresponds to the upper end.
 
 .. container:: list
 
@@ -7552,12 +7527,14 @@ end of the line, and 1 corresponds to the upper end. Example Useage:
 
       pfset Patch.top.BCPressure.alltime.0.Location   0.0
 
-This key specifies the pressure value for phase 0 at point number
-*point_number* and :math:`z=0` for type **DirEquilPLinear** boundary
-conditions. All pressure values on the patch are determined by first
-projecting the boundary condition coordinate onto the line, then
+*double*
+**Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *point_number*.Value**
+no default This key specifies the pressure value for phase 0 at point
+number *point_number* and :math:`z=0` for type **DirEquilPLinear**
+boundary conditions. All pressure values on the patch are determined by
+first projecting the boundary condition coordinate onto the line, then
 linearly interpolating between the neighboring point pressure values on
-the line. Example Useage:
+the line.
 
 .. container:: list
 
@@ -7565,9 +7542,10 @@ the line. Example Useage:
 
       pfset Patch.top.BCPressure.alltime.0.Value   14.0
 
-This key specifies the name of a properly distributed ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file that contains boundary data to be read for types PressureFile and FluxFile. For flux data, the data must be defined over a grid consistent with the pressure field. In both cases, only the values needed for the patch will be used. The rest of the data is ignored. Example Useage:``
+*string* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.FileName**
+no default This key specifies the name of a properly distributed ‘#=12
+‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``.pfb file that contains boundary data to be read for types PressureFile and FluxFile. For flux data, the data must be defined over a grid consistent with the pressure field. In both cases, only the values needed for the patch will be used. The rest of the data is ignored.``
 
 .. container:: list
 
@@ -7575,13 +7553,15 @@ This key specifies the name of a properly distributed ‘#=12 ‘$=12 ‘%=12
 
       pfset Patch.top.BCPressure.alltime.FileName   ocwd_bc.pfb
 
-This key specifies the predefined function that will be used to specify
-Dirichlet boundary conditions on patch *patch_name*. Note that this does
-not change according to any cycle. Instead, time dependence is handled
-by evaluating at the time the boundary condition value is desired.
-Choices for this key include **X, XPlusYPlusZ, X3Y2PlusSinXYPlus1,
-X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and **XYZTPlus1PermTensor**.
-Example Useage:
+*string*
+**Patch.\ *patch_name*.BCPressure.\ *interval_name*.PredefinedFunction**
+no default This key specifies the predefined function that will be used
+to specify Dirichlet boundary conditions on patch *patch_name*. Note
+that this does not change according to any cycle. Instead, time
+dependence is handled by evaluating at the time the boundary condition
+value is desired. Choices for this key include **X, XPlusYPlusZ,
+X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and
+**XYZTPlus1PermTensor**.
 
 .. container:: list
 
@@ -7653,10 +7633,10 @@ condition input is associated with domain patches (see
 § `6.1.7 <#Domain>`__). Note that different patches may have different
 types of boundary conditions on them.
 
-This key specifies the names of patches on which saturation boundary
-conditions will be specified. Note that these must all be patches on the
-external boundary of the domain and these patches must “cover” that
-external boundary. Example Useage:
+*list* **BCSaturation.PatchNames** no default This key specifies the
+names of patches on which saturation boundary conditions will be
+specified. Note that these must all be patches on the external boundary
+of the domain and these patches must “cover” that external boundary.
 
 .. container:: list
 
@@ -7664,8 +7644,9 @@ external boundary. Example Useage:
 
       pfset BCSaturation.PatchNames    "left right front back top bottom"
 
-This key specifies the type of boundary condition data given for the
-given phase, *phase_name*, on the given patch *patch_name*. Possible
+*string* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.Type** no
+default This key specifies the type of boundary condition data given for
+the given phase, *phase_name*, on the given patch *patch_name*. Possible
 values for this key are **DirConstant**, **ConstantWTHeight** and
 **PLinearWTHeight**. The choice **DirConstant** specifies that the
 saturation is constant on the whole patch. The choice
@@ -7675,8 +7656,7 @@ height of the water-table on the patch will be given by a piecewise
 linear function.
 
 Note: the types **ConstantWTHeight** and **PLinearWTHeight** assume we
-are running a 2-phase problem where phase 0 is the water phase. Example
-Useage:
+are running a 2-phase problem where phase 0 is the water phase.
 
 .. container:: list
 
@@ -7684,9 +7664,10 @@ Useage:
 
       pfset Patch.left.BCSaturation.water.Type  ConstantWTHeight
 
-This key specifies either the constant saturation value if
+*double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.Value** no
+default This key specifies either the constant saturation value if
 **DirConstant** is selected or the constant water-table height if
-**ConstantWTHeight** is selected. Example Useage:
+**ConstantWTHeight** is selected.
 
 .. container:: list
 
@@ -7694,9 +7675,10 @@ This key specifies either the constant saturation value if
 
       pfset Patch.top.BCSaturation.air.Value 1.0
 
-This key specifies the lower :math:`x` coordinate of a line in the
-xy-plane if type **PLinearWTHeight** boundary conditions are specified.
-Example Useage:
+*double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.XLower** no
+default This key specifies the lower :math:`x` coordinate of a line in
+the xy-plane if type **PLinearWTHeight** boundary conditions are
+specified.
 
 .. container:: list
 
@@ -7704,9 +7686,10 @@ Example Useage:
 
       pfset Patch.left.BCSaturation.water.XLower -10.0
 
-This key specifies the lower :math:`y` coordinate of a line in the
-xy-plane if type **PLinearWTHeight** boundary conditions are specified.
-Example Useage:
+*double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.YLower** no
+default This key specifies the lower :math:`y` coordinate of a line in
+the xy-plane if type **PLinearWTHeight** boundary conditions are
+specified.
 
 .. container:: list
 
@@ -7714,9 +7697,10 @@ Example Useage:
 
       pfset Patch.left.BCSaturation.water.YLower 5.0
 
-This key specifies the upper :math:`x` coordinate of a line in the
-xy-plane if type **PLinearWTHeight** boundary conditions are specified.
-Example Useage:
+*double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.XUpper** no
+default This key specifies the upper :math:`x` coordinate of a line in
+the xy-plane if type **PLinearWTHeight** boundary conditions are
+specified.
 
 .. container:: list
 
@@ -7724,9 +7708,10 @@ Example Useage:
 
       pfset Patch.left.BCSaturation.water.XUpper  125.0
 
-This key specifies the upper :math:`y` coordinate of a line in the
-xy-plane if type **PLinearWTHeight** boundary conditions are specified.
-Example Useage:
+*double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.YUpper** no
+default This key specifies the upper :math:`y` coordinate of a line in
+the xy-plane if type **PLinearWTHeight** boundary conditions are
+specified.
 
 .. container:: list
 
@@ -7734,9 +7719,10 @@ Example Useage:
 
       pfset Patch.left.BCSaturation.water.YUpper  82.0
 
-This key specifies the number of points on which saturation data is
-given along the line used for type **DirEquilPLinear** boundary
-conditions. Example Useage:
+*integer* **Patch.\ *patch_name*.BCPressure.\ *phase_name*.NumPoints**
+no default This key specifies the number of points on which saturation
+data is given along the line used for type **DirEquilPLinear** boundary
+conditions.
 
 .. container:: list
 
@@ -7744,11 +7730,13 @@ conditions. Example Useage:
 
       pfset Patch.left.BCPressure.water.NumPoints 2
 
-This key specifies a number between 0 and 1 which represents the
-location of a point on the line for which data is given in type
+*double*
+**Patch.\ *patch_name*.BCPressure.\ *phase_name*.\ *point_number*.Location**
+no default This key specifies a number between 0 and 1 which represents
+the location of a point on the line for which data is given in type
 **DirEquilPLinear** boundary conditions. The line is parameterized so
 that 0 corresponds to the lower end of the line, and 1 corresponds to
-the upper end. Example Useage:
+the upper end.
 
 .. container:: list
 
@@ -7756,11 +7744,13 @@ the upper end. Example Useage:
 
       pfset Patch.left.BCPressure.water.0.Location 0.333
 
-This key specifies the water-table height for the given point if type
-**DirEquilPLinear** boundary conditions are selected. All saturation
-values on the patch are determined by first projecting the water-table
-height value onto the line, then linearly interpolating between the
-neighboring water-table height values onto the line. Example Useage:
+*double*
+**Patch.\ *patch_name*.BCPressure.\ *phase_name*.\ *point_number*.Value**
+no default This key specifies the water-table height for the given point
+if type **DirEquilPLinear** boundary conditions are selected. All
+saturation values on the patch are determined by first projecting the
+water-table height value onto the line, then linearly interpolating
+between the neighboring water-table height values onto the line.
 
 .. container:: list
 
@@ -7779,10 +7769,11 @@ should *not* be defined for single phase and Richards’ equation cases.
 Here we define initial phase saturation conditions. The format for this
 section of input is:
 
-This key specifies the type of initial condition that will be applied to
+*string* **ICSaturation.\ *phase_name*.Type** no default This key
+specifies the type of initial condition that will be applied to
 different geometries for given phase, *phase_name*. The only key
 currently available is **Constant**. The choice **Constant** will apply
-constants values within geometries for the phase. Example Useage:
+constants values within geometries for the phase.
 
 .. container:: list
 
@@ -7790,11 +7781,11 @@ constants values within geometries for the phase. Example Useage:
 
       ICSaturation.water.Type Constant
 
-This key specifies the geometries on which an initial condition will be
-given if the type is set to **Constant**.
+*string* **ICSaturation.\ *phase_name*.GeomNames** no default This key
+specifies the geometries on which an initial condition will be given if
+the type is set to **Constant**.
 
 Note that geometries listed later “overlay” geometries listed earlier.
-Example Useage:
 
 .. container:: list
 
@@ -7802,9 +7793,10 @@ Example Useage:
 
       ICSaturation.water.GeomNames "domain"
 
-This key specifies the initial condition value assigned to all points in
-the named geometry, *geom_input_name*, if the type was set to
-**Constant**. Example Useage:
+*double* **Geom.\ *geom_input_name*.ICSaturation.\ *phase_name*.Value**
+no default This key specifies the initial condition value assigned to
+all points in the named geometry, *geom_input_name*, if the type was set
+to **Constant**.
 
 .. container:: list
 
@@ -7821,20 +7813,21 @@ The keys in this section are used to specify pressure initial conditions
 for Richards’ equation cases *only*. These keys will be ignored if any
 other case is run.
 
-This key specifies the type of initial condition given. The choices for
-this key are **Constant, HydroStaticDepth, HydroStaticPatch** and
-**PFBFile**. The choice **Constant** specifies that the initial pressure
-will be constant over the regions given. The choice **HydroStaticDepth**
-specifies that the initial pressure within a region will be in
-hydrostatic equilibrium with a given pressure specified at a given
-depth. The choice **HydroStaticPatch** specifies that the initial
-pressure within a region will be in hydrostatic equilibrium with a given
-pressure on a specified patch. Note that all regions must have the same
-type of initial data - different regions cannot have different types of
-initial data. However, the parameters for the type may be different. The
-**PFBFile** specification means that the initial pressure will be taken
-as a spatially varying function given by data in a ParFlow binary (.pfb)
-file. Example Useage:
+*string* **ICPressure.Type** no default This key specifies the type of
+initial condition given. The choices for this key are **Constant,
+HydroStaticDepth, HydroStaticPatch** and **PFBFile**. The choice
+**Constant** specifies that the initial pressure will be constant over
+the regions given. The choice **HydroStaticDepth** specifies that the
+initial pressure within a region will be in hydrostatic equilibrium with
+a given pressure specified at a given depth. The choice
+**HydroStaticPatch** specifies that the initial pressure within a region
+will be in hydrostatic equilibrium with a given pressure on a specified
+patch. Note that all regions must have the same type of initial data -
+different regions cannot have different types of initial data. However,
+the parameters for the type may be different. The **PFBFile**
+specification means that the initial pressure will be taken as a
+spatially varying function given by data in a ParFlow binary (.pfb)
+file.
 
 .. container:: list
 
@@ -7842,11 +7835,11 @@ file. Example Useage:
 
       pfset ICPressure.Type   Constant
 
-This key specifies the geometry names on which the initial pressure data
-will be given. These geometries must comprise the entire domain. Note
-that conditions for regions that overlap other regions will have
-unpredictable results. The regions given must be disjoint. Example
-Useage:
+*list* **ICPressure.GeomNames** no default This key specifies the
+geometry names on which the initial pressure data will be given. These
+geometries must comprise the entire domain. Note that conditions for
+regions that overlap other regions will have unpredictable results. The
+regions given must be disjoint.
 
 .. container:: list
 
@@ -7854,9 +7847,10 @@ Useage:
 
       pfset ICPressure.GeomNames   "toplayer middlelayer bottomlayer"
 
-This key specifies the initial pressure value for type **Constant**
-initial pressures and the reference pressure value for types
-**HydroStaticDepth** and **HydroStaticPatch**. Example Useage:
+*double* **Geom.\ *geom_name*.ICPressure.Value** no default This key
+specifies the initial pressure value for type **Constant** initial
+pressures and the reference pressure value for types
+**HydroStaticDepth** and **HydroStaticPatch**.
 
 .. container:: list
 
@@ -7864,9 +7858,9 @@ initial pressures and the reference pressure value for types
 
       pfset Geom.toplayer.ICPressure.Value  -734.0
 
-This key specifies the reference elevation on which the reference
-pressure is given for type **HydroStaticDepth** initial pressures.
-Example Useage:
+*double* **Geom.\ *geom_name*.ICPressure.RefElevation** no default This
+key specifies the reference elevation on which the reference pressure is
+given for type **HydroStaticDepth** initial pressures.
 
 .. container:: list
 
@@ -7874,8 +7868,9 @@ Example Useage:
 
       pfset Geom.toplayer.ICPressure.RefElevation  0.0
 
-This key specifies the geometry on which the reference patch resides for
-type **HydroStaticPatch** initial pressures. Example Useage:
+*double* **Geom.\ *geom_name*.ICPressure.RefGeom** no default This key
+specifies the geometry on which the reference patch resides for type
+**HydroStaticPatch** initial pressures.
 
 .. container:: list
 
@@ -7883,8 +7878,9 @@ type **HydroStaticPatch** initial pressures. Example Useage:
 
       pfset Geom.toplayer.ICPressure.RefGeom   bottomlayer
 
-This key specifies the patch on which the reference pressure is given
-for type **HydorStaticPatch** initial pressures. Example Useage:
+*double* **Geom.\ *geom_name*.ICPressure.RefPatch** no default This key
+specifies the patch on which the reference pressure is given for type
+**HydorStaticPatch** initial pressures.
 
 .. container:: list
 
@@ -7892,9 +7888,9 @@ for type **HydorStaticPatch** initial pressures. Example Useage:
 
       pfset Geom.toplayer.ICPressure.RefPatch   bottom
 
-This key specifies the name of the file containing pressure values for
-the domain. It is assumed that *geom_name* is “domain” for this key.
-Example Useage:
+*string* **Geom.\ *geom_name*.ICPressure.FileName** no default This key
+specifies the name of the file containing pressure values for the
+domain. It is assumed that *geom_name* is “domain” for this key.
 
 .. container:: list
 
@@ -7910,13 +7906,14 @@ Initial Conditions: Phase Concentrations
 Here we define initial concentration conditions for contaminants. The
 format for this section of input is:
 
-This key specifies the type of initial condition that will be applied to
-different geometries for given phase, *phase_name*, and the given
-contaminant, *contaminant_name*. The choices for this key are
+*string* **PhaseConcen.\ *phase_name*.\ *contaminant_name*.Type** no
+default This key specifies the type of initial condition that will be
+applied to different geometries for given phase, *phase_name*, and the
+given contaminant, *contaminant_name*. The choices for this key are
 **Constant** or **PFBFile**. The choice **Constant** will apply
 constants values to different geometries. The choice **PFBFile** will
 read values from a “ParFlow Binary” file (see
-§ `6.3 <#ParFlow Binary Files (.pfb)>`__). Example Useage:
+§ `6.3 <#ParFlow Binary Files (.pfb)>`__).
 
 .. container:: list
 
@@ -7924,11 +7921,11 @@ read values from a “ParFlow Binary” file (see
 
       PhaseConcen.water.tce.Type Constant
 
-This key specifies the geometries on which an initial condition will be
-given, if the type was set to **Constant**.
+*string* **PhaseConcen.\ *phase_name*.GeomNames** no default This key
+specifies the geometries on which an initial condition will be given, if
+the type was set to **Constant**.
 
 Note that geometries listed later “overlay” geometries listed earlier.
-Example Useage:
 
 .. container:: list
 
@@ -7936,9 +7933,11 @@ Example Useage:
 
       PhaseConcen.water.GeomNames "ic_concen_region"
 
-This key specifies the initial condition value assigned to all points in
-the named geometry, *geom_input_name*, if the type was set to
-**Constant**. Example Useage:
+*double*
+**PhaseConcen.\ *phase_name*.\ *contaminant_name*.\ *geom_input_name*.Value**
+no default This key specifies the initial condition value assigned to
+all points in the named geometry, *geom_input_name*, if the type was set
+to **Constant**.
 
 .. container:: list
 
@@ -7946,9 +7945,10 @@ the named geometry, *geom_input_name*, if the type was set to
 
       PhaseConcen.water.tce.ic_concen_region.Value 0.001
 
-This key specifies the name of the “ParFlow Binary” file which contains
-the initial condition values if the type was set to **PFBFile**. Example
-Useage:
+*string* **PhaseConcen.\ *phase_name*.\ *contaminant_name*.FileName** no
+default This key specifies the name of the “ParFlow Binary” file which
+contains the initial condition values if the type was set to
+**PFBFile**.
 
 .. container:: list
 
@@ -7967,10 +7967,11 @@ coded and predefined are allowed. Note that if this is speccified as
 something other than no known solution, corresponding boundary
 conditions and phase sources should also be specified.
 
-This specifies the predefined function that will be used as the known
-solution. Possible choices for this key are **NoKnownSolution, Constant,
-X, XPlusYPlusZ, X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1,
-XYZTPlus1** and **XYZTPlus1PermTensor**. Example Useage:
+*string* **KnownSolution** no default This specifies the predefined
+function that will be used as the known solution. Possible choices for
+this key are **NoKnownSolution, Constant, X, XPlusYPlusZ,
+X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and
+**XYZTPlus1PermTensor**.
 
 .. container:: list
 
@@ -8004,8 +8005,9 @@ Choices for this key correspond to solutions as follows.
 **XYZTPlus1**: 
    :math:`p = xyzt + 1`
 
-This key specifies the constant value of the known solution for type
-**Constant** known solutions. Example Useage:
+*double* **KnownSolution.Value** no default This key specifies the
+constant value of the known solution for type **Constant** known
+solutions.
 
 .. container:: list
 
@@ -8024,8 +8026,8 @@ Wells
 Here we define wells for the model. The format for this section of input
 is:
 
-This key specifies the names of the wells for which input data will be
-given. Example Useage:
+*string* **Wells.Names** no default This key specifies the names of the
+wells for which input data will be given.
 
 .. container:: list
 
@@ -8033,20 +8035,20 @@ given. Example Useage:
 
       Wells.Names "test_well inj_well ext_well"
 
-This key specifies the type of well to be defined for the given well,
-*well_name*. This key can be either **Vertical** or **Recirc**. The
-value **Vertical** indicates that this is a single segmented well whose
-action will be specified by the user. The value **Recirc** indicates
-that this is a dual segmented, recirculating, well with one segment
-being an extraction well and another being an injection well. The
-extraction well filters out a specified fraction of each contaminant and
-recirculates the remainder to the injection well where the diluted fluid
-is injected back in. The phase saturations at the extraction well are
-passed without modification to the injection well.
+*string* **Wells.\ *well_name*.InputType** no default This key specifies
+the type of well to be defined for the given well, *well_name*. This key
+can be either **Vertical** or **Recirc**. The value **Vertical**
+indicates that this is a single segmented well whose action will be
+specified by the user. The value **Recirc** indicates that this is a
+dual segmented, recirculating, well with one segment being an extraction
+well and another being an injection well. The extraction well filters
+out a specified fraction of each contaminant and recirculates the
+remainder to the injection well where the diluted fluid is injected back
+in. The phase saturations at the extraction well are passed without
+modification to the injection well.
 
 Note with the recirculating well, several input options are not needed
 as the extraction well will provide these values to the injection well.
-Example Useage:
 
 .. container:: list
 
@@ -8054,10 +8056,11 @@ Example Useage:
 
       Wells.test_well.InputType Vertical
 
-This key specifies the pumping action of the well. This key can be
-either **Injection** or **Extraction**. A value of **Injection**
-indicates that this is an injection well. A value of **Extraction**
-indicates that this is an extraction well. Example Useage:
+*string* **Wells.\ *well_name*.Action** no default This key specifies
+the pumping action of the well. This key can be either **Injection** or
+**Extraction**. A value of **Injection** indicates that this is an
+injection well. A value of **Extraction** indicates that this is an
+extraction well.
 
 .. container:: list
 
@@ -8065,16 +8068,16 @@ indicates that this is an extraction well. Example Useage:
 
       Wells.test_well.Action Injection
 
-This key specfies the mechanism by which the well works (how ParFlow
-works with the well data) if the input type key is set to **Vectical**.
-This key can be either **Pressure** or **Flux**. A value of **Pressure**
-indicates that the data provided for the well is in terms of hydrostatic
-pressure and ParFlow will ensure that the computed pressure field
-satisfies this condition in the computational cells which define the
-well. A value of **Flux** indicates that the data provided is in terms
-of volumetric flux rates and ParFlow will ensure that the flux field
-satisfies this condition in the computational cells which define the
-well. Example Useage:
+*double* **Wells.\ *well_name*.Type** no default This key specfies the
+mechanism by which the well works (how ParFlow works with the well data)
+if the input type key is set to **Vectical**. This key can be either
+**Pressure** or **Flux**. A value of **Pressure** indicates that the
+data provided for the well is in terms of hydrostatic pressure and
+ParFlow will ensure that the computed pressure field satisfies this
+condition in the computational cells which define the well. A value of
+**Flux** indicates that the data provided is in terms of volumetric flux
+rates and ParFlow will ensure that the flux field satisfies this
+condition in the computational cells which define the well.
 
 .. container:: list
 
@@ -8082,16 +8085,17 @@ well. Example Useage:
 
       Wells.test_well.Type Flux
 
-This key specfies the mechanism by which the extraction well works (how
-ParFlow works with the well data) if the input type key is set to
-**Recirc**. This key can be either **Pressure** or **Flux**. A value of
-**Pressure** indicates that the data provided for the well is in terms
-of hydrostatic pressure and ParFlow will ensure that the computed
-pressure field satisfies this condition in the computational cells which
-define the well. A value of **Flux** indicates that the data provided is
-in terms of volumetric flux rates and ParFlow will ensure that the flux
-field satisfies this condition in the computational cells which define
-the well. Example Useage:
+*string* **Wells.\ *well_name*.ExtractionType** no default This key
+specfies the mechanism by which the extraction well works (how ParFlow
+works with the well data) if the input type key is set to **Recirc**.
+This key can be either **Pressure** or **Flux**. A value of **Pressure**
+indicates that the data provided for the well is in terms of hydrostatic
+pressure and ParFlow will ensure that the computed pressure field
+satisfies this condition in the computational cells which define the
+well. A value of **Flux** indicates that the data provided is in terms
+of volumetric flux rates and ParFlow will ensure that the flux field
+satisfies this condition in the computational cells which define the
+well.
 
 .. container:: list
 
@@ -8099,16 +8103,17 @@ the well. Example Useage:
 
       Wells.ext_well.ExtractionType Pressure
 
-This key specifies the mechanism by which the injection well works (how
-ParFlow works with the well data) if the input type key is set to
-**Recirc**. This key can be either **Pressure** or **Flux**. A value of
-**Pressure** indicates that the data provided for the well is in terms
-of hydrostatic pressure and ParFlow will ensure that the computed
-pressure field satisfies this condition in the computational cells which
-define the well. A value of **Flux** indicates that the data provided is
-in terms of volumetric flux rates and ParFlow will ensure that the flux
-field satisfies this condition in the computational cells which define
-the well. Example Useage:
+*string* **Wells.\ *well_name*.InjectionType** no default This key
+specfies the mechanism by which the injection well works (how ParFlow
+works with the well data) if the input type key is set to **Recirc**.
+This key can be either **Pressure** or **Flux**. A value of **Pressure**
+indicates that the data provided for the well is in terms of hydrostatic
+pressure and ParFlow will ensure that the computed pressure field
+satisfies this condition in the computational cells which define the
+well. A value of **Flux** indicates that the data provided is in terms
+of volumetric flux rates and ParFlow will ensure that the flux field
+satisfies this condition in the computational cells which define the
+well.
 
 .. container:: list
 
@@ -8116,9 +8121,10 @@ the well. Example Useage:
 
       Wells.inj_well.InjectionType Flux
 
-This key specifies the x location of the vectical well if the input type
-is set to **Vectical** or of both the extraction and injection wells if
-the input type is set to **Recirc**. Example Useage:
+*double* **Wells.\ *well_name*.X** no default This key specifies the x
+location of the vectical well if the input type is set to **Vectical**
+or of both the extraction and injection wells if the input type is set
+to **Recirc**.
 
 .. container:: list
 
@@ -8126,9 +8132,10 @@ the input type is set to **Recirc**. Example Useage:
 
       Wells.test_well.X 20.0
 
-This key specifies the y location of the vectical well if the input type
-is set to **Vectical** or of both the extraction and injection wells if
-the input type is set to **Recirc**. Example Useage:
+*double* **Wells.\ *well_name*.Y** no default This key specifies the y
+location of the vectical well if the input type is set to **Vectical**
+or of both the extraction and injection wells if the input type is set
+to **Recirc**.
 
 .. container:: list
 
@@ -8136,8 +8143,9 @@ the input type is set to **Recirc**. Example Useage:
 
       Wells.test_well.Y 36.5
 
-This key specifies the z location of the upper extent of a vectical well
-if the input type is set to **Vectical**. Example Useage:
+*double* **Wells.\ *well_name*.ZUpper** no default This key specifies
+the z location of the upper extent of a vectical well if the input type
+is set to **Vectical**.
 
 .. container:: list
 
@@ -8145,8 +8153,9 @@ if the input type is set to **Vectical**. Example Useage:
 
       Wells.test_well.ZUpper 8.0
 
-This key specifies the z location of the upper extent of a extraction
-well if the input type is set to **Recirc**. Example Useage:
+*double* **Wells.\ *well_name*.ExtractionZUpper** no default This key
+specifies the z location of the upper extent of a extraction well if the
+input type is set to **Recirc**.
 
 .. container:: list
 
@@ -8154,8 +8163,9 @@ well if the input type is set to **Recirc**. Example Useage:
 
       Wells.ext_well.ExtractionZUpper 3.0
 
-This key specifies the z location of the upper extent of a injection
-well if the input type is set to **Recirc**. Example Useage:
+*double* **Wells.\ *well_name*.InjectionZUpper** no default This key
+specifies the z location of the upper extent of a injection well if the
+input type is set to **Recirc**.
 
 .. container:: list
 
@@ -8163,8 +8173,9 @@ well if the input type is set to **Recirc**. Example Useage:
 
       Wells.inj_well.InjectionZUpper 6.0
 
-This key specifies the z location of the lower extent of a vectical well
-if the input type is set to **Vectical**. Example Useage:
+*double* **Wells.\ *well_name*.ZLower** no default This key specifies
+the z location of the lower extent of a vectical well if the input type
+is set to **Vectical**.
 
 .. container:: list
 
@@ -8172,8 +8183,9 @@ if the input type is set to **Vectical**. Example Useage:
 
       Wells.test_well.ZLower 2.0
 
-This key specifies the z location of the lower extent of a extraction
-well if the input type is set to **Recirc**. Example Useage:
+*double* **Wells.\ *well_name*.ExtractionZLower** no default This key
+specifies the z location of the lower extent of a extraction well if the
+input type is set to **Recirc**.
 
 .. container:: list
 
@@ -8181,8 +8193,9 @@ well if the input type is set to **Recirc**. Example Useage:
 
       Wells.ext_well.ExtractionZLower 1.0
 
-This key specifies the z location of the lower extent of a injection
-well if the input type is set to **Recirc**. Example Useage:
+*double* **Wells.\ *well_name*.InjectionZLower** no default This key
+specifies the z location of the lower extent of a injection well if the
+input type is set to **Recirc**.
 
 .. container:: list
 
@@ -8190,15 +8203,16 @@ well if the input type is set to **Recirc**. Example Useage:
 
       Wells.inj_well.InjectionZLower 4.0
 
-This key specifies a method by which pressure or flux for a vertical
-well will be weighted before assignment to computational cells. This key
-can only be **Standard** if the type key is set to **Pressure**; or this
-key can be either **Standard**, **Weighted** or **Patterned** if the
-type key is set to **Flux**. A value of **Standard** indicates that the
-pressure or flux data will be used as is. A value of **Weighted**
-indicates that the flux data is to be weighted by the cells permeability
-divided by the sum of all cell permeabilities which define the well. The
-value of **Patterned** is not implemented. Example Useage:
+*string* **Wells.\ *well_name*.Method** no default This key specifies a
+method by which pressure or flux for a vertical well will be weighted
+before assignment to computational cells. This key can only be
+**Standard** if the type key is set to **Pressure**; or this key can be
+either **Standard**, **Weighted** or **Patterned** if the type key is
+set to **Flux**. A value of **Standard** indicates that the pressure or
+flux data will be used as is. A value of **Weighted** indicates that the
+flux data is to be weighted by the cells permeability divided by the sum
+of all cell permeabilities which define the well. The value of
+**Patterned** is not implemented.
 
 .. container:: list
 
@@ -8206,15 +8220,16 @@ value of **Patterned** is not implemented. Example Useage:
 
       Wells.test_well.Method Weighted
 
-This key specifies a method by which pressure or flux for an extraction
-well will be weighted before assignment to computational cells. This key
-can only be **Standard** if the type key is set to **Pressure**; or this
-key can be either **Standard**, **Weighted** or **Patterned** if the
-type key is set to **Flux**. A value of **Standard** indicates that the
-pressure or flux data will be used as is. A value of **Weighted**
-indicates that the flux data is to be weighted by the cells permeability
-divided by the sum of all cell permeabilities which define the well. The
-value of **Patterned** is not implemented. Example Useage:
+*string* **Wells.\ *well_name*.ExtractionMethod** no default This key
+specifies a method by which pressure or flux for an extraction well will
+be weighted before assignment to computational cells. This key can only
+be **Standard** if the type key is set to **Pressure**; or this key can
+be either **Standard**, **Weighted** or **Patterned** if the type key is
+set to **Flux**. A value of **Standard** indicates that the pressure or
+flux data will be used as is. A value of **Weighted** indicates that the
+flux data is to be weighted by the cells permeability divided by the sum
+of all cell permeabilities which define the well. The value of
+**Patterned** is not implemented.
 
 .. container:: list
 
@@ -8222,15 +8237,16 @@ value of **Patterned** is not implemented. Example Useage:
 
       Wells.ext_well.ExtractionMethod Standard
 
-This key specifies a method by which pressure or flux for an injection
-well will be weighted before assignment to computational cells. This key
-can only be **Standard** if the type key is set to **Pressure**; or this
-key can be either **Standard**, **Weighted** or **Patterned** if the
-type key is set to **Flux**. A value of **Standard** indicates that the
-pressure or flux data will be used as is. A value of **Weighted**
-indicates that the flux data is to be weighted by the cells permeability
-divided by the sum of all cell permeabilities which define the well. The
-value of **Patterned** is not implemented. Example Useage:
+*string* **Wells.\ *well_name*.InjectionMethod** no default This key
+specifies a method by which pressure or flux for an injection well will
+be weighted before assignment to computational cells. This key can only
+be **Standard** if the type key is set to **Pressure**; or this key can
+be either **Standard**, **Weighted** or **Patterned** if the type key is
+set to **Flux**. A value of **Standard** indicates that the pressure or
+flux data will be used as is. A value of **Weighted** indicates that the
+flux data is to be weighted by the cells permeability divided by the sum
+of all cell permeabilities which define the well. The value of
+**Patterned** is not implemented.
 
 .. container:: list
 
@@ -8238,8 +8254,8 @@ value of **Patterned** is not implemented. Example Useage:
 
       Wells.inj_well.InjectionMethod Standard
 
-This key specifies the time cycles to which data for the well
-*well_name* corresponds. Example Useage:
+*string* **Wells.\ *well_name*.Cycle** no default This key specifies the
+time cycles to which data for the well *well_name* corresponds.
 
 .. container:: list
 
@@ -8247,12 +8263,13 @@ This key specifies the time cycles to which data for the well
 
       Wells.test_well.Cycle "all_time"
 
-This key specifies the hydrostatic pressure value for a vectical well if
-the type key is set to **Pressure**.
+*double* **Wells.\ *well_name*.\ *interval_name*.Pressure.Value** no
+default This key specifies the hydrostatic pressure value for a vectical
+well if the type key is set to **Pressure**.
 
 Note This value gives the pressure of the primary phase (water) at
 :math:`z=0`. The other phase pressures (if any) are computed from the
-physical relationships that exist between the phases. Example Useage:
+physical relationships that exist between the phases.
 
 .. container:: list
 
@@ -8260,12 +8277,14 @@ physical relationships that exist between the phases. Example Useage:
 
       Wells.test_well.all_time.Pressure.Value 6.0
 
-This key specifies the hydrostatic pressure value for an extraction well
-if the extraction type key is set to **Pressure**.
+*double*
+**Wells.\ *well_name*.\ *interval_name*.Extraction.Pressure.Value** no
+default This key specifies the hydrostatic pressure value for an
+extraction well if the extraction type key is set to **Pressure**.
 
 Note This value gives the pressure of the primary phase (water) at
 :math:`z=0`. The other phase pressures (if any) are computed from the
-physical relationships that exist between the phases. Example Useage:
+physical relationships that exist between the phases.
 
 .. container:: list
 
@@ -8273,12 +8292,14 @@ physical relationships that exist between the phases. Example Useage:
 
       Wells.ext_well.all_time.Extraction.Pressure.Value 4.5
 
-This key specifies the hydrostatic pressure value for an injection well
-if the injection type key is set to **Pressure**.
+*double*
+**Wells.\ *well_name*.\ *interval_name*.Injection.Pressure.Value** no
+default This key specifies the hydrostatic pressure value for an
+injection well if the injection type key is set to **Pressure**.
 
 Note This value gives the pressure of the primary phase (water) at
 :math:`z=0`. The other phase pressures (if any) are computed from the
-physical relationships that exist between the phases. Example Useage:
+physical relationships that exist between the phases.
 
 .. container:: list
 
@@ -8286,11 +8307,13 @@ physical relationships that exist between the phases. Example Useage:
 
       Wells.inj_well.all_time.Injection.Pressure.Value 10.2
 
-This key specifies the volumetric flux for a vectical well if the type
-key is set to **Flux**.
+*double*
+**Wells.\ *well_name*.\ *interval_name*.Flux.\ *phase_name*.Value** no
+default This key specifies the volumetric flux for a vectical well if
+the type key is set to **Flux**.
 
 Note only a positive number should be entered, ParFlow assignes the
-correct sign based on the chosen action for the well. Example Useage:
+correct sign based on the chosen action for the well.
 
 .. container:: list
 
@@ -8298,11 +8321,13 @@ correct sign based on the chosen action for the well. Example Useage:
 
       Wells.test_well.all_time.Flux.water.Value 250.0
 
-This key specifies the volumetric flux for an extraction well if the
-extraction type key is set to **Flux**.
+*double*
+**Wells.\ *well_name*.\ *interval_name*.Extraction.Flux.\ *phase_name*.Value**
+no default This key specifies the volumetric flux for an extraction well
+if the extraction type key is set to **Flux**.
 
 Note only a positive number should be entered, ParFlow assignes the
-correct sign based on the chosen action for the well. Example Useage:
+correct sign based on the chosen action for the well.
 
 .. container:: list
 
@@ -8310,11 +8335,13 @@ correct sign based on the chosen action for the well. Example Useage:
 
       Wells.ext_well.all_time.Extraction.Flux.water.Value 125.0
 
-This key specifies the volumetric flux for an injection well if the
-injection type key is set to **Flux**.
+*double*
+**Wells.\ *well_name*.\ *interval_name*.Injection.Flux.\ *phase_name*.Value**
+no default This key specifies the volumetric flux for an injection well
+if the injection type key is set to **Flux**.
 
 Note only a positive number should be entered, ParFlow assignes the
-correct sign based on the chosen action for the well. Example Useage:
+correct sign based on the chosen action for the well.
 
 .. container:: list
 
@@ -8322,8 +8349,9 @@ correct sign based on the chosen action for the well. Example Useage:
 
       Wells.inj_well.all_time.Injection.Flux.water.Value 80.0
 
-This key specifies the saturation value of a vertical well. Example
-Useage:
+*double*
+**Wells.\ *well_name*.\ *interval_name*.Saturation.\ *phase_name*.Value**
+no default This key specifies the saturation value of a vertical well.
 
 .. container:: list
 
@@ -8331,8 +8359,9 @@ Useage:
 
       Wells.test_well.all_time.Saturation.water.Value 1.0
 
-This key specifies the contaminant value of a vertical well. Example
-Useage:
+*double*
+**Wells.\ *well_name*.\ *interval_name*.Concentration.\ *phase_name*.\ *contaminant_name*.Value**
+no default This key specifies the contaminant value of a vertical well.
 
 .. container:: list
 
@@ -8340,8 +8369,10 @@ Useage:
 
       Wells.test_well.all_time.Concentration.water.tce.Value 0.0005
 
-This key specifies the fraction of the extracted contaminant which gets
-resupplied to the injection well. Example Useage:
+*double*
+**Wells.\ *well_name*.\ *interval_name*.Injection.Concentration.\ *phase_name*.\ *contaminant_name*.Fraction**
+no default This key specifies the fraction of the extracted contaminant
+which gets resupplied to the injection well.
 
 .. container:: list
 
@@ -8373,14 +8404,14 @@ In addition to input keys related to the physics capabilities and
 modeling specifics there are some key values used by various algorithms
 and general control flags for ParFlow. These are described next :
 
-This key specifies the linear solver used for solver **IMPES**. Choices
-for this key are **MGSemi, PPCG, PCG** and **CGHS**. The choice
-**MGSemi** is an algebraic mulitgrid linear solver (not a preconditioned
-conjugate gradient) which may be less robust than **PCG** as described
-in :raw-latex:`\cite{Ashby-Falgout90}`. The choice **PPCG** is a
-preconditioned conjugate gradient solver. The choice **PCG** is a
-conjugate gradient solver with a multigrid preconditioner. The choice
-**CGHS** is a conjugate gradient solver. Example Useage:
+*string* **Solver.Linear** PCG This key specifies the linear solver used
+for solver **IMPES**. Choices for this key are **MGSemi, PPCG, PCG** and
+**CGHS**. The choice **MGSemi** is an algebraic mulitgrid linear solver
+(not a preconditioned conjugate gradient) which may be less robust than
+**PCG** as described in :raw-latex:`\cite{Ashby-Falgout90}`. The choice
+**PPCG** is a preconditioned conjugate gradient solver. The choice
+**PCG** is a conjugate gradient solver with a multigrid preconditioner.
+The choice **CGHS** is a conjugate gradient solver.
 
 .. container:: list
 
@@ -8388,9 +8419,10 @@ conjugate gradient solver with a multigrid preconditioner. The choice
 
       pfset Solver.Linear   MGSemi
 
-This key controls the order of the explicit method used in advancing the
-saturations. This value can be either 1 for a standard upwind first
-order or 2 for a second order Godunov method. Example Useage:
+*integer* **Solver.SadvectOrder** 2 This key controls the order of the
+explicit method used in advancing the saturations. This value can be
+either 1 for a standard upwind first order or 2 for a second order
+Godunov method.
 
 .. container:: list
 
@@ -8398,9 +8430,10 @@ order or 2 for a second order Godunov method. Example Useage:
 
       pfset Solver.SadvectOrder 1
 
-This key controls the order of the explicit method used in advancing the
-concentrations. This value can be either 1 for a standard upwind first
-order or 2 for a second order Godunov method. Example Useage:
+*integer* **Solver.AdvectOrder** 2 This key controls the order of the
+explicit method used in advancing the concentrations. This value can be
+either 1 for a standard upwind first order or 2 for a second order
+Godunov method.
 
 .. container:: list
 
@@ -8408,10 +8441,11 @@ order or 2 for a second order Godunov method. Example Useage:
 
       pfset Solver.AdvectOrder 2
 
-This key gives the value of the weight put on the computed CFL limit
-before computing a global timestep value. Values greater than 1 are not
-suggested and in fact because this is an approximation, values slightly
-less than 1 can also produce instabilities. Example Useage:
+*double* **Solver.CFL** 0.7 This key gives the value of the weight put
+on the computed CFL limit before computing a global timestep value.
+Values greater than 1 are not suggested and in fact because this is an
+approximation, values slightly less than 1 can also produce
+instabilities.
 
 .. container:: list
 
@@ -8419,8 +8453,9 @@ less than 1 can also produce instabilities. Example Useage:
 
       pfset Solver.CFL 0.7
 
-This key gives the maximum number of iterations that will be allowed for
-time-stepping. This is to prevent a run-away simulation. Example Useage:
+*integer* **Solver.MaxIter** 1000000 This key gives the maximum number
+of iterations that will be allowed for time-stepping. This is to prevent
+a run-away simulation.
 
 .. container:: list
 
@@ -8428,8 +8463,8 @@ time-stepping. This is to prevent a run-away simulation. Example Useage:
 
       pfset Solver.MaxIter 100
 
-This value gives the relative tolerance for the linear solve algorithm.
-Example Useage:
+*double* **Solver.RelTol** 1.0 This value gives the relative tolerance
+for the linear solve algorithm.
 
 .. container:: list
 
@@ -8437,8 +8472,8 @@ Example Useage:
 
       pfset Solver.RelTol 1.0
 
-This value gives the absolute tolerance for the linear solve algorithm.
-Example Useage:
+*double* **Solver.AbsTol** 1E-9 This value gives the absolute tolerance
+for the linear solve algorithm.
 
 .. container:: list
 
@@ -8446,10 +8481,10 @@ Example Useage:
 
       pfset Solver.AbsTol 1E-8
 
-This key gives a clipping value for data written to PFSB files. Data
-values greater than the negative of this value and less than the value
-itself are treated as zero and not written to PFSB files. Example
-Useage:
+*double* **Solver.Drop** 1E-8 This key gives a clipping value for data
+written to PFSB files. Data values greater than the negative of this
+value and less than the value itself are treated as zero and not written
+to PFSB files.
 
 .. container:: list
 
@@ -8457,28 +8492,10 @@ Useage:
 
       pfset Solver.Drop 1E-6
 
-This key provides a minimum value for the :math:`\bar{S_{f}}` used in
-the **OverlandDiffusive** boundary condition. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Solver.OverlandDiffusive.Epsilon 1E-7
-
-This key provides a minimum value for the :math:`\bar{S_{f}}` used in
-the **OverlandKinematic** boundary condition. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Solver.OverlandKinematic.Epsilon 1E-7
-
-This key is used to turn on printing of the subsurface data,
-Permeability and Porosity. The data is printed after it is generated and
-before the main time stepping loop - only once during the run. The data
-is written as a PFB file. Example Useage:
+*string* **Solver.PrintSubsurf** True This key is used to turn on
+printing of the subsurface data, Permeability and Porosity. The data is
+printed after it is generated and before the main time stepping loop -
+only once during the run. The data is written as a PFB file.
 
 .. container:: list
 
@@ -8486,9 +8503,10 @@ is written as a PFB file. Example Useage:
 
       pfset Solver.PrintSubsurf False
 
-This key is used to turn on printing of the pressure data. The printing
-of the data is controlled by values in the timing information section.
-The data is written as a PFB file. Example Useage:
+*string* **Solver.PrintPressure** True This key is used to turn on
+printing of the pressure data. The printing of the data is controlled by
+values in the timing information section. The data is written as a PFB
+file.
 
 .. container:: list
 
@@ -8496,9 +8514,10 @@ The data is written as a PFB file. Example Useage:
 
       pfset Solver.PrintPressure False
 
-This key is used to turn on printing of the x, y and z velocity data.
-The printing of the data is controlled by values in the timing
-information section. The data is written as a PFB file. Example Useage:
+*string* **Solver.PrintVelocities** False This key is used to turn on
+printing of the x, y and z velocity data. The printing of the data is
+controlled by values in the timing information section. The data is
+written as a PFB file.
 
 .. container:: list
 
@@ -8506,9 +8525,10 @@ information section. The data is written as a PFB file. Example Useage:
 
       pfset Solver.PrintVelocities True
 
-This key is used to turn on printing of the saturation data. The
-printing of the data is controlled by values in the timing information
-section. The data is written as a PFB file. Example Useage:
+*string* **Solver.PrintSaturation** True This key is used to turn on
+printing of the saturation data. The printing of the data is controlled
+by values in the timing information section. The data is written as a
+PFB file.
 
 .. container:: list
 
@@ -8516,9 +8536,10 @@ section. The data is written as a PFB file. Example Useage:
 
       pfset Solver.PrintSaturation False
 
-This key is used to turn on printing of the concentration data. The
-printing of the data is controlled by values in the timing information
-section. The data is written as a PFSB file. Example Useage:
+*string* **Solver.PrintConcentration** True This key is used to turn on
+printing of the concentration data. The printing of the data is
+controlled by values in the timing information section. The data is
+written as a PFSB file.
 
 .. container:: list
 
@@ -8526,10 +8547,10 @@ section. The data is written as a PFSB file. Example Useage:
 
       pfset Solver.PrintConcentration False
 
-This key is used to turn on collection and printing of the well data.
-The data is collected at intervals given by values in the timing
-information section. Printing occurs at the end of the run when all
-collected data is written. Example Useage:
+*string* **Solver.PrintWells** True This key is used to turn on
+collection and printing of the well data. The data is collected at
+intervals given by values in the timing information section. Printing
+occurs at the end of the run when all collected data is written.
 
 .. container:: list
 
@@ -8537,9 +8558,9 @@ collected data is written. Example Useage:
 
       pfset Solver.PrintWells False
 
-This key is used to turn on printing of the flux array passed from ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM to ParFlow. Printing occurs at each DumpInterval time. Example Useage:``
+*string* **Solver.PrintLSMSink** False This key is used to turn on
+printing of the flux array passed from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
+‘=̃12 ‘=̂12 ``CLM to ParFlow. Printing occurs at each DumpInterval time.``
 
 .. container:: list
 
@@ -8547,11 +8568,11 @@ This key is used to turn on printing of the flux array passed from ‘#=12
 
       pfset Solver.PrintLSMSink True
 
-This key is used to specify printing of the subsurface data,
-Permeability and Porosity in silo binary file format. The data is
-printed after it is generated and before the main time stepping loop -
-only once during the run. This data may be read in by VisIT and other
-visualization packages. Example Useage:
+*string* **Solver.WriteSiloSubsurfData** False This key is used to
+specify printing of the subsurface data, Permeability and Porosity in
+silo binary file format. The data is printed after it is generated and
+before the main time stepping loop - only once during the run. This data
+may be read in by VisIT and other visualization packages.
 
 .. container:: list
 
@@ -8559,10 +8580,10 @@ visualization packages. Example Useage:
 
       pfset Solver.WriteSiloSubsurfData True
 
-This key is used to specify printing of the saturation data in silo
-binary format. The printing of the data is controlled by values in the
-timing information section. This data may be read in by VisIT and other
-visualization packages. Example Useage:
+*string* **Solver.WriteSiloPressure** False This key is used to specify
+printing of the saturation data in silo binary format. The printing of
+the data is controlled by values in the timing information section. This
+data may be read in by VisIT and other visualization packages.
 
 .. container:: list
 
@@ -8570,9 +8591,10 @@ visualization packages. Example Useage:
 
       pfset Solver.WriteSiloPressure True
 
-This key is used to specify printing of the saturation data using silo
-binary format. The printing of the data is controlled by values in the
-timing information section. Example Useage:
+*string* **Solver.WriteSiloSaturation** False This key is used to
+specify printing of the saturation data using silo binary format. The
+printing of the data is controlled by values in the timing information
+section.
 
 .. container:: list
 
@@ -8580,9 +8602,10 @@ timing information section. Example Useage:
 
       pfset Solver.WriteSiloSaturation True
 
-This key is used to specify printing of the concentration data in silo
-binary format. The printing of the data is controlled by values in the
-timing information section. Example Useage:
+*string* **Solver.WriteSiloConcentration** False This key is used to
+specify printing of the concentration data in silo binary format. The
+printing of the data is controlled by values in the timing information
+section.
 
 .. container:: list
 
@@ -8590,9 +8613,10 @@ timing information section. Example Useage:
 
       pfset Solver.WriteSiloConcentration True
 
-This key is used to specify printing of the x, y and z velocity data in
-silo binary format. The printing of the data is controlled by values in
-the timing information section. Example Useage:
+*string* **Solver.WriteSiloVelocities** False This key is used to
+specify printing of the x, y and z velocity data in silo binary format.
+The printing of the data is controlled by values in the timing
+information section.
 
 .. container:: list
 
@@ -8600,9 +8624,10 @@ the timing information section. Example Useage:
 
       pfset Solver.WriteSiloVelocities True
 
-This key is used to specify printing of the x and y slope data using
-silo binary format. The printing of the data is controlled by values in
-the timing information section. Example Useage:
+*string* **Solver.WriteSiloSlopes** False This key is used to specify
+printing of the x and y slope data using silo binary format. The
+printing of the data is controlled by values in the timing information
+section.
 
 .. container:: list
 
@@ -8610,9 +8635,10 @@ the timing information section. Example Useage:
 
       pfset Solver.WriteSiloSlopes  True
 
-This key is used to specify printing of the Manning’s roughness data in
-silo binary format. The printing of the data is controlled by values in
-the timing information section. Example Useage:
+*string* **Solver.WriteSiloMannings** False This key is used to specify
+printing of the Manning’s roughness data in silo binary format. The
+printing of the data is controlled by values in the timing information
+section.
 
 .. container:: list
 
@@ -8620,9 +8646,10 @@ the timing information section. Example Useage:
 
       pfset Solver.WriteSiloMannings True
 
-This key is used to specify printing of the specific storage data in
-silo binary format. The printing of the data is controlled by values in
-the timing information section. Example Useage:
+*string* **Solver.WriteSiloSpecificStorage** False This key is used to
+specify printing of the specific storage data in silo binary format. The
+printing of the data is controlled by values in the timing information
+section.
 
 .. container:: list
 
@@ -8630,10 +8657,11 @@ the timing information section. Example Useage:
 
       pfset Solver.WriteSiloSpecificStorage True
 
-This key is used to specify printing of the mask data using silo binary
-format. The mask contains values equal to one for active cells and zero
-for inactive cells. The printing of the data is controlled by values in
-the timing information section. Example Useage:
+*string* **Solver.WriteSiloMask** False This key is used to specify
+printing of the mask data using silo binary format. The mask contains
+values equal to one for active cells and zero for inactive cells. The
+printing of the data is controlled by values in the timing information
+section.
 
 .. container:: list
 
@@ -8641,10 +8669,11 @@ the timing information section. Example Useage:
 
       pfset Solver.WriteSiloMask  True
 
-This key is used to specify printing of the evaporation and rainfall
-flux data using silo binary format. This data comes from either ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``clm or from external calls to ParFlow such as WRF. This data is in units of [L^3 T^{-1}]. The printing of the data is controlled by values in the timing information section. Example Useage:``
+*string* **Solver.WriteSiloEvapTrans** False This key is used to specify
+printing of the evaporation and rainfall flux data using silo binary
+format. This data comes from either ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
+‘=̂12
+``clm or from external calls to ParFlow such as WRF. This data is in units of [L^3 T^{-1}]. The printing of the data is controlled by values in the timing information section.``
 
 .. container:: list
 
@@ -8652,10 +8681,11 @@ flux data using silo binary format. This data comes from either ‘#=12
 
       pfset Solver.WriteSiloEvapTrans  True
 
-This key is used to specify printing of the evaporation and rainfall
-flux data using silo binary format as a running, cumulative amount. This
-data comes from either ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``clm or from external calls to ParFlow such as WRF. This data is in units of [L^3]. The printing of the data is controlled by values in the timing information section. Example Useage:``
+*string* **Solver.WriteSiloEvapTransSum** False This key is used to
+specify printing of the evaporation and rainfall flux data using silo
+binary format as a running, cumulative amount. This data comes from
+either ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``clm or from external calls to ParFlow such as WRF. This data is in units of [L^3]. The printing of the data is controlled by values in the timing information section.``
 
 .. container:: list
 
@@ -8663,13 +8693,13 @@ data comes from either ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
       pfset Solver.WriteSiloEvapTransSum  True
 
-This key is used to specify calculation and printing of the total
-overland outflow from the domain using silo binary format as a running
-cumulative amount. This is integrated along all domain boundaries and is
-calculated any location that slopes at the edge of the domain point
-outward. This data is in units of :math:`[L^3]`. The printing of the
-data is controlled by values in the timing information section. Example
-Useage:
+*string* **Solver.WriteSiloOverlandSum** False This key is used to
+specify calculation and printing of the total overland outflow from the
+domain using silo binary format as a running cumulative amount. This is
+integrated along all domain boundaries and is calculated any location
+that slopes at the edge of the domain point outward. This data is in
+units of :math:`[L^3]`. The printing of the data is controlled by values
+in the timing information section.
 
 .. container:: list
 
@@ -8677,48 +8707,21 @@ Useage:
 
       pfset Solver.WriteSiloOverlandSum  True
 
-This key specifies that a terrain-following coordinate transform is used
-for solver Richards. This key sets x and y subsurface slopes to be the
-same as the Topographic slopes (a value of False sets these subsurface
-slopes to zero). These slopes are used in the Darcy fluxes to add a
-density, gravity -dependent term. This key will not change the output
-files (that is the output is still orthogonal) or the geometries (they
-will still follow the computational grid)– these two things are both to
-do items. This key only changes solver Richards, not solver Impes.
-Example Useage:
+*string* **Solver.TerrainFollowingGrid** False This key specifies that a
+terrain-following coordinate transform is used for solver Richards. This
+key sets x and y subsurface slopes to be the same as the Topographic
+slopes (a value of False sets these subsurface slopes to zero). These
+slopes are used in the Darcy fluxes to add a density, gravity -dependent
+term. This key will not change the output files (that is the output is
+still orthogonal) or the geometries (they will still follow the
+computational grid)– these two things are both to do items. This key
+only changes solver Richards, not solver Impes.
 
 .. container:: list
 
    ::
 
-      pfset Solver.TerrainFollowingGrid.                        True
-
-This key specifies optional modifications to the terrain following grid
-formulation (Equation `[eq:darcyTFG] <#eq:darcyTFG>`__) . Choices for
-this key are **Original, Upwind, UpwindSine**. **Original** is the
-original TFG formulation shown in Equation
-`[eq:darcyTFG] <#eq:darcyTFG>`__ and documented in
-:raw-latex:`\cite{M13}`. The **Original** option calculates the
-:math:`\theta_x` and :math:`\theta_y` for a cell face as the average of
-the two adjacent cell slopes (i.e. assuming a cell centered slope
-calculation). The **Upwind** option uses the the :math:`\theta_x` and
-:math:`\theta_y` of a cell directly without averaging (i.e. assuming a
-face centered slope calculation). The **UpwindSine** is the same as the
-**Upwind** option but it also removes the Sine term from
-`[eq:darcyTFG] <#eq:darcyTFG>`__. Note the **UpwindSine** option is for
-experimental purposes only and should not be used in standard
-simulations. Also note that the choice of **upwind** or\ **Original**
-formulation should consistent with the choice of overland flow boundary
-condition if overland flow is being used. The **upwind** and
-**UpwindSine** are consistent with **OverlandDiffusive** and
-**OverlandKinematic** while **Original** is consistent with
-**OverlandFow** Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   Upwind
+      pfset Solver.TerrainFollowingGrid                        True
 
 .. _SILO Options:
 
@@ -8730,9 +8733,9 @@ writing to PDB and HDF5 file formats. SILO also allows data compression
 to be used, which can save signicant amounts of disk space for some
 problems.
 
-This key is used to specify the SILO filetype. Allowed values are PDB
-and HDF5. Note that you must have configured SILO with HDF5 in order to
-use that option. Example Useage:
+*string* **SILO.Filetype** PDB This key is used to specify the SILO
+filetype. Allowed values are PDB and HDF5. Note that you must have
+configured SILO with HDF5 in order to use that option.
 
 .. container:: list
 
@@ -8740,10 +8743,11 @@ use that option. Example Useage:
 
       pfset SILO.Filetype  PDB
 
-This key is used to specify the SILO compression options. See the SILO
-manual for the DB_SetCompression command for information on available
-options. NOTE: the options avaialable are highly dependent on the
-configure options when building SILO. Example Useage:
+*string* **SILO.CompressionOptions** This key is used to specify the
+SILO compression options. See the SILO manual for the DB_SetCompression
+command for information on available options. NOTE: the options
+avaialable are highly dependent on the configure options when building
+SILO.
 
 .. container:: list
 
@@ -8761,10 +8765,10 @@ linear and nonlinear solvers in the Richards’ equation implementation.
 For information about these solvers, see :raw-latex:`\cite{Woodward98}`
 and :raw-latex:`\cite{Ashby-Falgout90}`.
 
-This key specifies the tolerance that measures how much the relative
-reduction in the nonlinear residual should be before nonlinear
-iterations stop. The magnitude of the residual is measured with the
-:math:`l^1` (max) norm. Example Useage:
+*double* **Solver.Nonlinear.ResidualTol** 1e-7 This key specifies the
+tolerance that measures how much the relative reduction in the nonlinear
+residual should be before nonlinear iterations stop. The magnitude of
+the residual is measured with the :math:`l^1` (max) norm.
 
 .. container:: list
 
@@ -8772,9 +8776,9 @@ iterations stop. The magnitude of the residual is measured with the
 
       pfset Solver.Nonlinear.ResidualTol   1e-4
 
-This key specifies the tolerance that measures how small the difference
-between two consecutive nonlinear steps can be before nonlinear
-iterations stop. Example Useage:
+*double* **Solver.Nonlinear.StepTol** 1e-7 This key specifies the
+tolerance that measures how small the difference between two consecutive
+nonlinear steps can be before nonlinear iterations stop.
 
 .. container:: list
 
@@ -8782,8 +8786,9 @@ iterations stop. Example Useage:
 
       pfset Solver.Nonlinear.StepTol   1e-4
 
-This key specifies the maximum number of nonlinear iterations allowed
-before iterations stop with a convergence failure. Example Useage:
+*integer* **Solver.Nonlinear.MaxIter** 15 This key specifies the maximum
+number of nonlinear iterations allowed before iterations stop with a
+convergence failure.
 
 .. container:: list
 
@@ -8791,11 +8796,12 @@ before iterations stop with a convergence failure. Example Useage:
 
       pfset Solver.Nonlinear.MaxIter   50
 
-This key specifies the maximum number of vectors to be used in setting
-up the Krylov subspace in the GMRES iterative solver. These vectors are
-of problem size and it should be noted that large increases in this
-parameter can limit problem sizes. However, increasing this parameter
-can sometimes help nonlinear solver convergence. Example Useage:
+*integer* **Solver.Linear.KrylovDimension** 10 This key specifies the
+maximum number of vectors to be used in setting up the Krylov subspace
+in the GMRES iterative solver. These vectors are of problem size and it
+should be noted that large increases in this parameter can limit problem
+sizes. However, increasing this parameter can sometimes help nonlinear
+solver convergence.
 
 .. container:: list
 
@@ -8803,10 +8809,10 @@ can sometimes help nonlinear solver convergence. Example Useage:
 
       pfset Solver.Linear.KrylovDimension   15
 
-This key specifies the number of restarts allowed to the GMRES solver.
-Restarts start the development of the Krylov subspace over using the
-current iterate as the initial iterate for the next pass. Example
-Useage:
+*integer* **Solver.Linear.MaxRestarts** 0 This key specifies the number
+of restarts allowed to the GMRES solver. Restarts start the development
+of the Krylov subspace over using the current iterate as the initial
+iterate for the next pass.
 
 .. container:: list
 
@@ -8814,9 +8820,10 @@ Useage:
 
       pfset Solver.Linear.MaxRestarts   2
 
-This key gives the maximum number of convergence failures allowed. Each
-convergence failure cuts the timestep in half and the solver tries to
-advance the solution with the reduced timestep.
+*integer* **Solver.MaxConvergencFailures** 3 This key gives the maximum
+number of convergence failures allowed. Each convergence failure cuts
+the timestep in half and the solver tries to advance the solution with
+the reduced timestep.
 
 The default value is 3.
 
@@ -8826,8 +8833,7 @@ of the base time unit and if the solver begins to take very small
 timesteps :math:`smaller than base time unit \/ 1000` the values based
 on time cycles will be change at slightly incorrect times. If the
 problem is failing converge so poorly that a large number of restarts
-are required, consider setting the timestep to a smaller value. Example
-Useage:
+are required, consider setting the timestep to a smaller value.
 
 .. container:: list
 
@@ -8835,9 +8841,10 @@ Useage:
 
       pfset Solver.MaxConvergenceFailures 4
 
-This key specifies the amount of informational data that is printed to
-the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``*.out.kinsol.log file. Choices for this key are NoVerbosity, LowVerbosity, NormalVerbosity and HighVerbosity. The choice NoVerbosity prints no statistics about the nonlinear convergence process. The choice LowVerbosity outputs the nonlinear iteration count, the scaled norm of the nonlinear function, and the number of function calls. The choice NormalVerbosity prints the same as for LowVerbosity and also the global strategy statistics. The choice HighVerbosity prints the same as for NormalVerbosity with the addition of further Krylov iteration statistics. Example Useage:``
+*string* **Solver.Nonlinear.PrintFlag** HighVerbosity This key specifies
+the amount of informational data that is printed to the ‘#=12 ‘$=12
+‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``*.out.kinsol.log file. Choices for this key are NoVerbosity, LowVerbosity, NormalVerbosity and HighVerbosity. The choice NoVerbosity prints no statistics about the nonlinear convergence process. The choice LowVerbosity outputs the nonlinear iteration count, the scaled norm of the nonlinear function, and the number of function calls. The choice NormalVerbosity prints the same as for LowVerbosity and also the global strategy statistics. The choice HighVerbosity prints the same as for NormalVerbosity with the addition of further Krylov iteration statistics.``
 
 .. container:: list
 
@@ -8845,20 +8852,19 @@ the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
       pfset Solver.Nonlinear.PrintFlag   NormalVerbosity
 
-This key specifies how the linear system tolerance will be selected. The
-linear system is solved until a relative residual reduction of
-:math:`\eta` is achieved. Linear residuall norms are measured in the
-:math:`l^2` norm. Choices for this key include **EtaConstant, Walker1**
-and **Walker2**. If the choice **EtaConstant** is specified, then
-:math:`\eta` will be taken as constant. The choices **Walker1** and
-**Walker2** specify choices for :math:`\eta` developed by Eisenstat and
-Walker :raw-latex:`\cite{EW96}`. The choice **Walker1** specifies that
-:math:`\eta` will be given by
+*string* **Solver.Nonlinear.EtaChoice** Walker2 This key specifies how
+the linear system tolerance will be selected. The linear system is
+solved until a relative residual reduction of :math:`\eta` is achieved.
+Linear residuall norms are measured in the :math:`l^2` norm. Choices for
+this key include **EtaConstant, Walker1** and **Walker2**. If the choice
+**EtaConstant** is specified, then :math:`\eta` will be taken as
+constant. The choices **Walker1** and **Walker2** specify choices for
+:math:`\eta` developed by Eisenstat and Walker :raw-latex:`\cite{EW96}`.
+The choice **Walker1** specifies that :math:`\eta` will be given by
 :math:`| \|F(u^k)\| - \|F(u^{k-1}) + J(u^{k-1})*p \|  |  / \|F(u^{k-1})\|`.
 The choice **Walker2** specifies that :math:`\eta` will be given by
 :math:`\gamma \|F(u^k)\| / \|F(u^{k-1})\|^{\alpha}`. For both of the
 last two choices, :math:`\eta` is never allowed to be less than 1e-4.
-Example Useage:
 
 .. container:: list
 
@@ -8866,8 +8872,8 @@ Example Useage:
 
       pfset Solver.Nonlinear.EtaChoice   EtaConstant
 
-This key specifies the constant value of :math:`\eta` for the EtaChoice
-key **EtaConstant**. Example Useage:
+*double* **Solver.Nonlinear.EtaValue** 1e-4 This key specifies the
+constant value of :math:`\eta` for the EtaChoice key **EtaConstant**.
 
 .. container:: list
 
@@ -8875,8 +8881,8 @@ key **EtaConstant**. Example Useage:
 
       pfset Solver.Nonlinear.EtaValue   1e-7
 
-This key specifies the value of :math:`\alpha` for the case of EtaChoice
-being **Walker2**. Example Useage:
+*double* **Solver.Nonlinear.EtaAlpha** 2.0 This key specifies the value
+of :math:`\alpha` for the case of EtaChoice being **Walker2**.
 
 .. container:: list
 
@@ -8884,8 +8890,8 @@ being **Walker2**. Example Useage:
 
       pfset Solver.Nonlinear.EtaAlpha   1.0
 
-This key specifies the value of :math:`\gamma` for the case of EtaChoice
-being **Walker2**. Example Useage:
+*double* **Solver.Nonlinear.EtaGamma** 0.9 This key specifies the value
+of :math:`\gamma` for the case of EtaChoice being **Walker2**.
 
 .. container:: list
 
@@ -8893,11 +8899,11 @@ being **Walker2**. Example Useage:
 
       pfset Solver.Nonlinear.EtaGamma   0.7
 
-This key specifies whether the Jacobian will be used in matrix-vector
-products or whether a matrix-free version of the code will run. Choices
-for this key are **False** and **True**. Using the Jacobian will most
-likely decrease the number of nonlinear iterations but require more
-memory to run. Example Useage:
+*string* **Solver.Nonlinear.UseJacobian** False This key specifies
+whether the Jacobian will be used in matrix-vector products or whether a
+matrix-free version of the code will run. Choices for this key are
+**False** and **True**. Using the Jacobian will most likely decrease the
+number of nonlinear iterations but require more memory to run.
 
 .. container:: list
 
@@ -8905,10 +8911,11 @@ memory to run. Example Useage:
 
       pfset Solver.Nonlinear.UseJacobian   True
 
-This key specifies the value of :math:`\epsilon` used in approximating
-the action of the Jacobian on a vector with approximate directional
-derivatives of the nonlinear function. This parameter is only used when
-the UseJacobian key is **False**. Example Useage:
+*double* **Solver.Nonlinear.DerivativeEpsilon** 1e-7 This key specifies
+the value of :math:`\epsilon` used in approximating the action of the
+Jacobian on a vector with approximate directional derivatives of the
+nonlinear function. This parameter is only used when the UseJacobian key
+is **False**.
 
 .. container:: list
 
@@ -8916,12 +8923,13 @@ the UseJacobian key is **False**. Example Useage:
 
       pfset Solver.Nonlinear.DerivativeEpsilon   1e-8
 
-This key specifies the type of global strategy to use. Possible choices
-for this key are **InexactNewton** and **LineSearch**. The choice
+*string* **Solver.Nonlinear.Globalization** LineSearch This key
+specifies the type of global strategy to use. Possible choices for this
+key are **InexactNewton** and **LineSearch**. The choice
 **InexactNewton** specifies no global strategy, and the choice
 **LineSearch** specifies that a line search strategy should be used
 where the nonlinear step can be lengthened or decreased to satisfy
-certain criteria. Example Useage:
+certain criteria.
 
 .. container:: list
 
@@ -8929,15 +8937,16 @@ certain criteria. Example Useage:
 
       pfset Solver.Nonlinear.Globalization   LineSearch
 
-This key specifies which preconditioner to use. Currently, the three
-choices are **NoPC, MGSemi, PFMG, PFMGOctree** and **SMG**. The choice
-**NoPC** specifies that no preconditioner should be used. The choice
-**MGSemi** specifies a semi-coarsening multigrid algorithm which uses a
-point relaxation method. The choice **SMG** specifies a semi-coarsening
-multigrid algorithm which uses plane relaxations. This method is more
-robust than **MGSemi**, but generally requires more memory and compute
-time. The choice **PFMGOctree** can be more efficient for problems with
-large numbers of inactive cells. Example Useage:
+*string* **Solver.Linear.Preconditioner** MGSemi This key specifies
+which preconditioner to use. Currently, the three choices are **NoPC,
+MGSemi, PFMG, PFMGOctree** and **SMG**. The choice **NoPC** specifies
+that no preconditioner should be used. The choice **MGSemi** specifies a
+semi-coarsening multigrid algorithm which uses a point relaxation
+method. The choice **SMG** specifies a semi-coarsening multigrid
+algorithm which uses plane relaxations. This method is more robust than
+**MGSemi**, but generally requires more memory and compute time. The
+choice **PFMGOctree** can be more efficient for problems with large
+numbers of inactive cells.
 
 .. container:: list
 
@@ -8945,13 +8954,14 @@ large numbers of inactive cells. Example Useage:
 
       pfset Solver.Linear.Preconditioner   MGSemi
 
-This key specifies whether the preconditioning matrix is symmetric.
-Choices fo rthis key are **Symmetric** and **Nonsymmetric**. The choice
+*string* **Solver.Linear.Preconditioner.SymmetricMat** Symmetric This
+key specifies whether the preconditioning matrix is symmetric. Choices
+fo rthis key are **Symmetric** and **Nonsymmetric**. The choice
 **Symmetric** specifies that the symmetric part of the Jacobian will be
 used as the preconditioning matrix. The choice **Nonsymmetric**
 specifies that the full Jacobian will be used as the preconditioning
 matrix. NOTE: ONLY **Symmetric** CAN BE USED IF MGSemi IS THE SPECIFIED
-PRECONDITIONER! Example Useage:
+PRECONDITIONER!
 
 .. container:: list
 
@@ -8959,8 +8969,9 @@ PRECONDITIONER! Example Useage:
 
       pfset Solver.Linear.Preconditioner.SymmetricMat     Symmetric
 
+*integer* **Solver.Linear.Preconditioner.\ *precond_method*.MaxIter** 1
 This key specifies the maximum number of iterations to take in solving
-the preconditioner system with *precond_method* solver. Example Useage:
+the preconditioner system with *precond_method* solver.
 
 .. container:: list
 
@@ -8968,9 +8979,10 @@ the preconditioner system with *precond_method* solver. Example Useage:
 
       pfset Solver.Linear.Preconditioner.SMG.MaxIter    2
 
-This key specifies the number of relaxations to take before coarsening
-in the specified preconditioner method. Note that this key is only
-relevant to the SMG multigrid preconditioner. Example Useage:
+*integer* **Solver.Linear.Preconditioner.SMG.NumPreRelax** 1 This key
+specifies the number of relaxations to take before coarsening in the
+specified preconditioner method. Note that this key is only relevant to
+the SMG multigrid preconditioner.
 
 .. container:: list
 
@@ -8978,9 +8990,10 @@ relevant to the SMG multigrid preconditioner. Example Useage:
 
       pfset Solver.Linear.Preconditioner.SMG.NumPreRelax    2
 
-This key specifies the number of relaxations to take after coarsening in
-the specified preconditioner method. Note that this key is only relevant
-to the SMG multigrid preconditioner. Example Useage:
+*integer* **Solver.Linear.Preconditioner.SMG.NumPostRelax** 1 This key
+specifies the number of relaxations to take after coarsening in the
+specified preconditioner method. Note that this key is only relevant to
+the SMG multigrid preconditioner.
 
 .. container:: list
 
@@ -8988,8 +9001,9 @@ to the SMG multigrid preconditioner. Example Useage:
 
       pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0
 
-For the PFMG solver, this key specifies the *Hypre* RAP type. Valid
-values are **Galerkin** or **NonGalerkin** Example Useage:
+*string* **Solver.Linear.Preconditioner.PFMG.RAPType** NonGalerkin For
+the PFMG solver, this key specifies the *Hypre* RAP type. Valid values
+are **Galerkin** or **NonGalerkin**
 
 .. container:: list
 
@@ -8997,9 +9011,10 @@ values are **Galerkin** or **NonGalerkin** Example Useage:
 
       pfset Solver.Linear.Preconditioner.PFMG.RAPType    Galerkin
 
-This key specifies specifies that the Flux terms for Richards’ equation
-are read in from a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file. This file has [T^-1] units. Note this key is for a steady-state flux and should not be used in conjunction with the transient key below. Example Useage:``
+*logical* **Solver.EvapTransFile** False This key specifies specifies
+that the Flux terms for Richards’ equation are read in from a ‘#=12
+‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``.pfb file. This file has [T^-1] units. Note this key is for a steady-state flux and should not be used in conjunction with the transient key below.``
 
 .. container:: list
 
@@ -9007,10 +9022,10 @@ are read in from a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
       pfset Solver.EvapTransFile    True
 
-This key specifies specifies that the Flux terms for Richards’ equation
-are read in from a series of flux ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12
-``.pfb file. Each file has [T^-1] units. Note this key should not be used with the key above, only one of these keys should be set to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 True at a time, not both. Example Useage:``
+*logical* **Solver.EvapTransFileTransient** False This key specifies
+specifies that the Flux terms for Richards’ equation are read in from a
+series of flux ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``.pfb file. Each file has [T^-1] units. Note this key should not be used with the key above, only one of these keys should be set to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 True at a time, not both.``
 
 .. container:: list
 
@@ -9018,9 +9033,10 @@ are read in from a series of flux ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃
 
       pfset Solver.EvapTransFileTransient    True
 
-This key specifies specifies filename for the distributed ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file that contains the flux values for Richards’ equation. This file has [T^-1] units. For the steady-state option (Solver.EvapTransFile=True) this key should be the complete filename. For the transient option (Solver.EvapTransFileTransient=True then the filename is a header and ParFlow will load one file per timestep, with the form ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 filename.00000.pfb. Example Useage:``
+*string* **Solver.EvapTrans.FileName** no default This key specifies
+specifies filename for the distributed ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
+‘=̃12 ‘=̂12
+``.pfb file that contains the flux values for Richards’ equation. This file has [T^-1] units. For the steady-state option (Solver.EvapTransFile=True) this key should be the complete filename. For the transient option (Solver.EvapTransFileTransient=True then the filename is a header and ParFlow will load one file per timestep, with the form ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 filename.00000.pfb.``
 
 .. container:: list
 
@@ -9028,9 +9044,9 @@ This key specifies specifies filename for the distributed ‘#=12 ‘$=12
 
       pfset Solver.EvapTrans.FileName   evap.trans.test.pfb
 
-This key specifies whether a land surface model, such as ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM, will be called each solver timestep. Choices for this key include none and CLM. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*string* **Solver.LSM** none This key specifies whether a land surface
+model, such as ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM, will be called each solver timestep. Choices for this key include none and CLM. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9047,14 +9063,13 @@ These keys allow for *reduced or dampened physics* during model spinup
 or initialization. They are **only** intended for these initialization
 periods, **not** for regular runtime.
 
-This key specifies that a *simplified* form of the overland flow
-boundary condition (Equation `[eq:overland_bc] <#eq:overland_bc>`__) be
-used in place of the full equation. This formulation *removes lateral
-flow* and drives and ponded water pressures to zero using a
-**SeepageFace** boundary condition. While this can be helpful in
-spinning up the subsurface, this is no longer coupled subsurface-surface
-flow. If set to zero (the default) this key behaves normally. Example
-Useage:
+*integer* **OverlandFlowSpinUp** 0 This key specifies that a
+*simplified* form of the overland flow boundary condition (Equation
+`[eq:overland_bc] <#eq:overland_bc>`__) be used in place of the full
+equation. This formulation *removes lateral flow* and drives and ponded
+water pressures to zero. While this can be helpful in spinning up the
+subsurface, this is no longer coupled subsurface-surface flow. If set to
+zero (the default) this key behaves normally.
 
 .. container:: list
 
@@ -9062,9 +9077,10 @@ Useage:
 
       pfset OverlandFlowSpinUp   1
 
-This key sets :math:`P_1` and provides exponential dampening to the
-pressure relationship in the overland flow equation by adding the
-following term: :math:`P_2*exp(\psi*P_2)` Example Useage:
+*double* **OverlandFlowSpinUpDampP1** 0.0 This key sets :math:`P_1` and
+provides exponential dampening to the pressure relationship in the
+overland flow equation by adding the following term:
+:math:`P_2*exp(\psi*P_2)`
 
 .. container:: list
 
@@ -9072,9 +9088,10 @@ following term: :math:`P_2*exp(\psi*P_2)` Example Useage:
 
       pfset OverlandSpinupDampP1  10.0
 
-This key sets :math:`P_2` and provides exponential dampening to the
-pressure relationship in the overland flow equation adding the following
-term: :math:`P_2*exp(\psi*P_2)` Example Useage:
+*double* **OverlandFlowSpinUpDampP2** 0.0 This key sets :math:`P_2` and
+provides exponential dampening to the pressure relationship in the
+overland flow equation adding the following term:
+:math:`P_2*exp(\psi*P_2)`
 
 .. container:: list
 
@@ -9087,8 +9104,9 @@ term: :math:`P_2*exp(\psi*P_2)` Example Useage:
 CLM Solver Parameters
 ~~~~~~~~~~~~~~~~~~~~~
 
-This key specifies whether the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM one dimensional (averaged over each processor) output file is written or not. Choices for this key include True and False. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*string* **Solver.CLM.Print1dOut** False This key specifies whether the
+‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM one dimensional (averaged over each processor) output file is written or not. Choices for this key include True and False. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9096,33 +9114,35 @@ This key specifies whether the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 
 
       pfset Solver.CLM.Print1dOut   False
 
-This key specifies the value of the counter, *istep* in ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. This key primarily determines the start of the output counter for ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM.It is used to restart a run by setting the key to the ending step of the previous run plus one. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*integer* **Solver.CLM.IstepStart** 1 This key specifies the value of
+the counter, *istep* in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM. This key primarily determines the start of the output counter for ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM.It is used to restart a run by setting the key to the ending step of the previous run plus one. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
    ::
 
-      pfset Solver.CLM.IstepStart     8761
+      pfset Solver.CLM.IstepStart     8761      
 
-This key specifies defines whether 1D (uniform over the domain), 2D
-(spatially distributed) or 3D (spatially distributed with multiple
-timesteps per ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb forcing file) forcing data is used. Choices for this key are 1D, 2D and 3D. This key has no default so the user must set it to 1D, 2D or 3D. Failure to set this key will cause ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM to still be run but with unpredictable values causing ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM to eventually crash. 1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D forcing files are distributed ParFlow binary files, one for each variable and timestep. File names are specified in the Solver.CLM.MetFileName variable below. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*String* **Solver.CLM.MetForcing** no default This key specifies defines
+whether 1D (uniform over the domain), 2D (spatially distributed) or 3D
+(spatially distributed with multiple timesteps per ‘#=12 ‘$=12 ‘%=12
+‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``.pfb forcing file) forcing data is used. Choices for this key are 1D, 2D and 3D. This key has no default so the user must set it to 1D, 2D or 3D. Failure to set this key will cause ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM to still be run but with unpredictable values causing ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM to eventually crash. 1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D forcing files are distributed ParFlow binary files, one for each variable and timestep. File names are specified in the Solver.CLM.MetFileName variable below. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
    ::
 
-      pfset Solver.CLM.MetForcing   2D
+      pfset Solver.CLM.MetForcing   2D       
 
-This key specifies defines the file name for 1D, 2D or 3D forcing data.
-1D meteorological forcing files are text files with single columns for
-each variable and each timestep per row, while 2D and 3D forcing files
-are distributed ParFlow binary files, one for each variable and timestep
-(2D) or one for each variable and *multiple* timesteps (3D). Behavior of
-this key is different for 1D and 2D and 3D cases, as sepcified by the
+*String* **Solver.CLM.MetFileName** no default This key specifies
+defines the file name for 1D, 2D or 3D forcing data. 1D meteorological
+forcing files are text files with single columns for each variable and
+each timestep per row, while 2D and 3D forcing files are distributed
+ParFlow binary files, one for each variable and timestep (2D) or one for
+each variable and *multiple* timesteps (3D). Behavior of this key is
+different for 1D and 2D and 3D cases, as sepcified by the
 **Solver.CLM.MetForcing** key above. For 1D cases, it is the *FULL FILE
 NAME*. Note that in this configuration, this forcing file is **not**
 distributed, the user does not provide copies such as ‘#=12 ‘$=12 ‘%=12
@@ -9154,7 +9174,7 @@ distributed, the user does not provide copies such as ‘#=12 ‘$=12 ‘%=12
    Water-vapor specific humidity :math:`[kg/kg]` [clm_forcing]
 
 Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+``CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9162,10 +9182,11 @@ Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
       pfset Solver.CLM.MetFileName                             narr.1hr.txt
 
-This key specifies defines the location of 1D, 2D or 3D forcing data.
-For 1D cases, this is the path to a single forcing file (*e.g.* ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``narr.1hr.txt). For 2D and 3D cases, this is the path to the directory containing all forcing files. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*String* **Solver.CLM.MetFilePath** no default This key specifies
+defines the location of 1D, 2D or 3D forcing data. For 1D cases, this is
+the path to a single forcing file (*e.g.* ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
+‘=̃12 ‘=̂12
+``narr.1hr.txt). For 2D and 3D cases, this is the path to the directory containing all forcing files. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9173,17 +9194,17 @@ For 1D cases, this is the path to a single forcing file (*e.g.* ‘#=12
 
       pfset Solver.CLM.MetFilePath		"path/to/met/forcing/data/"
 
-This key specifies the number of timesteps per file for 3D forcing data.
-Example Useage:
+*integer* **Solver.CLM.MetFileNT** no default This key specifies the
+number of timesteps per file for 3D forcing data.
 
 .. container:: list
 
    ::
 
-      pfset Solver.CLM.MetFileNT	24
+      pfset Solver.CLM.MetFileNT	24	
 
-This key specifies whether vegetation should be forced in ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+*string* **Solver.CLM.ForceVegetation** False This key specifies whether
+vegetation should be forced in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 ``CLM. Currently this option only works for 1D and 3D forcings, as specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.MetForcing. Choices for this key include True and False. Forced vegetation variables are :``
 
 **LAI**: 
@@ -9200,7 +9221,7 @@ This key specifies whether vegetation should be forced in ‘#=12 ‘$=12
 
 In the case of 1D meteorological forcings, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
 ‘=̃12 ‘=̂12
-``CLM requires four files for vegetation time series and one vegetation map. The four files should be named respectively ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 lai.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 sai.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 z0m.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 displa.dat. They are ASCII files and contain 18 time-series columns (one per IGBP vegetation class, and each timestep per row). The vegetation map should be a properly distributed 2D ParFlow binary file ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb) which contains vegetation indices (from 1 to 18). The vegetation map filename is ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 veg_map.pfb. ParFlow uses the vegetation map to pass to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM a 2D map for each vegetation variable at each time step. In the case of 3D meteorological forcings, ParFlow expects four distincts properly distributed ParFlow binary file ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb), the third dimension being the timesteps. The files should be named ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 LAI.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 SAI.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Z0M.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 DISPLA.pfb. No vegetation map is needed in this case. Example Useage:``
+``CLM requires four files for vegetation time series and one vegetation map. The four files should be named respectively ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 lai.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 sai.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 z0m.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 displa.dat. They are ASCII files and contain 18 time-series columns (one per IGBP vegetation class, and each timestep per row). The vegetation map should be a properly distributed 2D ParFlow binary file ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb) which contains vegetation indices (from 1 to 18). The vegetation map filename is ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 veg_map.pfb. ParFlow uses the vegetation map to pass to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM a 2D map for each vegetation variable at each time step. In the case of 3D meteorological forcings, ParFlow expects four distincts properly distributed ParFlow binary file ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb), the third dimension being the timesteps. The files should be named ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 LAI.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 SAI.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Z0M.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 DISPLA.pfb. No vegetation map is needed in this case.``
 
 .. container:: list
 
@@ -9208,8 +9229,9 @@ In the case of 1D meteorological forcings, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=
 
       pfset Solver.CLM.ForceVegetation  True
 
-This key specifies whether the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM writes two dimensional binary output files to a silo binary format. This data may be read in by VisIT and other visualization packages. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM and silo must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all ParFlow variables, using the runname, and istep. Variables are either two-dimensional or over the number of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM layers (default of ten). Example Useage:``
+*string* **Solver.WriteSiloCLM** False This key specifies whether the
+‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM writes two dimensional binary output files to a silo binary format. This data may be read in by VisIT and other visualization packages. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM and silo must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all ParFlow variables, using the runname, and istep. Variables are either two-dimensional or over the number of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM layers (default of ten).``
 
 .. container:: list
 
@@ -9260,8 +9282,9 @@ The output variables are:
    ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
    ``t_soil for soil temperature over all layers [K] using the silo variable TemperatureSoil.``
 
-This key specifies whether the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM writes two dimensional binary output files to a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PFB binary format. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all ParFlow variables, using the runname, and istep. Variables are either two-dimensional or over the number of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM layers (default of ten). Example Useage:``
+*string* **Solver.PrintCLM** False This key specifies whether the ‘#=12
+‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM writes two dimensional binary output files to a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PFB binary format. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all ParFlow variables, using the runname, and istep. Variables are either two-dimensional or over the number of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM layers (default of ten).``
 
 .. container:: list
 
@@ -9312,8 +9335,9 @@ The output variables are:
    ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
    ``t_soil for soil temperature over all layers [K] using the silo variable TemperatureSoil.``
 
-This key specifies whether the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM writes two dimensional binary output files in a generic binary format. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*string* **Solver.WriteCLMBinary** True This key specifies whether the
+‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM writes two dimensional binary output files in a generic binary format. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9321,8 +9345,9 @@ This key specifies whether the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 
 
       pfset Solver.WriteCLMBinary False
 
-This key specifies whether the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM writes each set of two dimensional binary output files to a corresponding directory. These directories my be created before ParFlow is run (using the tcl script, for example). Choices for this key include True and False. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*string* **Solver.CLM.BinaryOutDir** True This key specifies whether the
+‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM writes each set of two dimensional binary output files to a corresponding directory. These directories my be created before ParFlow is run (using the tcl script, for example). Choices for this key include True and False. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9376,9 +9401,9 @@ These directories are:
    ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
    ``/diag_out for diagnostics.``
 
-This key specifies what directory all output from the ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM is written to. This key may be set to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 "./" or ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 "" to write output to the ParFlow run directory. This directory must be created before ParFlow is run. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*string* **Solver.CLM.CLMFileDir** no default This key specifies what
+directory all output from the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM is written to. This key may be set to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 "./" or ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 "" to write output to the ParFlow run directory. This directory must be created before ParFlow is run. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9386,9 +9411,9 @@ This key specifies what directory all output from the ‘#=12 ‘$=12 ‘%=12
 
       pfset Solver.CLM.CLMFileDir "CLM_Output/"
 
-This key specifies how often output from the ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12
-``CLM is written. This key is in integer multipliers of the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM timestep. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*integer* **Solver.CLM.CLMDumpInterval** 1 This key specifies how often
+output from the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM is written. This key is in integer multipliers of the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM timestep. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9396,8 +9421,9 @@ This key specifies how often output from the ‘#=12 ‘$=12 ‘%=12 ‘&=12
 
       pfset Solver.CLM.CLMDumpInterval 2
 
-This key specifies the form of the bare soil evaporation :math:`\beta`
-parameter in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+*string* **Solver.CLM.EvapBeta** Linear This key specifies the form of
+the bare soil evaporation :math:`\beta` parameter in ‘#=12 ‘$=12 ‘%=12
+‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 ``CLM. The valid types for this key are None, Linear, Cosine.``
 
 **None**: 
@@ -9411,7 +9437,7 @@ parameter in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
 Note that :math:`S_{res}` is specified by the key ‘#=12 ‘$=12 ‘%=12
 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``Solver.CLM.ResSat below, that \beta is limited between zero and one and also that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+``Solver.CLM.ResSat below, that \beta is limited between zero and one and also that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9419,9 +9445,10 @@ Note that :math:`S_{res}` is specified by the key ‘#=12 ‘$=12 ‘%=12
 
       pfset Solver.CLM.EvapBeta Linear
 
-This key specifies the residual saturation for the :math:`\beta`
-function in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM specified above. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*double* **Solver.CLM.ResSat** 0.1 This key specifies the residual
+saturation for the :math:`\beta` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12
+‘_=12 ‘=̃12 ‘=̂12
+``CLM specified above. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9429,8 +9456,9 @@ function in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
       pfset Solver.CLM.ResSat  0.15
 
-This key specifies the form of the plant water stress function
-:math:`\beta_t` parameter in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+*string* **Solver.CLM.VegWaterStress** Saturation This key specifies the
+form of the plant water stress function :math:`\beta_t` parameter in
+‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 ``CLM. The valid types for this key are None, Saturation, Pressure.``
 
 **None**: 
@@ -9444,7 +9472,7 @@ This key specifies the form of the plant water stress function
 
 Note that the wilting point, :math:`S_{wp}` or :math:`p_{wp}`, is
 specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``Solver.CLM.WiltingPoint below, that the field capacity, S_{fc} or p_{fc}, is specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.FieldCapacity below, that \beta_t is limited between zero and one and also that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+``Solver.CLM.WiltingPoint below, that the field capacity, S_{fc} or p_{fc}, is specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.FieldCapacity below, that \beta_t is limited between zero and one and also that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9452,9 +9480,10 @@ specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
       pfset Solver.CLM.VegWaterStress  Pressure
 
-This key specifies the wilting point for the :math:`\beta_t` function in
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM specified above. Note that the units for this function are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*double* **Solver.CLM.WiltingPoint** 0.1 This key specifies the wilting
+point for the :math:`\beta_t` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
+‘=̃12 ‘=̂12
+``CLM specified above. Note that the units for this function are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9462,9 +9491,10 @@ This key specifies the wilting point for the :math:`\beta_t` function in
 
       pfset Solver.CLM.WiltingPoint  0.15
 
-This key specifies the field capacity for the :math:`\beta_t` function
-in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM specified above. Note that the units for this function are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*double* **Solver.CLM.FieldCapacity** 1.0 This key specifies the field
+capacity for the :math:`\beta_t` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12
+‘_=12 ‘=̃12 ‘=̂12
+``CLM specified above. Note that the units for this function are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -9472,9 +9502,9 @@ in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
       pfset Solver.CLM.FieldCapacity  0.95
 
-This key specifies the form of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12
-``CLM. The valid types for this key are none, Spray, Drip, Instant. Example Useage:``
+*string* **Solver.CLM.IrrigationTypes** none This key specifies the form
+of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM. The valid types for this key are none, Spray, Drip, Instant.``
 
 .. container:: list
 
@@ -9482,9 +9512,9 @@ This key specifies the form of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12
 
       pfset Solver.CLM.IrrigationTypes Drip
 
-This key specifies the cycle of the irrigation in ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. The valid types for this key are Constant, Deficit. Note only Constant is currently implemented. Constant cycle applies irrigation each day from IrrigationStartTime to IrrigationStopTime in GMT. Example Useage:``
+*string* **Solver.CLM.IrrigationCycle** Constant This key specifies the
+cycle of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM. The valid types for this key are Constant, Deficit. Note only Constant is currently implemented. Constant cycle applies irrigation each day from IrrigationStartTime to IrrigationStopTime in GMT.``
 
 .. container:: list
 
@@ -9492,8 +9522,9 @@ This key specifies the cycle of the irrigation in ‘#=12 ‘$=12 ‘%=12
 
       pfset Solver.CLM.IrrigationCycle Constant
 
-This key specifies the rate of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12 ``CLM in [mm/s]. Example Useage:``
+*double* **Solver.CLM.IrrigationRate** no default This key specifies the
+rate of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM in [mm/s].``
 
 .. container:: list
 
@@ -9501,8 +9532,9 @@ This key specifies the rate of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12
 
       pfset Solver.CLM.IrrigationRate 10.
 
-This key specifies the start time of the irrigation in ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ``CLM GMT. Example Useage:``
+*double* **Solver.CLM.IrrigationStartTime** no default This key
+specifies the start time of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12
+‘_=12 ‘=̃12 ‘=̂12 ``CLM GMT.``
 
 .. container:: list
 
@@ -9510,8 +9542,9 @@ This key specifies the start time of the irrigation in ‘#=12 ‘$=12 ‘%=12
 
       pfset Solver.CLM.IrrigationStartTime 0800
 
-This key specifies the stop time of the irrigation in ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ``CLM GMT. Example Useage:``
+*double* **Solver.CLM.IrrigationStopTime** no default This key specifies
+the stop time of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
+‘=̂12 ``CLM GMT.``
 
 .. container:: list
 
@@ -9519,8 +9552,9 @@ This key specifies the stop time of the irrigation in ‘#=12 ‘$=12 ‘%=12
 
       pfset Solver.CLM.IrrigationStopTime 1200
 
-This key specifies the threshold value for the irrigation in ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ``CLM. Example Useage:``
+*double* **Solver.CLM.IrrigationThreshold** 0.5 This key specifies the
+threshold value for the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
+‘=̂12 ``CLM.``
 
 .. container:: list
 
@@ -9528,8 +9562,9 @@ This key specifies the threshold value for the irrigation in ‘#=12 ‘$=12
 
       pfset Solver.CLM.IrrigationThreshold 0.2
 
-How many times to reuse a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM atmospheric forcing file input. For example timestep=1, reuse =1 is normal behavior but reuse=2 and timestep=0.5 subdivides the time step using the same ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM input for both halves instead of needing two files. This is particually useful for large, distributed runs when the user wants to run ParFlow at a smaller timestep than the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM forcing. Forcing files will be re-used and total fluxes adjusted accordingly without needing duplicate files. Example Useage:``
+*integer* **Solver.CLM.ReuseCount** 1 How many times to reuse a ‘#=12
+‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM atmospheric forcing file input. For example timestep=1, reuse =1 is normal behavior but reuse=2 and timestep=0.5 subdivides the time step using the same ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM input for both halves instead of needing two files. This is particually useful for large, distributed runs when the user wants to run ParFlow at a smaller timestep than the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM forcing. Forcing files will be re-used and total fluxes adjusted accordingly without needing duplicate files.``
 
 .. container:: list
 
@@ -9537,11 +9572,11 @@ How many times to reuse a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=�
 
       pfset Solver.CLM.ReuseCount      5
 
-When **False**, this disables writing of the CLM output log files for
-each processor. For example, in the clm.tcl test case, if this flag is
-added **False**, washita.output.txt.\ *p* and washita.para.out.dat.\ *p*
-(were *p* is the processor #) are not created, assuming *washita* is the
-run name. Example Useage:
+*string* **Solver.CLM.WriteLogs** True When **False**, this disables
+writing of the CLM output log files for each processor. For example, in
+the clm.tcl test case, if this flag is added **False**,
+washita.output.txt.\ *p* and washita.para.out.dat.\ *p* (were *p* is the
+processor #) are not created, assuming *washita* is the run name.
 
 .. container:: list
 
@@ -9549,13 +9584,13 @@ run name. Example Useage:
 
       pfset Solver.CLM.WriteLogs    False
 
-Controls whether CLM restart files are sequentially written or whether a
-single file *restart file name*.00000.\ *p* is overwritten each time the
-restart file is output, where *p* is the processor number. If "True"
-only one file is written/overwritten and if "False" outputs are written
-more frequently. Compatible with DailyRST and ReuseCount; for the
-latter, outputs are written every n steps where n is the value of
-ReuseCount. Example Useage:
+*string* **Solver.CLM.WriteLastRST** False Controls whether CLM restart
+files are sequentially written or whether a single file *restart file
+name*.00000.\ *p* is overwritten each time the restart file is output,
+where *p* is the processor number. If "True" only one file is
+written/overwritten and if "False" outputs are written more frequently.
+Compatible with DailyRST and ReuseCount; for the latter, outputs are
+written every n steps where n is the value of ReuseCount.
 
 .. container:: list
 
@@ -9563,14 +9598,14 @@ ReuseCount. Example Useage:
 
       pfset Solver.CLM.WriteLastRST   True
 
-Controls whether CLM writes daily restart files (default) or at every
-time step when set to False; outputs are numbered according to the istep
-from ParFlow. If **ReuseCount=n**, with n greater than 1, the output
-will be written every n steps (i.e. it still writes hourly restart files
-if your time step is 0.5 or 0.25, etc...). Fully compatible with
-**WriteLastRST=False** so that each daily output is overwritten to time
-00000 in *restart file name*.00000.p where *p* is the processor number.
-Example Useage:
+*string* **Solver.CLM.DailyRST** True Controls whether CLM writes daily
+restart files (default) or at every time step when set to False; outputs
+are numbered according to the istep from ParFlow. If **ReuseCount=n**,
+with n greater than 1, the output will be written every n steps (i.e. it
+still writes hourly restart files if your time step is 0.5 or 0.25,
+etc...). Fully compatible with **WriteLastRST=False** so that each daily
+output is overwritten to time 00000 in *restart file name*.00000.p where
+*p* is the processor number.
 
 .. container:: list
 
@@ -9578,9 +9613,9 @@ Example Useage:
 
       pfset Solver.CLM.DailyRST    False
 
-Controls whether ParFlow writes all ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12
-``CLM output variables as a single file per time step. When "True", this combines the output of all the CLM output variables into a special multi-layer PFB with the file extension ".C.pfb". The first 13 layers correspond to the 2-D CLM outputs and the remaining layers are the soil temperatures in each layer. For example, a model with 4 soil layers will create a SingleFile CLM output with 17 layers at each time step. The file pseudo code is given below in § [ParFlow Binary Files (.c.pfb)] and the variables and units are as specified in the multiple ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PFB and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 SILO formats as above. Example Useage:``
+*string* **Solver.CLM.SingleFile** False Controls whether ParFlow writes
+all ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM output variables as a single file per time step. When "True", this combines the output of all the CLM output variables into a special multi-layer PFB with the file extension ".C.pfb". The first 13 layers correspond to the 2-D CLM outputs and the remaining layers are the soil temperatures in each layer. For example, a model with 4 soil layers will create a SingleFile CLM output with 17 layers at each time step. The file pseudo code is given below in § [ParFlow Binary Files (.c.pfb)] and the variables and units are as specified in the multiple ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PFB and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 SILO formats as above.``
 
 .. container:: list
 
@@ -9588,9 +9623,9 @@ Controls whether ParFlow writes all ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=
 
       pfset Solver.CLM.SingleFile   True
 
-This key sets the number of soil layers the ParFlow expects from ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. It will allocate and format all the arrays for passing variables to and from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM accordingly. This value now sets the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM number as well so recompilation is not required anymore. Most likely the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.SoiLayer, described below, will also need to be changed. Example Useage:``
+*integer* **Solver.CLM.RootZoneNZ** 10 This key sets the number of soil
+layers the ParFlow expects from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM. It will allocate and format all the arrays for passing variables to and from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM accordingly. Note that this does not set the soil layers in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM to do that the user needs to change the value of the parameter ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 nlevsoi in the file ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 clm_varpar.F90 in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PARFLOW_DIR\pfsimulator\clm directory to reflect the desired numnber of soil layers and recompile. Most likely the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.SoiLayer, described below, will also need to be changed.``
 
 .. container:: list
 
@@ -9598,9 +9633,9 @@ This key sets the number of soil layers the ParFlow expects from ‘#=12
 
       pfset Solver.CLM.RootZoneNZ      4
 
-This key sets the soil layer, and thus the soil depth, that ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM uses for the seasonal temperature adjustment for all leaf and stem area indices. Example Useage:``
+*integer* **Solver.CLM.SoiLayer** 7 This key sets the soil layer, and
+thus the soil depth, that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
+``CLM uses for the seasonal temperature adjustment for all leaf and stem area indices.``
 
 .. container:: list
 
@@ -9608,15 +9643,23 @@ This key sets the soil layer, and thus the soil depth, that ‘#=12 ‘$=12
 
       pfset Solver.CLM.SoiLayer      4
 
-This key specifies whether or not ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12
-``CLM allows for the inclusion of slopes when determining solar zenith angles. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. Example Useage:``
+*integer* **Solver.CLM.SoilLevels** 10 This key sets the number of soil
+levels for CLM.
 
 .. container:: list
 
    ::
 
-      pfset Solver.CLM.UseSlopeAspect True
+      pfset Solver.CLM.SoilLevels      4
+
+*integer* **Solver.CLM.LakeLevels** 10 This key sets the number of lake
+levels for CLM.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.LakeLevels      4
 
 .. _ParFlow NetCDF4 Parallel I/O:
 
@@ -9637,9 +9680,9 @@ hints option for better I/O performance.
 **HDF5 Library version 1.8.16 or higher is required for NetCDF4 parallel
 I/O**
 
-This key sets number of time steps user wishes to output in a NetCDF4
-file. Once the time step count increases beyond this number, a new file
-is automatically created. Example Useage:
+*integer* **NetCDF.NumStepsPerFile** This key sets number of time steps
+user wishes to output in a NetCDF4 file. Once the time step count
+increases beyond this number, a new file is automatically created.
 
 .. container:: list
 
@@ -9647,8 +9690,8 @@ is automatically created. Example Useage:
 
       pfset NetCDF.NumStepsPerFile    5
 
-This key sets pressure variable to be written in NetCDF4 file. Example
-Useage:
+*string* **NetCDF.WritePressure** False This key sets pressure variable
+to be written in NetCDF4 file.
 
 .. container:: list
 
@@ -9656,8 +9699,8 @@ Useage:
 
       pfset NetCDF.WritePressure    True
 
-This key sets saturation variable to be written in NetCDF4 file. Example
-Useage:
+*string* **NetCDF.WriteSaturation** False This key sets saturation
+variable to be written in NetCDF4 file.
 
 .. container:: list
 
@@ -9665,8 +9708,8 @@ Useage:
 
       pfset NetCDF.WriteSaturation    True
 
-This key sets Mannings coefficients to be written in NetCDF4 file.
-Example Useage:
+*string* **NetCDF.WriteMannings** False This key sets Mannings
+coefficients to be written in NetCDF4 file.
 
 .. container:: list
 
@@ -9674,8 +9717,9 @@ Example Useage:
 
       pfset NetCDF.WriteMannings	    True
 
-This key sets subsurface data(permeabilities, porosity, specific
-storage) to be written in NetCDF4 file. Example Useage:
+*string* **NetCDF.WriteSubsurface** False This key sets subsurface
+data(permeabilities, porosity, specific storage) to be written in
+NetCDF4 file.
 
 .. container:: list
 
@@ -9683,8 +9727,8 @@ storage) to be written in NetCDF4 file. Example Useage:
 
       pfset NetCDF.WriteSubsurface	    True
 
-This key sets x and y slopes to be written in NetCDF4 file. Example
-Useage:
+*string* **NetCDF.WriteSlopes** False This key sets x and y slopes to be
+written in NetCDF4 file.
 
 .. container:: list
 
@@ -9692,7 +9736,8 @@ Useage:
 
       pfset NetCDF.WriteSlopes	    True
 
-This key sets mask to be written in NetCDF4 file. Example Useage:
+*string* **NetCDF.WriteMask** False This key sets mask to be written in
+NetCDF4 file.
 
 .. container:: list
 
@@ -9700,8 +9745,8 @@ This key sets mask to be written in NetCDF4 file. Example Useage:
 
       pfset NetCDF.WriteMask	    True
 
-This key sets DZ multipliers to be written in NetCDF4 file. Example
-Useage:
+*string* **NetCDF.WriteDZMultiplier** False This key sets DZ multipliers
+to be written in NetCDF4 file.
 
 .. container:: list
 
@@ -9709,7 +9754,8 @@ Useage:
 
       pfset NetCDF.WriteDZMultiplier	    True
 
-This key sets Evaptrans to be written in NetCDF4 file. Example Useage:
+*string* **NetCDF.WriteEvapTrans** False This key sets Evaptrans to be
+written in NetCDF4 file.
 
 .. container:: list
 
@@ -9717,8 +9763,8 @@ This key sets Evaptrans to be written in NetCDF4 file. Example Useage:
 
       pfset NetCDF.WriteEvapTrans	    True
 
-This key sets Evaptrans sum to be written in NetCDF4 file. Example
-Useage:
+*string* **NetCDF.WriteEvapTransSum** False This key sets Evaptrans sum
+to be written in NetCDF4 file.
 
 .. container:: list
 
@@ -9726,8 +9772,8 @@ Useage:
 
       pfset NetCDF.WriteEvapTransSum	    True
 
-This key sets overland sum to be written in NetCDF4 file. Example
-Useage:
+*string* **NetCDF.WriteOverlandSum** False This key sets overland sum to
+be written in NetCDF4 file.
 
 .. container:: list
 
@@ -9735,8 +9781,8 @@ Useage:
 
       pfset NetCDF.WriteOverlandSum	    True
 
-This key sets overland bc flux to be written in NetCDF4 file. Example
-Useage:
+*string* **NetCDF.WriteOverlandBCFlux** False This key sets overland bc
+flux to be written in NetCDF4 file.
 
 .. container:: list
 
@@ -9753,8 +9799,8 @@ hypercube(hyperslab) of any dimension. When chunking is used, chunks are
 written in single write operation which can reduce access times. For
 more information on chunking, refer to NetCDF4 user guide.
 
-This key sets chunking for each time varying 3-D variable in NetCDF4
-file. Example Useage:
+*string* **NetCDF.Chunking** False This key sets chunking for each time
+varying 3-D variable in NetCDF4 file.
 
 .. container:: list
 
@@ -9774,7 +9820,8 @@ If one processor has grid distribution of 40(x)X40(y)X30(z) and another
 has 50(x)X50(y)X30(z), the later values should be used to set chunk
 sizes in each direction.
 
-This key sets chunking size in x-direction. Example Useage:
+*integer* **NetCDF.ChunkX** None This key sets chunking size in
+x-direction.
 
 .. container:: list
 
@@ -9782,7 +9829,8 @@ This key sets chunking size in x-direction. Example Useage:
 
       pfset NetCDF.ChunkX    50
 
-This key sets chunking size in y-direction. Example Useage:
+*integer* **NetCDF.ChunkY** None This key sets chunking size in
+y-direction.
 
 .. container:: list
 
@@ -9790,37 +9838,14 @@ This key sets chunking size in y-direction. Example Useage:
 
       pfset NetCDF.ChunkY    50
 
-This key sets chunking size in z-direction. Example Useage:
+*integer* **NetCDF.ChunkZ** None This key sets chunking size in
+z-direction.
 
 .. container:: list
 
    ::
 
       pfset NetCDF.ChunkZ    30
-
-This key enables in-transit deflate compression for all NetCDF variables
-using zlib. To use this feature, NetCDF4 v4.7.4 must be available, which
-supports the necessary parallel zlib compression. The compression
-quality can be influenced by the chunk sizes and the overall data
-distribution. Compressed variables in NetCDF files can be opened in
-serial mode also within older versions of NetCDF4. Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset NetCDF.Compression True
-
-This key sets the deflate compression level (if NetCDF.Compression is
-enabled), which influence the overall compression quality. zlib supports
-values between 0 (no compression), 1 (fastest compression) - 9 (slowest
-compression,smallest files). Example Useage:
-
-.. container:: list
-
-   ::
-
-      pfset NetCDF.CompressionLevel 1
 
 ROMIO Hints
 ~~~~~~~~~~~
@@ -9833,9 +9858,9 @@ hints are set in a text file in "key" and "value" pair. *For correct
 settings contact your HPC site administrator*. As in chunking, ROMIO
 hints can have significant performance impact on I/O.
 
-This key sets ROMIO hints file to be passed on to NetCDF4 interface.If
-this key is set, the file must be present and readable in experiment
-directory. Example Useage:
+*string* **NetCDF.ROMIOhints** None This key sets ROMIO hints file to be
+passed on to NetCDF4 interface.If this key is set, the file must be
+present and readable in experiment directory.
 
 .. container:: list
 
@@ -9875,7 +9900,8 @@ key. Moreover on speciality architectures, this may not be a portable
 feature. Users are advised to test this feature on their machine before
 putting into production.**
 
-This key sets flag for node level collective I/O. Example Useage:
+*string* **NetCDF.NodeLevelIO** False This key sets flag for node level
+collective I/O.
 
 .. container:: list
 
@@ -9912,8 +9938,8 @@ lon) or (time,z, y, x)*
 **Node level collective I/O is currently not implemented for setting
 initial conditions.**
 
-This key sets flag for initial conditions to be read from a NetCDF file.
-Example Useage:
+*string* **ICPressure.Type** no default This key sets flag for initial
+conditions to be read from a NetCDF file.
 
 .. container:: list
 
@@ -9961,8 +9987,8 @@ Please refer to “slopes.nc" under Little Washita test case. **Node level
 collective I/O is currently not implemented for setting initial
 conditions.**
 
-This key sets flag for slopes in x direction to be read from a NetCDF
-file. Example Useage:
+*string* **TopoSlopesX.Type** no default This key sets flag for slopes
+in x direction to be read from a NetCDF file.
 
 .. container:: list
 
@@ -9971,8 +9997,8 @@ file. Example Useage:
       pfset TopoSlopesX.Type   NCFile
       pfset TopoSlopesX.FileName   "slopex.nc"
 
-This key sets flag for slopes in y direction to be read from a NetCDF
-file. Example Useage:
+*string* **TopoSlopesY.Type** no default This key sets flag for slopes
+in y direction to be read from a NetCDF file.
 
 .. container:: list
 
@@ -10008,8 +10034,8 @@ dimensions is important e.g. *(time, lev, lat, lon) or (time,z, y, x)*
 **Node level collective I/O is currently not implemented for transient
 evaptrans forcing.**
 
-This key sets flag for transient evaptrans forcing to be read from a
-NetCDF file. Example Useage:
+*string* **NetCDF.EvapTransFileTransient** False This key sets flag for
+transient evaptrans forcing to be read from a NetCDF file.
 
 .. container:: list
 
@@ -10017,8 +10043,8 @@ NetCDF file. Example Useage:
 
       pfset NetCDF.EvapTransFileTransient   True
 
-This key sets the name of the NetCDF transient evaptrans forcing file.
-Example Useage:
+*string* **NetCDF.EvapTrans.FileName** no default This key sets the name
+of the NetCDF transient evaptrans forcing file.
 
 .. container:: list
 
@@ -10033,8 +10059,8 @@ Similar to ParFlow binary and silo, following keys can be used to write
 output CLM variables in a single NetCDF file containing multiple time
 steps.
 
-This key sets number of time steps to be written to a single NetCDF
-file. Example Useage:
+*integer* **NetCDF.CLMNumStepsPerFile** None This key sets number of
+time steps to be written to a single NetCDF file.
 
 .. container:: list
 
@@ -10042,8 +10068,8 @@ file. Example Useage:
 
       pfset NetCDF.CLMNumStepsPerFile 24
 
-This key sets CLM variables to be written in a NetCDF file. Example
-Useage:
+*string* **NetCDF.WriteCLM** False This key sets CLM variables to be
+written in a NetCDF file.
 
 .. container:: list
 
@@ -10136,8 +10162,8 @@ NetCDF4 CLM Input/Forcing
 **Note: While using NetCDF based CLM forcing, ``Solver.CLM.MetFileNT``
 should be set to its default value of 1**
 
-This key sets meteorological forcing to be read from NetCDF file.
-Example Useage:
+*string* **Solver.CLM.MetForcing** no default This key sets
+meteorological forcing to be read from NetCDF file.
 
 .. container:: list
 
@@ -10220,7 +10246,7 @@ ParFlow CLM Single Output Binary Files (.c.pfb)
 -----------------------------------------------
 
 The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file format is a binary file format which is used to store ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM output data in a single file. It is written as BIG ENDIAN binary bit ordering . Each field is written as a contigious 2D array; one can think of the Z axis as representing field. The number of fields depends on CLM options used. The format for the file is:``
+``.pfb file format is a binary file format which is used to store ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM output data in a single file. It is written as BIG ENDIAN binary bit ordering . The format for the file is:``
 
 .. container:: list
 
@@ -10236,35 +10262,29 @@ The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
          <integer : ix>  <integer : iy>  <integer : iz>
          <integer : nx>  <integer : ny>  <integer : nz>
          <integer : rx>  <integer : ry>  <integer : rz>
-
-         fields = [ eflx_lh_tot
-                    eflx_lwrad_out
-                    eflx_sh_tot
-                    eflx_soil_grnd
-                    qflx_evap_tot
-                    qflx_evap_grnd
-                    qflx_evap_soi
-                    qflx_evap_veg
-                    qflx_tran_veg
-                    qflx_infl
-                    swe_out
-                    t_grnd
-                    IF (clm_irr_type == 1)  qflx_qirr
-                    ELSE IF (clm_irr_type == 3)  qflx_qirr_inst
-                    ELSE                         NULL
-                    FOR k = 1 TO clm_nz
-                      tsoilk
-                    END
-                  ]
-         FOREACH f in fields
-           FOR j = iy TO iy + <ny> - 1
-           BEGIN
-             FOR i = ix TO ix + <nx> - 1
-             BEGIN
-                <f>_ij
-             END
-           END
-         END_FOREACH
+            FOR j = iy TO iy + <ny> - 1
+            BEGIN
+               FOR i = ix TO ix + <nx> - 1
+               BEGIN
+                  eflx_lh_tot_ij
+      	    eflx_lwrad_out_ij
+      	    eflx_sh_tot_ij
+      	    eflx_soil_grnd_ij
+      	    qflx_evap_tot_ij
+      	    qflx_evap_grnd_ij
+      	    qflx_evap_soi_ij
+      	    qflx_evap_veg_ij
+      	    qflx_infl_ij
+      	    swe_out_ij
+      	    t_grnd_ij
+           IF (clm_irr_type == 1)  qflx_qirr_ij 
+      ELSE IF (clm_irr_type == 3)  qflx_qirr_inst_ij
+      ELSE                         NULL
+      	    FOR k = 1 TO clm_nz
+      	    tsoil_ijk
+      	    END
+               END
+            END
       END
 
 .. _ParFlow Scattered Binary Files (.pfsb):
@@ -11018,6 +11038,726 @@ in part into the MMC, (1) had no cover texts or invariant sections, and
 The operator of an MMC Site may republish an MMC contained in the site
 under CC-BY-SA on the same site at any time before August 1, 2009,
 provided the MMC is eligible for relicensing.
+
+.. container:: thebibliography
+
+   999
+
+   Ajami, H., McCabe, M.F., Evans, J.P. and Stisen, S. (2014). Assessing
+   the impact of model spin-up on surface water-groundwater interactions
+   using an integrated hydrologic model. *Water Resources Research*
+   **50** 2636:2656, doi:10.1002/2013WR014258.
+
+   Ajami,H., M.F. McCabe, and J.P. Evans (2015). Impacts of model
+   initialization on an integrated surface water–groundwater model. ,
+   29(17):3790–3801.
+
+   Ajami, H.; Sharma, A. (2018). Disaggregating Soil Moisture to Finer
+   Spatial Resolutions: A Comparison of Alternatives. *Water Resour.
+   Res.* , **54 (11)**, 9456–9483. https://doi.org/10.1029/2018WR022575.
+
+   Ashby, S.F. and Falgout,R. D. (1996). A parallel multigrid
+   preconditioned conjugate gradient algorithm for groundwater flow
+   simulations. , **124**:145–159.
+
+   Atchley, A. and Maxwell, R.M. (2011). Influences of subsurface
+   heterogeneity and vegetation cover on soil moisture, surface
+   temperature, and evapotranspiration at hillslope scales.
+   *Hydrogeology Journal* doi:10.1007/s10040-010-0690-1.
+
+   Atchley, A.L., Maxwell, R.M. and Navarre-Sitchler, A.K. (2013). Human
+   Health Risk Assessment of CO 2 Leakage into Overlying Aquifers Using
+   a Stochastic, Geochemical Reactive Transport Approach. *Environmental
+   Science and Technology* **47** 5954–5962, doi:10.1021/es400316c.
+
+   Atchley, A.L., Maxwell, R.M. and Navarre-Sitchler, A.K. (2013). Using
+   streamlines to simulate stochastic reactive transport in
+   heterogeneous aquifers: Kinetic metal release and transport in CO2
+   impacted drinking water aquifers. *Advances in Water Resources*
+   **52** 93–106, doi:10.1016/j.advwatres.2012.09.005.
+
+   Atchley, A. L.; Kinoshita, A. M.; Lopez, S. R.; Trader, L.;
+   Middleton, R. (2018). Simulating Surface and Subsurface Water Balance
+   Changes Due to Burn Severity. *Vadose Zo. J.* **17 (1)**.
+   https://doi.org/10.2136/vzj2018.05.0099.
+
+   Bhaskar,A.S., C. Welty, R.M. Maxwell, and A.J. Miller (2015).
+   Untangling the effects of urban development on subsurface storage in
+   baltimore. , 51(2):1158–1181.
+
+   Baatz, D.; Kurtz, W.; Hendricks Franssen, H. J.; Vereecken, H.;
+   Kollet, S. J. (2017). Catchment Tomography - An Approach for Spatial
+   Parameter Estimation. *Adv. Water Resour.* **107**, 147–159.
+   https://doi.org/10.1016/j.advwatres.2017.06.006.
+
+   Barnes,M. C. Welty, and A. Miller (2015). Global topographic slope
+   enforcement to ensure connectivity and drainage in an urban terrain.
+   , 0(0):06015017.
+
+   Barnes, M. L.; Welty, C.; Miller, A. J. (2018). Impacts of
+   Development Pattern on Urban Groundwater Flow Regime. *Water Resour.
+   Res.* **54 (8)**, 5198–5212. https://doi.org/10.1029/2017WR022146.
+
+   Baroni, G.; Schalge, B.; Rakovec, O.; Kumar, R.; Schüler, L.;
+   Samaniego, L.; Simmer, C.; Attinger, S. A (2019). Comprehensive
+   Distributed Hydrological Modeling Intercomparison to Support Process
+   Representation and Data Collection Strategies. *Water Resour. Res.*
+   **990–1010**. https://doi.org/10.1029/2018WR023941.
+
+   Bearup,L.A. R.M. Maxwell and J.E. McCray (2016). Hillslope response
+   to insect-induced land-cover change: an integrated model of
+   end-member mixing. , ECO-15-0202.R1.
+
+   Beisman,J.J., R. M. Maxwell, A. K. Navarre-Sitchler, C. I. Steefel,
+   and S. Molins (2015). Parcrunchflow: an efficient, parallel reactive
+   transport simulation tool for physically and chemically heterogeneous
+   saturated subsurface environments. , 19(2):403–422.
+
+   Bürger, C.M., Kollet, S., Schumacher, J. and Bösel, D. (2012).
+   Introduction of a web service for cloud computing with the integrated
+   hydrologic simulation platform ParFlow. *Computers and Geosciences*
+   **48** 334–336, doi:10.1016/j.cageo.2012.01.007.
+
+   Condon, L.E. and Maxwell, R.M. (2013). Implementation of a linear
+   optimization water allocation algorithm into a fully integrated
+   physical hydrology model. *Advances in Water Resources* **60**
+   135–147, doi:10.1016/j.advwatres.2013.07.012.
+
+   Condon, L.E., Maxwell, R.M. and Gangopadhyay, S. (2013). The impact
+   of subsurface conceptualization on land energy fluxes. *Advances in
+   Water Resources* **60** 188–203, doi:10.1016/j.advwatres.2013.08.001.
+
+   Condon, L.E. and Maxwell, R.M. (2014). Feedbacks between managed
+   irrigation and water availability: Diagnosing temporal and spatial
+   patterns using an integrated hydrologic model. *Water Resources
+   Research* **50** 2600–2616, doi:10.1002/2013WR014868.
+
+   Condon, L.E. and Maxwell, R.M. (2014). Groundwater-fed irrigation
+   impacts spatially distributed temporal scaling behavior of the
+   natural system: a spatio-temporal framework for understanding water
+   management impacts. *Environmental Research Letters* **9** 1–9,
+   doi:10.1088/1748-9326/9/3/034009.
+
+   Condon, L.E., A. S. Hering, and R. M. Maxwell (2015). Quantitative
+   assessment of groundwater controls across major {US} river basins
+   using a multi-model regression algorithm. , 82:106 – 123.
+
+   Condon, L.E., and R. M. Maxwell (2015). Evaluating the relationship
+   between topography and groundwater using outputs from a
+   continental-scale integrated hydrology model. , 51(8):6602–6621.
+
+   Condon, L. E.; Maxwell, R. M. (2017). Systematic Shifts in Budyko
+   Relationships Caused by Groundwater Storage Changes. *Hydrol. Earth
+   Syst. Sci.* **21 (2)**, 1117–1135.
+   https://doi.org/10.5194/hess-21-1117-2017.
+
+   Condon, L. E.; Maxwell, R. M. (2019). Simulating the Sensitivity of
+   Evapotranspiration and Streamflow to Large-Scale Groundwater
+   Depletion. *Sci. Adv.*. **5** (6).
+   https://doi.org/10.1126/sciadv.aav4574.
+
+   Condon, L. E.; Maxwell, R. M. (2019). Modified priority flood and
+   global slope enforcement algorithm for topographic processing in
+   physically based hydrologic modeling applications. *Computers and
+   Geosciences*, **126**\ (February), 73–83.
+   https://doi.org/10.1016/j.cageo.2019.01.020.
+
+   Cui, Z., Welty, C. and Maxwell, R.M. (2014). Modeling nitrogen
+   transport and transformation in aquifers using a particle-tracking
+   approach. *Computers and Geosciences* **70** 1–14,
+   doi:10.1016/j.cageo.2014.05.005.
+
+   Dai, Y., X. Zeng, R.E. Dickinson, I. Baker, G.B. Bonan, M.G.
+   Bosilovich, A.S. Denning, P.A. Dirmeyer, P.R., G. Niu, K.W. Oleson,
+   C.A. Schlosser and Z.L. Yang (2003). The common land model. *The
+   Bulletin of the American Meteorological Society*
+   **84**\ (8):1013–1023.
+
+   Danesh-Yazdi, M.; Klaus, J.; Condon, L. E.; Maxwell, R. M. (2018).
+   Bridging the Gap between Numerical Solutions of Travel Time
+   Distributions and Analytical Storage Selection Functions. *Hydrol.
+   Process.*.\ **32** (8), 1063–1076. https://doi.org/10.1002/hyp.11481.
+
+   Daniels, M.H., Maxwell, R.M., Chow, F.K. (2010). An algorithm for
+   flow direction enforcement using subgrid-scale stream location data,
+   *Journal of Hydrologic Engineering* **16** 677–683,
+   doi:10.1061/(ASCE)HE.1943-5584.0000340.
+
+   de Barros, F.P.J., Rubin, Y. and Maxwell, R.M. (2009). The concept of
+   comparative information yield curves and their application to
+   risk-based site characterization. *Water Resources Research* 45,
+   W06401, doi:10.1029/2008WR007324.
+
+   de Rooij, R., Graham, W. and Maxwell, R.M. (2013). A
+   particle-tracking scheme for simulating pathlines in coupled
+   surface-subsurface flows. *Advances in Water Resources* **52** 7–18,
+   doi:10.1016/j.advwatres.2012.07.022.
+
+   Eisenstat, S.C. and Walker, H.F. (1996). Choosing the forcing terms
+   in an inexact newton method. , **17**\ (1):16–32.
+
+   Nicholas B. Engdahl and Reed M. Maxwell (2015). Quantifying changes
+   in age distributions and the hydrologic balance of a high-mountain
+   watershed from climate induced variations in recharge. , 522:152 –
+   162.
+
+   Zhufeng Fang, Heye Bogena, Stefan Kollet, Julian Koch, and Harry
+   Vereecken (2015). Spatio-temporal validation of long-term 3d
+   hydrological simulations of a forested catchment using empirical
+   orthogonal functions and wavelet coherence analysis. , 529, Part
+   3:1754 – 1767.
+
+   Fang, Y., L. R. Leung, Z. Duan, M. S. Wigmosta, R. M. Maxwell, J. Q.
+   Chambers, and J. Tomasella (2016). Influence of landscape
+   heterogeneity on water available to tropical forests in an Amazonian
+   catchment and implications for modeling drought response, *J.
+   Geophys. Res. Atmos.*, **122**, 8410–8426, doi:10.1002/2017JD027066.
+
+   Fang, Yilin ; Leung, L. Ruby; Duan, Zhuoran; Wigmosta, Mark S.;
+   Maxwell, Reed M.; Chambers, Jeffrey Q.; Tomasella, J. (2017). Journal
+   of Geophysical Research : Atmospheres. *J. Geophys. Res. Atmos.* /bf
+   122, 3672–3685. https://doi.org/10.1002/2016JD025676.
+
+   Ferguson, I.M. and Maxwell, R.M. (2010). Role of groundwater in
+   watershed response and land surface feedbacks under climate change.
+   *Water Resources Research* 46, W00F02, doi:10.1029/2009WR008616.
+
+   Ferguson, I.M. and Maxwell, R.M. (2011). Hydrologic and land:energy
+   feedbacks of agricultural water management practices. *Environmental
+   Research Letters* **6** 1–7, doi:10.1088/1748-9326/6/1/014006.
+
+   Ferguson, I.M. and Maxwell, R.M. (2012). Human impacts on terrestrial
+   hydrology: climate change versus pumping and irrigation.
+   *Environmental Research Letters* **7** 1–8,
+   doi:10.1088/1748-9326/7/4/044022.
+
+   Ferguson, I. M.; Jefferson, J. L.; Maxwell, R. M.; Kollet, S. J.
+   (2016). Effects of Root Water Uptake Formulation on Simulated Water
+   and Energy Budgets at Local and Basin Scales. *Environ. Earth Sci.*
+   **75 (4)**, 1–15. https://doi.org/10.1007/s12665-015-5041-z.
+
+   Forrester, M. M.; Maxwell, R. M.; Bearup, L. A.; Gochis, D. J.
+   (2018). Forest Disturbance Feedbacks From Bedrock to Atmosphere Using
+   Coupled Hydrometeorological Simulations Over the Rocky Mountain
+   Headwaters.\ *J. Geophys. Res. Atmos.* **123 (17)**, 9026–9046.
+   https://doi.org/10.1029/2018JD028380.
+
+   Forsyth, P.A., Wu, Y.S. and Pruess, K. (1995). Robust Numerical
+   Methods for Saturated-Unsaturated Flow with Dry Initial Conditions. ,
+   **17**:25–38.
+
+   Foster, L. M.; Bearup, L. A.; Molotch, N. P.; Brooks, P. D.; Maxwell,
+   R. M. (2016). Energy Budget Increases Reduce Mean Streamflow More
+   than Snow-Rain Transitions: Using Integrated Modeling to Isolate
+   Climate Change Impacts on Rocky Mountain Hydrology. *Environ. Res.
+   Lett.* **11 (4)**. https://doi.org/10.1088/1748-9326/11/4/044015.
+
+   Foster, L. M.; Maxwell, R. M. (2019). Sensitivity Analysis of
+   Hydraulic Conductivity and Manning’s n Parameters Lead to New Method
+   to Scale Effective Hydraulic Conductivity across Model Resolutions.
+   *Hydrol. Process.* **33 (3)**, 332–349.
+   https://doi.org/10.1002/hyp.13327.
+
+   Frei, S., Fleckenstein, J.H., Kollet, S.J. and Maxwell, R.M. (2009).
+   Patterns and dynamics of river-aquifer exchange with
+   variably-saturated flow using a fully-coupled model. *Journal of
+   Hydrology* 375(3-4), 383–393, doi:10.1016/j.jhydrol.2009.06.038.
+
+   Gebler, S.; Hendricks Franssen, H. J.; Kollet, S. J.; Qu, W.;
+   Vereecken, H. (2017). High Resolution Modelling of Soil Moisture
+   Patterns with TerrSysMP: A Comparison with Sensor Network Data. *J.
+   Hydrol.* **547**, 309–331.
+   https://doi.org/10.1016/j.jhydrol.2017.01.048.
+
+   Gilbert, J. M.; Jefferson, J. L.; Constantine, P. G.; Maxwell, R. M.
+   (2016). Global Spatial Sensitivity of Runoff to Subsurface
+   Permeability Using the Active Subspace Method. *Adv. Water Resour.*
+   **92**, 30–42. https://doi.org/10.1016/j.advwatres.2016.03.020.
+
+   Gilbert, J. M.; Maxwell, R. M. (2017). Examining Regional
+   Groundwater-Surface Water Dynamics Using an Integrated Hydrologic
+   Model of the San Joaquin River Basin. *Hydrol. Earth Syst. Sci.* **21
+   (2)**, 923–947. https://doi.org/10.5194/hess-21-923-2017.
+
+   Gilbert, J. M.; Maxwell, R. M.; Gochis, D. J. (2017). Effects of
+   Water-Table Configuration on the Planetary Boundary Layer over the
+   San Joaquin River Watershed, California. *J. Hydrometeorol.* **18
+   (5)**, 1471–1488. https://doi.org/10.1175/JHM-D-16-0134.1.
+
+   Gilbert, J. M.; Maxwell, R. M. (2018). Contrasting Warming and
+   Drought in Snowmelt-Dominated Agricultural Basins: Revealing the Role
+   of Elevation Gradients in Regional Response to Temperature Change.
+   *Environ. Res. Lett.* **13 (7)**.
+   https://doi.org/10.1088/1748-9326/aacb38.
+
+   Gou, S.; Miller, G. R.; Saville, C.; Maxwell, R. M.; Ferguson, I. M.
+   (2018). Simulating Groundwater Uptake and Hydraulic Redistribution by
+   Phreatophytes in a High-Resolution, Coupled Subsurface-Land Surface
+   Model. *Adv. Water Resour.* **121** (August 2017), 245–262.
+   https://doi.org/10.1016/j.advwatres.2018.08.008.
+
+   Haverkamp, R. and Vauclin, M. (1981). A comparative study of three
+   forms of the Richard equation used for predicting one-dimensional
+   infiltration in unsaturated soil. , **45**:13–20.
+
+   Hein, A.; Condon, L.; Maxwell, R. (2019). Unravelling the Impacts of
+   Precipitation, Temperature and Land-Cover Change for Extreme Drought
+   over the North American High Plains. *Hydrol. Earth Syst. Sci.
+   Discuss.* **1–30**. https://doi.org/10.5194/hess-2018-485.
+
+   Jennifer L. Jefferson and Reed M. Maxwell (2015). Evaluation of
+   simple to complex parameterizations of bare ground evaporation. ,
+   7(3):1075–1092.
+
+   Jennifer L. Jefferson, James M. Gilbert, Paul G. Constantine, and
+   Reed M. Maxwell (2015). Active subspaces for sensitivity analysis and
+   dimension reduction of an integrated hydrologic model. , 83:127 –
+   138.
+
+   Jefferson, J. L.; Maxwell, R. M.; Constantine, P. G. (2017).
+   Exploring the Sensitivity of Photosynthesis and Stomatal Resistance
+   Parameters in a Land Surface Model. *J. Hydrometeorol.* **18 (3)**,
+   897–915. https://doi.org/10.1175/jhm-d-16-0053.1.
+
+   Jones, J.E. and Woodward, C.S. (2001). Newton-krylov-multigrid
+   solvers for large-scale, highly heterogeneous, variably saturated
+   flow problems. , **24**:763–774.
+
+   Keune, J.; Gasper, F.; Goergen, K.; Hense, A.; Shrestha, P.; Sulis,
+   M.; Kollet, S. (2016). Studying the Influence of Groundwater
+   Representations on Land Surface-Atmosphere Feedbacks during the
+   European Heat Wave in 2003. *J. Geophys. Res.* **121 (22)**,
+   13,301-13,325. https://doi.org/10.1002/2016JD025426.
+
+   Keune, J.; Sulis, M.; Kollet, S.; Siebert, S.; Wada, Y. Human Water
+   Use Impacts on the Strength of the Continental Sink for Atmospheric
+   Water. *Geophys. Res. Lett.* **2018**, 45 (9), 4068–4076.
+   https://doi.org/10.1029/2018GL077621.
+
+   Keyes, D.E., McInnes, L.C., Woodward, C., Gropp, W., Myra, E.,
+   Pernice, M., Bell, J., Brown, J., Clo, A., Connors, J.,
+   Constantinescu, E., Estep, D., Evans, K., Farhat, C., Hakim, A.,
+   Hammond, G., Hansen, G., Hill, J., Isaac, T., et al. (2013).
+   Multiphysics simulations: Challenges and opportunities.
+   *International Journal of High Performance Computing Applications*
+   **27** 4–83, doi:10.1177/1094342012468181.
+
+   J. Koch, T. Cornelissen, Z. Fang, H. Bogen, B. H. Diekkrüger,
+   S. Kollet, and S. Stisen (2016). Inter-comparison of three
+   distributed hydrological models with respect to seasonal variability
+   of soil moisture patterns at a small forested catchment. ,
+   (533):234–246. https://doi.org/10.1016/j.jhydrol.2015.12.002.
+
+   Kollat, J.B., Reed, P.M. and Maxwell, R.M. (2011). Many-objective
+   groundwater monitoring network design using bias-aware ensemble
+   Kalman filtering, evolutionary optimization, and visual analytics.
+   *Water Resources Research*,doi:10.1029/2010WR009194.
+
+   Kollet, S.J. (2009). Influence of soil heterogeneity on
+   evapotranspiration under shallow water table conditions: transient,
+   stochastic simulations. *Environmental Research Letters* **4** 1–9,
+   doi:10.1088/1748-9326/4/3/035007.
+
+   Kollet, S.J., Cvijanovic, I., Sch"uttemeyer, D., Maxwell, R.M.,
+   Moene, A.F. and Bayer P (2009). The influence of rain sensible heat,
+   subsurface heat convection and the lower temperature boundary
+   condition on the energy balance at the land surface. *Vadose Zone
+   Journal*, doi:10.2136/vzj2009.0005.
+
+   Kollet, S. J. and Maxwell, R. M. (2006). Integrated
+   surface-groundwater flow modeling: A free-surface overland flow
+   boundary condition in a parallel groundwater flow model. *Advances in
+   Water Resources*, **29**:945–958 .
+
+   Kollet, S.J. and Maxwell, R.M. (2008). Capturing the influence of
+   groundwater dynamics on land surface processes using an integrated,
+   distributed watershed model, *Water Resources Research*,\ **44**:
+   W02402.
+
+   Kollet, S.J. and Maxwell, R.M. (2008). Demonstrating fractal scaling
+   of baseflow residence time distributions using a fully-coupled
+   groundwater and land surface model. *Geophysical Research Letters*,
+   **35**, L07402.
+
+   Kollet, S.J., Maxwell, R.M., Woodward, C.S., Smith, S.G.,
+   Vanderborght, J., Vereecken, H., and Simmer, C. (2010).
+   Proof-of-concept of regional scale hydrologic simulations at
+   hydrologic resolution utilizing massively parallel computer
+   resources. *Water Resources Research*, 46, W04201,
+   doi:10.1029/2009WR008730.
+
+   S.J. Kollet (2015). Optimality and inference in hydrology from
+   entropy production considerations: synthetic hillslope numerical
+   experiments. , (12):5123–5149.
+
+   Kollet, S. J. (2016). Technical Note: Inference in Hydrology from
+   Entropy Balance Considerations. *Hydrol. Earth Syst. Sci.* **20
+   (7)**, 2801–2809. https://doi.org/10.5194/hess-20-2801-2016.
+
+   Kollet, S. J., Sulis, M., Maxwell, R. M., Paniconi, C., Putti, M.,
+   Bertoldi, G., … Sudicky, E. (2017). The integrated hydrologic model
+   intercomparison project, IH-MIP2: A second set of benchmark results
+   to diagnose integrated hydrology and feedbacks. *Water Resources
+   Research.* https://doi.org/10.1002/2016WR019191.
+
+   Kollet, S., Gasper, F., Brdar, S., Goergen, K., Hendricks-Franssen,
+   H. J., Keune, J., … Sulis, M. (2018). Introduction of an experimental
+   terrestrial forecasting/monitoring system at regional to continental
+   scales based on the terrestrial systems modeling platform (v1.1.0).
+   *Water (Switzerland)*, **10(11)**. https://doi.org/10.3390/w10111697.
+
+   Kuffour, B. N. O. ., Engdahl, N. B. ., Woodward, C. S. ., Condon, L.
+   E. ., Kollet, S., & Maxwell, R. M. (2019). Simulating Coupled
+   Surface-Subsurface Flows with ParFlow v3.5.0: Capabilities,
+   applications, and ongoing development of an open-source, massively
+   parallel, integrated hydrologic model. *Geoscientific Model
+   Development*, (August). https://doi.org/10.5194/gmd-2019-190.
+
+   Kurtz, W., He, G., Kollet, S. J., Maxwell, R. M., Vereecken, H., &
+   Franssen, H. J. H. (2016). TerrSysMP-PDAF (version 1.0): A modular
+   high-performance data assimilation framework for an integrated land
+   surface-subsurface model. *Geoscientific Model Development.*
+   https://doi.org/10.5194/gmd-9-1341-2016.
+
+   Lim, T. C., & Welty, C. (2017). Effects of spatial configuration of
+   imperviousness and green infrastructure networks on hydrologic
+   response in a residential sewershed. *Water Resources Research*,
+   **53(9)**, 8084–8104. https://doi.org/10.1002/2017WR020631.
+
+   Lim, T. C., & Welty, C. (2018). Assessing variability and uncertainty
+   in green infrastructure planning using a high-resolution
+   surface-subsurface hydrological model and site-monitored flow data.
+   *Frontiers in Built Environment,* **4** (December), 1–15.
+   https://doi.org/10.3389/fbuil.2018.00071.
+
+   Lopez, S. R., & Maxwell, R. M. (2016). Identifying Urban Features
+   from LiDAR for a High-Resolution Urban Hydrologic Model. *Journal of
+   the American Water Resources Association*, **52(3)**, 756–768.
+   https://doi.org/10.1111/1752-1688.12425.
+
+   Maina, F. Z., & Siirila‐Woodburn, E. R. (2019). Watersheds dynamics
+   following wildfires: Nonlinear feedbacks and implications on
+   hydrologic responses. *Hydrological Processes*, (August), 1–18.
+   https://doi.org/10.1002/hyp.13568.
+
+   Major, E., Benson, D.A., Revielle, J., Ibrahim, H., Dean, A.,
+   Maxwell, R.M., Poeter, E. and Dogan, M. (2011). Comparison of Fickian
+   and temporally nonlocal transport theories over many scales in an
+   exhaustively sampled sandstone slab. *Water Resources Research*
+   **47** 1-14, doi:10.1029/2011WR010857.
+
+   Markovich, K. H., Maxwell, R. M., & Fogg, G. E. (2016).
+   Hydrogeological response to climate change in alpine hillslopes.
+   *Hydrological Processes*, **30(18)**, 3126–3138.
+   https://doi.org/10.1002/hyp.10851.
+
+   Maxwell, R.M., Carle, S.F and Tompson, A.F.B. (2000). Risk-Based
+   Management of Contaminated Groundwater: The Role of Geologic
+   Heterogeneity, Exposure and Cancer Risk in Determining the
+   Performance of Aquifer Remediation, In *Proceedings of Computational
+   Methods in Water Resources XII*, Balkema, 533–539.
+
+   Maxwell, R.M., Welty,C. and Tompson, A.F.B. (2003). Streamline-based
+   simulation of virus transport resulting from long term artificial
+   recharge in a heterogeneous aquifer *Advances in Water Resources*,
+   **22**\ (3):203–221.
+
+   Maxwell, R.M. and Miller, N.L. (2005). Development of a coupled land
+   surface and groundwater model. *Journal of Hydrometeorology*,
+   **6**\ (3):233–247.
+
+   Maxwell, R.M., Chow, F.K. and Kollet, S.J. (2007). The
+   groundwater-land-surface-atmosphere connection: soil moisture effects
+   on the atmospheric boundary layer in fully-coupled simulations.
+   *Advances in Water Resources*, **30**\ (12):2447–2466.
+
+   Maxwell, R.M., Welty, C. and Harvey, R.W. (2007). Revisiting the Cape
+   Cod Bacteria Injection Experiment Using a Stochastic Modeling
+   Approach, *Environmental Science and Technology*,
+   **41**\ (15):5548–5558.
+
+   Maxwell, R.M., Carle, S.F. and Tompson, A.F.B. (2008). Contamination,
+   risk, and heterogeneity: on the effectiveness of aquifer remediation.
+   *Environmental Geology*, **54**:1771–1786.
+
+   Maxwell, R.M. and Kollet, S.J. (2008). Quantifying the effects of
+   three-dimensional subsurface heterogeneity on Hortonian runoff
+   processes using a coupled numerical, stochastic approach. *Advances
+   in Water Resources* **31**\ (5): 807–817.
+
+   Maxwell, R.M. and Kollet, S.J. (2008) Interdependence of groundwater
+   dynamics and land-energy feedbacks under climate change. *Nature
+   Geoscience* **1**\ (10): 665–669.
+
+   Maxwell, R.M., Tompson, A.F.B. and Kollet, S.J. (2009) A
+   serendipitous, long-term infiltration experiment: Water and tritium
+   circulation beneath the CAMBRIC trench at the Nevada Test Site.
+   *Journal of Contaminant Hydrology* 108(1-2) 12-28,
+   doi:10.1016/j.jconhyd.2009.05.002.
+
+   Maxwell, R.M. (2010). Infiltration in arid environments: Spatial
+   patterns between subsurface heterogeneity and water-energy balances,
+   *Vadose Zone Journal* 9, 970–983, doi:10.2136/vzj2010.0014.
+
+   Maxwell, R.M., Lundquist, J.K., Mirocha, J.D., Smith, S.G., Woodward,
+   C.S. and Tompson, A.F.B. (2011). Development of a coupled
+   groundwater-atmospheric model. *Monthly Weather Review*
+   doi:10.1175/2010MWR3392.
+
+   Maxwell, R.M. (2013). A terrain-following grid transform and
+   preconditioner for parallel, large-scale, integrated hydrologic
+   modeling. *Advances in Water Resources* **53** 109–117,
+   doi:10.1016/j.advwatres.2012.10.001.
+
+   Maxwell, R.M., Putti, M., Meyerhoff, S., Delfs, J.-O., Ferguson,
+   I.M., Ivanov, V., Kim, J., Kolditz, O., Kollet, S.J., Kumar, M.,
+   Lopez, S., Niu, J., Paniconi, C., Park, Y.-J., Phanikumar, M.S.,
+   Shen, C., Sudicky, E. a. and Sulis, M. (2014). Surface-subsurface
+   model intercomparison: A first set of benchmark results to diagnose
+   integrated hydrology and feedbacks. *Water Resources Research* **50**
+   1531¿1549, doi:10.1002/2013WR013725.
+
+   Maxwell,R.M., L. E. Condon, and S. J. Kollet (2015). A
+   high-resolution simulation of groundwater and surface water over most
+   of the continental us with the integrated hydrologic model parflow
+   v3. , 8(3):923–937.
+
+   Maxwell,R.M., L. E. Condon, S. J. Kollet, K. Maher, R. Haggerty, and
+   M. M. Forrester (2016). The imprint of climate and geology on the
+   residence times of groundwater. , 43(2):701–708. 2015GL066916.
+
+   Maxwell, R. M., & Condon, L. E. (2016). Connections between
+   groundwater flow and transpiration partitioning. *Science*,
+   **353(6297)**, 377–380. https://doi.org/10.1126/science.aaf7891.
+
+   Maxwell, R. M., Condon, L. E., Danesh-Yazdi, M., & Bearup, L. A.
+   (2019). Exploring source water mixing and transient residence time
+   distributions of outflow and evapotranspiration with an integrated
+   hydrologic model and Lagrangian particle tracking approach.
+   *Ecohydrology*, **12(1)**, 1–10. https://doi.org/10.1002/eco.2042.
+
+   Meyerhoff, S.B. and Maxwell, R.M. (2011). Quantifying the effects of
+   subsurface heterogeneity on hillslope runoff using a stochastic
+   approach. *Hydrogeology Journal* **19** 1515¿1530,
+   doi:10.1007/s10040-011-0753-y.
+
+   Meyerhoff, S.B., Maxwell, R.M., Graham, W.D. and Williams, J.L.
+   (2014). Improved hydrograph prediction through subsurface
+   characterization: conditional stochastic hillslope simulations.
+   *Hydrogeology Journal* doi:10.1007/s10040-014-1112-6.
+
+   Meyerhoff, S.B., Maxwell, R.M., Revil, A., Martin, J.B., Karaoulis,
+   M. and Graham, W.D. (2014). Characterization of groundwater and
+   surface water mixing in a semiconfined karst aquifer using time-lapse
+   electrical resistivity tomography. *Water Resources Research* **50**
+   2566¿2585, doi:10.1002/2013WR013991.
+
+   Mikkelson, K.M., Maxwell, R.M., Ferguson, I., Stednick, J.D., McCray,
+   J.E. and Sharp, J.O. (2013). Mountain pine beetle infestation
+   impacts: modeling water and energy budgets at the hill-slope scale.
+   *Ecohydrology* **6** doi:10.1002/eco.278.
+
+   Moqbel, S.; Abu-El-Sha’r, W. (2018). Modeling Groundwater Flow and
+   Solute Transport at Azraq Basin Using Parflow and Slim-Fast. *Jordan
+   J. Civ. Eng.* **12 (2)**, 263–278.
+
+   Penn, C. A., Bearup, L. A., Maxwell, R. M., & Clow, D. W. (2016).
+   Numerical experiments to explain multiscale hydrological responses to
+   mountain pine beetle tree mortality in a headwater watershed. *Water
+   Resources Research*, **52**, 3143–3161. doi:10.1002/ 2015WR018300.
+
+   Pribulick, C. E., Foster, L. M., Bearup, L. A., Navarre-Sitchler, A.
+   K., Williams, K. H., Carroll, R. W. H., & Maxwell, R. M. (2016).
+   Contrasting the hydrologic response due to land cover and climate
+   change in a mountain headwaters system. *Ecohydrology*, **9(8)**,
+   1431–1438. https://doi.org/10.1002/eco.1779.
+
+   Rahman, M., M. Sulis, and S.J. Kollet (2015). Evaluating the
+   dual-boundary forcing concept in subsurface-land surface interactions
+   of the hydrological cycle. .
+
+   Rahman,M. M. Sulis, and S.J. Kollet (2015). The subsurface-land
+   surface-atmosphere connection under convective conditions. ,
+   (83):240–249.
+
+   Rahman, M., Sulis, M., & Kollet, S. J. (2016). Evaluating the
+   dual-boundary forcing concept in subsurface-land surface interactions
+   of the hydrological cycle. *Hydrological Processes*, **30(10)**,
+   1563–1573. https://doi.org/10.1002/hyp.10702.
+
+   Rahman, M., Rosolem, R., Kollet, S. J., & Wagener, T. (2018). Towards
+   a computationally efficient free-surface groundwater flow boundary
+   condition for large-scale hydrological modelling. *Advances in Water
+   Resources*, **123** (December 2018), 225–233.
+   https://doi.org/10.1016/j.advwatres.2018.11.015.
+
+   Reyes,R., R.M. Maxwell, and T. S. Hogue (2015). Impact of lateral
+   flow and spatial scaling on the simulation of semi-arid urban land
+   surfaces in an integrated hydrologic and land surface model. .
+
+   Reyes, B., Hogue, T., & Maxwell, R. (2018). Urban irrigation
+   suppresses land surface temperature and changes the hydrologic regime
+   in semi-arid regions. *Water (Switzerland)*, **10(11)**.
+   https://doi.org/10.3390/w10111563.
+
+   Rihani, J., Maxwell, R.M., Chow, F.K. (2010). Coupling groundwater
+   and land-surface processes: Idealized simulations to identify effects
+   of terrain and subsurface heterogeneity on land surface energy
+   fluxes. *Water Resources Research* 46, W12523,
+   doi:10.1029/2010WR009111.
+
+   Rihani, J.F., F. K. Chow, and R. M. Maxwell (2015). Isolating effects
+   of terrain and soil moisture heterogeneity on the atmospheric
+   boundary layer: Idealized simulations to diagnose land-atmosphere
+   feedbacks. , 7(2):915–937.
+
+   Schalge, B., Haefliger, V., Kollet, S., & Simmer, C. (2019).
+   Improvement of surface run-off in the hydrological model ParFlow by a
+   scale-consistent river parameterization. *Hydrological Processes*,
+   (October 2017), 2006–2019. https://doi.org/10.1002/hyp.13448.
+
+   Seck,A. C. Welty, and R. M. Maxwell (2015). Spin-up behavior and
+   effects of initial conditions for an integrated hydrologic model. ,
+   51(4):2188–2210.
+
+   Shrestha, P., Sulis, M., Masbou, M., Kollet, S. and Simmer, C.
+   (2014). A scale-consistent Terrestrial Systems Modeling Platform
+   based on COSMO, CLM and ParFlow. *Monthly Weather Review*
+   doi:10.1175/MWR-D-14-00029.1.
+
+   Shrestha,P., M. Sulis, C. Simmer, and S. Kollet (2015). Impacts of
+   grid resolution on surface energy fluxes simulated with an integrated
+   surface-groundwater flow model. , 19:4317–4326.
+
+   Shrestha, P., Sulis, M., Simmer, C., & Kollet, S. (2018). Effects of
+   horizontal grid resolution on evapotranspiration partitioning using
+   TerrSysMP. *Journal of Hydrology*, **557**, 910–915.
+   https://doi.org/10.1016/j.jhydrol.2018.01.024.
+
+   Siirila, E.R., Navarre-Sitchler, A.K., Maxwell, R.M. and McCray, J.E.
+   (2012). A quantitative methodology to assess the risks to human
+   health from CO2 leakage into groundwater. *Advances in Water
+   Resources*, **36**, 146-164, doi:10.1016/j.advwatres.2010.11.005.
+
+   Siirila, E.R. and Maxwell, R.M. (2012). A new perspective on human
+   health risk assessment: Development of a time dependent methodology
+   and the effect of varying exposure durations. *Science of The Total
+   Environment* **431** 221-232, doi:10.1016/j.scitotenv.2012.05.030.
+
+   Siirila, E.R. and Maxwell, R.M. (2012). Evaluating effective reaction
+   rates of kinetically driven solutes in large-scale, statistically
+   anisotropic media: Human health risk implications. *Water Resources
+   Research* **48** 1-23, doi:10.1029/2011WR011516.
+
+   Siirila-Woodburn, E. R., Steefel, C. I., Williams, K. H., &
+   Birkholzer, J. T. (2018). Predicting the impact of land management
+   decisions on overland flow generation: Implications for cesium
+   migration in forested Fukushima watersheds. *Advances in Water
+   Resources*, **113** (January), 42–54.
+   https://doi.org/10.1016/j.advwatres.2018.01.008.
+
+   Srivastava,V., W. Graham, R. Muñoz-Carpena, and R. M. Maxwell (2014).
+   Insights on geologic and vegetative controls over hydrologic behavior
+   of a large complex basin–global sensitivity analysis of an integrated
+   parallel hydrologic model. , 519, Part B:2238 – 2257.
+
+   Sulis, M., Meyerhoff, S., Paniconi, C., Maxwell, R.M., Putti, M. and
+   Kollet, S.J. (2010). A comparison of two physics-based numerical
+   models for simulating surface water-groundwater interactions.
+   *Advances in Water Resources*, 33(4), 456-467,
+   doi:10.1016/j.advwatres.2010.01.010.
+
+   Sulis, M., Williams, J. L., Shrestha, P., Diederich, M., Simmer, C.,
+   Kollet, S. J., & Maxwell, R. M. (2017). Coupling Groundwater,
+   Vegetation, and Atmospheric Processes: A Comparison of Two Integrated
+   Models. *Journal of Hydrometeorology*.
+   https://doi.org/10.1175/JHM-D-16-0159.1.
+
+   Sulis, M., Keune, J., Shrestha, P., Simmer, C., & Kollet, S. J.
+   (2018). Quantifying the Impact of Subsurface-Land Surface Physical
+   Processes on the Predictive Skill of Subseasonal Mesoscale
+   Atmospheric Simulations. *Journal of Geophysical Research:
+   Atmospheres*, **123(17)**, 9131–9151.
+   https://doi.org/10.1029/2017JD028187.
+
+   Sweetenham, M. G., Maxwell, R. M., & Santi, P. M. (2017). Assessing
+   the timing and magnitude of precipitation-induced seepage into
+   tunnels bored through fractured rock. *Tunnelling and Underground
+   Space Technology*, **65**, 62–75.
+   http://dx.doi.org/10.1016/j.tust.2017.02.003.
+
+   Tompson, A.F.B., Ababou, R. and Gelhar, L.W. (1989). Implementation
+   of of the three-dimensional turning bands random field generator. ,
+   **25**\ (10):2227–2243.
+
+   Tompson, A.F.B., Falgout, R.D., Smith, S.G., Bosl, W.J. and Ashby,
+   S.F. (1998). Analysis of subsurface contaminant migration and
+   remediation using high performance computing. *Advances in Water
+   Resources*, **22**\ (3):203–221.
+
+   Tompson, A. F. B., Bruton, C. J. and Pawloski, G. A. eds. (1999b).
+   *Evaluation of the hydrologic source term from underground nuclear
+   tests in Frenchman Flat at the Nevada Test Site: The CAMBRIC test*,
+   Lawrence Livermore National Laboratory, Livermore, CA
+   (UCRL-ID-132300), 360pp.
+
+   Tompson, A.F.B., Carle, S.F., Rosenberg, N.D. and Maxwell, R.M.
+   (1999). Analysis of groundwater migration from artificial recharge in
+   a large urban aquifer: A simulation perspective, *Water Resources
+   Research*, **35**\ (10):2981–2998.
+
+   Tompson AFB., Bruton, C.J., Pawloski, G.A., Smith, D.K., Bourcier,
+   W.L., Shumaker, D.E., Kersting, A.B., Carle, S.F. and Maxwell, R.M.
+   (2002). On the evaluation of groundwater contamination from
+   underground nuclear tests. *Environmental Geology*,
+   **42**\ (2-3):235–247.
+
+   Tompson, A. F. B., Maxwell, R. M., Carle, S. F., Zavarin, M.,
+   Pawloski, G. A. and Shumaker, D. E. (2005). *Evaluation of the
+   Non-Transient Hydrologic Source Term from the CAMBRIC Underground
+   Nuclear Test in Frenchman Flat, Nevada Test Site*, Lawrence Livermore
+   National Laboratory, Livermore, CA, UCRL-TR-217191.
+
+   van Genuchten, M.Th.(1980). A closed form equation for predicting the
+   hydraulic conductivity of unsaturated soils. , **44**:892–898.
+
+   Welch, B. (1995) . Prentice Hall.
+
+   Woodward, C.S. (1998), A Newton-Krylov-Multigrid solver for variably
+   saturated flow problems. In *Proceedings of the XIIth International
+   Conference on Computational Methods in Water Resources*, June.
+
+   Woodward, C.S., Grant, K.E., and Maxwell, R.M. (2002). Applications
+   of Sensitivity Analysis to Uncertainty Quantification for Variably
+   Saturated Flow. In *Proceedings of the XIVth International Conference
+   on Computational Methods in Water Resources, Amsterdam*, The
+   Netherlands, June.
+
+   Williams, J.L. and Maxwell, R.M. (2011). Propagating Subsurface
+   Uncertainty to the Atmosphere Using Fully Coupled Stochastic
+   Simulations. *Journal of Hydrometeorology* **12** 690-701,
+   doi:10.1175/2011JHM1363.1.
+
+   Williams, J.L., Maxwell, R.M. and Monache, L.D. (2013). Development
+   and verification of a new wind speed forecasting system using an
+   ensemble Kalman filter data assimilation technique in a fully coupled
+   hydrologic and atmospheric model. *Journal of Advances in Modeling
+   Earth Systems* **5** 785-800, doi:10.1002/jame.20051.
+
+   Zhang, H., Kurtz, W., Kollet, S., Vereecken, H., & Franssen, H. J. H.
+   (2018). Comparison of different assimilation methodologies of
+   groundwater levels to improve predictions of root zone soil moisture
+   with an integrated terrestrial system model. *Advances in Water
+   Resources*, **111**\ (May), 224–238.
+   https://doi.org/10.1016/j.advwatres.2017.11.003.
+
+   Zipper, S. C., Keune, J., & Kollet, S. J. (2019). Land use change
+   impacts on European heat and drought: Remote land-atmosphere
+   feedbacks mitigated locally by shallow groundwater. *Environmental
+   Research Letters*, *14(4)*. https://doi.org/10.1088/1748-9326/ab0db3.
+
+   *Endianness*, Wikipedia Entry:
+   http://en.wikipedia.org/wiki/Endianness
 
 [end]
 

@@ -59,28 +59,28 @@
 %
 %---------------------------------------------------------------------
 
-\def\textx#1{\mbox{#1}\endspec}
+\newcommand{\textx}[1]{\mbox{#1}\endspec}
 
-\def\code{\beginspec \tt \textx}
-\def\file{\beginspec \tt \textx}
-\def\kbd{\beginspec \tt \textx}
-\def\key{\beginspec \tt \textx}
-\def\menu{\beginspec \tt \textx}
-\def\samp{\beginspec \tt \textx}
+\newcommand{\code}{\beginspec \tt \textx}
+\newcommand{\file}{\beginspec \tt \textx}
+\newcommand{\kbd}{\beginspec \tt \textx}
+\newcommand{\key}{\beginspec \tt \textx}
+\newcommand{\menu}{\beginspec \tt \textx}
+\newcommand{\samp}{\beginspec \tt \textx}
 
 %---------------------------------------------------------------------
 % Various non-verbatim text commands:
 %---------------------------------------------------------------------
 
-\def\dfn#1{\mbox{\sl #1}}
-\def\var#1{\mbox{\sl #1}}
+\newcommand{\dfn}[1]{\mbox{\sl #1}}
+\newcommand{\var}[1]{\mbox{\sl #1}}
 
 %---------------------------------------------------------------------
 % Environment: defmac
 %---------------------------------------------------------------------
 
-\def\defmac{\beginspec \defmacx}
-\def\defmacx#1(#2){%
+\newcommand{\defmac}{\beginspec \defmacx}
+\newcommand{\defmacx}[2]{%
 \endspec%
 \begin{list}{}{\setlength{\itemsep}{\bigskipamount}}
 \item \mbox{} \hfill Macro
@@ -92,8 +92,8 @@
 % Environment: deftp
 %---------------------------------------------------------------------
 
-\def\deftp{\beginspec \deftpx}
-\def\deftpx#1#2{%
+\newcommand{\deftp}{\beginspec \deftpx}
+\newcommand{\deftpx}[2]{%
 \endspec%
 \begin{list}{}{\setlength{\itemsep}{\bigskipamount}}
 \item \mbox{} \hfill #1
@@ -105,8 +105,8 @@
 % Environment: deftypefn
 %---------------------------------------------------------------------
 
-\def\deftypefn{\beginspec \deftypefnx}
-\def\deftypefnx#1#2#3(#4){%
+\newcommand{\deftypefn}{\beginspec \deftypefnx}
+\newcommand{\deftypefn}[4]{%
 \endspec%
 \begin{list}{}{\setlength{\itemsep}{\bigskipamount}}
 \item \mbox{} \hfill #1
@@ -118,8 +118,8 @@
 % Environment: deftypevr
 %---------------------------------------------------------------------
 
-\def\deftypevr{\beginspec \deftypevrx}
-\def\deftypevrx#1#2#3{%
+\newcommand{\deftypevr}{\beginspec \deftypevrx}
+\newcommand{\deftypevrx}[3]{%
 \endspec%
 \begin{list}{}{\setlength{\itemsep}{\bigskipamount}}
 \item \mbox{} \hfill #1
@@ -139,16 +139,16 @@
 % Environment: TitlePage
 %---------------------------------------------------------------------
 
-\def\TitlePage{\begin{titlepage}%
+\newcommand{\TitlePage}{\begin{titlepage}%
 \setlength{\parindent}{0in}\vspace*{1.0in}
 }
-\def\endTitlePage{\vspace*{0.5in}\end{titlepage}}
+\newcommand{\endTitlePage}{\vspace*{0.5in}\end{titlepage}}
 
 %---------------------------------------------------------------------
 % Command: Title
 %---------------------------------------------------------------------
 
-\def\Title#1{%
+\newcommand{\Title}[1]{%
 \makebox[\textwidth][l]{\LARGE\bf #1}
 \rule{\textwidth}{2mm}
 }
@@ -157,13 +157,13 @@
 % Command: SubTitle
 %---------------------------------------------------------------------
 
-\def\SubTitle#1{\makebox[\textwidth][r]{#1}}
+\newcommand{\SubTitle}[1]{\makebox[\textwidth][r]{#1}}
 
 %---------------------------------------------------------------------
 % Command: Author
 %---------------------------------------------------------------------
 
-\def\Author#1{%
+\newcommand{\Author}[1]{%
 \vfill
 \noindent
 % SGS - I got rid of the makebox because it was not splitting lines
@@ -178,10 +178,10 @@
 % Environment: CopyrightPage
 %---------------------------------------------------------------------
 
-\def\CopyrightPage{\begin{titlepage}%
+\newcommand{\CopyrightPage}{\begin{titlepage}%
 \setlength{\parindent}{0in}\vspace*{3.0in}
 }
-\def\endCopyrightPage{\end{titlepage}}
+\newcommand{\endCopyrightPage}{\end{titlepage}}
 
 %=====================================================================
 %=====================================================================
@@ -199,21 +199,21 @@
 %   Texinfo `@example' environment.
 %---------------------------------------------------------------------
 
-\def\display{%
+\newcommand{\display}{%
 \begin{list}{}{\setlength{\listparindent}{0in}}
 \item
 }
-\def\enddisplay{\end{list}}
+\newcommand{\enddisplay}{\end{list}}
 
 %---------------------------------------------------------------------
 % Subheadings for `def' environments:
 %   These are used in the reference manual entries.
 %---------------------------------------------------------------------
 
-\def\DESCRIPTION{\item [{\bf DESCRIPTION}] \mbox{} \\}
-\def\EXAMPLE{\item [{\bf EXAMPLE}] \mbox{} \\}
-\def\SEEALSO{\item [{\bf SEE ALSO}] \mbox{} \\}
-\def\NOTES{\item [{\bf NOTES}] \mbox{} \\}
+\newcommand{\DESCRIPTION}{\item [{\bf DESCRIPTION}] \mbox{} \\}
+\newcommand{\EXAMPLE}{\item [{\bf EXAMPLE}] \mbox{} \\}
+\newcommand{\SEEALSO}{\item [{\bf SEE ALSO}] \mbox{} \\}
+\newcommand{\NOTES}{\item [{\bf NOTES}] \mbox{} \\}
 
 %---------------------------------------------------------------------
 % Command: vref
@@ -225,18 +225,18 @@
 %   and the page number.
 %---------------------------------------------------------------------
 
-\def\vref#1#2{\ref{#1} [#2], page \pageref{#1}}
+\newcommand{\vref}[2]{\ref{#1} [#2], page \pageref{#1}}
 
 %---------------------------------------------------------------------
 % Temporary index placeholder commands:
 %---------------------------------------------------------------------
 
-\def\cindex{}
-\def\findex{\code}
-\def\kindex{\code}
-\def\pindex{\code}
-\def\tindex{\code}
-\def\vindex{\code}
+\newcommand{\cindex}{}
+\newcommand{\findex}{\code}
+\newcommand{\kindex}{\code}
+\newcommand{\pindex}{\code}
+\newcommand{\tindex}{\code}
+\newcommand{\vindex}{\code}
 
 %---------------------------------------------------------------------
 % Commands: parflow, xparflow
@@ -248,15 +248,14 @@
 %     \xparflow{}
 %---------------------------------------------------------------------
 
-\def\parflow{{\sc ParFlow}}
-\def\xparflow{{\sc XParFlow}}
-\def\pftools{{\sc PFTools}}
-\def\cmake{{\sc CMake}}
-\def\ctest{{\sc CTest}}
+\newcommand{\parflow}{{\sc ParFlow}}
+\newcommand{\xparflow}{{\sc XParFlow}}
+\newcommand{\pftools}{{\sc PFTools}}
+\newcommand{\cmake}{{\sc CMake}}
+\newcommand{\ctest}{{\sc CTest}}
 
 %---------------------------------------------------------------------
 % Command: pfaddanchor
 %---------------------------------------------------------------------
 
 \def\pfaddanchor#1{}
-
