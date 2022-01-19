@@ -26,10 +26,16 @@ setup(
     extras_require={
         'all': [
             'imageio>=2.9.0',
-            'parflowio>=0.0.4'
+            'numpy',
+            'xarray',
+            'numba',
+            'dask'
         ],
         'pfb': [
-            'parflowio>=0.0.4'
+            'numpy',
+            'xarray',
+            'numba',
+            'dask'
         ],
         'pfsol': [
             'imageio>=2.9.0'
