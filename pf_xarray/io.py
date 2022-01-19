@@ -25,6 +25,169 @@ def read_pfb(file: str, mode: str='full', z_first: bool=True):
     return data
 
 
+def write_pfb(file_name, data, header, z_first=True, dist=False):
+    """
+    Write a single pfb file.
+
+    The data must be a 3D numpy array with float64 values.
+
+    The header must be a dict containing keys (x,y,z, dx,dy,dz, p,q,r).
+    The values x,y,z will default to 0 if missing.
+    The values dx,dy,dz default to nx,ny,nz if missing.
+    The values p,q,r will default to 1,1,1 if missing.
+    The header contained in a ParflowBinaryReader will be filled with these values
+      after loading a PFB file.
+
+    The nx, ny, nz size of the array is assumed to be the same as the shape of the data array.
+
+    The data shape dimensions are assumed to be (nz, ny, nx) unless z_first is false then dimensions
+       are assumed to be (nx, ny, nz).
+
+    If dist is True then also write a file with the .dist extension added to the file_name.
+    The .dist file will contain one line per subgrid with the offset of the subgrid in the .pfb file.
+
+    The number of subgrids in the saved file will be p * q * r. This is regardless of the number
+    of subgrids in the PFB file loaded by ParflowBinaryReader into the numpy array. Therefore,
+    loading a file with ParflowBinaryReader and saving it with this method will restructure the
+    file into a different number of subgrids.
+    """
+
+    try:
+
+        def calc_offset(extent, block_count, block_index):
+            """Calculates and returns the ix, iy, or iz subgrid offset."""
+
+            remainder = extent % block_count
+            block_size = int(extent / block_count)
+            offset = block_index * block_size
+            if block_index < remainder:
+                offset = offset + block_index
+            else:
+                offset = offset + remainder
+            return offset
+
+        def calc_extent(extent, block_count, block_index):
+            """Calculates and returns the nx, ny or nz subgrid size."""
+
+            remainder = extent % block_count
+            block_size = int(extent / block_count)
+            block_extent = block_size
+            if block_index < remainder:
+                block_extent = block_extent + 1
+            return block_extent
+
+        # Validate information from the header
+        if header is None:
+            raise Exception("Missing header.")
+        nx = int(header.get('nx', '0'))
+        ny = int(header.get('ny', '0'))
+        nz = int(header.get('nz', '0'))
+        if nx <= 0 or ny <= 0 or nz <= 0:
+            raise Exception("Header invalid with missing nx,ny,nz.")
+        p = int(header.get('p', '1'))
+        q = int(header.get('q', '1'))
+        r = int(header.get('r', '1'))
+        if p <= 0 or q <= 0 or r <= 0:
+            raise Exception("Header invalid p,q,r.")
+
+        x = int(header.get('x', '0'))
+        y = int(header.get('y', '0'))
+        z = int(header.get('z', '0'))
+        dx = float(header.get('dx', header.get('nx')))
+        dy = float(header.get('dy', header.get('ny')))
+        dz = float(header.get('dz', header.get('nz')))
+        n_subgrids = p * q * r
+
+        dist_offsets = []
+
+        with open(file_name, "wb") as fp:
+            # Write PFB file header
+            fp.write(struct.pack('>d', float(x)))
+            fp.write(struct.pack('>d', float(y)))
+            fp.write(struct.pack('>d', float(z)))
+            fp.write(struct.pack('>i', nx))
+            fp.write(struct.pack('>i', ny))
+            fp.write(struct.pack('>i', nz))
+            fp.write(struct.pack('>d', dx))
+            fp.write(struct.pack('>d', dy))
+            fp.write(struct.pack('>d', dz))
+            fp.write(struct.pack('>i', n_subgrids))
+            int_bytes = 4
+            double_bytes = 8
+            offset = double_bytes*3 + int_bytes*3 + \
+                double_bytes*3 + int_bytes*1  # file offset now
+
+            # Write the subgrids. Each subgrid has a subgrid header and data
+            grid_number = 0
+            for index_r in range(0, r):
+                for index_q in range(0, q):
+                    for index_p in range(0, p):
+                        sg_ix = x + calc_offset(nx, p, index_p)
+                        sg_iy = y + calc_offset(ny, q, index_q)
+                        sg_iz = z + calc_offset(nz, r, index_r)
+                        sg_nx = calc_extent(nx, p, index_p)
+                        sg_ny = calc_extent(ny, q, index_q)
+                        sg_nz = calc_extent(nz, r, index_r)
+                        sg_rx = 0
+                        sg_ry = 0
+                        sg_rz = 0
+
+                        # Add the file offset of the subgrid to the list
+                        dist_offsets.append(str(offset))
+
+                        # Write the PFB file subgrid header
+                        fp.write(struct.pack('>i', sg_ix))
+                        fp.write(struct.pack('>i', sg_iy))
+                        fp.write(struct.pack('>i', sg_iz))
+                        fp.write(struct.pack('>i', sg_nx))
+                        fp.write(struct.pack('>i', sg_ny))
+                        fp.write(struct.pack('>i', sg_nz))
+                        fp.write(struct.pack('>i', sg_rx))
+                        fp.write(struct.pack('>i', sg_ry))
+                        fp.write(struct.pack('>i', sg_rz))
+                        offset = offset + int_bytes * 9
+
+                        # Write the data of one subgrid using numpy memmap
+                        shape = [sg_nz, sg_ny, sg_nx]
+                        mm = np.memmap(
+                            file_name,
+                            dtype=np.float64,
+                            mode='readwrite',
+                            offset=offset,
+                            shape=tuple(shape),
+                            order='F'
+                        )
+
+                        # Copy the data from the input numpy array into the memmap array of the subgrid
+                        # The layout of the input numpy is different than the subgrid so copy each sub X row at a time
+                        for iz in range(calc_offset(nz, r, index_r), calc_offset(nz, r, index_r + 1)):
+                            for iy in range(calc_offset(ny, q, index_q), calc_offset(ny, q, index_q + 1)):
+                                # Write the data of one row of X data from the input numpy array to the subgrid row
+                                if z_first:
+                                    mm[iz % sg_nz, iy % sg_ny, 0:sg_nx] = data[iz,
+                                                                               iy, sg_ix:sg_ix+sg_nx].byteswap()
+                                else:
+                                    mm[iz % sg_nz, iy % sg_ny, 0:sg_nx] = data[iz,
+                                                                               iy, sg_ix:sg_ix+sg_nx].T.byteswap()
+
+                        # save the memmap array of the subgrid to the file
+                        mm.flush()
+
+                        # Update the file position after the subgrid was written
+                        offset = offset + double_bytes * sg_nx * sg_ny * sg_nz
+                        fp.seek(offset)
+                        grid_number = grid_number + 1
+
+        # Create the .dist file if requested
+        if dist:
+            with open(file_name + ".dist", "w+") as dist_fp:
+                dist_fp.write("\n".join(dist_offsets))
+                dist_fp.write("\n")
+    except Exception as e:
+        raise Exception(
+            f"Unable to write .pfb file '{file_name}' because '{str(e)}'.")
+
+
 def read_stack_of_pfbs(
     file_seq: Iterable[str],
     keys=None,
