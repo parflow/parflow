@@ -40,5 +40,10 @@ setup(
         'pfsol': [
             'imageio>=2.9.0'
         ]
+    },
+    entry_points={
+        'xarray.backends': [
+            'parflow = parflow.tools.pf_backend:ParflowBackendEntrypoint'
+        ],
     }
 )
