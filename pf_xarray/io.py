@@ -1,9 +1,8 @@
-from collections.abc import Iterable
 import itertools
 from numba import jit
 import numpy as np
 import struct
-from typing import Mapping, List, Union
+from typing import Mapping, List, Union, Iterable
 from numbers import Number
 from pprint import pprint
 
@@ -504,7 +503,7 @@ class ParflowBinaryReader:
             x0 = np.flatnonzero(start == coords)
             x0 = 0 if not x0 else x0[0]
             x1 = np.flatnonzero(end == coords)
-            x1 = None if not x1 else x1[0]
+            x1 = None if x1 is None or len(x1) == 0 else x1[0]
             return slice(x0, x1)
 
         def _get_needed_subgrids(start, end, coords):
