@@ -79,11 +79,14 @@ def write_pfb(file_name, data, header, z_first=True, dist=False):
         # Validate information from the header
         if header is None:
             raise Exception("Missing header.")
-        nx = int(header.get('nx', '0'))
-        ny = int(header.get('ny', '0'))
-        nz = int(header.get('nz', '0'))
-        if nx <= 0 or ny <= 0 or nz <= 0:
-            raise Exception("Header invalid with missing nx,ny,nz.")
+        if data is None:
+            raise Exception("Missing data numpy array.")
+        if not len(data.shape) == 3:
+            raise Exception("data must be a 3d numpy array.")
+        if z_first:
+            (nz, ny, nx) = data.shape
+        else:
+            (nx, ny, nz) = data.shape
         p = int(header.get('p', '1'))
         q = int(header.get('q', '1'))
         r = int(header.get('r', '1'))
@@ -93,9 +96,9 @@ def write_pfb(file_name, data, header, z_first=True, dist=False):
         x = int(header.get('x', '0'))
         y = int(header.get('y', '0'))
         z = int(header.get('z', '0'))
-        dx = float(header.get('dx', header.get('nx')))
-        dy = float(header.get('dy', header.get('ny')))
-        dz = float(header.get('dz', header.get('nz')))
+        dx = float(header.get('dx', nx))
+        dy = float(header.get('dy', ny))
+        dz = float(header.get('dz', nz))
         n_subgrids = p * q * r
 
         dist_offsets = []

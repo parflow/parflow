@@ -142,6 +142,30 @@ class TestPFXArray(unittest.TestCase):
         os.remove(file_name + '.dist')
         os.remove(file_name)
 
+    def test_empty_array(self):
+        da = np.arange(0, 0, dtype=np.float64)
+        da.resize([0, 0, 0])
+        header = {}
+        header['p'] = '1'
+        header['q'] = '1'
+        header['r'] = '1'
+        if not os.path.exists(TEMP_DIRECTORY):
+            os.makedirs(TEMP_DIRECTORY)
+        file_name = f'{TEMP_DIRECTORY}/empty.pfb'
+        if os.path.exists(file_name):
+            os.remove(file_name)
+        write_pfb(file_name, da, header=header)
+        if not os.path.exists(file_name):
+            self.fail(f"PFB File '{file_name}' was not created.")
+        with PFBPeek() as s:
+            header = s.open_pfb(file_name)
+            self.assertEqual(0, header.get('nx'))
+            self.assertEqual(0, header.get('ny'))
+            self.assertEqual(0, header.get('nz'))
+            self.assertEqual(0, header.get('nz'))
+            number_of_subgrids = int(header.get('n_subgrids', 0))
+            self.assertEqual(1, number_of_subgrids)
+        os.remove(file_name)
 
 if __name__ == '__main__':
     unittest.main()
