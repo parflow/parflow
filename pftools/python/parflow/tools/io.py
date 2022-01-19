@@ -479,7 +479,7 @@ class ParflowBinaryReader:
             ny: int=1,
             nz: int=None,
             z_first: bool=True
-    ) -> np.typing.ArrayLike:
+    ) -> np.ndarray:
         """
         Read a subsection of the full pfb file. For an example of what happens
         here consider the following image:
@@ -586,7 +586,7 @@ class ParflowBinaryReader:
         return ret_data
 
 
-    def loc_subgrid(self, pp: int, qq: int, rr: int) -> np.typing.ArrayLike:
+    def loc_subgrid(self, pp: int, qq: int, rr: int) -> np.ndarray:
         """
         Read a subgrid given it's (pp, qq, rr) coordinate in the subgrid-grid.
 
@@ -603,7 +603,7 @@ class ParflowBinaryReader:
         subgrid_idx = pp + (p * qq) + (q * p * rr)
         return self.iloc_subgrid(subgrid_idx)
 
-    def iloc_subgrid(self, idx: int) -> np.typing.ArrayLike:
+    def iloc_subgrid(self, idx: int) -> np.ndarray:
         """
         Read a subgrid at some scalar index.
 
@@ -618,7 +618,7 @@ class ParflowBinaryReader:
 
     def _backend_iloc_subgrid(
             self, offset: int, shape: Iterable[int]
-    ) -> np.typing.ArrayLike:
+    ) -> np.ndarray:
         """
         Backend function for memory mapping data from the pfb file on disk.
 
@@ -642,7 +642,7 @@ class ParflowBinaryReader:
 
     def read_all_subgrids(
             self, mode: str='full', z_first: bool=True
-    ) -> Union[Iterable[np.typing.ArrayLike], np.typing.ArrayLike]:
+    ) -> Union[Iterable[np.ndarray], np.ndarray]:
         """
         Read all of the subgrids in the file.
 

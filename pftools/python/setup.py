@@ -21,7 +21,7 @@ setup(
     ],
     keywords=['ParFlow', 'groundwater model', 'surface water model'],
     packages=find_packages(),
-    install_requires=['pyyaml==5.4', 'numpy'],
+    install_requires=['pyyaml==5.4', 'numpy', 'xarray', 'numba', 'dask'],
     include_package_data=True,
     extras_require={
         'all': [
