@@ -13,7 +13,7 @@ import yaml
 
 from .fs import get_absolute_path
 
-from parflow.tools.io import read_array
+from parflow.tools.io import read_pfb
 from parflow.tools.database.core import PFDBObj
 from parflow.tools.database.generated import LandCoverParamItem, CLM_KEY_DICT
 
@@ -245,7 +245,7 @@ class CLMExporter:
                 else:
                     raise Exception(f'Axis specification error: {axis}')
         elif vegm_root_key.Type == 'PFBFile':
-            array = read_array(get_absolute_path(vegm_root_key.FileName))
+            array = read_pfb(get_absolute_path(vegm_root_key.FileName))
             while array.ndim > 2:
                 # PFB files return 3D arrays, but the data is actually 2D
                 array = array[0]

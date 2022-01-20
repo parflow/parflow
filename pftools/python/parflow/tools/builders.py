@@ -13,7 +13,7 @@ from .helper import sort_dict
 from .fs import exists
 
 from parflow.tools.database.core import PFDBObj
-from parflow.tools.io import read_clm, write_array, write_patch_matrix_as_asc, write_array_pfb
+from parflow.tools.io import read_clm, write_pfb, write_patch_matrix_as_asc
 from parflow.tools.fs import get_absolute_path
 from parflow.tools.helper import remove_prefix, with_absolute_path
 
@@ -214,7 +214,7 @@ class SolidFileBuilder:
 
         else:
             temp_pfb_file = tempfile.NamedTemporaryFile(suffix='.pfb')
-            write_array_pfb(temp_pfb_file.name, self.mask_array)
+            write_pfb(temp_pfb_file.name, self.mask_array)
             args = [
                 f'--mask {temp_pfb_file.name}',
                 f'--side-patch-label {self.side_id}',
@@ -1376,7 +1376,7 @@ class CLMImporter:
                 item.Type = 'Constant'
                 item.Value = array[0, 0].item()
             else:
-                write_array(get_absolute_path(file_name), vegm_data[:, :, i])
+                write_pfb(get_absolute_path(file_name), vegm_data[:, :, i])
                 item.Type = 'PFBFile'
                 item.FileName = file_name
 
