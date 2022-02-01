@@ -4,15 +4,15 @@ The ParFlow System
 ==================
 
 The ParFlow system is still evolving, but here we discuss how to define
-the problem in § `3.1 <#Defining the Problem>`__, how to run ParFlow in
-§ `3.2 <#Running ParFlow>`__, and restart a simulation in
-§ `3.3 <#Restarting a Run>`__. We also cover options for visualizing the
-results in § `3.4 <#Visualizing Output>`__ and summarize the contents of
+the problem in §3.1 :ref:`Defining the Problem`, how to run ParFlow in
+§3.2 :ref:`Running Parflow`, and restart a simulation in 
+§3.3 :ref:`Restarting a Run`. We also cover options for visualizing the
+results in §3.4 :ref:`Visualizing Output` and summarize the contents of
 a directory of test problems provided with ParFlow in
-§ `3.5 <#Test Directory>`__. Finally in § `3.6 <#Tutorial>`__ we walk
+§3.5 :ref:`Test Directory`. Finally in §3.6 :ref:`Tutorial` we walk
 through two ParFlow input scripts in detail.
 
-The reader is also referred to § `4 <#Manipulating Data>`__ for a
+The reader is also referred to Chapter 4 :ref:`Manipulating Data` for a
 detailed listing of the of functions for manipulating ParFlow data.
 
 .. _Defining the Problem:
@@ -22,23 +22,28 @@ Defining the Problem
 
 There are many ways to define a problem in ParFlow, here we summarize
 the general approach for defining a domain
-(§ `3.1.1 <#Defining a domain>`__) and simulating a real watershed
-(§ `3.1.2 <#Defining a Real domain>`__).
+(§3.1.1 :ref:`Defining a domain`) and simulating a real watershed
+(§3.1.2 :ref:`Defining a Real domain`).
 
-In all cases the “main" ParFlow input file is the ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.tcl file. This input file is a TCL script with some special routines to create a database which is used as the input for ParFlow. See § [Main Input File (.tcl)] for details on the format of this file. The input values into ParFlow are defined by a key/value pair. For each key you provide the associated value using the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfset command inside the input script.``
+In all cases the “main" ParFlow input file is the ``.tcl`` file. 
+This input file is a TCL script with some special routines to create 
+a database which is used as the input for ParFlow. 
+See §[Main Input File (.tcl)][ADD LINK TO MAIN INPUT FILE SECTION] 
+for details on the format of this file. The input values into ParFlow 
+are defined by a key/value pair. For each key you provide the 
+associated value using the ``pfset`` command inside the input script.
 
 Since the input file is a TCL script you can use any feature of TCL to
 define the problem. This manual will make no effort to teach TCL so
 refer to one of the available TCL manuals for more information
-(“Practical Programming in TCL and TK” by Brent Welch
-:raw-latex:`\cite{welch.95}` is a good starting point). This is NOT
+(“Practical Programming in TCL and TK” by Brent Welch[]
+is a good starting point). This is NOT
 required, you can get along fine without understanding TCL/TK.
 
-Looking at the example programs in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``test directory (§ [Test Directory]) and going through the annotated input scripts included in this manual ( § [Tutorial]) is one of the best ways to understand what a ParFlow input file looks like.``
+Looking at the example programs in the :ref:`Test Directory` and 
+going through the annotated input scripts included in this 
+manual (:ref:`Tutorial`) is one of the best ways to understand 
+what a ParFlow input file looks like.
 
 .. _Defining a domain:
 
@@ -47,12 +52,15 @@ Basic Domain Definition
 
 ParFlow can handle complex geometries and defining the problem may
 involve several steps. Users can specify simple box domains directly in
-the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``tcl script. If a more complicated domain is required, the user may convert geometries into the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfsol file format (§ [ParFlow Solid Files (.pfsol)]) using the appropriate PFTools conversion utility (§ [Manipulating Data]). Alternatively, the topography can be specified using ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb files of the slopes in the x and y directions.``
+the ``tcl`` script. If a more complicated domain is required, the 
+user may convert geometries into the ``.pfsol`` file format
+(§[ParFlow Solid Files (.pfsol)][ADD LINK HERE]) using the appropriate 
+PFTools conversion utility (:ref:`Manipulating Data`). 
+Alternatively, the topography can be specified using ``.pfb`` 
+files of the slopes in the x and y directions.
 
 Regardless of the approach the user must set the computational grid
-within the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb script as follows:``
+within the ``.pfb`` script as follows:
 
 .. container:: list
 
@@ -102,12 +110,15 @@ Setting Up a Real Domain
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 This section provides a brief outline of a sample workflow for setup
-ParFlow ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM simulation of a real domain. Of course there are many ways to accomplish this and users are encouraged to develop a workflow that works for them.``
+ParFlow ``CLM`` simulation of a real domain. Of course there are 
+many ways to accomplish this and users are encouraged to develop 
+a workflow that works for them.
 
-This example assumes that you are running with ParFlow ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM and it uses slope files and an indicator file to define the topography and geologic units of the domain. An alternate approach would be to define geometries by building a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfsol file (§ [ParFlow Solid Files (.pfsol)]) using the appropriate PFTools conversion utility(§ [Manipulating Data]).``
+This example assumes that you are running with ParFlow ``CLM`` and 
+it uses slope files and an indicator file to define the topography 
+and geologic units of the domain. An alternate approach would be 
+to define geometries by building a ``.pfsol`` file (§[ParFlow Solid Files (.pfsol)][ADD LINK]) 
+using the appropriate PFTools conversion utility(:ref:`Manipulating Data`).``
 
 The general approach is as follows:
 
@@ -128,8 +139,13 @@ The general approach is as follows:
    Create consistent gridded layers that are all clipped to your domain
    and have the same number of grid cells
 
-   Convert gridded files to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``.pfb (§ [ParFlow Binary Files (.pfb)]). One way to accomplish this is by reformatting the gridded outputs to the correct ParFlow ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .sa order (§ [ParFlow Simple ASCII Files (.sa and .sb)]) and to convert the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .sa file to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb using the conversion tools (see § [common_pftcl] Example 1). If you have an elevation file in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb format, you may wish to preserve it as provenance for the slopes and for use in post-processing tools. You may point ParFlow to the elevation:``
+   Convert gridded files to ``.pfb (§[ParFlow Binary Files (.pfb)][ADD LINK]). 
+   One way to accomplish this is by reformatting the gridded outputs to the 
+   correct ParFlow ``.sa`` order (§[ParFlow Simple ASCII Files (.sa and .sb)][ADD LINK]) 
+   and to convert the ``.sa`` file to ``.pfb`` using the conversion tools 
+   (see §[common_pftcl][ADD LINK] Example 1). If you have an elevation file 
+   in ``.pfb`` format, you may wish to preserve it as provenance for the slopes
+   and for use in post-processing tools. You may point ParFlow to the elevation:
 
    .. container:: list
 
@@ -139,7 +155,7 @@ The general approach is as follows:
 
    Calculate slopes in the x and y directions from the elevation
    dataset. This can be done with the built in tools as shown in
-   § `4.3 <#common_pftcl>`__ Example 5. In most cases some additional
+   §4.3 <#common_pftcl>[ADD LINK] Example 5. In most cases some additional
    processing of the DEM will be required to ensure that the drainage
    patterns are correct. To check this you can run a “parking lot test"
    by setting the permeability of surface to almost zero and adding a
@@ -147,21 +163,29 @@ The general approach is as follows:
    right (i.e. your runoff patterns don’t match what you expect) you
    will need to go back and modify your DEM. The built in ParFlow tools
    pitfill and flatfill can be used to address some issues. (These tools
-   are also shown in § `4.3 <#common_pftcl>`__ Example 5).
+   are also shown in §4.3 <#common_pftcl> [ADD LINK] Example 5).
 
    Create an indicator file for the subsurface. The indicator file is a
-   3D ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``.pfb file with the same dimensions as your domain that has an integer for every cell designating which unit it belongs to. The units you define will correspond to the soil types and geologic units from your input datasets.``
+   3D ``.pfb`` file with the same dimensions as your domain that has 
+   an integer for every cell designating which unit it belongs to. 
+   The units you define will correspond to the soil types and geologic 
+   units from your input datasets.
 
    Determine the hydrologic properties for each of the subsurface units
    defined in the indicator file. You will need: Permeability, specific
    storage, porosity and vanGenuchten parameters.
 
-   At this point you are ready to run a ParFlow model without ‘#=12
-   ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``CLM and if you don’t need to include the land surface model in your simulations you can ignore the following steps. Either way, at this point it is advisable to run a “spinup" simulation to initialize the water table. There are several ways to approach this. One way is to start with the water table at a constant depth and run for a long time with a constant recharge forcing until the water table reaches a steady state. There are some additional key for spinup runs that are provided in § [Spinup Options].``
+   At this point you are ready to run a ParFlow model without ``CLM`` and 
+   if you don’t need to include the land surface model in your simulations 
+   you can ignore the following steps. Either way, at this point it is 
+   advisable to run a “spinup" simulation to initialize the water table. 
+   There are several ways to approach this. One way is to start with the 
+   water table at a constant depth and run for a long time with a constant 
+   recharge forcing until the water table reaches a steady state. 
+   There are some additional key for spinup runs that are provided 
+   in §[Spinup Options][ADD LINK].
 
-   Convert land cover classifications to the IGBP [15]_ land cover
+   Convert land cover classifications to the IGBP [15]_ [ADD FOOTNOTE] land cover
    classes that are used in CLM.
 
    -  1. Evergreen Needleleaf Forest
@@ -200,17 +224,19 @@ The general approach is as follows:
 
    -  18. Wooded Tundra
 
-   Create a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``CLM vegm file that designates the land cover fractions for every cell (Refer to the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 clm input directory in the Washita Example for an sample of what a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 vegm file should look like).``
+   Create a ``CLM`` vegm file that designates the land cover fractions 
+   for every cell (Refer to the ``clm input`` directory in the Washita 
+   Example for an sample of what a ``vegm`` file should look like).
 
-   Create a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``CLM driver file to set the parameters for the CLM model (Refer to the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 clm input directory in the Washita Example for a sample of a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM driver file).``
+   Create a ``CLM`` driver file to set the parameters for the ``CLM`` 
+   model (Refer to the ``clm input`` directory in the Washita Example 
+   for a sample of a ``CLM`` driver file).
 
    Assemble meteorological forcing data for your domain. CLM uses
    Greenwich Mean Time (GMT), not local time. The year, date and hour
-   (in GMT) that the forcing begins should match the values in ‘#=12
-   ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``drv_clmin.dat. CLM requires the following variables (also described on p. ):``
+   (in GMT) that the forcing begins should match the values 
+   in ``drv_clmin.dat``. ``CLM`` requires the following variables
+   (also described in [ADD LINK TO MAIN INPUT FILE]):
 
    -  DSWR: Visible or short-wave radiation :math:`[W/m^2]`.
 
@@ -234,8 +260,7 @@ The general approach is as follows:
    dimension) as time. If you are doing hourly simulations it is
    standard practice to put 24 hours in one file, but you can decide how
    many time steps per file. For an example of heterogenous forcing
-   files refer to the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``NLDAS directory in the Washita Example)``
+   files refer to the ``NLDAS`` directory in the Washita Example).
 
    Alternatively, if you would like to force the model with spatially
    homogenous forcings, then a single file can be provided where each
@@ -263,8 +288,7 @@ commands to load the ParFlow command package.
       package require parflow
       namespace import Parflow::*
 
-This loads the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``pfset and other ParFlow commands into the TCL shell.``
+This loads the ``pfset`` and other ParFlow commands into the TCL shell.
 
 Since this is a script you need to actually run ParFlow. These are
 normally the last lines of the input script.
@@ -279,11 +303,20 @@ normally the last lines of the input script.
       pfrun default_single
       pfundist default_single
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``pfrun command runs ParFlow with the database as it exists at that point in the file. The argument is the name to give to the output files (which will normally be the same as the name of the script). Advanced users can set up multiple problems within the input script by using different output names.``
+The ``pfrun`` command runs ParFlow with the database as it exists 
+at that point in the file. The argument is the name to give to the 
+output files (which will normally be the same as the name of the 
+script). Advanced users can set up multiple problems within the 
+input script by using different output names.
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``pfundist command takes the output files from the ParFlow run and undistributes them. ParFlow uses a virtual file system which allows files to be distributed across the processors. The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfundist takes these files and collapses them into a single file. On some machines if you don’t do the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfundist you will see many files after the run. Each of these contains the output from a single node; before attempting using them you should undistribute them.``
+The ``pfundist`` command takes the output files from the ParFlow 
+run and undistributes them. ParFlow uses a virtual file system 
+which allows files to be distributed across the processors. 
+The ``pfundist`` takes these files and collapses them into a 
+single file. On some machines if you don’t do the ``pfundist`` 
+you will see many files after the run. Each of these contains 
+the output from a single node; before attempting using them 
+you should undistribute them.
 
 Since the input file is a TCL script run it using TCL:
 
@@ -296,9 +329,15 @@ Since the input file is a TCL script run it using TCL:
 NOTE: Make sure you are using TCL 8.0 or later. The script will not work
 with earlier releases.
 
-One output file of particular interest is the ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12
-``<run name>.out.log file. This file contains information about the run such as number of processes used, convergence history of algorithms, timings and MFLOP rates. For Richards’ equation problems (including overland flow) the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <run name>.out.kinsol.log file contains the nonlinear convergence information for each timestep. Additionally, the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <run name>.out.tx contains all information routed to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 standard out of the machine you are running on and often contains error messages and other control information.``
+One output file of particular interest is the ``<run name>.out.log`` file. 
+This file contains information about the run such as number of 
+processes used, convergence history of algorithms, timings and 
+MFLOP rates. For Richards’ equation problems (including overland 
+flow) the ``<run name>.out.kinsol.log`` file contains the nonlinear 
+convergence information for each timestep. Additionally, 
+the ``<run name>.out.tx`` contains all information routed 
+to ``standard out`` of the machine you are running on and 
+often contains error messages and other control information.
 
 .. _Restarting a Run:
 
@@ -336,11 +375,10 @@ follow this procedure :
 
    -  Take the last pressure output file before the restart with the
       sequence number from above and format them for regular input using
-      the keys detailed in § `6.1.27 <#Initial Conditions: Pressure>`__
-      and possibly the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-      ``pfdist utility in the input script.``
+      the keys detailed in §`6.1.27 <#Initial Conditions: Pressure>`__[ADD LINK]
+      and possibly the ``pfdist`` utility in the input script.
 
-#. Change the Main Input File § `6.1 <#Main Input File (.tcl)>`__ :
+#. Change the Main Input File §`6.1 <#Main Input File (.tcl)>`__ [ADD LINK] :
 
    -  Edit the .tcl file (you may want to save the old one) and utilize
       the pressure initial condition input file option (as referenced
@@ -357,8 +395,11 @@ follow this procedure :
       -  Use the real time that the dump occured at from step 1 as the
          start_time.
 
-      -  To restart with ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-         ``CLM, use the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.IstepStart key described in § [CLM Solver Parameters] with a value equal to the dump sequence plus one. Make sure this corresponds to changes to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 drv_clmin.dat.``
+      -  To restart with ``CLM``, use the ``Solver.CLM.IstepStart`` 
+      key described in §[CLM Solver Parameters][ADD LINK] with a 
+      value equal to the dump sequence plus one. Make sure this 
+      corresponds to changes to ``drv_clmin.dat``.
+
 
 .. _Visualizing Output:
 
@@ -368,9 +409,14 @@ Visualizing Output
 While ParFlow does not have any visualization capabilities built-in,
 there are a number flexible, free options. Probably the best option is
 to use *VisIt*. *VisIt* is a powerful, free, open-source, rendering
-environment. It is multiplatform and may be downloaded directly from:
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``https://visit.llnl.gov/ The most flexible option for using VisIt to view ParFlow output is to write files using the SILO format, which is available either as a direct output option (described in § [Code Parameters]) or a conversion option using pftools. Many other output conversion options exist as described in § [Manipulating Data] and this allows ParFlow output to be converted into formats used by almost all visualization software.``
+environment. It is multiplatform and may be downloaded directly 
+from: `https://visit.llnl.gov/ <https://visit.llnl.gov/>`_. The most flexible 
+option for using VisIt to view ParFlow output is to write files using 
+the SILO format, which is available either as a direct output option 
+(described in §[Code Parameters][ADD LINK]) or a conversion option 
+using pftools. Many other output conversion options exist as described 
+in :ref:`Manipulating Data` and this allows ParFlow output to 
+be converted into formats used by almost all visualization software.
 
 .. _Test Directory:
 
@@ -379,55 +425,76 @@ Directory of Test Cases
 
 ParFlow comes with a directory containing a few simple input files for
 use as templates in making new files and for use in testing the code.
-These files sit in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``/test directory described earlier. This section gives a brief description of the problems in this directory.``
+These files sit in the ``/test`` directory described earlier. 
+This section gives a brief description of the problems in this directory.
 
 .. container:: description
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``crater2D.tcl An example of a two-dimensional, variably-saturated crater infiltration problem with time-varying boundary conditions. It uses the solid file ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 crater2D.pfsol.``
+   ``crater2D.tcl`` An example of a two-dimensional, variably-saturated 
+   crater infiltration problem with time-varying boundary conditions. 
+   It uses the solid file ``crater2D.pfsol``.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``default_richards.tcl The default variably-saturated Richards’ Equation simulation test script.``
+   ``default_richards.tcl`` The default variably-saturated Richards’ 
+   Equation simulation test script.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``default_single.tcl The default parflow, single-processor, fully-saturated test script.``
+   ``default_single.tcl`` The default parflow, single-processor, 
+   fully-saturated test script.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``forsyth2.tcl An example two-dimensional, variably-saturated infiltration problem with layers of different hydraulic properties. It runs problem 2 in  and uses the solid file ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 fors2_hf.pfsol.``
+   ``forsyth2.tcl`` An example two-dimensional, variably-saturated 
+   infiltration problem with layers of different hydraulic properties. 
+   It runs problem 2 in [] and uses the solid file ``fors2_hf.pfsol``.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``harvey.flow.tcl An example from  for the Cape Cod bacterial injection site. This example is a three-dimensional, fully-saturated flow problem with spatially heterogeneous media (using a correlated, random field approach). It also provides examples of how tcl/tk scripts may be used in conjunction with ParFlow to loop iteratively or to run other scripts or programs. It uses the input text file ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 stats4.txt. This input script is fully detailed in § [Tutorial]``
+   ``harvey.flow.tcl`` An example from  for the Cape Cod bacterial 
+   injection site. This example is a three-dimensional, fully-saturated 
+   flow problem with spatially heterogeneous media (using a correlated, 
+   random field approach). It also provides examples of how tcl/tk 
+   scripts may be used in conjunction with ParFlow to loop iteratively 
+   or to run other scripts or programs. It uses the input text 
+   file ``stats4.txt``. This input script is fully detailed in §:ref:`Tutorial`.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``default_overland.tcl An overland flow boundary condition test and example script based loosely on the V-catchment problem in . There are options provided to expand this problem into other overland flow-type, transient boundary-type problems included in the file as well.``
+   ``default_overland.tcl`` An overland flow boundary condition 
+   test and example script based loosely on the V-catchment 
+   problem in []. There are options provided to expand this problem 
+   into other overland flow-type, transient boundary-type problems 
+   included in the file as well.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``LW_var_dz_spinup.tcl An example that uses the Little Washita domain to demonstrate a steady-state spinup initialization using P-E forcing. It also demonstrates the variable dz keys.``
+   ``LW_var_dz_spinup.tcl`` An example that uses the Little Washita 
+   domain to demonstrate a steady-state spinup initialization using 
+   P-E forcing. It also demonstrates the variable dz keys.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``LW_var_dz.tcl An example that uses the Little Washita domain to demonstrate surface flow network development. It also uses the variable dz keys.``
+   ``LW_var_dz.tcl`` An example that uses the Little Washita domain 
+   to demonstrate surface flow network development. It also uses the 
+   variable dz keys.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``Evap_Trans_test.tcl An example that modifies the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 default_overland.tcl to demonstrate steady-state external flux ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb files.``
+   ``Evap_Trans_test.tcl`` An example that modifies the ``default_overland.tcl`` 
+   to demonstrate steady-state external flux ``.pfb`` files.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``overland_flux.tcl An example that modifies the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 default_overland.tcl to demonstrate transient external flux ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb files.``
+   ``overland_flux.tcl`` An example that modifies the ``default_overland.tcl`` 
+   to demonstrate transient external flux ``.pfb`` files.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/clm/clm.tcl An example of how to use ParFlow coupled to  ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 clm. This directory also includes  ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 clm-specific input. Note: this problem will only run if  ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 –with-clm flag is used during the configure and build process.``
+   ``/clm/clm.tcl`` An example of how to use ParFlow coupled 
+   to ``clm``. This directory also includes ``clm``-specific input. 
+   Note: this problem will only run if ``–with-clm`` flag is used 
+   during the configure and build process.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``water_balance_x.tcl and  ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 water_balance_y.tcl. An overland flow example script that uses the water-balance routines integrated into  ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pftools. These two problems are based on simple overland flow conditions with slopes primarily in the x or y-directions. Note: this problem only will run if the Silo file capability is used, that is a  ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 –with-silo=PATH flag is used during the configure and build process.``
+   ``water_balance_x.tcl`` and ``water_balance_y.tcl``. An overland 
+   flow example script that uses the water-balance routines integrated 
+   into ``pftools``. These two problems are based on simple overland 
+   flow conditions with slopes primarily in the x or y-directions. 
+   Note: this problem only will run if the Silo file capability 
+   is used, that is a ``–with-silo=PATH`` flag is used during the 
+   configure and build process.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``pfmg.tcl and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfmg_octree.tcl. Tests of the external Hypre preconditioner options. Note: this problem only will run if the Hypre capability is used, that is a  ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 –with-hypre=PATH flag is used during the configure and build process.``
+   ``pfmg.tcl`` and ``pfmg_octree.tcl`` Tests of the external 
+   Hypre preconditioner options. Note: this problem only will 
+   run if the Hypre capability is used, that is a ``–with-hypre=PATH`` 
+   flag is used during the configure and build process.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``test_x.tcl A test problem for the Richards’ solver that compares output to an analytical solution.``
+   ``test_x.tcl`` A test problem for the Richards’ solver that 
+   compares output to an analytical solution.
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/washita/tcl_scripts/LW_Test.tcl A three day simulation of the Little Washita domain using ParFlow ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM with 3D forcings.``
+   ``/washita/tcl_scripts/LW_Test.tcl`` A three day simulation 
+   of the Little Washita domain using ParFlow ``CLM`` with 3D forcings.
 
 .. _Tutorial:
 
@@ -436,13 +503,16 @@ Annotated Input Scripts
 
 This section contains two annotated input scripts:
 
--  § `3.6.1 <#Harvey Flow Example>`__ contains the harvey flow example (
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``harvey.flow.tcl) which is an idealized domain with a heterogenous subsurface. The example also demonstrates how to generate multiple realizations of the subsurface and add pumping wells.``
+-  §3.6.1 :ref:`Harvey Flow Example` contains the harvey flow 
+   example (``harvey.flow.tcl``) which is an idealized domain 
+   with a heterogenous subsurface. The example also demonstrates 
+   how to generate multiple realizations of the subsurface and 
+   add pumping wells.
 
--  § `3.6.2 <#Little Washita Example>`__ contains the Little Washita
-   example ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``LW_Test.tcl) which simulates a moderately sized (41km by 41km) real domain using ParFlow ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM with 3D meteorological forcings.``
+-  §3.6.2 :ref:`Little Washita Example` contains the Little Washita
+   example (``LW_Test.tcl``) which simulates a moderately sized 
+   (41km by 41km) real domain using ParFlow ``CLM`` with 3D 
+   meteorological forcings.
 
 To run ParFlow, you use a script written in Tcl/TK. This script has a
 lot of flexibility, as it is somewhere in between a program and a user
@@ -458,8 +528,7 @@ To run the simulation:
 #. save the tcl script
 
 #. For Linux/Unix/OSX: invoke the script from the command line using the
-   tcl-shell, this looks like: ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``>tclsh filename.tcl``
+   tcl-shell, this looks like: ``>tclsh filename.tcl``
 
 #. Wait patiently for the command prompt to return (Linux/Unix/OSX)
    indicating that ParFlow has finished. Intermediate files are written
@@ -482,12 +551,21 @@ length (meters), so pressure is now so-called pressure-head.
 Harvey Flow Example
 ~~~~~~~~~~~~~~~~~~~
 
-This tutorial matches the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``harvey_flow.tcl file found in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 /test directory. This example is directly from . This example demonstrates how to set up and run a fully saturated flow problem with heterogeneous hydraulic conductivity using the turning bands approach . Given statistical parameters describing the geology of your site, this script can be easily modified to make as many realizations of the subsurface as you like, each different and yet having the same statistical parameters, useful for a Monte Carlo simulation. This example is the basis for several fully-saturated ParFlow applications .``
+This tutorial matches the ``harvey_flow.tcl`` file found in 
+the ``/test`` directory. This example is directly from []. 
+This example demonstrates how to set up and run a fully saturated 
+flow problem with heterogeneous hydraulic conductivity using the 
+turning bands approach []. Given statistical parameters describing 
+the geology of your site, this script can be easily modified to 
+make as many realizations of the subsurface as you like, each 
+different and yet having the same statistical parameters, useful 
+for a Monte Carlo simulation. This example is the basis for several 
+fully-saturated ParFlow applications .
 
-When the script runs, it creates a new directory named ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``/flow right in the directory where the tcl script is stored. ParFlow then puts all its output in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 /flow. Of course, you can change the name and location of this output directory by modifying the tcl script that runs ParFlow.``
+When the script runs, it creates a new directory named ``/flow`` right 
+in the directory where the tcl script is stored. ParFlow then puts all 
+its output in ``/flow``. Of course, you can change the name and location 
+of this output directory by modifying the tcl script that runs ParFlow.
 
 Now for the tcl script:
 
@@ -498,8 +576,7 @@ Now for the tcl script:
    #
 
 These first three lines are what link ParFlow and the tcl script, thus
-allowing you to use a set of commands seen later, such as ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ``pfset, etc.``
+allowing you to use a set of commands seen later, such as ``pfset``, etc.
 
 ::
 
@@ -513,8 +590,8 @@ allowing you to use a set of commands seen later, such as ‘#=12 ‘$=12
    pfset FileVersion 4
 
 These next lines set the parallel process topology. The domain is
-divided in *x*,\ *y* and *z* by ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``P, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Q and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 R. The total number of processors is ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 P*Q*R (see § [Computing Topology]).``
+divided in *x*, *y* and *z* by ``P``, ``Q`` and ``R``. The total number 
+of processors is ``P*Q*R`` (see §[Computing Topology][ADD LINK]).
 
 ::
 
@@ -527,8 +604,8 @@ divided in *x*,\ *y* and *z* by ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
    pfset Process.Topology.R     1
 
 Next we set up the computational grid (*see*
-§ `3.1 <#Defining the Problem>`__ and
-§ `6.1.3 <#Computational Grid>`__).
+§3.1 :ref:`Defining the Problem` and
+§6.1.3 :ref:`Computational Grid` [ADD LINK]).
 
 ::
 
@@ -575,9 +652,8 @@ these as well. For Cape Cod, we have the entire domain, and also the 2
    #----------------------------------------------------------------------------
    pfset GeomInput.Names "domain_input upper_aquifer_input lower_aquifer_input"
 
-Now you characterize your domain that you just pre-declared to be a
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``box (see § [Geometries]), and you also give it a name, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 domain.``
+Now you characterize your domain that you just pre-declared to be a ``box`` 
+(see §[Geometries][ADD LINK]), and you also give it a name, ``domain``.
 
 ::
 
@@ -587,9 +663,12 @@ Now you characterize your domain that you just pre-declared to be a
    pfset GeomInput.domain_input.InputType       Box
    pfset GeomInput.domain_input.GeomName   domain
 
-Here, you set the limits in space for your entire domain. The span from
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``Lower.X to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Upper.X will be equal to the product of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ComputationalGrid.DX times ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ComputationalGrid.NX. Same for Y and Z (i.e. the number of grid elements times size of the grid element has to equal the size of the grid in each dimension). The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Patches key assigns names to the outside edges, because the domain is the limit of the problem in space.``
+Here, you set the limits in space for your entire domain. The span from ``Lower.X`` 
+to ``Upper.X`` will be equal to the product of ``ComputationalGrid.DX`` 
+times ``ComputationalGrid.NX``. Same for Y and Z (i.e. the number of grid elements 
+times size of the grid element has to equal the size of the grid in each dimension). 
+The ``Patches`` key assigns names to the outside edges, because the domain is the 
+limit of the problem in space.
 
 ::
 
@@ -648,7 +727,7 @@ as they are internal to the domain.
    pfset Geom.lower_aquifer.Upper.Z      1.5
 
 Now you add permeability data to the domain sections defined above
-(§ `6.1.11 <#Permeability>`__). You can reassign values simply by
+(§6.1.11 <#Permeability>`__ [ADD LINK]). You can reassign values simply by
 re-stating them – there is no need to comment out or delete the previous
 version – the final statement is the only one that counts.
 
@@ -676,8 +755,15 @@ define a constant permeability for the entire domain:
 However, for Cape Cod, we did not want a constant permeability field, so
 we instead generated a random permeability field meeting our statistical
 parameters for each the upper and lower zones. Third from the bottom is
-the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``Seed. This is a random starting point to generate the K field. Pick any large ODD number. First we do something tricky with  ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Tcl/TK. We use the native commands within tcl to open a text file and read in locally set variables. Note we use set here and not pfset. One is a native tcl command, the other a ParFlow-specific command. For this problem, we are linking the parameter estimation code, PEST to ParFlow. PEST writes out the ascii file ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 stats4.txt (also located in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 /test directory) as the result of a calibration run. Since we are not coupled to PEST in this example, we just read in the file and use the values to assign statistical properties.``
+the ``Seed``. This is a random starting point to generate the K field. 
+Pick any large ODD number. First we do something tricky with Tcl/TK. 
+We use the native commands within tcl to open a text file and read in 
+locally set variables. Note we use set here and not pfset. One is a native 
+tcl command, the other a ParFlow-specific command. For this problem, we 
+are linking the parameter estimation code, PEST to ParFlow. PEST writes 
+out the ascii file ``stats4.txt`` (also located in the ``/test`` directory) 
+as the result of a calibration run. Since we are not coupled to PEST in this 
+example, we just read in the file and use the values to assign statistical properties.
 
 ::
 
@@ -691,7 +777,7 @@ the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
    close $fileId
 
 Now we set the heterogeneous parameters for the Upper and Lower aquifers
-(*see* § `6.1.11 <#Permeability>`__). Note the special section at the
+(*see* §`6.1.11 <#Permeability>`__ [ADD LINK]). Note the special section at the
 very end of this block where we reset the geometric mean and standard
 deviation to our values we read in from a file. **Note:** ParFlow uses
 *Standard Deviation* not *Variance*.
@@ -834,14 +920,15 @@ unused, but need to be included.
    pfset TimingInfo.StartTime     0.0
    pfset TimingInfo.StopTime     0.0
 
-Set the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``dump interval to -1 to report info at the end of every calculation, which in this case is only when steady state has been reached.``
+Set the ``dump interval`` to -1 to report info at the end of every 
+calculation, which in this case is only when steady state has been 
+reached.
 
 ::
 
    pfset TimingInfo.DumpInterval	       -1
 
-Next, we assign the porosity (*see* § `6.1.12 <#Porosity>`__). For the
+Next, we assign the porosity (*see* §`6.1.12 <#Porosity>`__ [ADD LINK]). For the
 Cape Cod, the porosity is 0.39.
 
 ::
@@ -855,9 +942,8 @@ Cape Cod, the porosity is 0.39.
    pfset Geom.domain.Porosity.Type    Constant
    pfset Geom.domain.Porosity.Value   0.390
 
-Having defined the geometry of our problem before and named it ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``domain, we are now ready to report/upload that problem, which we do here.``
+Having defined the geometry of our problem before and named it ``domain``, we 
+are now ready to report/upload that problem, which we do here.
 
 ::
 
@@ -921,10 +1007,11 @@ associate them with the boundary conditions that follow.
    pfset BCPressure.PatchNames "left right front back bottom top"
 
 These are Dirichlet BCs (i.e. constant head over cell so the pressure
-head is set to hydrostatic– *see*
-§ `6.1.24 <#Boundary Conditions: Pressure>`__). There is no time
-dependence, so use the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``constant time cycle we defined previously. ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 RefGeom links this to the established domain geometry and tells ParFlow what to use for a datum when calculating hydrostatic head conditions.``
+head is set to hydrostatic– *see* §6.1.24 <#Boundary Conditions: Pressure>__[ADD LINK]). There is no time
+dependence, so use the ``constant`` time cycle we defined 
+previously. ``RefGeom`` links this to the established domain geometry 
+and tells ParFlow what to use for a datum when calculating hydrostatic 
+head conditions.
 
 ::
 
@@ -1062,9 +1149,9 @@ We drop significant digits beyond E-15
    #---------------------------------------------------------
 
 Here you set the number of realizations again using a local tcl
-variable. We have set only one run but by setting the ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``n_runs variable to something else we can run more than one realization of hydraulic conductivity.``
+variable. We have set only one run but by setting the ``n_runs`` 
+variable to something else we can run more than one realization 
+of hydraulic conductivity.
 
 ::
 
@@ -1076,17 +1163,18 @@ Here is where you tell ParFlow where to put the output. In this case, it
 is a directory called flow. Then you cd (change directory) into that new
 directory. If you wanted to put an entire path rather than just a name,
 you would have more control over where your output file goes. For
-example, you would put ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``file mkdir “/cape_cod/revised_statistics/flow" and then change into that directory.``
+example, you would put ``file mkdir “/cape_cod/revised_statistics/flow"`` 
+and then change into that directory.
 
 ::
 
    file mkdir "flow"
    cd "flow"
 
-Now we loop through the realizations, again using tcl. ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``k is the integer counter that is incremented for each realization. When you use a variable (rather than define it), you precede it with$. The hanging character { opens the do loop for ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 k.``
+Now we loop through the realizations, again using tcl. ``k`` is the integer 
+counter that is incremented for each realization. When you use a variable 
+(rather than define it), you precede it with ``$``. The hanging character ``{`` 
+opens the do loop for ``k``.
 
 ::
 
@@ -1095,9 +1183,12 @@ Now we loop through the realizations, again using tcl. ‘#=12 ‘$=12 ‘%=12
    #
    for {set k 1} {$k <= $n_runs} {incr k 1} {
 
-The following expressions sets the variable ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12
-``seed equal to the expression in brackets, which increments with each turn of the do loop and each seed will produce a different random field of K. You set upper and lower aquifer, because in the Cape Cod site, these are the two subsets of the domain. Note the seed starts at a different point to allow for different random field generation for the upper and lower zones.``
+The following expressions sets the variable ``seed`` equal to the expression 
+in brackets, which increments with each turn of the do loop and each seed 
+will produce a different random field of K. You set upper and lower aquifer, 
+because in the Cape Cod site, these are the two subsets of the domain. 
+Note the seed starts at a different point to allow for different random 
+field generation for the upper and lower zones.
 
 ::
 
@@ -1108,9 +1199,12 @@ The following expressions sets the variable ‘#=12 ‘$=12 ‘%=12 ‘&=12
    pfset Geom.lower_aquifer.Perm.Seed  [ expr 31313+2*$k ]
 
 The following command runs ParFlow and gives you a suite of output files
-for each realization. The file names will begin ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12
-``harvey_flow.1.xxxxx, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 harvey_flow.2.xxxx, etc up to as many realizations as you run. The .xxxxx part will designate x, y, and z permeability, etc. Recall that in this case, since we normalized gravity, viscosity, and density, remember that we are really getting hydraulic conductivity.``
+for each realization. The file names will 
+begin ``harvey_flow.1.xxxxx``, ``harvey_flow.2.xxxx``, etc up to as 
+many realizations as you run. The .xxxxx part will designate 
+x, y, and z permeability, etc. Recall that in this case, since we normalized 
+gravity, viscosity, and density, remember that we are really getting hydraulic 
+conductivity.
 
 ::
 
@@ -1118,15 +1212,17 @@ for each realization. The file names will begin ‘#=12 ‘$=12 ‘%=12 ‘&=12
 
 This command removes a large number of superfluous dummy files or
 un-distributes parallel files back into a single file. If you compile
-with the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``– with-amps-sequential-io option then a single ParFlow file is written with corresponding ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 XXXX.dist files and the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfundist command just removes these ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .dist files (though you don’t really need to remove them if you don’t want to).``
+with the ``–with-amps-sequential-io`` option then a single ParFlow 
+file is written with corresponding ``XXXX.dist`` files and 
+the ``pfundist`` command just removes these ``.dist`` files 
+(though you don’t really need to remove them if you don’t want to).
 
 ::
 
    pfundist harvey_flow.$k
 
 The following commands take advantage of PFTools (*see*
-§ `4.2 <#PFTCL Commands>`__) and load pressure head output of the
+§4.2 :ref:`PFTCL Commands`) and load pressure head output of the
 /parflow model into a pressure matrix.
 
 ::
@@ -1161,8 +1257,7 @@ particle or streamline calculation in the future. We can see below, that
 since we have a tcl script as input, we can do a lot of different
 operations, for example, we might run a particle tracking transport code
 simulation using the results of the ParFlow runs. This actually
-corresponds to the example presented in the ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12 ``SLIM user’s manual.``
+corresponds to the example presented in the ``SLIM`` user’s manual.
 
 ::
 
@@ -1212,13 +1307,13 @@ Let us change the input problem by adding a pumping well:
          pfset Wells.new_well.alltime.Injection.Flux.water.Value		     0.75
 
 For more information on defining the problem, see
-§ `3.1 <#Defining the Problem>`__.
+§3.1 :ref:`Defining the Problem`.
 
 We could also visualize the results of the ParFlow simulations, using
 *VisIt*. For example, we can turn on *SILO* file output which allows
 these files to be directly read and visualized. We would do this by
-adding the following ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``pfset commands, I usually add them to the solver section:``
+adding the following ``pfset`` commands, I usually add them to t
+he solver section:
 
 .. container:: list
 
@@ -1228,17 +1323,26 @@ adding the following ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       pfset Solver.WriteSiloPressure True
       pfset Solver.WriteSiloSaturation True
 
-You can then directly open the file ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12
-``harvey_flow.#.out.perm_x.silo (where ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 # is the realization number). The resulting image will be the hydraulic conductivity field of your domain, showing the variation in x-permeability in 3-D space. You can also generate representations of head or pressure (or y or z permeability) throughout your domain using ParFlow output files. See the section on visualization for more details.``
+You can then directly open the file ``harvey_flow.#.out.perm_x.silo`` 
+(where ``#`` is the realization number). The resulting image will 
+be the hydraulic conductivity field of your domain, showing the 
+variation in x-permeability in 3-D space. You can also generate 
+representations of head or pressure (or y or z permeability) 
+throughout your domain using ParFlow output files. See the section 
+on visualization for more details.
 
 .. _Little Washita Example:
 
 Little Washita Example
 ~~~~~~~~~~~~~~~~~~~~~~
 
-This tutorial matches the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``LW_Test.tcl file found in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 /test/washita/tcl_scripts directory and corresponds to . This script runs the Little Washita domain for three days using ParFlow ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM with 3D forcings. The domain is setup using terrain following grid (§ [TFG]) and subsurface geologes are specified using a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb indicator file. Input files were generated using the workflow detailed in § [Defining a Real domain].``
+This tutorial matches the ``LW_Test.tcl`` file found in 
+the ``/test/washita/tcl_scripts`` directory and corresponds to []. 
+This script runs the Little Washita domain for three days using 
+ParFlow ``CLM`` with 3D forcings. The domain is setup using terrain 
+following grid (§[TFG][ADD LINK]) and subsurface geologes are 
+specified using a ``.pfb`` indicator file. Input files were 
+generated using the workflow detailed in §:ref:`Defining a Real domain`.
 
 Now for the tcl script:
 
@@ -1249,8 +1353,7 @@ Now for the tcl script:
    #
 
 These first three lines are what link ParFlow and the tcl script, thus
-allowing you to use a set of commands seen later, such as ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ``pfset, etc.``
+allowing you to use a set of commands seen later, such as ``pfset``, etc.
 
 ::
 
@@ -1264,8 +1367,8 @@ allowing you to use a set of commands seen later, such as ‘#=12 ‘$=12
    pfset FileVersion 4
 
 These next lines set the parallel process topology. The domain is
-divided in *x*,\ *y* and *z* by ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``P, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Q and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 R. The total number of processors is ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 P*Q*R (see § [Computing Topology]).``
+divided in *x*, *y* and *z* by ``P``, ``Q`` and ``R``. The total 
+number of processors is ``P*Q*R`` (see §:ref:`Computing Topology`).
 
 ::
 
@@ -1303,8 +1406,8 @@ be described in detail later as they get used.
    puts "Files Copied"
 
 Next we set up the computational grid (*see*
-§ `3.1 <#Defining the Problem>`__ and
-§ `6.1.3 <#Computational Grid>`__).
+§3.1 :ref:`Defining the Problem` and
+§6.1.3 <#Computational Grid>[ADD LINK]).
 
 ::
 
@@ -1351,9 +1454,9 @@ is for the indicator file (which will also span the entire domain).
    #-----------------------------------------------------------------------------
    pfset GeomInput.Names                     "box_input indi_input"
 
-Now you characterize the domain that you just pre-declared to be a ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``box (see § [Geometries]), and you also give it a name, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 domain.``
+Now you characterize the domain that you just pre-declared 
+to be a ``box`` (see §[Geometries][ADD LINK]), and you also 
+give it a name, ``domain``.
 
 ::
 
@@ -1363,9 +1466,13 @@ Now you characterize the domain that you just pre-declared to be a ‘#=12
    pfset GeomInput.box_input.InputType      Box
    pfset GeomInput.box_input.GeomName      domain
 
-Here, you set the limits in space for your entire domain. The span from
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``Lower.X to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Upper.X will be equal to the product of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ComputationalGrid.DX times ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ComputationalGrid.NX. Same for Y and Z (i.e. the number of grid elements times size of the grid element has to equal the size of the grid in each dimension). The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Patches key assigns names to the outside edges, because the domain is the limit of the problem in space.``
+Here, you set the limits in space for your entire domain. The span 
+from ``Lower.X`` to ``Upper.X`` will be equal to the product 
+of ``ComputationalGrid.DX`` times ``ComputationalGrid.NX``. 
+Same for Y and Z (i.e. the number of grid elements times size 
+of the grid element has to equal the size of the grid in each 
+dimension). The ``Patches`` key assigns names to the outside 
+edges, because the domain is the limit of the problem in space.
 
 ::
 
@@ -1384,8 +1491,11 @@ Here, you set the limits in space for your entire domain. The span from
 
 Now we setup the indicator file. As noted above, the indicator file has
 integer values for every grid cell in the domain designating what
-geologic unit it belongs to. The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``GeomNames list should include a name for every unit in your indicator file. In this example we have thirteen soil units and eight geologic units. The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 FileName points to the indicator file that ParFlow will read. Recall that this file into the run directory at the start of the script.``
+geologic unit it belongs to. The ``GeomNames`` list should include 
+a name for every unit in your indicator file. In this example we 
+have thirteen soil units and eight geologic units. The ``FileName`` points 
+to the indicator file that ParFlow will read. Recall that this file 
+into the run directory at the start of the script.
 
 ::
 
@@ -1396,8 +1506,12 @@ geologic unit it belongs to. The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃1
    pfset GeomInput.indi_input.GeomNames      "s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 g1 g2 g3 g4 g5 g6 g7 g8"
    pfset Geom.indi_input.FileName            "IndicatorFile_Gleeson.50z.pfb"
 
-For every name in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``GeomNames list we define the corresponding value in the indicator file. For example, here we are saying that our first soil unit ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 s1) is represented by the number “1" in the indicator file, while the first geologic unit ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 g1) is represented by the number “21". Note that the integers used in the indicator file do not need to be consecutive.``
+For every name in the ``GeomNames`` list we define the corresponding 
+value in the indicator file. For example, here we are saying that 
+our first soil unit (``s1``) is represented by the number “1" in 
+the indicator file, while the first geologic unit (``g1``) is 
+represented by the number “21". Note that the integers used in the 
+indicator file do not need to be consecutive.
 
 ::
 
@@ -1424,13 +1538,13 @@ For every name in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
    pfset GeomInput.g8.Value                28
 
 Now you add permeability data to the domain sections defined above
-(§ `6.1.11 <#Permeability>`__). You can reassign values simply by
+(§`6.1.11 <#Permeability>`__[ADD LINK]). You can reassign values simply by
 re-stating them – there is no need to comment out or delete the previous
 version – the final statement is the only one that counts. Also, note
 that you do not need to assign permeability values to all of the
 geometries names. Any geometry that is not assigned its own permeability
-value will take the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``domain value. However, every geometry listed in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Porosity.GeomNames must have values assigned.``
+value will take the ``domain`` value. However, every geometry listed 
+in ``Porosity.GeomNames`` must have values assigned.
 
 ::
 
@@ -1486,8 +1600,7 @@ the case below, permeability is symmetric in all directions (x, y, and
 z) and therefore each is set to 1.0. Also note that we just specify this
 once for the whole domain because we want isotropic permeability
 everywhere. You can specify different tensors for different units by
-repeating these lines with different ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12 ``Geom.Names.``
+repeating these lines with different ``Geom.Names``.
 
 ::
 
@@ -1577,15 +1690,16 @@ This key specifies the time step number that will be associated with the
 first advection cycle of the transient problem. Because we are starting
 from scratch we set this to 0. If we were restarting a run we would set
 this to the last time step of your previous simulation. Refer to
-§ `3.3 <#Restarting a Run>`__ for additional instructions on restarting
+§3.3 :ref:`Restarting a Run` for additional instructions on restarting
 a run.
 
 ::
 
    pfset TimingInfo.StartCount               0.0
 
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``StartTime and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 StopTime specify the start and stop times for the simulation. These values should correspond with the forcing files you are using.``
+``StartTime`` and ``StopTime`` specify the start and stop times 
+for the simulation. These values should correspond with the 
+forcing files you are using.
 
 ::
 
@@ -1596,8 +1710,7 @@ This key specifies the timing interval at which ParFlow time dependent
 outputs will be written. Here we have a base unit of 1hr so a dump
 interval of 24 means that we are writing daily outputs. Note that this
 key only controls the ParFlow output interval and not the interval that
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM outputs will be written out at.``
+``CLM`` outputs will be written out at.
 
 ::
 
@@ -1611,12 +1724,11 @@ step of 1hr.
    pfset TimeStep.Type                       Constant
    pfset TimeStep.Value                      1.0
 
-Next, we assign the porosity (*see* § `6.1.12 <#Porosity>`__). As with
+Next, we assign the porosity (*see* §`6.1.12 <#Porosity>`__[ADD LINK]). As with
 the permeability we assign different values for different indicator
 geometries. Here we assign values for all of our soil units but not for
 the geologic units, they will default to the domain value of 0.4. Note
-that every geometry listed in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``Porosity.GeomNames must have values assigned.``
+that every geometry listed in ``Porosity.GeomNames`` must have values assigned.
 
 ::
 
@@ -1655,9 +1767,8 @@ that every geometry listed in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 �
    pfset Geom.s9.Porosity.Type            Constant
    pfset Geom.s9.Porosity.Value           0.442
 
-Having defined the geometry of our problem before and named it ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``domain, we are now ready to report/upload that problem, which we do here.``
+Having defined the geometry of our problem before and named it ``domain``, 
+we are now ready to report/upload that problem, which we do here.
 
 ::
 
@@ -1681,7 +1792,7 @@ Again, ParFlow has more capabilities than we are using here in this
 example. Note that since there are no well names listed here, ParFlow
 assumes we have no wells. If we had pumping wells, we would have to
 include them here, because they would affect the head distribution
-throughout our domain. See § `3.6.1 <#Harvey Flow Example>`__ for an
+throughout our domain. See §3.6.1 :ref:`Harvey Flow Example` for an
 example of how to include pumping wells in this script.
 
 ::
@@ -1692,8 +1803,14 @@ example of how to include pumping wells in this script.
    pfset Wells.Names                         ""
 
 You can give certain periods of time names if you want. For example if
-you aren’t running with ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM and you would like to have periods with rain and periods without. Here, however we have only one time cycle because ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM will handle the variable forcings. Therefore, we specify one time cycle and it’s constant for the duration of the simulation. We accomplish this by giving it a repeat value of -1, which repeats indefinitely. The length of the cycle is the length specified below (an integer) multiplied by the base unit value we specified earlier.``
+you aren’t running with ``CLM`` and you would like to have periods 
+with rain and periods without. Here, however we have only one time 
+cycle because ``CLM`` will handle the variable forcings. Therefore, 
+we specify one time cycle and it’s constant for the duration of the 
+simulation. We accomplish this by giving it a repeat value of -1, 
+which repeats indefinitely. The length of the cycle is the length 
+specified below (an integer) multiplied by the base unit value we 
+specified earlier.
 
 ::
 
@@ -1741,8 +1858,8 @@ flux of 0) boundaries.
    pfset Patch.y-upper.BCPressure.Cycle		      "constant"
    pfset Patch.y-upper.BCPressure.alltime.Value	      0.0
 
-The top is set to an ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``OverlandFLow boundary to turn on the fully-coupled overland flow routing.``
+The top is set to an ``OverlandFLow`` boundary to turn on the 
+fully-coupled overland flow routing.
 
 ::
 
@@ -1752,10 +1869,9 @@ The top is set to an ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
 Next we define topographic slopes and values. These slope values were
 derived from a digital elevation model of the domain following the
-workflow outlined in § `3.1.2 <#Defining a Real domain>`__. In this
-example we read the slope files in from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``.pfb files that were copied into the run directory at the start of this script.``
+workflow outlined in §3.1.2 :ref:`Defining a Real domain`. In this
+example we read the slope files in from ``.pfb`` files that were 
+copied into the run directory at the start of this script.
 
 ::
 
@@ -1785,9 +1901,11 @@ domain in this example.
    pfset Mannings.GeomNames                              "domain"
    pfset Mannings.Geom.domain.Value                      5.52e-6
 
-Following the same approach as we did for ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``Porosity we define the relative permeability inputs that will be used for Richards’ equation implementation (§ [Richards RelPerm]). Here we use ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 VanGenuchten parameters. Note that every geometry listed in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Porosity.GeomNames must have values assigned.``
+Following the same approach as we did for ``Porosity`` we define 
+the relative permeability inputs that will be used for Richards’ 
+equation implementation (§[Richards RelPerm][ADD LINK]). Here we 
+use ``VanGenuchten`` parameters. Note that every geometry 
+listed in ``Porosity.GeomNames`` must have values assigned.
 
 ::
 
@@ -1827,9 +1945,9 @@ Following the same approach as we did for ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=1
    pfset Geom.s9.RelPerm.Alpha        1.585
    pfset Geom.s9.RelPerm.N            2.413
 
-Next we do the same thing for saturation (§ `6.1.22 <#Saturation>`__)
-again using the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``VanGenuchten parameters Note that every geometry listed in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Porosity.GeomNames must have values assigned.``
+Next we do the same thing for saturation (§`6.1.22 <#Saturation>`__[ADD LINK])
+again using the ``VanGenuchten`` parameters Note that every geometry listed 
+in ``Porosity.GeomNames`` must have values assigned.
 
 ::
 
@@ -1901,9 +2019,11 @@ but we do not have any so this key is constant, 0.0 over entire domain.
    pfset PhaseSources.water.GeomNames                    "domain"
    pfset PhaseSources.water.Geom.domain.Value            0.0
 
-In this example we are using ParFlow ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12
-``CLM so we must provide some parameters for ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM (§ [CLM Solver Parameters]). Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM will also require some additional inputs outside of the tcl script. Refer to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 /washita/clm_input/ for examples of the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 vegm and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 driver files. These inputs are also discussed briefly in § [Defining a Real domain].``
+In this example we are using ParFlow ``CLM`` so we must provide some parameters 
+for ``CLM`` (§[CLM Solver Parameters][ADD LINK]). Note 
+that ``CLM`` will also require some additional inputs outside of the tcl script. 
+Refer to ``/washita/clm_input/`` for examples of the ``CLM``, ``vegm`` 
+and ``driver`` files. These inputs are also discussed briefly in :ref:`Defining a Real domain`.
 
 ::
 
@@ -1911,9 +2031,14 @@ In this example we are using ParFlow ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘
    # CLM Settings:
    # ------------------------------------------------------------
 
-First we specify that we will be using ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``CLM as the land surface model and provide the name of a directory that outputs will be written to. For this example we do not need outputs for each processor or a binary output directory. Finally we set the dump interval to 1, indicating that we will be writing outputs for every time step. Note that this does not have to match the dump interval for ParFlow outputs. Recall that earlier we set the ParFlow dump interval to 24.``
+First we specify that we will be using ``CLM`` as the land 
+surface model and provide the name of a directory that outputs 
+will be written to. For this example we do not need outputs 
+for each processor or a binary output directory. Finally we 
+set the dump interval to 1, indicating that we will be writing 
+outputs for every time step. Note that this does not have to 
+match the dump interval for ParFlow outputs. Recall that 
+earlier we set the ParFlow dump interval to 24.
 
 ::
 
@@ -1923,9 +2048,14 @@ First we specify that we will be using ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
    pfset Solver.BinaryOutDir                             False
    pfset Solver.CLM.CLMDumpInterval                      1
 
-Next we specify the details of the meteorological forcing files that
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``clm will read. First we provide the name of the files and the directory they can be found in. Next we specify that we are using ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 3D forcing files meaning that we have spatially distributed forcing with multiple time steps in every file. Therefore we must also specify the number of times steps ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 MetFileNT) in every file, in this case 24. Finally, we specify the initial value for the CLM counter.``
+Next we specify the details of the meteorological forcing files 
+that ``CLM`` will read. First we provide the name of the files 
+and the directory they can be found in. Next we specify that 
+we are using ``3D`` forcing files meaning that we have spatially 
+distributed forcing with multiple time steps in every file. 
+Therefore we must also specify the number of times steps 
+(``MetFileNT``) in every file, in this case 24. Finally, 
+we specify the initial value for the CLM counter.
 
 ::
 
@@ -1935,8 +2065,8 @@ Next we specify the details of the meteorological forcing files that
    pfset Solver.CLM.MetFileNT                            24
    pfset Solver.CLM.IstepStart                           1
 
-This last set of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM parameters refers to the physical properties of the system. Refer to § [CLM Solver Parameters] for details.``
+This last set of ``CLM`` parameters refers to the physical 
+properties of the system. Refer to §[CLM Solver Parameters][ADD LINK] for details.
 
 ::
 
@@ -1948,8 +2078,12 @@ This last set of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
    pfset Solver.CLM.IrrigationType                       none
 
 Next we set the initial conditions for the domain. In this example we
-are using a pressure ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file that was obtained by spinning up the model in the workflow outlined in § [Defining a Real domain]. Alternatively, the water table can be set to a constant value by changing the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ICPressure.Type. Again, the input file that is referenced here was was copied into the run directory at the top of this script.``
+are using a pressure ``.pfb`` file that was obtained by spinning up 
+the model in the workflow outlined in §:ref:`Defining a Real domain`. 
+Alternatively, the water table can be set to a constant value by 
+changing the ``ICPressure.Type``. Again, the input file that is 
+referenced here was was copied into the run directory at the top 
+of this script.
 
 ::
 
@@ -1962,9 +2096,11 @@ are using a pressure ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
    pfset Geom.domain.ICPressure.FileName                   press.init.pfb
 
 Now we specify what outputs we would like written. In this example we
-specify that we would like to write out ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``CLM variables as well as ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Pressure and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Saturation. However, there are many options for this and you should change these options according to what type of analysis you will be performing on your results. A complete list of print options is provided in § [Code Parameters].``
+specify that we would like to write out ``CLM`` variables as well 
+as ``Pressure`` and ``Saturation``. However, there are many options 
+for this and you should change these options according to what type 
+of analysis you will be performing on your results. A complete list 
+of print options is provided in §[Code Parameters][ADD LINK].
 
 ::
 
@@ -1992,8 +2128,9 @@ specify that we would like to write out ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
    pfset Solver.WriteSiloCLM                             False
 
 Next we specify the solver settings for the ParFlow
-(§ `6.1.33 <#RE Solver Parameters>`__). First we turn on solver Richards
-and the terrain following grid. We turn off variable dz.
+(§`6.1.33 <#RE Solver Parameters>`__[ADD LINK]). First we turn 
+on solver Richards and the terrain following grid. We turn off 
+variable dz.
 
 ::
 
@@ -2009,7 +2146,7 @@ We then set the max solver settings and linear and nonlinear convergence
 tolerance settings. The linear system will be solved to a norm of
 :math:`10^{-8}` and the nonlinear system will be solved to less than
 :math:`10^{-6}`. Of note in latter key block is the EtaChoice and that
-we use the analytical Jacobian (*UseJacobian=\ *\ **True**). We are
+we use the analytical Jacobian (*UseJacobian* = **True**). We are
 using the *FullJacobian* preconditioner, which is a more robust approach
 but is more expensive.
 
@@ -2045,10 +2182,10 @@ using it.
    pfset KnownSolution                                   NoKnownSolution
 
 Next we distribute all the inputs as described by the keys in
-§ `4.2 <#PFTCL Commands>`__. Note the slopes are 2D files, while the
+§4.2 :ref:`PFTCL Commands`. Note the slopes are 2D files, while the
 rest of the ParFlow inputs are 3D so we need to alter the NZ accordingly
 following example `[dist example] <#dist example>`__ in
-§ `4.3 <#common_pftcl>`__.
+§`4.3 <#common_pftcl>`__[FIX LINKS HERE].
 
 ::
 

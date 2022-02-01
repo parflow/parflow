@@ -26,10 +26,11 @@ In addition to these methods xpftools provides GUI access to most of
 these features. However the simplest approach is generally to include
 the tools commands within a tcl script. The following section lists all
 of the available ParFlow TCL commands along with detailed instructions
-for their use. § `4.2 <#PFTCL Commands>`__ provides several examples of
+for their use. §4.2 :ref:`PFTCL Commands` provides several examples of
 pre and post processing using the tools. In addition, a list of tools
-can be obtained by typing ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``pfhelp into a TCL shell after importing ParFlow. Typing ¿pfhelp¿ followed by a command name will display a detailed description of the command in question.``
+can be obtained by typing ``pfhelp`` into a TCL shell after importing 
+ParFlow. Typing ``pfhelp`` followed by a command name will display a 
+detailed description of the command in question.
 
 .. _PFTCL Commands:
 
@@ -39,7 +40,7 @@ PFTCL Commands
 The tables that follow `4.1 <#pftools1>`__, `4.2 <#pftools2>`__ and
 `4.3 <#pftools3>`__ provide a list of ParFlow commands with short
 descriptions grouped according to their function. The last two columns
-in this table indicate what examples from § `4.3 <#common_pftcl>`__, if
+in this table indicate what examples from §4.3 `common_pftcl`, if
 any, the command is used in and whether the command is compatible with a
 terrain following grid domain formulation.
 
@@ -203,7 +204,6 @@ terrain following grid domain formulation.
       |                | storage        |              |                |
       +----------------+----------------+--------------+----------------+
 
-[pftools1]
 
 .. container::
    :name: pftools2
@@ -371,7 +371,6 @@ terrain following grid domain formulation.
       |                | element        |              |                |
       +----------------+----------------+--------------+----------------+
 
-[pftools2]
 
 .. container::
    :name: pftools3
@@ -439,7 +438,6 @@ terrain following grid domain formulation.
       |                | solid files    |              |                |
       +----------------+----------------+--------------+----------------+
 
-[pftools3]
 
 Detailed descriptions of every command are included below in
 alphabetical order. Note that the required inputs are listed following
@@ -570,9 +568,9 @@ square brackets are optional and do not need to be provided.
       pfcomputetop mask
 
    This command computes the top of the domain based on the mask of
-   active and inactive zones. This is the land-surface in ‘#=12 ‘$=12
-   ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``clm or overland flow simulations. The identifier of the data set created by this operation is returned upon successful completion.``
+   active and inactive zones. This is the land-surface in ``clm`` 
+   or overland flow simulations. The identifier of the data set created 
+   by this operation is returned upon successful completion.
 
    ::
 
@@ -1361,7 +1359,7 @@ square brackets are optional and do not need to be provided.
    This command computes the sub-surface water storage (compressible and
    incompressible components) based on mask, porosity, saturation,
    storativity and pressure fields. The equations used to calculate this
-   quantity are given in § `5.9 <#Water Balance>`__. The identifier of
+   quantity are given in §5.9 <#Water Balance>`__[ADD LINK]. The identifier of
    the data set created by this operation is returned upon successful
    completion.
 
@@ -1381,7 +1379,7 @@ square brackets are optional and do not need to be provided.
    is calculated at any location that slopes at the edge of the domain
    point outward. This data is in units of :math:`[L^3 T^{-1}]` and the
    equations used to calculate this quantity are given in
-   § `5.9 <#Water Balance>`__. The identifier of the data set created by
+   §`5.9 <#Water Balance>`__[ADD LINK]. The identifier of the data set created by
    this operation is returned upon successful completion.
 
    ::
@@ -1391,7 +1389,7 @@ square brackets are optional and do not need to be provided.
    This command computes the surface water storage (ponded water on top
    of the domain) based on a computed top and pressure field. The
    equations used to calculate this quantity are given in
-   § `5.9 <#Water Balance>`__. The identifier of the data set created by
+   §`5.9 <#Water Balance>`__[ADD LINK]. The identifier of the data set created by
    this operation is returned upon successful completion.
 
    ::
@@ -1453,8 +1451,11 @@ square brackets are optional and do not need to be provided.
 
    This command computes the upstream area contributing to surface
    runoff at each cell based on the x and y slope values provided in
-   datasets ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``slope_x and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 slope_y, respectively. Contributing area is computed recursively for each cell; areas are not weighted by slope direction. Areas are returned as the number of upstream (contributing) cells; to compute actual area, simply multiply by the cell area (dx*dy).``
+   datasets ``slope_x`` and ``slope_y``, respectively. Contributing 
+   area is computed recursively for each cell; areas are not weighted 
+   by slope direction. Areas are returned as the number of upstream 
+   (contributing) cells; to compute actual area, simply multiply by 
+   the cell area (dx*dy).``
 
    ::
 

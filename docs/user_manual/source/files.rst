@@ -8,7 +8,7 @@ help simplify the description of these formats, we use a pseudocode
 notation composed of *fields* and *control constructs*.
 
 A field is a piece of data having one of the *field types* listed in
-Table `6.1 <#table-field-types>`__ (note that field types may have one
+Table `6.1 <#table-field-types>`__ (note that field types may have one
 meaning in ASCII files and another meaning in binary files).
 
 .. container::
@@ -19,30 +19,29 @@ meaning in ASCII files and another meaning in binary files).
       +-------------------------------------+---------+--------------------+
       | field type                          | ASCII   | binary             |
       +=====================================+=========+====================+
-      | ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12  | integer | XDR integer        |
-      | ‘=̂12 ``integer``                    |         |                    |
+      | ``integer``                         |         |                    |
       +-------------------------------------+---------+--------------------+
-      | ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12  | real    | -                  |
-      | ‘=̂12 ``real``                       |         |                    |
+      | ``real``                            |         |                    |
       +-------------------------------------+---------+--------------------+
-      | ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12  | string  | -                  |
-      | ‘=̂12 ``string``                     |         |                    |
+      | ``string``                          |         |                    |
       +-------------------------------------+---------+--------------------+
-      | ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12  | -       | IEEE 8 byte double |
-      | ‘=̂12 ``double``                     |         |                    |
+      | ``double``                          |         |                    |
       +-------------------------------------+---------+--------------------+
-      | ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12  | -       | IEEE 4 byte float  |
-      | ‘=̂12 ``float``                      |         |                    |
+      | ``float``                           |         |                    |
       +-------------------------------------+---------+--------------------+
 
-[table-field-types]
 
-Fields are denoted by enclosing the field name with a ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``< on the left and a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 > on the right. The field name is composed of alphanumeric characters and underscores ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 _). In the defining entry of a field, the field name is also prepended by its field type and a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 :. The control constructs used in our pseudocode have the keyword names ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 FOR, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 IF, and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 LINE, and the beginning and end of each of these constructs is delimited by the keywords ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 BEGIN and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 END.``
+Fields are denoted by enclosing the field name with a ``<`` on the left 
+and a ``>`` on the right. The field name is composed of alphanumeric 
+characters and underscores (``_``). In the defining entry of a field, 
+the field name is also prepended by its field type and a ``:``. 
+The control constructs used in our pseudocode have the keyword 
+names ``FOR``, ``IF``, and ``LINE``, and the beginning and end of 
+each of these constructs is delimited by the keywords ``BEGIN`` 
+and ``END``.
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``FOR construct is used to describe repeated input format patterns. For example, consider the following file format:``
+The ``FOR`` construct is used to describe repeated input format 
+patterns. For example, consider the following file format:
 
 .. container:: list
 
@@ -54,8 +53,10 @@ The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
          <real : x>  <real : y>  <real : z>
       END
 
-The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``<num_coordinates> is an integer specifying the number of coordinates to follow. The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 FOR construct indicates that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <num_coordinates> entries follow, and each entry is composed of the three real fields, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <x>, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <y>, and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <z>. Here is an example of a file with this format:``
+The field ``<num_coordinates>`` is an integer specifying the number of coordinates to 
+follow. The ``FOR`` construct indicates that ``<num_coordinates>`` entries follow, 
+and each entry is composed of the three real fields, ``<x>``, ``<y>``, 
+and ``<z>``. Here is an example of a file with this format:
 
 .. container:: list
 
@@ -66,8 +67,9 @@ The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       1.0 1.1 -3.1
       2.5 3.0 -3.7
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``IF construct is actually an ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 IF/ ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 ELSE construct, and is used to describe input format patterns that appear only under certain circumstances. For example, consider the following file format:``
+The ``IF`` construct is actually an ``IF/ELSE`` construct, and is used to describe input 
+format patterns that appear only under certain circumstances. For example, consider 
+the following file format:
 
 .. container:: list
 
@@ -83,8 +85,12 @@ The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
          <integer : i>  <integer : j>  <integer : k>
       END
 
-The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``<type> is an integer specifying the “type” of input to follow. The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 IF construct indicates that if ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <type> has value 0, then the three real fields, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <x>, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <y>, and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <z>, follow. If ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <type> has value 1, then the three integer fields, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <i>, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <j>, and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <k>, follow. Here is an example of a file with this format:``
+The field ``<type>`` is an integer specifying the “type” of input to 
+follow. The ``IF`` construct indicates that if ``<type>`` has value 0, 
+then the three real fields, ``<x>``, ``<y>``, and ``<z>``, follow. 
+If ``<type>`` has value 1, then the three integer 
+fields, ``<i>``, ``<j>``, and ``<k>``, follow. Here is an example 
+of a file with this format:
 
 .. container:: list
 
@@ -93,8 +99,10 @@ The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       0
       2.0 1.0 -3.5
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``LINE construct indicates fields that are on the same line of a file. Since input files in ParFlow are all in “free format”, it is used only to describe some output file formats. For example, consider the following file format:``
+The ``LINE`` construct indicates fields that are on the same line of 
+a file. Since input files in ParFlow are all in “free format”, it is 
+used only to describe some output file formats. For example, consider 
+the following file format:
 
 .. container:: list
 
@@ -107,8 +115,10 @@ The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
          <real : z>
       END
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``LINE construct indicates that the three real fields, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <x>, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <y>, and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <z>, are all on the same line. Here is an example of a file with this format:``
+The ``LINE`` construct indicates that the three real 
+fields, ``<x>``, ``<y>``, and ``<z>``
+, are all on the same line. Here is an example of a file 
+with this format:
 
 .. container:: list
 
@@ -117,8 +127,7 @@ The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       2.0 1.0 -3.5
 
 Comment lines may also appear in our file format pseudocode. All text
-following a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``# character is a comment, and is not part of the file format.``
+following a ``#`` character is a comment, and is not part of the file format.
 
 .. _Main Input File (.tcl):
 
@@ -139,8 +148,8 @@ This is very similiar in nature to the Windows XP/Vista registry and
 several other systems. When ParFlow runs, it queries the database you
 have created by key names to get the values you have specified.
 
-The command ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``pfset is used to create the database entries. A simple ParFlow input script contains a long list of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfset commands.``
+The command ``pfset`` is used to create the database entries. 
+A simple ParFlow input script contains a long list of ``pfset`` commands.
 
 It should be noted that the keys are “dynamic” in that many are built up
 from values of other keys. For example if you have two wells named
@@ -149,9 +158,9 @@ specify the parameters for each well. The keys are built up in a simple
 sort of heirarchy.
 
 The following sections contain a description of all of the keys used by
-ParFlow. For an example of input files you can look at the ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``test subdirectory of the ParFlow distribution. Looking over some examples should give you a good feel for how the file scripts are put together.``
+ParFlow. For an example of input files you can look at the ``test`` subdirectory 
+of the ParFlow distribution. Looking over some examples should give you 
+a good feel for how the file scripts are put together.
 
 Each key’s entry has the form:
 
@@ -192,8 +201,9 @@ file version number that this file fits.
 As development of the ParFlow code continues, the input file format will
 vary. We have thus included an input file format number as a way of
 verifying that the correct format type is being used. The user can check
-in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``parflow/config/file_versions.h file to verify that the format number specified in the input file matches the defined value of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PFIN_VERSION.``
+in the ``parflow/config/file_versions.h`` file to verify that the format 
+number specified in the input file matches the defined value 
+of  ``PFIN_VERSION``.
 
 .. _Computing Topology:
 
@@ -205,7 +215,7 @@ domain in parallel. “P” allocates the number of processes to the
 grid-cells in x. “Q” allocates the number of processes to the grid-cells
 in y. “R” allocates the number of processes to the grid-cells in z.
 Please note “R” should always be 1 if you are running with Solver
-Richards :raw-latex:`\cite{Jones-Woodward01}` unless you’re running a
+Richards [Jones-Woodward01] unless you’re running a
 totally saturated domain (solver IMPES).
 
 *integer* **Process.Topology.P** no default This assigns the process
@@ -259,7 +269,7 @@ Computational Grid
 ~~~~~~~~~~~~~~~~~~
 
 The computational grid is briefly described in
-§ `3.1 <#Defining the Problem>`__. The computational grid keys set the
+§3.1 :ref:`Defining the Problem`. The computational grid keys set the
 bottom left corner of the domain to a specific point in space. If using
 a .pfsol file, the bottom left corner location of the .pfsol file must
 be the points designated in the computational grid. The user can also
@@ -866,10 +876,10 @@ Domain
 ~~~~~~
 
 The domain may be represented by any of the solid types in
-§ `6.1.4 <#Geometries>`__ above that allow the definition of surface
+§`6.1.4 :ref:Geometries` above that allow the definition of surface
 patches. These surface patches are used to define boundary conditions in
-§ `6.1.24 <#Boundary Conditions: Pressure>`__ and
-§ `6.1.25 <#Boundary Conditions: Saturation>`__ below. Subsequently, it
+§6.1.24 :ref:`Boundary Conditions: Pressure` and
+§6.1.25 :ref:`Boundary Conditions: Saturation` below. Subsequently, it
 is required that the union (or combination) of the defined surface
 patches equal the entire domain surface. NOTE: This requirement is NOT
 checked in the code.
@@ -1007,7 +1017,7 @@ Permeability
 ~~~~~~~~~~~~
 
 In this section, permeability property values are assigned to grid
-points within geometries (specified in § `6.1.4 <#Geometries>`__ above)
+points within geometries (specified in §6.1.4 :ref:`Geometries` above)
 using one of the methods described below. Permeabilities are assumed to
 be a diagonal tensor with entries given as,
 
@@ -1095,7 +1105,7 @@ geometry, *geometry_name*. It must be either **Constant**,
 indicates that a constant is to be assigned to all grid cells within a
 geometry. The **TurnBand** value indicates that Tompson’s Turning Bands
 method is to be used to assign permeability data to all grid cells
-within a geometry :raw-latex:`\cite{TAG89}`. The **ParGauss** value
+within a geometry [TAG89]. The **ParGauss** value
 indicates that a Parallel Gaussian Simulator method is to be used to
 assign permeability data to all grid cells within a geometry. The
 **PFBFile** value indicates that premeabilities are to be read from the
@@ -1312,7 +1322,7 @@ specifies that permeability values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
 the “ParFlow Binary” file whose filename is given as the value. For a
 description of the ParFlow Binary file format, see
-§ `6.3 <#ParFlow Binary Files (.pfb)>`__. The ParFlow Binary file
+§6.3 `ParFlow Binary Files (.pfb)`. The ParFlow Binary file
 associated with the named geometry must contain a collection of
 permeability values corresponding in a one-to-one manner to the entire
 computational grid. That is to say, when the contents of the file are
@@ -1435,7 +1445,7 @@ Porosity
 ~~~~~~~~
 
 Here, porosity values are assigned within geounits (specified in
-§ `6.1.4 <#Geometries>`__ above) using one of the methods described
+§6.1.4 :ref:`Geometries` above) using one of the methods described
 below.
 
 The format for this section of input is:
@@ -1479,7 +1489,7 @@ Specific Storage
 
 Here, specific storage (:math:`S_s` in Equation
 `[eq:richard] <#eq:richard>`__) values are assigned within geounits
-(specified in § `6.1.4 <#Geometries>`__ above) using one of the methods
+(specified in §6.1.4 `Geometries` above) using one of the methods
 described below.
 
 The format for this section of input is:
@@ -1521,7 +1531,7 @@ dZMultipliers
 ~~~~~~~~~~~~~
 
 Here, dZ multipliers (:math:`\delta Z * m`) values are assigned within
-geounits (specified in § `6.1.4 <#Geometries>`__ above) using one of the
+geounits (specified in §6.1.4 :ref:Geometries` above) using one of the
 methods described below.
 
 The format for this section of input is:
@@ -1826,7 +1836,7 @@ Retardation
 ~~~~~~~~~~~
 
 Here, retardation values are assigned for contaminants within geounits
-(specified in § `6.1.4 <#Geometries>`__ above) using one of the
+(specified in §6.1.4 `Geometries` above) using one of the
 functions described below. The format for this section of input is:
 
 *list* **Geom.Retardation.GeomNames** no default This key specifies all
@@ -1950,7 +1960,7 @@ The various possible functions are defined as follows. The **Constant**
 specification means that the relative permeability will be constant on
 the specified geounit. The **VanGenuchten** specification means that the
 relative permeability will be given as a Van Genuchten function
-:raw-latex:`\cite{VanGenuchten80}` with the form,
+[VanGenuchten80] with the form,
 
 .. math::
 
@@ -1961,7 +1971,7 @@ relative permeability will be given as a Van Genuchten function
 where :math:`\alpha` and :math:`n` are soil parameters and
 :math:`m = 1 - 1/n`, on each region. The **Haverkamp** specification
 means that the relative permeability will be given in the following form
-:raw-latex:`\cite{Haverkamp-Vauclin81}`,
+[Haverkamp-Vauclin81],
 
 .. math::
 
@@ -2304,7 +2314,7 @@ The various possible functions are defined as follows. The **Constant**
 specification means that the saturation will be constant on the
 specified geounit. The **VanGenuchten** specification means that the
 saturation will be given as a Van Genuchten function
-:raw-latex:`\cite{VanGenuchten80}` with the form,
+[VanGenuchten80] with the form,
 
 .. math::
 
@@ -2315,7 +2325,7 @@ where :math:`s_{sat}` is the saturation at saturated conditions,
 :math:`s_{res}` is the residual saturation, and :math:`\alpha` and
 :math:`n` are soil parameters with :math:`m = 1 - 1/n`, on each region.
 The **Haverkamp** specification means that the saturation will be given
-in the following form :raw-latex:`\cite{Haverkamp-Vauclin81}`,
+in the following form [Haverkamp-Vauclin81],
 
 .. math::
 
@@ -2586,7 +2596,7 @@ that all phases are distributed within the domain at all times such that
 the lighter phases are vertically higher than the heavier phases.*
 
 Boundary condition input is associated with domain patches (see
-§ `6.1.7 <#Domain>`__). Note that different patches may have different
+§6.1.7 :ref:`Domain`). Note that different patches may have different
 types of boundary conditions on them.
 
 *list* **BCPressure.PatchNames** no default This key specifies the names
@@ -2627,12 +2637,18 @@ boundary condition that is read form a properly distributed .pfb file
 defined on a grid consistent with the pressure field grid. Only the
 values needed for the patch are used. The choices **OverlandFlow** and
 **OverlandFlowPFB** both turn on fully-coupled overland flow routing as
-described in :raw-latex:`\cite{KM06}` and in § `5.5 <#Overland Flow>`__.
+described in [KM06] and in §5.5 :ref:`Overland Flow`.
 The key **OverlandFlow** corresponds to a **Value** key with a positive
 or negative value, to indicate uniform fluxes (such as rainfall or
 evapotranspiration) over the entire domain while the key
-**OverlandFlowPFB** allows a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file to contain grid-based, spatially-variable fluxes. The choice ExactSolution specifies that an exact known solution is to be applied as a Dirichlet boundary condition on the respective patch. Note that this does not change according to any cycle. Instead, time dependence is handled by evaluating at the time the boundary condition value is desired. The solution is specified by using a predefined function (choices are described below). NOTE: These last three types of boundary condition input is for Richards’ equation cases only!``
+**OverlandFlowPFB** allows a ``.pfb`` file to contain grid-based, 
+spatially-variable fluxes. The choice ExactSolution specifies that 
+an exact known solution is to be applied as a Dirichlet boundary 
+condition on the respective patch. Note that this does not change 
+according to any cycle. Instead, time dependence is handled by evaluating 
+at the time the boundary condition value is desired. The solution is specified 
+by using a predefined function (choices are described below). NOTE: These last 
+three types of boundary condition input is for Richards’ equation cases only!
 
 .. container:: list
 
@@ -2779,9 +2795,11 @@ the line.
       pfset Patch.top.BCPressure.alltime.0.Value   14.0
 
 *string* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.FileName**
-no default This key specifies the name of a properly distributed ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file that contains boundary data to be read for types PressureFile and FluxFile. For flux data, the data must be defined over a grid consistent with the pressure field. In both cases, only the values needed for the patch will be used. The rest of the data is ignored.``
+no default This key specifies the name of a properly distributed ``.pfb`` file 
+that contains boundary data to be read for types PressureFile and FluxFile. 
+For flux data, the data must be defined over a grid consistent with the 
+pressure field. In both cases, only the values needed for the patch will 
+be used. The rest of the data is ignored.
 
 .. container:: list
 
@@ -2866,7 +2884,7 @@ cases.
 
 Here we define the boundary conditions for the saturations. Boundary
 condition input is associated with domain patches (see
-§ `6.1.7 <#Domain>`__). Note that different patches may have different
+§6.1.7 :ref:`Domain`). Note that different patches may have different
 types of boundary conditions on them.
 
 *list* **BCSaturation.PatchNames** no default This key specifies the
@@ -3149,7 +3167,7 @@ given contaminant, *contaminant_name*. The choices for this key are
 **Constant** or **PFBFile**. The choice **Constant** will apply
 constants values to different geometries. The choice **PFBFile** will
 read values from a “ParFlow Binary” file (see
-§ `6.3 <#ParFlow Binary Files (.pfb)>`__).
+§6.3 :ref:`ParFlow Binary Files (.pfb)`).
 
 .. container:: list
 
@@ -3644,7 +3662,7 @@ and general control flags for ParFlow. These are described next :
 for solver **IMPES**. Choices for this key are **MGSemi, PPCG, PCG** and
 **CGHS**. The choice **MGSemi** is an algebraic mulitgrid linear solver
 (not a preconditioned conjugate gradient) which may be less robust than
-**PCG** as described in :raw-latex:`\cite{Ashby-Falgout90}`. The choice
+**PCG** as described in [Ashby-Falgout90]. The choice
 **PPCG** is a preconditioned conjugate gradient solver. The choice
 **PCG** is a conjugate gradient solver with a multigrid preconditioner.
 The choice **CGHS** is a conjugate gradient solver.
@@ -3795,8 +3813,8 @@ occurs at the end of the run when all collected data is written.
       pfset Solver.PrintWells False
 
 *string* **Solver.PrintLSMSink** False This key is used to turn on
-printing of the flux array passed from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12 ``CLM to ParFlow. Printing occurs at each DumpInterval time.``
+printing of the flux array passed from ``CLM`` to ParFlow. 
+Printing occurs at each DumpInterval time.
 
 .. container:: list
 
@@ -3907,9 +3925,9 @@ section.
 
 *string* **Solver.WriteSiloEvapTrans** False This key is used to specify
 printing of the evaporation and rainfall flux data using silo binary
-format. This data comes from either ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12
-``clm or from external calls to ParFlow such as WRF. This data is in units of [L^3 T^{-1}]. The printing of the data is controlled by values in the timing information section.``
+format. This data comes from either ``clm`` or from external calls to 
+ParFlow such as WRF. This data is in units of [L^3 T^{-1}]. The printing 
+of the data is controlled by values in the timing information section.
 
 .. container:: list
 
@@ -3920,8 +3938,9 @@ format. This data comes from either ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=
 *string* **Solver.WriteSiloEvapTransSum** False This key is used to
 specify printing of the evaporation and rainfall flux data using silo
 binary format as a running, cumulative amount. This data comes from
-either ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``clm or from external calls to ParFlow such as WRF. This data is in units of [L^3]. The printing of the data is controlled by values in the timing information section.``
+either ``clm`` or from external calls to ParFlow such as WRF. This 
+data is in units of [L^3]. The printing of the data is controlled by 
+values in the timing information section.
 
 .. container:: list
 
@@ -3998,8 +4017,8 @@ Richards’ Equation Solver Parameters
 
 The following keys are used to specify various parameters used by the
 linear and nonlinear solvers in the Richards’ equation implementation.
-For information about these solvers, see :raw-latex:`\cite{Woodward98}`
-and :raw-latex:`\cite{Ashby-Falgout90}`.
+For information about these solvers, see [Woodward98]
+and [Ashby-Falgout90].
 
 *double* **Solver.Nonlinear.ResidualTol** 1e-7 This key specifies the
 tolerance that measures how much the relative reduction in the nonlinear
@@ -4078,9 +4097,15 @@ are required, consider setting the timestep to a smaller value.
       pfset Solver.MaxConvergenceFailures 4
 
 *string* **Solver.Nonlinear.PrintFlag** HighVerbosity This key specifies
-the amount of informational data that is printed to the ‘#=12 ‘$=12
-‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``*.out.kinsol.log file. Choices for this key are NoVerbosity, LowVerbosity, NormalVerbosity and HighVerbosity. The choice NoVerbosity prints no statistics about the nonlinear convergence process. The choice LowVerbosity outputs the nonlinear iteration count, the scaled norm of the nonlinear function, and the number of function calls. The choice NormalVerbosity prints the same as for LowVerbosity and also the global strategy statistics. The choice HighVerbosity prints the same as for NormalVerbosity with the addition of further Krylov iteration statistics.``
+the amount of informational data that is printed to the ``*.out.kinsol.log`` 
+file. Choices for this key are NoVerbosity, LowVerbosity, NormalVerbosity 
+and HighVerbosity. The choice NoVerbosity prints no statistics about the 
+nonlinear convergence process. The choice LowVerbosity outputs the nonlinear 
+iteration count, the scaled norm of the nonlinear function, and the number of 
+function calls. The choice NormalVerbosity prints the same as for LowVerbosity 
+and also the global strategy statistics. The choice HighVerbosity prints the 
+same as for NormalVerbosity with the addition of further Krylov iteration 
+statistics.
 
 .. container:: list
 
@@ -4095,7 +4120,7 @@ Linear residuall norms are measured in the :math:`l^2` norm. Choices for
 this key include **EtaConstant, Walker1** and **Walker2**. If the choice
 **EtaConstant** is specified, then :math:`\eta` will be taken as
 constant. The choices **Walker1** and **Walker2** specify choices for
-:math:`\eta` developed by Eisenstat and Walker :raw-latex:`\cite{EW96}`.
+:math:`\eta` developed by Eisenstat and Walker [EW96].
 The choice **Walker1** specifies that :math:`\eta` will be given by
 :math:`| \|F(u^k)\| - \|F(u^{k-1}) + J(u^{k-1})*p \|  |  / \|F(u^{k-1})\|`.
 The choice **Walker2** specifies that :math:`\eta` will be given by
@@ -4248,9 +4273,9 @@ are **Galerkin** or **NonGalerkin**
       pfset Solver.Linear.Preconditioner.PFMG.RAPType    Galerkin
 
 *logical* **Solver.EvapTransFile** False This key specifies specifies
-that the Flux terms for Richards’ equation are read in from a ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file. This file has [T^-1] units. Note this key is for a steady-state flux and should not be used in conjunction with the transient key below.``
+that the Flux terms for Richards’ equation are read in from a ``.pfb`` 
+file. This file has [T^-1] units. Note this key is for a steady-state 
+flux and should not be used in conjunction with the transient key below.
 
 .. container:: list
 
@@ -4260,8 +4285,9 @@ that the Flux terms for Richards’ equation are read in from a ‘#=12
 
 *logical* **Solver.EvapTransFileTransient** False This key specifies
 specifies that the Flux terms for Richards’ equation are read in from a
-series of flux ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file. Each file has [T^-1] units. Note this key should not be used with the key above, only one of these keys should be set to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 True at a time, not both.``
+series of flux ``.pfb`` file. Each file has [T^-1] units. Note this key s
+hould not be used with the key above, only one of these keys should be set 
+to ``True`` at a time, not both.
 
 .. container:: list
 
@@ -4270,9 +4296,12 @@ series of flux ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       pfset Solver.EvapTransFileTransient    True
 
 *string* **Solver.EvapTrans.FileName** no default This key specifies
-specifies filename for the distributed ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``.pfb file that contains the flux values for Richards’ equation. This file has [T^-1] units. For the steady-state option (Solver.EvapTransFile=True) this key should be the complete filename. For the transient option (Solver.EvapTransFileTransient=True then the filename is a header and ParFlow will load one file per timestep, with the form ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 filename.00000.pfb.``
+specifies filename for the distributed ``.pfb`` file that contains the 
+flux values for Richards’ equation. This file has [T^-1] units. 
+For the steady-state option (Solver.EvapTransFile=True) this key 
+should be the complete filename. For the transient option 
+(Solver.EvapTransFileTransient=True then the filename is a header and 
+ParFlow will load one file per timestep, with the form ``filename.00000.pfb``.
 
 .. container:: list
 
@@ -4281,8 +4310,9 @@ specifies filename for the distributed ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
       pfset Solver.EvapTrans.FileName   evap.trans.test.pfb
 
 *string* **Solver.LSM** none This key specifies whether a land surface
-model, such as ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM, will be called each solver timestep. Choices for this key include none and CLM. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+model, such as ``CLM``, will be called each solver timestep. Choices 
+for this key include none and CLM. Note that ``CLM`` must be compiled 
+and linked at runtime for this option to be active.
 
 .. container:: list
 
@@ -4340,9 +4370,11 @@ overland flow equation adding the following term:
 CLM Solver Parameters
 ~~~~~~~~~~~~~~~~~~~~~
 
-*string* **Solver.CLM.Print1dOut** False This key specifies whether the
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM one dimensional (averaged over each processor) output file is written or not. Choices for this key include True and False. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+*string* **Solver.CLM.Print1dOut** False This key specifies 
+whether the ``CLM`` one dimensional (averaged over each processor) 
+output file is written or not. Choices for this key include True and 
+False. Note that ``CLM`` must be compiled and linked at runtime 
+for this option to be active.
 
 .. container:: list
 
@@ -4351,8 +4383,11 @@ CLM Solver Parameters
       pfset Solver.CLM.Print1dOut   False
 
 *integer* **Solver.CLM.IstepStart** 1 This key specifies the value of
-the counter, *istep* in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. This key primarily determines the start of the output counter for ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM.It is used to restart a run by setting the key to the ending step of the previous run plus one. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+the counter, *istep* in ``CLM``. This key primarily determines the start 
+of the output counter for ``CLM``. It is used to restart a run by setting 
+the key to the ending step of the previous run plus one. Note 
+that ``CLM`` must be compiled and linked at runtime for this option to 
+be active.
 
 .. container:: list
 
@@ -4362,9 +4397,16 @@ the counter, *istep* in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂1
 
 *String* **Solver.CLM.MetForcing** no default This key specifies defines
 whether 1D (uniform over the domain), 2D (spatially distributed) or 3D
-(spatially distributed with multiple timesteps per ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb forcing file) forcing data is used. Choices for this key are 1D, 2D and 3D. This key has no default so the user must set it to 1D, 2D or 3D. Failure to set this key will cause ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM to still be run but with unpredictable values causing ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM to eventually crash. 1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D forcing files are distributed ParFlow binary files, one for each variable and timestep. File names are specified in the Solver.CLM.MetFileName variable below. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+(spatially distributed with multiple timesteps per ``.pfb`` forcing file) 
+forcing data is used. Choices for this key are 1D, 2D and 3D. This key 
+has no default so the user must set it to 1D, 2D or 3D. Failure to set 
+this key will cause ``CLM`` to still be run but with unpredictable values 
+causing ``CLM`` to eventually crash. 1D meteorological forcing files 
+are text files with single columns for each variable and each timestep 
+per row, while 2D forcing files are distributed ParFlow binary files, one 
+for each variable and timestep. File names are specified in the 
+Solver.CLM.MetFileName variable below. Note that ``CLM`` must be compiled 
+and linked at runtime for this option to be active.
 
 .. container:: list
 
@@ -4381,9 +4423,14 @@ each variable and *multiple* timesteps (3D). Behavior of this key is
 different for 1D and 2D and 3D cases, as sepcified by the
 **Solver.CLM.MetForcing** key above. For 1D cases, it is the *FULL FILE
 NAME*. Note that in this configuration, this forcing file is **not**
-distributed, the user does not provide copies such as ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``narr.1hr.txt.0, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 narr.1hr.txt.1 for each processor. ParFlow only needs the single original file (e.g. narr.1hr.txt). For 2D cases, this key is the BASE FILE NAME for the 2D forcing files, currently set to NLDAS, with individual files determined as follows ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 NLDAS.<variable>.<time step>.pfb. Where the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <variable> is the forcing variable and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <timestep> is the integer file counter corresponding to istep above. Forcing is needed for following variables:``
+distributed, the user does not provide copies such 
+as ``narr.1hr.txt.0``, ``narr.1hr.txt.1`` for each processor. ParFlow only 
+needs the single original file (e.g. narr.1hr.txt). For 2D cases, this key 
+is the BASE FILE NAME for the 2D forcing files, currently set to NLDAS, 
+with individual files determined as follows ``NLDAS.<variable>.<time step>.pfb``. 
+Where the ``<variable>`` is the forcing variable and ``<timestep>`` is the 
+integer file counter corresponding to istep above. Forcing is needed 
+for following variables:
 
 **DSWR**: 
    Downward Visible or Short-Wave radiation :math:`[W/m^2]`.
@@ -4409,8 +4456,7 @@ distributed, the user does not provide copies such as ‘#=12 ‘$=12 ‘%=12
 **SPFH**: 
    Water-vapor specific humidity :math:`[kg/kg]` [clm_forcing]
 
-Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM must be compiled and linked at runtime for this option to be active.``
+Note that ``CLM`` must be compiled and linked at runtime for this option to be active.``
 
 .. container:: list
 
@@ -4420,9 +4466,10 @@ Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 
 *String* **Solver.CLM.MetFilePath** no default This key specifies
 defines the location of 1D, 2D or 3D forcing data. For 1D cases, this is
-the path to a single forcing file (*e.g.* ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``narr.1hr.txt). For 2D and 3D cases, this is the path to the directory containing all forcing files. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+the path to a single forcing file (*e.g.* ``narr.1hr.txt``). For 2D and 
+3D cases, this is the path to the directory containing all forcing files. 
+Note that ``CLM`` must be compiled and linked at runtime for this 
+option to be active.
 
 .. container:: list
 
@@ -4440,8 +4487,10 @@ number of timesteps per file for 3D forcing data.
       pfset Solver.CLM.MetFileNT	24	
 
 *string* **Solver.CLM.ForceVegetation** False This key specifies whether
-vegetation should be forced in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. Currently this option only works for 1D and 3D forcings, as specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.MetForcing. Choices for this key include True and False. Forced vegetation variables are :``
+vegetation should be forced in ``CLM``. Currently this option only works 
+for 1D and 3D forcings, as specified by the key ``Solver.CLM.MetForcing``. 
+Choices for this key include True and False. Forced vegetation variables 
+are :
 
 **LAI**: 
    Leaf Area Index :math:`[-]`
@@ -4455,9 +4504,19 @@ vegetation should be forced in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 
 **DISPLA**: 
    Displacement height :math:`[m]` [clm_forcing]
 
-In the case of 1D meteorological forcings, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``CLM requires four files for vegetation time series and one vegetation map. The four files should be named respectively ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 lai.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 sai.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 z0m.dat, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 displa.dat. They are ASCII files and contain 18 time-series columns (one per IGBP vegetation class, and each timestep per row). The vegetation map should be a properly distributed 2D ParFlow binary file ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb) which contains vegetation indices (from 1 to 18). The vegetation map filename is ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 veg_map.pfb. ParFlow uses the vegetation map to pass to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM a 2D map for each vegetation variable at each time step. In the case of 3D meteorological forcings, ParFlow expects four distincts properly distributed ParFlow binary file ( ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfb), the third dimension being the timesteps. The files should be named ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 LAI.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 SAI.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Z0M.pfb, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 DISPLA.pfb. No vegetation map is needed in this case.``
+In the case of 1D meteorological forcings, ``CLM`` requires four files 
+for vegetation time series and one vegetation map. The four files should 
+be named respectively ``lai.dat``, ``sai.dat``, ``z0m.dat``, ``displa.dat``. 
+They are ASCII files and contain 18 time-series columns (one per IGBP 
+vegetation class, and each timestep per row). The vegetation map should 
+be a properly distributed 2D ParFlow binary file (``.pfb``) which contains 
+vegetation indices (from 1 to 18). The vegetation map filename is ``veg_map.pfb``. 
+ParFlow uses the vegetation map to pass to ``CLM`` a 2D map for each 
+vegetation variable at each time step. In the case of 3D meteorological 
+forcings, ParFlow expects four distincts properly distributed ParFlow binary 
+file (``.pfb``), the third dimension being the timesteps. The files should 
+be named ``LAI.pfb``, ``SAI.pfb``, ``Z0M.pfb``, ``DISPLA.pfb``. No 
+vegetation map is needed in this case.
 
 .. container:: list
 
@@ -4465,9 +4524,13 @@ In the case of 1D meteorological forcings, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=
 
       pfset Solver.CLM.ForceVegetation  True
 
-*string* **Solver.WriteSiloCLM** False This key specifies whether the
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM writes two dimensional binary output files to a silo binary format. This data may be read in by VisIT and other visualization packages. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM and silo must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all ParFlow variables, using the runname, and istep. Variables are either two-dimensional or over the number of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM layers (default of ten).``
+*string* **Solver.WriteSiloCLM** False This key specifies whether the ``CLM`` 
+writes two dimensional binary output files to a silo binary format. This data 
+may be read in by VisIT and other visualization packages. Note that ``CLM`` 
+and silo must be compiled and linked at runtime for this option to be active. 
+These files are all written according to the standard format used for all ParFlow 
+variables, using the runname, and istep. Variables are either two-dimensional 
+or over the number of ``CLM`` layers (default of ten).
 
 .. container:: list
 
@@ -4479,48 +4542,38 @@ The output variables are:
 
 .. container:: description
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_lh_tot for latent heat flux total [W/m^2] using the silo variable LatentHeat;``
+   ``eflx_lh_tot`` for latent heat flux total [W/m^2] using the silo variable LatentHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_lwrad_out for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;``
+   ``eflx_lwrad_out`` for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_sh_tot for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;``
+   ``eflx_sh_tot`` for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_soil_grnd for ground heat flux [W/m^2] using the silo variable GroundHeat;``
+   ``eflx_soil_grnd`` for ground heat flux [W/m^2] using the silo variable GroundHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_tot for total evaporation [mm/s] using the silo variable EvaporationTotal;``
+   ``qflx_evap_tot`` for total evaporation [mm/s] using the silo variable EvaporationTotal;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_grnd for ground evaporation without condensation [mm/s] using the silo variable EvaporationGroundNoSublimation;``
+   ``qflx_evap_grnd`` for ground evaporation without condensation [mm/s] using the silo 
+   variable EvaporationGroundNoSublimation;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_soi for soil evaporation [mm/s] using the silo variable EvaporationGround;``
+   ``qflx_evap_soi`` for soil evaporation [mm/s] using the silo variable EvaporationGround;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_veg for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;``
+   ``qflx_evap_veg`` for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_tran_veg for vegetation transpiration [mm/s] using the silo variable Transpiration;``
+   ``qflx_tran_veg`` for vegetation transpiration [mm/s] using the silo variable Transpiration;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_infl for soil infiltration [mm/s] using the silo variable Infiltration;``
+   ``qflx_infl`` for soil infiltration [mm/s] using the silo variable Infiltration;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``swe_out for snow water equivalent [mm] using the silo variable SWE;``
+   ``swe_out`` for snow water equivalent [mm] using the silo variable SWE;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``t_grnd for ground surface temperature [K] using the silo variable TemperatureGround; and``
+   ``t_grnd`` for ground surface temperature [K] using the silo variable TemperatureGround; and
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``t_soil for soil temperature over all layers [K] using the silo variable TemperatureSoil.``
+   ``t_soil`` for soil temperature over all layers [K] using the silo variable TemperatureSoil.
 
-*string* **Solver.PrintCLM** False This key specifies whether the ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM writes two dimensional binary output files to a ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PFB binary format. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all ParFlow variables, using the runname, and istep. Variables are either two-dimensional or over the number of ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM layers (default of ten).``
+*string* **Solver.PrintCLM** False This key specifies whether the ``CLM`` writes two dimensional 
+binary output files to a ``PFB`` binary format. Note that ``CLM`` must be compiled and linked 
+at runtime for this option to be active. These files are all written according to the 
+standard format used for all ParFlow variables, using the runname, and istep. Variables 
+are either two-dimensional or over the number of ``CLM`` layers (default of ten).
 
 .. container:: list
 
@@ -4532,48 +4585,36 @@ The output variables are:
 
 .. container:: description
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_lh_tot for latent heat flux total [W/m^2] using the silo variable LatentHeat;``
+   ``eflx_lh_tot`` for latent heat flux total [W/m^2] using the silo variable LatentHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_lwrad_out for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;``
+   ``eflx_lwrad_out`` for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_sh_tot for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;``
+   ``eflx_sh_tot`` for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_soil_grnd for ground heat flux [W/m^2] using the silo variable GroundHeat;``
+   ``eflx_soil_grnd`` for ground heat flux [W/m^2] using the silo variable GroundHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_tot for total evaporation [mm/s] using the silo variable EvaporationTotal;``
+   ``qflx_evap_tot`` for total evaporation [mm/s] using the silo variable EvaporationTotal;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_grnd for ground evaporation without sublimation [mm/s] using the silo variable EvaporationGroundNoSublimation;``
+   ``qflx_evap_grnd`` for ground evaporation without sublimation [mm/s] using the silo 
+   variable EvaporationGroundNoSublimation;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_soi for soil evaporation [mm/s] using the silo variable EvaporationGround;``
+   ``qflx_evap_soi`` for soil evaporation [mm/s] using the silo variable EvaporationGround;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_veg for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;``
+   ``qflx_evap_veg`` for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_tran_veg for vegetation transpiration [mm/s] using the silo variable Transpiration;``
+   ``qflx_tran_veg`` for vegetation transpiration [mm/s] using the silo variable Transpiration;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_infl for soil infiltration [mm/s] using the silo variable Infiltration;``
+   ``qflx_infl`` for soil infiltration [mm/s] using the silo variable Infiltration;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``swe_out for snow water equivalent [mm] using the silo variable SWE;``
+   ``swe_out`` for snow water equivalent [mm] using the silo variable SWE;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``t_grnd for ground surface temperature [K] using the silo variable TemperatureGround; and``
+   ``t_grnd`` for ground surface temperature [K] using the silo variable TemperatureGround; and
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``t_soil for soil temperature over all layers [K] using the silo variable TemperatureSoil.``
+   ``t_soil`` for soil temperature over all layers [K] using the silo variable TemperatureSoil.
 
-*string* **Solver.WriteCLMBinary** True This key specifies whether the
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM writes two dimensional binary output files in a generic binary format. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+*string* **Solver.WriteCLMBinary** True This key specifies whether the ``CLM`` writes two dimensional 
+binary output files in a generic binary format. Note that ``CLM`` must be compiled and linked at 
+runtime for this option to be active.
 
 .. container:: list
 
@@ -4581,9 +4622,11 @@ The output variables are:
 
       pfset Solver.WriteCLMBinary False
 
-*string* **Solver.CLM.BinaryOutDir** True This key specifies whether the
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM writes each set of two dimensional binary output files to a corresponding directory. These directories my be created before ParFlow is run (using the tcl script, for example). Choices for this key include True and False. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+*string* **Solver.CLM.BinaryOutDir** True This key specifies whether the ``CLM`` writes 
+each set of two dimensional binary output files to a corresponding directory. These 
+directories my be created before ParFlow is run (using the tcl script, for example). 
+Choices for this key include True and False. Note that ``CLM`` must be compiled and 
+linked at runtime for this option to be active.
 
 .. container:: list
 
@@ -4595,51 +4638,40 @@ These directories are:
 
 .. container:: description
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/qflx_top_soil for soil flux;``
+   ``/qflx_top_soil`` for soil flux;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/qflx_infl for infiltration;``
+   ``/qflx_infl`` for infiltration;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/qflx_evap_grnd for ground evaporation;``
+   ``/qflx_evap_grnd`` for ground evaporation;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/eflx_soil_grnd for ground heat flux;``
+   ``/eflx_soil_grnd`` for ground heat flux;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/qflx_evap_veg for vegetation evaporation;``
+   ``/qflx_evap_veg`` for vegetation evaporation;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/eflx_sh_tot for sensible heat flux;``
+   ``/eflx_sh_tot`` for sensible heat flux;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/eflx_lh_tot for latent heat flux;``
+   ``/eflx_lh_tot`` for latent heat flux;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/qflx_evap_tot for total evaporation;``
+   ``/qflx_evap_tot`` for total evaporation;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/t_grnd for ground surface temperature;``
+   ``/t_grnd`` for ground surface temperature;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/qflx_evap_soi for soil evaporation;``
+   ``/qflx_evap_soi`` for soil evaporation;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/qflx_tran_veg for vegetation transpiration;``
+   ``/qflx_tran_veg`` for vegetation transpiration;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/eflx_lwrad_out for outgoing long-wave radiation;``
+   ``/eflx_lwrad_out`` for outgoing long-wave radiation;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/swe_out for snow water equivalent; and``
+   ``/swe_out`` for snow water equivalent; and
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``/diag_out for diagnostics.``
+   ``/diag_out`` for diagnostics.
 
 *string* **Solver.CLM.CLMFileDir** no default This key specifies what
-directory all output from the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM is written to. This key may be set to ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 "./" or ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 "" to write output to the ParFlow run directory. This directory must be created before ParFlow is run. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+directory all output from the ``CLM`` is written to. This key may be 
+set to ``"./"`` or ``""`` to write output to the ParFlow run directory. 
+This directory must be created before ParFlow is run. Note 
+that ``CLM`` must be compiled and linked at runtime for this option 
+to be active.
 
 .. container:: list
 
@@ -4648,8 +4680,9 @@ directory all output from the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 �
       pfset Solver.CLM.CLMFileDir "CLM_Output/"
 
 *integer* **Solver.CLM.CLMDumpInterval** 1 This key specifies how often
-output from the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM is written. This key is in integer multipliers of the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM timestep. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+output from the ``CLM`` is written. This key is in integer multipliers 
+of the ``CLM`` timestep. Note that ``CLM`` must be compiled and linked 
+at runtime for this option to be active.
 
 .. container:: list
 
@@ -4658,9 +4691,8 @@ output from the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       pfset Solver.CLM.CLMDumpInterval 2
 
 *string* **Solver.CLM.EvapBeta** Linear This key specifies the form of
-the bare soil evaporation :math:`\beta` parameter in ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. The valid types for this key are None, Linear, Cosine.``
+the bare soil evaporation :math:`\beta` parameter in ``CLM``. The 
+valid types for this key are None, Linear, Cosine.
 
 **None**: 
    No beta formulation, :math:`\beta=1`.
@@ -4671,9 +4703,9 @@ the bare soil evaporation :math:`\beta` parameter in ‘#=12 ‘$=12 ‘%=12
 **Cosine**: 
    :math:`\beta=\frac{1}{2}(1-\cos(\frac{(\phi -\phi S_{res})}{(\phi S-\phi S_{res})}\pi)`
 
-Note that :math:`S_{res}` is specified by the key ‘#=12 ‘$=12 ‘%=12
-‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``Solver.CLM.ResSat below, that \beta is limited between zero and one and also that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+Note that :math:`S_{res}` is specified by the key ``Solver.CLM.ResSat`` below, 
+that \beta is limited between zero and one and also that ``CLM`` must 
+be compiled and linked at runtime for this option to be active.
 
 .. container:: list
 
@@ -4682,9 +4714,9 @@ Note that :math:`S_{res}` is specified by the key ‘#=12 ‘$=12 ‘%=12
       pfset Solver.CLM.EvapBeta Linear
 
 *double* **Solver.CLM.ResSat** 0.1 This key specifies the residual
-saturation for the :math:`\beta` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12
-``CLM specified above. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+saturation for the :math:`\beta` function in ``CLM`` specified above. 
+Note that ``CLM`` must be compiled and linked at runtime for this 
+option to be active.
 
 .. container:: list
 
@@ -4693,9 +4725,8 @@ saturation for the :math:`\beta` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12
       pfset Solver.CLM.ResSat  0.15
 
 *string* **Solver.CLM.VegWaterStress** Saturation This key specifies the
-form of the plant water stress function :math:`\beta_t` parameter in
-‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. The valid types for this key are None, Saturation, Pressure.``
+form of the plant water stress function :math:`\beta_t` parameter in ``CLM``. 
+The valid types for this key are None, Saturation, Pressure.
 
 **None**: 
    No transpiration water stress formulation, :math:`\beta_t=1`.
@@ -4707,8 +4738,11 @@ form of the plant water stress function :math:`\beta_t` parameter in
    :math:`\beta_t=\frac{P - P_{wp}}{P_{fc}-P_{wp}}`
 
 Note that the wilting point, :math:`S_{wp}` or :math:`p_{wp}`, is
-specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``Solver.CLM.WiltingPoint below, that the field capacity, S_{fc} or p_{fc}, is specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.FieldCapacity below, that \beta_t is limited between zero and one and also that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+specified by the key ``Solver.CLM.WiltingPoint`` below, that the 
+field capacity, S_{fc} or p_{fc}, is specified by the 
+key ``Solver.CLM.FieldCapacity`` below, that \beta_t is limited 
+between zero and one and also that ``CLM`` must be compiled and 
+linked at runtime for this option to be active.
 
 .. container:: list
 
@@ -4717,9 +4751,11 @@ specified by the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       pfset Solver.CLM.VegWaterStress  Pressure
 
 *double* **Solver.CLM.WiltingPoint** 0.1 This key specifies the wilting
-point for the :math:`\beta_t` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12
-‘=̃12 ‘=̂12
-``CLM specified above. Note that the units for this function are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+point for the :math:`\beta_t` function in ``CLM`` specified above. Note 
+that the units for this function are pressure [m] for a Pressure 
+formulation and saturation [-] for a Saturation formulation. Note 
+that ``CLM`` must be compiled and linked at runtime for this option 
+to be active.
 
 .. container:: list
 
@@ -4728,9 +4764,11 @@ point for the :math:`\beta_t` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=1
       pfset Solver.CLM.WiltingPoint  0.15
 
 *double* **Solver.CLM.FieldCapacity** 1.0 This key specifies the field
-capacity for the :math:`\beta_t` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12
-``CLM specified above. Note that the units for this function are pressure [m] for a Pressure formulation and saturation [-] for a Saturation formulation. Note that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM must be compiled and linked at runtime for this option to be active.``
+capacity for the :math:`\beta_t` function in ``CLM`` specified above. 
+Note that the units for this function are pressure [m] for a Pressure 
+formulation and saturation [-] for a Saturation formulation. Note 
+that ``CLM`` must be compiled and linked at runtime for this option 
+to be active.
 
 .. container:: list
 
@@ -4739,8 +4777,8 @@ capacity for the :math:`\beta_t` function in ‘#=12 ‘$=12 ‘%=12 ‘&=12
       pfset Solver.CLM.FieldCapacity  0.95
 
 *string* **Solver.CLM.IrrigationTypes** none This key specifies the form
-of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. The valid types for this key are none, Spray, Drip, Instant.``
+of the irrigation in ``CLM``. The valid types for this key are none, 
+Spray, Drip, Instant.
 
 .. container:: list
 
@@ -4749,8 +4787,10 @@ of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       pfset Solver.CLM.IrrigationTypes Drip
 
 *string* **Solver.CLM.IrrigationCycle** Constant This key specifies the
-cycle of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. The valid types for this key are Constant, Deficit. Note only Constant is currently implemented. Constant cycle applies irrigation each day from IrrigationStartTime to IrrigationStopTime in GMT.``
+cycle of the irrigation in ``CLM``. The valid types for this key are 
+Constant, Deficit. Note only Constant is currently implemented. Constant 
+cycle applies irrigation each day from IrrigationStartTime to 
+IrrigationStopTime in GMT.
 
 .. container:: list
 
@@ -4759,8 +4799,7 @@ cycle of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=
       pfset Solver.CLM.IrrigationCycle Constant
 
 *double* **Solver.CLM.IrrigationRate** no default This key specifies the
-rate of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM in [mm/s].``
+rate of the irrigation in ``CLM`` in [mm/s].
 
 .. container:: list
 
@@ -4769,8 +4808,7 @@ rate of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=�
       pfset Solver.CLM.IrrigationRate 10.
 
 *double* **Solver.CLM.IrrigationStartTime** no default This key
-specifies the start time of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12
-‘_=12 ‘=̃12 ‘=̂12 ``CLM GMT.``
+specifies the start time of the irrigation in ``CLM`` GMT.
 
 .. container:: list
 
@@ -4779,8 +4817,7 @@ specifies the start time of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12
       pfset Solver.CLM.IrrigationStartTime 0800
 
 *double* **Solver.CLM.IrrigationStopTime** no default This key specifies
-the stop time of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12 ``CLM GMT.``
+the stop time of the irrigation in ``CLM`` GMT.
 
 .. container:: list
 
@@ -4789,8 +4826,7 @@ the stop time of the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=�
       pfset Solver.CLM.IrrigationStopTime 1200
 
 *double* **Solver.CLM.IrrigationThreshold** 0.5 This key specifies the
-threshold value for the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
-‘=̂12 ``CLM.``
+threshold value for the irrigation in ``CLM``.
 
 .. container:: list
 
@@ -4798,9 +4834,14 @@ threshold value for the irrigation in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 �
 
       pfset Solver.CLM.IrrigationThreshold 0.2
 
-*integer* **Solver.CLM.ReuseCount** 1 How many times to reuse a ‘#=12
-‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM atmospheric forcing file input. For example timestep=1, reuse =1 is normal behavior but reuse=2 and timestep=0.5 subdivides the time step using the same ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM input for both halves instead of needing two files. This is particually useful for large, distributed runs when the user wants to run ParFlow at a smaller timestep than the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM forcing. Forcing files will be re-used and total fluxes adjusted accordingly without needing duplicate files.``
+*integer* **Solver.CLM.ReuseCount** 1 How many times to reuse a ``CLM`` 
+atmospheric forcing file input. For example timestep=1, reuse =1 is 
+normal behavior but reuse=2 and timestep=0.5 subdivides the time step 
+using the same ``CLM`` input for both halves instead of needing two files. 
+This is particually useful for large, distributed runs when the user 
+wants to run ParFlow at a smaller timestep than the ``CLM`` 
+forcing. Forcing files will be re-used and total fluxes adjusted 
+accordingly without needing duplicate files.
 
 .. container:: list
 
@@ -4850,8 +4891,15 @@ output is overwritten to time 00000 in *restart file name*.00000.p where
       pfset Solver.CLM.DailyRST    False
 
 *string* **Solver.CLM.SingleFile** False Controls whether ParFlow writes
-all ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM output variables as a single file per time step. When "True", this combines the output of all the CLM output variables into a special multi-layer PFB with the file extension ".C.pfb". The first 13 layers correspond to the 2-D CLM outputs and the remaining layers are the soil temperatures in each layer. For example, a model with 4 soil layers will create a SingleFile CLM output with 17 layers at each time step. The file pseudo code is given below in § [ParFlow Binary Files (.c.pfb)] and the variables and units are as specified in the multiple ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PFB and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 SILO formats as above.``
+all ``CLM`` output variables as a single file per time step. When "True", 
+this combines the output of all the CLM output variables into a special 
+multi-layer PFB with the file extension ".C.pfb". The first 13 layers 
+correspond to the 2-D CLM outputs and the remaining layers are the soil 
+temperatures in each layer. For example, a model with 4 soil layers will 
+create a SingleFile CLM output with 17 layers at each time step. The file 
+pseudo code is given below in §:ref:`ParFlow Binary Files (.c.pfb)` and 
+the variables and units are as specified in the multiple ``PFB`` 
+and ``SILO`` formats as above.
 
 .. container:: list
 
@@ -4860,8 +4908,14 @@ all ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
       pfset Solver.CLM.SingleFile   True
 
 *integer* **Solver.CLM.RootZoneNZ** 10 This key sets the number of soil
-layers the ParFlow expects from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM. It will allocate and format all the arrays for passing variables to and from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM accordingly. Note that this does not set the soil layers in ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM to do that the user needs to change the value of the parameter ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 nlevsoi in the file ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 clm_varpar.F90 in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 PARFLOW_DIR\pfsimulator\clm directory to reflect the desired numnber of soil layers and recompile. Most likely the key ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 Solver.CLM.SoiLayer, described below, will also need to be changed.``
+layers the ParFlow expects from ``CLM``. It will allocate and format all 
+the arrays for passing variables to and from ``CLM`` accordingly. Note 
+that this does not set the soil layers in ``CLM`` to do that the user 
+needs to change the value of the parameter ``nlevsoi`` in the 
+file ``clm_varpar.F90`` in the ``PARFLOW_DIR\pfsimulator\clm`` 
+directory to reflect the desired numnber of soil layers and recompile. 
+Most likely the key ``Solver.CLM.SoiLayer``, described below, will 
+also need to be changed.
 
 .. container:: list
 
@@ -4870,8 +4924,8 @@ layers the ParFlow expects from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12
       pfset Solver.CLM.RootZoneNZ      4
 
 *integer* **Solver.CLM.SoiLayer** 7 This key sets the soil layer, and
-thus the soil depth, that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``CLM uses for the seasonal temperature adjustment for all leaf and stem area indices.``
+thus the soil depth, that ``CLM`` uses for the seasonal temperature 
+adjustment for all leaf and stem area indices.
 
 .. container:: list
 
@@ -4880,7 +4934,7 @@ thus the soil depth, that ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=�
       pfset Solver.CLM.SoiLayer      4
 
 *integer* **Solver.CLM.SoilLevels** 10 This key sets the number of soil
-levels for CLM.
+levels for ``CLM``.
 
 .. container:: list
 
@@ -4906,8 +4960,8 @@ NetCDF4 parallel I/O is being implemented in ParFlow. As of now only
 output capability is implemented. Input functionality will be added in
 later version. Currently user has option of printing 3-D time varying
 pressure or saturation or both in a single NetCDF file containing
-multiple time steps. User should configure ParFlow(pfsimulatior part) "-
--with-netcdf" option and link the appropriate NetCDF4 library. Naming
+multiple time steps. User should configure ParFlow(pfsimulatior 
+part) ``--with-netcdf`` option and link the appropriate NetCDF4 library. Naming
 convention of output files is analogues to binary file names. Following
 options are available for NetCDF4 output along with various performance
 tuning options. User is advised to explore NetCDF4 chunking and ROMIO
@@ -5317,44 +5371,32 @@ The output variables are:
 
 .. container:: description
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_lh_tot for latent heat flux total [W/m^2] using the silo variable LatentHeat;``
+   ``eflx_lh_tot`` for latent heat flux total [W/m^2] using the silo variable LatentHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_lwrad_out for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;``
+   ``eflx_lwrad_out`` for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_sh_tot for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;``
+   ``eflx_sh_tot`` for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``eflx_soil_grnd for ground heat flux [W/m^2] using the silo variable GroundHeat;``
+   ``eflx_soil_grnd`` for ground heat flux [W/m^2] using the silo variable GroundHeat;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_tot for total evaporation [mm/s] using the silo variable EvaporationTotal;``
+   ``qflx_evap_tot`` for total evaporation [mm/s] using the silo variable EvaporationTotal;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_grnd for ground evaporation without condensation [mm/s] using the silo variable EvaporationGroundNoSublimation;``
+   ``qflx_evap_grnd`` for ground evaporation without condensation [mm/s] using the silo 
+   variable EvaporationGroundNoSublimation;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_soi for soil evaporation [mm/s] using the silo variable EvaporationGround;``
+   ``qflx_evap_soi`` for soil evaporation [mm/s] using the silo variable EvaporationGround;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_evap_veg for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;``
+   ``qflx_evap_veg`` for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_tran_veg for vegetation transpiration [mm/s] using the silo variable Transpiration;``
+   ``qflx_tran_veg`` for vegetation transpiration [mm/s] using the silo variable Transpiration;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``qflx_infl for soil infiltration [mm/s] using the silo variable Infiltration;``
+   ``qflx_infl`` for soil infiltration [mm/s] using the silo variable Infiltration;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``swe_out for snow water equivalent [mm] using the silo variable SWE;``
+   ``swe_out`` for snow water equivalent [mm] using the silo variable SWE;
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``t_grnd for ground surface temperature [K] using the silo variable TemperatureGround; and``
+   ``t_grnd`` for ground surface temperature [K] using the silo variable TemperatureGround; and
 
-   ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-   ``t_soil for soil temperature over all layers [K] using the silo variable TemperatureSoil.``
+   ``t_soil`` for soil temperature over all layers [K] using the silo variable TemperatureSoil.
 
 NetCDF4 CLM Input/Forcing
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5447,8 +5489,9 @@ file, slopes and meteorological forcing.
 ParFlow Binary Files (.pfb)
 ---------------------------
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file format is a binary file format which is used to store ParFlow grid data. It is written as BIG ENDIAN binary bit ordering . The format for the file is:``
+The ``.pfb`` file format is a binary file format which is used to store ParFlow 
+grid data. It is written as BIG ENDIAN binary bit ordering. The format 
+for the file is:
 
 .. container:: list
 
@@ -5481,8 +5524,9 @@ The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 ParFlow CLM Single Output Binary Files (.c.pfb)
 -----------------------------------------------
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfb file format is a binary file format which is used to store ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 CLM output data in a single file. It is written as BIG ENDIAN binary bit ordering . The format for the file is:``
+The ``.pfb`` file format is a binary file format which is used to 
+store ``CLM`` output data in a single file. It is written as 
+BIG ENDIAN binary bit ordering. The format for the file is:
 
 .. container:: list
 
@@ -5528,8 +5572,11 @@ The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 ParFlow Scattered Binary Files (.pfsb)
 --------------------------------------
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfsb file format is a binary file format which is used to store ParFlow grid data. This format is used when the grid data is “scattered”, that is, when most of the data is 0. For data of this type, the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfsb file format can reduce storage requirements considerably. The format for the file is:``
+The ``.pfsb`` file format is a binary file format which is used to 
+store ParFlow grid data. This format is used when the grid data 
+is “scattered”, that is, when most of the data is 0. For data of 
+this type, the ``.pfsb`` file format can reduce storage requirements 
+considerably. The format for the file is:
 
 .. container:: list
 
@@ -5567,8 +5614,10 @@ The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
 ParFlow Solid Files (.pfsol)
 ----------------------------
 
-The ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfsol file format is an ASCII file format which is used to define 3D solids. The solids are represented by closed triangulated surfaces, and surface “patches” may be associated with each solid.``
+The ``.pfsol`` file format is an ASCII file format which is used 
+to define 3D solids. The solids are represented by closed 
+triangulated surfaces, and surface “patches” may be associated 
+with each solid.
 
 Note that unlike the user input files, the solid file cannot contain
 comment lines.
@@ -5611,11 +5660,30 @@ The format for the file is:
          END
       END
 
-The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``<file_version_number> is used to make file format changes more manageable. The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <num_vertices> specifies the number of vertices to follow. The fields ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <x>, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <y>, and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <z> define the coordinate of a triangle vertex. The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <num_solids> specifies the number of solids to follow. The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <num_triangles> specifies the number of triangles to follow. The fields ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <v0>, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <v1>, and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <v2> are vertex indexes that specify the 3 vertices of a triangle. Note that the vertices for each triangle MUST be specified in an order that makes the normal vector point outward from the domain. The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <num_patches> specifies the number of surface patches to follow. The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 num_patch_triangles specifies the number of triangles indices to follow (these triangles make up the surface patch). The field ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 <t> is an index of a triangle on the solid ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 solid.``
+The field ``<file_version_number>`` is used to make file format 
+changes more manageable. The field ``<num_vertices>`` specifies 
+the number of vertices to follow. The fields ``<x>``, ``<y>``, 
+and ``<z>`` define the coordinate of a triangle vertex. The 
+field ``<num_solids>`` specifies the number of solids to follow. 
+The field ``<num_triangles>`` specifies the number of triangles 
+to follow. The fields ``<v0>``, ``<v1>``, and ``<v2>`` are 
+vertex indexes that specify the 3 vertices of a triangle. 
+Note that the vertices for each triangle MUST be specified in 
+an order that makes the normal vector point outward from the 
+domain. The field ``<num_patches>`` specifies the number of 
+surface patches to follow. The field ``num_patch_triangles`` 
+specifies the number of triangles indices to follow (these 
+triangles make up the surface patch). The field ``<t>`` is 
+an index of a triangle on the solid ``solid``.
 
-ParFlow ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.pfsol files can be created from GMS ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .sol files using the utility ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 gmssol2pfsol located in the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 $PARFLOW_DIR/bin directory. This conversion routine takes any number of GMS ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .sol files, concatenates the vertices of the solids defined in the files, throws away duplicate vertices, then prints out the ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfsol file. Information relating the solid index in the resulting ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .pfsol file with the GMS names and material IDs are printed to stdout.``
+ParFlow ``.pfsol`` files can be created from GMS ``.sol`` files 
+using the utility ``gmssol2pfsol`` located in the ``$PARFLOW_DIR/bin`` 
+directory. This conversion routine takes any number of 
+GMS ``.sol`` files, concatenates the vertices of the solids defined 
+in the files, throws away duplicate vertices, then prints out 
+the ``.pfsol`` file. Information relating the solid index in the 
+resulting ``.pfsol`` file with the GMS names and material IDs are 
+printed to stdout.
 
 .. _ParFlow Well Output File (.wells):
 
@@ -5805,8 +5873,11 @@ The data section has the following format:
 ParFlow Simple ASCII and Simple Binary Files (.sa and .sb)
 ----------------------------------------------------------
 
-The simple binary, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``.sa, file format is an ASCII file format which is used by ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pftools to write out ParFlow grid data. The simple binary, ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 .sb, file format is exactly the same, just written as BIG ENDIAN binary bit ordering . The format for the file is:``
+The simple binary, ``.sa``, file format is an ASCII file format 
+which is used by ``pftools`` to write out ParFlow grid data. 
+The simple binary, ``.sb``, file format is exactly the same, 
+just written as BIG ENDIAN binary bit ordering. The format 
+for the file is:
 
 .. container:: list
 

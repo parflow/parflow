@@ -6,18 +6,18 @@ Model Equations
 In this chapter, we discuss the model equations used by ParFlow for its
 fully and variably saturated flow, overland flow, and multiphase flow
 and transport models. First, section
-`5.1 <#Steady-State, Saturated Groundwater Flow>`__ describes
+5.1 :ref:`Steady-State, Saturated Groundwater Flow` describes
 steady-state, groundwater flow (specified by solver **IMPES**). Next,
-section `5.2 <#Richards' Equation>`__ describes the Richards’ equation
+section 5.2 :ref:`Richards' Equation` describes the Richards’ equation
 model (specified by solver **RICHARDS**) for variably saturated flow as
-implemented in ParFlow. Section `5.3 <#TFG>`__ describes the terrain
+implemented in ParFlow. Section 5.3 :ref:`TFG` describes the terrain
 following grid formulation. Next, the overland flow equations are
-presented in section `5.5 <#Overland Flow>`__. In section
-`5.6 <#Multi-Phase Flow Equations>`__ we describe the multi-phase flow
+presented in section 5.5 :ref:`Overland Flow`. In section
+5.6 :ref:`Multi-Phase Flow Equations` we describe the multi-phase flow
 equations (specified by solver **IMPES**), and in section
-`5.7 <#Transport Equations>`__ we describe the transport equations.
-Finally, section `5.8 <#Notation and Units>`__ presents some notation
-and units and section `5.9 <#Water Balance>`__ presents some basic water
+5.7 :ref:`Transport Equations` we describe the transport equations.
+Finally, section 5.8 :ref:`Notation and Units` presents some notation
+and units and section 5.9 :ref:`Water Balance` presents some basic water
 balance equations.
 
 .. _Steady-State, Saturated Groundwater Flow:
@@ -55,7 +55,7 @@ set to the saturated hydraulic conductivity, :math:`\textbf{K}`, below.
 This is accomplished by setting the relative permeability and viscosity
 terms to unity in `[eqn-phase-mobility] <#eqn-phase-mobility>`__ as well
 as the gravity and density terms in `[eqn-darcy] <#eqn-darcy>`__. This
-is shown in the example in § `3.6 <#Tutorial>`__, but please note that
+is shown in the example in §3.6 :ref:`Tutorial`, but please note that
 the resulting solution is in pressure-head, :math:`h`, not head
 potential, :math:`H`, and will still contain a hydrostatic pressure
 gradient in the :math:`z` direction.
@@ -118,7 +118,7 @@ Terrain Following Grid
 ----------------------
 
 The terrain following grid formulation transforms the ParFlow grid to
-conform to topography :raw-latex:`\cite{M13}`. This alters the form of
+conform to topography [M13]. This alters the form of
 Darcy’s law to include a topographic slope component:
 
 .. math::
@@ -136,8 +136,7 @@ topography. As cells are distributed near the ground surface and can be
 combined with the variable :math:`\delta Z` capability, the number of
 cells in the problem can be reduced dramatically over the orthogonal
 formulation. For complete details on this formulation, the stencil used
-and the function evaluation developed, please see
-:raw-latex:`\cite{M13}`. NOTE: in the original formulation,
+and the function evaluation developed, please see [M13]. NOTE: in the original formulation,
 :math:`\theta_x` and :math:`\theta_y` for a cell face is calculated as
 the average of the two adjacent cell slopes (i.e. assuming a cell
 centered slope calculation). The
@@ -176,7 +175,7 @@ models.
 Overland Flow
 -------------
 
-As detailed in :raw-latex:`\cite{KM06}`, ParFlow may simulate
+As detailed in [KM06], ParFlow may simulate
 fully-coupled surface and subsurface flow via an overland flow boundary
 condition. While complete details of this approach are given in that
 paper, a brief summary of the equations solved are presented here.
@@ -225,8 +224,8 @@ and
    \label{eq:manningsy}\end{aligned}
 
 where :math:`n` :math:`[TL^{-1/3}]` is the Manning’s coefficient. Though
-complete details of the coupled approach are given in
-:raw-latex:`\cite{KM06}`, brief details of the approach are presented
+complete details of the coupled approach are given in [KM06], brief 
+details of the approach are presented
 here. The coupled approach takes Equation
 `[eq:kinematic] <#eq:kinematic>`__ and adds a flux for subsurface
 exchanges, :math:`q_e(x)`.
@@ -264,7 +263,7 @@ of the two quantities, :math:`\psi` and :math:`0`. We may now solve this
 term for the flux :math:`q_e(x)` which we may set equal to flux boundary
 condition shown in Equation `[eq:bcn] <#eq:bcn>`__. This yields the
 following equation, which is referred to as the overland flow boundary
-condition :raw-latex:`\cite{KM06}`:
+condition [KM06]:
 
 .. math::
 
@@ -373,7 +372,6 @@ equations, and outlines the symbol dependencies and units.
       |                      | acceleration         |                      |
       +----------------------+----------------------+----------------------+
 
-[table-flow-units]
 
 Here, :math:`\phi` describes the fluid capacity of the porous medium,
 and :math:`S_i` describes the content of phase :math:`i` in the porous
@@ -553,7 +551,7 @@ incorporated along with the addition of injection and extraction wells.
       | a^{E}_{k}({\vec x})` | region               |                      |
       +----------------------+----------------------+----------------------+
 
-[table-transport-units]
+
 
 These equations will soon have to be generalized to include a diffusion
 term. At the present time, as an adsorption model, we take the mass
@@ -625,7 +623,6 @@ Table `5.3 <#table-flow-units-b>`__ defines the symbols and their units.
       | :math:`{\vec g}`   | gravity vector                | [:math:`L T^{-2}`]        |
       +--------------------+-------------------------------+---------------------------+
 
-[table-flow-units-b]
 
 We can then rewrite equations (`[eqn-pressure] <#eqn-pressure>`__) and
 (`[eqn-saturation] <#eqn-saturation>`__) as
@@ -689,14 +686,46 @@ Water Balance
 -------------
 
 ParFlow can calculate a water balance for the Richards’ equation,
-overland flow and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12
-``clm capabilities. For a schematic of the water balance in ParFlow please see . This water balance is computes using ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pftools commands as described in § [Manipulating Data]. There are two water balance storage components, subsurface and surface, and two flux calculations, overland flow and evapotranspiration. The storage components have units [L^3] while the fluxes may be instantaneous and have units [L^3T^{-1}] or cumulative over an output interval with units [L^3]. Examples of water balance calculations and errors are given in the scripts ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 water_balance_x.tcl and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 water_balance_y.tcl. The size of water balance errors depend on solver settings and tolerances but are typically very small, <10^{-10} [-]. The water balance takes the form: \begin{aligned}
+overland flow and ``clm`` capabilities. For a schematic of the water 
+balance in ParFlow please see . This water balance is computes 
+using ``pftools`` commands as described in §:ref:`Manipulating Data`. 
+There are two water balance storage components, subsurface and surface, 
+and two flux calculations, overland flow and evapotranspiration. 
+The storage components have units [L^3] while the fluxes may be 
+instantaneous and have units [L^3T^{-1}] or cumulative over an 
+output interval with units [L^3]. Examples of water balance 
+calculations and errors are given in the scripts ``water_balance_x.tcl`` 
+and ``water_balance_y.tcl``. The size of water balance errors 
+depend on solver settings and tolerances but are typically very 
+small, <10^{-10} [-]. The water balance takes the form: 
+\begin{aligned}
 \frac{\Delta [Vol_{subsurface} + Vol_{surface}]}{\Delta t} = Q_{overland} + Q_{evapotranspiration} + Q_{source sink}
-\label{eq:balance}\end{aligned} where Vol_{subsurface} is the subsurface storage [L^3]; Vol_{surface} is the surface storage [L^3]; Q_{overland} is the overland flux [L^3 T^{-1}]; Q_{evapotranspiration} is the evapotranspiration flux passed from ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 clm or other LSM, etc, [L^3 T^{-1}]; and Q_{source sink} are any other source/sink fluxes specified in the simulation [L^3 T^{-1}]. The surface and subsurface storage routines are calculated using the ParFlow toolset commands ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfsurfacestorage and ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfsubsurfacestorage respectively. Overland flow out of the domain is calculated by ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfsurfacerunoff. Details for the use of these commands are given in § [PFTCL Commands] and § [common_pftcl]. Q_{evapotranspiration} must be written out by ParFlow as a variable (as shown in § refCode Parameters) and only contains the external fluxes passed from a module such as ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 clm or WRF. Note that these volume and flux quantities are calculated spatially over the domain and are returned as array values, just like any other quantity in ParFlow. The tools command ‘#=12 ‘$=12 ‘%=12 ‘&=12 ‘_=12 ‘=̃12 ‘=̂12 pfsum will sum these arrays into a single value for the enrite domain. All other fluxes must be determined by the user. The subsurface storage is calculated over all active cells in the domain, \Omega, and contains both compressible and incompressible parts based on Equation [eq:richard]. This is computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows: \begin{aligned}
+\label{eq:balance}\end{aligned} where Vol_{subsurface} is the subsurface storage [L^3]; Vol_{surface} is the 
+surface storage [L^3]; Q_{overland} is the overland flux [L^3 T^{-1}]; Q_{evapotranspiration} is the 
+evapotranspiration flux passed from ``clm`` or other LSM, etc, [L^3 T^{-1}]; and Q_{source sink} are 
+any other source/sink fluxes specified in the simulation [L^3 T^{-1}]. The surface and subsurface 
+storage routines are calculated using the ParFlow toolset commands ``pfsurfacestorage`` 
+and ``pfsubsurfacestorage`` respectively. Overland flow out of the domain is calculated 
+by ``pfsurfacerunoff``. Details for the use of these commands are given in §:ref:`PFTCL Commands` 
+and §:ref:`common_pftcl`. Q_{evapotranspiration} must be written out by ParFlow as a 
+variable (as shown in §:ref:`refCode Parameters`) and only contains the external fluxes passed 
+from a module such as ``clm`` or WRF. Note that these volume and flux quantities are calculated 
+spatially over the domain and are returned as array values, just like any other quantity in ParFlow. 
+The tools command ``pfsum`` will sum these arrays into a single value for the enrite domain. 
+All other fluxes must be determined by the user. The subsurface storage is calculated over all 
+active cells in the domain, \Omega, and contains both compressible and incompressible parts based 
+on Equation [eq:richard]. This is computed on a cell-by-cell basis (with the result being an array 
+of balances over the domain) as follows: \begin{aligned}
 Vol_{subsurface} = \sum_\Omega [ S(\psi)S_s \psi \Delta x \Delta y \Delta z +
 S(\psi)(\psi)\phi \Delta x \Delta y \Delta z]
-\label{eq:sub_store}\end{aligned} The surface storage is calculated over the upper surface boundary cells in the domain, \Gamma, as computed by the mask and contains based on Equation [eq:kinematic]. This is again computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows: \begin{aligned}
+\label{eq:sub_store}\end{aligned} The surface storage is calculated over the upper surface boundary 
+cells in the domain, \Gamma, as computed by the mask and contains based on Equation [eq:kinematic]. 
+This is again computed on a cell-by-cell basis (with the result being an array of balances over the 
+domain) as follows: \begin{aligned}
 Vol_{surface} =  \sum_\Gamma \psi \Delta x \Delta y
-\label{eq:surf_store}\end{aligned} For the overland flow outflow from the domain, any cell at the top boundary that has a slope that points out of the domain and is ponded will remove water from the domain. This is calculated, for example in the y-direction, as the multiple of Equation [eq:manningsy] and the area: \begin{aligned}
+\label{eq:surf_store}\end{aligned} For the overland flow outflow from the domain, any cell at the 
+top boundary that has a slope that points out of the domain and is ponded will remove water from 
+the domain. This is calculated, for example in the y-direction, as the multiple of 
+Equation [eq:manningsy] and the area: \begin{aligned}
 Q_{overland}=vA= -\frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}\psi \Delta x=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{5/3}\Delta x
 \label{eq:outflow}\end{aligned}``
