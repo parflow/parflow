@@ -10,6 +10,7 @@ import os
 import unittest
 import numpy as np
 import xarray as xr
+import tempfile
 rootdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.append(rootdir)
 from pf_xarray.pf_backend import ParflowBackendEntrypoint
@@ -26,7 +27,10 @@ class TestPFXArray(unittest.TestCase):
         """Test reading a pfb file using xarray open_dataset."""
 
         ds = xr.open_dataset(
-            EXAMPLE_PFB_FILE_PATH_0, name='forsyth5.out.press', engine=ParflowBackendEntrypoint)
+            EXAMPLE_PFB_FILE_PATH_0,
+            name='forsyth5.out.press',
+            engine=ParflowBackendEntrypoint
+        )
 
         # Verify the sizes of the dimensions from the loaded xarray
         self.assertEqual(3, len(ds.dims))
@@ -72,7 +76,7 @@ class TestPFXArray(unittest.TestCase):
             if not os.path.exists(file_name):
                 self.fail(f"PFB File '{file_name}' was not created.")
             total = 0
-            with PFBPeek() as s:
+            with PFBSummary() as s:
                 header = s.open_pfb(file_name)
                 self.assertEqual(46, header.get('nx'))
                 self.assertEqual(46, header.get('ny'))
@@ -115,7 +119,7 @@ class TestPFXArray(unittest.TestCase):
             self.fail(f"PFB File '{file_name}' was not created.")
         if not os.path.exists(file_name + '.dist'):
             self.fail(f"PFB File '{file_name}.dist' was not created.")
-        with PFBPeek() as s:
+        with PFBSummary() as s:
             header = s.open_pfb(file_name)
             self.assertEqual(3, header.get('nx'))
             self.assertEqual(4, header.get('ny'))
@@ -156,7 +160,7 @@ class TestPFXArray(unittest.TestCase):
         write_pfb(file_name, da, header=header)
         if not os.path.exists(file_name):
             self.fail(f"PFB File '{file_name}' was not created.")
-        with PFBPeek() as s:
+        with PFBSummary() as s:
             header = s.open_pfb(file_name)
             self.assertEqual(0, header.get('nx'))
             self.assertEqual(0, header.get('ny'))
