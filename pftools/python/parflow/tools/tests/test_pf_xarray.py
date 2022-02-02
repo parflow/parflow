@@ -11,11 +11,10 @@ import unittest
 import numpy as np
 import xarray as xr
 rootdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-print(rootdir)
 sys.path.append(rootdir)
 from pf_xarray.pf_backend import ParflowBackendEntrypoint
 from pf_xarray.io import ParflowBinaryReader, read_stack_of_pfbs, read_pfb, write_pfb
-from pfb_peek import PFBPeek
+from pfb_summary import PFBSummary
 
 EXAMPLE_PFB_FILE_PATH_0 = f"{rootdir}/pf_xarray/tests/data/forsyth5.out.press.00000.pfb"
 EXAMPLE_PFB_FILE_PATH_1 = f"{rootdir}/pf_xarray/tests/data/forsyth5.out.press.00001.pfb"

@@ -1,8 +1,8 @@
 """
-    File: pfb_peek.py
+    File: pfb_summary.py
 
     USAGE:
-        python pfb_peek.py <pfb_file>
+        python pfb_summary.py <pfb_file>
 
     DESCRIPTION:
         Peeks into a parflow .pfb file and display a summary of the file.
@@ -10,24 +10,6 @@
         Then prints the subgrid headers of the first 2 subgrids and the last subgrid.
 
         The purpose of this utility is to assist with debugging so you can view a summary of a PFB file.
-
-    COMPONENT:
-        This class can also be used as a component, called by a python program or test case.
-        For example,
-
-            from pfb_peek import PFBPeek
-            summary = PFBPeek()
-            file_header = summary.open_pfb("myfile.pfb")
-            number_of_subgrids = int(file_header.get('n_subgrids', 0))
-            for i in range(0, number_of_subgrids):
-                subgrid_header = self.read_subgrid_header()
-                data = self.read_subgrid_data(subgrid_header)
-                print(subgrid_header)
-                print(data)
-
-        This is not as efficient as using the pf_xarray methods, but it allows access to the
-        details of the file headers and subgrid headers and subgrid data for testing and debugging.
-
 """
 from ctypes import cdll
 import sys
@@ -36,11 +18,16 @@ import struct
 import numpy as np
 
 
-class PFBPeek:
-    def __init__(self):
-        self.fp = None
-        self.file_name = None
-        self.header = None
+def pfb_summary(filename):
+    s = PFBSummary(file_name=filename)
+    s.print_summary()
+
+
+class PFBSummary:
+    def __init__(self, fp=None, file_name=None, header=None):
+        self.fp = fp
+        self.file_name = file_name
+        self.header = header
 
     def close(self):
         if self.fp is not None:
@@ -72,7 +59,10 @@ class PFBPeek:
             print(f"File '{file_name}' does not exist.")
             sys.exit(-1)
         self.file_name = file_name
-        self.open_pfb(file_name)
+        self.print_summary()
+
+    def print_summary(self):
+        self.open_pfb(self.file_name)
         print(self.header)
 
         checksum = 0
@@ -165,5 +155,5 @@ class PFBPeek:
 
 
 if __name__ == '__main__':
-    main = PFBPeek()
+    main = PFBSummary()
     main.run()
