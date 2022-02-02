@@ -15,8 +15,14 @@ import struct
 from typing import Mapping, List, Union, Iterable
 import yaml
 
-from .hydrology import calculate_evapotranspiration, calculate_overland_flow, calculate_overland_flow_grid, \
-    calculate_subsurface_storage, calculate_surface_storage, calculate_water_table_depth
+from .hydrology import (
+    calculate_evapotranspiration,
+    calculate_overland_flow,
+    calculate_overland_flow_grid,
+    calculate_subsurface_storage,
+    calculate_surface_storage,
+    calculate_water_table_depth,
+)
 from .fs import get_absolute_path
 from .helper import sort_dict, get_or_create_dict
 
@@ -44,6 +50,7 @@ def read_pfb(file: str, mode: str='full', z_first: bool=True):
 
 
 # -----------------------------------------------------------------------------
+
 def write_pfb(
     file, array,
     p=1, q=1, r=1,
@@ -53,29 +60,46 @@ def write_pfb(
     **kwargs
 ):
     """
-    Write a single pfb file.
+    Write a single pfb file. The data must be a 3D numpy array with float64
+    values. The number of subgrids in the saved file will be p * q * r. This
+    is regardless of the number of subgrids in the PFB file loaded by the
+    ParflowBinaryReader into the numpy array. Therefore, loading a file with
+    ParflowBinaryReader and saving it with this method may restructure the
+    file into a different number of subgrids if you chagne these values.
 
-    The data must be a 3D numpy array with float64 values.
+    If dist is True then also write a file with the .dist extension added to
+    the file_name. The .dist file will contain one line per subgrid with the
+    offset of the subgrid in the .pfb file.
 
-    The header must be a dict containing keys (x,y,z, dx,dy,dz, p,q,r).
-    The values x,y,z will default to 0 if missing.
-    The values dx,dy,dz default to nx,ny,nz if missing.
-    The values p,q,r will default to 1,1,1 if missing.
-    The header contained in a ParflowBinaryReader will be filled with these values
-      after loading a PFB file.
-
-    The nx, ny, nz size of the array is assumed to be the same as the shape of the data array.
-
-    The data shape dimensions are assumed to be (nz, ny, nx) unless z_first is false then dimensions
-       are assumed to be (nx, ny, nz).
-
-    If dist is True then also write a file with the .dist extension added to the file_name.
-    The .dist file will contain one line per subgrid with the offset of the subgrid in the .pfb file.
-
-    The number of subgrids in the saved file will be p * q * r. This is regardless of the number
-    of subgrids in the PFB file loaded by ParflowBinaryReader into the numpy array. Therefore,
-    loading a file with ParflowBinaryReader and saving it with this method will restructure the
-    file into a different number of subgrids.
+    :param file:
+        The name of the file to write the array to.
+    :param array:
+        The array to write.
+    :param p:
+        Number of subgrids in the x direction.
+    :param q:
+        Number of subgrids in the y direction.
+    :param r:
+        Number of subgrids in teh z direction.
+    :param x:
+        The length of the x-axis
+    :param y:
+        The length of the y-axis
+    :param z:
+        The length of the z-axis
+    :param dx:
+        The spacing between cells in the x direction
+    :param dy:
+        The spacing between cells in the y direction
+    :param dz:
+        The spacing between cells in the z direction
+    :param z_first:
+        Whether the z-axis should be first or last.
+    :param dist:
+        Whether to write the distfile in addition to the pfb.
+    :param kwargs:
+        Extra keyword arguments, primarily to eat unnecessary
+        args by passing in a dictionary with `**dict`.
     """
     if z_first:
         nz, ny, nx = array.shape
@@ -622,6 +646,25 @@ class ParflowBinaryReader:
 
 @jit()
 def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
+    """
+    Determines the sizes of the subgrids. Maingrid
+    sizes are simply the integer value of the number
+    of cells divided by the number of subgrids along
+    each axis. The remainder is the modulus.
+
+    :param nx:
+        The length of the array along the x axis.
+    :param ny:
+        The length of the array along the y axis.
+    :param nz:
+        The length of the array along the z axis.
+    :param p:
+        The number of subgrids along the x axis.
+    :param q:
+        The number of subgrids along the y axis.
+    :param r:
+        The number of subgrids along the z axis.
+    """
     nnx = int(nx / p)
     nny = int(ny / q)
     nnz = int(nz / r)
@@ -635,6 +678,18 @@ def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
 
 @jit()
 def get_subgrid_loc(sel_subgrid, p, q, r):
+    """
+    Translate an integer subgrid to the location in 3d subgrid space.
+
+    :param sel_subgrid:
+        The scalar index of the subgrid of interest.
+    :param p:
+        The number of subgrids along the x axis.
+    :param q:
+        The number of subgrids along the y axis.
+    :param r:
+        The number of subgrids along the z axis.
+    """
     rr = int(np.floor(sel_subgrid / (p * q)))
     qq = int(np.floor((sel_subgrid - (rr*p*q)) / p))
     pp = int(sel_subgrid - rr * (p * q) - (qq * p))
@@ -650,6 +705,28 @@ def subgrid_lower_left(
     pp, qq, rr,
     lx, ly, lz
 ):
+    """
+    Get the index of the lower left corner of a subgrid.
+
+    :param nnx:
+        The standard length of a subgrid on the x-axis
+    :param nny:
+        The standard length of a subgrid on the y-axis
+    :param nnz:
+        The standard length of a subgrid on the z-axis
+    :param pp:
+        The index of the subgrid on the x-axis.
+    :param qq:
+        The index of the subgrid on the y-axis.
+    :param rr:
+        The index of the subgrid on the z-axis.
+    :param lx:
+        Remainder from the maingrid calculation on the x-axis
+    :param ly:
+        Remainder from the maingrid calculation on the y-axis
+    :param lz:
+        Remainder from the maingrid calculation on the z-axis
+    """
     ix = pp * nnx + min(pp, lx)
     iy = qq * nny + min(qq, ly)
     iz = rr * nnz + min(rr, lz)
@@ -664,6 +741,28 @@ def subgrid_size(
     pp, qq, rr,
     lx, ly, lz
 ):
+    """
+    Get the size of a subgrid
+
+    :param nnx:
+        The standard length of a subgrid on the x-axis
+    :param nny:
+        The standard length of a subgrid on the y-axis
+    :param nnz:
+        The standard length of a subgrid on the z-axis
+    :param pp:
+        The index of the subgrid on the x-axis.
+    :param qq:
+        The index of the subgrid on the y-axis.
+    :param rr:
+        The index of the subgrid on the z-axis.
+    :param lx:
+        Remainder from the maingrid calculation on the x-axis
+    :param ly:
+        Remainder from the maingrid calculation on the y-axis
+    :param lz:
+        Remainder from the maingrid calculation on the z-axis
+    """
     snx = nnx if pp >= lx else nnx+1
     sny = nny if qq >= ly else nny+1
     snz = nnz if rr >= lz else nnz+1
@@ -674,6 +773,33 @@ def subgrid_size(
 
 @jit()
 def precalculate_subgrid_info(nx, ny, nz, p, q, r, n_subgrids):
+    """
+    Computes all necessary subgrid information to index and read
+    or write a pfb file.
+
+    :param nx:
+        Number of cells along the x-axis.
+    :param ny:
+        Number of cells along the y-axis.
+    :param nz:
+        Number of cells along the z-axis.
+    :param p:
+        Number of subgrids along the x-axis.
+    :param q:
+        Number of subgrids along the y-axis.
+    :param r:
+        Number of subgrids along the z-axis.
+    :param n_subgrids:
+        Number of total subgrids. Ought to be (p*q*r)
+
+    :return:
+        A tuple of arrays, (
+            subgrid_offsets,
+            subgid_locations,
+            subgrid_lower_left_indices,
+            subgrid_shapes
+        )
+    """
     subgrid_shapes = []
     subgrid_offsets = []
     subgrid_locs = []
