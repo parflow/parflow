@@ -137,14 +137,14 @@ def write_pfb(
 
 # -----------------------------------------------------------------------------
 
-def read_stack_of_pfbs(
+def read_pfb_sequence(
     file_seq: Iterable[str],
     keys=None,
     z_first: bool=True,
     z_is: str='z'
 ):
     """
-    An efficient wrapper to read a stack of pfb files. This
+    An efficient wrapper to read a sequence of pfb files. This
     approach is faster than looping over the ``read_pfb`` function
     because it caches the subgrid information from the first
     pfb file and then uses that to initialize all other readers.
@@ -192,10 +192,10 @@ def read_stack_of_pfbs(
         nz = np.max([keys[z_is]['stop'] - keys[z_is]['start'] - 1, 1])
 
     if z_first:
-        stack_size = (len(file_seq), nz, ny, nx)
+        seq_size = (len(file_seq), nz, ny, nx)
     else:
-        stack_size = (len(file_seq), nx, ny, nz)
-    pfb_stack = np.empty(stack_size, dtype=np.float64)
+        seq_size = (len(file_seq), nx, ny, nz)
+    pfb_seq = np.empty(seq_size, dtype=np.float64)
     for i, f in enumerate(file_seq):
         with ParflowBinaryReader(
             f, precompute_subgrid_info=False, header=base_header
@@ -207,17 +207,17 @@ def read_stack_of_pfbs(
             pfb.coords = base_sg_coords
             pfb.chunks = base_sg_chunks
             if not keys:
-                substack_data = pfb.read_all_subgrids(mode='full', z_first=z_first)
+                subseq_data = pfb.read_all_subgrids(mode='full', z_first=z_first)
             else:
-                substack_data = pfb.read_subarray(
+                subseq_data = pfb.read_subarray(
                         start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
-            pfb_stack[i, :, : ,:] = substack_data
+            pfb_seq[i, :, : ,:] = subseq_data
     if z_is == 'time':
         if z_first:
-            pfb_stack = np.concatenate(pfb_stack, axis=0)
+            pfb_seq = np.concatenate(pfb_seq, axis=0)
         else:
-            pfb_stack = np.concatenate(pfb_stack, axis=-1)
-    return pfb_stack
+            pfb_seq = np.concatenate(pfb_seq, axis=-1)
+    return pfb_seq
 
 
 # -----------------------------------------------------------------------------

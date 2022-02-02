@@ -9,7 +9,7 @@ import yaml
 
 from pprint import pprint
 from . import util
-from .io import ParflowBinaryReader, read_stack_of_pfbs, read_pfb
+from .io import ParflowBinaryReader, read_pfb_sequence, read_pfb
 from collections.abc import Iterable
 from dask import delayed
 from typing import Mapping, List, Union
@@ -236,7 +236,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
         inf_dims = ('time', *inf_dims)
         inf_shape = (len(all_files), *inf_shape)
-        base_da = self.load_stack_of_pfb(
+        base_da = self.load_sequence_of_pfb(
                 all_files, dims=inf_dims, shape=inf_shape)
         base_da = xr.Dataset({name: base_da})[name]
         return {name: base_da}
@@ -265,7 +265,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         _, inf_shape = self._infer_dims_and_shape(all_files[0])
         inf_dims = ('time', 'y', 'x')
         inf_shape = (len(all_files)*inf_shape[0], *inf_shape[1:])
-        base_da = self.load_stack_of_pfb(
+        base_da = self.load_sequence_of_pfb(
                 all_files, dims=inf_dims, shape=inf_shape,
                 z_first=True, z_is='time'
         )
@@ -315,7 +315,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
         inf_dims = ('time', *inf_dims)
         inf_shape = (len(all_files), *inf_shape)
-        base_da = self.load_stack_of_pfb(
+        base_da = self.load_sequence_of_pfb(
                 all_files, dims=inf_dims, shape=inf_shape,)
         base_da = xr.Dataset({name: base_da})[name]
         clm_das = [base_da.isel(z=i).rename(v) for i,v in enumerate(varnames)]
@@ -351,7 +351,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         var = xr.Variable(dims, data, ).squeeze()
         return var
 
-    def load_stack_of_pfb(
+    def load_sequence_of_pfb(
         self,
         filenames,
         dims=None,
@@ -445,7 +445,7 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
     :param dims:
         The dimensions of the dataset.
     :param mode:
-        Specification of whether a single file or a stack of files
+        Specification of whether a single file or a sequence of files
         should be read in.
     :param z_first:
         Whether the z axis should be first. If not, it it will be last.
@@ -492,7 +492,7 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
             accessor['time']['stop'] -= file_start_time
         if t_start == t_end:
             t_end += 1
-        sub = read_stack_of_pfbs(
+        sub = read_pfb_sequence(
             file_or_seq[t_start:t_end],
             keys=accessor,
             z_first=z_first,
