@@ -159,7 +159,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                         ds[k] = v
         return ds
 
-    def load_pfb_from_meta(self, var_meta, name='_') -> Mapping[str: xr.Dataset]:
+    def load_pfb_from_meta(self, var_meta, name='_') -> Mapping[str, xr.Dataset]:
         """
         Determines which sub-reader call to make based on the information
         in the metadata section  for a single variable of the pfmetadata file.

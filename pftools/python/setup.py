@@ -43,7 +43,7 @@ setup(
     },
     entry_points={
         'xarray.backends': [
-            'parflow = parflow.tools.pf_backend:ParflowBackendEntrypoint'
+            'parflow=parflow.tools.pf_backend:ParflowBackendEntrypoint'
         ],
     }
 )
