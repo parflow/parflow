@@ -479,7 +479,7 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
         accessor = {d: util._key_to_explicit_accessor(k)
                     for d, k in zip(dims, key)}
         t_start = accessor['time']['start']
-        t_end = accessor['time']['stop'] - 1
+        t_end = accessor['time']['stop']
         if z_is == 'time':
             # WARNING:  This is pretty hacky, accounting for first timestep offset
             try:
@@ -492,29 +492,30 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
             accessor['time']['stop'] -= file_start_time
         if t_start == t_end:
             t_end += 1
+
+        # Here we explicitly select which files we need to read
+        # to reduce the overall IO overhead. After selecting them
+        # out of the list we must remove the accessor indices
+        # because they have been used.
+        read_files = file_or_seq[t_start:t_end]
+        read_files = np.array(read_files)[accessor['time']['indices']]
+        accessor['time']['indices'] = slice(None, None, None)
+        # Read the array
         sub = read_pfb_sequence(
-            file_or_seq[t_start:t_end],
+            read_files,
             keys=accessor,
             z_first=z_first,
             z_is=z_is,
         )
-        # TODO: This can probably be cleaned up now with just
-        # sub = sub[accessor[d]['indices'] for d in dims]
-        if z_is == 'time':
-            sub = sub[accessor['time']['indices'],
-                      accessor['x']['indices'],
-                      accessor['y']['indices']]
-        elif z_first:
-            sub = sub[accessor['time']['indices'],
-                      accessor['z']['indices'],
-                      accessor['y']['indices'],
-                      accessor['x']['indices']]
-        else:
-            sub = sub[accessor['time']['indices'],
-                      accessor['x']['indices'],
-                      accessor['y']['indices'],
-                      accessor['z']['indices']]
-        sub = sub.squeeze()
+        # Select out specific indices from from the array
+        sub = sub[[accessor[d]['indices'] for d in dims]]
+        # Check which axes need to be squeezed out. This is
+        # to distinguish between doing `ds.isel(x=[0])` which
+        # should keep the x axis (and dimension) and `ds.isel(x=0)`
+        # which should remove the x axis (and dimension).
+        axes_to_squeeze = tuple(i for i, d in enumerate(dims)
+                                if accessor[d]['squeeze'])
+        sub = np.squeeze(sub, axis=axes_to_squeeze)
     return sub
 
 
@@ -571,7 +572,7 @@ class ParflowBackendArray(BackendArray):
         return indexing.explicit_indexing_adapter(
             key,
             self.shape,
-            indexing.IndexingSupport.BASIC,
+            indexing.IndexingSupport.OUTER,
             self._getitem,
         )
 
@@ -612,29 +613,11 @@ class ParflowBackendArray(BackendArray):
     def _getitem(self, key: tuple) -> np.typing.ArrayLike:
         """Mapping between keys to the actual data"""
         size = self._size_from_key(key)
-        key = self._explicit_indices_from_keys(size, key)
         sub = delayed(_getitem_no_state)(
                 self.file_or_seq, key, self.dims, self.mode,
                 self.z_first, self.z_is)
         sub = dask.array.from_delayed(sub, size, dtype=np.float64)
         return sub
-
-    def _explicit_indices_from_keys(self, size , key):
-        """
-        Translate between arbitrary indexers to the fixed key
-        representation used under the hood by `_getitem_no_state`.
-        """
-        ret_key = []
-        for dim_size, dim_key in zip(size, key):
-            if isinstance(dim_key, slice):
-                start = dim_key.start if dim_key.start is not None else 0
-                stop = dim_key.stop+1 if dim_key.stop is not None else dim_size+1
-                step = dim_key.step if dim_key.step is not None else 1
-                ret_key.append(slice(start, stop, step))
-            else:
-                # Do nothing here
-                ret_key.append(dim_key)
-        return tuple(ret_key)
 
     def _size_from_key(self, key):
         """Determine the size of a returned array given an indexing key"""

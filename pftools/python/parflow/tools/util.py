@@ -33,22 +33,27 @@ def _key_to_explicit_accessor(key: Union[slice, int, Iterable]) -> dict:
         xarray selectors.
     """
     if isinstance(key, slice):
+        start = key.start if key.start is not None else 0
+        stop = key.stop+1 if key.stop is not None else -1
         return {
             'start': key.start,
             'stop': key.stop,
-            'indices': slice(None, None, key.step)
+            'indices': slice(None, None, key.step),
+            'squeeze': False
         }
     elif isinstance(key, int):
         return {
             'start': key,
             'stop': key+1,
-            'indices': [0]
+            'indices': [0],
+            'squeeze': True
         }
     elif isinstance(key, Iterable):
         return {
             'start': np.min(key),
             'stop': np.max(key)+1,
-            'indices': key - np.min(key)
+            'indices': key - np.min(key),
+            'squeeze': False
         }
 
 
