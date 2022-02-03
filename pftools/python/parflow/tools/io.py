@@ -208,12 +208,15 @@ def read_pfb_sequence(
     if not keys:
         nx, ny, nz = base_header['nx'], base_header['ny'], base_header['nz']
     else:
-        start_x = keys['x']['start']
-        start_y = keys['y']['start']
-        start_z = keys[z_is]['start']
-        nx = np.max([keys['x']['stop'] - start_x - 1, 1])
-        ny = np.max([keys['y']['stop'] - keys['y']['start'] - 1, 1])
-        nz = np.max([keys[z_is]['stop'] - keys[z_is]['start'] - 1, 1])
+        start_x = keys['x']['start'] or 0
+        start_y = keys['y']['start'] or 0
+        start_z = keys[z_is]['start'] or 0
+        stop_x = keys['x']['stop'] or base_header['nx']
+        stop_y = keys['y']['stop'] or base_header['ny']
+        stop_z = keys[z_is]['stop'] or base_header['nz']
+        nx = np.max([stop_x - start_x, 1])
+        ny = np.max([stop_y - start_y, 1])
+        nz = np.max([stop_z - start_z, 1])
 
     if z_first:
         seq_size = (len(file_seq), nz, ny, nx)
