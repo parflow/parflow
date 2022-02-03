@@ -490,7 +490,7 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
                 file_start_time = int(file_or_seq[t_start].split('.')[-3].split('_')[0]) - 1
             accessor['time']['start'] -= file_start_time
             accessor['time']['stop'] -= file_start_time
-        if t_start == t_end:
+        if t_start is not None and t_start == t_end:
             t_end += 1
         sub = read_pfb_sequence(
             file_or_seq[t_start:t_end],
