@@ -2,6 +2,20 @@
 """io module
 
 Helper functions to load or write files
+
+A note on naming conventions in the python IO interfaces
+as compared to the C implementation for reading/writing
+pfb files:
++-------------------------+------------------+---------------------+
+| Description             | Parflow C        | Parflow Python      |
++-------------------------+------------------+---------------------+
+| Subgrid lengths         | P, Q, R          | p, q, r             |
+| Subgrid indices         | p, q, r          | sg_p, sg_q, sg_r    |
+| Size of the full grid   | NX, NY, NZ       | nx, ny, nz          |
+| Size of a subgrid       | nx, ny, nz       | sg_nx, sg_ny, sg_nz |
+| Cell size of the grid   | dx, dy, dz       | dx, dy, dz          |
+| Lower left index        | ix, iy, iz       | ix, iy, iz          |
++-------------------------+------------------+---------------------+
 """
 
 from functools import partial
@@ -537,21 +551,21 @@ class ParflowBinaryReader:
         return ret_data
 
 
-    def loc_subgrid(self, pp: int, qq: int, rr: int) -> np.ndarray:
+    def loc_subgrid(self, sg_p: int, sg_q: int, sg_r: int) -> np.ndarray:
         """
-        Read a subgrid given it's (pp, qq, rr) coordinate in the subgrid-grid.
+        Read a subgrid given it's (sg_p, sg_q, sg_r) coordinate in the subgrid-grid.
 
-        :param pp:
+        :param sg_p:
             Index in the p subgrid to read.
-        :param qq:
+        :param sg_q:
             Index in the q subgrid to read.
-        :param rr:
+        :param sg_r:
             Index in the r subgrid to read.
         :returns:
-            The data from the (pp, qq, rr)'th subgrid.
+            The data from the (sg_p, sg_q, sg_r)'th subgrid.
         """
         p, q, r = self.header['p'], self.header['q'], self.header['r']
-        subgrid_idx = pp + (p * qq) + (q * p * rr)
+        subgrid_idx = sg_p + (p * sg_q) + (q * p * sg_r)
         return self.iloc_subgrid(subgrid_idx)
 
     def iloc_subgrid(self, idx: int) -> np.ndarray:
@@ -609,8 +623,8 @@ class ParflowBinaryReader:
             If ``flat`` the returned data will be a list of each fo the subgrid arrays.
             If ``tiled`` the returned data will be a numpy array with dimensions
             (p, q, r) where each index of the array contains the subgrid data which
-            also will be numpy array of floats with dimensions (pp_nx, qq_ny, rr_nz) where
-            each of pp_nx, qq_ny, and rr_nz are the size of the subgrid array.
+            also will be numpy array of floats with dimensions (sg_nx, sg_ny, sg_nz) where
+            each of sg_nx, sg_ny, and sg_nz are the size of the subgrid array.
         """
         if mode not in ['flat', 'tiled', 'full']:
             raise Exception('mode must be one of flat, tiled, or full')
@@ -651,7 +665,7 @@ class ParflowBinaryReader:
 def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
     """
     Determines the sizes of the subgrids. Maingrid
-    sizes are simply the integer value of the number
+    sizes are simprm_ny the integer value of the number
     of cells divided by the number of subgrids along
     each axis. The remainder is the modulus.
 
@@ -668,13 +682,13 @@ def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
     :param r:
         The number of subgrids along the z axis.
     """
-    nnx = int(nx / p)
-    nny = int(ny / q)
-    nnz = int(nz / r)
-    lx = (nx % p)
-    ly = (ny % q)
-    lz = (nz % r)
-    return nnx, nny, nnz, lx, ly, lz
+    mg_nx = int(nx / p)
+    mg_ny = int(ny / q)
+    mg_nz = int(nz / r)
+    rm_nx = (nx % p)
+    rm_ny = (ny % q)
+    rm_nz = (nz % r)
+    return mg_nx, mg_ny, mg_nz, rm_nx, rm_ny, rm_nz
 
 
 # -----------------------------------------------------------------------------
@@ -693,10 +707,10 @@ def get_subgrid_loc(sel_subgrid, p, q, r):
     :param r:
         The number of subgrids along the z axis.
     """
-    rr = int(np.floor(sel_subgrid / (p * q)))
-    qq = int(np.floor((sel_subgrid - (rr*p*q)) / p))
-    pp = int(sel_subgrid - rr * (p * q) - (qq * p))
-    subgrid_loc = (pp, qq, rr)
+    sg_r = int(np.floor(sel_subgrid / (p * q)))
+    sg_q = int(np.floor((sel_subgrid - (sg_r*p*q)) / p))
+    sg_p = int(sel_subgrid - sg_r * (p * q) - (sg_q * p))
+    subgrid_loc = (sg_p, sg_q, sg_r)
     return subgrid_loc
 
 
@@ -704,35 +718,35 @@ def get_subgrid_loc(sel_subgrid, p, q, r):
 
 @jit()
 def subgrid_lower_left(
-    nnx, nny, nnz,
-    pp, qq, rr,
-    lx, ly, lz
+    mg_nx, mg_ny, mg_nz,
+    sg_p, sg_q, sg_r,
+    rm_nx, rm_ny, rm_nz
 ):
     """
     Get the index of the lower left corner of a subgrid.
 
-    :param nnx:
+    :param mg_nx:
         The standard length of a subgrid on the x-axis
-    :param nny:
+    :param mg_ny:
         The standard length of a subgrid on the y-axis
-    :param nnz:
+    :param mg_nz:
         The standard length of a subgrid on the z-axis
-    :param pp:
+    :param sg_p:
         The index of the subgrid on the x-axis.
-    :param qq:
+    :param sg_q:
         The index of the subgrid on the y-axis.
-    :param rr:
+    :param sg_r:
         The index of the subgrid on the z-axis.
-    :param lx:
+    :param rm_nx:
         Remainder from the maingrid calculation on the x-axis
-    :param ly:
+    :param rm_ny:
         Remainder from the maingrid calculation on the y-axis
-    :param lz:
+    :param rm_nz:
         Remainder from the maingrid calculation on the z-axis
     """
-    ix = pp * nnx + min(pp, lx)
-    iy = qq * nny + min(qq, ly)
-    iz = rr * nnz + min(rr, lz)
+    ix = sg_p * mg_nx + min(sg_p, rm_nx)
+    iy = sg_q * mg_ny + min(sg_q, rm_ny)
+    iz = sg_r * mg_nz + min(sg_r, rm_nz)
     return ix, iy, iz
 
 
@@ -740,36 +754,36 @@ def subgrid_lower_left(
 
 @jit()
 def subgrid_size(
-    nnx, nny, nnz,
-    pp, qq, rr,
-    lx, ly, lz
+    mg_nx, mg_ny, mg_nz,
+    sg_p, sg_q, sg_r,
+    rm_nx, rm_ny, rm_nz
 ):
     """
     Get the size of a subgrid
 
-    :param nnx:
+    :param mg_nx:
         The standard length of a subgrid on the x-axis
-    :param nny:
+    :param mg_ny:
         The standard length of a subgrid on the y-axis
-    :param nnz:
+    :param mg_nz:
         The standard length of a subgrid on the z-axis
-    :param pp:
+    :param sg_p:
         The index of the subgrid on the x-axis.
-    :param qq:
+    :param sg_q:
         The index of the subgrid on the y-axis.
-    :param rr:
+    :param sg_r:
         The index of the subgrid on the z-axis.
-    :param lx:
+    :param rm_nx:
         Remainder from the maingrid calculation on the x-axis
-    :param ly:
+    :param rm_ny:
         Remainder from the maingrid calculation on the y-axis
-    :param lz:
+    :param rm_nz:
         Remainder from the maingrid calculation on the z-axis
     """
-    snx = nnx if pp >= lx else nnx+1
-    sny = nny if qq >= ly else nny+1
-    snz = nnz if rr >= lz else nnz+1
-    return snx, sny, snz
+    sg_nx = mg_nx if sg_p >= rm_nx else mg_nx+1
+    sg_ny = mg_ny if sg_q >= rm_ny else mg_ny+1
+    sg_nz = mg_nz if sg_r >= rm_nz else mg_nz+1
+    return sg_nx, sg_ny, sg_nz
 
 
 # -----------------------------------------------------------------------------
@@ -808,30 +822,31 @@ def precalculate_subgrid_info(nx, ny, nz, p, q, r, n_subgrids):
     subgrid_locs = []
     subgrid_begin_idxs = []
     # Initial size and offset for first subgrid
-    snx, sny, snz = 0, 0, 0
+    sg_nx, sg_ny, sg_nz = 0, 0, 0
     off = 64
     for sg_num in range(n_subgrids):
         # Move past the current header and previous subgrid
-        off += 36 +  (8 * (snx * sny * snz))
+        off += 36 +  (8 * (sg_nx * sg_ny * sg_nz))
         subgrid_offsets.append(off)
 
-        nnx, nny, nnz, lx, ly, lz= get_maingrid_and_remainder(nx, ny, nz, p, q, r)
-        pp, qq, rr = get_subgrid_loc(sg_num, p, q, r)
-        subgrid_locs.append((pp, qq, rr))
+        (mg_nx, mg_ny, mg_nz,
+         rm_nx, rm_ny, rm_nz) = get_maingrid_and_remainder(nx, ny, nz, p, q, r)
+        sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, p, q, r)
+        subgrid_locs.append((sg_p, sg_q, sg_r))
 
         ix, iy, iz = subgrid_lower_left(
-            nnx, nny, nnz,
-            pp, qq, rr,
-            lx, ly, lz
+            mg_nx, mg_ny, mg_nz,
+            sg_p, sg_q, sg_r,
+            rm_nx, rm_ny, rm_nz
         )
         subgrid_begin_idxs.append((ix, iy, iz))
 
-        snx, sny, snz = subgrid_size(
-            nnx, nny, nnz,
-            pp, qq, rr,
-            lx, ly, lz
+        sg_nx, sg_ny, sg_nz = subgrid_size(
+            mg_nx, mg_ny, mg_nz,
+            sg_p, sg_q, sg_r,
+            rm_nx, rm_ny, rm_nz
         )
-        subgrid_shapes.append((snx, sny, snz))
+        subgrid_shapes.append((sg_nx, sg_ny, sg_nz))
     return subgrid_offsets, subgrid_locs, subgrid_begin_idxs, subgrid_shapes
 
 
