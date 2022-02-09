@@ -508,7 +508,7 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
             z_is=z_is,
         )
         # Select out specific indices from from the array
-        sub = sub[[accessor[d]['indices'] for d in dims]]
+        sub = sub[tuple([accessor[d]['indices'] for d in dims])]
         # Check which axes need to be squeezed out. This is
         # to distinguish between doing `ds.isel(x=[0])` which
         # should keep the x axis (and dimension) and `ds.isel(x=0)`
