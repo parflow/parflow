@@ -147,7 +147,7 @@ def write_pfb(
             mm = np.memmap(
                 file,
                 dtype=np.float64,
-                mode='readwrite',
+                mode='r+',
                 offset=off,
                 shape=tuple(shape),
                 order='F'
@@ -156,20 +156,20 @@ def write_pfb(
             s_ix, s_iy, s_iz = start
             n_ix, n_iy, n_iz = shape
             if z_first:
-                mm[:] = array[s_iz:s_iz+n_ix,
+                mm[:] = array[s_iz:s_iz+n_iz,
                               s_iy:s_iy+n_iy,
                               s_ix:s_ix+n_ix].T.byteswap()
             else:
                 mm[:] = array[s_ix:s_ix+n_ix,
                               s_iy:s_iy+n_iy,
                               s_iz:s_iz+n_iz].byteswap()
-            mm.flush()
-            f.seek(off)
+            # Seek to offset + the size of the subgrid
+            f.seek(off + 8 * np.prod(shape))
 
     # Create the .dist file if requested
     if dist:
         with open(file + ".dist", "w+") as dist_fp:
-            dist_fp.write("\n".join(sg_offs))
+            dist_fp.write("\n".join([str(s) for s in sg_offs]))
             dist_fp.write("\n")
 
 
