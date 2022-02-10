@@ -79,7 +79,7 @@ def write_pfb(
     is regardless of the number of subgrids in the PFB file loaded by the
     ParflowBinaryReader into the numpy array. Therefore, loading a file with
     ParflowBinaryReader and saving it with this method may restructure the
-    file into a different number of subgrids if you chagne these values.
+    file into a different number of subgrids if you change these values.
 
     If dist is True then also write a file with the .dist extension added to
     the file_name. The .dist file will contain one line per subgrid with the
