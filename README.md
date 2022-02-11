@@ -55,7 +55,10 @@ the Parflow developers and users.  In order to post you will have to
 join the group, old posts are visible without joining:
 - [Parflow-Users](https://groups.google.com/g/parflow)
 
-A Parflow blog is available with notes from users on how to compile and use Parflow:
+The most recent build/installation guides are now located on the Parflow Wiki:
+- [Parflow Installation guides](https://github.com/parflow/parflow/wiki/ParFlow-Installation-Guides)
+
+A Parflow blog is available with notes from users on how to use Parflow:
 - [Parflow Blog](http://parflow.blogspot.com/)
 
 To report Parflow bugs, please use the GitHub issue tracker for Parflow:
