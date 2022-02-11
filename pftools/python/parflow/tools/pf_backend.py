@@ -567,7 +567,7 @@ class ParflowBackendArray(BackendArray):
 
     def __getitem__(
             self, key: xr.core.indexing.ExplicitIndexer
-    ) -> np.typing.ArrayLike:
+    ) -> np.ndarray:
         """Dunder method to call implement the underlying indexing scheme"""
         return indexing.explicit_indexing_adapter(
             key,
@@ -610,7 +610,7 @@ class ParflowBackendArray(BackendArray):
             self._shape = base_shape
         return self._shape
 
-    def _getitem(self, key: tuple) -> np.typing.ArrayLike:
+    def _getitem(self, key: tuple) -> np.ndarray:
         """Mapping between keys to the actual data"""
         size = self._size_from_key(key)
         sub = delayed(_getitem_no_state)(
