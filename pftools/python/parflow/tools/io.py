@@ -168,9 +168,21 @@ def write_pfb(
 
     # Create the .dist file if requested
     if dist:
-        with open(file + ".dist", "w+") as dist_fp:
-            dist_fp.write("\n".join([str(s) for s in sg_offs]))
-            dist_fp.write("\n")
+        write_dist(file, sg_offs)
+
+
+def write_dist(file, sg_offs):
+    """
+    Write a distfile.
+
+    :param file:
+        The path of the file to be written.
+    :param sg_offs:
+        The subgrid offsets.
+    """
+    with open(file + ".dist", "w+") as dist_fp:
+        dist_fp.write("\n".join([str(s) for s in sg_offs]))
+        dist_fp.write("\n")
 
 
 # -----------------------------------------------------------------------------
