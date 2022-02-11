@@ -189,7 +189,10 @@ def write_dist(file, sg_offs):
         The subgrid offsets.
     """
     with open(file + ".dist", "w+") as dist_fp:
-        dist_fp.write("\n".join([str(s) for s in sg_offs]))
+        for i, s in enumerate(sg_offs):
+            # Need to account for header bytes
+            real_off = s - 100 if i == 0 else s - 36
+            dist_fp.write(f'\n{real_off}')
         dist_fp.write("\n")
 
 
