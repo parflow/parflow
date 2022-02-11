@@ -123,6 +123,7 @@ def write_pfb(
     elif len(array.shape) == 2:
         nz = 1
         ny, nx = array.shape
+        array = np.expand_dims(array, axis=0 if z_first else -1)
     else:
         raise ValueError("Array must be 2 or 3 dimensional to write to pfb!")
 
