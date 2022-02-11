@@ -115,10 +115,17 @@ def write_pfb(
         Extra keyword arguments, primarily to eat unnecessary
         args by passing in a dictionary with `**dict`.
     """
-    if z_first:
-        nz, ny, nx = array.shape
+    if len(array.shape) == 3:
+        if z_first:
+                nz, ny, nx = array.shape
+        else:
+            nx, ny, nz = array.shape
+    elif len(array.shape) == 2:
+        nz = 1
+        ny, nx = array.shape
     else:
-        nx, ny, nz = array.shape
+        raise ValueError("Array must be 2 or 3 dimensional to write to pfb!")
+
     n_subgrids = p * q * r
     # All the subgrid info here
     sg_offs, sg_locs, sg_starts, sg_shapes = precalculate_subgrid_info(

@@ -18,7 +18,6 @@ from .fs import get_absolute_path
 from .io import (
     DataAccessor,
     ParflowBinaryReader,
-    precompute_subgrid_info,
     write_dict,
     write_dist
 )
