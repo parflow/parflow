@@ -493,6 +493,10 @@ class Run(BaseRun):
         p = kwargs.get('P', self.Process.Topology.P)
         q = kwargs.get('Q', self.Process.Topology.Q)
         r = kwargs.get('R', self.Process.Topology.R)
-        with ParflowBinaryReader(pfb_file_full_path) as pfb:
+        with ParflowBinaryReader(pfb_file_full_path, p=p, q=q, r=r) as pfb:
+            header = pfb.header
             offsets = pfb.subgrid_offsets
         write_dist(pfb_file_full_path, offsets)
+
+
+

@@ -130,7 +130,7 @@ def write_pfb(
     n_subgrids = p * q * r
     # All the subgrid info here
     sg_offs, sg_locs, sg_starts, sg_shapes = precalculate_subgrid_info(
-        nx, ny, nz, p, q, r, n_subgrids
+        nx, ny, nz, p, q, r
     )
 
     with open(file, 'wb') as f:
@@ -192,8 +192,7 @@ def write_dist(file, sg_offs):
         for i, s in enumerate(sg_offs):
             # Need to account for header bytes
             real_off = s - 100 if i == 0 else s - 36
-            dist_fp.write(f'\n{real_off}')
-        dist_fp.write("\n")
+            dist_fp.write(f'{real_off}\n')
 
 
 # -----------------------------------------------------------------------------
@@ -325,13 +324,13 @@ class ParflowBinaryReader:
     """
 
     def __init__(
-            self,
-            file: str,
-            precompute_subgrid_info: bool=True,
-            p: int=None,
-            q: int=None,
-            r: int=None,
-            header: Mapping[str, Number]=None
+        self,
+        file: str,
+        precompute_subgrid_info: bool=True,
+        p: int=None,
+        q: int=None,
+        r: int=None,
+        header: Mapping[str, Number]=None
     ):
         self.filename = file
         self.f = open(self.filename, 'rb')
@@ -343,8 +342,12 @@ class ParflowBinaryReader:
         self.header['q'] = self.header.get('q', q)
         self.header['r'] = self.header.get('r', r)
 
-        # If p, q, and r aren't given we can precompute them
-        if not np.all([p, q, r]):
+        if np.all([p, q, r]):
+            self.header['p'] = p
+            self.header['q'] = q
+            self.header['r'] = r
+        else:
+            # If p, q, and r aren't given we can precompute them
             # NOTE: This is a bit of a fallback and may not always work
             eps = 1 - 1e-6
             first_sg_head = self.read_subgrid_header()
@@ -366,15 +369,17 @@ class ParflowBinaryReader:
 
     def compute_subgrid_info(self):
         """ Computes the subgrid information """
-        sg_offs, sg_locs, sg_starts, sg_shapes = precalculate_subgrid_info(
+        try:
+            sg_offs, sg_locs, sg_starts, sg_shapes = precalculate_subgrid_info(
                 self.header['nx'],
                 self.header['ny'],
                 self.header['nz'],
                 self.header['p'],
                 self.header['q'],
-                self.header['r'],
-                self.header['n_subgrids']
-        )
+                self.header['r']
+            )
+        except:
+            raise ValueError(self.header)
         self.subgrid_offsets = np.array(sg_offs)
         self.subgrid_locations = np.array(sg_locs)
         self.subgrid_start_indices = np.array(sg_starts)
@@ -812,7 +817,7 @@ def subgrid_size(
 # -----------------------------------------------------------------------------
 
 @jit()
-def precalculate_subgrid_info(nx, ny, nz, p, q, r, n_subgrids):
+def precalculate_subgrid_info(nx, ny, nz, p, q, r):
     """
     Computes all necessary subgrid information to index and read
     or write a pfb file.
@@ -829,8 +834,6 @@ def precalculate_subgrid_info(nx, ny, nz, p, q, r, n_subgrids):
         Number of subgrids along the y-axis.
     :param r:
         Number of subgrids along the z-axis.
-    :param n_subgrids:
-        Number of total subgrids. Ought to be (p*q*r)
 
     :return:
         A tuple of arrays, (
@@ -846,6 +849,7 @@ def precalculate_subgrid_info(nx, ny, nz, p, q, r, n_subgrids):
     subgrid_begin_idxs = []
     # Initial size and offset for first subgrid
     sg_nx, sg_ny, sg_nz = 0, 0, 0
+    n_subgrids = p * q * r
     off = 64
     for sg_num in range(n_subgrids):
         # Move past the current header and previous subgrid
