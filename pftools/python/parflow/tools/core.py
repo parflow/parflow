@@ -495,10 +495,15 @@ class Run(BaseRun):
         p = kwargs.get('P', self.Process.Topology.P)
         q = kwargs.get('Q', self.Process.Topology.Q)
         r = kwargs.get('R', self.Process.Topology.R)
-        array = read_pfb(pfb_file_full_path)
-        write_pfb(pfb_file_full_path, array, p=p, q=q, r=r, dist=True)
 
-        #write_dist(pfb_file_full_path, offsets)
+        with ParflowBinaryReader(pfb_file_full_path) as pfb:
+            array = pfb.read_all_subgrids()
+            header = pfb.header
+
+        dx, dy, dz = header['dx'], header['dy'], header['dz']
+        write_pfb(pfb_file_full_path, array,
+                   p=p, q=q, r=r, dx=dx, dy=dy, dz=dz,
+                   dist=True)
 
 
 

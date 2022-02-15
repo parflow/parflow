@@ -70,7 +70,7 @@ def write_pfb(
     p=1, q=1, r=1,
     x=0.0, y=0.0, z=0.0,
     dx=1.0, dy=1.0, dz=1.0,
-    z_first=True, dist=False,
+    z_first=True, dist=True,
     **kwargs
 ):
     """
@@ -94,7 +94,7 @@ def write_pfb(
     :param q:
         Number of subgrids in the y direction.
     :param r:
-        Number of subgrids in teh z direction.
+        Number of subgrids in the z direction.
     :param x:
         The length of the x-axis
     :param y:
@@ -149,7 +149,7 @@ def write_pfb(
         # loop over subgrids:
         for off, loc, start, shape in zip(sg_offs, sg_locs, sg_starts, sg_shapes):
             # Write the subgrid header
-            for sgh in itertools.chain(loc, shape, [1,1,1]):
+            for sgh in itertools.chain(start, shape, [1,1,1]):
                 f.write(struct.pack('>i', int(sgh)))
 
             mm = np.memmap(
