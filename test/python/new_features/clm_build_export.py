@@ -6,7 +6,7 @@ from parflow import Run
 from parflow.tools.builders import CLMImporter, DomainBuilder
 from parflow.tools.export import CLMExporter
 from parflow.tools.fs import get_absolute_path
-from parflow.tools.io import read_array, read_clm
+from parflow.tools.io import read_pfb, read_clm
 
 clmin_file = '../../input/drv_clmin.dat.old'
 vegm_file = '../../tcl/clm/drv_vegm.dat'
@@ -229,12 +229,12 @@ def verify_vegm_data(clm):
                 land_frac = item[land_frac_name]
                 assert land_frac.Type in ('PFBFile', 'Constant')
                 if land_frac.Type == 'PFBFile':
-                    array = read_array(land_frac.FileName).squeeze()
+                    array = read_pfb(land_frac.FileName).squeeze()
                     assert array.shape == shape
         else:
             assert item.Type in ('PFBFile', 'Constant')
             if item.Type == 'PFBFile':
-                array = read_array(item.FileName).squeeze()
+                array = read_pfb(item.FileName).squeeze()
                 assert array.shape == shape
 
     # Check a few individual ones

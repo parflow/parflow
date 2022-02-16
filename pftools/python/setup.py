@@ -21,18 +21,26 @@ setup(
     ],
     keywords=['ParFlow', 'groundwater model', 'surface water model'],
     packages=find_packages(),
-    install_requires=['pyyaml==5.4', 'numpy'],
+    install_requires=[
+        'pyyaml==5.4',
+        'numpy',
+        'xarray',
+        'numba',
+        'dask',
+        'imageio>=2.9.0'
+    ],
     include_package_data=True,
     extras_require={
         'all': [
             'imageio>=2.9.0',
-            'parflowio>=0.0.4'
-        ],
-        'pfb': [
-            'parflowio>=0.0.4'
         ],
         'pfsol': [
             'imageio>=2.9.0'
         ]
+    },
+    entry_points={
+        'xarray.backends': [
+            'parflow=parflow.tools.pf_backend:ParflowBackendEntrypoint'
+        ],
     }
 )
