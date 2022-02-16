@@ -216,7 +216,9 @@ class SolidFileBuilder:
 
         else:
             temp_pfb_file = tempfile.NamedTemporaryFile(suffix='.pfb')
-            write_pfb(temp_pfb_file.name, self.mask_array.astype(np.float64))
+            if self.mask_array.dtype != np.float64:
+                self.mask_array = self.mask_array.astype(np.float64)
+            write_pfb(temp_pfb_file.name, self.mask_array)
             args = [
                 f'--mask {temp_pfb_file.name}',
                 f'--side-patch-label {self.side_id}',
