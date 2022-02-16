@@ -5,6 +5,8 @@ from pathlib import Path
 import sys
 import tempfile
 import yaml
+import subprocess
+from subprocess import Popen, PIPE
 
 import numpy as np
 
@@ -214,7 +216,7 @@ class SolidFileBuilder:
 
         else:
             temp_pfb_file = tempfile.NamedTemporaryFile(suffix='.pfb')
-            write_pfb(temp_pfb_file.name, self.mask_array)
+            write_pfb(temp_pfb_file.name, self.mask_array.astype(np.float64))
             args = [
                 f'--mask {temp_pfb_file.name}',
                 f'--side-patch-label {self.side_id}',
@@ -233,8 +235,13 @@ class SolidFileBuilder:
         exe_path = get_absolute_path('$PARFLOW_DIR/bin/pfmask-to-pfsol')
         args = args + extra
         cmd_line = f'{exe_path} ' + ' '.join(args)
-        print(f'$ {cmd_line}')
-        os.system(cmd_line)
+        process = Popen(cmd_line.split(), stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        print('Standard output:')
+        print(stdout)
+        print('')
+        print('Standard error:')
+        print(stderr)
 
         print('=== pfmask-to-pfsol ===: END')
 

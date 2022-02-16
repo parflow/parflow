@@ -115,6 +115,10 @@ def write_pfb(
         Extra keyword arguments, primarily to eat unnecessary
         args by passing in a dictionary with `**dict`.
     """
+    if array.dtype != np.float64:
+        raise ValueError(f"Arrays written to pfb must be of type np.float64!"
+                          + " Found {array.dtype} instead!")
+
     if len(array.shape) == 3:
         if z_first:
                 nz, ny, nx = array.shape
