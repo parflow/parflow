@@ -28,8 +28,8 @@ the general approach for defining a domain
 In all cases the “main" ParFlow input file is the ``.tcl`` file. 
 This input file is a TCL script with some special routines to create 
 a database which is used as the input for ParFlow. 
-See §[Main Input File (.tcl)][ADD LINK TO MAIN INPUT FILE SECTION] 
-for details on the format of this file. The input values into ParFlow 
+See §:ref:`Main Input File (.tcl)` for details on the format of 
+this file. The input values into ParFlow 
 are defined by a key/value pair. For each key you provide the 
 associated value using the ``pfset`` command inside the input script.
 
@@ -54,7 +54,7 @@ ParFlow can handle complex geometries and defining the problem may
 involve several steps. Users can specify simple box domains directly in
 the ``tcl`` script. If a more complicated domain is required, the 
 user may convert geometries into the ``.pfsol`` file format
-(§[ParFlow Solid Files (.pfsol)][ADD LINK HERE]) using the appropriate 
+(:ref:`ParFlow Solid Files (.pfsol)`) using the appropriate 
 PFTools conversion utility (:ref:`Manipulating Data`). 
 Alternatively, the topography can be specified using ``.pfb`` 
 files of the slopes in the x and y directions.
@@ -117,7 +117,7 @@ a workflow that works for them.
 This example assumes that you are running with ParFlow ``CLM`` and 
 it uses slope files and an indicator file to define the topography 
 and geologic units of the domain. An alternate approach would be 
-to define geometries by building a ``.pfsol`` file (§[ParFlow Solid Files (.pfsol)][ADD LINK]) 
+to define geometries by building a ``.pfsol`` file (:ref:`ParFlow Solid Files (.pfsol)`) 
 using the appropriate PFTools conversion utility(:ref:`Manipulating Data`).``
 
 The general approach is as follows:
@@ -139,11 +139,11 @@ The general approach is as follows:
    Create consistent gridded layers that are all clipped to your domain
    and have the same number of grid cells
 
-   Convert gridded files to ``.pfb (§[ParFlow Binary Files (.pfb)][ADD LINK]). 
+   Convert gridded files to ``.pfb`` (:ref:`ParFlow Binary Files (.pfb)`). 
    One way to accomplish this is by reformatting the gridded outputs to the 
-   correct ParFlow ``.sa`` order (§[ParFlow Simple ASCII Files (.sa and .sb)][ADD LINK]) 
+   correct ParFlow ``.sa`` order (:ref: `ParFlow Simple ASCII Files (.sa and .sb)`) 
    and to convert the ``.sa`` file to ``.pfb`` using the conversion tools 
-   (see §[common_pftcl][ADD LINK] Example 1). If you have an elevation file 
+   (see :ref: `common_pftcl` Example 1). If you have an elevation file 
    in ``.pfb`` format, you may wish to preserve it as provenance for the slopes
    and for use in post-processing tools. You may point ParFlow to the elevation:
 
@@ -155,7 +155,7 @@ The general approach is as follows:
 
    Calculate slopes in the x and y directions from the elevation
    dataset. This can be done with the built in tools as shown in
-   §4.3 <#common_pftcl>[ADD LINK] Example 5. In most cases some additional
+   §4.3 :ref:`common_pftcl` Example 5. In most cases some additional
    processing of the DEM will be required to ensure that the drainage
    patterns are correct. To check this you can run a “parking lot test"
    by setting the permeability of surface to almost zero and adding a
@@ -163,7 +163,7 @@ The general approach is as follows:
    right (i.e. your runoff patterns don’t match what you expect) you
    will need to go back and modify your DEM. The built in ParFlow tools
    pitfill and flatfill can be used to address some issues. (These tools
-   are also shown in §4.3 <#common_pftcl> [ADD LINK] Example 5).
+   are also shown in §4.3 :ref:`common_pftcl` Example 5).
 
    Create an indicator file for the subsurface. The indicator file is a
    3D ``.pfb`` file with the same dimensions as your domain that has 
@@ -183,7 +183,7 @@ The general approach is as follows:
    water table at a constant depth and run for a long time with a constant 
    recharge forcing until the water table reaches a steady state. 
    There are some additional key for spinup runs that are provided 
-   in §[Spinup Options][ADD LINK].
+   in :ref:`Spinup Options`.
 
    Convert land cover classifications to the IGBP [15]_ [ADD FOOTNOTE] land cover
    classes that are used in CLM.
@@ -236,7 +236,7 @@ The general approach is as follows:
    Greenwich Mean Time (GMT), not local time. The year, date and hour
    (in GMT) that the forcing begins should match the values 
    in ``drv_clmin.dat``. ``CLM`` requires the following variables
-   (also described in [ADD LINK TO MAIN INPUT FILE]):
+   (also described in :ref:`Main Input File (.tcl)`):
 
    -  DSWR: Visible or short-wave radiation :math:`[W/m^2]`.
 
@@ -375,10 +375,10 @@ follow this procedure :
 
    -  Take the last pressure output file before the restart with the
       sequence number from above and format them for regular input using
-      the keys detailed in §`6.1.27 <#Initial Conditions: Pressure>`__[ADD LINK]
+      the keys detailed in 6.1.27 :ref:`Initial Conditions: Pressure`
       and possibly the ``pfdist`` utility in the input script.
 
-#. Change the Main Input File §`6.1 <#Main Input File (.tcl)>`__ [ADD LINK] :
+#. Change the Main Input File 6.1 :ref:`Main Input File (.tcl)`:
 
    -  Edit the .tcl file (you may want to save the old one) and utilize
       the pressure initial condition input file option (as referenced
@@ -396,10 +396,11 @@ follow this procedure :
          start_time.
 
       -  To restart with ``CLM``, use the ``Solver.CLM.IstepStart`` 
-      key described in §[CLM Solver Parameters][ADD LINK] with a 
+      key described in :ref:`CLM Solver Parameters` with a 
       value equal to the dump sequence plus one. Make sure this 
       corresponds to changes to ``drv_clmin.dat``.
 
+   
 
 .. _Visualizing Output:
 
@@ -413,7 +414,7 @@ environment. It is multiplatform and may be downloaded directly
 from: `https://visit.llnl.gov/ <https://visit.llnl.gov/>`_. The most flexible 
 option for using VisIt to view ParFlow output is to write files using 
 the SILO format, which is available either as a direct output option 
-(described in §[Code Parameters][ADD LINK]) or a conversion option 
+(described in :ref:`Code Parameters`) or a conversion option 
 using pftools. Many other output conversion options exist as described 
 in :ref:`Manipulating Data` and this allows ParFlow output to 
 be converted into formats used by almost all visualization software.
@@ -591,7 +592,7 @@ allowing you to use a set of commands seen later, such as ``pfset``, etc.
 
 These next lines set the parallel process topology. The domain is
 divided in *x*, *y* and *z* by ``P``, ``Q`` and ``R``. The total number 
-of processors is ``P*Q*R`` (see §[Computing Topology][ADD LINK]).
+of processors is ``P*Q*R`` (see :ref:`Computing Topology`).
 
 ::
 
@@ -605,7 +606,7 @@ of processors is ``P*Q*R`` (see §[Computing Topology][ADD LINK]).
 
 Next we set up the computational grid (*see*
 §3.1 :ref:`Defining the Problem` and
-§6.1.3 :ref:`Computational Grid` [ADD LINK]).
+§6.1.3 :ref:`Computational Grid`).
 
 ::
 
@@ -653,7 +654,7 @@ these as well. For Cape Cod, we have the entire domain, and also the 2
    pfset GeomInput.Names "domain_input upper_aquifer_input lower_aquifer_input"
 
 Now you characterize your domain that you just pre-declared to be a ``box`` 
-(see §[Geometries][ADD LINK]), and you also give it a name, ``domain``.
+(see :ref:`Geometries`), and you also give it a name, ``domain``.
 
 ::
 
@@ -727,7 +728,7 @@ as they are internal to the domain.
    pfset Geom.lower_aquifer.Upper.Z      1.5
 
 Now you add permeability data to the domain sections defined above
-(§6.1.11 <#Permeability>`__ [ADD LINK]). You can reassign values simply by
+(§6.1.11 :ref:`Permeability`). You can reassign values simply by
 re-stating them – there is no need to comment out or delete the previous
 version – the final statement is the only one that counts.
 
@@ -777,7 +778,7 @@ example, we just read in the file and use the values to assign statistical prope
    close $fileId
 
 Now we set the heterogeneous parameters for the Upper and Lower aquifers
-(*see* §`6.1.11 <#Permeability>`__ [ADD LINK]). Note the special section at the
+(*see* §6.1.11 :ref:`Permeability`). Note the special section at the
 very end of this block where we reset the geometric mean and standard
 deviation to our values we read in from a file. **Note:** ParFlow uses
 *Standard Deviation* not *Variance*.
@@ -928,7 +929,7 @@ reached.
 
    pfset TimingInfo.DumpInterval	       -1
 
-Next, we assign the porosity (*see* §`6.1.12 <#Porosity>`__ [ADD LINK]). For the
+Next, we assign the porosity (*see* §6.1.12 :ref:`Porosity`). For the
 Cape Cod, the porosity is 0.39.
 
 ::
@@ -1007,7 +1008,7 @@ associate them with the boundary conditions that follow.
    pfset BCPressure.PatchNames "left right front back bottom top"
 
 These are Dirichlet BCs (i.e. constant head over cell so the pressure
-head is set to hydrostatic– *see* §6.1.24 <#Boundary Conditions: Pressure>__[ADD LINK]). There is no time
+head is set to hydrostatic– *see* §6.1.24 :ref:`Boundary Conditions: Pressure`). There is no time
 dependence, so use the ``constant`` time cycle we defined 
 previously. ``RefGeom`` links this to the established domain geometry 
 and tells ParFlow what to use for a datum when calculating hydrostatic 
@@ -1340,7 +1341,7 @@ This tutorial matches the ``LW_Test.tcl`` file found in
 the ``/test/washita/tcl_scripts`` directory and corresponds to []. 
 This script runs the Little Washita domain for three days using 
 ParFlow ``CLM`` with 3D forcings. The domain is setup using terrain 
-following grid (§[TFG][ADD LINK]) and subsurface geologes are 
+following grid (§:ref:`TFG`) and subsurface geologes are 
 specified using a ``.pfb`` indicator file. Input files were 
 generated using the workflow detailed in §:ref:`Defining a Real domain`.
 
@@ -1407,7 +1408,7 @@ be described in detail later as they get used.
 
 Next we set up the computational grid (*see*
 §3.1 :ref:`Defining the Problem` and
-§6.1.3 <#Computational Grid>[ADD LINK]).
+§6.1.3 :ref:`Computational Grid`).
 
 ::
 
@@ -1455,7 +1456,7 @@ is for the indicator file (which will also span the entire domain).
    pfset GeomInput.Names                     "box_input indi_input"
 
 Now you characterize the domain that you just pre-declared 
-to be a ``box`` (see §[Geometries][ADD LINK]), and you also 
+to be a ``box`` (see :ref:`Geometries`), and you also 
 give it a name, ``domain``.
 
 ::
@@ -1538,7 +1539,7 @@ indicator file do not need to be consecutive.
    pfset GeomInput.g8.Value                28
 
 Now you add permeability data to the domain sections defined above
-(§`6.1.11 <#Permeability>`__[ADD LINK]). You can reassign values simply by
+(§6.1.11 :ref:`Permeability`). You can reassign values simply by
 re-stating them – there is no need to comment out or delete the previous
 version – the final statement is the only one that counts. Also, note
 that you do not need to assign permeability values to all of the
@@ -1724,7 +1725,7 @@ step of 1hr.
    pfset TimeStep.Type                       Constant
    pfset TimeStep.Value                      1.0
 
-Next, we assign the porosity (*see* §`6.1.12 <#Porosity>`__[ADD LINK]). As with
+Next, we assign the porosity (*see* §6.1.12 :ref:`Porosity`). As with
 the permeability we assign different values for different indicator
 geometries. Here we assign values for all of our soil units but not for
 the geologic units, they will default to the domain value of 0.4. Note
@@ -1903,7 +1904,7 @@ domain in this example.
 
 Following the same approach as we did for ``Porosity`` we define 
 the relative permeability inputs that will be used for Richards’ 
-equation implementation (§[Richards RelPerm][ADD LINK]). Here we 
+equation implementation (:ref:`Richards RelPerm`). Here we 
 use ``VanGenuchten`` parameters. Note that every geometry 
 listed in ``Porosity.GeomNames`` must have values assigned.
 
@@ -1945,7 +1946,7 @@ listed in ``Porosity.GeomNames`` must have values assigned.
    pfset Geom.s9.RelPerm.Alpha        1.585
    pfset Geom.s9.RelPerm.N            2.413
 
-Next we do the same thing for saturation (§`6.1.22 <#Saturation>`__[ADD LINK])
+Next we do the same thing for saturation (§6.1.22 :ref:`Saturation`)
 again using the ``VanGenuchten`` parameters Note that every geometry listed 
 in ``Porosity.GeomNames`` must have values assigned.
 
@@ -2020,7 +2021,7 @@ but we do not have any so this key is constant, 0.0 over entire domain.
    pfset PhaseSources.water.Geom.domain.Value            0.0
 
 In this example we are using ParFlow ``CLM`` so we must provide some parameters 
-for ``CLM`` (§[CLM Solver Parameters][ADD LINK]). Note 
+for ``CLM`` (:ref:`CLM Solver Parameters`). Note 
 that ``CLM`` will also require some additional inputs outside of the tcl script. 
 Refer to ``/washita/clm_input/`` for examples of the ``CLM``, ``vegm`` 
 and ``driver`` files. These inputs are also discussed briefly in :ref:`Defining a Real domain`.
@@ -2066,7 +2067,7 @@ we specify the initial value for the CLM counter.
    pfset Solver.CLM.IstepStart                           1
 
 This last set of ``CLM`` parameters refers to the physical 
-properties of the system. Refer to §[CLM Solver Parameters][ADD LINK] for details.
+properties of the system. Refer to :ref:`CLM Solver Parameters` for details.
 
 ::
 
@@ -2100,7 +2101,7 @@ specify that we would like to write out ``CLM`` variables as well
 as ``Pressure`` and ``Saturation``. However, there are many options 
 for this and you should change these options according to what type 
 of analysis you will be performing on your results. A complete list 
-of print options is provided in §[Code Parameters][ADD LINK].
+of print options is provided in :ref:`Code Parameters`.
 
 ::
 
@@ -2128,7 +2129,7 @@ of print options is provided in §[Code Parameters][ADD LINK].
    pfset Solver.WriteSiloCLM                             False
 
 Next we specify the solver settings for the ParFlow
-(§`6.1.33 <#RE Solver Parameters>`__[ADD LINK]). First we turn 
+(§6.1.33 :ref:`RE Solver Parameters`). First we turn 
 on solver Richards and the terrain following grid. We turn off 
 variable dz.
 
@@ -2185,7 +2186,7 @@ Next we distribute all the inputs as described by the keys in
 §4.2 :ref:`PFTCL Commands`. Note the slopes are 2D files, while the
 rest of the ParFlow inputs are 3D so we need to alter the NZ accordingly
 following example `[dist example] <#dist example>`__ in
-§`4.3 <#common_pftcl>`__[FIX LINKS HERE].
+§4.3 :ref:`common_pftcl`.
 
 ::
 

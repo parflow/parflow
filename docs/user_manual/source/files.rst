@@ -1322,7 +1322,7 @@ specifies that permeability values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
 the “ParFlow Binary” file whose filename is given as the value. For a
 description of the ParFlow Binary file format, see
-§6.3 `ParFlow Binary Files (.pfb)`. The ParFlow Binary file
+§6.3 :ref:`ParFlow Binary Files (.pfb)`. The ParFlow Binary file
 associated with the named geometry must contain a collection of
 permeability values corresponding in a one-to-one manner to the entire
 computational grid. That is to say, when the contents of the file are

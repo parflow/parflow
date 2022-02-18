@@ -1359,7 +1359,7 @@ square brackets are optional and do not need to be provided.
    This command computes the sub-surface water storage (compressible and
    incompressible components) based on mask, porosity, saturation,
    storativity and pressure fields. The equations used to calculate this
-   quantity are given in §5.9 <#Water Balance>`__[ADD LINK]. The identifier of
+   quantity are given in §5.9 :ref:`Water Balance`. The identifier of
    the data set created by this operation is returned upon successful
    completion.
 
@@ -1379,7 +1379,7 @@ square brackets are optional and do not need to be provided.
    is calculated at any location that slopes at the edge of the domain
    point outward. This data is in units of :math:`[L^3 T^{-1}]` and the
    equations used to calculate this quantity are given in
-   §`5.9 <#Water Balance>`__[ADD LINK]. The identifier of the data set created by
+   §5.9 :ref:`Water Balance`. The identifier of the data set created by
    this operation is returned upon successful completion.
 
    ::
@@ -1389,7 +1389,7 @@ square brackets are optional and do not need to be provided.
    This command computes the surface water storage (ponded water on top
    of the domain) based on a computed top and pressure field. The
    equations used to calculate this quantity are given in
-   §`5.9 <#Water Balance>`__[ADD LINK]. The identifier of the data set created by
+   §5.9 :ref:`Water Balance`. The identifier of the data set created by
    this operation is returned upon successful completion.
 
    ::
