@@ -22,7 +22,16 @@ from functools import partial
 import itertools
 import json
 from pathlib import Path
-from numba import jit
+try:
+    from numba import jit
+except ImportError:
+    # Some systems may not have numba capabilities
+    def jit(self, function, *args, **kwargs):
+        """Dummy decorator, does nothing"""
+        def wrapper(*args, **kwargs):
+            function(*args, **kwargs)
+        return wrapper
+
 from numbers import Number
 import numpy as np
 import struct
@@ -1272,18 +1281,7 @@ class DataAccessor:
     # ---------------------------------------------------------------------------
 
     def _pfb_to_array(self, file_path):
-        from parflowio.pyParflowio import PFData
-
-        array = None
-        if file_path:
-            full_path = get_absolute_path(file_path)
-            # FIXME do something with selector inside parflow-io
-            pfb_data = PFData(full_path)
-            pfb_data.loadHeader()
-            pfb_data.loadData()
-            array = pfb_data.moveDataArray()
-
-        return array
+        return read_pfb(get_absolute_path(file_path))
 
     # ---------------------------------------------------------------------------
     # time
