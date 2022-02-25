@@ -91,19 +91,30 @@ or command line:
 This assumes that you are using CMake with the pftools package as it is
 contained within the main ParFlow repo (see https://github.com/parflow/parflow)
 
-1. Update the version number in setup.py
+1. Update the version number in `setup.py`.
 
-2. Run the following command to create and test a source archive and a wheel
-   distribution of the package:
+2. Build with the cmake command line. Make sure that Python is enabled through 
+   the `PARFLOW_ENABLE_PYTHON` option.
+
+        mkdir build
+        cd build
+        cmake .. \
+            -D PARFLOW_ENABLE_PYTHON=TRUE
+
+3. Run the following command to create and test a source archive and a wheel
+   distribution of the package. Make sure you are running this command in an 
+   environment with the `twine` Python package installed.
 
         make PythonCreatePackage
 
-3. If the distributions pass, run the following command to publish the
-   distributions:
+4. If the distributions pass, run the following command to publish the
+   distributions. In order to run this command successfully, you must first set the
+   `TWINE_USERNAME` and `TWINE_PASSWORD` environment variables to the username
+   and password that you will use to authenticate with PyPI.
 
         make PythonPublishPackage
 
-4. Check PyPI to make sure your package update was published correctly. Thanks
+5. Check PyPI to make sure your package update was published correctly. Thanks
    for contributing!
 
 ## Getting help
