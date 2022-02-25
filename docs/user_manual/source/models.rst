@@ -206,7 +206,7 @@ which is commonly referred to as the kinematic wave approximation. In
 Equation `[eq:ovmom] <#eq:ovmom>`__ :math:`S_{o,i}` is the bed slope
 (gravity forcing term) :math:`[-]`, which is equal to the friction slope
 :math:`S_{f,i}` :math:`[L]`; :math:`i` stands for the :math:`x`- and
-:math:`y`-direction. Manning�s equation is used to establish a flow
+:math:`y`-direction. Manning's equation is used to establish a flow
 depth-discharge relationship:
 
 .. math::

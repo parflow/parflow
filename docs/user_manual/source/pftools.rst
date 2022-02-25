@@ -40,7 +40,7 @@ PFTCL Commands
 The tables that follow `4.1 <#pftools1>`__, `4.2 <#pftools2>`__ and
 `4.3 <#pftools3>`__ provide a list of ParFlow commands with short
 descriptions grouped according to their function. The last two columns
-in this table indicate what examples from §4.3 `common_pftcl`, if
+in this table indicate what examples from §4.3 :ref:`common_pftcl`, if
 any, the command is used in and whether the command is compatible with a
 terrain following grid domain formulation.
 

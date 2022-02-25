@@ -876,7 +876,7 @@ Domain
 ~~~~~~
 
 The domain may be represented by any of the solid types in
-§`6.1.4 :ref:Geometries` above that allow the definition of surface
+§6.1.4 :ref:`Geometries` above that allow the definition of surface
 patches. These surface patches are used to define boundary conditions in
 §6.1.24 :ref:`Boundary Conditions: Pressure` and
 §6.1.25 :ref:`Boundary Conditions: Saturation` below. Subsequently, it
@@ -4456,7 +4456,7 @@ for following variables:
 **SPFH**: 
    Water-vapor specific humidity :math:`[kg/kg]` [clm_forcing]
 
-Note that ``CLM`` must be compiled and linked at runtime for this option to be active.``
+Note that ``CLM`` must be compiled and linked at runtime for this option to be active.
 
 .. container:: list
 

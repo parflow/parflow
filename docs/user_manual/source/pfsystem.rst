@@ -28,7 +28,7 @@ the general approach for defining a domain
 In all cases the “main" ParFlow input file is the ``.tcl`` file. 
 This input file is a TCL script with some special routines to create 
 a database which is used as the input for ParFlow. 
-See §:ref:`Main Input File (.tcl)` for details on the format of 
+See :ref:`Main Input File (.tcl)` for details on the format of 
 this file. The input values into ParFlow 
 are defined by a key/value pair. For each key you provide the 
 associated value using the ``pfset`` command inside the input script.
@@ -118,7 +118,7 @@ This example assumes that you are running with ParFlow ``CLM`` and
 it uses slope files and an indicator file to define the topography 
 and geologic units of the domain. An alternate approach would be 
 to define geometries by building a ``.pfsol`` file (:ref:`ParFlow Solid Files (.pfsol)`) 
-using the appropriate PFTools conversion utility(:ref:`Manipulating Data`).``
+using the appropriate PFTools conversion utility (:ref:`Manipulating Data`).
 
 The general approach is as follows:
 
@@ -141,9 +141,9 @@ The general approach is as follows:
 
    Convert gridded files to ``.pfb`` (:ref:`ParFlow Binary Files (.pfb)`). 
    One way to accomplish this is by reformatting the gridded outputs to the 
-   correct ParFlow ``.sa`` order (:ref: `ParFlow Simple ASCII Files (.sa and .sb)`) 
+   correct ParFlow ``.sa`` order (:ref:`ParFlow Simple ASCII Files (.sa and .sb)`) 
    and to convert the ``.sa`` file to ``.pfb`` using the conversion tools 
-   (see :ref: `common_pftcl` Example 1). If you have an elevation file 
+   (see :ref:`common_pftcl` Example 1). If you have an elevation file 
    in ``.pfb`` format, you may wish to preserve it as provenance for the slopes
    and for use in post-processing tools. You may point ParFlow to the elevation:
 
@@ -185,7 +185,7 @@ The general approach is as follows:
    There are some additional key for spinup runs that are provided 
    in :ref:`Spinup Options`.
 
-   Convert land cover classifications to the IGBP [15]_ [ADD FOOTNOTE] land cover
+   Convert land cover classifications to the IGBP [1]_ land cover
    classes that are used in CLM.
 
    -  1. Evergreen Needleleaf Forest
@@ -267,6 +267,9 @@ The general approach is as follows:
    variable is a column and rows designate time steps.
 
    Run your simulation!
+
+.. [1]
+    http://www.igbp.net
 
 .. _Running ParFlow:
 
@@ -451,7 +454,7 @@ This section gives a brief description of the problems in this directory.
    random field approach). It also provides examples of how tcl/tk 
    scripts may be used in conjunction with ParFlow to loop iteratively 
    or to run other scripts or programs. It uses the input text 
-   file ``stats4.txt``. This input script is fully detailed in §:ref:`Tutorial`.
+   file ``stats4.txt``. This input script is fully detailed in :ref:`Tutorial`.
 
    ``default_overland.tcl`` An overland flow boundary condition 
    test and example script based loosely on the V-catchment 
@@ -1341,9 +1344,9 @@ This tutorial matches the ``LW_Test.tcl`` file found in
 the ``/test/washita/tcl_scripts`` directory and corresponds to []. 
 This script runs the Little Washita domain for three days using 
 ParFlow ``CLM`` with 3D forcings. The domain is setup using terrain 
-following grid (§:ref:`TFG`) and subsurface geologes are 
+following grid (:ref:`TFG`) and subsurface geologes are 
 specified using a ``.pfb`` indicator file. Input files were 
-generated using the workflow detailed in §:ref:`Defining a Real domain`.
+generated using the workflow detailed in :ref:`Defining a Real domain`.
 
 Now for the tcl script:
 
@@ -1369,7 +1372,7 @@ allowing you to use a set of commands seen later, such as ``pfset``, etc.
 
 These next lines set the parallel process topology. The domain is
 divided in *x*, *y* and *z* by ``P``, ``Q`` and ``R``. The total 
-number of processors is ``P*Q*R`` (see §:ref:`Computing Topology`).
+number of processors is ``P*Q*R`` (see :ref:`Computing Topology`).
 
 ::
 
@@ -2080,7 +2083,7 @@ properties of the system. Refer to :ref:`CLM Solver Parameters` for details.
 
 Next we set the initial conditions for the domain. In this example we
 are using a pressure ``.pfb`` file that was obtained by spinning up 
-the model in the workflow outlined in §:ref:`Defining a Real domain`. 
+the model in the workflow outlined in :ref:`Defining a Real domain`. 
 Alternatively, the water table can be set to a constant value by 
 changing the ``ICPressure.Type``. Again, the input file that is 
 referenced here was was copied into the run directory at the top 
@@ -2185,8 +2188,7 @@ using it.
 Next we distribute all the inputs as described by the keys in
 §4.2 :ref:`PFTCL Commands`. Note the slopes are 2D files, while the
 rest of the ParFlow inputs are 3D so we need to alter the NZ accordingly
-following example `[dist example] <#dist example>`__ in
-§4.3 :ref:`common_pftcl`.
+following example 4 in §4.3 :ref:`common_pftcl`.
 
 ::
 
