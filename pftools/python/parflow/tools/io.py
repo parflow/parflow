@@ -26,7 +26,7 @@ try:
     from numba import jit
 except ImportError:
     # Some systems may not have numba capabilities
-    def jit():
+    def jit(*args, **kwargs):
         """Dummy decorator, does nothing"""
         def _decorator(func):
             return func
