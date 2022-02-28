@@ -26,11 +26,11 @@ try:
     from numba import jit
 except ImportError:
     # Some systems may not have numba capabilities
-    def jit(self, function, *args, **kwargs):
+    def jit(*args, **kwargs):
         """Dummy decorator, does nothing"""
-        def wrapper(*args, **kwargs):
-            function(*args, **kwargs)
-        return wrapper
+        def _decorator(func):
+            return func
+        return _decorator
 
 from numbers import Number
 import numpy as np
