@@ -1531,7 +1531,7 @@ dZMultipliers
 ~~~~~~~~~~~~~
 
 Here, dZ multipliers (:math:`\delta Z * m`) values are assigned within
-geounits (specified in §6.1.4 :ref:Geometries` above) using one of the
+geounits (specified in §6.1.4 :ref:`Geometries` above) using one of the
 methods described below.
 
 The format for this section of input is:
@@ -4897,7 +4897,7 @@ multi-layer PFB with the file extension ".C.pfb". The first 13 layers
 correspond to the 2-D CLM outputs and the remaining layers are the soil 
 temperatures in each layer. For example, a model with 4 soil layers will 
 create a SingleFile CLM output with 17 layers at each time step. The file 
-pseudo code is given below in §:ref:`ParFlow Binary Files (.c.pfb)` and 
+pseudo code is given below in :ref:`ParFlow Binary Files (.c.pfb)` and 
 the variables and units are as specified in the multiple ``PFB`` 
 and ``SILO`` formats as above.
 

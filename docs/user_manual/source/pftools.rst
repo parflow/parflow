@@ -1455,7 +1455,7 @@ square brackets are optional and do not need to be provided.
    area is computed recursively for each cell; areas are not weighted 
    by slope direction. Areas are returned as the number of upstream 
    (contributing) cells; to compute actual area, simply multiply by 
-   the cell area (dx*dy).``
+   the cell area (dx*dy).
 
    ::
 

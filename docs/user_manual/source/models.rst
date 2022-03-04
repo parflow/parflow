@@ -334,43 +334,37 @@ equations, and outlines the symbol dependencies and units.
 
    .. table:: Notation and units for flow equations.
 
-      +----------------------+----------------------+----------------------+
-      | symbol               | quantity             | units                |
-      +======================+======================+======================+
-      | :mat                 | porosity             | []                   |
-      | h:`\phi({\vec x},t)` |                      |                      |
-      +----------------------+----------------------+----------------------+
-      | :ma                  | saturation           | []                   |
-      | th:`S_i({\vec x},t)` |                      |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`{\v           | Darcy velocity       | [:math:`L T^{-1}`]   |
-      | ec V}_i({\vec x},t)` | vector               |                      |
-      +----------------------+----------------------+----------------------+
-      | :ma                  | source/sink          | [:math:`T^{-1}`]     |
-      | th:`Q_i({\vec x},t)` |                      |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`{\lambda}_i`  | mobility             | [:ma                 |
-      |                      |                      | th:`L^{3} T M^{-1}`] |
-      +----------------------+----------------------+----------------------+
-      | :ma                  | pressure             | [:mat                |
-      | th:`p_i({\vec x},t)` |                      | h:`M L^{-1} T^{-2}`] |
-      +----------------------+----------------------+----------------------+
-      | :math:`\rho_i`       | mass density         | [:math:`M L^{-3}`]   |
-      +----------------------+----------------------+----------------------+
-      | :math:`{\vec g}`     | gravity vector       | [:math:`L T^{-2}`]   |
-      +----------------------+----------------------+----------------------+
-      | :math:`{             | intrinsic            | [:math:`L^{2}`]      |
-      | \bar k}({\vec x},t)` | permeability tensor  |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:               | relative             | []                   |
-      | `k_{ri}({\vec x},t)` | permeability         |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`\mu_i`        | viscosity            | [:mat                |
-      |                      |                      | h:`M L^{-1} T^{-1}`] |
-      +----------------------+----------------------+----------------------+
-      | :math:`g`            | gravitational        | [:math:`L T^{-2}`]   |
-      |                      | acceleration         |                      |
-      +----------------------+----------------------+----------------------+
+      +----------------------------+----------------------+---------------------------+
+      | symbol                     | quantity             | units                     |
+      +============================+======================+===========================+
+      | :math:`\phi({\vec x},t)`   | porosity             | []                        |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`S_i({\vec x},t)`    | saturation           | []                        |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`{                   | Darcy velocity       | [:math:`L T^{-1}`]        |
+      | \vec V}_i({\vec x},t)`     | vector               |                           |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`Q_i({\vec x},t)`    | source/sink          | [:math:`T^{-1}`]          |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`{\lambda}_i`        | mobility             | [:math:`L^{3} T M^{-1}`]  |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`p_i({\vec x},t)`    | pressure             | [:math:`M L^{-1} T^{-2}`] |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`\rho_i`             | mass density         | [:math:`M L^{-3}`]        |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`{\vec g}`           | gravity vector       | [:math:`L T^{-2}`]        |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`{                   | intrinsic            | [:math:`L^{2}`]           |
+      | \bar k}({\vec x},t)`       | permeability tensor  |                           |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`k_{ri}({\vec x},t)` | relative             | []                        |
+      |                            | permeability         |                           |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`\mu_i`              | viscosity            | [:math:`M L^{-1} T^{-1}`] |
+      +----------------------------+----------------------+---------------------------+
+      | :math:`g`                  | gravitational        | [:math:`L T^{-2}`]        |
+      |                            | acceleration         |                           |
+      +----------------------------+----------------------+---------------------------+
 
 
 Here, :math:`\phi` describes the fluid capacity of the porous medium,
@@ -508,48 +502,44 @@ incorporated along with the addition of injection and extraction wells.
 
    .. table:: Notation and units for transport equation.
 
-      +----------------------+----------------------+----------------------+
-      | symbol               | quantity             | units                |
-      +======================+======================+======================+
-      | :m                   | porosity             | []                   |
-      | ath:`\phi({\vec x})` |                      |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`              | concentration        | []                   |
-      | c_{i,j}({\vec x},t)` | fraction             |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`{\v           | Darcy velocity       | [:math:`L T^{-1}`]   |
-      | ec V}_i({\vec x},t)` | vector               |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`\lambda_j`    | degradation rate     | [:math:`T^{-1}`]     |
-      +----------------------+----------------------+----------------------+
-      | :math:               | density of the solid | [:math:`M L^{-3}`]]  |
-      | `\rho_{s}({\vec x})` | mass                 |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`F             | mass concentration   | [:                   |
-      | _{i,j}({\vec x}, t)` |                      | math:`L^{3} M^{-1}`] |
-      +----------------------+----------------------+----------------------+
-      | :math:`n_{I}`        | number of injection  | []                   |
-      |                      | wells                |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`              | injection rate       | [:math:`T^{-1}`]     |
-      | \gamma^{I;i}_{k}(t)` |                      |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`\Omeg         | injection well       | []                   |
-      | a^{I}_{k}({\vec x})` | region               |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`              | injected             | []                   |
-      | {\bar c}^{k}_{ij}()` | concentration        |                      |
-      |                      | fraction             |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`n_{E}`        | number of extraction | []                   |
-      |                      | wells                |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`              | extraction rate      | [:math:`T^{-1}`]     |
-      | \gamma^{E;i}_{k}(t)` |                      |                      |
-      +----------------------+----------------------+----------------------+
-      | :math:`\Omeg         | extraction well      | []                   |
-      | a^{E}_{k}({\vec x})` | region               |                      |
-      +----------------------+----------------------+----------------------+
+      +----------------------------------+----------------------+------------------------+
+      | symbol                           | quantity             | units                  |
+      +==================================+======================+========================+
+      | :math:`\phi({\vec x})`           | porosity             | []                     |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`c_{i,j}({\vec x},t)`      | concentration        | []                     |
+      |                                  | fraction             |                        |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`{\vec V}_i({\vec x},t)`   | Darcy velocity       | [:math:`L T^{-1}`]     |
+      |                                  | vector               |                        |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`\lambda_j`                | degradation rate     | [:math:`T^{-1}`]       |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`\rho_{s}({\vec x})`       | density of the solid | [:math:`M L^{-3}`]]    |
+      |                                  | mass                 |                        |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`F_{i,j}({\vec x}, t)`     | mass concentration   | [:math:`L^{3} M^{-1}`] |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`n_{I}`                    | number of injection  | []                     |
+      |                                  | wells                |                        |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`\gamma^{I;i}_{k}(t)`      | injection rate       | [:math:`T^{-1}`]       |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`\Omega^{I}_{k}({\vec x})` | injection well       | []                     |
+      |                                  | region               |                        |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`{\bar c}^{k}_{ij}()`      | injected             | []                     |
+      |                                  | concentration        |                        |
+      |                                  | fraction             |                        |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`n_{E}`                    | number of extraction | []                     |
+      |                                  | wells                |                        |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`\gamma^{E;i}_{k}(t)`      | extraction rate      | [:math:`T^{-1}`]       |
+      +----------------------------------+----------------------+------------------------+
+      | :math:`\Omega^{E}_{k}({\vec x})` | extraction well      | []                     |
+      |                                  | region               |                        |
+      +----------------------------------+----------------------+------------------------+
 
 
 
@@ -573,9 +563,9 @@ into `[eqn-transport] <#eqn-transport>`__ the following equation results
 
    \begin{aligned}
     \label{eqn-transport2}
-   (\phi+ (1 - \phi) \rho_{s}K_{d;j}) \frac{\partial}{\partial t} c_{i,j}& + & \nabla\cdot \left ( c_{i,j}{\vec V}_i\right ) \nonumber \\
-   & = & \nonumber \\
-   -~(\phi+ (1 - \phi) \rho_{s}K_{d;j}) \lambda_jc_{i,j}& + & \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\end{aligned}
+   (\phi+ (1 - \phi) \rho_{s}K_{d;j}) \frac{\partial}{\partial t} c_{i,j} & ~+~ \nabla\cdot \left ( c_{i,j}{\vec V}_i\right ) \nonumber \\
+   & ~=~ \nonumber \\
+   -~(\phi+ (1 - \phi) \rho_{s}K_{d;j}) \lambda_jc_{i,j} & ~+~ \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\end{aligned}
 
 .. _Notation and Units:
 
@@ -598,7 +588,7 @@ where
 .. math::
 
    \begin{aligned}
-    \label{eqn-cond-phead}
+   \label{eqn-cond-phead}
    {\bar K}_i& = & \gamma{\lambda}_i, \\
    h_i& = & ( p_i~-~ \bar{p}) / \gamma.\end{aligned}
 
@@ -669,7 +659,7 @@ denote ParFlow input symbols by appending the symbols in table
 .. math::
 
    \begin{aligned}
-    \label{eqn-parflow-input}
+   \label{eqn-parflow-input}
    {\bar k}(I)    & = & \gamma{\bar k}/ \mu_0 ; \\
    \mu_i(I) & = & \mu_i/ \mu_0 ; \\
    p_i(I)   & = & h_i; \\
@@ -688,44 +678,76 @@ Water Balance
 ParFlow can calculate a water balance for the Richards’ equation,
 overland flow and ``clm`` capabilities. For a schematic of the water 
 balance in ParFlow please see . This water balance is computes 
-using ``pftools`` commands as described in §:ref:`Manipulating Data`. 
+using ``pftools`` commands as described in :ref:`Manipulating Data`. 
 There are two water balance storage components, subsurface and surface, 
 and two flux calculations, overland flow and evapotranspiration. 
-The storage components have units [L^3] while the fluxes may be 
-instantaneous and have units [L^3T^{-1}] or cumulative over an 
-output interval with units [L^3]. Examples of water balance 
+The storage components have units [:math:`L^3`] while the fluxes may be 
+instantaneous and have units [:math:`L^3T^{-1}`] or cumulative over an 
+output interval with units [:math:`L^3`]. Examples of water balance 
 calculations and errors are given in the scripts ``water_balance_x.tcl`` 
 and ``water_balance_y.tcl``. The size of water balance errors 
 depend on solver settings and tolerances but are typically very 
-small, <10^{-10} [-]. The water balance takes the form: 
-\begin{aligned}
-\frac{\Delta [Vol_{subsurface} + Vol_{surface}]}{\Delta t} = Q_{overland} + Q_{evapotranspiration} + Q_{source sink}
-\label{eq:balance}\end{aligned} where Vol_{subsurface} is the subsurface storage [L^3]; Vol_{surface} is the 
-surface storage [L^3]; Q_{overland} is the overland flux [L^3 T^{-1}]; Q_{evapotranspiration} is the 
-evapotranspiration flux passed from ``clm`` or other LSM, etc, [L^3 T^{-1}]; and Q_{source sink} are 
-any other source/sink fluxes specified in the simulation [L^3 T^{-1}]. The surface and subsurface 
+small, :math:`<10^{-10}` [-]. The water balance takes the form: 
+
+.. math::
+
+   \begin{aligned}
+   \label{eq:balance}
+   \frac{\Delta [Vol_{subsurface} + Vol_{surface}]}{\Delta t} = Q_{overland} + Q_{evapotranspiration} + Q_{source sink}
+   \end{aligned} 
+
+where :math:`Vol_{subsurface}` is the subsurface storage [:math:`L^3`]; :math:`Vol_{surface}` is the 
+surface storage [:math:`L^3`]; :math:`Q_{overland}` is the overland flux [:math:`L^3 T^{-1}`]; 
+:math:`Q_{evapotranspiration}` is the evapotranspiration flux passed 
+from ``clm`` or other LSM, etc, [:math:`L^3 T^{-1}`]; and 
+:math:`Q_{source sink}` are any other source/sink fluxes specified in 
+the simulation [:math:`L^3 T^{-1}`]. The surface and subsurface 
 storage routines are calculated using the ParFlow toolset commands ``pfsurfacestorage`` 
 and ``pfsubsurfacestorage`` respectively. Overland flow out of the domain is calculated 
-by ``pfsurfacerunoff``. Details for the use of these commands are given in §:ref:`PFTCL Commands` 
-and §:ref:`common_pftcl`. Q_{evapotranspiration} must be written out by ParFlow as a 
-variable (as shown in §:ref:`refCode Parameters`) and only contains the external fluxes passed 
+by ``pfsurfacerunoff``. Details for the use of these commands are given in :ref:`PFTCL Commands` 
+and :ref:`common_pftcl`. :math:`Q_{evapotranspiration}` must be written out by ParFlow as a 
+variable (as shown in :ref:`Code Parameters`) and only contains the external fluxes passed 
 from a module such as ``clm`` or WRF. Note that these volume and flux quantities are calculated 
 spatially over the domain and are returned as array values, just like any other quantity in ParFlow. 
 The tools command ``pfsum`` will sum these arrays into a single value for the enrite domain. 
-All other fluxes must be determined by the user. The subsurface storage is calculated over all 
-active cells in the domain, \Omega, and contains both compressible and incompressible parts based 
-on Equation [eq:richard]. This is computed on a cell-by-cell basis (with the result being an array 
-of balances over the domain) as follows: \begin{aligned}
-Vol_{subsurface} = \sum_\Omega [ S(\psi)S_s \psi \Delta x \Delta y \Delta z +
-S(\psi)(\psi)\phi \Delta x \Delta y \Delta z]
-\label{eq:sub_store}\end{aligned} The surface storage is calculated over the upper surface boundary 
-cells in the domain, \Gamma, as computed by the mask and contains based on Equation [eq:kinematic]. 
-This is again computed on a cell-by-cell basis (with the result being an array of balances over the 
-domain) as follows: \begin{aligned}
-Vol_{surface} =  \sum_\Gamma \psi \Delta x \Delta y
-\label{eq:surf_store}\end{aligned} For the overland flow outflow from the domain, any cell at the 
-top boundary that has a slope that points out of the domain and is ponded will remove water from 
-the domain. This is calculated, for example in the y-direction, as the multiple of 
-Equation [eq:manningsy] and the area: \begin{aligned}
-Q_{overland}=vA= -\frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}\psi \Delta x=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{5/3}\Delta x
-\label{eq:outflow}\end{aligned}``
+All other fluxes must be determined by the user. 
+
+The subsurface storage is calculated over all active cells 
+in the domain, :math:`\Omega`, and contains both compressible 
+and incompressible parts based on Equation [eq:richard]. 
+This is computed on a cell-by-cell basis (with the result 
+being an array of balances over the domain) as follows: 
+
+.. math::
+
+   \begin{aligned}
+   \label{eq:sub_store}
+   Vol_{subsurface} = \sum_\Omega [ S(\psi)S_s \psi \Delta x \Delta y \Delta z +
+   S(\psi)(\psi)\phi \Delta x \Delta y \Delta z]
+   \end{aligned} 
+
+The surface storage is calculated over the upper surface boundary 
+cells in the domain, :math:`\Gamma`, as computed by the mask and 
+contains based on Equation [eq:kinematic]. This is again computed 
+on a cell-by-cell basis (with the result being an array of balances 
+over the domain) as follows: 
+
+.. math::
+
+   \begin{aligned}
+   \label{eq:surf_store}
+   Vol_{surface} =  \sum_\Gamma \psi \Delta x \Delta y
+   \end{aligned} 
+
+For the overland flow outflow from the domain, any cell at the 
+top boundary that has a slope that points out of the domain and 
+is ponded will remove water from the domain. This is calculated, 
+for example in the y-direction, as the multiple of Equation [eq:manningsy] 
+and the area: 
+
+.. math::
+
+   \begin{aligned}
+   \label{eq:outflow}
+   Q_{overland}=vA= -\frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}\psi \Delta x=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{5/3}\Delta x
+   \end{aligned}
