@@ -1202,14 +1202,16 @@ def _read_vegm(file_name):
     x_dim = int(last_line_split[0])
     y_dim = int(last_line_split[1])
     z_dim = len(last_line_split) - 2
-    vegm_array = np.zeros((x_dim, y_dim, z_dim))
+    
+    # To be consistent with ParFlow-python xy indexing, x should represent columns and y rows
+    vegm_array = np.zeros((y_dim, x_dim, z_dim))
     # Assume first two lines are comments
     for line in lines[2:]:
         elements = line.split()
         x = int(elements[0])
         y = int(elements[1])
         for i in range(z_dim):
-            vegm_array[x - 1, y - 1, i] = elements[i + 2]
+            vegm_array[y - 1, x - 1, i] = elements[i + 2]
 
     return vegm_array
 
