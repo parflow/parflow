@@ -30,31 +30,34 @@ fully-saturated groundwater flow. This follows the form often written
 as:
 
 .. math::
-
+   :label: ssgw
+   
    \begin{aligned}
    \nabla \cdot\textbf{q} = Q(x)
-   \label{eq:ssgw}\end{aligned}
+   \end{aligned}
+   
 
 where :math:`Q` is the spatially-variable source-sink term (to represent
 wells, etc) and :math:`\textbf{q}` is the Darcy flux
 :math:`[L^{2}T^{-1}]` which is commonly written as:
 
 .. math::
+   :label: darcy
 
    \begin{aligned}
    \textbf{q}=- \textbf{K} \nabla H
-   \label{eq:Darcy}\end{aligned}
+   \end{aligned}
 
 where :math:`\textbf{K}` is the saturated, hydraulic conductivity tensor
 :math:`[LT^{-1}]` and :math:`H` :math:`[L]` is the head-potential.
-Inspection of `[eqn-mass-balance] <#eqn-mass-balance>`__ and
-`[eqn-darcy] <#eqn-darcy>`__ show that these equations agree with the
+Inspection of :eq:`eqn-mass-balance` and
+:eq:`eqn-darcy` show that these equations agree with the
 above formulation for a single-phase (:math:`i=1`), fully-saturated
 (:math:`S_i=S=1`), problem where the mobility, :math:`{\lambda}_i`, is
 set to the saturated hydraulic conductivity, :math:`\textbf{K}`, below.
 This is accomplished by setting the relative permeability and viscosity
-terms to unity in `[eqn-phase-mobility] <#eqn-phase-mobility>`__ as well
-as the gravity and density terms in `[eqn-darcy] <#eqn-darcy>`__. This
+terms to unity in :eq:`eqn-phase-mobility` as well
+as the gravity and density terms in :eq:`eqn-darcy`. This
 is shown in the example in §3.6 :ref:`Tutorial`, but please note that
 the resulting solution is in pressure-head, :math:`h`, not head
 potential, :math:`H`, and will still contain a hydrostatic pressure
@@ -68,12 +71,13 @@ Richards’ Equation
 The form of Richards’ equation implemented in ParFlow is given as,
 
 .. math::
+   :label: richard
 
    \begin{aligned}
    S(p)S_s\frac{\partial p}{\partial t} -
    \frac{\partial (S(p)\rho(p)\phi)}{\partial t}
    - \nabla \cdot(\textbf{K}(p)\rho(p)(\nabla p - \rho(p) {\vec g})) = Q, \;  {\rm in} \; \Omega,
-   \label{eq:richard}\end{aligned}
+   \end{aligned}
 
 where :math:`\Omega` is the flow domain, :math:`p` is the pressure-head
 of water :math:`[L]`, :math:`S` is the water saturation, :math:`S_s` is
@@ -84,18 +88,22 @@ source/sink term :math:`[L^{3}T^{-1}]` (includes wells and surface
 fluxes). The hydraulic conductivity can be written as,
 
 .. math::
+   :label: hydcond
 
    \begin{aligned}
-   K(p) =  \frac{{\bar k}k_r(p)}{\mu}\end{aligned}
+   K(p) =  \frac{{\bar k}k_r(p)}{\mu}
+   \end{aligned}
 
 Boundary conditions can be stated as,
 
 .. math::
+   :label: bcd
 
-   \begin{aligned}
-   p & = & p_D, \; {\rm on} \; \Gamma^D, \label{eq:bcd} \\
+   \begin{align}
+   p & = & p_D, \; {\rm on} \; \Gamma^D, \\
    -K(p)\nabla p \cdot {\bf n} & = &
-   g_N, \; {\rm on} \; \Gamma^N, \label{eq:bcn}\end{aligned}
+   g_N, \; {\rm on} \; \Gamma^N,
+   \end{align}
 
 where :math:`\Gamma^D \cup \Gamma^N = \partial \Omega`,
 :math:`\Gamma^D \neq \emptyset`, and :math:`{\bf n}` is an outward
@@ -106,9 +114,11 @@ except through its effects on the hydraulic conductivity, :math:`K`. An
 initial condition,
 
 .. math::
+   :label: initcond
 
    \begin{aligned}
-   p = p^0(x), \; t = 0,\end{aligned}
+   p = p^0(x), \; t = 0,
+   \end{aligned}
 
 completes the specification of the problem.
 
@@ -122,10 +132,11 @@ conform to topography [M13]. This alters the form of
 Darcy’s law to include a topographic slope component:
 
 .. math::
+   :label: darcyTFG
 
    \begin{aligned}
    q_x=\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x)
-   \label{eq:darcyTFG}\end{aligned}
+   \end{aligned}
 
 where :math:`\theta_x = \arctan(S_0,x)` and
 :math:`\theta_y = \arctan(S_0,y)` which are assumed to be the same as
@@ -143,7 +154,7 @@ centered slope calculation). The
 **TerrainFollowingGrid.SlopeUpwindFormulation** key provide options to
 use the slope of a grid cell directly (i.e. assuming face centered slope
 calculations) and removing the sine term from
-`[eq:darcyTFG] <#eq:darcyTFG>`__. The **Upwind** and **UpwindSine**
+:eq:`darcyTFG`. The **Upwind** and **UpwindSine**
 options for this key will provide consistent results with
 **OverlandKinematic** and **OverlandDiffusive** boundary conditions
 while the **Original** option is consistent with the standard
@@ -159,10 +170,11 @@ a cell face. This slightly alters Darcy’s law to include a flow
 reduction in each direction, show here in x:
 
 .. math::
+   :label: qFBx
 
    \begin{aligned}
    q_x=FB_x\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x)
-   \label{eq:qFBx}\end{aligned}
+   \end{aligned}
 
 where :math:`FB_x`, :math:`FB_y` and :math:`FB_z` are a dimensionless
 multipliers specified by the **FBx**, **FBy** and **FBz** keys. This
@@ -184,11 +196,12 @@ wave equation. In two spatial dimensions, the continuity equation can be
 written as:
 
 .. math::
+   :label: kinematic
 
    \begin{aligned}
    \frac{\partial \psi_s}{\partial t} =
    \nabla \cdot({\vec v}\psi_s) + q_r(x)
-   \label{eq:kinematic}\end{aligned}
+   \end{aligned}
 
 where :math:`{\vec v}` is the depth averaged velocity vector
 :math:`[LT^{-1}]`; :math:`\psi_s` is the surface ponding depth
@@ -197,80 +210,87 @@ rainfall) rate :math:`[LT^{-1}]`. If diffusion terms are neglected the
 momentum equation can be written as:
 
 .. math::
+   :label: ovmom
 
    \begin{aligned}
    S_{f,i} = S_{o,i}
-   \label{eq:ovmom}\end{aligned}
+   \end{aligned}
 
 which is commonly referred to as the kinematic wave approximation. In
-Equation `[eq:ovmom] <#eq:ovmom>`__ :math:`S_{o,i}` is the bed slope
+Equation :eq:`ovmom` :math:`S_{o,i}` is the bed slope
 (gravity forcing term) :math:`[-]`, which is equal to the friction slope
 :math:`S_{f,i}` :math:`[L]`; :math:`i` stands for the :math:`x`- and
 :math:`y`-direction. Manning's equation is used to establish a flow
 depth-discharge relationship:
 
 .. math::
+   :label: manningsx
 
    \begin{aligned}
    v_x=- \frac{\sqrt{S_{f,x}}}{n}\psi_{s}^{2/3}
-   \label{eq:manningsx}\end{aligned}
+   \end{aligned}
 
 and
 
 .. math::
+   :label: manningsy
 
    \begin{aligned}
    v_y=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}
-   \label{eq:manningsy}\end{aligned}
+   \end{aligned}
 
 where :math:`n` :math:`[TL^{-1/3}]` is the Manning’s coefficient. Though
 complete details of the coupled approach are given in [KM06], brief 
 details of the approach are presented
 here. The coupled approach takes Equation
-`[eq:kinematic] <#eq:kinematic>`__ and adds a flux for subsurface
+eq:`kinematic` and adds a flux for subsurface
 exchanges, :math:`q_e(x)`.
 
 .. math::
+   :label: kinematic_ex
 
    \begin{aligned}
    \frac{\partial \psi_s}{\partial t} =
    \nabla \cdot({\vec v}\psi_s) + q_r(x) + q_e(x)
-   \label{eq:kinematic_ex}\end{aligned}
+   \end{aligned}
 
 We then assign a continuity of pressure at the top cell of the boundary
 between the surface and subsurface systems by setting pressure-head,
-:math:`p` in `[eq:richard] <#eq:richard>`__ equal to the
+:math:`p` in :eq:richard equal to the
 vertically-averaged surface pressure, :math:`\psi_s` as follows:
 
 .. math::
+   :label: press_cont
 
    \begin{aligned}
    p = \psi_s = \psi
-   \label{eq:press_cont}\end{aligned}
+   \end{aligned}
 
 If we substitute this relationship back into Equation
-`[eq:kinematic_ex] <#eq:kinematic_ex>`__ as follows:
+:eq:`kinematic_ex` as follows:
 
 .. math::
+   :label: OF_BC_ex
 
    \begin{aligned}
    \frac{\partial \parallel\psi,0\parallel}{\partial t} =
    \nabla \cdot({\vec v}\parallel\psi,0\parallel) + q_r(x) + q_e(x)
-   \label{eq:OF_BC_ex}\end{aligned}
+   \end{aligned}
 
 Where the :math:`\parallel\psi,0\parallel` operator chooses the greater
 of the two quantities, :math:`\psi` and :math:`0`. We may now solve this
 term for the flux :math:`q_e(x)` which we may set equal to flux boundary
-condition shown in Equation `[eq:bcn] <#eq:bcn>`__. This yields the
+condition shown in Equation eq:`bcn`. This yields the
 following equation, which is referred to as the overland flow boundary
 condition [KM06]:
 
 .. math::
+   :label: overland_bc
 
    \begin{aligned}
    -K(\psi)\nabla \psi \cdot {\bf n}  = \frac{\partial \parallel\psi,0\parallel}{\partial t} -
    \nabla \cdot({\vec v}\parallel\psi,0\parallel) - q_r(x)
-   \label{eq:overland_bc}\end{aligned}
+   \end{aligned}
 
 This results a version of the kinematic wave equation that is only
 active when the pressure at the top cell of the subsurface domain has a
@@ -281,16 +301,17 @@ fully-integrated, fully-mass conservative manner.
 The depth-discharge relationship can also be written as
 
 .. math::
+   :label: manningsnew
 
    \begin{aligned}
    v_x=- \frac{S_{f,x}}{n\sqrt{\overline{S_{f}}}}\psi_{s}^{2/3}
-   \label{eq:manningsnew}\end{aligned}
+   \end{aligned}
 
 where :math:`\overline{S_{f}}` is the magnitude of the friction slope.
 This formulation for overland flow is used in the **OverlandKinematic**
 and **OverlandDiffusive** boundary conditions. In **OverlandKinematic**
 case the friction slope equals the bed slope following Equation
-`[eq:ovmom] <#eq:ovmom>`__. For the **OverlandDiffusive** case the
+:eq:`ovmom`. For the **OverlandDiffusive** case the
 friction slope also includes the pressure gradient. The solution for
 both of these options is formulated to do the upwinding internally and
 assumes that the user provides face centered bedslopes
@@ -306,23 +327,23 @@ The flow equations are a set of *mass balance* and *momentum balance*
 (Darcy’s Law) equations, given respectively by,
 
 .. math::
+   :label: eqn-mass-balance
 
-   \label{eqn-mass-balance}
    \frac{\partial}{\partial t} ( \phi S_i)
      ~+~ \nabla\cdot {\vec V}_i
      ~-~ Q_i~=~ 0 ,
 
 .. math::
+   :label: eqn-darcy
 
-   \label{eqn-darcy}
    {\vec V}_i~+~ {\lambda}_i\cdot ( \nabla p_i~-~ \rho_i{\vec g}) ~=~ 0 ,
 
 for :math:`i = 0, \ldots , \nu- 1` :math:`(\nu\in \{1,2,3\})`, where
 
 .. math::
+   :label: eqn-phase-mobility
 
    \begin{aligned}
-    \label{eqn-phase-mobility}
    {\lambda}_i& = & \frac{{\bar k}k_{ri}}{\mu_i} , \\
    {\vec g}& = & [ 0, 0, -g ]^T ,\end{aligned}
 
@@ -378,30 +399,30 @@ is related to the *velocity vector*, :math:`{\vec v}_i`, by the
 following:
 
 .. math::
+   :label: eqn-Dvec-vs-vvec
 
-   \label{eqn-Dvec-vs-vvec}
    {\vec V}_i= \phi S_i{\vec v}_i.
 
 To complete the formulation, we have the following :math:`\nu`
 *consititutive relations*
 
 .. math::
+   :label: eqn-constitutive-sum
 
-   \label{eqn-constitutive-sum}
    \sum_i S_i= 1 ,
 
-.. math::
 
-   \label{eqn-constitutive-capillary}
+.. math::
+   :label: eqn-constitutive-capillary
+
    p_{i0} ~=~ p_{i0} ( S_0 ) ,
    ~~~~~~ i = 1 , \ldots , \nu- 1 .
 
+
 where, :math:`p_{ij} = p_i - p_j` is the *capillary pressure* between
 phase :math:`i` and phase :math:`j`. We now have the :math:`3 \nu`
-equations, (`[eqn-mass-balance] <#eqn-mass-balance>`__),
-(`[eqn-darcy] <#eqn-darcy>`__),
-(`[eqn-constitutive-sum] <#eqn-constitutive-sum>`__), and
-(`[eqn-constitutive-capillary] <#eqn-constitutive-capillary>`__), in the
+equations, :eq:`eqn-mass-balance`, :eq:`eqn-darcy`, :eq:`eqn-constitutive-sum`, and
+:eq:`eqn-constitutive-capillary`, in the
 :math:`3 \nu` unknowns, :math:`S_i, {\vec V}_i`, and :math:`p_i`.
 
 For technical reasons, we want to rewrite the above equations. First, we
@@ -409,17 +430,25 @@ define the *total mobility*, :math:`{\lambda}_T`, and the *total
 velocity*, :math:`{\vec V}_T`, by the relations
 
 .. math::
+   :label: eqn-total-mob
 
    \begin{aligned}
-   {\lambda}_T~=~ \sum_{i} {\lambda}_i, \label{eqn-total-mob} \\
-   {\vec V}_T~=~ \sum_{i} {\vec V}_i.     \label{eqn-total-vel}\end{aligned}
+   {\lambda}_T~=~ \sum_{i} {\lambda}_i,
+   \end{aligned}
+
+.. math::
+   :label: eqn-total-vel 
+
+   \begin{aligned}
+   {\vec V}_T~=~ \sum_{i} {\vec V}_i.
+   \end{aligned}
 
 After doing a bunch of algebra, we get the following equation for
 :math:`p_0`:
 
 .. math::
+   :label: eqn-pressure
 
-   \label{eqn-pressure}
    -~ \sum_{i}
      \left \{
        \nabla\cdot {\lambda}_i
@@ -433,8 +462,8 @@ After doing some more algebra, we get the following :math:`\nu- 1`
 equations for :math:`S_i`:
 
 .. math::
+   :label: eqn-saturation
 
-   \label{eqn-saturation}
    \frac{\partial}{\partial t} ( \phi S_i)
    ~+~
    \nabla\cdot
@@ -449,25 +478,25 @@ equations for :math:`S_i`:
    ~=~ 0 .
 
 The capillary pressures :math:`p_{ji}` in
-(`[eqn-saturation] <#eqn-saturation>`__) are rewritten in terms of the
+:eq:`eqn-saturation` are rewritten in terms of the
 constitutive relations in
-(`[eqn-constitutive-capillary] <#eqn-constitutive-capillary>`__) so that
+:eq:`eqn-constitutive-capillary` so that
 we have
 
 .. math::
+   :label: eqn-derived-capillary
 
-   \label{eqn-derived-capillary}
    p_{ji} ~=~ p_{j0} ~-~ p_{i0} ,
 
 where by definition, :math:`p_{ii} = 0`. Note that equations
-(`[eqn-saturation] <#eqn-saturation>`__) are analytically the same
-equations as in (`[eqn-mass-balance] <#eqn-mass-balance>`__). The reason
+:eq:`eqn-saturation` are analytically the same
+equations as in :eq:`eqn-mass-balance`. The reason
 we rewrite them in this latter form is because of the numerical scheme
 we are using. We now have the :math:`3 \nu` equations,
-(`[eqn-pressure] <#eqn-pressure>`__),
-(`[eqn-saturation] <#eqn-saturation>`__),
-(`[eqn-total-vel] <#eqn-total-vel>`__), (`[eqn-darcy] <#eqn-darcy>`__),
-and (`[eqn-constitutive-capillary] <#eqn-constitutive-capillary>`__), in
+:eq:`eqn-pressure`,
+:eq:`eqn-saturation`,
+:eq:`eqn-total-vel`, :eq:`eqn-darcy`,
+and :eq:`eqn-constitutive-capillary`, in
 the :math:`3 \nu` unknowns, :math:`S_i, {\vec V}_i`, and :math:`p_i`.
 
 .. _Transport Equations:
@@ -478,12 +507,12 @@ Transport Equations
 The transport equations in ParFlow are currently defined as follows:
 
 .. math::
+   :label: eqn-transport
 
    \begin{aligned}
-    \label{eqn-transport}
-   \left ( \frac{\partial}{\partial t} (\phi c_{i,j}) ~+~ \lambda_j~ \phi c_{i,j}\right ) & + & \nabla\cdot \left ( c_{i,j}{\vec V}_i\right ) \nonumber \\
-   & = & \\
-   -\left ( \frac{\partial}{\partial t} ((1 - \phi) \rho_{s}F_{i,j}) ~+~  \lambda_j~ (1 - \phi) \rho_{s}F_{i,j}\right ) & + & \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\nonumber\end{aligned}
+   \left ( \frac{\partial}{\partial t} (\phi c_{i,j}) ~+~ \lambda_j~ \phi c_{i,j}\right ) & + \nabla\cdot \left ( c_{i,j}{\vec V}_i\right ) \nonumber \\
+   & = \\
+   -\left ( \frac{\partial}{\partial t} ((1 - \phi) \rho_{s}F_{i,j}) ~+~  \lambda_j~ (1 - \phi) \rho_{s}F_{i,j}\right ) & + \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\nonumber\end{aligned}
 
 where :math:`i = 0, \ldots , \nu- 1` :math:`(\nu\in \{1,2,3\})` is the
 number of phases, :math:`j = 0, \ldots , n_c- 1` is the number of
@@ -549,20 +578,20 @@ concentration term (:math:`F_{i,j}`) to be instantaneous in time and a
 linear function of contaminant concentration :
 
 .. math::
+   :label: eqn-linear-retardation
 
-   \label{eqn-linear-retardation}
    F_{i,j}= K_{d;j}c_{i,j},
 
 where :math:`K_{d;j}` is the distribution coefficient of the component
 ([:math:`L^{3} M^{-1}`]). If
-`[eqn-linear-retardation] <#eqn-linear-retardation>`__ is substituted
-into `[eqn-transport] <#eqn-transport>`__ the following equation results
+:eq:`eqn-linear-retardation` is substituted
+into :eq:`eqn-transport` the following equation results
 (which is the current model used in ParFlow) :
 
 .. math::
+   :label: eqn-transport2
 
    \begin{aligned}
-    \label{eqn-transport2}
    (\phi+ (1 - \phi) \rho_{s}K_{d;j}) \frac{\partial}{\partial t} c_{i,j} & ~+~ \nabla\cdot \left ( c_{i,j}{\vec V}_i\right ) \nonumber \\
    & ~=~ \nonumber \\
    -~(\phi+ (1 - \phi) \rho_{s}K_{d;j}) \lambda_jc_{i,j} & ~+~ \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\end{aligned}
@@ -576,19 +605,19 @@ In this section, we discuss other common formulations of the flow and
 transport equations, and how they relate to the equations solved by
 ParFlow.
 
-We can rewrite equation (`[eqn-darcy] <#eqn-darcy>`__) as
+We can rewrite equation :eq:`eqn-darcy` as
 
 .. math::
+   :label: eqn-darcy-b
 
-   \label{eqn-darcy-b}
    {\vec V}_i~+~ {\bar K}_i\cdot ( \nabla h_i~-~ \frac{\rho_i}{\gamma} {\vec g}) ~=~ 0 ,
 
 where
 
 .. math::
+   :label: eqn-cond-phead
 
    \begin{aligned}
-   \label{eqn-cond-phead}
    {\bar K}_i& = & \gamma{\lambda}_i, \\
    h_i& = & ( p_i~-~ \bar{p}) / \gamma.\end{aligned}
 
@@ -614,12 +643,11 @@ Table `5.3 <#table-flow-units-b>`__ defines the symbols and their units.
       +--------------------+-------------------------------+---------------------------+
 
 
-We can then rewrite equations (`[eqn-pressure] <#eqn-pressure>`__) and
-(`[eqn-saturation] <#eqn-saturation>`__) as
+We can then rewrite equations :eq:`eqn-pressure` and :eq:`eqn-saturation` as
 
 .. math::
+   :label: eqn-pressure-b
 
-   \label{eqn-pressure-b}
    -~ \sum_{i}
      \left \{
        \nabla\cdot {\bar K}_i
@@ -631,8 +659,8 @@ We can then rewrite equations (`[eqn-pressure] <#eqn-pressure>`__) and
    ~=~ 0 ,
 
 .. math::
+   :label: eqn-saturation-b
 
-   \label{eqn-saturation-b}
    \frac{\partial}{\partial t} ( \phi S_i)
    ~+~
    \nabla\cdot
@@ -650,21 +678,22 @@ We can then rewrite equations (`[eqn-pressure] <#eqn-pressure>`__) and
 Note that :math:`{\bar K}_i` is supposed to be a tensor, but we treat it
 as a scalar here. Also, note that by carefully defining the input to
 ParFlow, we can use the units of equations
-(`[eqn-pressure-b] <#eqn-pressure-b>`__) and
-(`[eqn-saturation-b] <#eqn-saturation-b>`__). To be more precise, let us
+:eq:`eqn-pressure-b` and
+:eq:`eqn-saturation-b`. To be more precise, let us
 denote ParFlow input symbols by appending the symbols in table
 `5.1 <#table-flow-units>`__ with :math:`(I)`, and let
 :math:`\gamma= \rho_0 g` (this is a typical definition). Then, we want:
 
 .. math::
+   :label: eqn-parflow-input
 
    \begin{aligned}
-   \label{eqn-parflow-input}
    {\bar k}(I)    & = & \gamma{\bar k}/ \mu_0 ; \\
    \mu_i(I) & = & \mu_i/ \mu_0 ; \\
    p_i(I)   & = & h_i; \\
    \rho_i(I) & = & \rho_i/ \rho_0 ; \\
-   g (I)      & = & 1 .\end{aligned}
+   g (I)      & = & 1 .
+   \end{aligned}
 
 By doing this, :math:`{\bar k}(I)` represents hydraulic conductivity of
 the base phase :math:`{\bar K}_0` (e.g. water) under saturated
@@ -690,9 +719,9 @@ depend on solver settings and tolerances but are typically very
 small, :math:`<10^{-10}` [-]. The water balance takes the form: 
 
 .. math::
+   :label: balance
 
    \begin{aligned}
-   \label{eq:balance}
    \frac{\Delta [Vol_{subsurface} + Vol_{surface}]}{\Delta t} = Q_{overland} + Q_{evapotranspiration} + Q_{source sink}
    \end{aligned} 
 
@@ -719,9 +748,9 @@ This is computed on a cell-by-cell basis (with the result
 being an array of balances over the domain) as follows: 
 
 .. math::
+   :label: sub_store
 
    \begin{aligned}
-   \label{eq:sub_store}
    Vol_{subsurface} = \sum_\Omega [ S(\psi)S_s \psi \Delta x \Delta y \Delta z +
    S(\psi)(\psi)\phi \Delta x \Delta y \Delta z]
    \end{aligned} 
@@ -733,9 +762,9 @@ on a cell-by-cell basis (with the result being an array of balances
 over the domain) as follows: 
 
 .. math::
+   :label: surf_store
 
    \begin{aligned}
-   \label{eq:surf_store}
    Vol_{surface} =  \sum_\Gamma \psi \Delta x \Delta y
    \end{aligned} 
 
@@ -746,8 +775,8 @@ for example in the y-direction, as the multiple of Equation [eq:manningsy]
 and the area: 
 
 .. math::
+   :label: outflow
 
    \begin{aligned}
-   \label{eq:outflow}
    Q_{overland}=vA= -\frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}\psi \Delta x=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{5/3}\Delta x
    \end{aligned}
