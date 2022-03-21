@@ -3,3 +3,7 @@ xarray
 numba
 numpy
 dask
+pandas
+pftools
+scipy
+parflowio
