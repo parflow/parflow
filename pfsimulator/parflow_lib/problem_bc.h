@@ -226,7 +226,7 @@ typedef struct {
 /**
  * @brief For use when a BCLoop should execute no matter what the patch type is
  */
-#define ALL -1
+#define BC_ALL -1
 
 /**
  * @brief For use when a statement body is unnecessary in ForPatchCellsPerFace().
@@ -399,7 +399,7 @@ ForPatchCellsPerFace(NotARealBCType,
                              finalize,                        \
                              after_loop)                      \
   {                                                           \
-    if ( ((bctype) == ALL) ||                                 \
+    if ( ((bctype) == BC_ALL) ||                              \
          ((bctype) == _GetCurrentPatch(loopvars)))            \
     {                                                         \
       before_loop;                                            \
@@ -427,7 +427,7 @@ ForPatchCellsPerFace(NotARealBCType,
                                       finalize,                       \
                                       after_loop)                     \
   {                                                                   \
-    if ( ((bctype) == ALL) ||                                         \
+    if ( ((bctype) == BC_ALL) ||                                      \
          ((bctype) == _GetCurrentPatch(loopvars)))                    \
     {                                                                 \
       before_loop;                                                    \

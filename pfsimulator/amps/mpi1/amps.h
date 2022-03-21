@@ -48,14 +48,15 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/times.h>
 
 #ifdef PARFLOW_HAVE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+#endif
 #ifdef PARFLOW_HAVE_RMM
 #include <rmm/rmm_api.h>
-#endif
 #endif
 
 /*
@@ -143,7 +144,8 @@
  *
  * @memo Global communication context
  */
-#define amps_CommWorld MPI_COMM_WORLD
+
+extern MPI_Comm amps_CommWorld;
 
 extern MPI_Comm amps_CommNode;
 extern MPI_Comm amps_CommWrite;
@@ -152,7 +154,7 @@ extern MPI_Comm amps_CommWrite;
 extern MPI_Comm nodeComm;
 extern MPI_Comm writeComm;
 
-/* Global ranks and size of MPI_COMM_WORLD*/
+/* Global ranks and size of amps_CommWorld */
 extern int amps_rank;
 extern int amps_size;
 
@@ -1033,7 +1035,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_Error(name, type, comment, operation) \
   printf("%s : %s\n", name, comment)
 
-#ifdef PARFLOW_HAVE_CUDA
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
 /*--------------------------------------------------------------------------
  * Amps defines with CUDA
  *--------------------------------------------------------------------------*/
@@ -1056,6 +1058,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  */
 #define AMPS_MPI_NOT_USE_PERSISTENT
 
+#ifdef PARFLOW_HAVE_CUDA
 /*--------------------------------------------------------------------------
  *  GPU error handling macros
  *--------------------------------------------------------------------------*/
@@ -1074,6 +1077,7 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line) 
 		exit(1);
 	}
 }
+#endif // PARFLOW_HAVE_CUDA
 
 #ifdef PARFLOW_HAVE_RMM
 /**
@@ -1090,11 +1094,31 @@ static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
 		exit(1);
 	}
 }
-#endif
+#endif // PARFLOW_HAVE_RMM
 
 /*--------------------------------------------------------------------------
- * Define static unified memory allocation routines for CUDA
+ * Define static unified memory allocation routines for devices
  *--------------------------------------------------------------------------*/
+
+/**
+ * @brief Kokkos C wrapper declaration for memory allocation.
+ */
+void* kokkosUVMAlloc(size_t size);
+
+/**
+ * @brief Kokkos C wrapper declaration for memory deallocation.
+ */
+void kokkosUVMFree(void *ptr);
+
+/**
+ * @brief Kokkos C wrapper declaration for memory copy.
+ */
+void kokkosMemCpyUVMToUVM(char *dest, char *src, size_t size);
+
+/**
+ * @brief Kokkos C wrapper declaration for memset.
+ */
+void kokkosMemSetAmps(char *ptr, size_t size);
 
 /**
  * @brief Allocates unified memory
@@ -1106,13 +1130,15 @@ static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
  * @param size bytes to be allocated [IN]
  * @return a void pointer to the allocated dataspace
  */
-static inline void *_amps_talloc_cuda(size_t size)
+static inline void *_amps_talloc_device(size_t size)
 {
   void *ptr = NULL;  
   
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
-#else
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  ptr = kokkosUVMAlloc(size);
+#elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));  
 #endif
@@ -1130,18 +1156,25 @@ static inline void *_amps_talloc_cuda(size_t size)
  * @param size bytes to be allocated [IN]
  * @return a void pointer to the allocated dataspace
  */
-static inline void *_amps_ctalloc_cuda(size_t size)
+static inline void *_amps_ctalloc_device(size_t size)
 {
   void *ptr = NULL;  
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
-#else
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  ptr = kokkosUVMAlloc(size);
+#elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
 #endif  
-  // memset(ptr, 0, size);
+
+#if defined(PARFLOW_HAVE_CUDA)
   CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
+#else
+  // memset(ptr, 0, size);
+  kokkosMemSetAmps((char*)ptr, size);
+#endif
   
   return ptr;
 }
@@ -1153,32 +1186,34 @@ static inline void *_amps_ctalloc_cuda(size_t size)
  *
  * @param ptr a void pointer to the allocated dataspace [IN]
  */
-static inline void _amps_tfree_cuda(void *ptr)
+static inline void _amps_tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmFree(ptr,0,__FILE__,__LINE__));
-#else
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  kokkosUVMFree(ptr);
+#elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERRCHK(cudaFree(ptr));
   // CUDA_ERRCHK(cudaFreeHost(ptr));
 #endif
 }
 
 /** 
- * Same as \ref amps_TAlloc but allocates managed memory (CUDA required) 
+ * Same as \ref amps_TAlloc but allocates managed memory
  */
-#define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_device((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /** 
- * Same as \ref amps_CTAlloc but allocates managed memory (CUDA required) 
+ * Same as \ref amps_CTAlloc but allocates managed memory
  */
-#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_device((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /** 
- * Same as \ref amps_TFree but deallocates managed memory (CUDA required) 
+ * Same as \ref amps_TFree but deallocates managed memory
  */
-#define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
+#define amps_TFree_managed(ptr) if (ptr) _amps_tfree_device(ptr); else {}
 
-#endif // PARFLOW_HAVE_CUDA
+#endif // PARFLOW_HAVE_CUDA || PARFLOW_HAVE_KOKKOS
 
 #include "amps_proto.h"
 

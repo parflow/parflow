@@ -1,123 +1,74 @@
-# ParFlow Release Notes 3.7.0
----
+# ParFlow Release Notes 3.10.0
+-----------------------------
 
 ParFlow improvements and bug-fixes would not be possible without
 contributions of the ParFlow community.  Thank you for all the great
-work.
+contributions.
+
+Note : Version 3.10.0 is a minor update to v3.9.0.  These release notes cover 
+changes made in 3.10.0
 
 ## Overview of Changes
 
-* Autoconf support has been removed.
-* Support for on-node parallelism using OpenMP and CUDA
-* New overland flow formulations
-* Utility for writing PFB file from R
-* Additional solid file utilities in TCL
-* NetCDF and HDF5 added to Docker instance
+* Python PFB reader/writer updated
 
 ## User Visible Changes
 
-### Autoconf support has been removed
+### Python: PFB reader/writer updated
 
-The GNU Autoconf (e.g. configure) support has been dropped.  Use CMake
-to build ParFlow.  See the README.md file for information on building
-with CMake.
+Add simple and fast pure-python based readers and writers of PFB files, done by myself and Bill Hasling (@wh3248). This eliminates the need for the external ParflowIO dependency. Implemented a new backend for the xarray package that let's you open both .pfb files as well as .pfmetadata files directly into xarray datastructures. These are very useful for data wrangling and scientific analysis
 
-### Support for on-node parallelism using OpenMP and CUDA
+Basic usage of the new functionality:
 
-ParFlow now has an option so support on-node parallelism in addition to
-using MPI.   OpenMP and CUDA backends are currently supported.
+```
+import parflow as pf
 
-See the README-CUDA.md and README-OPENMP.md files for information on
-how to compile with support for CUDA and OpenMP.
+# Read a pfb file as numpy array:
+x = pf.read_pfb('/path/to/file.pfb')
 
-Big thank you goes to Michael Burke and Jaro Hokkanen and the teams at
-Boise State, U of Arizona, and FZ-Juelich for their hard work on
-adding OpenMP and CUDA support.
+# Read a pfb file as an xarray dataset:
+ds = xr.open_dataset('/path/to/file.pfb', name='example')
 
-### CMake dependency on version 3.14
+# Write a pfb file with distfile:
+pf.write_pfb('/path/to/new_file.pfb', x, 
+             p=p, q=q, r=r, dist=True)
+```
 
-ParFlow now requires CMake version 3.14 or better.
+### Python: SolidFileBuilder simplification
 
-###  New overland flow formulations
-
-Overland flow saw significant work:
-
-* OverlandKinematic and OverlandDiffusive BCs per LEC
-* Add OverlandKinematic as a Module
-* Adding new diffusive module
-* Added TFG slope upwind options to Richards Jacobian
-* Added overland eval diffusive module to new OverlandDiffusive BC condition
-* Adding Jacobian terms for diffusive module
-* Updating OverlandDiffusive boundary condition Jacobian
-* Updated documentation for new boundary conditions
-
-### Utility for writing PFB file from R
-
-A function to take array inputs and write them as pfbs.  See the file:
-pftools/prepostproc/PFB-WriteFcn.R
-
-### Additional solid file utilities in TCL
-
-A new PF tools for creating solid files with irregular top and bottom
-surfaces and conversion utilities to/from ascii or binary solid
-files. See user-manual documentation on pfpatchysolid and
-pfsolidfmtconver for information on the new TCL commands.
-
-### NetCDF and HDF5 added to Docker instance
-
-The ParFlow Docker instance now includes support for NetCDF and HDF5.
+Support simple use case in SolidFileBuilder when all work can simply be delegated to pfmask-to-pfsol
+Added a generate_asc_files (default False) argument to SolidFileBuilder.write 
 
 ## Bug Fixes
 
-### Fixed compilation issue with NetCDF
+### Python: interface fixed issue where some keys failed to set when unless set in a particular order
 
-CMake support for NetCDF compilation has been improved.
+1) Update some documentation for contributing to pf-keys
+2) Fix a bugs found in pf-keys where some keys failed to set when unless set in a particular order
+3) Add constraint for lists of names
 
-### Memory leaks
+This change lets us express that one list of names should be a subset of another list of names
+Constraint Example
 
-Several memory leaks were addressed in ParFlow and PFTools.
+Values for PhaseSources.{phase_name}.GeomNames should be a subset of values from either GeomInput.{geom_input_name}.GeomNames or GeomInput.{geom_input_name}.GeomName. Setting the domain to EnumDomain like so expresses that constraint. A more detailed example can be seen in this test case.
 
-### Parallel issue with overland flow boundary conditions
+## Internal/Developer Changes
 
-Fixed bug in nl_function_eval.c that caused MPI error for some
-overland BCs with processors outside computational grid.
+### Core: Diverting ParFlow output to stream
 
-### pfdist/undist issues
- 
-Fixed pfdist/undist issues when using the sequential I/O model.
+Added new method for use when ParFlow is embedded in another application to control the file stream used for ParFlow logging messages. In the embedded case will be disabled by default unless redirected by the calling application.
 
-## Internal Changes
+Change required to meet IDEAS Watersheds best practices.
 
-### Boundary condition refactoring
+### Python: Add keys and generator for Simput
 
-The loops for boundary conditions were refactored to provide a higher
-level of abstraction and be more self-documenting (removed magic
-numbers).  ForPatchCellsPerFace is a new macro for looping over patch
-faces.  See nl_function_eval.c for example usage and problem_bc.h for
-documentation on the new macros.
+Added keys and generator to allow use Simput and applications based on Simput to write inputs for parflow with a graphical web interface.
 
-### PVCopy extended to include boundary cells.
+### Core: Remove use of MPI_COMM_WORLD 
 
-PVCopy now includes boundary cells in the copy.
-
-### DockerHub Test
-
-A simple automated test of generated DockerHub instances was added.
-
-### Etrace support was added
-
-Support for generating function call traces with Etrace was added.  Add
--DPARFLOW_ENABLE_TRACE to CMake configure line.
-
-See https://github.com/elcritch/etrace for additional information.
-
-### Compiler warnings treated as errors
-
-Our development process now requires code compile cleanly with the
--Wall option on GCC.  Code submissions will not be accepted that do
-not cleanly compile. 
+Enable use of a communicator other than MPI_COMM_WORLD for more general embedding.
+Meet IDEAS Watersheds best practices policy.
 
 ## Known Issues
 
 See https://github.com/parflow/parflow/issues for current bug/issue reports.
-

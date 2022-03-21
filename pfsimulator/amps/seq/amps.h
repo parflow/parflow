@@ -75,8 +75,6 @@ typedef FILE *amps_File;
 #define amps_Fprintf fprintf
 #define amps_Fscanf fscanf
 
-#define amps_Printf printf
-
 #define amps_Sync(comm)
 
 #define amps_Exit(code) exit(code)

@@ -69,9 +69,8 @@ int amps_Finalize()
     MPI_Comm_free(&amps_CommWrite);
     CALL_oas_pfl_finalize(&dummy2_oas3);
   }
-#ifdef PARFLOW_HAVE_CUDA
-  amps_gpu_free_bufs();
-  amps_gpu_destroy_streams();
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+  amps_gpu_finalize();
 #endif
 
 #ifdef AMPS_MALLOC_DEBUG

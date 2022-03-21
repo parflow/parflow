@@ -129,6 +129,9 @@ Patch:
         __rst__:
           skip:
         __doc__: ''
+        __simput__:
+          type: VariableTable
+
 
         Value:
           help: >
@@ -202,9 +205,12 @@ Patch:
 
         .{phase_name}:
           __class__: BCPressIntPhaseItem
+          __from__: /Phase/Names
           __rst__:
             skip:
           __doc__: ''
+          __simput__:
+            type: VariableTable
 
           IntValue:
             help: >
@@ -220,6 +226,9 @@ Patch:
           __rst__:
             skip:
           __doc__: ''
+          __simput__:
+            type: VariableTable
+
 
           Location:
             help: >
@@ -330,9 +339,13 @@ Patch:
 
       .{phase_name}:
         __class__: BCSatPhaseItem
+        __from__: /Phase/Names
         __rst__:
           skip:
         __doc__: ''
+        __simput__:
+          type: VariableTable
+
 
         Type:
           help: >
@@ -404,6 +417,9 @@ Patch:
           __doc__: ''
           __rst__:
             skip:
+          __simput__:
+            type: VariableTable
+
 
           Location:
             help: >

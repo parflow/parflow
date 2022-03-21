@@ -87,7 +87,7 @@ Full API: SolidFileBuilder
 
 2. ``mask(mask_array)`` - applies the matrix array ``mask_array`` to the SolidFileBuilder object.
 
-3. ``write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False)`` - writes the ``SolidFileBuilder`` object data to the *.pfsol* file ``name``. The arguments ``xllcorner``, ``yllcorner``, and ``cellsize=0`` help define the size of the solid file domain. If ``vtk`` is set to ``True``, it will write a VTK file ``name.vtk`` that you can view in ParaView or another VTK viewer to check that the solid file is correct.
+3. ``write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False, extra=None, generate_asc_files=False)`` - writes the ``SolidFileBuilder`` object data to the *.pfsol* file ``name``. The arguments ``xllcorner``, ``yllcorner``, and ``cellsize=0`` help define the size of the solid file domain. If ``vtk`` is set to ``True``, it will write a VTK file ``name.vtk`` that you can view in ParaView or another VTK viewer to check that the solid file is correct. If there are any extra arguments you want to pass to the ``pfmask-to-pfsol`` converter in Parflow, specify them using the ``extra`` parameter, as a list of strings. When ``generate_asc_files`` is set to ``True``, this method generates .asc files for top/bottom/sides, with filenames ``<name>_top.asc, <name>_bottom.asc, <name>_front.asc, <name>_back.asc, <name>_left.asc, <name>_right.asc``, and calls ``pfmask-to-pfsol`` with individual ``mask-*`` flags with these files.
 
 4. ``for_key(self, geomItem)`` - sets two keys on the ``Run`` object passed in as the ``geomItem`` argument: 1) ``geomItem.InputType = 'SolidFile'`` 2) ``geomItem.FileName = 'name.pfsol'``. ``'name.pfsol'`` is implicitly referenced from the ``name`` argument of the ``write`` method.
 

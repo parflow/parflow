@@ -15,7 +15,14 @@ import argparse
 
 from . import settings
 from .fs import get_absolute_path
-from .io import write_dict, DataAccessor
+from .io import (
+    DataAccessor,
+    ParflowBinaryReader,
+    write_dict,
+    read_pfb,
+    write_pfb,
+    write_dist
+)
 from .terminal import Symbols as TermSymbol
 
 from .database.generated import BaseRun
@@ -489,6 +496,14 @@ class Run(BaseRun):
         q = kwargs.get('Q', self.Process.Topology.Q)
         r = kwargs.get('R', self.Process.Topology.R)
 
-        from parflowio.pyParflowio import PFData
-        pfb_data = PFData(pfb_file_full_path)
-        pfb_data.distFile(p, q, r, pfb_file_full_path)
+        with ParflowBinaryReader(pfb_file_full_path) as pfb:
+            array = pfb.read_all_subgrids()
+            header = pfb.header
+
+        dx, dy, dz = header['dx'], header['dy'], header['dz']
+        write_pfb(pfb_file_full_path, array,
+                   p=p, q=q, r=r, dx=dx, dy=dy, dz=dz,
+                   dist=True)
+
+
+

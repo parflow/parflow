@@ -295,7 +295,7 @@ GrGeomSolid   *GrGeomNewSolid(
 
   new_grgeomsolid->interior_boxes = NULL;
 
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
   GrGeomSolidCellFlagData(new_grgeomsolid) = NULL; 
   GrGeomSolidCellFlagDataSize(new_grgeomsolid) = 0;
   GrGeomSolidCellFlagInitialized(new_grgeomsolid) = 0;
@@ -361,9 +361,9 @@ void          GrGeomFreeSolid(
     tfree(solid->patch_boxes[f]);
   }
 
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
-  // Internal _tfree_cuda function is used because unified memory is not active in this comp unit
-  if(GrGeomSolidCellFlagData(solid)) _tfree_cuda(GrGeomSolidCellFlagData(solid));
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+  // Internal _tfree_device function is used because unified memory is not active in this comp unit
+  if(GrGeomSolidCellFlagData(solid)) _tfree_device(GrGeomSolidCellFlagData(solid));
 
   for (int f = 0; f < GrGeomOctreeNumFaces; f++)
   {
@@ -371,7 +371,7 @@ void          GrGeomFreeSolid(
     {
       int *ival = GrGeomSolidCellIval(solid, ipatch, f);
       if(ival)
-        _tfree_cuda(ival);
+        _tfree_device(ival);
     }
     tfree(solid->ival[f]);
   }

@@ -34,8 +34,7 @@ void amps_FindPowers(int N, int *log, int *Nnext, int *Nprev);
 amps_File amps_Fopen(char *filename, char *type);
 
 /* amps_gpupacking.cu */
-void amps_gpu_free_bufs();
-void amps_gpu_destroy_streams();
+void amps_gpu_finalize();
 void amps_gpu_sync_streams(int id);
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out);
 
@@ -86,6 +85,7 @@ int amps_create_mpi_cont_send_type(amps_Comm comm, amps_Invoice inv);
 void amps_create_mpi_type(amps_Comm comm, amps_Invoice inv);
 
 /* amps_print.c */
+FILE* amps_SetConsole(FILE* stream);
 void amps_Printf(const char *fmt, ...);
 
 /* amps_recv.c */

@@ -38,7 +38,7 @@
 
 #include "parflow.h"
 
-#if PARFLOW_ACC_BACKEND != PARFLOW_BACKEND_CUDA
+#if !defined(PARFLOW_HAVE_CUDA) && !defined(PARFLOW_HAVE_KOKKOS)
 #include "llnlmath.h"
 //#include "llnltyps.h"
 #endif
@@ -105,7 +105,7 @@ void    OverlandFlowEval(
   {
     if (qx_v == NULL || qy_v == NULL)  /* do not return velocity fluxes */
     {
-      ForPatchCellsPerFace(ALL,
+      ForPatchCellsPerFace(BC_ALL,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                            Locals(int io, itop, ip, k1, ii, step;
@@ -187,7 +187,7 @@ void    OverlandFlowEval(
     }
     else   /* return velocity fluxes */
     {
-      ForPatchCellsPerFace(ALL,
+      ForPatchCellsPerFace(BC_ALL,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                            Locals(int io, itop, ip, k1, step, ii;
@@ -267,7 +267,7 @@ void    OverlandFlowEval(
   {
     if (qx_v == NULL || qy_v == NULL)  /* Do not return derivs of velocity fluxes */
     {
-      ForPatchCellsPerFace(ALL,
+      ForPatchCellsPerFace(BC_ALL,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                            Locals(int io, ip;
@@ -316,7 +316,7 @@ void    OverlandFlowEval(
     }
     else   /* return derivs of velocity fluxes */
     {
-      ForPatchCellsPerFace(ALL,
+      ForPatchCellsPerFace(BC_ALL,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
                            Locals(int io, ip;

@@ -24,8 +24,7 @@
 #ifndef PF_CUDAMALLOC_H
 #define PF_CUDAMALLOC_H
 
-#include <string.h>
-#include "pf_cudamain.h"
+#include "pf_devices.h"
 
 /*--------------------------------------------------------------------------
  * Memory management macros for CUDA
@@ -38,12 +37,12 @@
 #define tfree_amps_cuda(ptr) amps_TFree_managed(ptr)
 
 #define talloc_cuda(type, count) \
-  ((count) ? (type*)_talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
+  ((count) ? (type*)_talloc_device(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #define ctalloc_cuda(type, count) \
-  ((count) ? (type*)_ctalloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
+  ((count) ? (type*)_ctalloc_device(sizeof(type) * (unsigned int)(count)) : NULL)
 
-#define tfree_cuda(ptr) if (ptr) _tfree_cuda(ptr); else {}
+#define tfree_cuda(ptr) if (ptr) _tfree_device(ptr); else {}
 
 #define tmemcpy_cuda(dest, src, bytes) \
   CUDA_ERR(cudaMemcpy(dest, src, bytes, cudaMemcpyDeviceToDevice))

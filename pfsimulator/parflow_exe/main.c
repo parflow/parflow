@@ -54,15 +54,10 @@ using namespace SAMRAI;
 
 #endif
 
-
 #include "Parflow.hxx"
 
-#ifdef HAVE_CEGDB
-#include <cegdb.h>
-#endif
-
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
-#include "pf_cudamain.h"
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+#include "pf_devices.h"
 #endif
 
 #ifdef PARFLOW_HAVE_ETRACE
@@ -114,11 +109,8 @@ int main(int argc, char *argv [])
     }
 #endif
 
-#ifdef HAVE_CEGDB
-    cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
-#endif
-
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
+    /* Set the destination stream for PF output/logging */
+    amps_SetConsole(stdout);
 
 #ifndef NDEBUG
     /*-----------------------------------------------------------------------
@@ -135,6 +127,13 @@ int main(int argc, char *argv [])
       amps_Sync(amps_CommWorld);
     }
 #endif // !NDEBUG
+
+    /*-----------------------------------------------------------------------
+     * Initialize acceleration architectures
+     *-----------------------------------------------------------------------*/
+#if defined(PARFLOW_HAVE_KOKKOS)
+    kokkosInit();
+#elif defined(PARFLOW_HAVE_CUDA)
 
     /*-----------------------------------------------------------------------
     * Check CUDA compute capability, set device, and initialize RMM allocator
@@ -166,7 +165,12 @@ int main(int argc, char *argv [])
         amps_Printf("\nThe minimum required GPU compute capability is 6.0.\n");
         exit(1);
       }
+    }
+#endif // PARFLOW_HAVE_KOKKOS
 
+  /*-----------------------------------------------------------------------
+  * Initialize RMM pool allocator
+  *-----------------------------------------------------------------------*/
 #ifdef PARFLOW_HAVE_RMM
       // RMM
       rmmOptions_t rmmOptions;
@@ -175,15 +179,12 @@ int main(int argc, char *argv [])
       rmmOptions.enable_logging = false;
       RMM_ERR(rmmInitialize(&rmmOptions));
 #endif // PARFLOW_HAVE_RMM
-    }
-#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
 
     wall_clock_time = amps_Clock();
 
     /*-----------------------------------------------------------------------
      * Command line arguments
      *-----------------------------------------------------------------------*/
-
 
     char *restart_read_dirname = NULL;
     int is_from_restart = FALSE;
@@ -410,7 +411,6 @@ int main(int argc, char *argv [])
 
     wall_clock_time = amps_Clock() - wall_clock_time;
 
-
     IfLogging(0)
     {
       if (!amps_Rank(amps_CommWorld))
@@ -486,10 +486,17 @@ int main(int argc, char *argv [])
 #endif
 
   /*-----------------------------------------------------------------------
+  * Shutdown Kokkos
+  *-----------------------------------------------------------------------*/
+#ifdef PARFLOW_HAVE_KOKKOS
+  kokkosFinalize();
+#endif
+
+  /*-----------------------------------------------------------------------
   * Shutdown RMM pool allocator
   *-----------------------------------------------------------------------*/
-#if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(PARFLOW_HAVE_RMM)
-    RMM_ERR(rmmFinalize());
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERR(rmmFinalize());
 #endif
 
   return 0;

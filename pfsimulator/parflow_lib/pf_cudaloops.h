@@ -27,7 +27,7 @@
 /*--------------------------------------------------------------------------
  * Include CUDA headers
  *--------------------------------------------------------------------------*/
-#include "pf_cudamain.h"
+#include "pf_devices.h"
 #include "pf_cudamalloc.h"
 
 extern "C++"{
@@ -491,13 +491,13 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   int flagdata_size = sizeof(char) * (nz * ny * nx);                                \
   if(GrGeomSolidCellFlagDataSize(grgeom) < flagdata_size)                           \
   {                                                                                 \
-    char *flagdata = (char*)_ctalloc_cuda(flagdata_size);                           \
+    char *flagdata = (char*)_ctalloc_device(flagdata_size);                         \
                                                                                     \
     if(GrGeomSolidCellFlagDataSize(grgeom) > 0)                                     \
       CUDA_ERR(cudaMemcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                \
         GrGeomSolidCellFlagDataSize(grgeom), cudaMemcpyDeviceToDevice));            \
                                                                                     \
-    _tfree_cuda(GrGeomSolidCellFlagData(grgeom));                                   \
+    _tfree_device(GrGeomSolidCellFlagData(grgeom));                                 \
     GrGeomSolidCellFlagData(grgeom) = flagdata;                                     \
     GrGeomSolidCellFlagDataSize(grgeom) = flagdata_size;                            \
   }                                                                                 \
@@ -662,7 +662,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_cuda(sizeof(decltype(rslt)));\
+    decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_device(sizeof(decltype(rslt)));\
     MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
     *ptr_rslt = rslt;                                                               \
     MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
@@ -675,7 +675,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
     MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
     rslt = *ptr_rslt;                                                               \
-    _tfree_cuda(ptr_rslt);                                                          \
+    _tfree_device(ptr_rslt);                                                        \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
@@ -715,7 +715,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_cuda(sizeof(decltype(rslt)));\
+    decltype(rslt)*ptr_rslt = (decltype(rslt)*)_talloc_device(sizeof(decltype(rslt)));\
     MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
     *ptr_rslt = rslt;                                                               \
     MemPrefetchHostToDevice_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
@@ -728,7 +728,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                     \
     MemPrefetchDeviceToHost_cuda(ptr_rslt, sizeof(decltype(rslt)), 0);              \
     rslt = *ptr_rslt;                                                               \
-    _tfree_cuda(ptr_rslt);                                                          \
+    _tfree_device(ptr_rslt);                                                        \
   }                                                                                 \
   (void)i;(void)j;(void)k;                                                          \
 }
@@ -770,6 +770,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
         dim3 block, grid;                                                           \
         FindDims(grid, block, PV_nx, PV_ny, PV_nz, 1);                              \
                                                                                     \
+        Globals *globals = ::globals;                                               \
         auto lambda_body =                                                          \
           GPU_LAMBDA(int i, int j, int k)                                           \
           {                                                                         \
@@ -810,6 +811,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       dim3 block, grid;                                                             \
       FindDims(grid, block, nx_gpu, ny_gpu, nz_gpu, 1);                             \
                                                                                     \
+      Globals *globals = ::globals;                                                 \
       char *inflag = GrGeomSolidCellFlagData(grgeom);                               \
       auto lambda_body =                                                            \
         GPU_LAMBDA(int i, int j, int k)                                             \
@@ -1040,7 +1042,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     if(!(ptr_ival))                                                                 \
     {                                                                               \
       GrGeomSolidCellIval(grgeom, patch_loc, PV_f) =                                \
-        (int*)_talloc_cuda(sizeof(int) * nx_bxs * ny_bxs * nz_bxs);                 \
+        (int*)_talloc_device(sizeof(int) * nx_bxs * ny_bxs * nz_bxs);               \
                                                                                     \
       ptr_ival = GrGeomSolidCellIval(grgeom, patch_loc, PV_f);                      \
       for (int idx = 0; idx < nx_bxs * ny_bxs * nz_bxs; idx++)                      \

@@ -88,7 +88,7 @@ void   NewGlobals(char *run_name)
 
 void  FreeGlobals()
 {
-  free(globals_ptr);
+  tfree(globals_ptr);
 }
 
 /*--------------------------------------------------------------------------
@@ -117,39 +117,3 @@ void  LogGlobals()
     CloseLogFile(log_file);
   }
 }
-
-#if PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA
-
-/**
- * @brief A struct for constant global data in read-only device memory.
- **/
-__constant__ Globals dev_globals;
-
-/**
- * @brief A struct member for constant global data in read-only device memory.
- **/
-__constant__ Background dev_background;
-
-/**
- * @brief A function to copy constant global data to read-only device memory.
- **/
-void CopyGlobalsToDevice()
-{
-  // Temporary pointers for getting the symbol addresses
-  Globals *tmp_globals_ptr;
-  Background *tmp_background_ptr;
-
-  // Get the symbol addresses from the __constant__ allocations
-  CUDA_ERR(cudaGetSymbolAddress((void**)&tmp_globals_ptr, dev_globals));
-  CUDA_ERR(cudaGetSymbolAddress((void**)&tmp_background_ptr, dev_background));
-
-  // Copy background data from host to device
-  CUDA_ERR(cudaMemcpy(tmp_background_ptr, globals->background, sizeof(Background), cudaMemcpyHostToDevice));
-
-  // Assign dev_background address to dev_globals.background
-  CUDA_ERR(cudaMemcpyToSymbol(dev_globals, &tmp_background_ptr, sizeof(Background*), offsetof(Globals, background), cudaMemcpyHostToDevice));
-
-  // Assign dev_globals address to dev_globals_ptr
-  CUDA_ERR(cudaMemcpyToSymbol(dev_globals_ptr, &tmp_globals_ptr, sizeof(Globals*), 0, cudaMemcpyHostToDevice));
-}
-#endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA

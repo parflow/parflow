@@ -29,7 +29,7 @@
 #include "amps.h"
 
 /* This CUDA stuff could be combined with AMPS_MPI_NOT_USE_PERSISTENT case */
-#ifdef PARFLOW_HAVE_CUDA
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
 
 void _amps_wait_exchange(amps_Handle handle)
 {
@@ -101,12 +101,12 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     else{ 
       combuf[0] = NULL;
       size[0] = 1;
-      amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
+      amps_create_mpi_type(amps_CommWorld, package->recv_invoices[i]);
       MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
     }
 
     MPI_Irecv(combuf[0], size[0], package->recv_invoices[i]->mpi_type,
-              package->src[i], 0, MPI_COMM_WORLD,
+              package->src[i], 0, amps_CommWorld,
               &(package->recv_requests[i]));
   }
 
@@ -123,7 +123,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     else{
       combuf[i] = NULL;
       size[i] = 1;
-      amps_create_mpi_type(MPI_COMM_WORLD, package->send_invoices[i]);
+      amps_create_mpi_type(amps_CommWorld, package->send_invoices[i]);
       MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
     }
   }
@@ -131,7 +131,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   {
     amps_gpu_sync_streams(i);
     MPI_Isend(combuf[i], size[i], package->send_invoices[i]->mpi_type,
-              package->dest[i], 0, MPI_COMM_WORLD,
+              package->dest[i], 0, amps_CommWorld,
               &(package->send_requests[i]));
   }
   free(combuf);
@@ -178,12 +178,12 @@ amps_Handle amps_IExchangePackage(amps_Package package)
    *--------------------------------------------------------------------*/
   for (i = 0; i < package->num_recv; i++)
   {
-    amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
+    amps_create_mpi_type(amps_CommWorld, package->recv_invoices[i]);
 
     MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
 
     MPI_Irecv(MPI_BOTTOM, 1, package->recv_invoices[i]->mpi_type,
-              package->src[i], 0, MPI_COMM_WORLD,
+              package->src[i], 0, amps_CommWorld,
               &(package->recv_requests[i]));
   }
 
@@ -192,12 +192,12 @@ amps_Handle amps_IExchangePackage(amps_Package package)
    *--------------------------------------------------------------------*/
   for (i = 0; i < package->num_send; i++)
   {
-    amps_create_mpi_type(MPI_COMM_WORLD, package->send_invoices[i]);
+    amps_create_mpi_type(amps_CommWorld, package->send_invoices[i]);
 
     MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
 
     MPI_Isend(MPI_BOTTOM, 1, package->send_invoices[i]->mpi_type,
-              package->dest[i], 0, MPI_COMM_WORLD,
+              package->dest[i], 0, amps_CommWorld,
               &(package->send_requests[i]));
   }
 
@@ -336,7 +336,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     {
       for (i = 0; i < package->num_recv; i++)
       {
-        amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
+        amps_create_mpi_type(amps_CommWorld, package->recv_invoices[i]);
         MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
 
         // Temporaries needed by insure++
@@ -344,7 +344,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
         MPI_Request *request_ptr = &(package->recv_requests[i]);
         MPI_Recv_init(MPI_BOTTOM, 1,
                       type,
-                      package->src[i], 0, MPI_COMM_WORLD,
+                      package->src[i], 0, amps_CommWorld,
                       request_ptr);
       }
     }
@@ -356,7 +356,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     {
       for (i = 0; i < package->num_send; i++)
       {
-        amps_create_mpi_type(MPI_COMM_WORLD,
+        amps_create_mpi_type(amps_CommWorld,
                              package->send_invoices[i]);
 
         MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
@@ -366,7 +366,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
         MPI_Request* request_ptr = &(package->send_requests[i]);
         MPI_Ssend_init(MPI_BOTTOM, 1,
                        type,
-                       package->dest[i], 0, MPI_COMM_WORLD,
+                       package->dest[i], 0, amps_CommWorld,
                        request_ptr);
       }
     }
