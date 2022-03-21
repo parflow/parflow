@@ -1333,7 +1333,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                              u_new = u_new * bc_patch_values[ival];
                              fp[ip] += dt * dir * u_new;
                              
-                             vel_vec[vel_idx] = u_new / h;
+                             vel_vec[vel_idx] = bc_patch_values[ival];
                            }),
                            AfterAllCells(DoNothing)
         ); /* End FluxBC */

@@ -43,12 +43,12 @@ typedef struct {
 } PublicXtra;
 
 typedef struct {
+  Problem           *problem;
+
   PFModule          *phase_mobility;
   PFModule          *phase_density;
   PFModule          *capillary_pressure;
   PFModule          *bc_pressure;
-
-  Problem           *problem;
   Grid              *grid;
   Grid              *x_grid;
   Grid              *y_grid;
@@ -120,8 +120,8 @@ void          PhaseVelocityFace(
   BCStruct *bc_struct;
   Subvector *p_sub, *subvector_m, *subvector_v, *d_sub;
   Subvector *vx_sub, *vy_sub, *vz_sub, *mx_sub, *my_sub, *mz_sub;
-  double *vx, *vy, *vz, *vel_vec=NULL;
-  double *mx, *my, *mz, *mob_vec=NULL;
+  double *vx, *vy, *vz;
+  double *mx, *my, *mz;
   double *den, *pres, *bc_patch_values;
 
   int nx_vy, sy_v;
@@ -422,7 +422,8 @@ void          PhaseVelocityFace(
    * and two "secondary" directions.  Here "primary" essentially the
    * direction of interest or the direction which we are modifying.
    * --------------------------------------------------------------------
-   * Fixed boundary values for saturated solver - JJB 04/21
+   * --------------------------------------------------------------------
+   * Fixed global boundary values for saturated solver - JJB 04/21
    * 
    *----------------------------------------------------------------------*/
 
@@ -479,15 +480,20 @@ void          PhaseVelocityFace(
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int ip, vx_l, vy_l, vz_l;
                                   int alpha, vel_idx;
+                                  double *mob_vec, *vel_vec;
                                   double pdiff, value, vel_h;),
                            CellSetup({
-                               alpha = 0;
-                               vel_idx = 0;
+                               ip = SubvectorEltIndex(p_sub, i, j, k);
 
                                vx_l = SubvectorEltIndex(vx_sub, i, j, k);
                                vy_l = SubvectorEltIndex(vy_sub, i, j, k);
                                vz_l = SubvectorEltIndex(vz_sub, i, j, k);
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
+
+                               alpha = 0;
+                               vel_idx = 0;
+
+                               mob_vec = NULL;
+                               vel_vec = NULL;
 
                                vel_h = 0.0e0;
                                pdiff = 0.0e0;
@@ -551,12 +557,17 @@ void          PhaseVelocityFace(
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int vel_idx, vx_l, vy_l, vz_l;
+                                  double *vel_vec;
                                   double value;),
                            CellSetup({
-                               vel_idx = 0;
+
                                vx_l = SubvectorEltIndex(vx_sub, i, j, k);
                                vy_l = SubvectorEltIndex(vy_sub, i, j, k);
                                vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+
+                               vel_idx = 0;
+                               vel_vec = NULL;
+
                                value = bc_patch_values[ival];
                              }),
                            FACE(LeftFace,  { 
@@ -728,7 +739,7 @@ void  PhaseVelocityFaceFreeInstanceXtra()
     PFModuleFreeInstance(instance_xtra->capillary_pressure);
     PFModuleFreeInstance(instance_xtra->bc_pressure);
 
-    free(instance_xtra);
+    tfree(instance_xtra);
   }
 }
 
