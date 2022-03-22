@@ -766,9 +766,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       u_upper = u_upper * FBz_dat[ip];
 
       /* velocity data jjb */
-      vx[vxi] = u_right / (ffx * z_mult_dat[ip]);
-      vy[vyi] = u_front / (ffy * z_mult_dat[ip]);
-      vz[vzi] = u_upper / ffz;
+      vx[vxi] = u_right / (ffx * z_mult_dat[ip] * del_y_slope);
+      vy[vyi] = u_front / (ffy * z_mult_dat[ip] * del_x_slope);
+      vz[vzi] = u_upper / (ffz * del_x_slope * del_y_slope);
 
       PlusEquals(fp[ip], dt * (u_right + u_front + u_upper));
       PlusEquals(fp[ip + 1], -dt * u_right);
