@@ -1196,7 +1196,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                       * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
                                                rpp[ip] * dp[ip])
                                       / viscosity;
-                             u_new = z_mult_dat[ip] * ffx;
+                             u_new = h;
                            }),
                            FACE(RightFace,
                            {
@@ -1221,7 +1221,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                       * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
                                                rpp[ip + 1] * dp[ip + 1])
                                       / viscosity;
-                             u_new = z_mult_dat[ip] * ffx;
+                             u_new = h;
                            }),
                            FACE(DownFace,
                            {

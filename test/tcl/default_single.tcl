@@ -347,17 +347,17 @@ if ![pftestFile default_single.out.press.00000.pfb "Max difference in Pressure" 
     set passed 0
 }
 
-if ![pftestFile default_single.out.phasex.0.00000.pfb "Max difference in X dir velocity" $sig_digits] {
-    set passed 0
-}
-
-if ![pftestFile default_single.out.phasey.0.00000.pfb "Max difference in Y dir velocity" $sig_digits] {
-    set passed 0
-}
-
 # use abs value test to prevent machine precision effects
 set abs_value 1e-12
-if ![pftestFileWithAbs default_single.out.phasez.0.00000.pfb "Max difference in Z dir velocity" $sig_digits $abs_value] {
+if ![pftestFileWithAbs default_single.out.phasex.0.00000.pfb "Max difference in x-velocity" $sig_digits $abs_value] {
+    set passed 0
+}
+
+if ![pftestFileWithAbs default_single.out.phasey.0.00000.pfb "Max difference in y-velocity" $sig_digits $abs_value] {
+    set passed 0
+}
+
+if ![pftestFileWithAbs default_single.out.phasez.0.00000.pfb "Max difference in z-velocity" $sig_digits $abs_value] {
     set passed 0
 }
 
