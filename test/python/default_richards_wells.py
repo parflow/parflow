@@ -6,8 +6,10 @@
 
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from utils import pfbs_are_equal_to_n_sig_figs
 
-drich = Run("default_richards_wells", __file__)
+run_name = "default_richards_wells"
+drich = Run(run_name, __file__)
 
 #---------------------------------------------------------
 
@@ -349,6 +351,25 @@ drich.Solver.Linear.Preconditioner = 'MGSemi'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/drich_w')
-mkdir(dir_name)
-drich.run(working_directory=dir_name)
+new_output_dir_name = get_absolute_path('test_output/drich_w')
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+drich.run(working_directory=new_output_dir_name)
+
+
+perm_x_pfb = f"/{run_name}.out.perm_x.pfb"
+assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + perm_x_pfb, correct_output_dir_name + perm_x_pfb)
+
+perm_y_pfb = f"/{run_name}.out.perm_y.pfb"
+assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + perm_x_pfb, correct_output_dir_name + perm_x_pfb)
+
+perm_z_pfb = f"/{run_name}.out.perm_z.pfb"
+assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + perm_z_pfb, correct_output_dir_name + perm_z_pfb)
+
+for i in range(0,5):
+    press_pfb = f"/{run_name}.out.press.0000{i}.pfb"
+    assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + press_pfb, correct_output_dir_name + press_pfb)
+
+# press_pfb1 = f"/{run_name}.out.press.00001.pfb"
+# press_pfb2 = f"/{run_name}.out.press.00002.pfb"
+# assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + press_pfb1, correct_output_dir_name + press_pfb2)
