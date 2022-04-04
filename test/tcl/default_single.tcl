@@ -315,12 +315,14 @@ pfset Solver.WriteSiloPressure True
 pfset Solver.WriteSiloSaturation True
 pfset Solver.WriteSiloConcentration True
 
+pfset Solver.PrintVelocities True
 
 #-----------------------------------------------------------------------------
 # The Solver Impes MaxIter default value changed so to get previous
 # results we need to set it back to what it was
 #-----------------------------------------------------------------------------
 pfset Solver.MaxIter 5
+pfset Solver.AbsTol 1e-25
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
@@ -342,6 +344,20 @@ set sig_digits 4
 set passed 1
 
 if ![pftestFile default_single.out.press.00000.pfb "Max difference in Pressure" $sig_digits] {
+    set passed 0
+}
+
+# use abs value test to prevent machine precision effects
+set abs_value 1e-12
+if ![pftestFileWithAbs default_single.out.phasex.0.00000.pfb "Max difference in x-velocity" $sig_digits $abs_value] {
+    set passed 0
+}
+
+if ![pftestFileWithAbs default_single.out.phasey.0.00000.pfb "Max difference in y-velocity" $sig_digits $abs_value] {
+    set passed 0
+}
+
+if ![pftestFileWithAbs default_single.out.phasez.0.00000.pfb "Max difference in z-velocity" $sig_digits $abs_value] {
     set passed 0
 }
 
