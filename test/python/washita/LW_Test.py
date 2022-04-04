@@ -17,7 +17,7 @@ dir_name = get_absolute_path('test_output/LW_test')
 mkdir(dir_name)
 
 cp('$PF_SRC/test/tcl/washita/clm_input/drv_clmin.dat', dir_name)
-cp('$PF_SRC/test/tcl/washita/clm_input/drv_vegm.dat', dir_name)
+cp('$PF_SRC/test/tcl/washita/clm_input/drv_vegm.alluv.dat', dir_name)
 cp('$PF_SRC/test/tcl/washita/clm_input/drv_vegp.dat', dir_name)
 cp('$PF_SRC/test/tcl/washita/parflow_input/LW.slopex.pfb', dir_name)
 cp('$PF_SRC/test/tcl/washita/parflow_input/LW.slopey.pfb', dir_name)
@@ -25,27 +25,27 @@ cp('$PF_SRC/test/tcl/washita/parflow_input/IndicatorFile_Gleeson.50z.pfb', dir_n
 cp('$PF_SRC/test/tcl/washita/parflow_input/press.init.pfb', dir_name)
 
 
-nldas_files = [
-  'NLDAS.DSWR.000001_to_000024.pfb',
-  'NLDAS.DLWR.000001_to_000024.pfb',
-  'NLDAS.APCP.000001_to_000024.pfb',
-  'NLDAS.Temp.000001_to_000024.pfb',
-  'NLDAS.UGRD.000001_to_000024.pfb',
-  'NLDAS.VGRD.000001_to_000024.pfb',
-  'NLDAS.Press.000001_to_000024.pfb',
-  'NLDAS.SPFH.000001_to_000024.pfb'
-  ]
-
-for file in nldas_files:
-  cp('$PF_SRC/test/tcl/washita/NLDAS/' + file, dir_name)
-  LW_Test.dist(dir_name + '/' + file, R=24)
+#nldas_files = [
+#  'NLDAS.DSWR.000001_to_000024.pfb',
+#  'NLDAS.DLWR.000001_to_000024.pfb',
+#  'NLDAS.APCP.000001_to_000024.pfb',
+#  'NLDAS.Temp.000001_to_000024.pfb',
+#  'NLDAS.UGRD.000001_to_000024.pfb',
+#  'NLDAS.VGRD.000001_to_000024.pfb',
+#  'NLDAS.Press.000001_to_000024.pfb',
+#  'NLDAS.SPFH.000001_to_000024.pfb'
+#  ]
+#
+#for file in nldas_files:
+#  cp('$PF_SRC/test/tcl/washita/NLDAS/' + file, dir_name)
+#  LW_Test.dist(dir_name + '/' + file)
 
 #-----------------------------------------------------------------------------
 
 LW_Test.FileVersion = 4
 
 #-----------------------------------------------------------------------------
-# Set Processor topology 
+# Set Processor topology
 #-----------------------------------------------------------------------------
 LW_Test.Process.Topology.P = 1
 LW_Test.Process.Topology.Q = 1
@@ -81,13 +81,13 @@ LW_Test.GeomInput.box_input.InputType = 'Box'
 LW_Test.GeomInput.box_input.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
-# Domain Geometry 
+# Domain Geometry
 #-----------------------------------------------------------------------------
 
 LW_Test.Geom.domain.Lower.X = 0.0
 LW_Test.Geom.domain.Lower.Y = 0.0
 LW_Test.Geom.domain.Lower.Z = 0.0
-#  
+#
 LW_Test.Geom.domain.Upper.X = 41000.0
 LW_Test.Geom.domain.Upper.Y = 41000.0
 LW_Test.Geom.domain.Upper.Z = 100.0
@@ -212,7 +212,7 @@ LW_Test.Gravity = 1.0
 #-----------------------------------------------------------------------------
 
 LW_Test.TimingInfo.BaseUnit = 1.0
-LW_Test.TimingInfo.StartCount = 0.0
+LW_Test.TimingInfo.StartCount = 0
 LW_Test.TimingInfo.StartTime = 0.0
 LW_Test.TimingInfo.StopTime = 12.0
 LW_Test.TimingInfo.DumpInterval = 24.0
@@ -533,16 +533,30 @@ LW_Test.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 # Distribute CLM and ParFlow inputs
 #-----------------------------------------------------------------------------
 
-LW_Test.dist('drv_clmin.dat')
-LW_Test.dist('drv_vegm.dat')
-LW_Test.dist('drv_vegp.dat')
-LW_Test.dist('LW.slopex.pfb')
-LW_Test.dist('LW.slopey.pfb')
-LW_Test.dist('IndicatorFile_Gleeson.50z.pfb')
-LW_Test.dist('press.init.pfb')
+#LW_Test.dist(dir_name + '/' + 'drv_clmin.dat')
+#LW_Test.dist(dir_name + '/' + 'drv_vegm.alluv.dat')
+#LW_Test.dist(dir_name + '/' + 'drv_vegp.dat')
+LW_Test.dist(dir_name + '/' + 'LW.slopex.pfb')
+LW_Test.dist(dir_name + '/' + 'LW.slopey.pfb')
+LW_Test.dist(dir_name + '/' + 'IndicatorFile_Gleeson.50z.pfb')
+LW_Test.dist(dir_name + '/' + 'press.init.pfb')
 
+nldas_files = [
+  'NLDAS.DSWR.000001_to_000024.pfb',
+  'NLDAS.DLWR.000001_to_000024.pfb',
+  'NLDAS.APCP.000001_to_000024.pfb',
+  'NLDAS.Temp.000001_to_000024.pfb',
+  'NLDAS.UGRD.000001_to_000024.pfb',
+  'NLDAS.VGRD.000001_to_000024.pfb',
+  'NLDAS.Press.000001_to_000024.pfb',
+  'NLDAS.SPFH.000001_to_000024.pfb'
+  ]
+
+for file in nldas_files:
+  cp('$PF_SRC/test/tcl/washita/NLDAS/' + file, dir_name)
+  LW_Test.dist(dir_name + '/' + file)
 #-----------------------------------------------------------------------------
-# Run Simulation 
+# Run Simulation
 #-----------------------------------------------------------------------------
 
 LW_Test.run(working_directory=dir_name)
