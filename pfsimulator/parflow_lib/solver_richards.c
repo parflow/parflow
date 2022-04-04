@@ -238,7 +238,9 @@ typedef struct {
   Vector *overland_sum;
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
   Vector *dz_mult;              /* vector containing dz multplier values for all cells */
-  Vector *x_velocity, *y_velocity, *z_velocity; /* vectors to hold velocity face values for pfbs - jjb */
+  Vector *x_velocity;           /* vector containing x-velocity face values */
+  Vector *y_velocity;           /* vector containing y-velocity face values */
+  Vector *z_velocity;           /* vector containing z-velocity face values */
 #ifdef HAVE_CLM
   /* RM: vars for pf printing of clm output */
   Vector *eflx_lh_tot;          /* total LH flux from canopy height to atmosphere [W/m^2] */
@@ -1426,24 +1428,37 @@ SetupRichards(PFModule * this_module)
       sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
       WritePFBinary(file_prefix, file_postfix,
                     instance_xtra->x_velocity);
+      static const char* velx_filenames[] = {
+        "velx"
+      };
+      MetadataAddDynamicField(
+                              js_outputs, file_prefix, t, 0, "x-velocity", "m/s", "x-face", "subsurface",
+                              sizeof(velx_filenames) / sizeof(velx_filenames[0]),
+                              velx_filenames);
 
       sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
       WritePFBinary(file_prefix, file_postfix,
                     instance_xtra->y_velocity);
+      static const char* vely_filenames[] = {
+        "vely"
+      };
+      MetadataAddDynamicField(
+                              js_outputs, file_prefix, t, 0, "y-velocity", "m/s", "y-face", "subsurface",
+                              sizeof(vely_filenames) / sizeof(vely_filenames[0]),
+                              vely_filenames);
 
       sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
       WritePFBinary(file_prefix, file_postfix,
                     instance_xtra->z_velocity);
-
-      any_file_dumped = 1;
-
-      static const char* mask_filenames[] = {
-        "velx", "vely", "velz"
+      static const char* velz_filenames[] = {
+        "velz"
       };
       MetadataAddDynamicField(
-                              js_outputs, file_prefix, t, 0, "velocity", "m/s", "cell", "subsurface",
-                              sizeof(mask_filenames) / sizeof(mask_filenames[0]),
-                              mask_filenames);
+                              js_outputs, file_prefix, t, 0, "z-velocity", "m/s", "z-face", "subsurface",
+                              sizeof(velz_filenames) / sizeof(velz_filenames[0]),
+                              velz_filenames);
+
+      any_file_dumped = 1;
     }
 
     /*-----------------------------------------------------------------
@@ -2967,20 +2982,29 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
         WritePFBinary(file_prefix, file_postfix,
                       instance_xtra->x_velocity);
+        // Update with new timesteps
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, instance_xtra->file_number,
+                                "x-velocity", "m/s", "x-face", "subsurface", 0, NULL);
 
         sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
         WritePFBinary(file_prefix, file_postfix,
                       instance_xtra->y_velocity);
+        // Update with new timesteps
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, instance_xtra->file_number,
+                                "y-velocity", "m/s", "y-face", "subsurface", 0, NULL);
 
         sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
         WritePFBinary(file_prefix, file_postfix,
                       instance_xtra->z_velocity);
-        any_file_dumped = 1;
-
         // Update with new timesteps
         MetadataAddDynamicField(
                                 js_outputs, file_prefix, t, instance_xtra->file_number,
-                                "velocity", "m/s", "cell", "subsurface", 0, NULL);
+                                "z-velocity", "m/s", "z-face", "subsurface", 0, NULL);
+
+        any_file_dumped = 1;
+
       }
 
 

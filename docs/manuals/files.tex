@@ -3550,10 +3550,18 @@ pfset Solver.PrintPressure False
 
 \pfkey{string}{Solver.PrintVelocities}{False}
 {
-This key is used to turn on printing of the x, y and z
-velocity data.  The printing of the data is controlled by
-values in the timing information section.  The data is
-written as a PFB file.
+This key is used to turn on printing of the x, y, and z 
+velocity (Darcy flux) data. The printing of the data is 
+controlled by values in the timing information section. 
+The x, y, and z data are written to separate PFB files. 
+The dimensions of these files are slightly different 
+than most PF data,  with the dimension of interest 
+representing interfaces, and the other two dimensions 
+representing cells. E.g. the x-velocity PFB has dimensions
+[NX+1, NY, NZ]. This key produces files in the format of 
+runname.out.phase<x||y||z>.00.0000.pfb when using ParFlow's
+saturated solver and runname.out.vel<x||y||z>.00000.pfb
+when using the Richards equation solver.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.PrintVelocities True

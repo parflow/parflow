@@ -575,15 +575,15 @@ foreach i "00000 00001" {
 	set passed 0
     }
 
-    if ![pftestFileWithAbs $runname.out.phasex.0.$i.pfb "Max difference in phase x for timestep $i" $sig_digits $abs_diff] {
+    if ![pftestFileWithAbs $runname.out.phasex.0.$i.pfb "Max difference in x-velocity at timestep $i" $sig_digits $abs_diff] {
 	set passed 0
     }
 
-    if ![pftestFileWithAbs $runname.out.phasey.0.$i.pfb "Max difference phase y for timestep $i" $sig_digits $abs_diff] {
+    if ![pftestFileWithAbs $runname.out.phasey.0.$i.pfb "Max difference in y-velocity at timestep $i" $sig_digits $abs_diff] {
 	set passed 0
     }
 
-    if ![pftestFileWithAbs $runname.out.phasez.0.$i.pfb "Max difference in phase z for timestep $i" $sig_digits $abs_diff] {
+    if ![pftestFileWithAbs $runname.out.phasez.0.$i.pfb "Max difference in z-velocity at timestep $i" $sig_digits $abs_diff] {
 	set passed 0
     }
 }
