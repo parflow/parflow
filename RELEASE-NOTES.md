@@ -10,9 +10,15 @@ changes made in 3.10.0
 
 ## Overview of Changes
 
+* Python dependency is now 3.6
 * Python PFB reader/writer updated
+* Bug fixes
 
 ## User Visible Changes
+
+### Python: Python version dependency update
+
+Python 3.6 or greater is now required for building and running ParFlow if Python is being used.
 
 ### Python: PFB reader/writer updated
 
@@ -39,7 +45,23 @@ pf.write_pfb('/path/to/new_file.pfb', x,
 Support simple use case in SolidFileBuilder when all work can simply be delegated to pfmask-to-pfsol
 Added a generate_asc_files (default False) argument to SolidFileBuilder.write 
 
+### Python: Fixed reading of vegm array
+
+Fixed indices so that the x index of the vegm_array correctly reflects the columns and y index reflects the rows. The _read_vegm function in PFTools was inconsistent with parflow-python xy indexing.
+
+### Python : Python PFTools version updates
+
+Updated Python PFTools dependency to current version 3.6.
+
 ## Bug Fixes
+
+### Examples/Tests: Fix errors in LW_Test test case. 
+
+LW_Test runs successfully and works in parallel.
+
+### Increased input database maximum value size from 4097 to 65536.
+
+The maximum input database value length was increased from 4097 to 65536. A bounds check is performed that emits a helpful error message when a database value is too big.
 
 ### Python: interface fixed issue where some keys failed to set when unless set in a particular order
 
