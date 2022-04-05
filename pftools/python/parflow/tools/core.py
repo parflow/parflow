@@ -71,6 +71,9 @@ def get_current_parflow_version():
     That method rely on PARFLOW_DIR environment variable to parse and
     extract the version of your installed version of ParFlow.
 
+    TODO: This not a very good way to get the version.   Should get
+    from cmake processed file.
+
     Returns:
         str: Return ParFlow version like '3.6.0'
 
@@ -81,7 +84,7 @@ def get_current_parflow_version():
         with open(version_file, 'r') as f:
             for line in f:
                 if 'PARFLOW_VERSION=' in line:
-                    version = line[17:22]
+                    version = line[17:-2]
             if not version:
                 print(f'Cannot find version in {version_file}')
     else:
