@@ -1,12 +1,11 @@
 # ParFlow Release Notes 3.10.0
 -----------------------------
 
-ParFlow improvements and bug-fixes would not be possible without
+ParFlow development and bug-fixes would not be possible without
 contributions of the ParFlow community.  Thank you for all the great
 contributions.
 
-Note : Version 3.10.0 is a minor update to v3.9.0.  These release notes cover 
-changes made in 3.10.0
+These release notes cover changes made in 3.10.0.
 
 ## Overview of Changes
 
@@ -102,7 +101,7 @@ Values for PhaseSources.{phase_name}.GeomNames should be a subset of values from
 
 ## Internal/Developer Changes
 
-### Cleaned up dependecies for Python (Python)
+### Cleaned up dependencies for Python (Python)
 
 ### Diverting ParFlow output to stream (Core)
 
@@ -112,7 +111,7 @@ Change required to meet IDEAS Watersheds best practices.
 
 ###  Add keys and generator for Simput (Python)
 
-Added keys and generator to allow use Simput and applications based on Simput to write inputs for parflow with a graphical web interface.
+Added keys and generator to allow use Simput and applications based on Simput to write inputs for ParFlow with a graphical web interface.
 
 ### Remove use of MPI_COMM_WORLD (Core)
 
