@@ -180,7 +180,7 @@ RUN $CMAKE                     \
     -D PARFLOW_ENABLE_SILO=TRUE        \
     -D SILO_ROOT=$SILO_DIR              \
     -D PARFLOW_HAVE_CLM=TRUE             \
-    -D PARFLOW_ENABLE_PYTHON=TRUE         \
+    -D PARFLOW_ENABLE_PYTHON=ON         \
     -D PARFLOW_ENABLE_TIMING=TRUE          \
     -D PARFLOW_AMPS_LAYER=mpi1              \
     -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE       \
@@ -193,6 +193,10 @@ RUN $CMAKE --build $BASE_PATH/parflow/build
 USER root
 RUN $CMAKE --install $BASE_PATH/parflow/build --prefix /opt/parflow
 USER ubuntu
+
+# Install the locally built version of pftools
+RUN python3 -m pip install /opt/parflow/python
+RUN cp -R /opt/parflow/python/parflow/tools/ref ~/.local/lib/python3.8/site-packages/parflow/tools/ref
 
 ENV PARFLOW_DIR /opt/parflow/
 WORKDIR /opt/parflow/

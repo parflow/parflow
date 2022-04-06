@@ -1,0 +1,71 @@
+# -----------------------------------------------------------------------------
+# Definition anatomy
+# -----------------------------------------------------------------------------
+#
+# run.Geom.{name}.{PARFLOW_KEY}:
+#   alias:
+#     - Short names that can be used inside your table definition
+#   addon:
+#     If provided those other key/value will be set under
+#       Geom.{name}.{KEY_1} = {VALUE_1}
+#       Geom.{name}.{KEY_2} = {VALUE_2}
+#   register:
+#     If provided the {name} will be added to a set() with the name
+#     run.{VALUE} = [] + {name}.
+#
+# -----------------------------------------------------------------------------
+
+key:
+  type: str
+  alias:
+    - key
+    - name
+    - Name
+    - Key
+
+# -----------------------------------------------------------------------------
+# Vegetation Parameters
+# -----------------------------------------------------------------------------
+
+InputType:
+  type: int
+  alias:
+    - InputType
+  register: Wells.Names
+
+Action:
+  alias:
+    - Action
+  register: Wells.Names
+
+X:
+  alias:
+    - X
+  register: Wells.Names
+
+Y:
+  alias:
+    - Y
+  register: Wells.Names
+
+ZUpper:
+  alias:
+    - ZUpper
+    - Zupper
+  register: Wells.Names
+
+ZLower:
+  alias:
+    - ZLower
+    - Zlower
+  register: Wells.Names
+
+Method:
+  alias:
+    - Method
+  register: Wells.Names
+
+Cycle:
+  alias:
+    - Cycle
+  register: Wells.Names
