@@ -158,8 +158,9 @@ USER ubuntu
 # Install Parflow
 # -----------------------------------------------------------------------------
 
-COPY --chown=ubuntu:ubuntu . $BASE_PATH/parflow/src
+COPY --chown=ubuntu:ubuntu ./pftools/python/requirements*.txt $BASE_PATH/parflow/src/pftools/python/
 RUN pip3 install -r $BASE_PATH/parflow/src/pftools/python/requirements_all.txt
+COPY --chown=ubuntu:ubuntu . $BASE_PATH/parflow/src
 
 # ARG PARFLOW_VERSION=master
 # ARG PARFLOW_GIT_URL=
@@ -193,8 +194,6 @@ RUN $CMAKE --build $BASE_PATH/parflow/build
 USER root
 RUN $CMAKE --install $BASE_PATH/parflow/build --prefix /opt/parflow
 
-# Change permissions to allow rebuilding pftools in container for iterative development
-RUN chmod -R ugo+rwx /opt/parflow/python
 # Install the locally built version of pftools
 USER ubuntu
 RUN python3 -m pip install /opt/parflow/python
