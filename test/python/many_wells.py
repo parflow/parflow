@@ -6,9 +6,9 @@
 
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
-from WellsBuilder import WellsPropertiesBuilder
+from parflow.tools.builders import WellPropertiesBuilder
 
-drich = Run("default_richards_wells", __file__)
+drich = Run("many_wells", __file__)
 
 #---------------------------------------------------------
 
@@ -234,7 +234,7 @@ drich.Cycle.constant.Repeat = -1
 
 drich.Wells.Names = 'pumping_well_1 pumping_well_2 pumping_well_3'
 wells_csv = "./many_wells.csv"
-wells_builder = WellsPropertiesBuilder(drich).load_csv_file(wells_csv)
+wells_builder = WellPropertiesBuilder(drich).load_csv_file(wells_csv)
 wells_builder.apply()
 
 #-----------------------------------------------------------------------------
@@ -342,6 +342,6 @@ drich.Solver.Linear.Preconditioner = 'MGSemi'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/drich_several_wells')
+dir_name = get_absolute_path('test_output/many_wells')
 mkdir(dir_name)
 drich.run(working_directory=dir_name)

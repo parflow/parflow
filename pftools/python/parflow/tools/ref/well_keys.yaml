@@ -24,48 +24,74 @@ key:
     - Key
 
 # -----------------------------------------------------------------------------
-# Vegetation Parameters
+# Well Parameters
 # -----------------------------------------------------------------------------
 
 InputType:
-  type: int
+  type: str
   alias:
     - InputType
   register: Wells.Names
 
+
+Type:
+  type: str
+  alias:
+    - Type
+  register: Wells.Names
+
 Action:
+  type: str
   alias:
     - Action
   register: Wells.Names
 
 X:
+  type: float
   alias:
     - X
   register: Wells.Names
 
 Y:
+  type: float
   alias:
     - Y
   register: Wells.Names
 
 ZUpper:
+  type: float
   alias:
     - ZUpper
     - Zupper
   register: Wells.Names
 
 ZLower:
+  type: float
   alias:
     - ZLower
     - Zlower
   register: Wells.Names
 
 Method:
+  type: str
   alias:
     - Method
   register: Wells.Names
 
 Cycle:
+  type: str
   alias:
     - Cycle
+  register: Wells.Names
+
+alltime.Pressure.Value:
+  type: float
+  alias:
+    - alltime.Pressure.Value
+  register: Wells.Names
+
+alltime.Saturation.water.Value:
+  type: float
+  alias:
+    - alltime.Saturation.water.Value
   register: Wells.Names

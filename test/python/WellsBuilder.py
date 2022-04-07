@@ -8,7 +8,7 @@ class WellsPropertiesBuilder(TableToProperties):
 
     @property
     def reference_file(self):
-        return '/data/parflow/pftools/python/parflow/tools/ref/wells_keys.yaml'
+        return '/data/parflow/pftools/python/parflow/tools/ref/well_keys.yaml'
 
     @property
     def key_root(self):

@@ -801,14 +801,14 @@ class SubsurfacePropertiesBuilder(TableToProperties):
         return 'subsurface_'
 
 
-class WellsPropertiesBuilder(TableToProperties):
+class WellPropertiesBuilder(TableToProperties):
 
     def __init__(self, run=None):
         super().__init__(run)
 
     @property
     def reference_file(self):
-        return 'ref/table_keys.yaml'
+        return 'ref/well_keys.yaml'
 
     @property
     def key_root(self):

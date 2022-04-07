@@ -1,0 +1,4 @@
+﻿key,InputType,Action,Type,X,Y,ZUpper,ZLower,Method,Cycle,alltime.Pressure.Value,alltime.Saturation.water.Value
+pumping_well_1,Vertical,Extraction,Pressure,0,80,3,2,Standard,constant,0.5,1
+pumping_well_2,Vertical,Extraction,Pressure,20,60,5,1,Standard,constant,0.5,1
+pumping_well_3,Vertical,Extraction,Pressure,40,50,7,2,Standard,constant,0.5,1
