@@ -36,10 +36,9 @@
 
 #include "parflow.h"
 #include "parflow_netcdf.h"
-
 #include "metadata.h"
-
 #include "cJSON.h"
+#include "oas3_coupler.h"
 
 #ifdef HAVE_SLURM
 #include <slurm/slurm.h>
@@ -1057,11 +1056,9 @@ AdvanceRichardsCoupled(PFModule * this_module, double start_time,      /* Starti
   double sw_lat = .0;
   double sw_lon = .0;
 
-  int rank;
   int any_file_dumped;
   int clm_file_dumped;
   int dump_files = 0;
-  int clm_dump_files;
   int retval;
   int converged;
   int take_more_time_steps;
@@ -1083,19 +1080,11 @@ AdvanceRichardsCoupled(PFModule * this_module, double start_time,      /* Starti
   char file_prefix[2048], file_type[2048], file_postfix[2048];
   char nc_postfix[2048];
 
-  /* Added for transient EvapTrans file management - NBE */
-  int Stepcount, Loopcount;
-  Stepcount = 0;
-  Loopcount = 0;
-
   int first_tstep = 1;
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
   //CPS oasis definition phase
-  int p = GetInt("Process.Topology.P");
-  int q = GetInt("Process.Topology.Q");
-  int r = GetInt("Process.Topology.R");
   int nlon = GetInt("ComputationalGrid.NX");
   int nlat = GetInt("ComputationalGrid.NY");
   double pfl_step = GetDouble("TimeStep.Value");
@@ -1143,8 +1132,6 @@ AdvanceRichardsCoupled(PFModule * this_module, double start_time,      /* Starti
                        (&cdt, &dt_info, t, problem, problem_data));
   }
   dt = cdt;
-
-  rank = amps_Rank(amps_CommWorld);
 
   /*
    * Check to see if pressure solves are requested
@@ -1207,7 +1194,6 @@ AdvanceRichardsCoupled(PFModule * this_module, double start_time,      /* Starti
 
       // IMF: Added to include CLM dumps in file_number updating.
       clm_file_dumped = 0;
-      clm_dump_files = 0;
     }                           //Endif to check whether an entire dt is complete
 
     converged = 1;

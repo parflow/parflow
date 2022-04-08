@@ -1,3 +1,6 @@
+#ifndef OAS3_COUPLER_H
+#define OAS3_COUPLER_H
+
 #define oas_pfl_define oas_pfl_define_
 #define CALL_oas_pfl_define(nx, ny, dx, dy, ix, iy, sw_lon, sw_lat, nlon, nlat, pfl_step, pfl_stop) \
   oas_pfl_define(&nx, &ny, &dx, &dy, &ix, &iy, &sw_lon, &sw_lat, &nlon, &nlat, &pfl_step, &pfl_stop)
@@ -32,3 +35,5 @@ void send_fld2_clm(double *pressure, double *saturation, double *topo, int *ix, 
   receive_fld2_clm(evap_trans, topo, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &pstep)
 void receive_fld2_clm(double *evap_trans, double *topo, int *ix, int*iy,
                       int *nx, int *ny, int *nz, int *nx_f, int *ny_f, double *pstep);
+
+#endif /* OAS3_COUPLER_H */
