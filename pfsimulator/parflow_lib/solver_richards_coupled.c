@@ -38,7 +38,7 @@
 #include "parflow_netcdf.h"
 #include "metadata.h"
 #include "cJSON.h"
-#include "oas3_coupler.h"
+#include "../amps/oas3/oas3_coupler.h"
 
 #ifdef HAVE_SLURM
 #include <slurm/slurm.h>
