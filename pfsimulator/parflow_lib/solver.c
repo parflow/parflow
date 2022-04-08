@@ -115,7 +115,7 @@ NewSolver()
 
   {
     NameArray solver_na;
-    solver_na = NA_NewNameArray("Richards Diffusion Impes");
+    solver_na = NA_NewNameArray("Richards Diffusion Impes RichardsCoupled");
     switch_name = GetStringDefault("Solver", "Impes");
     solver = NA_NameToIndex(solver_na, switch_name);
     NA_FreeNameArray(solver_na);
@@ -138,6 +138,12 @@ NewSolver()
     case 2:
     {
       amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverImpes, ("Solver"));
+      break;
+    }
+
+    case 3:
+    {
+      amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverRichardsCoupled, ("Solver"));
       break;
     }
 

@@ -214,49 +214,10 @@ typedef struct {
   int number_logged;
   int iteration_number;
   double dump_index;
-  double clm_dump_index;
 } InstanceXtra;
 
-static const char* dswr_filenames[] = { "DSWR" };
-static const char* dlwr_filenames[] = { "DLWR" };
-static const char* apcp_filenames[] = { "APCP" };
-static const char* temp_filenames[] = { "Temp" };
-static const char* wind_filenames[] = { "UGRD", "VGRD" };
-static const char* prss_filenames[] = { "Press" };
-static const char* spfh_filenames[] = { "SPFH" };
-
-static const char* vlai_filenames[] = { "LAI" };
-static const char* vsai_filenames[] = { "SAI" };
-static const char* vz0m_filenames[] = { "Z0M" };
-static const char* vdsp_filenames[] = { "DISPLA" };
-
-typedef struct _CLMForcingField {
-  const char* field_name; // Name for human presentation.
-  const char* field_units; // Units (if available).
-  const char** component_names; // Filenames assigned to each component.
-  int num_components; // Number of components.
-  int vegetative; // Is this a vegetation forcing function?
-} CLMForcingField;
-
-static const CLMForcingField clmForcingFields[] = {
-  { "downward shortwave radiation", NULL, dswr_filenames, sizeof(dswr_filenames) / sizeof(dswr_filenames[0]), 0 },
-  { "downward longwave radiation", NULL, dlwr_filenames, sizeof(dlwr_filenames) / sizeof(dlwr_filenames[0]), 0 },
-  { "precipitation", NULL, apcp_filenames, sizeof(apcp_filenames) / sizeof(apcp_filenames[0]), 0 },
-  { "temperature", NULL, temp_filenames, sizeof(temp_filenames) / sizeof(temp_filenames[0]), 0 },
-  { "wind velocity", NULL, wind_filenames, sizeof(wind_filenames) / sizeof(wind_filenames[0]), 0 },
-  { "atmospheric pressure", NULL, prss_filenames, sizeof(prss_filenames) / sizeof(prss_filenames[0]), 0 },
-  { "specific humidity", NULL, spfh_filenames, sizeof(spfh_filenames) / sizeof(spfh_filenames[0]), 0 },
-
-  // vegetative forcing functions (optionally enabled):
-  { "leaf area index", NULL, vlai_filenames, sizeof(vlai_filenames) / sizeof(vlai_filenames[0]), 1 },
-  { "stem area index", NULL, vsai_filenames, sizeof(vsai_filenames) / sizeof(vsai_filenames[0]), 1 },
-  { "aerodynamic roughness length", NULL, vz0m_filenames, sizeof(vz0m_filenames) / sizeof(vz0m_filenames[0]), 1 },
-  { "displacement height", NULL, vdsp_filenames, sizeof(vdsp_filenames) / sizeof(vdsp_filenames[0]), 1 },
-};
-int numForcingFields = sizeof(clmForcingFields) / sizeof(clmForcingFields[0]);
-
 void
-SetupRichards(PFModule * this_module)
+SetupRichardsCoupled(PFModule * this_module)
 {
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra *instance_xtra =
@@ -625,7 +586,6 @@ SetupRichards(PFModule * this_module)
 
   instance_xtra->iteration_number = instance_xtra->file_number = start_count;
   instance_xtra->dump_index = 1.0;
-  instance_xtra->clm_dump_index = 1.0;
 
   if (((t >= stop_time)
        || (instance_xtra->iteration_number > public_xtra->max_iterations))
@@ -1059,12 +1019,12 @@ SetupRichards(PFModule * this_module)
 }
 
 void
-AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time */
-                double stop_time,       /* Stopping time */
-                PFModule * time_step_control,   /* Use this module to control timestep if supplied */
-                Vector * evap_trans,    /* Flux from land surface model */
-                Vector ** pressure_out,         /* Output vars */
-                Vector ** porosity_out, Vector ** saturation_out)
+AdvanceRichardsCoupled(PFModule * this_module, double start_time,      /* Starting time */
+                       double stop_time,       /* Stopping time */
+                       PFModule * time_step_control,   /* Use this module to control timestep if supplied */
+                       Vector * evap_trans,    /* Flux from land surface model */
+                       Vector ** pressure_out,         /* Output vars */
+                       Vector ** porosity_out, Vector ** saturation_out)
 {
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra *instance_xtra =
@@ -2178,7 +2138,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
 
 void
-TeardownRichards(PFModule * this_module)
+TeardownRichardsCoupled(PFModule * this_module)
 {
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra *instance_xtra =
@@ -2229,7 +2189,7 @@ TeardownRichards(PFModule * this_module)
     FILE *log_file;
     int k;
 
-    log_file = OpenLogFile("SolverRichards");
+    log_file = OpenLogFile("SolverRichardsCoupled");
 
     if (start_count >= 0)
     {
@@ -2296,11 +2256,11 @@ TeardownRichards(PFModule * this_module)
 }
 
 /*--------------------------------------------------------------------------
- * SolverRichardsInitInstanceXtra
+ * SolverRichardsCoupledInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
 PFModule *
-SolverRichardsInitInstanceXtra()
+SolverRichardsCoupledInitInstanceXtra()
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -2589,11 +2549,11 @@ SolverRichardsInitInstanceXtra()
 }
 
 /*--------------------------------------------------------------------------
- * SolverRichardsFreeInstanceXtra
+ * SolverRichardsCoupledFreeInstanceXtra
  *--------------------------------------------------------------------------*/
 
 void
-SolverRichardsFreeInstanceXtra()
+SolverRichardsCoupledFreeInstanceXtra()
 {
   PFModule *this_module = ThisPFModule;
   InstanceXtra *instance_xtra =
@@ -2631,11 +2591,11 @@ SolverRichardsFreeInstanceXtra()
 }
 
 /*--------------------------------------------------------------------------
- * SolverRichardsNewPublicXtra
+ * SolverRichardsCoupledNewPublicXtra
  *--------------------------------------------------------------------------*/
 
 PFModule *
-SolverRichardsNewPublicXtra(char *name)
+SolverRichardsCoupledNewPublicXtra(char *name)
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra;
@@ -3571,11 +3531,11 @@ SolverRichardsNewPublicXtra(char *name)
 }
 
 /*--------------------------------------------------------------------------
- * SolverRichardsFreePublicXtra
+ * SolverRichardsCoupledFreePublicXtra
  *--------------------------------------------------------------------------*/
 
 void
-SolverRichardsFreePublicXtra()
+SolverRichardsCoupledFreePublicXtra()
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -3593,11 +3553,11 @@ SolverRichardsFreePublicXtra()
 }
 
 /*--------------------------------------------------------------------------
- * SolverRichardsSizeOfTempData
+ * SolverRichardsCoupledSizeOfTempData
  *--------------------------------------------------------------------------*/
 
 int
-SolverRichardsSizeOfTempData()
+SolverRichardsCoupledSizeOfTempData()
 {
   /* SGS temp data */
 
@@ -3605,10 +3565,10 @@ SolverRichardsSizeOfTempData()
 }
 
 /*--------------------------------------------------------------------------
- * SolverRichards
+ * SolverRichardsCoupled
  *--------------------------------------------------------------------------*/
 void
-SolverRichards()
+SolverRichardsCoupled()
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -3635,7 +3595,7 @@ SolverRichards()
    */
   Vector *evap_trans;
 
-  SetupRichards(this_module);
+  SetupRichardsCoupled(this_module);
 
   /*sk Initialize LSM terms */
   evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -3651,7 +3611,7 @@ SolverRichards()
     FinalizeVectorUpdate(handle);
   }
 
-  AdvanceRichards(this_module,
+  AdvanceRichardsCoupled(this_module,
                   start_time,
                   stop_time,
                   NULL,
@@ -3662,7 +3622,7 @@ SolverRichards()
    */
   recordMemoryInfo();
 
-  TeardownRichards(this_module);
+  TeardownRichardsCoupled(this_module);
 
   FreeVector(evap_trans);
 }
@@ -3672,7 +3632,7 @@ SolverRichards()
  */
 
 ProblemData *
-GetProblemDataRichards(PFModule * this_module)
+GetProblemDataRichardsCoupled(PFModule * this_module)
 {
   InstanceXtra *instance_xtra =
     (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -3681,7 +3641,7 @@ GetProblemDataRichards(PFModule * this_module)
 }
 
 Problem *
-GetProblemRichards(PFModule * this_module)
+GetProblemRichardsCoupled(PFModule * this_module)
 {
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
@@ -3689,7 +3649,7 @@ GetProblemRichards(PFModule * this_module)
 }
 
 PFModule *
-GetICPhasePressureRichards(PFModule * this_module)
+GetICPhasePressureRichardsCoupled(PFModule * this_module)
 {
   InstanceXtra *instance_xtra =
     (InstanceXtra*)PFModuleInstanceXtra(this_module);
