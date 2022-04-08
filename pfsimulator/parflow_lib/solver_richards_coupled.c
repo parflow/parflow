@@ -1070,7 +1070,6 @@ AdvanceRichardsCoupled(PFModule * this_module, double start_time,      /* Starti
   double ct = 0.0;
   double cdt = 0.0;
   double print_dt;
-  double print_cdt;
   double dtmp, err_norm;
   double gravity = ProblemGravity(problem);
 
