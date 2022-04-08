@@ -484,6 +484,18 @@ if ( ${PARFLOW_HAVE_CLM} )
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 endif ( ${PARFLOW_HAVE_CLM} )
 
+option(PARFLOW_HAVE_ECLM "Compile with eCLM (experimental)" "OFF")
+
+if ( ${PARFLOW_HAVE_ECLM} )
+  if (HAVE_CLM)
+    message(FATAL_ERROR "ERROR: PARFLOW_HAVE_CLM and PARFLOW_HAVE_ECLM cannot be enabled at the same time.")
+  endif (HAVE_CLM)
+  if (NOT HAVE_OAS3)
+    message(FATAL_ERROR "ERROR: OASIS is required when compiling with PARFLOW_HAVE_ECLM=ON (check OAS3_ROOT variable)")
+  else (HAVE_OAS3)
+    message(WARNING "Enabling components for ParFlow-eCLM coupled model (experimental feature!)")
+  endif (HAVE_OAS3)
+endif ( ${PARFLOW_HAVE_ECLM} )
 #
 # Parflow specific configuration options
 #

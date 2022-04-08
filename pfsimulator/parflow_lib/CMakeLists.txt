@@ -104,6 +104,7 @@ set (SRC_FILES_CONST advect.F
   solver_impes.c
   solver_lb.c
   solver_richards.c
+  solver_richards_coupled.c
   subsrf_sim.c
   time_cycle_data.c
   timing.c
