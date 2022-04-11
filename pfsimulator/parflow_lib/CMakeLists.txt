@@ -104,7 +104,6 @@ set (SRC_FILES_CONST advect.F
   solver_impes.c
   solver_lb.c
   solver_richards.c
-  solver_richards_coupled.c
   subsrf_sim.c
   time_cycle_data.c
   timing.c
@@ -122,6 +121,9 @@ set (SRC_FILES_CONST advect.F
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
 )
+if (${PARFLOW_HAVE_ECLM})
+  list(APPEND SRC_FILES_CONST solver_richards_coupled.c)
+endif(${PARFLOW_HAVE_ECLM})
 
 if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
