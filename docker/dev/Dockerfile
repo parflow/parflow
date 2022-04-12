@@ -58,6 +58,11 @@ RUN apt-get update && \
 RUN groupadd -g 1000 ubuntu && \
     useradd -u 1000 -g ubuntu -m -N -s /bin/bash ubuntu
 
+RUN apt-get update \
+    && apt-get install -y sudo
+RUN adduser ubuntu sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
 USER ubuntu
 WORKDIR /home/ubuntu/
 ENV BASE_PATH /home/ubuntu/
@@ -157,7 +162,7 @@ USER ubuntu
 # -----------------------------------------------------------------------------
 # Install Parflow
 # -----------------------------------------------------------------------------
-
+COPY --chown=ubuntu:ubuntu ./docker/dev/rebuild.sh ~/rebuild.sh
 COPY --chown=ubuntu:ubuntu ./pftools/python/requirements*.txt $BASE_PATH/parflow/src/pftools/python/
 RUN pip3 install -r $BASE_PATH/parflow/src/pftools/python/requirements_all.txt
 COPY --chown=ubuntu:ubuntu . $BASE_PATH/parflow/src
@@ -196,9 +201,13 @@ RUN $CMAKE --install $BASE_PATH/parflow/build --prefix /opt/parflow
 
 # Install the locally built version of pftools
 USER ubuntu
-RUN python3 -m pip install /opt/parflow/python
-RUN cp -R /opt/parflow/python/parflow/tools/ref ~/.local/lib/python3.8/site-packages/parflow/tools/ref
+RUN python3 -m pip install /home/ubuntu/parflow/build/pftools/python
+RUN cp -R /home/ubuntu/parflow/build/pftools/python/parflow/tools/ref ~/.local/lib/python3.8/site-packages/parflow/tools/ref
 
+RUN rm -R /home/ubuntu/parflow/src
+RUN mkdir /home/ubuntu/parflow/src
 
 ENV PARFLOW_DIR /opt/parflow/
 WORKDIR /opt/parflow/
+
+RUN echo 'alias rebuild="~/parflow/src/docker/dev/rebuild.sh"' >> ~/.bashrc
