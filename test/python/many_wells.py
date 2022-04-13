@@ -232,10 +232,10 @@ drich.Cycle.constant.Repeat = -1
 # Wells
 #-----------------------------------------------------------------------------
 
-drich.Wells.Names = 'pumping_well_1 pumping_well_2 pumping_well_3'
+
 wells_csv = "./many_wells.csv"
 wells_builder = WellPropertiesBuilder(drich).load_csv_file(wells_csv)
-wells_builder.apply()
+wells_builder.apply(name_registration=True, infer_key_names=True)
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure

@@ -583,7 +583,7 @@ class TableToProperties(ABC):
 
         return self
 
-    def apply(self, run=None, name_registration=True):
+    def apply(self, run=None, name_registration=True, infer_key_names=False):
         """Method to apply the loaded properties to a given
            run object.
 
@@ -602,6 +602,14 @@ class TableToProperties(ABC):
                 sys.exit(1)
         else:
             self.run = run
+
+        # new names are user specified names such as s1 s2 s3 for soil permeability
+        if infer_key_names and name_registration:
+            new_names = ""
+            for name in self.output:
+                if isinstance(self.output[name], dict):
+                    new_names = new_names + name + " "
+            self.key_root.Names = new_names
 
         valid_unit_names = []
         addon_keys = {}
