@@ -13,6 +13,13 @@ add_custom_target(DockerBuildDevelopment
   VERBATIM
 )
 
+add_custom_target(DockerRunDevelopment
+        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY --name=parflow-development -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src parflow-development
+        COMMENT
+        "Start docker image 'parflow-development' mounted to source directory to allow live rebuilding"
+        VERBATIM
+        )
+
 add_custom_target(DockerBuildRuntime
   docker build --rm -t parflow-runtime
     # --build-arg "BASE_IMAGE=ubuntu:20.04"

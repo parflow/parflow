@@ -58,6 +58,8 @@ RUN apt-get update && \
 RUN groupadd -g 1000 ubuntu && \
     useradd -u 1000 -g ubuntu -m -N -s /bin/bash ubuntu
 
+# We are adding sudo capabilities to the ubuntu user so that devs can run the cmake build inside the container.
+# If we instead have devs use the root user when they execute parflow you get MPI errors
 RUN apt-get update \
     && apt-get install -y sudo
 RUN adduser ubuntu sudo
