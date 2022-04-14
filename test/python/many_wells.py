@@ -22,9 +22,9 @@ drich.Process.Topology.R = 1
 # Computational Grid
 #---------------------------------------------------------
 
-drich.ComputationalGrid.Lower.X = -10.0
-drich.ComputationalGrid.Lower.Y = 10.0
-drich.ComputationalGrid.Lower.Z = 1.0
+drich.ComputationalGrid.Lower.X = 0
+drich.ComputationalGrid.Lower.Y = 0
+drich.ComputationalGrid.Lower.Z = 0
 
 drich.ComputationalGrid.DX = 10.0
 drich.ComputationalGrid.DY = 10.0

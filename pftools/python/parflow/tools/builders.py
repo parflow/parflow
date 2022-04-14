@@ -596,6 +596,7 @@ class TableToProperties(ABC):
                 (e.g., GeomNames) related to the loaded subsurface properties
         """
         # applying subsurface properties to run keys
+        print("applying")
         if run is None:
             if self.run is None:
                 print('No run object assigned')
