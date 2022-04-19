@@ -146,8 +146,8 @@ NewSolver()
 #ifdef HAVE_ECLM
       amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverRichardsCoupled, ("Solver"));
 #else
-      InputError("Error: Solver 'RichardsCoupled' is not available. Recompile ParFlow with these additional options: \n
-                   -DPARFLOW_AMPS_LAYER=\"oas3\" -DPARFLOW_HAVE_ECLM=\"TRUE\"", switch_name, key);
+      InputError("Error: Solver 'RichardsCoupled' is not available. Recompile ParFlow with these additional options:\n"
+                 " -DPARFLOW_AMPS_LAYER=\"oas3\" -DPARFLOW_HAVE_ECLM=\"TRUE\"\n", switch_name, key);
 #endif
       break;
     }
