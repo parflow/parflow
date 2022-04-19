@@ -29,6 +29,9 @@
 #cmakedefine PARFLOW_HAVE_CLM
 #cmakedefine HAVE_CLM
 
+#cmakedefine PARFLOW_HAVE_ECLM
+#cmakedefine HAVE_ECLM
+
 #cmakedefine PARFLOW_HAVE_HYPRE
 #cmakedefine HAVE_HYPRE
 

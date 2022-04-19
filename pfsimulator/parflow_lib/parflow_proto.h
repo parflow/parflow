@@ -1183,26 +1183,28 @@ void AdvanceRichards(PFModule *this_module,
                      );
 void SetupRichards(PFModule *this_module);
 
-/* solver_richards_coupled.c */
-void SolverRichardsCoupled(void);
-PFModule *SolverRichardsCoupledInitInstanceXtra(void);
-void SolverRichardsCoupledFreeInstanceXtra(void);
-PFModule *SolverRichardsCoupledNewPublicXtra(char *name);
-void SolverRichardsCoupledFreePublicXtra(void);
-int SolverRichardsCoupledSizeOfTempData(void);
-ProblemData *GetProblemDataRichardsCoupled(PFModule *this_module);
-Problem  *GetProblemRichardsCoupled(PFModule *this_module);
-PFModule *GetICPhasePressureRichardsCoupled(PFModule *this_module);
-void AdvanceRichardsCoupled(PFModule *this_module,
-                            double    start_time,   /* Starting time */
-                            double    stop_time,    /* Stopping time */
-                            PFModule *time_step_control, /* Use this module to control timestep if supplied */
-                            Vector *  evap_trans,   /* Flux from land surface model */
-                            Vector ** pressure_out, /* Output vars */
-                            Vector ** porosity_out,
-                            Vector ** saturation_out
-                           );
-void SetupRichardsCoupled(PFModule *this_module);
+#ifdef HAVE_ECLM
+  /* solver_richards_coupled.c */
+  void SolverRichardsCoupled(void);
+  PFModule *SolverRichardsCoupledInitInstanceXtra(void);
+  void SolverRichardsCoupledFreeInstanceXtra(void);
+  PFModule *SolverRichardsCoupledNewPublicXtra(char *name);
+  void SolverRichardsCoupledFreePublicXtra(void);
+  int SolverRichardsCoupledSizeOfTempData(void);
+  ProblemData *GetProblemDataRichardsCoupled(PFModule *this_module);
+  Problem  *GetProblemRichardsCoupled(PFModule *this_module);
+  PFModule *GetICPhasePressureRichardsCoupled(PFModule *this_module);
+  void AdvanceRichardsCoupled(PFModule *this_module,
+                              double    start_time,   /* Starting time */
+                              double    stop_time,    /* Stopping time */
+                              PFModule *time_step_control, /* Use this module to control timestep if supplied */
+                              Vector *  evap_trans,   /* Flux from land surface model */
+                              Vector ** pressure_out, /* Output vars */
+                              Vector ** porosity_out,
+                              Vector ** saturation_out
+                            );
+  void SetupRichardsCoupled(PFModule *this_module);
+#endif
 
 typedef void (*SubsrfSimInvoke) (ProblemData *problem_data, Vector *perm_x, Vector *perm_y, Vector *perm_z, int num_geounits, GeomSolid **geounits, GrGeomSolid **gr_geounits);
 typedef PFModule *(*SubsrfSimInitInstanceXtraInvoke) (Grid *grid, double *temp_data);
