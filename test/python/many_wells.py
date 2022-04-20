@@ -10,6 +10,9 @@ from parflow.tools.builders import WellPropertiesBuilder
 
 drich = Run("many_wells", __file__)
 
+
+
+
 #---------------------------------------------------------
 
 drich.FileVersion = 4
@@ -30,8 +33,9 @@ drich.ComputationalGrid.DX = 10.0
 drich.ComputationalGrid.DY = 10.0
 drich.ComputationalGrid.DZ = 1.0
 
-drich.ComputationalGrid.NX = 10
-drich.ComputationalGrid.NY = 10
+
+drich.ComputationalGrid.NX = 100
+drich.ComputationalGrid.NY = 100
 drich.ComputationalGrid.NZ = 8
 
 #---------------------------------------------------------
@@ -289,7 +293,7 @@ drich.TopoSlopesY.GeomNames = 'domain'
 drich.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
-# Mannings coefficient 
+# Mannings coefficient
 #---------------------------------------------------------
 
 drich.Mannings.Type = 'Constant'
@@ -345,3 +349,6 @@ drich.Solver.Linear.Preconditioner = 'MGSemi'
 dir_name = get_absolute_path('test_output/many_wells')
 mkdir(dir_name)
 drich.run(working_directory=dir_name)
+
+
+
