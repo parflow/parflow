@@ -22,7 +22,7 @@ s5   0.65  0.675     0.455            5.5      4.5       5.6      9
 s6   -     0.7       -                6.6      -         -        -
 '''
 
-soil_builder = SubsurfacePropertiesBuilder(run).load_csv_file(soil_properties_csv)
+soil_builder = SubsurfacePropertiesBuilder(run).load_txt_content(soil_properties)
 
 print('-'*80)
 print('basic mapping')
