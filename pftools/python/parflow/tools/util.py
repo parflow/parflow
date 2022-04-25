@@ -45,7 +45,7 @@ def _key_to_explicit_accessor(key: Union[slice, int, Iterable]) -> dict:
         return {
             'start': key,
             'stop': key+1,
-            'indices': [0],
+            'indices': slice(0, 1),
             'squeeze': True
         }
     elif isinstance(key, Iterable):
