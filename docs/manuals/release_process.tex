@@ -32,19 +32,28 @@ running account of release information.
 
 Edit VERSION file with current version.
 
+Edit \code{./docs/manuals/user_manual.tex} and insert the current date
+into the subtitle.
+
 \section{Regenerate the \parflow{} User Manual}
 
-The repository contains a PDF of the User Manaul.  This should be
-regenerated for the release so it is up-to-date.  This step requires
-a Latex install to perform.
+The repository contains a PDF of the User Manual.  This should be
+regenerated for the release so it is up-to-date.  This step requires a
+Latex install to perform.  By default the configure system will use
+the current tag and git hash to label the release.  By moving the .git
+directory the cmake configure will use the version specified in the
+just edited VERSION file.
 
 \begin{display}\begin{verbatim}
   cd <directory with ParFlow source>
+  mv .git git
   mkdir build
   cd build
   cmake -DPARFLOW_ENABLE_LATEX=TRUE ../parflow/
   make
   cp ./docs/manuals/user_manual.pdf ../parflow/
+  cd ..
+  mv git .git
 \end{verbatim}\end{display}
   
 \section{Commit release file changes}
