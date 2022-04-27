@@ -41,7 +41,7 @@
  * Maximum length for the value (including the trailing NUL).
  * User can thus enter 4096 characters.
  */
-#define IDB_MAX_VALUE_LEN 4097
+#define IDB_MAX_VALUE_LEN 65536
 
 /**
  * Entry value for the HBT.  Contains the key and the value pair.

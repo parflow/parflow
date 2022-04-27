@@ -28,8 +28,8 @@ pfset ComputationalGrid.DX	                 8.8888888888888893
 pfset ComputationalGrid.DY                      10.666666666666666
 pfset ComputationalGrid.DZ	                 1.0
 
-pfset ComputationalGrid.NX                      10
-pfset ComputationalGrid.NY                      10
+pfset ComputationalGrid.NX                      18
+pfset ComputationalGrid.NY                      15
 pfset ComputationalGrid.NZ                       8
 
 #---------------------------------------------------------

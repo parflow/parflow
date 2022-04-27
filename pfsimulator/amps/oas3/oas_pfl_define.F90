@@ -59,7 +59,7 @@ REAL (KIND=8), INTENT(IN)                  ::                   &
 CHARACTER(len=4)                           ::  clgrd
 INTEGER                                    ::  il_flag            ! Flag for grid writing by proc 0
 INTEGER                                    ::  var_nodims(2)      ! used in prism_def_var_proto
-INTEGER                                    ::  vshape(2,2)        ! Shape of array passed to PSMILe 
+INTEGER                                    ::  vshape(4)          ! Shape of array passed to PSMILe 
                                                                   ! 2 x field rank (= 4 because fields are of rank = 2)
 INTEGER                                    ::  dim_paral          ! Type of partition
 INTEGER, POINTER                           ::  il_paral(:)        ! Define process partition 
@@ -222,10 +222,10 @@ INTEGER                                    ::  status, pflncid,  &!
 ! Define the shape of valid region w/o any halo between cpus
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
- vshape(1,1)    = 1
- vshape(2,1)    = nx
- vshape(1,2)    = 1
- vshape(2,2)    = ny
+ vshape(1)    = 1
+ vshape(2)    = nx
+ vshape(3)    = 1
+ vshape(4)    = ny
 
  CALL prism_def_partition_proto ( part_id, il_paral, ierror )
  IF (ierror /= 0) CALL prism_abort_proto(comp_id, 'model1', 'Failure in prism_def_partition_proto')
@@ -307,7 +307,7 @@ INTEGER                                    ::  status, pflncid,  &!
 
  !Allocate memory for data exchange and initilize it
  !
- ALLOCATE( bufz(vshape(1,1):vshape(2,1), vshape(1,2):vshape(2,2)), stat = ierror )
+ ALLOCATE( bufz(vshape(1):vshape(2), vshape(3):vshape(4)), stat = ierror )
  IF (ierror > 0) CALL prism_abort_proto(comp_id, 'oas_pfl_define', 'Failure in allocating bufz' )
 
  ! Allocate array to store received fields between two coupling steps
