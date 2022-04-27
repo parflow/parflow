@@ -7,7 +7,7 @@
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
 
-drich = Run("default_richards_wells", __file__)
+drich = Run("three_wells", __file__)
 
 #---------------------------------------------------------
 
@@ -234,26 +234,26 @@ drich.Cycle.constant.Repeat = -1
 drich.Wells.Names = 'pumping_well_1 pumping_well_2 pumping_well_3'
 drich.Wells.pumping_well_1.InputType = 'Vertical'
 drich.Wells.pumping_well_1.Action = 'Extraction'
-drich.Wells.pumping_well_1.Type = 'Pressure'
+drich.Wells.pumping_well_1.Type = 'Flux'
 drich.Wells.pumping_well_1.X = 0
 drich.Wells.pumping_well_1.Y = 80
 drich.Wells.pumping_well_1.ZUpper = 3.0
 drich.Wells.pumping_well_1.ZLower = 2.00
 drich.Wells.pumping_well_1.Method = 'Standard'
 drich.Wells.pumping_well_1.Cycle = 'constant'
-drich.Wells.pumping_well_1.alltime.Pressure.Value = 0.5
+drich.Wells.pumping_well_1.alltime.Flux.water.Value = 0.5
 drich.Wells.pumping_well_1.alltime.Saturation.water.Value = 1.0
 
 drich.Wells.pumping_well_2.InputType = 'Vertical'
 drich.Wells.pumping_well_2.Action = 'Extraction'
-drich.Wells.pumping_well_2.Type = 'Pressure'
+drich.Wells.pumping_well_2.Type = 'Flux'
 drich.Wells.pumping_well_2.X = 20
 drich.Wells.pumping_well_2.Y = 60
 drich.Wells.pumping_well_2.ZUpper = 5.0
 drich.Wells.pumping_well_2.ZLower = 1.00
 drich.Wells.pumping_well_2.Method = 'Standard'
 drich.Wells.pumping_well_2.Cycle = 'constant'
-drich.Wells.pumping_well_2.alltime.Pressure.Value = 0.5
+drich.Wells.pumping_well_2.alltime.Flux.water.Value = 0.5
 drich.Wells.pumping_well_2.alltime.Saturation.water.Value = 1.0
 
 drich.Wells.pumping_well_3.InputType = 'Vertical'
@@ -373,6 +373,6 @@ drich.Solver.Linear.Preconditioner = 'MGSemi'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/drich_several_wells')
+dir_name = get_absolute_path('test_output/three_wells')
 mkdir(dir_name)
 drich.run(working_directory=dir_name)

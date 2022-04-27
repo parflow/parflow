@@ -270,7 +270,7 @@ void         PhaseSource(
   /*-----------------------------------------------------------------------
    * Put in any flux wells from the well package
    *-----------------------------------------------------------------------*/
-
+  fprintf(stdout, "Number of flux wells: %d\n", WellDataNumFluxWells(well_data));
   if (WellDataNumFluxWells(well_data) > 0)
   {
     time_cycle_data = WellDataTimeCycleData(well_data);
@@ -324,6 +324,7 @@ void         PhaseSource(
         nz_ps = SubvectorNZ(ps_sub);
 
         /*  Get the intersection of the well with the subgrid  */
+        fprintf(stdout, "Intersecting subgrids...\n");
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           /*  If an intersection;  loop over it, and insert value  */
