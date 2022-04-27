@@ -64,7 +64,6 @@ contains
     integer  :: part_id       ! id returned by oasis_def_partition
     integer  :: il_paral(5)
     integer  :: var_nodims(2)
-    integer  :: vshape(1)     ! required by oasis_def_var but is actually not used
     integer  :: write_grid_files
 
     ! TODO: Write Parflow grid parameters to grid file.
@@ -95,11 +94,11 @@ contains
     var_nodims(1) = 1
     var_nodims(2) = nlevsoil 
 
-    call oasis_def_var (sat_id, "PFL_SAT", part_id, var_nodims, OASIS_Out, vshape, OASIS_Real, ierror)
+    call oasis_def_var (sat_id, "PFL_SAT", part_id, var_nodims, OASIS_Out, OASIS_Real, ierror)
     if (ierror /= 0) call oasis_abort(comp_id, 'oas_pfl_define', 'oasis_def_var failed for PFL_SAT')
-    call oasis_def_var (psi_id, "PFL_PSI", part_id, var_nodims, OASIS_Out, vshape, OASIS_Real, ierror)
+    call oasis_def_var (psi_id, "PFL_PSI", part_id, var_nodims, OASIS_Out, OASIS_Real, ierror)
     if (ierror /= 0) call oasis_abort(comp_id, 'oas_pfl_define', 'oasis_def_var failed for PFL_PSI')
-    call oasis_def_var (et_id, "PFL_ET", part_id, var_nodims, OASIS_In, vshape, OASIS_Real, ierror)
+    call oasis_def_var (et_id, "PFL_ET", part_id, var_nodims, OASIS_In, OASIS_Real, ierror)
     if (ierror /= 0) call oasis_abort(comp_id, 'oas_pfl_define', 'oasis_def_var failed for PFL_ET')
 
     call oasis_enddef ( ierror )

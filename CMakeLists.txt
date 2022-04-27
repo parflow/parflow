@@ -189,8 +189,6 @@ if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
     if (NetCDF-Fortran_FOUND)
       set (PARFLOW_HAVE_OAS3 "yes")
       set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
-      set (OAS3_API_VERSION "2.0" CACHE STRING "OASIS3-MCT API version")
-      set_property(CACHE OAS3_API_VERSION PROPERTY STRINGS "2.0" "4.0")
     else (NetCDF-Fortran_FOUND)
       message(FATAL_ERROR "ERROR: NetCDF-Fortran is required when compiling with PARFLOW_AMPS_LAYER=oas3 (check NETCDF_Fortran_ROOT variable)")
     endif (NetCDF-Fortran_FOUND)
@@ -486,6 +484,19 @@ if ( ${PARFLOW_HAVE_CLM} )
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 endif ( ${PARFLOW_HAVE_CLM} )
 
+option(PARFLOW_HAVE_ECLM "Compile with eCLM (experimental)" "OFF")
+
+if ( ${PARFLOW_HAVE_ECLM} )
+  if (HAVE_CLM)
+    message(FATAL_ERROR "ERROR: PARFLOW_HAVE_CLM and PARFLOW_HAVE_ECLM cannot be enabled at the same time.")
+  endif (HAVE_CLM)
+  if (NOT HAVE_OAS3)
+    message(FATAL_ERROR "ERROR: OASIS is required when compiling with PARFLOW_HAVE_ECLM=ON (check OAS3_ROOT variable)")
+  else (HAVE_OAS3)
+    message(WARNING "Enabling components for ParFlow-eCLM coupled model (experimental feature!)")
+    set (HAVE_ECLM ${PARFLOW_HAVE_ECLM})
+  endif (HAVE_OAS3)
+endif ( ${PARFLOW_HAVE_ECLM} )
 #
 # Parflow specific configuration options
 #
