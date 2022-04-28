@@ -46,6 +46,24 @@ Action:
     - Action
   register: Wells.Names
 
+ExtractionType:
+  type: str
+  alias:
+    - ExtractionType
+    - extractiontype
+    - Extractiontype
+    - extractionType
+  register: Wells.Names
+
+InjectionType:
+  type: str
+  alias:
+    - InjectionType
+    - injectiontype
+    - Injectiontype
+    - injectionType
+  register: Wells.Names
+
 X:
   type: float
   alias:
@@ -65,6 +83,42 @@ ZUpper:
     - Zupper
   register: Wells.Names
 
+ExtractionZUpper:
+  type: float
+  alias:
+    - ExtractionZUpper
+    - ExtractionZupper
+    - extractionZUpper
+    - extractionZupper
+  register: Wells.Names
+
+ExtractionZLower:
+  type: float
+  alias:
+    - ExtractionZLower
+    - ExtractionZlower
+    - extractionZLower
+    - extractionZlower
+  register: Wells.Names
+
+InjectionZUpper:
+  type: float
+  alias:
+    - InjectionZUpper
+    - InjectionZupper
+    - injectionZUpper
+    - injectionZupper
+  register: Wells.Names
+
+InjectionZLower:
+  type: float
+  alias:
+    - InjectionZLower
+    - InjectionZlower
+    - injectionZLower
+    - injectionZlower
+  register: Wells.Names
+
 ZLower:
   type: float
   alias:
@@ -76,6 +130,25 @@ Method:
   type: str
   alias:
     - Method
+    - method
+  register: Wells.Names
+
+ExtractionMethod:
+  type: str
+  alias:
+    - ExtractionMethod
+    - Extractionmethod
+    - extractionMethod
+    - extractionmethod
+  register: Wells.Names
+
+InjectionMethod:
+  type: str
+  alias:
+    - InjectionMethod
+    - Injectionmethod
+    - injectionMethod
+    - injectionmethod
   register: Wells.Names
 
 Cycle:
@@ -88,6 +161,34 @@ alltime.Pressure.Value:
   type: float
   alias:
     - alltime.Pressure.Value
+    - alltime.Pressure.value
+    - alltime.pressure.Value
+    - alltime.pressure.value
+    - Alltime.Pressure.Value
+    - Alltime.Pressure.value
+    - Alltime.pressure.Value
+    - Alltime.pressure.value
+  register: Wells.Names
+
+alltime.Flux.water.Value:
+  type: float
+  alias:
+    - alltime.flux.water.value
+    - alltime.flux.water.Value
+    - alltime.flux.Water.value
+    - alltime.flux.Water.Value
+    - alltime.Flux.water.value
+    - alltime.Flux.water.Value
+    - alltime.Flux.Water.value
+    - alltime.Flux.Water.Value
+    - Alltime.flux.water.value
+    - Alltime.flux.water.Value
+    - Alltime.flux.Water.value
+    - Alltime.flux.Water.Value
+    - Alltime.Flux.water.value
+    - Alltime.Flux.water.Value
+    - Alltime.Flux.Water.value
+    - Alltime.Flux.Water.Value
   register: Wells.Names
 
 alltime.Saturation.water.Value:
