@@ -258,14 +258,14 @@ drich.Wells.pumping_well_2.alltime.Saturation.water.Value = 1.0
 
 drich.Wells.pumping_well_3.InputType = 'Vertical'
 drich.Wells.pumping_well_3.Action = 'Extraction'
-drich.Wells.pumping_well_3.Type = 'Pressure'
+drich.Wells.pumping_well_3.Type = 'Flux'
 drich.Wells.pumping_well_3.X = 40
-drich.Wells.pumping_well_3.Y = 50
-drich.Wells.pumping_well_3.ZUpper = 7.0
-drich.Wells.pumping_well_3.ZLower = 2.00
+drich.Wells.pumping_well_3.Y = 40
+drich.Wells.pumping_well_3.ZUpper = 5.0
+drich.Wells.pumping_well_3.ZLower = 1.00
 drich.Wells.pumping_well_3.Method = 'Standard'
 drich.Wells.pumping_well_3.Cycle = 'constant'
-drich.Wells.pumping_well_3.alltime.Pressure.Value = 0.5
+drich.Wells.pumping_well_3.alltime.Flux.water.Value = 0.5
 drich.Wells.pumping_well_3.alltime.Saturation.water.Value = 1.0
 
 #-----------------------------------------------------------------------------
