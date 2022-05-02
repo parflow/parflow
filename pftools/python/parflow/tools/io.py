@@ -568,8 +568,15 @@ class ParflowBinaryReader:
                 if end in c: break
             return np.arange(s, e+1)
 
+        if not start_x:
+            start_x = 0
+        if not start_y:
+            start_y = 0
+        if not start_z:
+            start_z = 0
         if not nz:
             nz = self.header['nz']
+
         end_x = start_x + nx
         end_y = start_y + ny
         end_z = start_z + nz

@@ -26,14 +26,14 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
     """
 
     open_dataset_parameters = [
-            "filename_or_obj",
-            "drop_variables",
-            "name",
-            "meta_yaml",
-            "read_inputs",
-            "read_outputs",
-            "inferred_dims",
-            "inferred_shape"
+        "filename_or_obj",
+        "drop_variables",
+        "name",
+        "meta_yaml",
+        "read_inputs",
+        "read_outputs",
+        "inferred_dims",
+        "inferred_shape"
     ]
 
     def open_dataset(
@@ -347,7 +347,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 z_first=z_first,
                 z_is=z_is
         ))
-        var = xr.Variable(dims, data, ).squeeze()
+        var = xr.Variable(dims, data, )
         return var
 
     def load_sequence_of_pfb(
@@ -461,12 +461,12 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
 
         with ParflowBinaryReader(file_or_seq) as pfd:
             sub = pfd.read_subarray(
-                start_x=int(accessor['x']['start']),
-                start_y=int(accessor['y']['start']),
-                start_z=int(accessor['z']['start']),
-                nx=int(accessor['x']['stop']),
-                ny=int(accessor['y']['stop']),
-                nz=int(accessor['z']['stop']),
+                start_x=accessor['x']['start'],
+                start_y=accessor['y']['start'],
+                start_z=accessor['z']['start'],
+                nx=accessor['x']['stop'],
+                ny=accessor['y']['stop'],
+                nz=accessor['z']['stop'],
                 z_first=z_first
             )
         sub = sub[accessor[d[0]]['indices'],

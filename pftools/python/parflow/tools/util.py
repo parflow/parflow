@@ -50,9 +50,9 @@ def _key_to_explicit_accessor(key: Union[slice, int, Iterable]) -> dict:
         }
     elif isinstance(key, Iterable):
         return {
-            'start': np.min(key),
-            'stop': np.max(key)+1,
-            'indices': key - np.min(key),
+            'start': int(np.min(key)),
+            'stop': int(np.max(key)+1),
+            'indices': int(key - np.min(key)),
             'squeeze': False
         }
 
