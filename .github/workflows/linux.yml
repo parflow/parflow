@@ -143,7 +143,7 @@ jobs:
         echo "wget done"
         sudo dpkg -i cuda-repo-${{ matrix.config.cudaos }}_${CUDA_VER}_amd64.deb
         echo "dpkg done"
-        sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/7fa2af80.pub
+        sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/3bf863cc.pub
         echo "apt-key done"      
         sudo apt update -qq
         echo "update done"              
