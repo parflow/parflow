@@ -11,7 +11,6 @@ from pprint import pprint
 from . import util
 from .io import ParflowBinaryReader, read_pfb_sequence, read_pfb
 from collections.abc import Iterable
-from dask import delayed
 from typing import Mapping, List, Union
 from xarray.backends  import BackendEntrypoint, BackendArray
 from xarray.core import indexing
@@ -27,14 +26,14 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
     """
 
     open_dataset_parameters = [
-            "filename_or_obj",
-            "drop_variables",
-            "name",
-            "meta_yaml",
-            "read_inputs",
-            "read_outputs",
-            "inferred_dims",
-            "inferred_shape"
+        "filename_or_obj",
+        "drop_variables",
+        "name",
+        "meta_yaml",
+        "read_inputs",
+        "read_outputs",
+        "inferred_dims",
+        "inferred_shape"
     ]
 
     def open_dataset(
@@ -348,7 +347,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 z_first=z_first,
                 z_is=z_is
         ))
-        var = xr.Variable(dims, data, ).squeeze()
+        var = xr.Variable(dims, data, )
         return var
 
     def load_sequence_of_pfb(
@@ -432,11 +431,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         return False
 
 
-@delayed
 def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
     """
-    Base functionality for actually getting data out of PFB files. This
-    function has been wrapped by @delayed, making it execute lazily.
+    Base functionality for actually getting data out of PFB files.
 
     :param file_or_seq:
         File or files that should be read from.
@@ -464,12 +461,12 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
 
         with ParflowBinaryReader(file_or_seq) as pfd:
             sub = pfd.read_subarray(
-                start_x=int(accessor['x']['start']),
-                start_y=int(accessor['y']['start']),
-                start_z=int(accessor['z']['start']),
-                nx=int(accessor['x']['stop']),
-                ny=int(accessor['y']['stop']),
-                nz=int(accessor['z']['stop']),
+                start_x=accessor['x']['start'],
+                start_y=accessor['y']['start'],
+                start_z=accessor['z']['start'],
+                nx=accessor['x']['stop'],
+                ny=accessor['y']['stop'],
+                nz=accessor['z']['stop'],
                 z_first=z_first
             )
         sub = sub[accessor[d[0]]['indices'],
@@ -613,10 +610,9 @@ class ParflowBackendArray(BackendArray):
     def _getitem(self, key: tuple) -> np.ndarray:
         """Mapping between keys to the actual data"""
         size = self._size_from_key(key)
-        sub = delayed(_getitem_no_state)(
+        sub = _getitem_no_state(
                 self.file_or_seq, key, self.dims, self.mode,
                 self.z_first, self.z_is)
-        sub = dask.array.from_delayed(sub, size, dtype=np.float64)
         return sub
 
     def _size_from_key(self, key):
