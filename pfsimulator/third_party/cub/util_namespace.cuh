@@ -44,3 +44,7 @@
 #ifndef CUB_NS_POSTFIX
 #define CUB_NS_POSTFIX
 #endif
+
+#ifndef CUB_NS_QUALIFIER
+#define CUB_NS_QUALIFIER ::cub
+#endif
