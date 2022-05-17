@@ -2,6 +2,7 @@ import contextlib
 import dask
 import json
 import numpy as np
+import pandas as pd
 import os
 import warnings
 import xarray as xr
@@ -143,6 +144,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         ds = xr.Dataset()
         ds.attrs['pf_metadata_file'] = filename_or_obj
         ds.attrs['parflow_version'] = pf_meta['parflow']['build']['version']
+        if 'coordinates' in self.pf_meta:
+            coords = self.load_coords_from_meta(self.pf_meta['coordinates'])
+            ds = ds.assign_coords(coords)
         if read_outputs:
             for var, var_meta in self.pf_meta['outputs'].items():
                 if read_outputs is True or var in read_outputs:
@@ -158,6 +162,28 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                     for k, v in das.items():
                         ds[k] = v
         return ds
+
+    def load_coords_from_meta(self, coord_meta) -> Mapping[str, xr.DataArray]:
+        """
+        Builds coordinate variables from the 'coordinates' section of
+        a pfmetadata file.
+        """
+        coords = {}
+        for var, var_meta in coord_meta.items():
+            meta_type = var_meta['type']
+            if meta_type == 'time':
+                coords[var] = pd.DatetimeIndex(pd.date_range(
+                    start=var_meta['start'],
+                    end=var_meta['stop'],
+                    freq=var_meta['freq'],
+                    closed='right'
+                ))
+            elif meta_type == 'pfb':
+                coords[var] = self.load_pfb_from_meta(var_meta, name=var)[var]
+            else:
+                #TODO: add a warning here
+                pass
+        return coords
 
     def load_pfb_from_meta(self, var_meta, name='_') -> Mapping[str, xr.Dataset]:
         """
