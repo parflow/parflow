@@ -281,12 +281,12 @@ def read_pfb_sequence(
     if not keys:
         nx, ny, nz = base_header['nx'], base_header['ny'], base_header['nz']
     else:
-        start_x = keys['x']['start'] or 0
-        start_y = keys['y']['start'] or 0
-        start_z = keys[z_is]['start'] or 0
-        stop_x = keys['x']['stop'] or base_header['nx']
-        stop_y = keys['y']['stop'] or base_header['ny']
-        stop_z = keys[z_is]['stop'] or base_header['nz']
+        start_x = keys.get('x', {}).get('start', None) or 0
+        start_y = keys.get('y', {}).get('start', None) or 0
+        start_z = keys.get(z_is, {}).get('start', None) or 0
+        stop_x =  keys.get('x', {}).get('stop', None) or base_header['nx']
+        stop_y =  keys.get('y', {}).get('stop', None) or base_header['ny']
+        stop_z =  keys.get(z_is, {}).get('stop', None) or base_header['nz']
         nx = np.max([stop_x - start_x, 1])
         ny = np.max([stop_y - start_y, 1])
         nz = np.max([stop_z - start_z, 1])
