@@ -14,6 +14,7 @@ from collections.abc import Iterable
 from typing import Mapping, List, Union
 from xarray.backends  import BackendEntrypoint, BackendArray
 from xarray.core import indexing
+from dask import delayed
 
 
 class ParflowBackendEntrypoint(BackendEntrypoint):
@@ -334,11 +335,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         """
         Load a `pfb` file directly as an xr.Variable
         """
-        if not dims:
-            if z_first:
-                dims = ('z', 'y', 'x')
-            else:
-                dims = ('x', 'y', 'z')
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(
                 filename_or_obj,
@@ -347,7 +343,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 z_first=z_first,
                 z_is=z_is
         ))
-        var = xr.Variable(dims, data, )
+        if not dims:
+            dims = data.array.dims
+        var = xr.Variable(dims, data, ).squeeze()
         return var
 
     def load_sequence_of_pfb(
@@ -358,11 +356,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         z_first=True,
         z_is='z',
     ) -> xr.Variable:
-        if not dims:
-            if z_first:
-                dims = ('time', 'z', 'y', 'x')
-            else:
-                dims = ('time', 'x', 'y', 'z')
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(
                 filenames,
@@ -371,7 +364,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 z_first=z_first,
                 z_is=z_is,
         ))
-        var = xr.Variable(dims, data)
+        if not dims:
+            dims = data.array.dims
+        var = xr.Variable(dims, data).squeeze()
         return var
 
 
@@ -424,7 +419,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
 
     def guess_can_open(self, filename_or_obj):
         """Registers the backend to recognize *.pfb and *.pfmetadata files"""
-        openable_extensions = ['pfb', 'pfmetadata']#, 'pbidb']
+        openable_extensions = ['pfb', 'pfmetadata']
         for ext in openable_extensions:
             if filename_or_obj.endswith(ext):
                 return True
@@ -454,24 +449,11 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
     if mode == 'single':
         accessor = {d: util._key_to_explicit_accessor(k)
                     for d, k in zip(dims, key)}
-        if z_first:
-            d = ['z', 'y', 'x']
-        else:
-            d = ['x', 'y', 'z']
-
-        with ParflowBinaryReader(file_or_seq) as pfd:
-            sub = pfd.read_subarray(
-                start_x=accessor['x']['start'],
-                start_y=accessor['y']['start'],
-                start_z=accessor['z']['start'],
-                nx=accessor['x']['stop'],
-                ny=accessor['y']['stop'],
-                nz=accessor['z']['stop'],
-                z_first=z_first
-            )
-        sub = sub[accessor[d[0]]['indices'],
-                  accessor[d[1]]['indices'],
-                  accessor[d[2]]['indices']].squeeze()
+        sub = read_pfb(
+            file_or_seq,
+            keys=accessor,
+            z_first=z_first,
+        ).squeeze()
     elif mode == 'sequence':
         accessor = {d: util._key_to_explicit_accessor(k)
                     for d, k in zip(dims, key)}
@@ -503,16 +485,16 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
             keys=accessor,
             z_first=z_first,
             z_is=z_is,
-        )
-        # Select out specific indices from from the array
-        sub = sub[tuple([accessor[d]['indices'] for d in dims])]
-        # Check which axes need to be squeezed out. This is
-        # to distinguish between doing `ds.isel(x=[0])` which
-        # should keep the x axis (and dimension) and `ds.isel(x=0)`
-        # which should remove the x axis (and dimension).
-        axes_to_squeeze = tuple(i for i, d in enumerate(dims)
-                                if accessor[d]['squeeze'])
-        sub = np.squeeze(sub, axis=axes_to_squeeze)
+        ).squeeze()
+    # Select out specific indices from from the array
+    sub = sub[tuple([accessor[d]['indices'] for d in dims])]
+    # Check which axes need to be squeezed out. This is
+    # to distinguish between doing `ds.isel(x=[0])` which
+    # should keep the x axis (and dimension) and `ds.isel(x=0)`
+    # which should remove the x axis (and dimension).
+    axes_to_squeeze = tuple(i for i, d in enumerate(dims)
+                            if accessor[d]['squeeze'])
+    sub = np.squeeze(sub, axis=axes_to_squeeze)
     return sub
 
 
@@ -573,46 +555,53 @@ class ParflowBackendArray(BackendArray):
             self._getitem,
         )
 
+    def _set_dims_and_shape(self):
+        with ParflowBinaryReader(
+            self.header_file,
+            precompute_subgrid_info=False
+        ) as pfd:
+            if self.z_first:
+                _shape = (pfd.header['nz'], pfd.header['ny'], pfd.header['nx'])
+            else:
+                _shape = (pfd.header['nx'], pfd.header['ny'], pfd.header['nz'])
+        if self.mode == 'sequence':
+            _shape = (len(self.file_or_seq), *_shape)
+        # Construct dimension template
+        if self.mode == 'single':
+            if self.z_first:
+                _dims = ('z', 'y', 'x')
+            else:
+                _dims = ('x', 'y', 'z')
+        elif self.mode == 'sequence':
+            if self.z_first:
+                _dims = ('time', 'z', 'y', 'x')
+            else:
+                _dims = ('time', 'x', 'y', 'x')
+        # Add some logic for automatically squeezing here?
+        self._shape = tuple(s for s in _shape if s >1)
+        self._dims = tuple(d for s, d in zip(_shape, _dims) if s >1)
+
     @property
     def dims(self):
         """Names of the dimensions of each axis of the array"""
         if self._dims is None:
-            if self.mode == 'single':
-                if self.z_first:
-                    self._dims = ('z', 'y', 'x')
-                else:
-                    self._dims = ('x', 'y', 'z')
-            elif self.mode == 'sequence':
-                if self.z_first:
-                    self._dims = ('time', 'z', 'y', 'x')
-                else:
-                    self._dims = ('time', 'x', 'y', 'x')
+            self._set_dims_and_shape()
         return self._dims
 
     @property
     def shape(self):
         """Shape of the data once loaded into memory"""
         if self._shape is None:
-            with ParflowBinaryReader(
-                self.header_file,
-                precompute_subgrid_info=False
-            ) as pfd:
-                if self.z_first:
-                    base_shape = (pfd.header['nz'], pfd.header['ny'], pfd.header['nx'])
-                else:
-                    base_shape = (pfd.header['nx'], pfd.header['ny'], pfd.header['nz'])
-            if self.mode == 'sequence':
-                base_shape = (len(self.file_or_seq), *base_shape)
-            # Add some logic for automatically squeezing here?
-            self._shape = base_shape
+            self._set_dims_and_shape()
         return self._shape
 
     def _getitem(self, key: tuple) -> np.ndarray:
         """Mapping between keys to the actual data"""
         size = self._size_from_key(key)
-        sub = _getitem_no_state(
+        sub = delayed(_getitem_no_state)(
                 self.file_or_seq, key, self.dims, self.mode,
                 self.z_first, self.z_is)
+        sub = dask.array.from_delayed(sub, size, dtype=np.float64)
         return sub
 
     def _size_from_key(self, key):
