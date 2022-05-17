@@ -35,6 +35,7 @@ Report, 2019
    models
    files
    PfkeysExample/index
+   bib
 
 .. [1]
    *Department of Geology and Geological Engineering and Integrated
