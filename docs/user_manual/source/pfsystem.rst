@@ -28,7 +28,7 @@ the general approach for defining a domain
 In all cases the “main" ParFlow input file is the ``.tcl`` file. 
 This input file is a TCL script with some special routines to create 
 a database which is used as the input for ParFlow. 
-See :ref:`Main Input File (.tcl)` for details on the format of 
+See :ref:`Main Input Files (.tcl, .py, .ipynb)` for details on the format of 
 this file. The input values into ParFlow 
 are defined by a key/value pair. For each key you provide the 
 associated value using the ``pfset`` command inside the input script.
