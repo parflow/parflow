@@ -129,10 +129,10 @@ with this format:
 Comment lines may also appear in our file format pseudocode. All text
 following a ``#`` character is a comment, and is not part of the file format.
 
-.. _Main Input File (.tcl):
+.. _Main Input Files (.tcl, .py, .ipynb):
 
-Main Input File (.tcl)
-----------------------
+Main Input Files (.tcl, .py, .ipynb)
+------------------------------------
 
 The main ParFlow input file is a TCL script. This might seem overly
 combersome at first but the basic input file structure is not very
