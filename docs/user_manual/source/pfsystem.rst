@@ -236,7 +236,7 @@ The general approach is as follows:
    Greenwich Mean Time (GMT), not local time. The year, date and hour
    (in GMT) that the forcing begins should match the values 
    in ``drv_clmin.dat``. ``CLM`` requires the following variables
-   (also described in :ref:`Main Input File (.tcl)`):
+   (also described in :ref:`Main Input Files (.tcl, .py, .ipynb)`):
 
    -  DSWR: Visible or short-wave radiation :math:`[W/m^2]`.
 
@@ -381,7 +381,7 @@ follow this procedure :
       the keys detailed in 6.1.27 :ref:`Initial Conditions: Pressure`
       and possibly the ``pfdist`` utility in the input script.
 
-#. Change the Main Input File 6.1 :ref:`Main Input File (.tcl)`:
+#. Change the Main Input File 6.1 :ref:`Main Input Files (.tcl, .py, .ipynb)`:
 
    -  Edit the .tcl file (you may want to save the old one) and utilize
       the pressure initial condition input file option (as referenced
