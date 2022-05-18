@@ -128,7 +128,7 @@ Terrain Following Grid
 ----------------------
 
 The terrain following grid formulation transforms the ParFlow grid to
-conform to topography [M13]. This alters the form of
+conform to topography :cite:p:`M13`. This alters the form of
 Darcy’s law to include a topographic slope component:
 
 .. math::
@@ -147,7 +147,7 @@ topography. As cells are distributed near the ground surface and can be
 combined with the variable :math:`\delta Z` capability, the number of
 cells in the problem can be reduced dramatically over the orthogonal
 formulation. For complete details on this formulation, the stencil used
-and the function evaluation developed, please see [M13]. NOTE: in the original formulation,
+and the function evaluation developed, please see :cite:t:`M13`. NOTE: in the original formulation,
 :math:`\theta_x` and :math:`\theta_y` for a cell face is calculated as
 the average of the two adjacent cell slopes (i.e. assuming a cell
 centered slope calculation). The
@@ -187,7 +187,7 @@ models.
 Overland Flow
 -------------
 
-As detailed in [KM06], ParFlow may simulate
+As detailed in :cite:t:`KM06`, ParFlow may simulate
 fully-coupled surface and subsurface flow via an overland flow boundary
 condition. While complete details of this approach are given in that
 paper, a brief summary of the equations solved are presented here.
@@ -240,7 +240,7 @@ and
    \end{aligned}
 
 where :math:`n` :math:`[TL^{-1/3}]` is the Manning’s coefficient. Though
-complete details of the coupled approach are given in [KM06], brief 
+complete details of the coupled approach are given in :cite:t:`KM06`, brief 
 details of the approach are presented
 here. The coupled approach takes Equation
 eq:`kinematic` and adds a flux for subsurface
@@ -282,7 +282,7 @@ of the two quantities, :math:`\psi` and :math:`0`. We may now solve this
 term for the flux :math:`q_e(x)` which we may set equal to flux boundary
 condition shown in Equation eq:`bcn`. This yields the
 following equation, which is referred to as the overland flow boundary
-condition [KM06]:
+condition :cite:p:`KM06`:
 
 .. math::
    :label: overland_bc
@@ -706,7 +706,7 @@ Water Balance
 
 ParFlow can calculate a water balance for the Richards’ equation,
 overland flow and ``clm`` capabilities. For a schematic of the water 
-balance in ParFlow please see . This water balance is computes 
+balance in ParFlow please see :cite:t:`M10`. This water balance is computes 
 using ``pftools`` commands as described in :ref:`Manipulating Data`. 
 There are two water balance storage components, subsurface and surface, 
 and two flux calculations, overland flow and evapotranspiration. 

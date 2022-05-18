@@ -36,7 +36,7 @@ associated value using the ``pfset`` command inside the input script.
 Since the input file is a TCL script you can use any feature of TCL to
 define the problem. This manual will make no effort to teach TCL so
 refer to one of the available TCL manuals for more information
-(“Practical Programming in TCL and TK” by Brent Welch[]
+(“Practical Programming in TCL and TK” by Brent Welch :cite:p:`welch.95`
 is a good starting point). This is NOT
 required, you can get along fine without understanding TCL/TK.
 
@@ -446,9 +446,9 @@ This section gives a brief description of the problems in this directory.
 
    ``forsyth2.tcl`` An example two-dimensional, variably-saturated 
    infiltration problem with layers of different hydraulic properties. 
-   It runs problem 2 in [] and uses the solid file ``fors2_hf.pfsol``.
+   It runs problem 2 in :cite:t:`FWP95` and uses the solid file ``fors2_hf.pfsol``.
 
-   ``harvey.flow.tcl`` An example from  for the Cape Cod bacterial 
+   ``harvey.flow.tcl`` An example from :cite:t:`MWH07` for the Cape Cod bacterial 
    injection site. This example is a three-dimensional, fully-saturated 
    flow problem with spatially heterogeneous media (using a correlated, 
    random field approach). It also provides examples of how tcl/tk 
@@ -458,7 +458,7 @@ This section gives a brief description of the problems in this directory.
 
    ``default_overland.tcl`` An overland flow boundary condition 
    test and example script based loosely on the V-catchment 
-   problem in []. There are options provided to expand this problem 
+   problem in :cite:t:`KM06`. There are options provided to expand this problem 
    into other overland flow-type, transient boundary-type problems 
    included in the file as well.
 
@@ -556,15 +556,15 @@ Harvey Flow Example
 ~~~~~~~~~~~~~~~~~~~
 
 This tutorial matches the ``harvey_flow.tcl`` file found in 
-the ``/test`` directory. This example is directly from []. 
+the ``/test`` directory. This example is directly from :cite:t:`MWH07`. 
 This example demonstrates how to set up and run a fully saturated 
 flow problem with heterogeneous hydraulic conductivity using the 
-turning bands approach []. Given statistical parameters describing 
+turning bands approach :cite:p:`TAG89`. Given statistical parameters describing 
 the geology of your site, this script can be easily modified to 
 make as many realizations of the subsurface as you like, each 
 different and yet having the same statistical parameters, useful 
 for a Monte Carlo simulation. This example is the basis for several 
-fully-saturated ParFlow applications .
+fully-saturated ParFlow applications :cite:p:`Siirila12a,Siirila12b,SNSMM10,Atchley13a,Atchley13b,Cui14`.
 
 When the script runs, it creates a new directory named ``/flow`` right 
 in the directory where the tcl script is stored. ParFlow then puts all 
@@ -1341,7 +1341,7 @@ Little Washita Example
 ~~~~~~~~~~~~~~~~~~~~~~
 
 This tutorial matches the ``LW_Test.tcl`` file found in 
-the ``/test/washita/tcl_scripts`` directory and corresponds to []. 
+the ``/test/washita/tcl_scripts`` directory and corresponds to :cite:t:`Condon14a,Condon14b`. 
 This script runs the Little Washita domain for three days using 
 ParFlow ``CLM`` with 3D forcings. The domain is setup using terrain 
 following grid (:ref:`TFG`) and subsurface geologes are 

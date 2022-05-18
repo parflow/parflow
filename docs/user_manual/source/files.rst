@@ -215,7 +215,7 @@ domain in parallel. “P” allocates the number of processes to the
 grid-cells in x. “Q” allocates the number of processes to the grid-cells
 in y. “R” allocates the number of processes to the grid-cells in z.
 Please note “R” should always be 1 if you are running with Solver
-Richards [Jones-Woodward01] unless you’re running a
+Richards :cite:p:`Jones-Woodward01` unless you’re running a
 totally saturated domain (solver IMPES).
 
 *integer* **Process.Topology.P** no default This assigns the process
@@ -1105,7 +1105,7 @@ geometry, *geometry_name*. It must be either **Constant**,
 indicates that a constant is to be assigned to all grid cells within a
 geometry. The **TurnBand** value indicates that Tompson’s Turning Bands
 method is to be used to assign permeability data to all grid cells
-within a geometry [TAG89]. The **ParGauss** value
+within a geometry :cite:p:`TAG89`. The **ParGauss** value
 indicates that a Parallel Gaussian Simulator method is to be used to
 assign permeability data to all grid cells within a geometry. The
 **PFBFile** value indicates that premeabilities are to be read from the
@@ -1960,7 +1960,7 @@ The various possible functions are defined as follows. The **Constant**
 specification means that the relative permeability will be constant on
 the specified geounit. The **VanGenuchten** specification means that the
 relative permeability will be given as a Van Genuchten function
-[VanGenuchten80] with the form,
+:cite:p:`VanGenuchten80` with the form,
 
 .. math::
 
@@ -1971,7 +1971,7 @@ relative permeability will be given as a Van Genuchten function
 where :math:`\alpha` and :math:`n` are soil parameters and
 :math:`m = 1 - 1/n`, on each region. The **Haverkamp** specification
 means that the relative permeability will be given in the following form
-[Haverkamp-Vauclin81],
+:cite:p:`Haverkamp-Vauclin81`,
 
 .. math::
 
@@ -2314,7 +2314,7 @@ The various possible functions are defined as follows. The **Constant**
 specification means that the saturation will be constant on the
 specified geounit. The **VanGenuchten** specification means that the
 saturation will be given as a Van Genuchten function
-[VanGenuchten80] with the form,
+:cite:p:`VanGenuchten80` with the form,
 
 .. math::
 
@@ -2325,7 +2325,7 @@ where :math:`s_{sat}` is the saturation at saturated conditions,
 :math:`s_{res}` is the residual saturation, and :math:`\alpha` and
 :math:`n` are soil parameters with :math:`m = 1 - 1/n`, on each region.
 The **Haverkamp** specification means that the saturation will be given
-in the following form [Haverkamp-Vauclin81],
+in the following form :cite:p:`Haverkamp-Vauclin81`,
 
 .. math::
 
@@ -2637,7 +2637,7 @@ boundary condition that is read form a properly distributed .pfb file
 defined on a grid consistent with the pressure field grid. Only the
 values needed for the patch are used. The choices **OverlandFlow** and
 **OverlandFlowPFB** both turn on fully-coupled overland flow routing as
-described in [KM06] and in §5.5 :ref:`Overland Flow`.
+described in :cite:t:`KM06` and in §5.5 :ref:`Overland Flow`.
 The key **OverlandFlow** corresponds to a **Value** key with a positive
 or negative value, to indicate uniform fluxes (such as rainfall or
 evapotranspiration) over the entire domain while the key
@@ -3662,7 +3662,7 @@ and general control flags for ParFlow. These are described next :
 for solver **IMPES**. Choices for this key are **MGSemi, PPCG, PCG** and
 **CGHS**. The choice **MGSemi** is an algebraic mulitgrid linear solver
 (not a preconditioned conjugate gradient) which may be less robust than
-**PCG** as described in [Ashby-Falgout90]. The choice
+**PCG** as described in cite:t:`Ashby-Falgout90`. The choice
 **PPCG** is a preconditioned conjugate gradient solver. The choice
 **PCG** is a conjugate gradient solver with a multigrid preconditioner.
 The choice **CGHS** is a conjugate gradient solver.
@@ -4017,8 +4017,8 @@ Richards’ Equation Solver Parameters
 
 The following keys are used to specify various parameters used by the
 linear and nonlinear solvers in the Richards’ equation implementation.
-For information about these solvers, see [Woodward98]
-and [Ashby-Falgout90].
+For information about these solvers, see :cite:t:`Woodward98`
+and cite:t:`Ashby-Falgout90`.
 
 *double* **Solver.Nonlinear.ResidualTol** 1e-7 This key specifies the
 tolerance that measures how much the relative reduction in the nonlinear
@@ -4120,7 +4120,7 @@ Linear residuall norms are measured in the :math:`l^2` norm. Choices for
 this key include **EtaConstant, Walker1** and **Walker2**. If the choice
 **EtaConstant** is specified, then :math:`\eta` will be taken as
 constant. The choices **Walker1** and **Walker2** specify choices for
-:math:`\eta` developed by Eisenstat and Walker [EW96].
+:math:`\eta` developed by Eisenstat and Walker :cite:p:`EW96`.
 The choice **Walker1** specifies that :math:`\eta` will be given by
 :math:`| \|F(u^k)\| - \|F(u^{k-1}) + J(u^{k-1})*p \|  |  / \|F(u^{k-1})\|`.
 The choice **Walker2** specifies that :math:`\eta` will be given by
@@ -5490,7 +5490,7 @@ ParFlow Binary Files (.pfb)
 ---------------------------
 
 The ``.pfb`` file format is a binary file format which is used to store ParFlow 
-grid data. It is written as BIG ENDIAN binary bit ordering. The format 
+grid data. It is written as BIG ENDIAN binary bit ordering :cite:p:`endian`. The format 
 for the file is:
 
 .. container:: list
@@ -5526,7 +5526,7 @@ ParFlow CLM Single Output Binary Files (.c.pfb)
 
 The ``.pfb`` file format is a binary file format which is used to 
 store ``CLM`` output data in a single file. It is written as 
-BIG ENDIAN binary bit ordering. The format for the file is:
+BIG ENDIAN binary bit ordering :cite:p:`endian`. The format for the file is:
 
 .. container:: list
 
@@ -5876,7 +5876,7 @@ ParFlow Simple ASCII and Simple Binary Files (.sa and .sb)
 The simple binary, ``.sa``, file format is an ASCII file format 
 which is used by ``pftools`` to write out ParFlow grid data. 
 The simple binary, ``.sb``, file format is exactly the same, 
-just written as BIG ENDIAN binary bit ordering. The format 
+just written as BIG ENDIAN binary bit ordering :cite:p:`endian`. The format 
 for the file is:
 
 .. container:: list

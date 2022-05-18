@@ -83,5 +83,3 @@ really intended to be used as reference material. This manual provides
 some overview of ParFlow some information on building the code, examples
 of scripts that solve certain classes of problems and a compendium of
 keys that are set for code options.
-
-.. bibliography::

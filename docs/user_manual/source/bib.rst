@@ -3,6 +3,8 @@
 Bibliography
 ===============
 
-.. bibliography:: refs.bib
-    :list: enumerated
-    :all:
+.. only:: html or text
+
+   .. rubric:: References
+
+.. bibliography::
