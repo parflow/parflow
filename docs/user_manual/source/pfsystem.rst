@@ -399,9 +399,9 @@ follow this procedure :
          start_time.
 
       -  To restart with ``CLM``, use the ``Solver.CLM.IstepStart`` 
-      key described in :ref:`CLM Solver Parameters` with a 
-      value equal to the dump sequence plus one. Make sure this 
-      corresponds to changes to ``drv_clmin.dat``.
+         key described in :ref:`CLM Solver Parameters` with a 
+         value equal to the dump sequence plus one. Make sure this 
+         corresponds to changes to ``drv_clmin.dat``.
 
    
 
