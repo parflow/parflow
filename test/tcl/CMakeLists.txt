@@ -2,6 +2,7 @@
 include(ParflowTest)
 
 set(TESTS
+  Dirichlet.tcl
   default_single.tcl
   default_richards_wells.tcl
   forsyth2.tcl
