@@ -3,5 +3,3 @@ xarray
 numba
 numpy
 dask
-pandas
-scipy
