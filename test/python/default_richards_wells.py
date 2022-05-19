@@ -369,7 +369,3 @@ assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + perm_z_pfb, correct_ou
 for i in range(0,5):
     press_pfb = f"/{run_name}.out.press.0000{i}.pfb"
     assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + press_pfb, correct_output_dir_name + press_pfb)
-
-# press_pfb1 = f"/{run_name}.out.press.00001.pfb"
-# press_pfb2 = f"/{run_name}.out.press.00002.pfb"
-# assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + press_pfb1, correct_output_dir_name + press_pfb2)
