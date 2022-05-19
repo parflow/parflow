@@ -140,8 +140,8 @@ jobs:
         CUDA_SHORT=10.1
         CUDA_VER=10.1.105-1
         wget -nv http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/cuda-repo-${{ matrix.config.cudaos }}_${CUDA_VER}_amd64.deb
-        sudo dpkg -i cuda-repo-${{ matrix.config.cudaos }}_${CUDA_VER}_amd64.deb;
-        sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/7fa2af80.pub
+        sudo dpkg -i cuda-repo-${{ matrix.config.cudaos }}_${CUDA_VER}_amd64.deb
+        sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/3bf863cc.pub
         sudo apt update -qq
         sudo apt install -qq -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-}
         export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}

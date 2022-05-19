@@ -55,12 +55,22 @@ except ImportError:
     from yaml import Dumper as YAMLDumper
 
 
-def read_pfb(file: str, mode: str='full', z_first: bool=True):
+def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True):
     """
     Read a single pfb file, and return the data therein
 
     :param file:
         The file to read.
+    :param keys:
+        A set of keys for indexing subarrays of the full pfb. Optional.
+        This is mainly a trick for interfacing with xarray, but the format
+        of the keys is:
+
+            ::
+            {'x': {'start': start_x, 'stop': end_x},
+             'y': {'start': start_y, 'stop': end_y},
+             'z': {'start': start_z, 'stop': end_z}}
+
     :param mode:
         The mode for the reader. See ``ParflowBinaryReader::read_all_subgrids``
         for more information about what modes are available.
@@ -68,7 +78,21 @@ def read_pfb(file: str, mode: str='full', z_first: bool=True):
         An nd array containing the data from the pfb file.
     """
     with ParflowBinaryReader(file) as pfb:
-        data = pfb.read_all_subgrids(mode=mode, z_first=z_first)
+        if not keys:
+            data = pfb.read_all_subgrids(mode=mode, z_first=z_first)
+        else:
+            base_header = pfb.header
+            start_x = keys['x']['start'] or 0
+            start_y = keys['y']['start'] or 0
+            start_z = keys['z']['start'] or 0
+            stop_x = keys['x']['stop'] or base_header['nx']
+            stop_y = keys['y']['stop'] or base_header['ny']
+            stop_z = keys['z']['stop'] or base_header['nz']
+            nx = np.max([stop_x - start_x, 1])
+            ny = np.max([stop_y - start_y, 1])
+            nz = np.max([stop_z - start_z, 1])
+            data = pfb.read_subarray(
+                        start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
     return data
 
 
@@ -544,8 +568,15 @@ class ParflowBinaryReader:
                 if end in c: break
             return np.arange(s, e+1)
 
+        if not start_x:
+            start_x = 0
+        if not start_y:
+            start_y = 0
+        if not start_z:
+            start_z = 0
         if not nz:
             nz = self.header['nz']
+
         end_x = start_x + nx
         end_y = start_y + ny
         end_z = start_z + nz
@@ -1202,7 +1233,7 @@ def _read_vegm(file_name):
     x_dim = int(last_line_split[0])
     y_dim = int(last_line_split[1])
     z_dim = len(last_line_split) - 2
-    
+
     # To be consistent with ParFlow-python xy indexing, x should represent columns and y rows
     vegm_array = np.zeros((y_dim, x_dim, z_dim))
     # Assume first two lines are comments
