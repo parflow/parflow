@@ -256,7 +256,7 @@ exchanges, :math:`q_e(x)`.
 
 We then assign a continuity of pressure at the top cell of the boundary
 between the surface and subsurface systems by setting pressure-head,
-:math:`p` in :eq:richard equal to the
+:math:`p` in :eq:`richard` equal to the
 vertically-averaged surface pressure, :math:`\psi_s` as follows:
 
 .. math::
@@ -743,7 +743,7 @@ All other fluxes must be determined by the user.
 
 The subsurface storage is calculated over all active cells 
 in the domain, :math:`\Omega`, and contains both compressible 
-and incompressible parts based on Equation [eq:richard]. 
+and incompressible parts based on Equation :eq:`richard`. 
 This is computed on a cell-by-cell basis (with the result 
 being an array of balances over the domain) as follows: 
 
