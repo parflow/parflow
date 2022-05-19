@@ -1661,8 +1661,7 @@ Manning’s Roughness Values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here, Manning’s roughness values (:math:`n` in Equations
-`[eq:manningsx] <#eq:manningsx>`__ and
-`[eq:manningsy] <#eq:manningsy>`__) are assigned to the upper boundary
+:eq:`manningsx` and :eq:`manningsy`) are assigned to the upper boundary
 of the domain using one of the methods described below.
 
 The format for this section of input is:
@@ -1728,8 +1727,7 @@ Topographical Slopes
 ~~~~~~~~~~~~~~~~~~~~
 
 Here, topographical slope values (:math:`S_{f,x}` and :math:`S_{f,y}` in
-Equations `[eq:manningsx] <#eq:manningsx>`__ and
-`[eq:manningsy] <#eq:manningsy>`__) are assigned to the upper boundary
+Equations :eq:`manningsx` and :eq:`manningsy`) are assigned to the upper boundary
 of the domain using one of the methods described below. Note that due to
 the negative sign in these equations :math:`S_{f,x}` and :math:`S_{f,y}`
 take a sign in the direction *opposite* of the direction of the slope.
@@ -3662,7 +3660,7 @@ and general control flags for ParFlow. These are described next :
 for solver **IMPES**. Choices for this key are **MGSemi, PPCG, PCG** and
 **CGHS**. The choice **MGSemi** is an algebraic mulitgrid linear solver
 (not a preconditioned conjugate gradient) which may be less robust than
-**PCG** as described in cite:t:`Ashby-Falgout90`. The choice
+**PCG** as described in :cite:t:`Ashby-Falgout90`. The choice
 **PPCG** is a preconditioned conjugate gradient solver. The choice
 **PCG** is a conjugate gradient solver with a multigrid preconditioner.
 The choice **CGHS** is a conjugate gradient solver.
@@ -4018,7 +4016,7 @@ Richards’ Equation Solver Parameters
 The following keys are used to specify various parameters used by the
 linear and nonlinear solvers in the Richards’ equation implementation.
 For information about these solvers, see :cite:t:`Woodward98`
-and cite:t:`Ashby-Falgout90`.
+and :cite:t:`Ashby-Falgout90`.
 
 *double* **Solver.Nonlinear.ResidualTol** 1e-7 This key specifies the
 tolerance that measures how much the relative reduction in the nonlinear
@@ -4331,7 +4329,7 @@ periods, **not** for regular runtime.
 
 *integer* **OverlandFlowSpinUp** 0 This key specifies that a
 *simplified* form of the overland flow boundary condition (Equation
-`[eq:overland_bc] <#eq:overland_bc>`__) be used in place of the full
+:eq:`overland_bc`) be used in place of the full
 equation. This formulation *removes lateral flow* and drives and ponded
 water pressures to zero. While this can be helpful in spinning up the
 subsurface, this is no longer coupled subsurface-surface flow. If set to
