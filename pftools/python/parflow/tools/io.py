@@ -291,6 +291,7 @@ def read_pfb_sequence(
         ny = np.max([stop_y - start_y, 1])
         nz = np.max([stop_z - start_z, 1])
 
+    n_seq = len(file_seq)
     if z_first:
         seq_size = (len(file_seq), nz, ny, nx)
     else:

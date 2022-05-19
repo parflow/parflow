@@ -176,7 +176,6 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                     start=var_meta['start'],
                     end=var_meta['stop'],
                     freq=var_meta['freq'],
-                    closed='right'
                 ))
             elif meta_type == 'pfb':
                 coords[var] = self.load_pfb_from_meta(var_meta, name=var)[var]
@@ -505,13 +504,22 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
         read_files = file_or_seq[t_start:t_end]
         read_files = np.array(read_files)[accessor['time']['indices']]
         accessor['time']['indices'] = slice(None, None, None)
-        # Read the array
-        sub = read_pfb_sequence(
-            read_files,
-            keys=accessor,
-            z_first=z_first,
-            z_is=z_is,
-        ).squeeze()
+        # Read the array - Note here that you still might need to fall
+        # back to just `read_pfb` if only a single timestep or similar
+        # has been chosen
+        if len(read_files) > 1:
+            sub = read_pfb_sequence(
+                read_files,
+                keys=accessor,
+                z_first=z_first,
+                z_is=z_is,
+            ).squeeze()
+        else:
+            sub = read_pfb(
+                read_files[0],
+                keys=accessor,
+                z_first=z_first
+            )
     # Select out specific indices from from the array
     sub = sub[tuple([accessor[d]['indices'] for d in dims])]
     # Check which axes need to be squeezed out. This is

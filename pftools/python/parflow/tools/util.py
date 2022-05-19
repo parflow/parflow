@@ -35,25 +35,26 @@ def _key_to_explicit_accessor(key: Union[slice, int, Iterable]) -> dict:
     if isinstance(key, slice):
         start = key.start if key.start is not None else 0
         stop = key.stop+1 if key.stop is not None else -1
-        return {
+        accessor = {
             'start': key.start,
             'stop': key.stop,
             'indices': slice(None, None, key.step),
             'squeeze': False
         }
     elif isinstance(key, int):
-        return {
+        accessor = {
             'start': key,
             'stop': key+1,
             'indices': slice(0, 1),
             'squeeze': True
         }
     elif isinstance(key, Iterable):
-        return {
+        accessor = {
             'start': int(np.min(key)),
             'stop': int(np.max(key)+1),
             'indices': int(key - np.min(key)),
             'squeeze': False
         }
+    return accessor
 
 
