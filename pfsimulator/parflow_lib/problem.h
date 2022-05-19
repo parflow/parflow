@@ -37,7 +37,7 @@ typedef struct {
   PFModule   *geometries;        /* All geometry info input here */
 
   PFModule   *domain;
-
+  double time_spent_in_phase_source;
   int num_phases;
 
   int num_contaminants;

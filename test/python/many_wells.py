@@ -329,7 +329,7 @@ drich.KnownSolution = 'NoKnownSolution'
 #-----------------------------------------------------------------------------
 
 drich.Solver = 'Richards'
-drich.Solver.MaxIter = 5
+drich.Solver.MaxIter = 10
 
 drich.Solver.Nonlinear.MaxIter = 10
 drich.Solver.Nonlinear.ResidualTol = 1e-9

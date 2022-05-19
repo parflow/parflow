@@ -190,6 +190,7 @@ RUN $CMAKE                     \
     -D PARFLOW_HAVE_CLM=TRUE             \
     -D PARFLOW_ENABLE_PYTHON=ON         \
     -D PARFLOW_ENABLE_TIMING=TRUE          \
+    -D PARFLOW_ENABLE_PROFILING=TRUE          \
     -D PARFLOW_AMPS_LAYER=mpi1              \
     -D PARFLOW_AMPS_SEQUENTIAL_IO=TRUE       \
     -D PARFLOW_ENABLE_NETCDF=TRUE             \
@@ -211,5 +212,7 @@ RUN mkdir /home/ubuntu/parflow/src
 
 ENV PARFLOW_DIR /opt/parflow/
 WORKDIR /opt/parflow/
+
+#alias parflow=/opt/parflow/bin/parflow
 
 RUN echo 'alias rebuild="~/parflow/src/docker/dev/rebuild.sh"' >> ~/.bashrc
