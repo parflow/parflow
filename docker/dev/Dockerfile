@@ -206,8 +206,8 @@ USER ubuntu
 RUN python3 -m pip install /home/ubuntu/parflow/build/pftools/python
 RUN cp -R /home/ubuntu/parflow/build/pftools/python/parflow/tools/ref ~/.local/lib/python3.8/site-packages/parflow/tools/ref
 
-RUN rm -R /home/ubuntu/parflow/src
-RUN mkdir /home/ubuntu/parflow/src
+#RUN rm -R /home/ubuntu/parflow/src
+#RUN mkdir /home/ubuntu/parflow/src
 
 ENV PARFLOW_DIR /opt/parflow/
 WORKDIR /opt/parflow/
