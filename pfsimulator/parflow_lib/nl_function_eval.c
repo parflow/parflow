@@ -452,7 +452,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     FBy_dat = SubvectorData(FBy_sub);
     FBz_dat = SubvectorData(FBz_sub);
 
-    //This adds in ET, can use to check against pumping and as a performance baseline
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(f_sub, i, j, k);
