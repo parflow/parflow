@@ -161,3 +161,6 @@ ipython_config.py
 
 # pyenv
 .python-version
+
+# space for local dev
+local/
