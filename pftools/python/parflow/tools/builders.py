@@ -600,7 +600,6 @@ class TableToProperties(ABC):
                 (e.g., GeomNames) related to the loaded subsurface properties
         """
         # applying subsurface properties to run keys
-        print("applying")
         if run is None:
             if self.run is None:
                 print('No run object assigned')
@@ -619,7 +618,6 @@ class TableToProperties(ABC):
         valid_unit_names = []
         addon_keys = {}
         for name in self.output:
-            # We need to do a case insensitive compare
             if name in self.key_root.__dict__:
                 valid_unit_names.append(name)
             elif name_registration and not isinstance(self.output[name], dict):
