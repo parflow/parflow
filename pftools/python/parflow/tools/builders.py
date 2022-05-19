@@ -311,6 +311,10 @@ class TableToProperties(ABC):
         self.column_index = {}
         self.props_in_row_header = True
         self.table_comments = []
+        self.empty_value_tokens = {
+            "-",
+            ""
+        }
         yaml_key_def = Path(__file__).parent / self.reference_file
         with open(yaml_key_def, 'r') as file:
             self.definition = yaml.safe_load(file)
@@ -348,7 +352,7 @@ class TableToProperties(ABC):
             registrations = []
             for alias, col_idx in self.column_index.items():
                 str_value = tokens[col_idx]
-                if str_value == '-':
+                if str_value in self.empty_value_tokens:
                     continue
 
                 key = self.alias_to_pfkey[alias]
@@ -416,7 +420,7 @@ class TableToProperties(ABC):
 
                 container = self.output[unit_name]
                 value_str = tokens[self.column_index[unit_name]]
-                if value_str == '-':
+                if value_str in self.empty_value_tokens:
                     continue
 
                 value = value_convert(value_str)
