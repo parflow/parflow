@@ -7,6 +7,10 @@ This chapter is an introduction to setting up and running ParFlow. In
 :ref:`ParFlow Solvers` we describe the solver options available
 for use with ParFlow applications.
 
+The ParFlow source code can be found on the `ParFlow GitHub <https://github.com/parflow/parflow>`_. 
+Instructions for building ParFlow and Frequently-Asked Questions can be found on the 
+`ParFlow Wiki <https://github.com/parflow/parflow/wiki>`_. 
+
 .. _ParFlow Solvers:
 
 ParFlow Solvers
