@@ -209,7 +209,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 filename = var_meta['data'][0]['file']
                 if not os.path.exists(filename):
                     filename = f'{self.base_dir}/{filename}'
-                v = self.load_single_pfb(filename).squeeze()
+                v = self.load_single_pfb(filename)
                 ret_das = {name: xr.Dataset({name: v})[name]}
         elif base_type == 'clm_output':
             ret_das = self.load_clm_output_pfb(var_meta, name)
@@ -235,7 +235,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             file = sub_dict['file']
             if not os.path.exists(file):
                 file = f'{self.base_dir}/{file}'
-            v = self.load_single_pfb(file).squeeze()
+            v = self.load_single_pfb(file)#.squeeze()
             all_da[comp_name] = xr.Dataset({comp_name: v})[comp_name]
         return all_da
 
@@ -258,9 +258,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
         # Put it all together
-        inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
-        inf_dims = ('time', *inf_dims)
-        inf_shape = (len(all_files), *inf_shape)
+        #inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
+        inf_dims = None #('time', *inf_dims)
+        inf_shape = None #(len(all_files), *inf_shape)
         base_da = self.load_sequence_of_pfb(
                 all_files, dims=inf_dims, shape=inf_shape)
         base_da = xr.Dataset({name: base_da})[name]
@@ -287,9 +287,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
         # Put it all together
-        _, inf_shape = self._infer_dims_and_shape(all_files[0])
-        inf_dims = ('time', 'y', 'x')
-        inf_shape = (len(all_files)*inf_shape[0], *inf_shape[1:])
+        #_, inf_shape = self._infer_dims_and_shape(all_files[0])
+        inf_dims = None#('time', 'y', 'x')
+        inf_shape = None#(len(all_files)*inf_shape[0], *inf_shape[1:])
         base_da = self.load_sequence_of_pfb(
                 all_files, dims=inf_dims, shape=inf_shape,
                 z_first=True, z_is='time'
@@ -337,9 +337,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
         # Put it all together
-        inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
-        inf_dims = ('time', *inf_dims)
-        inf_shape = (len(all_files), *inf_shape)
+        #inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
+        inf_dims = None# ('time', *inf_dims)
+        inf_shape = None#(len(all_files), *inf_shape)
         base_da = self.load_sequence_of_pfb(
                 all_files, dims=inf_dims, shape=inf_shape,)
         base_da = xr.Dataset({name: base_da})[name]
@@ -370,7 +370,9 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         ))
         if not dims:
             dims = data.array.dims
-        var = xr.Variable(dims, data, ).squeeze()
+        if not shape:
+            shape = data.array.shape
+        var = xr.Variable(dims, data, )
         return var
 
     def load_sequence_of_pfb(
@@ -391,9 +393,10 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         ))
         if not dims:
             dims = data.array.dims
-        var = xr.Variable(dims, data).squeeze()
+        if not shape:
+            shape = data.array.shape
+        var = xr.Variable(dims, data)
         return var
-
 
     def is_meta_or_pfb(self, filename_or_obj, strict=True):
         """Determine if a file is a pfb file or pfmetadata file"""
@@ -478,10 +481,10 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
             file_or_seq,
             keys=accessor,
             z_first=z_first,
-        ).squeeze()
+        )
     elif mode == 'sequence':
         accessor = {d: util._key_to_explicit_accessor(k)
-                    for d, k in zip(dims, key)}
+                for d, k in zip(dims, key)}
         t_start = accessor['time']['start']
         t_end = accessor['time']['stop']
         if z_is == 'time':
@@ -507,28 +510,20 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
         # Read the array - Note here that you still might need to fall
         # back to just `read_pfb` if only a single timestep or similar
         # has been chosen
-        if len(read_files) > 1:
-            sub = read_pfb_sequence(
-                read_files,
-                keys=accessor,
-                z_first=z_first,
-                z_is=z_is,
-            ).squeeze()
-        else:
-            sub = read_pfb(
-                read_files[0],
-                keys=accessor,
-                z_first=z_first
-            )
-    # Select out specific indices from from the array
+        sub = read_pfb_sequence(
+            read_files,
+            keys=accessor,
+            z_first=z_first,
+            z_is=z_is,
+        )
     sub = sub[tuple([accessor[d]['indices'] for d in dims])]
     # Check which axes need to be squeezed out. This is
     # to distinguish between doing `ds.isel(x=[0])` which
     # should keep the x axis (and dimension) and `ds.isel(x=0)`
     # which should remove the x axis (and dimension).
-    axes_to_squeeze = tuple(i for i, d in enumerate(dims)
-                            if accessor[d]['squeeze'])
-    sub = np.squeeze(sub, axis=axes_to_squeeze)
+    #axes_to_squeeze = tuple(i for i, d in enumerate(dims)
+    #                        if accessor[d]['squeeze'])
+    #sub = np.squeeze(sub, axis=axes_to_squeeze)
     return sub
 
 
@@ -572,6 +567,9 @@ class ParflowBackendArray(BackendArray):
                 self.file_or_seq = np.repeat(self.file_or_seq, ts_per_file)
         self._shape = shape
         self._dims = dims
+        self._pfb_dims = None
+        self._pfb_shape = None
+        self._squeeze_dims = None
         self.z_first=z_first
         self.z_is=z_is
         # Weird hack here, have to pull the dtype like this
@@ -612,8 +610,12 @@ class ParflowBackendArray(BackendArray):
             else:
                 _dims = ('time', 'x', 'y', 'x')
         # Add some logic for automatically squeezing here?
-        self._shape = tuple(s for s in _shape if s >1)
-        self._dims = tuple(d for s, d in zip(_shape, _dims) if s >1)
+        self._squeeze_dims = tuple(i for i, s in enumerate(_shape)
+                                   if s == 1)
+        self._shape = tuple(s for s in _shape if s > 1)
+        self._dims = tuple(d for s, d in zip(_shape, _dims) if s > 1)
+        self._pfb_dims = _dims
+        self._pfb_shape = _shape
 
     @property
     def dims(self):
@@ -629,13 +631,36 @@ class ParflowBackendArray(BackendArray):
             self._set_dims_and_shape()
         return self._shape
 
+    @property
+    def pfb_dims(self):
+        """names of dimensions in the underlying pfb file"""
+        if self._pfb_dims is None:
+            self._set_dims_and_shape()
+        return self._pfb_dims
+
+    @property
+    def pfb_shape(self):
+        """names of dimensions in the underlying pfb file"""
+        if self._pfb_shape is None:
+            self._set_dims_and_shape()
+        return self._pfb_shape
+
+    @property
+    def squeeze_dims(self):
+        """names of dimensions in the underlying pfb file"""
+        if self._squeeze_dims is None:
+            self._set_dims_and_shape()
+        return self._squeeze_dims
+
     def _getitem(self, key: tuple) -> np.ndarray:
         """Mapping between keys to the actual data"""
-        size = self._size_from_key(key)
+        real_size = self._size_from_key(key)
         sub = delayed(_getitem_no_state)(
                 self.file_or_seq, key, self.dims, self.mode,
                 self.z_first, self.z_is)
-        sub = dask.array.from_delayed(sub, size, dtype=np.float64)
+        sub = dask.array.from_delayed(sub, self.pfb_shape, dtype=np.float64)
+        if self.shape != sub.shape:
+            sub = dask.array.squeeze(sub, axis=self.squeeze_dims)
         return sub
 
     def _size_from_key(self, key):
