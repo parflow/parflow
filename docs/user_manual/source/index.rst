@@ -34,6 +34,8 @@ Report, 2019
    pftools
    models
    files
+   python/index
+   tutorials/index
    PfkeysExample/index
    bib
 
