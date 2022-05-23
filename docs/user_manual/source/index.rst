@@ -36,7 +36,6 @@ Report, 2019
    files
    python/index
    tutorials/index
-   PfkeysExample/index
    bib
 
 .. [1]
