@@ -1,4 +1,4 @@
-.. _Tutorials
+.. _Tutorials:
 
 Tutorials
 ===================================
@@ -14,3 +14,5 @@ Example text describing PFKeys overall.
    solid_files
    sub_tables
    domain_builder
+   data_accessor
+   hydrology
