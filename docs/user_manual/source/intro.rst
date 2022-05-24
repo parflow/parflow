@@ -4,8 +4,9 @@ Introduction
 ============
 
 ParFlow (*PARallel FLOW*) is an integrated hydrology model that
-simulates surface and subsurface flow. ParFlow :cite:p:`Ashby-Falgout90,Jones-Woodward01,KM06,M13`
-is a parallel simulation platform that operates in three modes:
+simulates surface and subsurface flow. ParFlow :cite:p:`Ashby-Falgout90,
+Jones-Woodward01,KM06,M13` is a parallel simulation platform that operates 
+in three modes:
 
 #. steady-state saturated;
 
@@ -17,17 +18,22 @@ ParFlow is especially suitable for large scale problems on a range of
 single and multi-processor computing platforms. ParFlow simulates
 saturated and variably saturated subsurface flow in heterogeneous
 porous media in three spatial dimensions using a mulitgrid-preconditioned
-conjugate gradient solver :cite:p:`Ashby-Falgout90` and a Newton-Krylov nonlinear solver :cite:`Jones-Woodward01`.
-ParFlow has recently been extended to coupled surface-subsurface flow to
-enable the simulation of hillslope runoff and channel routing in a truly
-integrated fashion :cite:p:`KM06`. ParFlow is also fully-coupled with the land 
-surface model ``CLM`` :cite:p:`Dai03` as described in :cite:t:`MM05,KM08a`. The development and 
-application of ParFlow has been on-going for more than 20 years 
-:cite:p:`Meyerhoff14a,Meyerhoff14b,Meyerhoff11,Mikkelson13,RMC10,Shrestha14,SNSMM10,Siirila12a,Siirila12b,SMPMPK10,Williams11,Williams13,FM10,Keyes13,KRM10,Condon13a,Condon13b,M13,KRM10,KRM10,SNSMM10,DMC10,AM10,MLMSWT10,M10,FM10,KMWSVVS10,SMPMPK10,FFKM09,KCSMMB09,MTK09,dBRM08,MK08b,KM08b,KM08a,MK08a,MCT08,MCK07,MWH07,KM06,MM05,TMCZPS05,MWT03,Teal02,WGM02,Jones-Woodward01,MCT00,TCRM99,TBP99,TFSBA98,Ashby-Falgout90`
-and resulted in some of the most advanced numerical solvers 
-and multigrid preconditioners for massively parallel computer 
-environments that are available today. Many of the numerical tools 
-developed within the ParFlow platform have been turned into or are 
+conjugate gradient solver :cite:p:`Ashby-Falgout90` and a Newton-Krylov nonlinear 
+solver :cite:`Jones-Woodward01`. ParFlow has recently been extended to coupled 
+surface-subsurface flow to enable the simulation of hillslope runoff and channel 
+routing in a truly integrated fashion :cite:p:`KM06`. ParFlow is also fully-coupled 
+with the land surface model ``CLM`` :cite:p:`Dai03` as described in 
+:cite:t:`MM05,KM08a`. The development and application of ParFlow has been 
+on-going for more than 20 years :cite:p:`Meyerhoff14a,Meyerhoff14b,
+Meyerhoff11,Mikkelson13,RMC10,Shrestha14, SNSMM10,Siirila12a,Siirila12b,
+SMPMPK10,Williams11,Williams13,FM10,Keyes13,KRM10,Condon13a,Condon13b,
+M13,KRM10,KRM10,SNSMM10,DMC10,AM10,MLMSWT10,M10,FM10,KMWSVVS10,SMPMPK10,
+FFKM09,KCSMMB09,MTK09,dBRM08,MK08b,KM08b,KM08a,MK08a,MCT08,MCK07,
+MWH07,KM06,MM05,TMCZPS05,MWT03,Teal02,WGM02,Jones-Woodward01,MCT00,
+TCRM99,TBP99,TFSBA98,Ashby-Falgout90` and resulted in some of the most 
+advanced numerical solvers and multigrid preconditioners for massively 
+parallel computer environments that are available today. Many of the numerical 
+tools developed within the ParFlow platform have been turned into or are 
 from libraries that are now distributed and maintained at LLNL 
 (Hypre and SUNDIALS, for example). An additional advantage of 
 ParFlow is the use of a sophisticated octree-space partitioning 
