@@ -48,6 +48,7 @@ Problem   *NewProblem(
 {
   Problem      *problem;
 
+  double time_spent_in_phase_source = 0;
   int version_number;
   int num_phases;
   int num_contaminants;

@@ -296,7 +296,7 @@ void FreeWellData(
 
 void PrintWellData(
                    WellData *   well_data,
-                   unsigned int print_mask)
+                  unsigned int print_mask)
 {
   TimeCycleData    *time_cycle_data;
 

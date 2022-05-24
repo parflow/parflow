@@ -304,7 +304,6 @@ void    RichardsJacobianEval(
 
   CommHandle  *handle;
   VectorUpdateCommHandle  *vector_update_handle;
-
   // Determine if an overland flow boundary condition is being used.
   // If so will use the analytic Jacobian.
   if (public_xtra->type == not_set)
