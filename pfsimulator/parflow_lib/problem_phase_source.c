@@ -8,7 +8,6 @@
 *********************************************************************EHEADER*/
 
 #include "parflow.h"
-#include "time.h"
 #include <float.h>
 #include <sys/time.h>
 
@@ -48,11 +47,8 @@ void         PhaseSource(
                          int          phase,
                          Problem *    problem,
                          ProblemData *problem_data,
-                         double       parflow_time)
+                         double       time)
 {
-//    struct timespec start, end;
-//    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-//            printf("working on intersection\n");
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
@@ -244,7 +240,7 @@ void         PhaseSource(
               double y = RealSpaceY(j, SubgridRY(subgrid));
               double z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-              data[ips] = x * y * z - parflow_time * parflow_time * (y * y * z * z + x * x * z * z + x * x * y * y);
+              data[ips] = x * y * z - time * time * (y * y * z * z + x * x * z * z + x * x * y * y);
             });
             break;
           } /* End case 5 */
@@ -260,7 +256,7 @@ void         PhaseSource(
               double z = RealSpaceZ(k, SubgridRZ(subgrid));
 
               data[ips] = x * y * z
-                          - parflow_time * parflow_time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
+                          - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
             });
             break;
           } /* End case 6 */
@@ -284,7 +280,7 @@ void         PhaseSource(
       well_data_physical = WellDataFluxWellPhysical(well_data, well);
       cycle_number = WellDataPhysicalCycleNumber(well_data_physical);
 
-      interval_number = TimeCycleDataComputeIntervalNumber(problem, parflow_time, time_cycle_data, cycle_number);
+      interval_number = TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number);
 
       well_data_value = WellDataFluxWellIntervalValue(well_data, well, interval_number);
 
@@ -327,17 +323,9 @@ void         PhaseSource(
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
 
-
-
-        // Do stuff  here
-//        tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid);
-
-
         /*  Get the intersection of the well with the subgrid  */
-//        fprintf(stdout, "Intersecting subgrids...\n");
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
-
           /*  If an intersection;  loop over it, and insert value  */
           ix = SubgridIX(tmp_subgrid);
           iy = SubgridIY(tmp_subgrid);
@@ -398,11 +386,6 @@ void         PhaseSource(
       }
     }
   }  /* End well data */
-//    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-//
-//    u_int64_t delta_us = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;
-//    problem->time_spent_in_phase_source += (double)(delta_us)/1000000.0;
-//    printf("time taken %f\n", problem->time_spent_in_phase_source);
 }
 
 
