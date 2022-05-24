@@ -3,7 +3,8 @@
 Tutorials
 ===================================
 
-Example text describing PFKeys overall.
+The following sections include tutorials for using various functionalities contained within Python PFTools.
+
 
 .. toctree::
    :maxdepth: 1

@@ -3,7 +3,8 @@
 Python
 ===================================
 
-Example text describing PFKeys overall.
+The following sections provide a brief introduction to usage of the Python PFTools package, from installation 
+to execution of a Python ParFlow run script.
 
 .. toctree::
    :maxdepth: 1

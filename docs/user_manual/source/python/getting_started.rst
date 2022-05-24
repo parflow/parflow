@@ -21,8 +21,9 @@ The ``[all]`` argument will download the dependencies necessary for running ParF
 and fully employing the other tools within this package. ``[all]`` encompasses the
 subsets of dependencies, including:
 
-- ``[pfb]``: installs the ``parflowio`` package for handling ParFlow binary (.pfb) files.
 - ``[pfsol]``: installs the ``imageio`` package for handling image processing to assist some workflows to build ParFlow solid (.pfsol) files.
+- ``[io]``: installs the ``numpy``, ``xarray``, and ``dask`` packages for handling reading and storing ParFlow binary (.pfb) data.
+- ``[fastio]``: installs the ``numba`` package for translating certain I/O operations into fast machine code.
 
 If you would like to set up a virtual environment to install ``pftools``, execute the following commands:
 
