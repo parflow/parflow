@@ -13,7 +13,7 @@ Installation
 
 ``pftools`` can be installed with the following command:
 
-.. code-block:: language
+.. code-block::
 
     pip install pftools[all]
 
@@ -27,7 +27,7 @@ subsets of dependencies, including:
 
 If you would like to set up a virtual environment to install ``pftools``, execute the following commands:
 
-.. code-block:: language
+.. code-block::
 
     python3 -m venv py-env
     source py-env/bin/activate
@@ -44,7 +44,7 @@ Command: ``python3 /path/to/script/run_script.py [args]``
 
 Usage:
 
-.. code-block:: language
+.. code-block::
 
     run_script.py [-h] [--parflow-directory PARFLOW_DIRECTORY] [--parflow-version PARFLOW_VERSION]
     [--working-directory WORKING_DIRECTORY] [--skip-validation] [--dry-run] [--show-line-error]
@@ -54,14 +54,14 @@ Parflow run arguments:
 
 - Optional arguments:
 
-  .. code-block:: language
+  .. code-block::
 
         -h, --help            show help message and exit
 
 
 - Parflow settings:
 
-  .. code-block:: language
+  .. code-block::
 
         --parflow-directory PARFLOW_DIRECTORY
                         Path to use for PARFLOW_DIR
@@ -71,7 +71,7 @@ Parflow run arguments:
 
 - Execution settings:
 
-  .. code-block:: language
+  .. code-block::
 
         --working-directory WORKING_DIRECTORY
                         Path to execution working directory
@@ -82,7 +82,7 @@ Parflow run arguments:
 
 - Error handling settings:
 
-  .. code-block:: language
+  .. code-block::
 
       --show-line-error     Show line error
 
@@ -90,7 +90,7 @@ Parflow run arguments:
 
 - Additional output:
 
-  .. code-block:: language
+  .. code-block::
 
       --write-yaml          Enable config to be written as YAML file
 
@@ -98,7 +98,7 @@ Parflow run arguments:
 
 - Parallel execution:
 
-  .. code-block:: language
+  .. code-block::
 
       -p P
            P allocates the number of processes to the grid-cells in x (overrides Process.Topology.P)
