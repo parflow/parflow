@@ -336,18 +336,13 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         if not os.path.exists(all_files[0]):
             all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
-        # Put it all together
-        #inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
-        inf_dims = None# ('time', *inf_dims)
-        inf_shape = None#(len(all_files), *inf_shape)
-        base_da = self.load_sequence_of_pfb(
-                all_files, dims=inf_dims, shape=inf_shape,)
-        base_da = xr.Dataset({name: base_da})[name]
-        clm_das = [base_da.isel(z=i).rename(v) for i,v in enumerate(varnames)]
-        return xr.merge(clm_das)
-
-
-        raise NotImplementedError('CLM output loading not supported. Coming soon!')
+        clm_das = []
+        for i, v in enumerate(varnames):
+            var_da = self.load_sequence_of_pfb(all_files, init_key={'z': i})
+            var_da = xr.Dataset({v: var_da})[v]
+            clm_das.append(var_da)
+        clm_das = xr.merge(clm_das)
+        return clm_das
 
     def load_single_pfb(
         self,
@@ -382,6 +377,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         shape=None,
         z_first=True,
         z_is='z',
+        init_key={}
     ) -> xr.Variable:
         data = indexing.LazilyIndexedArray(
             ParflowBackendArray(
@@ -390,6 +386,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
                 shape=shape,
                 z_first=z_first,
                 z_is=z_is,
+                init_key=init_key,
         ))
         if not dims:
             dims = data.array.dims
@@ -521,9 +518,9 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
     # to distinguish between doing `ds.isel(x=[0])` which
     # should keep the x axis (and dimension) and `ds.isel(x=0)`
     # which should remove the x axis (and dimension).
-    #axes_to_squeeze = tuple(i for i, d in enumerate(dims)
-    #                        if accessor[d]['squeeze'])
-    #sub = np.squeeze(sub, axis=axes_to_squeeze)
+    axes_to_squeeze = tuple(i for i, d in enumerate(dims)
+                            if accessor[d]['squeeze'])
+    sub = np.squeeze(sub, axis=axes_to_squeeze)
     return sub
 
 
@@ -536,7 +533,8 @@ class ParflowBackendArray(BackendArray):
          dims=None,
          shape=None,
          z_first=True,
-         z_is='z'
+         z_is='z',
+         init_key={},
     ):
         """
         Instantiate a new ParflowBackendArray.
@@ -551,6 +549,8 @@ class ParflowBackendArray(BackendArray):
             Whether the z axis is first. If not, it will be last.
         :param z_is:
             What the z axis represents. Can be 'z', 'time', 'variable'
+        :param init_key:
+            An initial key that can be used to prematurely subset.
         """
         self.file_or_seq = file_or_seq
         if isinstance(self.file_or_seq, str):
@@ -570,8 +570,9 @@ class ParflowBackendArray(BackendArray):
         self._pfb_dims = None
         self._pfb_shape = None
         self._squeeze_dims = None
-        self.z_first=z_first
-        self.z_is=z_is
+        self.z_first = z_first
+        self.z_is = z_is
+        self.init_key = init_key
         # Weird hack here, have to pull the dtype like this
         # to have valid `nbytes` attribute
         self.dtype = np.dtype(np.float64)
@@ -593,29 +594,34 @@ class ParflowBackendArray(BackendArray):
             precompute_subgrid_info=False
         ) as pfd:
             if self.z_first:
-                _shape = (pfd.header['nz'], pfd.header['ny'], pfd.header['nx'])
+                _shape = [pfd.header['nz'], pfd.header['ny'], pfd.header['nx']]
             else:
-                _shape = (pfd.header['nx'], pfd.header['ny'], pfd.header['nz'])
+                _shape = [pfd.header['nx'], pfd.header['ny'], pfd.header['nz']]
         if self.mode == 'sequence':
-            _shape = (len(self.file_or_seq), *_shape)
+            _shape = [len(self.file_or_seq), *_shape]
         # Construct dimension template
         if self.mode == 'single':
             if self.z_first:
-                _dims = ('z', 'y', 'x')
+                _dims = ['z', 'y', 'x']
             else:
-                _dims = ('x', 'y', 'z')
+                _dims = ['x', 'y', 'z']
         elif self.mode == 'sequence':
             if self.z_first:
-                _dims = ('time', 'z', 'y', 'x')
+                _dims = ['time', 'z', 'y', 'x']
             else:
-                _dims = ('time', 'x', 'y', 'x')
-        # Add some logic for automatically squeezing here?
-        self._squeeze_dims = tuple(i for i, s in enumerate(_shape)
-                                   if s == 1)
-        self._shape = tuple(s for s in _shape if s > 1)
-        self._dims = tuple(d for s, d in zip(_shape, _dims) if s > 1)
-        self._pfb_dims = _dims
-        self._pfb_shape = _shape
+                _dims = ['time', 'x', 'y', 'x']
+        # Add some logic for dealing with clm output's inconsistent format
+        if self.init_key:
+            for i, (dim, size) in enumerate(zip(_dims, _shape)):
+                if dim in self.init_key:
+                    _shape[i] = self._size_from_key([self.init_key[dim]])[0]
+        self._squeeze_dims = tuple(i for i, s in enumerate(_shape) if s == 1)
+        if not self._shape:
+            self._shape = tuple(s for s in _shape if s > 1)
+        if not self._dims:
+            self._dims = tuple(d for s, d in zip(_shape, _dims) if s > 1)
+        self._pfb_dims = tuple(_dims)
+        self._pfb_shape = tuple(_shape)
 
     @property
     def dims(self):
