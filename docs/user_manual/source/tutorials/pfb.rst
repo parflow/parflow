@@ -57,24 +57,21 @@ We convert a numpy array to a PFB file with the ``write_pfb()`` function:
 
 .. code-block:: python3
 
-    ## Write flow boundary file
-    FBx_data = np.full((20, 20, 20), 1.0)
-    for i in range(20):
-        for j in range(20):
-            # From cell 10 (index 9) to cell 11
-            # Reduction of 1E-3
-            FBx_data[i, j, 9] = 0.001
+    # Create numpy array
+    FBx_data = np.ones((20, 20, 20))
 
+    # Reduction of 1E-3
+    FBx_data[:, :, 9] = 0.001
+
+    # Write flow boundary file as PFB with write_pfb() function
     write_pfb(get_absolute_path('Flow_Barrier_X.pfb'), FBx_data)
 
-    rich_fbx.dist('Flow_Barrier_X.pfb')
 
 This creates a 3D numpy array that covers the entire domain and changes the values in the array 
 where X = 10 to 0.001. Note that the numpy array translation to a PFB file reads the dimensions 
 as (Z, Y, X). ``write_pfb(get_absolute_path('Flow_Barrier_X.pfb'), FBx_data)`` writes the data 
 from the ``FBx_data`` numpy array to a file called ``'Flow_Barrier_X.pfb'``, which will be located in 
-the current working directory. ``rich_fbx.dist('Flow_Barrier_X.pfb')`` connects the new PFB file 
-to the ``Run`` object and distributes it.
+the current working directory, and distributes it.
 
 ----
 
@@ -138,7 +135,7 @@ Full API
     :param ``dist``: Whether to write the distfile in addition to the pfb.
     :param ``kwargs``: Extra keyword arguments, primarily to eat unnecessary args by passing in a dictionary with ``**dict``.
 
-2. ``write_pfb(file, array, p=1, q=1, r=1, x=0.0, y=0.0, z=0.0, dx=1.0, dy=1.0, dz=1.0, z_first=True, dist=True, \**kwargs)``
+2. ``write_pfb(file, array, p=1, q=1, r=1, x=0.0, y=0.0, z=0.0, dx=1.0, dy=1.0, dz=1.0, z_first=True, dist=True, **kwargs)``
     Write a single pfb file. The data must be a 3D numpy array with ``float64``
     values. The number of subgrids in the saved file will be ``p`` * ``q`` * ``r``. This
     is regardless of the number of subgrids in the PFB file loaded by the
@@ -182,7 +179,7 @@ Full API
         xarray, but the format of the keys is:
 
         ::
-            
+
             {'x': {'start': start_x, 'stop': end_x},
             'y': {'start': start_y, 'stop': end_y},
             'z': {'start': start_z, 'stop': end_z}}
