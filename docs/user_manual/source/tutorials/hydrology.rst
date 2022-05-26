@@ -135,6 +135,6 @@ Full API
     :param ``dx``: Length of a grid element in the ``x`` direction
     :param ``dy``: Length of a grid element in the ``y`` direction
     :param ``flow_method``: Either 'OverlandFlow' or 'OverlandKinematic'. 'OverlandKinematic' by default.
-    :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'``. This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
+    :param ``epsilon``: Minimum slope magnitude for solver. Only applicable if ``flow_method='OverlandKinematic'``. This is set using the ``Solver.OverlandKinematic.Epsilon`` key in Parflow.
     :param ``mask``: An ``nz`` by ``ny`` by ``nx`` ``ndarray`` of mask values (bottom layer to top layer). If None, assumed to be an ``nz`` by ``ny`` by ``nx`` ``ndarray`` of 1s.
     :return: A ``ny`` by ``nx`` ``ndarray`` of overland flow values
