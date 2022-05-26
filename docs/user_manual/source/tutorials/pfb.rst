@@ -41,7 +41,7 @@ Let's copy another test Python script into our tutorial directory:
     cp $PARFLOW_SOURCE/test/python/base/richards_FBx/richards_FBx.py .
 
 This test is a use case where an internal flow boundary is defined as a numpy array, written 
-to a PFB file, and distributed for use in the run. Open the file, and you'll see the following 
+to a PFB file, and distributed for use in the run. Open the file, and add the following 
 modules at the top:
 
 .. code-block::
@@ -111,19 +111,81 @@ packages in Python, feel free to visualize to your heart's content!
 Full API
 ================================================================================
 
-1. read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True)
+1. ``read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True)``
+    Write a single pfb file. The data must be a 3D numpy array with ``float64``
+    values. The number of subgrids in the saved file will be ``p`` * ``q`` * ``r``. This
+    is regardless of the number of subgrids in the PFB file loaded by the
+    ParflowBinaryReader into the numpy array. Therefore, loading a file with
+    ParflowBinaryReader and saving it with this method may restructure the
+    file into a different number of subgrids if you change these values.
+    
+    If dist is True then also write a file with the .dist extension added to
+    the file_name. The ``.dist`` file will contain one line per subgrid with the
+    offset of the subgrid in the ``.pfb`` file.
 
-2. write_pfb(file, array, p=1, q=1, r=1, x=0.0, y=0.0, z=0.0, dx=1.0, dy=1.0, dz=1.0, z_first=True, dist=True, \**kwargs)
+    :param ``file``: The name of the file to write the array to.
+    :param ``array``: The array to write.
+    :param ``p``: Number of subgrids in the x direction.
+    :param ``q``: Number of subgrids in the y direction.
+    :param ``r``: Number of subgrids in the z direction.
+    :param ``x``: The length of the x-axis
+    :param ``y``: The length of the y-axis
+    :param ``z``: The length of the z-axis
+    :param ``dx``: The spacing between cells in the x direction
+    :param ``dy``: The spacing between cells in the y direction
+    :param ``dz``: The spacing between cells in the z direction
+    :param ``z_first``: Whether the z-axis should be first or last.
+    :param ``dist``: Whether to write the distfile in addition to the pfb.
+    :param ``kwargs``: Extra keyword arguments, primarily to eat unnecessary args by passing in a dictionary with ``**dict``.
 
-3. write_dist(file, sg_offs)
-    """
+2. ``write_pfb(file, array, p=1, q=1, r=1, x=0.0, y=0.0, z=0.0, dx=1.0, dy=1.0, dz=1.0, z_first=True, dist=True, \**kwargs)``
+    Write a single pfb file. The data must be a 3D numpy array with ``float64``
+    values. The number of subgrids in the saved file will be ``p`` * ``q`` * ``r``. This
+    is regardless of the number of subgrids in the PFB file loaded by the
+    ParflowBinaryReader into the numpy array. Therefore, loading a file with
+    ParflowBinaryReader and saving it with this method may restructure the
+    file into a different number of subgrids if you change these values.
+
+    If dist is True then also write a file with the ``.dist`` extension added to
+    the file_name. The .dist file will contain one line per subgrid with the
+    offset of the subgrid in the ``.pfb`` file.
+
+    :param ``file``: The name of the file to write the array to.
+    :param ``array``: The array to write.
+    :param ``p``: Number of subgrids in the x direction.
+    :param ``q``: Number of subgrids in the y direction.
+    :param ``r``: Number of subgrids in the z direction.
+    :param ``x``: The length of the x-axis
+    :param ``y``: The length of the y-axis
+    :param ``z``: The length of the z-axis
+    :param ``dx``: The spacing between cells in the x direction
+    :param ``dy``: The spacing between cells in the y direction
+    :param ``dz``: The spacing between cells in the z direction
+    :param ``z_first``: Whether the z-axis should be first or last.
+    :param ``dist``: Whether to write the distfile in addition to the pfb.
+    :param ``kwargs``: Extra keyword arguments, primarily to eat unnecessary args by passing in a dictionary with ``**dict``.
+
+3. ``write_dist(file, sg_offs)``
     Write a distfile.
-    :param file:
-        The path of the file to be written.
-    :param sg_offs:
-        The subgrid offsets.
-    """
 
+    :param ``file``: The path of the file to be written.
+    :param ``sg_offs``: The subgrid offsets.
 
-4. read_pfb_sequence(file_seq: Iterable[str], keys=None, z_first: bool=True, z_is: str='z')
+4. ``read_pfb_sequence(file_seq: Iterable[str], keys=None, z_first: bool=True, z_is: str='z')``
+    An efficient wrapper to read a sequence of pfb files. This
+    approach is faster than looping over the ``read_pfb`` function
+    because it caches the subgrid information from the first
+    pfb file and then uses that to initialize all other readers.
 
+    :param ``file_seq``: An iterable sequence of file names to be read.
+    :param ``keys``: A set of keys for indexing subarrays of the full pfb. Optional. This is mainly a trick for interfacing with 
+        xarray, but the format of the keys is:
+
+        ::
+            {'x': {'start': start_x, 'stop': end_x},
+            'y': {'start': start_y, 'stop': end_y},
+            'z': {'start': start_z, 'stop': end_z}}
+
+    :param ``z_first``: Whether the z dimension should be first. If true returned arrays have dimensions ``('z', 'y', 'x')`` else ``('x', 'y', 'z')``
+    :param ``z_is``: A descriptor of what the z axis represents. Can be one of ``'z'``, ``'time'``, ``'variable'``. Default is ``'z'``.
+    :return: An ``ndarray`` containing the data from the files.
