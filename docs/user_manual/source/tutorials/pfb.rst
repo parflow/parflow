@@ -182,6 +182,7 @@ Full API
         xarray, but the format of the keys is:
 
         ::
+            
             {'x': {'start': start_x, 'stop': end_x},
             'y': {'start': start_y, 'stop': end_y},
             'z': {'start': start_z, 'stop': end_z}}
