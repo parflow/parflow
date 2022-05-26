@@ -23,7 +23,7 @@ First, we’ll show some examples of using the DataAccessor class within a ParFl
     run = Run.from_definition('/path/to/pfidb/file')
 
     # Get the DataAccessor object corresponding to the Run object
-    data = run.data
+    data = run.data_accessor
 
     # Iterate through the timesteps of the DataAccessor object
     # i goes from 0 to n_timesteps - 1
