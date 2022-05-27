@@ -1,4 +1,4 @@
-.. _PFKeys
+.. _PFKeys:
 
 Example PFKeys Documentation
 ===================================
