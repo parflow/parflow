@@ -16,6 +16,7 @@ First, we’ll show some examples of using the Hydrology class within a ParFlow 
 
 .. code-block:: python3
 
+    import numpy as np
     from parflow import Run
     from parflow.tools.hydrology import calculate_surface_storage, calculate_subsurface_storage, \
         calculate_water_table_depth, calculate_evapotranspiration, calculate_overland_flow_grid
@@ -24,7 +25,7 @@ First, we’ll show some examples of using the Hydrology class within a ParFlow 
     run = Run.from_definition('/path/to/pfidb/file')
 
     # Get the DataAccessor object corresponding to the Run object
-    data = run.data
+    data = run.data_accessor
 
     # ----------------------------------------------
     # Get relevant information from the DataAccessor
@@ -94,7 +95,7 @@ First, we’ll show some examples of using the Hydrology class within a ParFlow 
         wtd[i, ...] = calculate_water_table_depth(pressure, saturation, dz)
 
         if et is not None:
-            # total ET for this time step is the summation of ET values across all x/y/z slices
+            # Total ET for this time step is the summation of ET values across all x/y/z slices
             et[i, ...] = np.sum(
                 calculate_evapotranspiration(et_flux_values, dx, dy, dz, mask=mask),
                 axis=(0, 1, 2)
