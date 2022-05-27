@@ -556,11 +556,11 @@ PFModule *PGSRFNewPublicXtra(char *geom_name);
 void PGSRFFreePublicXtra(void);
 int PGSRFSizeOfTempData(void);
 
-typedef void (*PhaseVelocityFaceInvoke) (Vector *xvel, Vector *yvel, Vector *zvel, ProblemData *problem_data, Vector *pressure, Vector **saturations, int phase);
+typedef void (*PhaseVelocityFaceInvoke) (Vector *xvel, Vector *yvel, Vector *zvel, ProblemData *problem_data, Vector *pressure, Vector **saturations, int phase, double time);
 typedef PFModule *(*PhaseVelocityFaceInitInstanceXtraInvoke) (Problem *problem, Grid *grid, Grid *x_grid, Grid *y_grid, Grid *z_grid, double *temp_data);
 
 /* phase_velocity_face.c */
-void PhaseVelocityFace(Vector *xvel, Vector *yvel, Vector *zvel, ProblemData *problem_data, Vector *pressure, Vector **saturations, int phase);
+void PhaseVelocityFace(Vector *xvel, Vector *yvel, Vector *zvel, ProblemData *problem_data, Vector *pressure, Vector **saturations, int phase, double time);
 PFModule *PhaseVelocityFaceInitInstanceXtra(Problem *problem, Grid *grid, Grid *x_grid, Grid *y_grid, Grid *z_grid, double *temp_data);
 void PhaseVelocityFaceFreeInstanceXtra(void);
 PFModule *PhaseVelocityFaceNewPublicXtra(void);

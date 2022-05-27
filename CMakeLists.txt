@@ -590,7 +590,7 @@ endif()
 
 option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
 if (PARFLOW_ENABLE_PYTHON)
-  find_package(Python3 3.3 QUIET REQUIRED COMPONENTS Interpreter)
+  find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
   set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
   set(PARFLOW_PYTHON_DEPENDS)
 

@@ -7,7 +7,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name='pftools',
-    version="1.2.0",
+    version="1.3.6",
     description=('A Python package creating an interface with the ParFlow '
                  'hydrologic model.'),
     long_description=README,
@@ -21,18 +21,33 @@ setup(
     ],
     keywords=['ParFlow', 'groundwater model', 'surface water model'],
     packages=find_packages(),
-    install_requires=['pyyaml==5.4', 'numpy'],
+    install_requires=[
+        'pyyaml>=5.4',
+    ],
     include_package_data=True,
     extras_require={
         'all': [
-            'imageio>=2.9.0',
-            'parflowio>=0.0.4'
-        ],
-        'pfb': [
-            'parflowio>=0.0.4'
+            'imageio>=2.9.0'
+            'numpy',
+            'xarray',
+            'numba',
+            'dask',
         ],
         'pfsol': [
             'imageio>=2.9.0'
-        ]
+        ],
+        'io':[
+            'numpy',
+            'xarray',
+            'dask',
+        ],
+        'fastio': [
+            'numba',
+        ],
+    },
+    entry_points={
+        'xarray.backends': [
+            'parflow=parflow.tools.pf_backend:ParflowBackendEntrypoint'
+        ],
     }
 )
