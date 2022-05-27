@@ -23,6 +23,9 @@ Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf).
 The manual contains additional documentation on how to use ParFlow and
 setup input files.  A quick start is included below.
 
+A web version of the user manual is also available on 
+[Read the Docs](https://parflow.readthedocs.io/en/latest/index.html).
+
 ### Citing Parflow
 
 If you want the DOI for a specific release see:
