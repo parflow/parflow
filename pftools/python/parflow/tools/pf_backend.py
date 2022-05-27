@@ -235,7 +235,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             file = sub_dict['file']
             if not os.path.exists(file):
                 file = f'{self.base_dir}/{file}'
-            v = self.load_single_pfb(file)#.squeeze()
+            v = self.load_single_pfb(file)
             all_da[comp_name] = xr.Dataset({comp_name: v})[comp_name]
         return all_da
 
@@ -258,11 +258,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
         # Put it all together
-        #inf_dims, inf_shape = self._infer_dims_and_shape(all_files[0])
-        inf_dims = None #('time', *inf_dims)
-        inf_shape = None #(len(all_files), *inf_shape)
-        base_da = self.load_sequence_of_pfb(
-                all_files, dims=inf_dims, shape=inf_shape)
+        base_da = self.load_sequence_of_pfb(all_files)
         base_da = xr.Dataset({name: base_da})[name]
         return {name: base_da}
 
@@ -287,13 +283,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
             all_files = [f'{self.base_dir}/{af}' for af in all_files]
 
         # Put it all together
-        #_, inf_shape = self._infer_dims_and_shape(all_files[0])
-        inf_dims = None#('time', 'y', 'x')
-        inf_shape = None#(len(all_files)*inf_shape[0], *inf_shape[1:])
-        base_da = self.load_sequence_of_pfb(
-                all_files, dims=inf_dims, shape=inf_shape,
-                z_first=True, z_is='time'
-        )
+        base_da = self.load_sequence_of_pfb(all_files, z_is='time')
         base_da = xr.Dataset({name: base_da})[name]
         return {name: base_da}
 
@@ -504,9 +494,7 @@ def _getitem_no_state(file_or_seq, key, dims, mode, z_first=True, z_is='z'):
         read_files = file_or_seq[t_start:t_end]
         read_files = np.array(read_files)[accessor['time']['indices']]
         accessor['time']['indices'] = slice(None, None, None)
-        # Read the array - Note here that you still might need to fall
-        # back to just `read_pfb` if only a single timestep or similar
-        # has been chosen
+        # Read the array
         sub = read_pfb_sequence(
             read_files,
             keys=accessor,
