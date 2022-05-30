@@ -14,7 +14,7 @@ in three modes:
 
 #. and integrated-watershed flow.
 
-ParFlow is especially suitable for large scale problems on a range of
+`ParFlow <https://parflow.org>`_ is especially suitable for large scale problems on a range of
 single and multi-processor computing platforms. ParFlow simulates
 saturated and variably saturated subsurface flow in heterogeneous
 porous media in three spatial dimensions using a mulitgrid-preconditioned
@@ -67,12 +67,12 @@ This manual describes how to use ParFlow, and is intended for
 hydrologists, geoscientists, environmental scientists and engineers.
 This manual is written assuming the reader has a basic understanding of
 Linux / UNIX environments, how to compose and execute scripts in various
-programming languages (e.g. TCL), and is familiar with groundwater and
+programming languages (e.g. TCL or Python), and is familiar with groundwater and
 surface water hydrology, parallel computing, and numerical modeling in
-general. In Chapter 2 :ref:`Getting Started`, we describe how to install
+general. In :ref:`Getting Started`, we describe how to install
 ParFlow, including building the code and associated libraries. Then, we
 lead the user through a simple ParFlow run and discuss the automated
-test suite. In Chapter 3 :ref:`The ParFlow System`, we describe the
+test suite. In :ref:`The ParFlow System`, we describe the
 ParFlow system in more detail. This chapter contains a lot of useful
 information regarding how a run is constructed and most importantly
 contains two detailed, annotated scripts that run two classical ParFlow
@@ -81,9 +81,9 @@ saturated, transient, coupled watershed. Both test cases are published
 in the literature and are a terrific initial starting point for a new
 ParFlow user.
 
-Chapter 4 :ref:`Manipulating Data` describes data analysis and
-processing. Chapter 5 :ref:`Model_Equations` provides the basic
-equations solved by ParFlow. Chapter 6 :ref:`ParFlow Files` describes
+:ref:`Manipulating Data` describes data analysis and
+processing. :ref:`Model_Equations` provides the basic
+equations solved by ParFlow. :ref:`ParFlow Files` describes
 the formats of the various files used by ParFlow. These chapters are
 really intended to be used as reference material. This manual provides
 some overview of ParFlow some information on building the code, examples
