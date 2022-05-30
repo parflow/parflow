@@ -857,11 +857,13 @@ is selected.
       <runname>.TimeStep.MinStep  =1.0e-3
 
 Here is a detailed example of how timing keys might be used in a
-simualtion.
+simulation.
 
 .. container:: list
 
    ::
+
+      ## TCL example
 
       #-----------------------------------------------------------------------------
       # Setup timing info [hr]
@@ -880,9 +882,33 @@ simualtion.
       ## Timing growth example
       pfset TimeStep.Type			Growth
       pfset TimeStep.InitialStep		0.0001
-      TimeStep.GrowthFactor		1.4
-      TimeStep.MaxStep			1.0
-      TimeStep.MinStep			0.0001
+      pfset TimeStep.GrowthFactor		1.4
+      pfset TimeStep.MaxStep			1.0
+      pfset TimeStep.MinStep			0.0001
+
+
+      ## Python Example
+
+      #-----------------------------------------------------------------------------
+      # Setup timing info [hr]
+      # 8760 hours in a year. Dumping files every 24 hours. Hourly timestep
+      #-----------------------------------------------------------------------------
+      <runname>.TimingInfo.BaseUnit		 =1.0
+      <runname>.TimingInfo.StartCount	 =0
+      <runname>.TimingInfo.StartTime	 =0.0
+      <runname>.TimingInfo.StopTime		 =8760.0
+      <runname>.TimingInfo.DumpInterval =-24
+
+      ## Timing constant example
+      <runname>.TimeStep.Type			=Constant
+      <runname>.TimeStep.Value		=	1.0
+
+      ## Timing growth example
+      <runname>.TimeStep.Type			 =Growth
+      <runname>.TimeStep.InitialStep =0.0001
+      <runname>.TimeStep.GrowthFactor		=1.4
+      <runname>.TimeStep.MaxStep			=1.0
+      <runname>.TimeStep.MinStep			=0.0001
 
 .. _Time Cycles:
 
@@ -907,6 +933,8 @@ number of keys defined below.
 
       pfset Cycle.Names constant onoff
 
+      <runname>.Cycle.Names constant ='onoff'
+
 *list* **Cycle.\ *cycle_name*.Names** no default This key is used to
 specify the named time intervals for each cycle. It is a list of names
 and each name defines a time interval when a specific boundary condition
@@ -918,6 +946,8 @@ intervals in that time cycle.
    ::
 
       pfset Cycle.onoff.Names "on off"
+
+      <runname>.Cycle.onoff.Names ='on off'
 
 *integer* **Cycle.\ *cycle_name.interval_name*.Length** no default This
 key is used to specify the length of a named time intervals. It is an
@@ -931,6 +961,8 @@ of all the intervals multiplied by the base unit.
 
       pfset Cycle.onoff.on.Length             10
 
+      <runname>.Cycle.onoff.on.Length        =10
+
 *integer* **Cycle.\ *cycle_name*.Repeat** no default This key is used to
 specify the how many times a named time interval repeats. A positive
 value specifies a number of repeat cycles a value of -1 specifies that
@@ -942,13 +974,16 @@ the cycle repeat for the entire simulation.
 
       pfset Cycle.onoff.Repeat               -1
 
+      <runname>.Cycle.onoff.Repeat          =-1
+
 Here is a detailed example of how time cycles might be used in a
-simualtion.
+simulation.
 
 .. container:: list
 
    ::
 
+      ## TCL example
 
       #-----------------------------------------------------------------------------
       # Time Cycles
@@ -963,6 +998,22 @@ simualtion.
       pfset Cycle.rainrec.rain.Length	10
       pfset Cycle.rainrec.rec.Length	8750
       pfset Cycle.rainrec.Repeat              	-1
+
+      ## Python example
+
+      #-----------------------------------------------------------------------------
+      # Time Cycles
+      #-----------------------------------------------------------------------------
+      <runname>.Cycle.Names 			  ="constant rainrec"
+      <runname>.Cycle.constant.Names  ="alltime"
+      <runname>.Cycle.constant.alltime.Length	=8760
+      <runname>.Cycle.constant.Repeat		=-1
+
+      # Creating a rain and recession period for the rest of year
+      <runname>.Cycle.rainrec.Names		='rain rec'
+      <runname>.Cycle.rainrec.rain.Length	=10
+      <runname>.Cycle.rainrec.rec.Length	=8750
+      <runname>.Cycle.rainrec.Repeat      =-1
 
 .. _Domain:
 
@@ -987,6 +1038,8 @@ named geometries is the problem domain.
 
       pfset Domain.GeomName    domain
 
+      <runname>.Domain.GeomName  =domain
+
 .. _Phases and Contaminants:
 
 Phases and Contaminants
@@ -1001,6 +1054,8 @@ be modeled. Currently only 1 or 2 phases may be modeled.
 
       pfset Phase.Names    "water"
 
+      <runname>.Phase.Names  = 'water'
+
 *list* **Contaminant.Names** no default This specifies the names of
 contaminants to be advected.
 
@@ -1010,19 +1065,23 @@ contaminants to be advected.
 
       pfset Contaminants.Names   "tce"
 
+      <runname>.Contaminants.Names   ='tce'
+
 .. _Gravity, Phase Density and Phase Viscosity:
 
 Gravity, Phase Density and Phase Viscosity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *double* **Gravity** no default Specifies the gravity constant to be
-used.
+used.  
 
 .. container:: list
 
    ::
 
       pfset Gravity	1.0
+
+      <runname>.Gravity	=1.0
 
 *string* **Phase.\ *phase_name*.Density.Type** no default This key
 specifies whether density will be a constant value or if it will be
@@ -1037,6 +1096,8 @@ must be either **Constant** or **EquationOfState**.
 
       pfset Phase.water.Density.Type	 Constant
 
+      <runname>.Phase.water.Density.Type	=Constant
+
 *double* **Phase.\ *phase_name*.Density.Value** no default This
 specifies the value of density if this phase was specified to have a
 constant density value for the phase *phase_name*.
@@ -1047,6 +1108,8 @@ constant density value for the phase *phase_name*.
 
       pfset Phase.water.Density.Value   1.0
 
+     <runname>.Phase.water.Density.Value  =1.0
+
 *double* **Phase.\ *phase_name*.Density.ReferenceDensity** no default
 This key specifies the reference density if an equation of state density
 function is specified for the phase *phase_name*.
@@ -1056,6 +1119,8 @@ function is specified for the phase *phase_name*.
    ::
 
       pfset Phase.water.Density.ReferenceDensity   1.0
+
+      <runname>.Phase.water.Density.ReferenceDensity =1.0
 
 *double* **Phase.\ *phase_name*.Density.CompressibilityConstant** no
 default This key specifies the phase compressibility constant if an
@@ -1068,6 +1133,8 @@ equation of state density function is specified for the phase
 
       pfset Phase.water.Density.CompressibilityConstant   1.0
 
+      <runname>.Phase.water.Density.CompressibilityConstant  =1.0
+
 *string* **Phase.\ *phase_name*.Viscosity.Type** Constant This key
 specifies whether viscosity will be a constant value. Currently, the
 only choice for this key is **Constant**.
@@ -1078,6 +1145,8 @@ only choice for this key is **Constant**.
 
       pfset Phase.water.Viscosity.Type   Constant
 
+      <runname>.Phase.water.Viscosity.Type   =Constant
+
 *double* **Phase.\ *phase_name*.Viscosity.Value** no default This
 specifies the value of viscosity if this phase was specified to have a
 constant viscosity value.
@@ -1086,7 +1155,9 @@ constant viscosity value.
 
    ::
 
-      pfset Phase.water.Viscosity.Value   1.0
+      pfset Phase.water.Viscosity.Value    1.0
+
+      <runname>.Phase.water.Viscosity.Value   =1.0
 
 .. _Chemical Reactions:
 
@@ -1104,6 +1175,8 @@ decay into another.
    ::
 
       pfset Contaminants.tce.Degradation.Value         0.0
+
+      <runname>.Contaminants.tce.Degradation.Value    =0.0
 
 .. _Permeability:
 
@@ -1143,6 +1216,8 @@ of the file that contains the conditioning data. The default string
    ::
 
       pfset Perm.Conditioning.FileName   "well_cond.txt"
+
+      <runname>.Perm.Conditioning.FileName  ='well_cond.txt'
 
 The file that contains the conditioning data is a simple ascii file
 containing points and values. The format is:
