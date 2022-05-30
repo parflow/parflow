@@ -24,10 +24,11 @@ updated: |today|
    intro
    start
    pfsystem
-   pftools
    models
    files
+   keys
    python/index
+   pftools
    tutorials/index
    bib
 
