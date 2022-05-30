@@ -3,7 +3,7 @@
 Introduction
 ============
 
-ParFlow (*PARallel FLOW*) is an integrated hydrology model that
+`ParFlow <https://parflow.org>`_ (*PARallel FLOW*) is an integrated hydrology model that
 simulates surface and subsurface flow. ParFlow :cite:p:`Ashby-Falgout90,
 Jones-Woodward01,KM06,M13` is a parallel simulation platform that operates 
 in three modes:
@@ -14,7 +14,7 @@ in three modes:
 
 #. and integrated-watershed flow.
 
-`ParFlow <https://parflow.org>`_ is especially suitable for large scale problems on a range of
+ParFlow is especially suitable for large scale problems on a range of
 single and multi-processor computing platforms. ParFlow simulates
 saturated and variably saturated subsurface flow in heterogeneous
 porous media in three spatial dimensions using a mulitgrid-preconditioned
