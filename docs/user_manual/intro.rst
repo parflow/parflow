@@ -19,7 +19,7 @@ single and multi-processor computing platforms. ParFlow simulates
 saturated and variably saturated subsurface flow in heterogeneous
 porous media in three spatial dimensions using a mulitgrid-preconditioned
 conjugate gradient solver :cite:p:`Ashby-Falgout90` and a Newton-Krylov nonlinear 
-solver :cite:`Jones-Woodward01`. ParFlow has recently been extended to coupled 
+solver :cite:`Jones-Woodward01`. ParFlow solves  
 surface-subsurface flow to enable the simulation of hillslope runoff and channel 
 routing in a truly integrated fashion :cite:p:`KM06`. ParFlow is also fully-coupled 
 with the land surface model ``CLM`` :cite:p:`Dai03` as described in 

@@ -134,22 +134,18 @@ following a ``#`` character is a comment, and is not part of the file format.
 Main Input Files (.tcl, .py, .ipynb)
 ------------------------------------
 
-The main ParFlow input file is a TCL script. This might seem overly
-combersome at first but the basic input file structure is not very
-complicated (although it is somewhat verbose). For more advanced users,
-the TCL scripting means you can very easily create programs to run
+The main ParFlow input file can be a Python script, a TCL script, or a Jupyter Notebook.  For more advanced users,
+the notbook or scripting environment provides a lot of flexibility and means you can very easily create programs to run
 ParFlow. A simple example is creating a loop to run several hundred
 different simulations using different seeds to the random field
 generators. This can be automated from within the ParFlow input file.
 
-The basic idea behind ParFlow input is a simple database. The database
-contains entries which have a key and a value associated with that key.
-This is very similiar in nature to the Windows XP/Vista registry and
-several other systems. When ParFlow runs, it queries the database you
+The basic idea behind ParFlow input is a simple database of keys. The database
+contains entries which have a key and a value associated with that key. When ParFlow runs, it queries the database you
 have created by key names to get the values you have specified.
 
-The command ``pfset`` is used to create the database entries. 
-A simple ParFlow input script contains a long list of ``pfset`` commands.
+The commands ``pfset`` in TCL or ``<runname>.Key=`` in Python are used to create the database entries. 
+A simple ParFlow input script contains a long list of these commands that set key values.  Note that the ``<runname>`` is the name a user gives to their run, and is a unique identifier to organize the key database and to anchor the files ParFlow writes.
 
 It should be noted that the keys are “dynamic” in that many are built up
 from values of other keys. For example if you have two wells named
@@ -196,7 +192,9 @@ file version number that this file fits.
 
    ::
 
-      pfset FileVersion 4
+      pfset FileVersion 4         ## TCL syntax
+
+      <runname>.FileVersion=4     ## Python syntax
 
 As development of the ParFlow code continues, the input file format will
 vary. We have thus included an input file format number as a way of
@@ -225,7 +223,9 @@ splits in the *x* direction.
 
    ::
 
-      pfset Process.Topology.P        2
+      pfset Process.Topology.P        2  ## TCL syntax
+
+      <runname>.Process.Topology.P=2   ## Python syntax
 
 *integer* **Process.Topology.Q** no default This assigns the process
 splits in the *y* direction.
@@ -234,7 +234,9 @@ splits in the *y* direction.
 
    ::
 
-      pfset Process.Topology.Q        1
+      pfset Process.Topology.Q        1  ## TCL syntax
+
+      <runname>.Process.Topology.Q=1  ## Python syntax
 
 *integer* **Process.Topology.P** no default This assigns the process
 splits in the *z* direction.
@@ -243,13 +245,15 @@ splits in the *z* direction.
 
    ::
 
-      pfset Process.Topology.R        1
+      pfset Process.Topology.R        1  ## TCL syntax
+
+      <runname>.Process.Topology.R=1  ## Python syntax
 
 In addition, you can assign the computing topology when you initiate
 your parflow script using tcl. You must include the topology allocation
 when using tclsh and the parflow script.
 
-Example Usage:
+Example Usage (in TCL):
 
 ::
 
@@ -283,7 +287,9 @@ coordinate system (i.e. UTM).
 
    ::
 
-      pfset   ComputationalGrid.Lower.X  0.0
+      pfset   ComputationalGrid.Lower.X  0.0  ## TCL syntax
+
+      <runname>.ComputationalGrid.Lower.X =0.0  ## Python syntax
 
 *double* **ComputationalGrid.Lower.Y** no default This assigns the lower
 *y* coordinate location for the computational grid.
@@ -292,7 +298,9 @@ coordinate system (i.e. UTM).
 
    ::
 
-      pfset   ComputationalGrid.Lower.Y  0.0
+      pfset   ComputationalGrid.Lower.Y  0.0  ## TCL syntax
+
+      <runname>.ComputationalGrid.Lower.Y =0.0  ## Python syntax
 
 *double* **ComputationalGrid.Lower.Z** no default This assigns the lower
 *z* coordinate location for the computational grid.
@@ -301,7 +309,9 @@ coordinate system (i.e. UTM).
 
    ::
 
-      pfset   ComputationalGrid.Lower.Z  0.0
+      pfset   ComputationalGrid.Lower.Z  0.0  ## TCL syntax
+
+      <runname>.ComputationalGrid.Lower.Z  =0.0  ## Python syntax
 
 *integer* **ComputationalGrid.NX** no default This assigns the number of
 grid cells in the *x* direction for the computational grid.
@@ -309,8 +319,10 @@ grid cells in the *x* direction for the computational grid.
 .. container:: list
 
    ::
+ 
+      pfset  ComputationalGrid.NX  10   ## TCL syntax
 
-      pfset  ComputationalGrid.NX  10 
+     <runname>.ComputationalGrid.NX  =10  ## Python syntax
 
 *integer* **ComputationalGrid.NY** no default This assigns the number of
 grid cells in the *y* direction for the computational grid.
@@ -319,7 +331,9 @@ grid cells in the *y* direction for the computational grid.
 
    ::
 
-      pfset  ComputationalGrid.NY  10 
+      pfset  ComputationalGrid.NY  10   ## TCL syntax
+
+      <runname>.ComputationalGrid.NY =10   ## Python syntax
 
 *integer* **ComputationalGrid.NZ** no default This assigns the number of
 grid cells in the *z* direction for the computational grid.
@@ -328,7 +342,9 @@ grid cells in the *z* direction for the computational grid.
 
    ::
 
-      pfset  ComputationalGrid.NZ  10 
+      pfset  ComputationalGrid.NZ  10   ## TCL syntax
+
+      <runname>.ComputationalGrid.NZ  =10   ## Python syntax
 
 *real* **ComputationalGrid.DX** no default This defines the size of grid
 cells in the *x* direction. Units are *L* and are defined by the units
@@ -338,7 +354,9 @@ of the hydraulic conductivity used in the problem.
 
    ::
 
-      pfset  ComputationalGrid.DX  10.0 
+      pfset  ComputationalGrid.DX  10.0   ## TCL syntax
+
+      <runname>.ComputationalGrid.DX = 10.0  ## Python syntax
 
 *real* **ComputationalGrid.DY** no default This defines the size of grid
 cells in the *y* direction. Units are *L* and are defined by the units
@@ -348,7 +366,9 @@ of the hydraulic conductivity used in the problem.
 
    ::
 
-      pfset  ComputationalGrid.DY  10.0 
+      pfset  ComputationalGrid.DY  10.0   ## TCL syntax
+
+      <runname>.ComputationalGrid.DY  =10.0   ## Python syntax
 
 *real* **ComputationalGrid.DZ** no default This defines the size of grid
 cells in the *z* direction. Units are *L* and are defined by the units
@@ -358,9 +378,11 @@ of the hydraulic conductivity used in the problem.
 
    ::
 
-      pfset  ComputationalGrid.DZ  1.0 
+      pfset  ComputationalGrid.DZ  1.0   ## TCL syntax
 
-Example Usage:
+      <runname>.ComputationalGrid.DZ  =1.0   ## Python syntax
+
+Example Usage (TCL):
 
 ::
 
@@ -378,6 +400,26 @@ Example Usage:
    pfset ComputationalGrid.DX		8.0
    pfset ComputationalGrid.DY		10.0
    pfset ComputationalGrid.DZ		1.0
+
+Example Usage (Python):
+
+::
+
+   #---------------------------------------------------------
+   # Computational Grid
+   #---------------------------------------------------------
+   
+   <runname>.ComputationalGrid.Lower.X	=-10.0
+   <runname>.ComputationalGrid.Lower.Y = 10.0
+   <runname>.ComputationalGrid.Lower.Z	=1.0
+
+   <runname>.ComputationalGrid.NX	=18
+   <runname>.ComputationalGrid.NY	=18
+   <runname>.ComputationalGrid.NZ	=8
+
+   <runname>.ComputationalGrid.DX   =8.0
+   <runname>.ComputationalGrid.DY	=10.0
+   <runname>.ComputationalGrid.DZ	=1.0
 
 .. _Geometries:
 
@@ -404,7 +446,9 @@ defined for this problem.
 
    ::
 
-      pfset GeomInput.Names    "solidinput indinput boxinput"
+      pfset GeomInput.Names    "solidinput indinput boxinput"  ## TCL syntax
+
+      <runname>.GeomInput.Names ='solidinput indinput boxinput'  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.InputType** no default This
 defines the input type for the geometry input with *geom_input_name*.
@@ -413,8 +457,10 @@ This key must be one of: **SolidFile, IndicatorField**, **Box**.
 .. container:: list
 
    ::
+ 
+      pfset GeomInput.solidinput.InputType  SolidFile   ## TCL syntax
 
-      pfset GeomInput.solidinput.InputType  SolidFile
+      <runname>.GeomInput.solidinput.InputType  ='SolidFile'  ## Python syntax
 
 *list* **GeomInput.\ *geom_input_name*.GeomNames** no default This is a
 list of the names of the geometries defined by the geometry input. For a
@@ -430,7 +476,13 @@ name using GeomInput.\ *geom_input_name*.Value.
    ::
 
       pfset GeomInput.solidinput.GeomNames "domain bottomlayer \
-                                            middlelayer toplayer"
+                                            middlelayer toplayer"  ## TCL syntax
+      
+      <runname>.GeomInput.solidinput.GeomNames ='domain bottomlayer middlelayer toplayer'  ## Python syntax
+
+
+
+
 
 *string* **GeomInput.\ *geom_input_name*.Filename** no default For
 IndicatorField and SolidFile geometry inputs this key specifies the
@@ -440,7 +492,9 @@ input filename which contains the field or solid information.
 
    ::
 
-      pfset GeomInput.solidinput.FileName   ocwd.pfsol
+      pfset GeomInput.solidinput.FileName   ocwd.pfsol   ## TCL syntax
+
+      <runname>.GeomInput.solidinput.FileName   ='ocwd.pfsol'  ## Python syntax
 
 *integer* **GeomInput.\ *geometry_input_name*.Value** no default For
 IndicatorField geometry inputs you need to specify the mapping between
@@ -451,7 +505,9 @@ be defined whereever the input file is equal to the specifed value.
 
    ::
 
-      pfset GeomInput.sourceregion.Value   11
+      pfset GeomInput.sourceregion.Value   11   ## TCL syntax
+
+      <runname>.GeomInput.sourceregion.Value   =11  ## Python syntax
 
 For box geometries you need to specify the location of the box. This is
 done by defining two corners of the the box.
@@ -464,7 +520,9 @@ geometry of name *box_geom_name*.
 
    ::
 
-      pfset Geom.background.Lower.X   -1.0
+      pfset Geom.background.Lower.X   -1.0   ## TCL syntax
+
+      <runname>.Geom.background.Lower.X  = -1.0   ## Python syntax
 
 *double* **Geom.\ *box_geom_name*.Lower.Y** no default This gives the
 lower Y real space coordinate value of the previously specified box
@@ -476,6 +534,8 @@ geometry of name *box_geom_name*.
 
       pfset Geom.background.Lower.Y   -1.0
 
+      <runname>.Geom.background.Lower.Y   =-1.0
+
 *double* **Geom.\ *box_geom_name*.Lower.Z** no default This gives the
 lower Z real space coordinate value of the previously specified box
 geometry of name *box_geom_name*.
@@ -485,6 +545,8 @@ geometry of name *box_geom_name*.
    ::
 
       pfset Geom.background.Lower.Z   -1.0
+
+      <runname>.Geom.background.Lower.Z  =-1.0
 
 *double* **Geom.\ *box_geom_name*.Upper.X** no default This gives the
 upper X real space coordinate value of the previously specified box
@@ -496,6 +558,8 @@ geometry of name *box_geom_name*.
 
       pfset Geom.background.Upper.X   151.0
 
+      <runname>.Geom.background.Upper.X   =151.0
+
 *double* **Geom.\ *box_geom_name*.Upper.Y** no default This gives the
 upper Y real space coordinate value of the previously specified box
 geometry of name *box_geom_name*.
@@ -506,6 +570,8 @@ geometry of name *box_geom_name*.
 
       pfset Geom.background.Upper.Y   171.0
 
+      <runname>.Geom.background.Upper.Y   =171.0
+
 *double* **Geom.\ *box_geom_name*.Upper.Z** no default This gives the
 upper Z real space coordinate value of the previously specified box
 geometry of name *box_geom_name*.
@@ -515,6 +581,8 @@ geometry of name *box_geom_name*.
    ::
 
       pfset Geom.background.Upper.Z   11.0
+
+      <runname>.Geom.background.Upper.Z   =11.0
 
 *list* **Geom.\ *geom_name*.Patches** no default Patches are defined on
 the surfaces of geometries. Currently you can only define patches on Box
@@ -531,8 +599,10 @@ converts GMS to SolidFile format.
 
       pfset Geom.background.Patches   "left right front back bottom top"
 
+      <runname>.Geom.background.Patches   ='left right front back bottom top'
+
 Here is an example geometry input section which has three geometry
-inputs.
+inputs (TCL).
 
 .. container:: list
 
@@ -634,6 +704,8 @@ result for every “real time” cycle interval length needed.
 
       pfset TimingInfo.BaseUnit      1.0
 
+      <runname>.TimingInfo.BaseUnit  =1.0
+
 *integer* **TimingInfo.StartCount** no default This key is used to
 indicate the time step number that will be associated with the first
 advection cycle in a transient problem. The value **-1** indicates that
@@ -648,6 +720,8 @@ time-step, but this has not yet been implemented.
 
       pfset TimingInfo.StartCount    0
 
+      <runname>.TimingInfo.StartCount  =0
+
 *double* **TimingInfo.StartTime** no default This key is used to
 indicate the starting time for the simulation.
 
@@ -657,6 +731,8 @@ indicate the starting time for the simulation.
 
       pfset TimingInfo.StartTime     0.0
 
+      <runname>.TimingInfo.StartTime    =0.0
+
 *double* **TimingInfo.StopTime** no default This key is used to indicate
 the stopping time for the simulation.
 
@@ -665,6 +741,8 @@ the stopping time for the simulation.
    ::
 
       pfset TimingInfo.StopTime      100.0
+
+      <runname>.TimingInfo.StopTime  =100.0
 
 *double* **TimingInfo.DumpInterval** no default This key is the real
 time interval at which time-dependent output should be written. A value
@@ -677,6 +755,8 @@ the absolute value of the integer part of the value.
    ::
 
       pfset TimingInfo.DumpInterval  10.0
+
+      <runname>.TimingInfo.DumpInterval =10.0
 
 *integer* **TimingInfo.DumpIntervalExecutionTimeLimit** 0 This key is
 used to indicate a wall clock time to halt the execution of a run. At
@@ -696,6 +776,8 @@ specified at configure time to enable.
 
       pfset TimingInfo.DumpIntervalExecutionTimeLimit 360
 
+      <runname>.TimingInfo.DumpIntervalExecutionTimeLimit =360
+
 For *Richards’ equation cases only* input is collected for time step
 selection. Input for this section is given as follows:
 
@@ -712,6 +794,8 @@ dt_{max}` and :math:`dt^{new} \geq dt_{min}`.
 
       pfset TimeStep.Type      Constant
 
+      <runname>.TimeStep.Type   ='Constant'
+
 *double* **TimeStep.Value** no default This key is used only if a
 constant time step is selected and indicates the value of the time step
 for all steps taken.
@@ -721,6 +805,8 @@ for all steps taken.
    ::
 
       pfset TimeStep.Value      0.001
+
+      <runanme>.TimeStep.Value     =0.001
 
 *double* **TimeStep.InitialStep** no default This key specifies the
 initial time step :math:`dt_0` if the **Growth** type time step is
@@ -732,6 +818,8 @@ selected.
 
       pfset TimeStep.InitialStep    0.001
 
+      <runname>.TimeStep.InitialStep    =0.001
+
 *double* **TimeStep.GrowthFactor** no default This key specifies the
 growth factor :math:`\gamma` by which a time step will be multiplied to
 get the new time step when the **Growth** type time step is selected.
@@ -741,6 +829,8 @@ get the new time step when the **Growth** type time step is selected.
    ::
 
       pfset TimeStep.GrowthFactor      1.5
+
+      <runname>.TimeStep.GrowthFactor      =1.5
 
 *double* **TimeStep.MaxStep** no default This key specifies the maximum
 time step allowed, :math:`dt_{max}`, when the **Growth** type time step
@@ -752,6 +842,8 @@ is selected.
 
       pfset TimeStep.MaxStep      86400
 
+      <runname>.TimeStep.MaxStep  =86400
+
 *double* **TimeStep.MinStep** no default This key specifies the minimum
 time step allowed, :math:`dt_{min}`, when the **Growth** type time step
 is selected.
@@ -761,6 +853,8 @@ is selected.
    ::
 
       pfset TimeStep.MinStep      1.0e-3
+
+      <runname>.TimeStep.MinStep  =1.0e-3
 
 Here is a detailed example of how timing keys might be used in a
 simualtion.
