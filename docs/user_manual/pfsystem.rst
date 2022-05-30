@@ -4,15 +4,13 @@ The ParFlow System
 ==================
 
 The ParFlow system is still evolving, but here we discuss how to define
-the problem in §3.1 :ref:`Defining the Problem`, how to run ParFlow in
-§3.2 :ref:`Running Parflow`, and restart a simulation in 
-§3.3 :ref:`Restarting a Run`. We also cover options for visualizing the
-results in §3.4 :ref:`Visualizing Output` and summarize the contents of
-a directory of test problems provided with ParFlow in
-§3.5 :ref:`Test Directory`. Finally in §3.6 :ref:`Tutorial` we walk
+the problem in :ref:`Defining the Problem`, how to run ParFlow in 
+:ref:`Running Parflow`, and restart a simulation in :ref:`Restarting a Run`. We also cover options for visualizing the
+results in :ref:`Visualizing Output` and summarize the contents of
+a directory of test problems provided with ParFlow in :ref:`Test Directory`. Finally in :ref:`Tutorial` we walk
 through two ParFlow input scripts in detail.
 
-The reader is also referred to Chapter 4 :ref:`Manipulating Data` for a
+The reader is also referred to :ref:`Manipulating Data` for a
 detailed listing of the of functions for manipulating ParFlow data.
 
 .. _Defining the Problem:
@@ -22,23 +20,21 @@ Defining the Problem
 
 There are many ways to define a problem in ParFlow, here we summarize
 the general approach for defining a domain
-(§3.1.1 :ref:`Defining a domain`) and simulating a real watershed
-(§3.1.2 :ref:`Defining a Real domain`).
+(:ref:`Defining a domain`) and simulating a real watershed
+(:ref:`Defining a Real domain`).
 
-In all cases the “main" ParFlow input file is the ``.tcl`` file. 
-This input file is a TCL script with some special routines to create 
-a database which is used as the input for ParFlow. 
-See :ref:`Main Input Files (.tcl, .py, .ipynb)` for details on the format of 
-this file. The input values into ParFlow 
-are defined by a key/value pair. For each key you provide the 
-associated value using the ``pfset`` command inside the input script.
+The “main" ParFlow input file is one of the following: a ``.tcl`` TCL script, a ``.py`` Python script, or a ``.ipynb`` JuPyter notebook. 
+This input script or notebook is used some special routines in PFTools to create 
+a database which is used as the input for ParFlow.  This database has the extension ``.pfidb`` and is the database of keys that ParFlow needs to define a run. 
+See :ref:`Main Input Files (.tcl, .py, .ipynb)` and :ref:`ParFlow Input Keys` for details on the format of 
+these files. The input values into ParFlow 
+are defined by a key/value pair and are listed in :ref:`ParFlow Input Keys`. For each key you provide the 
+associated value using either the ``pfset`` command in TCL or associated it with a named run (we use *<runname>* in this manual to denote that) inside the input script.
 
-Since the input file is a TCL script you can use any feature of TCL to
-define the problem. This manual will make no effort to teach TCL so
-refer to one of the available TCL manuals for more information
-(“Practical Programming in TCL and TK” by Brent Welch :cite:p:`welch.95`
-is a good starting point). This is NOT
-required, you can get along fine without understanding TCL/TK.
+Since the input file is a script or notebook you can use any feature of TCL or Python to
+define the problem and to postprocess your run. This manual will make no effort to teach TCL or Python so
+refer to one of the available manuals or the wealth of online content for more information. This is NOT
+required, you can get along fine without understanding TCL or Python.
 
 Looking at the example programs in the :ref:`Test Directory` and 
 going through the annotated input scripts included in this 
@@ -52,7 +48,7 @@ Basic Domain Definition
 
 ParFlow can handle complex geometries and defining the problem may
 involve several steps. Users can specify simple box domains directly in
-the ``tcl`` script. If a more complicated domain is required, the 
+the inpu script. If a more complicated domain is required, the 
 user may convert geometries into the ``.pfsol`` file format
 (:ref:`ParFlow Solid Files (.pfsol)`) using the appropriate 
 PFTools conversion utility (:ref:`Manipulating Data`). 
@@ -155,15 +151,13 @@ The general approach is as follows:
 
    Calculate slopes in the x and y directions from the elevation
    dataset. This can be done with the built in tools as shown in
-   §4.3 :ref:`common_pftcl` Example 5. In most cases some additional
+   :ref:`common_pftcl` Example 5. In most cases some additional
    processing of the DEM will be required to ensure that the drainage
    patterns are correct. To check this you can run a “parking lot test"
    by setting the permeability of surface to almost zero and adding a
    flux to the top surface. If the results from this test don’t look
    right (i.e. your runoff patterns don’t match what you expect) you
-   will need to go back and modify your DEM. The built in ParFlow tools
-   pitfill and flatfill can be used to address some issues. (These tools
-   are also shown in §4.3 :ref:`common_pftcl` Example 5).
+   will need to go back and modify your DEM.
 
    Create an indicator file for the subsurface. The indicator file is a
    3D ``.pfb`` file with the same dimensions as your domain that has 
@@ -173,7 +167,7 @@ The general approach is as follows:
 
    Determine the hydrologic properties for each of the subsurface units
    defined in the indicator file. You will need: Permeability, specific
-   storage, porosity and vanGenuchten parameters.
+   storage, porosity and van Genuchten parameters.
 
    At this point you are ready to run a ParFlow model without ``CLM`` and 
    if you don’t need to include the land surface model in your simulations 
@@ -277,8 +271,12 @@ Running ParFlow
 ---------------
 
 Once the problem input is defined, you need to add a few things to the
-script to make it execute ParFlow. First you need to add the TCL
-commands to load the ParFlow command package.
+script to make it execute ParFlow. First you need to add the TCL or Python
+commands to load the ParFlow command package.  We will cover TCL first, then Python below.
+
+**TCL**
+
+To set up and run ParFlow using PFTools in TCL, you need the following header lines.
 
 .. container:: list
 
@@ -321,7 +319,7 @@ you will see many files after the run. Each of these contains
 the output from a single node; before attempting using them 
 you should undistribute them.
 
-Since the input file is a TCL script run it using TCL:
+Since the input file is a TCL script run it using the TCL shell or command intepreter:
 
 .. container:: list
 
@@ -332,13 +330,59 @@ Since the input file is a TCL script run it using TCL:
 NOTE: Make sure you are using TCL 8.0 or later. The script will not work
 with earlier releases.
 
+**Python**
+
+To run ParFlow via Python in either a Notebook or script you need to install PFTools. This makes the Python commands 
+available within your environment.  To do this you can either
+build ParFlow to include the building of PFTools in Python, or you can install the package
+from PyPi.  This might look like:
+
+.. container:: list
+
+   ::
+
+      pip install pftools 
+
+At a minimum you need to import the ParFlow Python package and name your run.  There are a lot more tools
+that bring substantial functionality that are discussed in other sections of this manual.
+
+.. container:: list
+
+   ::
+
+      from parflow import Run
+      from parflow.tools.fs import mkdir, get_absolute_path
+
+      dsingle = Run("dsingle", __file__)
+      #-----------------------------------------------------------------------------
+      dsingle.FileVersion = 4
+
+Then to build the key database and execute ParFlow you use the run command built into the Python PFTools structure. 
+
+.. container:: list
+
+   ::
+
+      dsingle.run()
+
+From the command line you would execute your Python script using the command interpreter.
+
+.. container:: list
+
+   ::
+
+      python default_single.py 
+
+A lot more detail, including several tutorials and examples, are given in the :ref:`Python` section of this manual.
+
+
 One output file of particular interest is the ``<run name>.out.log`` file. 
 This file contains information about the run such as number of 
 processes used, convergence history of algorithms, timings and 
 MFLOP rates. For Richards’ equation problems (including overland 
 flow) the ``<run name>.out.kinsol.log`` file contains the nonlinear 
 convergence information for each timestep. Additionally, 
-the ``<run name>.out.tx`` contains all information routed 
+the ``<run name>.out.txt`` contains all information routed 
 to ``standard out`` of the machine you are running on and 
 often contains error messages and other control information.
 

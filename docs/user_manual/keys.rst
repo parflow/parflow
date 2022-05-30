@@ -136,7 +136,7 @@ Computational Grid
 ~~~~~~~~~~~~~~~~~~
 
 The computational grid is briefly described in
-§3.1 :ref:`Defining the Problem`. The computational grid keys set the
+:ref:`Defining the Problem`. The computational grid keys set the
 bottom left corner of the domain to a specific point in space. If using
 a .pfsol file, the bottom left corner location of the .pfsol file must
 be the points designated in the computational grid. The user can also
@@ -883,11 +883,8 @@ simulation.
 Domain
 ~~~~~~
 
-The domain may be represented by any of the solid types in
-§6.1.4 :ref:`Geometries` above that allow the definition of surface
-patches. These surface patches are used to define boundary conditions in
-§6.1.24 :ref:`Boundary Conditions: Pressure` and
-§6.1.25 :ref:`Boundary Conditions: Saturation` below. Subsequently, it
+The domain may be represented by any of the solid types in :ref:`Geometries` above that allow the definition of surface
+patches. These surface patches are used to define boundary conditions in :ref:`Boundary Conditions: Pressure` and :ref:`Boundary Conditions: Saturation` below. Subsequently, it
 is required that the union (or combination) of the defined surface
 patches equal the entire domain surface. NOTE: This requirement is NOT
 checked in the code.
@@ -1047,7 +1044,7 @@ Permeability
 ~~~~~~~~~~~~
 
 In this section, permeability property values are assigned to grid
-points within geometries (specified in §6.1.4 :ref:`Geometries` above)
+points within geometries (specified in :ref:`Geometries` above)
 using one of the methods described below. Permeabilities are assumed to
 be a diagonal tensor with entries given as,
 
@@ -1130,6 +1127,8 @@ geometries must cover the entire computational domain.
 
       pfset GeomInput.Names   "background domain concen_region"
 
+      <runname>.GeomInput.Names  ='background domain concen_region'
+
 *string* **Geom.geometry_name.Perm.Type** no default This key specifies
 which method is to be used to assign permeability data to the named
 geometry, *geometry_name*. It must be either **Constant**,
@@ -1163,6 +1162,8 @@ conditioning points can be changed.
 
       pfset Geom.background.Perm.Type   Constant
 
+      <runname>.Geom.background.Perm.Type   =Constant
+
 *double* **Geom.\ *geometry_name*.Perm.Value** no default This key
 specifies the value assigned to all points in the named geometry,
 *geometry_name*, if the type was set to constant.
@@ -1172,6 +1173,8 @@ specifies the value assigned to all points in the named geometry,
    ::
 
       pfset Geom.domain.Perm.Value   1.0
+
+      <runname>.Geom.domain.Perm.Value   =1.0
 
 *double* **Geom.\ *geometry_name*.Perm.LambdaX** no default This key
 specifies the x correlation length, :math:`\lambda_x`, of the field
@@ -1184,6 +1187,8 @@ Bands or Parallel Gaussian Simulator are chosen.
 
       pfset Geom.domain.Perm.LambdaX   200.0
 
+      <runname>.Geom.domain.Perm.LambdaX   =200.0
+
 *double* **Geom.\ *geometry_name*.Perm.LambdaY** no default This key
 specifies the y correlation length, :math:`\lambda_y`, of the field
 generated for the named geometry, *geometry_name*, if either the Turning
@@ -1194,6 +1199,8 @@ Bands or Parallel Gaussian Simulator are chosen.
    ::
 
       pfset Geom.domain.Perm.LambdaY   200.0
+
+      <runname>.Geom.domain.Perm.LambdaY   =200.0
 
 *double* **Geom.\ *geometry_name*.Perm.LambdaZ** no default This key
 specifies the z correlation length, :math:`\lambda_z`, of the field
@@ -1206,6 +1213,8 @@ Bands or Parallel Gaussian Simulator are chosen.
 
       pfset Geom.domain.Perm.LambdaZ   10.0
 
+      <runname>.Geom.domain.Perm.LambdaZ   =10.0
+
 *double* **Geom.\ *geometry_name*.Perm.GeomMean** no default This key
 specifies the geometric mean, :math:`\mu`, of the log normal field
 generated for the named geometry, *geometry_name*, if either the Turning
@@ -1216,6 +1225,8 @@ Bands or Parallel Gaussian Simulator are chosen.
    ::
 
       pfset Geom.domain.Perm.GeomMean   4.56
+
+      <runname>.Geom.domain.Perm.GeomMean   =4.56
 
 *double* **Geom.\ *geometry_name*.Perm.Sigma** no default This key
 specifies the standard deviation, :math:`\sigma`, of the normal field
@@ -1228,6 +1239,8 @@ Bands or Parallel Gaussian Simulator are chosen.
 
       pfset Geom.domain.Perm.Sigma   2.08
 
+      <runname>.Geom.domain.Perm.Sigma   =2.08
+
 *integer* **Geom.\ *geometry_name*.Perm.Seed** 1 This key specifies the
 initial seed for the random number generator used to generate the field
 for the named geometry, *geometry_name*, if either the Turning Bands or
@@ -1239,6 +1252,8 @@ Parallel Gaussian Simulator are chosen. This number must be positive.
 
       pfset Geom.domain.Perm.Seed   1
 
+      <runname>.Geom.domain.Perm.Seed   =1
+
 *integer* **Geom.\ *geometry_name*.Perm.NumLines** 100 This key
 specifies the number of lines to be used in the Turning Bands algorithm
 for the named geometry, *geometry_name*.
@@ -1248,6 +1263,8 @@ for the named geometry, *geometry_name*.
    ::
 
       pfset Geom.domain.Perm.NumLines   100
+
+      <runname>.Geom.domain.Perm.NumLines  =100
 
 *double* **Geom.\ *geometry_name*.Perm.RZeta** 5.0 This key specifies
 the resolution of the line processes, in terms of the minimum grid
@@ -1260,6 +1277,8 @@ geometry, *geometry_name*. Large values imply high resolution.
 
       pfset Geom.domain.Perm.RZeta   5.0
 
+      <runname>.Geom.domain.Perm.RZeta  =5.0
+
 *double* **Geom.\ *geometry_name*.Perm.KMax** 100.0 This key specifies
 the the maximum normalized frequency, :math:`K_{\rm max}`, to be used in
 the Turning Bands algorithm for the named geometry, *geometry_name*.
@@ -1270,6 +1289,8 @@ the Turning Bands algorithm for the named geometry, *geometry_name*.
 
       pfset Geom.domain.Perm.KMax   100.0
 
+      <runname>.Geom.domain.Perm.KMax   =100.0
+
 *double* **Geom.\ *geometry_name*.Perm.DelK** 0.2 This key specifies the
 normalized frequency increment, :math:`\delta K`, to be used in the
 Turning Bands algorithm for the named geometry, *geometry_name*.
@@ -1279,6 +1300,8 @@ Turning Bands algorithm for the named geometry, *geometry_name*.
    ::
 
       pfset Geom.domain.Perm.DelK   0.2
+
+      <runname>.Geom.domain.Perm.DelK  =0.2
 
 *integer* **Geom.\ *geometry_name*.Perm.MaxNPts** no default This key
 sets limits on the number of simulated points in the search neighborhood
@@ -1291,6 +1314,8 @@ to be used in the Parallel Gaussian Simulator for the named geometry,
 
       pfset Geom.domain.Perm.MaxNPts   5
 
+      <runname>.Geom.domain.Perm.MaxNPts  =5
+
 *integer* **Geom.\ *geometry_name*.Perm.MaxCpts** no default This key
 sets limits on the number of external conditioning points in the search
 neighborhood to be used in the Parallel Gaussian Simulator for the named
@@ -1301,6 +1326,8 @@ geometry, *geometry_name*.
    ::
 
       pfset Geom.domain.Perm.MaxCpts   200
+
+      <runname>.Geom.domain.Perm.MaxCpts   =200
 
 *string* **Geom.\ *geometry_name*.Perm.LogNormal** "LogTruncated" The
 key specifies when a normal, log normal, truncated normal or truncated
@@ -1315,6 +1342,8 @@ either Turning Bands or the Parallel Gaussian Simulator.
 
       pfset Geom.domain.Perm.LogNormal   "LogTruncated"
 
+      <runname>.Geom.domain.Perm.LogNormal   ='LogTruncated'
+
 *string* **Geom.\ *geometry_name*.Perm.StratType** "Bottom" This key
 specifies the stratification of the permeability field generated by the
 method for the named geometry, *geometry_name*. The value must be one of
@@ -1327,6 +1356,8 @@ Turning Bands or the Parallel Gaussian Simulator.
 
       pfset Geom.domain.Perm.StratType  "Bottom"
 
+      <runname>.Geom.domain.Perm.StratType  ='Bottom'
+
 *double* **Geom.\ *geometry_name*.Perm.LowCutoff** no default This key
 specifies the low cutoff value for truncating the generated field for
 the named geometry, *geometry_name*, when either the NormalTruncated or
@@ -1337,6 +1368,8 @@ LogTruncated values are chosen.
    ::
 
       pfset Geom.domain.Perm.LowCutoff   0.0
+
+      <runname>.Geom.domain.Perm.LowCutoff  =0.0
 
 *double* **Geom.\ *geometry_name*.Perm.HighCutoff** no default This key
 specifies the high cutoff value for truncating the generated field for
@@ -1349,12 +1382,14 @@ LogTruncated values are chosen.
 
       pfset Geom.domain.Perm.HighCutoff   100.0
 
+      <runname>.Geom.domain.Perm.HighCutoff   =100.0
+
 *string* **Geom.\ *geometry_name*.Perm.FileName** no default This key
 specifies that permeability values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
 the “ParFlow Binary” file whose filename is given as the value. For a
 description of the ParFlow Binary file format, see
-§6.3 :ref:`ParFlow Binary Files (.pfb)`. The ParFlow Binary file
+:ref:`ParFlow Binary Files (.pfb)`. The ParFlow Binary file
 associated with the named geometry must contain a collection of
 permeability values corresponding in a one-to-one manner to the entire
 computational grid. That is to say, when the contents of the file are
@@ -1383,6 +1418,8 @@ the permeability values would be read in only once.
 
       pfset Geom.domain.Perm.FileName "domain_perm.pfb"
 
+      <runname>.Geom.domain.Perm.FileName ='domain_perm.pfb'
+
 *string* **Perm.TensorType** no default This key specifies whether the
 permeability tensor entries :math:`k_x, k_y` and :math:`k_z` will be
 specified as three constants within a set of regions covering the domain
@@ -1395,6 +1432,8 @@ for this key are **TensorByGeom** and **TensorByFile**.
 
       pfset Perm.TensorType     TensorByGeom
 
+      <runname>.Perm.TensorType     =TensorByGeom
+
 *string* **Geom.Perm.TensorByGeom.Names** no default This key specifies
 all of the geometries to which permeability tensor entries will be
 assigned. These geometries must cover the entire computational domain.
@@ -1403,7 +1442,9 @@ assigned. These geometries must cover the entire computational domain.
 
    ::
 
-      pfset Geom.Perm.TensorByGeom.Names   "background domain" 
+      pfset Geom.Perm.TensorByGeom.Names   "background domain"
+
+      <runname>.Geom.Perm.TensorByGeom.Names   ='background domain'
 
 *double* **Geom.\ *geometry_name*.Perm.TensorValX** no default This key
 specifies the value of :math:`k_x` for the geometry given by
@@ -1415,6 +1456,8 @@ specifies the value of :math:`k_x` for the geometry given by
 
       pfset Geom.domain.Perm.TensorValX   1.0
 
+      <runname>.Geom.domain.Perm.TensorValX   =1.0
+
 *double* **Geom.\ *geometry_name*.Perm.TensorValY** no default This key
 specifies the value of :math:`k_y` for the geometry given by
 *geom_name*.
@@ -1425,6 +1468,8 @@ specifies the value of :math:`k_y` for the geometry given by
 
       pfset Geom.domain.Perm.TensorValY   1.0
 
+      <runname>.Geom.domain.Perm.TensorValY   =1.0
+
 *double* **Geom.\ *geometry_name*.Perm.TensorValZ** no default This key
 specifies the value of :math:`k_z` for the geometry given by
 *geom_name*.
@@ -1434,6 +1479,8 @@ specifies the value of :math:`k_z` for the geometry given by
    ::
 
       pfset Geom.domain.Perm.TensorValZ   1.0
+
+      <runname>.Geom.domain.Perm.TensorValZ   =1.0
 
 *string* **Geom.\ *geometry_name*.Perm.TensorFileX** no default This key
 specifies that :math:`k_x` values for the specified geometry,
@@ -1447,6 +1494,8 @@ choice for the value of *geometry_name* is “domain”.
 
       pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"
 
+      <runname>.Geom.domain.Perm.TensorByFileX  ='perm_x.pfb'
+
 *string* **Geom.\ *geometry_name*.Perm.TensorFileY** no default This key
 specifies that :math:`k_y` values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
@@ -1458,6 +1507,8 @@ choice for the value of *geometry_name* is “domain”.
    ::
 
       pfset Geom.domain.Perm.TensorByFileY   "perm_y.pfb"
+
+      <runname>.Geom.domain.Perm.TensorByFileY   ='perm_y.pfb'
 
 *string* **Geom.\ *geometry_name*.Perm.TensorFileZ** no default This key
 specifies that :math:`k_z` values for the specified geometry,
@@ -1471,13 +1522,15 @@ choice for the value of *geometry_name* is “domain”.
 
       pfset Geom.domain.Perm.TensorByFileZ   "perm_z.pfb"
 
+      <runname>.Geom.domain.Perm.TensorByFileZ  ='perm_z.pfb'
+
 .. _Porosity:
 
 Porosity
 ~~~~~~~~
 
 Here, porosity values are assigned within geounits (specified in
-§6.1.4 :ref:`Geometries` above) using one of the methods described
+:ref:`Geometries` above) using one of the methods described
 below.
 
 The format for this section of input is:
@@ -1492,6 +1545,8 @@ must cover the entire computational domain.
 
       pfset Geom.Porosity.GeomNames   "background"
 
+      <runname>.Geom.Porosity.GeomNames  ='background'
+
 *string* **Geom.\ *geometry_name*.Porosity.Type** no default This key
 specifies which method is to be used to assign porosity data to the
 named geometry, *geometry_name*. The only choice currently available is
@@ -1504,6 +1559,8 @@ grid cells within a geometry.
 
       pfset Geom.background.Porosity.Type   Constant
 
+      <runname>.Geom.background.Porosity.Type   =Constant
+
 *double* **Geom.\ *geometry_name*.Porosity.Value** no default This key
 specifies the value assigned to all points in the named geometry,
 *geometry_name*, if the type was set to constant.
@@ -1514,6 +1571,8 @@ specifies the value assigned to all points in the named geometry,
 
       pfset Geom.domain.Porosity.Value   1.0
 
+      <runname>.Geom.domain.Porosity.Value  =1.0
+
 .. _Specific Storage:
 
 Specific Storage
@@ -1521,7 +1580,7 @@ Specific Storage
 
 Here, specific storage (:math:`S_s` in Equation
 :eq:`richard`) values are assigned within geounits
-(specified in §6.1.4 `Geometries` above) using one of the methods
+(specified in `Geometries` above) using one of the methods
 described below.
 
 The format for this section of input is:
@@ -1536,6 +1595,8 @@ assigned. These geometries must cover the entire computational domain.
 
       pfset SpecificStorage.GeomNames       "domain"
 
+      <runname>.SpecificStorage.GeomNames      ='domain'
+
 *string* **SpecificStorage.Type** no default This key specifies which
 method is to be used to assign specific storage data. The only choice
 currently available is **Constant** which indicates that a constant is
@@ -1547,6 +1608,8 @@ to be assigned to all grid cells within a geometry.
 
       pfset SpecificStorage.Type            Constant
 
+      <runname>.SpecificStorage.Type     =Constant
+
 *double* **Geom.\ *geometry_name*.SpecificStorage.Value** no default
 This key specifies the value assigned to all points in the named
 geometry, *geometry_name*, if the type was set to constant.
@@ -1557,13 +1620,15 @@ geometry, *geometry_name*, if the type was set to constant.
 
       pfset Geom.domain.SpecificStorage.Value 1.0e-4
 
+      <runname>.Geom.domain.SpecificStorage.Value =1.0e-4
+
 .. _dZ Multipliers:
 
 dZMultipliers
 ~~~~~~~~~~~~~
 
 Here, dZ multipliers (:math:`\delta Z * m`) values are assigned within
-geounits (specified in §6.1.4 :ref:`Geometries` above) using one of the
+geounits (specified in :ref:`Geometries` above) using one of the
 methods described below.
 
 The format for this section of input is:
@@ -1579,6 +1644,8 @@ indicates a false or non-active variable dz and each layer thickness is
 
       pfset Solver.Nonlinear.VariableDz     True
 
+      <runnname>.Solver.Nonlinear.VariableDz  =True
+
 *list* **dzScale.GeomNames** no default This key specifies which problem
 domain is being applied a variable dz subsurface. These geometries must
 cover the entire computational domain.
@@ -1588,6 +1655,8 @@ cover the entire computational domain.
    ::
 
       pfset dzScale.GeomNames domain
+
+      <runname>.dzScale.GeomNames =domain
 
 *string* **dzScale.Type** no default This key specifies which method is
 to be used to assign variable vertical grid spacing. The choices
@@ -1602,6 +1671,8 @@ which reads in values from a distributed pfb file.
 
       pfset dzScale.Type            Constant
 
+      <runname>.dzScale.Type      = Constant
+
 *list* **Specific dzScale.GeomNames** no default This key specifies all
 of the geometries on which a different dz scaling value will be
 assigned. These geometries must cover the entire computational domain.
@@ -1611,6 +1682,8 @@ assigned. These geometries must cover the entire computational domain.
    ::
 
       pfset dzScale.GeomNames       "domain"
+
+      <runname>.dzScale.GeomNames   ='domain'
 
 *double* **Geom.\ *geometry_name*.dzScale.Value** no default This key
 specifies the value assigned to all points in the named geometry,
@@ -1622,6 +1695,8 @@ specifies the value assigned to all points in the named geometry,
 
       pfset Geom.domain.dzScale.Value 1.0
 
+      <runname>.Geom.domain.dzScale.Value =1.0
+
 *string* **Geom.\ *geometry_name*.dzScale.FileName** no default This key
 specifies file to be read in for variable dz values for the given
 geometry, *geometry_name*, if the type was set to **PFBFile**.
@@ -1631,6 +1706,8 @@ geometry, *geometry_name*, if the type was set to **PFBFile**.
    ::
 
       pfset Geom.domain.dzScale.FileName  vardz.pfb
+
+      <runname>.Geom.domain.dzScale.FileName  ='vardz.pfb'
 
 *integer* **dzScale.nzListNumber** no default This key indicates the
 number of layers with variable dz in the subsurface. This value is the
@@ -1642,20 +1719,25 @@ same as the *ComputationalGrid.NZ* key.
 
       pfset dzScale.nzListNumber  10
 
+      <runname>.dzScale.nzListNumber  =10
+
 *double* **Cell.\ *nzListNumber*.dzScale.Value** no default This key
 assigns the thickness of each layer defined by nzListNumber. ParFlow
 assigns the layers from the bottom-up (i.e. the bottom of the domain is
 layer 0, the top is layer NZ-1). The total domain depth
 (*Geom.domain.Upper.Z*) does not change with variable dz. The layer
-thickness is calculated by *ComputationalGrid.DZ \*dZScale*.
+thickness is calculated by *ComputationalGrid.DZ \*dZScale*. *Note that* in Python a number is not an allowed character for a variable.
+Thus we proceed the layer number with an underscore "_" as shown in the example below.
 
 .. container:: list
 
    ::
 
-      pfset Cell.0.dzScale.Value 1.0
+      pfset Cell.0.dzScale.Value 1.0    ## TCL
 
-Example Usage:
+      <runname>.Cell._0.dzScale.Value =1.0  ## Python
+
+Example Usage (TCL):
 
 .. container:: list
 
@@ -1687,6 +1769,39 @@ Example Usage:
       pfset Cell.3.dzScale.Value 0.45
       pfset Cell.4.dzScale.Value 0.05
 
+Example Usage (Python):
+
+.. container:: list
+
+   ::
+
+
+      #--------------------------------------------
+      # Variable dz Assignments
+      #------------------------------------------
+      # Set VariableDz to be true
+      # Indicate number of layers (nzlistnumber), which is the same as nz
+      # (1) There is nz*dz = total depth to allocate,  
+      # (2) Each layer’s thickness is dz*dzScale, and
+      # (3) Assign the layer thickness from the bottom up.
+      # In this example nz = 5; dz = 10; total depth 40;
+      # Layers 	Thickness [m]
+      # 0 		15 			Bottom layer
+      # 1		15
+      # 2		5
+      # 3		4.5			
+      # 4 		0.5			Top layer
+      <runname>.Solver.Nonlinear.VariableDz     =True
+      <runname>.dzScale.GeomNames               =domain
+      <runname>.dzScale.Type                    =nzList
+      <runname>.dzScale.nzListNumber            =5
+      <runname>.Cell._0.dzScale.Value            =1.5
+      <runname>.Cell._1.dzScale.Value            =1.5
+      <runname>.Cell._2.dzScale.Value            =0.5
+      <runname>.Cell._3.dzScale.Value            =0.45
+      <runname>.Cell._4.dzScale.Value            =0.05
+
+
 .. _Manning's Roughness Values:
 
 Manning’s Roughness Values
@@ -1710,6 +1825,8 @@ surface of the computational domain.
 
       pfset Mannings.GeomNames       "domain"
 
+      <runname>.Mannings.GeomNames    ='domain'
+
 *string* **Mannings.Type** no default This key specifies which method is
 to be used to assign Mannings roughness data. The choices currently
 available are **Constant** which indicates that a constant is to be
@@ -1723,6 +1840,8 @@ ParFlow binary file.
 
       pfset Mannings.Type "Constant"
 
+      <runname>.Mannings.Type =Constant
+
 *double* **Mannings.Geom.\ *geometry_name*.Value** no default This key
 specifies the value assigned to all points in the named geometry,
 *geometry_name*, if the type was set to constant.
@@ -1733,6 +1852,8 @@ specifies the value assigned to all points in the named geometry,
 
       pfset Mannings.Geom.domain.Value 5.52e-6
 
+      <runname>.Mannings.Geom.domain.Value =5.52e-6
+
 *double* **Mannings.FileName** no default This key specifies the value
 assigned to all points be read in from a ParFlow binary file.
 
@@ -1742,6 +1863,8 @@ assigned to all points be read in from a ParFlow binary file.
 
       pfset Mannings.FileName roughness.pfb
 
+      <runname>.Mannings.FileName ='roughness.pfb'
+
 Complete example of setting Mannings roughness :math:`n` values by
 geometry:
 
@@ -1749,9 +1872,13 @@ geometry:
 
    ::
 
-      pfset Mannings.Type "Constant"
-      pfset Mannings.GeomNames "domain"
-      pfset Mannings.Geom.domain.Value 5.52e-6
+    pfset Mannings.Type "Constant"
+    pfset Mannings.GeomNames "domain"
+    pfset Mannings.Geom.domain.Value 5.52e-6
+
+    <runname>.Mannings.Type ="Constant"
+    <runname>.Mannings.GeomNames ="domain"
+    <runname>.Mannings.Geom.domain.Value =5.52e-6
 
 .. _Topographical Slopes:
 
@@ -1779,6 +1906,8 @@ upper surface of the computational domain.
 
       pfset ToposlopesX.GeomNames       "domain"
 
+      <runname>.ToposlopesX.GeomNames      = "domain"
+
 *list* **ToposlopesY.GeomNames** no default This key specifies all of
 the geometries on which a different :math:`y` topographic slope values
 will be assigned. Topographic slopes may be assigned by **PFBFile** or
@@ -1790,6 +1919,8 @@ upper surface of the computational domain.
    ::
 
       pfset ToposlopesY.GeomNames       "domain"
+
+      <runname>.ToposlopesY.GeomNames      = "domain"
 
 *string* **ToposlopesX.Type** no default This key specifies which method
 is to be used to assign topographic slopes. The choices currently
@@ -1866,7 +1997,7 @@ Retardation
 ~~~~~~~~~~~
 
 Here, retardation values are assigned for contaminants within geounits
-(specified in §6.1.4 `Geometries` above) using one of the
+(specified in `Geometries` above) using one of the
 functions described below. The format for this section of input is:
 
 *list* **Geom.Retardation.GeomNames** no default This key specifies all
@@ -2625,8 +2756,7 @@ each phase interface the pressure is constant. *It is also assumed here
 that all phases are distributed within the domain at all times such that
 the lighter phases are vertically higher than the heavier phases.*
 
-Boundary condition input is associated with domain patches (see
-§6.1.7 :ref:`Domain`). Note that different patches may have different
+Boundary condition input is associated with domain patches (see :ref:`Domain`). Note that different patches may have different
 types of boundary conditions on them.
 
 *list* **BCPressure.PatchNames** no default This key specifies the names
@@ -2667,7 +2797,7 @@ boundary condition that is read form a properly distributed .pfb file
 defined on a grid consistent with the pressure field grid. Only the
 values needed for the patch are used. The choices **OverlandFlow** and
 **OverlandFlowPFB** both turn on fully-coupled overland flow routing as
-described in :cite:t:`KM06` and in §5.5 :ref:`Overland Flow`.
+described in :cite:t:`KM06` and in :ref:`Overland Flow`.
 The key **OverlandFlow** corresponds to a **Value** key with a positive
 or negative value, to indicate uniform fluxes (such as rainfall or
 evapotranspiration) over the entire domain while the key
@@ -2913,8 +3043,7 @@ should *not* be defined for the single phase and Richards’ equation
 cases.
 
 Here we define the boundary conditions for the saturations. Boundary
-condition input is associated with domain patches (see
-§6.1.7 :ref:`Domain`). Note that different patches may have different
+condition input is associated with domain patches (see :ref:`Domain`). Note that different patches may have different
 types of boundary conditions on them.
 
 *list* **BCSaturation.PatchNames** no default This key specifies the
@@ -3197,7 +3326,7 @@ given contaminant, *contaminant_name*. The choices for this key are
 **Constant** or **PFBFile**. The choice **Constant** will apply
 constants values to different geometries. The choice **PFBFile** will
 read values from a “ParFlow Binary” file (see
-§6.3 :ref:`ParFlow Binary Files (.pfb)`).
+:ref:`ParFlow Binary Files (.pfb)`).
 
 .. container:: list
 
