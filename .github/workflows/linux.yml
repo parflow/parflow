@@ -23,7 +23,7 @@ jobs:
             os: ubuntu-20.04,
             cudaos: 'ubuntu2004',
             python: "false",
-            backend: "none",
+            backend: "omp",
             amps_layer: oas3
           }
         - {
