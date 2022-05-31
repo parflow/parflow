@@ -1564,6 +1564,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   int fflag, fstart, fstop;     // IMF: index w/in 3D forcing array corresponding to istep
   int n, c;                     // IMF: index vars for looping over subgrid data BH: added c
   int ind_veg;                  /*BH: temporary variable to store vegetation index */
+  int Stepcount = 0;            /* Added for transient EvapTrans file management - NBE */
+  int Loopcount = 0;            /* Added for transient EvapTrans file management - NBE */
   double sw=NAN, lw=NAN, prcp=NAN, tas=NAN, u=NAN, v=NAN, patm=NAN, qatm=NAN;   // IMF: 1D forcing vars (local to AdvanceRichards)
   double lai[18], sai[18], z0m[18], displa[18]; /*BH: array with lai/sai/z0m/displa values for each veg class */
   double *sw_data = NULL;
@@ -1598,13 +1600,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     *qflx_soi, *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *iflag,
     *qirr, *qirr_inst;
   int clm_file_dir_length;
+
+  double print_cdt;
+  int clm_dump_files = 0;
+  int rank = amps_Rank(amps_CommWorld);
 #endif
 
-  int rank;
   int any_file_dumped;
   int clm_file_dumped;
   int dump_files = 0;
-  int clm_dump_files;
+  
   int retval;
   int converged;
   int take_more_time_steps;
@@ -1616,7 +1621,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   double ct = 0.0;
   double cdt = 0.0;
   double print_dt;
-  double print_cdt;
   double dtmp, err_norm;
   double gravity = ProblemGravity(problem);
 
@@ -1626,20 +1630,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   char file_prefix[2048], file_type[2048], file_postfix[2048];
   char nc_postfix[2048];
 
-  /* Added for transient EvapTrans file management - NBE */
-  int Stepcount, Loopcount;
-  Stepcount = 0;
-  Loopcount = 0;
-
   int first_tstep = 1;
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
   //CPS oasis definition phase
 #ifdef HAVE_OAS3
-  int p = GetInt("Process.Topology.P");
-  int q = GetInt("Process.Topology.Q");
-  int r = GetInt("Process.Topology.R");
   int nlon = GetInt("ComputationalGrid.NX");
   int nlat = GetInt("ComputationalGrid.NY");
   double pfl_step = GetDouble("TimeStep.Value");
@@ -1688,8 +1684,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                        (&cdt, &dt_info, t, problem, problem_data));
   }
   dt = cdt;
-
-  rank = amps_Rank(amps_CommWorld);
 
   /*
    * Check to see if pressure solves are requested
@@ -1762,7 +1756,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       // IMF: Added to include CLM dumps in file_number updating.
       //      Init to zero outside of ifdef HAVE_CLM
       clm_file_dumped = 0;
-      clm_dump_files = 0;
 
       /* IMF: The following are only used w/ CLM */
 #ifdef HAVE_CLM
