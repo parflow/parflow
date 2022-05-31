@@ -284,6 +284,25 @@ Example Usage (Python):
    <runname>.ComputationalGrid.DY	=10.0
    <runname>.ComputationalGrid.DZ	=1.0
 
+*string* **UseClustering** True Run a clustering algorithm to create
+boxes in index space for iteration. By default an octree representation
+is used for iteration, this may result in iterating over many nodes in
+the octree. Th UseClustering key will run a clustering algorithm to
+build a set of boxes for iteration.
+
+This does not always have a signiciant impact on performance and the
+clustering algorithm can be expensive to compute. For small problems and
+short running problems clustering is not recommended. Long running
+problems may or may not see a benifit. The result varies significantly
+based on the geometries in the problem.
+
+The Berger-Rigoutsos algorithm is currently used for clustering.
+
+::
+
+   pfset  UseClustering  False
+
+
 .. _Geometries:
 
 Geometries
@@ -1801,6 +1820,104 @@ Example Usage (Python):
       <runname>.Cell._3.dzScale.Value            =0.45
       <runname>.Cell._4.dzScale.Value            =0.05
 
+.. _Flow Barrier Keys:
+
+Flow Barriers
+~~~~~~~~~~~~~
+
+Here, the values for Flow Barriers described in `[FB] <#FB>`__ can be
+input. These are only available with Solver **Richards** and can be
+specified in X, Y or Z directions independently using PFB files. These
+barriers are appied at the cell face at the location :math:`i+1/2`. That
+is a value of :math:`FB_x` specified at :math:`i` will be applied to the
+cell face at :math:`i+1/2` or /em between cells :math:`i` and
+:math:`i+1`. The same goes for :math:`FB_y` (:math:`j+1/2`) and
+:math:`FB_z` (:math:`k+1/2`). The flow barrier values are unitless and
+mulitply the flux equation as shown in `[eq:qFBx] <#eq:qFBx>`__.
+
+The format for this section of input is:
+
+*string* **Solver.Nonlinear.FlowBarrierX** False This key specifies
+whether Flow Barriers are to be used in the X direction, the default is
+False. The default indicates a false or :math:`FB_x` value of one [-]
+everywhere in the domain.
+
+::
+
+   pfset Solver.Nonlinear.FlowBarrierX     True
+
+*string* **Solver.Nonlinear.FlowBarrierY** False This key specifies
+whether Flow Barriers are to be used in the Y direction, the default is
+False. The default indicates a false or :math:`FB_y` value of one [-]
+everywhere in the domain.
+
+::
+
+   pfset Solver.Nonlinear.FlowBarrierY     True
+
+*string* **Solver.Nonlinear.FlowBarrierZ** False This key specifies
+whether Flow Barriers are to be used in the Z direction, the default is
+False. The default indicates a false or :math:`FB_z` value of one [-]
+everywhere in the domain.
+
+::
+
+   pfset Solver.Nonlinear.FlowBarrierZ     True
+
+*string* **FBx.Type** no default This key specifies which method is to
+be used to assign flow barriers in X. The only choice currently
+available is **PFBFile** which reads in values from a distributed pfb
+file.
+
+::
+
+   pfset FBx.Type            PFBFile
+
+*string* **FBy.Type** no default This key specifies which method is to
+be used to assign flow barriers in Y. The only choice currently
+available is **PFBFile** which reads in values from a distributed pfb
+file.
+
+::
+
+   pfset FBy.Type            PFBFile
+
+*string* **FBz.Type** no default This key specifies which method is to
+be used to assign flow barriers in Z. The only choice currently
+available is **PFBFile** which reads in values from a distributed pfb
+file.
+
+::
+
+   pfset FBz.Type            PFBFile
+
+The Flow Barrier values may be read in from a PFB file over the entire
+domain. This is done as follows:
+
+*string* **Geom.domain.FBx.FileName** no default This key specifies file
+to be read in for the X flow barrier values for the domain, if the type
+was set to **PFBFile**.
+
+::
+
+   pfset Geom.domain.FBx.FileName  Flow_Barrier_X.pfb
+
+*string* **Geom.domain.FBy.FileName** no default This key specifies file
+to be read in for the Y flow barrier values for the domain, if the type
+was set to **PFBFile**.
+
+::
+
+   pfset Geom.domain.FBy.FileName  Flow_Barrier_Y.pfb
+
+*string* **Geom.domain.FBz.FileName** no default This key specifies file
+to be read in for the Z flow barrier values for the domain, if the type
+was set to **PFBFile**.
+
+::
+
+   pfset Geom.domain.FBz.FileName  Flow_Barrier_Z.pfb
+
 
 .. _Manning's Roughness Values:
 
@@ -2774,7 +2891,8 @@ and these patches must “cover” that external boundary.
 specifies the type of boundary condition data given for patch
 *patch_name*. Possible values for this key are **DirEquilRefPatch,
 DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile,
-OverlandFow, OverlandFlowPFB** and **ExactSolution**. The choice
+OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic,
+OverlandDiffusive** and **ExactSolution**. The choice
 **DirEquilRefPatch** specifies that the pressure on the specified patch
 will be in hydrostatic equilibrium with a constant reference pressure
 given on a reference patch. The choice **DirEquilPLinear** specifies
@@ -2797,18 +2915,25 @@ boundary condition that is read form a properly distributed .pfb file
 defined on a grid consistent with the pressure field grid. Only the
 values needed for the patch are used. The choices **OverlandFlow** and
 **OverlandFlowPFB** both turn on fully-coupled overland flow routing as
-described in :cite:t:`KM06` and in :ref:`Overland Flow`.
-The key **OverlandFlow** corresponds to a **Value** key with a positive
-or negative value, to indicate uniform fluxes (such as rainfall or
-evapotranspiration) over the entire domain while the key
-**OverlandFlowPFB** allows a ``.pfb`` file to contain grid-based, 
-spatially-variable fluxes. The choice ExactSolution specifies that 
-an exact known solution is to be applied as a Dirichlet boundary 
-condition on the respective patch. Note that this does not change 
-according to any cycle. Instead, time dependence is handled by evaluating 
-at the time the boundary condition value is desired. The solution is specified 
-by using a predefined function (choices are described below). NOTE: These last 
-three types of boundary condition input is for Richards’ equation cases only!
+described in :cite:t:`KM06` and in :ref:`Overland Flow`. The key **OverlandFlow**
+corresponds to a **Value** key with a positive or negative value, to
+indicate uniform fluxes (such as rainfall or evapotranspiration) over
+the entire domain while the key **OverlandFlowPFB** allows a file to
+contain grid-based, spatially-variable fluxes. The **OverlandKinematic**
+and **OverlandDiffusive** both turn on an kinematic and diffusive wave
+overland flow routing boundary that solve Maning's equation in 
+:ref:`Overland Flow` and do the upwinding internally
+(i.e. assuming that the user provides cell face slopes, as opposed to
+the traditional cell centered slopes). The key **SeepageFace** simulates
+a boundary that allows flow to exit but keeps the surface pressure at
+zero. The choice **ExactSolution** specifies that an exact known
+solution is to be applied as a Dirichlet boundary condition on the
+respective patch. Note that this does not change according to any cycle.
+Instead, time dependence is handled by evaluating at the time the
+boundary condition value is desired. The solution is specified by using
+a predefined function (choices are described below). NOTE: These last
+six types of boundary condition input is for *Richards’ equation cases
+only!*
 
 .. container:: list
 
@@ -3905,6 +4030,23 @@ to PFSB files.
 
       pfset Solver.Drop 1E-6
 
+*double* **Solver.OverlandDiffusive.Epsilon** 1E-5 This key provides a
+minimum value for the :math:`\bar{S_{f}}` used in the
+**OverlandDiffusive** boundary condition.
+
+::
+
+   pfset Solver.OverlandDiffusive.Epsilon 1E-7
+
+*double* **Solver.OverlandKinematic.Epsilon** 1E-5 This key provides a
+minimum value for the :math:`\bar{S_{f}}` used in the
+**OverlandKinematic** boundary condition.
+
+::
+
+   pfset Solver.OverlandKinematic.Epsilon 1E-7
+
+
 *string* **Solver.PrintSubsurf** True This key is used to turn on
 printing of the subsurface data, Permeability and Porosity. The data is
 printed after it is generated and before the main time stepping loop -
@@ -3928,15 +4070,21 @@ file.
       pfset Solver.PrintPressure False
 
 *string* **Solver.PrintVelocities** False This key is used to turn on
-printing of the x, y and z velocity data. The printing of the data is
-controlled by values in the timing information section. The data is
-written as a PFB file.
+printing of the x, y, and z velocity (Darcy flux) data. The printing of
+the data is controlled by values in the timing information section. The
+x, y, and z data are written to separate PFB files. The dimensions of
+these files are slightly different than most PF data, with the dimension
+of interest representing interfaces, and the other two dimensions
+representing cells. E.g. the x-velocity PFB has dimensions $[NX+1, NY,
+NZ]$. This key produces files in the format of
+``<runname>.out.phase<x||y||z>.00.0000.pfb`` when using ParFlow’s saturated
+solver and ``<runname>.out.vel<x||y||z>.00000.pfb`` when using the Richards
+equation solver.
 
-.. container:: list
+::
 
-   ::
+   pfset Solver.PrintVelocities True
 
-      pfset Solver.PrintVelocities True
 
 *string* **Solver.PrintSaturation** True This key is used to turn on
 printing of the saturation data. The printing of the data is controlled
@@ -4136,6 +4284,31 @@ only changes solver Richards, not solver Impes.
    ::
 
       pfset Solver.TerrainFollowingGrid                        True
+
+*string* **Solver.TerrainFollowingGrid.SlopeUpwindFormulation** Original
+This key specifies optional modifications to the terrain following grid
+formulation described in :ref:`TFG`. Choices for
+this key are **Original, Upwind, UpwindSine**. **Original** is the
+original TFG formulation documented in :cite:p:`M13`.
+The **Original** option calculates the :math:`\theta_x` and
+:math:`\theta_y` for a cell face as the average of the two adjacent cell
+slopes (i.e. assuming a cell centered slope calculation). The **Upwind**
+option uses the the :math:`\theta_x` and :math:`\theta_y` of a cell
+directly without averaging (i.e. assuming a face centered slope
+calculation). The **UpwindSine** is the same as the **Upwind** option
+but it also removes the Sine term from the TFG Darcy Formulation (in :ref:`TFG`).
+Note the **UpwindSine** option is for experimental purposes only and
+should not be used in standard simulations. Also note that the choice of
+**upwind** or\ **Original** formulation should consistent with the
+choice of overland flow boundary condition if overland flow is being
+used. The **upwind** and **UpwindSine** are consistent with
+**OverlandDiffusive** and **OverlandKinematic** while **Original** is
+consistent with **OverlandFow**
+
+::
+
+   pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   Upwind
+
 
 .. _SILO Options:
 
@@ -5110,10 +5283,20 @@ levels for CLM.
 
       pfset Solver.CLM.LakeLevels      4
 
+*string* **Solver.CLM.UseSlopeAspect** False This key specifies whether
+or not allows for the inclusion of slopes when determining solar zenith
+angles. Note that must be compiled and linked at runtime for this option
+to be active.
+
+::
+
+   pfset Solver.CLM.UseSlopeAspect True
+
+
 .. _ParFlow NetCDF4 Parallel I/O:
 
 ParFlow NetCDF4 Parallel I/O
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 NetCDF4 parallel I/O is being implemented in ParFlow. As of now only
 output capability is implemented. Input functionality will be added in
@@ -5295,6 +5478,33 @@ z-direction.
    ::
 
       pfset NetCDF.ChunkZ    30
+
+
+NetCDF4 Compression
+~~~~~~~~~~~~~~~~~~~
+
+*integer* **NetCDF.Compression** False This key enables in-transit
+deflate compression for all NetCDF variables using zlib. To use this
+feature, NetCDF4 v4.7.4 must be available, which supports the necessary
+parallel zlib compression. The compression quality can be influenced by
+the chunk sizes and the overall data distribution. Compressed variables
+in NetCDF files can be opened in serial mode also within older versions
+of NetCDF4.
+
+::
+
+   pfset NetCDF.Compression True
+
+*integer* **NetCDF.CompressionLevel** 1 This key sets the deflate
+compression level (if NetCDF.Compression is enabled), which influence
+the overall compression quality. zlib supports values between 0 (no
+compression), 1 (fastest compression) - 9 (slowest compression,smallest
+files).
+
+::
+
+   pfset NetCDF.CompressionLevel 1
+
 
 ROMIO Hints
 ~~~~~~~~~~~
