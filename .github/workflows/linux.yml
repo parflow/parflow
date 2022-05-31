@@ -125,7 +125,7 @@ jobs:
         mkdir -p $HOME/install
         echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
         echo "Setting PARFLOW_DIR=$HOME/install"
-        mkdir -p $HOME/depend
+        mkdir -p $HOME/depend/{include,lib}
         echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
         echo "Setting PARFLOW_DEP_DIR=$HOME/depend"
         echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
