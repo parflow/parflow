@@ -55,9 +55,9 @@ file version number that this file fits.
 
    ::
 
-      pfset FileVersion 4         ## TCL syntax
+      pfset FileVersion 4           ## TCL syntax
 
-      <runname>.FileVersion=4     ## Python syntax
+      <runname>.FileVersion = 4     ## Python syntax
 
 As development of the ParFlow code continues, the input file format will
 vary. We have thus included an input file format number as a way of
@@ -97,9 +97,9 @@ splits in the *y* direction.
 
    ::
 
-      pfset Process.Topology.Q        1   ## TCL syntax
+      pfset Process.Topology.Q       1   ## TCL syntax
 
-      <runname>.Process.Topology.Q = 1    ## Python syntax
+      <runname>.Process.Topology.Q = 1   ## Python syntax
 
 *integer* **Process.Topology.R** no default This assigns the process
 splits in the *z* direction.
@@ -108,9 +108,9 @@ splits in the *z* direction.
 
    ::
 
-      pfset Process.Topology.R        1   ## TCL syntax
+      pfset Process.Topology.R       1   ## TCL syntax
 
-      <runname>.Process.Topology.R = 1    ## Python syntax
+      <runname>.Process.Topology.R = 1   ## Python syntax
 
 In addition, you can assign the computing topology when you initiate
 your parflow script using tcl. You must include the topology allocation
@@ -174,7 +174,7 @@ coordinate system (i.e. UTM).
 
       pfset   ComputationalGrid.Lower.Z  0.0       ## TCL syntax
 
-      <runname>.ComputationalGrid.Lower.Z  = 0.0   ## Python syntax
+      <runname>.ComputationalGrid.Lower.Z = 0.0    ## Python syntax
 
 *integer* **ComputationalGrid.NX** no default This assigns the number of
 grid cells in the *x* direction for the computational grid.
@@ -331,7 +331,7 @@ defined for this problem.
 
       pfset GeomInput.Names    "solidinput indinput boxinput"     ## TCL syntax
 
-      <runname>.GeomInput.Names = 'solidinput indinput boxinput'  ## Python syntax
+      <runname>.GeomInput.Names = "solidinput indinput boxinput"  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.InputType** no default This
 defines the input type for the geometry input with *geom_input_name*.
@@ -341,9 +341,9 @@ This key must be one of: **SolidFile, IndicatorField**, **Box**.
 
    ::
  
-      pfset GeomInput.solidinput.InputType  SolidFile          ## TCL syntax
+      pfset GeomInput.solidinput.InputType  "SolidFile"        ## TCL syntax
 
-      <runname>.GeomInput.solidinput.InputType  = 'SolidFile'  ## Python syntax
+      <runname>.GeomInput.solidinput.InputType  = "SolidFile"  ## Python syntax
 
 *list* **GeomInput.\ *geom_input_name*.GeomNames** no default This is a
 list of the names of the geometries defined by the geometry input. For a
@@ -361,7 +361,7 @@ name using GeomInput.\ *geom_input_name*.Value.
       pfset GeomInput.solidinput.GeomNames "domain bottomlayer \
                                             middlelayer toplayer"  ## TCL syntax
       
-      <runname>.GeomInput.solidinput.GeomNames = 'domain bottomlayer middlelayer toplayer'  ## Python syntax
+      <runname>.GeomInput.solidinput.GeomNames = "domain bottomlayer middlelayer toplayer"  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.Filename** no default For
 IndicatorField and SolidFile geometry inputs this key specifies the
@@ -371,9 +371,9 @@ input filename which contains the field or solid information.
 
    ::
 
-      pfset GeomInput.solidinput.FileName   ocwd.pfsol         ## TCL syntax
+      pfset GeomInput.solidinput.FileName   "ocwd.pfsol"       ## TCL syntax
 
-      <runname>.GeomInput.solidinput.FileName = 'ocwd.pfsol'   ## Python syntax
+      <runname>.GeomInput.solidinput.FileName = "ocwd.pfsol"   ## Python syntax
 
 *integer* **GeomInput.\ *geometry_input_name*.Value** no default For
 IndicatorField geometry inputs you need to specify the mapping between
@@ -478,7 +478,7 @@ converts GMS to SolidFile format.
 
       pfset Geom.background.Patches   "left right front back bottom top"      ## TCL syntax
 
-      <runname>.Geom.background.Patches = 'left right front back bottom top'  ## Python syntax   
+      <runname>.Geom.background.Patches = "left right front back bottom top"  ## Python syntax   
 
 Here is an example geometry input section which has three geometry
 inputs (TCL).
@@ -496,7 +496,7 @@ inputs (TCL).
       # of the gemetries and the filename
       #
 
-      pfset GeomInput.solidinput.InputType	SolidFile
+      pfset GeomInput.solidinput.InputType	"SolidFile"
 
       # The names of the geometries contained in the solid file. Order is
       # important and defines the mapping. First geometry gets the first name. 
@@ -505,7 +505,7 @@ inputs (TCL).
       # Filename that contains the geometry
       #
 
-      pfset GeomInput.solidinput.FileName 	ocwd.pfsol
+      pfset GeomInput.solidinput.FileName 	"ocwd.pfsol"
 
       #
       # An indicator field is a 3D field of values. 
@@ -514,9 +514,9 @@ inputs (TCL).
       # computation grid exactly!
       #
 
-      pfset GeomInput.indinput.InputType 		IndicatorField
-      pfset GeomInput.indinput.GeomNames    	“sourceregion concenregion”
-      pfset GeomInput.indinput.FileName		ocwd.pfb
+      pfset GeomInput.indinput.InputType 		"IndicatorField"
+      pfset GeomInput.indinput.GeomNames    	"sourceregion concenregion"
+      pfset GeomInput.indinput.FileName		"ocwd.pfb"
 
       #
       # Within the indicator.pfb file, assign the values to each GeomNames
@@ -528,8 +528,8 @@ inputs (TCL).
       # A box is just a box defined by two points.
       #
 
-      pfset GeomInput.boxinput.InputType	Box
-      pfset GeomInput.boxinput.GeomName	background
+      pfset GeomInput.boxinput.InputType	"Box"
+      pfset GeomInput.boxinput.GeomName	"background"
       pfset Geom.background.Lower.X 		-1.0
       pfset Geom.background.Lower.Y 		-1.0
       pfset Geom.background.Lower.Z 		-1.0
@@ -543,7 +543,7 @@ inputs (TCL).
       # want (i.e. left right front back bottom top)
       #
 
-      pfset Geom.domain.Patches             		" z-upper x-lower y-lower \
+      pfset Geom.domain.Patches             		"z-upper x-lower y-lower \
                                             			x-upper y-upper z-lower"
 
 .. _Timing Information:
@@ -671,9 +671,9 @@ dt_{max}` and :math:`dt^{new} \geq dt_{min}`.
 
    ::
 
-      pfset TimeStep.Type      Constant      ## TCL syntax
+      pfset TimeStep.Type      "Constant"      ## TCL syntax
 
-      <runname>.TimeStep.Type = 'Constant'   ## Python syntax
+      <runname>.TimeStep.Type = "Constant"   ## Python syntax
 
 *double* **TimeStep.Value** no default This key is used only if a
 constant time step is selected and indicates the value of the time step
@@ -755,11 +755,11 @@ simulation.
       pfset TimingInfo.DumpInterval 	-24
 
       ## Timing constant example
-      pfset TimeStep.Type			      Constant
+      pfset TimeStep.Type			      "Constant"
       pfset TimeStep.Value			      1.0
 
       ## Timing growth example
-      pfset TimeStep.Type			      Growth
+      pfset TimeStep.Type			      "Growth"
       pfset TimeStep.InitialStep		   0.0001
       pfset TimeStep.GrowthFactor		1.4
       pfset TimeStep.MaxStep			   1.0
@@ -810,7 +810,7 @@ number of keys defined below.
 
    ::
 
-      pfset Cycle.Names constant onoff          ## TCL syntax
+      pfset Cycle.Names "constant onoff"        ## TCL syntax
 
       <runname>.Cycle.Names = "constant onoff"  ## Python syntax
 
@@ -912,7 +912,7 @@ named geometries is the problem domain.
 
    ::
 
-      pfset Domain.GeomName    domain        ## TCL syntax
+      pfset Domain.GeomName    "domain"        ## TCL syntax
 
       <runname>.Domain.GeomName = "domain"   ## Python syntax
 
@@ -970,7 +970,7 @@ must be either **Constant** or **EquationOfState**.
 
    ::
 
-      pfset Phase.water.Density.Type	 Constant           ## TCL syntax
+      pfset Phase.water.Density.Type	 "Constant"       ## TCL syntax
 
       <runname>.Phase.water.Density.Type = "Constant"    ## Python syntax
 
@@ -1019,7 +1019,7 @@ only choice for this key is **Constant**.
 
    ::
 
-      pfset Phase.water.Viscosity.Type   Constant           ## TCL syntax
+      pfset Phase.water.Viscosity.Type   "Constant"         ## TCL syntax
 
       <runname>.Phase.water.Viscosity.Type = "Constant"     ## Python syntax
 
@@ -1176,7 +1176,7 @@ conditioning points can be changed.
 
    ::
 
-      pfset Geom.background.Perm.Type   Constant         ## TCL syntax
+      pfset Geom.background.Perm.Type   "Constant"       ## TCL syntax
 
       <runname>.Geom.background.Perm.Type = "Constant"   ## Python syntax
 
@@ -1446,7 +1446,7 @@ for this key are **TensorByGeom** and **TensorByFile**.
 
    ::
 
-      pfset Perm.TensorType     TensorByGeom       ## TCL syntax
+      pfset Perm.TensorType     "TensorByGeom"     ## TCL syntax
 
       <runname>.Perm.TensorType = "TensorByGeom"   ## Python syntax
 
@@ -1573,7 +1573,7 @@ grid cells within a geometry.
 
    ::
 
-      pfset Geom.background.Porosity.Type   Constant           ## TCL syntax
+      pfset Geom.background.Porosity.Type   "Constant"         ## TCL syntax
 
       <runname>.Geom.background.Porosity.Type = "Constant"     ## Python syntax
 
@@ -1622,7 +1622,7 @@ to be assigned to all grid cells within a geometry.
 
    ::
 
-      pfset SpecificStorage.Type        Constant         ## TCL syntax
+      pfset SpecificStorage.Type        "Constant"       ## TCL syntax
 
       <runname>.SpecificStorage.Type = "Constant"        ## Python syntax
 
@@ -1670,7 +1670,7 @@ cover the entire computational domain.
 
    ::
 
-      pfset dzScale.GeomNames domain            ## TCL syntax
+      pfset dzScale.GeomNames "domain"          ## TCL syntax
 
       <runname>.dzScale.GeomNames = "domain"    ## Python syntax
 
@@ -1685,7 +1685,7 @@ which reads in values from a distributed pfb file.
 
    ::
 
-      pfset dzScale.Type       Constant         ## TCL syntax
+      pfset dzScale.Type       "Constant"       ## TCL syntax
 
       <runname>.dzScale.Type = "Constant"       ## Python syntax
 
@@ -1776,8 +1776,8 @@ Example Usage (TCL):
       # 3		4.5			
       # 4 		0.5			Top layer
       pfset Solver.Nonlinear.VariableDz     True
-      pfset dzScale.GeomNames            domain
-      pfset dzScale.Type            nzList
+      pfset dzScale.GeomNames            "domain"
+      pfset dzScale.Type            "nzList"
       pfset dzScale.nzListNumber       5
       pfset Cell.0.dzScale.Value 1.5
       pfset Cell.1.dzScale.Value 1.5
@@ -1972,7 +1972,7 @@ ParFlow binary file.
 
       pfset Mannings.Type     "Constant"     ## TCL syntax
 
-      <runname>.Mannings.Type = Constant     ## Python syntax
+      <runname>.Mannings.Type = "Constant"   ## Python syntax
 
 *double* **Mannings.Geom.\ *geometry_name*.Value** no default This key
 specifies the value assigned to all points in the named geometry,
