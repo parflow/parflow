@@ -3572,7 +3572,7 @@ Choices for this key correspond to solutions as follows.
 **XYZTPlus1**: 
    :math:`p = xyzt + 1`
 
-**XYZTPlus1**: 
+**XYZTPlus1PermTensor**: 
    :math:`p = xyzt + 1`
 
 *double* **KnownSolution.Value** no default This key specifies the
@@ -5293,24 +5293,6 @@ adjustment for all leaf and stem area indices.
    ::
 
       pfset Solver.CLM.SoiLayer      4
-
-*integer* **Solver.CLM.SoilLevels** 10 This key sets the number of soil
-levels for ``CLM``.
-
-.. container:: list
-
-   ::
-
-      pfset Solver.CLM.SoilLevels      4
-
-*integer* **Solver.CLM.LakeLevels** 10 This key sets the number of lake
-levels for CLM.
-
-.. container:: list
-
-   ::
-
-      pfset Solver.CLM.LakeLevels      4
 
 *string* **Solver.CLM.UseSlopeAspect** False This key specifies whether
 or not allows for the inclusion of slopes when determining solar zenith
