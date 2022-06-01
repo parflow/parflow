@@ -86,9 +86,9 @@ splits in the *x* direction.
 
    ::
 
-      pfset Process.Topology.P        2  ## TCL syntax
+      pfset Process.Topology.P        2   ## TCL syntax
 
-      <runname>.Process.Topology.P=2   ## Python syntax
+      <runname>.Process.Topology.P = 2    ## Python syntax
 
 *integer* **Process.Topology.Q** no default This assigns the process
 splits in the *y* direction.
@@ -97,20 +97,20 @@ splits in the *y* direction.
 
    ::
 
-      pfset Process.Topology.Q        1  ## TCL syntax
+      pfset Process.Topology.Q        1   ## TCL syntax
 
-      <runname>.Process.Topology.Q=1  ## Python syntax
+      <runname>.Process.Topology.Q = 1    ## Python syntax
 
-*integer* **Process.Topology.P** no default This assigns the process
+*integer* **Process.Topology.R** no default This assigns the process
 splits in the *z* direction.
 
 .. container:: list
 
    ::
 
-      pfset Process.Topology.R        1  ## TCL syntax
+      pfset Process.Topology.R        1   ## TCL syntax
 
-      <runname>.Process.Topology.R=1  ## Python syntax
+      <runname>.Process.Topology.R = 1    ## Python syntax
 
 In addition, you can assign the computing topology when you initiate
 your parflow script using tcl. You must include the topology allocation
@@ -138,7 +138,7 @@ Computational Grid
 The computational grid is briefly described in
 :ref:`Defining the Problem`. The computational grid keys set the
 bottom left corner of the domain to a specific point in space. If using
-a .pfsol file, the bottom left corner location of the .pfsol file must
+a ``.pfsol`` file, the bottom left corner location of the ``.pfsol`` file must
 be the points designated in the computational grid. The user can also
 assign the *x*, *y* and *z* location to correspond to a specific
 coordinate system (i.e. UTM).
@@ -150,9 +150,9 @@ coordinate system (i.e. UTM).
 
    ::
 
-      pfset   ComputationalGrid.Lower.X  0.0  ## TCL syntax
+      pfset   ComputationalGrid.Lower.X  0.0       ## TCL syntax
 
-      <runname>.ComputationalGrid.Lower.X =0.0  ## Python syntax
+      <runname>.ComputationalGrid.Lower.X = 0.0    ## Python syntax
 
 *double* **ComputationalGrid.Lower.Y** no default This assigns the lower
 *y* coordinate location for the computational grid.
@@ -161,9 +161,9 @@ coordinate system (i.e. UTM).
 
    ::
 
-      pfset   ComputationalGrid.Lower.Y  0.0  ## TCL syntax
+      pfset   ComputationalGrid.Lower.Y  0.0       ## TCL syntax
 
-      <runname>.ComputationalGrid.Lower.Y =0.0  ## Python syntax
+      <runname>.ComputationalGrid.Lower.Y = 0.0    ## Python syntax
 
 *double* **ComputationalGrid.Lower.Z** no default This assigns the lower
 *z* coordinate location for the computational grid.
@@ -172,9 +172,9 @@ coordinate system (i.e. UTM).
 
    ::
 
-      pfset   ComputationalGrid.Lower.Z  0.0  ## TCL syntax
+      pfset   ComputationalGrid.Lower.Z  0.0       ## TCL syntax
 
-      <runname>.ComputationalGrid.Lower.Z  =0.0  ## Python syntax
+      <runname>.ComputationalGrid.Lower.Z  = 0.0   ## Python syntax
 
 *integer* **ComputationalGrid.NX** no default This assigns the number of
 grid cells in the *x* direction for the computational grid.
@@ -183,9 +183,9 @@ grid cells in the *x* direction for the computational grid.
 
    ::
  
-      pfset  ComputationalGrid.NX  10   ## TCL syntax
+      pfset  ComputationalGrid.NX  10        ## TCL syntax
 
-     <runname>.ComputationalGrid.NX  =10  ## Python syntax
+     <runname>.ComputationalGrid.NX = 10     ## Python syntax
 
 *integer* **ComputationalGrid.NY** no default This assigns the number of
 grid cells in the *y* direction for the computational grid.
@@ -194,9 +194,9 @@ grid cells in the *y* direction for the computational grid.
 
    ::
 
-      pfset  ComputationalGrid.NY  10   ## TCL syntax
+      pfset  ComputationalGrid.NY  10        ## TCL syntax
 
-      <runname>.ComputationalGrid.NY =10   ## Python syntax
+      <runname>.ComputationalGrid.NY = 10    ## Python syntax
 
 *integer* **ComputationalGrid.NZ** no default This assigns the number of
 grid cells in the *z* direction for the computational grid.
@@ -205,9 +205,9 @@ grid cells in the *z* direction for the computational grid.
 
    ::
 
-      pfset  ComputationalGrid.NZ  10   ## TCL syntax
+      pfset  ComputationalGrid.NZ  10        ## TCL syntax
 
-      <runname>.ComputationalGrid.NZ  =10   ## Python syntax
+      <runname>.ComputationalGrid.NZ = 10    ## Python syntax
 
 *real* **ComputationalGrid.DX** no default This defines the size of grid
 cells in the *x* direction. Units are *L* and are defined by the units
@@ -217,7 +217,7 @@ of the hydraulic conductivity used in the problem.
 
    ::
 
-      pfset  ComputationalGrid.DX  10.0   ## TCL syntax
+      pfset  ComputationalGrid.DX  10.0      ## TCL syntax
 
       <runname>.ComputationalGrid.DX = 10.0  ## Python syntax
 
@@ -229,9 +229,9 @@ of the hydraulic conductivity used in the problem.
 
    ::
 
-      pfset  ComputationalGrid.DY  10.0   ## TCL syntax
+      pfset  ComputationalGrid.DY  10.0         ## TCL syntax
 
-      <runname>.ComputationalGrid.DY  =10.0   ## Python syntax
+      <runname>.ComputationalGrid.DY = 10.0     ## Python syntax
 
 *real* **ComputationalGrid.DZ** no default This defines the size of grid
 cells in the *z* direction. Units are *L* and are defined by the units
@@ -241,9 +241,9 @@ of the hydraulic conductivity used in the problem.
 
    ::
 
-      pfset  ComputationalGrid.DZ  1.0   ## TCL syntax
+      pfset  ComputationalGrid.DZ  1.0       ## TCL syntax
 
-      <runname>.ComputationalGrid.DZ  =1.0   ## Python syntax
+      <runname>.ComputationalGrid.DZ = 1.0   ## Python syntax
 
 Example Usage (TCL):
 
@@ -272,17 +272,17 @@ Example Usage (Python):
    # Computational Grid
    #---------------------------------------------------------
    
-   <runname>.ComputationalGrid.Lower.X	=-10.0
+   <runname>.ComputationalGrid.Lower.X	= -10.0
    <runname>.ComputationalGrid.Lower.Y = 10.0
-   <runname>.ComputationalGrid.Lower.Z	=1.0
+   <runname>.ComputationalGrid.Lower.Z	= 1.0
 
-   <runname>.ComputationalGrid.NX	=18
-   <runname>.ComputationalGrid.NY	=18
-   <runname>.ComputationalGrid.NZ	=8
+   <runname>.ComputationalGrid.NX	= 18
+   <runname>.ComputationalGrid.NY	= 18
+   <runname>.ComputationalGrid.NZ	= 8
 
-   <runname>.ComputationalGrid.DX   =8.0
-   <runname>.ComputationalGrid.DY	=10.0
-   <runname>.ComputationalGrid.DZ	=1.0
+   <runname>.ComputationalGrid.DX   = 8.0
+   <runname>.ComputationalGrid.DY	= 10.0
+   <runname>.ComputationalGrid.DZ	= 1.0
 
 *string* **UseClustering** True Run a clustering algorithm to create
 boxes in index space for iteration. By default an octree representation
