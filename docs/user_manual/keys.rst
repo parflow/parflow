@@ -794,7 +794,7 @@ simulation.
 Time Cycles
 ~~~~~~~~~~~
 
-The data given in the time cycle section describe how time intervals are
+The data given in the time cycle section describes how time intervals are
 created and named to be used for time-dependent boundary and well
 information needed by ParFlow. All the time cycles are synched to the
 **TimingInfo.BaseUnit** key described above and are *integer
@@ -810,9 +810,9 @@ number of keys defined below.
 
    ::
 
-      pfset Cycle.Names constant onoff
+      pfset Cycle.Names constant onoff          ## TCL syntax
 
-      <runname>.Cycle.Names constant ='onoff'
+      <runname>.Cycle.Names constant = 'onoff'  ## Python syntax
 
 *list* **Cycle.\ *cycle_name*.Names** no default This key is used to
 specify the named time intervals for each cycle. It is a list of names
@@ -824,9 +824,9 @@ intervals in that time cycle.
 
    ::
 
-      pfset Cycle.onoff.Names "on off"
+      pfset Cycle.onoff.Names "on off"          ## TCL syntax
 
-      <runname>.Cycle.onoff.Names ='on off'
+      <runname>.Cycle.onoff.Names = 'on off'    ## Python syntax
 
 *integer* **Cycle.\ *cycle_name.interval_name*.Length** no default This
 key is used to specify the length of a named time intervals. It is an
@@ -838,9 +838,9 @@ of all the intervals multiplied by the base unit.
 
    ::
 
-      pfset Cycle.onoff.on.Length             10
+      pfset Cycle.onoff.on.Length       10     ## TCL syntax
 
-      <runname>.Cycle.onoff.on.Length        =10
+      <runname>.Cycle.onoff.on.Length = 10     ## Python syntax
 
 *integer* **Cycle.\ *cycle_name*.Repeat** no default This key is used to
 specify the how many times a named time interval repeats. A positive
