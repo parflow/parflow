@@ -812,7 +812,7 @@ number of keys defined below.
 
       pfset Cycle.Names constant onoff          ## TCL syntax
 
-      <runname>.Cycle.Names constant = 'onoff'  ## Python syntax
+      <runname>.Cycle.Names = "constant onoff"  ## Python syntax
 
 *list* **Cycle.\ *cycle_name*.Names** no default This key is used to
 specify the named time intervals for each cycle. It is a list of names
@@ -826,7 +826,7 @@ intervals in that time cycle.
 
       pfset Cycle.onoff.Names "on off"          ## TCL syntax
 
-      <runname>.Cycle.onoff.Names = 'on off'    ## Python syntax
+      <runname>.Cycle.onoff.Names = "on off"    ## Python syntax
 
 *integer* **Cycle.\ *cycle_name.interval_name*.Length** no default This
 key is used to specify the length of a named time intervals. It is an
@@ -867,32 +867,32 @@ simulation.
       #-----------------------------------------------------------------------------
       # Time Cycles
       #-----------------------------------------------------------------------------
-      pfset Cycle.Names 			"constant rainrec"
-      pfset Cycle.constant.Names		"alltime"
-      pfset Cycle.constant.alltime.Length	8760
-      pfset Cycle.constant.Repeat		-1
+      pfset Cycle.Names 			            "constant rainrec"
+      pfset Cycle.constant.Names		         "alltime"
+      pfset Cycle.constant.alltime.Length	   8760
+      pfset Cycle.constant.Repeat		      -1
 
       # Creating a rain and recession period for the rest of year
-      pfset Cycle.rainrec.Names		"rain rec"
-      pfset Cycle.rainrec.rain.Length	10
-      pfset Cycle.rainrec.rec.Length	8750
-      pfset Cycle.rainrec.Repeat              	-1
+      pfset Cycle.rainrec.Names		         "rain rec"
+      pfset Cycle.rainrec.rain.Length	      10
+      pfset Cycle.rainrec.rec.Length	      8750
+      pfset Cycle.rainrec.Repeat             -1
 
       ## Python example
 
       #-----------------------------------------------------------------------------
       # Time Cycles
       #-----------------------------------------------------------------------------
-      <runname>.Cycle.Names 			  ="constant rainrec"
-      <runname>.Cycle.constant.Names  ="alltime"
-      <runname>.Cycle.constant.alltime.Length	=8760
-      <runname>.Cycle.constant.Repeat		=-1
+      <runname>.Cycle.Names = "constant rainrec"
+      <runname>.Cycle.constant.Names = "alltime"
+      <runname>.Cycle.constant.alltime.Length = 8760
+      <runname>.Cycle.constant.Repeat = -1
 
       # Creating a rain and recession period for the rest of year
-      <runname>.Cycle.rainrec.Names		='rain rec'
-      <runname>.Cycle.rainrec.rain.Length	=10
-      <runname>.Cycle.rainrec.rec.Length	=8750
-      <runname>.Cycle.rainrec.Repeat      =-1
+      <runname>.Cycle.rainrec.Names	= "rain rec"
+      <runname>.Cycle.rainrec.rain.Length	= 10
+      <runname>.Cycle.rainrec.rec.Length = 8750
+      <runname>.Cycle.rainrec.Repeat = -1
 
 .. _Domain:
 
