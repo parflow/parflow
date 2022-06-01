@@ -1822,15 +1822,15 @@ Example Usage (Python):
 Flow Barriers
 ~~~~~~~~~~~~~
 
-Here, the values for Flow Barriers described in `[FB] <#FB>`__ can be
+Here, the values for Flow Barriers described in :ref:`_FB` can be
 input. These are only available with Solver **Richards** and can be
 specified in X, Y or Z directions independently using PFB files. These
 barriers are appied at the cell face at the location :math:`i+1/2`. That
 is a value of :math:`FB_x` specified at :math:`i` will be applied to the
-cell face at :math:`i+1/2` or /em between cells :math:`i` and
+cell face at :math:`i+1/2` or between cells :math:`i` and
 :math:`i+1`. The same goes for :math:`FB_y` (:math:`j+1/2`) and
 :math:`FB_z` (:math:`k+1/2`). The flow barrier values are unitless and
-mulitply the flux equation as shown in `[eq:qFBx] <#eq:qFBx>`__.
+mulitply the flux equation as shown in :eq:`qFBx`.
 
 The format for this section of input is:
 
@@ -1841,7 +1841,9 @@ everywhere in the domain.
 
 ::
 
-   pfset Solver.Nonlinear.FlowBarrierX     True
+   pfset Solver.Nonlinear.FlowBarrierX       True     ## TCL syntax
+
+   <runname>.Solver.Nonlinear.FlowBarrierX = True     ## Python syntax
 
 *string* **Solver.Nonlinear.FlowBarrierY** False This key specifies
 whether Flow Barriers are to be used in the Y direction, the default is
@@ -1850,7 +1852,9 @@ everywhere in the domain.
 
 ::
 
-   pfset Solver.Nonlinear.FlowBarrierY     True
+   pfset Solver.Nonlinear.FlowBarrierY       True       ## TCL syntax
+
+   <runname>.Solver.Nonlinear.FlowBarrierY = True       ## Python syntax
 
 *string* **Solver.Nonlinear.FlowBarrierZ** False This key specifies
 whether Flow Barriers are to be used in the Z direction, the default is
@@ -1859,7 +1863,9 @@ everywhere in the domain.
 
 ::
 
-   pfset Solver.Nonlinear.FlowBarrierZ     True
+   pfset Solver.Nonlinear.FlowBarrierZ       True     ## TCL syntax
+
+   <runname>.Solver.Nonlinear.FlowBarrierZ = True     ## Python syntax
 
 *string* **FBx.Type** no default This key specifies which method is to
 be used to assign flow barriers in X. The only choice currently
@@ -1868,7 +1874,9 @@ file.
 
 ::
 
-   pfset FBx.Type            PFBFile
+   pfset FBx.Type       "PFBFile"      ## TCL syntax
+
+   <runname>.FBx.Type = "PFBFile"      ## Python syntax
 
 *string* **FBy.Type** no default This key specifies which method is to
 be used to assign flow barriers in Y. The only choice currently
@@ -1877,7 +1885,9 @@ file.
 
 ::
 
-   pfset FBy.Type            PFBFile
+   pfset FBy.Type       "PFBFile"    ## TCL syntax
+
+   <runname>.FBy.Type = "PFBFile"    ## Python syntax
 
 *string* **FBz.Type** no default This key specifies which method is to
 be used to assign flow barriers in Z. The only choice currently
@@ -1886,7 +1896,9 @@ file.
 
 ::
 
-   pfset FBz.Type            PFBFile
+   pfset FBz.Type       "PFBFile"    ## TCL syntax
+
+   <runname>.FBz.Type = "PFBFile"    ## Python syntax
 
 The Flow Barrier values may be read in from a PFB file over the entire
 domain. This is done as follows:
@@ -1897,7 +1909,9 @@ was set to **PFBFile**.
 
 ::
 
-   pfset Geom.domain.FBx.FileName  Flow_Barrier_X.pfb
+   pfset Geom.domain.FBx.FileName       "Flow_Barrier_X.pfb"      ## TCL syntax
+
+   <runname>.Geom.domain.FBx.FileName = "Flow_Barrier_X.pfb"      ## Python syntax
 
 *string* **Geom.domain.FBy.FileName** no default This key specifies file
 to be read in for the Y flow barrier values for the domain, if the type
@@ -1905,7 +1919,9 @@ was set to **PFBFile**.
 
 ::
 
-   pfset Geom.domain.FBy.FileName  Flow_Barrier_Y.pfb
+   pfset Geom.domain.FBy.FileName      "Flow_Barrier_Y.pfb"     ## TCL syntax
+
+   <runname>.Geom.domain.FBy.FileName = "Flow_Barrier_Y.pfb"    ## Python syntax
 
 *string* **Geom.domain.FBz.FileName** no default This key specifies file
 to be read in for the Z flow barrier values for the domain, if the type
@@ -1913,7 +1929,9 @@ was set to **PFBFile**.
 
 ::
 
-   pfset Geom.domain.FBz.FileName  Flow_Barrier_Z.pfb
+   pfset Geom.domain.FBz.FileName  "Flow_Barrier_Z.pfb"        ## TCL syntax
+
+   <runname>.Geom.domain.FBz.FileName = "Flow_Barrier_Z.pfb"   ## Python syntax
 
 
 .. _Manning's Roughness Values:
@@ -1937,9 +1955,9 @@ surface of the computational domain.
 
    ::
 
-      pfset Mannings.GeomNames       "domain"
+      pfset Mannings.GeomNames       "domain"    ## TCL syntax
 
-      <runname>.Mannings.GeomNames    ='domain'
+      <runname>.Mannings.GeomNames = "domain"    ## Python syntax
 
 *string* **Mannings.Type** no default This key specifies which method is
 to be used to assign Mannings roughness data. The choices currently
@@ -1952,9 +1970,9 @@ ParFlow binary file.
 
    ::
 
-      pfset Mannings.Type "Constant"
+      pfset Mannings.Type     "Constant"     ## TCL syntax
 
-      <runname>.Mannings.Type =Constant
+      <runname>.Mannings.Type = Constant     ## Python syntax
 
 *double* **Mannings.Geom.\ *geometry_name*.Value** no default This key
 specifies the value assigned to all points in the named geometry,
@@ -1964,9 +1982,9 @@ specifies the value assigned to all points in the named geometry,
 
    ::
 
-      pfset Mannings.Geom.domain.Value 5.52e-6
+      pfset Mannings.Geom.domain.Value 5.52e-6        ## TCL syntax
 
-      <runname>.Mannings.Geom.domain.Value =5.52e-6
+      <runname>.Mannings.Geom.domain.Value = 5.52e-6  ## Python syntax
 
 *double* **Mannings.FileName** no default This key specifies the value
 assigned to all points be read in from a ParFlow binary file.
@@ -1975,9 +1993,9 @@ assigned to all points be read in from a ParFlow binary file.
 
    ::
 
-      pfset Mannings.FileName roughness.pfb
+      pfset Mannings.FileName "roughness.pfb"         ## TCL syntax
 
-      <runname>.Mannings.FileName ='roughness.pfb'
+      <runname>.Mannings.FileName = "roughness.pfb"   ## Python syntax
 
 Complete example of setting Mannings roughness :math:`n` values by
 geometry:
@@ -1985,14 +2003,17 @@ geometry:
 .. container:: list
 
    ::
-
+    
+    ## TCL example
     pfset Mannings.Type "Constant"
     pfset Mannings.GeomNames "domain"
     pfset Mannings.Geom.domain.Value 5.52e-6
 
-    <runname>.Mannings.Type ="Constant"
-    <runname>.Mannings.GeomNames ="domain"
-    <runname>.Mannings.Geom.domain.Value =5.52e-6
+
+    ## Python example
+    <runname>.Mannings.Type = "Constant"
+    <runname>.Mannings.GeomNames = "domain"
+    <runname>.Mannings.Geom.domain.Value = 5.52e-6
 
 .. _Topographical Slopes:
 
@@ -2018,9 +2039,9 @@ upper surface of the computational domain.
 
    ::
 
-      pfset ToposlopesX.GeomNames       "domain"
+      pfset ToposlopesX.GeomNames       "domain"      ## TCL syntax
 
-      <runname>.ToposlopesX.GeomNames      = "domain"
+      <runname>.ToposlopesX.GeomNames = "domain"      ## Python syntax
 
 *list* **ToposlopesY.GeomNames** no default This key specifies all of
 the geometries on which a different :math:`y` topographic slope values
@@ -2032,9 +2053,9 @@ upper surface of the computational domain.
 
    ::
 
-      pfset ToposlopesY.GeomNames       "domain"
+      pfset ToposlopesY.GeomNames       "domain"      ## TCL syntax
 
-      <runname>.ToposlopesY.GeomNames      = "domain"
+      <runname>.ToposlopesY.GeomNames = "domain"      ## Python syntax
 
 *string* **ToposlopesX.Type** no default This key specifies which method
 is to be used to assign topographic slopes. The choices currently
@@ -2047,7 +2068,9 @@ ParFlow binary file.
 
    ::
 
-      pfset ToposlopesX.Type "Constant"
+      pfset ToposlopesX.Type "Constant"         ## TCL syntax
+
+      <runname>.ToposlopesX.Type = "Constant"   ## Python syntax
 
 *double* **ToposlopeX.Geom.\ *geometry_name*.Value** no default This key
 specifies the value assigned to all points in the named geometry,
@@ -2057,7 +2080,9 @@ specifies the value assigned to all points in the named geometry,
 
    ::
 
-      pfset ToposlopeX.Geom.domain.Value 0.001
+      pfset ToposlopeX.Geom.domain.Value       0.001     ## TCL syntax
+
+      <runname>.ToposlopeX.Geom.domain.Value = 0.001     ## Python syntax
 
 *double* **ToposlopesX.FileName** no default This key specifies the
 value assigned to all points be read in from a ParFlow binary file.
@@ -2066,7 +2091,9 @@ value assigned to all points be read in from a ParFlow binary file.
 
    ::
 
-      pfset TopoSlopesX.FileName lw.1km.slope_x.pfb
+      pfset TopoSlopesX.FileName       "lw.1km.slope_x.pfb"    ## TCL syntax
+
+      <runname>.TopoSlopesX.FileName = "lw.1km.slope_x.pfb"    ## Python syntax
 
 *double* **ToposlopesY.FileName** no default This key specifies the
 value assigned to all points be read in from a ParFlow binary file.
@@ -2075,7 +2102,9 @@ value assigned to all points be read in from a ParFlow binary file.
 
    ::
 
-      pfset TopoSlopesY.FileName lw.1km.slope_y.pfb
+      pfset TopoSlopesY.FileName       "lw.1km.slope_y.pfb"    ## TCL syntax
+
+      <runname>.TopoSlopesY.FileName = "lw.1km.slope_y.pfb"    ## Python syntax
 
 Example of setting :math:`x` and :math:`y` slopes by geometry:
 
@@ -2099,11 +2128,11 @@ Example of setting :math:`x` and :math:`y` slopes by file:
 
       pfset TopoSlopesX.Type "PFBFile"
       pfset TopoSlopesX.GeomNames "domain"
-      pfset TopoSlopesX.FileName lw.1km.slope_x.pfb
+      pfset TopoSlopesX.FileName "lw.1km.slope_x.pfb"
 
       pfset TopoSlopesY.Type "PFBFile"
       pfset TopoSlopesY.GeomNames "domain"
-      pfset TopoSlopesY.FileName lw.1km.slope_y.pfb
+      pfset TopoSlopesY.FileName "lw.1km.slope_y.pfb"
 
 .. _Retardation:
 
@@ -2122,7 +2151,9 @@ function applied.
 
    ::
 
-      pfset GeomInput.Names   "background"
+      pfset GeomInput.Names       "background"     ## TCL syntax
+
+      <runname>.GeomInput.Names = "background"     ## Python syntax
 
 *string*
 **Geom.\ *geometry_name*.\ *contaminant_name*.Retardation.Type** no
@@ -2136,7 +2167,9 @@ to be used to compute the retardation.
 
    ::
 
-      pfset Geom.background.tce.Retardation.Type   Linear
+      pfset Geom.background.tce.Retardation.Type   "Linear"       ## TCL syntax
+
+      <runname>.Geom.background.tce.Retardation.Type = "Linear"   ## Python syntax
 
 *double*
 **Geom.\ *geometry_name*.\ *contaminant_name*.Retardation.Value** no
@@ -2149,7 +2182,9 @@ should be scaled by the density of the material in the geometry.
 
    ::
 
-      pfset Geom.domain.Retardation.Value   0.2
+      pfset Geom.domain.Retardation.Value   0.2          ## TCL syntax
+
+      <runname>.Geom.domain.Retardation.Value = 0.2      ## Python syntax
 
 Full Multiphase Mobilities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
