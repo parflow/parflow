@@ -3030,7 +3030,9 @@ and these patches must “cover” that external boundary.
 
    ::
 
-      pfset BCPressure.PatchNames    "left right front back top bottom"
+      pfset BCPressure.PatchNames    "left right front back top bottom"       ## TCL syntax
+
+      <runname>.BCPressure.PatchNames = "left right front back top bottom"    ## Python syntax
 
 *string* **Patch.\ *patch_name*.BCPressure.Type** no default This key
 specifies the type of boundary condition data given for patch
@@ -3084,7 +3086,9 @@ only!*
 
    ::
 
-      pfset Patch.top.BCPressure.Type  "DirEquilRefPatch"
+      pfset Patch.top.BCPressure.Type  "DirEquilRefPatch"         ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.Type = "DirEquilRefPatch"    ## Python syntax
 
 *string* **Patch.\ *patch_name*.BCPressure.Cycle** no default This key
 specifies the time cycle to which boundary condition data for patch
@@ -3094,7 +3098,9 @@ specifies the time cycle to which boundary condition data for patch
 
    ::
 
-      pfset Patch.top.BCPressure.Cycle   "Constant"
+      pfset Patch.top.BCPressure.Cycle   "Constant"         ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.Cycle = "Constant"     ## Python syntax
 
 *string* **Patch.\ *patch_name*.BCPressure.RefGeom** no default This key
 specifies the name of the solid on which the reference patch for the
@@ -3106,7 +3112,9 @@ domains.
 
    ::
 
-      pfset Patch.top.BCPressure.RefGeom   "domain"
+      pfset Patch.top.BCPressure.RefGeom   "domain"         ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.RefGeom = "domain"     ## Python syntax
 
 *string* **Patch.\ *patch_name*.BCPressure.RefPatch** no default This
 key specifies the reference patch on which the **DirEquilRefPatch**
@@ -3117,7 +3125,9 @@ solid specified by the Patch.\ *patch_name*.BCPressure.RefGeom key.
 
    ::
 
-      pfset Patch.top.BCPressure.RefPatch    "bottom"
+      pfset Patch.top.BCPressure.RefPatch    "bottom"       ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.RefPatch = "bottom"    ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.Value** no
 default This key specifies the reference pressure value for the
@@ -3129,7 +3139,9 @@ for the **FluxVolumetric** boundary condition.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.Value  -14.0
+      pfset Patch.top.BCPressure.alltime.Value  -14.0       ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.Value = -14.0  ## Python syntax
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *phase_name*.IntValue**
@@ -3142,7 +3154,9 @@ interface with phase *phase_name* for cases with two phases present.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.water.IntValue   -13.0
+      pfset Patch.top.BCPressure.alltime.water.IntValue   -13.0         ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.water.IntValue = -13.0     ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.XLower** no
 default This key specifies the lower :math:`x` coordinate of a line in
@@ -3152,7 +3166,9 @@ the xy-plane.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.XLower  0.0
+      pfset Patch.top.BCPressure.alltime.XLower  0.0           ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.XLower = 0.0      ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.YLower** no
 default This key specifies the lower :math:`y` coordinate of a line in
@@ -3162,7 +3178,9 @@ the xy-plane.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.YLower  0.0
+      pfset Patch.top.BCPressure.alltime.YLower  0.0        ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.YLower = 0.0   ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.XUpper** no
 default This key specifies the upper :math:`x` coordinate of a line in
@@ -3172,7 +3190,9 @@ the xy-plane.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.XUpper  1.0
+      pfset Patch.top.BCPressure.alltime.XUpper  1.0        ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.XUpper = 1.0   ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.YUpper** no
 default This key specifies the upper :math:`y` coordinate of a line in
@@ -3182,7 +3202,9 @@ the xy-plane.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.YUpper  1.0
+      pfset Patch.top.BCPressure.alltime.YUpper  1.0        ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.YUpper = 1.0   ## Python syntax
 
 *integer*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.NumPoints** no
@@ -3194,7 +3216,9 @@ conditions.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.NumPoints   2
+      pfset Patch.top.BCPressure.alltime.NumPoints   2         ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.NumPoints = 2     ## Python syntax
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *point_number*.Location**
@@ -3207,7 +3231,9 @@ end of the line, and 1 corresponds to the upper end.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.0.Location   0.0
+      pfset Patch.top.BCPressure.alltime.0.Location   0.0         ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.0.Location = 0.0     ## Python syntax
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *point_number*.Value**
@@ -3222,7 +3248,9 @@ the line.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.0.Value   14.0
+      pfset Patch.top.BCPressure.alltime.0.Value   14.0        ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.0.Value = 14.0    ## Python syntax
 
 *string* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.FileName**
 no default This key specifies the name of a properly distributed ``.pfb`` file 
@@ -3235,7 +3263,9 @@ be used. The rest of the data is ignored.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.FileName   "ocwd_bc.pfb"
+      pfset Patch.top.BCPressure.alltime.FileName   "ocwd_bc.pfb"       ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.FileName = "ocwd_bc.pfb"   ## Python syntax
 
 *string*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.PredefinedFunction**
@@ -3251,7 +3281,9 @@ X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.PredefinedFunction  "XPlusYPlusZ"
+      pfset Patch.top.BCPressure.alltime.PredefinedFunction  "XPlusYPlusZ"       ## TCL syntax
+
+      <runname>.Patch.top.BCPressure.alltime.PredefinedFunction = "XPlusYPlusZ"  ## Python syntax
 
 The choices for this key correspond to pressures as follows.
 
