@@ -581,9 +581,9 @@ result for every “real time” cycle interval length needed.
 
    ::
 
-      pfset TimingInfo.BaseUnit      1.0
+      pfset TimingInfo.BaseUnit      1.0     ## TCL syntax
 
-      <runname>.TimingInfo.BaseUnit  =1.0
+      <runname>.TimingInfo.BaseUnit = 1.0    ## Python syntax
 
 *integer* **TimingInfo.StartCount** no default This key is used to
 indicate the time step number that will be associated with the first
@@ -597,9 +597,9 @@ time-step, but this has not yet been implemented.
 
    ::
 
-      pfset TimingInfo.StartCount    0
+      pfset TimingInfo.StartCount    0       ## TCL syntax
 
-      <runname>.TimingInfo.StartCount  =0
+      <runname>.TimingInfo.StartCount = 0    ## Python syntax
 
 *double* **TimingInfo.StartTime** no default This key is used to
 indicate the starting time for the simulation.
@@ -608,9 +608,9 @@ indicate the starting time for the simulation.
 
    ::
 
-      pfset TimingInfo.StartTime     0.0
+      pfset TimingInfo.StartTime     0.0     ## TCL syntax
 
-      <runname>.TimingInfo.StartTime    =0.0
+      <runname>.TimingInfo.StartTime = 0.0   ## Python syntax
 
 *double* **TimingInfo.StopTime** no default This key is used to indicate
 the stopping time for the simulation.
@@ -619,9 +619,9 @@ the stopping time for the simulation.
 
    ::
 
-      pfset TimingInfo.StopTime      100.0
+      pfset TimingInfo.StopTime      100.0      ## TCL syntax
 
-      <runname>.TimingInfo.StopTime  =100.0
+      <runname>.TimingInfo.StopTime = 100.0     ## Python syntax
 
 *double* **TimingInfo.DumpInterval** no default This key is the real
 time interval at which time-dependent output should be written. A value
@@ -633,9 +633,9 @@ the absolute value of the integer part of the value.
 
    ::
 
-      pfset TimingInfo.DumpInterval  10.0
+      pfset TimingInfo.DumpInterval  10.0       ## TCL syntax
 
-      <runname>.TimingInfo.DumpInterval =10.0
+      <runname>.TimingInfo.DumpInterval = 10.0  ## Python syntax
 
 *integer* **TimingInfo.DumpIntervalExecutionTimeLimit** 0 This key is
 used to indicate a wall clock time to halt the execution of a run. At
@@ -653,9 +653,9 @@ specified at configure time to enable.
 
    ::
 
-      pfset TimingInfo.DumpIntervalExecutionTimeLimit 360
+      pfset TimingInfo.DumpIntervalExecutionTimeLimit 360         ## TCL syntax
 
-      <runname>.TimingInfo.DumpIntervalExecutionTimeLimit =360
+      <runname>.TimingInfo.DumpIntervalExecutionTimeLimit = 360   ## Python syntax
 
 For *Richards’ equation cases only* input is collected for time step
 selection. Input for this section is given as follows:
@@ -671,9 +671,9 @@ dt_{max}` and :math:`dt^{new} \geq dt_{min}`.
 
    ::
 
-      pfset TimeStep.Type      Constant
+      pfset TimeStep.Type      Constant      ## TCL syntax
 
-      <runname>.TimeStep.Type   ='Constant'
+      <runname>.TimeStep.Type = 'Constant'   ## Python syntax
 
 *double* **TimeStep.Value** no default This key is used only if a
 constant time step is selected and indicates the value of the time step
@@ -683,9 +683,9 @@ for all steps taken.
 
    ::
 
-      pfset TimeStep.Value      0.001
+      pfset TimeStep.Value      0.001     ## TCL syntax
 
-      <runanme>.TimeStep.Value     =0.001
+      <runanme>.TimeStep.Value = 0.001    ## Python syntax
 
 *double* **TimeStep.InitialStep** no default This key specifies the
 initial time step :math:`dt_0` if the **Growth** type time step is
@@ -695,9 +695,9 @@ selected.
 
    ::
 
-      pfset TimeStep.InitialStep    0.001
+      pfset TimeStep.InitialStep    0.001       ## TCL syntax
 
-      <runname>.TimeStep.InitialStep    =0.001
+      <runname>.TimeStep.InitialStep = 0.001    ## Python syntax
 
 *double* **TimeStep.GrowthFactor** no default This key specifies the
 growth factor :math:`\gamma` by which a time step will be multiplied to
@@ -707,9 +707,9 @@ get the new time step when the **Growth** type time step is selected.
 
    ::
 
-      pfset TimeStep.GrowthFactor      1.5
+      pfset TimeStep.GrowthFactor      1.5      ## TCL syntax
 
-      <runname>.TimeStep.GrowthFactor      =1.5
+      <runname>.TimeStep.GrowthFactor = 1.5     ## Python syntax
 
 *double* **TimeStep.MaxStep** no default This key specifies the maximum
 time step allowed, :math:`dt_{max}`, when the **Growth** type time step
@@ -719,9 +719,9 @@ is selected.
 
    ::
 
-      pfset TimeStep.MaxStep      86400
+      pfset TimeStep.MaxStep      86400      ## TCL syntax
 
-      <runname>.TimeStep.MaxStep  =86400
+      <runname>.TimeStep.MaxStep = 86400     ## Python syntax
 
 *double* **TimeStep.MinStep** no default This key specifies the minimum
 time step allowed, :math:`dt_{min}`, when the **Growth** type time step
@@ -731,9 +731,9 @@ is selected.
 
    ::
 
-      pfset TimeStep.MinStep      1.0e-3
+      pfset TimeStep.MinStep      1.0e-3     ## TCL syntax
 
-      <runname>.TimeStep.MinStep  =1.0e-3
+      <runname>.TimeStep.MinStep = 1.0e-3    ## Python syntax
 
 Here is a detailed example of how timing keys might be used in a
 simulation.
@@ -748,22 +748,22 @@ simulation.
       # Setup timing info [hr]
       # 8760 hours in a year. Dumping files every 24 hours. Hourly timestep
       #-----------------------------------------------------------------------------
-      pfset TimingInfo.BaseUnit		1.0
+      pfset TimingInfo.BaseUnit		   1.0
       pfset TimingInfo.StartCount		0
-      pfset TimingInfo.StartTime		0.0
-      pfset TimingInfo.StopTime		8760.0
-      pfset TimingInfo.DumpInterval	-24
+      pfset TimingInfo.StartTime		   0.0
+      pfset TimingInfo.StopTime		   8760.0
+      pfset TimingInfo.DumpInterval 	-24
 
       ## Timing constant example
-      pfset TimeStep.Type			Constant
-      pfset TimeStep.Value			1.0
+      pfset TimeStep.Type			      Constant
+      pfset TimeStep.Value			      1.0
 
       ## Timing growth example
-      pfset TimeStep.Type			Growth
-      pfset TimeStep.InitialStep		0.0001
+      pfset TimeStep.Type			      Growth
+      pfset TimeStep.InitialStep		   0.0001
       pfset TimeStep.GrowthFactor		1.4
-      pfset TimeStep.MaxStep			1.0
-      pfset TimeStep.MinStep			0.0001
+      pfset TimeStep.MaxStep			   1.0
+      pfset TimeStep.MinStep			   0.0001
 
 
       ## Python Example
@@ -772,22 +772,22 @@ simulation.
       # Setup timing info [hr]
       # 8760 hours in a year. Dumping files every 24 hours. Hourly timestep
       #-----------------------------------------------------------------------------
-      <runname>.TimingInfo.BaseUnit		 =1.0
-      <runname>.TimingInfo.StartCount	 =0
-      <runname>.TimingInfo.StartTime	 =0.0
-      <runname>.TimingInfo.StopTime		 =8760.0
-      <runname>.TimingInfo.DumpInterval =-24
+      <runname>.TimingInfo.BaseUnit = 1.0
+      <runname>.TimingInfo.StartCount = 0
+      <runname>.TimingInfo.StartTime = 0.0
+      <runname>.TimingInfo.StopTime = 8760.0
+      <runname>.TimingInfo.DumpInterval = -24
 
       ## Timing constant example
-      <runname>.TimeStep.Type			=Constant
-      <runname>.TimeStep.Value		=	1.0
+      <runname>.TimeStep.Type	= 'Constant'
+      <runname>.TimeStep.Value = 1.0
 
       ## Timing growth example
-      <runname>.TimeStep.Type			 =Growth
-      <runname>.TimeStep.InitialStep =0.0001
-      <runname>.TimeStep.GrowthFactor		=1.4
-      <runname>.TimeStep.MaxStep			=1.0
-      <runname>.TimeStep.MinStep			=0.0001
+      <runname>.TimeStep.Type	= 'Growth'
+      <runname>.TimeStep.InitialStep = 0.0001
+      <runname>.TimeStep.GrowthFactor = 1.4
+      <runname>.TimeStep.MaxStep	= 1.0
+      <runname>.TimeStep.MinStep	= 0.0001
 
 .. _Time Cycles:
 
