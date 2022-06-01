@@ -4238,7 +4238,9 @@ The choice **CGHS** is a conjugate gradient solver.
 
    ::
 
-      pfset Solver.Linear   "MGSemi"
+      pfset Solver.Linear   "MGSemi"         ## TCL syntax
+
+      <runname>.Solver.Linear = "MGSemi"     ## Python syntax
 
 *integer* **Solver.SadvectOrder** 2 This key controls the order of the
 explicit method used in advancing the saturations. This value can be
@@ -4249,7 +4251,9 @@ Godunov method.
 
    ::
 
-      pfset Solver.SadvectOrder 1
+      pfset Solver.SadvectOrder 1         ## TCL syntax
+
+      <runname>.Solver.SadvectOrder = 1   ## Python syntax
 
 *integer* **Solver.AdvectOrder** 2 This key controls the order of the
 explicit method used in advancing the concentrations. This value can be
@@ -4260,7 +4264,9 @@ Godunov method.
 
    ::
 
-      pfset Solver.AdvectOrder 2
+      pfset Solver.AdvectOrder 2          ## TCL syntax
+
+      <runname>.Solver.AdvectOrder = 2    ## Python syntax
 
 *double* **Solver.CFL** 0.7 This key gives the value of the weight put
 on the computed CFL limit before computing a global timestep value.
@@ -4272,7 +4278,9 @@ instabilities.
 
    ::
 
-      pfset Solver.CFL 0.7
+      pfset Solver.CFL 0.7          ## TCL syntax
+
+      <runname>.Solver.CFL = 0.7    ## Python syntax
 
 *integer* **Solver.MaxIter** 1000000 This key gives the maximum number
 of iterations that will be allowed for time-stepping. This is to prevent
@@ -4282,7 +4290,9 @@ a run-away simulation.
 
    ::
 
-      pfset Solver.MaxIter 100
+      pfset Solver.MaxIter 100         ## TCL syntax
+
+      <runname>.Solver.MaxIter = 100   ## Python syntax
 
 *double* **Solver.RelTol** 1.0 This value gives the relative tolerance
 for the linear solve algorithm.
@@ -4291,7 +4301,9 @@ for the linear solve algorithm.
 
    ::
 
-      pfset Solver.RelTol 1.0
+      pfset Solver.RelTol 1.0          ## TCL syntax
+
+      <runname>.Solver.RelTol = 1.0    ## Python syntax
 
 *double* **Solver.AbsTol** 1E-9 This value gives the absolute tolerance
 for the linear solve algorithm.
@@ -4300,7 +4312,9 @@ for the linear solve algorithm.
 
    ::
 
-      pfset Solver.AbsTol 1E-8
+      pfset Solver.AbsTol 1E-8         ## TCL syntax
+
+      <runname>.Solver.AbsTol = 1E-8   ## Python syntax
 
 *double* **Solver.Drop** 1E-8 This key gives a clipping value for data
 written to PFSB files. Data values greater than the negative of this
@@ -4311,7 +4325,9 @@ to PFSB files.
 
    ::
 
-      pfset Solver.Drop 1E-6
+      pfset Solver.Drop 1E-6           ## TCL syntax
+
+      <runname>.Solver.Drop = 1E-6     ## Python syntax
 
 *double* **Solver.OverlandDiffusive.Epsilon** 1E-5 This key provides a
 minimum value for the :math:`\bar{S_{f}}` used in the
@@ -4319,7 +4335,9 @@ minimum value for the :math:`\bar{S_{f}}` used in the
 
 ::
 
-   pfset Solver.OverlandDiffusive.Epsilon 1E-7
+   pfset Solver.OverlandDiffusive.Epsilon 1E-7           ## TCL syntax
+
+   <runname>.Solver.OverlandDiffusive.Epsilon = 1E-7     ## Python syntax
 
 *double* **Solver.OverlandKinematic.Epsilon** 1E-5 This key provides a
 minimum value for the :math:`\bar{S_{f}}` used in the
@@ -4327,7 +4345,9 @@ minimum value for the :math:`\bar{S_{f}}` used in the
 
 ::
 
-   pfset Solver.OverlandKinematic.Epsilon 1E-7
+   pfset Solver.OverlandKinematic.Epsilon 1E-7           ## TCL syntax
+
+   <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
 
 
 *string* **Solver.PrintSubsurf** True This key is used to turn on
@@ -4339,7 +4359,9 @@ only once during the run. The data is written as a PFB file.
 
    ::
 
-      pfset Solver.PrintSubsurf False
+      pfset Solver.PrintSubsurf False           ## TCL syntax
+
+      <runname>.Solver.PrintSubsurf = False     ## Python syntax
 
 *string* **Solver.PrintPressure** True This key is used to turn on
 printing of the pressure data. The printing of the data is controlled by
@@ -4350,7 +4372,9 @@ file.
 
    ::
 
-      pfset Solver.PrintPressure False
+      pfset Solver.PrintPressure False          ## TCL syntax
+
+      <runname>.Solver.PrintPressure = False    ## Python syntax
 
 *string* **Solver.PrintVelocities** False This key is used to turn on
 printing of the x, y, and z velocity (Darcy flux) data. The printing of
@@ -4366,8 +4390,9 @@ equation solver.
 
 ::
 
-   pfset Solver.PrintVelocities True
+   pfset Solver.PrintVelocities True         ## TCL syntax
 
+   <runname>.Solver.PrintVelocities = True   ## Python syntax
 
 *string* **Solver.PrintSaturation** True This key is used to turn on
 printing of the saturation data. The printing of the data is controlled
@@ -4378,7 +4403,9 @@ PFB file.
 
    ::
 
-      pfset Solver.PrintSaturation False
+      pfset Solver.PrintSaturation False        ## TCL syntax
+
+      <runname>.Solver.PrintSaturation = False  ## Python syntax
 
 *string* **Solver.PrintConcentration** True This key is used to turn on
 printing of the concentration data. The printing of the data is
@@ -4389,7 +4416,9 @@ written as a PFSB file.
 
    ::
 
-      pfset Solver.PrintConcentration False
+      pfset Solver.PrintConcentration False           ## TCL syntax
+
+      <runname>.Solver.PrintConcentration = False     ## Python syntax
 
 *string* **Solver.PrintWells** True This key is used to turn on
 collection and printing of the well data. The data is collected at
@@ -4400,7 +4429,9 @@ occurs at the end of the run when all collected data is written.
 
    ::
 
-      pfset Solver.PrintWells False
+      pfset Solver.PrintWells False          ## TCL syntax
+
+      <runname>.Solver.PrintWells = False    ## Python syntax
 
 *string* **Solver.PrintLSMSink** False This key is used to turn on
 printing of the flux array passed from ``CLM`` to ParFlow. 
@@ -4410,7 +4441,9 @@ Printing occurs at each **DumpInterval** time.
 
    ::
 
-      pfset Solver.PrintLSMSink True
+      pfset Solver.PrintLSMSink True            ## TCL syntax
+
+      <runname>.Solver.PrintLSMSink = True      ## Python syntax
 
 *string* **Solver.WriteSiloSubsurfData** False This key is used to
 specify printing of the subsurface data, Permeability and Porosity in
@@ -4422,7 +4455,9 @@ may be read in by VisIT and other visualization packages.
 
    ::
 
-      pfset Solver.WriteSiloSubsurfData True
+      pfset Solver.WriteSiloSubsurfData True          ## TCL syntax
+
+      <runname>.Solver.WriteSiloSubsurfData = True    ## Python syntax
 
 *string* **Solver.WriteSiloPressure** False This key is used to specify
 printing of the saturation data in silo binary format. The printing of
@@ -4433,7 +4468,9 @@ data may be read in by VisIT and other visualization packages.
 
    ::
 
-      pfset Solver.WriteSiloPressure True
+      pfset Solver.WriteSiloPressure True          ## TCL syntax
+
+      <runname>.Solver.WriteSiloPressure = True    ## Python syntax
 
 *string* **Solver.WriteSiloSaturation** False This key is used to
 specify printing of the saturation data using silo binary format. The
@@ -4444,7 +4481,9 @@ section.
 
    ::
 
-      pfset Solver.WriteSiloSaturation True
+      pfset Solver.WriteSiloSaturation True        ## TCL syntax
+
+      <runname>.Solver.WriteSiloSaturation = True  ## Python syntax
 
 *string* **Solver.WriteSiloConcentration** False This key is used to
 specify printing of the concentration data in silo binary format. The
@@ -4455,7 +4494,9 @@ section.
 
    ::
 
-      pfset Solver.WriteSiloConcentration True
+      pfset Solver.WriteSiloConcentration True           ## TCL syntax
+
+      <runname>.Solver.WriteSiloConcentration = True     ## Python syntax
 
 *string* **Solver.WriteSiloVelocities** False This key is used to
 specify printing of the x, y and z velocity data in silo binary format.
@@ -4466,7 +4507,9 @@ information section.
 
    ::
 
-      pfset Solver.WriteSiloVelocities True
+      pfset Solver.WriteSiloVelocities True           ## TCL syntax
+
+      <runname>.Solver.WriteSiloVelocities = True     ## Python syntax
 
 *string* **Solver.WriteSiloSlopes** False This key is used to specify
 printing of the x and y slope data using silo binary format. The
@@ -4477,7 +4520,9 @@ section.
 
    ::
 
-      pfset Solver.WriteSiloSlopes  True
+      pfset Solver.WriteSiloSlopes  True        ## TCL syntax
+
+      <runname>.Solver.WriteSiloSlopes = True   ## Python syntax
 
 *string* **Solver.WriteSiloMannings** False This key is used to specify
 printing of the Manning’s roughness data in silo binary format. The
@@ -4488,7 +4533,9 @@ section.
 
    ::
 
-      pfset Solver.WriteSiloMannings True
+      pfset Solver.WriteSiloMannings True          ## TCL syntax
+
+      <runname>.Solver.WriteSiloMannings = True    ## Python syntax
 
 *string* **Solver.WriteSiloSpecificStorage** False This key is used to
 specify printing of the specific storage data in silo binary format. The
@@ -4499,7 +4546,9 @@ section.
 
    ::
 
-      pfset Solver.WriteSiloSpecificStorage True
+      pfset Solver.WriteSiloSpecificStorage True         ## TCL syntax
+
+      <runname>.Solver.WriteSiloSpecificStorage = True   ## Python syntax
 
 *string* **Solver.WriteSiloMask** False This key is used to specify
 printing of the mask data using silo binary format. The mask contains
@@ -4511,7 +4560,9 @@ section.
 
    ::
 
-      pfset Solver.WriteSiloMask  True
+      pfset Solver.WriteSiloMask  True          ## TCL syntax
+
+      <runname>.Solver.WriteSiloMask = True     ## Python syntax
 
 *string* **Solver.WriteSiloEvapTrans** False This key is used to specify
 printing of the evaporation and rainfall flux data using silo binary
@@ -4523,7 +4574,9 @@ of the data is controlled by values in the timing information section.
 
    ::
 
-      pfset Solver.WriteSiloEvapTrans  True
+      pfset Solver.WriteSiloEvapTrans  True        ## TCL syntax
+
+      <runname>.Solver.WriteSiloEvapTrans = True   ## Python syntax
 
 *string* **Solver.WriteSiloEvapTransSum** False This key is used to
 specify printing of the evaporation and rainfall flux data using silo
@@ -4536,7 +4589,9 @@ values in the timing information section.
 
    ::
 
-      pfset Solver.WriteSiloEvapTransSum  True
+      pfset Solver.WriteSiloEvapTransSum  True           ## TCL syntax
+
+      <runname>.Solver.WriteSiloEvapTransSum = True      ## Python syntax
 
 *string* **Solver.WriteSiloOverlandSum** False This key is used to
 specify calculation and printing of the total overland outflow from the
@@ -4550,7 +4605,9 @@ in the timing information section.
 
    ::
 
-      pfset Solver.WriteSiloOverlandSum  True
+      pfset Solver.WriteSiloOverlandSum  True            ## TCL syntax
+
+      <runname>.Solver.WriteSiloOverlandSum = True       ## Python syntax
 
 *string* **Solver.TerrainFollowingGrid** False This key specifies that a
 terrain-following coordinate transform is used for solver Richards. This
@@ -4566,7 +4623,9 @@ only changes solver Richards, not solver Impes.
 
    ::
 
-      pfset Solver.TerrainFollowingGrid                        True
+      pfset Solver.TerrainFollowingGrid  True         ## TCL syntax
+
+      <runname>.Solver.TerrainFollowingGrid = True    ## Python syntax
 
 *string* **Solver.TerrainFollowingGrid.SlopeUpwindFormulation** Original
 This key specifies optional modifications to the terrain following grid
@@ -4590,7 +4649,9 @@ consistent with **OverlandFow**
 
 ::
 
-   pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   "Upwind"
+   pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   "Upwind"        ## TCL syntax
+
+   <runname>.Solver.TerrainFollowingGrid.SlopeUpwindFormulation = "Upwind"    ## Python syntax
 
 
 .. _SILO Options:
@@ -4611,7 +4672,9 @@ configured SILO with HDF5 in order to use that option.
 
    ::
 
-      pfset SILO.Filetype  "PDB"
+      pfset SILO.Filetype  "PDB"       ## TCL syntax
+
+      <runname>.SILO.Filetype = "PDB"  ## Python syntax
 
 *string* **SILO.CompressionOptions** This key is used to specify the
 SILO compression options. See the SILO manual for the DB_SetCompression
@@ -4623,7 +4686,9 @@ SILO.
 
    ::
 
-      pfset SILO.CompressionOptions  "METHOD=GZIP"
+      pfset SILO.CompressionOptions  "METHOD=GZIP"          ## TCL syntax
+
+      <runname>.SILO.CompressionOptions = "METHOD=GZIP"     ## Python syntax
 
 .. _RE Solver Parameters:
 
@@ -4644,7 +4709,9 @@ the residual is measured with the :math:`l^1` (max) norm.
 
    ::
 
-      pfset Solver.Nonlinear.ResidualTol   1e-4
+      pfset Solver.Nonlinear.ResidualTol   1e-4          ## TCL syntax
+
+      <runname>.Solver.Nonlinear.ResidualTol = 1e-4      ## Python syntax
 
 *double* **Solver.Nonlinear.StepTol** 1e-7 This key specifies the
 tolerance that measures how small the difference between two consecutive
@@ -4654,7 +4721,9 @@ nonlinear steps can be before nonlinear iterations stop.
 
    ::
 
-      pfset Solver.Nonlinear.StepTol   1e-4
+      pfset Solver.Nonlinear.StepTol   1e-4        ## TCL syntax
+
+      <runname>.Solver.Nonlinear.StepTol = 1e-4    ## Python syntax
 
 *integer* **Solver.Nonlinear.MaxIter** 15 This key specifies the maximum
 number of nonlinear iterations allowed before iterations stop with a
@@ -4664,7 +4733,9 @@ convergence failure.
 
    ::
 
-      pfset Solver.Nonlinear.MaxIter   50
+      pfset Solver.Nonlinear.MaxIter   50       ## TCL syntax
+
+      <runname>.Solver.Nonlinear.MaxIter = 50   ## Python syntax
 
 *integer* **Solver.Linear.KrylovDimension** 10 This key specifies the
 maximum number of vectors to be used in setting up the Krylov subspace
@@ -4677,7 +4748,9 @@ solver convergence.
 
    ::
 
-      pfset Solver.Linear.KrylovDimension   15
+      pfset Solver.Linear.KrylovDimension   15        ## TCL syntax
+
+      <runname>.Solver.Linear.KrylovDimension = 15    ## Python syntax
 
 *integer* **Solver.Linear.MaxRestarts** 0 This key specifies the number
 of restarts allowed to the GMRES solver. Restarts start the development
@@ -4688,7 +4761,9 @@ iterate for the next pass.
 
    ::
 
-      pfset Solver.Linear.MaxRestarts   2
+      pfset Solver.Linear.MaxRestarts   2       ## TCL syntax
+
+      <runname>.Solver.Linear.MaxRestarts = 2   ## Python syntax
 
 *integer* **Solver.MaxConvergenceFailures** 3 This key gives the maximum
 number of convergence failures allowed. Each convergence failure cuts
@@ -4709,7 +4784,9 @@ are required, consider setting the timestep to a smaller value.
 
    ::
 
-      pfset Solver.MaxConvergenceFailures 4
+      pfset Solver.MaxConvergenceFailures 4           ## TCL syntax
+
+      <runname>.Solver.MaxConvergenceFailures = 4     ## Python syntax
 
 *string* **Solver.Nonlinear.PrintFlag** HighVerbosity This key specifies
 the amount of informational data that is printed to the ``*.out.kinsol.log`` 
@@ -4726,7 +4803,9 @@ statistics.
 
    ::
 
-      pfset Solver.Nonlinear.PrintFlag   "NormalVerbosity"
+      pfset Solver.Nonlinear.PrintFlag   "NormalVerbosity"        ## TCL syntax
+
+      <runname>.Solver.Nonlinear.PrintFlag = "NormalVerbosity"    ## Python syntax
 
 *string* **Solver.Nonlinear.EtaChoice** Walker2 This key specifies how
 the linear system tolerance will be selected. The linear system is
@@ -4746,7 +4825,9 @@ last two choices, :math:`\eta` is never allowed to be less than 1e-4.
 
    ::
 
-      pfset Solver.Nonlinear.EtaChoice   "EtaConstant"
+      pfset Solver.Nonlinear.EtaChoice   "EtaConstant"         ## TCL syntax
+
+      <runname>.Solver.Nonlinear.EtaChoice = "EtaConstant"     ## Python syntax
 
 *double* **Solver.Nonlinear.EtaValue** 1e-4 This key specifies the
 constant value of :math:`\eta` for the EtaChoice key **EtaConstant**.
@@ -4755,7 +4836,9 @@ constant value of :math:`\eta` for the EtaChoice key **EtaConstant**.
 
    ::
 
-      pfset Solver.Nonlinear.EtaValue   1e-7
+      pfset Solver.Nonlinear.EtaValue   1e-7          ## TCL syntax
+
+      <runname>.Solver.Nonlinear.EtaValue = 1e-7      ## Python syntax
 
 *double* **Solver.Nonlinear.EtaAlpha** 2.0 This key specifies the value
 of :math:`\alpha` for the case of EtaChoice being **Walker2**.
@@ -4764,7 +4847,9 @@ of :math:`\alpha` for the case of EtaChoice being **Walker2**.
 
    ::
 
-      pfset Solver.Nonlinear.EtaAlpha   1.0
+      pfset Solver.Nonlinear.EtaAlpha   1.0        ## TCL syntax
+
+      <runname>.Solver.Nonlinear.EtaAlpha = 1.0    ## Python syntax
 
 *double* **Solver.Nonlinear.EtaGamma** 0.9 This key specifies the value
 of :math:`\gamma` for the case of EtaChoice being **Walker2**.
@@ -4773,7 +4858,9 @@ of :math:`\gamma` for the case of EtaChoice being **Walker2**.
 
    ::
 
-      pfset Solver.Nonlinear.EtaGamma   0.7
+      pfset Solver.Nonlinear.EtaGamma   0.7        ## TCL syntax
+
+      <runname>.Solver.Nonlinear.EtaGamma = 0.7    ## Python syntax
 
 *string* **Solver.Nonlinear.UseJacobian** False This key specifies
 whether the Jacobian will be used in matrix-vector products or whether a
@@ -4785,7 +4872,9 @@ number of nonlinear iterations but require more memory to run.
 
    ::
 
-      pfset Solver.Nonlinear.UseJacobian   True
+      pfset Solver.Nonlinear.UseJacobian   True          ## TCL syntax
+
+      <runname>.Solver.Nonlinear.UseJacobian = True      ## Python syntax
 
 *double* **Solver.Nonlinear.DerivativeEpsilon** 1e-7 This key specifies
 the value of :math:`\epsilon` used in approximating the action of the
@@ -4797,7 +4886,9 @@ is **False**.
 
    ::
 
-      pfset Solver.Nonlinear.DerivativeEpsilon   1e-8
+      pfset Solver.Nonlinear.DerivativeEpsilon   1e-8       ## TCL syntax
+
+      <runname>.Solver.Nonlinear.DerivativeEpsilon = 1e-8   ## Python syntax
 
 *string* **Solver.Nonlinear.Globalization** LineSearch This key
 specifies the type of global strategy to use. Possible choices for this
@@ -4811,7 +4902,9 @@ certain criteria.
 
    ::
 
-      pfset Solver.Nonlinear.Globalization   "LineSearch"
+      pfset Solver.Nonlinear.Globalization   "LineSearch"         ## TCL syntax
+
+      <runname>.Solver.Nonlinear.Globalization = "LineSearch"     ## Python syntax
 
 *string* **Solver.Linear.Preconditioner** MGSemi This key specifies
 which preconditioner to use. Currently, the three choices are **NoPC,
@@ -4828,7 +4921,9 @@ numbers of inactive cells.
 
    ::
 
-      pfset Solver.Linear.Preconditioner   "MGSemi"
+      pfset Solver.Linear.Preconditioner   "MGSemi"         ## TCL syntax
+
+      <runname>.Solver.Linear.Preconditioner = "MGSemi"     ## Python syntax
 
 *string* **Solver.Linear.Preconditioner.SymmetricMat** Symmetric This
 key specifies whether the preconditioning matrix is symmetric. Choices
@@ -4843,7 +4938,9 @@ PRECONDITIONER!
 
    ::
 
-      pfset Solver.Linear.Preconditioner.SymmetricMat     "Symmetric"
+      pfset Solver.Linear.Preconditioner.SymmetricMat     "Symmetric"      ## TCL syntax
+
+      <runname>.Solver.Linear.Preconditioner.SymmetricMat = "Symmetric"    ## Python syntax
 
 *integer* **Solver.Linear.Preconditioner.\ *precond_method*.MaxIter** 1
 This key specifies the maximum number of iterations to take in solving
@@ -4853,7 +4950,9 @@ the preconditioner system with *precond_method* solver.
 
    ::
 
-      pfset Solver.Linear.Preconditioner.SMG.MaxIter    2
+      pfset Solver.Linear.Preconditioner.SMG.MaxIter    2         ## TCL syntax
+
+      <runname>.Solver.Linear.Preconditioner.SMG.MaxIter = 2      ## Python syntax
 
 *integer* **Solver.Linear.Preconditioner.SMG.NumPreRelax** 1 This key
 specifies the number of relaxations to take before coarsening in the
@@ -4864,7 +4963,9 @@ the SMG multigrid preconditioner.
 
    ::
 
-      pfset Solver.Linear.Preconditioner.SMG.NumPreRelax    2
+      pfset Solver.Linear.Preconditioner.SMG.NumPreRelax    2        ## TCL syntax
+
+      <runname>.Solver.Linear.Preconditioner.SMG.NumPreRelax = 2     ## Python syntax
 
 *integer* **Solver.Linear.Preconditioner.SMG.NumPostRelax** 1 This key
 specifies the number of relaxations to take after coarsening in the
@@ -4875,7 +4976,9 @@ the SMG multigrid preconditioner.
 
    ::
 
-      pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0
+      pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0       ## TCL syntax
+
+      <runname>.Solver.Linear.Preconditioner.SMG.NumPostRelax = 0    ## Python syntax
 
 *string* **Solver.Linear.Preconditioner.PFMG.RAPType** NonGalerkin For
 the PFMG solver, this key specifies the *Hypre* RAP type. Valid values
@@ -4885,7 +4988,9 @@ are **Galerkin** or **NonGalerkin**
 
    ::
 
-      pfset Solver.Linear.Preconditioner.PFMG.RAPType    "Galerkin"
+      pfset Solver.Linear.Preconditioner.PFMG.RAPType    "Galerkin"     ## TCL syntax
+
+      <runname>.Solver.Linear.Preconditioner.PFMG.RAPType = "Galerkin"  ## Python syntax
 
 *logical* **Solver.EvapTransFile** False This key specifies specifies
 that the Flux terms for Richards’ equation are read in from a ``.pfb`` 
@@ -4896,7 +5001,9 @@ flux and should not be used in conjunction with the transient key below.
 
    ::
 
-      pfset Solver.EvapTransFile    True
+      pfset Solver.EvapTransFile    True        ## TCL syntax
+
+      <runname>.Solver.EvapTransFile = True     ## Python syntax
 
 *logical* **Solver.EvapTransFileTransient** False This key specifies
 specifies that the Flux terms for Richards’ equation are read in from a
@@ -4908,7 +5015,9 @@ to ``True`` at a time, not both.
 
    ::
 
-      pfset Solver.EvapTransFileTransient    True
+      pfset Solver.EvapTransFileTransient    True        ## TCL syntax
+
+      <runname>.Solver.EvapTransFileTransient = True     ## Python syntax
 
 *string* **Solver.EvapTrans.FileName** no default This key specifies
 specifies filename for the distributed ``.pfb`` file that contains the 
@@ -4922,7 +5031,9 @@ ParFlow will load one file per timestep, with the form ``filename.00000.pfb``.
 
    ::
 
-      pfset Solver.EvapTrans.FileName   "evap.trans.test.pfb"
+      pfset Solver.EvapTrans.FileName   "evap.trans.test.pfb"        ## TCL syntax
+
+      <runname>.Solver.EvapTrans.FileName = "evap.trans.test.pfb"    ## Python syntax
 
 *string* **Solver.LSM** none This key specifies whether a land surface
 model, such as ``CLM``, will be called each solver timestep. Choices 
@@ -4933,7 +5044,9 @@ and linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.LSM "CLM"
+      pfset Solver.LSM "CLM"           ## TCL syntax
+
+      <runname>.Solver.LSM = "CLM"     ## Python syntax
 
 .. _Spinup Options:
 
