@@ -3861,7 +3861,7 @@ correct sign based on the chosen action for the well.
 no default This key specifies the volumetric flux for an extraction well
 if the extraction type key is set to **Flux**.
 
-Note only a positive number should be entered, ParFlow assignes the
+Note only a positive number should be entered, ParFlow assigns the
 correct sign based on the chosen action for the well.
 
 .. container:: list
@@ -3875,7 +3875,7 @@ correct sign based on the chosen action for the well.
 no default This key specifies the volumetric flux for an injection well
 if the injection type key is set to **Flux**.
 
-Note only a positive number should be entered, ParFlow assignes the
+Note only a positive number should be entered, ParFlow assigns the
 correct sign based on the chosen action for the well.
 
 .. container:: list
@@ -4072,8 +4072,8 @@ the data is controlled by values in the timing information section. The
 x, y, and z data are written to separate PFB files. The dimensions of
 these files are slightly different than most PF data, with the dimension
 of interest representing interfaces, and the other two dimensions
-representing cells. E.g. the x-velocity PFB has dimensions $[NX+1, NY,
-NZ]$. This key produces files in the format of
+representing cells. E.g. the x-velocity PFB has dimensions [NX+1, NY,
+NZ]. This key produces files in the format of
 ``<runname>.out.phase<x||y||z>.00.0000.pfb`` when using ParFlow’s saturated
 solver and ``<runname>.out.vel<x||y||z>.00000.pfb`` when using the Richards
 equation solver.
@@ -4118,7 +4118,7 @@ occurs at the end of the run when all collected data is written.
 
 *string* **Solver.PrintLSMSink** False This key is used to turn on
 printing of the flux array passed from ``CLM`` to ParFlow. 
-Printing occurs at each DumpInterval time.
+Printing occurs at each **DumpInterval** time.
 
 .. container:: list
 
@@ -4230,7 +4230,7 @@ section.
 *string* **Solver.WriteSiloEvapTrans** False This key is used to specify
 printing of the evaporation and rainfall flux data using silo binary
 format. This data comes from either ``clm`` or from external calls to 
-ParFlow such as WRF. This data is in units of [L^3 T^{-1}]. The printing 
+ParFlow such as WRF. This data is in units of :math:`[L^3 T^{-1}]`. The printing 
 of the data is controlled by values in the timing information section.
 
 .. container:: list
@@ -4243,7 +4243,7 @@ of the data is controlled by values in the timing information section.
 specify printing of the evaporation and rainfall flux data using silo
 binary format as a running, cumulative amount. This data comes from
 either ``clm`` or from external calls to ParFlow such as WRF. This 
-data is in units of [L^3]. The printing of the data is controlled by 
+data is in units of :math:`[L^3]`. The printing of the data is controlled by 
 values in the timing information section.
 
 .. container:: list
@@ -4296,7 +4296,7 @@ calculation). The **UpwindSine** is the same as the **Upwind** option
 but it also removes the Sine term from the TFG Darcy Formulation (in :ref:`TFG`).
 Note the **UpwindSine** option is for experimental purposes only and
 should not be used in standard simulations. Also note that the choice of
-**upwind** or\ **Original** formulation should consistent with the
+**upwind** or **Original** formulation should consistent with the
 choice of overland flow boundary condition if overland flow is being
 used. The **upwind** and **UpwindSine** are consistent with
 **OverlandDiffusive** and **OverlandKinematic** while **Original** is
@@ -4404,7 +4404,7 @@ iterate for the next pass.
 
       pfset Solver.Linear.MaxRestarts   2
 
-*integer* **Solver.MaxConvergencFailures** 3 This key gives the maximum
+*integer* **Solver.MaxConvergenceFailures** 3 This key gives the maximum
 number of convergence failures allowed. Each convergence failure cuts
 the timestep in half and the solver tries to advance the solution with
 the reduced timestep.
@@ -4414,7 +4414,7 @@ The default value is 3.
 Note that setting this value to a value greater than 9 may result in
 errors in how time cycles are calculated. Time is discretized in terms
 of the base time unit and if the solver begins to take very small
-timesteps :math:`smaller than base time unit \/ 1000` the values based
+timesteps :math:`smaller than base time unit 1000` the values based
 on time cycles will be change at slightly incorrect times. If the
 problem is failing converge so poorly that a large number of restarts
 are required, consider setting the timestep to a smaller value.
@@ -4427,13 +4427,13 @@ are required, consider setting the timestep to a smaller value.
 
 *string* **Solver.Nonlinear.PrintFlag** HighVerbosity This key specifies
 the amount of informational data that is printed to the ``*.out.kinsol.log`` 
-file. Choices for this key are NoVerbosity, LowVerbosity, NormalVerbosity 
-and HighVerbosity. The choice NoVerbosity prints no statistics about the 
-nonlinear convergence process. The choice LowVerbosity outputs the nonlinear 
+file. Choices for this key are **NoVerbosity**, **LowVerbosity**, **NormalVerbosity** 
+and **HighVerbosity**. The choice **NoVerbosity** prints no statistics about the 
+nonlinear convergence process. The choice **LowVerbosity** outputs the nonlinear 
 iteration count, the scaled norm of the nonlinear function, and the number of 
-function calls. The choice NormalVerbosity prints the same as for LowVerbosity 
-and also the global strategy statistics. The choice HighVerbosity prints the 
-same as for NormalVerbosity with the addition of further Krylov iteration 
+function calls. The choice **NormalVerbosity** prints the same as for **LowVerbosity** 
+and also the global strategy statistics. The choice **HighVerbosity** prints the 
+same as for **NormalVerbosity** with the addition of further Krylov iteration 
 statistics.
 
 .. container:: list
@@ -4445,7 +4445,7 @@ statistics.
 *string* **Solver.Nonlinear.EtaChoice** Walker2 This key specifies how
 the linear system tolerance will be selected. The linear system is
 solved until a relative residual reduction of :math:`\eta` is achieved.
-Linear residuall norms are measured in the :math:`l^2` norm. Choices for
+Linear residual norms are measured in the :math:`l^2` norm. Choices for
 this key include **EtaConstant, Walker1** and **Walker2**. If the choice
 **EtaConstant** is specified, then :math:`\eta` will be taken as
 constant. The choices **Walker1** and **Walker2** specify choices for
@@ -4546,7 +4546,7 @@ numbers of inactive cells.
 
 *string* **Solver.Linear.Preconditioner.SymmetricMat** Symmetric This
 key specifies whether the preconditioning matrix is symmetric. Choices
-fo rthis key are **Symmetric** and **Nonsymmetric**. The choice
+for this key are **Symmetric** and **Nonsymmetric**. The choice
 **Symmetric** specifies that the symmetric part of the Jacobian will be
 used as the preconditioning matrix. The choice **Nonsymmetric**
 specifies that the full Jacobian will be used as the preconditioning
@@ -4614,8 +4614,8 @@ flux and should not be used in conjunction with the transient key below.
 
 *logical* **Solver.EvapTransFileTransient** False This key specifies
 specifies that the Flux terms for Richards’ equation are read in from a
-series of flux ``.pfb`` file. Each file has [T^-1] units. Note this key s
-hould not be used with the key above, only one of these keys should be set 
+series of flux ``.pfb`` file. Each file has :math:`[T^-1]` units. Note this key 
+should not be used with the key above, only one of these keys should be set 
 to ``True`` at a time, not both.
 
 .. container:: list
@@ -4626,10 +4626,10 @@ to ``True`` at a time, not both.
 
 *string* **Solver.EvapTrans.FileName** no default This key specifies
 specifies filename for the distributed ``.pfb`` file that contains the 
-flux values for Richards’ equation. This file has [T^-1] units. 
-For the steady-state option (Solver.EvapTransFile=True) this key 
+flux values for Richards’ equation. This file has :math:`[T^-1]` units. 
+For the steady-state option (*Solver.EvapTransFile*=**True**) this key 
 should be the complete filename. For the transient option 
-(Solver.EvapTransFileTransient=True then the filename is a header and 
+(*Solver.EvapTransFileTransient*=**True**) then the filename is a header and 
 ParFlow will load one file per timestep, with the form ``filename.00000.pfb``.
 
 .. container:: list
@@ -4640,7 +4640,7 @@ ParFlow will load one file per timestep, with the form ``filename.00000.pfb``.
 
 *string* **Solver.LSM** none This key specifies whether a land surface
 model, such as ``CLM``, will be called each solver timestep. Choices 
-for this key include none and CLM. Note that ``CLM`` must be compiled 
+for this key include **none** and **CLM**. Note that ``CLM`` must be compiled 
 and linked at runtime for this option to be active.
 
 .. container:: list
@@ -4727,14 +4727,14 @@ be active.
 *String* **Solver.CLM.MetForcing** no default This key specifies defines
 whether 1D (uniform over the domain), 2D (spatially distributed) or 3D
 (spatially distributed with multiple timesteps per ``.pfb`` forcing file) 
-forcing data is used. Choices for this key are 1D, 2D and 3D. This key 
-has no default so the user must set it to 1D, 2D or 3D. Failure to set 
+forcing data is used. Choices for this key are **1D**, **2D** and **3D**. This key 
+has no default so the user *must* set it to 1D, 2D or 3D. Failure to set 
 this key will cause ``CLM`` to still be run but with unpredictable values 
 causing ``CLM`` to eventually crash. 1D meteorological forcing files 
 are text files with single columns for each variable and each timestep 
 per row, while 2D forcing files are distributed ParFlow binary files, one 
 for each variable and timestep. File names are specified in the 
-Solver.CLM.MetFileName variable below. Note that ``CLM`` must be compiled 
+**Solver.CLM.MetFileName** variable below. Note that ``CLM`` must be compiled 
 and linked at runtime for this option to be active.
 
 .. container:: list
@@ -4749,12 +4749,12 @@ forcing files are text files with single columns for each variable and
 each timestep per row, while 2D and 3D forcing files are distributed
 ParFlow binary files, one for each variable and timestep (2D) or one for
 each variable and *multiple* timesteps (3D). Behavior of this key is
-different for 1D and 2D and 3D cases, as sepcified by the
+different for 1D and 2D and 3D cases, as specified by the
 **Solver.CLM.MetForcing** key above. For 1D cases, it is the *FULL FILE
 NAME*. Note that in this configuration, this forcing file is **not**
 distributed, the user does not provide copies such 
 as ``narr.1hr.txt.0``, ``narr.1hr.txt.1`` for each processor. ParFlow only 
-needs the single original file (e.g. narr.1hr.txt). For 2D cases, this key 
+needs the single original file (*e.g.* ``narr.1hr.txt``). For 2D cases, this key 
 is the BASE FILE NAME for the 2D forcing files, currently set to NLDAS, 
 with individual files determined as follows ``NLDAS.<variable>.<time step>.pfb``. 
 Where the ``<variable>`` is the forcing variable and ``<timestep>`` is the 
@@ -4783,7 +4783,7 @@ for following variables:
    Atmospheric Pressure :math:`[pa]`
 
 **SPFH**: 
-   Water-vapor specific humidity :math:`[kg/kg]` [clm_forcing]
+   Water-vapor specific humidity :math:`[kg/kg]` 
 
 Note that ``CLM`` must be compiled and linked at runtime for this option to be active.
 
@@ -4818,7 +4818,7 @@ number of timesteps per file for 3D forcing data.
 *string* **Solver.CLM.ForceVegetation** False This key specifies whether
 vegetation should be forced in ``CLM``. Currently this option only works 
 for 1D and 3D forcings, as specified by the key ``Solver.CLM.MetForcing``. 
-Choices for this key include True and False. Forced vegetation variables 
+Choices for this key include **True** and **False**. Forced vegetation variables 
 are :
 
 **LAI**: 
@@ -4831,7 +4831,7 @@ are :
    Aerodynamic roughness length :math:`[m]`
 
 **DISPLA**: 
-   Displacement height :math:`[m]` [clm_forcing]
+   Displacement height :math:`[m]` 
 
 In the case of 1D meteorological forcings, ``CLM`` requires four files 
 for vegetation time series and one vegetation map. The four files should 
@@ -4858,7 +4858,7 @@ writes two dimensional binary output files to a silo binary format. This data
 may be read in by VisIT and other visualization packages. Note that ``CLM`` 
 and silo must be compiled and linked at runtime for this option to be active. 
 These files are all written according to the standard format used for all ParFlow 
-variables, using the runname, and istep. Variables are either two-dimensional 
+variables, using the *runname*, and *istep*. Variables are either two-dimensional 
 or over the number of ``CLM`` layers (default of ten).
 
 .. container:: list
@@ -4871,37 +4871,37 @@ The output variables are:
 
 .. container:: description
 
-   ``eflx_lh_tot`` for latent heat flux total [W/m^2] using the silo variable LatentHeat;
+   ``eflx_lh_tot`` for latent heat flux total :math:`[W/m^2]` using the silo variable *LatentHeat*;
 
-   ``eflx_lwrad_out`` for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;
+   ``eflx_lwrad_out`` for outgoing long-wave radiation :math:`[W/m^2]` using the silo variable *LongWave*;
 
-   ``eflx_sh_tot`` for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;
+   ``eflx_sh_tot`` for sensible heat flux total :math:`[W/m^2]` using the silo variable *SensibleHeat*;
 
-   ``eflx_soil_grnd`` for ground heat flux [W/m^2] using the silo variable GroundHeat;
+   ``eflx_soil_grnd`` for ground heat flux :math:`[W/m^2]` using the silo variable *GroundHeat*;
 
-   ``qflx_evap_tot`` for total evaporation [mm/s] using the silo variable EvaporationTotal;
+   ``qflx_evap_tot`` for total evaporation :math:`[mm/s]` using the silo variable *EvaporationTotal*;
 
-   ``qflx_evap_grnd`` for ground evaporation without condensation [mm/s] using the silo 
-   variable EvaporationGroundNoSublimation;
+   ``qflx_evap_grnd`` for ground evaporation without condensation :math:`[mm/s]` using the silo 
+   variable *EvaporationGroundNoSublimation*;
 
-   ``qflx_evap_soi`` for soil evaporation [mm/s] using the silo variable EvaporationGround;
+   ``qflx_evap_soi`` for soil evaporation :math:`[mm/s]` using the silo variable *EvaporationGround*;
 
-   ``qflx_evap_veg`` for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;
+   ``qflx_evap_veg`` for vegetation evaporation :math:`[mm/s]` using the silo variable *EvaporationCanopy*;
 
-   ``qflx_tran_veg`` for vegetation transpiration [mm/s] using the silo variable Transpiration;
+   ``qflx_tran_veg`` for vegetation transpiration :math:`[mm/s]` using the silo variable *Transpiration*;
 
-   ``qflx_infl`` for soil infiltration [mm/s] using the silo variable Infiltration;
+   ``qflx_infl`` for soil infiltration :math:`[mm/s]` using the silo variable *Infiltration*;
 
-   ``swe_out`` for snow water equivalent [mm] using the silo variable SWE;
+   ``swe_out`` for snow water equivalent :math:`[mm]` using the silo variable *SWE*;
 
-   ``t_grnd`` for ground surface temperature [K] using the silo variable TemperatureGround; and
+   ``t_grnd`` for ground surface temperature :math:`[K]` using the silo variable *TemperatureGround*; and
 
-   ``t_soil`` for soil temperature over all layers [K] using the silo variable TemperatureSoil.
+   ``t_soil`` for soil temperature over all layers :math:`[K]` using the silo variable *TemperatureSoil*.
 
 *string* **Solver.PrintCLM** False This key specifies whether the ``CLM`` writes two dimensional 
 binary output files to a ``PFB`` binary format. Note that ``CLM`` must be compiled and linked 
 at runtime for this option to be active. These files are all written according to the 
-standard format used for all ParFlow variables, using the runname, and istep. Variables 
+standard format used for all ParFlow variables, using the *runname*, and *istep*. Variables 
 are either two-dimensional or over the number of ``CLM`` layers (default of ten).
 
 .. container:: list
@@ -4914,32 +4914,32 @@ The output variables are:
 
 .. container:: description
 
-   ``eflx_lh_tot`` for latent heat flux total [W/m^2] using the silo variable LatentHeat;
+   ``eflx_lh_tot`` for latent heat flux total :math:`[W/m^2]` using the silo variable *LatentHeat*;
 
-   ``eflx_lwrad_out`` for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;
+   ``eflx_lwrad_out`` for outgoing long-wave radiation :math:`[W/m^2]` using the silo variable *LongWave*;
 
-   ``eflx_sh_tot`` for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;
+   ``eflx_sh_tot`` for sensible heat flux total :math:`[W/m^2]` using the silo variable *SensibleHeat*;
 
-   ``eflx_soil_grnd`` for ground heat flux [W/m^2] using the silo variable GroundHeat;
+   ``eflx_soil_grnd`` for ground heat flux :math:`[W/m^2]` using the silo variable *GroundHeat*;
 
-   ``qflx_evap_tot`` for total evaporation [mm/s] using the silo variable EvaporationTotal;
+   ``qflx_evap_tot`` for total evaporation :math:`[mm/s]` using the silo variable *EvaporationTotal*;
 
-   ``qflx_evap_grnd`` for ground evaporation without sublimation [mm/s] using the silo 
-   variable EvaporationGroundNoSublimation;
+   ``qflx_evap_grnd`` for ground evaporation without sublimation :math:`[mm/s]` using the silo 
+   variable *EvaporationGroundNoSublimation*;
 
-   ``qflx_evap_soi`` for soil evaporation [mm/s] using the silo variable EvaporationGround;
+   ``qflx_evap_soi`` for soil evaporation :math:`[mm/s]` using the silo variable *EvaporationGround*;
 
-   ``qflx_evap_veg`` for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;
+   ``qflx_evap_veg`` for vegetation evaporation :math:`[mm/s]` using the silo variable *EvaporationCanopy*;
 
-   ``qflx_tran_veg`` for vegetation transpiration [mm/s] using the silo variable Transpiration;
+   ``qflx_tran_veg`` for vegetation transpiration :math:`[mm/s]` using the silo variable *Transpiration*;
 
-   ``qflx_infl`` for soil infiltration [mm/s] using the silo variable Infiltration;
+   ``qflx_infl`` for soil infiltration :math:`[mm/s]` using the silo variable *Infiltration*;
 
-   ``swe_out`` for snow water equivalent [mm] using the silo variable SWE;
+   ``swe_out`` for snow water equivalent :math:`[mm]` using the silo variable *SWE*;
 
-   ``t_grnd`` for ground surface temperature [K] using the silo variable TemperatureGround; and
+   ``t_grnd`` for ground surface temperature :math:`[K]` using the silo variable *TemperatureGround*; and
 
-   ``t_soil`` for soil temperature over all layers [K] using the silo variable TemperatureSoil.
+   ``t_soil`` for soil temperature over all layers :math:`[K]` using the silo variable *TemperatureSoil*.
 
 *string* **Solver.WriteCLMBinary** True This key specifies whether the ``CLM`` writes two dimensional 
 binary output files in a generic binary format. Note that ``CLM`` must be compiled and linked at 
@@ -4954,7 +4954,7 @@ runtime for this option to be active.
 *string* **Solver.CLM.BinaryOutDir** True This key specifies whether the ``CLM`` writes 
 each set of two dimensional binary output files to a corresponding directory. These 
 directories my be created before ParFlow is run (using the tcl script, for example). 
-Choices for this key include True and False. Note that ``CLM`` must be compiled and 
+Choices for this key include **True** and **False**. Note that ``CLM`` must be compiled and 
 linked at runtime for this option to be active.
 
 .. container:: list
@@ -5021,7 +5021,7 @@ at runtime for this option to be active.
 
 *string* **Solver.CLM.EvapBeta** Linear This key specifies the form of
 the bare soil evaporation :math:`\beta` parameter in ``CLM``. The 
-valid types for this key are None, Linear, Cosine.
+valid types for this key are **None**, **Linear**, **Cosine**.
 
 **None**: 
    No beta formulation, :math:`\beta=1`.
@@ -5033,7 +5033,7 @@ valid types for this key are None, Linear, Cosine.
    :math:`\beta=\frac{1}{2}(1-\cos(\frac{(\phi -\phi S_{res})}{(\phi S-\phi S_{res})}\pi)`
 
 Note that :math:`S_{res}` is specified by the key ``Solver.CLM.ResSat`` below, 
-that \beta is limited between zero and one and also that ``CLM`` must 
+that :math:`\beta` is limited between zero and one and also that ``CLM`` must 
 be compiled and linked at runtime for this option to be active.
 
 .. container:: list
@@ -5055,7 +5055,7 @@ option to be active.
 
 *string* **Solver.CLM.VegWaterStress** Saturation This key specifies the
 form of the plant water stress function :math:`\beta_t` parameter in ``CLM``. 
-The valid types for this key are None, Saturation, Pressure.
+The valid types for this key are **None**, **Saturation**, **Pressure**.
 
 **None**: 
    No transpiration water stress formulation, :math:`\beta_t=1`.
@@ -5068,8 +5068,8 @@ The valid types for this key are None, Saturation, Pressure.
 
 Note that the wilting point, :math:`S_{wp}` or :math:`p_{wp}`, is
 specified by the key ``Solver.CLM.WiltingPoint`` below, that the 
-field capacity, S_{fc} or p_{fc}, is specified by the 
-key ``Solver.CLM.FieldCapacity`` below, that \beta_t is limited 
+field capacity, :math:`S_{fc}` or :math:`p_{fc}`, is specified by the 
+key ``Solver.CLM.FieldCapacity`` below, that :math:`\beta_t` is limited 
 between zero and one and also that ``CLM`` must be compiled and 
 linked at runtime for this option to be active.
 
@@ -5081,8 +5081,8 @@ linked at runtime for this option to be active.
 
 *double* **Solver.CLM.WiltingPoint** 0.1 This key specifies the wilting
 point for the :math:`\beta_t` function in ``CLM`` specified above. Note 
-that the units for this function are pressure [m] for a Pressure 
-formulation and saturation [-] for a Saturation formulation. Note 
+that the units for this function are pressure :math:`[m]` for a **Pressure** 
+formulation and saturation :math:`[-]` for a **Saturation** formulation. Note 
 that ``CLM`` must be compiled and linked at runtime for this option 
 to be active.
 
@@ -5094,8 +5094,8 @@ to be active.
 
 *double* **Solver.CLM.FieldCapacity** 1.0 This key specifies the field
 capacity for the :math:`\beta_t` function in ``CLM`` specified above. 
-Note that the units for this function are pressure [m] for a Pressure 
-formulation and saturation [-] for a Saturation formulation. Note 
+Note that the units for this function are pressure :math:`[m]` for a **Pressure** 
+formulation and saturation :math:`[-]` for a **Saturation** formulation. Note 
 that ``CLM`` must be compiled and linked at runtime for this option 
 to be active.
 
@@ -5106,8 +5106,8 @@ to be active.
       pfset Solver.CLM.FieldCapacity  0.95
 
 *string* **Solver.CLM.IrrigationTypes** none This key specifies the form
-of the irrigation in ``CLM``. The valid types for this key are none, 
-Spray, Drip, Instant.
+of the irrigation in ``CLM``. The valid types for this key are **none**, 
+**Spray**, **Drip**, **Instant**.
 
 .. container:: list
 
@@ -5117,7 +5117,7 @@ Spray, Drip, Instant.
 
 *string* **Solver.CLM.IrrigationCycle** Constant This key specifies the
 cycle of the irrigation in ``CLM``. The valid types for this key are 
-Constant, Deficit. Note only Constant is currently implemented. Constant 
+**Constant**, **Deficit**. Note only **Constant** is currently implemented. Constant 
 cycle applies irrigation each day from IrrigationStartTime to 
 IrrigationStopTime in GMT.
 
@@ -5128,7 +5128,7 @@ IrrigationStopTime in GMT.
       pfset Solver.CLM.IrrigationCycle Constant
 
 *double* **Solver.CLM.IrrigationRate** no default This key specifies the
-rate of the irrigation in ``CLM`` in [mm/s].
+rate of the irrigation in ``CLM`` in :math:`[mm/s]`.
 
 .. container:: list
 
@@ -5181,7 +5181,7 @@ accordingly without needing duplicate files.
 *string* **Solver.CLM.WriteLogs** True When **False**, this disables
 writing of the CLM output log files for each processor. For example, in
 the clm.tcl test case, if this flag is added **False**,
-washita.output.txt.\ *p* and washita.para.out.dat.\ *p* (were *p* is the
+``washita.output.txt.p`` and ``washita.para.out.dat.p`` (were *p* is the
 processor #) are not created, assuming *washita* is the run name.
 
 .. container:: list
@@ -5238,13 +5238,10 @@ and ``SILO`` formats as above.
 
 *integer* **Solver.CLM.RootZoneNZ** 10 This key sets the number of soil
 layers the ParFlow expects from ``CLM``. It will allocate and format all 
-the arrays for passing variables to and from ``CLM`` accordingly. Note 
-that this does not set the soil layers in ``CLM`` to do that the user 
-needs to change the value of the parameter ``nlevsoi`` in the 
-file ``clm_varpar.F90`` in the ``PARFLOW_DIR\pfsimulator\clm`` 
-directory to reflect the desired numnber of soil layers and recompile. 
-Most likely the key ``Solver.CLM.SoiLayer``, described below, will 
-also need to be changed.
+the arrays for passing variables to and from ``CLM`` accordingly. 
+This value now sets the CLM number as well so recompilation is
+not required anymore. Most likely the key ``Solver.CLM.SoiLayer``, 
+described below, will also need to be changed.
 
 .. container:: list
 
@@ -5347,7 +5344,7 @@ coefficients to be written in NetCDF4 file.
       pfset NetCDF.WriteMannings	    True
 
 *string* **NetCDF.WriteSubsurface** False This key sets subsurface
-data(permeabilities, porosity, specific storage) to be written in
+data (permeabilities, porosity, specific storage) to be written in
 NetCDF4 file.
 
 .. container:: list
@@ -5493,9 +5490,9 @@ of NetCDF4.
    pfset NetCDF.Compression True
 
 *integer* **NetCDF.CompressionLevel** 1 This key sets the deflate
-compression level (if NetCDF.Compression is enabled), which influence
+compression level (if **NetCDF.Compression** is enabled), which influence
 the overall compression quality. zlib supports values between 0 (no
-compression), 1 (fastest compression) - 9 (slowest compression,smallest
+compression), 1 (fastest compression) - 9 (slowest compression, smallest
 files).
 
 ::
@@ -5515,7 +5512,7 @@ settings contact your HPC site administrator*. As in chunking, ROMIO
 hints can have significant performance impact on I/O.
 
 *string* **NetCDF.ROMIOhints** None This key sets ROMIO hints file to be
-passed on to NetCDF4 interface.If this key is set, the file must be
+passed on to NetCDF4 interface. If this key is set, the file must be
 present and readable in experiment directory.
 
 .. container:: list
@@ -5624,7 +5621,7 @@ or (time, y, x)*
       	lon = 41 ;
       	lat = 41 ;
       variables:
-        	double time(time) ;
+      	double time(time) ;
       	double slopex(time, lat, lon) ;
       }
       netcdf slopey {
@@ -5737,32 +5734,32 @@ The output variables are:
 
 .. container:: description
 
-   ``eflx_lh_tot`` for latent heat flux total [W/m^2] using the silo variable LatentHeat;
+   ``eflx_lh_tot`` for latent heat flux total :math:`[W/m^2]` using the silo variable *LatentHeat*;
 
-   ``eflx_lwrad_out`` for outgoing long-wave radiation [W/m^2] using the silo variable LongWave;
+   ``eflx_lwrad_out`` for outgoing long-wave radiation :math:`[W/m^2]` using the silo variable *LongWave*;
 
-   ``eflx_sh_tot`` for sensible heat flux total [W/m^2] using the silo variable SensibleHeat;
+   ``eflx_sh_tot`` for sensible heat flux total :math:`[W/m^2]` using the silo variable *SensibleHeat*;
 
-   ``eflx_soil_grnd`` for ground heat flux [W/m^2] using the silo variable GroundHeat;
+   ``eflx_soil_grnd`` for ground heat flux :math:`[W/m^2]` using the silo variable *GroundHeat*;
 
-   ``qflx_evap_tot`` for total evaporation [mm/s] using the silo variable EvaporationTotal;
+   ``qflx_evap_tot`` for total evaporation :math:`[mm/s]` using the silo variable *EvaporationTotal*;
 
-   ``qflx_evap_grnd`` for ground evaporation without condensation [mm/s] using the silo 
-   variable EvaporationGroundNoSublimation;
+   ``qflx_evap_grnd`` for ground evaporation without condensation :math:`[mm/s]` using the silo 
+   variable *EvaporationGroundNoSublimation*;
 
-   ``qflx_evap_soi`` for soil evaporation [mm/s] using the silo variable EvaporationGround;
+   ``qflx_evap_soi`` for soil evaporation :math:`[mm/s]` using the silo variable *EvaporationGround*;
 
-   ``qflx_evap_veg`` for vegetation evaporation [mm/s] using the silo variable EvaporationCanopy;
+   ``qflx_evap_veg`` for vegetation evaporation :math:`[mm/s]` using the silo variable *EvaporationCanopy*;
 
-   ``qflx_tran_veg`` for vegetation transpiration [mm/s] using the silo variable Transpiration;
+   ``qflx_tran_veg`` for vegetation transpiration :math:`[mm/s]` using the silo variable *Transpiration*;
 
-   ``qflx_infl`` for soil infiltration [mm/s] using the silo variable Infiltration;
+   ``qflx_infl`` for soil infiltration :math:`[mm/s]` using the silo variable *Infiltration*;
 
-   ``swe_out`` for snow water equivalent [mm] using the silo variable SWE;
+   ``swe_out`` for snow water equivalent :math:`[mm]` using the silo variable *SWE*;
 
-   ``t_grnd`` for ground surface temperature [K] using the silo variable TemperatureGround; and
+   ``t_grnd`` for ground surface temperature :math:`[K]` using the silo variable *TemperatureGround*; and
 
-   ``t_soil`` for soil temperature over all layers [K] using the silo variable TemperatureSoil.
+   ``t_soil`` for soil temperature over all layers :math:`[K]` using the silo variable *TemperatureSoil*.
 
 NetCDF4 CLM Input/Forcing
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5803,8 +5800,8 @@ NetCDF4 CLM Input/Forcing
       	double UGRD(time, lat, lon) ;
       	double VGRD(time, lat, lon) ;
 
-**Note: While using NetCDF based CLM forcing, ``Solver.CLM.MetFileNT``
-should be set to its default value of 1**
+**Note: While using NetCDF based CLM forcing,** ``Solver.CLM.MetFileNT``
+**should be set to its default value of 1**
 
 *string* **Solver.CLM.MetForcing** no default This key sets
 meteorological forcing to be read from NetCDF file.
