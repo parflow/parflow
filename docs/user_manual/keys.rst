@@ -329,9 +329,9 @@ defined for this problem.
 
    ::
 
-      pfset GeomInput.Names    "solidinput indinput boxinput"  ## TCL syntax
+      pfset GeomInput.Names    "solidinput indinput boxinput"     ## TCL syntax
 
-      <runname>.GeomInput.Names ='solidinput indinput boxinput'  ## Python syntax
+      <runname>.GeomInput.Names = 'solidinput indinput boxinput'  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.InputType** no default This
 defines the input type for the geometry input with *geom_input_name*.
@@ -341,9 +341,9 @@ This key must be one of: **SolidFile, IndicatorField**, **Box**.
 
    ::
  
-      pfset GeomInput.solidinput.InputType  SolidFile   ## TCL syntax
+      pfset GeomInput.solidinput.InputType  SolidFile          ## TCL syntax
 
-      <runname>.GeomInput.solidinput.InputType  ='SolidFile'  ## Python syntax
+      <runname>.GeomInput.solidinput.InputType  = 'SolidFile'  ## Python syntax
 
 *list* **GeomInput.\ *geom_input_name*.GeomNames** no default This is a
 list of the names of the geometries defined by the geometry input. For a
@@ -361,11 +361,7 @@ name using GeomInput.\ *geom_input_name*.Value.
       pfset GeomInput.solidinput.GeomNames "domain bottomlayer \
                                             middlelayer toplayer"  ## TCL syntax
       
-      <runname>.GeomInput.solidinput.GeomNames ='domain bottomlayer middlelayer toplayer'  ## Python syntax
-
-
-
-
+      <runname>.GeomInput.solidinput.GeomNames = 'domain bottomlayer middlelayer toplayer'  ## Python syntax
 
 *string* **GeomInput.\ *geom_input_name*.Filename** no default For
 IndicatorField and SolidFile geometry inputs this key specifies the
@@ -375,9 +371,9 @@ input filename which contains the field or solid information.
 
    ::
 
-      pfset GeomInput.solidinput.FileName   ocwd.pfsol   ## TCL syntax
+      pfset GeomInput.solidinput.FileName   ocwd.pfsol         ## TCL syntax
 
-      <runname>.GeomInput.solidinput.FileName   ='ocwd.pfsol'  ## Python syntax
+      <runname>.GeomInput.solidinput.FileName = 'ocwd.pfsol'   ## Python syntax
 
 *integer* **GeomInput.\ *geometry_input_name*.Value** no default For
 IndicatorField geometry inputs you need to specify the mapping between
@@ -388,9 +384,9 @@ be defined whereever the input file is equal to the specifed value.
 
    ::
 
-      pfset GeomInput.sourceregion.Value   11   ## TCL syntax
+      pfset GeomInput.sourceregion.Value   11      ## TCL syntax
 
-      <runname>.GeomInput.sourceregion.Value   =11  ## Python syntax
+      <runname>.GeomInput.sourceregion.Value = 11  ## Python syntax
 
 For box geometries you need to specify the location of the box. This is
 done by defining two corners of the the box.
@@ -403,9 +399,9 @@ geometry of name *box_geom_name*.
 
    ::
 
-      pfset Geom.background.Lower.X   -1.0   ## TCL syntax
+      pfset Geom.background.Lower.X   -1.0         ## TCL syntax
 
-      <runname>.Geom.background.Lower.X  = -1.0   ## Python syntax
+      <runname>.Geom.background.Lower.X = -1.0     ## Python syntax
 
 *double* **Geom.\ *box_geom_name*.Lower.Y** no default This gives the
 lower Y real space coordinate value of the previously specified box
@@ -415,9 +411,9 @@ geometry of name *box_geom_name*.
 
    ::
 
-      pfset Geom.background.Lower.Y   -1.0
+      pfset Geom.background.Lower.Y   -1.0         ## TCL syntax
 
-      <runname>.Geom.background.Lower.Y   =-1.0
+      <runname>.Geom.background.Lower.Y = -1.0     ## Python syntax
 
 *double* **Geom.\ *box_geom_name*.Lower.Z** no default This gives the
 lower Z real space coordinate value of the previously specified box
@@ -427,9 +423,9 @@ geometry of name *box_geom_name*.
 
    ::
 
-      pfset Geom.background.Lower.Z   -1.0
+      pfset Geom.background.Lower.Z   -1.0         ## TCL syntax
 
-      <runname>.Geom.background.Lower.Z  =-1.0
+      <runname>.Geom.background.Lower.Z = -1.0     ## Python syntax
 
 *double* **Geom.\ *box_geom_name*.Upper.X** no default This gives the
 upper X real space coordinate value of the previously specified box
@@ -439,9 +435,9 @@ geometry of name *box_geom_name*.
 
    ::
 
-      pfset Geom.background.Upper.X   151.0
+      pfset Geom.background.Upper.X   151.0        ## TCL syntax
 
-      <runname>.Geom.background.Upper.X   =151.0
+      <runname>.Geom.background.Upper.X = 151.0    ## Python syntax
 
 *double* **Geom.\ *box_geom_name*.Upper.Y** no default This gives the
 upper Y real space coordinate value of the previously specified box
@@ -451,9 +447,9 @@ geometry of name *box_geom_name*.
 
    ::
 
-      pfset Geom.background.Upper.Y   171.0
+      pfset Geom.background.Upper.Y   171.0        ## TCL syntax
 
-      <runname>.Geom.background.Upper.Y   =171.0
+      <runname>.Geom.background.Upper.Y = 171.0    ## Python syntax
 
 *double* **Geom.\ *box_geom_name*.Upper.Z** no default This gives the
 upper Z real space coordinate value of the previously specified box
@@ -463,9 +459,9 @@ geometry of name *box_geom_name*.
 
    ::
 
-      pfset Geom.background.Upper.Z   11.0
+      pfset Geom.background.Upper.Z   11.0         ## TCL syntax
 
-      <runname>.Geom.background.Upper.Z   =11.0
+      <runname>.Geom.background.Upper.Z = 11.0     ## Python syntax
 
 *list* **Geom.\ *geom_name*.Patches** no default Patches are defined on
 the surfaces of geometries. Currently you can only define patches on Box
@@ -480,9 +476,9 @@ converts GMS to SolidFile format.
 
    ::
 
-      pfset Geom.background.Patches   "left right front back bottom top"
+      pfset Geom.background.Patches   "left right front back bottom top"      ## TCL syntax
 
-      <runname>.Geom.background.Patches   ='left right front back bottom top'
+      <runname>.Geom.background.Patches = 'left right front back bottom top'  ## Python syntax   
 
 Here is an example geometry input section which has three geometry
 inputs (TCL).
