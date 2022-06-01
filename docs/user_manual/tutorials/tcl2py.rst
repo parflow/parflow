@@ -20,13 +20,13 @@ In this first tutorial, we will set up a virtual environment with pftools and it
 
 First, let's set an environment variable for the newly cloned repo:
 
-.. code-block:: language
+.. code-block::
 
     export PARFLOW_SOURCE=/path/to/new/parflow/
 
 Now, set up a virtual environment and install pftools:
 
-.. code-block:: language
+.. code-block::
 
     python3 -m venv tutorial-env
     source tutorial-env/bin/activate
@@ -34,7 +34,7 @@ Now, set up a virtual environment and install pftools:
 
 Test your pftools installation:
 
-.. code-block:: language
+.. code-block::
 
     python3 $PARFLOW_SOURCE/test/python/base_3d/default_richards/default_richards.py
 
@@ -46,7 +46,7 @@ From TCL to Python file
 
 Great, now you have a working ParFlow interface! Next, create a new directory and import a TCL file (example here drawn from the ParFlow TCL tests):
 
-.. code-block:: language
+.. code-block::
 
     mkdir -p pftools_tutorial/tcl_to_py
     cd pftools_tutorial/tcl_to_py
@@ -54,13 +54,13 @@ Great, now you have a working ParFlow interface! Next, create a new directory an
 
 You can use our ``tcl2py`` tool to convert the TCL script to a Python script using the following command:
 
-.. code-block:: language
+.. code-block::
 
    python3 -m parflow.cli.tcl2py -i default_richards.tcl
 
 The converter gets you most of the way there, but there are a few things you'll have to change by hand. Open and edit the new ``.py`` file that you have generated and change the lines that need to be changed. If you are following this example, you will need to edit the ``Process.Topology`` values, the ``GeomInput.Names`` values, and comment out the two ``Solver.Linear.Preconditioner.MGSemi`` keys, as shown here:
 
-.. code-block:: python3
+.. code-block::
 
    default_richards.Process.Topology.P = 1
    default_richards.Process.Topology.Q = 1
@@ -77,7 +77,7 @@ The converter gets you most of the way there, but there are a few things you'll 
 
 Once you have edited your Python script, you can run it like you would any other Python script:
 
-.. code-block:: language
+.. code-block::
 
    python3 default_richards.py
 

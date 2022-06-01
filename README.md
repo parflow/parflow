@@ -23,6 +23,9 @@ Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf).
 The manual contains additional documentation on how to use ParFlow and
 setup input files.  A quick start is included below.
 
+A web version of the user manual is also available on 
+[Read the Docs](https://parflow.readthedocs.io/en/latest/index.html).
+
 ### Citing Parflow
 
 If you want the DOI for a specific release see:
@@ -242,7 +245,9 @@ or by starting a parallel interactive session.
 
 ### User Manual
 
-A version of the user manual is available at github : [Parflow Users Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
+A version of the user manual is available at GitHub: [Parflow Users Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
+
+A web version of the user manual is also available on [Read the Docs](https://parflow.readthedocs.io/en/latest/index.html)
 
 The user manual for Parflow may be built as part of the build when
 Latex is available on the system. Adding the
@@ -291,7 +296,7 @@ HTML pages are generated in the build/docs/doxygen/html directory.
 
     cd ./build-docker && make ParFlowKeyDoc
 
-    open ./build-docker/docs/pf-keys/build-site/index.html
+    open ./build-docker/docs/user_manual/build-site/index.html
 ```	
 
 ## Configure options
