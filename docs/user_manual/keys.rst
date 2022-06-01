@@ -1510,7 +1510,7 @@ choice for the value of *geometry_name* is “domain”.
 
       pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"         ## TCL syntax
 
-      <runname>.Geom.domain.Perm.TensorByFileX  = "perm_x.pfb"    ## Python syntax
+      <runname>.Geom.domain.Perm.TensorByFileX = "perm_x.pfb"    ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.TensorFileY** no default This key
 specifies that :math:`k_y` values for the specified geometry,
@@ -1658,9 +1658,9 @@ indicates a false or non-active variable dz and each layer thickness is
 
    ::
 
-      pfset Solver.Nonlinear.VariableDz     True
+      pfset Solver.Nonlinear.VariableDz     True      ## TCL syntax
 
-      <runnname>.Solver.Nonlinear.VariableDz  =True
+      <runnname>.Solver.Nonlinear.VariableDz = True   ## Python syntax
 
 *list* **dzScale.GeomNames** no default This key specifies which problem
 domain is being applied a variable dz subsurface. These geometries must
@@ -1670,9 +1670,9 @@ cover the entire computational domain.
 
    ::
 
-      pfset dzScale.GeomNames domain
+      pfset dzScale.GeomNames domain            ## TCL syntax
 
-      <runname>.dzScale.GeomNames =domain
+      <runname>.dzScale.GeomNames = "domain"    ## Python syntax
 
 *string* **dzScale.Type** no default This key specifies which method is
 to be used to assign variable vertical grid spacing. The choices
@@ -1685,9 +1685,9 @@ which reads in values from a distributed pfb file.
 
    ::
 
-      pfset dzScale.Type            Constant
+      pfset dzScale.Type       Constant         ## TCL syntax
 
-      <runname>.dzScale.Type      = Constant
+      <runname>.dzScale.Type = "Constant"       ## Python syntax
 
 *list* **Specific dzScale.GeomNames** no default This key specifies all
 of the geometries on which a different dz scaling value will be
@@ -1697,9 +1697,9 @@ assigned. These geometries must cover the entire computational domain.
 
    ::
 
-      pfset dzScale.GeomNames       "domain"
+      pfset dzScale.GeomNames       "domain"    ## TCL syntax
 
-      <runname>.dzScale.GeomNames   ='domain'
+      <runname>.dzScale.GeomNames = "domain"    ## Python syntax
 
 *double* **Geom.\ *geometry_name*.dzScale.Value** no default This key
 specifies the value assigned to all points in the named geometry,
@@ -1709,9 +1709,9 @@ specifies the value assigned to all points in the named geometry,
 
    ::
 
-      pfset Geom.domain.dzScale.Value 1.0
+      pfset Geom.domain.dzScale.Value 1.0          ## TCL syntax
 
-      <runname>.Geom.domain.dzScale.Value =1.0
+      <runname>.Geom.domain.dzScale.Value = 1.0    ## Python syntax
 
 *string* **Geom.\ *geometry_name*.dzScale.FileName** no default This key
 specifies file to be read in for variable dz values for the given
@@ -1721,9 +1721,9 @@ geometry, *geometry_name*, if the type was set to **PFBFile**.
 
    ::
 
-      pfset Geom.domain.dzScale.FileName  vardz.pfb
+      pfset Geom.domain.dzScale.FileName       "vardz.pfb"       ## TCL syntax 
 
-      <runname>.Geom.domain.dzScale.FileName  ='vardz.pfb'
+      <runname>.Geom.domain.dzScale.FileName = "vardz.pfb"       ## Python syntax
 
 *integer* **dzScale.nzListNumber** no default This key indicates the
 number of layers with variable dz in the subsurface. This value is the
@@ -1733,9 +1733,9 @@ same as the *ComputationalGrid.NZ* key.
 
    ::
 
-      pfset dzScale.nzListNumber  10
+      pfset dzScale.nzListNumber  10         ## TCL syntax
 
-      <runname>.dzScale.nzListNumber  =10
+      <runname>.dzScale.nzListNumber = 10    ## Python syntax
 
 *double* **Cell.\ *nzListNumber*.dzScale.Value** no default This key
 assigns the thickness of each layer defined by nzListNumber. ParFlow
@@ -1749,9 +1749,9 @@ Thus we proceed the layer number with an underscore "_" as shown in the example 
 
    ::
 
-      pfset Cell.0.dzScale.Value 1.0    ## TCL
+      pfset Cell.0.dzScale.Value 1.0         ## TCL syntax 
 
-      <runname>.Cell._0.dzScale.Value =1.0  ## Python
+      <runname>.Cell._0.dzScale.Value = 1.0  ## Python syntax
 
 Example Usage (TCL):
 
@@ -1807,15 +1807,15 @@ Example Usage (Python):
       # 2		5
       # 3		4.5			
       # 4 		0.5			Top layer
-      <runname>.Solver.Nonlinear.VariableDz     =True
-      <runname>.dzScale.GeomNames               =domain
-      <runname>.dzScale.Type                    =nzList
-      <runname>.dzScale.nzListNumber            =5
-      <runname>.Cell._0.dzScale.Value            =1.5
-      <runname>.Cell._1.dzScale.Value            =1.5
-      <runname>.Cell._2.dzScale.Value            =0.5
-      <runname>.Cell._3.dzScale.Value            =0.45
-      <runname>.Cell._4.dzScale.Value            =0.05
+      <runname>.Solver.Nonlinear.VariableDz = True
+      <runname>.dzScale.GeomNames = "domain"
+      <runname>.dzScale.Type = "nzList"
+      <runname>.dzScale.nzListNumber = 5
+      <runname>.Cell._0.dzScale.Value = 1.5
+      <runname>.Cell._1.dzScale.Value = 1.5
+      <runname>.Cell._2.dzScale.Value = 0.5
+      <runname>.Cell._3.dzScale.Value = 0.45
+      <runname>.Cell._4.dzScale.Value = 0.05
 
 .. _Flow Barrier Keys:
 
