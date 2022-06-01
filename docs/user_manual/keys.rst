@@ -1559,9 +1559,9 @@ must cover the entire computational domain.
 
    ::
 
-      pfset Geom.Porosity.GeomNames   "background"
+      pfset Geom.Porosity.GeomNames   "background"          ## TCL syntax
 
-      <runname>.Geom.Porosity.GeomNames  ='background'
+      <runname>.Geom.Porosity.GeomNames = "background"      ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Porosity.Type** no default This key
 specifies which method is to be used to assign porosity data to the
@@ -1573,9 +1573,9 @@ grid cells within a geometry.
 
    ::
 
-      pfset Geom.background.Porosity.Type   Constant
+      pfset Geom.background.Porosity.Type   Constant           ## TCL syntax
 
-      <runname>.Geom.background.Porosity.Type   =Constant
+      <runname>.Geom.background.Porosity.Type = "Constant"     ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Porosity.Value** no default This key
 specifies the value assigned to all points in the named geometry,
@@ -1585,9 +1585,9 @@ specifies the value assigned to all points in the named geometry,
 
    ::
 
-      pfset Geom.domain.Porosity.Value   1.0
+      pfset Geom.domain.Porosity.Value   1.0       ## TCL syntax
 
-      <runname>.Geom.domain.Porosity.Value  =1.0
+      <runname>.Geom.domain.Porosity.Value = 1.0   ## Python syntax
 
 .. _Specific Storage:
 
@@ -1596,7 +1596,7 @@ Specific Storage
 
 Here, specific storage (:math:`S_s` in Equation
 :eq:`richard`) values are assigned within geounits
-(specified in `Geometries` above) using one of the methods
+(specified in :ref:`Geometries` above) using one of the methods
 described below.
 
 The format for this section of input is:
@@ -1609,9 +1609,9 @@ assigned. These geometries must cover the entire computational domain.
 
    ::
 
-      pfset SpecificStorage.GeomNames       "domain"
+      pfset SpecificStorage.GeomNames       "domain"     ## TCL syntax
 
-      <runname>.SpecificStorage.GeomNames      ='domain'
+      <runname>.SpecificStorage.GeomNames = "domain"     ## Python syntax
 
 *string* **SpecificStorage.Type** no default This key specifies which
 method is to be used to assign specific storage data. The only choice
@@ -1622,9 +1622,9 @@ to be assigned to all grid cells within a geometry.
 
    ::
 
-      pfset SpecificStorage.Type            Constant
+      pfset SpecificStorage.Type        Constant         ## TCL syntax
 
-      <runname>.SpecificStorage.Type     =Constant
+      <runname>.SpecificStorage.Type = "Constant"        ## Python syntax
 
 *double* **Geom.\ *geometry_name*.SpecificStorage.Value** no default
 This key specifies the value assigned to all points in the named
@@ -1634,9 +1634,9 @@ geometry, *geometry_name*, if the type was set to constant.
 
    ::
 
-      pfset Geom.domain.SpecificStorage.Value 1.0e-4
+      pfset Geom.domain.SpecificStorage.Value 1.0e-4        ## TCL syntax
 
-      <runname>.Geom.domain.SpecificStorage.Value =1.0e-4
+      <runname>.Geom.domain.SpecificStorage.Value = 1.0e-4  ## Python syntax
 
 .. _dZ Multipliers:
 
