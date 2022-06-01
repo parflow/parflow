@@ -851,9 +851,9 @@ the cycle repeat for the entire simulation.
 
    ::
 
-      pfset Cycle.onoff.Repeat               -1
+      pfset Cycle.onoff.Repeat       -1
 
-      <runname>.Cycle.onoff.Repeat          =-1
+      <runname>.Cycle.onoff.Repeat = -1
 
 Here is a detailed example of how time cycles might be used in a
 simulation.
