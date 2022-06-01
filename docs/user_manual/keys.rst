@@ -3357,7 +3357,9 @@ of the domain and these patches must “cover” that external boundary.
 
    ::
 
-      pfset BCSaturation.PatchNames    "left right front back top bottom"
+      pfset BCSaturation.PatchNames    "left right front back top bottom"        ## TCL syntax
+
+      <runname>.BCSaturation.PatchNames = "left right front back top bottom"     ## Python syntax
 
 *string* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.Type** no
 default This key specifies the type of boundary condition data given for
@@ -3377,7 +3379,9 @@ are running a 2-phase problem where phase 0 is the water phase.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.Type  "ConstantWTHeight"
+      pfset Patch.left.BCSaturation.water.Type  "ConstantWTHeight"         ## TCL syntax
+
+      <runname>.Patch.left.BCSaturation.water.Type = "ConstantWTHeight"    ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.Value** no
 default This key specifies either the constant saturation value if
@@ -3388,7 +3392,9 @@ default This key specifies either the constant saturation value if
 
    ::
 
-      pfset Patch.top.BCSaturation.air.Value 1.0
+      pfset Patch.top.BCSaturation.air.Value 1.0         ## TCL syntax
+
+      <runname>.Patch.top.BCSaturation.air.Value = 1.0   ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.XLower** no
 default This key specifies the lower :math:`x` coordinate of a line in
@@ -3399,7 +3405,9 @@ specified.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.XLower -10.0
+      pfset Patch.left.BCSaturation.water.XLower -10.0            ## TCL syntax
+
+      <runname>.Patch.left.BCSaturation.water.XLower = -10.0      ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.YLower** no
 default This key specifies the lower :math:`y` coordinate of a line in
@@ -3410,7 +3418,9 @@ specified.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.YLower 5.0
+      pfset Patch.left.BCSaturation.water.YLower 5.0        ## TCL syntax
+
+      <runname>.Patch.left.BCSaturation.water.YLower = 5.0  ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.XUpper** no
 default This key specifies the upper :math:`x` coordinate of a line in
@@ -3421,7 +3431,9 @@ specified.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.XUpper  125.0
+      pfset Patch.left.BCSaturation.water.XUpper  125.0        ## TCL syntax
+
+      <runname>.Patch.left.BCSaturation.water.XUpper = 125.0   ## Python syntax
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.YUpper** no
 default This key specifies the upper :math:`y` coordinate of a line in
@@ -3432,7 +3444,9 @@ specified.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.YUpper  82.0
+      pfset Patch.left.BCSaturation.water.YUpper  82.0         ## TCL syntax
+
+      <runname>.Patch.left.BCSaturation.water.YUpper = 82.0    ## Python syntax
 
 *integer* **Patch.\ *patch_name*.BCPressure.\ *phase_name*.NumPoints**
 no default This key specifies the number of points on which saturation
@@ -3443,7 +3457,9 @@ conditions.
 
    ::
 
-      pfset Patch.left.BCPressure.water.NumPoints 2
+      pfset Patch.left.BCPressure.water.NumPoints 2         ## TCL syntax
+
+      <runname>.Patch.left.BCPressure.water.NumPoints = 2   ## Python syntax
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *phase_name*.\ *point_number*.Location**
@@ -3457,7 +3473,9 @@ the upper end.
 
    ::
 
-      pfset Patch.left.BCPressure.water.0.Location 0.333
+      pfset Patch.left.BCPressure.water.0.Location 0.333          ## TCL syntax
+
+      <runname>.Patch.left.BCPressure.water.0.Location = 0.333    ## Python syntax
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *phase_name*.\ *point_number*.Value**
@@ -3471,7 +3489,9 @@ between the neighboring water-table height values onto the line.
 
    ::
 
-      pfset Patch.left.BCPressure.water.0.Value  4.5
+      pfset Patch.left.BCPressure.water.0.Value  4.5        ## TCL syntax
+
+      <runname>.Patch.left.BCPressure.water.0.Value = 4.5   ## Python syntax
 
 .. _`Initial Conditions: Phase Saturations`:
 
@@ -3494,7 +3514,9 @@ constants values within geometries for the phase.
 
    ::
 
-      ICSaturation.water.Type "Constant"
+      pfset ICSaturation.water.Type "Constant"           ## TCL syntax
+
+      <runname>.ICSaturation.water.Type = "Constant"     ## Python syntax
 
 *string* **ICSaturation.\ *phase_name*.GeomNames** no default This key
 specifies the geometries on which an initial condition will be given if
@@ -3506,7 +3528,9 @@ Note that geometries listed later “overlay” geometries listed earlier.
 
    ::
 
-      ICSaturation.water.GeomNames "domain"
+      pfset ICSaturation.water.GeomNames "domain"        ## TCL syntax
+
+      <runname>.ICSaturation.water.GeomNames = "domain"  ## Python syntax
 
 *double* **Geom.\ *geom_input_name*.ICSaturation.\ *phase_name*.Value**
 no default This key specifies the initial condition value assigned to
@@ -3517,7 +3541,9 @@ to **Constant**.
 
    ::
 
-      Geom.domain.ICSaturation.water.Value 1.0
+      pfset Geom.domain.ICSaturation.water.Value 1.0        ## TCL syntax
+
+      <runname>.Geom.domain.ICSaturation.water.Value = 1.0  ## Python syntax
 
 .. _`Initial Conditions: Pressure`:
 
@@ -3548,7 +3574,9 @@ file.
 
    ::
 
-      pfset ICPressure.Type   "Constant"
+      pfset ICPressure.Type   "Constant"        ## TCL syntax
+
+      <runname>.ICPressure.Type = "Constant"    ## Python syntax
 
 *list* **ICPressure.GeomNames** no default This key specifies the
 geometry names on which the initial pressure data will be given. These
@@ -3560,7 +3588,9 @@ regions given must be disjoint.
 
    ::
 
-      pfset ICPressure.GeomNames   "toplayer middlelayer bottomlayer"
+      pfset ICPressure.GeomNames   "toplayer middlelayer bottomlayer"         ## TCL syntax
+
+      <runname>.ICPressure.GeomNames = "toplayer middlelayer bottomlayer"     ## Python syntax
 
 *double* **Geom.\ *geom_name*.ICPressure.Value** no default This key
 specifies the initial pressure value for type **Constant** initial
@@ -3571,7 +3601,9 @@ pressures and the reference pressure value for types
 
    ::
 
-      pfset Geom.toplayer.ICPressure.Value  -734.0
+      pfset Geom.toplayer.ICPressure.Value  -734.0          ## TCL syntax
+
+      <runname>.Geom.toplayer.ICPressure.Value = -734.0     ## Python syntax
 
 *double* **Geom.\ *geom_name*.ICPressure.RefElevation** no default This
 key specifies the reference elevation on which the reference pressure is
@@ -3581,7 +3613,9 @@ given for type **HydroStaticDepth** initial pressures.
 
    ::
 
-      pfset Geom.toplayer.ICPressure.RefElevation  0.0
+      pfset Geom.toplayer.ICPressure.RefElevation  0.0         ## TCL syntax
+
+      <runname>.Geom.toplayer.ICPressure.RefElevation = 0.0    ## Python syntax
 
 *double* **Geom.\ *geom_name*.ICPressure.RefGeom** no default This key
 specifies the geometry on which the reference patch resides for type
@@ -3591,7 +3625,9 @@ specifies the geometry on which the reference patch resides for type
 
    ::
 
-      pfset Geom.toplayer.ICPressure.RefGeom   "bottomlayer"
+      pfset Geom.toplayer.ICPressure.RefGeom   "bottomlayer"         ## TCL syntax
+
+      <runname>.Geom.toplayer.ICPressure.RefGeom = "bottomlayer"     ## Python syntax
 
 *double* **Geom.\ *geom_name*.ICPressure.RefPatch** no default This key
 specifies the patch on which the reference pressure is given for type
@@ -3601,7 +3637,9 @@ specifies the patch on which the reference pressure is given for type
 
    ::
 
-      pfset Geom.toplayer.ICPressure.RefPatch   "bottom"
+      pfset Geom.toplayer.ICPressure.RefPatch   "bottom"       ## TCL syntax
+
+      <runname>.Geom.toplayer.ICPressure.RefPatch = "bottom"   ## Python syntax
 
 *string* **Geom.\ *geom_name*.ICPressure.FileName** no default This key
 specifies the name of the file containing pressure values for the
@@ -3611,7 +3649,9 @@ domain. It is assumed that *geom_name* is “domain” for this key.
 
    ::
 
-      pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"
+      pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"       ## TCL syntax
+
+      <runname>.Geom.domain.ICPressure.FileName = "ic_pressure.pfb"  ## Python syntax
 
 .. _`Initial Conditions: Phase Concentrations`:
 
