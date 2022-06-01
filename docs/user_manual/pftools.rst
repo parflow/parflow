@@ -26,10 +26,10 @@ In addition to these methods xpftools provides GUI access to most of
 these features. However the simplest approach is generally to include
 the tools commands within a tcl script. The following section lists all
 of the available ParFlow TCL commands along with detailed instructions
-for their use. §4.2 :ref:`PFTCL Commands` provides several examples of
+for their use. §8.2 :ref:`PFTCL Commands` provides several examples of
 pre and post processing using the tools. In addition, a list of tools
 can be obtained by typing ``pfhelp`` into a TCL shell after importing 
-ParFlow. Typing ``pfhelp`` followed by a command name will display a 
+ParFlow. Typing ``¿pfhelp¿`` followed by a command name will display a 
 detailed description of the command in question.
 
 .. _PFTCL Commands:
