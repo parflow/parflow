@@ -8,7 +8,7 @@ help simplify the description of these formats, we use a pseudocode
 notation composed of *fields* and *control constructs*.
 
 A field is a piece of data having one of the *field types* listed in
-Table `6.1 <#table-field-types>`__ (note that field types may have one
+Table `5.1 <#table-field-types>`__ (note that field types may have one
 meaning in ASCII files and another meaning in binary files).
 
 .. container::
@@ -135,7 +135,7 @@ Main Input Files (.tcl, .py, .ipynb)
 ------------------------------------
 
 The main ParFlow input file can be a Python script, a TCL script, or a Jupyter Notebook.  For more advanced users,
-the notbook or scripting environment provides a lot of flexibility and means you can very easily create programs to run
+the notebook or scripting environment provides a lot of flexibility and means you can very easily create programs to run
 ParFlow. A simple example is creating a loop to run several hundred
 different simulations using different seeds to the random field
 generators. This can be automated from within the ParFlow input file. The input structure for these files is given in the :ref:`ParFlow Input Keys` chapter.
