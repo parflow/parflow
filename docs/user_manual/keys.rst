@@ -2206,7 +2206,9 @@ exponent. The possibilities for this key are **Constant** and
 
    ::
 
-      pfset Phase.water.Mobility.Type   Constant
+      pfset Phase.water.Mobility.Type   "Constant"       ## TCL syntax
+
+      <runname>.Phase.water.Mobility.Type = "Constant"   ## Python syntax
 
 *double* **Phase.\ *phase_name*.Mobility.Value** no default This key
 specifies the constant mobility value for phase *phase_name*.
@@ -2215,7 +2217,9 @@ specifies the constant mobility value for phase *phase_name*.
 
    ::
 
-      pfset Phase.water.Mobility.Value   1.0
+      pfset Phase.water.Mobility.Value   1.0       ## TCL syntax
+
+      <runname>.Phase.water.Mobility.Value = 1.0   ## Python syntax
 
 *double* **Phase.\ *phase_name*.Mobility.Exponent** 2.0 This key
 specifies the exponent used in a polynomial representation of the
@@ -2226,7 +2230,9 @@ for this key.
 
    ::
 
-      pfset Phase.water.Mobility.Exponent   2.0
+      pfset Phase.water.Mobility.Exponent   2.0          ## TCL syntax
+
+      <runname>.Phase.water.Mobility.Exponent = 2.0      ## Python syntax
 
 *double* **Phase.\ *phase_name*.Mobility.IrreducibleSaturation** 0.0
 This key specifies the irreducible saturation used in a polynomial
@@ -2237,7 +2243,9 @@ representation of the relative permeability. Currently, only a value of
 
    ::
 
-      pfset Phase.water.Mobility.IrreducibleSaturation   0.0
+      pfset Phase.water.Mobility.IrreducibleSaturation   0.0      ## TCL syntax
+
+      <runname>.Phase.water.Mobility.IrreducibleSaturation = 0.0  ## Python syntax
 
 .. _Richards RelPerm:
 
@@ -2264,7 +2272,9 @@ values for this key are **Constant, VanGenuchten, Haverkamp, Data,** and
 
    ::
 
-      pfset Phase.RelPerm.Type   Constant
+      pfset Phase.RelPerm.Type   "Constant"        ## TCL syntax
+
+      <runname>.Phase.RelPerm.Type = "Constant"    ## Python syntax
 
 The various possible functions are defined as follows. The **Constant**
 specification means that the relative permeability will be constant on
@@ -2308,7 +2318,9 @@ these geometries must cover the entire computational domain.
 
    ::
 
-      pfset Phase.RelPerm.Geonames   domain
+      pfset Phase.RelPerm.Geonames   "domain"      ## TCL syntax
+
+      <runname>.Phase.RelPerm.Geonames = "domain"  ## Python syntax
 
 *double* **Geom.\ *geom_name*.RelPerm.Value** no default This key
 specifies the constant relative permeability value on the specified
@@ -2318,7 +2330,9 @@ geometry.
 
    ::
 
-      pfset Geom.domain.RelPerm.Value    0.5
+      pfset Geom.domain.RelPerm.Value    0.5       ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.Value = 0.5    ## Python syntax
 
 *integer* **Phase.RelPerm.VanGenuchten.File** 0 This key specifies
 whether soil parameters for the VanGenuchten function are specified in a
@@ -2332,7 +2346,9 @@ none are specified by files. Parameters specified by files are:
 
    ::
 
-      pfset Phase.RelPerm.VanGenuchten.File   1
+      pfset Phase.RelPerm.VanGenuchten.File   1       ## TCL syntax
+
+      <runname>.Phase.RelPerm.VanGenuchten.File = 1   ## Python syntax
 
 *string* **Geom.\ *geom_name*.RelPerm.Alpha.Filename** no default This
 key specifies a pfb filename containing the alpha parameters for the
@@ -2343,7 +2359,9 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
    ::
 
-      pfset Geom.domain.RelPerm.Alpha.Filename   alphas.pfb
+      pfset Geom.domain.RelPerm.Alpha.Filename   "alphas.pfb"        ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.Alpha.Filename = "alphas.pfb"    ## Python syntax
 
 *string* **Geom.\ *geom_name*.RelPerm.N.Filename** no default This key
 specifies a pfb filename containing the N parameters for the
@@ -2354,7 +2372,9 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
    ::
 
-      pfset Geom.domain.RelPerm.N.Filename   Ns.pfb
+      pfset Geom.domain.RelPerm.N.Filename   "Ns.pfb"       ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.N.Filename = "Ns.pfb"   ## Python syntax
 
 *double* **Geom.\ *geom_name*.RelPerm.Alpha** no default This key
 specifies the :math:`\alpha` parameter for the Van Genuchten function
@@ -2364,7 +2384,9 @@ specified on *geom_name*.
 
    ::
 
-      pfset Geom.domain.RelPerm.Alpha  0.005
+      pfset Geom.domain.RelPerm.Alpha  0.005          ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.Alpha = 0.005     ## Python syntax
 
 *double* **Geom.\ *geom_name*.RelPerm.N** no default This key specifies
 the :math:`N` parameter for the Van Genuchten function specified on
@@ -2374,7 +2396,9 @@ the :math:`N` parameter for the Van Genuchten function specified on
 
    ::
 
-      pfset Geom.domain.RelPerm.N   2.0
+      pfset Geom.domain.RelPerm.N   2.0         ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.N = 2.0     ## Python syntax
 
 *int* **Geom.\ *geom_name*.RelPerm.NumSamplePoints** 0 This key
 specifies the number of sample points for a spline base interpolation
@@ -2386,7 +2410,9 @@ the interpolation table is faster but is less accurate.
 
    ::
 
-      pfset Geom.domain.RelPerm.NumSamplePoints  20000
+      pfset Geom.domain.RelPerm.NumSamplePoints  20000         ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.NumSamplePoints = 20000    ## Python syntax
 
 *int* **Geom.\ *geom_name*.RelPerm.MinPressureHead** no default This key
 specifies the lower value for a spline base interpolation table for the
@@ -2398,7 +2424,9 @@ range is 0. This value is used only when the table lookup method is used
 
    ::
 
-      pfset Geom.domain.RelPerm.MinPressureHead -300
+      pfset Geom.domain.RelPerm.MinPressureHead -300        ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.MinPressureHead = -300  ## Python syntax
 
 *double* **Geom.\ *geom_name*.RelPerm.A** no default This key specifies
 the :math:`A` parameter for the Haverkamp relative permeability on
@@ -2408,7 +2436,9 @@ the :math:`A` parameter for the Haverkamp relative permeability on
 
    ::
 
-      pfset Geom.domain.RelPerm.A  1.0
+      pfset Geom.domain.RelPerm.A  1.0          ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.A = 1.0     ## Python syntax
 
 *double* **Geom.\ *geom_name*.RelPerm.Gamma** no default This key
 specifies the the :math:`\gamma` parameter for the Haverkamp relative
@@ -2418,7 +2448,9 @@ permeability on *geom_name*.
 
    ::
 
-      pfset Geom.domain.RelPerm.Gamma  1.0
+      pfset Geom.domain.RelPerm.Gamma  1.0         ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.Gamma = 1.0    ## Python syntax
 
 *integer* **Geom.\ *geom_name*.RelPerm.Degree** no default This key
 specifies the degree of the polynomial for the Polynomial relative
@@ -2428,7 +2460,9 @@ permeability given on *geom_name*.
 
    ::
 
-      pfset Geom.domain.RelPerm.Degree  1
+      pfset Geom.domain.RelPerm.Degree  1       ## TCL syntax
+
+      <runname>.Geom.domain.RelPerm.Degree = 1  ## Python syntax
 
 *double* **Geom.\ *geom_name*.RelPerm.Coeff.\ *coeff_number*** no
 default This key specifies the *coeff_number*\ th coefficient of the
@@ -2437,9 +2471,15 @@ Polynomial relative permeability given on *geom_name*.
 .. container:: list
 
    ::
-
+      
+      ## TCL syntax
       pfset Geom.domain.RelPerm.Coeff.0  0.5
       pfset Geom.domain.RelPerm.Coeff.1  1.0
+      
+      ## Python syntax
+      <runname>.Geom.domain.RelPerm.Coeff.0 = 0.5
+      <runname>.Geom.domain.RelPerm.Coeff.1 = 1.0
+
 
 NOTE: For all these cases, if only one region is to be used (the
 domain), the background region should NOT be set as that single region.
@@ -2472,7 +2512,9 @@ different regions.
 
    ::
 
-      pfset PhaseSources.water.Type   Constant
+      pfset PhaseSources.water.Type   "Constant"      ## TCL syntax
+
+      <runname>.PhaseSources.water.Type = "Constant"  ## Python syntax
 
 *list* **PhaseSources.\ *phase_name*.GeomNames** no default This key
 specifies the names of the geometries on which source terms will be
@@ -2483,7 +2525,10 @@ Regions listed later “overlay” regions listed earlier.
 
    ::
 
-      pfset PhaseSources.water.GeomNames   "bottomlayer middlelayer toplayer"
+      pfset PhaseSources.water.GeomNames   "bottomlayer middlelayer toplayer"       ## TCL syntax
+
+      <runname>.PhaseSources.water.GeomNames = "bottomlayer middlelayer toplayer"   ## Python syntax
+
 
 *double* **PhaseSources.\ *phase_name*.Geom.\ *geom_name*.Value** no
 default This key specifies the value of a constant source term applied
@@ -2493,7 +2538,9 @@ to phase *phase \_name* on geometry *geom_name*.
 
    ::
 
-      pfset PhaseSources.water.Geom.toplayer.Value   1.0
+      pfset PhaseSources.water.Geom.toplayer.Value   1.0       ## TCL syntax
+
+      <runname>.PhaseSources.water.Geom.toplayer.Value = 1.0   ## Python syntax
 
 *string* **PhaseSources.\ *phase_name*.PredefinedFunction** no default
 This key specifies which of the predefined functions will be used for
@@ -2504,7 +2551,10 @@ X3Y2PlusSinXYPlus1,** and **XYZTPlus1PermTensor**.
 
    ::
 
-      pfset PhaseSources.water.PredefinedFunction   XPlusYPlusZ
+      pfset PhaseSources.water.PredefinedFunction   "XPlusYPlusZ"       ## TCL syntax
+
+      <runname>.PhaseSources.water.PredefinedFunction = "XPlusYPlusZ"   ## Python syntax
+
 
 The choices for this key correspond to sources as follows:
 
@@ -2567,7 +2617,9 @@ indicates that a constant capillary pressure exists between the phases.
 
    ::
 
-      pfset CapPressure.water.Type   Constant
+      pfset CapPressure.water.Type   "Constant"        ## TCL syntax
+
+      <runname>.CapPressure.water.Type = "Constant"    ## Python syntax
 
 *list* **CapPressure.\ *phase_name*.GeomNames** no default This key
 specifies the geometries that capillary pressures will be computed for
@@ -2579,7 +2631,10 @@ capillary pressure by ParFlow.
 
    ::
 
-      pfset CapPressure.water.GeomNames   "domain"
+      pfset CapPressure.water.GeomNames   "domain"       ## TCL syntax
+
+      <runname>.CapPressure.water.GeomNames = "domain"   ## Python syntax
+
 
 *double* **Geom.\ *geometry_name*.CapPressure.\ *phase_name*.Value** 0.0
 This key specifies the value of the capillary pressure in the named
@@ -2589,7 +2644,9 @@ geometry, *geometry_name*, for the named phase, *phase_name*.
 
    ::
 
-      pfset Geom.domain.CapPressure.water.Value   0.0
+      pfset Geom.domain.CapPressure.water.Value   0.0       ## TCL syntax
+
+      <runname>.Geom.domain.CapPressure.water.Value = 0.0   ## Python syntax
 
 *Important note*: the code currently works only for capillary pressure
 equal zero.
