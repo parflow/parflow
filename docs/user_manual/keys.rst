@@ -3674,7 +3674,9 @@ read values from a “ParFlow Binary” file (see
 
    ::
 
-      PhaseConcen.water.tce.Type "Constant"
+      pfset PhaseConcen.water.tce.Type "Constant"        ## TCL syntax
+
+      <runname>.PhaseConcen.water.tce.Type = "Constant"  ## Python syntax
 
 *string* **PhaseConcen.\ *phase_name*.GeomNames** no default This key
 specifies the geometries on which an initial condition will be given, if
@@ -3686,7 +3688,9 @@ Note that geometries listed later “overlay” geometries listed earlier.
 
    ::
 
-      PhaseConcen.water.GeomNames "ic_concen_region"
+      pfset PhaseConcen.water.GeomNames "ic_concen_region"        ## TCL syntax
+
+      <runname>.PhaseConcen.water.GeomNames = "ic_concen_region"  ## Python syntax
 
 *double*
 **PhaseConcen.\ *phase_name*.\ *contaminant_name*.\ *geom_input_name*.Value**
@@ -3698,7 +3702,9 @@ to **Constant**.
 
    ::
 
-      PhaseConcen.water.tce.ic_concen_region.Value 0.001
+      pfset PhaseConcen.water.tce.ic_concen_region.Value 0.001          ## TCL syntax
+
+      <runname>.PhaseConcen.water.tce.ic_concen_region.Value = 0.001    ## Python syntax
 
 *string* **PhaseConcen.\ *phase_name*.\ *contaminant_name*.FileName** no
 default This key specifies the name of the “ParFlow Binary” file which
@@ -3709,7 +3715,9 @@ contains the initial condition values if the type was set to
 
    ::
 
-      PhaseConcen.water.tce.FileName "initial_concen_tce.pfb"
+      pfset PhaseConcen.water.tce.FileName "initial_concen_tce.pfb"        ## TCL syntax
+
+      <runname>.PhaseConcen.water.tce.FileName = "initial_concen_tce.pfb"  ## Python syntax
 
 .. _ExactSolution:
 
@@ -3732,7 +3740,9 @@ X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and
 
    ::
 
-      pfset KnownSolution  "XPlusYPlusZ"
+      pfset KnownSolution  "XPlusYPlusZ"        ## TCL syntax
+
+      <runname>.KnownSolution = "XPlusYPlusZ"   ## Python syntax
 
 Choices for this key correspond to solutions as follows.
 
@@ -3768,7 +3778,9 @@ solutions.
 
    ::
 
-      pfset KnownSolution.Value  1.0
+      pfset KnownSolution.Value  1.0         ## TCL syntax
+
+      <runname>.KnownSolution.Value = 1.0    ## Python syntax
 
 Only for known solution test cases will information on the
 :math:`L^2`-norm of the pressure error be printed.
@@ -3788,7 +3800,9 @@ wells for which input data will be given.
 
    ::
 
-      Wells.Names "test_well inj_well ext_well"
+      pfset Wells.Names "test_well inj_well ext_well"          ## TCL syntax
+
+      <runname>.Wells.Names = "test_well inj_well ext_well"    ## Python syntax
 
 *string* **Wells.\ *well_name*.InputType** no default This key specifies
 the type of well to be defined for the given well, *well_name*. This key
@@ -3809,7 +3823,9 @@ as the extraction well will provide these values to the injection well.
 
    ::
 
-      Wells.test_well.InputType "Vertical"
+      pfset Wells.test_well.InputType "Vertical"         ## TCL syntax
+
+      <runname>.Wells.test_well.InputType = "Vertical"   ## Python syntax
 
 *string* **Wells.\ *well_name*.Action** no default This key specifies
 the pumping action of the well. This key can be either **Injection** or
@@ -3821,7 +3837,9 @@ extraction well.
 
    ::
 
-      Wells.test_well.Action "Injection"
+      pfset Wells.test_well.Action "Injection"        ## TCL syntax
+
+      <runname>.Wells.test_well.Action = "Injection"  ## Python syntax
 
 *double* **Wells.\ *well_name*.Type** no default This key specfies the
 mechanism by which the well works (how ParFlow works with the well data)
@@ -3838,7 +3856,9 @@ condition in the computational cells which define the well.
 
    ::
 
-      Wells.test_well.Type "Flux"
+      pfset Wells.test_well.Type "Flux"         ## TCL syntax
+
+      <runname>.Wells.test_well.Type = "Flux"   ## Python syntax
 
 *string* **Wells.\ *well_name*.ExtractionType** no default This key
 specfies the mechanism by which the extraction well works (how ParFlow
@@ -3856,7 +3876,9 @@ well.
 
    ::
 
-      Wells.ext_well.ExtractionType "Pressure"
+      pfset Wells.ext_well.ExtractionType "Pressure"        ## TCL syntax
+
+      <runname>.Wells.ext_well.ExtractionType = "Pressure"  ## Python syntax
 
 *string* **Wells.\ *well_name*.InjectionType** no default This key
 specfies the mechanism by which the injection well works (how ParFlow
@@ -3874,7 +3896,9 @@ well.
 
    ::
 
-      Wells.inj_well.InjectionType "Flux"
+      pfset Wells.inj_well.InjectionType "Flux"          ## TCL syntax
+
+      <runname>.Wells.inj_well.InjectionType = "Flux"    ## Python syntax
 
 *double* **Wells.\ *well_name*.X** no default This key specifies the x
 location of the vectical well if the input type is set to **Vectical**
@@ -3885,7 +3909,9 @@ to **Recirc**.
 
    ::
 
-      Wells.test_well.X 20.0
+      pfset Wells.test_well.X 20.0        ## TCL syntax
+
+      <runname>.Wells.test_well.X = 20.0  ## Python syntax
 
 *double* **Wells.\ *well_name*.Y** no default This key specifies the y
 location of the vectical well if the input type is set to **Vectical**
@@ -3896,7 +3922,9 @@ to **Recirc**.
 
    ::
 
-      Wells.test_well.Y 36.5
+      pfset Wells.test_well.Y 36.5        ## TCL syntax
+
+      <runname>.Wells.test_well.Y = 36.5  ## Python syntax
 
 *double* **Wells.\ *well_name*.ZUpper** no default This key specifies
 the z location of the upper extent of a vectical well if the input type
@@ -3906,7 +3934,9 @@ is set to **Vectical**.
 
    ::
 
-      Wells.test_well.ZUpper 8.0
+      pfset Wells.test_well.ZUpper 8.0          ## TCL syntax
+
+      <runname>.Wells.test_well.ZUpper = 8.0    ## Python syntax
 
 *double* **Wells.\ *well_name*.ExtractionZUpper** no default This key
 specifies the z location of the upper extent of a extraction well if the
@@ -3916,7 +3946,9 @@ input type is set to **Recirc**.
 
    ::
 
-      Wells.ext_well.ExtractionZUpper 3.0
+      pfset Wells.ext_well.ExtractionZUpper 3.0          ## TCL syntax
+
+      <runname>.Wells.ext_well.ExtractionZUpper = 3.0    ## Python syntax
 
 *double* **Wells.\ *well_name*.InjectionZUpper** no default This key
 specifies the z location of the upper extent of a injection well if the
@@ -3926,7 +3958,9 @@ input type is set to **Recirc**.
 
    ::
 
-      Wells.inj_well.InjectionZUpper 6.0
+      pfset Wells.inj_well.InjectionZUpper 6.0        ## TCL syntax
+
+      <runname>.Wells.inj_well.InjectionZUpper = 6.0  ## Python syntax
 
 *double* **Wells.\ *well_name*.ZLower** no default This key specifies
 the z location of the lower extent of a vectical well if the input type
@@ -3936,7 +3970,9 @@ is set to **Vectical**.
 
    ::
 
-      Wells.test_well.ZLower 2.0
+      pfset Wells.test_well.ZLower 2.0          ## TCL syntax
+
+      <runname>.Wells.test_well.ZLower = 2.0    ## Python syntax
 
 *double* **Wells.\ *well_name*.ExtractionZLower** no default This key
 specifies the z location of the lower extent of a extraction well if the
@@ -3946,7 +3982,9 @@ input type is set to **Recirc**.
 
    ::
 
-      Wells.ext_well.ExtractionZLower 1.0
+      pfset Wells.ext_well.ExtractionZLower 1.0          ## TCL syntax
+
+      <runname>.Wells.ext_well.ExtractionZLower = 1.0    ## Python syntax
 
 *double* **Wells.\ *well_name*.InjectionZLower** no default This key
 specifies the z location of the lower extent of a injection well if the
@@ -3956,7 +3994,9 @@ input type is set to **Recirc**.
 
    ::
 
-      Wells.inj_well.InjectionZLower 4.0
+      pfset Wells.inj_well.InjectionZLower 4.0           ## TCL syntax
+
+      <runname>.Wells.inj_well.InjectionZLower = 4.0     ## Python syntax
 
 *string* **Wells.\ *well_name*.Method** no default This key specifies a
 method by which pressure or flux for a vertical well will be weighted
@@ -3972,8 +4012,10 @@ of all cell permeabilities which define the well. The value of
 .. container:: list
 
    ::
+   
+      pfset Wells.test_well.Method "Weighted"         ## TCL syntax
 
-      Wells.test_well.Method "Weighted"
+      <runname>.Wells.test_well.Method = "Weighted"   ## Python syntax
 
 *string* **Wells.\ *well_name*.ExtractionMethod** no default This key
 specifies a method by which pressure or flux for an extraction well will
@@ -3990,7 +4032,9 @@ of all cell permeabilities which define the well. The value of
 
    ::
 
-      Wells.ext_well.ExtractionMethod "Standard"
+      pfset Wells.ext_well.ExtractionMethod "Standard"         ## TCL syntax
+
+      <runname>.Wells.ext_well.ExtractionMethod = "Standard"   ## Python syntax
 
 *string* **Wells.\ *well_name*.InjectionMethod** no default This key
 specifies a method by which pressure or flux for an injection well will
@@ -4007,7 +4051,9 @@ of all cell permeabilities which define the well. The value of
 
    ::
 
-      Wells.inj_well.InjectionMethod "Standard"
+      pfset Wells.inj_well.InjectionMethod "Standard"          ## TCL syntax
+
+      <runname>.Wells.inj_well.InjectionMethod = "Standard"    ## Python syntax
 
 *string* **Wells.\ *well_name*.Cycle** no default This key specifies the
 time cycles to which data for the well *well_name* corresponds.
@@ -4016,7 +4062,9 @@ time cycles to which data for the well *well_name* corresponds.
 
    ::
 
-      Wells.test_well.Cycle "all_time"
+      pfset Wells.test_well.Cycle "all_time"          ## TCL syntax
+
+      <runname>.Wells.test_well.Cycle = "all_time"    ## Python syntax
 
 *double* **Wells.\ *well_name*.\ *interval_name*.Pressure.Value** no
 default This key specifies the hydrostatic pressure value for a vectical
@@ -4030,7 +4078,9 @@ physical relationships that exist between the phases.
 
    ::
 
-      Wells.test_well.all_time.Pressure.Value 6.0
+      pfset Wells.test_well.all_time.Pressure.Value 6.0           ## TCL syntax
+
+      <runname>.Wells.test_well.all_time.Pressure.Value = 6.0     ## Python syntax
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Extraction.Pressure.Value** no
@@ -4045,7 +4095,9 @@ physical relationships that exist between the phases.
 
    ::
 
-      Wells.ext_well.all_time.Extraction.Pressure.Value 4.5
+      pfset Wells.ext_well.all_time.Extraction.Pressure.Value 4.5          ## TCL syntax
+
+      <runname>.Wells.ext_well.all_time.Extraction.Pressure.Value = 4.5    ## Python syntax
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Injection.Pressure.Value** no
@@ -4060,7 +4112,9 @@ physical relationships that exist between the phases.
 
    ::
 
-      Wells.inj_well.all_time.Injection.Pressure.Value 10.2
+      pfset Wells.inj_well.all_time.Injection.Pressure.Value 10.2          ## TCL syntax
+
+      <runname>.Wells.inj_well.all_time.Injection.Pressure.Value = 10.2     ## Python syntax
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Flux.\ *phase_name*.Value** no
@@ -4074,7 +4128,9 @@ correct sign based on the chosen action for the well.
 
    ::
 
-      Wells.test_well.all_time.Flux.water.Value 250.0
+      pfset Wells.test_well.all_time.Flux.water.Value 250.0          ## TCL syntax
+
+      <runname>.Wells.test_well.all_time.Flux.water.Value = 250.0    ## Python syntax
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Extraction.Flux.\ *phase_name*.Value**
@@ -4088,7 +4144,9 @@ correct sign based on the chosen action for the well.
 
    ::
 
-      Wells.ext_well.all_time.Extraction.Flux.water.Value 125.0
+      pfset Wells.ext_well.all_time.Extraction.Flux.water.Value 125.0         ## TCL syntax
+
+      <runname>.Wells.ext_well.all_time.Extraction.Flux.water.Value = 125.0   ## Python syntax
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Injection.Flux.\ *phase_name*.Value**
@@ -4102,7 +4160,9 @@ correct sign based on the chosen action for the well.
 
    ::
 
-      Wells.inj_well.all_time.Injection.Flux.water.Value 80.0
+      pfset Wells.inj_well.all_time.Injection.Flux.water.Value 80.0        ## TCL syntax
+
+      <runname>.Wells.inj_well.all_time.Injection.Flux.water.Value = 80.0  ## Python syntax
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Saturation.\ *phase_name*.Value**
@@ -4112,7 +4172,9 @@ no default This key specifies the saturation value of a vertical well.
 
    ::
 
-      Wells.test_well.all_time.Saturation.water.Value 1.0
+      pfset Wells.test_well.all_time.Saturation.water.Value 1.0            ## TCL syntax
+
+      <runname>.Wells.test_well.all_time.Saturation.water.Value = 1.0      ## Python syntax
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Concentration.\ *phase_name*.\ *contaminant_name*.Value**
@@ -4122,7 +4184,9 @@ no default This key specifies the contaminant value of a vertical well.
 
    ::
 
-      Wells.test_well.all_time.Concentration.water.tce.Value 0.0005
+      pfset Wells.test_well.all_time.Concentration.water.tce.Value 0.0005           ## TCL syntax
+
+      <runname>.Wells.test_well.all_time.Concentration.water.tce.Value = 0.0005     ## Python syntax
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Injection.Concentration.\ *phase_name*.\ *contaminant_name*.Fraction**
@@ -4133,7 +4197,9 @@ which gets resupplied to the injection well.
 
    ::
 
-      Wells.inj_well.all_time.Injection.Concentration.water.tce.Fraction 0.01
+      pfset Wells.inj_well.all_time.Injection.Concentration.water.tce.Fraction 0.01          ## TCL syntax
+
+      <runname>.Wells.inj_well.all_time.Injection.Concentration.water.tce.Fraction = 0.01    ## Python syntax
 
 Multiple wells assigned to one grid location can occur in several
 instances. The current actions taken by the code are as follows:
