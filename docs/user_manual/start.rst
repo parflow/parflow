@@ -46,7 +46,7 @@ To simulate overland flow, using the kinematic wave approximation to the
 shallow-wave equations, set the solver to RICHARDS and set the upper
 patch boundary condition for the domain geometry to OverlandFlow, an
 example is below. This simulates overland flow, independently or coupled
-to Richards’ Equation as detailed in KM06. The
+to Richards’ Equation as detailed in :cite:p:`KM06`. The
 overland flow boundary condition can simulate both uniform and
 spatially-distributed sources, reading a distribution of fluxes from a
 binary file in the latter case.
@@ -59,9 +59,11 @@ For this case, the solver needs to be set to RICHARDS::
 
    pfset Solver		Richards
 
-ParFlow may also be coupled with the land surface model ``CLM``. This version of ``CLM`` has been extensively modified to be called 
+ParFlow may also be coupled with the land surface model ``CLM`` [:cite:p:`DZD+03`]. 
+This version of ``CLM`` has been extensively modified to be called 
 from within ParFlow as a subroutine, to support parallel infrastructure including I/O and most importantly with modified physics 
-to support coupled operation to best utilize the integrated hydrology in ParFlow. To couple ``CLM`` into ParFlow first the ``–with-clm`` 
+to support coupled operation to best utilize the integrated hydrology in ParFlow[:cite:p:`MM05`, :cite:p:`KM08a`]. 
+To couple ``CLM`` into ParFlow first the ``–with-clm`` 
 option is needed in the ``./configure`` command as indicated in Installing ParFlow. Second, the ``CLM`` module needs 
 to be called from within ParFlow, this is done using the following solver key::
    
