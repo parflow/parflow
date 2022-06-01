@@ -35,7 +35,7 @@ advanced numerical solvers and multigrid preconditioners for massively
 parallel computer environments that are available today. Many of the numerical 
 tools developed within the ParFlow platform have been turned into or are 
 from libraries that are now distributed and maintained at LLNL 
-(Hypre and SUNDIALS, for example). An additional advantage of 
+(*Hypre* and *SUNDIALS*, for example). An additional advantage of 
 ParFlow is the use of a sophisticated octree-space partitioning 
 algorithm to depict complex structures in three-space, such as 
 topography, different hydrologic facies, and watershed boundaries. 
@@ -46,7 +46,7 @@ ParFlow is primarily written in *C*, uses a modular architecture
 and contains a flexible communications layer to encapsulate parallel 
 process interaction on a range of platforms. ``CLM`` is fully-integrated 
 into ParFlow as a module and has been parallelized (including I/O) 
-and is written in FORTRAN 90/95. ParFlow is organized into a main 
+and is written in *FORTRAN 90/95*. ParFlow is organized into a main 
 executable ``pfdir/pfsimulator/parflow_exe`` and a 
 library ``pfdir/pfsimulator/parflow_lib`` (where ``pfdir`` is 
 the main directory location) and is comprised of more than 190 
