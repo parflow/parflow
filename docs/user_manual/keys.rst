@@ -276,13 +276,13 @@ Example Usage (Python):
    <runname>.ComputationalGrid.Lower.Y = 10.0
    <runname>.ComputationalGrid.Lower.Z	= 1.0
 
-   <runname>.ComputationalGrid.NX = 18
-   <runname>.ComputationalGrid.NY = 18
-   <runname>.ComputationalGrid.NZ = 8
+   <runname>.ComputationalGrid.NX	= 18
+   <runname>.ComputationalGrid.NY	= 18
+   <runname>.ComputationalGrid.NZ	= 8
 
-   <runname>.ComputationalGrid.DX = 8.0
-   <runname>.ComputationalGrid.DY = 10.0
-   <runname>.ComputationalGrid.DZ = 1.0
+   <runname>.ComputationalGrid.DX   = 8.0
+   <runname>.ComputationalGrid.DY	= 10.0
+   <runname>.ComputationalGrid.DZ	= 1.0
 
 *string* **UseClustering** True Run a clustering algorithm to create
 boxes in index space for iteration. By default an octree representation
@@ -3030,9 +3030,7 @@ and these patches must “cover” that external boundary.
 
    ::
 
-      pfset BCPressure.PatchNames    "left right front back top bottom"       ## TCL syntax
-
-      <runname>.BCPressure.PatchNames = "left right front back top bottom"    ## Python syntax
+      pfset BCPressure.PatchNames    "left right front back top bottom"
 
 *string* **Patch.\ *patch_name*.BCPressure.Type** no default This key
 specifies the type of boundary condition data given for patch
@@ -3086,9 +3084,7 @@ only!*
 
    ::
 
-      pfset Patch.top.BCPressure.Type  "DirEquilRefPatch"         ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.Type = "DirEquilRefPatch"    ## Python syntax
+      pfset Patch.top.BCPressure.Type  DirEquilRefPatch
 
 *string* **Patch.\ *patch_name*.BCPressure.Cycle** no default This key
 specifies the time cycle to which boundary condition data for patch
@@ -3098,9 +3094,7 @@ specifies the time cycle to which boundary condition data for patch
 
    ::
 
-      pfset Patch.top.BCPressure.Cycle   "Constant"         ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.Cycle = "Constant"     ## Python syntax
+      pfset Patch.top.BCPressure.Cycle   Constant
 
 *string* **Patch.\ *patch_name*.BCPressure.RefGeom** no default This key
 specifies the name of the solid on which the reference patch for the
@@ -3112,9 +3106,7 @@ domains.
 
    ::
 
-      pfset Patch.top.BCPressure.RefGeom   "domain"         ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.RefGeom = "domain"     ## Python syntax
+      pfset Patch.top.BCPressure.RefGeom   "domain"
 
 *string* **Patch.\ *patch_name*.BCPressure.RefPatch** no default This
 key specifies the reference patch on which the **DirEquilRefPatch**
@@ -3125,9 +3117,7 @@ solid specified by the Patch.\ *patch_name*.BCPressure.RefGeom key.
 
    ::
 
-      pfset Patch.top.BCPressure.RefPatch    "bottom"       ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.RefPatch = "bottom"    ## Python syntax
+      pfset Patch.top.BCPressure.RefPatch    "bottom"
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.Value** no
 default This key specifies the reference pressure value for the
@@ -3139,9 +3129,7 @@ for the **FluxVolumetric** boundary condition.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.Value  -14.0       ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.Value = -14.0  ## Python syntax
+      pfset Patch.top.BCPressure.alltime.Value  -14.0
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *phase_name*.IntValue**
@@ -3154,9 +3142,7 @@ interface with phase *phase_name* for cases with two phases present.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.water.IntValue   -13.0         ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.water.IntValue = -13.0     ## Python syntax
+      pfset Patch.top.BCPressure.alltime.water.IntValue   -13.0
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.XLower** no
 default This key specifies the lower :math:`x` coordinate of a line in
@@ -3166,9 +3152,7 @@ the xy-plane.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.XLower  0.0           ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.XLower = 0.0      ## Python syntax
+      pfset Patch.top.BCPressure.alltime.XLower  0.0
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.YLower** no
 default This key specifies the lower :math:`y` coordinate of a line in
@@ -3178,9 +3162,7 @@ the xy-plane.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.YLower  0.0        ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.YLower = 0.0   ## Python syntax
+      pfset Patch.top.BCPressure.alltime.YLower  0.0
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.XUpper** no
 default This key specifies the upper :math:`x` coordinate of a line in
@@ -3190,9 +3172,7 @@ the xy-plane.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.XUpper  1.0        ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.XUpper = 1.0   ## Python syntax
+      pfset Patch.top.BCPressure.alltime.XUpper  1.0
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.YUpper** no
 default This key specifies the upper :math:`y` coordinate of a line in
@@ -3202,9 +3182,7 @@ the xy-plane.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.YUpper  1.0        ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.YUpper = 1.0   ## Python syntax
+      pfset Patch.top.BCPressure.alltime.YUpper  1.0
 
 *integer*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.NumPoints** no
@@ -3216,9 +3194,7 @@ conditions.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.NumPoints   2         ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.NumPoints = 2     ## Python syntax
+      pfset Patch.top.BCPressure.alltime.NumPoints   2
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *point_number*.Location**
@@ -3231,9 +3207,7 @@ end of the line, and 1 corresponds to the upper end.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.0.Location   0.0         ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.0.Location = 0.0     ## Python syntax
+      pfset Patch.top.BCPressure.alltime.0.Location   0.0
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.\ *point_number*.Value**
@@ -3248,9 +3222,7 @@ the line.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.0.Value   14.0        ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.0.Value = 14.0    ## Python syntax
+      pfset Patch.top.BCPressure.alltime.0.Value   14.0
 
 *string* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.FileName**
 no default This key specifies the name of a properly distributed ``.pfb`` file 
@@ -3263,9 +3235,7 @@ be used. The rest of the data is ignored.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.FileName   "ocwd_bc.pfb"       ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.FileName = "ocwd_bc.pfb"   ## Python syntax
+      pfset Patch.top.BCPressure.alltime.FileName   "ocwd_bc.pfb"
 
 *string*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.PredefinedFunction**
@@ -3281,9 +3251,7 @@ X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.PredefinedFunction  "XPlusYPlusZ"       ## TCL syntax
-
-      <runname>.Patch.top.BCPressure.alltime.PredefinedFunction = "XPlusYPlusZ"  ## Python syntax
+      pfset Patch.top.BCPressure.alltime.PredefinedFunction  "XPlusYPlusZ"
 
 The choices for this key correspond to pressures as follows.
 
@@ -3325,7 +3293,7 @@ Example Script:
       pfset Geom.domain.ICPressure.Value	   2.2
 
       pfset Geom.domain.ICPressure.RefGeom	"domain"
-      pfset Geom.domain.ICPressure.RefPatch	"z-lower"
+      pfset Geom.domain.ICPressure.RefPatch	z-lower
 
       ### Using a .pfb to initialize
       pfset ICPressure.Type                  "PFBFile"
@@ -3357,9 +3325,7 @@ of the domain and these patches must “cover” that external boundary.
 
    ::
 
-      pfset BCSaturation.PatchNames    "left right front back top bottom"        ## TCL syntax
-
-      <runname>.BCSaturation.PatchNames = "left right front back top bottom"     ## Python syntax
+      pfset BCSaturation.PatchNames    "left right front back top bottom"
 
 *string* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.Type** no
 default This key specifies the type of boundary condition data given for
@@ -3379,9 +3345,7 @@ are running a 2-phase problem where phase 0 is the water phase.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.Type  "ConstantWTHeight"         ## TCL syntax
-
-      <runname>.Patch.left.BCSaturation.water.Type = "ConstantWTHeight"    ## Python syntax
+      pfset Patch.left.BCSaturation.water.Type  "ConstantWTHeight"
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.Value** no
 default This key specifies either the constant saturation value if
@@ -3392,9 +3356,7 @@ default This key specifies either the constant saturation value if
 
    ::
 
-      pfset Patch.top.BCSaturation.air.Value 1.0         ## TCL syntax
-
-      <runname>.Patch.top.BCSaturation.air.Value = 1.0   ## Python syntax
+      pfset Patch.top.BCSaturation.air.Value 1.0
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.XLower** no
 default This key specifies the lower :math:`x` coordinate of a line in
@@ -3405,9 +3367,7 @@ specified.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.XLower -10.0            ## TCL syntax
-
-      <runname>.Patch.left.BCSaturation.water.XLower = -10.0      ## Python syntax
+      pfset Patch.left.BCSaturation.water.XLower -10.0
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.YLower** no
 default This key specifies the lower :math:`y` coordinate of a line in
@@ -3418,9 +3378,7 @@ specified.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.YLower 5.0        ## TCL syntax
-
-      <runname>.Patch.left.BCSaturation.water.YLower = 5.0  ## Python syntax
+      pfset Patch.left.BCSaturation.water.YLower 5.0
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.XUpper** no
 default This key specifies the upper :math:`x` coordinate of a line in
@@ -3431,9 +3389,7 @@ specified.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.XUpper  125.0        ## TCL syntax
-
-      <runname>.Patch.left.BCSaturation.water.XUpper = 125.0   ## Python syntax
+      pfset Patch.left.BCSaturation.water.XUpper  125.0
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.YUpper** no
 default This key specifies the upper :math:`y` coordinate of a line in
@@ -3444,9 +3400,7 @@ specified.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.YUpper  82.0         ## TCL syntax
-
-      <runname>.Patch.left.BCSaturation.water.YUpper = 82.0    ## Python syntax
+      pfset Patch.left.BCSaturation.water.YUpper  82.0
 
 *integer* **Patch.\ *patch_name*.BCPressure.\ *phase_name*.NumPoints**
 no default This key specifies the number of points on which saturation
@@ -3457,9 +3411,7 @@ conditions.
 
    ::
 
-      pfset Patch.left.BCPressure.water.NumPoints 2         ## TCL syntax
-
-      <runname>.Patch.left.BCPressure.water.NumPoints = 2   ## Python syntax
+      pfset Patch.left.BCPressure.water.NumPoints 2
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *phase_name*.\ *point_number*.Location**
@@ -3473,9 +3425,7 @@ the upper end.
 
    ::
 
-      pfset Patch.left.BCPressure.water.0.Location 0.333          ## TCL syntax
-
-      <runname>.Patch.left.BCPressure.water.0.Location = 0.333    ## Python syntax
+      pfset Patch.left.BCPressure.water.0.Location 0.333
 
 *double*
 **Patch.\ *patch_name*.BCPressure.\ *phase_name*.\ *point_number*.Value**
@@ -3489,9 +3439,7 @@ between the neighboring water-table height values onto the line.
 
    ::
 
-      pfset Patch.left.BCPressure.water.0.Value  4.5        ## TCL syntax
-
-      <runname>.Patch.left.BCPressure.water.0.Value = 4.5   ## Python syntax
+      pfset Patch.left.BCPressure.water.0.Value  4.5
 
 .. _`Initial Conditions: Phase Saturations`:
 
@@ -3514,9 +3462,7 @@ constants values within geometries for the phase.
 
    ::
 
-      pfset ICSaturation.water.Type "Constant"           ## TCL syntax
-
-      <runname>.ICSaturation.water.Type = "Constant"     ## Python syntax
+      ICSaturation.water.Type Constant
 
 *string* **ICSaturation.\ *phase_name*.GeomNames** no default This key
 specifies the geometries on which an initial condition will be given if
@@ -3528,9 +3474,7 @@ Note that geometries listed later “overlay” geometries listed earlier.
 
    ::
 
-      pfset ICSaturation.water.GeomNames "domain"        ## TCL syntax
-
-      <runname>.ICSaturation.water.GeomNames = "domain"  ## Python syntax
+      ICSaturation.water.GeomNames "domain"
 
 *double* **Geom.\ *geom_input_name*.ICSaturation.\ *phase_name*.Value**
 no default This key specifies the initial condition value assigned to
@@ -3541,9 +3485,7 @@ to **Constant**.
 
    ::
 
-      pfset Geom.domain.ICSaturation.water.Value 1.0        ## TCL syntax
-
-      <runname>.Geom.domain.ICSaturation.water.Value = 1.0  ## Python syntax
+      Geom.domain.ICSaturation.water.Value 1.0
 
 .. _`Initial Conditions: Pressure`:
 
@@ -3574,9 +3516,7 @@ file.
 
    ::
 
-      pfset ICPressure.Type   "Constant"        ## TCL syntax
-
-      <runname>.ICPressure.Type = "Constant"    ## Python syntax
+      pfset ICPressure.Type   "Constant"
 
 *list* **ICPressure.GeomNames** no default This key specifies the
 geometry names on which the initial pressure data will be given. These
@@ -3588,9 +3528,7 @@ regions given must be disjoint.
 
    ::
 
-      pfset ICPressure.GeomNames   "toplayer middlelayer bottomlayer"         ## TCL syntax
-
-      <runname>.ICPressure.GeomNames = "toplayer middlelayer bottomlayer"     ## Python syntax
+      pfset ICPressure.GeomNames   "toplayer middlelayer bottomlayer"
 
 *double* **Geom.\ *geom_name*.ICPressure.Value** no default This key
 specifies the initial pressure value for type **Constant** initial
@@ -3601,9 +3539,7 @@ pressures and the reference pressure value for types
 
    ::
 
-      pfset Geom.toplayer.ICPressure.Value  -734.0          ## TCL syntax
-
-      <runname>.Geom.toplayer.ICPressure.Value = -734.0     ## Python syntax
+      pfset Geom.toplayer.ICPressure.Value  -734.0
 
 *double* **Geom.\ *geom_name*.ICPressure.RefElevation** no default This
 key specifies the reference elevation on which the reference pressure is
@@ -3613,9 +3549,7 @@ given for type **HydroStaticDepth** initial pressures.
 
    ::
 
-      pfset Geom.toplayer.ICPressure.RefElevation  0.0         ## TCL syntax
-
-      <runname>.Geom.toplayer.ICPressure.RefElevation = 0.0    ## Python syntax
+      pfset Geom.toplayer.ICPressure.RefElevation  0.0
 
 *double* **Geom.\ *geom_name*.ICPressure.RefGeom** no default This key
 specifies the geometry on which the reference patch resides for type
@@ -3625,9 +3559,7 @@ specifies the geometry on which the reference patch resides for type
 
    ::
 
-      pfset Geom.toplayer.ICPressure.RefGeom   "bottomlayer"         ## TCL syntax
-
-      <runname>.Geom.toplayer.ICPressure.RefGeom = "bottomlayer"     ## Python syntax
+      pfset Geom.toplayer.ICPressure.RefGeom   "bottomlayer"
 
 *double* **Geom.\ *geom_name*.ICPressure.RefPatch** no default This key
 specifies the patch on which the reference pressure is given for type
@@ -3637,9 +3569,7 @@ specifies the patch on which the reference pressure is given for type
 
    ::
 
-      pfset Geom.toplayer.ICPressure.RefPatch   "bottom"       ## TCL syntax
-
-      <runname>.Geom.toplayer.ICPressure.RefPatch = "bottom"   ## Python syntax
+      pfset Geom.toplayer.ICPressure.RefPatch   "bottom"
 
 *string* **Geom.\ *geom_name*.ICPressure.FileName** no default This key
 specifies the name of the file containing pressure values for the
@@ -3649,9 +3579,7 @@ domain. It is assumed that *geom_name* is “domain” for this key.
 
    ::
 
-      pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"       ## TCL syntax
-
-      <runname>.Geom.domain.ICPressure.FileName = "ic_pressure.pfb"  ## Python syntax
+      pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"
 
 .. _`Initial Conditions: Phase Concentrations`:
 
@@ -3674,9 +3602,7 @@ read values from a “ParFlow Binary” file (see
 
    ::
 
-      pfset PhaseConcen.water.tce.Type "Constant"        ## TCL syntax
-
-      <runname>.PhaseConcen.water.tce.Type = "Constant"  ## Python syntax
+      PhaseConcen.water.tce.Type "Constant"
 
 *string* **PhaseConcen.\ *phase_name*.GeomNames** no default This key
 specifies the geometries on which an initial condition will be given, if
@@ -3688,9 +3614,7 @@ Note that geometries listed later “overlay” geometries listed earlier.
 
    ::
 
-      pfset PhaseConcen.water.GeomNames "ic_concen_region"        ## TCL syntax
-
-      <runname>.PhaseConcen.water.GeomNames = "ic_concen_region"  ## Python syntax
+      PhaseConcen.water.GeomNames "ic_concen_region"
 
 *double*
 **PhaseConcen.\ *phase_name*.\ *contaminant_name*.\ *geom_input_name*.Value**
@@ -3702,9 +3626,7 @@ to **Constant**.
 
    ::
 
-      pfset PhaseConcen.water.tce.ic_concen_region.Value 0.001          ## TCL syntax
-
-      <runname>.PhaseConcen.water.tce.ic_concen_region.Value = 0.001    ## Python syntax
+      PhaseConcen.water.tce.ic_concen_region.Value 0.001
 
 *string* **PhaseConcen.\ *phase_name*.\ *contaminant_name*.FileName** no
 default This key specifies the name of the “ParFlow Binary” file which
@@ -3715,9 +3637,7 @@ contains the initial condition values if the type was set to
 
    ::
 
-      pfset PhaseConcen.water.tce.FileName "initial_concen_tce.pfb"        ## TCL syntax
-
-      <runname>.PhaseConcen.water.tce.FileName = "initial_concen_tce.pfb"  ## Python syntax
+      PhaseConcen.water.tce.FileName "initial_concen_tce.pfb"
 
 .. _ExactSolution:
 
@@ -3740,9 +3660,7 @@ X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and
 
    ::
 
-      pfset KnownSolution  "XPlusYPlusZ"        ## TCL syntax
-
-      <runname>.KnownSolution = "XPlusYPlusZ"   ## Python syntax
+      pfset KnownSolution  "XPlusYPlusZ"
 
 Choices for this key correspond to solutions as follows.
 
@@ -3778,9 +3696,7 @@ solutions.
 
    ::
 
-      pfset KnownSolution.Value  1.0         ## TCL syntax
-
-      <runname>.KnownSolution.Value = 1.0    ## Python syntax
+      pfset KnownSolution.Value  1.0
 
 Only for known solution test cases will information on the
 :math:`L^2`-norm of the pressure error be printed.
@@ -3800,9 +3716,7 @@ wells for which input data will be given.
 
    ::
 
-      pfset Wells.Names "test_well inj_well ext_well"          ## TCL syntax
-
-      <runname>.Wells.Names = "test_well inj_well ext_well"    ## Python syntax
+      Wells.Names "test_well inj_well ext_well"
 
 *string* **Wells.\ *well_name*.InputType** no default This key specifies
 the type of well to be defined for the given well, *well_name*. This key
@@ -3823,9 +3737,7 @@ as the extraction well will provide these values to the injection well.
 
    ::
 
-      pfset Wells.test_well.InputType "Vertical"         ## TCL syntax
-
-      <runname>.Wells.test_well.InputType = "Vertical"   ## Python syntax
+      Wells.test_well.InputType "Vertical"
 
 *string* **Wells.\ *well_name*.Action** no default This key specifies
 the pumping action of the well. This key can be either **Injection** or
@@ -3837,9 +3749,7 @@ extraction well.
 
    ::
 
-      pfset Wells.test_well.Action "Injection"        ## TCL syntax
-
-      <runname>.Wells.test_well.Action = "Injection"  ## Python syntax
+      Wells.test_well.Action "Injection"
 
 *double* **Wells.\ *well_name*.Type** no default This key specfies the
 mechanism by which the well works (how ParFlow works with the well data)
@@ -3856,9 +3766,7 @@ condition in the computational cells which define the well.
 
    ::
 
-      pfset Wells.test_well.Type "Flux"         ## TCL syntax
-
-      <runname>.Wells.test_well.Type = "Flux"   ## Python syntax
+      Wells.test_well.Type "Flux"
 
 *string* **Wells.\ *well_name*.ExtractionType** no default This key
 specfies the mechanism by which the extraction well works (how ParFlow
@@ -3876,9 +3784,7 @@ well.
 
    ::
 
-      pfset Wells.ext_well.ExtractionType "Pressure"        ## TCL syntax
-
-      <runname>.Wells.ext_well.ExtractionType = "Pressure"  ## Python syntax
+      Wells.ext_well.ExtractionType "Pressure"
 
 *string* **Wells.\ *well_name*.InjectionType** no default This key
 specfies the mechanism by which the injection well works (how ParFlow
@@ -3896,9 +3802,7 @@ well.
 
    ::
 
-      pfset Wells.inj_well.InjectionType "Flux"          ## TCL syntax
-
-      <runname>.Wells.inj_well.InjectionType = "Flux"    ## Python syntax
+      Wells.inj_well.InjectionType "Flux"
 
 *double* **Wells.\ *well_name*.X** no default This key specifies the x
 location of the vectical well if the input type is set to **Vectical**
@@ -3909,9 +3813,7 @@ to **Recirc**.
 
    ::
 
-      pfset Wells.test_well.X 20.0        ## TCL syntax
-
-      <runname>.Wells.test_well.X = 20.0  ## Python syntax
+      Wells.test_well.X 20.0
 
 *double* **Wells.\ *well_name*.Y** no default This key specifies the y
 location of the vectical well if the input type is set to **Vectical**
@@ -3922,9 +3824,7 @@ to **Recirc**.
 
    ::
 
-      pfset Wells.test_well.Y 36.5        ## TCL syntax
-
-      <runname>.Wells.test_well.Y = 36.5  ## Python syntax
+      Wells.test_well.Y 36.5
 
 *double* **Wells.\ *well_name*.ZUpper** no default This key specifies
 the z location of the upper extent of a vectical well if the input type
@@ -3934,9 +3834,7 @@ is set to **Vectical**.
 
    ::
 
-      pfset Wells.test_well.ZUpper 8.0          ## TCL syntax
-
-      <runname>.Wells.test_well.ZUpper = 8.0    ## Python syntax
+      Wells.test_well.ZUpper 8.0
 
 *double* **Wells.\ *well_name*.ExtractionZUpper** no default This key
 specifies the z location of the upper extent of a extraction well if the
@@ -3946,9 +3844,7 @@ input type is set to **Recirc**.
 
    ::
 
-      pfset Wells.ext_well.ExtractionZUpper 3.0          ## TCL syntax
-
-      <runname>.Wells.ext_well.ExtractionZUpper = 3.0    ## Python syntax
+      Wells.ext_well.ExtractionZUpper 3.0
 
 *double* **Wells.\ *well_name*.InjectionZUpper** no default This key
 specifies the z location of the upper extent of a injection well if the
@@ -3958,9 +3854,7 @@ input type is set to **Recirc**.
 
    ::
 
-      pfset Wells.inj_well.InjectionZUpper 6.0        ## TCL syntax
-
-      <runname>.Wells.inj_well.InjectionZUpper = 6.0  ## Python syntax
+      Wells.inj_well.InjectionZUpper 6.0
 
 *double* **Wells.\ *well_name*.ZLower** no default This key specifies
 the z location of the lower extent of a vectical well if the input type
@@ -3970,9 +3864,7 @@ is set to **Vectical**.
 
    ::
 
-      pfset Wells.test_well.ZLower 2.0          ## TCL syntax
-
-      <runname>.Wells.test_well.ZLower = 2.0    ## Python syntax
+      Wells.test_well.ZLower 2.0
 
 *double* **Wells.\ *well_name*.ExtractionZLower** no default This key
 specifies the z location of the lower extent of a extraction well if the
@@ -3982,9 +3874,7 @@ input type is set to **Recirc**.
 
    ::
 
-      pfset Wells.ext_well.ExtractionZLower 1.0          ## TCL syntax
-
-      <runname>.Wells.ext_well.ExtractionZLower = 1.0    ## Python syntax
+      Wells.ext_well.ExtractionZLower 1.0
 
 *double* **Wells.\ *well_name*.InjectionZLower** no default This key
 specifies the z location of the lower extent of a injection well if the
@@ -3994,9 +3884,7 @@ input type is set to **Recirc**.
 
    ::
 
-      pfset Wells.inj_well.InjectionZLower 4.0           ## TCL syntax
-
-      <runname>.Wells.inj_well.InjectionZLower = 4.0     ## Python syntax
+      Wells.inj_well.InjectionZLower 4.0
 
 *string* **Wells.\ *well_name*.Method** no default This key specifies a
 method by which pressure or flux for a vertical well will be weighted
@@ -4012,10 +3900,8 @@ of all cell permeabilities which define the well. The value of
 .. container:: list
 
    ::
-   
-      pfset Wells.test_well.Method "Weighted"         ## TCL syntax
 
-      <runname>.Wells.test_well.Method = "Weighted"   ## Python syntax
+      Wells.test_well.Method "Weighted"
 
 *string* **Wells.\ *well_name*.ExtractionMethod** no default This key
 specifies a method by which pressure or flux for an extraction well will
@@ -4032,9 +3918,7 @@ of all cell permeabilities which define the well. The value of
 
    ::
 
-      pfset Wells.ext_well.ExtractionMethod "Standard"         ## TCL syntax
-
-      <runname>.Wells.ext_well.ExtractionMethod = "Standard"   ## Python syntax
+      Wells.ext_well.ExtractionMethod "Standard"
 
 *string* **Wells.\ *well_name*.InjectionMethod** no default This key
 specifies a method by which pressure or flux for an injection well will
@@ -4051,9 +3935,7 @@ of all cell permeabilities which define the well. The value of
 
    ::
 
-      pfset Wells.inj_well.InjectionMethod "Standard"          ## TCL syntax
-
-      <runname>.Wells.inj_well.InjectionMethod = "Standard"    ## Python syntax
+      Wells.inj_well.InjectionMethod "Standard"
 
 *string* **Wells.\ *well_name*.Cycle** no default This key specifies the
 time cycles to which data for the well *well_name* corresponds.
@@ -4062,9 +3944,7 @@ time cycles to which data for the well *well_name* corresponds.
 
    ::
 
-      pfset Wells.test_well.Cycle "all_time"          ## TCL syntax
-
-      <runname>.Wells.test_well.Cycle = "all_time"    ## Python syntax
+      Wells.test_well.Cycle "all_time"
 
 *double* **Wells.\ *well_name*.\ *interval_name*.Pressure.Value** no
 default This key specifies the hydrostatic pressure value for a vectical
@@ -4078,9 +3958,7 @@ physical relationships that exist between the phases.
 
    ::
 
-      pfset Wells.test_well.all_time.Pressure.Value 6.0           ## TCL syntax
-
-      <runname>.Wells.test_well.all_time.Pressure.Value = 6.0     ## Python syntax
+      Wells.test_well.all_time.Pressure.Value 6.0
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Extraction.Pressure.Value** no
@@ -4095,9 +3973,7 @@ physical relationships that exist between the phases.
 
    ::
 
-      pfset Wells.ext_well.all_time.Extraction.Pressure.Value 4.5          ## TCL syntax
-
-      <runname>.Wells.ext_well.all_time.Extraction.Pressure.Value = 4.5    ## Python syntax
+      Wells.ext_well.all_time.Extraction.Pressure.Value 4.5
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Injection.Pressure.Value** no
@@ -4112,9 +3988,7 @@ physical relationships that exist between the phases.
 
    ::
 
-      pfset Wells.inj_well.all_time.Injection.Pressure.Value 10.2          ## TCL syntax
-
-      <runname>.Wells.inj_well.all_time.Injection.Pressure.Value = 10.2     ## Python syntax
+      Wells.inj_well.all_time.Injection.Pressure.Value 10.2
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Flux.\ *phase_name*.Value** no
@@ -4128,9 +4002,7 @@ correct sign based on the chosen action for the well.
 
    ::
 
-      pfset Wells.test_well.all_time.Flux.water.Value 250.0          ## TCL syntax
-
-      <runname>.Wells.test_well.all_time.Flux.water.Value = 250.0    ## Python syntax
+      Wells.test_well.all_time.Flux.water.Value 250.0
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Extraction.Flux.\ *phase_name*.Value**
@@ -4144,9 +4016,7 @@ correct sign based on the chosen action for the well.
 
    ::
 
-      pfset Wells.ext_well.all_time.Extraction.Flux.water.Value 125.0         ## TCL syntax
-
-      <runname>.Wells.ext_well.all_time.Extraction.Flux.water.Value = 125.0   ## Python syntax
+      Wells.ext_well.all_time.Extraction.Flux.water.Value 125.0
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Injection.Flux.\ *phase_name*.Value**
@@ -4160,9 +4030,7 @@ correct sign based on the chosen action for the well.
 
    ::
 
-      pfset Wells.inj_well.all_time.Injection.Flux.water.Value 80.0        ## TCL syntax
-
-      <runname>.Wells.inj_well.all_time.Injection.Flux.water.Value = 80.0  ## Python syntax
+      Wells.inj_well.all_time.Injection.Flux.water.Value 80.0
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Saturation.\ *phase_name*.Value**
@@ -4172,9 +4040,7 @@ no default This key specifies the saturation value of a vertical well.
 
    ::
 
-      pfset Wells.test_well.all_time.Saturation.water.Value 1.0            ## TCL syntax
-
-      <runname>.Wells.test_well.all_time.Saturation.water.Value = 1.0      ## Python syntax
+      Wells.test_well.all_time.Saturation.water.Value 1.0
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Concentration.\ *phase_name*.\ *contaminant_name*.Value**
@@ -4184,9 +4050,7 @@ no default This key specifies the contaminant value of a vertical well.
 
    ::
 
-      pfset Wells.test_well.all_time.Concentration.water.tce.Value 0.0005           ## TCL syntax
-
-      <runname>.Wells.test_well.all_time.Concentration.water.tce.Value = 0.0005     ## Python syntax
+      Wells.test_well.all_time.Concentration.water.tce.Value 0.0005
 
 *double*
 **Wells.\ *well_name*.\ *interval_name*.Injection.Concentration.\ *phase_name*.\ *contaminant_name*.Fraction**
@@ -4197,9 +4061,7 @@ which gets resupplied to the injection well.
 
    ::
 
-      pfset Wells.inj_well.all_time.Injection.Concentration.water.tce.Fraction 0.01          ## TCL syntax
-
-      <runname>.Wells.inj_well.all_time.Injection.Concentration.water.tce.Fraction = 0.01    ## Python syntax
+      Wells.inj_well.all_time.Injection.Concentration.water.tce.Fraction 0.01
 
 Multiple wells assigned to one grid location can occur in several
 instances. The current actions taken by the code are as follows:
@@ -5069,7 +4931,8 @@ zero (the default) this key behaves normally.
 
    ::
 
-      pfset OverlandFlowSpinUp   1
+      pfset OverlandFlowSpinUp   1        ## TCL syntax
+      <runname>.OverlandFlowSpinUp = 1    ## Python syntax
 
 *double* **OverlandFlowSpinUpDampP1** 0.0 This key sets :math:`P_1` and
 provides exponential dampening to the pressure relationship in the
@@ -5080,7 +4943,8 @@ overland flow equation by adding the following term:
 
    ::
 
-      pfset OverlandSpinupDampP1  10.0
+      pfset OverlandSpinupDampP1  10.0       ## TCL syntax
+      <runname>.OverlandSpinupDampP1 = 10.0  ## Python syntax
 
 *double* **OverlandFlowSpinUpDampP2** 0.0 This key sets :math:`P_2` and
 provides exponential dampening to the pressure relationship in the
@@ -5091,7 +4955,8 @@ overland flow equation adding the following term:
 
    ::
 
-      pfset OverlandSpinupDampP2  0.1
+      pfset OverlandSpinupDampP2  0.1        ## TCL syntax
+      <runname>.OverlandSpinupDampP2 = 0.1   ## Python syntax
 
 .. _CLM Solver Parameters:
 
@@ -5108,7 +4973,8 @@ for this option to be active.
 
    ::
 
-      pfset Solver.CLM.Print1dOut   False
+      pfset Solver.CLM.Print1dOut   False       ## TCL syntax
+      <runname>.Solver.CLM.Print1dOut = False   ## Python syntax
 
 *integer* **Solver.CLM.IstepStart** 1 This key specifies the value of
 the counter, *istep* in ``CLM``. This key primarily determines the start 
@@ -5121,7 +4987,8 @@ be active.
 
    ::
 
-      pfset Solver.CLM.IstepStart     8761      
+      pfset Solver.CLM.IstepStart     8761      ## TCL syntax
+      <runname>.Solver.CLM.IstepStart = 8761    ## Python syntax   
 
 *String* **Solver.CLM.MetForcing** no default This key specifies defines
 whether 1D (uniform over the domain), 2D (spatially distributed) or 3D
@@ -5140,7 +5007,8 @@ and linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.CLM.MetForcing   "2D"       
+      pfset Solver.CLM.MetForcing   "2D"        ## TCL syntax
+      <runname>.Solver.CLM.MetForcing = "2D"    ## Python syntax
 
 *String* **Solver.CLM.MetFileName** no default This key specifies
 defines the file name for 1D, 2D or 3D forcing data. 1D meteorological
@@ -5190,7 +5058,8 @@ Note that ``CLM`` must be compiled and linked at runtime for this option to be a
 
    ::
 
-      pfset Solver.CLM.MetFileName     "narr.1hr.txt"
+      pfset Solver.CLM.MetFileName     "narr.1hr.txt"    ## TCL syntax
+      <runname>.Solver.CLM.MetFileName = "narr.1hr.txt"  ## Python syntax
 
 *String* **Solver.CLM.MetFilePath** no default This key specifies
 defines the location of 1D, 2D or 3D forcing data. For 1D cases, this is
@@ -5203,7 +5072,8 @@ option to be active.
 
    ::
 
-      pfset Solver.CLM.MetFilePath		"path/to/met/forcing/data/"
+      pfset Solver.CLM.MetFilePath "path/to/met/forcing/data/"          ## TCL syntax
+      <runname>.Solver.CLM.MetFilePath = "path/to/met/forcing/data/"    ## Python syntax
 
 *integer* **Solver.CLM.MetFileNT** no default This key specifies the
 number of timesteps per file for 3D forcing data.
@@ -5212,7 +5082,8 @@ number of timesteps per file for 3D forcing data.
 
    ::
 
-      pfset Solver.CLM.MetFileNT	24	
+      pfset Solver.CLM.MetFileNT	24          ## TCL syntax
+      <runname>.Solver.CLM.MetFileNT = 24    ## Python syntax
 
 *string* **Solver.CLM.ForceVegetation** False This key specifies whether
 vegetation should be forced in ``CLM``. Currently this option only works 
@@ -5250,7 +5121,8 @@ vegetation map is needed in this case.
 
    ::
 
-      pfset Solver.CLM.ForceVegetation  True
+      pfset Solver.CLM.ForceVegetation  True       ## TCL syntax
+      <runname>.Solver.CLM.ForceVegetation = True  ## Python syntax
 
 *string* **Solver.WriteSiloCLM** False This key specifies whether the ``CLM`` 
 writes two dimensional binary output files to a silo binary format. This data 
@@ -5264,7 +5136,8 @@ or over the number of ``CLM`` layers (default of ten).
 
    ::
 
-      pfset Solver.WriteSiloCLM True
+      pfset Solver.WriteSiloCLM True         ## TCL syntax
+      <runname>.Solver.WriteSiloCLM = True   ## Python syntax
 
 The output variables are:
 
@@ -5307,7 +5180,8 @@ are either two-dimensional or over the number of ``CLM`` layers (default of ten)
 
    ::
 
-      pfset Solver.PrintCLM True
+      pfset Solver.PrintCLM True          ## TCL syntax
+      <runname>.Solver.PrintCLM = True    ## Python syntax 
 
 The output variables are:
 
@@ -5348,7 +5222,8 @@ runtime for this option to be active.
 
    ::
 
-      pfset Solver.WriteCLMBinary False
+      pfset Solver.WriteCLMBinary False         ## TCL syntax
+      <runname>.Solver.WriteCLMBinary = False   ## Python syntax
 
 *string* **Solver.CLM.BinaryOutDir** True This key specifies whether the ``CLM`` writes 
 each set of two dimensional binary output files to a corresponding directory. These 
@@ -5360,7 +5235,8 @@ linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.CLM.BinaryOutDir True
+      pfset Solver.CLM.BinaryOutDir True        ## TCL syntax
+      <runname>.Solver.CLM.BinaryOutDir = True  ## Python syntax
 
 These directories are:
 
@@ -5405,7 +5281,8 @@ to be active.
 
    ::
 
-      pfset Solver.CLM.CLMFileDir "CLM_Output/"
+      pfset Solver.CLM.CLMFileDir "CLM_Output/"          ## TCL syntax
+      <runname>.Solver.CLM.CLMFileDir = "CLM_Output/"    ## Python syntax
 
 *integer* **Solver.CLM.CLMDumpInterval** 1 This key specifies how often
 output from the ``CLM`` is written. This key is in integer multipliers 
@@ -5416,7 +5293,8 @@ at runtime for this option to be active.
 
    ::
 
-      pfset Solver.CLM.CLMDumpInterval 2
+      pfset Solver.CLM.CLMDumpInterval 2           ## TCL syntax
+      <runname>.Solver.CLM.CLMDumpInterval = 2     ## Python syntax
 
 *string* **Solver.CLM.EvapBeta** Linear This key specifies the form of
 the bare soil evaporation :math:`\beta` parameter in ``CLM``. The 
@@ -5439,7 +5317,8 @@ be compiled and linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.CLM.EvapBeta "Linear"
+      pfset Solver.CLM.EvapBeta "Linear"           ## TCL syntax
+      <runname>.Solver.CLM.EvapBeta = "Linear"     ## Python syntax
 
 *double* **Solver.CLM.ResSat** 0.1 This key specifies the residual
 saturation for the :math:`\beta` function in ``CLM`` specified above. 
@@ -5450,7 +5329,8 @@ option to be active.
 
    ::
 
-      pfset Solver.CLM.ResSat  0.15
+      pfset Solver.CLM.ResSat  0.15          ## TCL syntax
+      <runname>.Solver.CLM.ResSat = 0.15     ## Python syntax 
 
 *string* **Solver.CLM.VegWaterStress** Saturation This key specifies the
 form of the plant water stress function :math:`\beta_t` parameter in ``CLM``. 
@@ -5476,7 +5356,8 @@ linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.CLM.VegWaterStress  "Pressure"
+      pfset Solver.CLM.VegWaterStress  "Pressure"        ## TCL syntax
+      <runname>.Solver.CLM.VegWaterStress = "Pressure"   ## Python syntax
 
 *double* **Solver.CLM.WiltingPoint** 0.1 This key specifies the wilting
 point for the :math:`\beta_t` function in ``CLM`` specified above. Note 
@@ -5489,7 +5370,8 @@ to be active.
 
    ::
 
-      pfset Solver.CLM.WiltingPoint  0.15
+      pfset Solver.CLM.WiltingPoint  0.15       ## TCL syntax
+      <runname>.Solver.CLM.WiltingPoint = 0.15  ## Python syntax
 
 *double* **Solver.CLM.FieldCapacity** 1.0 This key specifies the field
 capacity for the :math:`\beta_t` function in ``CLM`` specified above. 
@@ -5502,7 +5384,8 @@ to be active.
 
    ::
 
-      pfset Solver.CLM.FieldCapacity  0.95
+      pfset Solver.CLM.FieldCapacity  0.95         ## TCL syntax
+      <runname>.Solver.CLM.FieldCapacity = 0.95    ## Python syntax
 
 *string* **Solver.CLM.IrrigationTypes** none This key specifies the form
 of the irrigation in ``CLM``. The valid types for this key are **none**, 
@@ -5512,7 +5395,8 @@ of the irrigation in ``CLM``. The valid types for this key are **none**,
 
    ::
 
-      pfset Solver.CLM.IrrigationTypes "Drip"
+      pfset Solver.CLM.IrrigationTypes "Drip"      ## TCL syntax
+      <runname>.Solver.CLM.IrrigationTypes "Drip"  ## Python syntax
 
 *string* **Solver.CLM.IrrigationCycle** Constant This key specifies the
 cycle of the irrigation in ``CLM``. The valid types for this key are 
@@ -5524,7 +5408,8 @@ IrrigationStopTime in GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationCycle "Constant"
+      pfset Solver.CLM.IrrigationCycle "Constant"        ## TCL syntax
+      <runname>.Solver.CLM.IrrigationCycle = "Constant"  ## Python syntax
 
 *double* **Solver.CLM.IrrigationRate** no default This key specifies the
 rate of the irrigation in ``CLM`` in :math:`[mm/s]`.
@@ -5533,7 +5418,8 @@ rate of the irrigation in ``CLM`` in :math:`[mm/s]`.
 
    ::
 
-      pfset Solver.CLM.IrrigationRate 10.
+      pfset Solver.CLM.IrrigationRate 10.          ## TCL syntax
+      <runname>.Solver.CLM.IrrigationRate = 10.    ## Python syntax 
 
 *double* **Solver.CLM.IrrigationStartTime** no default This key
 specifies the start time of the irrigation in ``CLM`` GMT.
@@ -5542,7 +5428,8 @@ specifies the start time of the irrigation in ``CLM`` GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationStartTime 0800
+      pfset Solver.CLM.IrrigationStartTime 0800          ## TCL syntax
+      <runname>.Solver.CLM.IrrigationStartTime = 0800    ## Python syntax
 
 *double* **Solver.CLM.IrrigationStopTime** no default This key specifies
 the stop time of the irrigation in ``CLM`` GMT.
@@ -5551,7 +5438,8 @@ the stop time of the irrigation in ``CLM`` GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationStopTime 1200
+      pfset Solver.CLM.IrrigationStopTime 1200        ## TCL syntax
+      <runname>.Solver.CLM.IrrigationStopTime = 1200  ## Python syntax
 
 *double* **Solver.CLM.IrrigationThreshold** 0.5 This key specifies the
 threshold value for the irrigation in ``CLM``.
@@ -5560,7 +5448,8 @@ threshold value for the irrigation in ``CLM``.
 
    ::
 
-      pfset Solver.CLM.IrrigationThreshold 0.2
+      pfset Solver.CLM.IrrigationThreshold 0.2          ## TCL syntax
+      <runname>.Solver.CLM.IrrigationThreshold = 0.2    ## Python syntax
 
 *integer* **Solver.CLM.ReuseCount** 1 How many times to reuse a ``CLM`` 
 atmospheric forcing file input. For example timestep=1, reuse =1 is 
@@ -5575,7 +5464,8 @@ accordingly without needing duplicate files.
 
    ::
 
-      pfset Solver.CLM.ReuseCount      5
+      pfset Solver.CLM.ReuseCount      5     ## TCL syntax
+      <runname>.Solver.CLM.ReuseCount = 5    ## Python syntax
 
 *string* **Solver.CLM.WriteLogs** True When **False**, this disables
 writing of the CLM output log files for each processor. For example, in
@@ -5587,7 +5477,8 @@ processor #) are not created, assuming *washita* is the run name.
 
    ::
 
-      pfset Solver.CLM.WriteLogs    False
+      pfset Solver.CLM.WriteLogs    False       ## TCL syntax
+      <runname>.Solver.CLM.WriteLogs = False    ## Python syntax
 
 *string* **Solver.CLM.WriteLastRST** False Controls whether CLM restart
 files are sequentially written or whether a single file *restart file
@@ -5601,7 +5492,8 @@ written every n steps where n is the value of ReuseCount.
 
    ::
 
-      pfset Solver.CLM.WriteLastRST   True
+      pfset Solver.CLM.WriteLastRST   True      ## TCL syntax
+      <runname>.Solver.CLM.WriteLastRST = True  ## Python syntax 
 
 *string* **Solver.CLM.DailyRST** True Controls whether CLM writes daily
 restart files (default) or at every time step when set to False; outputs
@@ -5616,7 +5508,8 @@ output is overwritten to time 00000 in *restart file name*.00000.p where
 
    ::
 
-      pfset Solver.CLM.DailyRST    False
+      pfset Solver.CLM.DailyRST    False     ## TCL syntax
+      <runname>.Solver.CLM.DailyRST = False  ## Python syntax
 
 *string* **Solver.CLM.SingleFile** False Controls whether ParFlow writes
 all ``CLM`` output variables as a single file per time step. When "True", 
@@ -5633,7 +5526,8 @@ and ``SILO`` formats as above.
 
    ::
 
-      pfset Solver.CLM.SingleFile   True
+      pfset Solver.CLM.SingleFile   True        ## TCL syntax
+      <runname>.Solver.CLM.SingleFile = True    ## Python syntax
 
 *integer* **Solver.CLM.RootZoneNZ** 10 This key sets the number of soil
 layers the ParFlow expects from ``CLM``. It will allocate and format all 
@@ -5646,7 +5540,8 @@ described below, will also need to be changed.
 
    ::
 
-      pfset Solver.CLM.RootZoneNZ      4
+      pfset Solver.CLM.RootZoneNZ      4     ## TCL syntax
+      <runname>.Solver.CLM.RootZoneNZ = 4    ## Python syntax
 
 *integer* **Solver.CLM.SoiLayer** 7 This key sets the soil layer, and
 thus the soil depth, that ``CLM`` uses for the seasonal temperature 
@@ -5656,7 +5551,8 @@ adjustment for all leaf and stem area indices.
 
    ::
 
-      pfset Solver.CLM.SoiLayer      4
+      pfset Solver.CLM.SoiLayer      4    ## TCL syntax
+      <runname>.Solver.CLM.SoiLayer = 4   ## Python syntax
 
 *string* **Solver.CLM.UseSlopeAspect** False This key specifies whether
 or not allows for the inclusion of slopes when determining solar zenith
@@ -5665,7 +5561,8 @@ to be active.
 
 ::
 
-   pfset Solver.CLM.UseSlopeAspect True
+   pfset Solver.CLM.UseSlopeAspect True         ## TCL syntax
+   <runname>.Solver.CLM.UseSlopeAspect = True   ## Python syntax
 
 
 .. _ParFlow NetCDF4 Parallel I/O:
@@ -5695,7 +5592,8 @@ increases beyond this number, a new file is automatically created.
 
    ::
 
-      pfset NetCDF.NumStepsPerFile    5
+      pfset NetCDF.NumStepsPerFile    5      ## TCL syntax
+      <runname>.NetCDF.NumStepsPerFile = 5   ## Python syntax
 
 *string* **NetCDF.WritePressure** False This key sets pressure variable
 to be written in NetCDF4 file.
@@ -5704,7 +5602,8 @@ to be written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WritePressure    True
+      pfset NetCDF.WritePressure    True     ## TCL syntax
+      <runanme>.NetCDF.WritePressure = True  ## Python syntax
 
 *string* **NetCDF.WriteSaturation** False This key sets saturation
 variable to be written in NetCDF4 file.
@@ -5713,7 +5612,8 @@ variable to be written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteSaturation    True
+      pfset NetCDF.WriteSaturation    True      ## TCL syntax
+      <runname>.NetCDF.WriteSaturation = True   ## Python syntax
 
 *string* **NetCDF.WriteMannings** False This key sets Mannings
 coefficients to be written in NetCDF4 file.
@@ -5722,7 +5622,8 @@ coefficients to be written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteMannings	    True
+      pfset NetCDF.WriteMannings	    True    ## TCL syntax
+      <runname>.NetCDF.WriteMannings = True  ## Python syntax
 
 *string* **NetCDF.WriteSubsurface** False This key sets subsurface
 data (permeabilities, porosity, specific storage) to be written in
@@ -5732,7 +5633,8 @@ NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteSubsurface	    True
+      pfset NetCDF.WriteSubsurface	    True    ## TCL syntax
+      <runname>.NetCDF.WriteSubsurface	= True   ## Python syntax
 
 *string* **NetCDF.WriteSlopes** False This key sets x and y slopes to be
 written in NetCDF4 file.
@@ -5741,7 +5643,8 @@ written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteSlopes	    True
+      pfset NetCDF.WriteSlopes	    True    ## TCL syntax
+      <runname>.NetCDF.WriteSlopes = True    ## Python syntax
 
 *string* **NetCDF.WriteMask** False This key sets mask to be written in
 NetCDF4 file.
@@ -5750,7 +5653,8 @@ NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteMask	    True
+      pfset NetCDF.WriteMask True         ## TCL syntax
+      <runname>.NetCDF.WriteMask	= True   ## Python syntax 
 
 *string* **NetCDF.WriteDZMultiplier** False This key sets DZ multipliers
 to be written in NetCDF4 file.
@@ -5759,7 +5663,8 @@ to be written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteDZMultiplier	    True
+      pfset NetCDF.WriteDZMultiplier True          ## TCL syntax
+      <runname>.NetCDF.WriteDZMultiplier = True    ## Python syntax
 
 *string* **NetCDF.WriteEvapTrans** False This key sets Evaptrans to be
 written in NetCDF4 file.
@@ -5768,7 +5673,8 @@ written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteEvapTrans	    True
+      pfset NetCDF.WriteEvapTrans True          ## TCL syntax
+      <runname>.NetCDF.WriteEvapTrans = True    ## Python syntax
 
 *string* **NetCDF.WriteEvapTransSum** False This key sets Evaptrans sum
 to be written in NetCDF4 file.
@@ -5777,7 +5683,8 @@ to be written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteEvapTransSum	    True
+      pfset NetCDF.WriteEvapTransSum True          ## TCL syntax
+      <runname>.NetCDF.WriteEvapTransSum = True    ## Python syntax
 
 *string* **NetCDF.WriteOverlandSum** False This key sets overland sum to
 be written in NetCDF4 file.
@@ -5786,7 +5693,8 @@ be written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteOverlandSum	    True
+      pfset NetCDF.WriteOverlandSum	True        ## TCL syntax
+      <runname>.NetCDF.WriteOverlandSum = True  ## Python syntax
 
 *string* **NetCDF.WriteOverlandBCFlux** False This key sets overland bc
 flux to be written in NetCDF4 file.
@@ -5795,7 +5703,8 @@ flux to be written in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.WriteOverlandBCFlux	    True
+      pfset NetCDF.WriteOverlandBCFlux	True        ## TCL syntax
+      <runname>.NetCDF.WriteOverlandBCFlux = True  ## Python syntax
 
 NetCDF4 Chunking
 ~~~~~~~~~~~~~~~~
@@ -5813,7 +5722,8 @@ varying 3-D variable in NetCDF4 file.
 
    ::
 
-      pfset NetCDF.Chunking    True
+      pfset NetCDF.Chunking    True       ## TCL syntax
+      <runname>.NetCDF.Chunking = True    ## Python syntax
 
 Following keys are used only when **NetCDF.Chunking** is set to true.
 These keys are used to set chunk sizes in x, y and z direction. A
@@ -5834,7 +5744,8 @@ x-direction.
 
    ::
 
-      pfset NetCDF.ChunkX    50
+      pfset NetCDF.ChunkX    50     ## TCL syntax
+      <runname>.NetCDF.ChunkX = 50  ## Python syntax
 
 *integer* **NetCDF.ChunkY** None This key sets chunking size in
 y-direction.
@@ -5843,7 +5754,8 @@ y-direction.
 
    ::
 
-      pfset NetCDF.ChunkY    50
+      pfset NetCDF.ChunkY    50     ## TCL syntax
+      <runname>.NetCDF.ChunkY = 50  ## Python syntax
 
 *integer* **NetCDF.ChunkZ** None This key sets chunking size in
 z-direction.
@@ -5852,7 +5764,8 @@ z-direction.
 
    ::
 
-      pfset NetCDF.ChunkZ    30
+      pfset NetCDF.ChunkZ    30        ## TCL syntax
+      <runname>.NetCDF.ChunkZ = 30     ## Python syntax
 
 
 NetCDF4 Compression
@@ -5868,7 +5781,8 @@ of NetCDF4.
 
 ::
 
-   pfset NetCDF.Compression True
+   pfset NetCDF.Compression True          ## TCL syntax
+   <runname>.NetCDF.Compression = True    ## Python syntax
 
 *integer* **NetCDF.CompressionLevel** 1 This key sets the deflate
 compression level (if **NetCDF.Compression** is enabled), which influence
@@ -5878,7 +5792,8 @@ files).
 
 ::
 
-   pfset NetCDF.CompressionLevel 1
+   pfset NetCDF.CompressionLevel 1           ## TCL syntax
+   <runname>.NetCDF.CompressionLevel = 1     ## Python syntax
 
 
 ROMIO Hints
@@ -5900,7 +5815,8 @@ present and readable in experiment directory.
 
    ::
 
-      pfset NetCDF.ROMIOhints    "romio.hints"
+      pfset NetCDF.ROMIOhints "romio.hints"         ## TCL syntax
+      <runname>.NetCDF.ROMIOhints = "romio.hints"   ## Python syntax
 
 An example ROMIO hints file looks as follows.
 
@@ -5941,7 +5857,8 @@ collective I/O.
 
    ::
 
-      pfset NetCDF.NodeLevelIO   True
+      pfset NetCDF.NodeLevelIO   True        ## TCL syntax
+      <runname>.NetCDF.NodeLevelIO = True    ## Python syntax
 
 NetCDF4 Initial Conditions: Pressure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5979,8 +5896,11 @@ conditions to be read from a NetCDF file.
 
    ::
 
-      pfset ICPressure.Type   "NCFile"
-      pfset Geom.domain.ICPressure.FileName   "initial_condition.nc"
+      pfset ICPressure.Type   "NCFile"        ## TCL syntax  
+      pfset Geom.domain.ICPressure.FileName "initial_condition.nc" ## TCL syntax
+
+      <runname>.ICPressure.Type = "NCFile"    ## Python syntax
+      <runname>.Geom.domain.ICPressure.FileName = "initial_condition.nc" ## Python syntax
 
 NetCDF4 Slopes
 ~~~~~~~~~~~~~~
@@ -6028,8 +5948,11 @@ in x direction to be read from a NetCDF file.
 
    ::
 
-      pfset TopoSlopesX.Type   "NCFile"
-      pfset TopoSlopesX.FileName   "slopex.nc"
+      pfset TopoSlopesX.Type "NCFile"              ## TCL syntax
+      pfset TopoSlopesX.FileName "slopex.nc"       ## TCL syntax
+
+      <runname>.TopoSlopesX.Type = "NCFile"        ## Python syntax
+      <runname>.TopoSlopesX.FileName = "slopex.nc" ## Python syntax
 
 *string* **TopoSlopesY.Type** no default This key sets flag for slopes
 in y direction to be read from a NetCDF file.
@@ -6038,8 +5961,11 @@ in y direction to be read from a NetCDF file.
 
    ::
 
-      pfset TopoSlopesY.Type   "NCFile"
-      pfset TopoSlopesy.FileName   "slopey.nc"
+      pfset TopoSlopesY.Type "NCFile"              ## TCL syntax
+      pfset TopoSlopesy.FileName "slopey.nc"       ## TCL syntax
+
+      <runname>.TopoSlopesY.Type = "NCFile"        ## Python syntax
+      <runname>.TopoSlopesy.FileName = "slopey.nc" ## Python syntax
 
 NetCDF4 Transient EvapTrans Forcing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -6075,7 +6001,8 @@ transient evaptrans forcing to be read from a NetCDF file.
 
    ::
 
-      pfset NetCDF.EvapTransFileTransient   True
+      pfset NetCDF.EvapTransFileTransient True           ## TCL syntax
+      <runname>.NetCDF.EvapTransFileTransient = True     ## Python syntax
 
 *string* **NetCDF.EvapTrans.FileName** no default This key sets the name
 of the NetCDF transient evaptrans forcing file.
@@ -6084,7 +6011,8 @@ of the NetCDF transient evaptrans forcing file.
 
    ::
 
-      pfset NetCDF.EvapTrans.FileName         "evap_trans.nc"
+      pfset NetCDF.EvapTrans.FileName "evap_trans.nc"          ## TCL syntax
+      <runname>.NetCDF.EvapTrans.FileName = "evap_trans.nc"    ## Python syntax
 
 NetCDF4 CLM Output
 ~~~~~~~~~~~~~~~~~~
@@ -6100,7 +6028,8 @@ time steps to be written to a single NetCDF file.
 
    ::
 
-      pfset NetCDF.CLMNumStepsPerFile 24
+      pfset NetCDF.CLMNumStepsPerFile 24           ## TCL syntax
+      <runname>.NetCDF.CLMNumStepsPerFile = 24     ## Python syntax
 
 *string* **NetCDF.WriteCLM** False This key sets CLM variables to be
 written in a NetCDF file.
@@ -6109,7 +6038,8 @@ written in a NetCDF file.
 
    ::
 
-      pfset NetCDF.WriteCLM         True
+      pfset NetCDF.WriteCLM True          ## TCL syntax
+      <runname>.NetCDF.WriteCLM = True    ## Python syntax
 
 The output variables are:
 
@@ -6191,7 +6121,8 @@ meteorological forcing to be read from NetCDF file.
 
    ::
 
-      pfset Solver.CLM.MetForcing     "NC"
+      pfset Solver.CLM.MetForcing "NC"          ## TCL syntax
+      <runname>.Solver.CLM.MetForcing = "NC"    ## Python syntax
 
 Set the name of the input/forcing file as follows.
 
@@ -6199,7 +6130,8 @@ Set the name of the input/forcing file as follows.
 
    ::
 
-      pfset Solver.CLM.MetFileName   "metForcing.nc"
+      pfset Solver.CLM.MetFileName "metForcing.nc"          ## TCL syntax
+      <runname>.Solver.CLM.MetFileName = "metForcing.nc"    ## Python syntax
 
 This file should be present in experiment directory. User may create
 soft links in experiment directory in case where data can not be moved.
