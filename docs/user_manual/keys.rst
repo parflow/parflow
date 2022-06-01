@@ -276,13 +276,13 @@ Example Usage (Python):
    <runname>.ComputationalGrid.Lower.Y = 10.0
    <runname>.ComputationalGrid.Lower.Z	= 1.0
 
-   <runname>.ComputationalGrid.NX	= 18
-   <runname>.ComputationalGrid.NY	= 18
-   <runname>.ComputationalGrid.NZ	= 8
+   <runname>.ComputationalGrid.NX = 18
+   <runname>.ComputationalGrid.NY = 18
+   <runname>.ComputationalGrid.NZ = 8
 
-   <runname>.ComputationalGrid.DX   = 8.0
-   <runname>.ComputationalGrid.DY	= 10.0
-   <runname>.ComputationalGrid.DZ	= 1.0
+   <runname>.ComputationalGrid.DX = 8.0
+   <runname>.ComputationalGrid.DY = 10.0
+   <runname>.ComputationalGrid.DZ = 1.0
 
 *string* **UseClustering** True Run a clustering algorithm to create
 boxes in index space for iteration. By default an octree representation
@@ -3084,7 +3084,7 @@ only!*
 
    ::
 
-      pfset Patch.top.BCPressure.Type  DirEquilRefPatch
+      pfset Patch.top.BCPressure.Type  "DirEquilRefPatch"
 
 *string* **Patch.\ *patch_name*.BCPressure.Cycle** no default This key
 specifies the time cycle to which boundary condition data for patch
@@ -3094,7 +3094,7 @@ specifies the time cycle to which boundary condition data for patch
 
    ::
 
-      pfset Patch.top.BCPressure.Cycle   Constant
+      pfset Patch.top.BCPressure.Cycle   "Constant"
 
 *string* **Patch.\ *patch_name*.BCPressure.RefGeom** no default This key
 specifies the name of the solid on which the reference patch for the
@@ -3293,7 +3293,7 @@ Example Script:
       pfset Geom.domain.ICPressure.Value	   2.2
 
       pfset Geom.domain.ICPressure.RefGeom	"domain"
-      pfset Geom.domain.ICPressure.RefPatch	z-lower
+      pfset Geom.domain.ICPressure.RefPatch	"z-lower"
 
       ### Using a .pfb to initialize
       pfset ICPressure.Type                  "PFBFile"
@@ -3462,7 +3462,7 @@ constants values within geometries for the phase.
 
    ::
 
-      ICSaturation.water.Type Constant
+      ICSaturation.water.Type "Constant"
 
 *string* **ICSaturation.\ *phase_name*.GeomNames** no default This key
 specifies the geometries on which an initial condition will be given if
@@ -4485,7 +4485,7 @@ SILO.
 
    ::
 
-      pfset SILO.CompressionOptions  ``METHOD=GZIP''
+      pfset SILO.CompressionOptions  "METHOD=GZIP"
 
 .. _RE Solver Parameters:
 
