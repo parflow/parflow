@@ -5,19 +5,18 @@ Model Equations
 
 In this chapter, we discuss the model equations used by ParFlow for its
 fully and variably saturated flow, overland flow, and multiphase flow
-and transport models. First, section
-5.1 :ref:`Steady-State, Saturated Groundwater Flow` describes
+and transport models. First, section :ref:`Steady-State, Saturated Groundwater Flow` describes
 steady-state, groundwater flow (specified by solver **IMPES**). Next,
-section 5.2 :ref:`Richards' Equation` describes the Richards’ equation
+section :ref:`Richards' Equation` describes the Richards’ equation
 model (specified by solver **RICHARDS**) for variably saturated flow as
-implemented in ParFlow. Section 5.3 :ref:`TFG` describes the terrain
+implemented in ParFlow. Section :ref:`TFG` describes the terrain
 following grid formulation. Next, the overland flow equations are
-presented in section 5.5 :ref:`Overland Flow`. In section
-5.6 :ref:`Multi-Phase Flow Equations` we describe the multi-phase flow
+presented in section :ref:`Overland Flow`. In section
+:ref:`Multi-Phase Flow Equations` we describe the multi-phase flow
 equations (specified by solver **IMPES**), and in section
-5.7 :ref:`Transport Equations` we describe the transport equations.
-Finally, section 5.8 :ref:`Notation and Units` presents some notation
-and units and section 5.9 :ref:`Water Balance` presents some basic water
+:ref:`Transport Equations` we describe the transport equations.
+Finally, section :ref:`Notation and Units` presents some notation
+and units and section :ref:`Water Balance` presents some basic water
 balance equations.
 
 .. _Steady-State, Saturated Groundwater Flow:
@@ -58,7 +57,7 @@ set to the saturated hydraulic conductivity, :math:`\textbf{K}`, below.
 This is accomplished by setting the relative permeability and viscosity
 terms to unity in :eq:`eqn-phase-mobility` as well
 as the gravity and density terms in :eq:`eqn-darcy`. This
-is shown in the example in §3.6 :ref:`Tutorial`, but please note that
+is shown in the example in :ref:`Tutorial`, but please note that
 the resulting solution is in pressure-head, :math:`h`, not head
 potential, :math:`H`, and will still contain a hydrostatic pressure
 gradient in the :math:`z` direction.
@@ -280,7 +279,7 @@ If we substitute this relationship back into Equation
 Where the :math:`\parallel\psi,0\parallel` operator chooses the greater
 of the two quantities, :math:`\psi` and :math:`0`. We may now solve this
 term for the flux :math:`q_e(x)` which we may set equal to flux boundary
-condition shown in Equation eq:`bcn`. This yields the
+condition shown in Equation :eq:`bcd`. This yields the
 following equation, which is referred to as the overland flow boundary
 condition :cite:p:`KM06`:
 
