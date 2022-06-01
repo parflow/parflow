@@ -779,11 +779,11 @@ simulation.
       <runname>.TimingInfo.DumpInterval = -24
 
       ## Timing constant example
-      <runname>.TimeStep.Type	= 'Constant'
+      <runname>.TimeStep.Type	= "Constant"
       <runname>.TimeStep.Value = 1.0
 
       ## Timing growth example
-      <runname>.TimeStep.Type	= 'Growth'
+      <runname>.TimeStep.Type	= "Growth"
       <runname>.TimeStep.InitialStep = 0.0001
       <runname>.TimeStep.GrowthFactor = 1.4
       <runname>.TimeStep.MaxStep	= 1.0
@@ -912,9 +912,9 @@ named geometries is the problem domain.
 
    ::
 
-      pfset Domain.GeomName    domain
+      pfset Domain.GeomName    domain        ## TCL syntax
 
-      <runname>.Domain.GeomName  =domain
+      <runname>.Domain.GeomName = "domain"   ## Python syntax
 
 .. _Phases and Contaminants:
 
@@ -928,9 +928,9 @@ be modeled. Currently only 1 or 2 phases may be modeled.
 
    ::
 
-      pfset Phase.Names    "water"
+      pfset Phase.Names    "water"        ## TCL syntax
 
-      <runname>.Phase.Names  = 'water'
+      <runname>.Phase.Names = "water"     ## Python syntax
 
 *list* **Contaminant.Names** no default This specifies the names of
 contaminants to be advected.
@@ -939,9 +939,9 @@ contaminants to be advected.
 
    ::
 
-      pfset Contaminants.Names   "tce"
+      pfset Contaminants.Names   "tce"       ## TCL syntax
 
-      <runname>.Contaminants.Names   ='tce'
+      <runname>.Contaminants.Names = "tce"   ## Python syntax
 
 .. _Gravity, Phase Density and Phase Viscosity:
 
@@ -955,9 +955,9 @@ used.
 
    ::
 
-      pfset Gravity	1.0
+      pfset Gravity	1.0         ## TCL syntax
 
-      <runname>.Gravity	=1.0
+      <runname>.Gravity	= 1.0    ## Python syntax
 
 *string* **Phase.\ *phase_name*.Density.Type** no default This key
 specifies whether density will be a constant value or if it will be
@@ -970,9 +970,9 @@ must be either **Constant** or **EquationOfState**.
 
    ::
 
-      pfset Phase.water.Density.Type	 Constant
+      pfset Phase.water.Density.Type	 Constant           ## TCL syntax
 
-      <runname>.Phase.water.Density.Type	=Constant
+      <runname>.Phase.water.Density.Type = "Constant"    ## Python syntax
 
 *double* **Phase.\ *phase_name*.Density.Value** no default This
 specifies the value of density if this phase was specified to have a
@@ -982,9 +982,9 @@ constant density value for the phase *phase_name*.
 
    ::
 
-      pfset Phase.water.Density.Value   1.0
+      pfset Phase.water.Density.Value   1.0        ## TCL syntax
 
-     <runname>.Phase.water.Density.Value  =1.0
+     <runname>.Phase.water.Density.Value = 1.0     ## Python syntax
 
 *double* **Phase.\ *phase_name*.Density.ReferenceDensity** no default
 This key specifies the reference density if an equation of state density
@@ -994,9 +994,9 @@ function is specified for the phase *phase_name*.
 
    ::
 
-      pfset Phase.water.Density.ReferenceDensity   1.0
+      pfset Phase.water.Density.ReferenceDensity   1.0      ## TCL syntax
 
-      <runname>.Phase.water.Density.ReferenceDensity =1.0
+      <runname>.Phase.water.Density.ReferenceDensity = 1.0  ## Python syntax
 
 *double* **Phase.\ *phase_name*.Density.CompressibilityConstant** no
 default This key specifies the phase compressibility constant if an
@@ -1007,9 +1007,9 @@ equation of state density function is specified for the phase
 
    ::
 
-      pfset Phase.water.Density.CompressibilityConstant   1.0
+      pfset Phase.water.Density.CompressibilityConstant   1.0        ## TCL syntax
 
-      <runname>.Phase.water.Density.CompressibilityConstant  =1.0
+      <runname>.Phase.water.Density.CompressibilityConstant = 1.0    ## Python syntax
 
 *string* **Phase.\ *phase_name*.Viscosity.Type** Constant This key
 specifies whether viscosity will be a constant value. Currently, the
@@ -1019,9 +1019,9 @@ only choice for this key is **Constant**.
 
    ::
 
-      pfset Phase.water.Viscosity.Type   Constant
+      pfset Phase.water.Viscosity.Type   Constant           ## TCL syntax
 
-      <runname>.Phase.water.Viscosity.Type   =Constant
+      <runname>.Phase.water.Viscosity.Type = "Constant"     ## Python syntax
 
 *double* **Phase.\ *phase_name*.Viscosity.Value** no default This
 specifies the value of viscosity if this phase was specified to have a
@@ -1031,9 +1031,9 @@ constant viscosity value.
 
    ::
 
-      pfset Phase.water.Viscosity.Value    1.0
+      pfset Phase.water.Viscosity.Value    1.0     ## TCL syntax
 
-      <runname>.Phase.water.Viscosity.Value   =1.0
+      <runname>.Phase.water.Viscosity.Value = 1.0  ## Python syntax
 
 .. _Chemical Reactions:
 
@@ -1050,9 +1050,9 @@ decay into another.
 
    ::
 
-      pfset Contaminants.tce.Degradation.Value         0.0
+      pfset Contaminants.tce.Degradation.Value        0.0      ## TCL syntax
 
-      <runname>.Contaminants.tce.Degradation.Value    =0.0
+      <runname>.Contaminants.tce.Degradation.Value  = 0.0      ## Python syntax
 
 .. _Permeability:
 
@@ -1091,9 +1091,9 @@ of the file that contains the conditioning data. The default string
 
    ::
 
-      pfset Perm.Conditioning.FileName   "well_cond.txt"
+      pfset Perm.Conditioning.FileName   "well_cond.txt"       ## TCL syntax
 
-      <runname>.Perm.Conditioning.FileName  ='well_cond.txt'
+      <runname>.Perm.Conditioning.FileName = "well_cond.txt"   ## Python syntax
 
 The file that contains the conditioning data is a simple ascii file
 containing points and values. The format is:
@@ -1141,9 +1141,9 @@ geometries must cover the entire computational domain.
 
    ::
 
-      pfset GeomInput.Names   "background domain concen_region"
+      pfset GeomInput.Names   "background domain concen_region"      ## TCL syntax
 
-      <runname>.GeomInput.Names  ='background domain concen_region'
+      <runname>.GeomInput.Names = "background domain concen_region"  ## Python syntax
 
 *string* **Geom.geometry_name.Perm.Type** no default This key specifies
 which method is to be used to assign permeability data to the named
@@ -1176,9 +1176,9 @@ conditioning points can be changed.
 
    ::
 
-      pfset Geom.background.Perm.Type   Constant
+      pfset Geom.background.Perm.Type   Constant         ## TCL syntax
 
-      <runname>.Geom.background.Perm.Type   =Constant
+      <runname>.Geom.background.Perm.Type = "Constant"   ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.Value** no default This key
 specifies the value assigned to all points in the named geometry,
@@ -1188,9 +1188,9 @@ specifies the value assigned to all points in the named geometry,
 
    ::
 
-      pfset Geom.domain.Perm.Value   1.0
+      pfset Geom.domain.Perm.Value   1.0        ## TCL syntax
 
-      <runname>.Geom.domain.Perm.Value   =1.0
+      <runname>.Geom.domain.Perm.Value = 1.0    ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.LambdaX** no default This key
 specifies the x correlation length, :math:`\lambda_x`, of the field
@@ -1201,9 +1201,9 @@ Bands or Parallel Gaussian Simulator are chosen.
 
    ::
 
-      pfset Geom.domain.Perm.LambdaX   200.0
+      pfset Geom.domain.Perm.LambdaX   200.0       ## TCL syntax
 
-      <runname>.Geom.domain.Perm.LambdaX   =200.0
+      <runname>.Geom.domain.Perm.LambdaX = 200.0   ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.LambdaY** no default This key
 specifies the y correlation length, :math:`\lambda_y`, of the field
@@ -1214,9 +1214,9 @@ Bands or Parallel Gaussian Simulator are chosen.
 
    ::
 
-      pfset Geom.domain.Perm.LambdaY   200.0
+      pfset Geom.domain.Perm.LambdaY   200.0       ## TCL syntax
 
-      <runname>.Geom.domain.Perm.LambdaY   =200.0
+      <runname>.Geom.domain.Perm.LambdaY = 200.0   ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.LambdaZ** no default This key
 specifies the z correlation length, :math:`\lambda_z`, of the field
@@ -1227,9 +1227,9 @@ Bands or Parallel Gaussian Simulator are chosen.
 
    ::
 
-      pfset Geom.domain.Perm.LambdaZ   10.0
+      pfset Geom.domain.Perm.LambdaZ   10.0        ## TCL syntax
 
-      <runname>.Geom.domain.Perm.LambdaZ   =10.0
+      <runname>.Geom.domain.Perm.LambdaZ = 10.0    ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.GeomMean** no default This key
 specifies the geometric mean, :math:`\mu`, of the log normal field
@@ -1240,9 +1240,9 @@ Bands or Parallel Gaussian Simulator are chosen.
 
    ::
 
-      pfset Geom.domain.Perm.GeomMean   4.56
+      pfset Geom.domain.Perm.GeomMean   4.56       ## TCL syntax
 
-      <runname>.Geom.domain.Perm.GeomMean   =4.56
+      <runname>.Geom.domain.Perm.GeomMean = 4.56   ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.Sigma** no default This key
 specifies the standard deviation, :math:`\sigma`, of the normal field
@@ -1253,9 +1253,9 @@ Bands or Parallel Gaussian Simulator are chosen.
 
    ::
 
-      pfset Geom.domain.Perm.Sigma   2.08
+      pfset Geom.domain.Perm.Sigma   2.08       ## TCL syntax
 
-      <runname>.Geom.domain.Perm.Sigma   =2.08
+      <runname>.Geom.domain.Perm.Sigma = 2.08   ## Python syntax
 
 *integer* **Geom.\ *geometry_name*.Perm.Seed** 1 This key specifies the
 initial seed for the random number generator used to generate the field
@@ -1266,9 +1266,9 @@ Parallel Gaussian Simulator are chosen. This number must be positive.
 
    ::
 
-      pfset Geom.domain.Perm.Seed   1
+      pfset Geom.domain.Perm.Seed   1        ## TCL syntax
 
-      <runname>.Geom.domain.Perm.Seed   =1
+      <runname>.Geom.domain.Perm.Seed = 1    ## Python syntax
 
 *integer* **Geom.\ *geometry_name*.Perm.NumLines** 100 This key
 specifies the number of lines to be used in the Turning Bands algorithm
@@ -1278,9 +1278,9 @@ for the named geometry, *geometry_name*.
 
    ::
 
-      pfset Geom.domain.Perm.NumLines   100
+      pfset Geom.domain.Perm.NumLines   100        ## TCL syntax
 
-      <runname>.Geom.domain.Perm.NumLines  =100
+      <runname>.Geom.domain.Perm.NumLines = 100    ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.RZeta** 5.0 This key specifies
 the resolution of the line processes, in terms of the minimum grid
@@ -1291,9 +1291,9 @@ geometry, *geometry_name*. Large values imply high resolution.
 
    ::
 
-      pfset Geom.domain.Perm.RZeta   5.0
+      pfset Geom.domain.Perm.RZeta   5.0        ## TCL syntax
 
-      <runname>.Geom.domain.Perm.RZeta  =5.0
+      <runname>.Geom.domain.Perm.RZeta = 5.0    ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.KMax** 100.0 This key specifies
 the the maximum normalized frequency, :math:`K_{\rm max}`, to be used in
@@ -1303,9 +1303,9 @@ the Turning Bands algorithm for the named geometry, *geometry_name*.
 
    ::
 
-      pfset Geom.domain.Perm.KMax   100.0
+      pfset Geom.domain.Perm.KMax   100.0       ## TCL syntax
 
-      <runname>.Geom.domain.Perm.KMax   =100.0
+      <runname>.Geom.domain.Perm.KMax = 100.0   ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.DelK** 0.2 This key specifies the
 normalized frequency increment, :math:`\delta K`, to be used in the
@@ -1315,9 +1315,9 @@ Turning Bands algorithm for the named geometry, *geometry_name*.
 
    ::
 
-      pfset Geom.domain.Perm.DelK   0.2
+      pfset Geom.domain.Perm.DelK   0.2         ## TCL syntax
 
-      <runname>.Geom.domain.Perm.DelK  =0.2
+      <runname>.Geom.domain.Perm.DelK = 0.2     ## Python syntax
 
 *integer* **Geom.\ *geometry_name*.Perm.MaxNPts** no default This key
 sets limits on the number of simulated points in the search neighborhood
@@ -1328,9 +1328,9 @@ to be used in the Parallel Gaussian Simulator for the named geometry,
 
    ::
 
-      pfset Geom.domain.Perm.MaxNPts   5
+      pfset Geom.domain.Perm.MaxNPts   5        ## TCL syntax
 
-      <runname>.Geom.domain.Perm.MaxNPts  =5
+      <runname>.Geom.domain.Perm.MaxNPts = 5    ## Python syntax
 
 *integer* **Geom.\ *geometry_name*.Perm.MaxCpts** no default This key
 sets limits on the number of external conditioning points in the search
@@ -1341,9 +1341,9 @@ geometry, *geometry_name*.
 
    ::
 
-      pfset Geom.domain.Perm.MaxCpts   200
+      pfset Geom.domain.Perm.MaxCpts   200      ## TCL syntax
 
-      <runname>.Geom.domain.Perm.MaxCpts   =200
+      <runname>.Geom.domain.Perm.MaxCpts = 200  ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.LogNormal** "LogTruncated" The
 key specifies when a normal, log normal, truncated normal or truncated
@@ -1356,9 +1356,9 @@ either Turning Bands or the Parallel Gaussian Simulator.
 
    ::
 
-      pfset Geom.domain.Perm.LogNormal   "LogTruncated"
+      pfset Geom.domain.Perm.LogNormal   "LogTruncated"        ## TCL syntax
 
-      <runname>.Geom.domain.Perm.LogNormal   ='LogTruncated'
+      <runname>.Geom.domain.Perm.LogNormal = "LogTruncated"    ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.StratType** "Bottom" This key
 specifies the stratification of the permeability field generated by the
@@ -1370,9 +1370,9 @@ Turning Bands or the Parallel Gaussian Simulator.
 
    ::
 
-      pfset Geom.domain.Perm.StratType  "Bottom"
+      pfset Geom.domain.Perm.StratType  "Bottom"         ## TCL syntax
 
-      <runname>.Geom.domain.Perm.StratType  ='Bottom'
+      <runname>.Geom.domain.Perm.StratType = "Bottom"    ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.LowCutoff** no default This key
 specifies the low cutoff value for truncating the generated field for
@@ -1383,9 +1383,9 @@ LogTruncated values are chosen.
 
    ::
 
-      pfset Geom.domain.Perm.LowCutoff   0.0
+      pfset Geom.domain.Perm.LowCutoff   0.0       ## TCL syntax
 
-      <runname>.Geom.domain.Perm.LowCutoff  =0.0
+      <runname>.Geom.domain.Perm.LowCutoff = 0.0   ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.HighCutoff** no default This key
 specifies the high cutoff value for truncating the generated field for
@@ -1396,9 +1396,9 @@ LogTruncated values are chosen.
 
    ::
 
-      pfset Geom.domain.Perm.HighCutoff   100.0
+      pfset Geom.domain.Perm.HighCutoff   100.0       ## TCL syntax
 
-      <runname>.Geom.domain.Perm.HighCutoff   =100.0
+      <runname>.Geom.domain.Perm.HighCutoff = 100.0   ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.FileName** no default This key
 specifies that permeability values for the specified geometry,
@@ -1432,9 +1432,9 @@ the permeability values would be read in only once.
 
    ::
 
-      pfset Geom.domain.Perm.FileName "domain_perm.pfb"
+      pfset Geom.domain.Perm.FileName "domain_perm.pfb"        ## TCL syntax
 
-      <runname>.Geom.domain.Perm.FileName ='domain_perm.pfb'
+      <runname>.Geom.domain.Perm.FileName = "domain_perm.pfb"  ## Python syntax
 
 *string* **Perm.TensorType** no default This key specifies whether the
 permeability tensor entries :math:`k_x, k_y` and :math:`k_z` will be
@@ -1446,9 +1446,9 @@ for this key are **TensorByGeom** and **TensorByFile**.
 
    ::
 
-      pfset Perm.TensorType     TensorByGeom
+      pfset Perm.TensorType     TensorByGeom       ## TCL syntax
 
-      <runname>.Perm.TensorType     =TensorByGeom
+      <runname>.Perm.TensorType = "TensorByGeom"   ## Python syntax
 
 *string* **Geom.Perm.TensorByGeom.Names** no default This key specifies
 all of the geometries to which permeability tensor entries will be
@@ -1458,9 +1458,9 @@ assigned. These geometries must cover the entire computational domain.
 
    ::
 
-      pfset Geom.Perm.TensorByGeom.Names   "background domain"
+      pfset Geom.Perm.TensorByGeom.Names   "background domain"       ## TCL syntax
 
-      <runname>.Geom.Perm.TensorByGeom.Names   ='background domain'
+      <runname>.Geom.Perm.TensorByGeom.Names = "background domain"   ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.TensorValX** no default This key
 specifies the value of :math:`k_x` for the geometry given by
@@ -1470,9 +1470,9 @@ specifies the value of :math:`k_x` for the geometry given by
 
    ::
 
-      pfset Geom.domain.Perm.TensorValX   1.0
+      pfset Geom.domain.Perm.TensorValX   1.0         ## TCL syntax
 
-      <runname>.Geom.domain.Perm.TensorValX   =1.0
+      <runname>.Geom.domain.Perm.TensorValX = 1.0     ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.TensorValY** no default This key
 specifies the value of :math:`k_y` for the geometry given by
@@ -1482,9 +1482,9 @@ specifies the value of :math:`k_y` for the geometry given by
 
    ::
 
-      pfset Geom.domain.Perm.TensorValY   1.0
+      pfset Geom.domain.Perm.TensorValY   1.0         ## TCL syntax
 
-      <runname>.Geom.domain.Perm.TensorValY   =1.0
+      <runname>.Geom.domain.Perm.TensorValY = 1.0     ## Python syntax
 
 *double* **Geom.\ *geometry_name*.Perm.TensorValZ** no default This key
 specifies the value of :math:`k_z` for the geometry given by
@@ -1494,9 +1494,9 @@ specifies the value of :math:`k_z` for the geometry given by
 
    ::
 
-      pfset Geom.domain.Perm.TensorValZ   1.0
+      pfset Geom.domain.Perm.TensorValZ   1.0      ## TCL syntax
 
-      <runname>.Geom.domain.Perm.TensorValZ   =1.0
+      <runname>.Geom.domain.Perm.TensorValZ = 1.0  ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.TensorFileX** no default This key
 specifies that :math:`k_x` values for the specified geometry,
@@ -1508,9 +1508,9 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"
+      pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"         ## TCL syntax
 
-      <runname>.Geom.domain.Perm.TensorByFileX  ='perm_x.pfb'
+      <runname>.Geom.domain.Perm.TensorByFileX  = "perm_x.pfb"    ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.TensorFileY** no default This key
 specifies that :math:`k_y` values for the specified geometry,
@@ -1522,9 +1522,9 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileY   "perm_y.pfb"
+      pfset Geom.domain.Perm.TensorByFileY   "perm_y.pfb"         ## TCL syntax
 
-      <runname>.Geom.domain.Perm.TensorByFileY   ='perm_y.pfb'
+      <runname>.Geom.domain.Perm.TensorByFileY = "perm_y.pfb"     ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.TensorFileZ** no default This key
 specifies that :math:`k_z` values for the specified geometry,
@@ -1536,9 +1536,9 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileZ   "perm_z.pfb"
+      pfset Geom.domain.Perm.TensorByFileZ   "perm_z.pfb"         ## TCL syntax
 
-      <runname>.Geom.domain.Perm.TensorByFileZ  ='perm_z.pfb'
+      <runname>.Geom.domain.Perm.TensorByFileZ = "perm_z.pfb"     ## Python syntax
 
 .. _Porosity:
 
