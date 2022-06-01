@@ -2675,7 +2675,10 @@ have **Data** as its saturation. The possible values for this key are
 
    ::
 
-      pfset Phase.Saturation.Type   Constant
+      pfset Phase.Saturation.Type   "Constant"         ## TCL syntax
+
+      <runname>.Phase.Saturation.Type = "Constant"     ## Python syntax
+
 
 The various possible functions are defined as follows. The **Constant**
 specification means that the saturation will be constant on the
@@ -2723,7 +2726,10 @@ geometries must cover the entire computational domain.
 
    ::
 
-      pfset Phase.Saturation.Geonames   domain
+      pfset Phase.Saturation.Geonames   "domain"         ## TCL syntax
+
+      <runname>.Phase.Saturation.Geonames = "domain"     ## Python syntax
+
 
 *double* **Geom.\ *geom_name*.Saturation.Value** no default This key
 specifies the constant saturation value on the *geom_name* region.
@@ -2732,7 +2738,10 @@ specifies the constant saturation value on the *geom_name* region.
 
    ::
 
-      pfset Geom.domain.Saturation.Value    0.5
+      pfset Geom.domain.Saturation.Value    0.5       ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.Value = 0.5    ## Python syntax
+
 
 *integer* **Phase.Saturation.VanGenuchten.File** 0 This key specifies
 whether soil parameters for the VanGenuchten function are specified in a
@@ -2746,7 +2755,10 @@ none are specified by files. Parameters specified by files are
 
    ::
 
-      pfset Phase.Saturation.VanGenuchten.File   1
+      pfset Phase.Saturation.VanGenuchten.File   1       ## TCL syntax
+
+      <runname>.Phase.Saturation.VanGenuchten.File = 1   ## Python syntax
+
 
 *string* **Geom.\ *geom_name*.Saturation.Alpha.Filename** no default
 This key specifies a pfb filename containing the alpha parameters for
@@ -2757,7 +2769,10 @@ is “domain”.
 
    ::
 
-      pfset Geom.domain.Saturation.Filename   alphas.pfb
+      pfset Geom.domain.Saturation.Filename   "alphas.pfb"     ## TCL syntax
+
+      <runname.Geom.domain.Saturation.Filename = "alphas.pfb"  ## Python syntax
+
 
 *string* **Geom.\ *geom_name*.Saturation.N.Filename** no default This
 key specifies a pfb filename containing the N parameters for the
@@ -2768,7 +2783,9 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
    ::
 
-      pfset Geom.domain.Saturation.N.Filename   Ns.pfb
+      pfset Geom.domain.Saturation.N.Filename   "Ns.pfb"    ## TCL syntax
+
+      pfset Geom.domain.Saturation.N.Filename = "Ns.pfb"    ## Python syntax
 
 *string* **Geom.\ *geom_name*.Saturation.SRes.Filename** no default This
 key specifies a pfb filename containing the SRes parameters for the
@@ -2779,7 +2796,10 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
    ::
 
-      pfset Geom.domain.Saturation.SRes.Filename   SRess.pfb
+      pfset Geom.domain.Saturation.SRes.Filename   "SRess.pfb"          ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.SRes.Filename = "SRess.pfb"      ## Python syntax
+
 
 *string* **Geom.\ *geom_name*.Saturation.SSat.Filename** no default This
 key specifies a pfb filename containing the SSat parameters for the
@@ -2790,7 +2810,10 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
    ::
 
-      pfset Geom.domain.Saturation.SSat.Filename   SSats.pfb
+      pfset Geom.domain.Saturation.SSat.Filename   "SSats.pfb"       ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.SSat.Filename = "SSats.pfb"   ## Python syntax
+
 
 *double* **Geom.\ *geom_name*.Saturation.Alpha** no default This key
 specifies the :math:`\alpha` parameter for the Van Genuchten function
@@ -2800,7 +2823,9 @@ specified on *geom_name*.
 
    ::
 
-      pfset Geom.domain.Saturation.Alpha  0.005
+      pfset Geom.domain.Saturation.Alpha  0.005          ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.Alpha = 0.005     ## Python syntax
 
 *double* **Geom.\ *geom_name*.Saturation.N** no default This key
 specifies the :math:`N` parameter for the Van Genuchten function
@@ -2810,7 +2835,9 @@ specified on *geom_name*.
 
    ::
 
-      pfset Geom.domain.Saturation.N   2.0
+      pfset Geom.domain.Saturation.N   2.0         ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.N = 2.0     ## Python syntax
 
 Note that if both a Van Genuchten saturation and relative permeability
 are specified, then the soil parameters should be the same for each in
@@ -2823,7 +2850,9 @@ specifies the residual saturation on *geom_name*.
 
    ::
 
-      pfset Geom.domain.Saturation.SRes   0.0
+      pfset Geom.domain.Saturation.SRes   0.0         ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.SRes = 0.0     ## Python syntax
 
 *double* **Geom.\ *geom_name*.Saturation.SSat** no default This key
 specifies the saturation at saturated conditions on *geom_name*.
@@ -2832,7 +2861,9 @@ specifies the saturation at saturated conditions on *geom_name*.
 
    ::
 
-      pfset Geom.domain.Saturation.SSat   1.0
+      pfset Geom.domain.Saturation.SSat   1.0         ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.SSat = 1.0     ## Python syntax
 
 *double* **Geom.\ *geom_name*.Saturation.A** no default This key
 specifies the :math:`A` parameter for the Haverkamp saturation on
@@ -2842,7 +2873,9 @@ specifies the :math:`A` parameter for the Haverkamp saturation on
 
    ::
 
-      pfset Geom.domain.Saturation.A   1.0
+      pfset Geom.domain.Saturation.A   1.0         ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.A = 1.0     ## Python syntax
 
 *double* **Geom.\ *geom_name*.Saturation.Gamma** no default This key
 specifies the the :math:`\gamma` parameter for the Haverkamp saturation
@@ -2852,7 +2885,9 @@ on *geom_name*.
 
    ::
 
-      pfset Geom.domain.Saturation.Gamma   1.0
+      pfset Geom.domain.Saturation.Gamma   1.0        ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.Gamma = 1.0    ## Python syntax
 
 *integer* **Geom.\ *geom_name*.Saturation.Degree** no default This key
 specifies the degree of the polynomial for the Polynomial saturation
@@ -2862,7 +2897,9 @@ given on *geom_name*.
 
    ::
 
-      pfset Geom.domain.Saturation.Degree   1
+      pfset Geom.domain.Saturation.Degree   1      ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.Degree = 1  ## Python syntax
 
 *double* **Geom.\ *geom_name*.Saturation.Coeff.\ *coeff_number*** no
 default This key specifies the *coeff_number*\ th coefficient of the
@@ -2872,8 +2909,14 @@ Polynomial saturation given on *geom_name*.
 
    ::
 
+      ## TCL syntax
       pfset Geom.domain.Saturation.Coeff.0   0.5
       pfset Geom.domain.Saturation.Coeff.1   1.0
+
+      ## Python syntax
+      <runname>.Geom.domain.Saturation.Coeff.0 = 0.5
+      <runname>.Geom.domain.Saturation.Coeff.1 = 1.0
+
 
 *string* **Geom.\ *geom_name*.Saturation.FileName** no default This key
 specifies the name of the file containing saturation values for the
@@ -2883,7 +2926,10 @@ domain. It is assumed that *geom_name* is “domain” for this key.
 
    ::
 
-      pfset Geom.domain.Saturation.FileName  "domain_sats.pfb"
+      pfset Geom.domain.Saturation.FileName  "domain_sats.pfb"       ## TCL syntax
+
+      <runname>.Geom.domain.Saturation.FileName = "domain_sats.pfb"  ## Python syntax
+
 
 .. _Internal Boundary Conditions:
 
@@ -2910,7 +2956,9 @@ file and grid.
 
    ::
 
-      pfset InternalBC.Names   "fixedvalue"
+      pfset InternalBC.Names   "fixedvalue"        ## TCL syntax
+
+      <runname>.InternalBC.Names = "fixedvalue"    ## Python syntax
 
 *double* **InternalBC.\ *internal_bc_name*.X** no default This key
 specifies the x-coordinate, :math:`{\rm x}`, of the named,
@@ -2920,7 +2968,9 @@ specifies the x-coordinate, :math:`{\rm x}`, of the named,
 
    ::
 
-      pfset InternalBC.fixedheadvalue.X   40.0
+      pfset InternalBC.fixedheadvalue.X   40.0        ## TCL syntax
+
+      <runname>.InternalBC.fixedheadvalue.X = 40.0    ## Python syntax
 
 *double* **InternalBC.\ *internal_bc_name*.Y** no default This key
 specifies the y-coordinate, :math:`{\rm y}`, of the named,
@@ -2930,7 +2980,9 @@ specifies the y-coordinate, :math:`{\rm y}`, of the named,
 
    ::
 
-      pfset InternalBC.fixedheadvalue.Y   65.2
+      pfset InternalBC.fixedheadvalue.Y   65.2        ## TCL syntax
+
+      <runname>.InternalBC.fixedheadvalue.Y = 65.2    ## Python syntax
 
 *double* **InternalBC.\ *internal_bc_name*.Z** no default This key
 specifies the z-coordinate, :math:`{\rm z}`, of the named,
@@ -2940,7 +2992,9 @@ specifies the z-coordinate, :math:`{\rm z}`, of the named,
 
    ::
 
-      pfset InternalBC.fixedheadvalue.Z   12.1
+      pfset InternalBC.fixedheadvalue.Z   12.1        ## TCL syntax
+
+      <runname>.InternalBC.fixedheadvalue.Z = 12.1    ## Python syntax
 
 *double* **InternalBC.\ *internal_bc_name*.Value** no default This key
 specifies the value of the named, *internal_bc_name*, condition.
@@ -2949,7 +3003,9 @@ specifies the value of the named, *internal_bc_name*, condition.
 
    ::
 
-      pfset InternalBC.fixedheadvalue.Value   100.0
+      pfset InternalBC.fixedheadvalue.Value   100.0         ## TCL syntax
+
+      <runname>.InternalBC.fixedheadvalue.Value = 100.0     ## Python syntax
 
 .. _`Boundary Conditions: Pressure`:
 
@@ -3050,7 +3106,7 @@ domains.
 
    ::
 
-      pfset Patch.top.BCPressure.RefGeom   domain
+      pfset Patch.top.BCPressure.RefGeom   "domain"
 
 *string* **Patch.\ *patch_name*.BCPressure.RefPatch** no default This
 key specifies the reference patch on which the **DirEquilRefPatch**
@@ -3061,7 +3117,7 @@ solid specified by the Patch.\ *patch_name*.BCPressure.RefGeom key.
 
    ::
 
-      pfset Patch.top.BCPressure.RefPatch    bottom
+      pfset Patch.top.BCPressure.RefPatch    "bottom"
 
 *double* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.Value** no
 default This key specifies the reference pressure value for the
@@ -3179,7 +3235,7 @@ be used. The rest of the data is ignored.
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.FileName   ocwd_bc.pfb
+      pfset Patch.top.BCPressure.alltime.FileName   "ocwd_bc.pfb"
 
 *string*
 **Patch.\ *patch_name*.BCPressure.\ *interval_name*.PredefinedFunction**
@@ -3195,7 +3251,7 @@ X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and
 
    ::
 
-      pfset Patch.top.BCPressure.alltime.PredefinedFunction  XPlusYPlusZ
+      pfset Patch.top.BCPressure.alltime.PredefinedFunction  "XPlusYPlusZ"
 
 The choices for this key correspond to pressures as follows.
 
@@ -3232,20 +3288,20 @@ Example Script:
       # If your RefPatch is z-lower (bottom of domain), the pressure is positive.
       # If your RefPatch is z-upper (top of domain), the pressure is negative.
       ### Set water table to be at the bottom of the domain, the top layer is initially dry
-      pfset ICPressure.Type				HydroStaticPatch
-      pfset ICPressure.GeomNames		domain
-      pfset Geom.domain.ICPressure.Value	2.2
+      pfset ICPressure.Type				      "HydroStaticPatch"
+      pfset ICPressure.GeomNames		         "domain"
+      pfset Geom.domain.ICPressure.Value	   2.2
 
-      pfset Geom.domain.ICPressure.RefGeom	domain
+      pfset Geom.domain.ICPressure.RefGeom	"domain"
       pfset Geom.domain.ICPressure.RefPatch	z-lower
 
       ### Using a .pfb to initialize
-      pfset ICPressure.Type                                   PFBFile
-      pfset ICPressure.GeomNames		 "domain"
-      pfset Geom.domain.ICPressure.FileName	press.00090.pfb
+      pfset ICPressure.Type                  "PFBFile"
+      pfset ICPressure.GeomNames		         "domain"
+      pfset Geom.domain.ICPressure.FileName	"press.00090.pfb"
 
-      pfset Geom.domain.ICPressure.RefGeom	domain
-      pfset Geom.domain.ICPressure.RefPatch	z-upper
+      pfset Geom.domain.ICPressure.RefGeom	"domain"
+      pfset Geom.domain.ICPressure.RefPatch	"z-upper"
 
 .. _`Boundary Conditions: Saturation`:
 
@@ -3289,7 +3345,7 @@ are running a 2-phase problem where phase 0 is the water phase.
 
    ::
 
-      pfset Patch.left.BCSaturation.water.Type  ConstantWTHeight
+      pfset Patch.left.BCSaturation.water.Type  "ConstantWTHeight"
 
 *double* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.Value** no
 default This key specifies either the constant saturation value if
@@ -3460,7 +3516,7 @@ file.
 
    ::
 
-      pfset ICPressure.Type   Constant
+      pfset ICPressure.Type   "Constant"
 
 *list* **ICPressure.GeomNames** no default This key specifies the
 geometry names on which the initial pressure data will be given. These
@@ -3503,7 +3559,7 @@ specifies the geometry on which the reference patch resides for type
 
    ::
 
-      pfset Geom.toplayer.ICPressure.RefGeom   bottomlayer
+      pfset Geom.toplayer.ICPressure.RefGeom   "bottomlayer"
 
 *double* **Geom.\ *geom_name*.ICPressure.RefPatch** no default This key
 specifies the patch on which the reference pressure is given for type
@@ -3513,7 +3569,7 @@ specifies the patch on which the reference pressure is given for type
 
    ::
 
-      pfset Geom.toplayer.ICPressure.RefPatch   bottom
+      pfset Geom.toplayer.ICPressure.RefPatch   "bottom"
 
 *string* **Geom.\ *geom_name*.ICPressure.FileName** no default This key
 specifies the name of the file containing pressure values for the
@@ -3546,7 +3602,7 @@ read values from a “ParFlow Binary” file (see
 
    ::
 
-      PhaseConcen.water.tce.Type Constant
+      PhaseConcen.water.tce.Type "Constant"
 
 *string* **PhaseConcen.\ *phase_name*.GeomNames** no default This key
 specifies the geometries on which an initial condition will be given, if
@@ -3604,7 +3660,7 @@ X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1** and
 
    ::
 
-      pfset KnownSolution  XPlusYPlusZ
+      pfset KnownSolution  "XPlusYPlusZ"
 
 Choices for this key correspond to solutions as follows.
 
@@ -3681,7 +3737,7 @@ as the extraction well will provide these values to the injection well.
 
    ::
 
-      Wells.test_well.InputType Vertical
+      Wells.test_well.InputType "Vertical"
 
 *string* **Wells.\ *well_name*.Action** no default This key specifies
 the pumping action of the well. This key can be either **Injection** or
@@ -3693,7 +3749,7 @@ extraction well.
 
    ::
 
-      Wells.test_well.Action Injection
+      Wells.test_well.Action "Injection"
 
 *double* **Wells.\ *well_name*.Type** no default This key specfies the
 mechanism by which the well works (how ParFlow works with the well data)
@@ -3710,7 +3766,7 @@ condition in the computational cells which define the well.
 
    ::
 
-      Wells.test_well.Type Flux
+      Wells.test_well.Type "Flux"
 
 *string* **Wells.\ *well_name*.ExtractionType** no default This key
 specfies the mechanism by which the extraction well works (how ParFlow
@@ -3728,7 +3784,7 @@ well.
 
    ::
 
-      Wells.ext_well.ExtractionType Pressure
+      Wells.ext_well.ExtractionType "Pressure"
 
 *string* **Wells.\ *well_name*.InjectionType** no default This key
 specfies the mechanism by which the injection well works (how ParFlow
@@ -3746,7 +3802,7 @@ well.
 
    ::
 
-      Wells.inj_well.InjectionType Flux
+      Wells.inj_well.InjectionType "Flux"
 
 *double* **Wells.\ *well_name*.X** no default This key specifies the x
 location of the vectical well if the input type is set to **Vectical**
@@ -3845,7 +3901,7 @@ of all cell permeabilities which define the well. The value of
 
    ::
 
-      Wells.test_well.Method Weighted
+      Wells.test_well.Method "Weighted"
 
 *string* **Wells.\ *well_name*.ExtractionMethod** no default This key
 specifies a method by which pressure or flux for an extraction well will
@@ -3862,7 +3918,7 @@ of all cell permeabilities which define the well. The value of
 
    ::
 
-      Wells.ext_well.ExtractionMethod Standard
+      Wells.ext_well.ExtractionMethod "Standard"
 
 *string* **Wells.\ *well_name*.InjectionMethod** no default This key
 specifies a method by which pressure or flux for an injection well will
@@ -3879,7 +3935,7 @@ of all cell permeabilities which define the well. The value of
 
    ::
 
-      Wells.inj_well.InjectionMethod Standard
+      Wells.inj_well.InjectionMethod "Standard"
 
 *string* **Wells.\ *well_name*.Cycle** no default This key specifies the
 time cycles to which data for the well *well_name* corresponds.
@@ -4044,7 +4100,7 @@ The choice **CGHS** is a conjugate gradient solver.
 
    ::
 
-      pfset Solver.Linear   MGSemi
+      pfset Solver.Linear   "MGSemi"
 
 *integer* **Solver.SadvectOrder** 2 This key controls the order of the
 explicit method used in advancing the saturations. This value can be
@@ -4396,7 +4452,7 @@ consistent with **OverlandFow**
 
 ::
 
-   pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   Upwind
+   pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   "Upwind"
 
 
 .. _SILO Options:
@@ -4417,7 +4473,7 @@ configured SILO with HDF5 in order to use that option.
 
    ::
 
-      pfset SILO.Filetype  PDB
+      pfset SILO.Filetype  "PDB"
 
 *string* **SILO.CompressionOptions** This key is used to specify the
 SILO compression options. See the SILO manual for the DB_SetCompression
@@ -4532,7 +4588,7 @@ statistics.
 
    ::
 
-      pfset Solver.Nonlinear.PrintFlag   NormalVerbosity
+      pfset Solver.Nonlinear.PrintFlag   "NormalVerbosity"
 
 *string* **Solver.Nonlinear.EtaChoice** Walker2 This key specifies how
 the linear system tolerance will be selected. The linear system is
@@ -4552,7 +4608,7 @@ last two choices, :math:`\eta` is never allowed to be less than 1e-4.
 
    ::
 
-      pfset Solver.Nonlinear.EtaChoice   EtaConstant
+      pfset Solver.Nonlinear.EtaChoice   "EtaConstant"
 
 *double* **Solver.Nonlinear.EtaValue** 1e-4 This key specifies the
 constant value of :math:`\eta` for the EtaChoice key **EtaConstant**.
@@ -4617,7 +4673,7 @@ certain criteria.
 
    ::
 
-      pfset Solver.Nonlinear.Globalization   LineSearch
+      pfset Solver.Nonlinear.Globalization   "LineSearch"
 
 *string* **Solver.Linear.Preconditioner** MGSemi This key specifies
 which preconditioner to use. Currently, the three choices are **NoPC,
@@ -4634,7 +4690,7 @@ numbers of inactive cells.
 
    ::
 
-      pfset Solver.Linear.Preconditioner   MGSemi
+      pfset Solver.Linear.Preconditioner   "MGSemi"
 
 *string* **Solver.Linear.Preconditioner.SymmetricMat** Symmetric This
 key specifies whether the preconditioning matrix is symmetric. Choices
@@ -4649,7 +4705,7 @@ PRECONDITIONER!
 
    ::
 
-      pfset Solver.Linear.Preconditioner.SymmetricMat     Symmetric
+      pfset Solver.Linear.Preconditioner.SymmetricMat     "Symmetric"
 
 *integer* **Solver.Linear.Preconditioner.\ *precond_method*.MaxIter** 1
 This key specifies the maximum number of iterations to take in solving
@@ -4691,7 +4747,7 @@ are **Galerkin** or **NonGalerkin**
 
    ::
 
-      pfset Solver.Linear.Preconditioner.PFMG.RAPType    Galerkin
+      pfset Solver.Linear.Preconditioner.PFMG.RAPType    "Galerkin"
 
 *logical* **Solver.EvapTransFile** False This key specifies specifies
 that the Flux terms for Richards’ equation are read in from a ``.pfb`` 
@@ -4728,7 +4784,7 @@ ParFlow will load one file per timestep, with the form ``filename.00000.pfb``.
 
    ::
 
-      pfset Solver.EvapTrans.FileName   evap.trans.test.pfb
+      pfset Solver.EvapTrans.FileName   "evap.trans.test.pfb"
 
 *string* **Solver.LSM** none This key specifies whether a land surface
 model, such as ``CLM``, will be called each solver timestep. Choices 
@@ -4739,7 +4795,7 @@ and linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.LSM CLM
+      pfset Solver.LSM "CLM"
 
 .. _Spinup Options:
 
@@ -4833,7 +4889,7 @@ and linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.CLM.MetForcing   2D       
+      pfset Solver.CLM.MetForcing   "2D"       
 
 *String* **Solver.CLM.MetFileName** no default This key specifies
 defines the file name for 1D, 2D or 3D forcing data. 1D meteorological
@@ -4883,7 +4939,7 @@ Note that ``CLM`` must be compiled and linked at runtime for this option to be a
 
    ::
 
-      pfset Solver.CLM.MetFileName                             narr.1hr.txt
+      pfset Solver.CLM.MetFileName     "narr.1hr.txt"
 
 *String* **Solver.CLM.MetFilePath** no default This key specifies
 defines the location of 1D, 2D or 3D forcing data. For 1D cases, this is
@@ -5132,7 +5188,7 @@ be compiled and linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.CLM.EvapBeta Linear
+      pfset Solver.CLM.EvapBeta "Linear"
 
 *double* **Solver.CLM.ResSat** 0.1 This key specifies the residual
 saturation for the :math:`\beta` function in ``CLM`` specified above. 
@@ -5169,7 +5225,7 @@ linked at runtime for this option to be active.
 
    ::
 
-      pfset Solver.CLM.VegWaterStress  Pressure
+      pfset Solver.CLM.VegWaterStress  "Pressure"
 
 *double* **Solver.CLM.WiltingPoint** 0.1 This key specifies the wilting
 point for the :math:`\beta_t` function in ``CLM`` specified above. Note 
@@ -5205,7 +5261,7 @@ of the irrigation in ``CLM``. The valid types for this key are **none**,
 
    ::
 
-      pfset Solver.CLM.IrrigationTypes Drip
+      pfset Solver.CLM.IrrigationTypes "Drip"
 
 *string* **Solver.CLM.IrrigationCycle** Constant This key specifies the
 cycle of the irrigation in ``CLM``. The valid types for this key are 
@@ -5217,7 +5273,7 @@ IrrigationStopTime in GMT.
 
    ::
 
-      pfset Solver.CLM.IrrigationCycle Constant
+      pfset Solver.CLM.IrrigationCycle "Constant"
 
 *double* **Solver.CLM.IrrigationRate** no default This key specifies the
 rate of the irrigation in ``CLM`` in :math:`[mm/s]`.
@@ -5593,7 +5649,7 @@ present and readable in experiment directory.
 
    ::
 
-      pfset NetCDF.ROMIOhints    romio.hints
+      pfset NetCDF.ROMIOhints    "romio.hints"
 
 An example ROMIO hints file looks as follows.
 
@@ -5672,7 +5728,7 @@ conditions to be read from a NetCDF file.
 
    ::
 
-      pfset ICPressure.Type   NCFile
+      pfset ICPressure.Type   "NCFile"
       pfset Geom.domain.ICPressure.FileName   "initial_condition.nc"
 
 NetCDF4 Slopes
@@ -5721,7 +5777,7 @@ in x direction to be read from a NetCDF file.
 
    ::
 
-      pfset TopoSlopesX.Type   NCFile
+      pfset TopoSlopesX.Type   "NCFile"
       pfset TopoSlopesX.FileName   "slopex.nc"
 
 *string* **TopoSlopesY.Type** no default This key sets flag for slopes
@@ -5731,7 +5787,7 @@ in y direction to be read from a NetCDF file.
 
    ::
 
-      pfset TopoSlopesY.Type   NCFile
+      pfset TopoSlopesY.Type   "NCFile"
       pfset TopoSlopesy.FileName   "slopey.nc"
 
 NetCDF4 Transient EvapTrans Forcing
@@ -5884,7 +5940,7 @@ meteorological forcing to be read from NetCDF file.
 
    ::
 
-      pfset Solver.CLM.MetForcing     NC
+      pfset Solver.CLM.MetForcing     "NC"
 
 Set the name of the input/forcing file as follows.
 
