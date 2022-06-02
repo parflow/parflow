@@ -23,35 +23,35 @@ First, we'll show some usage examples of loading tables of parameters within a P
 
 .. code-block:: python3
 
-    from parflow import Run
-    from parflow.tools.builders import SubsurfacePropertiesBuilder
+  from parflow import Run
+  from parflow.tools.builders import SubsurfacePropertiesBuilder
 
-    table_test = Run("table_test", __file__)
+  table_test = Run("table_test", __file__)
 
-    table_test.GeomInput.Names = 'box_input indi_input'
-    table_test.GeomInput.indi_input.InputType = 'IndicatorField'
-    table_test.GeomInput.indi_input.GeomNames = 's1 s2 s3 s4 g1 g2 g3 g4'
+  table_test.GeomInput.Names = 'box_input indi_input'
+  table_test.GeomInput.indi_input.InputType = 'IndicatorField'
+  table_test.GeomInput.indi_input.GeomNames = 's1 s2 s3 s4 g1 g2 g3 g4'
 
-    # First example: table as in-line text
-    soil_properties = '''
-    # ----------------------------------------------------------------
-    # Sample header
-    # ----------------------------------------------------------------
-    key     Perm   Porosity   RelPermAlpha  RelPermN  SatAlpha  SatN    SatSRes    SatSSat
+  # First example: table as in-line text
+  soil_properties = '''
+  # ----------------------------------------------------------------
+  # Sample header
+  # ----------------------------------------------------------------
+  key     Perm   Porosity   RelPermAlpha  RelPermN  SatAlpha  SatN    SatSRes    SatSSat
 
-    s1      0.26   0.375      3.548         4.162     3.548     4.162   0.000001   1
-    s2      0.04   -          3.467         2.738     -         2.738   0.000001   1
-    s3      0.01   0.387      2.692         2.445     2.692     2.445   0.000001   1
-    s4      0.01   0.439      -             2.659     0.501     2.659   0.000001   1
-    '''
+  s1      0.26   0.375      3.548         4.162     3.548     4.162   0.000001   1
+  s2      0.04   -          3.467         2.738     -         2.738   0.000001   1
+  s3      0.01   0.387      2.692         2.445     2.692     2.445   0.000001   1
+  s4      0.01   0.439      -             2.659     0.501     2.659   0.000001   1
+  '''
 
-    # Creating object and assigning the subsurface properties
-    SubsurfacePropertiesBuilder(table_test) \
-      .load_txt_content(soil_properties) \              # loading the in-line text
-      .load_csv_file('geologic_properties_123.csv') \   # loading external csv file
-      .assign('g3', 'g4') \                             # assigns properties of unit 'g3' to unit 'g4'
-      .apply() \                                        # setting keys based on loaded properties
-      .print_as_table()                                 # printing table of loaded properties
+  # Creating object and assigning the subsurface properties
+  SubsurfacePropertiesBuilder(table_test) \
+    .load_txt_content(soil_properties) \              # loading the in-line text
+    .load_csv_file('geologic_properties_123.csv') \   # loading external csv file
+    .assign('g3', 'g4') \                             # assigns properties of unit 'g3' to unit 'g4'
+    .apply() \                                        # setting keys based on loaded properties
+    .print_as_table()                                 # printing table of loaded properties
 
 At the top of the script, we import the ``SubsurfacePropertiesBuilder`` class from ``parflow.tools.builders``. Then,
 after specifying the ``GeomInput.indi_input.GeomNames``, we include a table for the soil properties as an in-line text variable.
