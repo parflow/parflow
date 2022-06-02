@@ -18,13 +18,13 @@ ParFlow v3.5.0: capabilities, applications, and ongoing development of
 an open-source, massively parallel, integrated hydrologic
 model](https://www.geosci-model-dev.net/13/1373/2020/gmd-13-1373-2020.pdf).
 
-The Parflow User Manual is available at [Parflow Users
-Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf).
-The manual contains additional documentation on how to use ParFlow and
-setup input files.  A quick start is included below.
-
-A web version of the user manual is also available on 
-[Read the Docs](https://parflow.readthedocs.io/en/latest/index.html).
+An online version of the users manual is available on [Read the
+Docks:Parflow Users
+Manual](https://parflow.readthedocs.io/en/latest/index.html).  The
+manual contains additional documentation on how to use ParFlow and
+setup input files.  A quick start is included below.  A PDF version is
+available at [Parflow Users
+Manual PDF](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
 
 ### Citing Parflow
 
@@ -245,26 +245,49 @@ or by starting a parallel interactive session.
 
 ### User Manual
 
-A version of the user manual is available at GitHub: [Parflow Users Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
+An online version of the user manual is also available on [Read the
+Docks:Parflow Users
+Manual](https://parflow.readthedocs.io/en/latest/index.html), a PDF
+version is available at [Parflow Users
+Manual PDF](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
 
-A web version of the user manual is also available on [Read the Docs](https://parflow.readthedocs.io/en/latest/index.html)
+#### Generating the user manaul in HTML
 
-The user manual for Parflow may be built as part of the build when
-Latex is available on the system. Adding the
--DPARFLOW_ENABLE_LATEX=TRUE option to the CMake configure will enable
-building of the documentation.
+An HTML version of the user manual for Parflow may be built using:
 
 ```shell
-   mkdir build
-   cd build
-   cmake ../parflow \
-        <other cmake options> \
-	-DPARFLOW_ENABLE_LATEX=TRUE \
-	-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+cd docs/user_manual
+pip install -r requirements.txt
+
+make html
 ```
 
-When make is run the documenation will be built and installed in
-${INSTALL_DIR}/docs/user_manual.pdf.
+The main HTML page created at _build/html/index.html.   Open this using 
+a browser.  On MacOS:
+
+```shell
+open _build/html/index.html
+```
+
+or a browser if on Linux:
+
+```shell
+firefox _build/html/index.html
+```
+
+#### Generating the user manaul in PDF
+
+An HTML version of the user manual for Parflow may be built using:
+
+```shell
+cd docs/user_manual
+pip install -r requirements.txt
+
+make latexpdf
+```
+
+This command is currently failing for a number of users, possibly due
+to old LaTex installs.  We are currently investigating.
 
 ### Code documentation
 
@@ -295,7 +318,11 @@ HTML pages are generated in the build/docs/doxygen/html directory.
       -D PARFLOW_PYTHON_VIRTUAL_ENV=ON
 
     cd ./build-docker && make ParFlowKeyDoc
+```
 
+On MacOS the key documenation may be viewed with `open` or use a browser to open the index.html file:
+
+```
     open ./build-docker/docs/user_manual/build-site/index.html
 ```	
 
