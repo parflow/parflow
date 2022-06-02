@@ -18,12 +18,13 @@ ParFlow v3.5.0: capabilities, applications, and ongoing development of
 an open-source, massively parallel, integrated hydrologic
 model](https://www.geosci-model-dev.net/13/1373/2020/gmd-13-1373-2020.pdf).
 
-An online version of the Parflow User Manual is also available on
-[Read the Docs](https://parflow.readthedocs.io/en/latest/index.html).
-The manual contains additional documentation on how to use ParFlow and
-setup input files.  A quick start is included below.
-
-A PDF version is also available at [Parflow Users Manual](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
+An online version of the users manual is available on [Read the
+Docks:Parflow Users
+Manual](https://parflow.readthedocs.io/en/latest/index.html).  The
+manual contains additional documentation on how to use ParFlow and
+setup input files.  A quick start is included below.  A PDF version is
+available at [Parflow Users
+Manual PDF](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
 
 ### Citing Parflow
 
@@ -245,10 +246,10 @@ or by starting a parallel interactive session.
 ### User Manual
 
 An online version of the user manual is also available on [Read the
-Docs](https://parflow.readthedocs.io/en/latest/index.html), a PDF
+Docks:Parflow Users
+Manual](https://parflow.readthedocs.io/en/latest/index.html), a PDF
 version is available at [Parflow Users
-Manual](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
-
+Manual PDF](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
 
 #### Generating the user manaul in HTML
 
