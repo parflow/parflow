@@ -109,11 +109,12 @@ Full API
 ================================================================================
 
 1. ``read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True)``
-    Read a single pfb file, and return the data therein
+    Read a single pfb file, and return the data therein.
+    
     :param ``file``: The file to read.
     :param ``keys``: A set of keys for indexing subarrays of the full pfb. Optional. This is mainly a trick for interfacing with 
         xarray, but the format of the keys is:
-        
+
         ::
 
             {'x': {'start': start_x, 'stop': end_x},
