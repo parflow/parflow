@@ -109,31 +109,19 @@ Full API
 ================================================================================
 
 1. ``read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True)``
-    Write a single pfb file. The data must be a 3D numpy array with ``float64``
-    values. The number of subgrids in the saved file will be ``p`` * ``q`` * ``r``. This
-    is regardless of the number of subgrids in the PFB file loaded by the
-    ParflowBinaryReader into the numpy array. Therefore, loading a file with
-    ParflowBinaryReader and saving it with this method may restructure the
-    file into a different number of subgrids if you change these values.
-    
-    If dist is True then also write a file with the .dist extension added to
-    the file_name. The ``.dist`` file will contain one line per subgrid with the
-    offset of the subgrid in the ``.pfb`` file.
+    Read a single pfb file, and return the data therein
+    :param ``file``: The file to read.
+    :param ``keys``: A set of keys for indexing subarrays of the full pfb. Optional. This is mainly a trick for interfacing with 
+        xarray, but the format of the keys is:
+        
+        ::
 
-    :param ``file``: The name of the file to write the array to.
-    :param ``array``: The array to write.
-    :param ``p``: Number of subgrids in the x direction.
-    :param ``q``: Number of subgrids in the y direction.
-    :param ``r``: Number of subgrids in the z direction.
-    :param ``x``: The length of the x-axis
-    :param ``y``: The length of the y-axis
-    :param ``z``: The length of the z-axis
-    :param ``dx``: The spacing between cells in the x direction
-    :param ``dy``: The spacing between cells in the y direction
-    :param ``dz``: The spacing between cells in the z direction
-    :param ``z_first``: Whether the z-axis should be first or last.
-    :param ``dist``: Whether to write the distfile in addition to the pfb.
-    :param ``kwargs``: Extra keyword arguments, primarily to eat unnecessary args by passing in a dictionary with ``**dict``.
+            {'x': {'start': start_x, 'stop': end_x},
+            'y': {'start': start_y, 'stop': end_y},
+            'z': {'start': start_z, 'stop': end_z}}
+
+    :param ``mode``: The mode for the reader. See ``ParflowBinaryReader::read_all_subgrids`` for more information about what modes are available.
+    :return: An ``ndarray`` containing the data from the pfb file.
 
 2. ``write_pfb(file, array, p=1, q=1, r=1, x=0.0, y=0.0, z=0.0, dx=1.0, dy=1.0, dz=1.0, z_first=True, dist=True, **kwargs)``
     Write a single pfb file. The data must be a 3D numpy array with ``float64``
