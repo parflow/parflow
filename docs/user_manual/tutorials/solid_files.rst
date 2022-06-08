@@ -67,41 +67,127 @@ Next, we'll show some examples of the ``SolidFileBuilder`` class to demonstrate 
 Full API: IO tools (from ``parflow.tools.io``)
 ================================================================================
 
-1. ``load_patch_matrix_from_pfb_file(file_name, layer=None)`` - reads in a 2D or 3D ParFlow binary (PFB) file ``file_name`` and converts it to a patch matrix. If it is a 3D PFB file, the user can specify a vertical layer of the file to convert to the matrix. If no layer is specified, the function will use the top layer of the file.
+1. ``load_patch_matrix_from_pfb_file(file_name, layer=None)``
+    Reads in a 2D or 3D ParFlow binary (PFB) file and converts it to a patch matrix.     
 
-2. ``load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_id=0)`` - reads in an image file ``file_name`` and converts it to a patch matrix. The ``color_to_patch`` argument is a dictionary with hexidecimal colors as keys with their corresponding ID numbers as values. See *$PARFLOW_SOURCE/test/python/pfsol/image-as-mask/image-as-mask.py* for an example. If ``color_to_patch`` is not provided, it will default to assume that everything in white is not part of the mask and everything else is part of the mask. The ``fall_back_id`` is the ID number for colors that are found in the image but are not specified in the ``color_to_patch`` dictionary. Its default value is zero.
+    :param ``file_name``: Path to PFB file.
+    :param ``layer``: If 3D PFB file, ``layer`` corresponds to a vertical layer of the file to convert to the matrix.
+        If no layer is specified, the function will use the top layer of the file.
+    :return: An ``ndarray`` containing patch matrix data.
 
-3. ``load_patch_matrix_from_asc_file(file_name)`` - reads in an ASCII file ``file_name`` and converts it to a patch matrix.
+2. ``load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_id=0)``
+    Reads in an image file ``file_name`` and converts it to a patch matrix. 
+    
+    :param ``file_name``: Path to image file.
+    :param ``color_to_patch``: A dictionary with hexidecimal colors as keys with their corresponding ID numbers as values. 
+        See *$PARFLOW_SOURCE/test/python/pfsol/image-as-mask/image-as-mask.py* for an example. If ``color_to_patch`` is not 
+        provided, it will default to assume that everything in white is not part of the mask and everything else is part of the mask. 
+    :param ``fall_back_id``: The ID number for colors that are found in the image but are not specified in the ``color_to_patch`` 
+        dictionary. Its default value is zero.
+    :return: An ``ndarray`` containing patch matrix data.
 
-4. ``load_patch_matrix_from_sa_file(file_name)`` - reads in a simple ASCII file ``file_name`` and converts it to a patch matrix.
+3. ``load_patch_matrix_from_asc_file(file_name)``
+    Reads in an ASCII file and converts it to a patch matrix.
 
-5. ``write_patch_matrix_as_asc(matrix, file_name, xllcorner=0.0, yllcorner=0.0, cellsize=1.0, NODATA_value=0)`` - writes an ASCII file to ``file_name`` from the patch matrix ``matrix``. The arguments ``xllcorner``, ``yllcorner``, ``cellsize``, and ``NODATA_value`` are necessary for the header of the ASCII file.
+    :param ``file_name``: Path to ASCII file.
+    :return: An ``ndarray`` containing patch matrix data.
 
-6. ``write_patch_matrix_as_sa(matrix, file_name)`` - writes a simple ASCII file to ``file_name`` from the patch matrix ``matrix``.
+4. ``load_patch_matrix_from_sa_file(file_name)``
+    Reads in a simple ASCII file ``file_name`` and converts it to a patch matrix.
+
+    :param ``file_name``: Path to simple ASCII file.
+    :return: An ``ndarray`` containing patch matrix data.
+
+5. ``write_patch_matrix_as_asc(matrix, file_name, xllcorner=0.0, yllcorner=0.0, cellsize=1.0, NODATA_value=0)``
+    Writes a patch matrix to an ASCII file. 
+    
+    :param ``matrix``: Patch matrix that you want to write out.
+    :param ``file_name``: Filename to write the patch matrix to. 
+    :param ``xllcorner``: X-coordinate of the origin (by lower left corner of the cell). 
+        Written to the header of the ASCII file.
+    :param ``yllcorner``: Y-coordinate of the origin (by lower left corner of the cell). 
+        Written to the header of the ASCII file.
+    :param ``cellsize``: Cell size. Written to the header of the ASCII file.
+    :param ``NODATA_value``: The input values to be NoData in the output raster. Written to the header of the ASCII file.
+
+6. ``write_patch_matrix_as_sa(matrix, file_name)``
+    Writes a patch matrix to a simple ASCII file.
+
+    :param ``matrix``: Patch matrix that you want to write out.
+    :param ``file_name``: Filename to write the patch matrix to. 
 
 ================================================================================
 Full API: SolidFileBuilder
 ================================================================================
 
-1. ``SolidFileBuilder(top=1, bottom=2, side=3)`` - initializes a SolidFileBuilder object with default values for the top, bottom, and sides of a domain, respectively.
+1. ``SolidFileBuilder(top=1, bottom=2, side=3)``
+    Initializes a ``SolidFileBuilder`` object with default values for the top, bottom, and sides of a domain, respectively.
 
-2. ``mask(mask_array)`` - applies the matrix array ``mask_array`` to the SolidFileBuilder object.
+    :param ``top``: ID of the top patch of the domain.
+    :param ``bottom``: ID of the bottom patch of the domain.
+    :param ``side``: ID of the side patch of the domain.
 
-3. ``write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False, extra=None, generate_asc_files=False)`` - writes the ``SolidFileBuilder`` object data to the *.pfsol* file ``name``. The arguments ``xllcorner``, ``yllcorner``, and ``cellsize=0`` help define the size of the solid file domain. If ``vtk`` is set to ``True``, it will write a VTK file ``name.vtk`` that you can view in ParaView or another VTK viewer to check that the solid file is correct. If there are any extra arguments you want to pass to the ``pfmask-to-pfsol`` converter in Parflow, specify them using the ``extra`` parameter, as a list of strings. When ``generate_asc_files`` is set to ``True``, this method generates .asc files for top/bottom/sides, with filenames ``<name>_top.asc, <name>_bottom.asc, <name>_front.asc, <name>_back.asc, <name>_left.asc, <name>_right.asc``, and calls ``pfmask-to-pfsol`` with individual ``mask-*`` flags with these files.
+2. ``mask(mask_array)``
+    Applies the matrix array ``mask_array`` to the SolidFileBuilder object.
 
-4. ``for_key(self, geomItem)`` - sets two keys on the ``Run`` object passed in as the ``geomItem`` argument: 1) ``geomItem.InputType = 'SolidFile'`` 2) ``geomItem.FileName = 'name.pfsol'``. ``'name.pfsol'`` is implicitly referenced from the ``name`` argument of the ``write`` method.
+    :param ``mask_array``: Array of values to define the mask.
 
-5. ``top(patch_id)`` - sets the ID number of the top of the solid file domain to the integer ``patch_id``. This will override the ``top`` argument passed to the ``SolidFileBuilder`` object.
+3. ``write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False, extra=None, generate_asc_files=False)``
+    Writes the ``SolidFileBuilder`` object data to the *.pfsol* file ``name``. 
+    
+    :param ``name``: Name of the solid file to write.
+    :param ``xllcorner``: X-coordinate of the origin (by lower left corner of the cell). 
+    :param ``yllcorner``: Y-coordinate of the origin (by lower left corner of the cell). 
+    :param ``cellsize=0``: Cell size.
+    :param ``vtk``: If ``vtk`` is set to ``True``, it will write a VTK file ``name.vtk`` that you can view in 
+        ParaView or another VTK viewer to check that the solid file is correct. 
+    :param ``extra``: If there are any extra arguments you want to pass to the ``pfmask-to-pfsol`` converter in Parflow, 
+        specify them using the ``extra`` parameter, as a list of strings. 
+    :param ``generate_asc_files``: When ``generate_asc_files`` is set to ``True``, this method generates .asc files 
+        for top/bottom/sides, with filenames ``<name>_top.asc, <name>_bottom.asc, <name>_front.asc, <name>_back.asc, 
+        <name>_left.asc, <name>_right.asc``, and calls ``pfmask-to-pfsol`` with individual ``mask-*`` flags with these files.
 
-6. ``bottom(patch_id)`` - sets the ID number of the bottom of the solid file domain to the integer ``patch_id``. This will override the ``bottom`` argument passed to the ``SolidFileBuilder`` object.
+4. ``for_key(self, geomItem)``
+    Sets two keys on the ``Run`` object passed in as the ``geomItem`` argument:
+        1) ``geomItem.InputType = 'SolidFile'`` 
+        2) ``geomItem.FileName = 'name.pfsol'``. 
+    
+    ``'name.pfsol'`` is implicitly referenced from the ``name`` argument of the ``write`` method.
 
-7. ``side(patch_id)`` - sets the ID number of the side of the solid file domain to the integer ``patch_id``. This will override the ``side`` argument passed to the ``SolidFileBuilder`` object.
+    :param ``geom_item``: String name of the geometric unit in the ParFlow run that will be used as a token for the ParFlow key.
 
-8. ``top_ids(top_patch_ids)`` - sets the ID numbers of the top of the solid file domain to the values in the numpy array ``top_patch_ids``.
+5. ``top(patch_id)``
+    Sets the ID number of the top of the solid file domain to the integer ``patch_id``. This will override the ``top`` 
+    argument passed to the ``SolidFileBuilder`` object.
 
-9. ``bottom_ids(bottom_patch_ids)`` - sets the ID numbers of the bottom of the solid file domain to the values in the numpy array ``bottom_patch_ids``.
+    :param ``patch_id``: Integer ID of top patch in mask array.
 
-10. ``side_ids(side_patch_ids)`` - sets the ID numbers of the side of the solid file domain to the values in the numpy array ``side_patch_ids``.
+6. ``bottom(patch_id)``
+    Sets the ID number of the bottom of the solid file domain to the integer ``patch_id``. This will override the 
+    ``bottom`` argument passed to the ``SolidFileBuilder`` object.
+
+    :param ``patch_id``: Integer ID of bottom patch in mask array.
+
+7. ``side(patch_id)``
+    Sets the ID number of the side of the solid file domain to the integer ``patch_id``. This will override 
+    the ``side`` argument passed to the ``SolidFileBuilder`` object.
+
+    :param ``patch_id``: Integer ID of side patch in mask array.
+
+8. ``top_ids(top_patch_ids)``
+    Sets the ID numbers of the top of the solid file domain to the values in the numpy array ``top_patch_ids``.
+
+    :param ``top_patch_ids``: Numpy array of top patch IDs.
+
+9. ``bottom_ids(bottom_patch_ids)``
+    Sets the ID numbers of the bottom of the solid file domain to the values in the numpy array ``bottom_patch_ids``.
+
+    :param ``bottom_patch_ids``: Numpy array of bottom patch IDs.
+
+10. ``side_ids(side_patch_ids)``
+    Sets the ID numbers of the side of the solid file domain to the values in the numpy array ``side_patch_ids``.
+
+    :param ``side_patch_ids``: Numpy array of side patch IDs.
 
 ================================================================================
 More examples

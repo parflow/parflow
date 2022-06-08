@@ -189,10 +189,27 @@ Full API for ``SubsurfacePropertiesBuilder``
         ``'freeze_cherry'``: Soil/rock properties from Freeze and Cherry (1979). Note: Freeze and Cherry only has permeability and porosity.
 
 6. ``assign(old=None, new=None, mapping=None)``
-    Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the ``old`` units, and the values as the ``new`` units. If an ``old`` unit will apply to multiple ``new`` units, the ``new`` units need to be passed in as a list.
+    Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. 
+    Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the 
+    ``old`` units, and the values as the ``new`` units. If an ``old`` unit will apply to multiple ``new`` units, 
+    the ``new`` units need to be passed in as a list.
+
+    :param `old`: String source unit with existing parameters
+    :param `new`: String target unit to which the parameters from old will be mapped.
+    :param `mapping``: Dictionary that includes the old units as keys and new units as values.
 
 7. ``apply(run=None, name_registration=True)``
-    Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated with a specific unit (e.g., ``Phase.RelPerm.Type``).
+    Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. 
+    If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the 
+    ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the 
+    subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each 
+    property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated 
+    with a specific unit (e.g., ``Phase.RelPerm.Type``).
+
+    :param ``run``: Run object to which the loaded subsurface parameters will be applied. If run=None, then the run object
+        must be passed in as an argument when the ``TableToProperties`` is instantiated.
+    :param ``name_registration``: Boolean value. If ``True``, sets the auxiliary keys (e.g., ``GeomNames``) related to the loaded subsurface properties.
+
 
 8. ``print()``
     Prints out the subsurface parameters for all subsurface units in a hierarchical format.
