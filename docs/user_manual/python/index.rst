@@ -11,4 +11,5 @@ to execution of a Python ParFlow run script.
 
    getting_started
    run_script
+   tutorials/index
    keys_contribution
