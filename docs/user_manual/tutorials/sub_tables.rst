@@ -154,6 +154,7 @@ This will print the following:
 Full API for ``SubsurfacePropertiesBuilder``
 ================================================================================
 
+<<<<<<< HEAD
 1. ``SubsurfacePropertiesBuilder(run=None)``: Instantiates a ``SubsurfacePropertiesBuilder`` object. If the optional ``Run`` object ``run`` is given, it will use the subsurface units in ``run`` for later application. ``run`` must be provided as an argument either here or when calling the ``apply()`` method (see below).
 2. ``load_csv_file(tableFile, encoding='utf-8-sig')``: Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``, which should translate files generated from Microsoft Excel.
 3. ``load_txt_file(tableFile, encoding='utf-8-sig')``: Loads a text file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``.
@@ -163,6 +164,72 @@ Full API for ``SubsurfacePropertiesBuilder``
 7. ``apply(run=None, name_registration=True)``: Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated with a specific unit (e.g., ``Phase.RelPerm.Type``).
 8. ``print()``: Prints out the subsurface parameters for all subsurface units in a hierarchical format.
 9. ``print_as_table(props_in_header=True, column_separator='  ')``: Prints out the subsurface parameters for all subsurface units in a table format. ``props_in_header`` will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
+=======
+1. ``SubsurfacePropertiesBuilder(run=None)``
+    Instantiates a ``SubsurfacePropertiesBuilder`` object.
+
+    :param ``run``: An optional ``Run`` object. If provided, it will use the subsurface units in ``run`` for later applications.
+        ``run`` must be provided as an argument either here or when calling the ``apply()`` method (see below).
+
+2. ``load_csv_file(tableFile, encoding='utf-8-sig')``
+    Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. 
+
+    :param ``tableFile``: String path to the input .csv file.
+    :param ``encoding``: The text encoding format of your file. Defaults to ``utf-8-sig``, which should translate files generated from Microsoft Excel.
+
+3. ``load_txt_file(tableFile, encoding='utf-8-sig')``
+    Loads a text file to your ``SubsurfacePropertiesBuilder`` object.
+
+    :param ``tableFile``: String path to the input .txt file.
+    :param ``encoding``: The text encoding format of your file. Defaults to ``utf-8-sig``.
+
+4. ``load_txt_content(txt_content)``
+    Loads in-line text to your ``SubsurfacePropertiesBuilder`` object.
+
+    :param ``txt_content``: In-line text string.
+
+5. ``load_default_properties(database='conus_1')``
+    Loads one of several databases of subsurface properties. 
+
+    :param ``database``: Default database. Options are: 
+
+        ``'conus_1'``: Soil/rock properties from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_
+
+        ``'washita'``: Soil/rock properties from Little Washita script.
+
+        ``'freeze_cherry'``: Soil/rock properties from Freeze and Cherry (1979). Note: Freeze and Cherry only has permeability and porosity.
+
+6. ``assign(old=None, new=None, mapping=None)``
+    Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. 
+    Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the 
+    ``old`` units, and the values as the ``new`` units. If an ``old`` unit will apply to multiple ``new`` units, 
+    the ``new`` units need to be passed in as a list.
+
+    :param `old`: String source unit with existing parameters
+    :param `new`: String target unit to which the parameters from old will be mapped.
+    :param `mapping``: Dictionary that includes the old units as keys and new units as values.
+
+7. ``apply(run=None, name_registration=True)``
+    Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. 
+    If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the 
+    ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the 
+    subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each 
+    property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated 
+    with a specific unit (e.g., ``Phase.RelPerm.Type``).
+
+    :param ``run``: Run object to which the loaded subsurface parameters will be applied. If run=None, then the run object
+        must be passed in as an argument when the ``TableToProperties`` is instantiated.
+    :param ``name_registration``: Boolean value. If ``True``, sets the auxiliary keys (e.g., ``GeomNames``) related to the loaded subsurface properties.
+
+
+8. ``print()``
+    Prints out the subsurface parameters for all subsurface units in a hierarchical format.
+
+9. ``print_as_table(props_in_header=True, column_separator='  ')``
+    Prints out the subsurface parameters for all subsurface units in a table format. 
+    
+    :param ``props_in_header``: will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
+>>>>>>> 82679542 (Formatting updates to API sections)
 
 ================================================================================
 Exporting subsurface properties
