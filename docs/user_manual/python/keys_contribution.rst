@@ -122,7 +122,7 @@ This defines the domains that constrain the value of the key. The domains must i
 - ``RequiresModule``: This is for keys that must have a particular module installed or compiled to be a valid key (e.g., ``Solver.CLM....``). This takes an argument of the required module in all caps, e.g., ``RequiresModule: NETCDF``.
 
 - ``ValidFile``: This is for keys which reference file names to make sure that the file exists. It can take two arguments: ``working_directory``, for which you can specify the absolute path of the directory where your file is stored, ``path_prefix_source``, for which you can specify the path to a key that defines the path
-to the file (e.g. ``Solver.CLM.MetFile``). If no arguments are provided, it will check your current working directory for the file.
+    to the file (e.g. ``Solver.CLM.MetFile``). If no arguments are provided, it will check your current working directory for the file.
 
 
 ^^^^^^^^^^^^^^^^^
@@ -156,6 +156,7 @@ level as the ``.{phase_name}`` in ``Phase.phase_name``. This can also be an abso
 Skip field exportation but allow to set other keys from it in a more convinient manner using some handler.
 
 .. code-block:: yaml
+
     Solver:
         CLM:
             Input:
