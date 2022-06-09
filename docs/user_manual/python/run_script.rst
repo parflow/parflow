@@ -1,10 +1,12 @@
-********************************************************************************
-Run script
-********************************************************************************
+.. _run_script:
 
-================================================================================
+Run script
+===========
+
+.. _run_script_anatomy:
+
 Anatomy
-================================================================================
+--------
 
 At the top of all the Python test scripts (located in `parflow/test/python/
 <https://github.com/parflow/parflow/tree/master/test/python>`_) are something similar to the following lines:
@@ -17,9 +19,10 @@ At the top of all the Python test scripts (located in `parflow/test/python/
 These lines import the ``Run`` class from the ``parflow`` module and create a new ``Run`` object called ``test_run`` 
 (or whatever you want the run name to be). All the key/value pairs are set on this object.
 
-================================================================================
+.. _run_script_setting_keys:
+
 Setting keys
-================================================================================
+-------------
 
 The basic way to set keys in a Python script is assigning a variable to the ``Run`` object that you initialize at the beginning 
 of your model, like shown:
@@ -47,9 +50,10 @@ that you have already instantiated the ``Run`` object ``test_run``.
 
 Python PFTools requires that you define the user-defined input names (e.g., ``GeomInput.Names``, ``Cycle.Names``, ``Phase.Names``) *before* you use them as part of a key name.
 
-================================================================================
+.. _run_script_valid_keys:
+
 Valid key names
-================================================================================
+----------------
 
 As a general rule, each "token" within a key name (e.g. ``GeomInput`` or ``domain_input`` in the prior 
 example) must be a valid Python variable name. Information about valid Python variable names is `here
@@ -86,9 +90,11 @@ However, as shown in the following example, these integer tokens can be set in m
 
 These will all write the key in the ParFlow database file in the correct format.
 
-================================================================================
+.. _run_script_pfset:
+
 Setting keys and values with ``pfset()``
-================================================================================
+-----------------------------------------
+
 The ``pfset()`` method does more than just allow you to set an individual key. You can set groups 
 of keys at a time using the ``hierarchical_map``, ``flat_map``, or ``yaml_content`` arguments in 
 the ``pfset`` method, as shown in the test file ``$PARFLOW_SOURCE/test/python/new_features/pfset_test/pfset_test.py``:
@@ -165,9 +171,10 @@ Or, if you have a yaml file, you can use the ``yaml_file`` argument to read in a
 
 This can make your run scripts more compact and readable.
 
-================================================================================
+.. _run_script_pfset_new:
+
 Setting keys that aren't in the library with ``pfset()``
-================================================================================
+---------------------------------------------------------
 
 If you want to set a key in the Python script that's not already in the library, you have two 
 options: 1) add the key to the library (see the documentation on "Contributing keys") or 2) using 
@@ -200,9 +207,10 @@ at any level with any ``value``. Here are some examples from the test file ``$PA
 As you can see from the many examples here, you can use ``pfset(key, value)`` at any level of token 
 within your key, and even set keys that already exist.
 
-===================================================
+.. _run_script_key_validation:
+
 Key validation
-===================================================
+---------------
 
 An objective of the Python PFTools is to improve the error messages before and during a ParFlow run. 
 The first step of this is validation. If you call the ``validate()`` method on your ``Run`` object with 
@@ -222,9 +230,10 @@ You will also get a warning if you set a key multiple times, as shown:
 Here, ``Process.Topology.P`` was set three times: first to 1, then to 4, and finally to 2. Note: if you use 
 the ``pfset()`` method to define a new key name, it will not throw an error in the validation.
 
-===================================================
+.. _run_script_methods:
+
 Methods
-===================================================
+--------
 
 Other methods that can be called on a ``Run`` object are shown below:
 
@@ -253,9 +262,10 @@ Other methods that can be called on a ``Run`` object are shown below:
     # Clone the run into a new Run object
     cloned_run = test_run.clone('cloned_run')
 
-================================================================================
+.. _run_script_api:
+
 Full API
-================================================================================
+---------
 
 1. ``runobj.validate(indent=1, verbose=False, enable_print=True)``
     Validates the values set to each key. Validation checks for:
@@ -316,9 +326,11 @@ Full API
 
     :param ``name``: A string representing the name of the new run.
 
-================================================================================
+
+.. _run_script_example:
+
 Example
-================================================================================
+--------
 
 The `default_richards.py test
 <https://github.com/parflow/parflow/tree/master/test/python/base_3d/default_richards/default_richards.py>`_ is a 
@@ -330,7 +342,7 @@ directory, and replace the last line (``drich.run``) with the following lines:
     drich_2 = drich.clone('drich_2')
     drich_2.Patch.left.BCPressure.alltime.Value = 6.0
     drich_2.validate()
-    drich_2.write(file_format=‘yaml’)
+    drich_2.write(file_format='yaml')
     drich_2.run(skip_validation=True)
 
 Execute the script and look at what prints and which output files are created - explore to your heart's content!

@@ -300,9 +300,9 @@ The Berger-Rigoutsos algorithm is currently used for clustering.
 
 ::
 
-   pfset  UseClustering  False         ## TCL syntax
+   pfset UseClustering False         ## TCL syntax
 
-   <runname>.UseClustering	= False     ## Python syntax
+   <runname>.UseClustering = False     ## Python syntax
 
 .. _Geometries:
 
@@ -514,7 +514,7 @@ inputs (TCL).
       # computation grid exactly!
       #
 
-      pfset GeomInput.indinput.InputType 		"IndicatorField"
+      pfset GeomInput.indinput.InputType     "IndicatorField"
       pfset GeomInput.indinput.GeomNames    	"sourceregion concenregion"
       pfset GeomInput.indinput.FileName		"ocwd.pfb"
 
@@ -529,7 +529,7 @@ inputs (TCL).
       #
 
       pfset GeomInput.boxinput.InputType	"Box"
-      pfset GeomInput.boxinput.GeomName	"background"
+      pfset GeomInput.boxinput.GeomName   "background"
       pfset Geom.background.Lower.X 		-1.0
       pfset Geom.background.Lower.Y 		-1.0
       pfset Geom.background.Lower.Z 		-1.0
@@ -543,8 +543,8 @@ inputs (TCL).
       # want (i.e. left right front back bottom top)
       #
 
-      pfset Geom.domain.Patches             		"z-upper x-lower y-lower \
-                                            			x-upper y-upper z-lower"
+      pfset Geom.domain.Patches           "z-upper x-lower y-lower \
+                                            	x-upper y-upper z-lower"
 
 .. _Timing Information:
 
@@ -867,13 +867,13 @@ simulation.
       #-----------------------------------------------------------------------------
       # Time Cycles
       #-----------------------------------------------------------------------------
-      pfset Cycle.Names 			            "constant rainrec"
-      pfset Cycle.constant.Names		         "alltime"
-      pfset Cycle.constant.alltime.Length	   8760
-      pfset Cycle.constant.Repeat		      -1
+      pfset Cycle.Names                      "constant rainrec"
+      pfset Cycle.constant.Names             "alltime"
+      pfset Cycle.constant.alltime.Length    8760
+      pfset Cycle.constant.Repeat            -1
 
       # Creating a rain and recession period for the rest of year
-      pfset Cycle.rainrec.Names		         "rain rec"
+      pfset Cycle.rainrec.Names              "rain rec"
       pfset Cycle.rainrec.rain.Length	      10
       pfset Cycle.rainrec.rec.Length	      8750
       pfset Cycle.rainrec.Repeat             -1
@@ -1822,7 +1822,7 @@ Example Usage (Python):
 Flow Barriers
 ~~~~~~~~~~~~~
 
-Here, the values for Flow Barriers described in :ref:`_FB` can be
+Here, the values for Flow Barriers described in :ref:`FB` can be
 input. These are only available with Solver **Richards** and can be
 specified in X, Y or Z directions independently using PFB files. These
 barriers are appied at the cell face at the location :math:`i+1/2`. That

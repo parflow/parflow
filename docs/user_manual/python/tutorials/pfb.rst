@@ -1,11 +1,12 @@
-********************************************************************************
+.. _pfb:
+
 PFB
-********************************************************************************
+====
 
+.. _pfb_intro:
 
-================================================================================
 Introduction
-================================================================================
+-------------
 
 ParFlow Binary (PFB) files are an integral part of ParFlow, and we need an easy way to handle them. 
 Fortunately, we have a several functions within ``pftools`` that help us with this.  The ``parflow.tools.io`` 
@@ -13,9 +14,10 @@ module allows the user to work with numpy arrays, which are easy to visualize an
 in Python. We'll walk through some examples working with PFB files in Python to see just how powerful 
 this is.
 
-================================================================================
+.. _pfb_dist:
+
 Distributing
-================================================================================
+-------------
 
 Let's say you have mastered the conversion of a TCL script to Python, and you have a few PFB 
 files that you need to distribute to convert your workflow to Python. Here, you can use the 
@@ -29,9 +31,11 @@ This will distribute the PFB file with the distribution assigned to the ``Proces
 keys on the ``Run`` object (``LWvdz`` in this example). However, this can be overwritten for 
 a particular file, as shown above.
 
-================================================================================
+.. _pfb_create:
+
 Creating PFB from Python
-================================================================================
+-------------------------
+
 Let's copy another test Python script into our tutorial directory:
 
 .. code-block::
@@ -80,9 +84,11 @@ your directory - among the other output files is the *'Flow_Barrier_X.pfb'* that
 If you have a PFB reader tool (such as ParaView), you can see what the file looks like: a 
 20 x 20 x 20 unit cube with a low-conductivity slice through the middle. Nice!
 
-================================================================================
+.. _pfb_load:
+
 Loading PFB from Python
-================================================================================
+------------------------
+
 Now that we understand how to write a PFB file, how about reading one? This can be useful to do 
 inside a Python script so you can visualize or manipulate existing data. Visualizing output data 
 within the same script as a run can be very helpful!
@@ -104,9 +110,10 @@ numpy array. The ``print`` statements print the dimensions of the array and the 
 run this script again to see the printed output. If you're savvy with ``matplotlib`` or other visualization 
 packages in Python, feel free to visualize to your heart's content!
 
-================================================================================
+.. _pfb_api:
+
 Full API
-================================================================================
+---------
 
 1. ``read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True)``
     Read a single pfb file, and return the data therein.

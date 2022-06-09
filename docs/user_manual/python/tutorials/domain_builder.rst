@@ -1,19 +1,21 @@
-********************************************************************************
+.. _domain_builder:
+
 Domain definition helpers
-********************************************************************************
+==========================
 
+.. _domain_builder_intro:
 
-================================================================================
 Introduction
-================================================================================
+-------------
 
 One of ParFlow's strengths is its customizability; you can practically define any type of hydrologic problem with it.
 One of the downsides of that, however, is that setting all the keys can be cumbersome, especially when starting a run from scratch.
 With the new ``DomainBuilder``, Python-PFTools helps condense the setting of keys for many common problem definitions.
 
-================================================================================
+.. _domain_builder_usage:
+
 Usage of ``DomainBuilder``
-================================================================================
+---------------------------
 
 First, we'll show some usage examples of loading tables of parameters within a ParFlow Python script:
 
@@ -50,9 +52,10 @@ In this example, the 10 lines associated with the instantiation of the ``DomainB
 As is possible with any other key setting, you can always overwrite the keys as necessary; the ``DomainBuilder`` is designed to help you get started.
 Once you instantitate the ``DomainBuilder`` object on a ``Run`` object, each method will set various keys with the given arguments, which are described below.
 
-================================================================================
+.. _domain_builder_api:
+
 Full API
-================================================================================
+---------
 
 1. ``DomainBuilder(run, name='domain')``
     Instantiates the ``DomainBuilder`` object on the ``Run`` object ``run``. 

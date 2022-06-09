@@ -1,11 +1,14 @@
-********************************************************************************
+.. _solid_files:
+
 Solid Files
-********************************************************************************
+============
+
 Generating solid (.pfsol) files for a ParFlow run can be somewhat of a pain. PFTools has a few features that can help with this process.
 
-================================================================================
+.. _solid_files_examples:
+
 Example
-================================================================================
+--------
 
 To see the how Python can help generate solid files, navigate to *$PARFLOW_SOURCE/test/python/pfsol/simple-mask/* and open the Python script
 *simple-mask.py*. Here, you'll see the following lines at the top of the script:
@@ -63,9 +66,10 @@ Next, we'll show some examples of the ``SolidFileBuilder`` class to demonstrate 
         .side_ids(id_array) \              # Using a 2D numpy array to provide new patch ids (possibly to change boundary conditions)
         .write('sabino_domain_2.pfsol', cellsize=90)   # Write second pfsol file
 
-================================================================================
+.. _solid_files_io_api:
+
 Full API: IO tools (from ``parflow.tools.io``)
-================================================================================
+-----------------------------------------------
 
 1. ``load_patch_matrix_from_pfb_file(file_name, layer=None)``
     Reads in a 2D or 3D ParFlow binary (PFB) file and converts it to a patch matrix.     
@@ -116,9 +120,10 @@ Full API: IO tools (from ``parflow.tools.io``)
     :param ``matrix``: Patch matrix that you want to write out.
     :param ``file_name``: Filename to write the patch matrix to. 
 
-================================================================================
+.. _solid_files_builder_api:
+
 Full API: SolidFileBuilder
-================================================================================
+---------------------------
 
 1. ``SolidFileBuilder(top=1, bottom=2, side=3)``
     Initializes a ``SolidFileBuilder`` object with default values for the top, bottom, and sides of a domain, respectively.
@@ -189,9 +194,10 @@ Full API: SolidFileBuilder
 
     :param ``side_patch_ids``: Numpy array of side patch IDs.
 
-================================================================================
+.. _solid_files_more_examples:
+
 More examples
-================================================================================
+--------------
 
 Other example scripts showing how to use the ``SolidFileBuilder`` can be found in *$PARFLOW_SOURCE/test/python/pfsol/*. If you have an idea for a new feature or
 improvement to the functionality, please let us know, or better yet, become a contributor!
