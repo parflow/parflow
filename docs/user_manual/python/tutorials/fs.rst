@@ -1,10 +1,12 @@
-********************************************************************************
-Filesystem
-********************************************************************************
+.. _fs:
 
-================================================================================
+Filesystem
+===========
+
+.. _fs_intro:
+
 Introduction
-================================================================================
+-------------
 
 Files in ParFlow are like sand at the beach: everywhere.
 Python's native modules offer plenty of methods to handle files and directories,
@@ -72,9 +74,10 @@ of environment variables and relative paths within your run script:
    rm('tmp')
 
 
-================================================================================
+.. _fs_api:
+
 Full API
-================================================================================
+---------
 
 1. ``get_absolute_path(file_path)``
     Returns the absolute file path of the relative file location.
@@ -117,9 +120,11 @@ Full API
     :param ``file_path``: The path to the text file.
     :return: The content of the text file.
 
-================================================================================
+
+.. _fs_example:
+
 Example
-================================================================================
+--------
 
 If you want more examples on how to leverage those helper functions,
 you can look at `$PARFLOW_SOURCE/test/python/clm/clm/clm.py <https://github.com/parflow/parflow/blob/master/test/python/clm/clm/clm.py#L32-L38>`_

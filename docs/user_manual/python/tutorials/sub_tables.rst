@@ -3,7 +3,6 @@
 Tables for Subsurface Parameters
 ================================
 
-
 .. _sub_tables_intro:
 
 Introduction

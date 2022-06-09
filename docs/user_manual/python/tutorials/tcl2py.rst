@@ -1,6 +1,7 @@
-********************************************************************************
+.. _tcl2py:
+    
 From TCL to Python
-********************************************************************************
+===================
 
 Welcome to the tutorial for the Python pftools. You will need the following to
 fully follow this tutorial:
@@ -11,9 +12,11 @@ fully follow this tutorial:
 
 The commands in the tutorial assume that you are running a bash shell in Linux or MacOS.
 
-================================================================================
+.. _tcl2py_virtual_env:
+
 Virtual environment setup
-================================================================================
+--------------------------
+
 In this first tutorial, we will set up a virtual environment with pftools and its dependencies before importing a TCL file, converting it to Python, and running ParFlow.
 
 ----
@@ -40,9 +43,10 @@ Test your pftools installation:
 
 The run should execute successfully, printing the message ``ParFlow ran successfully``.
 
-================================================================================
+.. _tcl2py_example:
+
 From TCL to Python file
-================================================================================
+------------------------
 
 Great, now you have a working ParFlow interface! Next, create a new directory and import a TCL file (example here drawn from the ParFlow TCL tests):
 
@@ -83,9 +87,10 @@ Once you have edited your Python script, you can run it like you would any other
 
 Voilà! You have now successfully converted your first ParFlow TCL script to Python. In the next tutorial, we'll get more advanced to leverage the many other features in the Python PFTools. Onward!
 
-=====================================================
+.. _tcl2py_troubleshoot:
+
 Troubleshooting when converting TCL script to Python
-=====================================================
+-----------------------------------------------------
 
 Although the tutorial above (hopefully) went without a hitch, you may not always be so lucky. For those instances, Python PFTools has a tool that allows you to sort two *.pfidb* files to determine any discrepancies between two files.
 This is especially useful when comparing an existing TCL script's generated file to its Python-generated equivalent. First, you must sort each of the
