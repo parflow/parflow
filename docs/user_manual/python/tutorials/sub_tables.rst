@@ -1,11 +1,13 @@
-********************************************************************************
+.. _sub_tables:
+
 Tables for Subsurface Parameters
-********************************************************************************
+================================
 
 
-================================================================================
+.. _sub_tables_intro:
+
 Introduction
-================================================================================
+------------
 
 ParFlow domains with complex geology often involve many lines in the input script, which lengthens the script and makes it more cumbersome to navigate. Python PFTools makes it easy to do the following:
 
@@ -13,9 +15,10 @@ ParFlow domains with complex geology often involve many lines in the input scrip
 - Export a table of the subsurface properties
 - Load a database of common soil and geologic properties to set up your domain
 
-================================================================================
+.. _sub_tables_usage:
+
 Usage of ``SubsurfacePropertiesBuilder``
-================================================================================
+-----------------------------------------
 
 First, we'll show some usage examples of loading tables of parameters within a ParFlow Python script:
 
@@ -74,9 +77,10 @@ The ``print_as_table`` method prints out the subsurface properties for each unit
     g3   0.01  0.387     2.692         2.445     2.692     2.445  1e-06  1.0
     g4   0.01  0.387     2.692         2.445     2.692     2.445  1e-06  1.0
 
-================================================================================
+.. _sub_tables_formatting:
+
 Table formatting for importing
-================================================================================
+------------------------------
 
 Let's have another look at the in-line table from the usage example above:
 
@@ -102,9 +106,10 @@ These tables can be formatted in a number of different ways. Here are several co
 - The table does not have to be completely filled. As shown here, blank property values must be designated by a hyphen.
 - To properly process the table and map to the correct keys, the field names (including ``key``) must be one of several possible aliases. The aliases are listed in `this yaml file <https://github.com/grapp1/parflow/blob/py-input/pftools/python/parflow/tools/ref/table_keys.yaml>`_ that is included in the Python PFTools. These aliases include the exact end of the key name (e.g., ``Perm.Value`` as opposed to the alias ``Perm``), so when in doubt, you can use the exact name.
 
-================================================================================
+.. _sub_tables_default_db:
+
 Default database loading
-================================================================================
+------------------------
 
 We have added several databases of commonly used parameters for different soil and geologic units to provide some helpful guidance. To load these database, you can simply call the ``load_default_properties`` method on the ``SubsurfacePropertiesBuilder`` object.
 The available databases in the Python PFTools package can be found `in the "subsurface_*.txt" files here. <https://github.com/parflow/parflow/tree/master/pftools/python/parflow/tools/ref>`_
@@ -150,9 +155,11 @@ This will print the following:
     s1      0.269    0.38      0.14   3.55          4.16
     s2      0.0436   0.39      1.26   3.47          2.74
 
-================================================================================
+
+.. _sub_tables_api:
+
 Full API for ``SubsurfacePropertiesBuilder``
-================================================================================
+--------------------------------------------
 
 1. ``SubsurfacePropertiesBuilder(run=None)``
     Instantiates a ``SubsurfacePropertiesBuilder`` object.
@@ -219,9 +226,10 @@ Full API for ``SubsurfacePropertiesBuilder``
     
     :param ``props_in_header``: will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
 
-================================================================================
+.. _export_subsurface:
+
 Exporting subsurface properties
-================================================================================
+-------------------------------
 
 It is often useful to have a table of the subsurface properties assigned to various subsurface units during a run. As mentioned in the `run script API <https://grapp1parflow.readthedocs.io/en/latest/python/run_script.html#full-api>`_,
 you can write out a table of the subsurface properties by calling the ``write_subsurface_table`` method on your ``Run`` object.
@@ -245,9 +253,10 @@ Execute the Python script, and you should see the output file *def_richards_subs
 
 See that it only prints out the properties that are explicitly assigned to each of the subsurface units ``domain`` and ``background``.
 
-================================================================================
+.. _sub_tables_examples:
+
 Examples
-================================================================================
+--------
 
 Full examples of the ``SubsurfacePropertiesBuilder`` can be found in the *new_features* subdirectory of the ParFlow Python tests.
 
