@@ -2072,7 +2072,7 @@ ParFlow binary file.
 
       <runname>.ToposlopesX.Type = "Constant"   ## Python syntax
 
-*double* **ToposlopeX.Geom.\ *geometry_name*.Value** no default This key
+*double* **ToposlopesX.Geom.\ *geometry_name*.Value** no default This key
 specifies the value assigned to all points in the named geometry,
 *geometry_name*, if the type was set to constant.
 
@@ -3402,7 +3402,7 @@ specified.
 
       pfset Patch.left.BCSaturation.water.YUpper  82.0
 
-*integer* **Patch.\ *patch_name*.BCPressure.\ *phase_name*.NumPoints**
+*integer* **Patch.\ *patch_name*.BCSaturation.\ *phase_name*.NumPoints**
 no default This key specifies the number of points on which saturation
 data is given along the line used for type **DirEquilPLinear** boundary
 conditions.
@@ -3411,10 +3411,10 @@ conditions.
 
    ::
 
-      pfset Patch.left.BCPressure.water.NumPoints 2
+      pfset Patch.left.BCSaturation.water.NumPoints 2
 
 *double*
-**Patch.\ *patch_name*.BCPressure.\ *phase_name*.\ *point_number*.Location**
+**Patch.\ *patch_name*.BCSaturation.\ *phase_name*.\ *point_number*.Location**
 no default This key specifies a number between 0 and 1 which represents
 the location of a point on the line for which data is given in type
 **DirEquilPLinear** boundary conditions. The line is parameterized so
@@ -3425,10 +3425,10 @@ the upper end.
 
    ::
 
-      pfset Patch.left.BCPressure.water.0.Location 0.333
+      pfset Patch.left.BCSaturation.water.0.Location 0.333
 
 *double*
-**Patch.\ *patch_name*.BCPressure.\ *phase_name*.\ *point_number*.Value**
+**Patch.\ *patch_name*.BCSaturation.\ *phase_name*.\ *point_number*.Value**
 no default This key specifies the water-table height for the given point
 if type **DirEquilPLinear** boundary conditions are selected. All
 saturation values on the patch are determined by first projecting the
@@ -3439,7 +3439,7 @@ between the neighboring water-table height values onto the line.
 
    ::
 
-      pfset Patch.left.BCPressure.water.0.Value  4.5
+      pfset Patch.left.BCSaturation.water.0.Value  4.5
 
 .. _`Initial Conditions: Phase Saturations`:
 
