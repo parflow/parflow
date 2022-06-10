@@ -1322,7 +1322,7 @@ Let us change the input problem by adding a pumping well:
 
 .. container:: enumerate
 
-   Add the following lines to the input file near where the existing
+   1. Add the following lines to the input file near where the existing
    well information is in the input file. You need to replace the
    “Wells.Names” line with the one included here to get both wells
    activated (this value lists the names of the wells):
