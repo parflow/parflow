@@ -13,7 +13,7 @@ macro(pf_exec_check cmd)
   if (${PARFLOW_HAVE_SILO})
     set( ENV{PARFLOW_HAVE_SILO} "yes")
   endif()
-
+  message(STATUS "PARFLOW_HAVE_OAS3=${PARFLOW_HAVE_OAS3}")
   if(${PARFLOW_HAVE_OAS3})
     # OASIS3-MCT initialization requires namcouple file
     file(COPY ${CMAKE_MODULE_PATH}/namcouple 
@@ -66,7 +66,7 @@ macro(pf_test_clean)
   if (NOT FILES STREQUAL "")
     file(REMOVE ${FILES})
   endif()
-  
+
   if(${PARFLOW_HAVE_OAS3})
     file(GLOB FILES namcouple debug.notroot.01 debug.root.01 grids.nc masks.nc nout.000000)
     if (NOT FILES STREQUAL "")
@@ -75,6 +75,7 @@ macro(pf_test_clean)
   endif()
 endmacro()
 
+message(STATUS "PARFLOW_HAVE_OAS3=${PARFLOW_HAVE_OAS3}")
 pf_test_clean ()
 
 list(APPEND CMD tclsh ${PARFLOW_TEST})
