@@ -13,12 +13,7 @@ macro(pf_exec_check cmd)
   if (${PARFLOW_HAVE_SILO})
     set( ENV{PARFLOW_HAVE_SILO} "yes")
   endif()
-  message(STATUS "PARFLOW_AMPS_LAYER=${PARFLOW_AMPS_LAYER}")
-  if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
-    # OASIS3-MCT initialization requires namcouple file
-    file(COPY ${CMAKE_MODULE_PATH}/namcouple 
-         DESTINATION ${WORKING_DIRECTORY})
-  endif()
+
   # Note: This method of printing the command is only necessary because the
   # 'COMMAND_ECHO' parameter of execute_process is relatively new, introduced
   # around cmake-3.15, and we'd like to be compatible with older cmake versions.
@@ -67,7 +62,7 @@ macro(pf_test_clean)
     file(REMOVE ${FILES})
   endif()
 
-  if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
+  if (${PARFLOW_HAVE_OAS3})
     file(GLOB FILES namcouple debug.notroot.01 debug.root.01 grids.nc masks.nc nout.000000)
     if (NOT FILES STREQUAL "")
       file(REMOVE ${FILES})
@@ -84,6 +79,22 @@ if (${PARFLOW_HAVE_MEMORYCHECK})
   SET(ENV{PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} ${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS})
 endif()
 
+if (${PARFLOW_HAVE_OAS3})
+  # Create dummy namcouple file to successfully initialize OASIS3-MCT
+  set(NAMCOUPLE_FILE namcouple)
+  file(WRITE  ${NAMCOUPLE_FILE} "$NFIELDS\n")
+  file(APPEND ${NAMCOUPLE_FILE} "  1\n")
+  file(APPEND ${NAMCOUPLE_FILE} "$RUNTIME\n")
+  file(APPEND ${NAMCOUPLE_FILE} "  864090\n")
+  file(APPEND ${NAMCOUPLE_FILE} "$NLOGPRT\n")
+  file(APPEND ${NAMCOUPLE_FILE} "  1 0\n")
+  file(APPEND ${NAMCOUPLE_FILE} "$STRINGS\n")
+  file(APPEND ${NAMCOUPLE_FILE} "  ECLM_ET PFL_ET 1 1800 1 clm_flx.nc EXPOUT\n")
+  file(APPEND ${NAMCOUPLE_FILE} "    300 300 300 300 gclm gpfl SEQ=2\n")
+  file(APPEND ${NAMCOUPLE_FILE} "    R 0 R 0\n")
+  file(APPEND ${NAMCOUPLE_FILE} "    LOCTRANS\n")
+  file(APPEND ${NAMCOUPLE_FILE} "    INSTANT\n")
+endif()
 pf_exec_check(CMD)
 
 if (${PARFLOW_HAVE_MEMORYCHECK})
