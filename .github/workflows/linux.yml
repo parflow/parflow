@@ -1,6 +1,6 @@
 name: ParFlow CI Test
 
-on: [push, pull_request, workflow_dispatch]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -234,16 +234,18 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       if: matrix.config.amps_layer == 'oas3'
       run: |
-        git clone -b OASIS3-MCT_5.0 https://gitlab.com/cerfacs/oasis3-mct.git
-        cd oasis3-mct
-        git checkout dd00d6c72b13bf1
-        export OASIS_ROOT=$(pwd)
-        cd util/make_dir
-        echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu20.04' > make.inc
-        make realclean -f TopMakefileOasis3
-        make -f TopMakefileOasis3
-        mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
-        mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          git clone -b OASIS3-MCT_5.0 https://gitlab.com/cerfacs/oasis3-mct.git
+          cd oasis3-mct
+          git checkout dd00d6c72b13bf1
+          export OASIS_ROOT=$(pwd)
+          cd util/make_dir
+          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu20.04' > make.inc
+          make realclean -f TopMakefileOasis3
+          make -f TopMakefileOasis3
+          mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
+          mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
+        fi
 
     - name: SILO Install
       env:
