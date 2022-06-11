@@ -292,5 +292,5 @@ jobs:
       run: |
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
-        (cd build; ctest -VV)
+        (cd build; ctest --output-on-failure -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }})
 
