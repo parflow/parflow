@@ -20,6 +20,11 @@ macro(pf_amps_exec_check cmd ranks args)
     set( full_command ./${${cmd}} ${${args}} )
   endif()
 
+  if(${PARFLOW_HAVE_OAS3})
+    # OASIS3-MCT initialization requires namcouple file
+    file(COPY ${CMAKE_MODULE_PATH}/namcouple 
+         DESTINATION ${WORKING_DIRECTORY})
+  endif()
   # Note: This method of printing the command is only necessary because the
   # 'COMMAND_ECHO' parameter of execute_process is relatively new, introduced
   # around cmake-3.15, and we'd like to be compatible with older cmake versions.
@@ -65,6 +70,13 @@ macro(pf_amps_test_clean)
   file(GLOB FILES default_single.out)
   if (NOT FILES STREQUAL "")
     file(REMOVE ${FILES})
+  endif()
+
+  if(${PARFLOW_HAVE_OAS3})
+    file(GLOB FILES namcouple debug.notroot.01 debug.root.01 grids.nc masks.nc nout.000000)
+    if (NOT FILES STREQUAL "")
+      file(REMOVE ${FILES})
+    endif()
   endif()
 endmacro()
 
