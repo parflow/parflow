@@ -292,5 +292,5 @@ jobs:
       run: |
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
-        (cd build; ctest)
+        (cd build; ctest -VV)
 
