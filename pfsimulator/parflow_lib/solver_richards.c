@@ -5972,8 +5972,6 @@ SolverRichards()
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
-  InstanceXtra *instance_xtra =
-    (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   Problem *problem = (public_xtra->problem);
   double start_time = ProblemStartTime(problem);
