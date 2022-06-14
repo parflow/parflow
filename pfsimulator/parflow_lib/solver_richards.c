@@ -234,6 +234,7 @@ typedef struct {
   Vector *old_pressure;
   Vector *mask;
 
+  Vector *evap_trans;           /* sk: Vector that contains the sink terms from the land surface model */
   Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
   Vector *overland_sum;
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
@@ -830,6 +831,19 @@ SetupRichards(PFModule * this_module)
       NewVectorType(z_grid, 1, 2, vector_side_centered_z);
     InitVectorAll(instance_xtra->z_velocity, 0.0);
 
+    /*sk Initialize LSM terms */
+    instance_xtra->evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
+    InitVectorAll(instance_xtra->evap_trans, 0.0);
+
+    if (public_xtra->evap_trans_file)
+    {
+      //sprintf(filename, "%s", public_xtra->evap_trans_filename);
+      //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
+      ReadPFBinary(public_xtra->evap_trans_filename, instance_xtra->evap_trans);
+
+      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+    }
 
     /* IMF: the following are only used w/ CLM */
 #ifdef HAVE_CLM
@@ -1507,7 +1521,7 @@ void
 AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time */
                 double stop_time,       /* Stopping time */
                 PFModule * time_step_control,   /* Use this module to control timestep if supplied */
-                Vector * evap_trans,    /* Flux from land surface model */
+                Vector * evap_trans,
                 Vector ** pressure_out,         /* Output vars */
                 Vector ** porosity_out, Vector ** saturation_out)
 {
@@ -1731,7 +1745,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
-        et_sub = VectorSubvector(evap_trans, is);
+        et_sub = VectorSubvector(instance_xtra->evap_trans, is);
         m_sub = VectorSubvector(instance_xtra->mask, is);
 
         ix = SubgridIX(subgrid);
@@ -1755,7 +1769,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         CALL_receive_fld2_clm(et, ms, ix, iy, nx, ny, nz, nx_f, ny_f, t);
       }
       amps_Sync(amps_CommWorld);
-      handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 #endif // end to HAVE_OAS3 CALL
 
@@ -2149,7 +2163,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         subgrid = GridSubgrid(grid, is);
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
-        et_sub = VectorSubvector(evap_trans, is);
+        et_sub = VectorSubvector(instance_xtra->evap_trans, is);
         m_sub = VectorSubvector(instance_xtra->mask, is);
         po_sub = VectorSubvector(porosity, is);
         dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
@@ -2404,7 +2418,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
 
-      handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 
 
@@ -2421,8 +2435,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         /*KKu: evaptrans is the name of the variable expected in NetCDF file */
         /*Here looping similar to pfb is not implemented. All steps are assumed to be
          * present in the single NetCDF file*/
-        ReadPFNC(filename, evap_trans, "evaptrans", istep - 1, 3);
-        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+        ReadPFNC(filename, instance_xtra->evap_trans, "evaptrans", istep - 1, 3);
+        handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
       else if (public_xtra->evap_trans_file_transient)
@@ -2456,11 +2470,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         printf("%d %s %s \n", istep, filename,
                public_xtra->evap_trans_filename);
 
-        ReadPFBinary(filename, evap_trans);
+        ReadPFBinary(filename, instance_xtra->evap_trans);
 
         //printf("Checking time step logging, steps = %i\n",Stepcount);
 
-        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+        handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
 
@@ -2775,7 +2789,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                                    t, dt,
                                    problem_data,
                                    instance_xtra->old_pressure,
-                                   evap_trans,
+                                   instance_xtra->evap_trans,
                                    instance_xtra->ovrl_bc_flx,
                                    instance_xtra->x_velocity,
                                    instance_xtra->y_velocity,
@@ -2894,7 +2908,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         || public_xtra->print_evaptrans_sum
         || public_xtra->write_netcdf_evaptrans_sum)
     {
-      EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
+      EvapTransSum(problem_data, dt, evap_trans_sum, instance_xtra->evap_trans);
     }
 
     /***************************************************************
@@ -3057,7 +3071,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         sprintf(file_postfix, "evaptrans.%05d",
                 instance_xtra->file_number);
-        WritePFBinary(file_prefix, file_postfix, evap_trans);
+        WritePFBinary(file_prefix, file_postfix, instance_xtra->evap_trans);
         any_file_dumped = 1;
 
         // Update with new timesteps
@@ -3073,7 +3087,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         sprintf(file_postfix, "%05d", instance_xtra->file_number);
         sprintf(file_type, "evaptrans");
-        WriteSilo(file_prefix, file_type, file_postfix, evap_trans,
+        WriteSilo(file_prefix, file_type, file_postfix, instance_xtra->evap_trans,
                   t, instance_xtra->file_number, "EvapTrans");
         any_file_dumped = 1;
       }
@@ -3083,7 +3097,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "%05d", instance_xtra->file_number);
         sprintf(file_type, "evaptrans");
         WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-                       evap_trans, t, instance_xtra->file_number,
+                       instance_xtra->evap_trans, t, instance_xtra->file_number,
                        "EvapTrans");
         any_file_dumped = 1;
       }
@@ -3091,7 +3105,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (public_xtra->write_netcdf_evaptrans)
       {
         sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-        WritePFNC(file_prefix, nc_postfix, t, evap_trans,
+        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->evap_trans,
                   public_xtra->numVarTimeVariant, "evaptrans", 3,
                   false, public_xtra->numVarIni);
         any_file_dumped = 1;
@@ -3240,7 +3254,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         /*sk Print the sink terms from the land surface model */
         sprintf(file_postfix, "et.%05d", instance_xtra->file_number);
-        WritePFBinary(file_prefix, file_postfix, evap_trans);
+        WritePFBinary(file_prefix, file_postfix, instance_xtra->evap_trans);
 
         /*sk Print the sink terms from the land surface model */
         sprintf(file_postfix, "obf.%05d", instance_xtra->file_number);
@@ -3782,7 +3796,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       sprintf(file_postfix, "evaptrans.%05d",
               instance_xtra->file_number);
-      WritePFBinary(file_prefix, file_postfix, evap_trans);
+      WritePFBinary(file_prefix, file_postfix, instance_xtra->evap_trans);
       any_file_dumped = 1;
     }
 
@@ -3790,7 +3804,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
       sprintf(file_type, "evaptrans");
-      WriteSilo(file_prefix, file_type, file_postfix, evap_trans,
+      WriteSilo(file_prefix, file_type, file_postfix, instance_xtra->evap_trans,
                 t, instance_xtra->file_number, "EvapTrans");
       any_file_dumped = 1;
     }
@@ -3867,7 +3881,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       /*sk Print the sink terms from the land surface model */
       sprintf(file_postfix, "et.%05d", instance_xtra->file_number);
-      WritePFBinary(file_prefix, file_postfix, evap_trans);
+      WritePFBinary(file_prefix, file_postfix, instance_xtra->evap_trans);
 
       /*sk Print the sink terms from the land surface model */
       sprintf(file_postfix, "obf.%05d", instance_xtra->file_number);
@@ -3910,6 +3924,7 @@ TeardownRichards(PFModule * this_module)
   FreeVector(instance_xtra->x_velocity);
   FreeVector(instance_xtra->y_velocity);
   FreeVector(instance_xtra->z_velocity);
+  FreeVector(instance_xtra->evap_trans);
 
   if (instance_xtra->evap_trans_sum)
   {
@@ -5961,46 +5976,19 @@ SolverRichards()
     (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   Problem *problem = (public_xtra->problem);
-
   double start_time = ProblemStartTime(problem);
   double stop_time = ProblemStopTime(problem);
-
-  Grid *grid = (instance_xtra->grid);
-
   Vector *pressure_out;
   Vector *porosity_out;
   Vector *saturation_out;
 
-  char filename[2048];
-
-  VectorUpdateCommHandle *handle;
-
-  /*
-   * sk: Vector that contains the sink terms from the land surface model
-   */
-  Vector *evap_trans;
-
   SetupRichards(this_module);
-
-  /*sk Initialize LSM terms */
-  evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
-  InitVectorAll(evap_trans, 0.0);
-
-  if (public_xtra->evap_trans_file)
-  {
-    sprintf(filename, "%s", public_xtra->evap_trans_filename);
-    //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
-    ReadPFBinary(filename, evap_trans);
-
-    handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
-    FinalizeVectorUpdate(handle);
-  }
 
   AdvanceRichards(this_module,
                   start_time,
                   stop_time,
                   NULL,
-                  evap_trans, &pressure_out, &porosity_out, &saturation_out);
+                  NULL, &pressure_out, &porosity_out, &saturation_out);
 
   /*
    * Record amount of memory in use.
@@ -6008,8 +5996,6 @@ SolverRichards()
   recordMemoryInfo();
 
   TeardownRichards(this_module);
-
-  FreeVector(evap_trans);
 }
 
 /*
