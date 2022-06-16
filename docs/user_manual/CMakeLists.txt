@@ -4,7 +4,7 @@
 
 add_custom_command(
   OUTPUT
-    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/keys.rst"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/keys.rst"
   COMMAND
     ${PARFLOW_PYTHON} read_the_doc_rst.py
   DEPENDS
@@ -31,7 +31,7 @@ add_custom_target(
   GenerateKeysRST
   DEPENDS
     ${PARFLOW_PYTHON_DEPENDS}
-    "${CMAKE_CURRENT_SOURCE_DIR}/parflow/keys.rst"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/keys.rst"
 )
 
 # -----------------------------------------------------------------------------
@@ -53,6 +53,13 @@ if (NOT sphinx_theme_found AND NOT PARFLOW_PYTHON_VIRTUAL_ENV)
   return()
 endif()
 
+find_python_module("sphinxcontrib-bibtex" sphinx_bib_found)
+if (NOT sphinx_bib_found AND NOT PARFLOW_PYTHON_VIRTUAL_ENV)
+  message(STATUS
+    "Please install sphinxcontrib-bibtex to generate documentation for ParFlow keys or use the VirtualEnv option.")
+  return()
+endif()
+
 # -----------------------------------------------------------------------------
 
 add_custom_target(
@@ -66,7 +73,7 @@ add_custom_target(
   SOURCES
     conf.py
     index.rst
-    parflow/keys.rst
+    python/keys.rst
   # ensures that the output is continuously generated
   # when using ninja; avoids builder from timing out
   USES_TERMINAL
