@@ -1549,6 +1549,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   Vector *evap_trans_sum = instance_xtra->evap_trans_sum;
   Vector *overland_sum = instance_xtra->overland_sum;   /* sk: Vector of outflow at the boundary */
 
+  if (evap_trans == NULL)
+  {
+    evap_trans = instance_xtra->evap_trans;
+  }
+
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
@@ -1739,7 +1744,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
-        et_sub = VectorSubvector(instance_xtra->evap_trans, is);
+        et_sub = VectorSubvector(evap_trans, is);
         m_sub = VectorSubvector(instance_xtra->mask, is);
 
         ix = SubgridIX(subgrid);
@@ -1763,7 +1768,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         CALL_receive_fld2_clm(et, ms, ix, iy, nx, ny, nz, nx_f, ny_f, t);
       }
       amps_Sync(amps_CommWorld);
-      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 #endif // end to HAVE_OAS3 CALL
 
@@ -2156,7 +2161,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         subgrid = GridSubgrid(grid, is);
         p_sub = VectorSubvector(instance_xtra->pressure, is);
         s_sub = VectorSubvector(instance_xtra->saturation, is);
-        et_sub = VectorSubvector(instance_xtra->evap_trans, is);
+        et_sub = VectorSubvector(evap_trans, is);
         m_sub = VectorSubvector(instance_xtra->mask, is);
         po_sub = VectorSubvector(porosity, is);
         dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
@@ -2411,7 +2416,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
 
-      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 
 
@@ -2428,8 +2433,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         /*KKu: evaptrans is the name of the variable expected in NetCDF file */
         /*Here looping similar to pfb is not implemented. All steps are assumed to be
          * present in the single NetCDF file*/
-        ReadPFNC(filename, instance_xtra->evap_trans, "evaptrans", istep - 1, 3);
-        handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+        ReadPFNC(filename, evap_trans, "evaptrans", istep - 1, 3);
+        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
       else if (public_xtra->evap_trans_file_transient)
@@ -2463,11 +2468,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         printf("%d %s %s \n", istep, filename,
                public_xtra->evap_trans_filename);
 
-        ReadPFBinary(filename, instance_xtra->evap_trans);
+        ReadPFBinary(filename, evap_trans);
 
         //printf("Checking time step logging, steps = %i\n",Stepcount);
 
-        handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
 
@@ -2782,7 +2787,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                                    t, dt,
                                    problem_data,
                                    instance_xtra->old_pressure,
-                                   instance_xtra->evap_trans,
+                                   evap_trans,
                                    instance_xtra->ovrl_bc_flx,
                                    instance_xtra->x_velocity,
                                    instance_xtra->y_velocity,
@@ -2901,7 +2906,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         || public_xtra->print_evaptrans_sum
         || public_xtra->write_netcdf_evaptrans_sum)
     {
-      EvapTransSum(problem_data, dt, evap_trans_sum, instance_xtra->evap_trans);
+      EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
     }
 
     /***************************************************************
@@ -3064,7 +3069,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         sprintf(file_postfix, "evaptrans.%05d",
                 instance_xtra->file_number);
-        WritePFBinary(file_prefix, file_postfix, instance_xtra->evap_trans);
+        WritePFBinary(file_prefix, file_postfix, evap_trans);
         any_file_dumped = 1;
 
         // Update with new timesteps
@@ -3080,7 +3085,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         sprintf(file_postfix, "%05d", instance_xtra->file_number);
         sprintf(file_type, "evaptrans");
-        WriteSilo(file_prefix, file_type, file_postfix, instance_xtra->evap_trans,
+        WriteSilo(file_prefix, file_type, file_postfix, evap_trans,
                   t, instance_xtra->file_number, "EvapTrans");
         any_file_dumped = 1;
       }
@@ -3090,7 +3095,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "%05d", instance_xtra->file_number);
         sprintf(file_type, "evaptrans");
         WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-                       instance_xtra->evap_trans, t, instance_xtra->file_number,
+                       evap_trans, t, instance_xtra->file_number,
                        "EvapTrans");
         any_file_dumped = 1;
       }
@@ -3098,7 +3103,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (public_xtra->write_netcdf_evaptrans)
       {
         sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->evap_trans,
+        WritePFNC(file_prefix, nc_postfix, t, evap_trans,
                   public_xtra->numVarTimeVariant, "evaptrans", 3,
                   false, public_xtra->numVarIni);
         any_file_dumped = 1;
@@ -3247,7 +3252,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         /*sk Print the sink terms from the land surface model */
         sprintf(file_postfix, "et.%05d", instance_xtra->file_number);
-        WritePFBinary(file_prefix, file_postfix, instance_xtra->evap_trans);
+        WritePFBinary(file_prefix, file_postfix, evap_trans);
 
         /*sk Print the sink terms from the land surface model */
         sprintf(file_postfix, "obf.%05d", instance_xtra->file_number);
@@ -3789,7 +3794,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       sprintf(file_postfix, "evaptrans.%05d",
               instance_xtra->file_number);
-      WritePFBinary(file_prefix, file_postfix, instance_xtra->evap_trans);
+      WritePFBinary(file_prefix, file_postfix, evap_trans);
       any_file_dumped = 1;
     }
 
@@ -3797,7 +3802,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
       sprintf(file_type, "evaptrans");
-      WriteSilo(file_prefix, file_type, file_postfix, instance_xtra->evap_trans,
+      WriteSilo(file_prefix, file_type, file_postfix, evap_trans,
                 t, instance_xtra->file_number, "EvapTrans");
       any_file_dumped = 1;
     }
@@ -3874,7 +3879,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       /*sk Print the sink terms from the land surface model */
       sprintf(file_postfix, "et.%05d", instance_xtra->file_number);
-      WritePFBinary(file_prefix, file_postfix, instance_xtra->evap_trans);
+      WritePFBinary(file_prefix, file_postfix, evap_trans);
 
       /*sk Print the sink terms from the land surface model */
       sprintf(file_postfix, "obf.%05d", instance_xtra->file_number);
