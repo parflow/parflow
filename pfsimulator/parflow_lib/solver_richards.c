@@ -1521,7 +1521,7 @@ void
 AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time */
                 double stop_time,       /* Stopping time */
                 PFModule * time_step_control,   /* Use this module to control timestep if supplied */
-                Vector * evap_trans,
+                Vector * evap_trans,    /* Flux from land surface model */
                 Vector ** pressure_out,         /* Output vars */
                 Vector ** porosity_out, Vector ** saturation_out)
 {
