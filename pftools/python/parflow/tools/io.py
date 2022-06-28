@@ -56,7 +56,7 @@ except ImportError:
 
 
 def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
-             read_sginfo: bool=False):
+             read_sg_info: bool=False):
     """
     Read a single pfb file, and return the data therein
 
@@ -75,14 +75,14 @@ def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
     :param mode:
         The mode for the reader. See ``ParflowBinaryReader::read_all_subgrids``
         for more information about what modes are available.
-    :param read_sginfo:
+    :param read_sg_info:
         Precalculating subgrid information does not always work correctly for
         some files, especially velocity files. If ``True``, read subgrid info 
         directly from the pfb file (slower, but more robust)
     :return:
         An nd array containing the data from the pfb file.
     """
-    with ParflowBinaryReader(file, read_sginfo_fromfile=read_sginfo) as pfb:
+    with ParflowBinaryReader(file, read_sg_info=read_sg_info) as pfb:
         if not keys:
             data = pfb.read_all_subgrids(mode=mode, z_first=z_first)
         else:
@@ -244,7 +244,7 @@ def read_pfb_sequence(
     keys=None,
     z_first: bool=True,
     z_is: str='z',
-    read_sginfo: bool=False
+    read_sg_info: bool=False
 ):
     """
     An efficient wrapper to read a sequence of pfb files. This
@@ -270,7 +270,7 @@ def read_pfb_sequence(
     :param z_is:
         A descriptor of what the z axis represents. Can be one of
         'z', 'time', 'variable'. Default is 'z'.
-    :param read_sginfo:
+    :param read_sg_info:
         Precalculating subgrid information does not always work correctly for
         some files, especially velocity files. If ``True``, read subgrid info 
         directly from the pfb file (slower, but more robust)
@@ -280,7 +280,7 @@ def read_pfb_sequence(
     """
     # Filter out unique files only
     file_seq = sorted(list(set(file_seq)))
-    with ParflowBinaryReader(file_seq[0], read_sginfo_fromfile=read_sginfo) as pfb_init:
+    with ParflowBinaryReader(file_seq[0], read_sg_info=read_sg_info) as pfb_init:
         base_header = pfb_init.header
         base_sg_offsets = pfb_init.subgrid_offsets
         base_sg_locations = pfb_init.subgrid_locations
@@ -369,7 +369,7 @@ class ParflowBinaryReader:
     :param header:
         A dictionary representing the header of the pfb file. This is an optional
         input, if it is not given we will read it from the pfb file directly.
-    :param read_sginfo_fromfile:
+    :param read_sg_info:
         Whether or not to read subgrid information directly from the pfb file.
         Precalculating subgrid information does not always work correctly for
         some files, especially velocity files. This reads the subgrid offset 
@@ -386,7 +386,7 @@ class ParflowBinaryReader:
         q: int=None,
         r: int=None,
         header: Mapping[str, Number]=None,
-        read_sginfo_fromfile: bool=False
+        read_sg_info: bool=False
     ):
         self.filename = file
         self.f = open(self.filename, 'rb')
@@ -414,7 +414,7 @@ class ParflowBinaryReader:
         if precompute_subgrid_info:
             self.compute_subgrid_info()
 
-        if read_sginfo_fromfile:
+        if read_sg_info:
             self.read_subgrid_info()
             
     def close(self):
