@@ -234,6 +234,7 @@ typedef struct {
   Vector *old_pressure;
   Vector *mask;
 
+  Vector *evap_trans;           /* sk: Vector that contains the sink terms from the land surface model */
   Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
   Vector *overland_sum;
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
@@ -830,6 +831,19 @@ SetupRichards(PFModule * this_module)
       NewVectorType(z_grid, 1, 2, vector_side_centered_z);
     InitVectorAll(instance_xtra->z_velocity, 0.0);
 
+    /*sk Initialize LSM terms */
+    instance_xtra->evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
+    InitVectorAll(instance_xtra->evap_trans, 0.0);
+
+    if (public_xtra->evap_trans_file)
+    {
+      //sprintf(filename, "%s", public_xtra->evap_trans_filename);
+      //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
+      ReadPFBinary(public_xtra->evap_trans_filename, instance_xtra->evap_trans);
+
+      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+    }
 
     /* IMF: the following are only used w/ CLM */
 #ifdef HAVE_CLM
@@ -1534,6 +1548,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   Vector *porosity = ProblemDataPorosity(problem_data);
   Vector *evap_trans_sum = instance_xtra->evap_trans_sum;
   Vector *overland_sum = instance_xtra->overland_sum;   /* sk: Vector of outflow at the boundary */
+
+  if (evap_trans == NULL)
+  {
+    evap_trans = instance_xtra->evap_trans;
+  }
 
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
@@ -3903,6 +3922,7 @@ TeardownRichards(PFModule * this_module)
   FreeVector(instance_xtra->x_velocity);
   FreeVector(instance_xtra->y_velocity);
   FreeVector(instance_xtra->z_velocity);
+  FreeVector(instance_xtra->evap_trans);
 
   if (instance_xtra->evap_trans_sum)
   {
@@ -5950,50 +5970,21 @@ SolverRichards()
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
-  InstanceXtra *instance_xtra =
-    (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   Problem *problem = (public_xtra->problem);
-
   double start_time = ProblemStartTime(problem);
   double stop_time = ProblemStopTime(problem);
-
-  Grid *grid = (instance_xtra->grid);
-
   Vector *pressure_out;
   Vector *porosity_out;
   Vector *saturation_out;
 
-  char filename[2048];
-
-  VectorUpdateCommHandle *handle;
-
-  /*
-   * sk: Vector that contains the sink terms from the land surface model
-   */
-  Vector *evap_trans;
-
   SetupRichards(this_module);
-
-  /*sk Initialize LSM terms */
-  evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
-  InitVectorAll(evap_trans, 0.0);
-
-  if (public_xtra->evap_trans_file)
-  {
-    sprintf(filename, "%s", public_xtra->evap_trans_filename);
-    //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
-    ReadPFBinary(filename, evap_trans);
-
-    handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
-    FinalizeVectorUpdate(handle);
-  }
 
   AdvanceRichards(this_module,
                   start_time,
                   stop_time,
                   NULL,
-                  evap_trans, &pressure_out, &porosity_out, &saturation_out);
+                  NULL, &pressure_out, &porosity_out, &saturation_out);
 
   /*
    * Record amount of memory in use.
@@ -6001,8 +5992,6 @@ SolverRichards()
   recordMemoryInfo();
 
   TeardownRichards(this_module);
-
-  FreeVector(evap_trans);
 }
 
 /*
