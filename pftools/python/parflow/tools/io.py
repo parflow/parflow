@@ -56,7 +56,7 @@ except ImportError:
 
 
 def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
-             read_sg_info: bool=False):
+             read_sg_info: bool=True):
     """
     Read a single pfb file, and return the data therein
 
