@@ -24,8 +24,9 @@ module oas_pfl_mod
 
   ! Local variables
   integer :: comp_id, rank, ierror
-  integer :: nlevsoil = 10          ! Number of soil layers in CLM
-  integer :: sat_id, psi_id, et_id
+  integer :: nlevsoi = 20           ! Number of soil layers in CLM
+  integer :: nlevgrnd = 25          ! Number of soil layers in CLM
+  integer :: soilliq_id, psi_id, et_id
 
 contains
 
@@ -92,22 +93,24 @@ contains
     ! ... Define coupling fields
     ! -----------------------------------------------------------------
     var_nodims(1) = 1
-    var_nodims(2) = nlevsoil 
+    var_nodims(2) = nlevsoi 
 
-    call oasis_def_var (sat_id, "PFL_SAT", part_id, var_nodims, OASIS_Out, OASIS_Real, ierror)
-    if (ierror /= 0) call oasis_abort(comp_id, 'oas_pfl_define', 'oasis_def_var failed for PFL_SAT')
-    call oasis_def_var (psi_id, "PFL_PSI", part_id, var_nodims, OASIS_Out, OASIS_Real, ierror)
-    if (ierror /= 0) call oasis_abort(comp_id, 'oas_pfl_define', 'oasis_def_var failed for PFL_PSI')
     call oasis_def_var (et_id, "PFL_ET", part_id, var_nodims, OASIS_In, OASIS_Real, ierror)
     if (ierror /= 0) call oasis_abort(comp_id, 'oas_pfl_define', 'oasis_def_var failed for PFL_ET')
+
+    var_nodims(2) = nlevgrnd
+    call oasis_def_var (psi_id, "PFL_PSI", part_id, var_nodims, OASIS_Out, OASIS_Real, ierror)
+    if (ierror /= 0) call oasis_abort(comp_id, 'oas_pfl_define', 'oasis_def_var failed for PFL_PSI')
+    call oasis_def_var (soilliq_id, "PFL_SOILLIQ", part_id, var_nodims, OASIS_Out, OASIS_Real, ierror)
+    if (ierror /= 0) call oasis_abort(comp_id, 'oas_pfl_define', 'oasis_def_var failed for PFL_SOILLIQ')
 
     call oasis_enddef ( ierror )
     if (ierror /= 0) call oasis_abort (comp_id, 'oas_pfl_define', 'oasis_enddef failed')
     write(6,*) 'oaspfl: - oas_pfl_define : variable definition complete'
-      
+
   end subroutine oas_pfl_define
 
-  subroutine send_fld2_clm(pressure, saturation, topo, ix, iy, nx, ny, nz, nx_f, ny_f, pstep) bind(c, name='send_fld2_clm_')
+  subroutine send_fld2_clm(pressure, saturation, topo, ix, iy, nx, ny, nz, nx_f, ny_f, pstep, porosity, dz) bind(c, name='send_fld2_clm_')
     ! Input args
     integer,      intent(in)  :: nx, ny, nz,                       & ! Subgrid
                                  nx_f, ny_f,                       & !         
@@ -115,22 +118,23 @@ contains
     real(kind=8), intent(in)  :: pstep,                            & ! Parflow model time-step in hours
                                  pressure((nx+2)*(ny+2)*(nz+2)),   & ! pressure head (m)
                                  saturation((nx+2)*(ny+2)*(nz+2)), & ! saturation    (-)
-                                 topo((nx+2)*(ny+2)*(nz+2))          ! mask    (0 for inactive, 1 for active)
-                                
+                                 topo((nx+2)*(ny+2)*(nz+2)),       & ! mask    (0 for inactive, 1 for active)
+                                 porosity((nx+2)*(ny+2)*(nz+2)),   & ! pressure head (m)
+                                 dz((nx+2)*(ny+2)*(nz+2))
 
     ! Local variables                            
     integer                   :: i, j, k, l, g
     integer                   :: isecs                               ! Parflow model time in seconds
     integer                   :: j_incr, k_incr                      ! convert 1D vector to 3D i,j,k array
     integer, allocatable      :: counter(:,:), topo_mask(:,:)        ! Mask for active parflow cells
-    real(kind=8), allocatable :: sat_snd(:,:) , psi_snd(:,:)     ! temporary array
+    real(kind=8), allocatable :: h2osoi_liq_snd(:,:,:) , psi_snd(:,:,:)     ! temporary array
 
     isecs= nint(pstep*3600.d0)
     j_incr = nx_f
     k_incr = nx_f*ny_f
 
-    allocate(sat_snd(nx*ny,nlevsoil))
-    allocate(psi_snd(nx*ny,nlevsoil))
+    allocate(h2osoi_liq_snd(nx,ny,nlevgrnd))
+    allocate(psi_snd(nx,ny,nlevgrnd))
     allocate(topo_mask(nx,ny))
     allocate(counter(nx,ny))
 
@@ -149,16 +153,16 @@ contains
       end do
     end do
 
-    sat_snd = 0
+    h2osoi_liq_snd = 0
     psi_snd = 0
     do i = 1, nx
       do j = 1, ny
-        do k = 1, nlevsoil
+        do k = 1, nlevgrnd
           if (topo_mask(i,j) > 0) then
             l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))     !
-            g = (i-1)*ny + j
-            sat_snd(g,k) = saturation(l)
-            psi_snd(g,k) = pressure(l)*1000.0                      ! convert from [m] to [mm]
+            ! h2osoi_liq_snd(g,k) = saturation(l)
+            h2osoi_liq_snd(i,j,k) = saturation(l)*porosity(l)*dz(l)*1000
+            psi_snd(i,j,k) = pressure(l)*1000.0     ! convert from [m] to [mm]
           end if
         end do
       end do
@@ -166,10 +170,10 @@ contains
 
     !Send the fields
 
-    call oasis_put(sat_id, isecs, sat_snd, ierror)
+    call oasis_put(soilliq_id, isecs, h2osoi_liq_snd, ierror)
     call oasis_put(psi_id, isecs, psi_snd, ierror)
 
-    deallocate(sat_snd)
+    deallocate(h2osoi_liq_snd)
     deallocate(psi_snd)
     deallocate(counter)
     deallocate(topo_mask)
@@ -190,16 +194,15 @@ contains
     integer                     :: j_incr, k_incr                     ! convert 1D vector to 3D i,j,k array
     integer, allocatable        :: counter(:,:),                    & !
                                    topo_mask(:,:)                     ! Mask for active parflow cells
-    real(kind=8), allocatable   :: et_rcv(:,:)                        ! ET fluxes from eCLM
+    real(kind=8), allocatable   :: et_rcv(:,:,:)                      ! ET fluxes from eCLM
 
     isecs= nint(pstep*3600.d0)
     j_incr = nx_f
     k_incr = nx_f*ny_f
-    nlevsoil = 10
 
     allocate(topo_mask(nx,ny))
     allocate(counter(nx,ny))
-    allocate(et_rcv(nx*ny,nlevsoil))
+    allocate(et_rcv(nx,ny,nlevsoi))
 
     topo_mask = 0
     ! Create the masking vector
@@ -221,11 +224,11 @@ contains
     evap_trans = 0.
     do i = 1, nx
       do j = 1, ny
-        do k = 1, nlevsoil 
+        do k = 1, nlevsoi 
           if (topo_mask(i,j) > 0) then
-            g = (i-1)*ny + j
+            !g = (i-1)*ny + j
             l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))
-            evap_trans(l) = et_rcv(g,k)
+            evap_trans(l) = et_rcv(i,j,k)!et_rcv(g,k)
           end if
         end do
       end do
