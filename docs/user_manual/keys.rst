@@ -800,7 +800,7 @@ information needed by ParFlow. All the time cycles are synched to the
 **TimingInfo.BaseUnit** key described above and are *integer
 multipliers* of that value.
 
-*list* **CycleNames** no default This key is used to specify the named
+*list* **Cycle.Names** no default This key is used to specify the named
 time cycles to be used in a simulation. It is a list of names and each
 name defines a time cycle and the number of items determines the total
 number of time cycles specified. Each named cycle is described using a
@@ -932,7 +932,7 @@ be modeled. Currently only 1 or 2 phases may be modeled.
 
       <runname>.Phase.Names = "water"     ## Python syntax
 
-*list* **Contaminant.Names** no default This specifies the names of
+*list* **Contaminants.Names** no default This specifies the names of
 contaminants to be advected.
 
 .. container:: list
