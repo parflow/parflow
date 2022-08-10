@@ -26,7 +26,7 @@ In addition to these methods xpftools provides GUI access to most of
 these features. However the simplest approach is generally to include
 the tools commands within a tcl script. The following section lists all
 of the available ParFlow TCL commands along with detailed instructions
-for their use. §8.2 :ref:`PFTCL Commands` provides several examples of
+for their use. :ref:`PFTCL Commands` provides several examples of
 pre and post processing using the tools. In addition, a list of tools
 can be obtained by typing ``pfhelp`` into a TCL shell after importing 
 ParFlow. Typing ``¿pfhelp¿`` followed by a command name will display a 
@@ -37,10 +37,10 @@ detailed description of the command in question.
 PFTCL Commands
 --------------
 
-The tables that follow `4.1 <#pftools1>`__, `4.2 <#pftools2>`__ and
-`4.3 <#pftools3>`__ provide a list of ParFlow commands with short
+The tables that follow `8.1 <#pftools1>`__, `8.2 <#pftools2>`__ and
+`8.3 <#pftools3>`__ provide a list of ParFlow commands with short
 descriptions grouped according to their function. The last two columns
-in this table indicate what examples from §4.3 :ref:`common_pftcl`, if
+in this table indicate what examples from :ref:`common_pftcl`, if
 any, the command is used in and whether the command is compatible with a
 terrain following grid domain formulation.
 
@@ -1359,7 +1359,7 @@ square brackets are optional and do not need to be provided.
    This command computes the sub-surface water storage (compressible and
    incompressible components) based on mask, porosity, saturation,
    storativity and pressure fields. The equations used to calculate this
-   quantity are given in §5.9 :ref:`Water Balance`. The identifier of
+   quantity are given in :ref:`Water Balance`. The identifier of
    the data set created by this operation is returned upon successful
    completion.
 
@@ -1379,7 +1379,7 @@ square brackets are optional and do not need to be provided.
    is calculated at any location that slopes at the edge of the domain
    point outward. This data is in units of :math:`[L^3 T^{-1}]` and the
    equations used to calculate this quantity are given in
-   §5.9 :ref:`Water Balance`. The identifier of the data set created by
+   :ref:`Water Balance`. The identifier of the data set created by
    this operation is returned upon successful completion.
 
    ::
@@ -1389,7 +1389,7 @@ square brackets are optional and do not need to be provided.
    This command computes the surface water storage (ponded water on top
    of the domain) based on a computed top and pressure field. The
    equations used to calculate this quantity are given in
-   §5.9 :ref:`Water Balance`. The identifier of the data set created by
+   :ref:`Water Balance`. The identifier of the data set created by
    this operation is returned upon successful completion.
 
    ::

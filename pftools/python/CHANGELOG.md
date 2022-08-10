@@ -5,9 +5,9 @@
 - Metadata keys and processing of CLM files
 - Fix a bug on xarray indexing which require squeezing out multiple dimensions
 - Add the ability to give keys to the pf.read_pfb function for subsetting
-- Performance improvement with xarray by removing dask delayed call, which
-  caused threadlocks. Lazy loading is implemented natively now with changes to
-  the indexing methods.
+- Minor performance improvements by reducing subgrid header reads on sequences.
+- Improved interoperabilty for differently shaped pfbs to be merged into a single
+  xarray dataset object. For example, merging surface and subsurface parameters.
 
 ## v1.0.0 (released 2020-11-12):
 
