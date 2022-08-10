@@ -160,17 +160,6 @@ This will print the following:
 Full API for ``SubsurfacePropertiesBuilder``
 --------------------------------------------
 
-<<<<<<< HEAD
-1. ``SubsurfacePropertiesBuilder(run=None)``: Instantiates a ``SubsurfacePropertiesBuilder`` object. If the optional ``Run`` object ``run`` is given, it will use the subsurface units in ``run`` for later application. ``run`` must be provided as an argument either here or when calling the ``apply()`` method (see below).
-2. ``load_csv_file(tableFile, encoding='utf-8-sig')``: Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``, which should translate files generated from Microsoft Excel.
-3. ``load_txt_file(tableFile, encoding='utf-8-sig')``: Loads a text file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``.
-4. ``load_txt_content(txt_content)``: Loads in-line text to your ``SubsurfacePropertiesBuilder`` object.
-5. ``load_default_properties(database='conus_1')``: Loads one of several databases of subsurface properties. The default, ``conus_1``, is from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_
-6. ``assign(old=None, new=None, mapping=None)``: Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the ``old`` units, and the values as the ``new`` units. If an ``old`` unit will apply to multiple ``new`` units, the ``new`` units need to be passed in as a list.
-7. ``apply(run=None, name_registration=True)``: Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated with a specific unit (e.g., ``Phase.RelPerm.Type``).
-8. ``print()``: Prints out the subsurface parameters for all subsurface units in a hierarchical format.
-9. ``print_as_table(props_in_header=True, column_separator='  ')``: Prints out the subsurface parameters for all subsurface units in a table format. ``props_in_header`` will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
-=======
 1. ``SubsurfacePropertiesBuilder(run=None)``
     Instantiates a ``SubsurfacePropertiesBuilder`` object.
 
@@ -235,7 +224,6 @@ Full API for ``SubsurfacePropertiesBuilder``
     Prints out the subsurface parameters for all subsurface units in a table format. 
     
     :param ``props_in_header``: will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
->>>>>>> 82679542 (Formatting updates to API sections)
 
 .. _export_subsurface:
 
