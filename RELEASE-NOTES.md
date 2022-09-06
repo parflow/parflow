@@ -1,147 +1,69 @@
-# ParFlow Release Notes 3.10.0
------------------------------
+# ParFlow Release Notes 3.11.0
+------------------------------
 
-`ParFlow development and bug-fixes would not be possible without
-contributions of the ParFlow community.  Thank you for all the great
-contributions.
+This release contains several bug fixes and minor feature updates.
 
-These release notes cover changes made in 3.10.0.
+ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community.  Thank you for all the great contributions.
 
 ## Overview of Changes
 
-* Python dependency is now 3.6
-* Extend velocity calculations to domain boundary faces and option to output velocity
-* Python PFB reader/writer updated
-* Bug fixes
+* Improved reading of PFB file in Python PFTools
+* ParFlow Documentation Update 
+* PDF User Manual removed from the repository
+* Initialization of evap_trans to the SetupRichards function has been moved
+* CUDA fixes
+* OASIS array fix
 
 ## User Visible Changes
 
-### Extend velocity calculations to domain boundary faces and option to output velocity (Core)
+### Improved reading of PFB file in Python PFTools
 
-Extends the calculation of velocity (Darcy flux) values to the
-exterior boundary faces of the domain. Here are the highlights:
+Subgrid header information is read directly from the file to enable reading of files with edge data like the velocity files.
 
-Values are calculated for simulations using solver_impes (DirichletBC
-or FluxBC) or solver_richards (all BCs).
+Some issues ixes some cases where PFB files with different z-dimension shapes could not be merged together in xarray. Notably this happens for surface parameters which have shape (1, ny, nx) which really should be represented by xarray by squeezing out the z dimension. This now happens in xarray transparently. Loading files with the standard read_pfb or read_pfb_sequence will not auto-squeeze dimensions.
 
-Velocities work with TFG and variable dz options.
+Perfomance of reading should be improved by using memmapped and only the first subgrid header is read when loading a sequence of PFB files.   Parallism should be better in the read.
 
-The saturated velocity flux calculation (phase_velocity_face.c) has
-been added to the accelerated library.
+The ability to give keys to the pf.read_pfb function for subsetting was added.
+	
+### ParFlow Documentation Update 
 
-The description of Solver.PrintVelocities in pf-keys/definitions and
-the manual has been augmented with more information.
+The User Manual is being transitioned to ReadTheDocs from the previous LaTex manual.   A first pass at the conversion of the ParFlow LaTeX manual to ReadTheDocs format. This new documentation format contains the selected sections from the ParFlow LaTeX manual along with Kitware's introduction to Python PFTools and resulting tutorials. Added new sections documenting the Python PFTools Hydrology module, the Data Accessor class, and updated the PFB reading/writing tutorial to use the updated PFTools functions instead of Parflowio.
+    
+The original LaTeX files intact for now as this documentation conversion isn't fully complete, and we want to maintain that information while we still need to reference it.
+Currently this version of the ReadTheDocs is not generating the KitWare version of the ParFlow keys documentation but as a longer-term task they can be re-integrated into the new manual.
 
-Velocity has been added as a test criteria to the following tests from
-parflow/test/tcl :
+### PDF User Manual removed from the repository
 
-- default_single.tcl
-- default_richards.tcl
-- default_overland.tcl
-- LW_var_dz.tcl
+The PDF of the User Manual that was in the repository has been removed.  An online version of the users manual is available on [Read the Docks:Parflow Users Manual](https://parflow.readthedocs.io/en/latest/index.html).  A PDF version is available at [Parflow Users Manual PDF](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
+    
+## Internal/Developer Changes
 
-Also fixes incorrect application of FluxBC in saturated pressure
-discretization. Previously, positive fluxes assigned on a boundary
-flowed into the domain, and negative fluxes flowed out of the domain,
-regardless of alignment within the coordinate system. The new method
-allows more intuitive flux assignment where positive fluxes move up a
-coordinate axis and negative fluxes move down a coordinate axis.
+### Initialization of evap_trans to the SetupRichards function has been moved
+The Vector evap_trans was made part of the InstanceXtra structure, initialized is done in SetupRichards() and deallocated in TeardownRichards().
 
-### Python version dependency update (Python)
+### CUDA 11.5 update
 
-Python 3.6 or greater is now required for building and running ParFlow
-if Python is being used.
+Starting from CUB 1.14, CUB_NS_QUALIFIER macro must be specified.  The CUB_NS_QUALIFIER macro in the same way it was added in the CUB (see https://github.com/NVIDIA/cub/blob/94a50bf20cc01f44863a524ba36e089fd80f342e/cub/util_namespace.cuh#L99-L109)
 
-### PFB reader/writer updated (Python)
-
-Add simple and fast pure-python based readers and writers of PFB
-files. This eliminates the need for the external ParflowIO
-dependency. Implemented a new backend for the xarray package that
-let's you open both .pfb files as well as .pfmetadata files directly
-into xarray datastructures. These are very useful for data wrangling
-and scientific analysis
-
-Basic usage of the new functionality:
-
-```
-import parflow as pf
-
-# Read a pfb file as numpy array:
-x = pf.read_pfb('/path/to/file.pfb')
-
-# Read a pfb file as an xarray dataset:
-ds = xr.open_dataset('/path/to/file.pfb', name='example')
-
-# Write a pfb file with distfile:
-pf.write_pfb('/path/to/new_file.pfb', x, 
-             p=p, q=q, r=r, dist=True)
-```
-
-### SolidFileBuilder simplification (Python)
-
-Support simple use case in SolidFileBuilder when all work can simply
-be delegated to pfmask-to-pfsol.  Added a generate_asc_files (default
-False) argument to SolidFileBuilder.write.
-
-### Fixed reading of vegm array (Python)
-
-Fixed indices so that the x index of the vegm_array correctly reflects
-the columns and y index reflects the rows. The _read_vegm function in
-PFTools was inconsistent with parflow-python xy indexing.
-
-### Python PFTools version updates (Python)
-
-Updated Python PFTools dependency to current version 3.6.
+### CUDA Linux Repository Key Rotation
+    
+Updating NVidia CUDA repository keys due to rotation as documented [here](https://forums.developer.nvidia.com/t/notice-cuda-linux-repository-key-rotation/212772)
 
 ## Bug Fixes
 
-### Fix errors in LW_Test test case (Examples/Tests)
 
-LW_Test runs successfully and works in parallel.
+### Minor improvements/bugfix for python IO 
 
-### Increased input database maximum value size from 4097 to 65536 (Core)
+Fix a bug on xarray indexing which require squeezing out multiple dimensions. Lazy loading is implemented natively now with changes to the indexing methods.
 
-The maximum input database value length was increased from 4097
-to 65536. A bounds check is performed that emits a helpful error
-message when a database value is too big.
+### OASIS array fix
 
-### Python interface fixed issue where some keys failed to set when unless set in a particular order (Python)
+vshape should be a 1d array instead of a 2d array.  Its attributes are specified as [INTEGER, DIMENSION(2*id var nodims(1)), IN] based on the [OASIS3-MCT docs](https://gitlab.com/cerfacs/oasis3-mct/-/blob/OASIS3-MCT_3.1/doc/oasis3mct_UserGuide.pdf)
 
-1) Update some documentation for contributing to pf-keys
-2) Fix a bugs found in pf-keys where some keys failed to set when unless set in a particular order
-3) Add constraint for lists of names
-
-This change lets us express that one list of names should be a subset
-of another list of names Constraint Example
-
-Values for PhaseSources.{phase_name}.GeomNames should be a subset of
-values from either GeomInput.{geom_input_name}.GeomNames or
-GeomInput.{geom_input_name}.GeomName. Setting the domain to EnumDomain
-like so expresses that constraint. A more detailed example can be seen
-in this test case.
-
-## Internal/Developer Changes
-
-### Cleaned up dependencies for Python (Python)
-
-### Diverting ParFlow output to stream (Core)
-
-Added new method for use when ParFlow is embedded in another
-application to control the file stream used for ParFlow logging
-messages. In the embedded case will be disabled by default unless
-redirected by the calling application.
-
-Change required to meet IDEAS Watersheds best practices.
-
-###  Add keys and generator for Simput (Python)
-
-Added keys and generator to allow use Simput and applications based on
-Simput to write inputs for ParFlow with a graphical web interface.
-
-### Remove use of MPI_COMM_WORLD (Core)
-
-Enable use of a communicator other than MPI_COMM_WORLD for more
-general embedding.  Meet IDEAS Watersheds best practices policy.
+    New version of pftools to push to pipy for Parflow v3.10.0 (#384)
+    
+    Minor bugfix was needed in Python pftools for parsing versions, need to push this to pipy.
 
 ## Known Issues
 
