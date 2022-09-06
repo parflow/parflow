@@ -3,9 +3,8 @@
 # with simple flow domains, like a wall or a fault.
 #------------------------------------------------------------------
 
-from parflow import Run
+from parflow import Run, write_pfb
 from parflow.tools.fs import get_absolute_path, mkdir, chdir
-from parflowio.pyParflowio import PFData
 import numpy as np
 
 rich_fbx = Run("richards_FBx", __file__)
@@ -182,11 +181,7 @@ FBx_data = np.full((20, 20, 20), 1.0)
 # from cell 10 (index 9) to cell 11
 # reduction of 1E-3
 FBx_data[:, :, 9] = 0.001
-
-FBx_data_pfb = PFData(FBx_data)
-FBx_data_pfb.writeFile(get_absolute_path('Flow_Barrier_X.pfb'))
-FBx_data_pfb.close()
-
+write_pfb(get_absolute_path('Flow_Barrier_X.pfb'), FBx_data)
 rich_fbx.dist('Flow_Barrier_X.pfb')
 
 #-----------------------------------------------------------------------------

@@ -603,7 +603,7 @@ endif()
 
 option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
 if (PARFLOW_ENABLE_PYTHON)
-  find_package(Python3 3.3 QUIET REQUIRED COMPONENTS Interpreter)
+  find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
   set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
   set(PARFLOW_PYTHON_DEPENDS)
 
@@ -622,7 +622,7 @@ if (PARFLOW_ENABLE_PYTHON)
       COMMAND
         "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_all.txt"
       COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/pf-keys/requirements.txt"
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/user_manual/requirements.txt"
       COMMAND
         "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_dev.txt"
       COMMENT
@@ -644,7 +644,7 @@ if (PARFLOW_ENABLE_PYTHON)
   # Only enable Key Documentation if we enable Python
   option(PARFLOW_ENABLE_KEYS_DOC "Build key documentation for ParFlow" "FALSE")
   if (PARFLOW_ENABLE_KEYS_DOC)
-    add_subdirectory(docs/pf-keys)
+    add_subdirectory(docs/user_manual)
   endif()
 endif()
 
