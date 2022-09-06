@@ -20,7 +20,7 @@ ParFlow development and bug-fixes would not be possible without contributions of
 
 Subgrid header information is read directly from the file to enable reading of files with edge data like the velocity files.
 
-Some issues ixes some cases where PFB files with different z-dimension shapes could not be merged together in xarray. Notably this happens for surface parameters which have shape (1, ny, nx) which really should be represented by xarray by squeezing out the z dimension. This now happens in xarray transparently. Loading files with the standard read_pfb or read_pfb_sequence will not auto-squeeze dimensions.
+Fixes some cases where PFB files with different z-dimension shapes could not be merged together in xarray. Notably this happens for surface parameters which have shape (1, ny, nx) which really should be represented by xarray by squeezing out the z dimension. This now happens in xarray transparently. Loading files with the standard read_pfb or read_pfb_sequence will not auto-squeeze dimensions.
 
 Perfomance of reading should be improved by using memmapped and only the first subgrid header is read when loading a sequence of PFB files.   Parallism should be better in the read.
 
@@ -28,10 +28,9 @@ The ability to give keys to the pf.read_pfb function for subsetting was added.
 	
 ### ParFlow Documentation Update 
 
-The User Manual is being transitioned to ReadTheDocs from the previous LaTex manual.   A first pass at the conversion of the ParFlow LaTeX manual to ReadTheDocs format. This new documentation format contains the selected sections from the ParFlow LaTeX manual along with Kitware's introduction to Python PFTools and resulting tutorials. Added new sections documenting the Python PFTools Hydrology module, the Data Accessor class, and updated the PFB reading/writing tutorial to use the updated PFTools functions instead of Parflowio.
+The User Manual is being transitioned to ReadTheDocs from the previous LaTex manual.   A first pass at the conversion of the ParFlow LaTeX manual to ReadTheDocs format. This new documentation format contains the selected sections from the ParFlow LaTeX manual along with Kitware's introduction to Python PFTools and resulting tutorials. Added new sections documenting the Python PFTools Hydrology module, the Data Accessor class, and updated the PFB reading/writing tutorial to use the updated PFTools functions instead of parflowio.
     
-The original LaTeX files intact for now as this documentation conversion isn't fully complete, and we want to maintain that information while we still need to reference it.
-Currently this version of the ReadTheDocs is not generating the KitWare version of the ParFlow keys documentation but as a longer-term task they can be re-integrated into the new manual.
+The original LaTeX files remain intact for now as this documentation conversion isn't fully complete.   Currently this version of the ReadTheDocs is not generating the KitWare version of the ParFlow keys documentation but as a longer-term task they can be re-integrated into the new manual.
 
 ### PDF User Manual removed from the repository
 
@@ -62,7 +61,7 @@ Fix a bug on xarray indexing which require squeezing out multiple dimensions. La
 vshape should be a 1d array instead of a 2d array.  Its attributes are specified as [INTEGER, DIMENSION(2*id var nodims(1)), IN] based on the [OASIS3-MCT docs](https://gitlab.com/cerfacs/oasis3-mct/-/blob/OASIS3-MCT_3.1/doc/oasis3mct_UserGuide.pdf)
 
 
-### Python pftools for version parsing
+### Python pftools version parsing
     
 Minor bugfix was needed in Python pftools for parsing versions.
 
