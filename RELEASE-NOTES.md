@@ -10,7 +10,7 @@ ParFlow development and bug-fixes would not be possible without contributions of
 * Improved reading of PFB file in Python PFTools
 * ParFlow Documentation Update 
 * PDF User Manual removed from the repository
-* Initialization of evap_trans to the SetupRichards function has been moved
+* Initialization of evap_trans vector has been moved
 * CUDA fixes
 * OASIS array fix
 
@@ -39,7 +39,7 @@ The PDF of the User Manual that was in the repository has been removed.  An onli
     
 ## Internal/Developer Changes
 
-### Initialization of evap_trans to the SetupRichards function has been moved
+### Initialization of evap_trans has been moved
 The Vector evap_trans was made part of the InstanceXtra structure, initialized is done in SetupRichards() and deallocated in TeardownRichards().
 
 ### CUDA 11.5 update
@@ -61,9 +61,10 @@ Fix a bug on xarray indexing which require squeezing out multiple dimensions. La
 
 vshape should be a 1d array instead of a 2d array.  Its attributes are specified as [INTEGER, DIMENSION(2*id var nodims(1)), IN] based on the [OASIS3-MCT docs](https://gitlab.com/cerfacs/oasis3-mct/-/blob/OASIS3-MCT_3.1/doc/oasis3mct_UserGuide.pdf)
 
-    New version of pftools to push to pipy for Parflow v3.10.0 (#384)
+
+### Python pftools for version parsing
     
-    Minor bugfix was needed in Python pftools for parsing versions, need to push this to pipy.
+Minor bugfix was needed in Python pftools for parsing versions.
 
 ## Known Issues
 
