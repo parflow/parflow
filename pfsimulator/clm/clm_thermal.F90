@@ -245,6 +245,9 @@ subroutine clm_thermal (clm)
      if (soil_beta < 0.0) soil_beta = 0.00d0
      if (soil_beta > 1.) soil_beta = 1.d0
 !print*,'soil_beta 1:',soil_beta
+
+!LB - Reset beta to one if snow layers are present
+     if (clm%snl < 0) soil_beta = 1.0d0
      hr   = dexp(psit/roverg/tg)
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
   else
@@ -582,8 +585,13 @@ subroutine clm_thermal (clm)
   if (clm%qflx_evap_soi >= 0.) then
      ! Do not allow for sublimation in melting (melting ==> evap. ==> sublimation)
      ! clm%qflx_evap_grnd = min(clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi)
-     clm%qflx_evap_grnd = clm%qflx_evap_soi    
-     clm%qflx_sub_snow = clm%qflx_evap_soi - clm%qflx_evap_grnd
+     !clm%qflx_evap_grnd = clm%qflx_evap_soi    
+     !clm%qflx_sub_snow = clm%qflx_evap_soi - clm%qflx_evap_grnd
+  if (clm%snl<0) then !LB - sublimation; includes evaporation of meltwater
+        clm%qflx_sub_snow = clm%qflx_evap_soi  
+	 else !LB - evaporation; passed to PF; includes sublimation if clm%snowdp < 0.01
+        clm%qflx_evap_grnd = clm%qflx_evap_soi 
+     endif
   else
      if (tg < tfrz) then
         clm%qflx_dew_snow = abs(clm%qflx_evap_soi)
