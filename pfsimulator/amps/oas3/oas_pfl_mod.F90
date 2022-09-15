@@ -185,7 +185,7 @@ contains
                                    nx_f, ny_f                       ! dimensions of ET subvector
     real(kind=8), intent(in)    :: pstep,                         & ! current model time in hours
                                    topo((nx+2)*(ny+2)*(nz+2))       ! topography mask (0 for inactive, 1 for active)
-    real(kind=8), intent(inout) :: evap_trans((nx+2)*(ny+2)*(nz+2)) ! evapotranspiration [m/s]
+    real(kind=8), intent(inout) :: evap_trans((nx+2)*(ny+2)*(nz+2)) ! evapotranspiration [1/hrs]
                                                                     ! (nx+2)*(ny+2)*(nz+2) = total number of subgrid cells; the
                                                                     !  extra "+2" terms account for the ghost nodes/halo points
 
@@ -195,7 +195,7 @@ contains
     integer                     :: l                                ! index variable for ParFlow fields (e.g. evap_trans, topo)
     integer                     :: z                                ! subsurface level (z=nz topmost layer, z=1 deepest layer)
     integer                     :: top_z_level(nx,ny)               ! topmost z level of active ParFlow cells
-    real(kind=8), allocatable   :: evap_trans_3d(:,:,:)             ! Root ET fluxes received from eCLM [m/s]
+    real(kind=8), allocatable   :: evap_trans_3d(:,:,:)             ! Root ET fluxes received from eCLM [1/hrs]
 
     ! Receive ET fluxes from eCLM
     allocate(evap_trans_3d(nx,ny,nlevsoi))
