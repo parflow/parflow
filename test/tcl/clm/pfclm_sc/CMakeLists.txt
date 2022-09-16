@@ -5,10 +5,7 @@ set(TESTS "")
 if(${PARFLOW_HAVE_CLM})
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND TESTS
-      clm.tcl
-      clm_forc_veg.tcl
-      clm_varDZ.tcl
-      clm_slope.tcl)
+      pfclm_sc.tcl)
   endif()
 endif()
 
@@ -17,24 +14,11 @@ set(PARALLEL_TESTS)
 if((${PARFLOW_AMPS_LAYER} STREQUAL "mpi1") OR (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND PARALLEL_TESTS
-      clm.tcl
-      clm.jac.tcl
-      clm_forc_veg.tcl
-      clm_varDZ.tcl
-      clm_slope.tcl)
+      pfclm_sc.tcl)
   endif()
 endif()
 
 set(SAMRAI_TESTS)
-
-if(${PARFLOW_HAVE_CLM})
-  if(${PARFLOW_HAVE_SAMRAI})
-    if(${PARFLOW_HAVE_HYPRE})
-      list(APPEND SAMRAI_TESTS
-	clm_samrai.tcl)
-    endif()
-  endif()
-endif()
 
 foreach(inputfile ${TESTS})
   pf_add_sequential_test(${inputfile})
@@ -51,8 +35,5 @@ foreach(inputfile ${SAMRAI_TESTS})
     pf_add_parallel_test(${inputfile} ${processor_topology})
   endforeach()
 endforeach()
-
-add_subdirectory (clm-reuse)
-add_subdirectory (pfclm_sc)
 
 
