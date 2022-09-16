@@ -1557,8 +1557,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
-  Subvector *p_sub, *s_sub, *et_sub, *m_sub;
-  double *pp, *sp, *et, *ms;
+  Subvector *p_sub, *s_sub, *et_sub, *m_sub, *po_sub, *dz_sub;
+  double *pp, *sp, *et, *ms, *po_dat, *dz_dat;
   double sw_lat = .0;
   double sw_lon = .0;
 #endif
@@ -1746,6 +1746,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         s_sub = VectorSubvector(instance_xtra->saturation, is);
         et_sub = VectorSubvector(evap_trans, is);
         m_sub = VectorSubvector(instance_xtra->mask, is);
+        po_sub = VectorSubvector(porosity, is);
+        dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
 
         ix = SubgridIX(subgrid);
         iy = SubgridIY(subgrid);
@@ -1760,10 +1762,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         pp = SubvectorData(p_sub);
         et = SubvectorData(et_sub);
         ms = SubvectorData(m_sub);
-
+        po_dat = SubvectorData(po_sub);
+        dz_dat = SubvectorData(dz_sub);
         //CPS       amps_Printf("Calling oasis send/receive for time  %3.1f \n", t);
         CALL_send_fld2_clm(pp, sp, ms, ix, iy, nx, ny, nz, nx_f, ny_f,
-                           t);
+                           t,po_dat,dz_dat);
         amps_Sync(amps_CommWorld);
         CALL_receive_fld2_clm(et, ms, ix, iy, nx, ny, nz, nx_f, ny_f, t);
       }
