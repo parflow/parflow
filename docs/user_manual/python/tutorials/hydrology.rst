@@ -1,16 +1,19 @@
-********************************************************************************
-Hydrology Module
-********************************************************************************
+.. _hydrology:
 
-================================================================================
+Hydrology Module
+=================
+
+.. _hydrology_intro:
+
 Introduction
-================================================================================
+-------------
 
 The Python PFTools Hydrology module provides standalone functions for common hydrologic calculations.
 
-================================================================================
+.. _hydrology_usage:
+
 Usage of ``Hydrology``
-================================================================================
+----------------------
 
 First, we’ll show some examples of using the Hydrology class within a ParFlow Python script:
 
@@ -105,9 +108,11 @@ First, we’ll show some examples of using the Hydrology class within a ParFlow 
 
         data.time += 1
 
-================================================================================
+
+.. _hydrology_api:
+
 Full API
-================================================================================
+---------
 
 1. ``calculate_water_table_depth(pressure, saturation, dz)``
     Calculate water table depth from the land surface.

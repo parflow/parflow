@@ -1,11 +1,12 @@
-********************************************************************************
+.. _sub_tables:
+
 Tables for Subsurface Parameters
-********************************************************************************
+================================
 
+.. _sub_tables_intro:
 
-================================================================================
 Introduction
-================================================================================
+------------
 
 ParFlow domains with complex geology often involve many lines in the input script, which lengthens the script and makes it more cumbersome to navigate. Python PFTools makes it easy to do the following:
 
@@ -13,43 +14,44 @@ ParFlow domains with complex geology often involve many lines in the input scrip
 - Export a table of the subsurface properties
 - Load a database of common soil and geologic properties to set up your domain
 
-================================================================================
+.. _sub_tables_usage:
+
 Usage of ``SubsurfacePropertiesBuilder``
-================================================================================
+-----------------------------------------
 
 First, we'll show some usage examples of loading tables of parameters within a ParFlow Python script:
 
 .. code-block:: python3
 
-    from parflow import Run
-    from parflow.tools.builders import SubsurfacePropertiesBuilder
+  from parflow import Run
+  from parflow.tools.builders import SubsurfacePropertiesBuilder
 
-    table_test = Run("table_test", __file__)
+  table_test = Run("table_test", __file__)
 
-    table_test.GeomInput.Names = 'box_input indi_input'
-    table_test.GeomInput.indi_input.InputType = 'IndicatorField'
-    table_test.GeomInput.indi_input.GeomNames = 's1 s2 s3 s4 g1 g2 g3 g4'
+  table_test.GeomInput.Names = 'box_input indi_input'
+  table_test.GeomInput.indi_input.InputType = 'IndicatorField'
+  table_test.GeomInput.indi_input.GeomNames = 's1 s2 s3 s4 g1 g2 g3 g4'
 
-    # First example: table as in-line text
-    soil_properties = '''
-    # ----------------------------------------------------------------
-    # Sample header
-    # ----------------------------------------------------------------
-    key     Perm   Porosity   RelPermAlpha  RelPermN  SatAlpha  SatN    SatSRes    SatSSat
+  # First example: table as in-line text
+  soil_properties = '''
+  # ----------------------------------------------------------------
+  # Sample header
+  # ----------------------------------------------------------------
+  key     Perm   Porosity   RelPermAlpha  RelPermN  SatAlpha  SatN    SatSRes    SatSSat
 
-    s1      0.26   0.375      3.548         4.162     3.548     4.162   0.000001   1
-    s2      0.04   -          3.467         2.738     -         2.738   0.000001   1
-    s3      0.01   0.387      2.692         2.445     2.692     2.445   0.000001   1
-    s4      0.01   0.439      -             2.659     0.501     2.659   0.000001   1
-    '''
+  s1      0.26   0.375      3.548         4.162     3.548     4.162   0.000001   1
+  s2      0.04   -          3.467         2.738     -         2.738   0.000001   1
+  s3      0.01   0.387      2.692         2.445     2.692     2.445   0.000001   1
+  s4      0.01   0.439      -             2.659     0.501     2.659   0.000001   1
+  '''
 
-    # Creating object and assigning the subsurface properties
-    SubsurfacePropertiesBuilder(table_test) \
-      .load_txt_content(soil_properties) \              # loading the in-line text
-      .load_csv_file('geologic_properties_123.csv') \   # loading external csv file
-      .assign('g3', 'g4') \                             # assigns properties of unit 'g3' to unit 'g4'
-      .apply() \                                        # setting keys based on loaded properties
-      .print_as_table()                                 # printing table of loaded properties
+  # Creating object and assigning the subsurface properties
+  SubsurfacePropertiesBuilder(table_test) \
+    .load_txt_content(soil_properties) \              # loading the in-line text
+    .load_csv_file('geologic_properties_123.csv') \   # loading external csv file
+    .assign('g3', 'g4') \                             # assigns properties of unit 'g3' to unit 'g4'
+    .apply() \                                        # setting keys based on loaded properties
+    .print_as_table()                                 # printing table of loaded properties
 
 At the top of the script, we import the ``SubsurfacePropertiesBuilder`` class from ``parflow.tools.builders``. Then,
 after specifying the ``GeomInput.indi_input.GeomNames``, we include a table for the soil properties as an in-line text variable.
@@ -74,9 +76,10 @@ The ``print_as_table`` method prints out the subsurface properties for each unit
     g3   0.01  0.387     2.692         2.445     2.692     2.445  1e-06  1.0
     g4   0.01  0.387     2.692         2.445     2.692     2.445  1e-06  1.0
 
-================================================================================
+.. _sub_tables_formatting:
+
 Table formatting for importing
-================================================================================
+------------------------------
 
 Let's have another look at the in-line table from the usage example above:
 
@@ -102,9 +105,10 @@ These tables can be formatted in a number of different ways. Here are several co
 - The table does not have to be completely filled. As shown here, blank property values must be designated by a hyphen.
 - To properly process the table and map to the correct keys, the field names (including ``key``) must be one of several possible aliases. The aliases are listed in `this yaml file <https://github.com/grapp1/parflow/blob/py-input/pftools/python/parflow/tools/ref/table_keys.yaml>`_ that is included in the Python PFTools. These aliases include the exact end of the key name (e.g., ``Perm.Value`` as opposed to the alias ``Perm``), so when in doubt, you can use the exact name.
 
-================================================================================
+.. _sub_tables_default_db:
+
 Default database loading
-================================================================================
+------------------------
 
 We have added several databases of commonly used parameters for different soil and geologic units to provide some helpful guidance. To load these database, you can simply call the ``load_default_properties`` method on the ``SubsurfacePropertiesBuilder`` object.
 The available databases in the Python PFTools package can be found `in the "subsurface_*.txt" files here. <https://github.com/parflow/parflow/tree/master/pftools/python/parflow/tools/ref>`_
@@ -150,23 +154,81 @@ This will print the following:
     s1      0.269    0.38      0.14   3.55          4.16
     s2      0.0436   0.39      1.26   3.47          2.74
 
-================================================================================
+
+.. _sub_tables_api:
+
 Full API for ``SubsurfacePropertiesBuilder``
-================================================================================
+--------------------------------------------
 
-1. ``SubsurfacePropertiesBuilder(run=None)``: Instantiates a ``SubsurfacePropertiesBuilder`` object. If the optional ``Run`` object ``run`` is given, it will use the subsurface units in ``run`` for later application. ``run`` must be provided as an argument either here or when calling the ``apply()`` method (see below).
-2. ``load_csv_file(tableFile, encoding='utf-8-sig')``: Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``, which should translate files generated from Microsoft Excel.
-3. ``load_txt_file(tableFile, encoding='utf-8-sig')``: Loads a text file to your ``SubsurfacePropertiesBuilder`` object. The default text encoding format is ``utf-8-sig``.
-4. ``load_txt_content(txt_content)``: Loads in-line text to your ``SubsurfacePropertiesBuilder`` object.
-5. ``load_default_properties(database='conus_1')``: Loads one of several databases of subsurface properties. The default, ``conus_1``, is from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_
-6. ``assign(old=None, new=None, mapping=None)``: Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the ``old`` units, and the values as the ``new`` units. If an ``old`` unit will apply to multiple ``new`` units, the ``new`` units need to be passed in as a list.
-7. ``apply(run=None, name_registration=True)``: Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated with a specific unit (e.g., ``Phase.RelPerm.Type``).
-8. ``print()``: Prints out the subsurface parameters for all subsurface units in a hierarchical format.
-9. ``print_as_table(props_in_header=True, column_separator='  ')``: Prints out the subsurface parameters for all subsurface units in a table format. ``props_in_header`` will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
+1. ``SubsurfacePropertiesBuilder(run=None)``
+    Instantiates a ``SubsurfacePropertiesBuilder`` object.
 
-================================================================================
+    :param ``run``: An optional ``Run`` object. If provided, it will use the subsurface units in ``run`` for later applications.
+        ``run`` must be provided as an argument either here or when calling the ``apply()`` method (see below).
+
+2. ``load_csv_file(tableFile, encoding='utf-8-sig')``
+    Loads a comma-separated (csv) file to your ``SubsurfacePropertiesBuilder`` object. 
+
+    :param ``tableFile``: String path to the input .csv file.
+    :param ``encoding``: The text encoding format of your file. Defaults to ``utf-8-sig``, which should translate files generated from Microsoft Excel.
+
+3. ``load_txt_file(tableFile, encoding='utf-8-sig')``
+    Loads a text file to your ``SubsurfacePropertiesBuilder`` object.
+
+    :param ``tableFile``: String path to the input .txt file.
+    :param ``encoding``: The text encoding format of your file. Defaults to ``utf-8-sig``.
+
+4. ``load_txt_content(txt_content)``
+    Loads in-line text to your ``SubsurfacePropertiesBuilder`` object.
+
+    :param ``txt_content``: In-line text string.
+
+5. ``load_default_properties(database='conus_1')``
+    Loads one of several databases of subsurface properties. 
+
+    :param ``database``: Default database. Options are: 
+
+        ``'conus_1'``: Soil/rock properties from `Maxwell and Condon (2016). <https://science.sciencemag.org/content/353/6297/377>`_
+
+        ``'washita'``: Soil/rock properties from Little Washita script.
+
+        ``'freeze_cherry'``: Soil/rock properties from Freeze and Cherry (1979). Note: Freeze and Cherry only has permeability and porosity.
+
+6. ``assign(old=None, new=None, mapping=None)``
+    Assigns properties to the ``new`` subsurface unit using the properties from the ``old`` subsurface unit. 
+    Alternatively, a dictionary (``mapping``) can be passed in as an argument, which should have the keys as the 
+    ``old`` units, and the values as the ``new`` units. If an ``old`` unit will apply to multiple ``new`` units, 
+    the ``new`` units need to be passed in as a list.
+
+    :param `old`: String source unit with existing parameters
+    :param `new`: String target unit to which the parameters from old will be mapped.
+    :param `mapping``: Dictionary that includes the old units as keys and new units as values.
+
+7. ``apply(run=None, name_registration=True)``
+    Applies the loaded subsurface properties to the subsurface units in the ``Run`` object ``run``. 
+    If ``run`` is not provided here, the user must provide the ``run`` argument when instantiating the 
+    ``SubsurfacePropertiesBuilder``object. If ``name_registration`` is set to ``True``, it will add the 
+    subsurface unit names (e.g., *s1*, *s2* from the example above) to the list of unit names for each 
+    property (e.g., setting  ``Geom.Perm.Names = 's1 s2 s3 s4'``), and set the ``addon`` keys not associated 
+    with a specific unit (e.g., ``Phase.RelPerm.Type``).
+
+    :param ``run``: Run object to which the loaded subsurface parameters will be applied. If run=None, then the run object
+        must be passed in as an argument when the ``TableToProperties`` is instantiated.
+    :param ``name_registration``: Boolean value. If ``True``, sets the auxiliary keys (e.g., ``GeomNames``) related to the loaded subsurface properties.
+
+
+8. ``print()``
+    Prints out the subsurface parameters for all subsurface units in a hierarchical format.
+
+9. ``print_as_table(props_in_header=True, column_separator='  ')``
+    Prints out the subsurface parameters for all subsurface units in a table format. 
+    
+    :param ``props_in_header``: will print the table with the property names as column headings if set to ``True``, or as row headings if set to ``False``.
+
+.. _export_subsurface:
+
 Exporting subsurface properties
-================================================================================
+-------------------------------
 
 It is often useful to have a table of the subsurface properties assigned to various subsurface units during a run. As mentioned in the `run script API <https://grapp1parflow.readthedocs.io/en/latest/python/run_script.html#full-api>`_,
 you can write out a table of the subsurface properties by calling the ``write_subsurface_table`` method on your ``Run`` object.
@@ -190,9 +252,10 @@ Execute the Python script, and you should see the output file *def_richards_subs
 
 See that it only prints out the properties that are explicitly assigned to each of the subsurface units ``domain`` and ``background``.
 
-================================================================================
+.. _sub_tables_examples:
+
 Examples
-================================================================================
+--------
 
 Full examples of the ``SubsurfacePropertiesBuilder`` can be found in the *new_features* subdirectory of the ParFlow Python tests.
 

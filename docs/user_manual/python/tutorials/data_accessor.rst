@@ -1,17 +1,20 @@
-********************************************************************************
-Data Accessor
-********************************************************************************
+.. _data_accessor:
 
-================================================================================
+Data Accessor
+==============
+
+.. _data_accessor_intro:
+
 Introduction
-================================================================================
+-------------
 
 The ``DataAccessor`` class is a helper class for extracting numpy arrays from a given
 ParFlow run.
 
-================================================================================
+.. _data_accessor_usage:
+
 Usage of ``DataAccessor``
-================================================================================
+-------------------------
 
 First, we’ll show some examples of using the DataAccessor class within a ParFlow Python script:
 
@@ -64,9 +67,10 @@ First, we’ll show some examples of using the DataAccessor class within a ParFl
         data.time += 1
 
 
-================================================================================
+.. _data_accessor_api:
+
 Full API
-================================================================================
+---------
 
 #. ``run.data_accessor`` 
     Accesses the ``DataAccessor`` object on the current ``Run`` object ``run``. 

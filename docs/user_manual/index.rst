@@ -27,9 +27,8 @@ updated: |today|
    models
    files
    keys
-   python/index
    pftools
-   tutorials/index
+   python/index
    bib
 
 .. [1]
