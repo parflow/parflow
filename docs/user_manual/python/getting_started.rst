@@ -1,15 +1,17 @@
-********************************************************************************
+.. _getting_started:
+
 PFTools
-********************************************************************************
+========
 
 Welcome to Python PFTools. This is a Python package that creates a user-friendly
 Python interface for ParFlow. This package allows users to run ParFlow directly
 from a Python script, leveraging the power and accessibility of Python. More
 documentation for this package can be found here: https://pypi.org/project/pftools/
 
-================================================================================
+.. _getting_started_install:
+
 Installation
-================================================================================
+-------------
 
 ``pftools`` can be installed with the following command:
 
@@ -34,9 +36,10 @@ If you would like to set up a virtual environment to install ``pftools``, execut
     pip install pftools[all]
 
 
-================================================================================
+.. _getting_started_execution:
+
 Execution
-================================================================================
+-----------
 
 Command: ``python3 /path/to/script/run_script.py [args]``
 
