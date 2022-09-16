@@ -449,7 +449,11 @@ SetupRichards(PFModule * this_module)
   /* Do turning bands (and other stuff maybe) */
   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
   ComputeTop(problem, problem_data);
-  ComputePatchTop(problem, problem_data);
+
+  if(public_xtra->print_top || public_xtra->write_silo_top)
+  {
+    ComputePatchTop(problem, problem_data);
+  }
 
   /* @RMM set subsurface slopes to topographic slopes if we have terrain following grid
    * turned on.  We might later make this an geometry or input file option but for now
@@ -1787,13 +1791,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
       BeginTiming(CLMTimingIndex);
 
-      // SGS FIXME this should not be here, should not be reading input at this point
-      // Should get these values from somewhere else.
       /* sk: call to the land surface model/subroutine */
       /* sk: For the couple with CLM */
-      int p = GetInt("Process.Topology.P");
-      int q = GetInt("Process.Topology.Q");
-      int r = GetInt("Process.Topology.R");
+      int p = GlobalsP;
+      int q = GlobalsQ;
+      int r = GlobalsR;
       /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
       int gnx = BackgroundNX(GlobalsBackground);
       int gny = BackgroundNY(GlobalsBackground);

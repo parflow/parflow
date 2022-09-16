@@ -69,9 +69,6 @@ void ComputePatchTop(Problem *    problem,      /* General problem information *
 
   InitVectorAll(patch_top, -1);
 
-  printf("Computing Patch Top\n");
-
-
   BCStruct    *bc_struct;
 
   BCPressureData *bc_pressure_data = ProblemDataBCPressureData(problem_data);

@@ -488,6 +488,14 @@ if ![pftestFile crater.out.porosity.pfb "Max difference in porosity" $sig_digits
     set passed 0
 }
 
+if ![pftestFile crater.out.top_patch.pfb "Max difference in top patch" $sig_digits] {
+    set passed 0
+}
+
+if ![pftestFile crater.out.top_zindex.pfb "Max difference in top zindex" $sig_digits] {
+    set passed 0
+}
+
 foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
     if ![pftestFile crater.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
 	set passed 0

@@ -1735,6 +1735,15 @@ Solver:
     domains:
       BoolDomain:
 
+  PrintTop:
+    help: >
+      [Type: boolean/string] Key used to control writing of two PFB files for the top of the domain.  'TopZIndex' is a NX * NY
+      file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
+      (i,j) column does not intersect the domain. format.
+    default: False
+    domains:
+      BoolDomain:
+
   # missing from manual
   PrintSlopes:
     help: >
@@ -2333,6 +2342,16 @@ Solver:
       binary format as a running cumulative amount. This is integrated along all domain boundaries and is calculated any
       location that slopes at the edge of the domain point outward. This data is in units of [L3]. The printing of the data
       is controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloTop:
+    help: >
+      [Type: boolean/string] Key used to control writing of two Silo files for the top of the domain.  'TopZIndex' is a NX * NY
+      file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
+      (i,j) column does not intersect the domain. format.
     default: False
     domains:
       BoolDomain:

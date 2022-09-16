@@ -60,10 +60,10 @@ Back   +Y
 Each mask file should be the same dimensions in X and Y and have
 number of points in Z = 1.
 
-Note that the axis alignment is based on the standard PF axis
-alignment used inside the code and in PF file formats.  Other file
-formats, such as the ASC format, use different alignments.  In the
-ASC format the Y axis is inverted.
+Note that the axis alignment shown here is based on the standard PF
+axis alignment used inside the code and in PF file formats.  Other
+file formats, such as the ASC format, use different alignments.  In
+the ASC format the Y axis is inverted from the PF file formats.
 
 #### Setting Top/Bottom of domain
 
