@@ -15,7 +15,14 @@ import argparse
 
 from . import settings
 from .fs import get_absolute_path
-from .io import write_dict, DataAccessor
+from .io import (
+    DataAccessor,
+    ParflowBinaryReader,
+    write_dict,
+    read_pfb,
+    write_pfb,
+    write_dist
+)
 from .terminal import Symbols as TermSymbol
 
 from .database.generated import BaseRun
@@ -64,6 +71,9 @@ def get_current_parflow_version():
     That method rely on PARFLOW_DIR environment variable to parse and
     extract the version of your installed version of ParFlow.
 
+    TODO: This not a very good way to get the version.   Should get
+    from cmake processed file.
+
     Returns:
         str: Return ParFlow version like '3.6.0'
 
@@ -74,7 +84,7 @@ def get_current_parflow_version():
         with open(version_file, 'r') as f:
             for line in f:
                 if 'PARFLOW_VERSION=' in line:
-                    version = line[17:22]
+                    version = line[17:-2]
             if not version:
                 print(f'Cannot find version in {version_file}')
     else:
@@ -489,6 +499,14 @@ class Run(BaseRun):
         q = kwargs.get('Q', self.Process.Topology.Q)
         r = kwargs.get('R', self.Process.Topology.R)
 
-        from parflowio.pyParflowio import PFData
-        pfb_data = PFData(pfb_file_full_path)
-        pfb_data.distFile(p, q, r, pfb_file_full_path)
+        with ParflowBinaryReader(pfb_file_full_path) as pfb:
+            array = pfb.read_all_subgrids()
+            header = pfb.header
+
+        dx, dy, dz = header['dx'], header['dy'], header['dz']
+        write_pfb(pfb_file_full_path, array,
+                   p=p, q=q, r=r, dx=dx, dy=dy, dz=dz,
+                   dist=True)
+
+
+

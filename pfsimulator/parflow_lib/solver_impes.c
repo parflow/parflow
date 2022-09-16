@@ -714,7 +714,8 @@ void      SolverImpes()
                               problem_data,
                               pressure,
                               saturations,
-                              phase));
+                              phase,
+                              t));
 
           phase_maximum = MaxPhaseFieldValue(phase_x_velocity[phase],
                                              phase_y_velocity[phase],

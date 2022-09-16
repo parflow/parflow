@@ -58,7 +58,6 @@ set (SRC_FILES_CONST advect.F
   pf_smg.c
   pfield.c
   pgsRF.c
-  phase_velocity_face.c
   ppcg.c
   printgrid.c
   printmatrix.c
@@ -143,6 +142,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     overlandflow_eval.cpp
     overlandflow_eval_diffusive.cpp
     overlandflow_eval_Kin.cpp
+    phase_velocity_face.cpp
     problem_phase_density.cpp
     problem_phase_rel_perm.cpp
     problem_phase_source.cpp
@@ -234,6 +234,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     overlandflow_eval.c
     overlandflow_eval_diffusive.c
     overlandflow_eval_Kin.c
+    phase_velocity_face.c
     pf_module.c
     problem_bc.c
     problem_bc_pressure.c

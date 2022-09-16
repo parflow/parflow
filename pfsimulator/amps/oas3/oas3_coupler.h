@@ -22,10 +22,10 @@ void oas_pfl_rcv(int *kid, int *kstep, double *kdata,
 
 
 #define send_fld2_clm send_fld2_clm_
-#define CALL_send_fld2_clm(pressure, saturation, topo, ix, iy, nx, ny, nz, nx_f, ny_f, pstep) \
-  send_fld2_clm(pressure, saturation, topo, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &pstep)
+#define CALL_send_fld2_clm(pressure, saturation, topo, ix, iy, nx, ny, nz, nx_f, ny_f, pstep, porosity, dz) \
+  send_fld2_clm(pressure, saturation, topo, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &pstep, porosity, dz)
 void send_fld2_clm(double *pressure, double *saturation, double *topo, int *ix, int*iy,
-                   int *nx, int *ny, int *nz, int *nx_f, int *ny_f, double *pstep);
+                   int *nx, int *ny, int *nz, int *nx_f, int *ny_f, double *pstep, double *porosity, double *dz);
 
 #define receive_fld2_clm receive_fld2_clm_
 #define CALL_receive_fld2_clm(evap_trans, topo, ix, iy, nx, ny, nz, nx_f, ny_f, pstep) \

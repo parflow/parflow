@@ -806,15 +806,15 @@ void          DiscretizePressure(
       ForPatchCellsPerFace(FluxBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int iv; double ff;),
+                           Locals(int iv, dir; double ff;),
                            CellSetup({ iv = SubvectorEltIndex(f_sub, i, j, k); }),
-                           FACE(LeftFace,  { ff = ffx; }),
-                           FACE(RightFace, { ff = ffx; }),
-                           FACE(DownFace,  { ff = ffy; }),
-                           FACE(UpFace,    { ff = ffy; }),
-                           FACE(BackFace,  { ff = ffz; }),
-                           FACE(FrontFace, { ff = ffz; }),
-                           CellFinalize({ fp[iv] -= ff * bc_patch_values[ival]; }),
+                           FACE(LeftFace,  { ff = ffx; dir = -1;}),
+                           FACE(RightFace, { ff = ffx; dir = 1;}),
+                           FACE(DownFace,  { ff = ffy; dir = -1;}),
+                           FACE(UpFace,    { ff = ffy; dir = 1;}),
+                           FACE(BackFace,  { ff = ffz; dir = -1;}),
+                           FACE(FrontFace, { ff = ffz; dir = 1;}),
+                           CellFinalize({ fp[iv] -= ff * dir * bc_patch_values[ival]; }),
                            AfterAllCells(DoNothing)
         );
     }

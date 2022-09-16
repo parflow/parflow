@@ -154,13 +154,20 @@ IDB *IDB_NewDB(char *filename)
   amps_FreeInvoice(invoice);
 
   /* Read in each of the items in the file and put them in the HBT */
-
   invoice = amps_NewInvoice("%i%&c%i%&c", &key_len, &key_len, key,
                             &value_len, &value_len, value);
   for (i = 0; i < num_entries; i++)
   {
     /* Read the key and value from the input file */
     amps_SFBCast(amps_CommWorld, file, invoice);
+    if ((value_len + 1) > IDB_MAX_VALUE_LEN) {
+      key[key_len] = '\0';
+      char s[128];
+      sprintf(s, "%d", IDB_MAX_VALUE_LEN-1);
+      InputError("Error: The value associated with input database "
+                 "key <%s> is too long. The maximum length is %s. ",
+                 key, s); 
+    }
     key[key_len] = '\0';
     value[value_len] = '\0';
 
