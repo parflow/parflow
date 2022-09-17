@@ -65,11 +65,6 @@ void ComputeTop(Problem *    problem,      /* General problem information */
 
   (void)problem;
 
-  if(GlobalsR > 1)
-  {
-    PARFLOW_ERROR("Computing top patch indices currently only works if processor distribution in Z is 1");
-  }
-
   InitVectorAll(top, -1);
 //   PFVConstInit(-1, top);
 
