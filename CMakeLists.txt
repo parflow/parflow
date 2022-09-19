@@ -484,6 +484,19 @@ if ( ${PARFLOW_HAVE_CLM} )
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 endif ( ${PARFLOW_HAVE_CLM} )
 
+option(PARFLOW_HAVE_ECLM "Compile with eCLM (experimental)" "OFF")
+
+if ( ${PARFLOW_HAVE_ECLM} )
+  if (HAVE_CLM)
+    message(FATAL_ERROR "ERROR: PARFLOW_HAVE_CLM and PARFLOW_HAVE_ECLM cannot be enabled at the same time.")
+  endif (HAVE_CLM)
+  if (NOT HAVE_OAS3)
+    message(FATAL_ERROR "ERROR: OASIS is required when compiling with PARFLOW_HAVE_ECLM=ON (check OAS3_ROOT variable)")
+  else (HAVE_OAS3)
+    message(WARNING "Enabling components for ParFlow-eCLM coupled model (experimental feature!)")
+    set (HAVE_ECLM ${PARFLOW_HAVE_ECLM})
+  endif (HAVE_OAS3)
+endif ( ${PARFLOW_HAVE_ECLM} )
 #
 # Parflow specific configuration options
 #
@@ -609,7 +622,7 @@ if (PARFLOW_ENABLE_PYTHON)
       COMMAND
         "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_all.txt"
       COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/pf-keys/requirements.txt"
+        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/user_manual/requirements.txt"
       COMMAND
         "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_dev.txt"
       COMMENT
@@ -631,7 +644,7 @@ if (PARFLOW_ENABLE_PYTHON)
   # Only enable Key Documentation if we enable Python
   option(PARFLOW_ENABLE_KEYS_DOC "Build key documentation for ParFlow" "FALSE")
   if (PARFLOW_ENABLE_KEYS_DOC)
-    add_subdirectory(docs/pf-keys)
+    add_subdirectory(docs/user_manual)
   endif()
 endif()
 

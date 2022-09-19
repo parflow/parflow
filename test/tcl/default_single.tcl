@@ -309,12 +309,6 @@ pfset PhaseConcen.water.tce.Type                      Constant
 pfset PhaseConcen.water.tce.GeomNames                 concen_region
 pfset PhaseConcen.water.tce.Geom.concen_region.Value  0.8
 
-
-pfset Solver.WriteSiloSubsurfData True
-pfset Solver.WriteSiloPressure True
-pfset Solver.WriteSiloSaturation True
-pfset Solver.WriteSiloConcentration True
-
 pfset Solver.PrintVelocities True
 
 #-----------------------------------------------------------------------------

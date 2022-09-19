@@ -1391,8 +1391,10 @@ void PF2WRF(Vector *pf_vector,
             Vector *top);
 
 void ComputeTop(Problem *    problem,
-                ProblemData *problem_data
-                );
+                ProblemData *problem_data);
+
+void ComputePatchTop(Problem *    problem,
+		     ProblemData *problem_data);
 
 int CheckTime(Problem *problem, char *key, double time);
 

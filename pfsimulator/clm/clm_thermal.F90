@@ -143,8 +143,8 @@ subroutine clm_thermal (clm)
 
   real(r8)                         & 
        cgrnd,                      & ! deriv. of soil energy flux wrt to soil temp [w/m2/k]
-       cgrndl,                     & ! deriv, of soil sensible heat flux wrt soil temp [w/m2/k]
-       cgrnds,                     & ! deriv of soil latent heat flux wrt soil temp [w/m**2/k]
+       cgrndl,                     & ! deriv of soil latent heat flux wrt soil temp [w/m**2/k] (RMM, fixed)
+       cgrnds,                     & ! deriv, of soil sensible heat flux wrt soil temp [w/m2/k]
        hs,                         & ! net energy flux into the surface (w/m2)
        dhsdt,                      & ! d(hs)/dT
        eg,                         & ! water vapor pressure at temperature T [pa]
@@ -170,7 +170,7 @@ subroutine clm_thermal (clm)
        tinc,                       & ! temperature difference of two time step
        obuold                        ! monin-obukhov length from previous iteration
 
-  real(r8) temp, temp_alpha, temp_rz                      !temporary variable                                      
+  real(r8) temp, soil_beta, rz_beta, temp_rz                      !soil_beta, rz_beta, the soil beta function and root zone beta function [-]                                       
   real(r8) cf                        !s m**2/umol -> s/m
 
   !=== End Variable List ===================================================
@@ -227,23 +227,27 @@ subroutine clm_thermal (clm)
      if (clm%pf_press(1)>= 0.0d0)  psit = 0.0d0
      if (clm%pf_press(1) < 0.0d0)  psit = clm%pf_press(1)
      !    enddo  
-!@RMM
-! added beta-type formulation depending on soil moisture, the lower value is hard-wired
-! to 0.1, this should either be set to the residual saturation for that layer
-! or made a user input via PF
+!RMM
+! added beta-type formulation depending on soil moisture, the residual saturation for evap is passed in via parflow
+! the type of soil beta is also a PF key
      select case (clm%beta_type)
      case (0)    ! none
-     temp_alpha = 1.0d0
+     soil_beta = 1.0d0
      case (1)    ! linear
-     temp_alpha = (clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1))
+     soil_beta = (clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1))
      case (2)    ! cosine, like ISBA
-     temp_alpha = 0.5d0*(1.0d0 - cos(((clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) / & 
+     soil_beta = 0.5d0*(1.0d0 - cos(((clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) / & 
                   (clm%watsat(1) - clm%res_sat*clm%watsat(1)))*3.141d0))     
      end select
      
-     if (temp_alpha < 0.0) temp_alpha = 0.00d0
-     if (temp_alpha > 1.) temp_alpha = 1.d0
-!print*,'temp-alpha1:',temp_alpha
+     !print*, 'clm%pf_vol_liq(1)/clm%watsat clm%res_sat clm%watsat(1) :',clm%pf_vol_liq(1)/clm%watsat(1),clm%res_sat,clm%watsat(1)
+
+     if (soil_beta < 0.0) soil_beta = 0.00d0
+     if (soil_beta > 1.) soil_beta = 1.d0
+!print*,'soil_beta 1:',soil_beta
+
+!LB - Reset beta to one if snow layers are present
+     if (clm%snl < 0) soil_beta = 1.0d0
      hr   = dexp(psit/roverg/tg)
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
   else
@@ -378,11 +382,10 @@ subroutine clm_thermal (clm)
      raih   = (1-clm%frac_veg_nosno)*clm%forc_rho*cpair/rah
      raiw   = (1-clm%frac_veg_nosno)*clm%forc_rho/raw          
      cgrnds = raih
-!@RMM
-! apply beta (confusingly called temp_alpha) 
-! to derivative of soil temp
+! RMM
+! apply soil beta to latent heat flux of ground
 !
-     cgrndl = temp_alpha*raiw*dqgdT
+     cgrndl = soil_beta*raiw*dqgdT
      cgrnd  = cgrnds + htvp*cgrndl
      clm%sfact  = raiw*sfacx
      if (dqh >= 0.) clm%sfact = 0.
@@ -393,13 +396,15 @@ subroutine clm_thermal (clm)
 
      clm%taux   = -(1-clm%frac_veg_nosno)*clm%forc_rho*clm%forc_u/ram        
      clm%tauy   = -(1-clm%frac_veg_nosno)*clm%forc_rho*clm%forc_v/ram
-!@RMM
-! apply beta (confusingly called temp_alpha) 
-! to evaporation
-!
+! RMM
+! apply soil beta 
+! to bare soil evaporation
      clm%eflx_sh_grnd  = -raih*dth
-     clm%qflx_evap_soi  = -temp_alpha*raiw*dqh
-!print*, 'Alpha:', temp_alpha
+     clm%qflx_evap_soi  = -raiw*dqh
+! check if this needs to be limited in the case of dew, i.e. don't limit dew, only evap
+     !if(clm%qflx_evap_soi <= 0.0) 
+     clm%qflx_evap_soi =soil_beta*clm%qflx_evap_soi
+!print*, 'Soil Beta 2:', soil_beta
      clm%eflx_sh_tot  = clm%eflx_sh_grnd
      clm%qflx_evap_tot  = clm%qflx_evap_soi
 
@@ -429,9 +434,9 @@ subroutine clm_thermal (clm)
         if(clm%h2osoi_liq(i) > 0.0) then
 !           temp = ((-150000.0d0 - clm%pf_press(i))/(-150000.0d0) )
 !@RMM
-! added beta-type formulation depending on soil moisture, the lower value is hard-wired
-! to 0.1, this should either be set to the residual saturation for that layer
-! or made a user input via PF
+! added beta-type formulation depending on soil moisture, the lower value (i.e. the wilting point) is passed in via ParFlow
+! and care should be taken to make sure this is set equal to or above residual saturation 
+! the *type* of beta is important as well and is passed in as a key via ParFlow
 ! a root zone average is taken here
            select case (clm%vegwaterstresstype)
            case (0)     ! none
@@ -453,14 +458,12 @@ subroutine clm_thermal (clm)
      enddo
 
 !@RMM
-! added a transpiration cutoff depending on soil moisture, the value is hard-wired
-! to 0.1, this should either be set to the residual saturation for that layer
-! or made a user input via PF
+! added a transpiration cutoff depending on soil moisture,  user input via PF
      if ( (clm%vegwaterstresstype == 1).and.(clm%pf_press(1)<=(clm%wilting_point*1000.d0)) ) clm%btran = 0.0d0
      if ( (clm%vegwaterstresstype == 2).and.(clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
 
      call clm_leaftem(z0mv,z0hv,z0qv,thm,th,thv,tg,qg,dqgdT,htvp,sfacx,     &
-          dqgmax,emv,emg,dlrad,ulrad,cgrnds,cgrndl,cgrnd,temp_alpha,clm)
+          dqgmax,emv,emg,dlrad,ulrad,cgrnds,cgrndl,cgrnd,soil_beta,clm)
 
   endif
 
@@ -582,8 +585,13 @@ subroutine clm_thermal (clm)
   if (clm%qflx_evap_soi >= 0.) then
      ! Do not allow for sublimation in melting (melting ==> evap. ==> sublimation)
      ! clm%qflx_evap_grnd = min(clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi)
-     clm%qflx_evap_grnd = clm%qflx_evap_soi    
-     clm%qflx_sub_snow = clm%qflx_evap_soi - clm%qflx_evap_grnd
+     !clm%qflx_evap_grnd = clm%qflx_evap_soi    
+     !clm%qflx_sub_snow = clm%qflx_evap_soi - clm%qflx_evap_grnd
+  if (clm%snl<0) then !LB - sublimation; includes evaporation of meltwater
+        clm%qflx_sub_snow = clm%qflx_evap_soi  
+	 else !LB - evaporation; passed to PF; includes sublimation if clm%snowdp < 0.01
+        clm%qflx_evap_grnd = clm%qflx_evap_soi 
+     endif
   else
      if (tg < tfrz) then
         clm%qflx_dew_snow = abs(clm%qflx_evap_soi)

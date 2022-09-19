@@ -51,11 +51,13 @@ subroutine clm_snowage (clm)
 
      clm%snowage = 0.
 
-  else if (clm%h2osno > 800.) then   ! Over Antarctica
+! RMM removed arbitrary snow age for SWE >=800; we have places in the US / CO / CA that have 800 mm of SWE and this 
+! cutoff caused issues when the SWE passed that amount
+  !else if (clm%h2osno > 800.) then   ! Over Antarctica
 
-     clm%snowage = 0.
+  !   clm%snowage = 0.
 
-  else                               ! Away from Antarctica 
+  else                               !! RMM rmoved ! Away from Antarctica 
 
      age3  = 0.3
      arg   = 5.e3*(1./tfrz-1./clm%t_grnd)

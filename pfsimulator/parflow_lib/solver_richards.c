@@ -234,6 +234,7 @@ typedef struct {
   Vector *old_pressure;
   Vector *mask;
 
+  Vector *evap_trans;           /* sk: Vector that contains the sink terms from the land surface model */
   Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
   Vector *overland_sum;
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
@@ -448,6 +449,11 @@ SetupRichards(PFModule * this_module)
   /* Do turning bands (and other stuff maybe) */
   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
   ComputeTop(problem, problem_data);
+
+  if(public_xtra->print_top || public_xtra->write_silo_top)
+  {
+    ComputePatchTop(problem, problem_data);
+  }
 
   /* @RMM set subsurface slopes to topographic slopes if we have terrain following grid
    * turned on.  We might later make this an geometry or input file option but for now
@@ -716,18 +722,21 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->print_top)
   {
-    printf("PrintTop -- not yet implemented\n");
-    // strcpy(file_postfix, "top");
-    // WritePFBinary(file_prefix, file_postfix, XXXXXXXXXXXXXXXX(problem_data));
+    strcpy(file_postfix, "top_zindex");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataIndexOfDomainTop(problem_data));
+    strcpy(file_postfix, "top_patch");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data));
   }
 
   if (public_xtra->write_silo_top)
   {
-    printf("WriteSiloTop -- not yet implemented\n");
-    // strcpy(file_postfix, "");
-    // strcpy(file_type, "top");
-    // WriteSilo(file_prefix, file_type, file_postfix, XXXXXXXXXXXXXXXXXXXXX(problem_data),
-    //          t, 0, "Top");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "top_zindex");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataIndexOfDomainTop(problem_data),
+              t, 0, "TopZIndex");
+    strcpy(file_type, "top_patch");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data),
+              t, 0, "TopPatch");
   }
 
   if (!amps_Rank(amps_CommWorld))
@@ -830,6 +839,19 @@ SetupRichards(PFModule * this_module)
       NewVectorType(z_grid, 1, 2, vector_side_centered_z);
     InitVectorAll(instance_xtra->z_velocity, 0.0);
 
+    /*sk Initialize LSM terms */
+    instance_xtra->evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
+    InitVectorAll(instance_xtra->evap_trans, 0.0);
+
+    if (public_xtra->evap_trans_file)
+    {
+      //sprintf(filename, "%s", public_xtra->evap_trans_filename);
+      //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
+      ReadPFBinary(public_xtra->evap_trans_filename, instance_xtra->evap_trans);
+
+      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+    }
 
     /* IMF: the following are only used w/ CLM */
 #ifdef HAVE_CLM
@@ -1535,11 +1557,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   Vector *evap_trans_sum = instance_xtra->evap_trans_sum;
   Vector *overland_sum = instance_xtra->overland_sum;   /* sk: Vector of outflow at the boundary */
 
+  if (evap_trans == NULL)
+  {
+    evap_trans = instance_xtra->evap_trans;
+  }
+
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
-  Subvector *p_sub, *s_sub, *et_sub, *m_sub;
-  double *pp, *sp, *et, *ms;
+  Subvector *p_sub, *s_sub, *et_sub, *m_sub, *po_sub, *dz_sub;
+  double *pp, *sp, *et, *ms, *po_dat, *dz_dat;
   double sw_lat = .0;
   double sw_lon = .0;
 #endif
@@ -1564,6 +1591,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   int fflag, fstart, fstop;     // IMF: index w/in 3D forcing array corresponding to istep
   int n, c;                     // IMF: index vars for looping over subgrid data BH: added c
   int ind_veg;                  /*BH: temporary variable to store vegetation index */
+  int Stepcount = 0;            /* Added for transient EvapTrans file management - NBE */
+  int Loopcount = 0;            /* Added for transient EvapTrans file management - NBE */
   double sw=NAN, lw=NAN, prcp=NAN, tas=NAN, u=NAN, v=NAN, patm=NAN, qatm=NAN;   // IMF: 1D forcing vars (local to AdvanceRichards)
   double lai[18], sai[18], z0m[18], displa[18]; /*BH: array with lai/sai/z0m/displa values for each veg class */
   double *sw_data = NULL;
@@ -1598,13 +1627,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     *qflx_soi, *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *iflag,
     *qirr, *qirr_inst;
   int clm_file_dir_length;
+
+  double print_cdt;
+  int clm_dump_files = 0;
+  int rank = amps_Rank(amps_CommWorld);
 #endif
 
-  int rank;
   int any_file_dumped;
   int clm_file_dumped;
   int dump_files = 0;
-  int clm_dump_files;
+  
   int retval;
   int converged;
   int take_more_time_steps;
@@ -1616,7 +1648,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   double ct = 0.0;
   double cdt = 0.0;
   double print_dt;
-  double print_cdt;
   double dtmp, err_norm;
   double gravity = ProblemGravity(problem);
 
@@ -1626,20 +1657,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   char file_prefix[2048], file_type[2048], file_postfix[2048];
   char nc_postfix[2048];
 
-  /* Added for transient EvapTrans file management - NBE */
-  int Stepcount, Loopcount;
-  Stepcount = 0;
-  Loopcount = 0;
-
   int first_tstep = 1;
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
   //CPS oasis definition phase
 #ifdef HAVE_OAS3
-  int p = GetInt("Process.Topology.P");
-  int q = GetInt("Process.Topology.Q");
-  int r = GetInt("Process.Topology.R");
   int nlon = GetInt("ComputationalGrid.NX");
   int nlat = GetInt("ComputationalGrid.NY");
   double pfl_step = GetDouble("TimeStep.Value");
@@ -1689,8 +1712,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   }
   dt = cdt;
 
-  rank = amps_Rank(amps_CommWorld);
-
   /*
    * Check to see if pressure solves are requested
    * start_count < 0 implies that subsurface data ONLY is requested
@@ -1733,6 +1754,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         s_sub = VectorSubvector(instance_xtra->saturation, is);
         et_sub = VectorSubvector(evap_trans, is);
         m_sub = VectorSubvector(instance_xtra->mask, is);
+        po_sub = VectorSubvector(porosity, is);
+        dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
 
         ix = SubgridIX(subgrid);
         iy = SubgridIY(subgrid);
@@ -1747,10 +1770,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         pp = SubvectorData(p_sub);
         et = SubvectorData(et_sub);
         ms = SubvectorData(m_sub);
-
+        po_dat = SubvectorData(po_sub);
+        dz_dat = SubvectorData(dz_sub);
         //CPS       amps_Printf("Calling oasis send/receive for time  %3.1f \n", t);
         CALL_send_fld2_clm(pp, sp, ms, ix, iy, nx, ny, nz, nx_f, ny_f,
-                           t);
+                           t,po_dat,dz_dat);
         amps_Sync(amps_CommWorld);
         CALL_receive_fld2_clm(et, ms, ix, iy, nx, ny, nz, nx_f, ny_f, t);
       }
@@ -1762,19 +1786,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       // IMF: Added to include CLM dumps in file_number updating.
       //      Init to zero outside of ifdef HAVE_CLM
       clm_file_dumped = 0;
-      clm_dump_files = 0;
 
       /* IMF: The following are only used w/ CLM */
 #ifdef HAVE_CLM
       BeginTiming(CLMTimingIndex);
 
-      // SGS FIXME this should not be here, should not be reading input at this point
-      // Should get these values from somewhere else.
       /* sk: call to the land surface model/subroutine */
       /* sk: For the couple with CLM */
-      int p = GetInt("Process.Topology.P");
-      int q = GetInt("Process.Topology.Q");
-      int r = GetInt("Process.Topology.R");
+      int p = GlobalsP;
+      int q = GlobalsQ;
+      int r = GlobalsR;
       /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
       int gnx = BackgroundNX(GlobalsBackground);
       int gny = BackgroundNY(GlobalsBackground);
@@ -3910,6 +3931,7 @@ TeardownRichards(PFModule * this_module)
   FreeVector(instance_xtra->x_velocity);
   FreeVector(instance_xtra->y_velocity);
   FreeVector(instance_xtra->z_velocity);
+  FreeVector(instance_xtra->evap_trans);
 
   if (instance_xtra->evap_trans_sum)
   {
@@ -5957,50 +5979,21 @@ SolverRichards()
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
-  InstanceXtra *instance_xtra =
-    (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   Problem *problem = (public_xtra->problem);
-
   double start_time = ProblemStartTime(problem);
   double stop_time = ProblemStopTime(problem);
-
-  Grid *grid = (instance_xtra->grid);
-
   Vector *pressure_out;
   Vector *porosity_out;
   Vector *saturation_out;
 
-  char filename[2048];
-
-  VectorUpdateCommHandle *handle;
-
-  /*
-   * sk: Vector that contains the sink terms from the land surface model
-   */
-  Vector *evap_trans;
-
   SetupRichards(this_module);
-
-  /*sk Initialize LSM terms */
-  evap_trans = NewVectorType(grid, 1, 1, vector_cell_centered);
-  InitVectorAll(evap_trans, 0.0);
-
-  if (public_xtra->evap_trans_file)
-  {
-    sprintf(filename, "%s", public_xtra->evap_trans_filename);
-    //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
-    ReadPFBinary(filename, evap_trans);
-
-    handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
-    FinalizeVectorUpdate(handle);
-  }
 
   AdvanceRichards(this_module,
                   start_time,
                   stop_time,
                   NULL,
-                  evap_trans, &pressure_out, &porosity_out, &saturation_out);
+                  NULL, &pressure_out, &porosity_out, &saturation_out);
 
   /*
    * Record amount of memory in use.
@@ -6008,8 +6001,6 @@ SolverRichards()
   recordMemoryInfo();
 
   TeardownRichards(this_module);
-
-  FreeVector(evap_trans);
 }
 
 /*
