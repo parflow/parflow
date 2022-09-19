@@ -450,6 +450,11 @@ SetupRichards(PFModule * this_module)
   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
   ComputeTop(problem, problem_data);
 
+  if(public_xtra->print_top || public_xtra->write_silo_top)
+  {
+    ComputePatchTop(problem, problem_data);
+  }
+
   /* @RMM set subsurface slopes to topographic slopes if we have terrain following grid
    * turned on.  We might later make this an geometry or input file option but for now
    * it's just copying one vector into another */
@@ -717,18 +722,21 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->print_top)
   {
-    printf("PrintTop -- not yet implemented\n");
-    // strcpy(file_postfix, "top");
-    // WritePFBinary(file_prefix, file_postfix, XXXXXXXXXXXXXXXX(problem_data));
+    strcpy(file_postfix, "top_zindex");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataIndexOfDomainTop(problem_data));
+    strcpy(file_postfix, "top_patch");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data));
   }
 
   if (public_xtra->write_silo_top)
   {
-    printf("WriteSiloTop -- not yet implemented\n");
-    // strcpy(file_postfix, "");
-    // strcpy(file_type, "top");
-    // WriteSilo(file_prefix, file_type, file_postfix, XXXXXXXXXXXXXXXXXXXXX(problem_data),
-    //          t, 0, "Top");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "top_zindex");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataIndexOfDomainTop(problem_data),
+              t, 0, "TopZIndex");
+    strcpy(file_type, "top_patch");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data),
+              t, 0, "TopPatch");
   }
 
   if (!amps_Rank(amps_CommWorld))
@@ -1783,13 +1791,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
       BeginTiming(CLMTimingIndex);
 
-      // SGS FIXME this should not be here, should not be reading input at this point
-      // Should get these values from somewhere else.
       /* sk: call to the land surface model/subroutine */
       /* sk: For the couple with CLM */
-      int p = GetInt("Process.Topology.P");
-      int q = GetInt("Process.Topology.Q");
-      int r = GetInt("Process.Topology.R");
+      int p = GlobalsP;
+      int q = GlobalsQ;
+      int r = GlobalsR;
       /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
       int gnx = BackgroundNX(GlobalsBackground);
       int gny = BackgroundNY(GlobalsBackground);

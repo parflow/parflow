@@ -11,6 +11,7 @@ set (SRC_FILES_CONST advect.F
   computation.c
   compute_maximums.c
   compute_top.c
+  compute_patch_top.c
   compute_total_concentration.c
   constantRF.c
   constant_porosity.c

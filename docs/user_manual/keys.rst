@@ -4282,6 +4282,21 @@ written as a PFSB file.
 
       <runname>.Solver.PrintConcentration = False     ## Python syntax
 
+
+*string* **Solver.PrintTop** False This key is used to turn on printing
+of the top of domain data.  'TopZIndex' is a NX * NY file with the Z
+index of the top of the domain. 'TopPatch' is the Patch index for the
+top of the domain.  A value of -1 indicates an (i,j) column does not
+intersect the domain.  The data is written as a PFB file.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintTop False                    ## TCL syntax
+
+      <runname>.Solver.PrintTop = False              ## Python syntax
+      
 *string* **Solver.PrintWells** True This key is used to turn on
 collection and printing of the well data. The data is collected at
 intervals given by values in the timing information section. Printing
@@ -4471,6 +4486,23 @@ in the timing information section.
 
       <runname>.Solver.WriteSiloOverlandSum = True       ## Python syntax
 
+*string* **Solver.WriteSiloTop** False Key used to control writing of
+two Silo files for the top of the domain.  'TopZIndex' is a NX * NY
+file with the Z index of the top of the domain. 'TopPatch' is the
+Patch index for the top of the domain.  A value of -1 indicates an
+(i,j) column does not intersect the domain.
+
+.. container:: list
+
+
+   ::
+
+      pfset Solver.WriteSiloTop True                  ## TCL syntax
+
+      <runname>.Solver.WriteSiloTop = True            ## Python syntax
+      
+      
+
 *string* **Solver.TerrainFollowingGrid** False This key specifies that a
 terrain-following coordinate transform is used for solver Richards. This
 key sets x and y subsurface slopes to be the same as the Topographic
@@ -4514,6 +4546,9 @@ consistent with **OverlandFow**
    pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   "Upwind"        ## TCL syntax
 
    <runname>.Solver.TerrainFollowingGrid.SlopeUpwindFormulation = "Upwind"    ## Python syntax
+
+
+   
 
 
 .. _SILO Options:

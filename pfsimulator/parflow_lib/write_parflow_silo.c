@@ -202,8 +202,6 @@ void     WriteSiloInit(char *file_prefix)
   
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
-  int i;
-  int j;
 
   char key[IDB_MAX_KEY_LEN];
 
@@ -265,8 +263,9 @@ void     WriteSiloInit(char *file_prefix)
                              "mannings",
                              "specific_storage",
                              "mask",
-                             "dz_mult",             // IMF -- added...
-                             "top",                 // IMF -- added...
+                             "dz_mult",
+			     "top_zindex",
+			     "top_patch",
                              "eflx_lh_tot",
                              "eflx_lwrad_out",
                              "eflx_sh_tot",
@@ -285,15 +284,15 @@ void     WriteSiloInit(char *file_prefix)
                              "evaptrans",
                              "evaptranssum",
                              "overlandsum",
-                             "overland_bc_flux", };
+                             "overland_bc_flux",
+                             0};
 
-    // IMF -- added second '+2' to next line...
-    for (i = 0; i < 31 + 2; i++)
+    for(int i = 0; output_types[i]; i++)
     {
       sprintf(filename, "%s/%s", file_prefix, output_types[i]);
       pf_mk_dir(filename);
 
-      for (j = 0; j < P; j++)
+      for (int j = 0; j < P; j++)
       {
         sprintf(filename, "%s/%s/%06u", file_prefix, output_types[i], j);
         pf_mk_dir(filename);
