@@ -12,6 +12,7 @@ set(TESTS
   crater2D_vangtable_linear.tcl
   small_domain.tcl
   richards_hydrostatic_equalibrium.tcl
+  LW_surface_pressure.tcl
 )
 
 if(${PARFLOW_HAVE_HYPRE})

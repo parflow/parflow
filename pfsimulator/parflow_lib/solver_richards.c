@@ -120,6 +120,9 @@ typedef struct {
   int write_silopmpio_overland_bc_flux; /* write overland outflow boundary condition flux as PMPIO? */
   int write_silopmpio_dzmult;   /* write dz multiplier as PMPIO? */
   int spinup;                   /* spinup flag, remove ponded water */
+  int reset_surface_pressure;   /* surface pressure flag set to True and pressures are reset per threshold keys */
+  int threshold_pressure;       /* surface pressure threshold pressure */
+  int reset_pressure;           /* surface pressure reset pressure */
   int evap_trans_file;          /* read evap_trans as a SS file before advance richards */
   int evap_trans_file_transient;        /* read evap_trans as a transient file before advance richards timestep */
   char *evap_trans_filename;    /* File name for evap trans */
@@ -2884,6 +2887,69 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                      );
       }
     }
+
+
+   /***************************************************************
+    *          modify land surface pressures                      *
+    ***************************************************************/
+   
+    if (public_xtra->reset_surface_pressure == 1)
+    {
+      GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+
+      int i, j, k, r, is;
+      int ix, iy, iz;
+      int nx, ny, nz;
+      int ip;
+      // JLW add declarations for use without CLM
+      Subvector *p_sub_sp;
+      double *pp_sp;
+
+      Subgrid *subgrid;
+      Grid *grid = VectorGrid(evap_trans_sum);
+
+      ForSubgridI(is, GridSubgrids(grid))
+      {
+        subgrid = GridSubgrid(grid, is);
+        p_sub_sp = VectorSubvector(instance_xtra->pressure, is);
+
+        r = SubgridRX(subgrid);
+
+        ix = SubgridIX(subgrid);
+        iy = SubgridIY(subgrid);
+        iz = SubgridIZ(subgrid);
+
+        nx = SubgridNX(subgrid);
+        ny = SubgridNY(subgrid);
+        nz = SubgridNZ(subgrid);
+
+        pp_sp = SubvectorData(p_sub_sp);
+
+        GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+        {
+          ip = SubvectorEltIndex(p_sub_sp, i, j, k);
+          // printf(" %d %d %d %d  \n",i,j,k,ip);
+          // printf(" pp[ip] %10.3f \n",pp[ip]);
+          // printf(" NZ: %d \n",nz);
+          if (k == (nz - 1))
+          {
+            //   printf(" %d %d %d %d  \n",i,j,k,ip);
+            //   printf(" pp[ip] %10.3f \n",pp[ip]);
+
+            if (pp_sp[ip] > public_xtra->threshold_pressure)
+            {
+              printf(" pressure reset: %d %d %d %10.3f \n", i, j, k,
+                     pp_sp[ip]); pp_sp[ip] = public_xtra->reset_pressure;
+            }
+          }
+        }
+                     );
+      }
+    }
+
+    /* update pressure,  not sure if we need to do this but we might if pressures are reset along processor edges RMM */
+    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+    FinalizeVectorUpdate(handle);
 
     /* velocity updates - not sure these are necessary jjb */
     handle = InitVectorUpdate(instance_xtra->x_velocity, VectorUpdateAll);
@@ -5695,7 +5761,7 @@ SolverRichardsNewPublicXtra(char *name)
     WriteSiloInit(GlobalsOutFileName);
   }
 
-  /* @RMM -- added control block for silo pmpio
+  /* RMM -- added control block for silo pmpio
    * writing.  Previous silo is backward compat/included and true/false
    * switches work the same as SILO and PFB.  We can change defaults eventually
    * to write silopmpio and to write a single file in the future */
@@ -5859,7 +5925,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->write_silopmpio_top = switch_value;
 
-  //@RMM spinup key
+  //RMM spinup key
   sprintf(key, "%s.Spinup", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -5869,6 +5935,25 @@ SolverRichardsNewPublicXtra(char *name)
                switch_name, key);
   }
   public_xtra->spinup = switch_value;
+
+ //RMM surface pressure keys
+ //Solver.ResetSurfacePressure “True”
+  sprintf(key, "%s.ResetSurfacePressure", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->reset_surface_pressure = switch_value;
+
+  sprintf(key, "%s.ResetSurfacePressure.ThresholdPressure", name);
+  public_xtra->threshold_pressure = GetDoubleDefault(key, 0.0);
+
+  sprintf(key, "%s.ResetSurfacePressure.ResetPressure", name);
+  public_xtra->reset_pressure = GetDoubleDefault(key, 0.0);
+
 
 
   /* @RMM read evap trans as SS file before advance richards
