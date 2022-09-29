@@ -1597,6 +1597,22 @@ Solver:
     domains:
       DoubleValue:
 
+  ResetSurfacePressure:
+    __doc__: >
+      [Type: logical] Check surface pressure and reset values above a threshold to a different value.
+    default: False
+    
+    ThresholdPressure:
+      help: >
+        [Type: double] .
+      default: 0.0
+      
+    ResetPressure:
+      help: >
+        [Type: double] .
+      default: 0.0
+
+
   OverlandDiffusive:
     __doc__: >
       Setting epsilon value for the diffusive overland flow formulation.
