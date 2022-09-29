@@ -2938,18 +2938,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
             if (pp_sp[ip] > public_xtra->threshold_pressure)
             {
-              printf(" pressure reset: %d %d %d %10.3f \n", i, j, k,
+              amps_Printf(" time: %10.3f  pressure reset: %d %d %d %10.3f \n",t, i, j, k,
                      pp_sp[ip]); pp_sp[ip] = public_xtra->reset_pressure;
             }
           }
         }
                      );
       }
-    }
-
     /* update pressure,  not sure if we need to do this but we might if pressures are reset along processor edges RMM */
     handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
+    }
+
+
 
     /* velocity updates - not sure these are necessary jjb */
     handle = InitVectorUpdate(instance_xtra->x_velocity, VectorUpdateAll);
