@@ -12,12 +12,12 @@ LW_surface_press = Run("LW_surface_press", __file__)
 # Copying slope files
 #---------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/LW_surface_press')
-mkdir(dir_name)
-chdir(dir_name)
+#dir_name = get_absolute_path('test_output/LW_surface_press')
+#mkdir(dir_name)
+#chdir(dir_name)
 
-cp('../../test/input/lw.1km.slope_x.10x.pfb','.')
-cp('../../test/input/lw.1km.slope_y.10x.pfb','.')
+#cp('../../test/input/lw.1km.slope_x.10x.pfb','.')
+#cp('../../test/input/lw.1km.slope_y.10x.pfb','.')
 
 #---------------------------------------------------------
 
@@ -259,7 +259,7 @@ LW_surface_press.Patch.y_upper.BCPressure.Cycle = 'constant'
 LW_surface_press.Patch.y_upper.BCPressure.alltime.Value = 0.0
 
 ## overland flow boundary condition with very heavy rainfall then slight ET
-LW_surface_press.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
+LW_surface_press.Patch.z_upper.BCPressure.Type = 'FluxConst'
 LW_surface_press.Patch.z_upper.BCPressure.Cycle = 'constant'
 # constant recharge at 100 mm / y
 LW_surface_press.Patch.z_upper.BCPressure.alltime.Value = -0.005
