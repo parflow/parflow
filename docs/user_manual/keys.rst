@@ -4889,6 +4889,36 @@ are **Galerkin** or **NonGalerkin**
 
       <runname>.Solver.Linear.Preconditioner.PFMG.RAPType = "Galerkin"  ## Python syntax
 
+
+*logical* **Solver.ResetSurfacePressure** False This key changes any surface pressure greater than a threshold value to 
+another value in between solver timesteps. It works differently than the Spinup keys and is intended to 
+help with slope errors and issues and provides some diagnostic information.  The threshold keys are specified below.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.ResetSurfacePressure        True        ## TCL syntax
+      <runname>.Solver.ResetSurfacePressure  = "True"    ## Python syntax
+
+*double* **Solver.ResetSurfacePressure.ThresholdPressure** 0.0 This key specifies a threshold value used in the **ResetSurfacePressure** key above.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.ResetSurfacePressure.ThresholdPressure        10.0        ## TCL syntax
+      <runname>.Solver.ResetSurfacePressure.ThresholdPressure  = 10.0    ## Python syntax
+
+*double* **Solver.ResetSurfacePressure.ResetPressure** 0.0 This key specifies a reset value used in the **ResetSurfacePressure** key above.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.ResetSurfacePressure.ResetPressure        0.0        ## TCL syntax
+      <runname>.Solver.ResetSurfacePressure.ResetPressure  = 0.0    ## Python syntax
+
 *logical* **Solver.EvapTransFile** False This key specifies specifies
 that the Flux terms for Richards’ equation are read in from a ``.pfb`` 
 file. This file has [T^-1] units. Note this key is for a steady-state 
@@ -4993,6 +5023,18 @@ overland flow equation adding the following term:
       pfset OverlandSpinupDampP2  0.1        ## TCL syntax
       <runname>.OverlandSpinupDampP2 = 0.1   ## Python syntax
 
+
+*logical* **Solver.SpinUp** False This key removes surface pressure in between solver timesteps.
+It works differently than the Spinup keys above as the pressure will build up, then all pressures greater than
+zero will be reset to zero.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SpinUp   True        ## TCL syntax
+      <runname>.Solver.SpinUp = "True"    ## Python syntax
+      
 .. _CLM Solver Parameters:
 
 CLM Solver Parameters
