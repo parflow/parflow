@@ -83,7 +83,7 @@ jobs:
       if: matrix.config.os == 'ubuntu-20.04'
       run: |
         sudo apt-get -qq update
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev libnetcdf-dev libnetcdf-mpi-dev 
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev
 
     - name: Package Install 18.04 CUDA
       if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.os == 'ubuntu-18.04'
@@ -110,7 +110,7 @@ jobs:
     - name: NetCDF Package Install
       if: matrix.config.netcdf == 'true'
       run: |
-        sudo apt -qq -y install libnetcdf-dev libnetcdff-dev
+        sudo apt -qq -y install libnetcdf-dev libnetcdff-dev libnetcdf-mpi-dev 
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
