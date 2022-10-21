@@ -615,7 +615,14 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
           sprintf(key, "Patch.%s.BCPressure.RefGeom", patch_name);
           switch_name = GetString(key);
-          data->reference_solid = NA_NameToIndexExitOnError(GlobalsGeomNames, switch_name, key);
+
+          data->reference_solid = NA_NameToIndex(GlobalsGeomNames,
+                                                 switch_name);
+
+          if (data->reference_solid < 0)
+          {
+            InputError("Error: invalid geometry name <%s> for reference solid <%s>\n", switch_name, key);
+          }
 
           sprintf(key, "Patch.%s.BCPressure.RefPatch", patch_name);
           switch_name = GetString(key);

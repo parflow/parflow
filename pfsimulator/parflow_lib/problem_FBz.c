@@ -202,6 +202,7 @@ PFModule   *FBzNewPublicXtra()
     switch_na = NA_NewNameArray("PFBFile");
     switch_name = GetString(name);
     public_xtra->type = NA_NameToIndexExitOnError(switch_na, switch_name, name);
+    NA_FreeNameArray(switch_na);
 
     // switch for FBz Type
     //  PFBFile = 0;
@@ -222,8 +223,7 @@ PFModule   *FBzNewPublicXtra()
       {
 	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
-    }
-    NA_FreeNameArray(switch_na);
+    }   
   }
 
   PFModulePublicXtra(this_module) = public_xtra;
