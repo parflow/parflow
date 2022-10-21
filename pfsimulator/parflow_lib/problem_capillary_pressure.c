@@ -223,7 +223,7 @@ PFModule  *CapillaryPressureNewPublicXtra(
 
     sprintf(key, "CapPressure.%s.Type", phase_name);
     switch_name = GetStringDefault(key, "Constant");
-    public_xtra->type[i] = NA_NameToIndex(type_na, switch_name);
+    public_xtra->type[i] = NA_NameToIndexExitOnError(type_na, switch_name, key);
 
     switch ((public_xtra->type[i]))
     {
@@ -264,8 +264,7 @@ PFModule  *CapillaryPressureNewPublicXtra(
 
       default:
       {
-        InputError("Error: invalid type <%s> for key <%s>\n",
-                   switch_name, key);
+	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
   }

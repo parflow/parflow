@@ -452,7 +452,7 @@ PFModule   *RedBlackGSPointNewPublicXtra(char *name)
   sprintf(key, "%s.Symmetric", name);
   switch_name = GetStringDefault(key, "True");
 
-  symmetric = NA_NameToIndex(switch_na, switch_name);
+  symmetric = NA_NameToIndexExitOnError(switch_na, switch_name, key);
 
   switch (symmetric)
   {
@@ -472,9 +472,7 @@ PFModule   *RedBlackGSPointNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: invalid symmetric value <%s> for key <%s>\n",
-                 switch_name, key);
-      break;
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
 
