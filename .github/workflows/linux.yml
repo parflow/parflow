@@ -111,7 +111,7 @@ jobs:
       if: matrix.config.netcdf == 'true'
       run: |
         sudo apt -qq -y install libnetcdf-dev libnetcdff-dev libnetcdf-mpi-dev
-        echo "NETCDF_FLAGS=-DNETCDF_DIR=/usr/lib/x86_64-linux-gnu/netcdf/mpi" >> $GITHUB_ENV
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=/usr/lib/x86_64-linux-gnu/netcdf/mpi -DPARFLOW_ENABLE_NETCDF=On" >> $GITHUB_ENV
         echo "ls"
         ls /usr/lib/x86_64-linux-gnu/netcdf/mpi
         echo "done ls"
