@@ -418,9 +418,9 @@ PFModule  *ManningsNewPublicXtra()
                                        XYZTPlus1 XYZTPlus1PermTensor");
   public_xtra = ctalloc(PublicXtra, 1);
 
-  switch_name = GetString("Mannings.Type");
-
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  sprintf(key, "Mannings.Type");
+  switch_name = GetString(key);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, key);
 
   switch ((public_xtra->type))
   {
@@ -459,13 +459,7 @@ PFModule  *ManningsNewPublicXtra()
       switch_name = GetString("Mannings.PredefinedFunction");
 
       dummy1->function_type =
-        NA_NameToIndex(function_type_na, switch_name);
-
-      if (dummy1->function_type < 0)
-      {
-        InputError("Error: invalid function <%s> for key <%s>\n",
-                   switch_name, key);
-      }
+        NA_NameToIndexExitOnError(function_type_na, switch_name, "Mannings.PredefinedFunction");
 
       (public_xtra->data) = (void*)dummy1;
 
@@ -484,9 +478,7 @@ PFModule  *ManningsNewPublicXtra()
 
     default:
     {
-      InputError("Error: invalid type <%s> for key <%s>\n",
-                 switch_name, key);
-    }
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);    }
   }       /* End case statement */
 
 

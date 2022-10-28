@@ -99,7 +99,7 @@ NewSolver()
     NameArray switch_na;
     switch_na = NA_NewNameArray("False True");
     switch_name = GetStringDefault("UseClustering", "True");
-    GlobalsUseClustering = NA_NameToIndex(switch_na, switch_name);
+    GlobalsUseClustering = NA_NameToIndexExitOnError(switch_na, switch_name, "UseClustering");
     NA_FreeNameArray(switch_na);
   }
 
@@ -117,34 +117,33 @@ NewSolver()
     NameArray solver_na;
     solver_na = NA_NewNameArray("Richards Diffusion Impes");
     switch_name = GetStringDefault("Solver", "Impes");
-    solver = NA_NameToIndex(solver_na, switch_name);
+    solver = NA_NameToIndexExitOnError(solver_na, switch_name, "Solver");
     NA_FreeNameArray(solver_na);
-  }
 
-  switch (solver)
-  {
-    case 0:
+    switch (solver)
     {
-      amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverRichards, ("Solver"));
-      break;
-    }
-
-    case 1:
-    {
-      amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverDiffusion, ("Solver"));
-      break;
-    }
-
-    case 2:
-    {
-      amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverImpes, ("Solver"));
-      break;
-    }
-
-    default:
-    {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      case 0:
+      {
+	amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverRichards, ("Solver"));
+	break;
+      }
+      
+      case 1:
+      {
+	amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverDiffusion, ("Solver"));
+	break;
+      }
+      
+      case 2:
+      {
+	amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverImpes, ("Solver"));
+	break;
+      }
+      
+      default:
+      {
+	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+      }
     }
   }
 }

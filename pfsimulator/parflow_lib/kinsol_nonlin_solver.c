@@ -541,14 +541,15 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
                                         "NormalVerbosity HighVerbosity");
   sprintf(key, "Solver.Nonlinear.PrintFlag");
   switch_name = GetStringDefault(key, "LowVerbosity");
-  (public_xtra->print_flag) = NA_NameToIndex(verbosity_switch_na,
-                                             switch_name);
+  (public_xtra->print_flag) = NA_NameToIndexExitOnError(verbosity_switch_na,
+							switch_name,
+							key);
   NA_FreeNameArray(verbosity_switch_na);
 
   eta_switch_na = NA_NewNameArray("EtaConstant Walker1 Walker2");
   sprintf(key, "Solver.Nonlinear.EtaChoice");
   switch_name = GetStringDefault(key, "Walker2");
-  switch_value = NA_NameToIndex(eta_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(eta_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -582,8 +583,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(eta_switch_na);
@@ -591,7 +591,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   switch_na = NA_NewNameArray("False True");
   sprintf(key, "Solver.Nonlinear.UseJacobian");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -608,8 +608,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(switch_na);
@@ -620,7 +619,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   globalization_switch_na = NA_NewNameArray("InexactNewton LineSearch");
   sprintf(key, "Solver.Nonlinear.Globalization");
   switch_name = GetStringDefault(key, "LineSearch");
-  switch_value = NA_NameToIndex(globalization_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(globalization_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -637,8 +636,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(globalization_switch_na);
@@ -646,7 +644,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
   sprintf(key, "Solver.Linear.Preconditioner");
   switch_name = GetStringDefault(key, "MGSemi");
-  switch_value = NA_NameToIndex(precond_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(precond_switch_na, switch_name, key);
   if (switch_value == 0)
   {
     (public_xtra->precond) = NULL;
@@ -664,8 +662,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   }
   else
   {
-    InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-               key);
+    InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
   }
   NA_FreeNameArray(precond_switch_na);
 

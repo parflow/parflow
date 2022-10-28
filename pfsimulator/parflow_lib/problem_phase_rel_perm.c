@@ -1811,7 +1811,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
   public_xtra = ctalloc(PublicXtra, 1);
 
   switch_name = GetString("Phase.RelPerm.Type");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "Phase.RelPerm.Type");
 
   NA_FreeNameArray(type_na);
 
@@ -1897,14 +1897,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
 
             sprintf(key, "Geom.%s.RelPerm.InterpolationMethod", region);
             switch_name = GetStringDefault(key, "Spline");
-            int interpolation_method = NA_NameToIndex(type_na, switch_name);
-
-            if (interpolation_method < 0)
-            {
-              InputError("Error: invalid type <%s> for key <%s>\n",
-                         switch_name, key);
-            }
-
+            int interpolation_method = NA_NameToIndexExitOnError(type_na, switch_name, key);
             NA_FreeNameArray(type_na);
 
             dummy1->lookup_tables[ir] = VanGComputeTable(
@@ -2032,8 +2025,7 @@ PFModule   *PhaseRelPermNewPublicXtra()
 
     default:
     {
-      InputError("Error: invalid type <%s> for key <%s>\n",
-                 switch_name, key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }      /* End switch */
 

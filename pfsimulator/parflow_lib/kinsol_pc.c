@@ -214,7 +214,7 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
   precond_na = NA_NewNameArray("FullJacobian PFSymmetric SymmetricPart Picard");
   sprintf(key, "%s.PCMatrixType", name);
   switch_name = GetStringDefault(key, "PFSymmetric");
-  switch_value = NA_NameToIndex(precond_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(precond_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -243,15 +243,14 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(precond_na);
 
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
-  switch_value = NA_NameToIndex(precond_switch_na, pc_name);
   sprintf(key, "%s.%s", name, pc_name);
+  switch_value = NA_NameToIndexExitOnError(precond_switch_na, pc_name, key);
   switch (switch_value)
   {
     case 0:
@@ -302,6 +301,10 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
                  "Hypre PFMG code not compiled in.\n", switch_name, key);
 #endif
       break;
+    }
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(precond_switch_na);

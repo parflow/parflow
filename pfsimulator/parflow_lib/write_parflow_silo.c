@@ -226,20 +226,24 @@ void     WriteSiloInit(char *file_prefix)
   char *switch_name = GetStringDefault(key, "PDB");
   NameArray type_na = NA_NewNameArray("PDB HDF5");
 
-  switch (NA_NameToIndex(type_na, switch_name))
+  switch (NA_NameToIndexExitOnError(type_na, switch_name, key))
   {
     case 0:
+    {
       s_parflow_silo_filetype = DB_PDB;
       break;
+    }
 
     case 1:
+    {
       s_parflow_silo_filetype = DB_HDF5;
       break;
+    }
 
     default:
-      amps_Printf("Error: invalid SILO.Filetype %s\n", switch_name);
-      exit(1);
-      break;
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
   }
 
   NA_FreeNameArray(type_na);

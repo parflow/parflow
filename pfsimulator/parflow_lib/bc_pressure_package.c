@@ -533,12 +533,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
     /* Determine the domain geom index from domain name */
     switch_name = GetString("Domain.GeomName");
-    domain_index = NA_NameToIndex(GlobalsGeomNames, switch_name);
-    if (domain_index < 0)
-    {
-      InputError("Error: invalid geometry name <%s> for key <%s>\n",
-                 switch_name, "Domain.GeomName");
-    }
+    domain_index = NA_NameToIndexExitOnError(GlobalsGeomNames, switch_name, "Domain.GeomName");
 
     ForEachPatch(num_patches, i)
     {
@@ -548,30 +543,20 @@ PFModule  *BCPressurePackageNewPublicXtra(
         NA_NameToIndex(GlobalsGeometries[domain_index]->patches,
                        patch_name);
 
+      if(public_xtra->patch_indexes[i] < 0)
+      {
+	amps_Printf("Invalid patch name <%s>\n", patch_name);
+	NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
+      }
+
       sprintf(key, "Patch.%s.BCPressure.Type", patch_name);
       switch_name = GetString(key);
-
-      public_xtra->input_types[i] = NA_NameToIndex(type_na, switch_name);
-
-      if (public_xtra->input_types[i] < 0)
-      {
-        InputError("Error: invalid type name <%s> for <%s>\n",
-                   switch_name, key);
-      }
+      public_xtra->input_types[i] = NA_NameToIndexExitOnError(type_na, switch_name, key);
 
       sprintf(key, "Patch.%s.BCPressure.Cycle", patch_name);
       cycle_name = GetString(key);
-
       public_xtra->cycle_numbers[i] = i;
-
-      global_cycle = NA_NameToIndex(GlobalsCycleNames, cycle_name);
-
-      if (global_cycle < 0)
-      {
-        InputError("Error: invalid cycle name <%s> for <%s>\n",
-                   cycle_name, key);
-      }
-
+      global_cycle = NA_NameToIndexExitOnError(GlobalsCycleNames, cycle_name, key);
 
       interval_division = public_xtra->interval_divisions[i] =
         GlobalsIntervalDivisions[global_cycle];
@@ -643,14 +628,9 @@ PFModule  *BCPressurePackageNewPublicXtra(
           switch_name = GetString(key);
 
           data->reference_patch =
-            NA_NameToIndex(GeomSolidPatches(
-                                            GlobalsGeometries[data->reference_solid]),
-                           switch_name);
-
-          if (data->reference_patch < 0)
-          {
-            InputError("Error: invalid reference patch name <%s> for key <%s>\n", switch_name, key);
-          }
+            NA_NameToIndexExitOnError(GeomSolidPatches(
+						       GlobalsGeometries[data->reference_solid]),
+				      switch_name, key);
 
           ForEachInterval(interval_division, interval_number)
           {
@@ -871,14 +851,8 @@ PFModule  *BCPressurePackageNewPublicXtra(
                                    interval_number));
             switch_name = GetString(key);
 
-            data->function_type = NA_NameToIndex(function_na,
-                                                 switch_name);
-
-            if (data->function_type < 0)
-            {
-              InputError("Error: invalid function type <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            data->function_type = NA_NameToIndexExitOnError(function_na,
+							    switch_name, key);
 
             // MCB: This is overwriting the data struct inside the for loop
             // Also structured this way in master branch without changes

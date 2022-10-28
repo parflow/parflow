@@ -402,7 +402,7 @@ PFModule   *PCGNewPublicXtra(char *name)
   precond_na = NA_NewNameArray("MGSemi WJacobi");
   sprintf(key, "%s.Preconditioner", name);
   switch_name = GetStringDefault(key, "MGSemi");
-  switch_value = NA_NameToIndex(precond_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(precond_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -419,8 +419,7 @@ PFModule   *PCGNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(precond_na);
@@ -431,9 +430,7 @@ PFModule   *PCGNewPublicXtra(char *name)
 
   sprintf(key, "%s.TwoNorm", name);
   switch_name = GetStringDefault(key, "False");
-
-  two_norm = NA_NameToIndex(switch_na, switch_name);
-
+  two_norm = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   switch (two_norm)
   {
     /* True */
@@ -452,9 +449,7 @@ PFModule   *PCGNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: invalid two norm value <%s> for key <%s>\n",
-                 switch_name, key);
-      break;
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);	    
     }
   }
 

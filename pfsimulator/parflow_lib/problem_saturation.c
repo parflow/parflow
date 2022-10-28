@@ -840,7 +840,7 @@ PFModule   *SaturationNewPublicXtra()
   public_xtra = ctalloc(PublicXtra, 1);
 
   switch_name = GetString("Phase.Saturation.Type");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "Phase.Saturation.Type");
 
 
   switch_name = GetString("Phase.Saturation.GeomNames");
