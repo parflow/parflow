@@ -5002,7 +5002,7 @@ zero (the default) this key behaves normally.
 *double* **OverlandFlowSpinUpDampP1** 0.0 This key sets :math:`P_1` and
 provides exponential dampening to the pressure relationship in the
 overland flow equation by adding the following term:
-:math:`P_2*exp(\psi*P_2)`
+:math:`P_2*exp(\psi*P_1)`
 
 .. container:: list
 
@@ -5014,7 +5014,7 @@ overland flow equation by adding the following term:
 *double* **OverlandFlowSpinUpDampP2** 0.0 This key sets :math:`P_2` and
 provides exponential dampening to the pressure relationship in the
 overland flow equation adding the following term:
-:math:`P_2*exp(\psi*P_2)`
+:math:`P_2*exp(\psi*P_1)`
 
 .. container:: list
 
