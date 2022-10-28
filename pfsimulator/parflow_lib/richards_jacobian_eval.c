@@ -2120,7 +2120,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
   sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
   switch_name = GetStringDefault(key, "Original");
-  switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(upwind_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -2143,8 +2143,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(upwind_switch_na);
@@ -2152,7 +2151,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   switch_na = NA_NewNameArray("False True");
   sprintf(key, "Solver.Nonlinear.UseJacobian");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -2169,8 +2168,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(switch_na);

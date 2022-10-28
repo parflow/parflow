@@ -4598,7 +4598,7 @@ SolverRichardsNewPublicXtra(char *name)
   nonlin_switch_na = NA_NewNameArray("KINSol");
   sprintf(key, "%s.NonlinearSolver", name);
   switch_name = GetStringDefault(key, "KINSol");
-  switch_value = NA_NameToIndex(nonlin_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(nonlin_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -4610,8 +4610,7 @@ SolverRichardsNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(nonlin_switch_na);
@@ -4619,7 +4618,7 @@ SolverRichardsNewPublicXtra(char *name)
   lsm_switch_na = NA_NewNameArray("none CLM");
   sprintf(key, "%s.LSM", name);
   switch_name = GetStringDefault(key, "none");
-  switch_value = NA_NameToIndex(lsm_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(lsm_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -4642,8 +4641,7 @@ SolverRichardsNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(lsm_switch_na);
@@ -4655,35 +4653,20 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.Print1dOut", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->clm_1d_out = switch_value;
 
   /*BH: added an option for choosing to force vegetation (LAI,SAI,displa, z0) */
   sprintf(key, "%s.CLM.ForceVegetation", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->clm_forc_veg = switch_value;
   /*BH: end added an option for choosing to force vegetation (LAI,SAI,displa, z0) */
 
 
   sprintf(key, "%s.CLM.BinaryOutDir", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->clm_bin_out_dir = switch_value;
 
   sprintf(key, "%s.CLM.CLMFileDir", name);
@@ -4708,12 +4691,7 @@ SolverRichardsNewPublicXtra(char *name)
   // NBE: Keys for the single file CLM output
   sprintf(key, "%s.CLM.SingleFile", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->single_clm_file = switch_value;
 
   // NBE: Different clm_nz must be hard wired, working on a way to dynamically allocate instead
@@ -4751,35 +4729,20 @@ SolverRichardsNewPublicXtra(char *name)
    */
   sprintf(key, "%s.CLM.WriteLogs", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->clm_write_logs = switch_value;
 
   /* NBE - Only write ONE restart file and overwrite it each time instead of writing
    * a new RST at every step/day */
   sprintf(key, "%s.CLM.WriteLastRST", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->clm_last_rst = switch_value;
 
   /* NBE - Option to write daily or hourly outputs from CLM */
   sprintf(key, "%s.CLM.DailyRST", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->clm_daily_rst = switch_value;
 
 
@@ -4789,7 +4752,7 @@ SolverRichardsNewPublicXtra(char *name)
   beta_switch_na = NA_NewNameArray("none Linear Cosine");
   sprintf(key, "%s.CLM.EvapBeta", name);
   switch_name = GetStringDefault(key, "Linear");
-  switch_value = NA_NameToIndex(beta_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(beta_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -4812,8 +4775,7 @@ SolverRichardsNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(beta_switch_na);
@@ -4825,7 +4787,7 @@ SolverRichardsNewPublicXtra(char *name)
   vegtype_switch_na = NA_NewNameArray("none Pressure Saturation");
   sprintf(key, "%s.CLM.VegWaterStress", name);
   switch_name = GetStringDefault(key, "Saturation");
-  switch_value = NA_NameToIndex(vegtype_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(vegtype_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -4848,8 +4810,7 @@ SolverRichardsNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(vegtype_switch_na);
@@ -4863,45 +4824,25 @@ SolverRichardsNewPublicXtra(char *name)
   /* IMF Write CLM as Silo (default=False) */
   sprintf(key, "%s.WriteSiloCLM", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_CLM = switch_value;
 
   /* IMF Write CLM as PFB (default=False) */
   sprintf(key, "%s.PrintCLM", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_CLM = switch_value;
 
   /* IMF Write CLM Binary (default=True) */
   sprintf(key, "%s.WriteCLMBinary", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_CLM_binary = switch_value;
   
 /* IMF Account for slope in CLM energy budget (default=False) */
   sprintf(key, "%s.CLM.UseSlopeAspect", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->slope_accounting_CLM = switch_value;
 
   /* IMF Key for CLM met file path */
@@ -4914,12 +4855,7 @@ SolverRichardsNewPublicXtra(char *name)
    */
   sprintf(key, "%s.CLM.MetFileSubdir", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->clm_metsub = switch_value;
 
   /* IMF Key for CLM met file name...
@@ -4943,7 +4879,7 @@ SolverRichardsNewPublicXtra(char *name)
   metforce_switch_na = NA_NewNameArray("none 1D 2D 3D NC");
   sprintf(key, "%s.CLM.MetForcing", name);
   switch_name = GetStringDefault(key, "none");
-  switch_value = NA_NameToIndex(metforce_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(metforce_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -4978,8 +4914,7 @@ SolverRichardsNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(metforce_switch_na);
@@ -4993,7 +4928,7 @@ SolverRichardsNewPublicXtra(char *name)
   irrtype_switch_na = NA_NewNameArray("none Spray Drip Instant");
   sprintf(key, "%s.CLM.IrrigationType", name);
   switch_name = GetStringDefault(key, "none");
-  switch_value = NA_NameToIndex(irrtype_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(irrtype_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:                     // none
@@ -5022,8 +4957,7 @@ SolverRichardsNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(irrtype_switch_na);
@@ -5033,12 +4967,7 @@ SolverRichardsNewPublicXtra(char *name)
    * an extra variable is written out*/
   sprintf(key, "NetCDF.WriteCLM");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     /* KKu: Number of CLM variables + time in NetCDF file */
@@ -5059,7 +4988,7 @@ SolverRichardsNewPublicXtra(char *name)
   irrcycle_switch_na = NA_NewNameArray("Constant Deficit");
   sprintf(key, "%s.CLM.IrrigationCycle", name);
   switch_name = GetStringDefault(key, "Constant");
-  switch_value = NA_NameToIndex(irrcycle_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(irrcycle_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -5076,8 +5005,7 @@ SolverRichardsNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(irrcycle_switch_na);
@@ -5105,7 +5033,7 @@ SolverRichardsNewPublicXtra(char *name)
   irrthresholdtype_switch_na = NA_NewNameArray("Top Bottom Column");
   sprintf(key, "%s.CLM.IrrigationThresholdType", name);
   switch_name = GetStringDefault(key, "Column");
-  switch_value = NA_NameToIndex(irrthresholdtype_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(irrthresholdtype_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -5128,8 +5056,7 @@ SolverRichardsNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(irrthresholdtype_switch_na);
@@ -5140,12 +5067,7 @@ SolverRichardsNewPublicXtra(char *name)
   /* RMM set terrain grid (default=False) */
   sprintf(key, "%s.TerrainFollowingGrid", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->terrain_following_grid = switch_value;
   // CPS
 
@@ -5179,174 +5101,89 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.PrintSubsurfData", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_subsurf_data = switch_value;
 
   sprintf(key, "%s.PrintSlopes", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_slopes = switch_value;
 
   sprintf(key, "%s.PrintMannings", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_mannings = switch_value;
 
   sprintf(key, "%s.PrintSpecificStorage", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_specific_storage = switch_value;
 
   sprintf(key, "%s.PrintTop", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_top = switch_value;
 
   sprintf(key, "%s.PrintPressure", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_press = switch_value;
 
   sprintf(key, "%s.PrintVelocities", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_velocities = switch_value;
 
   sprintf(key, "%s.PrintSaturation", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_satur = switch_value;
 
   sprintf(key, "%s.PrintConcentration", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_concen = switch_value;
 
   sprintf(key, "%s.PrintDZMultiplier", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_dzmult = switch_value;
 
   sprintf(key, "%s.PrintMask", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_mask = switch_value;
 
   sprintf(key, "%s.PrintEvapTrans", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_evaptrans = switch_value;
 
   sprintf(key, "%s.PrintEvapTransSum", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_evaptrans_sum = switch_value;
 
   sprintf(key, "%s.PrintOverlandSum", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_overland_sum = switch_value;
 
   sprintf(key, "%s.PrintOverlandBCFlux", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_overland_bc_flux = switch_value;
 
   sprintf(key, "%s.PrintWells", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_wells = switch_value;
 
   // SGS TODO
   // Need to add this to the user manual, this is new for LSM stuff that was added.
   sprintf(key, "%s.PrintLSMSink", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_lsm_sink = switch_value;
 
 #ifndef HAVE_CLM
@@ -5357,96 +5194,50 @@ SolverRichardsNewPublicXtra(char *name)
   }
 #endif
 
-
   /* Silo file writing control */
   sprintf(key, "%s.WriteSiloSubsurfData", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_subsurf_data = switch_value;
 
   sprintf(key, "%s.WriteSiloPressure", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_press = switch_value;
 
   sprintf(key, "%s.WriteSiloVelocities", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_velocities = switch_value;
 
   sprintf(key, "%s.WriteSiloSaturation", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_satur = switch_value;
 
   sprintf(key, "%s.WriteSiloEvapTrans", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_evaptrans = switch_value;
 
   sprintf(key, "%s.WriteSiloEvapTransSum", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_evaptrans_sum = switch_value;
 
   sprintf(key, "%s.WriteSiloOverlandSum", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_overland_sum = switch_value;
 
   sprintf(key, "%s.WriteSiloOverlandBCFlux", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_overland_bc_flux = switch_value;
 
   sprintf(key, "%s.WriteSiloDZMultiplier", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_dzmult = switch_value;
   /*
    * ---------------------------
@@ -5466,12 +5257,7 @@ SolverRichardsNewPublicXtra(char *name)
                                  * are written */
   sprintf(key, "NetCDF.WritePressure");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarTimeVariant++;
@@ -5482,12 +5268,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteSaturation");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarTimeVariant++;
@@ -5497,12 +5278,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteEvapTrans");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarTimeVariant++;
@@ -5511,12 +5287,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteEvapTransSum");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarTimeVariant++;
@@ -5525,12 +5296,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteOverlandSum");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarTimeVariant++;
@@ -5539,12 +5305,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteOverlandBCFlux");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarTimeVariant++;
@@ -5553,12 +5314,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteMannings");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarIni++;
@@ -5567,12 +5323,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteSubsurface");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     /*Increamenting by 5 for x, y, z permiability, porosity and specific storage */
@@ -5582,12 +5333,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteSlopes");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     /*Increamenting by 2 for x, y slopes */
@@ -5597,12 +5343,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteDZMultiplier");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarIni++;
@@ -5611,12 +5352,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.WriteMask");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
     public_xtra->numVarIni++;
@@ -5629,12 +5365,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.EvapTransFileTransient");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->nc_evap_trans_file_transient = switch_value;
 
   sprintf(key, "NetCDF.EvapTrans.FileName");
@@ -5682,63 +5413,33 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.WriteSiloConcentration", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_concen = switch_value;
 
   sprintf(key, "%s.WriteSiloMask", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_mask = switch_value;
 
 
   sprintf(key, "%s.WriteSiloSlopes", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_slopes = switch_value;
 
   sprintf(key, "%s.WriteSiloMannings", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_mannings = switch_value;
 
   sprintf(key, "%s.WriteSiloSpecificStorage", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_specific_storage = switch_value;
 
   sprintf(key, "%s.WriteSiloTop", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_top = switch_value;
 
 
@@ -5769,92 +5470,47 @@ SolverRichardsNewPublicXtra(char *name)
   /* Silo PMPIO file writing control */
   sprintf(key, "%s.WriteSiloPMPIOSubsurfData", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_subsurf_data = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOPressure", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_press = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOVelocities", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_velocities = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOSaturation", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_satur = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOEvapTrans", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_evaptrans = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOEvapTransSum", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_evaptrans_sum = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOOverlandSum", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_overland_sum = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOOverlandBCFlux", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_overland_bc_flux = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIODZMultiplier", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_dzmult = switch_value;
 
 #ifndef HAVE_CLM
@@ -5867,86 +5523,46 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.WriteSiloPMPIOConcentration", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_concen = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOMask", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_mask = switch_value;
 
 
   sprintf(key, "%s.WriteSiloPMPIOSlopes", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_slopes = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOMannings", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_mannings = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOSpecificStorage", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_specific_storage = switch_value;
 
   sprintf(key, "%s.WriteSiloPMPIOTop", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silopmpio_top = switch_value;
 
   //RMM spinup key
   sprintf(key, "%s.Spinup", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->spinup = switch_value;
 
  //RMM surface pressure keys
  //Solver.ResetSurfacePressure “True”
   sprintf(key, "%s.ResetSurfacePressure", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->reset_surface_pressure = switch_value;
 
   sprintf(key, "%s.ResetSurfacePressure.ThresholdPressure", name);
@@ -5962,34 +5578,19 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.EvapTransFile", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->evap_trans_file = switch_value;
 
 
   sprintf(key, "%s.EvapTransFileTransient", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->evap_trans_file_transient = switch_value;
 
   /* Nick's addition */
   sprintf(key, "%s.EvapTrans.FileLooping", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->evap_trans_file_looping = switch_value;
 
 

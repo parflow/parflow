@@ -437,11 +437,7 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
 
   /* Determine the domain geom index from domain name */
   switch_name = GetString("Domain.GeomName");
-  domain_index = NA_NameToIndex(GlobalsGeomNames, switch_name);
-
-  if (domain_index < 0)
-    InputError("Error: invalid geometry name <%s> for key <%s>\n",
-               switch_name, "Domain.GeomName");
+  domain_index = NA_NameToIndexExitOnError(GlobalsGeomNames, switch_name, "Domain.GeomName");
 
   indx = 0;
   for (i = 0; i < num_phases - 1; i++)
@@ -454,12 +450,17 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
 
       public_xtra->patch_indexes[indx] =
         NA_NameToIndex(GlobalsGeometries[domain_index]->patches,
-                       patch_name);
+		       patch_name);
+
+      if(public_xtra->patch_indexes[indx] < 0)
+      {
+	NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
+      }
 
       sprintf(key, "Patch.%s.BCSaturation.%s.Type", patch_name, phase_name);
       switch_name = GetString(key);
       public_xtra->input_types[indx] =
-        NA_NameToIndex(type_na, switch_name);
+        NA_NameToIndexExitOnError(type_na, switch_name, key);
 
       switch ((public_xtra->input_types[indx]))
       {
@@ -545,8 +546,7 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
 
         default:
         {
-          InputError("Error: invalid type <%s> for key <%s>\n",
-                     switch_name, key);
+	  InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
         }
       }
       indx++;

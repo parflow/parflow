@@ -260,7 +260,7 @@ PFModule  *RetardationNewPublicXtra(
         switch_name = GetString(key);
 
         public_xtra->type[index] =
-          NA_NameToIndex(switch_na, switch_name);
+          NA_NameToIndexExitOnError(switch_na, switch_name, key);
 
         switch ((public_xtra->type[index]))
         {
@@ -282,10 +282,7 @@ PFModule  *RetardationNewPublicXtra(
 
           default:
           {
-            InputError("Error: invalid retardation type <%s> for key <%s>\n",
-                       switch_name, key);
-
-            break;
+	    InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
           }
         }
       }
