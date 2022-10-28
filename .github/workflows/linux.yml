@@ -17,7 +17,7 @@ jobs:
             python: "false",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "true"
+            netcdf: "false"
           }
         - {
             name: "Ubuntu 20.04 OASIS3-MCT Build",
