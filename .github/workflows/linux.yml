@@ -111,7 +111,9 @@ jobs:
       if: matrix.config.netcdf == 'true'
       run: |
         sudo apt -qq -y install libnetcdf-dev libnetcdff-dev libnetcdf-mpi-dev
-        echo "NETCDF_FLAGS=-DNETCDF_DIR=/usr/lib/x86_64-linux-gnu/netcdf/mpi/" >> $GITHUB_ENV
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=/usr/lib/x86_64-linux-gnu/netcdf/mpi" >> $GITHUB_ENV
+	echo "NETCDF_FLAGS=$NETCDF_FLAGS"
+	ls /usr/lib/x86_64-linux-gnu/netcdf/mpi
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
