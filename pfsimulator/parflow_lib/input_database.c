@@ -526,8 +526,8 @@ void NA_InputError(NameArray name_array, const char *switch_name, const char *ke
 {
   if (!amps_Rank(amps_CommWorld))
   {
-    amps_Printf("Error: invalid type <%s> for key <%s>\n", switch_name, key);
-    amps_Printf("       Allowed value are:\n");
+    amps_Printf("Error: invalid value <%s> for key <%s>\n", switch_name, key);
+    amps_Printf("       Allowed values are:\n");
 
     for (int i = 0; i < name_array->num; i++)
     {
