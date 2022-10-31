@@ -750,8 +750,8 @@ being an array of balances over the domain) as follows:
    :label: sub_store
 
    \begin{aligned}
-   Vol_{subsurface} = \sum_\Omega [ S(\psi)S_s \psi \Delta x \Delta y \Delta z +
-   S(\psi)(\psi)\phi \Delta x \Delta y \Delta z]
+   Vol_{subsurface} = \sum_\Omega [ S(\psi) S_s \psi \Delta x \Delta y \Delta z +
+   S(\psi) \phi \Delta x \Delta y \Delta z]
    \end{aligned} 
 
 The surface storage is calculated over the upper surface boundary 
