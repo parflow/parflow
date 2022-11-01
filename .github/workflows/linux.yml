@@ -74,7 +74,7 @@ jobs:
         #     cudaos: 'ubuntu1804',
         #     amps_layer: mpi1,
         #     netcdf: "false"
-          }
+        #  }
 
     steps:
     - uses: actions/checkout@v2
