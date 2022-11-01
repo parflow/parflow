@@ -10,71 +10,71 @@ jobs:
       # fail-fast: true
       matrix:
         config:
-        - {
-            name: "Ubuntu 20.04",
-            os: ubuntu-20.04,
-            cudaos: 'ubuntu2004',
-            python: "false",
-            backend: "none",
-            amps_layer: mpi1,
-            netcdf: "false"
-          }
         # - {
-        #     name: "Ubuntu 20.04 OASIS3-MCT Build",
+        #     name: "Ubuntu 20.04",
         #     os: ubuntu-20.04,
         #     cudaos: 'ubuntu2004',
         #     python: "false",
-        #     backend: "omp",
-        #     amps_layer: oas3,
-        #     netcdf: "true"      
+        #     backend: "none",
+        #     amps_layer: mpi1,
+        #     netcdf: "false"
         #   }
         - {
-            name: "Ubuntu 18.04",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
-            python: "false",
-            backend: "none",
-            amps_layer: mpi1,
-            netcdf: "false"
-          }
-        - {
-            name: "Ubuntu 18.04 Python",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
-            python: "true",
-            backend: "none",
-            amps_layer: mpi1,
-            netcdf: "false"
-          }
-        - {
-            name: "Ubuntu 18.04 OMP",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
+            name: "Ubuntu 20.04 OASIS3-MCT Build",
+            os: ubuntu-20.04,
+            cudaos: 'ubuntu2004',
             python: "false",
             backend: "omp",
-            amps_layer: mpi1,
-            netcdf: "false"
+            amps_layer: oas3,
+            netcdf: "true"      
           }
-        - {
-            name: "Ubuntu 18.04 CUDA Build",
-            os: ubuntu-18.04,
-            cc: "gcc", cxx: "g++",
-            python: "false",
-            backend: "cuda",
-            cudaos: 'ubuntu1804',
-            amps_layer: mpi1,
-            netcdf: "false"
-          }
-        - {
-            name: "Ubuntu 18.04 Kokkos Build",
-            os: ubuntu-18.04,
-            cc: "gcc", cxx: "g++",
-            python: "false",
-            backend: "kokkos",
-            cudaos: 'ubuntu1804',
-            amps_layer: mpi1,
-            netcdf: "false"
-          }
+        # - {
+        #     name: "Ubuntu 18.04",
+        #     os: ubuntu-18.04,
+        #     cudaos: 'ubuntu1804',
+        #     python: "false",
+        #     backend: "none",
+        #     amps_layer: mpi1,
+        #     netcdf: "false"
+        #   }
+        # - {
+        #     name: "Ubuntu 18.04 Python",
+        #     os: ubuntu-18.04,
+        #     cudaos: 'ubuntu1804',
+        #     python: "true",
+        #     backend: "none",
+        #     amps_layer: mpi1,
+        #     netcdf: "false"
+        #   }
+        # - {
+        #     name: "Ubuntu 18.04 OMP",
+        #     os: ubuntu-18.04,
+        #     cudaos: 'ubuntu1804',
+        #     python: "false",
+        #     backend: "omp",
+        #     amps_layer: mpi1,
+        #     netcdf: "false"
+        #   }
+        # - {
+        #     name: "Ubuntu 18.04 CUDA Build",
+        #     os: ubuntu-18.04,
+        #     cc: "gcc", cxx: "g++",
+        #     python: "false",
+        #     backend: "cuda",
+        #     cudaos: 'ubuntu1804',
+        #     amps_layer: mpi1,
+        #     netcdf: "false"
+        #   }
+        # - {
+        #     name: "Ubuntu 18.04 Kokkos Build",
+        #     os: ubuntu-18.04,
+        #     cc: "gcc", cxx: "g++",
+        #     python: "false",
+        #     backend: "kokkos",
+        #     cudaos: 'ubuntu1804',
+        #     amps_layer: mpi1,
+        #     netcdf: "false"
+        #   }
 
     steps:
     - uses: actions/checkout@v2
@@ -230,24 +230,7 @@ jobs:
         fi
         sudo ldconfig
 
-    - name: OASIS3-MCT Install
-      env:
-        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-      if: matrix.config.amps_layer == 'oas3'
-      run: |
-        if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone -b OASIS3-MCT_5.0 https://gitlab.com/cerfacs/oasis3-mct.git
-          cd oasis3-mct
-          git checkout dd00d6c72b13bf1
-          export OASIS_ROOT=$(pwd)
-          cd util/make_dir
-          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu20.04' > make.inc
-          make realclean -f TopMakefileOasis3
-          make -f TopMakefileOasis3
-          mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
-          mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
-        fi
-
+    # Package netcdf is missing features needed by the ParFlow writers
     - name: NetCDF Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
@@ -260,6 +243,26 @@ jobs:
           CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --disable-shared --prefix=$PARFLOW_DEP_DIR
           make
           make install
+        fi
+
+    - name: OASIS3-MCT Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.amps_layer == 'oas3'
+      run: |
+        # OASIS can use package netcdf for building
+        apt install -qq libnetcdf-dev libnetcdff-dev
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          git clone -b OASIS3-MCT_5.0 https://gitlab.com/cerfacs/oasis3-mct.git
+          cd oasis3-mct
+          git checkout dd00d6c72b13bf1
+          export OASIS_ROOT=$(pwd)
+          cd util/make_dir
+          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu20.04' > make.inc
+          make realclean -f TopMakefileOasis3
+          make -f TopMakefileOasis3
+          mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
+          mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
         fi
 
     - name: SILO Install
