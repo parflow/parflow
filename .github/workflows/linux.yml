@@ -251,7 +251,7 @@ jobs:
       if: matrix.config.amps_layer == 'oas3'
       run: |
         # OASIS can use package netcdf for building
-        apt install -qq libnetcdf-dev libnetcdff-dev
+        sudo apt install -qq libnetcdf-dev libnetcdff-dev
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone -b OASIS3-MCT_5.0 https://gitlab.com/cerfacs/oasis3-mct.git
           cd oasis3-mct
