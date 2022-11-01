@@ -256,7 +256,7 @@ jobs:
           wget -q https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz
           tar -xf v4.5.0.tar.gz
           cd netcdf-c-4.5.0
-	  CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi/ ./configure --disable-shared --prefix=${NCDIR}
+          CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --disable-shared --prefix=${NCDIR}
           make
           make -j2 install
         fi
