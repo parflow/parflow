@@ -251,6 +251,7 @@ jobs:
     - name: NetCDF Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.netcdf == 'true'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           wget -q https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz
@@ -258,7 +259,7 @@ jobs:
           cd netcdf-c-4.5.0
           CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --disable-shared --prefix=$PARFLOW_DEP_DIR
           make
-          make -j2 install
+          make install
         fi
 
     - name: SILO Install
