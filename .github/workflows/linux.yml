@@ -19,62 +19,62 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false"
           }
-        # - {
-        #     name: "Ubuntu 20.04 OASIS3-MCT Build",
-        #     os: ubuntu-20.04,
-        #     cudaos: 'ubuntu2004',
-        #     python: "false",
-        #     backend: "omp",
-        #     amps_layer: oas3,
-        #     netcdf: "true"      
-        #   }
-        # - {
-        #     name: "Ubuntu 18.04",
-        #     os: ubuntu-18.04,
-        #     cudaos: 'ubuntu1804',
-        #     python: "false",
-        #     backend: "none",
-        #     amps_layer: mpi1,
-        #     netcdf: "false"
-        #   }
-        # - {
-        #     name: "Ubuntu 18.04 Python",
-        #     os: ubuntu-18.04,
-        #     cudaos: 'ubuntu1804',
-        #     python: "true",
-        #     backend: "none",
-        #     amps_layer: mpi1,
-        #     netcdf: "false"
-        #   }
-        # - {
-        #     name: "Ubuntu 18.04 OMP",
-        #     os: ubuntu-18.04,
-        #     cudaos: 'ubuntu1804',
-        #     python: "false",
-        #     backend: "omp",
-        #     amps_layer: mpi1,
-        #     netcdf: "false"
-        #   }
-        # - {
-        #     name: "Ubuntu 18.04 CUDA Build",
-        #     os: ubuntu-18.04,
-        #     cc: "gcc", cxx: "g++",
-        #     python: "false",
-        #     backend: "cuda",
-        #     cudaos: 'ubuntu1804',
-        #     amps_layer: mpi1,
-        #     netcdf: "false"
-        #   }
-        # - {
-        #     name: "Ubuntu 18.04 Kokkos Build",
-        #     os: ubuntu-18.04,
-        #     cc: "gcc", cxx: "g++",
-        #     python: "false",
-        #     backend: "kokkos",
-        #     cudaos: 'ubuntu1804',
-        #     amps_layer: mpi1,
-        #     netcdf: "false"
-        #  }
+        - {
+            name: "Ubuntu 20.04 OASIS3-MCT Build",
+            os: ubuntu-20.04,
+            cudaos: 'ubuntu2004',
+            python: "false",
+            backend: "omp",
+            amps_layer: oas3,
+            netcdf: "true"      
+          }
+        - {
+            name: "Ubuntu 18.04",
+            os: ubuntu-18.04,
+            cudaos: 'ubuntu1804',
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 18.04 Python",
+            os: ubuntu-18.04,
+            cudaos: 'ubuntu1804',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 18.04 OMP",
+            os: ubuntu-18.04,
+            cudaos: 'ubuntu1804',
+            python: "false",
+            backend: "omp",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 18.04 CUDA Build",
+            os: ubuntu-18.04,
+            cc: "gcc", cxx: "g++",
+            python: "false",
+            backend: "cuda",
+            cudaos: 'ubuntu1804',
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 18.04 Kokkos Build",
+            os: ubuntu-18.04,
+            cc: "gcc", cxx: "g++",
+            python: "false",
+            backend: "kokkos",
+            cudaos: 'ubuntu1804',
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
 
     steps:
     - uses: actions/checkout@v2
