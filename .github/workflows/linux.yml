@@ -19,15 +19,15 @@ jobs:
             amps_layer: mpi1,
             netcdf: "false"
           }
-        - {
-            name: "Ubuntu 20.04 OASIS3-MCT Build",
-            os: ubuntu-20.04,
-            cudaos: 'ubuntu2004',
-            python: "false",
-            backend: "omp",
-            amps_layer: oas3,
-            netcdf: "true"      
-          }
+        # - {
+        #     name: "Ubuntu 20.04 OASIS3-MCT Build",
+        #     os: ubuntu-20.04,
+        #     cudaos: 'ubuntu2004',
+        #     python: "false",
+        #     backend: "omp",
+        #     amps_layer: oas3,
+        #     netcdf: "true"      
+        #   }
         - {
             name: "Ubuntu 18.04",
             os: ubuntu-18.04,
