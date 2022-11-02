@@ -231,6 +231,8 @@ jobs:
         sudo ldconfig
 
     # Package netcdf is missing features needed by the ParFlow writers, build from source
+    # netcdf is True when we want to build the PF NetCDF writer.  OASIS is using the Fortran interface
+    # which is currently not built here.   This is currently incompatible with the OASIS build which uses the NetCDF packages.
     - name: NetCDF Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
