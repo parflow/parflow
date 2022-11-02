@@ -1,6 +1,8 @@
 # - Find NetCDF
 # Find the native NetCDF includes and library
 #
+#  NETCDF_DIR          - root directory of NetCDF install hint
+#
 #  NETCDF_INCLUDE_DIR  - user modifiable choice of where netcdf headers are
 #  NETCDF_LIBRARY      - user modifiable choice of where netcdf libraries are
 #
@@ -44,7 +46,8 @@ if(NETCDF_USE_DEFAULT_PATHS)
 endif()
 
 find_path (NETCDF_INCLUDE_DIR netcdf.h
-  PATHS "${NETCDF_DIR}/include")
+  PATHS "${NETCDF_DIR}/include"
+  HINTS "${NETCDF_DIR}/include")
 mark_as_advanced (NETCDF_INCLUDE_DIR)
 set (NETCDF_C_INCLUDE_DIRS ${NETCDF_INCLUDE_DIR})
 
