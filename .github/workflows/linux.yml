@@ -250,7 +250,7 @@ jobs:
           wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.0.tar.gz
           tar -xf v4.5.0.tar.gz
           cd netcdf-fortran-4.5.0
-          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --disable-shared --prefix=${PARFLOW_DEP_DIR}
+          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib LIBS="-lhdf5_hl -lhdf5 -lcurl" ./configure --disable-shared --prefix=${PARFLOW_DEP_DIR}
           make
           make install
           cd ..
