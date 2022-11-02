@@ -245,8 +245,8 @@ jobs:
           CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
-          rm v4.5.0.tar.gz
           cd ..
+          rm v4.5.0.tar.gz
           wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.0.tar.gz
           tar -xf v4.5.0.tar.gz
           cd netcdf-fortran-4.5.0
