@@ -245,14 +245,16 @@ jobs:
           CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
+          rm v4.5.0.tar.gz
           cd ..
-           wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.0.tar.gz
-           tar -xf v4.5.0.tar.gz
-           cd netcdf-fortran-4.5.0
-           CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DIR}/include LDFLAGS=-L${PARFLOW_DIR}/lib ./configure --prefix=${PARFLOW_DIR}
-           make
-           make install
-           cd ..
+          wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.0.tar.gz
+          tar -xf v4.5.0.tar.gz
+          cd netcdf-fortran-4.5.0
+          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DIR}/include LDFLAGS=-L${PARFLOW_DIR}/lib ./configure --prefix=${PARFLOW_DIR}
+          make
+          make install
+          cd ..
+          rm v4.5.0.tar.gz
         fi
         echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
 
