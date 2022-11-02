@@ -26,7 +26,7 @@ jobs:
             python: "false",
             backend: "omp",
             amps_layer: oas3,
-            netcdf: "true"      
+            netcdf: "true"
           }
         - {
             name: "Ubuntu 18.04",
@@ -100,7 +100,7 @@ jobs:
       run: |
         sudo apt-get -qq update
         sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
-        
+
     - name: Python Package Install
       if: matrix.config.python == 'true'
       run: |
@@ -183,7 +183,7 @@ jobs:
           wget -nv https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz
           tar -xf ucx-1.8.0.tar.gz
           cd ucx-1.8.0
-          ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --disable-numa --prefix=$PARFLOW_DEP_DIR 
+          ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --disable-numa --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
@@ -198,7 +198,7 @@ jobs:
           cmake . -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
-        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV  
+        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
 
     - name: Kokkos Install
       env:
@@ -210,10 +210,10 @@ jobs:
           tar -xf 3.3.01.tar.gz
           cd kokkos-3.3.01
           mkdir build && cd build
-          cmake .. -DCMAKE_CXX_COMPILER=$(pwd)/../bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DKokkos_ENABLE_CUDA=On -DKokkos_ENABLE_CUDA_LAMBDA=On -DKokkos_ENABLE_CUDA_UVM=On -DKokkos_ARCH_VOLTA70=On  
+          cmake .. -DCMAKE_CXX_COMPILER=$(pwd)/../bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DKokkos_ENABLE_CUDA=On -DKokkos_ENABLE_CUDA_LAMBDA=On -DKokkos_ENABLE_CUDA_UVM=On -DKokkos_ARCH_VOLTA70=On
           make -j 2 install
         fi
-        echo "KOKKOS_FLAGS=-DKOKKOS_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV     
+        echo "KOKKOS_FLAGS=-DKOKKOS_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
 
     - name: OpenMPI Install for CUDA
       env:
@@ -243,6 +243,7 @@ jobs:
           CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --disable-shared --prefix=$PARFLOW_DEP_DIR
           make
           make install
+          echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
         fi
 
     - name: OASIS3-MCT Install
@@ -252,6 +253,7 @@ jobs:
       run: |
         # OASIS can use package netcdf for building
         sudo apt install -qq libnetcdf-dev libnetcdff-dev
+        echo "NETCDF_FLAGS=-DPARFLOW_ENABLE_NETCDF" >> $GITHUB_ENV
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone -b OASIS3-MCT_5.0 https://gitlab.com/cerfacs/oasis3-mct.git
           cd oasis3-mct
@@ -285,8 +287,8 @@ jobs:
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           wget -nv https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz
-          tar -xf v2.18.2.tar.gz 
-          cd hypre-2.18.2/src 
+          tar -xf v2.18.2.tar.gz
+          cd hypre-2.18.2/src
           ./configure --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
@@ -301,7 +303,7 @@ jobs:
         export OMP_NUM_THREADS=1
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
         echo "HAVE_CLM=${HAVE_CLM}"
-        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} -DPARFLOW_ENABLE_NETCDF=${{ matrix.config.netcdf }} $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)
