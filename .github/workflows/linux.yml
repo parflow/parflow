@@ -265,7 +265,6 @@ jobs:
           mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
           mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
         fi
-        echo "NETCDF_FLAGS=-DPARFLOW_ENABLE_NETCDF=TRUE" >> $GITHUB_ENV
 
     - name: SILO Install
       env:
