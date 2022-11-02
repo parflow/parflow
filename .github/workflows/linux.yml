@@ -244,7 +244,7 @@ jobs:
           make
           make install
         fi
-        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
 
     - name: OASIS3-MCT Install
       env:
@@ -265,7 +265,7 @@ jobs:
           mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
           mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
         fi
-        echo "NETCDF_FLAGS=-DPARFLOW_ENABLE_NETCDF=On" >> $GITHUB_ENV
+        echo "NETCDF_FLAGS=-DPARFLOW_ENABLE_NETCDF=TRUE" >> $GITHUB_ENV
 
     - name: SILO Install
       env:
