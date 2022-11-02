@@ -253,7 +253,7 @@ jobs:
       run: |
         # OASIS can use package netcdf for building
         sudo apt install -qq libnetcdf-dev libnetcdff-dev
-        echo "NETCDF_FLAGS=-DPARFLOW_ENABLE_NETCDF" >> $GITHUB_ENV
+        echo "NETCDF_FLAGS=-DPARFLOW_ENABLE_NETCDF=On" >> $GITHUB_ENV
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone -b OASIS3-MCT_5.0 https://gitlab.com/cerfacs/oasis3-mct.git
           cd oasis3-mct
