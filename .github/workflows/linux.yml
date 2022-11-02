@@ -26,7 +26,7 @@ jobs:
             python: "false",
             backend: "omp",
             amps_layer: oas3,
-            netcdf: "true"
+            netcdf: "false"
           }
         - {
             name: "Ubuntu 18.04",
