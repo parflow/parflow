@@ -242,20 +242,20 @@ jobs:
           wget -q https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz
           tar -xf v4.5.0.tar.gz
           cd netcdf-c-4.5.0
-          CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --disable-shared --prefix=$PARFLOW_DEP_DIR
+          CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
           cd ..
           rm v4.5.0.tar.gz
-          wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.0.tar.gz
-          tar -xf v4.5.0.tar.gz
-          cd netcdf-fortran-4.5.0
-          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib LIBS="-lhdf5_hl -lhdf5 -lcurl" ./configure --disable-shared --prefix=${PARFLOW_DEP_DIR}
+          wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.4.4.tar.gz
+          tar -xf v4.4.4.tar.gz
+          cd netcdf-fortran-4.4.4
+          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib LIBS="-lhdf5_hl -lhdf5 -lcurl" ./configure --prefix=${PARFLOW_DEP_DIR}
           cat config.log
           make
           make install
           cd ..
-          rm v4.5.0.tar.gz
+          rm v4.4.4.tar.gz
         fi
         echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
 
@@ -276,7 +276,6 @@ jobs:
           mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
           mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
         fi
-        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DNETCDF_Fortran_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
 
     - name: SILO Install
       env:
