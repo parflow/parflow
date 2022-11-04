@@ -38,7 +38,7 @@ jobs:
             netcdf: "true"
           }
         # - {
-        #     name: "Ubuntu 18.04 Python",
+        #     name: "Ubuntu 20.04 Python",
         #     os: ubuntu-20.04,
         #     cudaos: 'ubuntu2004',
         #     python: "true",
@@ -47,7 +47,7 @@ jobs:
         #     netcdf: "false"
         #   }
         # - {
-        #     name: "Ubuntu 18.04 OMP",
+        #     name: "Ubuntu 20.04 OMP",
         #     os: ubuntu-20.04,
         #     cudaos: 'ubuntu2004',
         #     python: "false",
@@ -56,7 +56,7 @@ jobs:
         #     netcdf: "false"
         #   }
         # - {
-        #     name: "Ubuntu 18.04 CUDA Build",
+        #     name: "Ubuntu 20.04 CUDA Build",
         #     os: ubuntu-20.04,
         #     cc: "gcc", cxx: "g++",
         #     python: "false",
@@ -66,7 +66,7 @@ jobs:
         #     netcdf: "false"
         #   }
         # - {
-        #     name: "Ubuntu 18.04 Kokkos Build",
+        #     name: "Ubuntu 20.04 Kokkos Build",
         #     os: ubuntu-20.04,
         #     cc: "gcc", cxx: "g++",
         #     python: "false",
@@ -85,8 +85,8 @@ jobs:
         sudo apt-get -qq update
         sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
 
-    - name: Package Install 18.04 CUDA
-      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.os == 'ubuntu-18.04'
+    - name: Package Install 20.04 CUDA
+      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.os == 'ubuntu-20.04'
       run: |
         sudo apt-get -qq update
         sudo apt-get -qq install -y software-properties-common
@@ -95,8 +95,8 @@ jobs:
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157
 
-    - name: Package Install 18.04
-      if: matrix.config.os == 'ubuntu-18.04'
+    - name: Package Install 20.04
+      if: matrix.config.os == 'ubuntu-20.04'
       run: |
         sudo apt-get -qq update
         sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
