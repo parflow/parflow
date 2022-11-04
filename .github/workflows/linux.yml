@@ -37,15 +37,15 @@ jobs:
             amps_layer: mpi1,
             netcdf: "true"
           }
-        # - {
-        #     name: "Ubuntu 20.04 Python",
-        #     os: ubuntu-20.04,
-        #     cudaos: 'ubuntu2004',
-        #     python: "true",
-        #     backend: "none",
-        #     amps_layer: mpi1,
-        #     netcdf: "false"
-        #   }
+        - {
+            name: "Ubuntu 20.04 Python",
+            os: ubuntu-20.04,
+            cudaos: 'ubuntu2004',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
         # - {
         #     name: "Ubuntu 20.04 OMP",
         #     os: ubuntu-20.04,
