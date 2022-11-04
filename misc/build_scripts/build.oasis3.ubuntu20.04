@@ -26,10 +26,10 @@ MPI_INCLUDE = $(MPIDIR)/include
 MPILIB      = -L$(MPIDIR)/lib -lmpi
 #
 # NETCDF library of the system
-NETCDF_INCLUDE1 = /usr/include
+NETCDF_INCLUDE1 = ${PARFLOW_DEP_DIR}/include
 # netcdf.mod and hdf5.mod
-NETCDF_INCLUDE2 = /usr/include/hdf5/openmpi
-NETCDF_LIBRARY  =  -L/usr/lib/x86_64-linux-gnu -lnetcdff -lnetcdf
+NETCDF_INCLUDE2 = ${PARFLOW_DEP_DIR}/include
+NETCDF_LIBRARY  =  -L/${PARLFLOW_DEP_DIR}/lib -lnetcdff -lnetcdf
 #
 # Compiling and other commands
 MAKE        = make
