@@ -10,15 +10,15 @@ jobs:
       # fail-fast: true
       matrix:
         config:
-        - {
-            name: "Ubuntu 22.04",
-            os: ubuntu-22.04,
-            cudaos: 'ubuntu2204',
-            python: "false",
-            backend: "none",
-            amps_layer: mpi1,
-            netcdf: "true"
-          }
+        # - {
+        #     name: "Ubuntu 22.04",
+        #     os: ubuntu-22.04,
+        #     cudaos: 'ubuntu2204',
+        #     python: "false",
+        #     backend: "none",
+        #     amps_layer: mpi1,
+        #     netcdf: "true"
+        #   }
         - {
             name: "Ubuntu 20.04 OASIS3-MCT Build",
             os: ubuntu-20.04,
