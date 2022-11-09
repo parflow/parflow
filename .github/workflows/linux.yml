@@ -2,6 +2,7 @@ name: ParFlow CI Test
 
 on: [push, pull_request]
 
+
 jobs:
   build:
     name: ${{ matrix.config.name }}
