@@ -2085,7 +2085,7 @@ specifies the value assigned to all points in the named geometry,
       <runname>.ToposlopeX.Geom.domain.Value = 0.001     ## Python syntax
 
 *double* **ToposlopesX.FileName** no default This key specifies the
-value assigned to all points be read in from a ParFlow binary file.
+value assigned to all points be read in from a ParFlow 2D binary file.
 
 .. container:: list
 
@@ -2096,7 +2096,7 @@ value assigned to all points be read in from a ParFlow binary file.
       <runname>.TopoSlopesX.FileName = "lw.1km.slope_x.pfb"    ## Python syntax
 
 *double* **ToposlopesY.FileName** no default This key specifies the
-value assigned to all points be read in from a ParFlow binary file.
+value assigned to all points be read in from a ParFlow 2D binary file.
 
 .. container:: list
 
