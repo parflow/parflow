@@ -1,5 +1,6 @@
 name: ParFlow CI Test
 
+
 on: [push, pull_request]
 
 jobs:
@@ -11,13 +12,40 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu 20.04",
-            os: ubuntu-20.04,
-            cudaos: 'ubuntu2004',
+            name: "Ubuntu 22.04",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
             python: "false",
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true"
+          }
+        - {
+            name: "Ubuntu 22.04 Python",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true"
+          }
+        - {
+            name: "Ubuntu 20.04 Python",
+            os: ubuntu-20.04,
+            cudaos: 'ubuntu2004',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 22.04 OMP",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            python: "false",
+            backend: "omp",
+            amps_layer: mpi1,
+            netcdf: "false"
           }
         - {
             name: "Ubuntu 20.04 OASIS3-MCT Build",
@@ -27,33 +55,6 @@ jobs:
             backend: "omp",
             amps_layer: oas3,
             netcdf: "true"
-          }
-        - {
-            name: "Ubuntu 18.04",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
-            python: "false",
-            backend: "none",
-            amps_layer: mpi1,
-            netcdf: "false"
-          }
-        - {
-            name: "Ubuntu 18.04 Python",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
-            python: "true",
-            backend: "none",
-            amps_layer: mpi1,
-            netcdf: "false"
-          }
-        - {
-            name: "Ubuntu 18.04 OMP",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
-            python: "false",
-            backend: "omp",
-            amps_layer: mpi1,
-            netcdf: "false"
           }
         - {
             name: "Ubuntu 18.04 CUDA Build",
@@ -78,6 +79,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Package Install 22.04
+      if: matrix.config.os == 'ubuntu-22.04'
+      run: |
+        sudo apt-get -qq update
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
 
     - name: Package Install 20.04
       if: matrix.config.os == 'ubuntu-20.04'
@@ -239,22 +246,22 @@ jobs:
       if: matrix.config.netcdf == 'true'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -q https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz
-          tar -xf v4.5.0.tar.gz
-          cd netcdf-c-4.5.0
+          wget -q https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+          tar -xf v4.9.0.tar.gz
+          cd netcdf-c-4.9.0
           CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
           cd ..
-          rm v4.5.0.tar.gz
-          wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.4.4.tar.gz
-          tar -xf v4.4.4.tar.gz
-          cd netcdf-fortran-4.4.4
+          rm v4.9.0.tar.gz
+          wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+          tar -xf v4.5.4.tar.gz
+          cd netcdf-fortran-4.5.4
           CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
           make
           make install
           cd ..
-          rm v4.4.4.tar.gz
+          rm v4.5.4.tar.gz
         fi
         echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
 
@@ -308,6 +315,8 @@ jobs:
         cat ~/depend/cache-key
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
+        gcc -v
+        mpicc -v
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
         CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
 
@@ -321,4 +330,3 @@ jobs:
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
         (cd build; ctest --output-on-failure)
-
