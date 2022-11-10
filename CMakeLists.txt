@@ -471,10 +471,8 @@ if ( ${PARFLOW_HAVE_MALLOC_H} )
 endif ( ${PARFLOW_HAVE_MALLOC_H} )
 
 # Check for mallinfo
+check_symbol_exists(mallinfo2 malloc.h PARFLOW_HAVE_MALLINFO2)
 check_symbol_exists(mallinfo malloc.h PARFLOW_HAVE_MALLINFO)
-if ( ${PARFLOW_HAVE_MALLINFO} )
-  set(HAVE_MALLINFO ${PARFLOW_HAVE_MALLINFO})
-endif ( ${PARFLOW_HAVE_MALLINFO} )
 
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
