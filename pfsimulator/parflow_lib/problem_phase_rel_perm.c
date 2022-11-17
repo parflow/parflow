@@ -196,6 +196,9 @@ VanGTable *VanGComputeTable(
     }
   }
 
+  // GCC 11.3.0 WITH optimization warns that del is possibly used without initialization.
+  // This silences the warning.   Looks like a false warning, what is the opt doing?
+  memset(del, num_sample_points+1, sizeof(double));
   // begin monotonic spline (see Fritsch and Carlson, SIAM J. Num. Anal., 17 (2), 1980)
   for (index = 0; index < num_sample_points; index++)
   {
