@@ -48,18 +48,18 @@ void CopyParFlowVectorToHypreVector(Vector *rhs,
     
   ForSubgridI(sg, GridSubgrids(grid))
   {
-    Subgrid* intake_subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
+    Subgrid* subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
     Subvector* rhs_sub = VectorSubvector(rhs, sg);
 
     double* rhs_ptr = SubvectorData(rhs_sub);
 
-    ix = SubgridIX(intake_subgrid);
-    iy = SubgridIY(intake_subgrid);
-    iz = SubgridIZ(intake_subgrid);
+    ix = SubgridIX(subgrid);
+    iy = SubgridIY(subgrid);
+    iz = SubgridIZ(subgrid);
 
-    nx = SubgridNX(intake_subgrid);
-    ny = SubgridNY(intake_subgrid);
-    nz = SubgridNZ(intake_subgrid);
+    nx = SubgridNX(subgrid);
+    ny = SubgridNY(subgrid);
+    nz = SubgridNZ(subgrid);
 
     nx_v = SubvectorNX(rhs_sub);
     ny_v = SubvectorNY(rhs_sub);
@@ -97,18 +97,18 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
-    Subgrid* intake_subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
+    Subgrid* subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
     Subvector* soln_sub = VectorSubvector(soln, sg);
 
     double* soln_ptr = SubvectorData(soln_sub);
 
-    ix = SubgridIX(intake_subgrid);
-    iy = SubgridIY(intake_subgrid);
-    iz = SubgridIZ(intake_subgrid);
+    ix = SubgridIX(subgrid);
+    iy = SubgridIY(subgrid);
+    iz = SubgridIZ(subgrid);
 
-    nx = SubgridNX(intake_subgrid);
-    ny = SubgridNY(intake_subgrid);
-    nz = SubgridNZ(intake_subgrid);
+    nx = SubgridNX(subgrid);
+    ny = SubgridNY(subgrid);
+    nz = SubgridNZ(subgrid);
 
     nx_v = SubvectorNX(soln_sub);
     ny_v = SubvectorNY(soln_sub);
@@ -157,18 +157,18 @@ void HypreAssembleGrid(
     /* Set local grid extents as global grid values */
     ForSubgridI(sg, GridSubgrids(pf_grid))
     {
-      Subgrid* intake_subgrid = GridSubgrid(pf_grid, sg);
+      Subgrid* subgrid = GridSubgrid(pf_grid, sg);
 
-      ilo[0] = SubgridIX(intake_subgrid);
-      ilo[1] = SubgridIY(intake_subgrid);
-      ilo[2] = SubgridIZ(intake_subgrid);
-      ihi[0] = ilo[0] + SubgridNX(intake_subgrid) - 1;
-      ihi[1] = ilo[1] + SubgridNY(intake_subgrid) - 1;
-      ihi[2] = ilo[2] + SubgridNZ(intake_subgrid) - 1;
+      ilo[0] = SubgridIX(subgrid);
+      ilo[1] = SubgridIY(subgrid);
+      ilo[2] = SubgridIZ(subgrid);
+      ihi[0] = ilo[0] + SubgridNX(subgrid) - 1;
+      ihi[1] = ilo[1] + SubgridNY(subgrid) - 1;
+      ihi[2] = ilo[2] + SubgridNZ(subgrid) - 1;
 
-      dxyz[0] = SubgridDX(intake_subgrid);
-      dxyz[1] = SubgridDY(intake_subgrid);
-      dxyz[2] = SubgridDZ(intake_subgrid);
+      dxyz[0] = SubgridDX(subgrid);
+      dxyz[1] = SubgridDY(subgrid);
+      dxyz[2] = SubgridDZ(subgrid);
     }
     HYPRE_StructGridSetExtents(*hypre_grid, ilo, ihi);
     HYPRE_StructGridAssemble(*hypre_grid);
@@ -271,7 +271,7 @@ void HypreAssembleMatrixAsElements(
     {
 
       
-      Subgrid* intake_subgrid = GridSubgrid(mat_grid, sg);
+      Subgrid* subgrid = GridSubgrid(mat_grid, sg);
 
       Submatrix* pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
 
@@ -295,13 +295,13 @@ void HypreAssembleMatrixAsElements(
         up = SubmatrixStencilData(pfB_sub, 6);
       }
       
-      ix = SubgridIX(intake_subgrid);
-      iy = SubgridIY(intake_subgrid);
-      iz = SubgridIZ(intake_subgrid);
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
       
-      nx = SubgridNX(intake_subgrid);
-      ny = SubgridNY(intake_subgrid);
-      nz = SubgridNZ(intake_subgrid);
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
       
       nx_m = SubmatrixNX(pfB_sub);
       ny_m = SubmatrixNY(pfB_sub);
@@ -349,13 +349,13 @@ void HypreAssembleMatrixAsElements(
                                       stencil_indices, coeffs);
         });
       }
-    }   /* End intake_subgrid loop */
+    }   /* End subgrid loop */
   }
   else  /* Overland flow is activated. Update preconditioning matrix */
   {
     ForSubgridI(sg, GridSubgrids(mat_grid))
     {
-      Subgrid* intake_subgrid = GridSubgrid(mat_grid, sg);
+      Subgrid* subgrid = GridSubgrid(mat_grid, sg);
       
       Submatrix* pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
       Submatrix* pfC_sub = MatrixSubmatrix(pf_Cmat, sg);
@@ -398,13 +398,13 @@ void HypreAssembleMatrixAsElements(
         top_dat = SubvectorData(top_sub);
       }
       
-      ix = SubgridIX(intake_subgrid);
-      iy = SubgridIY(intake_subgrid);
-      iz = SubgridIZ(intake_subgrid);
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
       
-      nx = SubgridNX(intake_subgrid);
-      ny = SubgridNY(intake_subgrid);
-      nz = SubgridNZ(intake_subgrid);
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
       
       nx_m = SubmatrixNX(pfB_sub);
       ny_m = SubmatrixNY(pfB_sub);
@@ -516,7 +516,7 @@ void HypreAssembleMatrixAsElements(
                                       stencil_indices, coeffs);
         });
       }
-    }   /* End intake_subgrid loop */
+    }   /* End subgrid loop */
   }  /* end if pf_Cmat==NULL */
   
   HYPRE_StructMatrixAssemble(*hypre_mat);

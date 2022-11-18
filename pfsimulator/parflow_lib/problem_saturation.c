@@ -213,7 +213,7 @@ void     Saturation(
               psdat[ips] = 0.0;
             });
           }     /* End else clause */
-        }       /* End intake_subgrid loop */
+        }       /* End subgrid loop */
       }         /* End reion loop */
       break;
     }        /* End case 0 */
@@ -309,7 +309,7 @@ void     Saturation(
                 }
               });
             }   /* End else clause */
-          }     /* End intake_subgrid loop */
+          }     /* End subgrid loop */
         }       /* End loop over regions */
       }         /* End if data not from file */
       else
@@ -411,7 +411,7 @@ void     Saturation(
               }
             });
           }     /* End else clause */
-        }       /* End intake_subgrid loop */
+        }       /* End subgrid loop */
       }         /* End if data_from_file */
       break;
     }        /* End case 1 */
@@ -499,7 +499,7 @@ void     Saturation(
               }
             });
           }     /* End else clause */
-        }       /* End intake_subgrid loop */
+        }       /* End subgrid loop */
       }         /* End loop over regions */
       break;
     }        /* End case 2 */
@@ -594,7 +594,7 @@ void     Saturation(
               }
             });
           }     /* End else clause */
-        }       /* End intake_subgrid loop */
+        }       /* End subgrid loop */
       }         /* End loop over regions */
       break;
     }        /* End case 4 */
@@ -648,7 +648,7 @@ void     Saturation(
             psdat[ips] = 0.0;
           });
         }    /* End else clause */
-      }      /* End intake_subgrid loop */
+      }      /* End subgrid loop */
       break;
     }        /* End case 5 */
   }          /* End switch */
@@ -1344,7 +1344,7 @@ void  SaturationOutputStatic(
 	      pd_sres_dat[ips] = s_res;  //BB  // no ssat???
 	      
 	    });
-          }     /* End intake_subgrid loop */
+          }     /* End subgrid loop */
         }       /* End loop over regions */
       }         /* End if data not from file */
       else
@@ -1408,7 +1408,7 @@ void  SaturationOutputStatic(
 	    pd_sres_dat[ips] = s_res;  //BB
 	    pd_ssat_dat[ips] = s_sat;  //BB
 	  });
-        }       /* End intake_subgrid loop */
+        }       /* End subgrid loop */
       }         /* End if data_from_file */
       break;
     }        /* End case 1 */

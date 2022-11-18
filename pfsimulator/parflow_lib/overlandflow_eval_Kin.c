@@ -47,7 +47,7 @@ typedef void InstanceXtra;
 
 void    OverlandFlowEvalKin(
                             Grid *       grid,  /* data struct for computational grid */
-                            int          sg,  /* current intake_subgrid */
+                            int          sg,  /* current subgrid */
                             BCStruct *   bc_struct,  /* data struct of boundary patch values */
                             int          ipatch,  /* current boundary patch */
                             ProblemData *problem_data,  /* Geometry data for problem */

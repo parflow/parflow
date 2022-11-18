@@ -847,23 +847,23 @@ void PutCLMDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int 
 
       Grid *grid = VectorGrid(v);
       SubgridArray *subgrids = GridSubgrids(grid);
-      Subgrid *intake_subgrid = NULL;
+      Subgrid *subgrid = NULL;
       Subvector *subvector;
       int g;
 
       ForSubgridI(g, subgrids)
       {
-        intake_subgrid = SubgridArraySubgrid(subgrids, g);
+        subgrid = SubgridArraySubgrid(subgrids, g);
         subvector = VectorSubvector(v, g);
       }
 
-      int ix = SubgridIX(intake_subgrid);
-      int iy = SubgridIY(intake_subgrid);
-      int iz = SubgridIZ(intake_subgrid);
+      int ix = SubgridIX(subgrid);
+      int iy = SubgridIY(subgrid);
+      int iz = SubgridIZ(subgrid);
 
-      int nx = SubgridNX(intake_subgrid);
-      int ny = SubgridNY(intake_subgrid);
-      int nz = SubgridNZ(intake_subgrid);
+      int nx = SubgridNX(subgrid);
+      int ny = SubgridNY(subgrid);
+      int nz = SubgridNZ(subgrid);
 
 
       int nx_v = SubvectorNX(subvector);
@@ -896,23 +896,23 @@ void PutCLMDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int 
 
       Grid *grid = VectorGrid(v);
       SubgridArray *subgrids = GridSubgrids(grid);
-      Subgrid *intake_subgrid = NULL;
+      Subgrid *subgrid = NULL;
       Subvector *subvector;
       int g;
 
       ForSubgridI(g, subgrids)
       {
-        intake_subgrid = SubgridArraySubgrid(subgrids, g);
+        subgrid = SubgridArraySubgrid(subgrids, g);
         subvector = VectorSubvector(v, g);
       }
 
-      int ix = SubgridIX(intake_subgrid);
-      int iy = SubgridIY(intake_subgrid);
-      int iz = SubgridIZ(intake_subgrid);
+      int ix = SubgridIX(subgrid);
+      int iy = SubgridIY(subgrid);
+      int iz = SubgridIZ(subgrid);
 
-      int nx = SubgridNX(intake_subgrid);
-      int ny = SubgridNY(intake_subgrid);
-      int nz = SubgridNZ(intake_subgrid);
+      int nx = SubgridNX(subgrid);
+      int ny = SubgridNY(subgrid);
+      int nz = SubgridNZ(subgrid);
 
 
       int nx_v = SubvectorNX(subvector);

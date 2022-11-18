@@ -120,7 +120,7 @@ void FBx(ProblemData *problem_data, Vector *FBx)
             ipicv = SubvectorEltIndex(val_sub, i, j, k);
             FBx_dat[ips] = val_dat[ipicv];
           });
-        }      /* End intake_subgrid loop */
+        }      /* End subgrid loop */
 
         FreeTempVector(values);
         break;

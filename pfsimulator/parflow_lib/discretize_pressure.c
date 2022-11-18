@@ -493,17 +493,17 @@ void          DiscretizePressure(
   {
     double *tmp_ptr;
 
-    ix = SubgridIX(intake_subgrid);
-    iy = SubgridIY(intake_subgrid);
-    iz = SubgridIZ(intake_subgrid);
+    ix = SubgridIX(subgrid);
+    iy = SubgridIY(subgrid);
+    iz = SubgridIZ(subgrid);
 
-    nx = SubgridNX(intake_subgrid);
-    ny = SubgridNY(intake_subgrid);
-    nz = SubgridNZ(intake_subgrid);
+    nx = SubgridNX(subgrid);
+    ny = SubgridNY(subgrid);
+    nz = SubgridNZ(subgrid);
 
-    dx = SubgridDX(intake_subgrid);
-    dy = SubgridDY(intake_subgrid);
-    dz = SubgridDZ(intake_subgrid);
+    dx = SubgridDX(subgrid);
+    dy = SubgridDY(subgrid);
+    dz = SubgridDZ(subgrid);
 
     vf = dx * dy * dz * scale;
 

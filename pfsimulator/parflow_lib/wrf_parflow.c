@@ -220,7 +220,7 @@ void wrfparflowadvance_(double *current_time,
 void WRF2PF(
             float * wrf_array, /* WRF array */
             int     wrf_depth, /* Depth (Z) of WRF array, X,Y are assumed
-                                * to be same as PF vector intake_subgrid */
+                                * to be same as PF vector subgrid */
             int     ghost_size_i_lower, /* Number of ghost cells */
             int     ghost_size_j_lower,
             int     ghost_size_i_upper,
@@ -283,7 +283,7 @@ void PF2WRF(
             Vector *pf_vector,
             float * wrf_array, /* WRF array */
             int     wrf_depth, /* Depth (Z) of WRF array, X,Y are assumed
-                                * to be same as PF vector intake_subgrid */
+                                * to be same as PF vector subgrid */
             int     ghost_size_i_lower, /* Number of ghost cells */
             int     ghost_size_j_lower,
             int     ghost_size_i_upper,

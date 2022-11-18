@@ -202,7 +202,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
-  Subgrid        *intake_subgrid;
+  Subgrid        *subgrid;
   Subvector      *subvector;
 
   int g;
@@ -278,15 +278,15 @@ void     WriteSiloPMPIO(char *  file_prefix,
 
   ForSubgridI(g, subgrids)
   {
-    intake_subgrid = SubgridArraySubgrid(subgrids, g);
+    subgrid = SubgridArraySubgrid(subgrids, g);
     subvector = VectorSubvector(v, g);
-    int ix = SubgridIX(intake_subgrid);
-    int iy = SubgridIY(intake_subgrid);
-    int iz = SubgridIZ(intake_subgrid);
+    int ix = SubgridIX(subgrid);
+    int iy = SubgridIY(subgrid);
+    int iz = SubgridIZ(subgrid);
 
-    int nx = SubgridNX(intake_subgrid);
-    int ny = SubgridNY(intake_subgrid);
-    int nz = SubgridNZ(intake_subgrid);
+    int nx = SubgridNX(subgrid);
+    int ny = SubgridNY(subgrid);
+    int nz = SubgridNZ(subgrid);
 
     int nx_v = SubvectorNX(subvector);
     int ny_v = SubvectorNY(subvector);
@@ -315,13 +315,13 @@ void     WriteSiloPMPIO(char *  file_prefix,
     coords[0] = ctalloc(float, dims[0]);
     for (i = 0; i < dims[0]; i++)
     {
-      coords[0][i] = SubgridX(intake_subgrid) + SubgridDX(intake_subgrid) * ((float)i - 0.5);
+      coords[0][i] = SubgridX(subgrid) + SubgridDX(subgrid) * ((float)i - 0.5);
     }
 
     coords[1] = ctalloc(float, dims[1]);
     for (j = 0; j < dims[1]; j++)
     {
-      coords[1][j] = SubgridY(intake_subgrid) + SubgridDY(intake_subgrid) * ((float)j - 0.5);
+      coords[1][j] = SubgridY(subgrid) + SubgridDY(subgrid) * ((float)j - 0.5);
     }
 
     coords[2] = ctalloc(float, dims[2]);
@@ -335,9 +335,9 @@ void     WriteSiloPMPIO(char *  file_prefix,
        * if ( k > 19 ) {
        * mult = 0.4;
        * }
-       * z_coord +=  SubgridDZ(intake_subgrid)*mult;
+       * z_coord +=  SubgridDZ(subgrid)*mult;
        * coords[2][k] =  z_coord; */
-      coords[2][k] = SubgridZ(intake_subgrid) + SubgridDZ(intake_subgrid) * ((float)k - 0.5);
+      coords[2][k] = SubgridZ(subgrid) + SubgridDZ(subgrid) * ((float)k - 0.5);
     }
 
 //       if (numGroups > 1) {

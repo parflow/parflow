@@ -115,7 +115,7 @@ void LBWells(
         well_subgrid = WellDataPhysicalSubgrid(well_data_physical);
         head = WellDataValuePhaseValue(well_data_value, 0);
 
-        /*  Get the intersection of the well with the intake_subgrid  */
+        /*  Get the intersection of the well with the subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           /*  If an intersection;  loop over it, and insert value  */
@@ -146,7 +146,7 @@ void LBWells(
             cellTypep[index] = 0;
           });
 
-          /* done with this temporay intake_subgrid */
+          /* done with this temporay subgrid */
           FreeSubgrid(tmp_subgrid);
         }      /* if (tmp_sub_grid ...)  */
       }     /* for (well = 0; ...)  */

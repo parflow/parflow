@@ -39,7 +39,7 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
 #ifdef PARFLOW_HAVE_NETCDF
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
-  Subgrid        *intake_subgrid;
+  Subgrid        *subgrid;
   Subvector      *subvector;
   
   int g;
@@ -52,9 +52,9 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
   
   ForSubgridI(g, subgrids)
   {
-    intake_subgrid = SubgridArraySubgrid(subgrids, g);
+    subgrid = SubgridArraySubgrid(subgrids, g);
     subvector = VectorSubvector(v, g);
-    ReadNCFile(ncRID, varID, subvector, intake_subgrid, varName, tStep, dimensionality);
+    ReadNCFile(ncRID, varID, subvector, subgrid, varName, tStep, dimensionality);
   }
   nc_close(ncRID);
 }
@@ -113,13 +113,13 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
     nc_inq_varid(ncRID, varName, &varID);
 
 
-    int ix = SubgridIX(intake_subgrid);
-    int iy = SubgridIY(intake_subgrid);
-    int iz = SubgridIZ(intake_subgrid);
+    int ix = SubgridIX(subgrid);
+    int iy = SubgridIY(subgrid);
+    int iz = SubgridIZ(subgrid);
 
-    int nx = SubgridNX(intake_subgrid);
-    int ny = SubgridNY(intake_subgrid);
-    int nz = SubgridNZ(intake_subgrid);
+    int nx = SubgridNX(subgrid);
+    int ny = SubgridNY(subgrid);
+    int nz = SubgridNZ(subgrid);
 
     int nx_v = SubvectorNX(subvector);
     int ny_v = SubvectorNY(subvector);
@@ -134,7 +134,7 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
     double *nc_data;
     nc_data = (double*)malloc(sizeof(double) * nx * ny * nz);
 
-    (void)intake_subgrid;
+    (void)subgrid;
     startp[0] = tStep, countp[0] = 1;
     startp[1] = iz, countp[1] = nz;
     startp[2] = iy, countp[2] = ny;
@@ -170,13 +170,13 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
     nc_inq_varid(ncRID, varName, &varID);
 
 
-    int ix = SubgridIX(intake_subgrid);
-    int iy = SubgridIY(intake_subgrid);
-    int iz = SubgridIZ(intake_subgrid);
+    int ix = SubgridIX(subgrid);
+    int iy = SubgridIY(subgrid);
+    int iz = SubgridIZ(subgrid);
 
-    int nx = SubgridNX(intake_subgrid);
-    int ny = SubgridNY(intake_subgrid);
-    int nz = SubgridNZ(intake_subgrid);
+    int nx = SubgridNX(subgrid);
+    int ny = SubgridNY(subgrid);
+    int nz = SubgridNZ(subgrid);
 
     int nx_v = SubvectorNX(subvector);
     int ny_v = SubvectorNY(subvector);

@@ -131,7 +131,7 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   cJSON_AddItemToObject(topsurf, "origin",
                         cJSON_CreateDoubleArray(topOrigin, 3));
   cJSON* topSGD = cJSON_CreateArray();
-  cJSON_AddItemToObject(topsurf, "intake_subgrid-divisions", topSGD);
+  cJSON_AddItemToObject(topsurf, "subgrid-divisions", topSGD);
 
   cJSON* subsurf = cJSON_CreateObject();
   cJSON_AddItemToObject(pf, "subsurface", subsurf);
@@ -142,7 +142,7 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   cJSON_AddItemToObject(subsurf, "origin",
                         cJSON_CreateDoubleArray(subOrigin, 3));
   cJSON* subSGD = cJSON_CreateArray();
-  cJSON_AddItemToObject(subsurf, "intake_subgrid-divisions", subSGD);
+  cJSON_AddItemToObject(subsurf, "subgrid-divisions", subSGD);
 
   memset(idivs, 0, sizeof(int) * ni);
   memset(jdivs, 0, sizeof(int) * nj);

@@ -169,7 +169,7 @@ void     ThermalConductivity(
               ptdat[ips] = 0.0;
             });
           }     /* End else clause */
-        }       /* End intake_subgrid loop */
+        }       /* End subgrid loop */
       }         /* End reion loop */
       break;
     }        /* End case 0 */
@@ -242,7 +242,7 @@ void     ThermalConductivity(
                 ptdat[ipt] = psdat[ips] * (cwet - cdry);     /* Here psdat contains the derivative dS/dp */
               });
             }   /* End else clause */
-          }     /* End intake_subgrid loop */
+          }     /* End subgrid loop */
         }       /* End loop over regions */
       }         /* End if data not from file */
       else
@@ -310,7 +310,7 @@ void     ThermalConductivity(
               ptdat[ipt] = psdat[ipp] * (cwet - cdry);
             });
           }     /* End else clause */
-        }       /* End intake_subgrid loop */
+        }       /* End subgrid loop */
       }         /* End if data_from_file */
       break;
     }        /* End case 1 */

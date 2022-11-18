@@ -120,7 +120,7 @@ void FBz(ProblemData *problem_data, Vector *FBz)
             ipicv = SubvectorEltIndex(val_sub, i, j, k);
             FBz_dat[ips] = val_dat[ipicv];
           });
-        }      /* End intake_subgrid loop */
+        }      /* End subgrid loop */
 
         break;
       }

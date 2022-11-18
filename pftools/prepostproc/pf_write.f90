@@ -93,7 +93,7 @@
 
 ! End: writing of sub-grid spatial information
 
-! Start: write data for each individual intake_subgrid
+! Start: write data for each individual subgrid
   do  k=iz +1 , iz + nnz
    do  j=iy +1 , iy + nny
     do  i=ix +1 , ix + nnx
@@ -101,7 +101,7 @@
     end do
    end do
   end do
-! End: read in saturation data from each individual intake_subgrid
+! End: read in saturation data from each individual subgrid
 
   end do
 ! End: loop over number of sub grids

@@ -76,9 +76,9 @@ A \dfn{subregion-array} is just an array of subregions.
 
 A \dfn{region} is an array of subregion-arrays.
 
-A \dfn{intake_subgrid} is a subregion with striding factors equal 1.
+A \dfn{subgrid} is a subregion with striding factors equal 1.
 
-A \dfn{intake_subgrid-array} is an array of subgrids.
+A \dfn{subgrid-array} is an array of subgrids.
 
 A \dfn{grid} is also an array of subgrids.
 
@@ -102,7 +102,7 @@ Subgrids may overlap.
 \item
 The computed solution at a point $P$
 in the problem domain
-is defined to be the value at the point on the finest intake_subgrid containing it.
+is defined to be the value at the point on the finest subgrid containing it.
 (note: we use ``vertex centered'' gridding, not ``cell centered'')
 
 \item

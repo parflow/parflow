@@ -34,7 +34,7 @@
 
 /*--------------------------------------------------------------------------
  * This routine returns the height of either the top or bottom of a
- * solid at each (x,y) coordinate of an array of intake_subgrid.  The result is
+ * solid at each (x,y) coordinate of an array of subgrid.  The result is
  * returned in an array of 2D real arrays.  The `type' field determines
  * whether to look at the bottom or top of the solid given by the following:
  *    1 - bottom

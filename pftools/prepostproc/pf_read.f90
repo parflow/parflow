@@ -56,7 +56,7 @@ print *,""
 
 ! Start: loop over number of sub grids
   do is = 0, (ns-1)
-print *,"Doing intake_subgrid",is
+print *,"Doing subgrid",is
 
 ! Start: reading of sub-grid spatial information
    read(100) ix
@@ -81,7 +81,7 @@ print *,"r",rx,ry,rz
 
 ! End: reading of sub-grid spatial information
 
-! Start: read in saturation data from each individual intake_subgrid
+! Start: read in saturation data from each individual subgrid
   do  k=iz +1 , iz + nnz
    do  j=iy +1 , iy + nny
     do  i=ix +1 , ix + nnx
@@ -89,9 +89,9 @@ print *,"r",rx,ry,rz
     end do
    end do
   end do
-! End: read in saturation data from each individual intake_subgrid
+! End: read in saturation data from each individual subgrid
 
-! End: read in saturation data from each individual intake_subgrid
+! End: read in saturation data from each individual subgrid
 
   end do
 ! End: loop over number of sub grids

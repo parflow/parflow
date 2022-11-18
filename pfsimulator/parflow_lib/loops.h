@@ -43,9 +43,9 @@
  * @brief Declare increment variables for striding indices in BoxLoops
  * @param[in,out] jinc Name of the Y increment variable to be declared
  * @param[in,out] kinc Name of the Z increment variable to be declared
- * @param[in] nx X size of intake_subgrid
- * @param[in] ny Y size of intake_subgrid
- * @param[in] nz Z size of intake_subgrid
+ * @param[in] nx X size of subgrid
+ * @param[in] ny Y size of subgrid
+ * @param[in] nz Z size of subgrid
  * @param[in] nxd X size of vector subregion
  * @param[in] nyd Y size of vector subregion
  * @param[in] nzd Z size of vector subregion

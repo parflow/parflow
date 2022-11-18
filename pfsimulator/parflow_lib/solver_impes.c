@@ -1158,17 +1158,17 @@ void      SolverImpes()
 	  /*   int x, y, z; */
 	  
 	  /*   // @RMM - dummy variables for calling CRUNCHFLOW */
-	  /*   nx = SubgridNX(intake_subgrid); */
-	  /*   ny = SubgridNY(intake_subgrid); */
-	  /*   nz = SubgridNZ(intake_subgrid); */
+	  /*   nx = SubgridNX(subgrid); */
+	  /*   ny = SubgridNY(subgrid); */
+	  /*   nz = SubgridNZ(subgrid); */
 	  
-	  /*   ix = SubgridIX(intake_subgrid); */
-	  /*   iy = SubgridIY(intake_subgrid); */
-	  /*   iz = SubgridIZ(intake_subgrid); */
+	  /*   ix = SubgridIX(subgrid); */
+	  /*   iy = SubgridIY(subgrid); */
+	  /*   iz = SubgridIZ(subgrid); */
 	  
-	  /*   dx = SubgridDX(intake_subgrid); */
-	  /*   dy = SubgridDY(intake_subgrid); */
-	  /*   dz = SubgridDZ(intake_subgrid); */
+	  /*   dx = SubgridDX(subgrid); */
+	  /*   dy = SubgridDY(subgrid); */
+	  /*   dz = SubgridDZ(subgrid); */
 	  
 	  /*   CALL_CRUNCHFLOW(); */
 	  /* } */
@@ -1546,7 +1546,7 @@ PFModule *SolverImpesInitInstanceXtra()
 
   all_subgrids = GridAllSubgrids(grid);
 
-  /***** Set up a new intake_subgrid grown by one in the x-direction *****/
+  /***** Set up a new subgrid grown by one in the x-direction *****/
 
   new_all_subgrids = NewSubgridArray();
   ForSubgridI(i, all_subgrids)
@@ -1564,7 +1564,7 @@ PFModule *SolverImpesInitInstanceXtra()
 
   all_subgrids = GridAllSubgrids(grid);
 
-  /***** Set up a new intake_subgrid grown by one in the y-direction *****/
+  /***** Set up a new subgrid grown by one in the y-direction *****/
 
   new_all_subgrids = NewSubgridArray();
   ForSubgridI(i, all_subgrids)
@@ -1582,7 +1582,7 @@ PFModule *SolverImpesInitInstanceXtra()
 
   all_subgrids = GridAllSubgrids(grid);
 
-  /***** Set up a new intake_subgrid grown by one in the z-direction *****/
+  /***** Set up a new subgrid grown by one in the z-direction *****/
 
   new_all_subgrids = NewSubgridArray();
   ForSubgridI(i, all_subgrids)

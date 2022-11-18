@@ -235,7 +235,7 @@ void         PField(
 
     /* Map data to grid and shift to N(0,1) distribution.
      * Keep only points that are within max_search_radius
-     * of this intake_subgrid. */
+     * of this subgrid. */
     nc_sub = 0;
     for (n = 0; n < nc; n++)
     {

@@ -225,7 +225,7 @@ void         PGSRF(
   nLxyz = nLx * nLy * nLz;
 
   /*------------------------
-   * Define a random path through the points in this intake_subgrid.
+   * Define a random path through the points in this subgrid.
    * The random path generation procedure of Srivastava and
    * Gomez has been adopted in this subroutine.  A linear
    * congruential generator of the form: r(i) = 5*r(i-1)+1 mod(2**n)
@@ -496,7 +496,7 @@ void         PGSRF(
         iz2 += iLzp1;
 
       /* This if clause checks to see if there are, in fact,
-       * any points at all in this intake_subgrid, for this
+       * any points at all in this subgrid, for this
        * particular region. Note that each value of n in the
        * above n-loop corresponds to a different region. */
       if ((ix2 < ix + nx) && (iy2 < iy + ny) && (iz2 < iz + nz))
@@ -600,7 +600,7 @@ void         PGSRF(
 
         /* The following loop hits every point in the current
          * region. That is, it skips by max_search_rad+1
-         * through the intake_subgrid. In this way, all the points
+         * through the subgrid. In this way, all the points
          * in this loop may simulated simultaneously; each is
          * outside the search radius of all the others. */
         nxG = (nx + ix);

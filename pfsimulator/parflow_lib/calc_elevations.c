@@ -35,7 +35,7 @@
 
 /*--------------------------------------------------------------------------
  * This routine returns the elevations on a patch of a
- * solid at each (x,y) coordinate of an array of intake_subgrid.  The result is
+ * solid at each (x,y) coordinate of an array of subgrid.  The result is
  * returned in an array of 2D real arrays.
  *
  * This routine is called by the pressure boundary condition routine and
@@ -103,7 +103,7 @@ double         **CalcElevations(
 
   /*
    * SGS TODO SHOULD HAVE ASSERT MACRO
-   * This algorithm only works for one intake_subgrid per rank due to the merge process.
+   * This algorithm only works for one subgrid per rank due to the merge process.
    * Unless we could guarantee subgrids are ordered on each rank.
    */
   assert(SubgridArraySize(subgrids) == 1);
@@ -156,7 +156,7 @@ double         **CalcElevations(
 
     /*
      * SGS TODO SHOULD HAVE ASSERT MACRO
-     * This algorithm only works for one intake_subgrid per rank due to the merge process.
+     * This algorithm only works for one subgrid per rank due to the merge process.
      * Unless we could guarantee subgrids are ordered on each rank.
      *
      * SGS TODO this algorithm is inefficient, currently sends all arrays from each rank in the Z

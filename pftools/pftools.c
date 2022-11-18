@@ -531,7 +531,7 @@ Data    *InitPFToolsData()
 }
 
 /* Function AddSubgridArray - This function adds a pointer to a new
- * intake_subgrid array to the hash table of intake_subgrid array pointers.  A
+ * subgrid array to the hash table of subgrid array pointers.  A
  * hash key used to access the pointer is generated automatically.
  *
  * Parameters
@@ -5372,7 +5372,7 @@ int PrintDomainCommand(
 
 
 /*
- * Builds a intake_subgrid array from the current Parflow database key/values
+ * Builds a subgrid array from the current Parflow database key/values
  * that specify the processor topology.
  */
 int BuildDomainCommand(

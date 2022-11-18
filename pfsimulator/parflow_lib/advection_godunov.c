@@ -416,7 +416,7 @@ void     Godunov(
         ny_zv = SubvectorNY(subvector_zvel);
         nz_zv = SubvectorNZ(subvector_zvel);
 
-        /*  Get the intersection of the well with the intake_subgrid  */
+        /*  Get the intersection of the well with the subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           ix = SubgridIX(tmp_subgrid);
@@ -510,7 +510,7 @@ void     Godunov(
               total_volume += dt * flux * cell_volume;
             });
           }
-          FreeSubgrid(tmp_subgrid);        /* done with temporary intake_subgrid */
+          FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
       }
 
@@ -574,7 +574,7 @@ void     Godunov(
         ny_p = SubvectorNY(px_sub);
         nz_p = SubvectorNZ(px_sub);
 
-        /*  Get the intersection of the well with the intake_subgrid  */
+        /*  Get the intersection of the well with the subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           ix = SubgridIX(tmp_subgrid);
@@ -693,7 +693,7 @@ void     Godunov(
               total_volume += dt * weight * flux * cell_volume;
             });
           }
-          FreeSubgrid(tmp_subgrid);        /* done with temporary intake_subgrid */
+          FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
       }
 
@@ -795,7 +795,7 @@ void     Godunov(
         ny_w = SubvectorNY(subvector_scal);         /* scal & rhs share ny_w */
         nz_w = SubvectorNZ(subvector_scal);         /* scal & rhs share nz_w */
 
-        /*  Get the intersection of the well with the intake_subgrid  */
+        /*  Get the intersection of the well with the subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           ix = SubgridIX(tmp_subgrid);
@@ -840,7 +840,7 @@ void     Godunov(
               well_stat += cell_change * cell_volume;
             });
           }
-          FreeSubgrid(tmp_subgrid);        /* done with temporary intake_subgrid */
+          FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
       }
 
@@ -879,7 +879,7 @@ void     Godunov(
         ny_w = SubvectorNY(subvector_scal);         /* scal & rhs share ny_w */
         nz_w = SubvectorNZ(subvector_scal);         /* scal & rhs share nz_w */
 
-        /*  Get the intersection of the well with the intake_subgrid  */
+        /*  Get the intersection of the well with the subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           ix = SubgridIX(tmp_subgrid);
@@ -924,7 +924,7 @@ void     Godunov(
               well_stat += cell_change * cell_volume;
             });
           }
-          FreeSubgrid(tmp_subgrid);        /* done with temporary intake_subgrid */
+          FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
       }
 

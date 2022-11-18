@@ -184,7 +184,7 @@ void dzScale(ProblemData *problem_data, Vector *dz_mult)
             ipicv = SubvectorEltIndex(val_sub, i, j, k);
             dz_dat[ips] = val_dat[ipicv];
           });
-        }      /* End intake_subgrid loop */
+        }      /* End subgrid loop */
 
         break;
       }
@@ -223,7 +223,7 @@ void dzScale(ProblemData *problem_data, Vector *dz_mult)
             ips = SubvectorEltIndex(dz_sub, i, j, k);
             dz_dat[ips] = values[k];
           });
-        }           /* End intake_subgrid loop */
+        }           /* End subgrid loop */
 
         break;
       }

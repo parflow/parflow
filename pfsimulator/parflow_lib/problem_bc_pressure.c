@@ -350,7 +350,7 @@ BCStruct    *BCPressure(
                                  }),
                                  AfterAllCells(DoNothing)
               ); /* End ForPatchCellsPerFace loop */
-          }                      /* End intake_subgrid loop */
+          }                      /* End subgrid loop */
 
 
           break;
@@ -607,7 +607,7 @@ BCStruct    *BCPressure(
             {
               patch_values[ival] = flux;
             });
-          }       /* End intake_subgrid loop */
+          }       /* End subgrid loop */
           break;
         } /* End FluxConst */
 
@@ -665,7 +665,7 @@ BCStruct    *BCPressure(
                 patch_values[ival] = volumetric_flux;
               });
             }
-          }           /* End intake_subgrid loop */
+          }           /* End subgrid loop */
           break;
         } /* End FluxVolumetric */
 
@@ -727,7 +727,7 @@ BCStruct    *BCPressure(
             });
 
             FreeVector(tmp_vector);
-          }             /* End intake_subgrid loop */
+          }             /* End subgrid loop */
           break;
         } /* End PressureFile */
 
@@ -773,7 +773,7 @@ BCStruct    *BCPressure(
             });
 
             FreeVector(tmp_vector);
-          }         /* End intake_subgrid loop */
+          }         /* End subgrid loop */
           break;
         } /* End FluxFile */
 
@@ -950,7 +950,7 @@ BCStruct    *BCPressure(
                 break;
               }     /* End case 5 */
             }       /* End switch */
-          }         /* End intake_subgrid loop */
+          }         /* End subgrid loop */
           break;
         } /* End ExactSolution */
 
@@ -983,7 +983,7 @@ BCStruct    *BCPressure(
             {
               patch_values[ival] = flux;
             });
-          }       /* End intake_subgrid loop */
+          }       /* End subgrid loop */
           break;
         } /* End OverlandFlow */
 
@@ -1033,7 +1033,7 @@ BCStruct    *BCPressure(
 
             //tfree(VectorData(tmp_vector));
             FreeVector(tmp_vector);
-          }              /* End intake_subgrid loop */
+          }              /* End subgrid loop */
           break;
         } /* End OverlandFlowPFB */
 

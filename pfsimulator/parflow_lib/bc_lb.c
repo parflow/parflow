@@ -122,7 +122,7 @@ void LBInitializeBC(
 
           ForSubgridI(is, subgrids)
           {
-            /* intake_subgrid = GridSubgrid(grid, is); */
+            /* subgrid = GridSubgrid(grid, is); */
             subgrid = SubgridArraySubgrid(subgrids, is);
             sub_p = VectorSubvector(pressure, is);
             sub_cellType = CharVectorSubcharvector(cellType, is);
@@ -159,7 +159,7 @@ void LBInitializeBC(
             });
 
             tfree(elevations[is]);
-          }       /* End intake_subgrid loop */
+          }       /* End subgrid loop */
 
           tfree(elevations);
           break;
@@ -177,7 +177,7 @@ void LBInitializeBC(
 
           ForSubgridI(is, subgrids)
           {
-            /* intake_subgrid = GridSubgrid(grid, is); */
+            /* subgrid = GridSubgrid(grid, is); */
             subgrid = SubgridArraySubgrid(subgrids, is);
             sub_p = VectorSubvector(pressure, is);
             sub_cellType = CharVectorSubcharvector(cellType, is);
@@ -244,7 +244,7 @@ void LBInitializeBC(
 
               cellTypep[ival] = 0;
             });
-          }      /* End intake_subgrid loop */
+          }      /* End subgrid loop */
 
           break;
         }
@@ -257,7 +257,7 @@ void LBInitializeBC(
 
           ForSubgridI(is, subgrids)
           {
-            /* intake_subgrid = GridSubgrid(grid, is); */
+            /* subgrid = GridSubgrid(grid, is); */
             subgrid = SubgridArraySubgrid(subgrids, is);
             sub_p = VectorSubvector(pressure, is);
             sub_cellType = CharVectorSubcharvector(cellType, is);
@@ -289,7 +289,7 @@ void LBInitializeBC(
                 cellTypep[ival] = 1;
               }
             });
-          }         /* End intake_subgrid loop */
+          }         /* End subgrid loop */
           break;
         }
       }

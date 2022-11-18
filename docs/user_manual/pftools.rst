@@ -326,7 +326,7 @@ terrain following grid domain formulation.
       | pfprintdomain  | Print domain   | 3            | X              |
       +----------------+----------------+--------------+----------------+
       | pfbuilddomain  | Build a        |              | X              |
-      |                | intake_subgrid array  |              |                |
+      |                | subgrid array  |              |                |
       |                | from a ParFlow |              |                |
       |                | database       |              |                |
       +----------------+----------------+--------------+----------------+
@@ -468,7 +468,7 @@ square brackets are optional and do not need to be provided.
 
       pfbuilddomain database
 
-   This command builds a intake_subgrid array given a ParFlow database that
+   This command builds a subgrid array given a ParFlow database that
    contains the domain parameters and the processor topology.
 
    ::
@@ -553,7 +553,7 @@ square brackets are optional and do not need to be provided.
       pfcomputedomain top bottom
 
    This command computes a domain based on the top and bottom data sets.
-   The domain built will have a single intake_subgrid per processor that covers
+   The domain built will have a single subgrid per processor that covers
    the active data as defined by the top and botttom. This domain will
    more closely follow the topology of the terrain than the default
    single computation domain.
@@ -637,7 +637,7 @@ square brackets are optional and do not need to be provided.
    provided rather than the processor topology as used by pfdist. This
    is used by the SAMRAI version of which allows for a more complicated
    computation domain specification with different sized subgrids on
-   each processor and allows for more than one intake_subgrid per processor.
+   each processor and allows for more than one subgrid per processor.
    Frequently this will be used with a domain created by the
    pfcomputedomain command.
 

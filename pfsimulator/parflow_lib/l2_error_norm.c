@@ -226,7 +226,7 @@ void         L2ErrorNorm(
         break;
       }      /* End case  p = x*y*z*t + 1*/
     }     /* End switch statement for solution types */
-  }       /* End intake_subgrid loop */
+  }       /* End subgrid loop */
 
   if ((public_xtra->solution_type) > 0)
   {

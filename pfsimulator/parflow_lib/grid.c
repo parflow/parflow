@@ -125,7 +125,7 @@ void  FreeGrid(
 
     FreeSubgridArray(GridAllSubgrids(grid));
 
-    /* these intake_subgrid arrays point to subgrids in all_subgrids */
+    /* these subgrid arrays point to subgrids in all_subgrids */
     SubgridArraySize(GridSubgrids(grid)) = 0;
     FreeSubgridArray(GridSubgrids(grid));
 
@@ -139,10 +139,10 @@ void  FreeGrid(
 
 /*--------------------------------------------------------------------------
  * ProjectSubgrid:
- *   Projects a intake_subgrid onto an "index region".  This index region is the
+ *   Projects a subgrid onto an "index region".  This index region is the
  *   collection of index space indices with strides (sx, sy, sz) that
  *   contains the index (ix, iy, iz).  The base index space is determined
- *   by the intake_subgrid passed in.
+ *   by the subgrid passed in.
  *
  *   Returns 0 for an empty projection, and 1 for a nonempty projection.
  *--------------------------------------------------------------------------*/
@@ -229,7 +229,7 @@ int         ProjectSubgrid(
 
 /*--------------------------------------------------------------------------
  * ConvertToSubgrid:
- *   Converts a subregion to a intake_subgrid, if possible.
+ *   Converts a subregion to a subgrid, if possible.
  *
  *   Note: The subregion passed in is modified.
  *--------------------------------------------------------------------------*/
@@ -278,8 +278,8 @@ Subgrid    *ConvertToSubgrid(
 
 /*--------------------------------------------------------------------------
  * ExtractSubgrid: RDF todo
- *   Extract a intake_subgrid with resolution (rx, ry, rz).
- *   Assumes that (rx, ry, rz) are not finer than intake_subgrid's resolution.
+ *   Extract a subgrid with resolution (rx, ry, rz).
+ *   Assumes that (rx, ry, rz) are not finer than subgrid's resolution.
  *--------------------------------------------------------------------------*/
 
 Subgrid  *ExtractSubgrid(
@@ -361,7 +361,7 @@ Subgrid  *ExtractSubgrid(
  *
  *   This routine assumes that rs_i >= rs_j, for all s = x, y, z, where
  *   (i,j) = (1,2) or (2,1).  i.e. one of the subgrids passed in has
- *   resolution either finer than or equal to the other intake_subgrid (in all
+ *   resolution either finer than or equal to the other subgrid (in all
  *   three directions).
  *--------------------------------------------------------------------------*/
 
@@ -719,7 +719,7 @@ SubgridArray  *UnionSubgridArray(
     }
 
     /*------------------------------------------------------
-     * Set up block_index array with new_sa intake_subgrid indices
+     * Set up block_index array with new_sa subgrid indices
      *------------------------------------------------------*/
 
     for (d = 0; d < 3; d++)

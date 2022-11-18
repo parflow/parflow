@@ -267,7 +267,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
             break;
           } /* End case 6 */
         }   /* End switch statement on function_types */
-      }     /* End intake_subgrid loop */
+      }     /* End subgrid loop */
 
       break;
     }  /* End case 1 for input types */
@@ -309,7 +309,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
           ipicv = SubvectorEltIndex(m_values_sub, i, j, 0);
           psdat[ips] = m_values_dat[ipicv];
         });
-      }      /* End intake_subgrid loop */
+      }      /* End subgrid loop */
 
       break;
     }

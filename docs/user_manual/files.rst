@@ -158,7 +158,7 @@ for the file is:
       <double : DX>   <double : DY>   <double : DZ>
 
       <integer : num_subgrids>
-      FOR intake_subgrid = 0 TO <num_subgrids> - 1
+      FOR subgrid = 0 TO <num_subgrids> - 1
       BEGIN
          <integer : ix>  <integer : iy>  <integer : iz>
          <integer : nx>  <integer : ny>  <integer : nz>
@@ -193,7 +193,7 @@ BIG ENDIAN binary bit ordering :cite:p:`endian`. The format for the file is:
       <double : DX>   <double : DY>   <double : DZ>
 
       <integer : num_subgrids>
-      FOR intake_subgrid = 0 TO <num_subgrids> - 1
+      FOR subgrid = 0 TO <num_subgrids> - 1
       BEGIN
          <integer : ix>  <integer : iy>  <integer : iz>
          <integer : nx>  <integer : ny>  <integer : nz>
@@ -243,7 +243,7 @@ considerably. The format for the file is:
       <double : DX>   <double : DY>   <double : DZ>
 
       <integer : num_subgrids>
-      FOR intake_subgrid = 0 TO <num_subgrids> - 1
+      FOR subgrid = 0 TO <num_subgrids> - 1
       BEGIN
          <integer : ix>  <integer : iy>  <integer : iz>
          <integer : nx>  <integer : ny>  <integer : nz>

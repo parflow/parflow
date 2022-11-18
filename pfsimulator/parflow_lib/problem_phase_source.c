@@ -265,7 +265,7 @@ void         PhaseSource(
             break;
           } /* End case 6 */
         }   /* End switch statement on function_types */
-      }     /* End intake_subgrid loop */
+      }     /* End subgrid loop */
 
       break;
     }  /* End case 1 for input types */
@@ -327,7 +327,7 @@ void         PhaseSource(
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
 
-        /*  Get the intersection of the well with the intake_subgrid  */
+        /*  Get the intersection of the well with the subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           /*  If an intersection;  loop over it, and insert value  */
@@ -382,7 +382,7 @@ void         PhaseSource(
               data[ips] += weight * flux;
             });
           }
-          /* done with this temporary intake_subgrid */
+          /* done with this temporary subgrid */
 
           FreeSubgrid(tmp_subgrid);
 
@@ -415,7 +415,7 @@ void         PhaseSource(
       {
         reservoir_value = -ReservoirDataValuePhaseValue(reservoir_data_value, phase);
       }
-      /*  Get the intersection of the well with the intake_subgrid  */
+      /*  Get the intersection of the well with the subgrid  */
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
       flux = reservoir_value / volume;
 
@@ -449,7 +449,7 @@ void         PhaseSource(
 //          printf("When in phase source time series second value is %f\n",  GetValue(reservoir_data_physical->release_curve, 4.0));
 //          printf("Release amount is %f\n", release_amount);
 //          printf("Reservoir status is %d\n", ReservoirDataPhysicalStatus(reservoir_data_physical));
-          /*  Get the intersection of the reservoir with the intake_subgrid  */
+          /*  Get the intersection of the reservoir with the subgrid  */
           if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_subgrid))) {
             /*  If an intersection;  loop over it, and insert value  */
             ix = SubgridIX(tmp_subgrid);
@@ -505,7 +505,7 @@ void         PhaseSource(
                           data[ips] += weight * flux;
                         });
             }
-            /* done with this temporary intake_subgrid */
+            /* done with this temporary subgrid */
 
             FreeSubgrid(tmp_subgrid);
 

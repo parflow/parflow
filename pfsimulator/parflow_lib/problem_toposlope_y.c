@@ -282,7 +282,7 @@ void         YSlope(
             break;
           }        /* End case 6 */
         }       /* End switch statement on function_types */
-      }        /* End intake_subgrid loop */
+      }        /* End subgrid loop */
 
       break;
     }     /* End case 1 for input types */
@@ -323,7 +323,7 @@ void         YSlope(
 
           psdat[ips] = sy_values_dat[ipicv];
         });
-      }    /* End intake_subgrid loop */
+      }    /* End subgrid loop */
 
       break;
     }
@@ -364,7 +364,7 @@ void         YSlope(
 
           psdat[ips] = sy_values_dat[ipicv];
         });
-      }    /* End intake_subgrid loop */
+      }    /* End subgrid loop */
 
       break;
     }

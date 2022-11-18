@@ -8,11 +8,11 @@ problems due to a more flexible computation domain.  In Parflow the
 computation domain is specified as a single parallelepiped in the TCL
 input script.  Parflow/SAMRAI will also accept this input but in
 addition supports specifying the computation domain as a set of
-parallelepiped subgrids.  You may have more than one intake_subgrid per
+parallelepiped subgrids.  You may have more than one subgrid per
 processor.  This enables the computation domain to more closely match
 the active region of the problem.
 
-Note for CLM and WRF runs only a single intake_subgrid is allowed per
+Note for CLM and WRF runs only a single subgrid is allowed per
 processor since CLM and WRF only decompose problems in X and Y.  Also
 the subgrids will need to match the decomposition that WRF is using in
 X and Y.
@@ -50,7 +50,7 @@ are necessary.  This should produce the same output as the non-SAMRAI
 version.  However this offers no real advantage but is supported to
 allow for backward compatibility.  If you want to run with a SAMRAI
 grid you need to do two things differently.  First the compute domain
-specification is more complicated.  Each intake_subgrid must be specified.
+specification is more complicated.  Each subgrid must be specified.
 Second you must use pfdistondomain instead of pfdist to distribute
 input files.
 
@@ -65,7 +65,7 @@ with the SAMRAI version.
 
 ### Input file changes for running with a SAMRAI grid
 
-This simplest example of specifying a SAMRAI grid is a single intake_subgrid
+This simplest example of specifying a SAMRAI grid is a single subgrid
 run on a single processor:
 
 ```tcl
@@ -81,7 +81,7 @@ run on a single processor:
 ```
 
 NumSubgrids is the total number of subgrids in the specification
-(across all processors).  For each intake_subgrid you must specify the
+(across all processors).  For each subgrid you must specify the
 processor (P) and the starting index and number of grid points along
 each dimension.
  
@@ -110,16 +110,16 @@ might look like:
 Which specifies a split of the domain along the Y axis at Y=5.
 
 See the test script "samrai.tcl" for some examples on different
-processor topologies and using more than one intake_subgrid per processor.
+processor topologies and using more than one subgrid per processor.
 
 If you are manually building the grid for a CLM run you need to specify
-intake_subgrid extents to include overlap for the active region ghost layer.
+subgrid extents to include overlap for the active region ghost layer.
 Basically you need to make sure that the IZ and NZ values are such
 that they cover the active domain for each processor plus the active
 domain in neighboring processors ghost layers (IX-2 to NX+4).  The
 overland flow calculation needs to have the information about the top
 of the domain to correctly move water to/from neighboring subgrids and
-communication is done only along intake_subgrid boundaries so the intake_subgrid
+communication is done only along subgrid boundaries so the subgrid
 extents need to be high enough to communicate the information between
 neighbors.
 
@@ -135,7 +135,7 @@ time-step (can be really small).  Using the mask file from that is
 created by this run one can use the "pfcomputedomain" and
 "pfprintdomain" commands in pftools to write out a grid.  This grid
 will use the processor topology you have specified to build a grid
-such that each processor's intake_subgrid covers only the extent of the
+such that each processor's subgrid covers only the extent of the
 active region (which comes from the mask file).
 
 A sample script compute_domain.tcl which does this is enclosed in test

@@ -93,7 +93,7 @@ void    PermeabilityFace(
   FinalizeVectorUpdate(handle);
 
   /*-----------------------------------------------------------------------
-   * compute the z-face permeabilities for each intake_subgrid
+   * compute the z-face permeabilities for each subgrid
    *-----------------------------------------------------------------------*/
 
   subgrids = GridSubgrids(z_grid);
