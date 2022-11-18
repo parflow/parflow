@@ -32,8 +32,8 @@ First, we'll show some usage examples of loading tables of parameters within a P
         0.0, 100.0
     ]
 
-    domain_patches = 'intake_x_lower intake_x_upper intake_y_lower intake_y_upper intake_z_lower intake_z_upper'
-    zero_flux_patches = 'intake_x_lower intake_x_upper intake_y_lower intake_y_upper intake_z_lower'
+    domain_patches = 'x_lower x_upper y_lower y_upper z_lower z_upper'
+    zero_flux_patches = 'x_lower x_upper y_lower y_upper z_lower'
 
     DomainBuilder(LW_Test) \
         .no_wells() \
@@ -44,7 +44,7 @@ First, we'll show some usage examples of loading tables of parameters within a P
         .homogeneous_subsurface('domain', specific_storage=1.0e-5, isotropic=True) \
         .zero_flux(zero_flux_patches, 'constant', 'alltime') \
         .slopes_mannings('domain', slope_x='LW.slopex.pfb', slope_y='LW.slopey.pfb', mannings=5.52e-6) \
-        .ic_pressure('domain', patch='intake_z_upper', pressure='press.init.pfb')
+        .ic_pressure('domain', patch='z_upper', pressure='press.init.pfb')
 
 In this example, the 10 lines associated with the instantiation of the ``DomainBuilder`` class generate about 70 keys!
 As is possible with any other key setting, you can always overwrite the keys as necessary; the ``DomainBuilder`` is designed to help you get started.
@@ -293,7 +293,7 @@ The following examples of the method usage assume that the name of the ``Run`` o
       run.Solver.CLM.FieldCapacity = 0.98
       run.Solver.CLM.IrrigationType = 'none'
 
-13. ``well(name, type, x, y, intake_z_upper, intake_z_lower, cycle_name, interval_name, action='Extraction', saturation=1.0, phase='water', hydrostatic_pressure=None, value=None)``: Sets the following keys:
+13. ``well(name, type, x, y, z_upper, z_lower, cycle_name, interval_name, action='Extraction', saturation=1.0, phase='water', hydrostatic_pressure=None, value=None)``: Sets the following keys:
 
 .. code-block:: python3
 
@@ -305,8 +305,8 @@ The following examples of the method usage assume that the name of the ``Run`` o
       run.Wells.{name}.Type = type
       run.Wells.{name}.X = x
       run.Wells.{name}.Y = y
-      run.Wells.{name}.ZUpper = intake_z_upper
-      run.Wells.{name}.ZLower = intake_z_lower
+      run.Wells.{name}.ZUpper = z_upper
+      run.Wells.{name}.ZLower = z_lower
       run.Wells.{name}.Method = 'Standard'
       run.Wells.{name}.Cycle = cycle_name
       run.Wells.{name}.{interval_name}.Saturation.{phase}.Value = saturation

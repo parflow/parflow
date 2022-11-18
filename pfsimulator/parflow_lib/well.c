@@ -341,11 +341,11 @@ void PrintWellData(
                       WellDataPhysicalNumber(well_data_physical));
           amps_Printf("   name = %s\n",
                       WellDataPhysicalName(well_data_physical));
-          amps_Printf("   intake_x_lower, intake_y_lower, intake_z_lower = %f %f %f\n",
+          amps_Printf("   x_lower, y_lower, z_lower = %f %f %f\n",
                       WellDataPhysicalXLower(well_data_physical),
                       WellDataPhysicalYLower(well_data_physical),
                       WellDataPhysicalZLower(well_data_physical));
-          amps_Printf("   intake_x_upper, intake_y_upper, intake_z_upper = %f %f %f\n",
+          amps_Printf("   x_upper, y_upper, z_upper = %f %f %f\n",
                       WellDataPhysicalXUpper(well_data_physical),
                       WellDataPhysicalYUpper(well_data_physical),
                       WellDataPhysicalZUpper(well_data_physical));
@@ -560,11 +560,11 @@ void PrintWellData(
                       WellDataPhysicalNumber(well_data_physical));
           amps_Printf("   name = %s\n",
                       WellDataPhysicalName(well_data_physical));
-          amps_Printf("   intake_x_lower, intake_y_lower, intake_z_lower = %f %f %f\n",
+          amps_Printf("   x_lower, y_lower, z_lower = %f %f %f\n",
                       WellDataPhysicalXLower(well_data_physical),
                       WellDataPhysicalYLower(well_data_physical),
                       WellDataPhysicalZLower(well_data_physical));
-          amps_Printf("   intake_x_upper, intake_y_upper, intake_z_upper = %f %f %f\n",
+          amps_Printf("   x_upper, y_upper, z_upper = %f %f %f\n",
                       WellDataPhysicalXUpper(well_data_physical),
                       WellDataPhysicalYUpper(well_data_physical),
                       WellDataPhysicalZUpper(well_data_physical));

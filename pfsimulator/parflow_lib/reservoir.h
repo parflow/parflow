@@ -39,8 +39,8 @@ typedef struct {
     char          *name;
 //  char* release_curve_file;
 //  TimeSeries * release_curve;
-    double intake_x_lower, intake_y_lower, intake_z_lower;
-    double intake_x_upper, intake_y_upper, intake_z_upper;
+    double x_lower, y_lower, z_lower;
+    double x_upper, y_upper, z_upper;
     double release_x_lower, release_y_lower, release_z_lower;
     double release_x_upper, release_y_upper, release_z_upper;
     double diameter;
@@ -123,22 +123,22 @@ typedef struct {
   ((reservoir_data_physical)->name)
 
 #define ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_x_lower)
+  ((reservoir_data_physical)->x_lower)
 
 #define ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_y_lower)
+  ((reservoir_data_physical)->y_lower)
 
 #define ReservoirDataPhysicalZLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_z_lower)
+  ((reservoir_data_physical)->z_lower)
 
 #define ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_x_upper)
+  ((reservoir_data_physical)->x_upper)
 
 #define ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_y_upper)
+  ((reservoir_data_physical)->y_upper)
 
 #define ReservoirDataPhysicalZUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_z_upper)
+  ((reservoir_data_physical)->z_upper)
 
 #define ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_subgrid)

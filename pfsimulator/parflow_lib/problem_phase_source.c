@@ -445,7 +445,7 @@ void         PhaseSource(
         if (TRUE) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
 //          double release_amount = GetValue(reservoir_data_physical->release_curve, problem->current_unix_epoch_time);
-//          printf("When in phase source the reservoir x value is %f\n",  reservoir_data_physical->intake_x_lower);
+//          printf("When in phase source the reservoir x value is %f\n",  reservoir_data_physical->x_lower);
 //          printf("When in phase source time series second value is %f\n",  GetValue(reservoir_data_physical->release_curve, 4.0));
 //          printf("Release amount is %f\n", release_amount);
 //          printf("Reservoir status is %d\n", ReservoirDataPhysicalStatus(reservoir_data_physical));

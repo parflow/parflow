@@ -341,11 +341,11 @@ void PrintReservoirData(
                       ReservoirDataPhysicalNumber(reservoir_data_physical));
           amps_Printf("   name = %s\n",
                       ReservoirDataPhysicalName(reservoir_data_physical));
-          amps_Printf("   intake_x_lower, intake_y_lower, intake_z_lower = %f %f %f\n",
+          amps_Printf("   x_lower, y_lower, z_lower = %f %f %f\n",
                       ReservoirDataPhysicalIntakeXLower(reservoir_data_physical),
                       ReservoirDataPhysicalIntakeYLower(reservoir_data_physical),
                       ReservoirDataPhysicalZLower(reservoir_data_physical));
-          amps_Printf("   intake_x_upper, intake_y_upper, intake_z_upper = %f %f %f\n",
+          amps_Printf("   x_upper, y_upper, z_upper = %f %f %f\n",
                       ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical),
                       ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical),
                       ReservoirDataPhysicalZUpper(reservoir_data_physical));
@@ -560,11 +560,11 @@ void PrintReservoirData(
                       ReservoirDataPhysicalNumber(reservoir_data_physical));
           amps_Printf("   name = %s\n",
                       ReservoirDataPhysicalName(reservoir_data_physical));
-          amps_Printf("   intake_x_lower, intake_y_lower, intake_z_lower = %f %f %f\n",
+          amps_Printf("   x_lower, y_lower, z_lower = %f %f %f\n",
                       ReservoirDataPhysicalIntakeXLower(reservoir_data_physical),
                       ReservoirDataPhysicalIntakeYLower(reservoir_data_physical),
                       ReservoirDataPhysicalZLower(reservoir_data_physical));
-          amps_Printf("   intake_x_upper, intake_y_upper, intake_z_upper = %f %f %f\n",
+          amps_Printf("   x_upper, y_upper, z_upper = %f %f %f\n",
                       ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical),
                       ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical),
                       ReservoirDataPhysicalZUpper(reservoir_data_physical));
