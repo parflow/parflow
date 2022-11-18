@@ -55,23 +55,23 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
   {
     Grid *grid = VectorGrid(v);
     SubgridArray *subgrids = GridSubgrids(grid);
-    Subgrid *subgrid = NULL;
+    Subgrid *intake_subgrid = NULL;
     Subvector *subvector = NULL;
     int g;
 
     ForSubgridI(g, subgrids)
     {
-      subgrid = SubgridArraySubgrid(subgrids, g);
+      intake_subgrid = SubgridArraySubgrid(subgrids, g);
       subvector = VectorSubvector(v, g);
     }
 
-    int ix = SubgridIX(subgrid);
-    int iy = SubgridIY(subgrid);
-    int iz = SubgridIZ(subgrid);
+    int ix = SubgridIX(intake_subgrid);
+    int iy = SubgridIY(intake_subgrid);
+    int iz = SubgridIZ(intake_subgrid);
 
-    int nx = SubgridNX(subgrid);
-    int ny = SubgridNY(subgrid);
-    int nz = SubgridNZ(subgrid);
+    int nx = SubgridNX(intake_subgrid);
+    int ny = SubgridNY(intake_subgrid);
+    int nz = SubgridNZ(intake_subgrid);
 
     int nx_v = SubvectorNX(subvector);
     int ny_v = SubvectorNY(subvector);
@@ -1088,23 +1088,23 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dim
 
       Grid *grid = VectorGrid(v);
       SubgridArray *subgrids = GridSubgrids(grid);
-      Subgrid *subgrid = NULL;
+      Subgrid *intake_subgrid = NULL;
       Subvector *subvector = NULL;
       int g;
 
       ForSubgridI(g, subgrids)
       {
-        subgrid = SubgridArraySubgrid(subgrids, g);
+        intake_subgrid = SubgridArraySubgrid(subgrids, g);
         subvector = VectorSubvector(v, g);
       }
 
-      int ix = SubgridIX(subgrid);
-      int iy = SubgridIY(subgrid);
-      int iz = SubgridIZ(subgrid);
+      int ix = SubgridIX(intake_subgrid);
+      int iy = SubgridIY(intake_subgrid);
+      int iz = SubgridIZ(intake_subgrid);
 
-      int nx = SubgridNX(subgrid);
-      int ny = SubgridNY(subgrid);
-      int nz = SubgridNZ(subgrid);
+      int nx = SubgridNX(intake_subgrid);
+      int ny = SubgridNY(intake_subgrid);
+      int nz = SubgridNZ(intake_subgrid);
 
       int nx_v = SubvectorNX(subvector);
       int ny_v = SubvectorNY(subvector);
@@ -1136,23 +1136,23 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dim
 
       Grid *grid = VectorGrid(v);
       SubgridArray *subgrids = GridSubgrids(grid);
-      Subgrid *subgrid = NULL;
+      Subgrid *intake_subgrid = NULL;
       Subvector *subvector;
       int g;
 
       ForSubgridI(g, subgrids)
       {
-        subgrid = SubgridArraySubgrid(subgrids, g);
+        intake_subgrid = SubgridArraySubgrid(subgrids, g);
         subvector = VectorSubvector(v, g);
       }
 
-      int ix = SubgridIX(subgrid);
-      int iy = SubgridIY(subgrid);
-      int iz = SubgridIZ(subgrid);
+      int ix = SubgridIX(intake_subgrid);
+      int iy = SubgridIY(intake_subgrid);
+      int iz = SubgridIZ(intake_subgrid);
 
-      int nx = SubgridNX(subgrid);
-      int ny = SubgridNY(subgrid);
-      int nz = SubgridNZ(subgrid);
+      int nx = SubgridNX(intake_subgrid);
+      int ny = SubgridNY(intake_subgrid);
+      int nz = SubgridNZ(intake_subgrid);
 
       int nx_v = SubvectorNX(subvector);
       int ny_v = SubvectorNY(subvector);

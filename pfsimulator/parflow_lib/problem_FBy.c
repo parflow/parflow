@@ -120,7 +120,7 @@ void FBy(ProblemData *problem_data, Vector *FBy)
             ipicv = SubvectorEltIndex(val_sub, i, j, k);
             FBy_dat[ips] = val_dat[ipicv];
           });
-        }      /* End subgrid loop */
+        }      /* End intake_subgrid loop */
 
         FreeTempVector(values);
 

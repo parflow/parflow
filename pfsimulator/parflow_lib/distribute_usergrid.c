@@ -46,7 +46,7 @@
 
 /*--------------------------------------------------------------------------
  * DistributeUserGrid:
- *   We currently assume that the user's grid consists of 1 subgrid only.
+ *   We currently assume that the user's grid consists of 1 intake_subgrid only.
  *--------------------------------------------------------------------------*/
 
 SubgridArray   *DistributeUserGrid(

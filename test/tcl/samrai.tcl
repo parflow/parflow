@@ -104,7 +104,7 @@ if {[expr $NumProcs == 1]} {
 	pfset ProcessGrid.2.NY 10
 	pfset ProcessGrid.2.NZ 8
     } else {
-	puts "Invalid processor/number of subgrid option"
+	puts "Invalid processor/number of intake_subgrid option"
 	exit
     }
 } elseif {[expr $NumProcs == 2]} {
@@ -190,11 +190,11 @@ if {[expr $NumProcs == 1]} {
 	pfset ProcessGrid.3.NZ 8
     } else {
 
-	puts "Invalid processor/number of subgrid option"
+	puts "Invalid processor/number of intake_subgrid option"
 	exit
     }
 } else {
-    puts "Invalid processor/number of subgrid option"
+    puts "Invalid processor/number of intake_subgrid option"
     exit
 }
 

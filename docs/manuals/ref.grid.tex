@@ -39,7 +39,7 @@ typedef struct
    int  rx, ry, rz;      /* Refinement over the background grid */
    int  level;           /* Refinement level = rx + ry + rz */
 
-   int  process;         /* Process containing this subgrid */
+   int  process;         /* Process containing this intake_subgrid */
 
 } Subregion;
 \end{verbatim}\end{display}
@@ -91,8 +91,8 @@ typedef struct
 \end{verbatim}\end{display}
 
 The \code{subgrids} component of the \code{Grid} structure above, is a
-subgrid-array of subgrids associated with my process.
-The \code{all_subgrids} component is a subgrid-array of all subgrids
+intake_subgrid-array of subgrids associated with my process.
+The \code{all_subgrids} component is a intake_subgrid-array of all subgrids
 in the grid.
 It is important to note that \code{subgrids} contains pointers into
 \code{all_subgrids}.
@@ -116,7 +116,7 @@ Background      *background;
 Subregion       *subregion;
 SubregionArray  *subregion_array;
 Region          *region;
-Subgrid         *subgrid;
+Subgrid         *intake_subgrid;
 SubgridArray    *subgrid_array;
 Grid            *grid;
 int              i;
@@ -171,17 +171,17 @@ RegionSize(region)               region -> size
 
 \begin{display}\begin{verbatim}
 
-SubgridIX(subgrid)       SubregionIX(subgrid)
-SubgridIY(subgrid)       SubregionIY(subgrid)
-SubgridIZ(subgrid)       SubregionIZ(subgrid)
-SubgridNX(subgrid)       SubregionNX(subgrid)
-SubgridNY(subgrid)       SubregionNY(subgrid)
-SubgridNZ(subgrid)       SubregionNZ(subgrid)
-SubgridRX(subgrid)       SubregionRX(subgrid)
-SubgridRY(subgrid)       SubregionRY(subgrid)
-SubgridRZ(subgrid)       SubregionRZ(subgrid)
-SubgridLevel(subgrid)    SubregionLevel(subgrid)
-SubgridProcess(subgrid)  SubregionProcess(subgrid)
+SubgridIX(intake_subgrid)       SubregionIX(intake_subgrid)
+SubgridIY(intake_subgrid)       SubregionIY(intake_subgrid)
+SubgridIZ(intake_subgrid)       SubregionIZ(intake_subgrid)
+SubgridNX(intake_subgrid)       SubregionNX(intake_subgrid)
+SubgridNY(intake_subgrid)       SubregionNY(intake_subgrid)
+SubgridNZ(intake_subgrid)       SubregionNZ(intake_subgrid)
+SubgridRX(intake_subgrid)       SubregionRX(intake_subgrid)
+SubgridRY(intake_subgrid)       SubregionRY(intake_subgrid)
+SubgridRZ(intake_subgrid)       SubregionRZ(intake_subgrid)
+SubgridLevel(intake_subgrid)    SubregionLevel(intake_subgrid)
+SubgridProcess(intake_subgrid)  SubregionProcess(intake_subgrid)
 
 \end{verbatim}\end{display}
 
@@ -518,7 +518,7 @@ FreeRegion(region);
 
 \index{\findex{FreeSubgrid}}
 
-\begin{deftypefn}{Function}{void}{FreeSubgrid}({Subgrid *} \var{subgrid})
+\begin{deftypefn}{Function}{void}{FreeSubgrid}({Subgrid *} \var{intake_subgrid})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
@@ -545,7 +545,7 @@ This is currently a macro (\ref{FreeSubregion}).
 
 \index{\findex{FreeSubgridArray}}
 
-\begin{deftypefn}{Function}{void}{FreeSubgridArray}({SubgridArray *} \var{subgrid\_array})
+\begin{deftypefn}{Function}{void}{FreeSubgridArray}({SubgridArray *} \var{intake_subgrid\_array})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
@@ -696,11 +696,11 @@ ForSubregionArrayI(i, region)
 
 \index{\findex{ForSubgridI}}
 
-\begin{defmac} ForSubgridI (int \var{i}, {SubgridArray *} \var{subgrid\_array})
+\begin{defmac} ForSubgridI (int \var{i}, {SubgridArray *} \var{intake_subgrid\_array})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
-Loops over all subgrid indices in \var{subgrid\_array}, setting
+Loops over all intake_subgrid indices in \var{intake_subgrid\_array}, setting
 \var{i} to each index.
 
 %=========================== EXAMPLES
@@ -708,12 +708,12 @@ Loops over all subgrid indices in \var{subgrid\_array}, setting
 \mbox{}
 \begin{display}\begin{verbatim}
 SubgridArray *subgrid_array;
-Subgrid      *subgrid;
+Subgrid      *intake_subgrid;
 int           i;
 
 ForSubgridI(i, subgrid_array)
 {
-   subgrid = SubgridArraySubgrid(subgrid_array, i);
+   intake_subgrid = SubgridArraySubgrid(subgrid_array, i);
 
    ...
 }
@@ -768,16 +768,16 @@ This is actually a macro.
 
 \index{\findex{SubgridXYZ}}
 
-\begin{deftypefn}{Function}{double}{SubgridX}({Subgrid *} \var{subgrid})
+\begin{deftypefn}{Function}{double}{SubgridX}({Subgrid *} \var{intake_subgrid})
 \end{deftypefn}
-\begin{deftypefn}{Function}{double}{SubgridY}({Subgrid *} \var{subgrid})
+\begin{deftypefn}{Function}{double}{SubgridY}({Subgrid *} \var{intake_subgrid})
 \end{deftypefn}
-\begin{deftypefn}{Function}{double}{SubgridZ}({Subgrid *} \var{subgrid})
+\begin{deftypefn}{Function}{double}{SubgridZ}({Subgrid *} \var{intake_subgrid})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
 Returns the real-space coordinates corresponding to the
-\code{ix}, \code{iy}, and \code{iz} components of \var{subgrid}.
+\code{ix}, \code{iy}, and \code{iz} components of \var{intake_subgrid}.
 
 %=========================== NOTES
 \NOTES
@@ -882,11 +882,11 @@ accidentally.
 
 \index{\findex{DuplicateSubgrid}}
 
-\begin{deftypefn}{Function}{Subgrid *}{DuplicateSubgrid}({Subgrid *} \var{subgrid})
+\begin{deftypefn}{Function}{Subgrid *}{DuplicateSubgrid}({Subgrid *} \var{intake_subgrid})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
-Returns a duplicate of \var{subgrid}.
+Returns a duplicate of \var{intake_subgrid}.
 
 %=========================== NOTES
 \NOTES
@@ -908,11 +908,11 @@ This is currently a macro (\ref{DuplicateSubregion}).
 
 \index{\findex{AppendSubgrid}}
 
-\begin{deftypefn}{Function}{void}{AppendSubgrid}({Subgrid *} \var{subgrid}, {SubgridArray *} \var{subgrid\_array})
+\begin{deftypefn}{Function}{void}{AppendSubgrid}({Subgrid *} \var{intake_subgrid}, {SubgridArray *} \var{intake_subgrid\_array})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
-Appends \var{subgrid} to \var{subgrid\_array}.
+Appends \var{intake_subgrid} to \var{intake_subgrid\_array}.
 
 %=========================== NOTES
 \NOTES
@@ -934,11 +934,11 @@ This is currently a macro (\ref{AppendSubregion}).
 
 \index{\findex{AppendSubgridArray}}
 
-\begin{deftypefn}{Function}{void}{AppendSubgridArray}({SubgridArray *} \var{subgrid\_array\_0}, {SubgridArray *} \var{subgrid\_array\_1})
+\begin{deftypefn}{Function}{void}{AppendSubgridArray}({SubgridArray *} \var{intake_subgrid\_array\_0}, {SubgridArray *} \var{intake_subgrid\_array\_1})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
-Appends \var{subgrid\_array\_0} to \var{subgrid\_array\_1}.
+Appends \var{intake_subgrid\_array\_0} to \var{intake_subgrid\_array\_1}.
 
 %=========================== NOTES
 \NOTES
@@ -960,11 +960,11 @@ This is currently a macro (\ref{AppendSubregionArray}).
 
 \index{\findex{ConvertToSubregion}}
 
-\begin{deftypefn}{Function}{Subregion *}{ConvertToSubregion}({Subgrid *} \var{subgrid})
+\begin{deftypefn}{Function}{Subregion *}{ConvertToSubregion}({Subgrid *} \var{intake_subgrid})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
-Converts \var{subgrid} to a \code{Subregion *} and returns it.
+Converts \var{intake_subgrid} to a \code{Subregion *} and returns it.
 
 %=========================== NOTES
 \NOTES
@@ -1013,16 +1013,16 @@ If a conversion cannot be made, \code{NULL} is returned.
 
 \index{\findex{ProjectSubgrid}}
 
-\begin{deftypefn}{Function}{Subregion *}{ProjectSubgrid}({Subgrid *} \var{subgrid}, int \var{sx}, int \var{sy}, int \var{sz}, int \var{ix}, int \var{iy}, int \var{iz})
+\begin{deftypefn}{Function}{Subregion *}{ProjectSubgrid}({Subgrid *} \var{intake_subgrid}, int \var{sx}, int \var{sy}, int \var{sz}, int \var{ix}, int \var{iy}, int \var{iz})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
-Projects \var{subgrid} onto an {\em index-region}.
+Projects \var{intake_subgrid} onto an {\em index-region}.
 The index-region is the collection of index-space indices with
 strides \var{sx}, \var{sy}, \var{sz}, and containing
 the indices \var{ix}, \var{iy}, \var{iz}.
-The base index-space is determined by the \var{subgrid}.
-\var{subgrid} is not modified.
+The base index-space is determined by the \var{intake_subgrid}.
+\var{intake_subgrid} is not modified.
 
 %=========================== SEE ALSO
 \SEEALSO
@@ -1040,13 +1040,13 @@ The base index-space is determined by the \var{subgrid}.
 
 \index{\findex{ExtractSubgrid}}
 
-\begin{deftypefn}{Function}{Subgrid *}{ExtractSubgrid}(int \var{rx}, int \var{ry}, int \var{rz}, {Subgrid *} \var{subgrid})
+\begin{deftypefn}{Function}{Subgrid *}{ExtractSubgrid}(int \var{rx}, int \var{ry}, int \var{rz}, {Subgrid *} \var{intake_subgrid})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
-Returns, if possible, the largest subgrid with resolution
+Returns, if possible, the largest intake_subgrid with resolution
 \var{rx}, \var{ry}, \var{rz},
-contained in \var{subgrid}
+contained in \var{intake_subgrid}
 
 %=========================== NOTES
 \NOTES
@@ -1121,13 +1121,13 @@ from \var{subgrid1}.
 
 \index{\findex{UnionSubgridArray}}
 
-\begin{deftypefn}{Function}{SubgridArray *}{UnionSubgridArray}({SubgridArray *} \var{subgrid\_array})
+\begin{deftypefn}{Function}{SubgridArray *}{UnionSubgridArray}({SubgridArray *} \var{intake_subgrid\_array})
 
 %=========================== DESCRIPTION
 \DESCRIPTION
-Unions the subgrids in \var{subgrid\_array}.
+Unions the subgrids in \var{intake_subgrid\_array}.
 This involves removing any duplication of grid points, resulting in
-a subgrid-array of disjoint subgrids.
+a intake_subgrid-array of disjoint subgrids.
 The routine also tries to agglomerate subgrids into bigger subgrids.
 
 %=========================== NOTES

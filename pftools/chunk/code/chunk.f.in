@@ -2859,7 +2859,7 @@ CC
         read(15) rx
         read(15) ry
         read(15) rz
-        print*, 'subgrid:' ,is
+        print*, 'intake_subgrid:' ,is
         print*, 'ix, iy, iz: ',ix, iy, iz
         print*, 'nnx, nny, nnz: ',nnx, nny, nnz
         print*, 'rx, ry, rz: ',rx, ry, rz

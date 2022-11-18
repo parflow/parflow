@@ -1,5 +1,5 @@
 BCPressure:
-  PatchNames: x_lower x_upper y_lower y_upper z_lower z_upper
+  PatchNames: intake_x_lower intake_x_upper intake_y_lower intake_y_upper intake_z_lower intake_z_upper
 ComputationalGrid:
   DX: 1000.0
   DY: 1000.0
@@ -40,12 +40,12 @@ Geom:
   domain:
     ICPressure:
       FileName: press.init.pfb
-      RefPatch: z_upper
+      RefPatch: intake_z_upper
     Lower:
       X: 0.0
       Y: 0.0
       Z: 0.0
-    Patches: x_lower x_upper y_lower y_upper z_lower z_upper
+    Patches: intake_x_lower intake_x_upper intake_y_lower intake_y_upper intake_z_lower intake_z_upper
     Perm:
       TensorValX: 1.0
       TensorValY: 1.0
@@ -284,37 +284,37 @@ Mannings:
   GeomNames: domain
   Type: Constant
 Patch:
-  x_lower:
+  intake_x_lower:
     BCPressure:
       Cycle: constant
       Type: FluxConst
       alltime:
         Value: 0.0
-  x_upper:
+  intake_x_upper:
     BCPressure:
       Cycle: constant
       Type: FluxConst
       alltime:
         Value: 0.0
-  y_lower:
+  intake_y_lower:
     BCPressure:
       Cycle: constant
       Type: FluxConst
       alltime:
         Value: 0.0
-  y_upper:
+  intake_y_upper:
     BCPressure:
       Cycle: constant
       Type: FluxConst
       alltime:
         Value: 0.0
-  z_lower:
+  intake_z_lower:
     BCPressure:
       Cycle: constant
       Type: FluxConst
       alltime:
         Value: 0.0
-  z_upper:
+  intake_z_upper:
     BCPressure:
       Cycle: rainrec
       Type: OverlandFlow

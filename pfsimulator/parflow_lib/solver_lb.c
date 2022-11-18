@@ -1353,7 +1353,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
 
   all_subgrids = GridAllSubgrids(grid);
 
-  /***** Set up a new subgrid grown by one in the x-direction *****/
+  /***** Set up a new intake_subgrid grown by one in the x-direction *****/
 
   new_all_subgrids = NewSubgridArray();
   ForSubgridI(i, all_subgrids)
@@ -1371,7 +1371,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
 
   all_subgrids = GridAllSubgrids(grid);
 
-  /***** Set up a new subgrid grown by one in the y-direction *****/
+  /***** Set up a new intake_subgrid grown by one in the y-direction *****/
 
   new_all_subgrids = NewSubgridArray();
   ForSubgridI(i, all_subgrids)
@@ -1389,7 +1389,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
 
   all_subgrids = GridAllSubgrids(grid);
 
-  /***** Set up a new subgrid grown by one in the z-direction *****/
+  /***** Set up a new intake_subgrid grown by one in the z-direction *****/
 
   new_all_subgrids = NewSubgridArray();
   ForSubgridI(i, all_subgrids)

@@ -531,7 +531,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                            AfterAllCells(DoNothing)
         );     /* End DirichletBC */
     }          /* End ipatch loop */
-  }            /* End subgrid loop */
+  }            /* End intake_subgrid loop */
 
   /* Calculate relative permeability values overwriting current
    * phase source values */
@@ -2134,7 +2134,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                            AfterAllCells(DoNothing)
         ); /* End OverlandDiffusiveBC case */
     }          /* End ipatch loop */
-  }            /* End subgrid loop */
+  }            /* End intake_subgrid loop */
 
   /*
    * Reset values inserted for the DirichletBC back to the decoupled
@@ -2184,7 +2184,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                            AfterAllCells(DoNothing)
         );
     }          /* End ipatch loop */
-  }            /* End subgrid loop */
+  }            /* End intake_subgrid loop */
 
   FreeBCStruct(bc_struct);
 

@@ -230,7 +230,7 @@ void         ICPhasePressure(
 
             data[ips] = values[ir];
           });
-        }      /* End of subgrid loop */
+        }      /* End of intake_subgrid loop */
       }        /* End of region loop */
       break;
     }          /* End of case 0 */
@@ -313,7 +313,7 @@ void         ICPhasePressure(
               ips = SubvectorEltIndex(m_sub, i, j, k);
               m_dat[ips] = region_indices[ir] + 1;
             });
-          }       /* End of subgrid loop */
+          }       /* End of intake_subgrid loop */
         }         /* End of region loop */
 
         /* Get new pressure values. */
@@ -364,7 +364,7 @@ void         ICPhasePressure(
                 data[ips] = pressure_values[ir];
               });
             }
-          }       /* End of subgrid loop */
+          }       /* End of intake_subgrid loop */
         }         /* End of region loop */
 
         /* Get density values at new pressure values. */
@@ -427,7 +427,7 @@ void         ICPhasePressure(
                 nonlin_resid += fcn_data[ips] * fcn_data[ips];
               });
             }
-          }       /* End of subgrid loop */
+          }       /* End of intake_subgrid loop */
         }         /* End of region loop */
 
         amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
@@ -503,7 +503,7 @@ void         ICPhasePressure(
             ips = SubvectorEltIndex(m_sub, i, j, k);
             m_dat[ips] = region_indices[ir] + 1;
           });
-        }      /* End of subgrid loop */
+        }      /* End of intake_subgrid loop */
       }        /* End of region loop */
 
 
@@ -587,7 +587,7 @@ void         ICPhasePressure(
                 data[ips] = pressure_values[ir];
               });
             }
-          }       /* End of subgrid loop */
+          }       /* End of intake_subgrid loop */
         }         /* End of region loop */
 
         /* Get density values at new pressure values. */
@@ -651,7 +651,7 @@ void         ICPhasePressure(
                 nonlin_resid += fcn_data[ips] * fcn_data[ips];
               });
             }
-          }       /* End of subgrid loop */
+          }       /* End of intake_subgrid loop */
         }         /* End of region loop */
 
         amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
@@ -717,7 +717,7 @@ void         ICPhasePressure(
           m_dat[ips] = 99999;
           // m_dat[ips] = 1.0;
         });
-      }        /* End subgrid loop */
+      }        /* End intake_subgrid loop */
 
       break;
     }          /* End case 3 */
@@ -763,7 +763,7 @@ void         ICPhasePressure(
           m_dat[ips] = 99999;
           // m_dat[ips] = 1.0;
         });
-      }        /* End subgrid loop */
+      }        /* End intake_subgrid loop */
 
       break;
     }          /* End case 4 */

@@ -112,10 +112,10 @@ void LBReservoirs(
 
         reservoir_data_value = ReservoirDataPressReservoirIntervalValue(reservoir_data, reservoir, interval_number);
 
-        reservoir_subgrid = ReservoirDataPhysicalSubgrid(reservoir_data_physical);
+        reservoir_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
         head = ReservoirDataValuePhaseValue(reservoir_data_value, 0);
 
-        /*  Get the intersection of the reservoir with the subgrid  */
+        /*  Get the intersection of the reservoir with the intake_subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_subgrid)))
         {
           /*  If an intersection;  loop over it, and insert value  */
@@ -146,7 +146,7 @@ void LBReservoirs(
                       cellTypep[index] = 0;
                     });
 
-          /* done with this temporay subgrid */
+          /* done with this temporay intake_subgrid */
           FreeSubgrid(tmp_subgrid);
         }      /* if (tmp_sub_grid ...)  */
       }     /* for (reservoir = 0; ...)  */

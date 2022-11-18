@@ -93,7 +93,7 @@ void         PFMGOctree(
   HYPRE_StructSolver hypre_pfmg_data = instance_xtra->hypre_pfmg_data;
 
   Grid               *grid = VectorGrid(rhs);
-  Subgrid            *subgrid;
+  Subgrid            *intake_subgrid;
   int sg;
 
   Subvector          *rhs_sub;
@@ -131,18 +131,18 @@ void         PFMGOctree(
     int ilo[3];
     int ihi[3];
 
-    subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
+    intake_subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
     rhs_sub = VectorSubvector(rhs, sg);
 
     rhs_ptr = SubvectorData(rhs_sub);
 
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
+    ix = SubgridIX(intake_subgrid);
+    iy = SubgridIY(intake_subgrid);
+    iz = SubgridIZ(intake_subgrid);
 
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
+    nx = SubgridNX(intake_subgrid);
+    ny = SubgridNY(intake_subgrid);
+    nz = SubgridNZ(intake_subgrid);
 
     nx_v = SubvectorNX(rhs_sub);
     ny_v = SubvectorNY(rhs_sub);
@@ -239,18 +239,18 @@ void         PFMGOctree(
     int ilo[3];
     int ihi[3];
 
-    subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
+    intake_subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
     soln_sub = VectorSubvector(soln, sg);
 
     soln_ptr = SubvectorData(soln_sub);
 
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
+    ix = SubgridIX(intake_subgrid);
+    iy = SubgridIY(intake_subgrid);
+    iz = SubgridIZ(intake_subgrid);
 
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
+    nx = SubgridNX(intake_subgrid);
+    ny = SubgridNY(intake_subgrid);
+    nz = SubgridNZ(intake_subgrid);
 
     nx_v = SubvectorNX(soln_sub);
     ny_v = SubvectorNY(soln_sub);
@@ -318,7 +318,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
   int smoother = public_xtra->smoother;
 
   Grid               *mat_grid;
-  Subgrid            *subgrid;
+  Subgrid            *intake_subgrid;
   int sg;
 
   Vector             *top = ProblemDataIndexOfDomainTop(problem_data);               //DOK
@@ -385,19 +385,19 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     /* Set local grid extents as global grid values */
     ForSubgridI(sg, GridSubgrids(grid))
     {
-      subgrid = GridSubgrid(grid, sg);
+      intake_subgrid = GridSubgrid(grid, sg);
 
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
+      ix = SubgridIX(intake_subgrid);
+      iy = SubgridIY(intake_subgrid);
+      iz = SubgridIZ(intake_subgrid);
 
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
+      nx = SubgridNX(intake_subgrid);
+      ny = SubgridNY(intake_subgrid);
+      nz = SubgridNZ(intake_subgrid);
 
-      instance_xtra->dxyz[0] = SubgridDX(subgrid);
-      instance_xtra->dxyz[1] = SubgridDY(subgrid);
-      instance_xtra->dxyz[2] = SubgridDZ(subgrid);
+      instance_xtra->dxyz[0] = SubgridDX(intake_subgrid);
+      instance_xtra->dxyz[1] = SubgridDY(intake_subgrid);
+      instance_xtra->dxyz[2] = SubgridDZ(intake_subgrid);
 
       GrGeomInBoxLoop(i, j, k,
                       num_i, num_j, num_k,
@@ -489,17 +489,17 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     {
       ForSubgridI(sg, GridSubgrids(mat_grid))
       {
-        subgrid = GridSubgrid(mat_grid, sg);
+        intake_subgrid = GridSubgrid(mat_grid, sg);
 
         pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
 
-        ix = SubgridIX(subgrid);
-        iy = SubgridIY(subgrid);
-        iz = SubgridIZ(subgrid);
+        ix = SubgridIX(intake_subgrid);
+        iy = SubgridIY(intake_subgrid);
+        iz = SubgridIZ(intake_subgrid);
 
-        nx = SubgridNX(subgrid);
-        ny = SubgridNY(subgrid);
-        nz = SubgridNZ(subgrid);
+        nx = SubgridNX(intake_subgrid);
+        ny = SubgridNY(intake_subgrid);
+        nz = SubgridNZ(intake_subgrid);
 
         nx_m = SubmatrixNX(pfB_sub);
         ny_m = SubmatrixNY(pfB_sub);
@@ -637,13 +637,13 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
           hypre_BoxDestroy(value_box);
         }
-      }     /* End subgrid loop */
+      }     /* End intake_subgrid loop */
     }
     else  /* Overland flow is activated. Update preconditioning matrix */
     {
       ForSubgridI(sg, GridSubgrids(mat_grid))
       {
-        subgrid = GridSubgrid(mat_grid, sg);
+        intake_subgrid = GridSubgrid(mat_grid, sg);
 
         pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
         pfC_sub = MatrixSubmatrix(pf_Cmat, sg);
@@ -662,13 +662,13 @@ PFModule  *PFMGOctreeInitInstanceXtra(
           top_dat = SubvectorData(top_sub);
         }
 
-        ix = SubgridIX(subgrid);
-        iy = SubgridIY(subgrid);
-        iz = SubgridIZ(subgrid);
+        ix = SubgridIX(intake_subgrid);
+        iy = SubgridIY(intake_subgrid);
+        iz = SubgridIZ(intake_subgrid);
 
-        nx = SubgridNX(subgrid);
-        ny = SubgridNY(subgrid);
-        nz = SubgridNZ(subgrid);
+        nx = SubgridNX(intake_subgrid);
+        ny = SubgridNY(intake_subgrid);
+        nz = SubgridNZ(intake_subgrid);
 
         nx_m = SubmatrixNX(pfB_sub);
         ny_m = SubmatrixNY(pfB_sub);
@@ -843,14 +843,14 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
 	  hypre_BoxDestroy(value_box);
         }
-      }     /* End subgrid loop */
+      }     /* End intake_subgrid loop */
 
       ForSubgridI(sg, GridSubgrids(mat_grid))
       {
 	double *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
 	double *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL;
 	
-        subgrid = GridSubgrid(mat_grid, sg);
+        intake_subgrid = GridSubgrid(mat_grid, sg);
 
         pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
         pfC_sub = MatrixSubmatrix(pf_Cmat, sg);
@@ -888,13 +888,13 @@ PFModule  *PFMGOctreeInitInstanceXtra(
           top_dat = SubvectorData(top_sub);
         }
 
-        ix = SubgridIX(subgrid);
-        iy = SubgridIY(subgrid);
-        iz = SubgridIZ(subgrid);
+        ix = SubgridIX(intake_subgrid);
+        iy = SubgridIY(intake_subgrid);
+        iz = SubgridIZ(intake_subgrid);
 
-        nx = SubgridNX(subgrid);
-        ny = SubgridNY(subgrid);
-        nz = SubgridNZ(subgrid);
+        nx = SubgridNX(intake_subgrid);
+        ny = SubgridNY(intake_subgrid);
+        nz = SubgridNZ(intake_subgrid);
 
         nx_m = SubmatrixNX(pfB_sub);
         ny_m = SubmatrixNY(pfB_sub);
@@ -1007,7 +1007,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
 	  }); // BoxLoop
         } // non symmetric
-      }   /* End subgrid loop */
+      }   /* End intake_subgrid loop */
       
     }  /* end if pf_Cmat==NULL */
 

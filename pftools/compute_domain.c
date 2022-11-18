@@ -51,9 +51,9 @@ void ComputeDomain(
   int num_procs = P * Q * R;
   int p;
 
-  // For each subgrid find the min/max k values
+  // For each intake_subgrid find the min/max k values
   // in the active region (using top/bottom).
-  // Reset the subgrid to reflect this vertical extent.
+  // Reset the intake_subgrid to reflect this vertical extent.
   for (p = 0; p < num_procs; p++)
   {
     int s_i;

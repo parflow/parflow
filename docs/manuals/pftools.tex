@@ -120,7 +120,7 @@ and whether the command is compatible with a terrain following grid domain formu
 	pfenlargebox & Compute expanded dataset &  & X \\ \hline
 	pfgetsubbox & Return subset of data &  & X \\ \hline
 	pfprintdomain & Print domain & 3 & X \\ \hline
-	pfbuilddomain & Build a subgrid array from a ParFlow database &  & X \\ \hline
+	pfbuilddomain & Build a intake_subgrid array from a ParFlow database &  & X \\ \hline
 	\multicolumn{4}{|c|}{Dataset operations} \\ \hline
 	pflistdata & Return dataset names and labels &  & X \\ \hline
 	pfgetlist & Return dataset descriptions &  & X \\ \hline
@@ -183,7 +183,7 @@ Conductivity and pressure head data sets are given as arguments.
 The output includes x, y, and z velocity components that are appended to the Tcl result.
 
 \item{\begin{verbatim}pfbuilddomain database\end{verbatim}}
-This command builds a subgrid array given a ParFlow database that contains the domain
+This command builds a intake_subgrid array given a ParFlow database that contains the domain
 parameters and the processor topology.
 
 \item{\begin{verbatim}pfcelldiff datasetx datasety mask\end{verbatim}}
@@ -228,7 +228,7 @@ The identifier of the data set created by this operation is returned upon succes
 
 \item{\begin{verbatim}pfcomputedomain top bottom\end{verbatim}} This
  command computes a domain based on the top and bottom data sets.  The
- domain built will have a single subgrid per processor that covers the
+ domain built will have a single intake_subgrid per processor that covers the
  active data as defined by the top and botttom.  This domain will more
  closely follow the topology of the terrain than the default single
  computation domain.
@@ -293,7 +293,7 @@ pfdist -nz 1 slopex.pfb
  provided rather than the processor topology as used by pfdist.  This
  is used by the SAMRAI version of which allows for a more complicated
  computation domain specification with different sized subgrids on
- each processor and allows for more than one subgrid per processor.
+ each processor and allows for more than one intake_subgrid per processor.
   Frequently this will be used with a domain created by the
  pfcomputedomain command.
 

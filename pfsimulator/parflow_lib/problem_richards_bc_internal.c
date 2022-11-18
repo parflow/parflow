@@ -217,7 +217,7 @@ void RichardsBCInternal(
           BoxLoopI0(i, j, k,
                     ix, iy, iz, nx, ny, nz,
           {
-            /* Need to check if i,j,k is part of this subgrid or not */
+            /* Need to check if i,j,k is part of this intake_subgrid or not */
             if (((i >= SubgridIX(subgrid)) &&
                  (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
                 ((j >= SubgridIY(subgrid)) &&
@@ -245,7 +245,7 @@ void RichardsBCInternal(
           BoxLoopI0(i, j, k,
                     ix, iy, iz, nx, ny, nz,
           {
-            /* Need to check if i,j,k is part of this subgrid or not */
+            /* Need to check if i,j,k is part of this intake_subgrid or not */
             if (((i >= SubgridIX(subgrid)) &&
                  (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
                 ((j >= SubgridIY(subgrid)) &&

@@ -261,7 +261,7 @@ void SubsrfSim(
             perm_y_dat[ipy] = 0.0;
             perm_z_dat[ipz] = 0.0;
           });
-        }    /* End subgrid loop */
+        }    /* End intake_subgrid loop */
       }      /* End loop over regions */
 
       break;
@@ -321,7 +321,7 @@ void SubsrfSim(
           perm_y_dat[ipy] = perm_z_dat[ipz] * ky_values_dat[ipy];
           perm_z_dat[ipz] = perm_z_dat[ipz] * kz_values_dat[ipz];
         });
-      }      /* End subgrid loop */
+      }      /* End intake_subgrid loop */
       break;
     }        /* End case 1 */
   }          /* End switch statement */
@@ -371,7 +371,7 @@ void SubsrfSim(
         ny_p = SubvectorNY(perm_x_sub);
         nz_p = SubvectorNZ(perm_x_sub);
 
-        /*  Get the intersection of the well with the subgrid  */
+        /*  Get the intersection of the well with the intake_subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           ix = SubgridIX(tmp_subgrid);
@@ -402,7 +402,7 @@ void SubsrfSim(
             perm_average_z += perm_z_elt[pi] * (cell_volume / well_volume);
           });
 
-          FreeSubgrid(tmp_subgrid);       /* done with temporary subgrid */
+          FreeSubgrid(tmp_subgrid);       /* done with temporary intake_subgrid */
         }
       }
 

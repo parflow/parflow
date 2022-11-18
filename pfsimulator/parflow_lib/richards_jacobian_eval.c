@@ -455,7 +455,7 @@ void    RichardsJacobianEval(
       cp[im] += (sdp[iv] * dp[iv] + sp[iv] * ddp[iv])
                 * pop[ipo] * vol2 + ss[iv] * vol2 * (sdp[iv] * dp[iv] * pp[iv] + sp[iv] * ddp[iv] * pp[iv] + sp[iv] * dp[iv]); //sk start
     });
-  }    /* End subgrid loop */
+  }    /* End intake_subgrid loop */
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
                                  (problem_data, grid, gr_domain, time));
@@ -501,7 +501,7 @@ void    RichardsJacobianEval(
                            AfterAllCells(DoNothing)
         ); /* End DirichletBC Case */
     }          /* End ipatch loop */
-  }            /* End subgrid loop */
+  }            /* End intake_subgrid loop */
 
   /* Calculate rel_perm and rel_perm_der */
 
@@ -958,7 +958,7 @@ void    RichardsJacobianEval(
                              AfterAllCells(DoNothing)
           ); /* End Patch Loop */
       }           /* End ipatch loop */
-    }             /* End subgrid loop */
+    }             /* End intake_subgrid loop */
   }                  /* End if symm_part */
 
   ForSubgridI(is, GridSubgrids(grid))
@@ -1418,7 +1418,7 @@ void    RichardsJacobianEval(
         ); /* End OverlandDiffusiveBC */
 
     } /* End ipatch loop */
-  }            /* End subgrid loop */
+  }            /* End intake_subgrid loop */
 
   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, NULL, J, time,
                                                              pressure, CALCDER));
@@ -1831,7 +1831,7 @@ void    RichardsJacobianEval(
                              AfterAllCells(DoNothing)
           ); /* End OverlandBC */
       } /* End ipatch loop */
-    }             /* End subgrid loop */
+    }             /* End intake_subgrid loop */
   }
 
 

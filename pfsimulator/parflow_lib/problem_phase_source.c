@@ -265,7 +265,7 @@ void         PhaseSource(
             break;
           } /* End case 6 */
         }   /* End switch statement on function_types */
-      }     /* End subgrid loop */
+      }     /* End intake_subgrid loop */
 
       break;
     }  /* End case 1 for input types */
@@ -327,7 +327,7 @@ void         PhaseSource(
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
 
-        /*  Get the intersection of the well with the subgrid  */
+        /*  Get the intersection of the well with the intake_subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           /*  If an intersection;  loop over it, and insert value  */
@@ -382,7 +382,7 @@ void         PhaseSource(
               data[ips] += weight * flux;
             });
           }
-          /* done with this temporary subgrid */
+          /* done with this temporary intake_subgrid */
 
           FreeSubgrid(tmp_subgrid);
 
@@ -398,12 +398,11 @@ void         PhaseSource(
     for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++)
     {
       reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
-      cycle_number = ReservoirDataPhysicalCycleNumber(reservoir_data_physical);
       interval_number = TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number);
 
       reservoir_data_value = ReservoirDataFluxReservoirIntervalValue(reservoir_data, reservoir, interval_number);
 
-      reservoir_subgrid = ReservoirDataPhysicalSubgrid(reservoir_data_physical);
+      reservoir_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
 
       reservoir_value = 0.0;
       if (ReservoirDataPhysicalAction(reservoir_data_physical) == INJECTION_WELL)
@@ -416,7 +415,7 @@ void         PhaseSource(
       {
         reservoir_value = -ReservoirDataValuePhaseValue(reservoir_data_value, phase);
       }
-      /*  Get the intersection of the well with the subgrid  */
+      /*  Get the intersection of the well with the intake_subgrid  */
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
       flux = reservoir_value / volume;
 
@@ -446,11 +445,11 @@ void         PhaseSource(
         if (TRUE) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
 //          double release_amount = GetValue(reservoir_data_physical->release_curve, problem->current_unix_epoch_time);
-//          printf("When in phase source the reservoir x value is %f\n",  reservoir_data_physical->x_lower);
+//          printf("When in phase source the reservoir x value is %f\n",  reservoir_data_physical->intake_x_lower);
 //          printf("When in phase source time series second value is %f\n",  GetValue(reservoir_data_physical->release_curve, 4.0));
 //          printf("Release amount is %f\n", release_amount);
 //          printf("Reservoir status is %d\n", ReservoirDataPhysicalStatus(reservoir_data_physical));
-          /*  Get the intersection of the reservoir with the subgrid  */
+          /*  Get the intersection of the reservoir with the intake_subgrid  */
           if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_subgrid))) {
             /*  If an intersection;  loop over it, and insert value  */
             ix = SubgridIX(tmp_subgrid);
@@ -506,7 +505,7 @@ void         PhaseSource(
                           data[ips] += weight * flux;
                         });
             }
-            /* done with this temporary subgrid */
+            /* done with this temporary intake_subgrid */
 
             FreeSubgrid(tmp_subgrid);
 

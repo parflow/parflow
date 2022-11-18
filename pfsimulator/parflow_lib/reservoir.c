@@ -179,9 +179,9 @@ void FreeReservoirData(
           {
             tfree(ReservoirDataPhysicalName(reservoir_data_physical));
           }
-          if (ReservoirDataPhysicalSubgrid(reservoir_data_physical))
+          if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical))
           {
-            FreeSubgrid(ReservoirDataPhysicalSubgrid(reservoir_data_physical));
+            FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
           }
           tfree(reservoir_data_physical);
         }
@@ -272,9 +272,9 @@ void FreeReservoirData(
           {
             tfree(ReservoirDataPhysicalName(reservoir_data_physical));
           }
-          if (ReservoirDataPhysicalSubgrid(reservoir_data_physical))
+          if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical))
           {
-            FreeSubgrid(ReservoirDataPhysicalSubgrid(reservoir_data_physical));
+            FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
           }
           tfree(reservoir_data_physical);
         }
@@ -341,18 +341,18 @@ void PrintReservoirData(
                       ReservoirDataPhysicalNumber(reservoir_data_physical));
           amps_Printf("   name = %s\n",
                       ReservoirDataPhysicalName(reservoir_data_physical));
-          amps_Printf("   x_lower, y_lower, z_lower = %f %f %f\n",
-                      ReservoirDataPhysicalXLower(reservoir_data_physical),
-                      ReservoirDataPhysicalYLower(reservoir_data_physical),
+          amps_Printf("   intake_x_lower, intake_y_lower, intake_z_lower = %f %f %f\n",
+                      ReservoirDataPhysicalIntakeXLower(reservoir_data_physical),
+                      ReservoirDataPhysicalIntakeYLower(reservoir_data_physical),
                       ReservoirDataPhysicalZLower(reservoir_data_physical));
-          amps_Printf("   x_upper, y_upper, z_upper = %f %f %f\n",
-                      ReservoirDataPhysicalXUpper(reservoir_data_physical),
-                      ReservoirDataPhysicalYUpper(reservoir_data_physical),
+          amps_Printf("   intake_x_upper, intake_y_upper, intake_z_upper = %f %f %f\n",
+                      ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical),
+                      ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical),
                       ReservoirDataPhysicalZUpper(reservoir_data_physical));
           amps_Printf("   diameter = %f\n",
                       ReservoirDataPhysicalDiameter(reservoir_data_physical));
 
-          subgrid = ReservoirDataPhysicalSubgrid(reservoir_data_physical);
+          subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
           amps_Printf("   (ix, iy, iz) = (%d, %d, %d)\n",
                       SubgridIX(subgrid),
                       SubgridIY(subgrid),
@@ -560,18 +560,18 @@ void PrintReservoirData(
                       ReservoirDataPhysicalNumber(reservoir_data_physical));
           amps_Printf("   name = %s\n",
                       ReservoirDataPhysicalName(reservoir_data_physical));
-          amps_Printf("   x_lower, y_lower, z_lower = %f %f %f\n",
-                      ReservoirDataPhysicalXLower(reservoir_data_physical),
-                      ReservoirDataPhysicalYLower(reservoir_data_physical),
+          amps_Printf("   intake_x_lower, intake_y_lower, intake_z_lower = %f %f %f\n",
+                      ReservoirDataPhysicalIntakeXLower(reservoir_data_physical),
+                      ReservoirDataPhysicalIntakeYLower(reservoir_data_physical),
                       ReservoirDataPhysicalZLower(reservoir_data_physical));
-          amps_Printf("   x_upper, y_upper, z_upper = %f %f %f\n",
-                      ReservoirDataPhysicalXUpper(reservoir_data_physical),
-                      ReservoirDataPhysicalYUpper(reservoir_data_physical),
+          amps_Printf("   intake_x_upper, intake_y_upper, intake_z_upper = %f %f %f\n",
+                      ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical),
+                      ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical),
                       ReservoirDataPhysicalZUpper(reservoir_data_physical));
           amps_Printf("   diameter = %f\n",
                       ReservoirDataPhysicalDiameter(reservoir_data_physical));
 
-          subgrid = ReservoirDataPhysicalSubgrid(reservoir_data_physical);
+          subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
           amps_Printf("   (ix, iy, iz) = (%d, %d, %d)\n",
                       SubgridIX(subgrid),
                       SubgridIY(subgrid),
@@ -849,11 +849,11 @@ void WriteReservoirs(
           fprintf(file, "%s\n", ReservoirDataPhysicalName(reservoir_data_physical));
 
           fprintf(file, "%f %f %f %f %f %f %f\n",
-                  ReservoirDataPhysicalXLower(reservoir_data_physical),
-                  ReservoirDataPhysicalYLower(reservoir_data_physical),
+                  ReservoirDataPhysicalIntakeXLower(reservoir_data_physical),
+                  ReservoirDataPhysicalIntakeYLower(reservoir_data_physical),
                   ReservoirDataPhysicalZLower(reservoir_data_physical),
-                  ReservoirDataPhysicalXUpper(reservoir_data_physical),
-                  ReservoirDataPhysicalYUpper(reservoir_data_physical),
+                  ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical),
+                  ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical),
                   ReservoirDataPhysicalZUpper(reservoir_data_physical),
                   ReservoirDataPhysicalDiameter(reservoir_data_physical));
           fprintf(file, "1 %1d %1d\n",
@@ -870,11 +870,11 @@ void WriteReservoirs(
           fprintf(file, "%s\n", ReservoirDataPhysicalName(reservoir_data_physical));
 
           fprintf(file, "%f %f %f %f %f %f %f\n",
-                  ReservoirDataPhysicalXLower(reservoir_data_physical),
-                  ReservoirDataPhysicalYLower(reservoir_data_physical),
+                  ReservoirDataPhysicalIntakeXLower(reservoir_data_physical),
+                  ReservoirDataPhysicalIntakeYLower(reservoir_data_physical),
                   ReservoirDataPhysicalZLower(reservoir_data_physical),
-                  ReservoirDataPhysicalXUpper(reservoir_data_physical),
-                  ReservoirDataPhysicalYUpper(reservoir_data_physical),
+                  ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical),
+                  ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical),
                   ReservoirDataPhysicalZUpper(reservoir_data_physical),
                   ReservoirDataPhysicalDiameter(reservoir_data_physical));
           fprintf(file, "0 %1d %1d\n",
@@ -890,7 +890,7 @@ void WriteReservoirs(
         /* Write out important current physical data */
         reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
         fprintf(file, "%2d\n", ReservoirDataPhysicalNumber(reservoir_data_physical));
-        subgrid = ReservoirDataPhysicalSubgrid(reservoir_data_physical);
+        subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
         fprintf(file, "%d %d %d %d %d %d %d %d %d\n",
                 SubgridIX(subgrid),
                 SubgridIY(subgrid),
@@ -1040,7 +1040,7 @@ void WriteReservoirs(
         /* Write out important current physical data */
         reservoir_data_physical = ReservoirDataPressReservoirPhysical(reservoir_data, reservoir);
         fprintf(file, "%2d\n", ReservoirDataPhysicalNumber(reservoir_data_physical));
-        subgrid = ReservoirDataPhysicalSubgrid(reservoir_data_physical);
+        subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
         fprintf(file, "%d %d %d %d %d %d %d %d %d\n",
                 SubgridIX(subgrid),
                 SubgridIY(subgrid),

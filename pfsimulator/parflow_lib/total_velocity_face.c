@@ -169,7 +169,7 @@ void    TotalVelocityFace(
   FinalizeVectorUpdate(handle);
 
   /*----------------------------------------------------------------------
-   * compute the x-face total velocities for each subgrid
+   * compute the x-face total velocities for each intake_subgrid
    *----------------------------------------------------------------------*/
 
   subgrids = GridSubgrids(x_grid);
@@ -230,7 +230,7 @@ void    TotalVelocityFace(
   }
 
   /*----------------------------------------------------------------------
-   * compute the y-face total velocities for each subgrid
+   * compute the y-face total velocities for each intake_subgrid
    *----------------------------------------------------------------------*/
 
   subgrids = GridSubgrids(y_grid);
@@ -291,7 +291,7 @@ void    TotalVelocityFace(
   }
 
   /*----------------------------------------------------------------------
-   * compute the z-face total velocities for each subgrid
+   * compute the z-face total velocities for each intake_subgrid
    *----------------------------------------------------------------------*/
 
   subgrids = GridSubgrids(z_grid);
@@ -380,7 +380,7 @@ void    TotalVelocityFace(
     FinalizeVectorUpdate(handle);
 
     /*-------------------------------------------------------------------
-     * add contributions to the x-face total velocities for each subgrid
+     * add contributions to the x-face total velocities for each intake_subgrid
      *-------------------------------------------------------------------*/
 
     subgrids = GridSubgrids(x_grid);
@@ -446,7 +446,7 @@ void    TotalVelocityFace(
     }
 
     /*-------------------------------------------------------------------
-     * add contributions to the y-face total velocities for each subgrid
+     * add contributions to the y-face total velocities for each intake_subgrid
      *-------------------------------------------------------------------*/
 
     subgrids = GridSubgrids(y_grid);
@@ -512,7 +512,7 @@ void    TotalVelocityFace(
     }
 
     /*-------------------------------------------------------------------
-     * add contributions to the z-face total velocities for each subgrid
+     * add contributions to the z-face total velocities for each intake_subgrid
      *-------------------------------------------------------------------*/
 
     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
@@ -623,9 +623,9 @@ void    TotalVelocityFace(
     nz = SubgridNZ(subgrid);
 
     /*
-     * ds[0] = SubgridDX(subgrid);
-     * ds[1] = SubgridDY(subgrid);
-     * ds[2] = SubgridDZ(subgrid);
+     * ds[0] = SubgridDX(intake_subgrid);
+     * ds[1] = SubgridDY(intake_subgrid);
+     * ds[2] = SubgridDZ(intake_subgrid);
      */
 
     for (ipatch = 0; ipatch < GrGeomSolidNumPatches(gr_domain); ipatch++)

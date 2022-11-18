@@ -210,7 +210,7 @@ void          PhaseVelocityFace(
   FinalizeVectorUpdate(handle);
 
   /*-----------------------------------------------------------------------
-   * compute the x-face velocities for each subgrid
+   * compute the x-face velocities for each intake_subgrid
    *-----------------------------------------------------------------------*/
 
   subgrids = GridSubgrids(x_grid);
@@ -271,7 +271,7 @@ void          PhaseVelocityFace(
   }
 
   /*----------------------------------------------------------------------
-   * compute the y-face velocities for each subgrid
+   * compute the y-face velocities for each intake_subgrid
    *----------------------------------------------------------------------*/
 
   subgrids = GridSubgrids(y_grid);
@@ -332,7 +332,7 @@ void          PhaseVelocityFace(
   }
 
   /*----------------------------------------------------------------------
-   * compute the z-face velocities for each subgrid
+   * compute the z-face velocities for each intake_subgrid
    *----------------------------------------------------------------------*/
 
   subgrids = GridSubgrids(z_grid);

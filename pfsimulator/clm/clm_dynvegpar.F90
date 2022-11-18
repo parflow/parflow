@@ -12,7 +12,7 @@ subroutine clm_dynvegpar (clm)
 !
 !=========================================================================
 ! DESCRIPTION:
-!  Vegetation dynamic parameters and snow cover fraction as subgrid vectors 
+!  Vegetation dynamic parameters and snow cover fraction as intake_subgrid vectors
 !
 ! REVISION HISTORY:
 !  15 September 1999: Yongjiu Dai; Initial code

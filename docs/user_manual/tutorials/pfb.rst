@@ -117,8 +117,8 @@ Full API
     file into a different number of subgrids if you change these values.
     
     If dist is True then also write a file with the .dist extension added to
-    the file_name. The ``.dist`` file will contain one line per subgrid with the
-    offset of the subgrid in the ``.pfb`` file.
+    the file_name. The ``.dist`` file will contain one line per intake_subgrid with the
+    offset of the intake_subgrid in the ``.pfb`` file.
 
     :param ``file``: The name of the file to write the array to.
     :param ``array``: The array to write.
@@ -144,8 +144,8 @@ Full API
     file into a different number of subgrids if you change these values.
 
     If dist is True then also write a file with the ``.dist`` extension added to
-    the file_name. The .dist file will contain one line per subgrid with the
-    offset of the subgrid in the ``.pfb`` file.
+    the file_name. The .dist file will contain one line per intake_subgrid with the
+    offset of the intake_subgrid in the ``.pfb`` file.
 
     :param ``file``: The name of the file to write the array to.
     :param ``array``: The array to write.
@@ -166,12 +166,12 @@ Full API
     Write a distfile.
 
     :param ``file``: The path of the file to be written.
-    :param ``sg_offs``: The subgrid offsets.
+    :param ``sg_offs``: The intake_subgrid offsets.
 
 4. ``read_pfb_sequence(file_seq: Iterable[str], keys=None, z_first: bool=True, z_is: str='z')``
     An efficient wrapper to read a sequence of pfb files. This
     approach is faster than looping over the ``read_pfb`` function
-    because it caches the subgrid information from the first
+    because it caches the intake_subgrid information from the first
     pfb file and then uses that to initialize all other readers.
 
     :param ``file_seq``: An iterable sequence of file names to be read.

@@ -77,7 +77,7 @@ typedef struct {
   int rx, ry, rz;        /* Refinement over the background grid */
   int level;             /* Refinement level = rx + ry + rz */
 
-  int process;          /* Process containing this subgrid */
+  int process;          /* Process containing this intake_subgrid */
 } Subregion;
 
 /*--------------------------------------------------------------------------

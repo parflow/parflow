@@ -453,7 +453,7 @@ ForPatchCellsPerFace(NotARealBCType,
  * @param[in,out] ival Index for patch value array
  * @param bc_struct BCStruct to use in internal looping structures
  * @param ipatch Current patch number
- * @param is Current subgrid number
+ * @param is Current intake_subgrid number
  * @param body Statement body to execute
 */
 #define ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is, body)    \

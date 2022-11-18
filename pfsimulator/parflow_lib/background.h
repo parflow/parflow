@@ -43,7 +43,7 @@ typedef struct {
   double X, Y, Z;         /* Anchor point in real-space */
   double DX, DY, DZ;      /* Spacing in each coordinate direction */
 
-  /* Bounding information (essentially a level 0 subgrid) */
+  /* Bounding information (essentially a level 0 intake_subgrid) */
   int IX, IY, IZ;
   int NX, NY, NZ;
 } Background;

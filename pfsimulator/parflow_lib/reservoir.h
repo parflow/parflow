@@ -39,10 +39,13 @@ typedef struct {
     char          *name;
 //  char* release_curve_file;
 //  TimeSeries * release_curve;
-    double x_lower, y_lower, z_lower;
-    double x_upper, y_upper, z_upper;
+    double intake_x_lower, intake_y_lower, intake_z_lower;
+    double intake_x_upper, intake_y_upper, intake_z_upper;
+    double release_x_lower, release_y_lower, release_z_lower;
+    double release_x_upper, release_y_upper, release_z_upper;
     double diameter;
-    Subgrid       *subgrid;
+    Subgrid       *intake_subgrid;
+    Subgrid       *release_subgrid;
     double size;
     int action;
     int method;
@@ -119,26 +122,47 @@ typedef struct {
 #define ReservoirDataPhysicalName(reservoir_data_physical) \
   ((reservoir_data_physical)->name)
 
-#define ReservoirDataPhysicalXLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->x_lower)
+#define ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_x_lower)
 
-#define ReservoirDataPhysicalYLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->y_lower)
+#define ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_y_lower)
 
 #define ReservoirDataPhysicalZLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->z_lower)
+  ((reservoir_data_physical)->intake_z_lower)
 
-#define ReservoirDataPhysicalXUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->x_upper)
+#define ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_x_upper)
 
-#define ReservoirDataPhysicalYUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->y_upper)
+#define ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_y_upper)
 
 #define ReservoirDataPhysicalZUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->z_upper)
+  ((reservoir_data_physical)->intake_z_upper)
 
-#define ReservoirDataPhysicalSubgrid(reservoir_data_physical) \
-  ((reservoir_data_physical)->subgrid)
+#define ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_subgrid)
+
+#define ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_x_lower)
+
+#define ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_y_lower)
+
+#define ReservoirDataPhysicalReleaseZLower(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_z_lower)
+
+#define ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_x_upper)
+
+#define ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_y_upper)
+
+#define ReservoirDataPhysicalReleaseZUpper(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_z_upper)
+
+#define ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_subgrid)
 
 #define ReservoirDataPhysicalDiameter(reservoir_data_physical) \
   ((reservoir_data_physical)->diameter)

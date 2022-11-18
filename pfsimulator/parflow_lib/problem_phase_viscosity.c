@@ -164,7 +164,7 @@ void    PhaseViscosity(
             vp[id] = 0.0;
           });
         }     /* End if fcn */
-      }   /* End subgrid loop */
+      }   /* End intake_subgrid loop */
 
       break;
     }        /* End case 0 */

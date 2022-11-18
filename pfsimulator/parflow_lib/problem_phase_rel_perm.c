@@ -512,7 +512,7 @@ void         PhaseRelPerm(
               prdat[ipr] = 0.0;
             });
           }     /* End else clause */
-        }       /* End subgrid loop */
+        }       /* End intake_subgrid loop */
       }         /* End loop over regions */
 
       /* Compute rel perms inside regions */
@@ -552,7 +552,7 @@ void         PhaseRelPerm(
               prdat[ipr] = 0.0;
             });
           }     /* End else clause */
-        }       /* End subgrid loop */
+        }       /* End intake_subgrid loop */
       }         /* End loop over regions */
       break;
     }        /* End case 0 */
@@ -907,7 +907,7 @@ void         PhaseRelPerm(
                 });
               }
             }   /* End else clause */
-          }     /* End subgrid loop */
+          }     /* End intake_subgrid loop */
         }       /* End loop over regions */
       }         /* End if data not from file */
 
@@ -1013,7 +1013,7 @@ void         PhaseRelPerm(
               }
             });
           }     /* End else clause */
-        }       /* End subgrid loop */
+        }       /* End intake_subgrid loop */
       }         /* End if data_from_file */
 
       /* Compute rel. perms. on interior */
@@ -1251,7 +1251,7 @@ void         PhaseRelPerm(
                 });
               }
             }   /* End else clause */
-          }     /* End subgrid loop */
+          }     /* End intake_subgrid loop */
         }       /* End subregion loop */
       }         /* End if data not given by file */
       else if (data_from_file == 1) /* alphas and ns given in pfb files */
@@ -1348,7 +1348,7 @@ void         PhaseRelPerm(
               }
             });
           }     /* End else clause */
-        }       /* End subgrid loop */
+        }       /* End intake_subgrid loop */
       }         /* End if data given by file */
       break;
     }        /* End case 1 */
@@ -1436,7 +1436,7 @@ void         PhaseRelPerm(
               }
             });
           }     /* End else clause */
-        }       /* End subgrid loop */
+        }       /* End intake_subgrid loop */
       }         /* End subregion loop */
 
       /* Compute rel. perms. on interior */
@@ -1503,7 +1503,7 @@ void         PhaseRelPerm(
               }
             });
           }     /* End else clause */
-        }       /* End subgrid loop */
+        }       /* End intake_subgrid loop */
       }         /* End subregion loop */
 
       break;
@@ -1599,7 +1599,7 @@ void         PhaseRelPerm(
               }
             });
           }     /* End else clause */
-        }       /* End subgrid loop */
+        }       /* End intake_subgrid loop */
       }         /* End subregion loop */
 
       /* Compute rel. perms. in interior */
@@ -1667,7 +1667,7 @@ void         PhaseRelPerm(
               }
             });
           }     /* End else clause */
-        }       /* End subgrid loop */
+        }       /* End intake_subgrid loop */
       }         /* End subregion loop */
 
       break;

@@ -78,7 +78,7 @@ void resetBoundary(Vector *vector, const double value, const int ghosts)
   int sg = 0;
   ForSubgridI(sg, subgrids)
   {
-    /* Get information about this subgrid */
+    /* Get information about this intake_subgrid */
     const Subgrid *subgrid = SubgridArraySubgrid(subgrids, sg);
 
     const int ix = SubgridIX(subgrid);
@@ -89,7 +89,7 @@ void resetBoundary(Vector *vector, const double value, const int ghosts)
     const int ny = SubgridNY(subgrid);
     const int nz = SubgridNZ(subgrid);
 
-    /* Compute information about the subgrid and ghost layer */
+    /* Compute information about the intake_subgrid and ghost layer */
     const int ix_all = ix - ghosts;
     const int iy_all = iy - ghosts;
     const int iz_all = iz - ghosts;

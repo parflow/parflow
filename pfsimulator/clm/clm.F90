@@ -229,7 +229,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
 
 
      end if
-     !=== Allocate memory for subgrid tile space
+     !=== Allocate memory for intake_subgrid tile space
      !=== LEGACY =============================================================================================
      !=== (Keeping around in case we go back to multiple tiles per cell)
 

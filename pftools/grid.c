@@ -74,7 +74,7 @@ void  FreeGrid(
 {
   FreeSubgridArray(GridAllSubgrids(grid));
 
-  /* these subgrid arrays point to subgrids in all_subgrids */
+  /* these intake_subgrid arrays point to subgrids in all_subgrids */
   SubgridArraySize(GridSubgrids(grid)) = 0;
   FreeSubgridArray(GridSubgrids(grid));
   SubgridArraySize(GridNeighbors(grid)) = 0;

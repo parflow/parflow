@@ -44,16 +44,16 @@
 amps_ThreadLocalDcl(int, s_parflow_silo_filetype);
 
 #ifdef HAVE_SILO
-void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   *subgrid,
+void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   *intake_subgrid,
                                char *variable_name)
 {
-  int ix = SubgridIX(subgrid);
-  int iy = SubgridIY(subgrid);
-  int iz = SubgridIZ(subgrid);
+  int ix = SubgridIX(intake_subgrid);
+  int iy = SubgridIY(intake_subgrid);
+  int iz = SubgridIZ(intake_subgrid);
 
-  int nx = SubgridNX(subgrid);
-  int ny = SubgridNY(subgrid);
-  int nz = SubgridNZ(subgrid);
+  int nx = SubgridNX(intake_subgrid);
+  int ny = SubgridNY(intake_subgrid);
+  int nz = SubgridNZ(intake_subgrid);
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
@@ -94,17 +94,17 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   coords[0] = ctalloc(float, dims[0]);
   for (i = 0; i < dims[0]; i++)
   {
-    coords[0][i] = SubgridX(subgrid) + SubgridDX(subgrid) * ((float)i - 0.5);
+    coords[0][i] = SubgridX(intake_subgrid) + SubgridDX(intake_subgrid) * ((float)i - 0.5);
   }
 
   coords[1] = ctalloc(float, dims[1]);
   for (j = 0; j < dims[1]; j++)
   {
-    coords[1][j] = SubgridY(subgrid) + SubgridDY(subgrid) * ((float)j - 0.5);
+    coords[1][j] = SubgridY(intake_subgrid) + SubgridDY(intake_subgrid) * ((float)j - 0.5);
   }
 
   coords[2] = ctalloc(float, dims[2]);
-  /* z_coord = SubgridZ(subgrid); */
+  /* z_coord = SubgridZ(intake_subgrid); */
 /*  @RMM-- bare bones testing
  * for implementing variable dz into silo output
  * need to brab the vardz vector out of problem data
@@ -115,9 +115,9 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
      * if ( k > 19 ) {
      *   mult = 0.4;
      * }
-     * z_coord +=  SubgridDZ(subgrid)*mult;
+     * z_coord +=  SubgridDZ(intake_subgrid)*mult;
      * coords[2][k] =  z_coord; */
-    coords[2][k] = SubgridZ(subgrid) + SubgridDZ(subgrid) * ((float)k - 0.5);
+    coords[2][k] = SubgridZ(intake_subgrid) + SubgridDZ(intake_subgrid) * ((float)k - 0.5);
   }
 
   sprintf(meshname, "%s_%06u", "mesh", p);
@@ -323,7 +323,7 @@ void     WriteSilo(char *  file_prefix,
 #ifdef HAVE_SILO
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
-  Subgrid        *subgrid;
+  Subgrid        *intake_subgrid;
   Subvector      *subvector;
   
   int g;
@@ -507,10 +507,10 @@ void     WriteSilo(char *  file_prefix,
 
   ForSubgridI(g, subgrids)
   {
-    subgrid = SubgridArraySubgrid(subgrids, g);
+    intake_subgrid = SubgridArraySubgrid(subgrids, g);
     subvector = VectorSubvector(v, g);
 
-    WriteSilo_Subvector(db_file, subvector, subgrid, variable_name);
+    WriteSilo_Subvector(db_file, subvector, intake_subgrid, variable_name);
   }
 
   err = DBClose(db_file);

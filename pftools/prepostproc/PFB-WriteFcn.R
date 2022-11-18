@@ -37,7 +37,7 @@ writepfb=function(to.write,filename,dx,dy,dz){
   writeBin(dz2,fp,double(),endian="big")
   
   ##write for local grids if there is any
-  #number of subgrid
+  #number of intake_subgrid
   is=as.vector(as.integer(1))
   writeBin(is,fp,integer(),endian="big")
   

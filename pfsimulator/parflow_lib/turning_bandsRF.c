@@ -254,7 +254,7 @@ void          TurningBandsRF(
     /*--------------------------------------------------------------------
      * Scale the shear_array to the TB coordinate system.
      *
-     * Modify the subgrid z extent (zhi) to account for the shearing
+     * Modify the intake_subgrid z extent (zhi) to account for the shearing
      * to be done.  This is necessary to get subsequent line size
      * computations correct.
      *--------------------------------------------------------------------*/

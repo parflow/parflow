@@ -205,7 +205,7 @@ void    PhaseDensity(
               dp[id] = 0.0;
             });
           }   /* End if fcn */
-        }    /* End subgrid loop */
+        }    /* End intake_subgrid loop */
       }      /* End if density_v is not NULL */
       else
       {

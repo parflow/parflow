@@ -1590,7 +1590,7 @@ void    GrGeomOctreeFromInd(
   {
     subgrid = SubgridArraySubgrid(subgrids, sg);
 
-    /* level is gotten from subgrid x-resolution */
+    /* level is gotten from intake_subgrid x-resolution */
     l = SubgridRX(subgrid);
 
     if (sg == 0)
@@ -1630,7 +1630,7 @@ void    GrGeomOctreeFromInd(
     {
       if (SubgridRX(SubgridArraySubgrid(subgrids, sg)) == l)
       {
-        /* Get information about this subgrid */
+        /* Get information about this intake_subgrid */
         subgrid = SubgridArraySubgrid(subgrids, sg);
 
         const int ix = SubgridIX(subgrid);
@@ -1645,7 +1645,7 @@ void    GrGeomOctreeFromInd(
         const int ry = SubgridRY(subgrid);
         const int rz = SubgridRZ(subgrid);
 
-        /* Compute information about the subgrid and ghost layer */
+        /* Compute information about the intake_subgrid and ghost layer */
         const int ix_all = ix - 2;
         const int iy_all = iy - 2;
         const int iz_all = iz - 2;
@@ -1686,7 +1686,7 @@ void    GrGeomOctreeFromInd(
           }
         });
 
-        /* Get the level of the octree this subgrid */
+        /* Get the level of the octree this intake_subgrid */
         /*  lies on in relation to  the background  */
         level = octree_bg_level + l;
         inc = Pow2(l);

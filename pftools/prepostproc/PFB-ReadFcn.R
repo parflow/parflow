@@ -45,10 +45,10 @@ print(dz)
 is = readBin(to.read,integer(),endian="big")
 
 if(verbose){print(is)}
-#loop over each subgrid to grab data
+#loop over each intake_subgrid to grab data
 
 for (i in 1:is ) {
-#read in local starting points ix, iy, iz of this subgrid
+#read in local starting points ix, iy, iz of this intake_subgrid
 ix = readBin(to.read,integer(),endian="big")
 iy = readBin(to.read,integer(),endian="big")
 iz = readBin(to.read,integer(),endian="big")
@@ -59,7 +59,7 @@ print(iy)
 print(iz)
 }
 
-#read in locall nx, ny, nz of this subgrid
+#read in locall nx, ny, nz of this intake_subgrid
 nnx = readBin(to.read,integer(),endian="big")
 nny = readBin(to.read,integer(),endian="big")
 nnz = readBin(to.read,integer(),endian="big")

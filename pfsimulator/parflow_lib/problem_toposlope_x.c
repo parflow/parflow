@@ -172,7 +172,7 @@ void         XSlope(
           GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
           {
             ips = SubvectorEltIndex(ps_sub, i, j, 0);
-            //x = RealSpaceX(i, SubgridRX(subgrid));
+            //x = RealSpaceX(i, SubgridRX(intake_subgrid));
             //data[ips] = sin(x)/8.0 + (1/8)*pow(x,-(7/8)) +sin(x/5.0)/(5.0*8.0);
             data[ips] = value;
           });
@@ -298,7 +298,7 @@ void         XSlope(
             break;
           }        /* End case 6 */
         }       /* End switch statement on function_types */
-      }        /* End subgrid loop */
+      }        /* End intake_subgrid loop */
 
       break;
     }     /* End case 1 for input types */
@@ -339,7 +339,7 @@ void         XSlope(
 
           psdat[ips] = sx_values_dat[ipicv];
         });
-      }    /* End subgrid loop */
+      }    /* End intake_subgrid loop */
 
       break;
     }
@@ -380,7 +380,7 @@ void         XSlope(
 
           psdat[ips] = sx_values_dat[ipicv];
         });
-      }    /* End subgrid loop */
+      }    /* End intake_subgrid loop */
 
       break;
     }

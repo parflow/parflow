@@ -33,7 +33,7 @@
  * k-index into the supplied vector that is at the top
  * of the geometry.
  *
- * Only works with 1 subgrid per task.
+ * Only works with 1 intake_subgrid per task.
  *
  * This assumes number of processors is 1 in Z; assumes
  * that the entire Z column is on a single task.
@@ -103,7 +103,7 @@ void ComputeTop(Problem *    problem,      /* General problem information */
         top_data[index] = k;
       }
     });
-  }      /* End of subgrid loop */
+  }      /* End of intake_subgrid loop */
 
   /* Pass top values to neighbors.  */
   handle = InitVectorUpdate(top, VectorUpdateAll);

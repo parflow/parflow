@@ -136,7 +136,7 @@ void Porosity(
         ny_p = SubvectorNY(subvector);
         nz_p = SubvectorNZ(subvector);
 
-        /*  Get the intersection of the well with the subgrid  */
+        /*  Get the intersection of the well with the intake_subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           ix = SubgridIX(tmp_subgrid);
@@ -157,7 +157,7 @@ void Porosity(
             phi[pi] = 1.0;
           });
 
-          FreeSubgrid(tmp_subgrid);       /* done with temporary subgrid */
+          FreeSubgrid(tmp_subgrid);       /* done with temporary intake_subgrid */
         }
       }
     }
@@ -178,7 +178,7 @@ void Porosity(
         ny_p = SubvectorNY(subvector);
         nz_p = SubvectorNZ(subvector);
 
-        /*  Get the intersection of the well with the subgrid  */
+        /*  Get the intersection of the well with the intake_subgrid  */
         if ((tmp_subgrid = IntersectSubgrids(subgrid, well_subgrid)))
         {
           ix = SubgridIX(tmp_subgrid);
@@ -199,7 +199,7 @@ void Porosity(
             phi[pi] = 1.0;
           });
 
-          FreeSubgrid(tmp_subgrid);       /* done with temporary subgrid */
+          FreeSubgrid(tmp_subgrid);       /* done with temporary intake_subgrid */
         }
       }
     }
