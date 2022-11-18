@@ -1,0 +1,182 @@
+# -----------------------------------------------------------------------------
+# Definition anatomy
+# -----------------------------------------------------------------------------
+#
+# run.Geom.{name}.{PARFLOW_KEY}:
+#   alias:
+#     - Short names that can be used inside your table definition
+#   addon:
+#     If provided those other key/value will be set under
+#       Geom.{name}.{KEY_1} = {VALUE_1}
+#       Geom.{name}.{KEY_2} = {VALUE_2}
+#   register:
+#     If provided the {name} will be added to a set() with the name
+#     run.{VALUE} = [] + {name}.
+#
+# -----------------------------------------------------------------------------
+
+key:
+  type: str
+  alias:
+    - key
+    - name
+    - Name
+    - Key
+
+# -----------------------------------------------------------------------------
+# Reservoir Parameters
+# -----------------------------------------------------------------------------
+
+InputType:
+  type: str
+  alias:
+    - InputType
+  register: Reservoirs.Names
+
+
+Type:
+  type: str
+  alias:
+    - Type
+  register: Reservoirs.Names
+
+Action:
+  type: str
+  alias:
+    - Action
+  register: Reservoirs.Names
+
+ExtractionType:
+  type: str
+  alias:
+    - ExtractionType
+    - extractiontype
+    - Extractiontype
+    - extractionType
+  register: Reservoirs.Names
+
+InjectionType:
+  type: str
+  alias:
+    - InjectionType
+    - injectiontype
+    - Injectiontype
+    - injectionType
+  register: Reservoirs.Names
+
+X:
+  type: float
+  alias:
+    - X
+  register: Reservoirs.Names
+
+Y:
+  type: float
+  alias:
+    - Y
+  register: Reservoirs.Names
+
+ZUpper:
+  type: float
+  alias:
+    - ZUpper
+    - Zupper
+  register: Reservoirs.Names
+
+Status:
+  type: int
+  alias:
+    - Status
+    - status
+
+ExtractionZUpper:
+  type: float
+  alias:
+    - ExtractionZUpper
+    - ExtractionZupper
+    - extractionZUpper
+    - extractionZupper
+  register: Reservoirs.Names
+
+ExtractionZLower:
+  type: float
+  alias:
+    - ExtractionZLower
+    - ExtractionZlower
+    - extractionZLower
+    - extractionZlower
+  register: Reservoirs.Names
+
+InjectionZUpper:
+  type: float
+  alias:
+    - InjectionZUpper
+    - InjectionZupper
+    - injectionZUpper
+    - injectionZupper
+  register: Reservoirs.Names
+
+InjectionZLower:
+  type: float
+  alias:
+    - InjectionZLower
+    - InjectionZlower
+    - injectionZLower
+    - injectionZlower
+  register: Reservoirs.Names
+
+ZLower:
+  type: float
+  alias:
+    - ZLower
+    - Zlower
+  register: Reservoirs.Names
+
+Method:
+  type: str
+  alias:
+    - Method
+    - method
+  register: Reservoirs.Names
+
+ExtractionMethod:
+  type: str
+  alias:
+    - ExtractionMethod
+    - Extractionmethod
+    - extractionMethod
+    - extractionmethod
+  register: Reservoirs.Names
+
+InjectionMethod:
+  type: str
+  alias:
+    - InjectionMethod
+    - Injectionmethod
+    - injectionMethod
+    - injectionmethod
+  register: Reservoirs.Names
+
+Cycle:
+  type: str
+  alias:
+    - Cycle
+  register: Reservoirs.Names
+
+alltime.Flux.water.Value:
+  type: float
+  alias:
+    - alltime.Flux.water.Value
+  register: Reservoirs.Names
+
+alltime.Saturation.water.Value:
+  type: float
+  alias:
+    - alltime.Saturation.water.Value
+  register: Reservoirs.Names
+
+ReleaseCurveFile:
+  type: str
+  alias:
+    - ReleaseCurveFile
+  register: Reservoirs.Names

@@ -813,6 +813,32 @@ class SubsurfacePropertiesBuilder(TableToProperties):
         return 'subsurface_'
 
 
+class ReservoirPropertiesBuilder(TableToProperties):
+
+    def __init__(self, run=None):
+        super().__init__(run)
+
+    @property
+    def reference_file(self):
+        return 'ref/reservoir_keys.yaml'
+
+    @property
+    def key_root(self):
+        return self.run.Reservoirs
+
+    @property
+    def unit_string(self):
+        return 'Reservoirs'
+
+    @property
+    def default_db(self):
+        return 'conus_1'
+
+    @property
+    def db_prefix(self):
+        return 'reservoirs_'
+
+
 class WellPropertiesBuilder(TableToProperties):
 
     def __init__(self, run=None):
@@ -1171,6 +1197,49 @@ class DomainBuilder:
         self.run.Solver.CLM.WiltingPoint = 0.12
         self.run.Solver.CLM.FieldCapacity = 0.98
         self.run.Solver.CLM.IrrigationType = 'none'
+
+        return self
+
+    def reservoir(self, name, type, x, y, z_upper, z_lower,
+                  cycle_name, interval_name, action='Extraction',
+                  saturation=1.0, phase='water', hydrostatic_pressure=None,
+                  value=None):
+        """Setting keys necessary to define a simple reservoir
+        """
+
+        if not self.run.Wells.Names:
+            self.run.Wells.Names = []
+
+        self.run.Wells.Names += [name]
+        reservoir = self.run.Wells[name]
+        reservoir.InputType = 'Vertical'
+        reservoir.Action = 'Extraction'
+        reservoir.Type = type
+        reservoir.X = x
+        reservoir.Y = y
+        reservoir.ZUpper = z_upper
+        reservoir.ZLower = z_lower
+        reservoir.Method = 'Standard'
+        reservoir.Cycle = cycle_name
+        reservoir[interval_name].Saturation[phase].Value = saturation
+
+        if action == 'Extraction':
+            reservoir.Action = 'Extraction'
+            if type == 'Pressure':
+                reservoir[interval_name].Pressure.Value = hydrostatic_pressure
+                if value is not None:
+                    reservoir[interval_name].Extraction.Pressure.Value = value
+            elif type == 'Flux' and value is not None:
+                reservoir[interval_name].Extraction.Flux[phase].Value = value
+
+        if action == 'Injection':
+            reservoir.Action = 'Injection'
+            if type == 'Pressure':
+                reservoir[interval_name].Pressure.Value = hydrostatic_pressure
+                if value is not None:
+                    reservoir[interval_name].Injection.Pressure.Value = value
+            elif type == 'Flux' and value is not None:
+                reservoir[interval_name].Injection.Flux[phase].Value = value
 
         return self
 

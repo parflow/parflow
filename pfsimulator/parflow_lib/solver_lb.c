@@ -698,6 +698,7 @@ void      SolverDiffusion()
       /* Initialize the pressure field and initialize */
       LBInitializeBC(lattice, problem, problem_data);
       LBWells(lattice, problem, problem_data);
+      LBReservoirs(lattice, problem, problem_data);
       PerturbSystem(lattice, problem);
       LatticeFlowInit(lattice, problem);
 

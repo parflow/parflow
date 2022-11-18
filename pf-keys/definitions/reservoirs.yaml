@@ -1,0 +1,471 @@
+# reservoirs.yaml
+# Definitions of all reservoir items
+
+# -----------------------------------------------------------------------------
+# Reservoirs
+# -----------------------------------------------------------------------------
+
+Reservoirs:
+  __doc__: >
+    Here we define the reservoirs for the model.
+
+  # Reservoirs.Names not in grep
+  Names:
+    help: >
+      [Type: string] This key specifies the names fo the reservoirs for which input data will be given.
+    domains:
+      AnyString:
+    handlers:
+      ReservoirUpdater:
+        type: ChildrenHandler
+        class_name: ReservoirItem
+
+  .{reservoir_name}:
+    __class__: ReservoirItem
+    __rst__:
+      name: Reservoirs.{reservoir_name}
+    __doc__: >
+      Specifying properties for reservoirs
+    __simput__:
+      type: VariableTable
+      table_label: Reservoir
+
+    # Setting key Reservoirs.{reservoir_name}.{interval_name}...
+    .{interval_name}:
+      __class__: ReservoirIntervalItem
+      __from__: /Cycle/{CycleItem}/Names
+      __rst__:
+        skip:
+      __doc__: >
+        This is to set properties for named reservoirs within specified cycles.
+      __simput__:
+        type: VariableTable
+        table_label: Interval
+        match_condition:
+          siblingParamKey: Reservoirs/reservoir_name_/Cycle
+          foreignNameKey: Cycle/cycle_name_
+
+
+      Pressure:
+        __class__: ReservoirIntervalItemPressure
+        __rst__:
+          skip:
+        __doc__: >
+          Setting pressure for a named reservoir within a specified cycle.
+        Value:
+          __rst__:
+            name: Reservoirs.{reservoir_name}.{interval_name}.Pressure.Value
+          help: >
+            [Type: double] This key specifies the hydrostatic pressure value for a vertical reservoir if the type key is set to Pressure.
+            Note This value gives the pressure of the primary phase (water) at z = 0. The other phase pressures (if any) are
+            computed from the physical relationships that exist between the phases.
+          domains:
+            DoubleValue:
+
+      # Setting key Reservoirs.{reservoir_name}.{interval_name}.Saturation.{phase_name}.Value
+      Saturation:
+        __class__: ReservoirIntervalItemSaturation
+        __rst__:
+          skip:
+        __doc__: ''
+
+        .{phase_name}:
+          __class__: ReservoirIntervalSaturationPhaseItem
+          __from__: /Phase/Names
+          __rst__:
+            skip:
+          __doc__: ''
+          __simput__:
+            type: VariableTable
+            table_label: Phase
+
+          Value:
+            __rst__:
+              name: Reservoirs.{reservoir_name}.{interval_name}.Saturation.{phase_name}.Value
+            help: >
+              [Type: double] This key specifies the saturation value of a vertical reservoir.
+            domains:
+              DoubleValue:
+                min_value: 0.0
+                max_value: 1.0
+
+      # Setting key Reservoirs.{reservoir_name}.{interval_name}.Flux.{phase_name}.Value
+      Flux:
+        __class__: ReservoirIntervalItemFlux
+        __rst__:
+          skip:
+        __doc__: ''
+
+        .{phase_name}:
+          __class__: ReservoirIntervalFluxPhaseItem
+          __from__: /Phase/Names
+          __rst__:
+            skip:
+          __doc__: ''
+          __simput__:
+            type: VariableTable
+            table_label: Phase
+
+          # typos in the description - vertical, assign
+          Value:
+            __rst__:
+              name: Reservoirs.{reservoir_name}.{interval_name}.Flux.{phase_name}.Value
+            help: >
+              [Type: double] This key specifies the volumetric flux for a vertical reservoir if the type key is set to Flux.
+              Note only a positive number should be entered, ParFlow assigns the correct sign based on the chosen action
+              for the reservoir.
+            domains:
+              DoubleValue:
+
+      Concentration:
+        __class__: ReservoirIntervalItemConcentration
+        __doc__: >
+          Setting contaminant value of vertical reservoir.
+
+        # Setting key Reservoirs.{reservoir_name}.{interval_name}.Concentration.{phase_name}.{contaminant_name}.Value
+    #        .{phase_name}:
+    #          __class__: ConcentrationPhaseItem
+    #          __from__: /Phase/Names
+    #          __rst__:
+    #            skip:
+    #          __doc__: ''
+    #          __simput__:
+    #            type: VariableTable
+    #            table_label: Phase
+    #
+    #          .{contaminant_name}:
+    #            __class__: ConcentrationPhaseContItem
+    #            __from__: /Contaminants/Names
+    #            __rst__:
+    #              skip:
+    #            __doc__: ''
+    #            __simput__:
+    #              type: VariableTable
+    #              table_label: Contaminant
+    #
+    #
+    #            Value:
+    #              help: >
+    #                [Type: double] This key specifies the contaminant value of a vertical reservoir.
+    #              domains:
+    #                DoubleValue:
+
+    #      Extraction:
+    #        __rst__:
+    #          skip:
+    #        __doc__: >
+    #          Setting extraction pressure for a named reservoir within a specified cycle.
+    #        Pressure:
+    #          __class__: ReservoirIntervalItemExtractionPressure
+    #          __rst__:
+    #            skip:
+    #          __doc__: >
+    #            Setting extraction pressure for a named reservoir within a specified cycle.
+    #          Value:
+    #            __rst__:
+    #              name: Reservoirs.{reservoir_name}.{interval_name}.Extraction.Pressure.Value
+    #            help: >
+    #              [Type: double] This key specifies the hydrostatic pressure value for an extraction reservoir if the extraction type key is set to
+    #              Pressure. Note This value gives the pressure of the primary phase (water) at z = 0. The other phase pressures (if any) are
+    #              computed from the physical relationships that exist between the phases.
+    #            domains:
+    #              DoubleValue:
+    #        # Setting key Reservoirs.{reservoir_name}.{interval_name}.Extraction.Flux.{phase_name}.Value
+    #        Flux:
+    #          __class__: ReservoirIntervalItemExtractionFlux
+    #          __rst__:
+    #            skip:
+    #          __doc__: >
+    #            Setting flux for a named reservoir within a specified cycle for a specific phase in an extraction reservoir.
+    #
+    #          .{phase_name}:
+    #            __class__: ExtractionFluxPhaseItem
+    #            __from__: /Phase/Names
+    #            __rst__:
+    #              skip:
+    #            __doc__: ''
+    #            __simput__:
+    #              type: VariableTable
+    #              table_label: Phase
+    #            # typos in the description - assign
+    #            Value:
+    #              __rst__:
+    #                name: Reservoirs.{reservoir_name}.{interval_name}.Extraction.Flux.{phase_name}.Value
+    #              help: >
+    #                [Type: double] This key specifies the volumetric flux for an extraction reservoir if the extraction type key is set to Flux.
+    #                Note only a positive number should be entered, ParFlow assigns the correct sign based on the chosen action
+    #                for the reservoir.
+    #              domains:
+    #                DoubleValue:
+    #
+    #      Injection:
+    #        __rst__:
+    #          skip:
+    #        __doc__: >
+    #          Setting extraction pressure for a named reservoir within a specified cycle.
+    #        Pressure:
+    #          __class__: ReservoirIntervalItemInjectionPressure
+    #          __rst__:
+    #            skip:
+    #          __doc__: >
+    #            Setting extraction pressure for a named reservoir within a specified cycle.
+    #          Value:
+    #            __rst__:
+    #              name: Reservoirs.{reservoir_name}.{interval_name}.Injection.Pressure.Value
+    #            help: >
+    #              [Type: double] This key specifies the hydrostatic pressure value for an extraction reservoir if the extraction type key is set to
+    #              Pressure. Note This value gives the pressure of the primary phase (water) at z = 0. The other phase pressures (if any) are
+    #              computed from the physical relationships that exist between the phases.
+    #            domains:
+    #              DoubleValue:
+    #        # Setting key Reservoirs.{reservoir_name}.{interval_name}.Injection.Flux.{phase_name}.Value
+    #        Flux:
+    #          __class__: ReservoirIntervalItemInjectionFlux
+    #          __rst__:
+    #            skip:
+    #          __doc__: >
+    #            Setting flux for a named reservoir within a specified cycle for a specific phase in an injection reservoir.
+    #
+    #          .{phase_name}:
+    #            __class__: InjectionFluxPhaseItem
+    #            __from__: /Phase/Names
+    #            __rst__:
+    #              skip:
+    #            __doc__: ''
+    #            __simput__:
+    #              type: VariableTable
+    #              table_label: Phase
+    #            # typos in the description - assign
+    #            Value:
+    #              __rst__:
+    #                name: Reservoirs.{reservoir_name}.{interval_name}.Injection.Flux.{phase_name}.Value
+    #              help: >
+    #                [Type: double] This key specifies the volumetric flux for an injection reservoir if the injection type key is set to Flux.
+    #                Note only a positive number should be entered, ParFlow assigns the correct sign based on the chosen action
+    #                for the reservoir.
+    #              domains:
+    #                DoubleValue:
+    #
+    #        # Setting key Reservoirs.{reservoir_name}.{interval_name}.Injection.Concentration.{phase_name}.{contaminant_name}.Fraction
+    #        Concentration:
+    #          __rst__:
+    #            skip:
+    #          __doc__: >
+    #            Setting the fraction of the extracted contaminant which gets resupplied to the injection reservoir.
+    #
+    #          .{phase_name}:
+    #            __class__: InjectionConcentrationPhaseItem
+    #            __from__: /Phase/Names
+    #            __rst__:
+    #              skip:
+    #            __doc__: ''
+    #            __simput__:
+    #              type: VariableTable
+    #              table_label: Phase
+    #
+    #            .{contaminant_name}:
+    #              __class__: InjectionConcentrationPhaseContaminantItem
+    #              __from__: /Contaminants/Names
+    #              __rst__:
+    #                skip:
+    #              __doc__: ''
+    #              __simput__:
+    #                type: VariableTable
+    #                table_label: Phase
+    #              Fraction:
+    #                help: >
+    #                  [Type: double] This key specifies the fraction of the extracted contaminant which gets resupplied to the injection reservoir.
+    #                domains:
+    #                  DoubleValue:
+    #                    min_value: 0.0
+    #                    max_value: 1.0
+
+    InputType:
+      help: >
+        [Type: string] This key specifies the type of reservoir to be defined for the given reservoir, reservoir_name. This key can be either Vertical or
+        Recirc. The value Vertical indicates that this is a single segmented reservoir whose action will be specified by the user.
+        The value Recirc indicates that this is a dual segmented, recirculating, reservoir with one segment being an extraction
+        reservoir and another being an injection reservoir. The extraction reservoir filters out a specified fraction of each contaminant and
+        recirculates the remainder to the injection reservoir where the diluted fluid is injected back in. The phase saturations at
+        the extraction reservoir are passed without modification to the injection reservoir.
+        Note with the recirculating reservoir, several input options are not needed as the extraction reservoir will provide these
+        values to the injection reservoir.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Vertical
+            - Recirc
+
+    Action:
+      help: >
+        [Type: string] This key specifies the pumping action of the reservoir. This key can be either Injection or Extraction. A value of
+        Injection indicates that this is an injection reservoir. A value of Extraction indicates that this is an extraction reservoir.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Injection
+            - Extraction
+
+    ReleaseCurveFile:
+      help: >
+        [Type: string] This key specifies the release curve of the reservoir as a timeseries (TBD FORMATTING DOC)
+      domains:
+        AnyString:
+
+    Type:
+      # type is wrong in manual (should be string). Also, multiple typos
+      help: >
+        [Type: string] This key specifies the mechanism by which the reservoir works (how ParFlow works with the reservoir data) if the input
+        type key is set to Vertical. This key can be either Pressure or Flux. A value of Pressure indicates that the
+        data provided for the reservoir is in terms of hydrostatic pressure and ParFlow will ensure that the computed pressure
+        field satisfies this condition in the computational cells which define the reservoir. A value of Flux indicates that the data
+        provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this condition in
+        the computational cells which define the reservoir.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Pressure
+            - Flux
+
+    ExtractionType:
+      help: >
+        [Type: string] This key specifies the mechanism by which the extraction reservoir works (how ParFlow works with the reservoir data)
+        if the input type key is set to Recirc. This key can be either Pressure or Flux. A value of Pressure indicates
+        that the data provided for the reservoir is in terms of hydrostatic pressure and ParFlow will ensure that the computed
+        pressure field satisfies this condition in the computational cells which define the reservoir. A value of Flux indicates
+        that the data provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this
+        condition in the computational cells which define the reservoir.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Pressure
+            - Flux
+
+    InjectionType:
+      help: >
+        [Type: string] This key specifies the mechanism by which the injection reservoir works (how ParFlow works with the reservoir data)
+        if the input type key is set to Recirc. This key can be either Pressure or Flux. A value of Pressure indicates
+        that the data provided for the reservoir is in terms of hydrostatic pressure and ParFlow will ensure that the computed
+        pressure field satisfies this condition in the computational cells which define the reservoir. A value of Flux indicates
+        that the data provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this
+        condition in the computational cells which define the reservoir.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Pressure
+            - Flux
+
+    X:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the x location of the vertical reservoir if the input type is set to Vertical or of both the extraction
+        and injection reservoirs if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    Y:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the y location of the vertical reservoir if the input type is set to Vertical or of both the extraction
+        and injection reservoirs if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    Status:
+      help: >
+        [Type: boolean]
+      domains:
+        IntValue:
+
+    ZUpper:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of a vertical reservoir if the input type is set to Vertical.
+      domains:
+        DoubleValue:
+
+    ExtractionZUpper:
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of a extraction reservoir if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    InjectionZUpper:
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of an injection reservoir if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    ZLower:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the z location of the lower extent of a vertical reservoir if the input type is set to Vertical.
+      domains:
+        DoubleValue:
+
+    ExtractionZLower:
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of a extraction reservoir if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    InjectionZLower:
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of an injection reservoir if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    Method:
+      help: >
+        [Type: string] This key specifies a method by which pressure or flux for a vertical reservoir will be weighted before assignment to
+        computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be either
+        Standard,Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the pressure
+        or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the cells
+        permeability divided by the sum of all cell permeabilities which define the reservoir. The value of Patterned is not
+        implemented.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Standard
+            - Weighted
+            - Patterned
+
+    ExtractionMethod:
+      help: >
+        [Type: string] This key specifies a method by which pressure or flux for an extraction reservoir will be weighted before assignment
+        to computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be
+        either Standard, Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the
+        pressure or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the
+        cells permeability divided by the sum of all cell permeabilities which define the reservoir. The value of Patterned is not
+        implemented.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Standard
+            - Weighted
+            - Patterned
+
+    InjectionMethod:
+      help: >
+        [Type: string] This key specifies a method by which pressure or flux for an injection reservoir will be weighted before assignment
+        to computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be
+        either Standard, Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the
+        pressure or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the
+        cells permeability divided by the sum of all cell permeabilities which define the reservoir. The value of Patterned is not
+        implemented.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Standard
+            - Weighted
+            - Patterned
+
+    Cycle:
+      help: >
+        [Type: string] This key specifies the time cycles to which data for the reservoir reservoir_name corresponds.
+      domains:
+        EnumDomain:
+          locations:
+            - /Cycle/Names
+      __simput__:
+        table_column_order: 1

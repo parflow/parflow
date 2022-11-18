@@ -66,6 +66,7 @@
 #include "problem_bc.h"
 #include "problem_eval.h"
 #include "well.h"
+#include "reservoir.h"
 #include "bc_pressure.h"
 #include "problem.h"
 #include "solver.h"
