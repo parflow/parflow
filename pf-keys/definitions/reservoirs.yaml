@@ -355,19 +355,31 @@ Reservoirs:
             - Pressure
             - Flux
 
-    X:
+    Release_X:
       # typos - vertical
       help: >
-        [Type: double] This key specifies the x location of the vertical reservoir if the input type is set to Vertical or of both the extraction
-        and injection reservoirs if the input type is set to Recirc.
+        [Type: double] This key specifies the x location of where the reservoir releases water
       domains:
         DoubleValue:
 
-    Y:
+    Release_Y:
       # typos - vertical
       help: >
-        [Type: double] This key specifies the y location of the vertical reservoir if the input type is set to Vertical or of both the extraction
-        and injection reservoirs if the input type is set to Recirc.
+        [Type: double] This key specifies the y location of where the reservoir releases water
+      domains:
+        DoubleValue:
+
+    Intake_X:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the x location of where the reservoir intakes water
+      domains:
+        DoubleValue:
+
+    Intake_Y:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the y location of where the reservoir intakes water.
       domains:
         DoubleValue:
 

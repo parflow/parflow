@@ -75,6 +75,7 @@ typedef struct {
     double release_x_location;
     double release_y_location;
     double z_lower, z_upper;
+    double max_capacity, min_release_capacity, current_capacity;
     int status;
     int method;
     int cycle_number;
@@ -139,6 +140,7 @@ void         ReservoirPackage(
   double release_subgrid_volume;
   double intake_x_lower, intake_x_upper, intake_y_lower, intake_y_upper, z_lower, z_upper;
   double release_x_lower, release_x_upper, release_y_lower, release_y_upper;
+  double max_capacity, min_release_capacity, current_capacity;
 
   /* Allocate the reservoir data */
   ReservoirDataNumPhases(reservoir_data) = (public_xtra->num_phases);
@@ -261,6 +263,9 @@ void         ReservoirPackage(
             ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
             ReservoirDataPhysicalZUpper(reservoir_data_physical) = (dummy0->z_upper);
             ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
+            ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) = (dummy0->max_capacity);
+            ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->min_release_capacity);
+            ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) = (dummy0->current_capacity);
             ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
             ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
             ReservoirDataPhysicalSize(reservoir_data_physical) = intake_subgrid_volume;
@@ -395,6 +400,9 @@ void         ReservoirPackage(
             ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
             ReservoirDataPhysicalZUpper(reservoir_data_physical) = (dummy0->z_upper);
             ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
+            ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) = (dummy0->max_capacity);
+            ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->min_release_capacity);
+            ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) = (dummy0->current_capacity);
             ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
             ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
             ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
@@ -974,14 +982,29 @@ PFModule  *ReservoirPackageNewPublicXtra(
           sprintf(key, "Reservoirs.%s.ReleaseCurveFile", reservoir_name);
           dummy0->release_curve_file = GetString(key);
 
-          sprintf(key, "Reservoirs.%s.X", reservoir_name);
+          sprintf(key, "Reservoirs.%s.Release_X", reservoir_name);
+          dummy0->release_x_location = GetDouble(key);
+
+          sprintf(key, "Reservoirs.%s.Release_Y", reservoir_name);
+          dummy0->release_y_location = GetDouble(key);
+
+          sprintf(key, "Reservoirs.%s.Intake_X", reservoir_name);
           dummy0->intake_x_location = GetDouble(key);
 
-          sprintf(key, "Reservoirs.%s.Y", reservoir_name);
+          sprintf(key, "Reservoirs.%s.Intake_Y", reservoir_name);
           dummy0->intake_y_location = GetDouble(key);
 
           sprintf(key, "Reservoirs.%s.ZUpper", reservoir_name);
           dummy0->z_upper = GetDouble(key);
+
+          sprintf(key, "Reservoirs.%s.Min_Release_Capacity", reservoir_name);
+          dummy0->min_release_capacity = GetDouble(key);
+
+          sprintf(key, "Reservoirs.%s.Max_Capacity", reservoir_name);
+          dummy0->max_capacity = GetDouble(key);
+
+          sprintf(key, "Reservoirs.%s.Current_Capacity", reservoir_name);
+          dummy0->current_capacity = GetDouble(key);
 
 
           sprintf(key, "Reservoirs.%s.ZLower", reservoir_name);

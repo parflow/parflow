@@ -64,16 +64,28 @@ InjectionType:
     - injectionType
   register: Reservoirs.Names
 
-X:
+Release_X:
   type: float
   alias:
-    - X
+    - Release_X
   register: Reservoirs.Names
 
-Y:
+Release_Y:
   type: float
   alias:
-    - Y
+    - Release_Y
+  register: Reservoirs.Names
+
+Intake_X:
+  type: float
+  alias:
+    - Intake_X
+  register: Reservoirs.Names
+
+Intake_Y:
+  type: float
+  alias:
+    - Intake_Y
   register: Reservoirs.Names
 
 ZUpper:
@@ -81,6 +93,24 @@ ZUpper:
   alias:
     - ZUpper
     - Zupper
+  register: Reservoirs.Names
+
+Min_Release_Capacity:
+  type: float
+  alias:
+    - Min_Release_Capacity
+  register: Reservoirs.Names
+
+Max_Capacity:
+  type: float
+  alias:
+    - Max_Capacity
+  register: Reservoirs.Names
+
+Current_Capacity:
+  type: float
+  alias:
+    - Current_Capacity
   register: Reservoirs.Names
 
 Status:
