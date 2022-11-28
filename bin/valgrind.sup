@@ -1,4 +1,22 @@
 # -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+#
+# Additional copyrights may follow
+#
+# $HEADER$
+#
+
 ###############################################################
 #
 # OPAL suppressions
@@ -42,38 +60,6 @@
   fun:poll_dispatch
 }
 
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Param
-   writev(vector[...])
-   fun:writev
-   fun:OPAL_MCA_PMIX3X_pmix_ptl_base_send_handler
-   fun:event_persist_closure
-   fun:event_process_active_single_queue
-   fun:event_process_active
-   fun:opal_libevent2022_event_base_loop
-   fun:progress_engine
-   fun:start_thread
-   fun:clone
-}
-
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:malloc
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-}
 
 ###############################################################
 #
@@ -112,16 +98,6 @@
   fun:mca_btl_tcp_endpoint_send
 }
 
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:malloc
-   ...
-   fun:ompi_mpi_init
-}
-
-
 ###############################################################
 #
 # Suppressions for various commonly-used packages
@@ -138,6 +114,10 @@
   fun:utcp_sendto
   fun:utcp_msg_wait
 }
+
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
 ###############################################################
@@ -281,6 +261,51 @@
    fun:PMPI_Init
 }
 
+{
+  <insert_a_suppression_name_here>
+  Memcheck:Leak
+  match-leak-kinds: definite
+  fun:malloc
+  ...
+  fun:ompi_mpi_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:orte_finalize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   ...
+   fun:start_thread
+   fun:clone
+}
 
 ###############################################################
 #
@@ -343,4 +368,26 @@
    fun:SolverRichards
    fun:Solve
    fun:main
+}
+
+##############################################################################
+#
+# HDF5
+#
+##############################################################################
+{
+   <insert_a_suppression_name_here>
+   Memcheck:User
+   obj:/usr/lib64/openmpi/lib/libopen-pal.so.40.30.1
+   fun:PMPI_File_write_at_all
+   obj:/usr/lib64/openmpi/lib/libhdf5.so.103.1.0
+   fun:H5FD_write
+   fun:H5F__accum_write
+   fun:H5PB_write
+   fun:H5F_block_write
+   fun:H5C_apply_candidate_list
+   fun:H5AC__run_sync_point
+   fun:H5AC__flush_entries
+   fun:H5AC_flush
+   obj:/usr/lib64/openmpi/lib/libhdf5.so.103.1.0
 }
