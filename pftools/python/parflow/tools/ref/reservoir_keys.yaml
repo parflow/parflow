@@ -101,6 +101,12 @@ Min_Release_Capacity:
     - Min_Release_Capacity
   register: Reservoirs.Names
 
+Release_Rate:
+  type: float
+  alias:
+    - Release_Rate
+  register: Reservoirs.Names
+
 Max_Capacity:
   type: float
   alias:

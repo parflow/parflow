@@ -369,6 +369,34 @@ Reservoirs:
       domains:
         DoubleValue:
 
+    Min_Release_Capacity:
+      # typos - vertical
+      help: >
+        [Type: double]
+      domains:
+        DoubleValue:
+
+    Max_Capacity:
+      # typos - vertical
+      help: >
+        [Type: double]
+      domains:
+        DoubleValue:
+
+    Current_Capacity:
+      # typos - vertical
+      help: >
+        [Type: double]
+      domains:
+        DoubleValue:
+
+    Release_Rate:
+      # typos - vertical
+      help: >
+        [Type: double]
+      domains:
+        DoubleValue:
+
     Intake_X:
       # typos - vertical
       help: >
