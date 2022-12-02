@@ -36,22 +36,22 @@ testclean:
 	@rm -f *.silo*
 	@rm -f *.pfsb*
 	@rm -f *.log
+	@rm -f *.out.timing.csv	
 	@rm -f .hostfile
 	@rm -f .amps.*
 	@rm -f *.out.pftcl
 	@rm -f *.pfidb
 	@rm -f *.out.txt
-	@rm -fr default_richards.out
 	@rm -fr clm.out
 	@rm -fr test.log.*
 	@rm -fr drv_clmin.dat.*
-	@rm -fr drv_vegm.dat.*
+	@rm -f drv_clmin.dat drv_vegm.dat drv_vegp.dat displa.dat 
 	@rm -fr core*
 	@rm -fr clm_output.txt.*
 	@rm -fr clm_varDZ_output.txt.*
 	@rm -fr clm_varDZ.out
 	@rm -f clm_varDZ.out.pftcl
-	@rm -f clm_varDZ_elog.txt.*
+	@rm -f clm_varDZ_elog.txt.*	
 	@rm -fr clm_slope_output.txt.*
 	@rm -fr clm_slope.out
 	@rm -f clm_slope.out.pftcl
@@ -61,5 +61,6 @@ testclean:
 	@rm -f clm_forc_veg.out.pftcl
 	@rm -f clm_forc_veg_elog.txt.*	
 	@rm -fr clm-reuse-ts-* swe.out.csv
-	@rm -f clm_restart.tcl
-	@rm -f swe.out.csv clm_restart.tcl
+	@rm -f *.pfmetadata
+	@rm -f z0m.dat sai.dat lai.dat narr_1hr.sc3.txt.0
+	@rm -fr test_output
