@@ -8,14 +8,7 @@
 
 include $(PARFLOW_DIR)/config/Makefile.config
 
-SUBDIRS = clm washita/tcl_scripts
-
-default: check
-
-test: check
-
-check:
-	@echo "Tests should be run with CTest.  In CMake build directory run 'make test'"
+SUBDIRS =
 
 clean: testclean
 	@-for i in $(SUBDIRS); \
@@ -35,20 +28,14 @@ testclean:
 	@rm -f *.out.pftcl
 	@rm -f *.pfidb
 	@rm -f *.out.txt
-	@rm -fr default_richards.out
 	@rm -fr *.out.wells
-	@rm -fr indicator_field.out
-	@rm -fr water_balance.out
-	@rm -fr default_overland.out
 	@rm -fr test.log.*
-	@rm -fr richards_hydrostatic_equalibrium.out
 	@rm -fr core.*
-	@rm -fr samrai_grid.tmp.tcl
-	@rm -f samrai_grid2D.tmp.tcl
-	@rm -fr LW_var_dz_spinup.out
-	@rm -fr default_single.out
 	@rm -f *.nc
 	@rm -f *.pfmetadata
 	@rm -f *.etrace
 	@rm -f Flow_Barrier_X.sa Flow_Barrier_Y.sa
+	@rm -f clm_para_out.dat.0
+	@rm -f *.yaml
+	@rm -f drv_vegm.dat clm_out.txt.0 clm_output.txt.0 drv_clmin.dat drv_vegm.alluv.dat drv_vegp.dat
 

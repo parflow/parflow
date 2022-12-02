@@ -11,6 +11,9 @@ include $(PARFLOW_DIR)/config/Makefile.config
 clean: testclean
 
 testclean:
+	@rm -f *.pfb*
+	@rm -f *.pfidb
+	@rm -f *.out.txt
 	@rm -f global_nt.scr
 	@rm -f clm_elog.txt.*
 	@rm -f washita.para.out.dat.*
@@ -36,6 +39,7 @@ testclean:
 	@rm -f *.silo*
 	@rm -f *.pfsb*
 	@rm -f *.log
+	@rm -f *.out.timing.csv	
 	@rm -f .hostfile
 	@rm -f .amps.*
 	@rm -f *.out.pftcl
@@ -51,7 +55,7 @@ testclean:
 	@rm -fr clm_varDZ_output.txt.*
 	@rm -fr clm_varDZ.out
 	@rm -f clm_varDZ.out.pftcl
-	@rm -f clm_varDZ_elog.txt.*
+	@rm -f clm_varDZ_elog.txt.*	
 	@rm -fr clm_slope_output.txt.*
 	@rm -fr clm_slope.out
 	@rm -f clm_slope.out.pftcl
@@ -61,5 +65,5 @@ testclean:
 	@rm -f clm_forc_veg.out.pftcl
 	@rm -f clm_forc_veg_elog.txt.*	
 	@rm -fr clm-reuse-ts-* swe.out.csv
-	@rm -f clm_restart.tcl
-	@rm -f swe.out.csv clm_restart.tcl
+	@rm -f *.pfmetadata
+	@rm -f clm_restart.tcl pfclm.rst.00000.0
