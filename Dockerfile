@@ -104,9 +104,9 @@ RUN curl "https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz" -o "silo
 # Hypre
 #
 WORKDIR /home/parflow
-RUN  wget -q https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz && \
-   tar xf v2.18.2.tar.gz && \
-   cd hypre-2.18.2/src && \
+RUN  wget -q https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz && \
+   tar xf v2.26.0.tar.gz && \
+   cd hypre-2.26.0/src && \
    ./configure --prefix=$PARFLOW_DIR && \
    make install && \
    cd ../.. && \
