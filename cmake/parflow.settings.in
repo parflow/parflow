@@ -1,0 +1,48 @@
+# ParFlow C Configuration Summary
+=================================
+
+# General
+---------
+ParFlow Version:	@PARFLOW_VERSION@
+Hostname:		@HOSTNAME@
+OS:			@CMAKE_SYSTEM@
+Build Directory: 	@CMAKE_CURRENT_BINARY_DIR@
+Install Prefix:         @CMAKE_INSTALL_PREFIX@
+
+# Compiling Options
+-------------------
+
+Build Type:		@CMAKE_BUILD_TYPE@
+
+C Compiler:		@CMAKE_C_COMPILER@
+CXX Compiler:		@CMAKE_CXX_COMPILER@
+Fortran Compiler:	@CMAKE_Fortran_COMPILER@
+
+C Flags:		@CMAKE_C_FLAGS@
+CXX Flags:		@CMAKE_CXX_FLAGS@
+Fortran Flags: 		@CMAKE_Fortran_FLAGS@
+
+# Features Enabled
+------------------
+AMPS Comm Layer:	@PARFLOW_AMPS_LAYER@
+AMPS Sequential IO:	@PARFLOW_AMPS_SEQUENTIAL_IO@
+SLURM Support:		@PARFLOW_HAVE_SLURM@
+
+CLM Support:		@PARFLOW_HAVE_CLM@
+Hypre Support:		@PARFLOW_HAVE_HYPRE@
+Sundials Support:	@PARFLOW_HAVE_SUNDIALS@
+
+Tcl Support:		@PARFLOW_HAVE_TCL@
+Python Support:		@PARFLOW_HAVE_PYTHON@
+
+Silo Support:		@PARFLOW_HAVE_SILO@
+NetCDF Suppport:	@PARFLOW_HAVE_NETCDF@
+HDF5 Support:		@PARFLOW_HAVE_HDF5@
+Zlib Support:		@PARFLOW_HAVE_ZLIB@
+SZlib Support:		@PARFLOW_HAVE_SZLIB@
+
+Backend: 		@PARFLOW_ACCELERATOR_BACKEND@
+OMP Support:		@PARFLOW_HAVE_OMP@
+Kokkos Support:		@PARFLOW_HAVE_KOKKOS@
+CUDA Support:		@PARFLOW_HAVE_CUDA@
+RMM Support:		@PARFLOW_HAVE_RMM@

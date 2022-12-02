@@ -132,6 +132,11 @@ message(STATUS "Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
 
 #-----------------------------------------------------------------------------
+# System information
+#-----------------------------------------------------------------------------
+cmake_host_system_information(RESULT HOSTNAME QUERY HOSTNAME)
+
+#-----------------------------------------------------------------------------
 # General project wide configuration
 #-----------------------------------------------------------------------------
 # TODO should get rid of non-prefix versions of flags; preprocessor flags should be in PARFLOW namespace
@@ -531,6 +536,7 @@ configure_file (cmake/pfversion.h.in include/pfversion.h)
 
 configure_file (cmake/Makefile.config.in config/Makefile.config)
 configure_file (cmake/pf-cmake-env.sh.in config/pf-cmake-env.sh)
+configure_file (cmake/parflow.settings.in config/parflow.settings)
 
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)
@@ -604,6 +610,7 @@ if (PARFLOW_ENABLE_PYTHON)
   find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
   set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
   set(PARFLOW_PYTHON_DEPENDS)
+  set(PARFLOW_HAVE_PYTHON)
 
   option(PARFLOW_PYTHON_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
   if (PARFLOW_PYTHON_VIRTUAL_ENV)
