@@ -8,7 +8,7 @@
 
 include $(PARFLOW_DIR)/config/Makefile.config
 
-SUBDIRS = clm washita/tcl_scripts
+SUBDIRS = clm new_features
 
 default: check
 
@@ -27,7 +27,6 @@ testclean:
 	@rm -f *.pfb*
 	@rm -f *.silo*
 	@rm -f *.pfsb*
-	@rm -f *.sa
 	@rm -f *.log
 	@rm -f *.out.timing.csv
 	@rm -f .hostfile
@@ -51,4 +50,5 @@ testclean:
 	@rm -f *.pfmetadata
 	@rm -f *.etrace
 	@rm -f Flow_Barrier_X.sa Flow_Barrier_Y.sa
-
+	@rm -f stats4.txt
+	@rm -fr test_output
