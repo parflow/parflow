@@ -303,9 +303,9 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -nv https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz
-          tar -xf v2.18.2.tar.gz
-          cd hypre-2.18.2/src
+          wget -nv https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
+          tar -xf v2.26.0.tar.gz
+          cd hypre-2.26.0/src
           ./configure --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
