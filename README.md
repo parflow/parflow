@@ -461,7 +461,7 @@ you will need to modify the 'Dockerfile' file.
 .\bin\docker-build.bat
 ```
 
-## Building the Docker image with CMake (expirmental)
+## Building the Docker image with CMake (expirmental not supported)
 
 Rather than building ParFlow on your computer, you can use the build
 system to create a container and build ParFlow in it.

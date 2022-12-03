@@ -127,7 +127,7 @@ RUN git clone -b master --single-branch https://github.com/parflow/parflow.git p
 
 RUN mkdir -p build && \
     cd build && \
-    LDFLAGS="-lcurl" cmake ../parflow \
+    cmake ../parflow \
        -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
        -DHYPRE_ROOT=$PARFLOW_DIR \
@@ -136,6 +136,9 @@ RUN mkdir -p build && \
        -DPARFLOW_ENABLE_NETCDF=TRUE \
        -DPARFLOW_ENABLE_TIMING=TRUE \
        -DPARFLOW_HAVE_CLM=TRUE \
+       -DPARFLOW_ENABLE_PYTHON=TRUE \
+       -DPARFLOW_PYTHON_VIRTUAL_ENV=ON \
+       -DCURL_LIBRARY=/usr/lib/x86_64-linux-gnu/libcurl.so.4 \
        -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR && \
      make install && \
      cd .. && \
