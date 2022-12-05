@@ -123,7 +123,8 @@ ENV HWLOC_HIDE_ERRORS "2"
 
 WORKDIR /home/parflow
 
-RUN git clone -b master --single-branch https://github.com/parflow/parflow.git parflow
+#RUN git clone -b master --single-branch https://github.com/parflow/parflow.git parflow
+RUN git clone -b docker-update --single-branch https://github.com/parflow/parflow.git parflow
 
 RUN mkdir -p build && \
     cd build && \
