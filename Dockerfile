@@ -146,5 +146,5 @@ RUN mkdir -p build && \
 
 WORKDIR /data
 
-ENTRYPOINT ["tclsh"]
+ENTRYPOINT ["pfrun"]
 
