@@ -1,6 +1,5 @@
 name: ParFlow CI Test
 
-
 on: [push, pull_request]
 
 jobs:
@@ -187,9 +186,10 @@ jobs:
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           sudo apt install -qq -y autoconf automake libtool
-          wget -nv https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz
-          tar -xf ucx-1.8.0.tar.gz
-          cd ucx-1.8.0
+	  URL=https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz
+	  mkdir ucx
+	  cd ucx
+  	  curl -L $URL | tar --strip-components=1 -xzv
           ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --disable-numa --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
@@ -213,10 +213,12 @@ jobs:
       if: matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -nv https://github.com/kokkos/kokkos/archive/refs/tags/3.3.01.tar.gz
-          tar -xf 3.3.01.tar.gz
-          cd kokkos-3.3.01
-          mkdir build && cd build
+  	  URL=https://github.com/kokkos/kokkos/archive/refs/tags/3.3.01.tar.gz
+	  mkdir kokkos
+	  cd kokkos
+  	  curl -L $URL | tar --strip-components=1 -xzv
+          mkdir build
+	  cd build
           cmake .. -DCMAKE_CXX_COMPILER=$(pwd)/../bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DKokkos_ENABLE_CUDA=On -DKokkos_ENABLE_CUDA_LAMBDA=On -DKokkos_ENABLE_CUDA_UVM=On -DKokkos_ARCH_VOLTA70=On
           make -j 2 install
         fi
@@ -228,9 +230,10 @@ jobs:
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -nv https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz
-          tar -xf openmpi-4.0.3.tar.gz
-          cd openmpi-4.0.3
+	  URL=https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz
+	  mkdir openmpi
+          cd openmpi
+  	  curl -L $URL | tar --strip-components=1 -xzv	
           ./configure --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DEP_DIR --prefix=$PARFLOW_DEP_DIR
           sudo make -j 2 install
           cd ..
@@ -246,22 +249,22 @@ jobs:
       if: matrix.config.netcdf == 'true'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -q https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
-          tar -xf v4.9.0.tar.gz
-          cd netcdf-c-4.9.0
+	  URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+	  mkdir netcdf-c
+	  cd netcdf-c
+  	  curl -L $URL | tar --strip-components=1 -xzv
           CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
           cd ..
-          rm v4.9.0.tar.gz
-          wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
-          tar -xf v4.5.4.tar.gz
-          cd netcdf-fortran-4.5.4
+
+	  URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+	  mkdir netcdf-fortran
+	  cd netcdf-fortran
+  	  curl -L $URL | tar --strip-components=1 -xzv
           CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
           make
           make install
-          cd ..
-          rm v4.5.4.tar.gz
         fi
         echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
 
@@ -289,11 +292,10 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          # wget -nv https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
-          # Use mirror for reliablity
-          wget -nv https://raw.githubusercontent.com/parflow/parflow-dependencies/master/silo-4.10.2.tar.gz
-          tar -xf silo-4.10.2.tar.gz
-          cd silo-4.10.2
+	  URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.tar.gz
+	  mkdir silo
+	  cd silo
+	  curl -L $URL | tar --strip-components=1 -xzv
           ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
@@ -303,9 +305,11 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -nv https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
-          tar -xf v2.26.0.tar.gz
-          cd hypre-2.26.0/src
+	  URL=https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
+	  mkdir hypre
+	  cd hypre
+	  curl -L $URL | tar --strip-components=1 -xzv
+	  cd src
           ./configure --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
