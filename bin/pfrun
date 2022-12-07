@@ -22,7 +22,7 @@ set -o pipefail  # Causes a pipeline to return the exit status of the last comma
 #-----------------------------------------------------------------------------
 # Program usage 
 #-----------------------------------------------------------------------------
-usage () {
+function usage () {
   cat << EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [-h] [-v] [-f] -p param_value arg1 [arg2...]
 
@@ -33,13 +33,11 @@ Available options:
 	  -h, --help      Print this help and exit
 	  -v, --verbose   Verbose output
 	  --debug         Show each shell command as it is executed, warning very verbose
-	  -f, --flag      A flag
-	  -p, --param     Option with parameter
 EOF
   exit
 }
 
-init_colors() {
+function init_colors() {
   if [[ -t 2 ]] && [[ -z "${NO_COLOR-}" ]] && [[ "${TERM-}" != "dumb" ]]; then
     NOFORMAT='\033[0m' RED='\033[0;31m' GREEN='\033[0;32m' ORANGE='\033[0;33m' BLUE='\033[0;34m' PURPLE='\033[0;35m' CYAN='\033[0;36m' YELLOW='\033[1;33m'
   else
@@ -50,8 +48,8 @@ init_colors() {
 #=============================================================================
 # Logging
 #=============================================================================
-log () {
-   if [ $VERBOSE -eq 1 ]
+function log () {
+   if [ ${VERBOSE} -eq 1 ]
    then
       echo -e "$@"
    fi
@@ -60,7 +58,7 @@ log () {
 #=============================================================================
 # Error
 #=============================================================================
-error () {
+function error () {
    echo >&2 -e "$@"
    exit -1
 }
@@ -68,20 +66,20 @@ error () {
 #=============================================================================
 # Parse users arguments
 #=============================================================================
-# Default arguments 
-FLAG=0
-PARAM=''
-VERBOSE=0
+function parse_arguments () {
+   # Default arguments 
+   VERBOSE=0
+   NO_COLOR=0
 
-while :; do
-   case "${1-}" in
-      -h | --help)
-	 usage ;;
-      -v | --verbose)
-	 VERBOSE=1
-	 ;;
-      --debug)
-	 set -x  # Show each command
+   while :; do
+      case "${1-}" in
+	 -h | --help)
+	    usage ;;
+	 -v | --verbose)
+	    VERBOSE=1
+	    ;;
+	 --debug)
+	    set -x  # Show each command
 	 ;;
       --no-color)
 	 NO_COLOR=1
@@ -92,29 +90,38 @@ while :; do
       *)
 	 break
 	 ;;
-   esac
+      esac
+      shift
+   done
+
+   args=("$@")
+
+   # check required params and arguments
+   [[ ${#args[@]} -lt 1 ]] && error "Missing name of Python or TCL script to execute"
+
+   script_filename=${args[0]}
    shift
-done
+   
+   echo "$@"
 
-args=("$@")
+   args=("$@")
 
-# check required params and arguments
-[[ ${#args[@]} -lt 1 ]] && error "Missing name of Python or TCL script to execute"
+   init_colors
+}
 
-init_colors
+parse_arguments "$@"
 
-file=$1
-ext="${file##*.}"
+ext="${script_filename##*.}"
 
-log "Running $@"
+log "Running ${script_filename} ${args[@]}"
 
-case $ext in
+case ${ext} in
    tcl)
-      tclsh $@
+      tclsh "${script_filename}" "${args[@]}"
       ;;
 
    py)
-      pfpython $@
+      pfpython "${script_filename}" "${args[@]}"
       ;;
    *)
       error "Error <$file> is not a TCL or Python script"
