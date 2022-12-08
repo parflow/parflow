@@ -580,6 +580,11 @@ install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
 install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
 
 #-----------------------------------------------------------------------------
+# Install general helper scripts
+#-----------------------------------------------------------------------------
+install(PROGRAMS bin/pfrun DESTINATION bin)
+
+#-----------------------------------------------------------------------------
 # Doxygen
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_DOXYGEN "Enable Doxygen and building of code documentation" "OFF")
