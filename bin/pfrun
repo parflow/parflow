@@ -102,8 +102,6 @@ function parse_arguments () {
    script_filename=${args[0]}
    shift
    
-   echo "$@"
-
    args=("$@")
 
    init_colors
