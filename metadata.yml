@@ -1,9 +1,11 @@
 ---
 code_id: 58218
+site_ownership_code: "LLNL"
 open_source: true
-repository_link: "https://github.com/parflow/parflow"
-accessibility: "OS"
+repository_link: "https://github.com/parflow/parflow/releases/tag/v3.8.0"
+project_type: "OS"
 software_type: "S"
+official_use_only: {}
 developers:
 - email: ""
   orcid: ""
@@ -223,12 +225,16 @@ sponsoring_organizations:
   DOE: true
 contributing_organizations: []
 research_organizations: []
-related_identifiers: []
-award_dois: []
+related_identifiers:
+- identifier_type: "DOI"
+  identifier_value: "10.5281/zenodo.6413322"
+  relation_type: "IsPreviousVersionOf"
+  source: "AutoBackfill"
+change_log: []
 release_date: "2021-05-27"
 software_title: "ParFlow"
 acronym: "parflow"
-doi: "10.5281/zenodo.4816885"
+doi: "https://doi.org/10.5281/zenodo.4816885"
 description: "ParFlow is an open-source, modular, parallel watershed flow model. It\
   \ includes fully-integrated overland flow, the ability to simulate complex topography,\
   \ geology and heterogeneity and coupled land-surface processes including the land-energy\
@@ -245,13 +251,15 @@ programming_languages:
 version_number: "3.8.0"
 documentation_url: "https://www.parflow.org"
 country_of_origin: "United States"
+project_keywords: []
 licenses:
 - "GNU Lesser General Public License v2.1"
 recipient_org: "LLNL"
 site_accession_number: "CODE-OCEC-08-103"
 date_record_added: "2021-06-02"
-date_record_updated: "2021-06-25"
+date_record_updated: "2021-06-29"
 links:
 - rel: "citation"
   href: "https://www.osti.gov/doecode/biblio/58218"
-is_migration: false
+is_file_certified: false
+is_limited: false
