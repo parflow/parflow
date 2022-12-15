@@ -16,6 +16,18 @@ if((${PARFLOW_AMPS_LAYER} STREQUAL "mpi1") OR (${PARFLOW_AMPS_LAYER} STREQUAL "c
   set(PARALLEL_TESTS richards.plinear.tcl)
 endif()
 
+if(${PARFLOW_HAVE_OAS3})
+  # Exclude tests that use Richards solver
+  list(REMOVE_ITEM TESTS 
+    cond.tcl
+    default_richards.tcl
+    forsyth2.tcl
+    forsyth5.tcl
+    test_X3Y2PlusSinXYPlus1.tcl
+    test_X.tcl
+    test_XYZTPlus1.tcl)
+endif()
+
 foreach(inputfile ${TESTS})
   pf_add_sequential_test(${inputfile})
 endforeach()

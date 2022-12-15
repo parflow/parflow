@@ -202,8 +202,6 @@ void     WriteSiloInit(char *file_prefix)
   
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
-  int i;
-  int j;
 
   char key[IDB_MAX_KEY_LEN];
 
@@ -228,20 +226,24 @@ void     WriteSiloInit(char *file_prefix)
   char *switch_name = GetStringDefault(key, "PDB");
   NameArray type_na = NA_NewNameArray("PDB HDF5");
 
-  switch (NA_NameToIndex(type_na, switch_name))
+  switch (NA_NameToIndexExitOnError(type_na, switch_name, key))
   {
     case 0:
+    {
       s_parflow_silo_filetype = DB_PDB;
       break;
+    }
 
     case 1:
+    {
       s_parflow_silo_filetype = DB_HDF5;
       break;
+    }
 
     default:
-      amps_Printf("Error: invalid SILO.Filetype %s\n", switch_name);
-      exit(1);
-      break;
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
   }
 
   NA_FreeNameArray(type_na);
@@ -265,8 +267,9 @@ void     WriteSiloInit(char *file_prefix)
                              "mannings",
                              "specific_storage",
                              "mask",
-                             "dz_mult",             // IMF -- added...
-                             "top",                 // IMF -- added...
+                             "dz_mult",
+			     "top_zindex",
+			     "top_patch",
                              "eflx_lh_tot",
                              "eflx_lwrad_out",
                              "eflx_sh_tot",
@@ -285,15 +288,15 @@ void     WriteSiloInit(char *file_prefix)
                              "evaptrans",
                              "evaptranssum",
                              "overlandsum",
-                             "overland_bc_flux", };
+                             "overland_bc_flux",
+                             0};
 
-    // IMF -- added second '+2' to next line...
-    for (i = 0; i < 31 + 2; i++)
+    for(int i = 0; output_types[i]; i++)
     {
       sprintf(filename, "%s/%s", file_prefix, output_types[i]);
       pf_mk_dir(filename);
 
-      for (j = 0; j < P; j++)
+      for (int j = 0; j < P; j++)
       {
         sprintf(filename, "%s/%s/%06u", file_prefix, output_types[i], j);
         pf_mk_dir(filename);

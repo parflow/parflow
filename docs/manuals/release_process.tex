@@ -32,20 +32,12 @@ running account of release information.
 
 Edit VERSION file with current version.
 
+Edit \code{./docs/manuals/conf.py} and insert the current date
+into the subtitle.
+
 \section{Regenerate the \parflow{} User Manual}
 
-The repository contains a PDF of the User Manaul.  This should be
-regenerated for the release so it is up-to-date.  This step requires
-a Latex install to perform.
-
-\begin{display}\begin{verbatim}
-  cd <directory with ParFlow source>
-  mkdir build
-  cd build
-  cmake -DPARFLOW_ENABLE_LATEX=TRUE ../parflow/
-  make
-  cp ./docs/manuals/user_manual.pdf ../parflow/
-\end{verbatim}\end{display}
+This should be automated by ReadTheDocs.
   
 \section{Commit release file changes}
 
@@ -69,3 +61,10 @@ Version tag should have format of ``vX.Z.Z'' version.  Release title
 should have format of ``ParFlow Version X.Y.Z''.  The GitHub release
 description can be copied from the release notes markdown file that
 was created in a proir step.
+
+\section{Generate Docker}
+
+\begin{display}\begin{verbatim}
+  docker build -t <hub-user>/<repo-name>[:<tag>]
+  docker push <hub-user>/<repo-name>:<tag>
+\end{verbatim}\end{display}

@@ -126,14 +126,7 @@ PFModule   *DomainNewPublicXtra()
   public_xtra = ctalloc(PublicXtra, 1);
 
   geom_name = GetString("Domain.GeomName");
-  public_xtra->geom_index = NA_NameToIndex(GlobalsGeomNames, geom_name);
-
-  if (public_xtra->geom_index < 0)
-  {
-    InputError("Error: invalid geometry name <%s> for key <%s>\n",
-               geom_name, "Domain.GeomName");
-  }
-
+  public_xtra->geom_index = NA_NameToIndexExitOnError(GlobalsGeomNames, geom_name, "Domain.GeomName");
 
   PFModulePublicXtra(this_module) = public_xtra;
   return this_module;

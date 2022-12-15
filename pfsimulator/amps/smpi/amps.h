@@ -143,13 +143,13 @@
  *
  * @memo Global communication context
  */
-#define amps_CommWorld MPI_COMM_WORLD
+extern MPI_Comm amps_CommWorld;
 
 /* Communicators for I/O */
 extern MPI_Comm amps_CommNode;
 extern MPI_Comm amps_CommWrite;
 
-/* Global ranks and size of MPI_COMM_WORLD*/
+/* Global ranks and size of amps_CommWorld */
 extern int amps_rank;
 extern int amps_size;
 

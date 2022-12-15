@@ -32,7 +32,7 @@ if (${PARFLOW_HAVE_SILO})
 endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_link_libraries (parflow ${NETCDF_LIBRARIES})
+  target_link_libraries (parflow ${NetCDF_LIBRARIES})
 
   target_link_libraries (parflow ${CURL_LIBRARIES})
 endif (${PARFLOW_HAVE_NETCDF})

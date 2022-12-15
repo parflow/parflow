@@ -8,27 +8,6 @@
 
 include $(PARFLOW_DIR)/config/Makefile.config
 
-default: check
-
-TESTS := \
-
-ifeq (${PARFLOW_HAVE_CLM},yes)
-ifeq (${PARFLOW_HAVE_HYPRE},yes)
-TESTS += clm-reuse.tcl
-endif
-endif
-
-check: check_sequential
-
-check_sequential:
-	@-for i in $(TESTS); \
-	do \
-	        make --no-print-directory testclean; \
-		echo "*****************************************************************************"; \
-		echo "Running $$i on 1 1 1"; \
-		tclsh $$i 1 1 1; \
-	done
-
 clean: testclean
 
 testclean:
@@ -74,11 +53,13 @@ testclean:
 	@rm -f clm_varDZ.out.pftcl
 	@rm -f clm_varDZ_elog.txt.*
 	@rm -fr clm_slope_output.txt.*
-        @rm -fr clm_slope.out
-        @rm -f clm_slope.out.pftcl
-        @rm -f clm_slope_elog.txt.*
+	@rm -fr clm_slope.out
+	@rm -f clm_slope.out.pftcl
+	@rm -f clm_slope_elog.txt.*
 	@rm -fr clm_forc_veg_output.txt.*
 	@rm -fr clm_forc_veg.out
 	@rm -f clm_forc_veg.out.pftcl
 	@rm -f clm_forc_veg_elog.txt.*	
 	@rm -fr clm-reuse-ts-* swe.out.csv
+	@rm -f clm_restart.tcl
+	@rm -f swe.out.csv clm_restart.tcl

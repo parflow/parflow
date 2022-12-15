@@ -279,10 +279,8 @@ PFModule  *PFMGNewPublicXtra(char *name)
   char key[IDB_MAX_KEY_LEN];
   char          *smoother_name;
   NameArray smoother_switch_na;
-  int smoother;
   char          *raptype_name;
   NameArray raptype_switch_na;
-  int raptype;
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -300,35 +298,16 @@ PFModule  *PFMGNewPublicXtra(char *name)
   smoother_switch_na = NA_NewNameArray("Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
   sprintf(key, "%s.Smoother", name);
   smoother_name = GetStringDefault(key, "RBGaussSeidelNonSymmetric");
-  smoother = NA_NameToIndex(smoother_switch_na, smoother_name);
-  if (smoother >= 0)
-  {
-    public_xtra->smoother = NA_NameToIndex(smoother_switch_na,
-                                           smoother_name);
-  }
-  else
-  {
-    InputError("Error: Invalid value <%s> for key <%s>.\n",
-               smoother_name, key);
-  }
+  public_xtra->smoother = NA_NameToIndexExitOnError(smoother_switch_na, smoother_name, key);
   NA_FreeNameArray(smoother_switch_na);
 
   raptype_switch_na = NA_NewNameArray("Galerkin NonGalerkin");
   sprintf(key, "%s.RAPType", name);
   raptype_name = GetStringDefault(key, "NonGalerkin");
-  raptype = NA_NameToIndex(raptype_switch_na, raptype_name);
-  if (raptype >= 0)
-  {
-    public_xtra->raptype = raptype;
-  }
-  else
-  {
-    InputError("Error: Invalid value <%s> for key <%s>.\n",
-               raptype_name, key);
-  }
+  public_xtra->raptype = NA_NameToIndexExitOnError(raptype_switch_na, raptype_name, key);
   NA_FreeNameArray(raptype_switch_na);
 
-  if (raptype == 0 && smoother > 1)
+  if (public_xtra->raptype == 0 && public_xtra->smoother  > 1)
   {
     InputError("Error: Galerkin RAPType is not compatible with Smoother <%s>.\n",
                smoother_name, key);

@@ -299,14 +299,8 @@ PFModule   *dzScaleNewPublicXtra()
   name = "Solver.Nonlinear.VariableDz";
   switch_na = NA_NewNameArray("False True");
   switch_name = GetStringDefault(name, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, name);
   NA_FreeNameArray(switch_na);
-
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
 
   public_xtra->variable_dz = switch_value;
   if (public_xtra->variable_dz == 1)
@@ -314,7 +308,7 @@ PFModule   *dzScaleNewPublicXtra()
     name = "dzScale.Type";
     switch_na = NA_NewNameArray("Constant PFBFile nzList");
     switch_name = GetString(name);
-    public_xtra->type = NA_NameToIndex(switch_na, switch_name);
+    public_xtra->type = NA_NameToIndexExitOnError(switch_na, switch_name, name);
     NA_FreeNameArray(switch_na);
 
     name = "dzScale.GeomNames";

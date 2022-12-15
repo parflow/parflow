@@ -446,8 +446,7 @@ PFModule   *ThermalConductivityNewPublicXtra()
   public_xtra = ctalloc(PublicXtra, 1);
 
   switch_name = GetString("Phase.ThermalConductivity.Type");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
-
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "Phase.ThermalConductivity.Type");
 
   switch_name = GetString("Phase.ThermalConductivity.GeomNames");
   public_xtra->regions = NA_NewNameArray(switch_name);

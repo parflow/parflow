@@ -9,7 +9,6 @@ amps_invoice.o: amps_invoice.c amps.h amps_proto.h
 amps_irecv.o: amps_irecv.c amps.h amps_proto.h
 amps_newpackage.o: amps_newpackage.c amps.h amps_proto.h
 amps_pack.o: amps_pack.c amps.h amps_proto.h
-amps_print.o: amps_print.c amps.h amps_proto.h
 amps_recv.o: amps_recv.c amps.h amps_proto.h
 amps_send.o: amps_send.c amps.h amps_proto.h
 amps_sizeofinvoice.o: amps_sizeofinvoice.c amps.h amps_proto.h

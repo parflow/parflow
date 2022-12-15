@@ -26,7 +26,7 @@ def map_to_self(pfdb_obj):
 def map_to_child(name):
     """Helper function that return a function for extracting a field name
     """
-    return lambda pfdb_obj: getattr(pfdb_obj, name, None)
+    return lambda pfdb_obj: pfdb_obj.__getitem__(name)
 
 # -----------------------------------------------------------------------------
 
@@ -36,6 +36,13 @@ def map_to_children_of_type(class_name):
     of a given type (class_name).
     """
     return lambda pfdb_obj: pfdb_obj.get_children_of_type(class_name)
+
+# -----------------------------------------------------------------------------
+# Filter helpers
+# -----------------------------------------------------------------------------
+
+def filter_none(x):
+    return x is not None
 
 # -----------------------------------------------------------------------------
 # Key dictionary helpers

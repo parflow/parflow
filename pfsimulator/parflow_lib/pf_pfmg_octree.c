@@ -1090,8 +1090,6 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
 
   NameArray smoother_switch_na;
 
-  int smoother;
-
   public_xtra = ctalloc(PublicXtra, 1);
 
   sprintf(key, "%s.MaxIter", name);
@@ -1106,22 +1104,10 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
   sprintf(key, "%s.BoxSizePowerOf2", name);
   public_xtra->box_size_power = GetIntDefault(key, 4);
 
-  /* Use a dummy place holder so that cardinalities match
-   * with what HYPRE expects */
-  smoother_switch_na = NA_NewNameArray("Dummy Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
+  smoother_switch_na = NA_NewNameArray("Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
   sprintf(key, "%s.Smoother", name);
   smoother_name = GetStringDefault(key, "RBGaussSeidelNonSymmetric");
-  smoother = NA_NameToIndex(smoother_switch_na, smoother_name);
-  if (smoother != 0)
-  {
-    public_xtra->smoother = NA_NameToIndex(smoother_switch_na,
-                                           smoother_name) - 1;
-  }
-  else
-  {
-    InputError("Error: Invalid value <%s> for key <%s>.\n",
-               smoother_name, key);
-  }
+  public_xtra -> smoother = NA_NameToIndexExitOnError(smoother_switch_na, smoother_name, key);
   NA_FreeNameArray(smoother_switch_na);
 
   public_xtra->time_index_pfmg = RegisterTiming("PFMGOctree");

@@ -19,15 +19,15 @@ assert run.Geom.Porosity.select('.')[0] is porosity
 assert porosity.select('.')[0] is porosity
 assert porosity.select()[0] is porosity
 assert porosity.select('..')[0] is run.Geom
-assert porosity.select('GeomNames')[0] is porosity.GeomNames
-assert porosity.select('./GeomNames')[0] is porosity.GeomNames
-assert run.Geom.select('Porosity/GeomNames')[0] is porosity.GeomNames
+assert porosity.select('GeomNames') == porosity.GeomNames
+assert porosity.select('./GeomNames') == porosity.GeomNames
+assert run.Geom.select('Porosity/GeomNames') == porosity.GeomNames
 assert porosity.select('/')[0] is run
 assert porosity.select('/Geom')[0] is run.Geom
 assert porosity.select('/Geom/Porosity')[0] is porosity
 assert porosity.select('../../Solver/../Geom/./Porosity/..')[0] is run.Geom
 assert porosity.select('../..')[0] is run
-assert run.Geom.select('.Porosity.GeomNames')[0] is porosity.GeomNames
+assert run.Geom.select('.Porosity.GeomNames') == porosity.GeomNames
 
 # value() tests
 background = run.Geom.background

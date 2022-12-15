@@ -34,7 +34,7 @@ int dest;
 char *buffer;
 int size;
 {
-  MPI_Send(buffer, size, MPI_BYTE, dest, 0, MPI_COMM_WORLD);
+  MPI_Send(buffer, size, MPI_BYTE, dest, 0, amps_CommWorld);
 
   return 0;
 }
@@ -92,7 +92,7 @@ int amps_Send(amps_Comm comm, int dest, amps_Invoice invoice)
  * amps_Printf("amps_Send: %d bytes to node %d from buffer %x\n", size, dest, buffer);
  */
 
-  MPI_Send(buffer, size, MPI_BYTE, dest, 0, MPI_COMM_WORLD);
+  MPI_Send(buffer, size, MPI_BYTE, dest, 0, amps_CommWorld);
 
   amps_ClearInvoice(invoice);
 

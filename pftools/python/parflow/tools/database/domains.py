@@ -179,7 +179,7 @@ class EnumDomain:
 
     The expected keyword argument is a list of the accepted values.
     """
-    def validate(self, value, enum_list=[], pf_version=None, **kwargs):
+    def validate(self, value, enum_list=[], location='', locations=[], container=None,  pf_version=None, **kwargs):
         errors = []
 
         if value is None:
@@ -190,7 +190,7 @@ class EnumDomain:
 
         lookup_list = []
         if isinstance(enum_list, list):
-            lookup_list = enum_list
+            lookup_list.extend(enum_list)
 
         if isinstance(enum_list, dict):
             # We need to find the matching version
@@ -205,9 +205,22 @@ class EnumDomain:
 
             lookup_list = enum_list[version_to_use[1]]
 
-        if value not in lookup_list:
-            str_list = ', '.join(lookup_list)
-            errors.append(error(f'{value} must be one of [{str_list}]'))
+        if location:
+            lookup_list.extend(container.select(location))
+
+        if locations:
+            for location in locations:
+                lookup_list.extend(container.select(location))
+
+        if isinstance(value, list):
+            for v in value:
+                if v not in lookup_list:
+                    str_list = ', '.join(lookup_list)
+                    errors.append(error(f'{v} must be one of [{str_list}]'))
+        else: 
+            if value not in lookup_list:
+                str_list = ', '.join(lookup_list)
+                errors.append(error(f'{value} must be one of [{str_list}]'))
 
         return errors
 

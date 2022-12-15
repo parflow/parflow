@@ -7,7 +7,7 @@ from parflow import Run
 from parflow.tools.builders import VegParamBuilder
 from parflow.tools.export import CLMExporter
 from parflow.tools.fs import get_absolute_path
-from parflow.tools.io import read_clm, write_array
+from parflow.tools.io import read_clm, write_pfb
 
 clm = Run("clm", __file__)
 
@@ -65,7 +65,7 @@ clm.Solver.CLM.Vegetation.Map.LandFrac.forest_en.Value = 0.0
 forest_eb_mat = np.zeros((clm.ComputationalGrid.NX, clm.ComputationalGrid.NY))
 forest_eb_mat[1, :] = 1.0
 file_name = 'forest_eb_mat.pfb'
-write_array(get_absolute_path(file_name), forest_eb_mat)
+write_pfb(get_absolute_path(file_name), forest_eb_mat)
 
 clm.Solver.CLM.Vegetation.Map.LandFrac.forest_eb.Type = 'PFBFile'
 clm.Solver.CLM.Vegetation.Map.LandFrac.forest_eb.FileName = file_name
