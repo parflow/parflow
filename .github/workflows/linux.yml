@@ -56,28 +56,28 @@ jobs:
             netcdf: "true"
           }
 
-	# Ubuntu 18.04 is being deprecated on GitHub and support has been disabled.  Currently subject to brownouts so
-	# disabling.  See https://github.com/actions/runner-images/issues/6002
-        # - {
-        #     name: "Ubuntu 18.04 CUDA Build",
-        #     os: ubuntu-18.04,
-        #     cc: "gcc", cxx: "g++",
-        #     python: "false",
-        #     backend: "cuda",
-        #     cudaos: 'ubuntu1804',
-        #     amps_layer: mpi1,
-        #     netcdf: "false"
-        #   }
-        # - {
-        #     name: "Ubuntu 18.04 Kokkos Build",
-        #     os: ubuntu-18.04,
-        #     cc: "gcc", cxx: "g++",
-        #     python: "false",
-        #     backend: "kokkos",
-        #     cudaos: 'ubuntu1804',
-        #     amps_layer: mpi1,
-        #     netcdf: "false"
-        #   }
+# Ubuntu 18.04 is being deprecated on GitHub and support has been disabled.  Currently subject to brownouts so
+# disabling.  See https://github.com/actions/runner-images/issues/6002
+# - {
+#     name: "Ubuntu 18.04 CUDA Build",
+#     os: ubuntu-18.04,
+#     cc: "gcc", cxx: "g++",
+#     python: "false",
+#     backend: "cuda",
+#     cudaos: 'ubuntu1804',
+#     amps_layer: mpi1,
+#     netcdf: "false"
+#   }
+# - {
+#     name: "Ubuntu 18.04 Kokkos Build",
+#     os: ubuntu-18.04,
+#     cc: "gcc", cxx: "g++",
+#     python: "false",
+#     backend: "kokkos",
+#     cudaos: 'ubuntu1804',
+#     amps_layer: mpi1,
+#     netcdf: "false"
+#   }
 
     steps:
     - uses: actions/checkout@v2
