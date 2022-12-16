@@ -11,7 +11,52 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu 18.04 CUDA Build",
+            name: "Ubuntu 22.04",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true"
+          }
+        - {
+            name: "Ubuntu 22.04 Python",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true"
+          }
+        - {
+            name: "Ubuntu 20.04 Python",
+            os: ubuntu-20.04,
+            cudaos: 'ubuntu2004',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 22.04 OMP",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            python: "false",
+            backend: "omp",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 20.04 OASIS3-MCT Build",
+            os: ubuntu-20.04,
+            cudaos: 'ubuntu2004',
+            python: "false",
+            backend: "omp",
+            amps_layer: oas3,
+            netcdf: "true"
+          }
+        - {
+            name: "Ubuntu 22.04 CUDA Build",
             os: ubuntu-22.04,
             cc: "gcc", cxx: "g++",
             python: "false",
@@ -21,8 +66,21 @@ jobs:
             netcdf: "false"
           }
 
+# Ubuntu 18.04 is being deprecated on GitHub and support has been disabled.  Currently subject to brownouts so
+# disabling.  See https://github.com/actions/runner-images/issues/6002
+# - {
+#     name: "Ubuntu 18.04 Kokkos Build",
+#     os: ubuntu-18.04,
+#     cc: "gcc", cxx: "g++",
+#     python: "false",
+#     backend: "kokkos",
+#     cudaos: 'ubuntu1804',
+#     amps_layer: mpi1,
+#     netcdf: "false"
+#   }
+
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Package Install 22.04
       if: matrix.config.os == 'ubuntu-22.04'
@@ -63,7 +121,7 @@ jobs:
 # settings for the project (using date-timestamp for secret).
 
     - name: Cache dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: cache-parflow-dependencies
       env:
         cache-name: cache-parflow-dependencies
@@ -109,7 +167,9 @@ jobs:
     - name: CUDA Install
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
-        CUDA_SHORT=11.8
+        export CUDA_VERSION_MAJOR_MINOR=11.8.0
+	export CUDA_SHORT=11.8
+	export CUDA_OS=${{ matrix.config.cudaos }}
         ./install-cuda.sh
         export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
         echo "CUDA_HOME=${CUDA_HOME}" >> $GITHUB_ENV

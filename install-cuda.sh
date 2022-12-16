@@ -48,24 +48,18 @@ function version_lt() {
 
 # Get the cuda version from the environment as $cuda.
 # CUDA_VERSION_MAJOR_MINOR=${cuda}
-CUDA_VERSION_MAJOR_MINOR=11.8.0
 
 # Split the version.
 # We (might/probably) don't know PATCH at this point - it depends which version gets installed.
 CUDA_MAJOR=$(echo "${CUDA_VERSION_MAJOR_MINOR}" | cut -d. -f1)
 CUDA_MINOR=$(echo "${CUDA_VERSION_MAJOR_MINOR}" | cut -d. -f2)
 CUDA_PATCH=$(echo "${CUDA_VERSION_MAJOR_MINOR}" | cut -d. -f3)
-# use lsb_release to find the OS.
-UBUNTU_VERSION=$(lsb_release -sr)
-UBUNTU_VERSION="${UBUNTU_VERSION//.}"
-
-UBUNTU_VERSION=2204
 
 echo "CUDA_MAJOR: ${CUDA_MAJOR}"
 echo "CUDA_MINOR: ${CUDA_MINOR}"
 echo "CUDA_PATCH: ${CUDA_PATCH}"
-# echo "UBUNTU_NAME: ${UBUNTU_NAME}"
-echo "UBUNTU_VERSION: ${UBUNTU_VERSION}"
+
+echo "CUDA_OS: ${CUDA_OS}"
 
 # If we don't know the CUDA_MAJOR or MINOR, error.
 if [ -z "${CUDA_MAJOR}" ] ; then
@@ -76,12 +70,6 @@ if [ -z "${CUDA_MINOR}" ] ; then
     echo "Error: Unknown CUDA Minor version. Aborting."
     exit 1
 fi
-# If we don't know the Ubuntu version, error.
-if [ -z ${UBUNTU_VERSION} ]; then
-    echo "Error: Unknown Ubuntu version. Aborting."
-    exit 1
-fi
-
 
 ## -------------------------------
 ## Select CUDA packages to install
@@ -121,12 +109,12 @@ echo "CUDA_PACKAGES ${CUDA_PACKAGES}"
 ## Prepare to install
 ## -----------------
 CPU_ARCH="x86_64"
-PIN_FILENAME="cuda-ubuntu${UBUNTU_VERSION}.pin"
-PIN_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/${CPU_ARCH}/${PIN_FILENAME}"
+PIN_FILENAME="cuda-${CUDA_OS}.pin"
+PIN_URL="https://developer.download.nvidia.com/compute/cuda/repos/${CUDA_OS}/${CPU_ARCH}/${PIN_FILENAME}"
 # apt keyring package now available https://developer.nvidia.com/blog/updating-the-cuda-linux-gpg-repository-key/
 KERYRING_PACKAGE_FILENAME="cuda-keyring_1.0-1_all.deb"
-KEYRING_PACKAGE_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/${CPU_ARCH}/${KERYRING_PACKAGE_FILENAME}"
-REPO_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/${CPU_ARCH}/"
+KEYRING_PACKAGE_URL="https://developer.download.nvidia.com/compute/cuda/repos/${CUDA_OS}/${CPU_ARCH}/${KERYRING_PACKAGE_FILENAME}"
+REPO_URL="https://developer.download.nvidia.com/compute/cuda/repos/${CUDA_OS}/${CPU_ARCH}/"
 
 echo "PIN_FILENAME ${PIN_FILENAME}"
 echo "PIN_URL ${PIN_URL}"
