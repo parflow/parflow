@@ -9,12 +9,10 @@
 
 # Ideally choose from the list of meta-packages to minimise variance between cuda versions (although it does change too). Some of these packages may not be availble in older CUDA releases
 CUDA_PACKAGES_IN=(
-    "cuda-compiler"
+    "cuda-core"
     "cuda-cudart-dev"
     "cuda-nvtx"
-    "cuda-nvrtc-dev"
-    "libcurand-dev" # 11-0+
-    "cuda-cccl" # 11.4+, provides cub and thrust. On 11.3 knwon as cuda-thrust-11-3
+    "cuda-nvml-dev"
 )
 
 ## -------------------
