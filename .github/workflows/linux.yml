@@ -130,7 +130,7 @@ jobs:
           mkdir ucx
           cd ucx
           curl -L $URL | tar --strip-components=1 -xzv
-          ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --disable-numa --prefix=$PARFLOW_DEP_DIR
+          ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --with-go=no--disable-numa --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
