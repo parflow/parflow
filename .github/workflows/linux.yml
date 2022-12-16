@@ -142,7 +142,7 @@ jobs:
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone -b branch-0.10  --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
           cd rmm
-          cmake . -DCMAKE_C_FLAGS="-DTHRUST_IGNORE_DEPRECATED_CPP_DIALECT" -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
+          cmake . -DCMAKE_CXX_FLAGS="-DTHRUST_IGNORE_DEPRECATED_CPP_DIALECT" -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
         echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
