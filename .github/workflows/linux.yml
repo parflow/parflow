@@ -168,8 +168,8 @@ jobs:
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         export CUDA_VERSION_MAJOR_MINOR=11.8.0
-	export CUDA_SHORT=11.8
-	export CUDA_OS=${{ matrix.config.cudaos }}
+        export CUDA_SHORT=11.8
+        export CUDA_OS=${{ matrix.config.cudaos }}
         ./install-cuda.sh
         export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
         echo "CUDA_HOME=${CUDA_HOME}" >> $GITHUB_ENV
