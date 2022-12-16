@@ -129,7 +129,7 @@ jobs:
           URL=https://github.com/openucx/ucx/releases/download/v1.13.1/ucx-1.13.1.tar.gz
           mkdir ucx
           cd ucx
-          curl -L $URL | tar --strip-components=1 -xzv
+          curl -L $URL | tar --strip-components=1 -xz
           ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --with-go=no --disable-numa --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
@@ -140,7 +140,7 @@ jobs:
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone -b v22.10.01 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+          git clone -b branch-0.10  --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
           cd rmm
           cmake . -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
           make -j 2 install
@@ -156,7 +156,7 @@ jobs:
           URL=https://github.com/kokkos/kokkos/archive/refs/tags/3.3.01.tar.gz
           mkdir kokkos
           cd kokkos
-          curl -L $URL | tar --strip-components=1 -xzv
+          curl -L $URL | tar --strip-components=1 -xz
           mkdir build
           cd build
           cmake .. -DCMAKE_CXX_COMPILER=$(pwd)/../bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DKokkos_ENABLE_CUDA=On -DKokkos_ENABLE_CUDA_LAMBDA=On -DKokkos_ENABLE_CUDA_UVM=On -DKokkos_ARCH_VOLTA70=On
@@ -173,7 +173,7 @@ jobs:
           URL=https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz
           mkdir openmpi
           cd openmpi
-          curl -L $URL | tar --strip-components=1 -xzv  
+          curl -L $URL | tar --strip-components=1 -xz
           ./configure --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DEP_DIR --prefix=$PARFLOW_DEP_DIR
           sudo make -j 2 install
           cd ..
@@ -192,7 +192,7 @@ jobs:
           URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
           mkdir netcdf-c
           cd netcdf-c
-          curl -L $URL | tar --strip-components=1 -xzv
+          curl -L $URL | tar --strip-components=1 -xz
           CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
@@ -201,7 +201,7 @@ jobs:
           URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
           mkdir netcdf-fortran
           cd netcdf-fortran
-          curl -L $URL | tar --strip-components=1 -xzv
+          curl -L $URL | tar --strip-components=1 -xz
           CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
           make
           make install
@@ -235,7 +235,7 @@ jobs:
           URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.tar.gz
           mkdir silo
           cd silo
-          curl -L $URL | tar --strip-components=1 -xzv
+          curl -L $URL | tar --strip-components=1 -xz
           ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
@@ -248,7 +248,7 @@ jobs:
           URL=https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
           mkdir hypre
           cd hypre
-          curl -L $URL | tar --strip-components=1 -xzv
+          curl -L $URL | tar --strip-components=1 -xz
           cd src
           ./configure --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
