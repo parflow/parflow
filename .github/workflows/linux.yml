@@ -109,6 +109,7 @@ jobs:
     - name: CUDA Install
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
+        CUDA_SHORT=11.8
         ./install-cuda.sh
         export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
         echo "CUDA_HOME=${CUDA_HOME}" >> $GITHUB_ENV
