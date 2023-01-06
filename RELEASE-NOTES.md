@@ -1,4 +1,4 @@
-# ParFlow Release Notes 3.11.0
+# ParFlow Release Notes 3.12.0
 ------------------------------
 
 This release contains several bug fixes and minor feature updates.
@@ -7,63 +7,125 @@ ParFlow development and bug-fixes would not be possible without contributions of
 
 ## Overview of Changes
 
-* Improved reading of PFB file in Python PFTools
-* ParFlow Documentation Update 
-* PDF User Manual removed from the repository
-* Initialization of evap_trans vector has been moved
-* CUDA fixes
-* OASIS array fix
+* Documentation updates
+* 
 
 ## User Visible Changes
 
-### Improved reading of PFB file in Python PFTools
+### DockerHub Container has Python and TCL support.
 
-Subgrid header information is read directly from the file to enable reading of files with edge data like the velocity files.
+The DockerHub Container has been updated to support both Python and TCL input scripts.   Previously only TCL was supported.   The type of script is determined by the file extension so make sure to use .tcl for TCL and and .py for Python as per standard file extension naming.
 
-Fixes some cases where PFB files with different z-dimension shapes could not be merged together in xarray. Notably this happens for surface parameters which have shape (1, ny, nx) which really should be represented by xarray by squeezing out the z dimension. This now happens in xarray transparently. Loading files with the standard read_pfb or read_pfb_sequence will not auto-squeeze dimensions.
+Simple examples using Docker:
 
-Perfomance of reading should be improved by using memmapped and only the first subgrid header is read when loading a sequence of PFB files.   Parallism should be better in the read.
+```
+docker run --rm -v $(pwd):/data parflow/parflow:version-3.12.0 default_single.py
+```
 
-The ability to give keys to the pf.read_pfb function for subsetting was added.
-	
-### ParFlow Documentation Update 
+```
+docker run --rm -v $(pwd):/data parflow/parflow:version-3.12.0 default_single.tcl 1 1 1
+```
 
-The User Manual is being transitioned to ReadTheDocs from the previous LaTex manual.   A first pass at the conversion of the ParFlow LaTeX manual to ReadTheDocs format. This new documentation format contains the selected sections from the ParFlow LaTeX manual along with Kitware's introduction to Python PFTools and resulting tutorials. Added new sections documenting the Python PFTools Hydrology module, the Data Accessor class, and updated the PFB reading/writing tutorial to use the updated PFTools functions instead of parflowio.
-    
-The original LaTeX files remain intact for now as this documentation conversion isn't fully complete.   Currently this version of the ReadTheDocs is not generating the KitWare version of the ParFlow keys documentation but as a longer-term task they can be re-integrated into the new manual.
 
-### PDF User Manual removed from the repository
+### Dependency Updates
 
-The PDF of the User Manual that was in the repository has been removed.  An online version of the users manual is available on [Read the Docks:Parflow Users Manual](https://parflow.readthedocs.io/en/latest/index.html).  A PDF version is available at [Parflow Users Manual PDF](https://parflow.readthedocs.io/_/downloads/en/latest/pdf/).
-    
-## Internal/Developer Changes
+We have tested and updated some dependencies in ParFlow to use more current releases.  The following are used in our continuous integration builds and tests.
 
-### Initialization of evap_trans has been moved
-The Vector evap_trans was made part of the InstanceXtra structure, initialized is done in SetupRichards() and deallocated in TeardownRichards().
+Ubuntu               22.04
+Ubuntu               20.04
 
-### CUDA 11.5 update
+CMake                3.25.1
+Hypre                2.26.0
+Silo                 4.11
+NetCDF-C             4.9.0
+NetCDF-Fortan        4.5.5
 
-Starting from CUB 1.14, CUB_NS_QUALIFIER macro must be specified.  The CUB_NS_QUALIFIER macro in the same way it was added in the CUB (see https://github.com/NVIDIA/cub/blob/94a50bf20cc01f44863a524ba36e089fd80f342e/cub/util_namespace.cuh#L99-L109)
 
-### CUDA Linux Repository Key Rotation
-    
-Updating NVidia CUDA repository keys due to rotation as documented [here](https://forums.developer.nvidia.com/t/notice-cuda-linux-repository-key-rotation/212772)
+CUDA                 11.8.0  (with OpenMPI 4.0.3)
+UCX                  1.13.1
+RMM                  0.10
+
+Kokkos               3.3.01
+
+Dependencies not listed are coming from the Ubuntu packages.   We try to have as few version specific dependencies as possible so other release may work.
+
+
+### Surface Pressure Threshold
+
+The surface pressure may now have a threshold applied.  This is controlled with several keys.
+
+```
+pfset Solver.ResetSurfacePressure        True      ## TCL syntax
+<runname>.Solver.ResetSurfacePressure  = "True"    ## Python syntax
+```
+	  
+This key changes any surface pressure greater than a threshold value to 
+another value in between solver timesteps. It works differently than the Spinup keys and is intended to 
+help with slope errors and issues and provides some diagnostic information.  The threshold keys are specified below.
+
+The threshold value is specified with ```ResetSurfacePressure```
+
+```
+pfset Solver.ResetSurfacePressure.ThresholdPressure        10.0    ## TCL syntax
+<runname>.Solver.ResetSurfacePressure.ThresholdPressure  = 10.0    ## Python syntax
+```
+
+The Solver.SpinUp key removes surface pressure in between solver timesteps.
+
+```
+pfset Solver.SpinUp   True        ## TCL syntax
+<runname>.Solver.SpinUp = "True"  ## Python syntax
+```
+	  
+### Top of domain indices output 
+
+The capability to output the Top Z index and Top Patch Index have been added to allow easier processing of surface values.   The new input keys are PrintTop and WriteSiloTop.
+
+```
+pfset Solver.PrintTop False                    ## TCL syntax
+<runname>.Solver.PrintTop = False              ## Python syntax
+
+pfset Solver.WriteSiloTop True                  ## TCL syntax
+<runname>.Solver.WriteSiloTop = True            ## Python syntax
+```
+
+The keys are used to turn on printing of the top of domain data.  'TopZIndex' is a NX * NY file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an (i,j) column does not intersect the domain. The data is written as a PFB or Silo formats.
+
+### Documentation Updates
+
+The read-the-docs manual has been cleaned up; many formatting and typos have been fixed from the Latex conversion.
 
 ## Bug Fixes
 
+### CLM 
 
-### Minor improvements/bugfix for python IO 
+Fixed an issue that was identified by @danielletijerina where some bare soil on vegetated surfaces wasn't being beta-limited in CLM. Fixes to clm_thermal.F90 were implemented. At the same time, CLM snow additions and dew corrections by LBearup were added. A snow-age fix for deep snow was implemented along with canopy dew.
 
-Fix a bug on xarray indexing which require squeezing out multiple dimensions. Lazy loading is implemented natively now with changes to the indexing methods.
+### Python PFtools
+The _overland_flow_kinematic method was updated to match the outflow of ParFlow along the edges of irregular domains, which the prior Hydrology Python PFTools did not.
 
-### OASIS array fix
+a) the slope in both x and y are corrected (by copying the corresponding value inside the mask) outside the mask edges in lower x and y as they both come into play through "slope".
+b) because the correction is now done at lower x and y edges in both slopex and slopey, this could lead to overwriting the slopes outside for grid cells that are both outside x and y lower edges. For this, the calculation in x (q_x, qeast) is done first, after adjusting slopes outside lower x edges and then the calculation in y (q_y, qnorth) is done second, after adjusting slopes outside lower y edges.
 
-vshape should be a 1d array instead of a 2d array.  Its attributes are specified as [INTEGER, DIMENSION(2*id var nodims(1)), IN] based on the [OASIS3-MCT docs](https://gitlab.com/cerfacs/oasis3-mct/-/blob/OASIS3-MCT_3.1/doc/oasis3mct_UserGuide.pdf)
+## Internal/Developer Changes
 
+### CI Testing Updates
 
-### Python pftools version parsing
-    
-Minor bugfix was needed in Python pftools for parsing versions.
+The GitHub Actions tests have been updated to use later Ubuntu releases.   The 18.04 tests were removed and tests were moved to to 22.04.   Currently testing is done with both 20.04 and 22.04.
+Dependencies have been updated for NetCDF, Hypre, GCC
+
+### NetCDF Testing
+
+The NetCDF testing has been updated to unify the GitHub Actions for OASIS3 tests and the other regression tests.
+
+### Regression Test Comparison Directory
+
+The TCL script pfTestFile used for regression testing has been updated to enable setting the directory for the regression test comparison files.  Example usage:
+
+```
+set correct_output_dir "../../correct_output/clm_output"
+pftestFile clm.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir
+```
 
 ## Known Issues
 
