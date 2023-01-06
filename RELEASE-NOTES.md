@@ -77,7 +77,7 @@ pfset Solver.SpinUp   True        ## TCL syntax
 <runname>.Solver.SpinUp = "True"  ## Python syntax
 ```
 	  
-### Top of domain indicies output 
+### Top of domain indices output 
 
 The capability to output the Top Z index and Top Patch Index have been added to allow easier processing of surface values.   The new input keys are PrintTop and WriteSiloTop.
 
