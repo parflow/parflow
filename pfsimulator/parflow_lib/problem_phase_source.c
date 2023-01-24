@@ -356,7 +356,7 @@ void         PhaseSource(
 
           int ip = 0;
           int ips = 0;
-          printf("Releasing flux from well %f\n", flux);
+
           if (WellDataPhysicalMethod(well_data_physical)
               == FLUX_WEIGHTED)
           {
@@ -368,6 +368,7 @@ void         PhaseSource(
                       + (py[ip] / avg_y) * (area_y / area_sum)
                       + (pz[ip] / avg_z) * (area_z / area_sum);
               data[ips] += weight * flux;
+              printf("Releasing flux from well %f\n", flux);
             });
           }else{
             double weight = -FLT_MAX;
@@ -400,7 +401,7 @@ void         PhaseSource(
       reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
 //      interval_number = TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number);
 
-      reservoir_data_value = ReservoirDataFluxReservoirIntervalValue(reservoir_data, reservoir, interval_number);
+//      reservoir_data_value = ReservoirDataFluxReservoirIntervalValue(reservoir_data, reservoir, interval_number);
 
       reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
       reservoir_release_subgrid = ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical);
@@ -443,7 +444,9 @@ void         PhaseSource(
         nz_ps = SubvectorNZ(ps_sub);
 
         // Check if the reservoir is on
-        if (TRUE) {
+        bool should_release = reservoir_data_physical->current_capacity > reservoir_data_physical->min_release_capacity&&\
+                              reservoir_data_physical->current_capacity < reservoir_data_physical->max_capacity;
+        if (should_release) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
 //          double release_amount = GetValue(reservoir_data_physical->release_curve, problem->current_unix_epoch_time);
 //          printf("When in phase source the reservoir x value is %f\n",  reservoir_data_physical->x_lower);
@@ -451,7 +454,8 @@ void         PhaseSource(
 //          printf("Release amount is %f\n", release_amount);
 //          printf("Reservoir status is %d\n", ReservoirDataPhysicalStatus(reservoir_data_physical));
           /*  Get the intersection of the reservoir with the subgrid  */
-          if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid))) {
+          tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid);
+          if (tmp_subgrid) {
             /*  If an intersection;  loop over it, and insert value  */
             ix = SubgridIX(tmp_subgrid);
             iy = SubgridIY(tmp_subgrid);
@@ -506,67 +510,70 @@ void         PhaseSource(
                           data[ips] += weight * flux;
                         });
             }
+            reservoir_data_physical->current_capacity-=reservoir_data_physical->release_rate;
+            printf("Reservoir current capacity is %f", reservoir_data_physical->current_capacity);
           }
-//          else if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid))) {
-//            /*  If an intersection;  loop over it, and insert value  */
-//            ix = SubgridIX(tmp_subgrid);
-//            iy = SubgridIY(tmp_subgrid);
-//            iz = SubgridIZ(tmp_subgrid);
-//
-//            nx = SubgridNX(tmp_subgrid);
-//            ny = SubgridNY(tmp_subgrid);
-//            nz = SubgridNZ(tmp_subgrid);
-//
-//            dx = SubgridDX(tmp_subgrid);
-//            dy = SubgridDY(tmp_subgrid);
-//            dz = SubgridDZ(tmp_subgrid);
-//
-//            area_x = dy * dz;
-//            area_y = dx * dz;
-//            area_z = dx * dy;
-//            area_sum = area_x + area_y + area_z;
-//
-//            px = SubvectorElt(px_sub, ix, iy, iz);
-//            py = SubvectorElt(py_sub, ix, iy, iz);
-//            pz = SubvectorElt(pz_sub, ix, iy, iz);
-//
-//            data = SubvectorElt(ps_sub, ix, iy, iz);
-//
-//            int ip = 0;
-//            int ips = 0;
-//
-////            reservoir_data_physical->release_curve(problem_data);
-//            if (ReservoirDataPhysicalMethod(reservoir_data_physical)
-//                == FLUX_WEIGHTED) {
-//              BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-//                        ip, nx_p, ny_p, nz_p, 1, 1, 1,
-//                        ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
-//                        {
-//                          double weight = (px[ip] / avg_x) * (area_x / area_sum)
-//                                          + (py[ip] / avg_y) * (area_y / area_sum)
-//                                          + (pz[ip] / avg_z) * (area_z / area_sum);
-//                          data[ips] += weight * flux;
-//                        });
-//            } else {
-//              double weight = -FLT_MAX;
-//              if (ReservoirDataPhysicalMethod(reservoir_data_physical)
-//                  == FLUX_STANDARD)
-//                weight = 1.0;
-//              else if (ReservoirDataPhysicalMethod(reservoir_data_physical)
-//                       == FLUX_PATTERNED)
-//                weight = 0.0;
-//              BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-//                        ip, nx_p, ny_p, nz_p, 1, 1, 1,
-//                        ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
-//                        {
-//                          data[ips] += weight * flux;
-//                        });
-//            }
-//            /* done with this temporary subgrid */
-//
-//            FreeSubgrid(tmp_subgrid);
-//
-//          }
+          else if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_intake_subgrid))) {
+            /*  If an intersection;  loop over it, and insert value  */
+            ix = SubgridIX(tmp_subgrid);
+            iy = SubgridIY(tmp_subgrid);
+            iz = SubgridIZ(tmp_subgrid);
+
+            nx = SubgridNX(tmp_subgrid);
+            ny = SubgridNY(tmp_subgrid);
+            nz = SubgridNZ(tmp_subgrid);
+
+            dx = SubgridDX(tmp_subgrid);
+            dy = SubgridDY(tmp_subgrid);
+            dz = SubgridDZ(tmp_subgrid);
+
+            area_x = dy * dz;
+            area_y = dx * dz;
+            area_z = dx * dy;
+            area_sum = area_x + area_y + area_z;
+
+            px = SubvectorElt(px_sub, ix, iy, iz);
+            py = SubvectorElt(py_sub, ix, iy, iz);
+            pz = SubvectorElt(pz_sub, ix, iy, iz);
+
+            data = SubvectorElt(ps_sub, ix, iy, iz);
+
+            int ip = 0;
+            int ips = 0;
+
+//            reservoir_data_physical->release_curve(problem_data);
+            if (ReservoirDataPhysicalMethod(reservoir_data_physical)
+                == FLUX_WEIGHTED) {
+              BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+                        ip, nx_p, ny_p, nz_p, 1, 1, 1,
+                        ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+                        {
+                          double weight = (px[ip] / avg_x) * (area_x / area_sum)
+                                          + (py[ip] / avg_y) * (area_y / area_sum)
+                                          + (pz[ip] / avg_z) * (area_z / area_sum);
+                          double data_ips = data[ips];
+                          data[ips] -= weight * flux;
+                        });
+            } else {
+              double weight = -FLT_MAX;
+              if (ReservoirDataPhysicalMethod(reservoir_data_physical)
+                  == FLUX_STANDARD)
+                weight = 1.0;
+              else if (ReservoirDataPhysicalMethod(reservoir_data_physical)
+                       == FLUX_PATTERNED)
+                weight = 0.0;
+              BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+                        ip, nx_p, ny_p, nz_p, 1, 1, 1,
+                        ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+                        {
+                          data[ips] -= weight * flux;
+                        });
+            }
+            /* done with this temporary subgrid */
+
+            FreeSubgrid(tmp_subgrid);
+
+          }
         }
       }
     }
