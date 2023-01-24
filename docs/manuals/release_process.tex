@@ -67,3 +67,15 @@ was created in a proir step.
   docker build -t <hub-user>/<repo-name>[:<tag>]
   docker push <hub-user>/<repo-name>:<tag>
 \end{verbatim}\end{display}
+
+Example using podman to build and push
+
+\begin{display}\begin{verbatim}
+  VERSION=3.12.0
+  podman build -t docker.io/parflow/parflow:version-$(VERSION) .
+  podman login docker.io
+  podman push docker.io/parflow/parflow:version-$(VERSION)
+  podman tag docker.io/parflow/parflow:version-$(VERSION) docker.io/parflow/parflow:latest
+  podman push  docker.io/parflow/parflow:latest
+\end{verbatim}\end{display}
+  
