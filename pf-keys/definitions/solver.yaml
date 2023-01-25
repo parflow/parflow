@@ -1597,6 +1597,30 @@ Solver:
     domains:
       DoubleValue:
 
+  ResetSurfacePressure:
+    __doc__: >
+      [Type: logical] Check surface pressure and reset values above a threshold to a different value.
+    __value__:
+      help: >
+        [Type: boolean/string] Check surface pressure and reset values above a threshold to a different value.
+      default: False
+      domains:
+        BoolDomain:
+
+    ThresholdPressure:
+      help: >
+        [Type: double]
+      default: 0.0
+      domains:
+        DoubleValue:      
+      
+    ResetPressure:
+      help: >
+        [Type: double] 
+      default: 0.0
+      domains:
+        DoubleValue:
+
   OverlandDiffusive:
     __doc__: >
       Setting epsilon value for the diffusive overland flow formulation.
@@ -1732,6 +1756,15 @@ Solver:
       [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the
       timing information section. The data is written as a PFB file.
     default: True
+    domains:
+      BoolDomain:
+
+  PrintTop:
+    help: >
+      [Type: boolean/string] Key used to control writing of two PFB files for the top of the domain.  'TopZIndex' is a NX * NY
+      file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
+      (i,j) column does not intersect the domain. format.
+    default: False
     domains:
       BoolDomain:
 
@@ -2333,6 +2366,16 @@ Solver:
       binary format as a running cumulative amount. This is integrated along all domain boundaries and is calculated any
       location that slopes at the edge of the domain point outward. This data is in units of [L3]. The printing of the data
       is controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloTop:
+    help: >
+      [Type: boolean/string] Key used to control writing of two Silo files for the top of the domain.  'TopZIndex' is a NX * NY
+      file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
+      (i,j) column does not intersect the domain. format.
     default: False
     domains:
       BoolDomain:

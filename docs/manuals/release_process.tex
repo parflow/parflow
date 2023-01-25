@@ -32,29 +32,11 @@ running account of release information.
 
 Edit VERSION file with current version.
 
-Edit \code{./docs/manuals/user_manual.tex} and insert the current date
-into the subtitle.
+Edit \code{./docs/user_Manual/conf.py} and update version number.
 
 \section{Regenerate the \parflow{} User Manual}
 
-The repository contains a PDF of the User Manual.  This should be
-regenerated for the release so it is up-to-date.  This step requires a
-Latex install to perform.  By default the configure system will use
-the current tag and git hash to label the release.  By moving the .git
-directory the cmake configure will use the version specified in the
-just edited VERSION file.
-
-\begin{display}\begin{verbatim}
-  cd <directory with ParFlow source>
-  mv .git git
-  mkdir build
-  cd build
-  cmake -DPARFLOW_ENABLE_LATEX=TRUE ../parflow/
-  make
-  cp ./docs/manuals/user_manual.pdf ../parflow/
-  cd ..
-  mv git .git
-\end{verbatim}\end{display}
+This should be automated by ReadTheDocs.
   
 \section{Commit release file changes}
 
@@ -78,3 +60,22 @@ Version tag should have format of ``vX.Z.Z'' version.  Release title
 should have format of ``ParFlow Version X.Y.Z''.  The GitHub release
 description can be copied from the release notes markdown file that
 was created in a proir step.
+
+\section{Generate Docker}
+
+\begin{display}\begin{verbatim}
+  docker build -t <hub-user>/<repo-name>[:<tag>]
+  docker push <hub-user>/<repo-name>:<tag>
+\end{verbatim}\end{display}
+
+Example using podman to build and push
+
+\begin{display}\begin{verbatim}
+  VERSION=3.12.0
+  podman build -t docker.io/parflow/parflow:version-$(VERSION) .
+  podman login docker.io
+  podman push docker.io/parflow/parflow:version-$(VERSION)
+  podman tag docker.io/parflow/parflow:version-$(VERSION) docker.io/parflow/parflow:latest
+  podman push  docker.io/parflow/parflow:latest
+\end{verbatim}\end{display}
+  

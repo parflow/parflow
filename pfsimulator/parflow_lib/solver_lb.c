@@ -1701,7 +1701,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
   diag_solver_na = NA_NewNameArray("NoDiagScale MatDiagScale");
   sprintf(key, "%s.DiagSolver", name);
   switch_name = GetStringDefault(key, "NoDiagScale");
-  switch_value = NA_NameToIndex(diag_solver_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(diag_solver_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -1720,9 +1720,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
 
     default:
     {
-      amps_Printf("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                  key);
-      exit(1);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(diag_solver_na);
@@ -1730,7 +1728,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
   linear_solver_na = NA_NewNameArray("MGSemi PPCG PCG CGHS");
   sprintf(key, "%s.Linear", name);
   switch_name = GetStringDefault(key, "PPCG");
-  switch_value = NA_NameToIndex(linear_solver_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(linear_solver_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -1763,8 +1761,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(linear_solver_na);
@@ -1801,12 +1798,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
 
   sprintf(key, "%s.CompCompress", name);
   switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid flag value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->comp_compress_flag = switch_value;
 
   NA_FreeNameArray(switch_na);

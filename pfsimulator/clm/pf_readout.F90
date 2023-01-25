@@ -21,11 +21,11 @@ do t=1,drv%nch
 i=tile(t)%col
 j=tile(t)%row
   do k = 1, nlevsoi
-     l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM
+     l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing #RMM
      if(clm(t)%planar_mask == 1) then
       clm(t)%pf_vol_liq(k) = saturation(l) * clm(t)%watsat(k)
       clm(t)%pf_press(k)   = pressure(l) * 1000.d0
-      clm(t)%h2osoi_liq(k) = clm(t)%pf_vol_liq(k)*clm(t)%dz(1)*denh2o
+      clm(t)%h2osoi_liq(k) = clm(t)%pf_vol_liq(k)*clm(t)%dz(k)*denh2o   ! fixed DZ #RMM
       endif
   end do !k
   

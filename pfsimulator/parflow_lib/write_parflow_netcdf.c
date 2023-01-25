@@ -41,6 +41,15 @@ static bool is3Ddefined = false;
 static bool isTdefined = false;
 #endif
 
+void FreeVarNCData(varNCData* myVarNCData)
+{
+  if(myVarNCData)
+  {
+    free(myVarNCData -> dimIDs);
+    free(myVarNCData);
+  }
+}
+
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
                char *varName, int dimensionality, bool init, int numVarIni)
 {
@@ -144,7 +153,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
       static char file_name[255];
       static int numOfDefVars = 0;
 
-      varNCData *myVarNCData;
+      varNCData *myVarNCData=NULL;
 
       if (numStepsInFile == userSpecSteps * numVarTimeVariant)
       {
@@ -182,6 +191,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
         }
       }
       free(data_nc_node);
+      FreeVarNCData(myVarNCData);
     }
   }
   else
@@ -191,7 +201,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
     static char file_name[255];
     static int numOfDefVars = 0;
 
-    varNCData *myVarNCData;
+    varNCData *myVarNCData = NULL;
     if (init)
     {
       sprintf(file_name, "%s%s%s%s", file_prefix, ".", file_postfix, ".nc");
@@ -256,6 +266,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
         }
       }
     }
+    FreeVarNCData(myVarNCData);
   }
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");

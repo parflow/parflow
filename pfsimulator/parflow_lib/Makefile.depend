@@ -339,7 +339,8 @@ FILE_18=compute_top.o
 DEPENDS_18:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
-	communication.h computation.h compute_top.c file_versions.h	\
+	communication.h computation.h compute_top.c compute_patch_top.c \
+	file_versions.h		      		    			\
 	general.h geometry.h geostats.h globals.h grgeom_list.h		\
 	grgeom_octree.h grgeometry.h grid.h hbt.h info_header.h		\
 	input_database.h lb.h logging.h loops.h matrix.h n_vector.h	\

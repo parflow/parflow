@@ -414,7 +414,7 @@ PFModule  *InternalEnergyDensityNewPublicXtra(
 
     switch_name = GetString(key);
 
-    public_xtra->type_density[i] = NA_NameToIndex(switch_na, switch_name);
+    public_xtra->type_density[i] = NA_NameToIndexExitOnError(switch_na, switch_name, key);
 
     switch ((public_xtra->type_density[i]))
     {
@@ -439,8 +439,7 @@ PFModule  *InternalEnergyDensityNewPublicXtra(
 
       default:
       {
-        InputError("Error: invalid type <%s> for key <%s>\n",
-                   switch_name, key);
+	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
   }
@@ -452,7 +451,7 @@ PFModule  *InternalEnergyDensityNewPublicXtra(
 
     switch_name = GetString(key);
 
-    public_xtra->type_energy[i] = NA_NameToIndex(switch_na, switch_name);
+    public_xtra->type_energy[i] = NA_NameToIndexExitOnError(switch_na, switch_name, key);
 
     switch ((public_xtra->type_energy[i]))
     {
@@ -477,9 +476,7 @@ PFModule  *InternalEnergyDensityNewPublicXtra(
 
       default:
       {
-        InputError("Error: invalid type <%s> for key <%s>\n",
-                   switch_name, key);
-      }
+	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);      }
     }
   }
 

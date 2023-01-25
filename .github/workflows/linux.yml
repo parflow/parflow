@@ -11,74 +11,85 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu 20.04",
+            name: "Ubuntu 22.04",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true"
+          }
+        - {
+            name: "Ubuntu 22.04 Python",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true"
+          }
+        - {
+            name: "Ubuntu 20.04 Python",
+            os: ubuntu-20.04,
+            cudaos: 'ubuntu2004',
+            python: "true",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 22.04 OMP",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
+            python: "false",
+            backend: "omp",
+            amps_layer: mpi1,
+            netcdf: "false"
+          }
+        - {
+            name: "Ubuntu 20.04 OASIS3-MCT Build",
             os: ubuntu-20.04,
             cudaos: 'ubuntu2004',
             python: "false",
-            backend: "none",
+            backend: "omp",
+            amps_layer: oas3,
+            netcdf: "true"
           }
         - {
-            name: "Ubuntu 18.04",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
-            python: "false",
-            backend: "none",
-          }
-        - {
-            name: "Ubuntu 18.04 Python",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
-            python: "true",
-            backend: "none"     
-          }
-        - {
-            name: "Ubuntu 18.04 OMP",
-            os: ubuntu-18.04,
-            cudaos: 'ubuntu1804',
-            python: "false",
-            backend: "omp"     
-          }
-        - {
-            name: "Ubuntu 18.04 CUDA Build",
-            os: ubuntu-18.04,
+            name: "Ubuntu 22.04 CUDA Build",
+            os: ubuntu-22.04,
             cc: "gcc", cxx: "g++",
             python: "false",
             backend: "cuda",
-            cudaos: 'ubuntu1804'
+            cudaos: 'ubuntu2204',
+            amps_layer: mpi1,
+            netcdf: "false"
           }
         - {
-            name: "Ubuntu 18.04 Kokkos Build",
-            os: ubuntu-18.04,
+            name: "Ubuntu 22.04 Kokkos Build",
+            os: ubuntu-22.04,
             cc: "gcc", cxx: "g++",
             python: "false",
             backend: "kokkos",
-            cudaos: 'ubuntu1804'
+            cudaos: 'ubuntu2204',
+            amps_layer: mpi1,
+            netcdf: "false"
           }
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
+    - name: Package Install 22.04
+      if: matrix.config.os == 'ubuntu-22.04'
+      run: |
+        sudo apt-get -qq update
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
 
     - name: Package Install 20.04
       if: matrix.config.os == 'ubuntu-20.04'
       run: |
         sudo apt-get -qq update
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev
-
-    - name: Package Install 18.04 CUDA
-      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.os == 'ubuntu-18.04'
-      run: |
-        sudo apt-get -qq update
-        sudo apt-get -qq install -y software-properties-common
-        sudo add-apt-repository -y main
-        sudo add-apt-repository -y universe
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157
-
-    - name: Package Install 18.04
-      if: matrix.config.os == 'ubuntu-18.04'
-      run: |
-        sudo apt-get -qq update
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers tcl-dev tk-dev
+        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
 
     - name: Python Package Install
       if: matrix.config.python == 'true'
@@ -91,7 +102,7 @@ jobs:
 # settings for the project (using date-timestamp for secret).
 
     - name: Cache dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: cache-parflow-dependencies
       env:
         cache-name: cache-parflow-dependencies
@@ -105,7 +116,7 @@ jobs:
         mkdir -p $HOME/install
         echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
         echo "Setting PARFLOW_DIR=$HOME/install"
-        mkdir -p $HOME/depend
+        mkdir -p $HOME/depend/{include,lib}
         echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
         echo "Setting PARFLOW_DEP_DIR=$HOME/depend"
         echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
@@ -121,11 +132,11 @@ jobs:
           echo "Installing"
           cd ~/depend
           echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
-          wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.0-Linux-x86_64.tar.gz
-          tar -xf cmake-3.14.0-Linux-x86_64.tar.gz
-          ~/depend/cmake-3.14.0-Linux-x86_64/bin/cmake --version
+          wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
+          tar -xf cmake-3.25.1-linux-x86_64.tar.gz
+          $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
         fi
-        echo "$HOME/depend/cmake-3.14.0-Linux-x86_64/bin" >> $GITHUB_PATH
+        echo "$HOME/depend/cmake-3.25.1-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: NVidia Driver Install
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
@@ -137,13 +148,10 @@ jobs:
     - name: CUDA Install
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
-        CUDA_SHORT=10.1
-        CUDA_VER=10.1.105-1
-        wget -nv http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/cuda-repo-${{ matrix.config.cudaos }}_${CUDA_VER}_amd64.deb
-        sudo dpkg -i cuda-repo-${{ matrix.config.cudaos }}_${CUDA_VER}_amd64.deb
-        sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${{ matrix.config.cudaos }}/x86_64/3bf863cc.pub
-        sudo apt update -qq
-        sudo apt install -qq -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-}
+        export CUDA_VERSION_MAJOR_MINOR=11.8.0
+        export CUDA_SHORT=11.8
+        export CUDA_OS=${{ matrix.config.cudaos }}
+        ./bin/install-cuda.sh
         export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
         echo "CUDA_HOME=${CUDA_HOME}" >> $GITHUB_ENV
         export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
@@ -159,10 +167,11 @@ jobs:
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           sudo apt install -qq -y autoconf automake libtool
-          wget -nv https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz
-          tar -xf ucx-1.8.0.tar.gz
-          cd ucx-1.8.0
-          ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --disable-numa --prefix=$PARFLOW_DEP_DIR 
+          URL=https://github.com/openucx/ucx/releases/download/v1.13.1/ucx-1.13.1.tar.gz
+          mkdir ucx
+          cd ucx
+          curl -L $URL | tar --strip-components=1 -xz
+          ./contrib/configure-release --with-cuda=$CUDA_HOME --with-java=no --with-go=no --disable-numa --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
@@ -172,12 +181,12 @@ jobs:
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+          git clone -b branch-0.10  --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
           cd rmm
-          cmake . -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
+          cmake . -DCMAKE_CXX_FLAGS="-DTHRUST_IGNORE_DEPRECATED_CPP_DIALECT" -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
-        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV  
+        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
 
     - name: Kokkos Install
       env:
@@ -185,14 +194,16 @@ jobs:
       if: matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -nv https://github.com/kokkos/kokkos/archive/refs/tags/3.3.01.tar.gz
-          tar -xf 3.3.01.tar.gz
-          cd kokkos-3.3.01
-          mkdir build && cd build
-          cmake .. -DCMAKE_CXX_COMPILER=$(pwd)/../bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DKokkos_ENABLE_CUDA=On -DKokkos_ENABLE_CUDA_LAMBDA=On -DKokkos_ENABLE_CUDA_UVM=On -DKokkos_ARCH_VOLTA70=On  
+          URL=https://github.com/kokkos/kokkos/archive/refs/tags/3.3.01.tar.gz
+          mkdir kokkos
+          cd kokkos
+          curl -L $URL | tar --strip-components=1 -xz
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_CXX_COMPILER=$(pwd)/../bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DKokkos_ENABLE_CUDA=On -DKokkos_ENABLE_CUDA_LAMBDA=On -DKokkos_ENABLE_CUDA_UVM=On -DKokkos_ARCH_VOLTA70=On
           make -j 2 install
         fi
-        echo "KOKKOS_FLAGS=-DKOKKOS_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV     
+        echo "KOKKOS_FLAGS=-DKOKKOS_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
 
     - name: OpenMPI Install for CUDA
       env:
@@ -200,25 +211,72 @@ jobs:
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -nv https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz
-          tar -xf openmpi-4.0.3.tar.gz
-          cd openmpi-4.0.3
+          URL=https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz
+          mkdir openmpi
+          cd openmpi
+          curl -L $URL | tar --strip-components=1 -xz
           ./configure --with-cuda=$CUDA_HOME --with-ucx=$PARFLOW_DEP_DIR --prefix=$PARFLOW_DEP_DIR
           sudo make -j 2 install
           cd ..
         fi
         sudo ldconfig
 
+    # Package netcdf is missing features needed by the ParFlow writers, build from source
+    # netcdf is True when we want to build the PF NetCDF writer.  OASIS is using the Fortran interface
+    # which is currently not built here.   This is currently incompatible with the OASIS build which uses the NetCDF packages.
+    - name: NetCDF Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.netcdf == 'true'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+          mkdir netcdf-c
+          cd netcdf-c
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
+          make
+          make install
+          cd ..
+
+          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+          mkdir netcdf-fortran
+          cd netcdf-fortran
+          curl -L $URL | tar --strip-components=1 -xz
+          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
+          make
+          make install
+        fi
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
+
+    - name: OASIS3-MCT Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.amps_layer == 'oas3'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          git clone -b OASIS3-MCT_5.0 https://gitlab.com/cerfacs/oasis3-mct.git
+          cd oasis3-mct
+          git checkout dd00d6c72b13bf1
+          export OASIS_ROOT=$(pwd)
+          cd util/make_dir
+          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu20.04' > make.inc
+          make realclean -f TopMakefileOasis3
+          make -f TopMakefileOasis3
+          mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
+          mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
+        fi
+        echo "NETCDF_FLAGS=-DNETCDF_Fortran_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
+
     - name: SILO Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          # wget -nv https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
-          # Use mirror for reliablity
-          wget -nv https://raw.githubusercontent.com/parflow/parflow-dependencies/master/silo-4.10.2.tar.gz
-          tar -xf silo-4.10.2.tar.gz
-          cd silo-4.10.2
+          URL=https://github.com/LLNL/Silo/archive/refs/tags/4.11.tar.gz
+          mkdir silo
+          cd silo
+          curl -L $URL | tar --strip-components=1 -xz
           ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
@@ -228,9 +286,11 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          wget -nv https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz
-          tar -xf v2.18.2.tar.gz 
-          cd hypre-2.18.2/src 
+          URL=https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz
+          mkdir hypre
+          cd hypre
+          curl -L $URL | tar --strip-components=1 -xz
+          cd src
           ./configure --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
@@ -238,12 +298,12 @@ jobs:
     - name: ParFlow CMake Configure
       run: |
         cat ~/depend/cache-key
-        printenv PATH
-        which mpicc
-        which cmake
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
-        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=mpi1 -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
+        gcc -v
+        mpicc -v
+        if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)
@@ -254,5 +314,4 @@ jobs:
       run: |
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
-        (cd build; ctest)
-
+        (cd build; ctest --output-on-failure)

@@ -130,6 +130,14 @@ typedef struct {
    */
   Vector         *index_of_domain_top;
 
+  /* 
+   * This is a NX * NY vector of patch id/index of the top
+   * of the domain.
+   *
+   * -1 means domain is not present at the i,j index.
+   */
+  Vector         *patch_index_of_domain_top;
+
   Vector         *permeability_x;
   Vector         *permeability_y;
   Vector         *permeability_z;
@@ -258,6 +266,7 @@ typedef struct {
 #define ProblemDataGrDomain(problem_data)       ((problem_data)->gr_domain)
 
 #define ProblemDataIndexOfDomainTop(problem_data)  ((problem_data)->index_of_domain_top)
+#define ProblemDataPatchIndexOfDomainTop(problem_data)  ((problem_data)->patch_index_of_domain_top)
 
 #define ProblemDataPermeabilityX(problem_data)  ((problem_data)->permeability_x)
 #define ProblemDataPermeabilityY(problem_data)  ((problem_data)->permeability_y)

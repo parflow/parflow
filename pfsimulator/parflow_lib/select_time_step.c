@@ -208,7 +208,7 @@ PFModule  *SelectTimeStepNewPublicXtra()
   public_xtra = ctalloc(PublicXtra, 1);
 
   switch_name = GetString("TimeStep.Type");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "TimeStep.Type");
 
   switch ((public_xtra->type))
   {
@@ -239,8 +239,7 @@ PFModule  *SelectTimeStepNewPublicXtra()
 
     default:
     {
-      InputError("Error: invalid type <%s> for key <%s>\n",
-                 switch_name, "TimeStep.Type");
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, "TimeStep.Type");
     }
   }
 

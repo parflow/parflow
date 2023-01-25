@@ -128,8 +128,13 @@ if (NOT PARFLOW_VERSION)
   file (STRINGS "VERSION" PARFLOW_VERSION)
 endif ()
 
-message("Configuring version : ${PARFLOW_VERSION}")
+message(STATUS "Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
+
+#-----------------------------------------------------------------------------
+# System information
+#-----------------------------------------------------------------------------
+cmake_host_system_information(RESULT HOSTNAME QUERY HOSTNAME)
 
 #-----------------------------------------------------------------------------
 # General project wide configuration
@@ -175,9 +180,9 @@ endif((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
 option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "TRUE")
 
 if (PARFLOW_AMPS_SEQUENTIAL_IO)
-  message("Using single file AMPS I/O for PFB output")
+  message(STATUS "Using single file AMPS I/O for PFB output")
 else ()
-  message("Using multiple file AMPS I/O for PFB output")
+  message(STATUS "Using multiple file AMPS I/O for PFB output")
   set(AMPS_SPLIT_FILE "yes")
 endif ()
 
@@ -241,11 +246,11 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 option(PARFLOW_ENABLE_NETCDF "Build with NetCDF" "OFF")
 if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
   find_package (NetCDF)
-  if (${NETCDF_FOUND})
+  if (${NetCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
     find_package(CURL)
-  endif (${NETCDF_FOUND})
+  endif (${NetCDF_FOUND})
 endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
 
 #-----------------------------------------------------------------------------
@@ -471,10 +476,8 @@ if ( ${PARFLOW_HAVE_MALLOC_H} )
 endif ( ${PARFLOW_HAVE_MALLOC_H} )
 
 # Check for mallinfo
+check_symbol_exists(mallinfo2 malloc.h PARFLOW_HAVE_MALLINFO2)
 check_symbol_exists(mallinfo malloc.h PARFLOW_HAVE_MALLINFO)
-if ( ${PARFLOW_HAVE_MALLINFO} )
-  set(HAVE_MALLINFO ${PARFLOW_HAVE_MALLINFO})
-endif ( ${PARFLOW_HAVE_MALLINFO} )
 
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
@@ -484,6 +487,19 @@ if ( ${PARFLOW_HAVE_CLM} )
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 endif ( ${PARFLOW_HAVE_CLM} )
 
+option(PARFLOW_HAVE_ECLM "Compile with eCLM (experimental)" "OFF")
+
+if ( ${PARFLOW_HAVE_ECLM} )
+  if (HAVE_CLM)
+    message(FATAL_ERROR "ERROR: PARFLOW_HAVE_CLM and PARFLOW_HAVE_ECLM cannot be enabled at the same time.")
+  endif (HAVE_CLM)
+  if (NOT HAVE_OAS3)
+    message(FATAL_ERROR "ERROR: OASIS is required when compiling with PARFLOW_HAVE_ECLM=ON (check OAS3_ROOT variable)")
+  else (HAVE_OAS3)
+    message(WARNING "Enabling components for ParFlow-eCLM coupled model (experimental feature!)")
+    set (HAVE_ECLM ${PARFLOW_HAVE_ECLM})
+  endif (HAVE_OAS3)
+endif ( ${PARFLOW_HAVE_ECLM} )
 #
 # Parflow specific configuration options
 #
@@ -520,6 +536,7 @@ configure_file (cmake/pfversion.h.in include/pfversion.h)
 
 configure_file (cmake/Makefile.config.in config/Makefile.config)
 configure_file (cmake/pf-cmake-env.sh.in config/pf-cmake-env.sh)
+configure_file (cmake/parflow.settings.in config/parflow.settings)
 
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)
@@ -563,6 +580,11 @@ install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
 install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
 
 #-----------------------------------------------------------------------------
+# Install general helper scripts
+#-----------------------------------------------------------------------------
+install(PROGRAMS bin/pfrun DESTINATION bin)
+
+#-----------------------------------------------------------------------------
 # Doxygen
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_DOXYGEN "Enable Doxygen and building of code documentation" "OFF")
@@ -573,14 +595,14 @@ if ( ${PARFLOW_ENABLE_DOXYGEN} )
     set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/docs/doxygen)
     set(DOXYGEN_IMAGE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/docs/doxygen/images)
 
-    message("Doxygen build started")
+    message(STATUS "Doxygen build started")
 
     doxygen_add_docs(doxygen
       COMMENT "Generating API documentation with Doxygen"
       ${PROJECT_SOURCE_DIR})
 
   else (DOXYGEN_FOUND)
-    message("Doxygen need to be installed to generate the doxygen documentation")
+    message(WARNING "Doxygens need to be installed to generate the doxygen documentation")
   endif (DOXYGEN_FOUND)
 endif()
 
@@ -593,6 +615,7 @@ if (PARFLOW_ENABLE_PYTHON)
   find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
   set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
   set(PARFLOW_PYTHON_DEPENDS)
+  set(PARFLOW_HAVE_PYTHON)
 
   option(PARFLOW_PYTHON_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
   if (PARFLOW_PYTHON_VIRTUAL_ENV)

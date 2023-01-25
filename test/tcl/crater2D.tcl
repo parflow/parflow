@@ -463,6 +463,9 @@ pfset Solver.Linear.Preconditioner                       MGSemi
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 
+# Test Top writing
+pfset Solver.PrintTop                                    True
+
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
@@ -485,6 +488,14 @@ if ![pftestFile crater.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
     set passed 0
 }
 if ![pftestFile crater.out.porosity.pfb "Max difference in porosity" $sig_digits] {
+    set passed 0
+}
+
+if ![pftestFile crater.out.top_patch.pfb "Max difference in top patch" $sig_digits] {
+    set passed 0
+}
+
+if ![pftestFile crater.out.top_zindex.pfb "Max difference in top zindex" $sig_digits] {
     set passed 0
 }
 

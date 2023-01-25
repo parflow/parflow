@@ -334,6 +334,7 @@ int main(int argc, char **argv)
   int bottom;
   int side;
   float zTop,zBot;
+  float dx, dy;
 
   try {  
 
@@ -360,6 +361,12 @@ int main(int argc, char **argv)
 
     TCLAP::ValueArg<float> zBotArg("","z-bottom","Set bottom of domain",false,NAN,"float");
     cmd.add( zBotArg );
+
+    TCLAP::ValueArg<float> dxArg("","dx","Set DX",false,NAN,"float");
+    cmd.add( dxArg );
+    
+    TCLAP::ValueArg<float> dyArg("","dy","Set DY",false,NAN,"float");
+    cmd.add( dyArg );
 
     TCLAP::ValueArg<string>* maskFilenamesArgs[g_maskNames.size()];
 
@@ -396,6 +403,8 @@ int main(int argc, char **argv)
     side = sideArg.getValue();;
     zTop = zTopArg.getValue();;
     zBot = zBotArg.getValue();;
+    dx = dyArg.getValue();
+    dy = dyArg.getValue();
 
   }
   catch (TCLAP::ArgException &e)  // catch any exceptions
@@ -405,7 +414,7 @@ int main(int argc, char **argv)
 
   int nx, ny, nz;
   double sx = 0, sy = 0, sz = 0;
-  double dx, dy, dz;
+  double dz;
 
   std::vector<Databox*> databox(inFilenames[0].size());
 
@@ -432,8 +441,15 @@ int main(int argc, char **argv)
   sx = DataboxX(databox[0]);
   sy = DataboxY(databox[0]);
 
-  dx = DataboxDx(databox[0]);
-  dy = DataboxDy(databox[0]);
+  if(isnan(dx))
+  {
+    dx = DataboxDx(databox[0]);
+  }
+
+  if(isnan(dy))
+  {
+    dy = DataboxDy(databox[0]);
+  }
 
   // If user specifies Top/Bottom on command line override defaults
   if(isnan(zBot))
@@ -633,6 +649,7 @@ int main(int argc, char **argv)
 	// Front
 	if ( (j==0) || (indicators[0][ triangleIndex(i,j-1,0) ] == 0) )
 	{
+
 	  Simplify::Triangle triangle;
 	  triangle.patch = indicators[FRONT][ triangleIndex(i,j,0) ];
 	  g_patchLabels.insert(triangle.patch);
