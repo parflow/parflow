@@ -202,50 +202,6 @@ typedef struct {
 } PublicXtra;
 
 typedef struct {
-<<<<<<< HEAD
-    PFModule *permeability_face;
-    PFModule *advect_concen;
-    PFModule *set_problem_data;
-
-    PFModule *retardation;
-    PFModule *phase_rel_perm;
-    PFModule *ic_phase_pressure;
-    PFModule *ic_phase_concen;
-    PFModule *problem_saturation;
-    PFModule *phase_density;
-    PFModule *select_time_step;
-    PFModule *l2_error_norm;
-    PFModule *nonlin_solver;
-
-    Grid *grid;
-    Grid *grid2d;
-    Grid *x_grid;
-    Grid *y_grid;
-    Grid *z_grid;
-
-    ProblemData *problem_data;
-
-    double *temp_data;
-
-    /****************************************************************************
-     * Local variables that need to be kept around
-     *****************************************************************************/
-    Vector *pressure;
-    Vector *saturation;
-    Vector *density;
-    Vector *old_density;
-    Vector *old_saturation;
-    Vector *old_pressure;
-    Vector *mask;
-
-    Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
-    Vector *overland_sum;
-    Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
-    Vector *dz_mult;              /* vector containing dz multplier values for all cells */
-    Vector *x_velocity;           /* vector containing x-velocity face values */
-    Vector *y_velocity;           /* vector containing y-velocity face values */
-    Vector *z_velocity;           /* vector containing z-velocity face values */
-=======
   PFModule *permeability_face;
   PFModule *advect_concen;
   PFModule *set_problem_data;
@@ -289,7 +245,6 @@ typedef struct {
   Vector *x_velocity;           /* vector containing x-velocity face values */
   Vector *y_velocity;           /* vector containing y-velocity face values */
   Vector *z_velocity;           /* vector containing z-velocity face values */
->>>>>>> 6f65b2836442db516a89bbbcb9ec47a7fc5b3884
 #ifdef HAVE_CLM
     /* RM: vars for pf printing of clm output */
   Vector *eflx_lh_tot;          /* total LH flux from canopy height to atmosphere [W/m^2] */
@@ -2995,7 +2950,84 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     FinalizeVectorUpdate(handle);
     }
 
+    //TODO define these variables somewhere that makes more sense
+    bool domain_has_reservoirs = TRUE;
+    double reservoir_reset_pressure = 0.0;
+    ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
+    ReservoirDataPhysical *reservoir_data_physical;
+    ReservoirDataValue    *reservoir_data_value;
+    Subgrid          *tmp_subgrid, *reservoir_intake_subgrid;
+    if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
+//    double epoch_time = problem->current_unix_epoch_time;
+      for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
+        reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
+//      interval_number = TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number);
 
+//      reservoir_data_value = ReservoirDataFluxReservoirIntervalValue(reservoir_data, reservoir, interval_number);
+
+        reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
+        GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+
+        int i, j, k, r, is;
+        int ix, iy, iz;
+        int nx, ny, nz;
+        int ip;
+        // JLW add declarations for use without CLM
+        Subvector *p_sub_sp;
+        double *pp_sp;
+
+        Subgrid *subgrid;
+        Grid *grid = VectorGrid(evap_trans_sum);
+
+        ForSubgridI(is, GridSubgrids(grid))
+        {
+          subgrid = GridSubgrid(grid, is);
+
+
+
+          if (tmp_subgrid = IntersectSubgrids(subgrid, reservoir_intake_subgrid))
+          {
+            p_sub_sp = VectorSubvector(instance_xtra->pressure, is);
+            pp_sp = SubvectorData(p_sub_sp);
+            r = SubgridRX(tmp_subgrid);
+
+            ix = SubgridIX(tmp_subgrid);
+            iy = SubgridIY(tmp_subgrid);
+            iz = SubgridIZ(tmp_subgrid);
+
+            nx = SubgridNX(tmp_subgrid);
+            ny = SubgridNY(tmp_subgrid);
+            nz = SubgridNZ(tmp_subgrid);
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                         {
+                           ip = SubvectorEltIndex(p_sub_sp, i, j, k);
+                           // printf(" %d %d %d %d  \n",i,j,k,ip);
+                           // printf(" pp[ip] %10.3f \n",pp[ip]);
+                           // printf(" NZ: %d \n",nz);
+                           if (k == (nz - 1))
+                           {
+                             //   printf(" %d %d %d %d  \n",i,j,k,ip);
+                             //   printf(" pp[ip] %10.3f \n",pp[ip]);
+
+                             if (pp_sp[ip] > public_xtra->threshold_pressure)
+                             {
+                               amps_Printf(" time: %10.3f reservoir pressure reset: %d %d %d %10.3f \n",t, i, j, k,
+                                           pp_sp[ip]); pp_sp[ip] = reservoir_reset_pressure;
+                             }
+                           }
+                         }
+            );
+          }
+        }
+        /* update pressure,  not sure if we need to do this but we might if pressures are reset along processor edges RMM */
+        handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+        FinalizeVectorUpdate(handle);
+      }
+    }
+    if (domain_has_reservoirs)
+    {
+
+    }
 
     /* velocity updates - not sure these are necessary jjb */
     handle = InitVectorUpdate(instance_xtra->x_velocity, VectorUpdateAll);
@@ -5711,11 +5743,6 @@ SolverRichards()
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
-<<<<<<< HEAD
-  InstanceXtra *instance_xtra =
-      (InstanceXtra*)PFModuleInstanceXtra(this_module);
-=======
->>>>>>> 6f65b2836442db516a89bbbcb9ec47a7fc5b3884
 
   Problem *problem = (public_xtra->problem);
   double start_time = ProblemStartTime(problem);
