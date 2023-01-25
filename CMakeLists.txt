@@ -485,6 +485,10 @@ if ( ${PARFLOW_HAVE_CLM} )
   # Make true value match autoconf value; for some backwards compatiblity
   set(PARFLOW_HAVE_CLM "yes")
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
+
+  if( ${PARFLOW_HAVE_CLM} )
+    add_subdirectory (pfsimulator/clm)
+  endif( ${PARFLOW_HAVE_CLM} )
 endif ( ${PARFLOW_HAVE_CLM} )
 
 option(PARFLOW_HAVE_ECLM "Compile with eCLM (experimental)" "OFF")
@@ -558,6 +562,11 @@ if ( ${PARFLOW_ENABLE_SIMULATOR} )
   add_subdirectory (pfsimulator)
   add_subdirectory (test)
   add_subdirectory (examples)
+
+  #-----------------------------------------------------------------------------
+  # Install general helper scripts
+  #-----------------------------------------------------------------------------
+  install(PROGRAMS bin/pfrun DESTINATION bin)
 endif ()
 
 option(PARFLOW_ENABLE_TOOLS "Enable building of the Parflow tools" "True")
@@ -576,13 +585,6 @@ if (PARFLOW_ENABLE_LATEX)
 endif()
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
-# Test script for docker builds
-install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
-
-#-----------------------------------------------------------------------------
-# Install general helper scripts
-#-----------------------------------------------------------------------------
-install(PROGRAMS bin/pfrun DESTINATION bin)
 
 #-----------------------------------------------------------------------------
 # Doxygen
