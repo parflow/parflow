@@ -452,11 +452,6 @@ void         PhaseSource(
         bool should_release = reservoir_data_physical->current_capacity > reservoir_data_physical->min_release_capacity;
         if (should_release) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
-//          double release_amount = GetValue(reservoir_data_physical->release_curve, problem->current_unix_epoch_time);
-//          printf("When in phase source the reservoir x value is %f\n",  reservoir_data_physical->x_lower);
-//          printf("When in phase source time series second value is %f\n",  GetValue(reservoir_data_physical->release_curve, 4.0));
-//          printf("Release amount is %f\n", release_amount);
-//          printf("Reservoir status is %d\n", ReservoirDataPhysicalStatus(reservoir_data_physical));
           /*  Get the intersection of the reservoir with the subgrid  */
           tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid);
           if (tmp_subgrid) {
