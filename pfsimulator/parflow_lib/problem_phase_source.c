@@ -420,7 +420,12 @@ void         PhaseSource(
       /*  Get the intersection of the reservoir with the subgrid  */
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
       flux = reservoir_value / volume;
-
+      //If we are overfull need to release the rest of the flux
+      bool reservoir_is_overfull = reservoir_data_physical->current_capacity > reservoir_data_physical->max_capacity;
+      if (reservoir_is_overfull){
+        //TODO replace 0.01 with dt
+        flux = (reservoir_data_physical->current_capacity - reservoir_data_physical->max_capacity) / (volume*0.01) ;
+      }
       avg_x = ReservoirDataPhysicalAveragePermeabilityX(reservoir_data_physical);
       avg_y = ReservoirDataPhysicalAveragePermeabilityY(reservoir_data_physical);
       avg_z = ReservoirDataPhysicalAveragePermeabilityZ(reservoir_data_physical);
@@ -442,10 +447,9 @@ void         PhaseSource(
         nx_ps = SubvectorNX(ps_sub);
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
-
+        printf("Reservoir current capacity is %f\n", reservoir_data_physical->current_capacity);
         // Check if the reservoir is on
-        bool should_release = reservoir_data_physical->current_capacity > reservoir_data_physical->min_release_capacity&&\
-                              reservoir_data_physical->current_capacity < reservoir_data_physical->max_capacity;
+        bool should_release = reservoir_data_physical->current_capacity > reservoir_data_physical->min_release_capacity;
         if (should_release) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
 //          double release_amount = GetValue(reservoir_data_physical->release_curve, problem->current_unix_epoch_time);
@@ -482,7 +486,7 @@ void         PhaseSource(
 
             int ip = 0;
             int ips = 0;
-            printf("Releasing flux from reservoir %f\n", flux);
+//            printf("Releasing flux from reservoir %f\n", flux);
 //            reservoir_data_physical->release_curve(problem_data);
             if (ReservoirDataPhysicalMethod(reservoir_data_physical)
                 == FLUX_WEIGHTED) {
@@ -510,8 +514,9 @@ void         PhaseSource(
                           data[ips] += weight * flux;
                         });
             }
-            reservoir_data_physical->current_capacity-=reservoir_data_physical->release_rate;
-            printf("Reservoir current capacity is %f", reservoir_data_physical->current_capacity);
+            //TODO replace 0.01 with dt
+            reservoir_data_physical->current_capacity-= flux*0.01*volume;
+            printf("Releasing %f water\n", flux*0.01*volume);
           }
           else if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_intake_subgrid))) {
             /*  If an intersection;  loop over it, and insert value  */
