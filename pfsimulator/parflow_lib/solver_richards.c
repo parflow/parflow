@@ -2892,8 +2892,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
    /***************************************************************
     *          modify land surface pressures                      *
     ***************************************************************/
-   
-    if (public_xtra->reset_surface_pressure == 1)
+    if(0)
+//    if (public_xtra->reset_surface_pressure == 1)
     {
       GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
@@ -2982,13 +2982,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         ForSubgridI(is, GridSubgrids(grid))
         {
           subgrid = GridSubgrid(grid, is);
-
-
-
           if (tmp_subgrid = IntersectSubgrids(subgrid, reservoir_intake_subgrid))
           {
             p_sub_sp = VectorSubvector(instance_xtra->pressure, is);
-            pp_sp = SubvectorData(p_sub_sp);
+
             r = SubgridRX(tmp_subgrid);
 
             ix = SubgridIX(tmp_subgrid);
@@ -2998,18 +2995,20 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             nx = SubgridNX(tmp_subgrid);
             ny = SubgridNY(tmp_subgrid);
             nz = SubgridNZ(tmp_subgrid);
+            int grid_nz = SubgridNZ(subgrid);
+
+            pp_sp = SubvectorData(p_sub_sp);
+            printf("About to loop\n");
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
                          {
                            ip = SubvectorEltIndex(p_sub_sp, i, j, k);
-                           // printf(" %d %d %d %d  \n",i,j,k,ip);
-                           // printf(" pp[ip] %10.3f \n",pp[ip]);
-                           // printf(" NZ: %d \n",nz);
-                           if (k == (nz - 1))
+                           printf("In loop, k is %d\n", k);
+                           if (k == (grid_nz - 1))
                            {
                              //   printf(" %d %d %d %d  \n",i,j,k,ip);
                              //   printf(" pp[ip] %10.3f \n",pp[ip]);
-
-                             if (pp_sp[ip] > public_xtra->threshold_pressure)
+                              printf("Checking if we should reset pressure\n");
+                             if (pp_sp[ip] > reservoir_reset_pressure)
                              {
                                amps_Printf(" time: %10.3f reservoir pressure reset: %d %d %d %10.3f \n",t, i, j, k,
                                            pp_sp[ip]); pp_sp[ip] = reservoir_reset_pressure;
@@ -3020,13 +3019,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           }
         }
         /* update pressure,  not sure if we need to do this but we might if pressures are reset along processor edges RMM */
-        handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
-        FinalizeVectorUpdate(handle);
-      }
-    }
-    if (domain_has_reservoirs)
-    {
 
+      }
+      handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
     }
 
     /* velocity updates - not sure these are necessary jjb */

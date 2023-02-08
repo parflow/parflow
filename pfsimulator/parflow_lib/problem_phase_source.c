@@ -447,14 +447,13 @@ void         PhaseSource(
         nx_ps = SubvectorNX(ps_sub);
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
-        printf("Reservoir current capacity is %f\n", reservoir_data_physical->current_capacity);
+//        printf("Reservoir current capacity is %f\n", reservoir_data_physical->current_capacity);
         // Check if the reservoir is on
         bool should_release = reservoir_data_physical->current_capacity > reservoir_data_physical->min_release_capacity;
         if (should_release) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
           /*  Get the intersection of the reservoir with the subgrid  */
-          tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid);
-          if (tmp_subgrid) {
+          if (tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid)) {
             /*  If an intersection;  loop over it, and insert value  */
             ix = SubgridIX(tmp_subgrid);
             iy = SubgridIY(tmp_subgrid);
@@ -511,7 +510,7 @@ void         PhaseSource(
             }
             //TODO replace 0.01 with dt
             reservoir_data_physical->current_capacity-= flux*0.01*volume;
-            printf("Releasing %f water\n", flux*0.01*volume);
+//            printf("Releasing %f water\n", flux*0.01*volume);
           }
           else if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_intake_subgrid))) {
             /*  If an intersection;  loop over it, and insert value  */
