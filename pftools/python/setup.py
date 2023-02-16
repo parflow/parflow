@@ -27,7 +27,7 @@ setup(
     include_package_data=True,
     extras_require={
         'all': [
-            'imageio>=2.9.0'
+            'imageio>=2.9.0',
             'numpy',
             'xarray',
             'numba',
