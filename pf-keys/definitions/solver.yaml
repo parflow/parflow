@@ -1612,14 +1612,38 @@ Solver:
         [Type: double]
       default: 0.0
       domains:
-        DoubleValue:      
-      
+        DoubleValue:
+
     ResetPressure:
       help: >
         [Type: double] 
       default: 0.0
       domains:
         DoubleValue:
+  
+  SurfacePredictor:
+    __doc__: >
+      [Type: logical] Try to calculate if a surface cell will pond / switch from sub surface to surface flow and set pressure to a positive value.
+    __value__:
+      help: >
+        [Type: boolean/string] Try to calculate if a surface cell will pond / switch from sub surface to surface flow and set pressure to a positive value.
+      default: False
+      domains:
+        BoolDomain:
+
+    PressureValue:
+      help: >
+        [Type: double] Surface pressure value set if flux into cell exceeds capacity.
+      default: 0.00001
+      domains:
+        DoubleValue:
+      
+    PrintValues:
+      help: >
+        [Type: logical] Surface predictor print flag.
+      default: False
+      domains:
+        BoolDomain:
 
   OverlandDiffusive:
     __doc__: >
