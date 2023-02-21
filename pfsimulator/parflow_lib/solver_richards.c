@@ -2841,14 +2841,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
         {
           ip = SubvectorEltIndex(p_sub, i, j, k);
-          // printf(" %d %d %d %d  \n",i,j,k,ip);
-          // printf(" pp[ip] %10.3f \n",pp[ip]);
-          // printf(" NZ: %d \n",nz);
+          
           if (k == (nz - 1))
           {
-               //printf(" %d %d %d %d  \n",i,j,k,ip);
-               //printf(" et_sp[ip] pp[ip] %3.6e %10.3f \n",et_sp[ip],pp[ip]);
-            int press_cond = 0;  //will replace with actual condition
             vol = dx*dy*dz*dz_dat[ip]*po_dat[ip]*sp[ip];
             flux_in = dx*dy*dz*dz_dat[ip]*et[ip]*dt;
             vol_max = dx*dy*dz*dz_dat[ip]*po_dat[ip];
