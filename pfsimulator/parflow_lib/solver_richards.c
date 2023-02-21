@@ -2854,7 +2854,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       
                 press_pred = public_xtra->surface_predictor_pressure;
               if (public_xtra->surface_predictor_print == 1) {
-                printf(" Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Pressure: %3.6e I: %d J: %d  \n",vol, vol_max,flux_in,pp[ip],i,j);
+                amps_Printf(" Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Pressure: %3.6e I: %d J: %d  \n",vol, vol_max,flux_in,pp[ip],i,j);
               }
               pp[ip] = press_pred; 
 
