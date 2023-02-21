@@ -4923,7 +4923,7 @@ help with slope errors and issues and provides some diagnostic information.  The
       pfset Solver.ResetSurfacePressure.ThresholdPressure        10.0        ## TCL syntax
       <runname>.Solver.ResetSurfacePressure.ThresholdPressure  = 10.0    ## Python syntax
 
-*double* **Solver.SurfacePressure.ResetPressure** 0.0 This key specifies a reset value used in the **ResetSurfacePressure** key above.
+*double* **Solver.ResetSurfacePressure.ResetPressure** 0.0 This key specifies a reset value used in the **ResetSurfacePressure** key above.
 
 .. container:: list
 
