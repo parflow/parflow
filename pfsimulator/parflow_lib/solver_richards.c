@@ -2995,6 +2995,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             nx = SubgridNX(tmp_subgrid);
             ny = SubgridNY(tmp_subgrid);
             nz = SubgridNZ(tmp_subgrid);
+            double dx = SubgridDX(tmp_subgrid);
+            double dy = SubgridDY(tmp_subgrid);
             int grid_nz = SubgridNZ(subgrid);
 
             pp_sp = SubvectorData(p_sub_sp);
@@ -3010,8 +3012,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                               printf("Checking if we should reset pressure\n");
                              if (pp_sp[ip] > reservoir_reset_pressure)
                              {
-                               amps_Printf(" time: %10.3f reservoir pressure reset: %d %d %d %10.3f \n",t, i, j, k,
-                                           pp_sp[ip]); pp_sp[ip] = reservoir_reset_pressure;
+                               amps_Printf(" time: %10.3f reservoir pressure reset: %d %d %d %10.3f \n",t, i, j, k,pp_sp[ip]);
+                                           printf("Amount of water to be added is %f\n", pp_sp[ip]*dx*dy);
+                                             printf("Before adding water current capcity is %f\n", reservoir_data_physical->current_capacity);
+                                             reservoir_data_physical->current_capacity = reservoir_data_physical->current_capacity + pp_sp[ip]*dx*dy;
+                                             printf("After adding water Current Capcity is %f\n", reservoir_data_physical->current_capacity);
+                                            pp_sp[ip] = reservoir_reset_pressure;
+
                              }
                            }
                          }
