@@ -2955,7 +2955,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     double reservoir_reset_pressure = 0.0;
     ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
     ReservoirDataPhysical *reservoir_data_physical;
-    ReservoirDataValue    *reservoir_data_value;
     Subgrid          *tmp_subgrid, *reservoir_intake_subgrid;
     if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
 //    double epoch_time = problem->current_unix_epoch_time;

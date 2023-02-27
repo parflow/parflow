@@ -79,9 +79,6 @@ typedef struct {
     int status;
     int method;
     int cycle_number;
-    double **phase_values;
-    double **saturation_values;
-    double **contaminant_values;
 } Type0;                      /* basic vertical reservoir */
 
 typedef struct {
@@ -95,9 +92,6 @@ typedef struct {
     int method_ext;
     int method_inj;
     int cycle_number;
-    double **phase_values_ext;
-    double **phase_values_inj;
-    double **contaminant_fractions;
 } Type1;                      /* basic vertical reservoir, recirculating */
 
 /*--------------------------------------------------------------------------
@@ -120,8 +114,6 @@ void         ReservoirPackage(
 
   ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
   ReservoirDataPhysical *reservoir_data_physical;
-  ReservoirDataValue    *reservoir_data_value;
-  ReservoirDataStat     *reservoir_data_stat = NULL;
 
   int i, sequence_number, phase, contaminant, indx, press_reservoir, flux_reservoir;
 
@@ -154,16 +146,12 @@ void         ReservoirPackage(
     if ((public_xtra->num_press_reservoirs) > 0)
     {
       ReservoirDataPressReservoirPhysicals(reservoir_data) = ctalloc(ReservoirDataPhysical *, (public_xtra->num_press_reservoirs));
-      ReservoirDataPressReservoirValues(reservoir_data) = ctalloc(ReservoirDataValue * *, (public_xtra->num_press_reservoirs));
-      ReservoirDataPressReservoirStats(reservoir_data) = ctalloc(ReservoirDataStat *, (public_xtra->num_press_reservoirs));
     }
 
     ReservoirDataNumFluxReservoirs(reservoir_data) = (public_xtra->num_flux_reservoirs);
     if ((public_xtra->num_flux_reservoirs) > 0)
     {
       ReservoirDataFluxReservoirPhysicals(reservoir_data) = ctalloc(ReservoirDataPhysical *, (public_xtra->num_flux_reservoirs));
-      ReservoirDataFluxReservoirValues(reservoir_data) = ctalloc(ReservoirDataValue * *, (public_xtra->num_flux_reservoirs));
-      ReservoirDataFluxReservoirStats(reservoir_data) = ctalloc(ReservoirDataStat *, (public_xtra->num_flux_reservoirs));
     }
   }
 
@@ -281,99 +269,6 @@ void         ReservoirPackage(
 
             /* Put in values for this reservoir */
             interval_division = TimeCycleDataIntervalDivision(time_cycle_data, ReservoirDataPhysicalCycleNumber(reservoir_data_physical));
-            ReservoirDataPressReservoirIntervalValues(reservoir_data, press_reservoir) = ctalloc(ReservoirDataValue *, interval_division);
-            for (interval_number = 0; interval_number < interval_division; interval_number++)
-            {
-              reservoir_data_value = ctalloc(ReservoirDataValue, 1);
-
-              ReservoirDataValuePhaseValues(reservoir_data_value) = ctalloc(double, 1);
-              phase = 0;
-              {
-                ReservoirDataValuePhaseValue(reservoir_data_value, phase) = ((dummy0->phase_values[interval_number])[phase]);
-              }
-              if ((dummy0->action) == INJECTION_RESERVOIR)
-              {
-                ReservoirDataValueSaturationValues(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  ReservoirDataValueSaturationValue(reservoir_data_value, phase) = ((dummy0->saturation_values[interval_number])[phase]);
-                }
-                ReservoirDataValueContaminantValues(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                  {
-                    indx = phase * (public_xtra->num_contaminants) + contaminant;
-                    ReservoirDataValueContaminantValue(reservoir_data_value, indx) = ((dummy0->contaminant_values[interval_number])[indx]);
-                  }
-                }
-                ReservoirDataValueContaminantFractions(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                  {
-                    indx = phase * (public_xtra->num_contaminants) + contaminant;
-                    ReservoirDataValueContaminantFraction(reservoir_data_value, indx) = 1.0;
-                  }
-                }
-              }
-              else
-              {
-                ReservoirDataValueContaminantFractions(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                  {
-                    indx = phase * (public_xtra->num_contaminants) + contaminant;
-                    ReservoirDataValueContaminantFraction(reservoir_data_value, indx) = 1.0;
-                  }
-                }
-              }
-              ReservoirDataPressReservoirIntervalValue(reservoir_data, press_reservoir, interval_number) = reservoir_data_value;
-            }
-
-            /* Put in informational statistics for this reservoir */
-            reservoir_data_stat = ctalloc(ReservoirDataStat, 1);
-            ReservoirDataStatDeltaPhases(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              ReservoirDataStatDeltaPhase(reservoir_data_stat, phase) = 0.0;
-            }
-            ReservoirDataStatPhaseStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              ReservoirDataStatPhaseStat(reservoir_data_stat, phase) = 0.0;
-            }
-            ReservoirDataStatDeltaSaturations(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              ReservoirDataStatDeltaSaturation(reservoir_data_stat, phase) = 0.0;
-            }
-            ReservoirDataStatSaturationStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              ReservoirDataStatSaturationStat(reservoir_data_stat, phase) = 0.0;
-            }
-            ReservoirDataStatDeltaContaminants(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-              {
-                indx = phase * (public_xtra->num_contaminants) + contaminant;
-                ReservoirDataStatDeltaContaminant(reservoir_data_stat, indx) = 0.0;
-              }
-            }
-            ReservoirDataStatContaminantStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-              {
-                indx = phase * (public_xtra->num_contaminants) + contaminant;
-                ReservoirDataStatContaminantStat(reservoir_data_stat, indx) = 0.0;
-              }
-            }
-            ReservoirDataPressReservoirStat(reservoir_data, press_reservoir) = reservoir_data_stat;
-
             press_reservoir++;
           }
           else if ((dummy0->mechanism) == FLUX_RESERVOIR)
@@ -419,99 +314,6 @@ void         ReservoirPackage(
 
             /* Put in values for this reservoir */
             interval_division = TimeCycleDataIntervalDivision(time_cycle_data, ReservoirDataPhysicalCycleNumber(reservoir_data_physical));
-            ReservoirDataFluxReservoirIntervalValues(reservoir_data, flux_reservoir) = ctalloc(ReservoirDataValue *, interval_division);
-            for (interval_number = 0; interval_number < interval_division; interval_number++)
-            {
-              reservoir_data_value = ctalloc(ReservoirDataValue, 1);
-
-              ReservoirDataValuePhaseValues(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataValuePhaseValue(reservoir_data_value, phase) = ((dummy0->phase_values[interval_number])[phase]);
-              }
-              if ((dummy0->action) == INJECTION_RESERVOIR)
-              {
-                ReservoirDataValueSaturationValues(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  ReservoirDataValueSaturationValue(reservoir_data_value, phase) = ((dummy0->saturation_values[interval_number])[phase]);
-                }
-                ReservoirDataValueContaminantValues(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                  {
-                    indx = phase * (public_xtra->num_contaminants) + contaminant;
-                    ReservoirDataValueContaminantValue(reservoir_data_value, indx) = ((dummy0->contaminant_values[interval_number])[indx]);
-                  }
-                }
-                ReservoirDataValueContaminantFractions(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                  {
-                    indx = phase * (public_xtra->num_contaminants) + contaminant;
-                    ReservoirDataValueContaminantFraction(reservoir_data_value, indx) = 1.0;
-                  }
-                }
-              }
-              else
-              {
-                ReservoirDataValueContaminantFractions(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                  {
-                    indx = phase * (public_xtra->num_contaminants) + contaminant;
-                    ReservoirDataValueContaminantFraction(reservoir_data_value, indx) = 1.0;
-                  }
-                }
-              }
-              ReservoirDataFluxReservoirIntervalValue(reservoir_data, flux_reservoir, interval_number) = reservoir_data_value;
-            }
-
-            /* Put in informational statistics for this reservoir */
-            reservoir_data_stat = ctalloc(ReservoirDataStat, 1);
-            ReservoirDataStatDeltaPhases(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              ReservoirDataStatDeltaPhase(reservoir_data_stat, phase) = 0.0;
-            }
-            ReservoirDataStatPhaseStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              ReservoirDataStatPhaseStat(reservoir_data_stat, phase) = 0.0;
-            }
-            ReservoirDataStatDeltaSaturations(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              ReservoirDataStatDeltaSaturation(reservoir_data_stat, phase) = 0.0;
-            }
-            ReservoirDataStatSaturationStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              ReservoirDataStatSaturationStat(reservoir_data_stat, phase) = 0.0;
-            }
-            ReservoirDataStatDeltaContaminants(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-              {
-                indx = phase * (public_xtra->num_contaminants) + contaminant;
-                ReservoirDataStatDeltaContaminant(reservoir_data_stat, indx) = 0.0;
-              }
-            }
-            ReservoirDataStatContaminantStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-            for (phase = 0; phase < (public_xtra->num_phases); phase++)
-            {
-              for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-              {
-                indx = phase * (public_xtra->num_contaminants) + contaminant;
-                ReservoirDataStatContaminantStat(reservoir_data_stat, indx) = 0.0;
-              }
-            }
-            ReservoirDataFluxReservoirStat(reservoir_data, flux_reservoir) = reservoir_data_stat;
-
             flux_reservoir++;
           }
           sequence_number++;
@@ -542,7 +344,6 @@ void         ReservoirPackage(
               z_upper = (dummy1->z_upper_ext);
 
               action = EXTRACTION_RESERVOIR;
-              phase_values = (dummy1->phase_values_ext);
               mechanism = (dummy1->mechanism_ext);
               method = (dummy1->method_ext);
             }
@@ -552,7 +353,6 @@ void         ReservoirPackage(
               z_upper = (dummy1->z_upper_inj);
 
               action = INJECTION_RESERVOIR;
-              phase_values = (dummy1->phase_values_inj);
               mechanism = (dummy1->mechanism_inj);
               method = (dummy1->method_inj);
             }
@@ -618,89 +418,6 @@ void         ReservoirPackage(
 
               /* Put in values for this reservoir */
               interval_division = TimeCycleDataIntervalDivision(time_cycle_data, ReservoirDataPhysicalCycleNumber(reservoir_data_physical));
-              ReservoirDataPressReservoirIntervalValues(reservoir_data, press_reservoir) = ctalloc(ReservoirDataValue *, interval_division);
-              for (interval_number = 0; interval_number < interval_division; interval_number++)
-              {
-                reservoir_data_value = ctalloc(ReservoirDataValue, 1);
-
-                ReservoirDataValuePhaseValues(reservoir_data_value) = ctalloc(double, 1);
-                phase = 0;
-                {
-                  ReservoirDataValuePhaseValue(reservoir_data_value, phase) = ((phase_values[interval_number])[phase]);
-                }
-                if (action == INJECTION_RESERVOIR)
-                {
-                  /* This is where the dependence of the injection reservoir on the extraction reservoir occurs */
-                  ReservoirDataValueDeltaSaturationPtrs(reservoir_data_value) = ReservoirDataStatDeltaSaturations(reservoir_data_stat);
-                  ReservoirDataValueDeltaContaminantPtrs(reservoir_data_value) = ReservoirDataStatDeltaContaminants(reservoir_data_stat);
-
-                  ReservoirDataValueContaminantFractions(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                  for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                  {
-                    for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                    {
-                      indx = phase * (public_xtra->num_contaminants) + contaminant;
-                      ReservoirDataValueContaminantFraction(reservoir_data_value, indx) = 1.0 - ((dummy1->contaminant_fractions[interval_number])[indx]);
-                    }
-                  }
-                }
-                else
-                {
-                  ReservoirDataValueContaminantFractions(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                  for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                  {
-                    for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                    {
-                      indx = phase * (public_xtra->num_contaminants) + contaminant;
-                      ReservoirDataValueContaminantFraction(reservoir_data_value, indx) = ((dummy1->contaminant_fractions[interval_number])[indx]);
-                    }
-                  }
-                }
-                ReservoirDataPressReservoirIntervalValue(reservoir_data, press_reservoir, interval_number) = reservoir_data_value;
-              }
-
-              /* Put in informational statistics for this reservoir */
-              reservoir_data_stat = ctalloc(ReservoirDataStat, 1);
-              ReservoirDataStatDeltaPhases(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataStatDeltaPhase(reservoir_data_stat, phase) = 0.0;
-              }
-              ReservoirDataStatPhaseStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataStatPhaseStat(reservoir_data_stat, phase) = 0.0;
-              }
-              ReservoirDataStatDeltaSaturations(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataStatDeltaSaturation(reservoir_data_stat, phase) = 0.0;
-              }
-              ReservoirDataStatSaturationStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataStatSaturationStat(reservoir_data_stat, phase) = 0.0;
-              }
-              ReservoirDataStatDeltaContaminants(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                {
-                  indx = phase * (public_xtra->num_contaminants) + contaminant;
-                  ReservoirDataStatDeltaContaminant(reservoir_data_stat, indx) = 0.0;
-                }
-              }
-              ReservoirDataStatContaminantStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                {
-                  indx = phase * (public_xtra->num_contaminants) + contaminant;
-                  ReservoirDataStatContaminantStat(reservoir_data_stat, indx) = 0.0;
-                }
-              }
-              ReservoirDataFluxReservoirStat(reservoir_data, flux_reservoir) = reservoir_data_stat;
-
               press_reservoir++;
             }
             else if (mechanism == FLUX_RESERVOIR)
@@ -740,89 +457,6 @@ void         ReservoirPackage(
 
               /* Put in values for this reservoir */
               interval_division = TimeCycleDataIntervalDivision(time_cycle_data, ReservoirDataPhysicalCycleNumber(reservoir_data_physical));
-              ReservoirDataFluxReservoirIntervalValues(reservoir_data, flux_reservoir) = ctalloc(ReservoirDataValue *, interval_division);
-              for (interval_number = 0; interval_number < interval_division; interval_number++)
-              {
-                reservoir_data_value = ctalloc(ReservoirDataValue, 1);
-
-                ReservoirDataValuePhaseValues(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases));
-                for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                {
-                  ReservoirDataValuePhaseValue(reservoir_data_value, phase) = ((phase_values[interval_number])[phase]);
-                }
-                if (action == INJECTION_RESERVOIR)
-                {
-                  /* This is where the dependence of the injection reservoir on the extraction reservoir occurs */
-                  ReservoirDataValueDeltaSaturationPtrs(reservoir_data_value) = ReservoirDataStatDeltaSaturations(reservoir_data_stat);
-                  ReservoirDataValueDeltaContaminantPtrs(reservoir_data_value) = ReservoirDataStatDeltaContaminants(reservoir_data_stat);
-
-                  ReservoirDataValueContaminantFractions(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                  for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                  {
-                    for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                    {
-                      indx = phase * (public_xtra->num_contaminants) + contaminant;
-                      ReservoirDataValueContaminantFraction(reservoir_data_value, indx) = 1.0 - ((dummy1->contaminant_fractions[interval_number])[indx]);
-                    }
-                  }
-                }
-                else
-                {
-                  ReservoirDataValueContaminantFractions(reservoir_data_value) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-                  for (phase = 0; phase < (public_xtra->num_phases); phase++)
-                  {
-                    for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                    {
-                      indx = phase * (public_xtra->num_contaminants) + contaminant;
-                      ReservoirDataValueContaminantFraction(reservoir_data_value, indx) = ((dummy1->contaminant_fractions[interval_number])[indx]);
-                    }
-                  }
-                }
-                ReservoirDataFluxReservoirIntervalValue(reservoir_data, flux_reservoir, interval_number) = reservoir_data_value;
-              }
-
-              /* Put in informational statistics for this reservoir */
-              reservoir_data_stat = ctalloc(ReservoirDataStat, 1);
-              ReservoirDataStatDeltaPhases(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataStatDeltaPhase(reservoir_data_stat, phase) = 0.0;
-              }
-              ReservoirDataStatPhaseStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataStatPhaseStat(reservoir_data_stat, phase) = 0.0;
-              }
-              ReservoirDataStatDeltaSaturations(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataStatDeltaSaturation(reservoir_data_stat, phase) = 0.0;
-              }
-              ReservoirDataStatSaturationStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                ReservoirDataStatSaturationStat(reservoir_data_stat, phase) = 0.0;
-              }
-              ReservoirDataStatDeltaContaminants(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                {
-                  indx = phase * (public_xtra->num_contaminants) + contaminant;
-                  ReservoirDataStatDeltaContaminant(reservoir_data_stat, indx) = 0.0;
-                }
-              }
-              ReservoirDataStatContaminantStats(reservoir_data_stat) = ctalloc(double, (public_xtra->num_phases) * (public_xtra->num_contaminants));
-              for (phase = 0; phase < (public_xtra->num_phases); phase++)
-              {
-                for (contaminant = 0; contaminant < (public_xtra->num_contaminants); contaminant++)
-                {
-                  indx = phase * (public_xtra->num_contaminants) + contaminant;
-                  ReservoirDataStatContaminantStat(reservoir_data_stat, indx) = 0.0;
-                }
-              }
-              ReservoirDataFluxReservoirStat(reservoir_data, flux_reservoir) = reservoir_data_stat;
-
               flux_reservoir++;
             }
             sequence_number++;
@@ -1067,101 +701,6 @@ PFModule  *ReservoirPackageNewPublicXtra(
                 GlobalsIntervals[global_cycle][interval_number];
           }
 
-          dummy0->phase_values = ctalloc(double *, interval_division);
-
-          if ((dummy0->action) == INJECTION_RESERVOIR)
-          {
-            (dummy0->saturation_values) = ctalloc(double *,
-                                                  interval_division);
-            (dummy0->contaminant_values) = ctalloc(double *,
-                                                   interval_division);
-          }
-          else if ((dummy0->action) == EXTRACTION_RESERVOIR)
-          {
-            (dummy0->saturation_values) = NULL;
-            (dummy0->contaminant_values) = NULL;
-          }
-
-          /*** Read in the values for the reservoir ***/
-          for (interval_number = 0; interval_number < interval_division;
-               interval_number++)
-          {
-            if ((dummy0->mechanism) == PRESSURE_RESERVOIR)
-            {
-              dummy0->phase_values[interval_number] = ctalloc(double, 1);
-
-              sprintf(key, "Reservoirs.%s.%s.Pressure.Value",
-                      reservoir_name,
-                      NA_IndexToName(
-                          GlobalsIntervalNames[global_cycle],
-                          interval_number));
-
-              dummy0->phase_values[interval_number][0] = GetDouble(key);
-            }
-            else if ((dummy0->mechanism) == FLUX_RESERVOIR)
-            {
-              (dummy0->phase_values[interval_number]) = ctalloc(double,
-                                                                num_phases);
-
-              for (phase = 0; phase < num_phases; phase++)
-              {
-                sprintf(key, "Reservoirs.%s.%s.Flux.%s.Value",
-                        reservoir_name,
-                        NA_IndexToName(
-                            GlobalsIntervalNames[global_cycle],
-                            interval_number),
-                        NA_IndexToName(GlobalsPhaseNames, phase));
-
-                dummy0->phase_values[interval_number][phase] =
-                    GetDouble(key);
-              }
-            }
-
-
-            if ((dummy0->action) == INJECTION_RESERVOIR)
-            {
-              dummy0->saturation_values[interval_number] =
-                      ctalloc(double, num_phases);
-
-              for (phase = 0; phase < num_phases; phase++)
-              {
-                sprintf(key, "Reservoirs.%s.%s.Saturation.%s.Value",
-                        reservoir_name,
-                        NA_IndexToName(
-                            GlobalsIntervalNames[global_cycle],
-                            interval_number),
-                        NA_IndexToName(GlobalsPhaseNames, phase));
-
-                dummy0->saturation_values[interval_number][phase] =
-                    GetDouble(key);
-              }
-
-              dummy0->contaminant_values[interval_number] =
-                      ctalloc(double, num_phases * num_contaminants);
-
-              for (phase = 0;
-                   phase < num_phases;
-                   phase++)
-              {
-                for (contaminant = 0;
-                     contaminant < num_contaminants;
-                     contaminant++)
-                {
-                  sprintf(key, "Reservoirs.%s.%s.Concentration.%s.%s.Value",
-                          reservoir_name,
-                          NA_IndexToName(
-                              GlobalsIntervalNames[global_cycle],
-                              interval_number),
-                          NA_IndexToName(GlobalsPhaseNames, phase),
-                          NA_IndexToName(GlobalsContaminatNames,
-                                         contaminant));
-                  dummy0->contaminant_values[interval_number]
-                  [phase + contaminant] = GetDouble(key);
-                }
-              }
-            }
-          }
-
           /*** Bump the counter for the reservoir type ***/
           if ((dummy0->mechanism) == PRESSURE_RESERVOIR)
           {
@@ -1300,108 +839,6 @@ PFModule  *ReservoirPackageNewPublicXtra(
                 GlobalsIntervals[global_cycle][interval_number];
           }
 
-
-
-          (dummy1->phase_values_ext) = ctalloc(double *, interval_division);
-          (dummy1->phase_values_inj) = ctalloc(double *, interval_division);
-          (dummy1->contaminant_fractions) = ctalloc(double *, interval_division);
-
-          /*** Read in the values for the reservoir ***/
-          for (interval_number = 0; interval_number < interval_division; interval_number++)
-          {
-            /*** Read in the values for the extraction reservoir ***/
-            if ((dummy1->mechanism_ext) == PRESSURE_RESERVOIR)
-            {
-              dummy1->phase_values_ext[interval_number] =
-                      ctalloc(double, 1);
-
-              sprintf(key, "Reservoirs.%s.%s.Extraction.Pressure.Value",
-                      reservoir_name,
-                      NA_IndexToName(
-                          GlobalsIntervalNames[global_cycle],
-                          interval_number));
-
-              dummy1->phase_values_ext[interval_number][0] =
-                  GetDouble(key);
-            }
-            else if ((dummy1->mechanism_ext) == FLUX_RESERVOIR)
-            {
-              dummy1->phase_values_ext[interval_number] =
-                      ctalloc(double, num_phases);
-
-              for (phase = 0; phase < num_phases; phase++)
-              {
-                sprintf(key, "Reservoirs.%s.%s.Extraction.Flux.%s.Value",
-                        reservoir_name,
-                        NA_IndexToName(
-                            GlobalsIntervalNames[global_cycle],
-                            interval_number),
-                        NA_IndexToName(GlobalsPhaseNames, phase));
-
-                dummy1->phase_values_ext[interval_number][phase] =
-                    GetDouble(key);
-              }
-            }
-
-            /*** Read in the values for the injection reservoir ***/
-            if ((dummy1->mechanism_inj) == PRESSURE_RESERVOIR)
-            {
-              dummy1->phase_values_inj[interval_number] =
-                      ctalloc(double, 1);
-
-              sprintf(key, "Reservoirs.%s.%s.Injection.Pressure.Value",
-                      reservoir_name,
-                      NA_IndexToName(
-                          GlobalsIntervalNames[global_cycle],
-                          interval_number));
-
-              dummy1->phase_values_inj[interval_number][0] =
-                  GetDouble(key);
-            }
-            else if ((dummy1->mechanism_inj) == FLUX_RESERVOIR)
-            {
-              dummy1->phase_values_inj[interval_number] =
-                      ctalloc(double, num_phases);
-
-              for (phase = 0; phase < num_phases; phase++)
-              {
-                sprintf(key, "Reservoirs.%s.%s.Injection.Flux.%s.Value",
-                        reservoir_name,
-                        NA_IndexToName(
-                            GlobalsIntervalNames[global_cycle],
-                            interval_number),
-                        NA_IndexToName(GlobalsPhaseNames, phase));
-
-                dummy1->phase_values_inj[interval_number][phase] =
-                    GetDouble(key);
-              }
-            }
-
-            /* read in the fractions */
-            (dummy1->contaminant_fractions[interval_number]) =
-                    ctalloc(double, num_phases * num_contaminants);
-
-            for (phase = 0; phase < num_phases; phase++)
-            {
-              for (contaminant = 0;
-                   contaminant < num_contaminants;
-                   contaminant++)
-              {
-                sprintf(key,
-                        "Reservoirs.%s.%s.Injection.Concentration.%s.%s.Fraction",
-                        reservoir_name,
-                        NA_IndexToName(
-                            GlobalsIntervalNames[global_cycle],
-                            interval_number),
-                        NA_IndexToName(GlobalsPhaseNames, phase),
-                        NA_IndexToName(GlobalsContaminatNames,
-                                       contaminant));
-                dummy1->contaminant_fractions[interval_number]
-                [phase + contaminant] = GetDouble(key);
-              }
-            }
-          }
-
           /*** Bump the counter for both reservoir types ***/
           if ((dummy1->mechanism_inj) == PRESSURE_RESERVOIR)
           {
@@ -1480,42 +917,6 @@ void  ReservoirPackageFreePublicXtra()
 
             interval_division = (public_xtra->interval_divisions[(dummy0->cycle_number)]);
 
-            for (interval_number = 0; interval_number < interval_division; interval_number++)
-            {
-              if ((dummy0->contaminant_values))
-              {
-                if ((dummy0->contaminant_values[interval_number]))
-                {
-                  tfree((dummy0->contaminant_values[interval_number]));
-                }
-              }
-              if ((dummy0->saturation_values))
-              {
-                if ((dummy0->saturation_values[interval_number]))
-                {
-                  tfree((dummy0->saturation_values[interval_number]));
-                }
-              }
-              if ((dummy0->phase_values))
-              {
-                if ((dummy0->phase_values[interval_number]))
-                {
-                  tfree((dummy0->phase_values[interval_number]));
-                }
-              }
-            }
-            if ((dummy0->contaminant_values))
-            {
-              tfree((dummy0->contaminant_values));
-            }
-            if ((dummy0->saturation_values))
-            {
-              tfree((dummy0->saturation_values));
-            }
-            if ((dummy0->phase_values))
-            {
-              tfree((dummy0->phase_values));
-            }
             if ((dummy0->name))
             {
               tfree((dummy0->name));
@@ -1535,43 +936,6 @@ void  ReservoirPackageFreePublicXtra()
             dummy1 = (Type1*)(public_xtra->data[i]);
 
             interval_division = (public_xtra->interval_divisions[(dummy1->cycle_number)]);
-
-            for (interval_number = 0; interval_number < interval_division; interval_number++)
-            {
-              if ((dummy1->contaminant_fractions))
-              {
-                if ((dummy1->contaminant_fractions[interval_number]))
-                {
-                  tfree((dummy1->contaminant_fractions[interval_number]));
-                }
-              }
-              if ((dummy1->phase_values_ext))
-              {
-                if ((dummy1->phase_values_ext[interval_number]))
-                {
-                  tfree((dummy1->phase_values_ext[interval_number]));
-                }
-              }
-              if ((dummy1->phase_values_inj))
-              {
-                if ((dummy1->phase_values_inj[interval_number]))
-                {
-                  tfree((dummy1->phase_values_inj[interval_number]));
-                }
-              }
-            }
-            if ((dummy1->contaminant_fractions))
-            {
-              tfree((dummy1->contaminant_fractions));
-            }
-            if ((dummy1->phase_values_ext))
-            {
-              tfree((dummy1->phase_values_ext));
-            }
-            if ((dummy1->phase_values_inj))
-            {
-              tfree((dummy1->phase_values_inj));
-            }
             if ((dummy1->name))
             {
               tfree((dummy1->name));

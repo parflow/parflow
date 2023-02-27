@@ -57,33 +57,7 @@ typedef struct {
     double average_permeability_z;
 } ReservoirDataPhysical;
 
-/*----------------------------------------------------------------
- * Reservoir Data Values structure
- *----------------------------------------------------------------*/
-
-typedef struct {
-    double        *phase_values;            /* 1 (press) or num_phases (flux) */
-    double        *saturation_values;       /*           num_phases           */
-    double        *delta_saturation_ptrs;   /*           num_phases           */
-    double        *contaminant_values;      /* num_phases * num_contaminants  */
-    double        *delta_contaminant_ptrs;  /* num_phases * num_contaminants  */
-    double        *contaminant_fractions;   /* num_phases * num_contaminants  */
-} ReservoirDataValue;
-
-/*----------------------------------------------------------------
- * Reservoir Data Stats structure
- *----------------------------------------------------------------*/
-
-typedef struct {
-    double        *delta_phases;        /*          num_phases           */
-    double        *phase_stats;         /*          num_phases           */
-    double        *delta_saturations;   /*          num_phases           */
-    double        *saturation_stats;    /*          num_phases           */
-    double        *delta_contaminants;  /* num_phases * num_contaminants */
-    double        *contaminant_stats;   /* num_phases * num_contaminants */
-} ReservoirDataStat;
-
-/*----------------------------------------------------------------
+/*------------------------------------------------------------------
  * Reservoir Data structure
  *----------------------------------------------------------------*/
 
@@ -97,15 +71,12 @@ typedef struct {
     int num_press_reservoirs;
 
     ReservoirDataPhysical  **press_reservoir_physicals;
-    ReservoirDataValue    ***press_reservoir_values;
-    ReservoirDataStat      **press_reservoir_stats;
 
     /* Flux reservoir section */
     int num_flux_reservoirs;
 
     ReservoirDataPhysical  **flux_reservoir_physicals;
-    ReservoirDataValue    ***flux_reservoir_values;
-    ReservoirDataStat      **flux_reservoir_stats;
+
 
     /* time info */
     TimeCycleData      *time_cycle_data;
@@ -203,75 +174,7 @@ typedef struct {
 
 #define ReservoirDataPhysicalAveragePermeabilityZ(reservoir_data_physical) \
   ((reservoir_data_physical)->average_permeability_z)
-
-/*--------------------------------------------------------------------------
- * Accessor macros: ReservoirDataValue
- *--------------------------------------------------------------------------*/
-#define ReservoirDataValueIntervalValues(reservoir_data_values) \
-  (((reservoir_data)->press_reservoir_values[i])[interval_number])
-
-#define ReservoirDataValuePhaseValues(reservoir_data_value) \
-  ((reservoir_data_value)->phase_values)
-#define ReservoirDataValuePhaseValue(reservoir_data_value, i) \
-  ((reservoir_data_value)->phase_values[i])
-
-#define ReservoirDataValueSaturationValues(reservoir_data_value) \
-  ((reservoir_data_value)->saturation_values)
-#define ReservoirDataValueSaturationValue(reservoir_data_value, i) \
-  ((reservoir_data_value)->saturation_values[i])
-
-#define ReservoirDataValueDeltaSaturationPtrs(reservoir_data_value) \
-  ((reservoir_data_value)->delta_saturation_ptrs)
-#define ReservoirDataValueDeltaSaturationPtr(reservoir_data_value, i) \
-  ((reservoir_data_value)->delta_saturation_ptrs[i])
-
-#define ReservoirDataValueContaminantValues(reservoir_data_value) \
-  ((reservoir_data_value)->contaminant_values)
-#define ReservoirDataValueContaminantValue(reservoir_data_value, i) \
-  ((reservoir_data_value)->contaminant_values[i])
-
-#define ReservoirDataValueDeltaContaminantPtrs(reservoir_data_value) \
-  ((reservoir_data_value)->delta_contaminant_ptrs)
-#define ReservoirDataValueDeltaContaminantPtr(reservoir_data_value, i) \
-  ((reservoir_data_value)->delta_contaminant_ptrs[i])
-
-#define ReservoirDataValueContaminantFractions(reservoir_data_value) \
-  ((reservoir_data_value)->contaminant_fractions)
-#define ReservoirDataValueContaminantFraction(reservoir_data_value, i) \
-  ((reservoir_data_value)->contaminant_fractions[i])
-
-/*--------------------------------------------------------------------------
- * Accessor macros: ReservoirDataStat
- *--------------------------------------------------------------------------*/
-#define ReservoirDataStatDeltaPhases(reservoir_data_stat) \
-  ((reservoir_data_stat)->delta_phases)
-#define ReservoirDataStatDeltaPhase(reservoir_data_stat, i) \
-  ((reservoir_data_stat)->delta_phases[i])
-
-#define ReservoirDataStatPhaseStats(reservoir_data_stat) \
-  ((reservoir_data_stat)->phase_stats)
-#define ReservoirDataStatPhaseStat(reservoir_data_stat, i) \
-  ((reservoir_data_stat)->phase_stats[i])
-
-#define ReservoirDataStatDeltaSaturations(reservoir_data_stat) \
-  ((reservoir_data_stat)->delta_saturations)
-#define ReservoirDataStatDeltaSaturation(reservoir_data_stat, i) \
-  ((reservoir_data_stat)->delta_saturations[i])
-
-#define ReservoirDataStatSaturationStats(reservoir_data_stat) \
-  ((reservoir_data_stat)->saturation_stats)
-#define ReservoirDataStatSaturationStat(reservoir_data_stat, i) \
-  ((reservoir_data_stat)->saturation_stats[i])
-
-#define ReservoirDataStatDeltaContaminants(reservoir_data_stat) \
-  ((reservoir_data_stat)->delta_contaminants)
-#define ReservoirDataStatDeltaContaminant(reservoir_data_stat, i) \
-  ((reservoir_data_stat)->delta_contaminants[i])
-
-#define ReservoirDataStatContaminantStats(reservoir_data_stat) \
-  ((reservoir_data_stat)->contaminant_stats)
-#define ReservoirDataStatContaminantStat(reservoir_data_stat, i) \
-  ((reservoir_data_stat)->contaminant_stats[i])
+  
 
 /*--------------------------------------------------------------------------
  * Accessor macros: ReservoirData
@@ -291,15 +194,11 @@ typedef struct {
 #define ReservoirDataPressReservoirPhysical(reservoir_data, i) \
   ((reservoir_data)->press_reservoir_physicals[i])
 
-#define ReservoirDataPressReservoirValues(reservoir_data) \
-  ((reservoir_data)->press_reservoir_values)
-#define ReservoirDataPressReservoirIntervalValues(reservoir_data, i) \
-  ((reservoir_data)->press_reservoir_values[i])
+
 #define ReservoirDataPressReservoirIntervalValue(reservoir_data, i, interval_number) \
   (((reservoir_data)->press_reservoir_values[i])[interval_number])
 
-#define ReservoirDataPressReservoirStats(reservoir_data) \
-  ((reservoir_data)->press_reservoir_stats)
+
 #define ReservoirDataPressReservoirStat(reservoir_data, i) \
   ((reservoir_data)->press_reservoir_stats[i])
 
@@ -311,17 +210,8 @@ typedef struct {
 #define ReservoirDataFluxReservoirPhysical(reservoir_data, i) \
   ((reservoir_data)->flux_reservoir_physicals[i])
 
-#define ReservoirDataFluxReservoirValues(reservoir_data) \
-  ((reservoir_data)->flux_reservoir_values)
-#define ReservoirDataFluxReservoirIntervalValues(reservoir_data, i) \
-  ((reservoir_data)->flux_reservoir_values[i])
-#define ReservoirDataFluxReservoirIntervalValue(reservoir_data, i, interval_number) \
-  (((reservoir_data)->flux_reservoir_values[i])[interval_number])
 
-#define ReservoirDataFluxReservoirStats(reservoir_data) \
-  ((reservoir_data)->flux_reservoir_stats)
-#define ReservoirDataFluxReservoirStat(reservoir_data, i) \
-  ((reservoir_data)->flux_reservoir_stats[i])
+
 
 /*--------------------------------------------------------------------------
  * Reservoir Data constants used in the program.

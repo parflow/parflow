@@ -58,7 +58,6 @@ void         PhaseSource(
 
   ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
   ReservoirDataPhysical *reservoir_data_physical;
-  ReservoirDataValue    *reservoir_data_value;
 
   TimeCycleData    *time_cycle_data;
 
