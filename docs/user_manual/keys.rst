@@ -1508,7 +1508,7 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileX   "perm_x.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileX = "perm_x.pfb"    ## Python syntax
 
@@ -1522,7 +1522,7 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileY   "perm_y.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileY   "perm_y.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileY = "perm_y.pfb"     ## Python syntax
 
@@ -1536,7 +1536,7 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileZ   "perm_z.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileZ   "perm_z.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileZ = "perm_z.pfb"     ## Python syntax
 
@@ -4931,6 +4931,34 @@ help with slope errors and issues and provides some diagnostic information.  The
 
       pfset Solver.ResetSurfacePressure.ResetPressure        0.0        ## TCL syntax
       <runname>.Solver.ResetSurfacePressure.ResetPressure  = 0.0    ## Python syntax
+
+
+*logical* **Solver.SurfacePredictor** False This key activates a routine that uses the evap trans flux and available water storage in a surface cell to predict whether an unsaturated cell will pond during the next timestep. The pressure values are set with the key below.
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor        True        ## TCL syntax
+      <runname>.Solver.SurfacePredictor  = "True"    ## Python syntax
+
+*double* **Solver.SurfacePredictor.PressureValue** 0.00001 This key specifies a surface pressure if the **SurfacePredictor** key above is True and ponded conditions are predicted at a surface cell.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor.PressureValue        0.001        ## TCL syntax
+      <runname>.Solver.SurfacePredictor.PressureValue  = 0.001    ## Python syntax
+
+*logical* **Solver.SurfacePredictor.PrintValues** False This key specifies if the **SurfacePredictor** values are printed.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor.PrintValues        True        ## TCL syntax
+      <runname>.Solver.SurfacePredictor.PrintValue  = "True"    ## Python syntax
+
 
 *logical* **Solver.EvapTransFile** False This key specifies specifies
 that the Flux terms for Richards’ equation are read in from a ``.pfb`` 

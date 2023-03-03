@@ -199,6 +199,7 @@ def _overland_flow_kinematic(mask, pressure_top, slopex, slopey, mannings, dx, d
     # We will be tweaking the slope values for this algorithm, so we make a copy
     slopex = np.copy(slopex)
     slopey = np.copy(slopey)
+    mannings = np.copy(mannings)
 
     # We're only interested in the surface mask, as an ny-by-nx array
     mask = mask[-1, ...]
@@ -207,10 +208,11 @@ def _overland_flow_kinematic(mask, pressure_top, slopex, slopey, mannings, dx, d
     #  -------
     # | 0 | 1 |
     #  -------
-    # and copy the slopex values from the '1' cells to the corresponding '0' cells
+    # and copy the slopex, slopey and mannings values from the '1' cells to the corresponding '0' cells
     _x, _y = np.where(np.diff(mask, axis=1, append=0) == 1)
     slopex[(_x, _y)] = slopex[(_x, _y + 1)]
     slopey[(_x, _y)] = slopey[(_x, _y + 1)] 
+    mannings[(_x, _y)] = mannings[(_x, _y + 1)] 
     
     slope = np.maximum(epsilon, np.hypot(slopex, slopey))
     
@@ -243,6 +245,7 @@ def _overland_flow_kinematic(mask, pressure_top, slopex, slopey, mannings, dx, d
     _x, _y = np.where(np.diff(mask, axis=0, append=0) == 1)
     slopey[(_x, _y)] = slopey[(_x + 1, _y)]
     slopex[(_x, _y)] = slopex[(_x + 1, _y)]
+    mannings[(_x, _y)] = mannings[(_x + 1, _y)]
     
     slope = np.maximum(epsilon, np.hypot(slopex, slopey))
     
