@@ -1508,7 +1508,7 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileX   "perm_x.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileX = "perm_x.pfb"    ## Python syntax
 
@@ -1522,7 +1522,7 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileY   "perm_y.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileY   "perm_y.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileY = "perm_y.pfb"     ## Python syntax
 
@@ -1536,7 +1536,7 @@ choice for the value of *geometry_name* is “domain”.
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileZ   "perm_z.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileZ   "perm_z.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileZ = "perm_z.pfb"     ## Python syntax
 
