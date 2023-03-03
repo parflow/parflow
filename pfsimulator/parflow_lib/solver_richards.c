@@ -2788,83 +2788,80 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
       t += dt;
 
-/*  experiment with a predictor to adjust land surface pressures to be >0 if rainfall*/
-
-    if (public_xtra->surface_predictor == 1)
-    {
-      GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
-
-      int i, j, k, r, is;
-      int ix, iy, iz;
-      int nx, ny, nz;
-      int ip;
-      double dx, dy, dz;
-      double vol, vol_max, flux_in, press_pred;
-     
-      Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
-      double *pp, *sp, *et, *po_dat, *dz_dat;
-  
-
-
-      Subgrid *subgrid;
-      Grid *grid = VectorGrid(evap_trans_sum);
-
-      ForSubgridI(is, GridSubgrids(grid))
+      /*  experiment with a predictor to adjust land surface pressures to be >0 if rainfall*/
+      if (public_xtra->surface_predictor == 1)
       {
-        subgrid = GridSubgrid(grid, is);
-        p_sub = VectorSubvector(instance_xtra->pressure, is);
-        et_sub = VectorSubvector(evap_trans, is);
-        dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
-        s_sub = VectorSubvector(instance_xtra->saturation, is);
-        po_sub = VectorSubvector(porosity, is);
-        
-        r = SubgridRX(subgrid);
+        GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
-        ix = SubgridIX(subgrid);
-        iy = SubgridIY(subgrid);
-        iz = SubgridIZ(subgrid);
+        int i, j, k, r, is;
+        int ix, iy, iz;
+        int nx, ny, nz;
+        int ip;
+        double dx, dy, dz;
+        double vol, vol_max, flux_in, press_pred;
 
-        nx = SubgridNX(subgrid);
-        ny = SubgridNY(subgrid);
-        nz = SubgridNZ(subgrid);
+        Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
+        double *pp, *sp, *et, *po_dat, *dz_dat;
 
-        dx = SubgridDX(subgrid);
-        dy = SubgridDY(subgrid);
-        dz = SubgridDZ(subgrid);
-        
-        pp = SubvectorData(p_sub);
-        et = SubvectorData(et_sub);
-        dz_dat = SubvectorData(dz_sub);
-        po_dat = SubvectorData(po_sub);
-        sp = SubvectorData(s_sub);
+        Subgrid *subgrid;
+        Grid *grid = VectorGrid(evap_trans_sum);
 
-        GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+        ForSubgridI(is, GridSubgrids(grid))
         {
-          ip = SubvectorEltIndex(p_sub, i, j, k);
-          
-          if (k == (nz - 1))
-          {
-            vol = dx*dy*dz*dz_dat[ip]*po_dat[ip]*sp[ip];
-            flux_in = dx*dy*dz*dz_dat[ip]*et[ip]*dt;
-            vol_max = dx*dy*dz*dz_dat[ip]*po_dat[ip];
-            press_pred = (flux_in-(vol_max - vol))/(dx*dy*po_dat[ip]);
-            if (flux_in > (vol_max - vol))
-            {
-              if (pp[ip] < 0.0){
-      
-                press_pred = public_xtra->surface_predictor_pressure;
-              if (public_xtra->surface_predictor_print == 1) {
-                amps_Printf(" Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Pressure: %3.6e I: %d J: %d  \n",vol, vol_max,flux_in,pp[ip],i,j);
-              }
-              pp[ip] = press_pred; 
+          subgrid = GridSubgrid(grid, is);
+          p_sub = VectorSubvector(instance_xtra->pressure, is);
+          et_sub = VectorSubvector(evap_trans, is);
+          dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
+          s_sub = VectorSubvector(instance_xtra->saturation, is);
+          po_sub = VectorSubvector(porosity, is);
 
+          r = SubgridRX(subgrid);
+
+          ix = SubgridIX(subgrid);
+          iy = SubgridIY(subgrid);
+          iz = SubgridIZ(subgrid);
+
+          nx = SubgridNX(subgrid);
+          ny = SubgridNY(subgrid);
+          nz = SubgridNZ(subgrid);
+
+          dx = SubgridDX(subgrid);
+          dy = SubgridDY(subgrid);
+          dz = SubgridDZ(subgrid);
+
+          pp = SubvectorData(p_sub);
+          et = SubvectorData(et_sub);
+          dz_dat = SubvectorData(dz_sub);
+          po_dat = SubvectorData(po_sub);
+          sp = SubvectorData(s_sub);
+
+          GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
+
+            if (k == (nz - 1))
+            {
+              vol = dx*dy*dz*dz_dat[ip]*po_dat[ip]*sp[ip];
+              flux_in = dx*dy*dz*dz_dat[ip]*et[ip]*dt;
+              vol_max = dx*dy*dz*dz_dat[ip]*po_dat[ip];
+              press_pred = (flux_in-(vol_max - vol))/(dx*dy*po_dat[ip]);
+              if (flux_in > (vol_max - vol))
+              {
+                if (pp[ip] < 0.0){
+
+                  press_pred = public_xtra->surface_predictor_pressure;
+                  if (public_xtra->surface_predictor_print == 1) {
+                    amps_Printf(" Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Pressure: %3.6e I: %d J: %d  \n",vol, vol_max,flux_in,pp[ip],i,j);
+                  }
+                  pp[ip] = press_pred;
+
+                }
               }
             }
           }
+        );
         }
-                     );
       }
-    }
 
       /*******************************************************************/
       /*          Solve the nonlinear system for this time step          */
