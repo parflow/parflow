@@ -78,7 +78,6 @@ typedef struct {
     double max_capacity, min_release_capacity, current_capacity, release_rate;
     int status;
     int method;
-    int cycle_number;
 } Type0;                      /* basic vertical reservoir */
 
 typedef struct {
@@ -91,7 +90,6 @@ typedef struct {
     double z_lower_inj, z_upper_inj;
     int method_ext;
     int method_inj;
-    int cycle_number;
 } Type1;                      /* basic vertical reservoir, recirculating */
 
 /*--------------------------------------------------------------------------
@@ -125,7 +123,6 @@ void         ReservoirPackage(
   int rx, ry, rz;
   int process;
   int reservoir_action, action, mechanism, method;
-  int cycle_length, cycle_number, interval_division, interval_number;
 
   double          **phase_values;
   double intake_subgrid_volume;
@@ -133,10 +130,8 @@ void         ReservoirPackage(
   double intake_x_lower, intake_x_upper, intake_y_lower, intake_y_upper, z_lower, z_upper;
   double release_x_lower, release_x_upper, release_y_lower, release_y_upper;
   double max_capacity, min_release_capacity, current_capacity, release_rate;
-
+  double intake_amount_since_last_print, release_amount_since_last_print;
   /* Allocate the reservoir data */
-  ReservoirDataNumPhases(reservoir_data) = (public_xtra->num_phases);
-  ReservoirDataNumContaminants(reservoir_data) = (public_xtra->num_contaminants);
 
   ReservoirDataNumReservoirs(reservoir_data) = (public_xtra->num_reservoirs);
 
@@ -161,24 +156,6 @@ void         ReservoirPackage(
 
   if ((public_xtra->num_units) > 0)
   {
-    /* Load the time cycle data */
-    time_cycle_data = NewTimeCycleData((public_xtra->num_cycles), (public_xtra->interval_divisions));
-
-    for (cycle_number = 0; cycle_number < (public_xtra->num_cycles); cycle_number++)
-    {
-      TimeCycleDataIntervalDivision(time_cycle_data, cycle_number) = (public_xtra->interval_divisions[cycle_number]);
-      cycle_length = 0;
-      for (interval_number = 0; interval_number < (public_xtra->interval_divisions[cycle_number]); interval_number++)
-      {
-        cycle_length += (public_xtra->intervals[cycle_number])[interval_number];
-        TimeCycleDataInterval(time_cycle_data, cycle_number, interval_number) = (public_xtra->intervals[cycle_number])[interval_number];
-      }
-      TimeCycleDataRepeatCount(time_cycle_data, cycle_number) = (public_xtra->repeat_counts[cycle_number]);
-      TimeCycleDataCycleLength(time_cycle_data, cycle_number) = cycle_length;
-    }
-
-    ReservoirDataTimeCycleData(reservoir_data) = time_cycle_data;
-
     /* Load the reservoir data */
     for (i = 0; i < (public_xtra->num_units); i++)
     {
@@ -253,22 +230,17 @@ void         ReservoirPackage(
             ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
             ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) = (dummy0->max_capacity);
             ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->min_release_capacity);
+            ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
+            ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
             ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
             ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) = (dummy0->current_capacity);
             ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
             ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
             ReservoirDataPhysicalSize(reservoir_data_physical) = intake_subgrid_volume;
             ReservoirDataPhysicalAction(reservoir_data_physical) = (dummy0->action);
-            ReservoirDataPhysicalMethod(reservoir_data_physical) = (dummy0->method);
-            ReservoirDataPhysicalStatus(reservoir_data_physical) = (dummy0->status);
-            ReservoirDataPhysicalCycleNumber(reservoir_data_physical) = (dummy0->cycle_number);
-            ReservoirDataPhysicalAveragePermeabilityX(reservoir_data_physical) = 0.0;
-            ReservoirDataPhysicalAveragePermeabilityY(reservoir_data_physical) = 0.0;
-            ReservoirDataPhysicalAveragePermeabilityZ(reservoir_data_physical) = 0.0;
             ReservoirDataPressReservoirPhysical(reservoir_data, press_reservoir) = reservoir_data_physical;
 
             /* Put in values for this reservoir */
-            interval_division = TimeCycleDataIntervalDivision(time_cycle_data, ReservoirDataPhysicalCycleNumber(reservoir_data_physical));
             press_reservoir++;
           }
           else if ((dummy0->mechanism) == FLUX_RESERVOIR)
@@ -298,22 +270,17 @@ void         ReservoirPackage(
             ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
             ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) = (dummy0->max_capacity);
             ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->min_release_capacity);
+            ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
+            ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
             ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
             ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) = (dummy0->current_capacity);
             ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
             ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
             ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
             ReservoirDataPhysicalAction(reservoir_data_physical) = (dummy0->action);
-            ReservoirDataPhysicalMethod(reservoir_data_physical) = (dummy0->method);
-            ReservoirDataPhysicalStatus(reservoir_data_physical) = (dummy0->status);
-            ReservoirDataPhysicalCycleNumber(reservoir_data_physical) = (dummy0->cycle_number);
-            ReservoirDataPhysicalAveragePermeabilityX(reservoir_data_physical) = 0.0;
-            ReservoirDataPhysicalAveragePermeabilityY(reservoir_data_physical) = 0.0;
-            ReservoirDataPhysicalAveragePermeabilityZ(reservoir_data_physical) = 0.0;
             ReservoirDataFluxReservoirPhysical(reservoir_data, flux_reservoir) = reservoir_data_physical;
 
             /* Put in values for this reservoir */
-            interval_division = TimeCycleDataIntervalDivision(time_cycle_data, ReservoirDataPhysicalCycleNumber(reservoir_data_physical));
             flux_reservoir++;
           }
           sequence_number++;
@@ -409,15 +376,9 @@ void         ReservoirPackage(
               ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
               ReservoirDataPhysicalSize(reservoir_data_physical) = intake_subgrid_volume;
               ReservoirDataPhysicalAction(reservoir_data_physical) = action;
-              ReservoirDataPhysicalMethod(reservoir_data_physical) = method;
-              ReservoirDataPhysicalCycleNumber(reservoir_data_physical) = (dummy1->cycle_number);
-              ReservoirDataPhysicalAveragePermeabilityX(reservoir_data_physical) = 0.0;
-              ReservoirDataPhysicalAveragePermeabilityY(reservoir_data_physical) = 0.0;
-              ReservoirDataPhysicalAveragePermeabilityZ(reservoir_data_physical) = 0.0;
               ReservoirDataPressReservoirPhysical(reservoir_data, press_reservoir) = reservoir_data_physical;
 
               /* Put in values for this reservoir */
-              interval_division = TimeCycleDataIntervalDivision(time_cycle_data, ReservoirDataPhysicalCycleNumber(reservoir_data_physical));
               press_reservoir++;
             }
             else if (mechanism == FLUX_RESERVOIR)
@@ -448,15 +409,9 @@ void         ReservoirPackage(
               ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
               ReservoirDataPhysicalSize(reservoir_data_physical) = intake_subgrid_volume;
               ReservoirDataPhysicalAction(reservoir_data_physical) = action;
-              ReservoirDataPhysicalMethod(reservoir_data_physical) = method;
-              ReservoirDataPhysicalCycleNumber(reservoir_data_physical) = (dummy1->cycle_number);
-              ReservoirDataPhysicalAveragePermeabilityX(reservoir_data_physical) = 0.0;
-              ReservoirDataPhysicalAveragePermeabilityY(reservoir_data_physical) = 0.0;
-              ReservoirDataPhysicalAveragePermeabilityZ(reservoir_data_physical) = 0.0;
               ReservoirDataFluxReservoirPhysical(reservoir_data, flux_reservoir) = reservoir_data_physical;
 
               /* Put in values for this reservoir */
-              interval_division = TimeCycleDataIntervalDivision(time_cycle_data, ReservoirDataPhysicalCycleNumber(reservoir_data_physical));
               flux_reservoir++;
             }
             sequence_number++;
@@ -521,9 +476,6 @@ PFModule  *ReservoirPackageNewPublicXtra(
   Type0         *dummy0;
   Type1         *dummy1;
 
-  int num_units;
-  int i, interval_division, interval_number;
-
   int num_cycles;
   int global_cycle;
 
@@ -540,6 +492,7 @@ PFModule  *ReservoirPackageNewPublicXtra(
 
   int phase;
   int contaminant;
+  int num_units;
 
   NameArray inputtype_na;
   NameArray action_na;
@@ -581,7 +534,7 @@ PFModule  *ReservoirPackageNewPublicXtra(
   {
     (public_xtra->type) = ctalloc(int, num_units);
     (public_xtra->data) = ctalloc(void *, num_units);
-
+    int i;
     for (i = 0; i < num_units; i++)
     {
       reservoir_name = NA_IndexToName(public_xtra->reservoir_names, i);
@@ -615,8 +568,8 @@ PFModule  *ReservoirPackageNewPublicXtra(
             InputError("Error: invalid type <%s> for key <%s>\n",
                        switch_name, key);
           }
-          sprintf(key, "Reservoirs.%s.ReleaseCurveFile", reservoir_name);
-          dummy0->release_curve_file = GetString(key);
+//          sprintf(key, "Reservoirs.%s.ReleaseCurveFile", reservoir_name);
+//          dummy0->release_curve_file = GetString(key);
 
           sprintf(key, "Reservoirs.%s.Release_X", reservoir_name);
           dummy0->release_x_location = GetDouble(key);
@@ -649,9 +602,6 @@ PFModule  *ReservoirPackageNewPublicXtra(
           sprintf(key, "Reservoirs.%s.ZLower", reservoir_name);
           dummy0->z_lower = GetDouble(key);
 
-          sprintf(key, "Reservoirs.%s.Status", reservoir_name);
-          dummy0->status = GetInt(key);
-
           if ((dummy0->mechanism) == PRESSURE_RESERVOIR)
           {
             sprintf(key, "Reservoirs.%s.Method", reservoir_name);
@@ -675,31 +625,6 @@ PFModule  *ReservoirPackageNewPublicXtra(
             }
           }
 
-          sprintf(key, "Reservoirs.%s.Cycle", reservoir_name);
-          cycle_name = GetString(key);
-          global_cycle = NA_NameToIndex(GlobalsCycleNames, cycle_name);
-
-          if (global_cycle < 0)
-          {
-            InputError("Error: Cycle name <%s> does not exist for key <%s>\n",
-                       cycle_name, key);
-          }
-
-          dummy0->cycle_number = i;
-
-          interval_division = public_xtra->interval_divisions[i] =
-              GlobalsIntervalDivisions[global_cycle];
-
-          public_xtra->repeat_counts[i] =
-              GlobalsRepeatCounts[global_cycle];
-
-          (public_xtra->intervals[i]) = ctalloc(int, interval_division);
-          for (interval_number = 0; interval_number < interval_division;
-               interval_number++)
-          {
-            public_xtra->intervals[i][interval_number] =
-                GlobalsIntervals[global_cycle][interval_number];
-          }
 
           /*** Bump the counter for the reservoir type ***/
           if ((dummy0->mechanism) == PRESSURE_RESERVOIR)
@@ -823,21 +748,10 @@ PFModule  *ReservoirPackageNewPublicXtra(
                        cycle_name, key);
           }
 
-          dummy1->cycle_number = i;
-
-          interval_division = public_xtra->interval_divisions[i] =
-              GlobalsIntervalDivisions[global_cycle];
 
           public_xtra->repeat_counts[i] =
               GlobalsRepeatCounts[global_cycle];
 
-          (public_xtra->intervals[i]) = ctalloc(int, interval_division);
-          for (interval_number = 0; interval_number < interval_division;
-               interval_number++)
-          {
-            public_xtra->intervals[i][interval_number] =
-                GlobalsIntervals[global_cycle][interval_number];
-          }
 
           /*** Bump the counter for both reservoir types ***/
           if ((dummy1->mechanism_inj) == PRESSURE_RESERVOIR)
@@ -915,8 +829,6 @@ void  ReservoirPackageFreePublicXtra()
           {
             dummy0 = (Type0*)(public_xtra->data[i]);
 
-            interval_division = (public_xtra->interval_divisions[(dummy0->cycle_number)]);
-
             if ((dummy0->name))
             {
               tfree((dummy0->name));
@@ -935,7 +847,6 @@ void  ReservoirPackageFreePublicXtra()
           {
             dummy1 = (Type1*)(public_xtra->data[i]);
 
-            interval_division = (public_xtra->interval_divisions[(dummy1->cycle_number)]);
             if ((dummy1->name))
             {
               tfree((dummy1->name));

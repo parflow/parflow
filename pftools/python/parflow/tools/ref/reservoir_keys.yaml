@@ -119,11 +119,6 @@ Current_Capacity:
     - Current_Capacity
   register: Reservoirs.Names
 
-Status:
-  type: int
-  alias:
-    - Status
-    - status
 
 ExtractionZUpper:
   type: float
@@ -193,26 +188,8 @@ InjectionMethod:
     - injectionmethod
   register: Reservoirs.Names
 
-Cycle:
-  type: str
-  alias:
-    - Cycle
-  register: Reservoirs.Names
-
-alltime.Flux.water.Value:
-  type: float
-  alias:
-    - alltime.Flux.water.Value
-  register: Reservoirs.Names
-
-alltime.Saturation.water.Value:
-  type: float
-  alias:
-    - alltime.Saturation.water.Value
-  register: Reservoirs.Names
-
-ReleaseCurveFile:
-  type: str
-  alias:
-    - ReleaseCurveFile
-  register: Reservoirs.Names
+#ReleaseCurveFile:
+#  type: str
+#  alias:
+#    - ReleaseCurveFile
+#  register: Reservoirs.Names

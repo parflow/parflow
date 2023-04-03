@@ -45,16 +45,12 @@ typedef struct {
     double release_x_upper, release_y_upper, release_z_upper;
     double diameter;
     double max_capacity, min_release_capacity, current_capacity, release_rate;
+    double intake_amount_since_last_print, release_amount_since_last_print;
     Subgrid       *intake_subgrid;
     Subgrid       *release_subgrid;
     double size;
     int action;
     int method;
-    int status;
-    int cycle_number;
-    double average_permeability_x;
-    double average_permeability_y;
-    double average_permeability_z;
 } ReservoirDataPhysical;
 
 /*------------------------------------------------------------------
@@ -62,9 +58,6 @@ typedef struct {
  *----------------------------------------------------------------*/
 
 typedef struct {
-    int num_phases;
-    int num_contaminants;
-
     int num_reservoirs;
 
     /* Pressure reservoir section */
@@ -151,37 +144,23 @@ typedef struct {
 #define ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) \
   ((reservoir_data_physical)->current_capacity)
 
+#define ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_amount_since_last_print)
+
+#define ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_amount_since_last_print)
+
 #define ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) \
   ((reservoir_data_physical)->min_release_capacity)
 
 #define ReservoirDataPhysicalReleaseRate(reservoir_data_physical) \
   ((reservoir_data_physical)->release_rate)
 
-#define ReservoirDataPhysicalStatus(reservoir_data_physical) \
-  ((reservoir_data_physical)->status)
 
-#define ReservoirDataPhysicalMethod(reservoir_data_physical) \
-  ((reservoir_data_physical)->method)
-
-#define ReservoirDataPhysicalCycleNumber(reservoir_data_physical) \
-  ((reservoir_data_physical)->cycle_number)
-
-#define ReservoirDataPhysicalAveragePermeabilityX(reservoir_data_physical) \
-  ((reservoir_data_physical)->average_permeability_x)
-
-#define ReservoirDataPhysicalAveragePermeabilityY(reservoir_data_physical) \
-  ((reservoir_data_physical)->average_permeability_y)
-
-#define ReservoirDataPhysicalAveragePermeabilityZ(reservoir_data_physical) \
-  ((reservoir_data_physical)->average_permeability_z)
-  
 
 /*--------------------------------------------------------------------------
  * Accessor macros: ReservoirData
  *--------------------------------------------------------------------------*/
-#define ReservoirDataNumPhases(reservoir_data) ((reservoir_data)->num_phases)
-#define ReservoirDataNumContaminants(reservoir_data) ((reservoir_data)->num_contaminants)
-
 #define ReservoirDataNumReservoirs(reservoir_data) ((reservoir_data)->num_reservoirs)
 
 #define ReservoirDataTimeCycleData(reservoir_data) ((reservoir_data)->time_cycle_data)

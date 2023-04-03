@@ -1211,13 +1211,17 @@ SetupRichards(PFModule * this_module)
     /*-------------------------------------------------------------------
      * Print out the initial well data?
      *-------------------------------------------------------------------*/
-
+    WriteReservoirs("ReservoirsOutput",
+                    problem,
+                    ProblemDataReservoirData(problem_data),
+                    t, WELLDATA_WRITEHEADER);
     if (print_wells)
     {
       WriteWells(file_prefix,
                  problem,
                  ProblemDataWellData(problem_data),
                  t, WELLDATA_WRITEHEADER);
+
     }
     sprintf(nc_postfix, "%05d", instance_xtra->file_number);
     if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur
@@ -2892,8 +2896,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
    /***************************************************************
     *          modify land surface pressures                      *
     ***************************************************************/
-    if(0)
-//    if (public_xtra->reset_surface_pressure == 1)
+    if (public_xtra->reset_surface_pressure == 1)
     {
       GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
@@ -3011,13 +3014,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                               printf("Checking if we should reset pressure\n");
                              if (pp_sp[ip] > reservoir_reset_pressure)
                              {
-                               amps_Printf(" time: %10.3f reservoir pressure reset: %d %d %d %10.3f \n",t, i, j, k,pp_sp[ip]);
-                                           printf("Amount of water to be added is %f\n", pp_sp[ip]*dx*dy);
-                                             printf("Before adding water current capcity is %f\n", reservoir_data_physical->current_capacity);
-                                             reservoir_data_physical->current_capacity = reservoir_data_physical->current_capacity + pp_sp[ip]*dx*dy;
-                                             printf("After adding water Current Capcity is %f\n", reservoir_data_physical->current_capacity);
-                                            pp_sp[ip] = reservoir_reset_pressure;
-
+                               double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
+                               reservoir_data_physical->current_capacity = reservoir_data_physical->current_capacity + pp_sp[ip]*dx*dy;
+                               reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
+                               pp_sp[ip] = reservoir_reset_pressure;
+                               printf("time is %f\n",t);
                              }
                            }
                          }
@@ -3804,13 +3805,17 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     /*******************************************************************/
     /*                   Print the Well Data                           */
     /*******************************************************************/
-
+    WriteReservoirs("ReservoirsOutput",
+                    problem,
+                    ProblemDataReservoirData(problem_data),
+                    t, WELLDATA_DONTWRITEHEADER);
     if (print_wells && dump_files)
     {
       WriteWells(file_prefix,
                  problem,
                  ProblemDataWellData(problem_data),
                  t, WELLDATA_DONTWRITEHEADER);
+
     }
 
     /*-----------------------------------------------------------------
