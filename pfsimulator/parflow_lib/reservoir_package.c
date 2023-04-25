@@ -272,6 +272,7 @@ void         ReservoirPackage(
             ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->min_release_capacity);
             ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
             ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
+            ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = (0);
             ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
             ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) = (dummy0->current_capacity);
             ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;

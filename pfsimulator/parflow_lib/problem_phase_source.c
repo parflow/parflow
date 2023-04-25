@@ -445,6 +445,7 @@ void         PhaseSource(
         nz_ps = SubvectorNZ(ps_sub);
 //        printf("Reservoir current capacity is %f\n", reservoir_data_physical->current_capacity);
         // Check if the reservoir is on
+        ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = 0;
         bool should_release = reservoir_data_physical->current_capacity > reservoir_data_physical->min_release_capacity;
         if (should_release) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
@@ -486,8 +487,9 @@ void         PhaseSource(
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
                       {
                         data[ips] += weight * flux;
-                        reservoir_data_physical->release_amount_since_last_print += flux*dt*volume;
-                        reservoir_data_physical->current_capacity-= flux*dt*volume;
+                        ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) += flux*dt*volume;
+//                        reservoir_data_physical->release_amount_since_last_print += flux*dt*volume;
+//                        reservoir_data_physical->current_capacity-= flux*dt*volume;
                       });
             //TODO replace 0.01 with dt
 
