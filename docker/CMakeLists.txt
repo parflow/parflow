@@ -1,63 +1,67 @@
+execute_process(COMMAND bash -c "cd ${CMAKE_SOURCE_DIR} && git rev-parse --abbrev-ref HEAD | sed 's/[^a-zA-Z0-9]/-/g'" OUTPUT_VARIABLE BRANCH_NAME OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ($cd ..))
+#set(BRANCH_NAME ($git rev-parse --abbrev-ref HEAD | sed 's/[^a-zA-Z0-9]/-/g'))
+
 add_custom_target(DockerBuildDevelopment
-  docker build --rm -t parflow-development
-    # --build-arg "BASE_IMAGE=ubuntu:20.04"
-    # --build-arg "CMAKE_URL=https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz"
-    # --build-arg "HDF5_URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
-    # --build-arg "NETCDF_URL=https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz"
-    # --build-arg "SILO_URL=https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz"
-    # --build-arg "HYPRE_VERSION=v2.19.0"
-    -f "${CMAKE_CURRENT_SOURCE_DIR}/dev/Dockerfile"
-    "${CMAKE_CURRENT_SOURCE_DIR}/.."
-  COMMENT
-    "Build docker image 'parflow-development'"
-  VERBATIM
-)
+        docker build --rm -t parflow-development:${BRANCH_NAME}
+        # --build-arg "BASE_IMAGE=ubuntu:20.04"
+        # --build-arg "CMAKE_URL=https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz"
+        # --build-arg "HDF5_URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
+        # --build-arg "NETCDF_URL=https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz"
+        # --build-arg "SILO_URL=https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz"
+        # --build-arg "HYPRE_VERSION=v2.19.0"
+        -f "${CMAKE_CURRENT_SOURCE_DIR}/dev/Dockerfile"
+        "${CMAKE_CURRENT_SOURCE_DIR}/.."
+        COMMENT
+        "Build docker image 'parflow-development:${BRANCH_NAME}'"
+        VERBATIM
+        )
 
 add_custom_target(DockerRunDevelopment
-        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY --name=parflow-development -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src parflow-development
+        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY --name=parflow-development:${BRANCH_NAME} -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src parflow-development:${BRANCH_NAME}
         COMMENT
         "Start docker image 'parflow-development' mounted to source directory to allow live rebuilding"
         VERBATIM
         )
 
 add_custom_target(DockerBuildRuntime
-  docker build --rm -t parflow-runtime
-    # --build-arg "BASE_IMAGE=ubuntu:20.04"
-    -f "${CMAKE_CURRENT_SOURCE_DIR}/runtime/Dockerfile"
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-  DEPENDS
-    DockerBuildDevelopment
-  VERBATIM
-  COMMENT
-    "Build docker image 'parflow-runtime'"
-)
+        docker build --rm -t parflow-runtime
+        # --build-arg "BASE_IMAGE=ubuntu:20.04"
+        -f "${CMAKE_CURRENT_SOURCE_DIR}/runtime/Dockerfile"
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        DEPENDS
+        DockerBuildDevelopment
+        VERBATIM
+        COMMENT
+        "Build docker image 'parflow-runtime'"
+        )
 
 add_custom_target(DockerTestDevelopment
-  docker run --rm --workdir /home/ubuntu/parflow/build parflow-development /home/ubuntu/parflow/dependencies/cmake/bin/ctest --output-on-failure
-  DEPENDS
-    DockerBuildDevelopment
-  USES_TERMINAL
-  COMMENT
-    "Run parflow tests inside 'parflow-development' docker image"
-)
+        docker run --rm --workdir /home/ubuntu/parflow/build parflow-development:${BRANCH_NAME} /home/ubuntu/parflow/dependencies/cmake/bin/ctest --output-on-failure
+        DEPENDS
+        DockerBuildDevelopment
+        USES_TERMINAL
+        COMMENT
+        "Run parflow tests inside 'parflow-development:${BRANCH_NAME}' docker image"
+        )
 
 add_custom_target(DockerTestPyDevelopment
-  docker run --rm --workdir /home/ubuntu/parflow/build parflow-development /home/ubuntu/parflow/dependencies/cmake/bin/ctest -R py --output-on-failure
-  DEPENDS
-    DockerBuildDevelopment
-  USES_TERMINAL
-  COMMENT
-    "Run parflow tests inside 'parflow-development' docker image"
-)
+        docker run --rm --workdir /home/ubuntu/parflow/build parflow-development:${BRANCH_NAME} /home/ubuntu/parflow/dependencies/cmake/bin/ctest -R py --output-on-failure
+        DEPENDS
+        DockerBuildDevelopment
+        USES_TERMINAL
+        COMMENT
+        "Run parflow tests inside 'parflow-development:${BRANCH_NAME}' docker image"
+        )
 
 add_custom_target(DockerTestRuntime
-  docker run --rm -v "${CMAKE_CURRENT_SOURCE_DIR}/../test/python:/tests" -v "${CMAKE_CURRENT_SOURCE_DIR}/..:/PF_SRC" -e PF_SRC=/PF_SRC -it parflow-runtime  /tests/new_features/full_clone.py
-  DEPENDS
-    DockerBuildRuntime
-  USES_TERMINAL
-  COMMENT
-    "Run a parflow test inside 'parflow-runtime' docker image"
-)
+        docker run --rm -v "${CMAKE_CURRENT_SOURCE_DIR}/../test/python:/tests" -v "${CMAKE_CURRENT_SOURCE_DIR}/..:/PF_SRC" -e PF_SRC=/PF_SRC -it parflow-runtime  /tests/new_features/full_clone.py
+        DEPENDS
+        DockerBuildRuntime
+        USES_TERMINAL
+        COMMENT
+        "Run a parflow test inside 'parflow-runtime' docker image"
+        )
 
 # -----------------------------------------------------------------------------
 # Examples on how to run a test by hand using the runtime image
