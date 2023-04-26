@@ -3807,10 +3807,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     /*******************************************************************/
     /*                   Print the Well Data                           */
     /*******************************************************************/
-    WriteReservoirs("ReservoirsOutput",
-                    problem,
-                    ProblemDataReservoirData(problem_data),
-                    t, WELLDATA_DONTWRITEHEADER);
+    if (dump_files) {
+      WriteReservoirs("ReservoirsOutput",
+                      problem,
+                      ProblemDataReservoirData(problem_data),
+                      t, WELLDATA_DONTWRITEHEADER);
+    }
     if (print_wells && dump_files)
     {
       WriteWells(file_prefix,
