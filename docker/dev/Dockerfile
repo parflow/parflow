@@ -216,7 +216,7 @@ RUN cp -R /home/ubuntu/parflow/build/pftools/python/parflow/tools/ref ~/.local/l
 #RUN mkdir /home/ubuntu/parflow/src
 
 ENV PARFLOW_DIR /opt/parflow/
-WORKDIR /opt/parflow/
+WORKDIR /local
 
 #alias parflow=/opt/parflow/bin/parflow
 

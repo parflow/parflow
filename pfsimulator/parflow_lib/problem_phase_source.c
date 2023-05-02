@@ -404,6 +404,7 @@ void         PhaseSource(
 
       reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
       reservoir_release_subgrid = ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical);
+
       double dt = 1.0;
       reservoir_value = 0.0;
       if (ReservoirDataPhysicalAction(reservoir_data_physical) == INJECTION_WELL)

@@ -1,6 +1,6 @@
+# Get the branch name and store it in a variable
 execute_process(COMMAND bash -c "cd ${CMAKE_SOURCE_DIR} && git rev-parse --abbrev-ref HEAD | sed 's/[^a-zA-Z0-9]/-/g'" OUTPUT_VARIABLE BRANCH_NAME OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ($cd ..))
-#set(BRANCH_NAME ($git rev-parse --abbrev-ref HEAD | sed 's/[^a-zA-Z0-9]/-/g'))
 
 add_custom_target(DockerBuildDevelopment
         docker build --rm -t parflow-development:${BRANCH_NAME}
@@ -18,9 +18,9 @@ add_custom_target(DockerBuildDevelopment
         )
 
 add_custom_target(DockerRunDevelopment
-        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY --name=parflow-development:${BRANCH_NAME} -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src parflow-development:${BRANCH_NAME}
+        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src -v ${CMAKE_CURRENT_SOURCE_DIR}/../..:/local parflow-development:${BRANCH_NAME}
         COMMENT
-        "Start docker image 'parflow-development' mounted to source directory to allow live rebuilding"
+        "Start docker image 'parflow-development:${BRANCH_NAME}' mounted to source directory to allow live rebuilding"
         VERBATIM
         )
 
