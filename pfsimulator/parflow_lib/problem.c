@@ -111,13 +111,7 @@ Problem   *NewProblem(
 
   NameArray switch_na = NA_NewNameArray("False True");
   char *switch_name = GetStringDefault("TimingInfo.DumpAtEnd", "False");
-  int switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
-  ProblemDumpAtEnd(problem) = switch_value;
+  ProblemDumpAtEnd(problem) = NA_NameToIndexExitOnError(switch_na, switch_name, "TimingInfo.DumpAtEnd");
   NA_FreeNameArray(switch_na);
 
   /*-----------------------------------------------------------------------
@@ -495,6 +489,7 @@ void          FreeProblemData(
 
     FreeVector(ProblemDataRealSpaceZ(problem_data));
     FreeVector(ProblemDataIndexOfDomainTop(problem_data));
+    FreeVector(ProblemDataPatchIndexOfDomainTop(problem_data));
 
     tfree(problem_data);
   }

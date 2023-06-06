@@ -1155,8 +1155,8 @@ method is to be used to assign permeability data to all grid cells
 within a geometry :cite:p:`TAG89`. The **ParGauss** value
 indicates that a Parallel Gaussian Simulator method is to be used to
 assign permeability data to all grid cells within a geometry. The
-**PFBFile** value indicates that premeabilities are to be read from the
-“ParFlow Binary” file. Both the Turning Bands and Parallel Gaussian
+**PFBFile** value indicates that premeabilities are to be read from a 
+ParFlow 3D binary file. Both the Turning Bands and Parallel Gaussian
 Simulators generate a random field with correlation lengths in the
 :math:`3` spatial directions given by :math:`\lambda_x`,
 :math:`\lambda_y`, and :math:`\lambda_z` with the geometric mean of the
@@ -1403,9 +1403,9 @@ LogTruncated values are chosen.
 *string* **Geom.\ *geometry_name*.Perm.FileName** no default This key
 specifies that permeability values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
-the “ParFlow Binary” file whose filename is given as the value. For a
+the “ParFlow binary” file whose filename is given as the value. For a
 description of the ParFlow Binary file format, see
-:ref:`ParFlow Binary Files (.pfb)`. The ParFlow Binary file
+:ref:`ParFlow Binary Files (.pfb)`. The ParFlow binary file
 associated with the named geometry must contain a collection of
 permeability values corresponding in a one-to-one manner to the entire
 computational grid. That is to say, when the contents of the file are
@@ -1501,42 +1501,42 @@ specifies the value of :math:`k_z` for the geometry given by
 *string* **Geom.\ *geometry_name*.Perm.TensorFileX** no default This key
 specifies that :math:`k_x` values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
-the “ParFlow Binary” file whose filename is given as the value. The only
+a ParFlow 3D binary file whose filename is given as the value. The only
 choice for the value of *geometry_name* is “domain”.
 
 .. container:: list
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileX   "perm_x.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileX = "perm_x.pfb"    ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.TensorFileY** no default This key
 specifies that :math:`k_y` values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
-the “ParFlow Binary” file whose filename is given as the value. The only
+a ParFlow 3D binary file whose filename is given as the value. The only
 choice for the value of *geometry_name* is “domain”.
 
 .. container:: list
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileY   "perm_y.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileY   "perm_y.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileY = "perm_y.pfb"     ## Python syntax
 
 *string* **Geom.\ *geometry_name*.Perm.TensorFileZ** no default This key
 specifies that :math:`k_z` values for the specified geometry,
 *geometry_name*, are given according to a user-supplied description in
-the “ParFlow Binary” file whose filename is given as the value. The only
+a ParFlow 3D binary file whose filename is given as the value. The only
 choice for the value of *geometry_name* is “domain”.
 
 .. container:: list
 
    ::
 
-      pfset Geom.domain.Perm.TensorByFileZ   "perm_z.pfb"         ## TCL syntax
+      pfset Geom.domain.Perm.TensorFileZ   "perm_z.pfb"         ## TCL syntax
 
       <runname>.Geom.domain.Perm.TensorByFileZ = "perm_z.pfb"     ## Python syntax
 
@@ -1565,9 +1565,10 @@ must cover the entire computational domain.
 
 *string* **Geom.\ *geometry_name*.Porosity.Type** no default This key
 specifies which method is to be used to assign porosity data to the
-named geometry, *geometry_name*. The only choice currently available is
-**Constant** which indicates that a constant is to be assigned to all
-grid cells within a geometry.
+named geometry, *geometry_name*. The choices for this key are **Constant**
+and **PFBFile**. **Constant** indicates that a constant is to be assigned to all
+grid cells within a geometry. The **PFBFile** value indicates that porosity values
+are to be read from a ParFlow 3D binary file.
 
 .. container:: list
 
@@ -1579,7 +1580,7 @@ grid cells within a geometry.
 
 *double* **Geom.\ *geometry_name*.Porosity.Value** no default This key
 specifies the value assigned to all points in the named geometry,
-*geometry_name*, if the type was set to constant.
+*geometry_name*, if the type was set to **Constant**.
 
 .. container:: list
 
@@ -1588,6 +1589,19 @@ specifies the value assigned to all points in the named geometry,
       pfset Geom.domain.Porosity.Value   1.0       ## TCL syntax
 
       <runname>.Geom.domain.Porosity.Value = 1.0   ## Python syntax
+
+*string* **Geom.\ *geometry_name*.Porosity.FileName** no default This key
+specifies that porosity values for the specified geometry,
+*geometry_name*, are given according to a user-supplied description in
+a ParFlow 3D binary file whose filename is given as the value.
+
+.. container:: list
+
+   ::
+
+      pfset Geom.domain.Porosity.FileName   "porosity.pfb"         ## TCL syntax
+
+      <runname>.Geom.domain.Porosity.FileName = "porosity.pfb"     ## Python syntax
 
 .. _Specific Storage:
 
@@ -1679,7 +1693,7 @@ to be used to assign variable vertical grid spacing. The choices
 currently available are **Constant** which indicates that a constant is
 to be assigned to all grid cells within a geometry, **nzList** which
 assigns all layers of a given model to a list value, and **PFBFile**
-which reads in values from a distributed pfb file.
+which reads in values from a distributed ParFlow 3D binary file.
 
 .. container:: list
 
@@ -1824,7 +1838,7 @@ Flow Barriers
 
 Here, the values for Flow Barriers described in :ref:`FB` can be
 input. These are only available with Solver **Richards** and can be
-specified in X, Y or Z directions independently using PFB files. These
+specified in X, Y or Z directions independently using ParFlow binary files. These
 barriers are appied at the cell face at the location :math:`i+1/2`. That
 is a value of :math:`FB_x` specified at :math:`i` will be applied to the
 cell face at :math:`i+1/2` or between cells :math:`i` and
@@ -1869,7 +1883,7 @@ everywhere in the domain.
 
 *string* **FBx.Type** no default This key specifies which method is to
 be used to assign flow barriers in X. The only choice currently
-available is **PFBFile** which reads in values from a distributed pfb
+available is **PFBFile** which reads in values from a distributed ParFlow binary
 file.
 
 ::
@@ -1891,7 +1905,7 @@ file.
 
 *string* **FBz.Type** no default This key specifies which method is to
 be used to assign flow barriers in Z. The only choice currently
-available is **PFBFile** which reads in values from a distributed pfb
+available is **PFBFile** which reads in values from a distributed ParFlow binary 
 file.
 
 ::
@@ -1900,7 +1914,7 @@ file.
 
    <runname>.FBz.Type = "PFBFile"    ## Python syntax
 
-The Flow Barrier values may be read in from a PFB file over the entire
+The Flow Barrier values may be read in from a ParFlow binary file over the entire
 domain. This is done as follows:
 
 *string* **Geom.domain.FBx.FileName** no default This key specifies file
@@ -1964,7 +1978,7 @@ to be used to assign Mannings roughness data. The choices currently
 available are **Constant** which indicates that a constant is to be
 assigned to all grid cells within a geometry and **PFBFile** which
 indicates that all values are read in from a distributed, grid-based
-ParFlow binary file.
+ParFlow 2D binary file.
 
 .. container:: list
 
@@ -1987,7 +2001,7 @@ specifies the value assigned to all points in the named geometry,
       <runname>.Mannings.Geom.domain.Value = 5.52e-6  ## Python syntax
 
 *double* **Mannings.FileName** no default This key specifies the value
-assigned to all points be read in from a ParFlow binary file.
+assigned to all points be read in from a ParFlow 2D binary file.
 
 .. container:: list
 
@@ -2062,7 +2076,7 @@ is to be used to assign topographic slopes. The choices currently
 available are **Constant** which indicates that a constant is to be
 assigned to all grid cells within a geometry and **PFBFile** which
 indicates that all values are read in from a distributed, grid-based
-ParFlow binary file.
+ParFlow 2D binary file.
 
 .. container:: list
 
@@ -2085,7 +2099,7 @@ specifies the value assigned to all points in the named geometry,
       <runname>.ToposlopeX.Geom.domain.Value = 0.001     ## Python syntax
 
 *double* **ToposlopesX.FileName** no default This key specifies the
-value assigned to all points be read in from a ParFlow binary file.
+value assigned to all points be read in from a ParFlow 2D binary file.
 
 .. container:: list
 
@@ -2096,7 +2110,7 @@ value assigned to all points be read in from a ParFlow binary file.
       <runname>.TopoSlopesX.FileName = "lw.1km.slope_x.pfb"    ## Python syntax
 
 *double* **ToposlopesY.FileName** no default This key specifies the
-value assigned to all points be read in from a ParFlow binary file.
+value assigned to all points be read in from a ParFlow 2D binary file.
 
 .. container:: list
 
@@ -2336,7 +2350,7 @@ geometry.
 
 *integer* **Phase.RelPerm.VanGenuchten.File** 0 This key specifies
 whether soil parameters for the VanGenuchten function are specified in a
-pfb file or by region. The options are either 0 for specification by
+ParFlow 3D binary file or by region. The options are either 0 for specification by
 region, or 1 for specification in a file. Note that either all
 parameters are specified in files (each has their own input file) or
 none are specified by files. Parameters specified by files are:
@@ -2351,7 +2365,7 @@ none are specified by files. Parameters specified by files are:
       <runname>.Phase.RelPerm.VanGenuchten.File = 1   ## Python syntax
 
 *string* **Geom.\ *geom_name*.RelPerm.Alpha.Filename** no default This
-key specifies a pfb filename containing the alpha parameters for the
+key specifies a ParFlow binary filename containing the alpha parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 “domain”.
 
@@ -2364,7 +2378,7 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
       <runname>.Geom.domain.RelPerm.Alpha.Filename = "alphas.pfb"    ## Python syntax
 
 *string* **Geom.\ *geom_name*.RelPerm.N.Filename** no default This key
-specifies a pfb filename containing the N parameters for the
+specifies a ParFlow binary filename containing the N parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 “domain”.
 
@@ -2716,7 +2730,7 @@ saturation function for each region of the form,
 
 The **PFBFile** specification means that the saturation will be taken as
 a spatially varying but constant in pressure function given by data in a
-ParFlow binary (.pfb) file.
+ParFlow 3D binary file.
 
 *list* **Phase.Saturation.GeomNames** no default This key specifies the
 geometries on which saturation will be given. The union of these
@@ -2745,7 +2759,7 @@ specifies the constant saturation value on the *geom_name* region.
 
 *integer* **Phase.Saturation.VanGenuchten.File** 0 This key specifies
 whether soil parameters for the VanGenuchten function are specified in a
-pfb file or by region. The options are either 0 for specification by
+ParFlow 3D binary file or by region. The options are either 0 for specification by
 region, or 1 for specification in a file. Note that either all
 parameters are specified in files (each has their own input file) or
 none are specified by files. Parameters specified by files are
@@ -2761,7 +2775,7 @@ none are specified by files. Parameters specified by files are
 
 
 *string* **Geom.\ *geom_name*.Saturation.Alpha.Filename** no default
-This key specifies a pfb filename containing the alpha parameters for
+This key specifies a ParFlow binary filename containing the alpha parameters for
 the VanGenuchten function cell-by-cell. The ONLY option for *geom_name*
 is “domain”.
 
@@ -2775,7 +2789,7 @@ is “domain”.
 
 
 *string* **Geom.\ *geom_name*.Saturation.N.Filename** no default This
-key specifies a pfb filename containing the N parameters for the
+key specifies a ParFlow binary filename containing the N parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 “domain”.
 
@@ -2788,7 +2802,7 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
       pfset Geom.domain.Saturation.N.Filename = "Ns.pfb"    ## Python syntax
 
 *string* **Geom.\ *geom_name*.Saturation.SRes.Filename** no default This
-key specifies a pfb filename containing the SRes parameters for the
+key specifies a ParFlow binary filename containing the SRes parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 “domain”.
 
@@ -2802,7 +2816,7 @@ VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 
 
 *string* **Geom.\ *geom_name*.Saturation.SSat.Filename** no default This
-key specifies a pfb filename containing the SSat parameters for the
+key specifies a ParFlow binary filename containing the SSat parameters for the
 VanGenuchten function cell-by-cell. The ONLY option for *geom_name* is
 “domain”.
 
@@ -3054,16 +3068,16 @@ the domain patch. The units should be consistent with all other user
 input for the problem. For *Richards’ equation* fluxes must be specified
 as a mass flux and given as the above flux multiplied by the density.
 The choice **PressureFile** defines a hydraulic head boundary condition
-that is read from a properly distributed .pfb file. Only the values
+that is read from a properly distributed ParFlow binary file. Only the values
 needed for the patch are used. The choice **FluxFile** defines a flux
-boundary condition that is read form a properly distributed .pfb file
+boundary condition that is read form a properly distributed ParFlow binary file
 defined on a grid consistent with the pressure field grid. Only the
 values needed for the patch are used. The choices **OverlandFlow** and
 **OverlandFlowPFB** both turn on fully-coupled overland flow routing as
 described in :cite:t:`KM06` and in :ref:`Overland Flow`. The key **OverlandFlow**
 corresponds to a **Value** key with a positive or negative value, to
 indicate uniform fluxes (such as rainfall or evapotranspiration) over
-the entire domain while the key **OverlandFlowPFB** allows a file to
+the entire domain while the key **OverlandFlowPFB** allows a ParFlow 2D binary file to
 contain grid-based, spatially-variable fluxes. The **OverlandKinematic**
 and **OverlandDiffusive** both turn on an kinematic and diffusive wave
 overland flow routing boundary that solve Maning's equation in 
@@ -3225,7 +3239,7 @@ the line.
       pfset Patch.top.BCPressure.alltime.0.Value   14.0
 
 *string* **Patch.\ *patch_name*.BCPressure.\ *interval_name*.FileName**
-no default This key specifies the name of a properly distributed ``.pfb`` file 
+no default This key specifies the name of a properly distributed ParFlow binary file 
 that contains boundary data to be read for types PressureFile and FluxFile. 
 For flux data, the data must be defined over a grid consistent with the 
 pressure field. In both cases, only the values needed for the patch will 
@@ -3509,8 +3523,7 @@ patch. Note that all regions must have the same type of initial data -
 different regions cannot have different types of initial data. However,
 the parameters for the type may be different. The **PFBFile**
 specification means that the initial pressure will be taken as a
-spatially varying function given by data in a ParFlow binary (.pfb)
-file.
+spatially varying function given by data in a ParFlow 3D binary file.
 
 .. container:: list
 
@@ -3595,7 +3608,7 @@ applied to different geometries for given phase, *phase_name*, and the
 given contaminant, *contaminant_name*. The choices for this key are
 **Constant** or **PFBFile**. The choice **Constant** will apply
 constants values to different geometries. The choice **PFBFile** will
-read values from a “ParFlow Binary” file (see
+read values from a ParFlow 3D binary file (see
 :ref:`ParFlow Binary Files (.pfb)`).
 
 .. container:: list
@@ -3629,7 +3642,7 @@ to **Constant**.
       PhaseConcen.water.tce.ic_concen_region.Value 0.001
 
 *string* **PhaseConcen.\ *phase_name*.\ *contaminant_name*.FileName** no
-default This key specifies the name of the “ParFlow Binary” file which
+default This key specifies the name of the ParFlow 3D binary file which
 contains the initial condition values if the type was set to
 **PFBFile**.
 
@@ -4215,7 +4228,7 @@ minimum value for the :math:`\bar{S_{f}}` used in the
 *string* **Solver.PrintSubsurf** True This key is used to turn on
 printing of the subsurface data, Permeability and Porosity. The data is
 printed after it is generated and before the main time stepping loop -
-only once during the run. The data is written as a PFB file.
+only once during the run. The data is written as a ParFlow binary file.
 
 .. container:: list
 
@@ -4241,7 +4254,7 @@ file.
 *string* **Solver.PrintVelocities** False This key is used to turn on
 printing of the x, y, and z velocity (Darcy flux) data. The printing of
 the data is controlled by values in the timing information section. The
-x, y, and z data are written to separate PFB files. The dimensions of
+x, y, and z data are written to separate ParFlow binary files. The dimensions of
 these files are slightly different than most PF data, with the dimension
 of interest representing interfaces, and the other two dimensions
 representing cells. E.g. the x-velocity PFB has dimensions [NX+1, NY,
@@ -4259,7 +4272,7 @@ equation solver.
 *string* **Solver.PrintSaturation** True This key is used to turn on
 printing of the saturation data. The printing of the data is controlled
 by values in the timing information section. The data is written as a
-PFB file.
+ParFlow binary file.
 
 .. container:: list
 
@@ -4287,7 +4300,7 @@ written as a PFSB file.
 of the top of domain data.  'TopZIndex' is a NX * NY file with the Z
 index of the top of the domain. 'TopPatch' is the Patch index for the
 top of the domain.  A value of -1 indicates an (i,j) column does not
-intersect the domain.  The data is written as a PFB file.
+intersect the domain.  The data is written as a ParFlow binary file.
 
 .. container:: list
 
@@ -4889,6 +4902,64 @@ are **Galerkin** or **NonGalerkin**
 
       <runname>.Solver.Linear.Preconditioner.PFMG.RAPType = "Galerkin"  ## Python syntax
 
+
+*logical* **Solver.ResetSurfacePressure** False This key changes any surface pressure greater than a threshold value to 
+another value in between solver timesteps. It works differently than the Spinup keys and is intended to 
+help with slope errors and issues and provides some diagnostic information.  The threshold keys are specified below.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.ResetSurfacePressure        True        ## TCL syntax
+      <runname>.Solver.ResetSurfacePressure  = "True"    ## Python syntax
+
+*double* **Solver.ResetSurfacePressure.ThresholdPressure** 0.0 This key specifies a threshold value used in the **ResetSurfacePressure** key above.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.ResetSurfacePressure.ThresholdPressure        10.0        ## TCL syntax
+      <runname>.Solver.ResetSurfacePressure.ThresholdPressure  = 10.0    ## Python syntax
+
+*double* **Solver.ResetSurfacePressure.ResetPressure** 0.0 This key specifies a reset value used in the **ResetSurfacePressure** key above.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.ResetSurfacePressure.ResetPressure        0.0        ## TCL syntax
+      <runname>.Solver.ResetSurfacePressure.ResetPressure  = 0.0    ## Python syntax
+
+
+*logical* **Solver.SurfacePredictor** False This key activates a routine that uses the evap trans flux and available water storage in a surface cell to predict whether an unsaturated cell will pond during the next timestep. The pressure values are set with the key below.
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor        True        ## TCL syntax
+      <runname>.Solver.SurfacePredictor  = "True"    ## Python syntax
+
+*double* **Solver.SurfacePredictor.PressureValue** 0.00001 This key specifies a surface pressure if the **SurfacePredictor** key above is True and ponded conditions are predicted at a surface cell.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor.PressureValue        0.001        ## TCL syntax
+      <runname>.Solver.SurfacePredictor.PressureValue  = 0.001    ## Python syntax
+
+*logical* **Solver.SurfacePredictor.PrintValues** False This key specifies if the **SurfacePredictor** values are printed.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SurfacePredictor.PrintValues        True        ## TCL syntax
+      <runname>.Solver.SurfacePredictor.PrintValue  = "True"    ## Python syntax
+
+
 *logical* **Solver.EvapTransFile** False This key specifies specifies
 that the Flux terms for Richards’ equation are read in from a ``.pfb`` 
 file. This file has [T^-1] units. Note this key is for a steady-state 
@@ -4972,7 +5043,7 @@ zero (the default) this key behaves normally.
 *double* **OverlandFlowSpinUpDampP1** 0.0 This key sets :math:`P_1` and
 provides exponential dampening to the pressure relationship in the
 overland flow equation by adding the following term:
-:math:`P_2*exp(\psi*P_2)`
+:math:`P_2*exp(\psi*P_1)`
 
 .. container:: list
 
@@ -4984,7 +5055,7 @@ overland flow equation by adding the following term:
 *double* **OverlandFlowSpinUpDampP2** 0.0 This key sets :math:`P_2` and
 provides exponential dampening to the pressure relationship in the
 overland flow equation adding the following term:
-:math:`P_2*exp(\psi*P_2)`
+:math:`P_2*exp(\psi*P_1)`
 
 .. container:: list
 
@@ -4993,6 +5064,18 @@ overland flow equation adding the following term:
       pfset OverlandSpinupDampP2  0.1        ## TCL syntax
       <runname>.OverlandSpinupDampP2 = 0.1   ## Python syntax
 
+
+*logical* **Solver.SpinUp** False This key removes surface pressure in between solver timesteps.
+It works differently than the Spinup keys above as the pressure will build up, then all pressures greater than
+zero will be reset to zero.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.SpinUp   True        ## TCL syntax
+      <runname>.Solver.SpinUp = "True"    ## Python syntax
+      
 .. _CLM Solver Parameters:
 
 CLM Solver Parameters

@@ -1597,6 +1597,54 @@ Solver:
     domains:
       DoubleValue:
 
+  ResetSurfacePressure:
+    __doc__: >
+      [Type: logical] Check surface pressure and reset values above a threshold to a different value.
+    __value__:
+      help: >
+        [Type: boolean/string] Check surface pressure and reset values above a threshold to a different value.
+      default: False
+      domains:
+        BoolDomain:
+
+    ThresholdPressure:
+      help: >
+        [Type: double]
+      default: 0.0
+      domains:
+        DoubleValue:
+
+    ResetPressure:
+      help: >
+        [Type: double] 
+      default: 0.0
+      domains:
+        DoubleValue:
+  
+  SurfacePredictor:
+    __doc__: >
+      [Type: logical] Try to calculate if a surface cell will pond / switch from sub surface to surface flow and set pressure to a positive value.
+    __value__:
+      help: >
+        [Type: boolean/string] Try to calculate if a surface cell will pond / switch from sub surface to surface flow and set pressure to a positive value.
+      default: False
+      domains:
+        BoolDomain:
+
+    PressureValue:
+      help: >
+        [Type: double] Surface pressure value set if flux into cell exceeds capacity.
+      default: 0.00001
+      domains:
+        DoubleValue:
+      
+    PrintValues:
+      help: >
+        [Type: logical] Surface predictor print flag.
+      default: False
+      domains:
+        BoolDomain:
+
   OverlandDiffusive:
     __doc__: >
       Setting epsilon value for the diffusive overland flow formulation.

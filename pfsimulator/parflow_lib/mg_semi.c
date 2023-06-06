@@ -1256,7 +1256,7 @@ PFModule   *MGSemiNewPublicXtra(char *name)
   smoother_na = NA_NewNameArray("RedBlackGSPoint WJacobi");
   sprintf(key, "%s.Smoother", name);
   switch_name = GetStringDefault(key, "RedBlackGSPoint");
-  switch_value = NA_NameToIndex(smoother_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(smoother_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -1273,8 +1273,7 @@ PFModule   *MGSemiNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(smoother_na);
@@ -1282,7 +1281,7 @@ PFModule   *MGSemiNewPublicXtra(char *name)
   coarse_solve_na = NA_NewNameArray("CGHS RedBlackGSPoint WJacobi");
   sprintf(key, "%s.CoarseSolve", name);
   switch_name = GetStringDefault(key, "RedBlackGSPoint");
-  switch_value = NA_NameToIndex(coarse_solve_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(coarse_solve_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -1305,8 +1304,7 @@ PFModule   *MGSemiNewPublicXtra(char *name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(coarse_solve_na);

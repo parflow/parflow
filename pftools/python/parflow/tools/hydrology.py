@@ -192,9 +192,14 @@ def _overland_flow(pressure_top, slopex, slopey, mannings, dx, dy):
 # -----------------------------------------------------------------------------
 
 def _overland_flow_kinematic(mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon):
+    ##### --- ######
+    #     qx       #
+    ##### --- ######
+
     # We will be tweaking the slope values for this algorithm, so we make a copy
-    slopex = slopex.copy()
-    slopey = slopey.copy()
+    slopex = np.copy(slopex)
+    slopey = np.copy(slopey)
+    mannings = np.copy(mannings)
 
     # We're only interested in the surface mask, as an ny-by-nx array
     mask = mask[-1, ...]
@@ -203,46 +208,65 @@ def _overland_flow_kinematic(mask, pressure_top, slopex, slopey, mannings, dx, d
     #  -------
     # | 0 | 1 |
     #  -------
-    # and copy the slopex values from the '1' cells to the corresponding '0' cells
+    # and copy the slopex, slopey and mannings values from the '1' cells to the corresponding '0' cells
     _x, _y = np.where(np.diff(mask, axis=1, append=0) == 1)
     slopex[(_x, _y)] = slopex[(_x, _y + 1)]
+    slopey[(_x, _y)] = slopey[(_x, _y + 1)] 
+    mannings[(_x, _y)] = mannings[(_x, _y + 1)] 
+    
+    slope = np.maximum(epsilon, np.hypot(slopex, slopey))
+    
+    # Upwind pressure - this is for the north and east face of all cells
+    # The slopes are calculated across these boundaries so the upper x boundaries are included in these
+    # calculations. The lower x boundaries are added further down as q_x0
+    pressure_top_padded = np.pad(pressure_top[:, 1:], ((0, 0,), (0, 1)))  # pad right
+    pupwindx = np.maximum(0, np.sign(slopex) * pressure_top_padded) + np.maximum(0, -np.sign(slopex) * pressure_top)
+    
+    flux_factor = np.sqrt(slope) * mannings
+    
+    # Flux across the x directions
+    q_x = -slopex / flux_factor * pupwindx ** (5 / 3) * dy
+    
+    # Fix the lower x boundary
+    # Use the slopes of the first column
+    q_x0 = -slopex[:, 0] / flux_factor[:, 0] * np.maximum(0, np.sign(slopex[:, 0]) * pressure_top[:, 0]) ** (5 / 3) * dy
+    qeast = np.hstack([q_x0[:, np.newaxis], q_x])
+
+
+    ##### --- ######
+    #   qy   #
+    ##### --- ######
 
     # Find all patterns of the form
     #  ---
     # | 0 |
     # | 1 |
     #  ---
-    # and copy the slopey values from the '1' cells to the corresponding '0' cells
     _x, _y = np.where(np.diff(mask, axis=0, append=0) == 1)
     slopey[(_x, _y)] = slopey[(_x + 1, _y)]
-
+    slopex[(_x, _y)] = slopex[(_x + 1, _y)]
+    mannings[(_x, _y)] = mannings[(_x + 1, _y)]
+    
     slope = np.maximum(epsilon, np.hypot(slopex, slopey))
+    
 
     # Upwind pressure - this is for the north and east face of all cells
-    # The slopes are calculated across these boundaries so the upper x/y boundaries are included in these
-    # calculations. The lower x/y boundaries are added further down as q_x0/q_y0
-    pressure_top_padded = np.pad(pressure_top[:, 1:], ((0, 0,), (0, 1)))  # pad right
-    pupwindx = np.maximum(0, np.sign(slopex) * pressure_top_padded) + np.maximum(0, -np.sign(slopex) * pressure_top)
+    # The slopes are calculated across these boundaries so the upper y boundaries are included in these
+    # calculations. The lower y boundaries are added further down as q_y0
     pressure_top_padded = np.pad(pressure_top[1:, :], ((0, 1,), (0, 0)))  # pad bottom
     pupwindy = np.maximum(0, np.sign(slopey) * pressure_top_padded) + np.maximum(0, -np.sign(slopey) * pressure_top)
 
     flux_factor = np.sqrt(slope) * mannings
-    # Flux across the x/y directions
-    q_x = -slopex / flux_factor * pupwindx ** (5 / 3) * dy
-    q_y = -slopey / flux_factor * pupwindy ** (5 / 3) * dx
 
-    # Fix the lower x boundary
-    # Use the slopes of the first column
-    q_x0 = -slopex[:, 0] / flux_factor[:, 0] * np.maximum(0, np.sign(slopex[:, 0]) * pressure_top[:, 0]) ** (5 / 3) * dy
-    qeast = np.hstack([q_x0[:, np.newaxis], q_x])
+    # Flux across the y direction
+    q_y = -slopey / flux_factor * pupwindy ** (5 / 3) * dx
 
     # Fix the lower y boundary
     # Use the slopes of the first row
     q_y0 = -slopey[0, :] / flux_factor[0, :] * np.maximum(0, np.sign(slopey[0, :]) * pressure_top[0, :]) ** (5 / 3) * dx
     qnorth = np.vstack([q_y0, q_y])
-
+    
     return qeast, qnorth
-
 
 # -----------------------------------------------------------------------------
 

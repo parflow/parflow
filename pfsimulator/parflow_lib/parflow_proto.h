@@ -293,28 +293,6 @@ PFModule *InputRFNewPublicXtra(char *geom_name);
 void InputRFFreePublicXtra(void);
 int InputRFSizeOfTempData(void);
 
-/* input_database.c */
-void IDB_Print(FILE *file, void *entry);
-int IDB_Compare(void *a, void *b);
-void IDB_Free(void *a);
-IDB_Entry *IDB_NewEntry(char *key, char *value);
-IDB *IDB_NewDB(char *filename);
-void IDB_FreeDB(IDB *database);
-void IDB_PrintUsage(FILE *file, IDB *database);
-char *IDB_GetString(IDB *database, const char *key);
-char *IDB_GetStringDefault(IDB *database, const char *key, char *default_value);
-double IDB_GetDoubleDefault(IDB *database, const char *key, double default_value);
-double IDB_GetDouble(IDB *database, const char *key);
-int IDB_GetIntDefault(IDB *database, const char *key, int default_value);
-int IDB_GetInt(IDB *database, const char *key);
-NameArray NA_NewNameArray(char *string);
-int NA_AppendToArray(NameArray name_array, char *string);
-void NA_FreeNameArray(NameArray name_array);
-int NA_NameToIndex(NameArray name_array, char *name);
-char *NA_IndexToName(NameArray name_array, int index);
-int NA_Sizeof(NameArray name_array);
-void InputError(const char *format, const char *s1, const char *s2);
-
 typedef int (*NonlinSolverInvoke) (Vector *pressure, Vector *density, Vector *old_density, Vector *saturation, Vector *old_saturation, double t, double dt, ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
 typedef PFModule *(*NonlinSolverInitInstanceXtraInvoke) (Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data);
 
