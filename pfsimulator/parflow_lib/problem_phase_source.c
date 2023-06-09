@@ -405,7 +405,7 @@ void         PhaseSource(
       reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
       reservoir_release_subgrid = ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical);
 
-      double dt = 1.0;
+      double dt = problem->current_dt;
       reservoir_value = 0.0;
       if (ReservoirDataPhysicalAction(reservoir_data_physical) == INJECTION_WELL)
       {
@@ -419,12 +419,12 @@ void         PhaseSource(
       }
       /*  Get the intersection of the reservoir with the subgrid  */
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-      flux = reservoir_value / volume *dt;
+      flux = reservoir_value / (volume);
       //If we are overfull need to release the rest of the flux
       bool reservoir_is_overfull = reservoir_data_physical->current_capacity > reservoir_data_physical->max_capacity;
       if (reservoir_is_overfull){
         //TODO replace 0.01 with dt
-        flux = (reservoir_data_physical->current_capacity - reservoir_data_physical->max_capacity) / (volume*dt) ;
+        flux = (reservoir_data_physical->current_capacity - reservoir_data_physical->max_capacity) / (volume) ;
       }
 
       ForSubgridI(is, subgrids)
@@ -492,10 +492,6 @@ void         PhaseSource(
 //                        reservoir_data_physical->release_amount_since_last_print += flux*dt*volume;
 //                        reservoir_data_physical->current_capacity-= flux*dt*volume;
                       });
-            //TODO replace 0.01 with dt
-
-
-//            printf("Releasing %f water\n", flux*0.01*volume);
           }
         }
       }

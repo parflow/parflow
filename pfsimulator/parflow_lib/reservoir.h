@@ -41,12 +41,16 @@ typedef struct {
 //  TimeSeries * release_curve;
     double intake_x_lower, intake_y_lower, z_lower;
     double intake_x_upper, intake_y_upper, z_upper;
+    int has_secondary_intake_cell;
+    double secondary_intake_x_lower, secondary_intake_y_lower;
+    double secondary_intake_x_upper, secondary_intake_y_upper;
     double release_x_lower, release_y_lower, release_z_lower;
     double release_x_upper, release_y_upper, release_z_upper;
     double diameter;
     double max_capacity, min_release_capacity, current_capacity, release_rate;
     double intake_amount_since_last_print, release_amount_since_last_print, release_amount_in_solver;
     Subgrid       *intake_subgrid;
+    Subgrid       *secondary_intake_subgrid;
     Subgrid       *release_subgrid;
     double size;
     int action;
@@ -93,6 +97,12 @@ typedef struct {
 #define ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_y_lower)
 
+#define ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) \
+  ((reservoir_data_physical)->secondary_intake_x_lower)
+
+#define ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) \
+  ((reservoir_data_physical)->secondary_intake_y_lower)
+
 #define ReservoirDataPhysicalZLower(reservoir_data_physical) \
   ((reservoir_data_physical)->z_lower)
 
@@ -102,11 +112,23 @@ typedef struct {
 #define ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_y_upper)
 
+#define ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_x_upper)
+
+#define ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_y_upper)
+
 #define ReservoirDataPhysicalZUpper(reservoir_data_physical) \
   ((reservoir_data_physical)->z_upper)
 
 #define ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_subgrid)
+
+#define ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) \
+  ((reservoir_data_physical)->secondary_intake_subgrid)
+
+#define ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) \
+  ((reservoir_data_physical)->has_secondary_intake_cell)
 
 #define ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) \
   ((reservoir_data_physical)->release_x_lower)

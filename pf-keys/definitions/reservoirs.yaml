@@ -119,6 +119,30 @@ Reservoirs:
       domains:
         DoubleValue:
 
+    Secondary_Intake_X:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the x location of the optional secondary intake cell
+      default: -1.0
+      domains:
+        DoubleValue:
+
+    Secondary_Intake_Y:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the y location of the optional secondary intake cell
+      default: -1.0
+      domains:
+        DoubleValue:
+
+    Has_Secondary_Intake_Cell:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the y location of the optional secondary intake cell
+      default: 0
+      domains:
+        IntValue:
+
     Min_Release_Capacity:
       # typos - vertical
       help: >

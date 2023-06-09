@@ -72,6 +72,9 @@ typedef struct {
     int mechanism;
     double intake_x_location;
     double intake_y_location;
+    int has_secondary_intake_cell;
+    double secondary_intake_x_location;
+    double secondary_intake_y_location;
     double release_x_location;
     double release_y_location;
     double z_lower, z_upper;
@@ -106,6 +109,7 @@ void         ReservoirPackage(
   Type1            *dummy1;
 
   Subgrid          *new_intake_subgrid;
+  Subgrid          *new_secondary_intake_subgrid;
   Subgrid          *new_release_subgrid;
 
   TimeCycleData    *time_cycle_data;
@@ -116,6 +120,7 @@ void         ReservoirPackage(
   int i, sequence_number, phase, contaminant, indx, press_reservoir, flux_reservoir;
 
   int intake_ix, intake_iy;
+  int secondary_intake_ix, secondary_intake_iy;
   int release_ix, release_iy;
   int iz_lower, iz_upper;
   int nx, ny, nz;
@@ -126,8 +131,10 @@ void         ReservoirPackage(
 
   double          **phase_values;
   double intake_subgrid_volume;
+  double secondary_intake_subgrid_volume;
   double release_subgrid_volume;
   double intake_x_lower, intake_x_upper, intake_y_lower, intake_y_upper, z_lower, z_upper;
+  double secondary_intake_x_lower, secondary_intake_x_upper, secondary_intake_y_lower, secondary_intake_y_upper;
   double release_x_lower, release_x_upper, release_y_lower, release_y_upper;
   double max_capacity, min_release_capacity, current_capacity, release_rate;
   double intake_amount_since_last_print, release_amount_since_last_print;
@@ -167,6 +174,8 @@ void         ReservoirPackage(
 
           intake_ix = IndexSpaceX((dummy0->intake_x_location), 0);
           intake_iy = IndexSpaceY((dummy0->intake_y_location), 0);
+          secondary_intake_ix = IndexSpaceX((dummy0->secondary_intake_x_location), 0);
+          secondary_intake_iy = IndexSpaceY((dummy0->secondary_intake_y_location), 0);
           release_ix = IndexSpaceX((dummy0->release_x_location), 0);
           release_iy = IndexSpaceY((dummy0->release_y_location), 0);
           iz_lower = IndexSpaceZ((dummy0->z_lower), 0);
@@ -187,11 +196,23 @@ void         ReservoirPackage(
                                           rx, ry, rz,
                                           process);
 
+
           dx = SubgridDX(new_intake_subgrid);
           dy = SubgridDY(new_intake_subgrid);
           dz = SubgridDZ(new_intake_subgrid);
 
           intake_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
+
+          new_secondary_intake_subgrid = NewSubgrid(secondary_intake_ix, secondary_intake_iy, iz_lower,
+                                                    nx, ny, nz,
+                                                    rx, ry, rz,
+                                                    process);
+
+          dx = SubgridDX(new_secondary_intake_subgrid);
+          dy = SubgridDY(new_secondary_intake_subgrid);
+          dz = SubgridDZ(new_secondary_intake_subgrid);
+
+          secondary_intake_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
 
           new_release_subgrid = NewSubgrid(release_ix, release_iy, iz_lower,
                                           nx, ny, nz,
@@ -219,11 +240,16 @@ void         ReservoirPackage(
 //            reservoir_data_physical->release_curve = tmp_time_series;
             ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = (dummy0->intake_x_location);
             ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = (dummy0->intake_y_location);
+            ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
+            ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
+            ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) = (dummy0->has_secondary_intake_cell);
             ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) = (dummy0->release_x_location);
             ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) = (dummy0->release_y_location);
             ReservoirDataPhysicalZLower(reservoir_data_physical) = (dummy0->z_lower);
             ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = (dummy0->intake_x_location);
             ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) = (dummy0->intake_y_location);
+            ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
+            ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
             ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
             ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
             ReservoirDataPhysicalZUpper(reservoir_data_physical) = (dummy0->z_upper);
@@ -235,6 +261,7 @@ void         ReservoirPackage(
             ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
             ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) = (dummy0->current_capacity);
             ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
+            ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
             ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
             ReservoirDataPhysicalSize(reservoir_data_physical) = intake_subgrid_volume;
             ReservoirDataPhysicalAction(reservoir_data_physical) = (dummy0->action);
@@ -259,11 +286,16 @@ void         ReservoirPackage(
 //            printf("Time series second value: %f\n", GetValue(reservoir_data_physical->release_curve, 4.0));
             ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = (dummy0->intake_x_location);
             ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = (dummy0->intake_y_location);
+            ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
+            ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
+            ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) = (dummy0->has_secondary_intake_cell);
             ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) = (dummy0->release_x_location);
             ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) = (dummy0->release_y_location);
             ReservoirDataPhysicalZLower(reservoir_data_physical) = (dummy0->z_lower);
             ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = (dummy0->intake_x_location);
             ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) = (dummy0->intake_y_location);
+            ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
+            ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
             ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
             ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
             ReservoirDataPhysicalZUpper(reservoir_data_physical) = (dummy0->z_upper);
@@ -276,6 +308,7 @@ void         ReservoirPackage(
             ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
             ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) = (dummy0->current_capacity);
             ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
+            ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
             ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
             ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
             ReservoirDataPhysicalAction(reservoir_data_physical) = (dummy0->action);
@@ -368,13 +401,18 @@ void         ReservoirPackage(
 
               ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = intake_x_lower;
               ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = intake_y_lower;
+              ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = secondary_intake_x_lower;
+              ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) = secondary_intake_y_lower;
               ReservoirDataPhysicalZLower(reservoir_data_physical) = z_lower;
               ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = intake_x_upper;
               ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) = intake_y_upper;
+              ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) = secondary_intake_x_upper;
+              ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) = secondary_intake_y_upper;
               ReservoirDataPhysicalZUpper(reservoir_data_physical) = z_upper;
 
               ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dx);
               ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
+              ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
               ReservoirDataPhysicalSize(reservoir_data_physical) = intake_subgrid_volume;
               ReservoirDataPhysicalAction(reservoir_data_physical) = action;
               ReservoirDataPressReservoirPhysical(reservoir_data, press_reservoir) = reservoir_data_physical;
@@ -401,13 +439,18 @@ void         ReservoirPackage(
 
               ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = intake_x_lower;
               ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = intake_y_lower;
+              ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = secondary_intake_x_lower;
+              ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) = secondary_intake_y_lower;
               ReservoirDataPhysicalZLower(reservoir_data_physical) = z_lower;
               ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = intake_x_upper;
               ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) = intake_y_upper;
+              ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) = secondary_intake_x_upper;
+              ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) = secondary_intake_y_upper;
               ReservoirDataPhysicalZUpper(reservoir_data_physical) = z_upper;
 
               ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dx);
               ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
+              ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
               ReservoirDataPhysicalSize(reservoir_data_physical) = intake_subgrid_volume;
               ReservoirDataPhysicalAction(reservoir_data_physical) = action;
               ReservoirDataFluxReservoirPhysical(reservoir_data, flux_reservoir) = reservoir_data_physical;
@@ -583,6 +626,15 @@ PFModule  *ReservoirPackageNewPublicXtra(
 
           sprintf(key, "Reservoirs.%s.Intake_Y", reservoir_name);
           dummy0->intake_y_location = GetDouble(key);
+
+          sprintf(key, "Reservoirs.%s.Secondary_Intake_X", reservoir_name);
+          dummy0->secondary_intake_x_location = GetDouble(key);
+
+          sprintf(key, "Reservoirs.%s.Secondary_Intake_Y", reservoir_name);
+          dummy0->secondary_intake_y_location = GetDouble(key);
+
+          sprintf(key, "Reservoirs.%s.Has_Secondary_Intake_Cell", reservoir_name);
+          dummy0->has_secondary_intake_cell = GetInt(key);
 
           sprintf(key, "Reservoirs.%s.ZUpper", reservoir_name);
           dummy0->z_upper = GetDouble(key);

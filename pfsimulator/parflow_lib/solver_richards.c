@@ -374,6 +374,7 @@ SetupRichards(PFModule * this_module)
 
   double t;
   double dt = 0.0;
+  problem->current_dt = 0.0;
   double gravity = ProblemGravity(problem);
 
   double dtmp;
@@ -399,6 +400,7 @@ SetupRichards(PFModule * this_module)
 
   t = start_time;
   dt = 0.0e0;
+  problem->current_dt = 0.0;
 
   NewMetadata(this_module);
   MetadataAddParflowDomainInfo(js_domains, this_module, grid);
@@ -1207,7 +1209,6 @@ SetupRichards(PFModule * this_module)
     /*****************************************************************/
 
     any_file_dumped = 0;
-
     /*-------------------------------------------------------------------
      * Print out the initial well data?
      *-------------------------------------------------------------------*/
@@ -1652,6 +1653,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
   double t;
   double dt = 0.0;
+  problem-> current_dt = 0.0;
   double ct = 0.0;
   double cdt = 0.0;
   double print_dt;
@@ -1718,6 +1720,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                        (&cdt, &dt_info, t, problem, problem_data));
   }
   dt = cdt;
+  problem-> current_dt = cdt;
 
   /*
    * Check to see if pressure solves are requested
@@ -2548,7 +2551,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                              (&dt, &dt_info, t, problem,
                                  problem_data));
         }
-
+        problem->current_dt = dt;
         PFVCopy(instance_xtra->density, instance_xtra->old_density);
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
@@ -2568,6 +2571,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           if (diff_time > TIME_EPSILON)
           {
             dt = new_dt;
+            problem-> current_dt = new_dt;
           }
           else
           {
@@ -2597,6 +2601,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           if (diff_time > TIME_EPSILON)
           {
             dt = new_dt;
+            problem-> current_dt = new_dt;
           }
           else
           {
@@ -2636,6 +2641,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               if (diff_time > TIME_EPSILON)
               {
                 dt = new_dt;
+                problem-> current_dt = new_dt;
               }
               else
               {
@@ -2671,6 +2677,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             if (diff_time > TIME_EPSILON)
             {
               dt = new_dt;
+              problem-> current_dt = new_dt;
             }
             else
             {
@@ -2712,6 +2719,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           if (fabs(dt - print_dt) > TIME_EPSILON)
           {
             dt = print_dt;
+//            problem->current_dt = print_dt;
           }
           dt_info = 'p';
 
@@ -2773,6 +2781,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         if (diff_time > TIME_EPSILON)
         {
           dt = new_dt;
+          problem-> current_dt = new_dt;
         }
         else
         {
@@ -2783,6 +2792,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
 
         dt = new_dt;
+        problem-> current_dt = new_dt;
 
         dt_info = 'f';
       }
@@ -2959,6 +2969,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
     ReservoirDataPhysical *reservoir_data_physical;
     Subgrid          *tmp_subgrid, *reservoir_intake_subgrid;
+    Subgrid          *reservoir_secondary_intake_subgrid;
     if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
 //    double epoch_time = problem->current_unix_epoch_time;
       for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
@@ -3004,29 +3015,75 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             int grid_nz = SubgridNZ(subgrid);
 
             pp_sp = SubvectorData(p_sub_sp);
-            printf("About to loop\n");
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
                          {
                            ip = SubvectorEltIndex(p_sub_sp, i, j, k);
-                           printf("In loop, k is %d\n", k);
                            if (k == (grid_nz - 1))
                            {
                              //   printf(" %d %d %d %d  \n",i,j,k,ip);
                              //   printf(" pp[ip] %10.3f \n",pp[ip]);
-                              printf("Checking if we should reset pressure\n");
                              if (pp_sp[ip] > reservoir_reset_pressure)
                              {
                                double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
                                reservoir_data_physical->current_capacity = reservoir_data_physical->current_capacity + pp_sp[ip]*dx*dy;
                                reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
                                pp_sp[ip] = reservoir_reset_pressure;
-                               printf("time is %f\n",t);
                              }
                            }
                          }
             );
           }
         }
+//        handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+//        FinalizeVectorUpdate(handle);
+        if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) == 1){
+          reservoir_secondary_intake_subgrid = ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical);
+
+          ForSubgridI(is, GridSubgrids(grid))
+          {
+            subgrid = GridSubgrid(grid, is);
+            if (tmp_subgrid = IntersectSubgrids(subgrid, reservoir_secondary_intake_subgrid))
+            {
+              p_sub_sp = VectorSubvector(instance_xtra->pressure, is);
+
+              r = SubgridRX(tmp_subgrid);
+
+              ix = SubgridIX(tmp_subgrid);
+              iy = SubgridIY(tmp_subgrid);
+              iz = SubgridIZ(tmp_subgrid);
+
+              nx = SubgridNX(tmp_subgrid);
+              ny = SubgridNY(tmp_subgrid);
+              nz = SubgridNZ(tmp_subgrid);
+              double dx = SubgridDX(tmp_subgrid);
+              double dy = SubgridDY(tmp_subgrid);
+              int grid_nz = SubgridNZ(subgrid);
+
+              pp_sp = SubvectorData(p_sub_sp);
+              printf("1\n");
+              GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                           {
+                             printf("2\n");
+                             ip = SubvectorEltIndex(p_sub_sp, i, j, k);
+                             if (k == (grid_nz - 1))
+                             {
+                               printf("pressure:%f\n", pp_sp[ip]);
+                               if (pp_sp[ip] > reservoir_reset_pressure)
+                               {
+                                 printf("4\n");
+                                 double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
+                                 reservoir_data_physical->current_capacity = reservoir_data_physical->current_capacity + pp_sp[ip]*dx*dy;
+                                 reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
+                                 pp_sp[ip] = reservoir_reset_pressure;
+                               }
+                             }
+                           }
+              );
+            }
+          };
+
+        }
+
         /* update pressure,  not sure if we need to do this but we might if pressures are reset along processor edges RMM */
 
       }

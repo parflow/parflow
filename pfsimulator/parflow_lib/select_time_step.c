@@ -83,6 +83,7 @@ void     SelectTimeStep(
       constant = (dummy0->step);
 
       (*dt) = constant;
+      problem->current_dt = (*dt);
 
       break;
     }    /* End case 0 */
@@ -104,14 +105,18 @@ void     SelectTimeStep(
       if ((*dt) == 0.0)
       {
         (*dt) = initial_step;
+        problem->current_dt = (*dt);
       }
       else
       {
         (*dt) = (*dt) * factor;
+        problem->current_dt = (*dt);
         if ((*dt) < min_step)
           (*dt) = min_step;
+          problem->current_dt = (*dt);
         if ((*dt) > max_step)
           (*dt) = max_step;
+          problem->current_dt = (*dt);
       }
 
       break;
@@ -142,11 +147,13 @@ void     SelectTimeStep(
   if ((*dt) > well_dt)
   {
     (*dt) = well_dt;
+    problem->current_dt = (*dt);
     (*dt_info) = 'w';
   }
   else if ((*dt) > bc_dt)
   {
     (*dt) = bc_dt;
+    problem->current_dt = (*dt);
     (*dt_info) = 'b';
   }
   else
@@ -219,7 +226,6 @@ PFModule  *SelectTimeStepNewPublicXtra()
       dummy0->step = GetDouble("TimeStep.Value");
 
       (public_xtra->data) = (void*)dummy0;
-
       break;
     }
 

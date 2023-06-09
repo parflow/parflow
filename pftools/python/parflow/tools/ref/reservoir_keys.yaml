@@ -88,6 +88,24 @@ Intake_Y:
     - Intake_Y
   register: Reservoirs.Names
 
+Secondary_Intake_X:
+  type: float
+  alias:
+    - Secondary_Intake_X
+  register: Reservoirs.Names
+
+Secondary_Intake_Y:
+  type: float
+  alias:
+    - Secondary_Intake_Y
+  register: Reservoirs.Names
+
+Has_Secondary_Intake_Cell:
+  type: int
+  alias:
+    - Has_Secondary_Intake_Cell
+  register: Reservoirs.Names
+
 ZUpper:
   type: float
   alias:
