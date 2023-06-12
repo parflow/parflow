@@ -2714,7 +2714,7 @@ in the following form :cite:p:`Haverkamp-Vauclin81`,
 .. math::
 
    \begin{aligned}
-   s(p) = \frac{\alpha(s_{sat} - s_{res})}{A + p^{\gamma}} + s_{res},\end{aligned}
+   s(p) = \frac{\A(s_{sat} - s_{res})}{A + p^{\gamma}} + s_{res},\end{aligned}
 
 where :math:`A` and :math:`\gamma` are soil parameters, on each region.
 The **Data** specification is currently unsupported but will later mean
@@ -3074,18 +3074,20 @@ boundary condition that is read form a properly distributed ParFlow binary file
 defined on a grid consistent with the pressure field grid. Only the
 values needed for the patch are used. The choices **OverlandFlow** and
 **OverlandFlowPFB** both turn on fully-coupled overland flow routing as
-described in :cite:t:`KM06` and in :ref:`Overland Flow`. The key **OverlandFlow**
+described in :cite:t:`KM06` and :ref:`Overland Flow`. The key **OverlandFlow**
 corresponds to a **Value** key with a positive or negative value, to
 indicate uniform fluxes (such as rainfall or evapotranspiration) over
 the entire domain while the key **OverlandFlowPFB** allows a ParFlow 2D binary file to
 contain grid-based, spatially-variable fluxes. The **OverlandKinematic**
-and **OverlandDiffusive** both turn on an kinematic and diffusive wave
-overland flow routing boundary that solve Maning's equation in 
+and **OverlandDiffusive** both turn on a kinematic and diffusive wave
+overland flow routing boundary that solve Maning's equation in
 :ref:`Overland Flow` and do the upwinding internally
 (i.e. assuming that the user provides cell face slopes, as opposed to
 the traditional cell centered slopes). The key **SeepageFace** simulates
 a boundary that allows flow to exit but keeps the surface pressure at
-zero. The choice **ExactSolution** specifies that an exact known
+zero. Consider a sign flip in top boundary condition values (i.e., outgoing
+fluxes are positve and incomming fluxes are negative). The choice
+**ExactSolution** specifies that an exact known
 solution is to be applied as a Dirichlet boundary condition on the
 respective patch. Note that this does not change according to any cycle.
 Instead, time dependence is handled by evaluating at the time the
@@ -4961,9 +4963,10 @@ help with slope errors and issues and provides some diagnostic information.  The
 
 
 *logical* **Solver.EvapTransFile** False This key specifies specifies
-that the Flux terms for Richards’ equation are read in from a ``.pfb`` 
-file. This file has [T^-1] units. Note this key is for a steady-state 
-flux and should not be used in conjunction with the transient key below.
+that the Flux terms for Richards’ equation are read in from a ParFlow 3D binary
+file. This file has [T^-1] units corresponding to the flux value(s) divided by
+the layer thickness **DZ**. Note this key is for a steady-state flux
+and should not be used in conjunction with the transient key below.
 
 .. container:: list
 
@@ -4975,9 +4978,10 @@ flux and should not be used in conjunction with the transient key below.
 
 *logical* **Solver.EvapTransFileTransient** False This key specifies
 specifies that the Flux terms for Richards’ equation are read in from a
-series of flux ``.pfb`` file. Each file has :math:`[T^-1]` units. Note this key 
-should not be used with the key above, only one of these keys should be set 
-to ``True`` at a time, not both.
+series of ParFlow 3D binary files. Each file has :math:`[T^-1]` units
+corresponding to the flux value(s) divided by the layer thickness **DZ**.
+Note this key should not be used with the key above, only one of these
+keys should be set to ``True`` at a time, not both.
 
 .. container:: list
 
@@ -4988,12 +4992,16 @@ to ``True`` at a time, not both.
       <runname>.Solver.EvapTransFileTransient = True     ## Python syntax
 
 *string* **Solver.EvapTrans.FileName** no default This key specifies
-specifies filename for the distributed ``.pfb`` file that contains the 
-flux values for Richards’ equation. This file has :math:`[T^-1]` units. 
+specifies filename for the distributed ParFlow 3D binary file that contains the 
+flux values for Richards’ equation. This file has :math:`[T^-1]` units 
+corresponding to the flux value(s) divided by the layer thickness **DZ**. 
 For the steady-state option (*Solver.EvapTransFile*=**True**) this key 
 should be the complete filename. For the transient option 
 (*Solver.EvapTransFileTransient*=**True**) then the filename is a header and 
 ParFlow will load one file per timestep, with the form ``filename.00000.pfb``.
+EvapTrans values are considered as sources or sinks in Richards' equation, so
+they have no conflicts with boundary conditions. Consequently, sign flip is not
+required (i.e., incomming flluxes are positive and outgoing fluxes are negative).
 
 .. container:: list
 
