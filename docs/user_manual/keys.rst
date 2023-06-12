@@ -2714,7 +2714,7 @@ in the following form :cite:p:`Haverkamp-Vauclin81`,
 .. math::
 
    \begin{aligned}
-   s(p) = \frac{\alpha(s_{sat} - s_{res})}{A + p^{\gamma}} + s_{res},\end{aligned}
+   s(p) = \frac{\A(s_{sat} - s_{res})}{A + p^{\gamma}} + s_{res},\end{aligned}
 
 where :math:`A` and :math:`\gamma` are soil parameters, on each region.
 The **Data** specification is currently unsupported but will later mean
