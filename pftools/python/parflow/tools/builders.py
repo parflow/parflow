@@ -1378,7 +1378,7 @@ class CLMImporter:
             array = vegm_data[:, :, i]
             if token == 'Color':
                 # This one needs to be an integer
-                array = array.astype(np.int)
+                array = array.astype(np.int32)
 
             if array.min() == array.max():
                 # All the values are the same
