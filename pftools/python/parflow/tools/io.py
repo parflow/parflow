@@ -802,7 +802,7 @@ class ParflowBinaryReader:
 
 # -----------------------------------------------------------------------------
 
-@jit()
+@jit(nopython=True)
 def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
     """
     Determines the sizes of the subgrids. Maingrid
@@ -834,7 +834,7 @@ def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
 
 # -----------------------------------------------------------------------------
 
-@jit()
+@jit(nopython=True)
 def get_subgrid_loc(sel_subgrid, p, q, r):
     """
     Translate an integer subgrid to the location in 3d subgrid space.
@@ -857,7 +857,7 @@ def get_subgrid_loc(sel_subgrid, p, q, r):
 
 # -----------------------------------------------------------------------------
 
-@jit()
+@jit(nopython=True)
 def subgrid_lower_left(
     mg_nx, mg_ny, mg_nz,
     sg_p, sg_q, sg_r,
@@ -893,7 +893,7 @@ def subgrid_lower_left(
 
 # -----------------------------------------------------------------------------
 
-@jit()
+@jit(nopython=True)
 def subgrid_size(
     mg_nx, mg_ny, mg_nz,
     sg_p, sg_q, sg_r,
@@ -929,7 +929,7 @@ def subgrid_size(
 
 # -----------------------------------------------------------------------------
 
-@jit()
+@jit(nopython=True)
 def precalculate_subgrid_info(nx, ny, nz, p, q, r):
     """
     Computes all necessary subgrid information to index and read
