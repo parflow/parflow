@@ -1295,24 +1295,19 @@ def _read_vegm(file_name):
            3D numpy array for domain, with 3rd dimension defining each column
            in the vegm.dat file except for x/y
     """
-    with open(file_name, 'r') as rf:
-        lines = rf.readlines()
+    # Assume first two lines are comments and use generic column names
+    df = pd.read_csv(file_name, delim_whitespace=True, skiprows=2, header=None)
+    df.columns = [f'c{i}' for i in range(df.shape[1])]
 
-    last_line_split = lines[-1].split()
-    x_dim = int(last_line_split[0])
-    y_dim = int(last_line_split[1])
-    z_dim = len(last_line_split) - 2
-
-    # To be consistent with ParFlow-python xy indexing, x should represent columns and y rows
-    vegm_array = np.zeros((y_dim, x_dim, z_dim))
-    # Assume first two lines are comments
-    for line in lines[2:]:
-        elements = line.split()
-        x = int(elements[0])
-        y = int(elements[1])
-        for i in range(z_dim):
-            vegm_array[y - 1, x - 1, i] = elements[i + 2]
-
+    # Number of columns and rows determined by last line of file
+    nx = int(df.iloc[-1]['c0'])
+    ny = int(df.iloc[-1]['c1'])
+    # Don't use 'x' and 'y' columns
+    feature_cols = df.columns[2:]
+    # Stack everything into (ny, nx, n_features)
+    vegm_array = np.stack(
+        [df[c].values.reshape((ny, nx)) for c in feature_cols], axis=-1
+    )
     return vegm_array
 
 
