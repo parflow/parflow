@@ -33,6 +33,7 @@ except ImportError:
         return _decorator
 
 from numbers import Number
+import pandas as pd
 import numpy as np
 import struct
 from typing import Mapping, List, Union, Iterable
