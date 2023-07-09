@@ -31,4 +31,6 @@ foreach(inputfile ${TESTS})
   pf_add_py_test(${inputfile})
 endforeach()
 
-add_subdirectory(clm)
+if (${PARFLOW_HAVE_CLM})
+  add_subdirectory(clm)
+endif(${PARFLOW_HAVE_CLM})
