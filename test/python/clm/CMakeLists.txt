@@ -3,17 +3,19 @@ include(ParflowTest)
 set(CLM_TESTS)
 set(CLM_2D_TESTS)
 
-if (${PARFLOW_HAVE_CLM} AND ${PARFLOW_HAVE_HYPRE})
-  list(APPEND CLM_TESTS
-    clm-reuse)
+if (${PARFLOW_HAVE_CLM})
+  if (${PARFLOW_HAVE_HYPRE})
+    list(APPEND CLM_TESTS
+      clm-reuse)
 
-  list(APPEND CLM_2D_TESTS
-    clm
-    clm_varDZ
-    clm.jac
-    clm_forc_veg
-    clm_4levels
-    clm_slope)
+    list(APPEND CLM_2D_TESTS
+      clm
+      clm_varDZ
+      clm.jac
+      clm_forc_veg
+      clm_4levels
+      clm_slope)
+  endif()
 endif()
 
 
