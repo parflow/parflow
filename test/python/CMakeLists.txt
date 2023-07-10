@@ -89,12 +89,16 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
     list(APPEND PARALLEL_2DTOPO_TESTS
       default_overland
       default_overland.pfmg.jac
-      default_overland.pfmg_octree.jac
       default_overland.pfmg_octree.fulljac
       LW_var_dz
       LW_var_dz_spinup
       overland_slopingslab_KWE
       richards_box_proctest_vardz)
+
+    if(${PARFLOW_HAVE_SILO})
+      list(APPEND PARALLEL_2DTOPO_TESTS
+	default_overland.pfmg_octree.jac)
+    endif()
   endif()
 
 endif()
