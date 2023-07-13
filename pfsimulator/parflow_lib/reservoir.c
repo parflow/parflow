@@ -156,7 +156,7 @@ void WriteReservoirs(
   Subgrid          *subgrid;
 
   char* reservoir_name;
-  double current_capacity;
+  double current_storage;
   int reservoir;
 
   FILE             *file;
@@ -194,7 +194,7 @@ void WriteReservoirs(
         for (reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
 
-          fprintf(file, ",%s_current_capacity", ReservoirDataPhysicalName(reservoir_data_physical));
+          fprintf(file, ",%s_current_storage", ReservoirDataPhysicalName(reservoir_data_physical));
           fprintf(file, ",%s_intake_amount_since_last_row", ReservoirDataPhysicalName(reservoir_data_physical));
           fprintf(file, ",%s_release_amount_since_last_row", ReservoirDataPhysicalName(reservoir_data_physical));
           fprintf(file, ",%s_release_rate", ReservoirDataPhysicalName(reservoir_data_physical));
@@ -204,7 +204,7 @@ void WriteReservoirs(
         for (reservoir = 0; reservoir < ReservoirDataNumPressReservoirs(reservoir_data); reservoir++) {
           reservoir_data_physical = ReservoirDataPressReservoirPhysical(reservoir_data, reservoir);
 
-          fprintf(file, ",%s_current_capacity", ReservoirDataPhysicalName(reservoir_data_physical));
+          fprintf(file, ",%s_current_storage", ReservoirDataPhysicalName(reservoir_data_physical));
           fprintf(file, ",%s_intake_amount_since_last_row", ReservoirDataPhysicalName(reservoir_data_physical));
           fprintf(file, ",%s_release_amount_since_last_row", ReservoirDataPhysicalName(reservoir_data_physical));
           fprintf(file, ",%s_release_rate", ReservoirDataPhysicalName(reservoir_data_physical));

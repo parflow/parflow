@@ -157,7 +157,7 @@ Reservoirs:
       domains:
         DoubleValue:
 
-    Current_Capacity:
+    current_storage:
       # typos - vertical
       help: >
         [Type: double]

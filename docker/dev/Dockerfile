@@ -192,7 +192,7 @@ RUN $CMAKE                     \
     -D PARFLOW_ENABLE_HYPRE=TRUE      \
     -D PARFLOW_ENABLE_SILO=TRUE        \
     -D SILO_ROOT=$SILO_DIR              \
-    -D PARFLOW_HAVE_CLM=TRUE             \
+    -D PARFLOW_HAVE_CLM=FALSE             \
     -D PARFLOW_ENABLE_PYTHON=ON         \
     -D PARFLOW_ENABLE_TIMING=TRUE          \
     -D PARFLOW_ENABLE_PROFILING=TRUE          \

@@ -2974,8 +2974,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 //    double epoch_time = problem->current_unix_epoch_time;
       for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
         reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
-        reservoir_data_physical->release_amount_since_last_print += ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical);
-        reservoir_data_physical->current_capacity-= ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical);
+        reservoir_data_physical->release_amount_since_last_print += ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
+        reservoir_data_physical->current_storage-= ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical);
 //      interval_number = TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number);
 
 //      reservoir_data_value = ReservoirDataFluxReservoirIntervalValue(reservoir_data, reservoir, interval_number);
@@ -3025,7 +3025,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                              if (pp_sp[ip] > reservoir_reset_pressure)
                              {
                                double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-                               reservoir_data_physical->current_capacity = reservoir_data_physical->current_capacity + pp_sp[ip]*dx*dy;
+                               reservoir_data_physical->current_storage = reservoir_data_physical->current_storage + pp_sp[ip]*dx*dy;
                                reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
                                pp_sp[ip] = reservoir_reset_pressure;
                              }
@@ -3072,7 +3072,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                                {
                                  printf("4\n");
                                  double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-                                 reservoir_data_physical->current_capacity = reservoir_data_physical->current_capacity + pp_sp[ip]*dx*dy;
+                                 reservoir_data_physical->current_storage = reservoir_data_physical->current_storage + pp_sp[ip]*dx*dy;
                                  reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
                                  pp_sp[ip] = reservoir_reset_pressure;
                                }

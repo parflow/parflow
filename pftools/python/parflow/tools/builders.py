@@ -465,6 +465,8 @@ class TableToProperties(ABC):
                     self.name_registration[unit_name] = set()
 
         if self.props_in_row_header is None:
+            print("Raising invalid table format, first line tokens are:\n")
+            print(first_line_tokens)
             raise Exception('Invalid table format')
 
         return True

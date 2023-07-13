@@ -94,8 +94,6 @@ Problem   *NewProblem(
   ProblemStopTime(problem) = GetDouble("TimingInfo.StopTime");
   CheckTime(problem, "TimingInfo.StopTime", ProblemStopTime(problem));
 
-  problem->current_dt =
-
   ProblemDumpInterval(problem) = GetDouble("TimingInfo.DumpInterval");
   CheckTime(problem, "TimingInfo.DumpInterval", ProblemDumpInterval(problem));
 

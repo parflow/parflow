@@ -131,10 +131,10 @@ Max_Capacity:
     - Max_Capacity
   register: Reservoirs.Names
 
-Current_Capacity:
+current_storage:
   type: float
   alias:
-    - Current_Capacity
+    - current_storage
   register: Reservoirs.Names
 
 
