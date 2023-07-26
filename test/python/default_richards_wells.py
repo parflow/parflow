@@ -348,7 +348,7 @@ drich.Solver.Linear.Preconditioner = 'MGSemi'
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-new_output_dir_name = get_absolute_path('test_output/drich_w')
+new_output_dir_name = get_absolute_path('test_output/' + run_name)
 correct_output_dir_name = get_absolute_path('../correct_output')
 mkdir(new_output_dir_name)
 drich.run(working_directory=new_output_dir_name)
