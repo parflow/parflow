@@ -1,17 +1,24 @@
 include(ParflowTest)
 
-if(PARFLOW_HAVE_CLM OR DEFINED ENV{PARFLOW_DIR})
-  set(CLM_TESTS
-    clm-reuse
-  )
-  set(CLM_2D_TESTS
-    clm
-    clm_varDZ
-    clm.jac
-    clm_forc_veg
-    clm_4levels
-    clm_slope
-  )
+set(CLM_TESTS)
+set(CLM_2D_TESTS)
+
+if (${PARFLOW_HAVE_CLM})
+  if (${PARFLOW_HAVE_HYPRE})
+    list(APPEND CLM_TESTS
+      clm-reuse)
+
+    list(APPEND CLM_2D_TESTS
+      clm_slope)
+    if (${PARFLOW_HAVE_SILO})
+      list(APPEND CLM_2D_TESTS
+	clm
+	clm_varDZ
+	clm.jac
+	clm_forc_veg
+	clm_4levels)
+    endif()
+  endif()
 endif()
 
 
