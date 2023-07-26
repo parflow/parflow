@@ -19,16 +19,22 @@ set(TESTS
   # pfb_mask
   pfidb_pfset
   pfset_test
-  prefix_naming
   selection_methods
-  serial_runs
-  simple-mask
   write_check
   tables_LW
 )
+
+if(${PARFLOW_HAVE_HYPRE})
+  list(APPEND TESTS
+    prefix_naming
+    serial_runs
+    simple-mask)
+endif()
 
 foreach(inputfile ${TESTS})
   pf_add_py_test(${inputfile})
 endforeach()
 
-add_subdirectory(clm)
+if (${PARFLOW_HAVE_CLM})
+  add_subdirectory(clm)
+endif(${PARFLOW_HAVE_CLM})
