@@ -1,5 +1,5 @@
 import os
-import xarray as xr
+from parflow.tools.io import read_pfb
 
 def py_MSigDiff(file1, file2, m, abs_zero=0.0):
     assert isinstance(abs_zero, float)
@@ -7,8 +7,8 @@ def py_MSigDiff(file1, file2, m, abs_zero=0.0):
 
     # Load data from the files and create xarray DataArrays
     try:
-        data1 = xr.open_dataarray(file1)
-        data2 = xr.open_dataarray(file2)
+        data1 = read_pfb(file1)
+        data2 = read_pfb(file2)
     except Exception as e:
         print("Error: Failed to load data from files.", e)
         return
