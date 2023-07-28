@@ -1,8 +1,5 @@
 PyYAML==6.0.1
-ecmwflibs
 xarray
-xarray[io]
-rioxarray
 numba
 numpy
 dask
