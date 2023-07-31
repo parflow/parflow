@@ -1,21 +1,43 @@
 import os
 from parflow.tools.io import read_pfb
 
-def py_MSigDiff(file1, file2, m, abs_zero=0.0):
+def msig_diff(data1, data2, m, abs_zero=0.0):
+    """Python version of the C MSigDiff function.
+
+    Two nd arrays are given as the first two arguments.
+    The grid point at which the number of digits in agreement
+    (significant digits) is fewest is determined.  If m >= 0 
+    then the coordinate whose two values differ in more than 
+    m significant digits will be computed.  If m < 0 then the 
+    coordinate whose values have a minimum number of significant 
+    digits will be computed. The number of the fewest significant 
+    digits is determined, and the maximum absolute difference is 
+    computed. The only coordinates that will be considered will be 
+    those whose differences are greater than absolute zero. 
+
+    Args:
+        data1 (numpy.ndarray): first ndarray
+        data2 (numpy.ndarray): second ndarray
+        m (int): number of significant digits
+        abs_zero (float): threshold below which all numbers are considered to be 0
+
+    Returns:
+        A list of the following form is returned upon success:
+ 
+               [[i j k s] max_adiff]
+ 
+        where i, j, and k are the coordinates computed, sd is the
+        minimum number of significant digits computed, and max_adiff
+        is the maximum absolute difference computed.
+
+    Raises:
+        ValueError: If data1 and data2 do not have the same shape.
+    """
     assert isinstance(abs_zero, float)
     assert abs_zero >= 0
 
-    # Load data from the files and create xarray DataArrays
-    try:
-        data1 = read_pfb(file1)
-        data2 = read_pfb(file2)
-    except Exception as e:
-        print("Error: Failed to load data from files.", e)
-        return
-
     if not data1.shape == data2.shape:
-        print("Error: Data arrays must have the same dimensions.")
-        return
+        raise ValueError("Error: Data arrays must have the same dimensions.") 
         
     nx, ny, nz = data1.shape
 
@@ -50,7 +72,7 @@ def py_MSigDiff(file1, file2, m, abs_zero=0.0):
 
                     m_sig_digs_everywhere = False
 
-    result_list = []
+    result = []
     if not m_sig_digs_everywhere:
         sig_digs = 0
         sdiff = max_sdiff
@@ -58,64 +80,127 @@ def py_MSigDiff(file1, file2, m, abs_zero=0.0):
             sdiff *= 10.0
             sig_digs += 1
 
-        result_list.append([mi, mj, mk, sig_digs])
-        result_list.append(max_adiff)
+        result.append([mi, mj, mk, sig_digs])
+        result.append(max_adiff)
 
-    return result_list
+    return result
 
-def py_pftestFile(file, correct_file, message, sig_digits=6):
+
+def pf_test_file(file, correct_file, message, sig_digits=6):
+    """Python version of the tcl pftestFile procedure.
+    
+    Two file paths are given as the first two arguments.
+    The function reads them into ndarrays and calls a comparison
+    function (msig_diff) to check if the files differ by
+    more than sig_digits significant digits in any coordinate.
+    If they do, the function prints an error message and the
+    coordinate in which the files have the greatest difference.
+
+    Args:
+        file (string): path to test output file
+        correct_file (string): path to reference output file
+        message (string): message to print in case of test failure
+        sig_digits (int): number of significant digits
+
+    Returns:
+        bool: True if files differ in no more than sig_digits
+              significant digits in all coordinates. False otherwise.
+
+    Raises:
+        FileNotFoundError: If file or correct_file do not exist.
+        Exception: If the function fails to read either file into an ndarray.
+    """
     if not os.path.exists(file):
-        print(f"FAILED : output file <{file}> not created")
-        return False
+        raise FileNotFoundError(f"FAILED : output file <{file}> not created")
 
     if not os.path.exists(correct_file):
-        print(f"FAILED : regression check output file <{correct_file}> does not exist")
+        raise FileNotFoundError(f"FAILED : regression check output file <{correct_file}> does not exist")
+
+    try:
+        data = read_pfb(file)
+        correct_data = read_pfb(correct_file)
+    except Exception as e:
+        print("Error: Failed to load data from files.", e)
         return False
-
-    result = py_MSigDiff(correct_file, file, sig_digits)
-    if len(result) != 0:
-        mSigDigs, maxAbsDiff = result
-
-        i, j, k, sig_digs = mSigDigs
-
-        print(f"FAILED : {message}")
-        print(f"\tMinimum significant digits at ({i:3d}, {j:3d}, {k:3d}) = {sig_digs:2d}")
-        print(f"\tCorrect value {xr.open_dataarray(correct_file)[i, j, k]:e}")
-        print(f"\tComputed value {xr.open_dataarray(file)[i, j, k]:e}")
-
-        elt_diff = abs(xr.open_dataarray(correct_file)[i, j, k] - xr.open_dataarray(file)[i, j, k])
-        print(f"\tDifference {elt_diff:e}")
-
-        print(f"\tMaximum absolute difference = {maxAbsDiff:e}")
-
-        return False
-    else:
+    
+    result = msig_diff(data, correct_data, sig_digits)
+    if (len(result)) == 0:
         return True
 
-def py_pftestFileWithAbs(file, correct_file, message, abs_value, sig_digits=6):
+    m_sig_digs, max_abs_diff = result
+
+    i, j, k, sig_digs = m_sig_digs
+
+    print(f"FAILED : {message}")
+    print(f"\tMinimum significant digits at ({i:3d}, {j:3d}, {k:3d}) = {sig_digs:2d}")
+    print(f"\tCorrect value {correct_data[i, j, k]:e}")
+    print(f"\tComputed value {data[i, j, k]:e}")
+
+    elt_diff = abs(data[i, j, k] - correct_data[i, j, k])
+    print(f"\tDifference {elt_diff:e}")
+
+    print(f"\tMaximum absolute difference = {max_abs_diff:e}")
+
+    return False
+
+
+def pf_test_file_with_abs(file, correct_file, message, abs_value, sig_digits=6):
+    """Python version of the tcl pftestFileWithAbs procedure.
+    
+    Two file paths are given as the first two arguments.
+    The function reads them into ndarrays and calls a comparison
+    function (msig_diff) to check if the files differ by
+    more than sig_digits significant digits in any coordinate.
+    If they do, the function checks if the difference in that 
+    coordinate is greater than abs_value. If it is, it prints 
+    an error message and the coordinate in which the files have 
+    the greatest difference.
+
+    Args:
+        file (string): path to test output file
+        correct_file (string): path to reference output file
+        message (string): message to print in case of test failure
+        abs_value (float): threshold to determine if two files differ
+                           enough to fail the test
+        sig_digits (int): number of significant digits
+
+    Returns:
+        bool: True if files differ in no more than sig_digits
+              significant digits in all coordinates. False otherwise.
+
+    Raises:
+        FileNotFoundError: If file or correct_file do not exist.
+        Exception: If the function fails to read either file into an ndarray.
+    """
     if not os.path.exists(file):
-        print(f"FAILED : output file <{file}> not created")
-        return False
+        raise FileNotFoundError(f"FAILED : output file <{file}> not created")
 
     if not os.path.exists(correct_file):
-        print(f"FAILED : regression check output file <{correct_file}> does not exist")
+        raise FileNotFoundError(f"FAILED : regression check output file <{correct_file}> does not exist")
+
+    try:
+        data = read_pfb(file)
+        correct_data = read_pfb(correct_file)
+    except Exception as e:
+        print("Error: Failed to load data from files.", e)
         return False
 
-    result = py_MSigDiff(correct_file, file, sig_digits)
+    result = msig_diff(data, correct_data, sig_digits)
     if len(result) != 0:
-        mSigDigs, maxAbsDiff = result
+        m_sig_digs, max_abs_diff = result
 
-        i, j, k, sig_digs = mSigDigs
+        i, j, k, sig_digs = m_sig_digs
 
-        elt_diff = abs(xr.open_dataarray(correct_file)[i, j, k] - xr.open_dataarray(file)[i, j, k])
-
+        elt_diff = abs(data[i, j, k] - correct_data[i, j, k])
+        
         if elt_diff > abs_value:
             print(f"FAILED : {message}")
             print(f"\tMinimum significant digits at ({i:3d}, {j:3d}, {k:3d}) = {sig_digs:2d}")
-            print(f"\tCorrect value {xr.open_dataarray(correct_file)[i, j, k]:e}")
-            print(f"\tComputed value {xr.open_dataarray(file)[i, j, k]:e}")
+            print(f"\tCorrect value {correct_data[i, j, k]:e}")
+            print(f"\tComputed value {data[i, j, k]:e}")
             print(f"\tDifference {elt_diff:e}")
-            print(f"\tMaximum absolute difference = {maxAbsDiff:e}")
+            print(f"\tMaximum absolute difference = {max_abs_diff:e}")
             return False
+
 
     return True

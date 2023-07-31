@@ -6,7 +6,7 @@
 
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
-from utils import py_pftestFile
+from utils import pf_test_file
 
 run_name = "default_richards_wells"
 drich = Run(run_name, __file__)
@@ -356,22 +356,22 @@ drich.run(working_directory=new_output_dir_name)
 passed = True
 
 filename = f"/{run_name}.out.perm_x.pfb"
-if not py_pftestFile(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_x"):
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_x"):
     passed = False
 filename = f"/{run_name}.out.perm_y.pfb"
-if not py_pftestFile(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_y"):
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_y"):
     passed = False
 filename = f"/{run_name}.out.perm_z.pfb"
-if not py_pftestFile(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_z"):
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_z"):
     passed = False
 
 timesteps = ["00000", "00001", "00002", "00003", "00004", "00005"]
 for i in timesteps:
     filename = f"/{run_name}.out.press.{i}.pfb"
-    if not py_pftestFile(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {i}"):
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {i}"):
         passed = False
     filename = f"/{run_name}.out.satur.{i}.pfb"
-    if not py_pftestFile(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {i}"):
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {i}"):
         passed = False
 
 if passed:
