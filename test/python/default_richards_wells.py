@@ -4,9 +4,10 @@
 #  3 nonlinear iterations.
 #-----------------------------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
-from utils import pf_test_file
+from parflow.tools.compare import pf_test_file
 
 run_name = "default_richards_wells"
 drich = Run(run_name, __file__)
@@ -378,3 +379,4 @@ if passed:
     print(f"{run_name} : PASSED")
 else:
     print(f"{run_name} : FAILED")
+    sys.exit(1)
