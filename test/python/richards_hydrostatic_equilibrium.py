@@ -5,10 +5,13 @@
 # take any solver iterations.
 #---------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
-rich = Run("richards_hydrostatic_equilibrium", __file__)
+run_name = "richards_hydrostatic_equalibrium"
+rich = Run(run_name, __file__)
 
 #---------------------------------------------------------
 
@@ -301,6 +304,34 @@ rich.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/rich_heq')
-mkdir(dir_name)
-rich.run(working_directory=dir_name)
+new_output_dir_name = get_absolute_path('test_output/richards_hydrostatic_equilibrium')
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+rich.run(working_directory=new_output_dir_name)
+
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+
+for i in range(3):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
