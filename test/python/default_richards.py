@@ -335,8 +335,6 @@ drich.Solver.Linear.KrylovDimension = 10
 
 drich.Solver.Linear.Preconditioner = 'PFMG'
 
-#drich.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
-#drich.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 drich.Solver.PrintVelocities = True
 
 #-----------------------------------------------------------------------------
