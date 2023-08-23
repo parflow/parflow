@@ -343,6 +343,7 @@ pfmg.Solver.Linear.Preconditioner.PFMG.Smoother = 'WJacobi'
 
 new_output_dir_name = get_absolute_path('test_output/pfmg')
 correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
 pfmg.run(working_directory=new_output_dir_name)
 
 passed = True
