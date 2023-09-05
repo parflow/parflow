@@ -289,7 +289,7 @@ rbp.Solver.Linear.Preconditioner = 'PFMG'
 #-----------------------------------------------------------------------------
 
 correct_output_dir_name = get_absolute_path('../correct_output')
-new_output_dir_name = get_absolute_path('test_output/richards_fbx')
+new_output_dir_name = get_absolute_path('test_output/richards_ptest')
 mkdir(new_output_dir_name)
 
 rbp.run(working_directory=new_output_dir_name)
