@@ -167,9 +167,9 @@ USER ubuntu
 # -----------------------------------------------------------------------------
 # Install Parflow
 # -----------------------------------------------------------------------------
-COPY --chown=ubuntu:ubuntu ./docker/dev/rebuild.sh ~/rebuild.sh
-COPY --chown=ubuntu:ubuntu ./pftools/python/requirements*.txt $BASE_PATH/parflow/src/pftools/python/
-RUN pip3 install -r $BASE_PATH/parflow/src/pftools/python/requirements_all.txt
+#COPY --chown=ubuntu:ubuntu ./docker/dev/rebuild.sh ~/rebuild.sh
+#COPY --chown=ubuntu:ubuntu ./pftools/python/requirements*.txt $BASE_PATH/parflow/src/pftools/python/
+#RUN pip3 install -r $BASE_PATH/parflow/src/pftools/python/requirements_all.txt
 RUN pip3 install numba
 RUN pip3 install parflowio
 COPY --chown=ubuntu:ubuntu . $BASE_PATH/parflow/src

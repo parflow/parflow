@@ -6,7 +6,6 @@
 
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
-from utils import pfbs_are_equal_to_n_sig_figs
 
 run_name = "default_richards_wells"
 drich = Run(run_name, __file__)
