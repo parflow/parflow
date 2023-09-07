@@ -7,7 +7,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name='pftools',
-    version="1.3.7",
+    version="1.3.9",
     description=('A Python package creating an interface with the ParFlow '
                  'hydrologic model.'),
     long_description=README,
@@ -27,7 +27,7 @@ setup(
     include_package_data=True,
     extras_require={
         'all': [
-            'imageio>=2.9.0'
+            'imageio>=2.9.0',
             'numpy',
             'xarray',
             'numba',
