@@ -532,8 +532,7 @@ int            MakePatchySolid(
       }
       // If it's a bottom point keep going to find the next instance of the x-y coodrinates
       if (km<=3) {
-        m=m-1;
-        for (m=m; m>0; m=m-1)
+        for (m=m-1; m>0; m=m-1)
         {
           if ((Xp_Act[3*m]==x_test)&(Xp_Act[3*m+1]==y_test))
           {

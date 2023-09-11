@@ -124,7 +124,7 @@ VectorUpdateCommHandle  *InitVectorUpdate(
   }
 #endif
 
-  CommHandle *amps_com_handle;
+  CommHandle *amps_com_handle = NULL;
   if (grid_type == invalid_grid_type)
   {
 #ifdef SHMEM_OBJECTS

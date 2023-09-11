@@ -4521,8 +4521,8 @@ SolverRichardsInitInstanceXtra()
   nonlin_sz = PFModuleSizeOfTempData(instance_xtra->nonlin_solver);
 
   /* Compute size for problem parameters */
-  parameter_sz = PFModuleSizeOfTempData(instance_xtra->problem_saturation)
-                 + PFModuleSizeOfTempData(instance_xtra->phase_rel_perm);
+  parameter_sz = PFModuleSizeOfTempData(instance_xtra->problem_saturation);
+  parameter_sz  += PFModuleSizeOfTempData(instance_xtra->phase_rel_perm);
 
   /* set temp_data size to max of velocity_sz, concen_sz, and ic_sz. */
   /* The temp vector space for the nonlinear solver is added in because */
@@ -4575,9 +4575,10 @@ SolverRichardsInitInstanceXtra()
                             (instance_xtra->advect_concen),
                             (NULL, NULL, temp_data_placeholder));
 
-  temp_data_placeholder +=
-    pfmax(PFModuleSizeOfTempData(instance_xtra->retardation),
-          PFModuleSizeOfTempData(instance_xtra->advect_concen));
+  int size_retardation = PFModuleSizeOfTempData(instance_xtra->retardation);
+  int size_advect = PFModuleSizeOfTempData(instance_xtra->advect_concen);
+  temp_data_placeholder += pfmax(size_retardation, size_advect);
+ 
   /* set temporary vector data used for advection */
 
   temp_data += temp_data_size;
