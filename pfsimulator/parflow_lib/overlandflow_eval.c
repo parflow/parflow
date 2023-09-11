@@ -83,7 +83,8 @@ void    OverlandFlowEval(
 
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp;
 
-  int i, j, k, ival, sy_v;
+  int i, j, k, ival=0, sy_v;
+  PF_UNUSED(ival);
 
   p_sub = VectorSubvector(pressure, sg);
 
