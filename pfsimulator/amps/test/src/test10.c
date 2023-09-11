@@ -192,9 +192,7 @@ int ReadAndCheckFile(char* filename, int loop)
   return result;
 }
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   char *in_filename = "test9.input";
   char *out_filename = "test10.input";

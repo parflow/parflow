@@ -4786,7 +4786,7 @@ int               DiffEltCommand(
   int sd;
   int i, j, k;
   double diff;
-  double abs_zero;
+  double abs_zero = 0;
 
   Tcl_Obj       *result;
 

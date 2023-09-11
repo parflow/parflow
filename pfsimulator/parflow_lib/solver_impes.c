@@ -1818,9 +1818,12 @@ PFModule *SolverImpesInitInstanceXtra()
   PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
                             (instance_xtra->advect_concen),
                             (NULL, NULL, temp_data_placeholder));
+
+  int size_retardation = PFModuleSizeOfTempData(instance_xtra->retardation);
+  int size_advect = PFModuleSizeOfTempData(instance_xtra->advect_concen);
   temp_data_placeholder += pfmax(
-                                 PFModuleSizeOfTempData(instance_xtra->retardation),
-                                 PFModuleSizeOfTempData(instance_xtra->advect_concen)
+                                 size_retardation,
+				 size_advect
                                  );
   /* set temporary vector data used for advection */
 

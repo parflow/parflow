@@ -43,9 +43,7 @@
 #define v2_stride 4
 #define v3_stride 2
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   amps_Invoice invoice;
 

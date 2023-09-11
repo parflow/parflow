@@ -1337,7 +1337,7 @@ void     WriteSiloPMPIOInit(char *file_prefix);
 
 
 /* wrf_parflow.c */
-void wrfparflowinit_();
+void wrfparflowinit_(char *input_file);
 void wrfparflowadvance_(double *current_time,
                         double *dt,
                         float * wrf_flux,

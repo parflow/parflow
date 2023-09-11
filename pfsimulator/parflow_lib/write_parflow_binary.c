@@ -52,6 +52,7 @@ long SizeofPFBinarySubvector(
   int nz_v = SubvectorNZ(subvector);
 
   int i, j, k, ai;
+  PF_UNUSED(ai);
 
   long size;
 

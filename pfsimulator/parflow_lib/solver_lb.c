@@ -1613,8 +1613,12 @@ PFModule *SolverDiffusionInitInstanceXtra()
   PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
                             (instance_xtra->advect_concen),
                             (NULL, NULL, temp_data_placeholder));
-  temp_data_placeholder += pfmax(PFModuleSizeOfTempData(instance_xtra->retardation),
-                                 PFModuleSizeOfTempData(instance_xtra->advect_concen));
+  int size_retardation = PFModuleSizeOfTempData(instance_xtra->retardation);
+  int size_advect = PFModuleSizeOfTempData(instance_xtra->advect_concen);
+  
+  temp_data_placeholder += pfmax(size_retardation,
+				 size_advect
+                                 );
 
   temp_data += temp_data_size;
 
