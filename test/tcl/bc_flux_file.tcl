@@ -11,7 +11,7 @@ namespace import Parflow::*
 
 pfset FileVersion 4
 
-set runname "bc_pressure_file"
+set runname "bc_flux_file"
 
 pfset Process.Topology.P        [lindex $argv 0]
 pfset Process.Topology.Q        [lindex $argv 1]
@@ -251,24 +251,29 @@ pfset Patch.bottom.BCPressure.Type			FluxConst
 pfset Patch.bottom.BCPressure.Cycle			"constant"
 pfset Patch.bottom.BCPressure.alltime.Value		0.0
 
+# pfset Patch.top.BCPressure.Type			FluxConst
+# pfset Patch.top.BCPressure.Cycle			"constant"
+# pfset Patch.top.BCPressure.alltime.Value		0.0
+
+#
 # Testing using the PressureFile option, create a file with 0's for all elements
-set pressure_filename "pressure_test.pfb"
+set flux_filename "flux_test.pfb"
 
 set N [list [pfget ComputationalGrid.NX] [pfget ComputationalGrid.NY] [pfget ComputationalGrid.NZ] ]
 
-set pressure_file [pfnewgrid \
+set flux_file [pfnewgrid \
 		       [list [pfget ComputationalGrid.NX] [pfget ComputationalGrid.NY] [pfget ComputationalGrid.NZ] ] \
 		       [list [pfget ComputationalGrid.Lower.X] [pfget ComputationalGrid.Lower.Y] [pfget ComputationalGrid.Lower.Z] ] \
 		       [list [pfget ComputationalGrid.DX] [pfget ComputationalGrid.DY] [pfget ComputationalGrid.DZ] ] \
-		       "BCPressure"
+		       "BCFlux"
 		   ]
 
-pfsave $pressure_file -pfb $pressure_filename
-pfdist $pressure_filename
+pfsave $flux_file -pfb $flux_filename
+pfdist $flux_filename
 
-pfset Patch.top.BCPressure.Type		              "PressureFile"
+pfset Patch.top.BCPressure.Type		              "FluxFile"
 pfset Patch.top.BCPressure.Cycle		      "constant"
-pfset Patch.top.BCPressure.alltime.FileName           $pressure_filename
+pfset Patch.top.BCPressure.alltime.FileName           $flux_filename
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
@@ -348,7 +353,7 @@ pfset Solver.PrintVelocities True
 #-----------------------------------------------------------------------------
 pfrun $runname
 pfundist $runname
-pfundist $pressure_filename
+pfundist $flux_filename
 
 #
 # Tests 

@@ -15,6 +15,7 @@ set(TESTS
   richards_hydrostatic_equalibrium.tcl
   LW_surface_press.tcl
   bc_pressure_file.tcl
+  bc_flux_file.tcl
 )
 
 if(${PARFLOW_HAVE_HYPRE})
