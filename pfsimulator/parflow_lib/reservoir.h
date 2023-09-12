@@ -53,8 +53,6 @@ typedef struct {
     Subgrid       *secondary_intake_subgrid;
     Subgrid       *release_subgrid;
     double size;
-    int action;
-    int method;
 } ReservoirDataPhysical;
 
 /*------------------------------------------------------------------
@@ -157,8 +155,6 @@ typedef struct {
 #define ReservoirDataPhysicalSize(reservoir_data_physical) \
   ((reservoir_data_physical)->size)
 
-#define ReservoirDataPhysicalAction(reservoir_data_physical) \
-  ((reservoir_data_physical)->action)
 
 #define ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) \
   ((reservoir_data_physical)->max_capacity)

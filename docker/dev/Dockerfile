@@ -58,6 +58,7 @@ RUN apt-get update && \
 RUN groupadd -g 1000 ubuntu && \
     useradd -u 1000 -g ubuntu -m -N -s /bin/bash ubuntu
 
+
 # We are adding sudo capabilities to the ubuntu user so that devs can run the cmake build inside the container.
 # If we instead have devs use the root user when they execute parflow you get MPI errors
 RUN apt-get update \
@@ -67,7 +68,7 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 USER ubuntu
 WORKDIR /home/ubuntu/
-ENV BASE_PATH /home/ubuntu/
+ENV BASE_PATH /home/ubuntu
 
 RUN mkdir -p                              \
     $BASE_PATH/parflow/build               \
@@ -167,9 +168,9 @@ USER ubuntu
 # -----------------------------------------------------------------------------
 # Install Parflow
 # -----------------------------------------------------------------------------
-#COPY --chown=ubuntu:ubuntu ./docker/dev/rebuild.sh ~/rebuild.sh
-#COPY --chown=ubuntu:ubuntu ./pftools/python/requirements*.txt $BASE_PATH/parflow/src/pftools/python/
-#RUN pip3 install -r $BASE_PATH/parflow/src/pftools/python/requirements_all.txt
+COPY --chown=ubuntu:ubuntu ./docker/dev/rebuild.sh ~/rebuild.sh
+COPY --chown=ubuntu:ubuntu ./pftools/python/requirements*.txt $BASE_PATH/parflow/src/pftools/python/
+RUN pip3 install -r $BASE_PATH/parflow/src/pftools/python/requirements_all.txt
 RUN pip3 install numba
 RUN pip3 install parflowio
 COPY --chown=ubuntu:ubuntu . $BASE_PATH/parflow/src
@@ -192,7 +193,7 @@ RUN $CMAKE                     \
     -D PARFLOW_ENABLE_HYPRE=TRUE      \
     -D PARFLOW_ENABLE_SILO=TRUE        \
     -D SILO_ROOT=$SILO_DIR              \
-    -D PARFLOW_HAVE_CLM=FALSE             \
+    -D PARFLOW_HAVE_CLM=TRUE             \
     -D PARFLOW_ENABLE_PYTHON=ON         \
     -D PARFLOW_ENABLE_TIMING=TRUE          \
     -D PARFLOW_ENABLE_PROFILING=TRUE          \
@@ -215,7 +216,7 @@ RUN cp -R /home/ubuntu/parflow/build/pftools/python/parflow/tools/ref ~/.local/l
 #RUN rm -R /home/ubuntu/parflow/src
 #RUN mkdir /home/ubuntu/parflow/src
 
-ENV PARFLOW_DIR /opt/parflow/
+ENV PARFLOW_DIR /opt/parflow
 WORKDIR /local
 
 #alias parflow=/opt/parflow/bin/parflow

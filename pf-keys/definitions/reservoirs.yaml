@@ -62,49 +62,6 @@ Reservoirs:
 #      domains:
 #        AnyString:
 
-    Type:
-      # type is wrong in manual (should be string). Also, multiple typos
-      help: >
-        [Type: string] This key specifies the mechanism by which the reservoir works (how ParFlow works with the reservoir data) if the input
-        type key is set to Vertical. This key can be either Pressure or Flux. A value of Pressure indicates that the
-        data provided for the reservoir is in terms of hydrostatic pressure and ParFlow will ensure that the computed pressure
-        field satisfies this condition in the computational cells which define the reservoir. A value of Flux indicates that the data
-        provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this condition in
-        the computational cells which define the reservoir.
-      domains:
-        EnumDomain:
-          enum_list:
-            - Pressure
-            - Flux
-
-    ExtractionType:
-      help: >
-        [Type: string] This key specifies the mechanism by which the extraction reservoir works (how ParFlow works with the reservoir data)
-        if the input type key is set to Recirc. This key can be either Pressure or Flux. A value of Pressure indicates
-        that the data provided for the reservoir is in terms of hydrostatic pressure and ParFlow will ensure that the computed
-        pressure field satisfies this condition in the computational cells which define the reservoir. A value of Flux indicates
-        that the data provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this
-        condition in the computational cells which define the reservoir.
-      domains:
-        EnumDomain:
-          enum_list:
-            - Pressure
-            - Flux
-
-    InjectionType:
-      help: >
-        [Type: string] This key specifies the mechanism by which the injection reservoir works (how ParFlow works with the reservoir data)
-        if the input type key is set to Recirc. This key can be either Pressure or Flux. A value of Pressure indicates
-        that the data provided for the reservoir is in terms of hydrostatic pressure and ParFlow will ensure that the computed
-        pressure field satisfies this condition in the computational cells which define the reservoir. A value of Flux indicates
-        that the data provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this
-        condition in the computational cells which define the reservoir.
-      domains:
-        EnumDomain:
-          enum_list:
-            - Pressure
-            - Flux
-
     Release_X:
       # typos - vertical
       help: >
@@ -157,7 +114,7 @@ Reservoirs:
       domains:
         DoubleValue:
 
-    current_storage:
+    Current_Storage:
       # typos - vertical
       help: >
         [Type: double]
@@ -222,48 +179,3 @@ Reservoirs:
         [Type: double] This key specifies the z location of the upper extent of an injection reservoir if the input type is set to Recirc.
       domains:
         DoubleValue:
-
-    Method:
-      help: >
-        [Type: string] This key specifies a method by which pressure or flux for a vertical reservoir will be weighted before assignment to
-        computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be either
-        Standard,Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the pressure
-        or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the cells
-        permeability divided by the sum of all cell permeabilities which define the reservoir. The value of Patterned is not
-        implemented.
-      domains:
-        EnumDomain:
-          enum_list:
-            - Standard
-            - Weighted
-            - Patterned
-
-    ExtractionMethod:
-      help: >
-        [Type: string] This key specifies a method by which pressure or flux for an extraction reservoir will be weighted before assignment
-        to computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be
-        either Standard, Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the
-        pressure or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the
-        cells permeability divided by the sum of all cell permeabilities which define the reservoir. The value of Patterned is not
-        implemented.
-      domains:
-        EnumDomain:
-          enum_list:
-            - Standard
-            - Weighted
-            - Patterned
-
-    InjectionMethod:
-      help: >
-        [Type: string] This key specifies a method by which pressure or flux for an injection reservoir will be weighted before assignment
-        to computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be
-        either Standard, Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the
-        pressure or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the
-        cells permeability divided by the sum of all cell permeabilities which define the reservoir. The value of Patterned is not
-        implemented.
-      domains:
-        EnumDomain:
-          enum_list:
-            - Standard
-            - Weighted
-            - Patterned

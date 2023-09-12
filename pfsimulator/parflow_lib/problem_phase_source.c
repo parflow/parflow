@@ -406,23 +406,12 @@ void         PhaseSource(
       reservoir_release_subgrid = ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical);
 
       double dt = problem->current_dt;
-      reservoir_value = 0.0;
-      if (ReservoirDataPhysicalAction(reservoir_data_physical) == INJECTION_WELL)
-      {
-        reservoir_value = ReservoirDataPhysicalReleaseRate(reservoir_data_physical);
-      }
-      else if (ReservoirDataPhysicalAction(reservoir_data_physical)
-               == EXTRACTION_WELL)
-
-      {
-        reservoir_value = -ReservoirDataPhysicalReleaseRate(reservoir_data_physical);
-      }
+      reservoir_value = ReservoirDataPhysicalReleaseRate(reservoir_data_physical);
       /*  Get the intersection of the reservoir with the subgrid  */
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
       flux = reservoir_value / (volume);
       //If we are overfull need to release the rest of the flux
-      bool reservoir_is_overfull = reservoir_data_physical->current_storage > reservoir_data_physical->max_capacity;
-      if (reservoir_is_overfull){
+      if (reservoir_data_physical->current_storage > reservoir_data_physical->max_capacity){
         flux = (reservoir_data_physical->current_storage - reservoir_data_physical->max_capacity) / (volume) ;
       }
 
@@ -443,14 +432,13 @@ void         PhaseSource(
         nx_ps = SubvectorNX(ps_sub);
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
-//        printf("Reservoir current capacity is %f\n", reservoir_data_physical->current_storage);
+//        printf("Reservoir current capacity is %f\n", reservoir_data_physical->Current_Storage);
         // Check if the reservoir is on
         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = 0;
-        bool should_release = reservoir_data_physical->current_storage > reservoir_data_physical->min_release_capacity;
-        if (should_release) {
+        if (reservoir_data_physical->current_storage > reservoir_data_physical->min_release_capacity) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
           /*  Get the intersection of the reservoir with the subgrid  */
-          if (tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid)) {
+          if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid))) {
             /*  If an intersection;  loop over it, and insert value  */
             ix = SubgridIX(tmp_subgrid);
             iy = SubgridIY(tmp_subgrid);
@@ -489,7 +477,7 @@ void         PhaseSource(
                         data[ips] += weight * flux;
                         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) += flux*volume;
 //                        reservoir_data_physical->release_amount_since_last_print += flux*dt*volume;
-//                        reservoir_data_physical->current_storage-= flux*dt*volume;
+//                        reservoir_data_physical->Current_Storage-= flux*dt*volume;
                       });
           }
         }

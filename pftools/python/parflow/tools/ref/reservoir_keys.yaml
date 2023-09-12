@@ -27,43 +27,6 @@ key:
 # Reservoir Parameters
 # -----------------------------------------------------------------------------
 
-InputType:
-  type: str
-  alias:
-    - InputType
-  register: Reservoirs.Names
-
-
-Type:
-  type: str
-  alias:
-    - Type
-  register: Reservoirs.Names
-
-Action:
-  type: str
-  alias:
-    - Action
-  register: Reservoirs.Names
-
-ExtractionType:
-  type: str
-  alias:
-    - ExtractionType
-    - extractiontype
-    - Extractiontype
-    - extractionType
-  register: Reservoirs.Names
-
-InjectionType:
-  type: str
-  alias:
-    - InjectionType
-    - injectiontype
-    - Injectiontype
-    - injectionType
-  register: Reservoirs.Names
-
 Release_X:
   type: float
   alias:
@@ -131,10 +94,10 @@ Max_Capacity:
     - Max_Capacity
   register: Reservoirs.Names
 
-current_storage:
+Current_Storage:
   type: float
   alias:
-    - current_storage
+    - Current_Storage
   register: Reservoirs.Names
 
 
@@ -179,31 +142,6 @@ ZLower:
   alias:
     - ZLower
     - Zlower
-  register: Reservoirs.Names
-
-Method:
-  type: str
-  alias:
-    - Method
-    - method
-  register: Reservoirs.Names
-
-ExtractionMethod:
-  type: str
-  alias:
-    - ExtractionMethod
-    - Extractionmethod
-    - extractionMethod
-    - extractionmethod
-  register: Reservoirs.Names
-
-InjectionMethod:
-  type: str
-  alias:
-    - InjectionMethod
-    - Injectionmethod
-    - injectionMethod
-    - injectionmethod
   register: Reservoirs.Names
 
 #ReleaseCurveFile:

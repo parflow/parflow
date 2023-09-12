@@ -3102,7 +3102,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                              if (pp_sp[ip] > reservoir_reset_pressure)
                              {
                                double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-                               reservoir_data_physical->current_storage = reservoir_data_physical->current_storage + pp_sp[ip]*dx*dy;
+                               reservoir_data_physical->current_storage = reservoir_data_physical->current_storage + pp_sp[ip] * dx * dy;
                                reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
                                pp_sp[ip] = reservoir_reset_pressure;
                              }
@@ -3149,7 +3149,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                                {
                                  printf("4\n");
                                  double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-                                 reservoir_data_physical->current_storage = reservoir_data_physical->current_storage + pp_sp[ip]*dx*dy;
+                                 reservoir_data_physical->current_storage = reservoir_data_physical->current_storage + pp_sp[ip] * dx * dy;
                                  reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
                                  pp_sp[ip] = reservoir_reset_pressure;
                                }
