@@ -501,20 +501,20 @@ void         PhaseRelPerm(
           if (fcn == CALCFCN)
           {
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-              nx, ny, nz,
+                           nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               prdat[ipr] = values[ir];
             });
           }
           else    /* fcn = CALCDER */
           {
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-              nx, ny, nz,
+                           nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               prdat[ipr] = 0.0;
             });
           }     /* End else clause */
@@ -627,20 +627,20 @@ void         PhaseRelPerm(
                                / pow(opahn, (m / 2));
 
                 printf("DebugTableFn, %d, %e, %e, %e, %e, %e\n",
-                  ir,
-                  head,
-                  f_val,
-                  VanGLookupLinear(head,
-                    dummy1->lookup_tables[ir],
-                    CALCFCN),
-                  fabs(VanGLookupLinear(head,
-                    dummy1->lookup_tables[ir],
-                    CALCFCN) - f_val),
-                  fabs((VanGLookupLinear(head,
-                    dummy1->lookup_tables[ir],
-                    CALCFCN) - f_val) / f_val)
+                       ir,
+                       head,
+                       f_val,
+                       VanGLookupLinear(head,
+                                        dummy1->lookup_tables[ir],
+                                        CALCFCN),
+                       fabs(VanGLookupLinear(head,
+                                             dummy1->lookup_tables[ir],
+                                             CALCFCN) - f_val),
+                       fabs((VanGLookupLinear(head,
+                                              dummy1->lookup_tables[ir],
+                                              CALCFCN) - f_val) / f_val)
 
-                  );
+                       );
               }
 
               for (double head = 0.0; head < fabs((dummy1->lookup_tables[ir])->min_pressure_head); head += 0.001)
@@ -661,19 +661,19 @@ void         PhaseRelPerm(
                                * n * alpha * ahnm1;
 
                 printf("DebugTableDer, %d, %e, %e, %e, %e, %e\n",
-                  ir,
-                  head,
-                  f_val,
-                  VanGLookupLinear(head,
-                    dummy1->lookup_tables[ir],
-                    CALCDER),
-                  fabs(VanGLookupLinear(head,
-                    dummy1->lookup_tables[ir],
-                    CALCDER) - f_val),
-                  fabs((VanGLookupLinear(head,
-                    dummy1->lookup_tables[ir],
-                    CALCDER) - f_val) / f_val)
-                  );
+                       ir,
+                       head,
+                       f_val,
+                       VanGLookupLinear(head,
+                                        dummy1->lookup_tables[ir],
+                                        CALCDER),
+                       fabs(VanGLookupLinear(head,
+                                             dummy1->lookup_tables[ir],
+                                             CALCDER) - f_val),
+                       fabs((VanGLookupLinear(head,
+                                              dummy1->lookup_tables[ir],
+                                              CALCDER) - f_val) / f_val)
+                       );
               }
             }
 #endif
@@ -688,16 +688,16 @@ void         PhaseRelPerm(
                   case 0:
                   {
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-                      nx, ny, nz,
+                                   nx, ny, nz,
                     {
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
@@ -706,8 +706,8 @@ void         PhaseRelPerm(
                         double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
 
                         prdat[ipr] = VanGLookupSpline(head,
-                          dummy1->lookup_tables[ir],
-                          CALCFCN);
+                                                      dummy1->lookup_tables[ir],
+                                                      CALCFCN);
                       }
                     });
                   }
@@ -724,16 +724,16 @@ void         PhaseRelPerm(
                     PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-                      nx, ny, nz,
+                                   nx, ny, nz,
                     {
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
@@ -764,14 +764,14 @@ void         PhaseRelPerm(
                 /* Compute VanG curve */
 
                 GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-                  nx, ny, nz,
+                               nx, ny, nz,
                 {
                   int ipr = SubvectorEltIndex(pr_sub,
-                    i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipp = SubvectorEltIndex(pp_sub,
-                    i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipd = SubvectorEltIndex(pd_sub,
-                    i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 1.0;
@@ -800,16 +800,16 @@ void         PhaseRelPerm(
                   case 0:
                   {
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-                      nx, ny, nz,
+                                   nx, ny, nz,
                     {
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
@@ -817,8 +817,8 @@ void         PhaseRelPerm(
                       {
                         double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                         prdat[ipr] = VanGLookupSpline(head,
-                          dummy1->lookup_tables[ir],
-                          CALCDER);
+                                                      dummy1->lookup_tables[ir],
+                                                      CALCDER);
                       }
                     });
                   }
@@ -835,16 +835,16 @@ void         PhaseRelPerm(
                     PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-                      nx, ny, nz,
+                                   nx, ny, nz,
                     {
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                        i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
@@ -881,14 +881,14 @@ void         PhaseRelPerm(
                 /* Compute VanG curve */
 
                 GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-                  nx, ny, nz,
+                               nx, ny, nz,
                 {
                   int ipr = SubvectorEltIndex(pr_sub,
-                    i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipp = SubvectorEltIndex(pp_sub,
-                    i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipd = SubvectorEltIndex(pd_sub,
-                    i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 0.0;
@@ -954,14 +954,14 @@ void         PhaseRelPerm(
           if (fcn == CALCFCN)
           {
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-              nx, ny, nz,
+                           nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
               int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
@@ -985,14 +985,14 @@ void         PhaseRelPerm(
           else    /* fcn = CALCDER */
           {
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-              nx, ny, nz,
+                           nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
               int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
@@ -1073,8 +1073,8 @@ void         PhaseRelPerm(
                       {
                         double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                         prdat[ipr] = VanGLookupSpline(head,
-                          dummy1->lookup_tables[ir],
-                          CALCFCN);
+                                                      dummy1->lookup_tables[ir],
+                                                      CALCFCN);
                       }
                     });
                   }
@@ -1177,8 +1177,8 @@ void         PhaseRelPerm(
                         double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
 
                         prdat[ipr] = VanGLookupSpline(head,
-                          dummy1->lookup_tables[ir],
-                          CALCDER);
+                                                      dummy1->lookup_tables[ir],
+                                                      CALCDER);
                       }
                     });
                   }
@@ -1400,14 +1400,14 @@ void         PhaseRelPerm(
           if (fcn == CALCFCN)
           {
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-              nx, ny, nz,
+                           nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 1.0;
@@ -1422,14 +1422,14 @@ void         PhaseRelPerm(
           else   /* fcn = CALCDER */
           {
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-              nx, ny, nz,
+                           nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 0.0;
@@ -1565,12 +1565,12 @@ void         PhaseRelPerm(
           if (fcn == CALCFCN)
           {
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-              nx, ny, nz,
+                           nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = region_coeffs[0];
               else
@@ -1586,12 +1586,12 @@ void         PhaseRelPerm(
           else   /* fcn = CALCDER */
           {
             GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
-              nx, ny, nz,
+                           nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = 0.0;
               else
@@ -1725,12 +1725,12 @@ PFModule  *PhaseRelPermInitInstanceXtra(
         (dummy1->alpha_values) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
         ReadPFBinary((dummy1->alpha_file),
-          (dummy1->alpha_values));
+                     (dummy1->alpha_values));
         handle = InitVectorUpdate(dummy1->alpha_values, VectorUpdateAll);
         FinalizeVectorUpdate(handle);     // This is needed to initalize ghost cells after reading the pfb
 
         ReadPFBinary((dummy1->n_file),
-          (dummy1->n_values));
+                     (dummy1->n_values));
         handle = InitVectorUpdate(dummy1->n_values, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
@@ -1907,11 +1907,11 @@ PFModule   *PhaseRelPermNewPublicXtra()
             NA_FreeNameArray(type_na);
 
             dummy1->lookup_tables[ir] = VanGComputeTable(
-              interpolation_method,
-              num_sample_points,
-              min_pressure_head,
-              dummy1->alphas[ir],
-              dummy1->ns[ir]);
+                                                         interpolation_method,
+                                                         num_sample_points,
+                                                         min_pressure_head,
+                                                         dummy1->alphas[ir],
+                                                         dummy1->ns[ir]);
           }
           else
           {

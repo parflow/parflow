@@ -74,7 +74,7 @@ char *argv[];
     if (myrank == 0)
     {
       printf("\t%d\t%d\t%f\t%f\t%.2f\n",
-        amps_Size(amps_CommWorld), len, t, mean_time, rate);
+             amps_Size(amps_CommWorld), len, t, mean_time, rate);
       fflush(stdout);
     }
   }

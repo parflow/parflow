@@ -67,8 +67,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   for (i = 0; i < package->num_recv; i++)
     if ((package->recv_handles[i] =
            (struct amps_HandleObject *)amps_IRecv(amps_CommWorld,
-             package->src[i],
-             package->recv_invoices[i])))
+                                                  package->src[i],
+                                                  package->recv_invoices[i])))
       package->recv_remaining++;
 
   /*--------------------------------------------------------------------
@@ -77,8 +77,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   for (i = 0; i < package->num_send; i++)
   {
     amps_Send(amps_CommWorld,
-      package->dest[i],
-      package->send_invoices[i]);
+              package->dest[i],
+              package->send_invoices[i]);
   }
 
   return(amps_NewHandle(NULL, 0, NULL, package));

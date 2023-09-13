@@ -306,7 +306,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
 
         iv = 0;
         BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-          iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                  iv, nx_v, ny_v, nz_v, 1, 1, 1,
         {
           DoubleTags v;
           v.as_double = vp[iv];
@@ -536,8 +536,8 @@ int SplitTagBoundBox(Box*          box_lft,
   {
     tmp_dim = sorted[dim];
     if (FindZeroCutPoint(&cut_pt,
-      tmp_dim, box_lo[tmp_dim], box_up[tmp_dim],
-      hist_box, min_box[tmp_dim]))
+                         tmp_dim, box_lo[tmp_dim], box_up[tmp_dim],
+                         hist_box, min_box[tmp_dim]))
     {
       break;
     }
@@ -552,8 +552,8 @@ int SplitTagBoundBox(Box*          box_lft,
     tmp_dim = sorted[0];
 
     CutAtLaplacian(&cut_pt,
-      tmp_dim, box_lo[tmp_dim], box_up[tmp_dim],
-      hist_box, min_box[tmp_dim]);
+                   tmp_dim, box_lo[tmp_dim], box_up[tmp_dim],
+                   hist_box, min_box[tmp_dim]);
   }
 
   /*
@@ -610,7 +610,7 @@ void FindBoxesContainingTags(BoxList*   boxes,
       BoxClear(&box_rgt);
 
       int is_split = SplitTagBoundBox(&box_lft, &box_rgt, &tag_bound_box,
-        hist_box, min_box);
+                                      hist_box, min_box);
 
       if (is_split)
       {
@@ -623,13 +623,13 @@ void FindBoxesContainingTags(BoxList*   boxes,
         BoxList* box_list_rgt = NewBoxList();
 
         FindBoxesContainingTags(box_list_lft,
-          vector,
-          &box_lft, min_box,
-          tag);
+                                vector,
+                                &box_lft, min_box,
+                                tag);
         FindBoxesContainingTags(box_list_rgt,
-          vector,
-          &box_rgt, min_box,
-          tag);
+                                vector,
+                                &box_rgt, min_box,
+                                tag);
 
         if (((BoxListSize(box_list_lft) > 1) ||
              (BoxListSize(box_list_rgt) > 1)) ||
@@ -733,7 +733,7 @@ void BergerRigoutsos(Vector*    vector,
       BoxClear(&box_rgt);
 
       int is_split = SplitTagBoundBox(&box_lft, &box_rgt, &tag_bound_box,
-        histogram_box, min_box);
+                                      histogram_box, min_box);
 
       if (is_split)
       {
@@ -746,13 +746,13 @@ void BergerRigoutsos(Vector*    vector,
         BoxList* box_list_rgt = NewBoxList();
 
         FindBoxesContainingTags(box_list_lft,
-          vector,
-          &box_lft, min_box,
-          tag);
+                                vector,
+                                &box_lft, min_box,
+                                tag);
         FindBoxesContainingTags(box_list_rgt,
-          vector,
-          &box_rgt, min_box,
-          tag);
+                                vector,
+                                &box_rgt, min_box,
+                                tag);
 
         if (((BoxListSize(box_list_lft) > 1) ||
              (BoxListSize(box_list_rgt) > 1)) ||
@@ -836,7 +836,7 @@ void ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
 
       int *fdir;
       GrGeomPatchLoop(i, j, k, fdir, geom_solid, patch,
-        r, ix, iy, iz, nx, ny, nz,
+                      r, ix, iy, iz, nx, ny, nz,
       {
         int ip = SubvectorEltIndex(d_sub, i, j, k);
         int this_face_tag = 1 << PV_f;
@@ -869,9 +869,9 @@ void ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
     tag.as_tags = 1 << face;
 
     BergerRigoutsos(indicator,
-      min_box,
-      tag,
-      boxes);
+                    min_box,
+                    tag,
+                    boxes);
 
     GrGeomSolidPatchBoxes(geom_solid, patch, face) = NewBoxArray(boxes);
 
@@ -968,9 +968,9 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
     tag.as_tags = 1 << face;
 
     BergerRigoutsos(indicator,
-      min_box,
-      tag,
-      boxes);
+                    min_box,
+                    tag,
+                    boxes);
 
     GrGeomSolidSurfaceBoxes(geom_solid, face) = NewBoxArray(boxes);
 
@@ -1057,9 +1057,9 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
   BoxList* boxes = NewBoxList();
 
   BergerRigoutsos(indicator,
-    min_box,
-    tag,
-    boxes);
+                  min_box,
+                  tag,
+                  boxes);
 
   GrGeomSolidInteriorBoxes(geom_solid) = NewBoxArray(boxes);
 

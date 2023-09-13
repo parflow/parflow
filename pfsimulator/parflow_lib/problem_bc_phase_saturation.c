@@ -122,7 +122,7 @@ void          BCPhaseSaturation(
    *-----------------------------------------------------------------------*/
 
   bc_struct = NewBCStruct(subgrids, gr_domain,
-    num_patches, patch_indexes, bc_types, NULL);
+                          num_patches, patch_indexes, bc_types, NULL);
 
   /*-----------------------------------------------------------------------
    * Implement BC's
@@ -152,29 +152,29 @@ void          BCPhaseSaturation(
         {
           double constant;
           ForPatchCellsPerFace(BC_ALL,
-            BeforeAllCells({
+                               BeforeAllCells({
             dummy0 = (Type0*)(public_xtra->data[indx + ipatch]);
             constant = (dummy0->constant);
           }),
-            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-            Locals(int sv, iv; ),
-            CellSetup({
+                               LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                               Locals(int sv, iv; ),
+                               CellSetup({
             sv = 0;
             iv = SubvectorEltIndex(sat_sub, i, j, k);
           }),
-            FACE(LeftFace, { sv = -sx_v; }),
-            FACE(RightFace, { sv = sx_v; }),
-            FACE(DownFace, { sv = -sy_v; }),
-            FACE(UpFace, { sv = sy_v; }),
-            FACE(BackFace, { sv = -sz_v; }),
-            FACE(FrontFace, { sv = sz_v; }),
-            CellFinalize({
+                               FACE(LeftFace, { sv = -sx_v; }),
+                               FACE(RightFace, { sv = sx_v; }),
+                               FACE(DownFace, { sv = -sy_v; }),
+                               FACE(UpFace, { sv = sy_v; }),
+                               FACE(BackFace, { sv = -sz_v; }),
+                               FACE(FrontFace, { sv = sz_v; }),
+                               CellFinalize({
             satp[iv] = constant;
             satp[iv + sv] = constant;
             satp[iv + 2 * sv] = constant;
           }),
-            AfterAllCells(DoNothing)
-            );
+                               AfterAllCells(DoNothing)
+                               );
           break;
         }
 
@@ -183,33 +183,33 @@ void          BCPhaseSaturation(
           double height, lower, upper, dz2;
 
           ForPatchCellsPerFace(BC_ALL,
-            BeforeAllCells({
+                               BeforeAllCells({
             dummy1 = (Type1*)(public_xtra->data[indx + ipatch]);
             height = (dummy1->height);
             lower = (dummy1->lower);
             upper = (dummy1->upper);
             dz2 = SubgridDZ(subgrid) / 2.0;
           }),
-            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-            Locals(int sv, iv; double z; ),
-            CellSetup({
+                               LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                               Locals(int sv, iv; double z; ),
+                               CellSetup({
             sv = 0;
             z = RealSpaceZ(k, SubgridRZ(subgrid));
             iv = SubvectorEltIndex(sat_sub, i, j, k);
           }),
-            FACE(LeftFace, { sv = -sx_v; }),
-            FACE(RightFace, { sv = sx_v; }),
-            FACE(DownFace, { sv = -sy_v; }),
-            FACE(UpFace, { sv = sy_v; }),
-            FACE(BackFace, {
+                               FACE(LeftFace, { sv = -sx_v; }),
+                               FACE(RightFace, { sv = sx_v; }),
+                               FACE(DownFace, { sv = -sy_v; }),
+                               FACE(UpFace, { sv = sy_v; }),
+                               FACE(BackFace, {
             sv = -sz_v;
             z = z - dz2;
           }),
-            FACE(FrontFace, {
+                               FACE(FrontFace, {
             sv = sz_v;
             z = z + dz2;
           }),
-            CellFinalize({
+                               CellFinalize({
             if (z <= height)
             {
               satp[iv       ] = lower;
@@ -223,8 +223,8 @@ void          BCPhaseSaturation(
               satp[iv + 2 * sv] = upper;
             }
           }),
-            AfterAllCells(DoNothing)
-            );
+                               AfterAllCells(DoNothing)
+                               );
           break;
         }
 
@@ -240,7 +240,7 @@ void          BCPhaseSaturation(
           double unitx, unity, line_min, line_length;
 
           ForPatchCellsPerFace(BC_ALL,
-            BeforeAllCells({
+                               BeforeAllCells({
             dummy2 = (Type2*)(public_xtra->data[indx + ipatch]);
             num_points = (dummy2->num_points);
             point = (dummy2->point);
@@ -261,41 +261,41 @@ void          BCPhaseSaturation(
             line_min = (dummy2->xlower) * unitx
                        + (dummy2->ylower) * unity;
           }),
-            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-            Locals(int sv, iv, ip;
-              double x, y, z, xy, slope, interp_height; ),
-            CellSetup({
+                               LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                               Locals(int sv, iv, ip;
+                                      double x, y, z, xy, slope, interp_height; ),
+                               CellSetup({
             sv = 0;
             x = RealSpaceX(i, SubgridRX(subgrid));
             y = RealSpaceY(j, SubgridRY(subgrid));
             z = RealSpaceZ(k, SubgridRZ(subgrid));
             iv = SubvectorEltIndex(sat_sub, i, j, k);
           }),
-            FACE(LeftFace, {
+                               FACE(LeftFace, {
             sv = -sx_v;
             x = x - dx2;
           }),
-            FACE(RightFace, {
+                               FACE(RightFace, {
             sv = sx_v;
             x = x + dx2;
           }),
-            FACE(DownFace, {
+                               FACE(DownFace, {
             sv = -sy_v;
             y = y - dy2;
           }),
-            FACE(UpFace, {
+                               FACE(UpFace, {
             sv = sy_v;
             y = y + dy2;
           }),
-            FACE(BackFace, {
+                               FACE(BackFace, {
             sv = -sz_v;
             z = z - dz2;
           }),
-            FACE(FrontFace, {
+                               FACE(FrontFace, {
             sv = sz_v;
             z = z + dz2;
           }),
-            CellFinalize(
+                               CellFinalize(
           {
             /* project center of BC face onto piecewise linear line */
             xy = x * unitx + y * unity;
@@ -328,8 +328,8 @@ void          BCPhaseSaturation(
               satp[iv + 2 * sv] = upper;
             }
           }),
-            AfterAllCells(DoNothing)
-            );
+                               AfterAllCells(DoNothing)
+                               );
 
           break;
         }
@@ -451,7 +451,7 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
 
       public_xtra->patch_indexes[indx] =
         NA_NameToIndex(GlobalsGeometries[domain_index]->patches,
-          patch_name);
+                       patch_name);
 
       if (public_xtra->patch_indexes[indx] < 0)
       {
@@ -472,7 +472,7 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
           dummy0 = ctalloc(Type0, 1);
 
           sprintf(key, "Patch.%s.BCSaturation.%s.Value",
-            patch_name, phase_name);
+                  patch_name, phase_name);
           dummy0->constant = GetDouble(key);
 
           (public_xtra->data[indx]) = (void*)dummy0;
@@ -486,7 +486,7 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
           dummy1 = ctalloc(Type1, 1);
 
           sprintf(key, "Patch.%s.BCSaturation.%s.Value",
-            patch_name, phase_name);
+                  patch_name, phase_name);
           dummy1->height = GetDouble(key);
 
           (dummy1->lower) = 1.0;
@@ -505,23 +505,23 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
           dummy2 = ctalloc(Type2, 1);
 
           sprintf(key, "Patch.%s.BCSaturation.%s.XLower",
-            patch_name, phase_name);
+                  patch_name, phase_name);
           dummy2->xlower = GetDouble(key);
 
           sprintf(key, "Patch.%s.BCSaturation.%s.YLower",
-            patch_name, phase_name);
+                  patch_name, phase_name);
           dummy2->ylower = GetDouble(key);
 
           sprintf(key, "Patch.%s.BCSaturation.%s.XUpper",
-            patch_name, phase_name);
+                  patch_name, phase_name);
           dummy2->xupper = GetDouble(key);
 
           sprintf(key, "Patch.%s.BCSaturation.%s.YUpper",
-            patch_name, phase_name);
+                  patch_name, phase_name);
           dummy2->yupper = GetDouble(key);
 
           sprintf(key, "Patch.%s.BCPressure.%s.NumPoints", patch_name,
-            phase_name);
+                  phase_name);
           num_points = dummy2->num_points = GetInt(key);
 
           (dummy2->point) = ctalloc(double, (dummy2->num_points));
@@ -530,11 +530,11 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
           for (k = 0; k < num_points; k++)
           {
             sprintf(key, "Patch.%s.BCPressure.%s.%d.Location",
-              patch_name, phase_name, k);
+                    patch_name, phase_name, k);
             dummy2->point[k] = GetDouble(key);
 
             sprintf(key, "Patch.%s.BCPressure.%s.%d.Value",
-              patch_name, phase_name, k);
+                    patch_name, phase_name, k);
             dummy2->height[k] = GetDouble(key);
           }
 

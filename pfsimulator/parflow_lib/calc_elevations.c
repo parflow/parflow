@@ -138,7 +138,7 @@ double         **CalcElevations(
 
     /* Construct elevation_array */
     GrGeomPatchLoop(i, j, k, fdir, grgeom_solid, ref_patch,
-      rz, ix, iy, iz, nx, ny, nz,
+                    rz, ix, iy, iz, nx, ny, nz,
     {
       if (fdir[2] != 0)
       {
@@ -176,11 +176,11 @@ double         **CalcElevations(
       amps_Invoice invoice = amps_NewInvoice("%*d", num, elevation_array);
 
       int dstRank = pqr_to_process(GlobalsP,
-        GlobalsQ,
-        0,
-        GlobalsNumProcsX,
-        GlobalsNumProcsY,
-        GlobalsNumProcsZ);
+                                   GlobalsQ,
+                                   0,
+                                   GlobalsNumProcsX,
+                                   GlobalsNumProcsY,
+                                   GlobalsNumProcsZ);
 
       amps_Send(amps_CommWorld, dstRank, invoice);
 
@@ -205,11 +205,11 @@ double         **CalcElevations(
       for (R = 1; R < GlobalsNumProcsZ; R++)
       {
         int dstRank = pqr_to_process(GlobalsP,
-          GlobalsQ,
-          R,
-          GlobalsNumProcsX,
-          GlobalsNumProcsY,
-          GlobalsNumProcsZ);
+                                     GlobalsQ,
+                                     R,
+                                     GlobalsNumProcsX,
+                                     GlobalsNumProcsY,
+                                     GlobalsNumProcsZ);
 
         /*
          * Receive and reduce results from all processors.
@@ -250,11 +250,11 @@ double         **CalcElevations(
       for (R = 1; R < GlobalsNumProcsZ; R++)
       {
         int dstRank = pqr_to_process(GlobalsP,
-          GlobalsQ,
-          R,
-          GlobalsNumProcsX,
-          GlobalsNumProcsY,
-          GlobalsNumProcsZ);
+                                     GlobalsQ,
+                                     R,
+                                     GlobalsNumProcsX,
+                                     GlobalsNumProcsY,
+                                     GlobalsNumProcsZ);
 
         amps_Invoice invoice = amps_NewInvoice("%*d", num, elevation_array);
         amps_Send(amps_CommWorld, dstRank, invoice);

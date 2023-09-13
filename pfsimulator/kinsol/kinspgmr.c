@@ -303,7 +303,7 @@ static int KINSpgmrSetup(KINMem kin_mem)
 
   /* Call precondset routine */
   ret = precondset(Neq, uu, uscale, fval, fscale, vtemp1, vtemp2, func,
-    uround, &nfe, P_data);
+                   uround, &nfe, P_data);
 
   if (ret != 0)
     return(1);
@@ -358,9 +358,9 @@ static int KINSpgmrSolve(KINMem kin_mem, N_Vector xx, N_Vector bb,
 
   /* Call SpgmrSolve  */
   ret = SpgmrSolve(spgmr_mem, kin_mem, xx, bb, pretype, gstype, eps,
-    maxlinrestarts, kin_mem, fscale, fscale,
-    KINSpgmrAtimes, KINSpgmrPSolve,
-    res_norm, &nli_inc, &nps_inc);
+                   maxlinrestarts, kin_mem, fscale, fscale,
+                   KINSpgmrAtimes, KINSpgmrPSolve,
+                   res_norm, &nli_inc, &nps_inc);
   /* Increment counters nli, nps, and ncfl
    * (nni is updated in the KINSol main iteration loop) */
   nli += nli_inc;
@@ -399,7 +399,7 @@ static int KINSpgmrSolve(KINMem kin_mem, N_Vector xx, N_Vector bb,
 
   if (kin_mem->kin_printfl > TWO)
     fprintf(kin_mem->kin_msgfp,
-      "linear (Krylov step) residual norm %12.3g  eps %12.3g\n", *res_norm, eps);
+            "linear (Krylov step) residual norm %12.3g  eps %12.3g\n", *res_norm, eps);
 
   /* Set return value to appropriate values */
 
@@ -459,7 +459,7 @@ static int KINSpgmrAtimes(void *kinsol_mem, N_Vector v, N_Vector z)
     ret = KINSpgmrAtimesDQ(kinsol_mem, v, z);
   else
     ret = (*userAtimes)((kin_mem->kin_f_data), v, z,
-      &(kinspgmr_mem->g_new_uu), uu);
+                        &(kinspgmr_mem->g_new_uu), uu);
 
   return(ret);
 }
@@ -547,7 +547,7 @@ static int KINSpgmrPSolve(void *kinsol_mem, N_Vector r, N_Vector z,
   N_VScale(ONE, r, z);
 
   ret = psolve(Neq, uu, uscale, fval, fscale, z, vtemp1, func, uround,
-    &nfe, P_data);
+               &nfe, P_data);
 
   /* This call is counted in nps within the KINSpgmrSolve routine */
 

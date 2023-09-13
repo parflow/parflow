@@ -1892,7 +1892,7 @@ int ComputePitFill(
       {
         // calculate slope magnitude
         smag = sqrt((*DataboxCoeff(sx, i, j, 0)) * (*DataboxCoeff(sx, i, j, 0)) +
-          (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
+                    (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
 
         // test if local minimum
         lmin = 0;
@@ -1935,7 +1935,7 @@ int ComputePitFill(
       {
         // re-calculate slope magnitude from new DEM
         smag = sqrt((*DataboxCoeff(sx, i, j, 0)) * (*DataboxCoeff(sx, i, j, 0)) +
-          (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
+                    (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
 
         // test if local minimum
         lmin = 0;
@@ -2030,7 +2030,7 @@ int ComputeMovingAvg(
       {
         // calculate slope magnitude
         smag = sqrt((*DataboxCoeff(sx, i, j, 0)) * (*DataboxCoeff(sx, i, j, 0)) +
-          (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
+                    (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
 
         // test if local minimum
         lmin = 0;
@@ -2114,7 +2114,7 @@ int ComputeMovingAvg(
       {
         // re-calculate slope magnitude from new DEM
         smag = sqrt((*DataboxCoeff(sx, i, j, 0)) * (*DataboxCoeff(sx, i, j, 0)) +
-          (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
+                    (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
 
         // test if local minimum
         lmin = 0;
@@ -3117,17 +3117,17 @@ void ComputeSlopeD8(
               if (i == imin)             // adjacent in y
               {
                 *DataboxCoeff(slope, i, j, 0) = fabs(*DataboxCoeff(dem, i, j, 0) -
-                  *DataboxCoeff(dem, imin, jmin, 0)) / dy;
+                                                     *DataboxCoeff(dem, imin, jmin, 0)) / dy;
               }
               else if (j == jmin)        // adjacent in x
               {
                 *DataboxCoeff(slope, i, j, 0) = fabs(*DataboxCoeff(dem, i, j, 0) -
-                  *DataboxCoeff(dem, imin, jmin, 0)) / dx;
+                                                     *DataboxCoeff(dem, imin, jmin, 0)) / dx;
               }
               else
               {
                 *DataboxCoeff(slope, i, j, 0) = fabs(*DataboxCoeff(dem, i, j, 0) -
-                  *DataboxCoeff(dem, imin, jmin, 0)) / dxy;
+                                                     *DataboxCoeff(dem, imin, jmin, 0)) / dxy;
               }
             }
           }

@@ -148,7 +148,7 @@ int main(int argc, char **argv)
         {
           r_avg = ((msglen) / t_avg) / (1024 * 1024);
           amps_Printf(" %7d      %6d        %lg      %7.2lf\n",
-            msglen, msglen / word_size, t_avg * 1.0E6, r_avg);
+                      msglen, msglen / word_size, t_avg * 1.0E6, r_avg);
         }
       }
     }

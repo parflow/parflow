@@ -55,10 +55,10 @@ CommPkg  *NewCharVectorUpdatePkg(
   compute_pkg = GridComputePkg(CharVectorGrid(charvector), update_mode);
 
   new_comm_pkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
-    ComputePkgRecvRegion(compute_pkg),
-    CharVectorDataSpace(charvector),
-    CharVectorNC(charvector),
-    (double*)CharVectorData(charvector));
+                            ComputePkgRecvRegion(compute_pkg),
+                            CharVectorDataSpace(charvector),
+                            CharVectorNC(charvector),
+                            (double*)CharVectorData(charvector));
 
   return new_comm_pkg;
 }
@@ -119,17 +119,17 @@ CharVector  *NewTempCharVector(
 
     SubcharvectorDataSpace(new_sub) =
       NewSubgrid(SubgridIX(subgrid) - num_ghost,
-        SubgridIY(subgrid) - num_ghost,
-        SubgridIZ(subgrid) - num_ghost,
-        SubgridNX(subgrid) + 2 * num_ghost,
-        SubgridNY(subgrid) + 2 * num_ghost,
-        SubgridNZ(subgrid) + 2 * num_ghost,
-        SubgridRX(subgrid),
-        SubgridRY(subgrid),
-        SubgridRZ(subgrid),
-        SubgridProcess(subgrid));
+                 SubgridIY(subgrid) - num_ghost,
+                 SubgridIZ(subgrid) - num_ghost,
+                 SubgridNX(subgrid) + 2 * num_ghost,
+                 SubgridNY(subgrid) + 2 * num_ghost,
+                 SubgridNZ(subgrid) + 2 * num_ghost,
+                 SubgridRX(subgrid),
+                 SubgridRY(subgrid),
+                 SubgridRZ(subgrid),
+                 SubgridProcess(subgrid));
     AppendSubgrid(SubcharvectorDataSpace(new_sub),
-      CharVectorDataSpace(new_char_vector));
+                  CharVectorDataSpace(new_char_vector));
 
     SubcharvectorNC(new_sub) = nc;
 
@@ -288,7 +288,7 @@ void InitCharVector(CharVector *v, char value)
 
       iv = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-        iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vp[iv] = value;
       });
@@ -332,7 +332,7 @@ void InitCharVectorAll(CharVector *v, char value)
 
       iv = 0;
       BoxLoopI1(i, j, k, ix_v, iy_v, iz_v, nx_v, ny_v, nz_v,
-        iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vp[iv] = value;
       });
@@ -387,7 +387,7 @@ void InitCharVectorInc(CharVector *v, char value, int inc)
 
       iv = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-        iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vp[iv] = (char)(value + (i + j + k) * inc);
       });

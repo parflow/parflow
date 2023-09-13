@@ -51,10 +51,10 @@ Databox         *NewDatabox(
                             double dz)
 {
   return NewDataboxDefault(
-    nx, ny, nz,
-    x, y, z,
-    dx, dy, dz,
-    0.0);
+                           nx, ny, nz,
+                           x, y, z,
+                           dx, dy, dz,
+                           0.0);
 }
 
 

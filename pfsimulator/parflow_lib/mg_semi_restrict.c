@@ -151,17 +151,17 @@ void             MGSemiRestrict(
         s = StencilShape(MatrixStencil(P));
 
         p1 = SubmatrixElt(P_sub, 1,
-          (ix + s[0][0]), (iy + s[0][1]), (iz + s[0][2]));
+                          (ix + s[0][0]), (iy + s[0][1]), (iz + s[0][2]));
         p2 = SubmatrixElt(P_sub, 0,
-          (ix + s[1][0]), (iy + s[1][1]), (iz + s[1][2]));
+                          (ix + s[1][0]), (iy + s[1][1]), (iz + s[1][2]));
 
         i_p = 0;
         i_c = 0;
         i_f = 0;
         BoxLoopI3(ii, jj, kk, ix, iy, iz, nx, ny, nz,
-          i_p, nx_p, ny_p, nz_p, 1, 1, 1,
-          i_c, nx_c, ny_c, nz_c, 1, 1, 1,
-          i_f, nx_f, ny_f, nz_f, sx, sy, sz,
+                  i_p, nx_p, ny_p, nz_p, 1, 1, 1,
+                  i_c, nx_c, ny_c, nz_c, 1, 1, 1,
+                  i_f, nx_f, ny_f, nz_f, sx, sy, sz,
         {
           r_cp[i_c] =
             r_fp[i_f] + (p1[i_p] * r_fp[i_f - stride] +
@@ -203,7 +203,7 @@ ComputePkg   *NewMGSemiRestrictComputePkg(
   CommRegFromStencil(&send_reg, &recv_reg, grid, stencil);
 
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    GridSubgrids(grid), send_reg, recv_reg, stencil);
+                        GridSubgrids(grid), send_reg, recv_reg, stencil);
 
   /* RDF temporary until rewrite of CommRegFromStencil */
   ProjectRegion(send_reg, sx, sy, sz, f_index, f_index, f_index);

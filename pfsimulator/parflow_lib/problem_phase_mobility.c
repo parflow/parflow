@@ -150,8 +150,8 @@ void    PhaseMobility(
         ik = 0;
         ipm = 0;
         BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-          ik, nx_k, ny_k, nz_k, 1, 1, 1,
-          ipm, nx_pm, ny_pm, nz_pm, 1, 1, 1,
+                  ik, nx_k, ny_k, nz_k, 1, 1, 1,
+                  ipm, nx_pm, ny_pm, nz_pm, 1, 1, 1,
         {
           pmxp[ipm] = kxp[ik] * constant / pv;
           pmyp[ipm] = kyp[ik] * constant / pv;
@@ -219,9 +219,9 @@ void    PhaseMobility(
         ipm = 0;
         ips = 0;
         BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-          ik, nx_k, ny_k, nz_k, 1, 1, 1,
-          ipm, nx_pm, ny_pm, nz_pm, 1, 1, 1,
-          ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+                  ik, nx_k, ny_k, nz_k, 1, 1, 1,
+                  ipm, nx_pm, ny_pm, nz_pm, 1, 1, 1,
+                  ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
         {
           pmxp[ipm] = kxp[ik] * pow((psp[ips] - ps0), e) / pv;
           pmyp[ipm] = kyp[ik] * pow((psp[ips] - ps0), e) / pv;
@@ -306,7 +306,7 @@ PFModule  *PhaseMobilityNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "Phase.%s.Density.Type",
-      NA_IndexToName(GlobalsPhaseNames, i));
+            NA_IndexToName(GlobalsPhaseNames, i));
 
     switch_name = GetString(key);
 
@@ -319,7 +319,7 @@ PFModule  *PhaseMobilityNewPublicXtra(
         dummy0 = ctalloc(Type0, 1);
 
         sprintf(key, "Phase.%s.Mobility.Value",
-          NA_IndexToName(GlobalsPhaseNames, i));
+                NA_IndexToName(GlobalsPhaseNames, i));
         dummy0->constant = GetDouble(key);
 
         (public_xtra->data[i]) = (void*)dummy0;
@@ -331,10 +331,10 @@ PFModule  *PhaseMobilityNewPublicXtra(
       {
         dummy1 = ctalloc(Type1, 1);
         sprintf(key, "Phase.%s.Mobility.Exponent",
-          NA_IndexToName(GlobalsPhaseNames, i));
+                NA_IndexToName(GlobalsPhaseNames, i));
         dummy1->exponent = GetDoubleDefault(key, 2.0);
         sprintf(key, "Phase.%s.Mobility.IrreducibleSaturation",
-          NA_IndexToName(GlobalsPhaseNames, i));
+                NA_IndexToName(GlobalsPhaseNames, i));
         dummy1->irreducible_saturation = GetDoubleDefault(key, 0.0);
 
         (public_xtra->data[i]) = (void*)dummy1;

@@ -221,9 +221,9 @@ void printMaxMemory(FILE *log_file)
     if (log_file)
     {
       fprintf(log_file,
-        "Maximum memory used on processor %d : %d MB\n",
-        p,
-        (int)amps_ThreadLocal(s_max_memory) / (1024 * 1024));
+              "Maximum memory used on processor %d : %d MB\n",
+              p,
+              (int)amps_ThreadLocal(s_max_memory) / (1024 * 1024));
     }
 
     for (p = 1; p < amps_Size(amps_CommWorld); p++)
@@ -232,9 +232,9 @@ void printMaxMemory(FILE *log_file)
       if (log_file)
       {
         fprintf(log_file,
-          "Maximum memory used on processor %d : %d MB\n",
-          p,
-          maxmem / (1024 * 1024));
+                "Maximum memory used on processor %d : %d MB\n",
+                p,
+                maxmem / (1024 * 1024));
       }
     }
   }
@@ -326,11 +326,11 @@ void printMemoryInfo(FILE *log_file)
 
   /* Print out concise malloc info line */
   fprintf(log_file,
-    "Memory in use : %zu MB in %zu allocs, %zu MB reserved ( %zu unused)\n",
-    used_mem / (1024 * 1024),
-    number_allocated,
-    reserved_mem / (1024 * 1024),
-    free_mem / (1024 * 1024));
+          "Memory in use : %zu MB in %zu allocs, %zu MB reserved ( %zu unused)\n",
+          used_mem / (1024 * 1024),
+          number_allocated,
+          reserved_mem / (1024 * 1024),
+          free_mem / (1024 * 1024));
 #else
 #ifdef PARFLOW_HAVE_MALLINFO
   /* Get malloc info structure */
@@ -359,11 +359,11 @@ void printMemoryInfo(FILE *log_file)
 
   /* Print out concise malloc info line */
   fprintf(log_file,
-    "Memory in use : %d MB in %d allocs, %d MB reserved ( %d unused)\n",
-    used_mem / (1024 * 1024),
-    number_allocated,
-    reserved_mem / (1024 * 1024),
-    free_mem / (1024 * 1024));
+          "Memory in use : %d MB in %d allocs, %d MB reserved ( %d unused)\n",
+          used_mem / (1024 * 1024),
+          number_allocated,
+          reserved_mem / (1024 * 1024),
+          free_mem / (1024 * 1024));
 #endif
 #endif
 }

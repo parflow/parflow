@@ -383,9 +383,9 @@ PFModule  *ThermalConductivityInitInstanceXtra(
     if ((dummy1->data_from_file) == 1)
     {
       ReadPFBinary((dummy1->cdry_file),
-        (dummy1->cdry_values));
+                   (dummy1->cdry_values));
       ReadPFBinary((dummy1->cwet_file),
-        (dummy1->cwet_values));
+                   (dummy1->cwet_values));
     }
   }
 
@@ -534,7 +534,7 @@ PFModule   *ThermalConductivityNewPublicXtra()
     default:
     {
       InputError("Error: invalid type <%s> for key <%s>\n",
-        switch_name, key);
+                 switch_name, key);
     }
   }      /* End switch */
 

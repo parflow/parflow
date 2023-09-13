@@ -185,18 +185,18 @@ Subregion  *DuplicateSubregion(
 
 
   new_subregion = NewSubregion(SubregionIX(subregion),
-    SubregionIY(subregion),
-    SubregionIZ(subregion),
-    SubregionNX(subregion),
-    SubregionNY(subregion),
-    SubregionNZ(subregion),
-    SubregionSX(subregion),
-    SubregionSY(subregion),
-    SubregionSZ(subregion),
-    SubregionRX(subregion),
-    SubregionRY(subregion),
-    SubregionRZ(subregion),
-    SubregionProcess(subregion));
+                               SubregionIY(subregion),
+                               SubregionIZ(subregion),
+                               SubregionNX(subregion),
+                               SubregionNY(subregion),
+                               SubregionNZ(subregion),
+                               SubregionSX(subregion),
+                               SubregionSY(subregion),
+                               SubregionSZ(subregion),
+                               SubregionRX(subregion),
+                               SubregionRY(subregion),
+                               SubregionRZ(subregion),
+                               SubregionProcess(subregion));
 
   return new_subregion;
 }

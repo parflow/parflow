@@ -253,7 +253,7 @@ PFModule  *CapillaryPressureNewPublicXtra(
             NA_NameToIndex(GlobalsGeomNames, region);
 
           sprintf(key, "Geom.%s.CapPressure.%s.Value",
-            region, phase_name);
+                  region, phase_name);
           dummy0->values[ir] = GetDoubleDefault(key, 0.0);
         }
 

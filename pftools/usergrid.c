@@ -159,16 +159,16 @@ SubgridArray   *CopyGrid(
     Subgrid* subgrid = SubgridArraySubgrid(all_subgrids, s_i);
 
     AppendSubgrid(NewSubgrid(SubgridIX(subgrid),
-      SubgridIY(subgrid),
-      SubgridIZ(subgrid),
-      SubgridNX(subgrid),
-      SubgridNY(subgrid),
-      SubgridNZ(subgrid),
-      SubgridRX(subgrid),
-      SubgridRY(subgrid),
-      SubgridRZ(subgrid),
-      SubgridProcess(subgrid)),
-      &new_subgrids);
+                             SubgridIY(subgrid),
+                             SubgridIZ(subgrid),
+                             SubgridNX(subgrid),
+                             SubgridNY(subgrid),
+                             SubgridNZ(subgrid),
+                             SubgridRX(subgrid),
+                             SubgridRY(subgrid),
+                             SubgridRZ(subgrid),
+                             SubgridProcess(subgrid)),
+                  &new_subgrids);
   }
 
   return new_subgrids;
@@ -257,13 +257,13 @@ SubgridArray   *DistributeUserGrid(
         process = pqr_to_process(p, q, r, P, Q, R);
 
         AppendSubgrid(NewSubgrid(pqr_to_xyz(p, mx, lx, x),
-          pqr_to_xyz(q, my, ly, y),
-          pqr_to_xyz(r, mz, lz, z),
-          pqr_to_nxyz(p, mx, lx),
-          pqr_to_nxyz(q, my, ly),
-          pqr_to_nxyz(r, mz, lz),
-          0, 0, 0, process),
-          &all_subgrids);
+                                 pqr_to_xyz(q, my, ly, y),
+                                 pqr_to_xyz(r, mz, lz, z),
+                                 pqr_to_nxyz(p, mx, lx),
+                                 pqr_to_nxyz(q, my, ly),
+                                 pqr_to_nxyz(r, mz, lz),
+                                 0, 0, 0, process),
+                      &all_subgrids);
       }
 
   return all_subgrids;

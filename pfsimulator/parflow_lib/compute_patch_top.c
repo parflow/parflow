@@ -76,11 +76,11 @@ void ComputePatchTop(Problem *     problem,     /* General problem information *
   int num_patches = BCPressureDataNumPatches(bc_pressure_data);
 
   bc_struct = NewBCStruct(GridSubgrids(grid3d),
-    gr_domain,
-    num_patches,
-    BCPressureDataPatchIndexes(bc_pressure_data),
-    BCPressureDataBCTypes(bc_pressure_data),
-    NULL);
+                          gr_domain,
+                          num_patches,
+                          BCPressureDataPatchIndexes(bc_pressure_data),
+                          BCPressureDataBCTypes(bc_pressure_data),
+                          NULL);
   if (num_patches > 0)
   {
     int is;
@@ -101,27 +101,27 @@ void ComputePatchTop(Problem *     problem,     /* General problem information *
       ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(BC_ALL,
-          BeforeAllCells(DoNothing),
-          LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-          Locals(int current_patch_index, index2d; ),
-          CellSetup(
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int current_patch_index, index2d; ),
+                             CellSetup(
         {
           current_patch_index = -1;
           index2d = SubvectorEltIndex(patch_top_subvector, i, j, grid2d_iz);
         }),
-          FACE(LeftFace, DoNothing),
-          FACE(RightFace, DoNothing),
-          FACE(DownFace, DoNothing),
-          FACE(UpFace, DoNothing),
-          FACE(BackFace, DoNothing),
-          FACE(FrontFace,
+                             FACE(LeftFace, DoNothing),
+                             FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing),
+                             FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
         {
           if (index_top_data[index2d] > 0)
           {
             current_patch_index = ipatch;
           }
         }),
-          CellFinalize(
+                             CellFinalize(
         {
           /* If we detected an UpperZFace that
            * was on the top of the domain then
@@ -134,8 +134,8 @@ void ComputePatchTop(Problem *     problem,     /* General problem information *
             patch_top_data[index2d] = current_patch_index;
           }
         }),
-          AfterAllCells(DoNothing)
-          );                    /* End BC_ALL */
+                             AfterAllCells(DoNothing)
+                             ); /* End BC_ALL */
       } /* End ipatch loop */
     } /* End subgrid loop */
   } /* End num_patches > 0 */

@@ -122,8 +122,8 @@ void            Matvec(
 
         vi = 0;
         BoxLoopI1(i, j, k,
-          ix, iy, iz, nx, ny, nz,
-          vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                  ix, iy, iz, nx, ny, nz,
+                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
         {
           yp[vi] *= beta;
         });
@@ -197,8 +197,8 @@ void            Matvec(
               if (temp == 0.0)
               {
                 BoxLoopI1(i, j, k,
-                  ix, iy, iz, nx, ny, nz,
-                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                          ix, iy, iz, nx, ny, nz,
+                          vi, nx_v, ny_v, nz_v, 1, 1, 1,
               {
                 yp[vi] = 0.0;
               });
@@ -206,8 +206,8 @@ void            Matvec(
               else
               {
                 BoxLoopI1(i, j, k,
-                  ix, iy, iz, nx, ny, nz,
-                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                          ix, iy, iz, nx, ny, nz,
+                          vi, nx_v, ny_v, nz_v, 1, 1, 1,
               {
                 yp[vi] *= temp;
               });
@@ -286,16 +286,16 @@ void            Matvec(
         for (si = 0; si < stencil_size; si++)
         {
           xp = SubvectorElt(x_sub,
-            (ix + s[si][0]),
-            (iy + s[si][1]),
-            (iz + s[si][2]));
+                            (ix + s[si][0]),
+                            (iy + s[si][1]),
+                            (iz + s[si][2]));
           ap = SubmatrixElt(A_sub, si, ix, iy, iz);
 
           vi = 0; mi = 0;
           BoxLoopI2(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            vi, nx_v, ny_v, nz_v, sx, sy, sz,
-            mi, nx_m, ny_m, nz_m, 1, 1, 1,
+                    ix, iy, iz, nx, ny, nz,
+                    vi, nx_v, ny_v, nz_v, sx, sy, sz,
+                    mi, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             yp[vi] += ap[mi] * xp[vi];
           });
@@ -307,8 +307,8 @@ void            Matvec(
 
           vi = 0;
           BoxLoopI1(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                    ix, iy, iz, nx, ny, nz,
+                    vi, nx_v, ny_v, nz_v, 1, 1, 1,
           {
             yp[vi] *= alpha;
           });
@@ -431,8 +431,8 @@ void            MatvecSubMat(
 
         vi = 0;
         BoxLoopI1(i, j, k,
-          ix, iy, iz, nx, ny, nz,
-          vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                  ix, iy, iz, nx, ny, nz,
+                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
         {
           yp[vi] *= beta;
         });
@@ -505,8 +505,8 @@ void            MatvecSubMat(
               if (temp == 0.0)
               {
                 BoxLoopI1(i, j, k,
-                  ix, iy, iz, nx, ny, nz,
-                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                          ix, iy, iz, nx, ny, nz,
+                          vi, nx_v, ny_v, nz_v, 1, 1, 1,
               {
                 yp[vi] = 0.0;
               });
@@ -514,8 +514,8 @@ void            MatvecSubMat(
               else
               {
                 BoxLoopI1(i, j, k,
-                  ix, iy, iz, nx, ny, nz,
-                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                          ix, iy, iz, nx, ny, nz,
+                          vi, nx_v, ny_v, nz_v, 1, 1, 1,
               {
                 yp[vi] *= temp;
               });
@@ -602,17 +602,17 @@ void            MatvecSubMat(
         for (si = 0; si < stencil_size; si++)
         {
           xp = SubvectorElt(x_sub,
-            (ix + s[si][0]),
-            (iy + s[si][1]),
-            (iz + s[si][2]));
+                            (ix + s[si][0]),
+                            (iy + s[si][1]),
+                            (iz + s[si][2]));
           bp = SubmatrixElt(JB_sub, si, ix, iy, iz);
 
           vi = 0; mi = 0;
 
           BoxLoopI2(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            vi, nx_v, ny_v, nz_v, sx, sy, sz,
-            mi, nx_m, ny_m, nz_m, 1, 1, 1,
+                    ix, iy, iz, nx, ny, nz,
+                    vi, nx_v, ny_v, nz_v, sx, sy, sz,
+                    mi, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             yp[vi] += bp[mi] * xp[vi];
           });
@@ -629,9 +629,9 @@ void            MatvecSubMat(
 
           /* Only JC involved here */
           BoxLoopI2(i, j, k,
-            ix, iy, iz, nx, ny, 1,
-            vi, nx_v, ny_v, nz_v, sx, sy, sz,
-            mi, nx_mc, ny_mc, nz_mc, 1, 1, 1,
+                    ix, iy, iz, nx, ny, 1,
+                    vi, nx_v, ny_v, nz_v, sx, sy, sz,
+                    mi, nx_mc, ny_mc, nz_mc, 1, 1, 1,
           {
             int itop = SubvectorEltIndex(top_sub, i, j, 0);
             int k1 = (int)top_dat[itop];
@@ -659,8 +659,8 @@ void            MatvecSubMat(
 
           vi = 0;
           BoxLoopI1(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                    ix, iy, iz, nx, ny, nz,
+                    vi, nx_v, ny_v, nz_v, 1, 1, 1,
           {
             yp[vi] *= alpha;
           });
@@ -774,8 +774,8 @@ void            MatvecJacF(
 
         vi = 0;
         BoxLoopI1(i, j, k,
-          ix, iy, iz, nx, ny, nz,
-          vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                  ix, iy, iz, nx, ny, nz,
+                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
         {
           yp[vi] *= beta;
         });
@@ -848,8 +848,8 @@ void            MatvecJacF(
               if (temp == 0.0)
               {
                 BoxLoopI1(i, j, k,
-                  ix, iy, iz, nx, ny, nz,
-                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                          ix, iy, iz, nx, ny, nz,
+                          vi, nx_v, ny_v, nz_v, 1, 1, 1,
               {
                 yp[vi] = 0.0;
               });
@@ -857,8 +857,8 @@ void            MatvecJacF(
               else
               {
                 BoxLoopI1(i, j, k,
-                  ix, iy, iz, nx, ny, nz,
-                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                          ix, iy, iz, nx, ny, nz,
+                          vi, nx_v, ny_v, nz_v, 1, 1, 1,
               {
                 yp[vi] *= temp;
               });
@@ -939,18 +939,18 @@ void            MatvecJacF(
         for (si = 1; si < 5; si++)     /* first loop over only w,e,s,n stencil nodes */
         {
           xp = SubvectorElt(x_sub,
-            (ix + s[si][0]),
-            (iy + s[si][1]),
-            (iz + s[si][2]));
+                            (ix + s[si][0]),
+                            (iy + s[si][1]),
+                            (iz + s[si][2]));
           fp = SubmatrixElt(JF_sub, si, ix, iy, iz);
 
           vi = 0;
           mi = 0;
 
           BoxLoopI2(i, j, k,
-            ix, iy, iz, nx, ny, 1,
-            vi, nx_v, ny_v, nz_v, sx, sy, sz,
-            mi, nx_mf, ny_mf, nz_mf, 1, 1, 1,
+                    ix, iy, iz, nx, ny, 1,
+                    vi, nx_v, ny_v, nz_v, sx, sy, sz,
+                    mi, nx_mf, ny_mf, nz_mf, 1, 1, 1,
           {
             int itop = SubvectorEltIndex(top_sub, (i + s[si][0]), (j + s[si][1]), 0);
             int k1 = (int)top_dat[itop];
@@ -973,9 +973,9 @@ void            MatvecJacF(
 
         vi = 0; mi = 0;
         BoxLoopI2(i, j, k,
-          ix, iy, iz, nx, ny, 1,
-          vi, nx_v, ny_v, nz_v, sx, sy, sz,
-          mi, nx_mf, ny_mf, nz_mf, 1, 1, 1,
+                  ix, iy, iz, nx, ny, 1,
+                  vi, nx_v, ny_v, nz_v, sx, sy, sz,
+                  mi, nx_mf, ny_mf, nz_mf, 1, 1, 1,
         {
           int itop = SubvectorEltIndex(top_sub, i, j, 0);
           int k1 = (int)top_dat[itop];
@@ -993,8 +993,8 @@ void            MatvecJacF(
 
           vi = 0;
           BoxLoopI1(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                    ix, iy, iz, nx, ny, nz,
+                    vi, nx_v, ny_v, nz_v, 1, 1, 1,
           {
             yp[vi] *= alpha;
           });
@@ -1110,8 +1110,8 @@ void            MatvecJacE(
 
         vi = 0;
         BoxLoopI1(i, j, k,
-          ix, iy, iz, nx, ny, nz,
-          vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                  ix, iy, iz, nx, ny, nz,
+                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
         {
           yp[vi] *= beta;
         });
@@ -1184,8 +1184,8 @@ void            MatvecJacE(
               if (temp == 0.0)
               {
                 BoxLoopI1(i, j, k,
-                  ix, iy, iz, nx, ny, nz,
-                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                          ix, iy, iz, nx, ny, nz,
+                          vi, nx_v, ny_v, nz_v, 1, 1, 1,
               {
                 yp[vi] = 0.0;
               });
@@ -1193,8 +1193,8 @@ void            MatvecJacE(
               else
               {
                 BoxLoopI1(i, j, k,
-                  ix, iy, iz, nx, ny, nz,
-                  vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                          ix, iy, iz, nx, ny, nz,
+                          vi, nx_v, ny_v, nz_v, 1, 1, 1,
               {
                 yp[vi] *= temp;
               });
@@ -1281,9 +1281,9 @@ void            MatvecJacE(
           mi = 0;
 
           BoxLoopI2(i, j, k,
-            ix, iy, iz, nx, ny, 1,
-            vi, nx_v, ny_v, nz_v, sx, sy, sz,
-            mi, nx_me, ny_me, nz_me, 1, 1, 1,
+                    ix, iy, iz, nx, ny, 1,
+                    vi, nx_v, ny_v, nz_v, sx, sy, sz,
+                    mi, nx_me, ny_me, nz_me, 1, 1, 1,
           {
             int itop = SubvectorEltIndex(top_sub, i, j, 0);
             int k1 = (int)top_dat[itop];
@@ -1301,9 +1301,9 @@ void            MatvecJacE(
 
         vi = 0; mi = 0;
         BoxLoopI2(i, j, k,
-          ix, iy, iz, nx, ny, 1,
-          vi, nx_v, ny_v, nz_v, sx, sy, sz,
-          mi, nx_me, ny_me, nz_me, 1, 1, 1,
+                  ix, iy, iz, nx, ny, 1,
+                  vi, nx_v, ny_v, nz_v, sx, sy, sz,
+                  mi, nx_me, ny_me, nz_me, 1, 1, 1,
         {
           int itop = SubvectorEltIndex(top_sub, i, j, 0);
           int k1 = (int)top_dat[itop];
@@ -1321,8 +1321,8 @@ void            MatvecJacE(
 
           vi = 0;
           BoxLoopI1(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            vi, nx_v, ny_v, nz_v, 1, 1, 1,
+                    ix, iy, iz, nx, ny, nz,
+                    vi, nx_v, ny_v, nz_v, 1, 1, 1,
           {
             yp[vi] *= alpha;
           });

@@ -113,7 +113,7 @@ CommPkg   *NewMatrixUpdatePkg(
 
 
     new_commpkg = NewCommPkg(send_reg, recv_reg,
-      MatrixDataSpace(matrix), n, SubmatrixData(submatrix));
+                             MatrixDataSpace(matrix), n, SubmatrixData(submatrix));
 
     FreeRegion(send_reg);
     FreeRegion(recv_reg);
@@ -167,19 +167,19 @@ CommHandle  *InitMatrixUpdate(
       matrix->boundary_fill_refine_algorithm = new xfer::RefineAlgorithm(dim);
 
       matrix->boundary_fill_refine_algorithm->registerRefine(
-        matrix->samrai_id,
-        matrix->samrai_id,
-        matrix->samrai_id,
-        tbox::Pointer < xfer::RefineOperator > (NULL));
+                                                             matrix->samrai_id,
+                                                             matrix->samrai_id,
+                                                             matrix->samrai_id,
+                                                             tbox::Pointer < xfer::RefineOperator > (NULL));
 
       tbox::Pointer < hier::PatchLevel > level =
         hierarchy->getPatchLevel(level_number);
 
       matrix->boundary_fill_schedule = matrix->boundary_fill_refine_algorithm
                                        ->createSchedule(level,
-        level_number - 1,
-        hierarchy,
-        NULL);
+                                                        level_number - 1,
+                                                        hierarchy,
+                                                        NULL);
     }
     const double time = 1.0;
     matrix->boundary_fill_schedule->fillData(time);
@@ -452,12 +452,12 @@ Matrix          *NewMatrixType(
       SubgridNZ(new_subregion) += zl + zu,
 
       ProjectSubgrid(new_subregion,
-        SubregionSX(subregion),
-        SubregionSY(subregion),
-        SubregionSZ(subregion),
-        SubregionIX(subregion),
-        SubregionIY(subregion),
-        SubregionIZ(subregion));
+                     SubregionSX(subregion),
+                     SubregionSY(subregion),
+                     SubregionSZ(subregion),
+                     SubregionIX(subregion),
+                     SubregionIY(subregion),
+                     SubregionIZ(subregion));
     }
     SubmatrixDataSpace(new_sub) = new_subregion;
     AppendSubregion(new_subregion, MatrixDataSpace(new_matrix));
@@ -573,8 +573,8 @@ Matrix          *NewMatrixType(
       tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
 
       new_matrix->samrai_id = patch_descriptor->definePatchDataComponent(
-        variable_name,
-        variable->getPatchDataFactory()->cloneFactory(ghosts));
+                                                                         variable_name,
+                                                                         variable->getPatchDataFactory()->cloneFactory(ghosts));
 
 
       samrai_matrix_ids[grid_type][index] = new_matrix->samrai_id;
@@ -596,7 +596,7 @@ Matrix          *NewMatrixType(
         std::cout << "In matrix box " << patch_box << std::endl;
 
         tbox::Pointer < pdat::CellData < double >> patch_data(
-          patch->getPatchData(new_matrix->samrai_id));
+                                                              patch->getPatchData(new_matrix->samrai_id));
         Submatrix *submatrix = MatrixSubmatrix(new_matrix, i);
         SubmatrixData(submatrix) = patch_data->getPointer(0);
         patch_data->fillAll(0);
@@ -767,7 +767,7 @@ void    InitMatrix(
 
       im = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-        im, nx_m, ny_m, nz_m, 1, 1, 1,
+                im, nx_m, ny_m, nz_m, 1, 1, 1,
       {
         Ap[im] = value;
       });

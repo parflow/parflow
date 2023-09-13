@@ -198,7 +198,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
   {
     i__1 = ks - 1;
     slopez_(&s[s_offset], &slz[slz_offset], &i__1, &kc, &lo[1], &hi[1], &
-      dlo[1], &dhi[1], &dzscr[dzscr_offset], &dzfrm[dzfrm_offset]);
+            dlo[1], &dhi[1], &dzscr[dzscr_offset], &dzfrm[dzfrm_offset]);
   }
   i__1 = ke + 1;
   for (k = ks - 1; k <= i__1; ++k)
@@ -206,14 +206,14 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
     if (!firstord)
     {
       slopexy_(&s[s_offset], &slx[slx_offset], &sly[sly_offset], &k, &
-        lo[1], &hi[1], &dlo[1], &dhi[1], &dxscr[dxscr_offset], &
-        dyscr[dyscr_offset]);
+               lo[1], &hi[1], &dlo[1], &dhi[1], &dxscr[dxscr_offset], &
+               dyscr[dyscr_offset]);
       if (k <= ke)
       {
         i__2 = k + 1;
         slopez_(&s[s_offset], &slz[slz_offset], &i__2, &kp, &lo[1], &
-          hi[1], &dlo[1], &dhi[1], &dzscr[dzscr_offset], &dzfrm[
-            dzfrm_offset]);
+                hi[1], &dlo[1], &dhi[1], &dzscr[dzscr_offset], &dzfrm[
+                  dzfrm_offset]);
       }
     }
     i__2 = je + 1;
@@ -622,7 +622,7 @@ doublereal *dxscr, *dyscr;
 /* Computing MIN */
       d__1 = abs(ds), d__2 = dxscr[i__ + (dxscr_dim1 << 1)];
       slx[i__ + j * slx_dim1] = dxscr[i__ + dxscr_dim1 * 3] * pfmin(d__1,
-        d__2);
+                                                                    d__2);
     }
   }
 /*     ::::: SLOPES in the Y direction */
@@ -650,7 +650,7 @@ doublereal *dxscr, *dyscr;
       d__2 = dyscr[j + (dyscr_dim1 << 1)], d__3 = (d__1 = dyscr[j +
                                                                 dyscr_dim1], abs(d__1));
       dyscr[j + (dyscr_dim1 << 2)] = dyscr[j + dyscr_dim1 * 3] * pfmin(
-        d__2, d__3);
+                                                                       d__2, d__3);
     }
     i__2 = je + 1;
     for (j = js - 1; j <= i__2; ++j)
@@ -660,7 +660,7 @@ doublereal *dxscr, *dyscr;
 /* Computing MIN */
       d__1 = abs(ds), d__2 = dyscr[j + (dyscr_dim1 << 1)];
       sly[i__ + j * sly_dim1] = dyscr[j + dyscr_dim1 * 3] * pfmin(d__1,
-        d__2);
+                                                                  d__2);
     }
   }
   return 0;
@@ -764,7 +764,7 @@ doublereal *dzscr, *dzfrm;
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
                                                                   dzscr_dim1], abs(d__1));
       dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-        d__2, d__3);
+                                                                         d__2, d__3);
       kt = *k + 1;
       dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (kt + 1) * s_dim2)
                                           * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
@@ -785,7 +785,7 @@ doublereal *dzscr, *dzfrm;
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
                                                                   dzscr_dim1], abs(d__1));
       dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-        d__2, d__3);
+                                                                         d__2, d__3);
       dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (*k + 1) * s_dim2)
                                           * s_dim1] - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + *k * s_dim2) * s_dim1] - s[i__ + (j
@@ -805,7 +805,7 @@ doublereal *dzscr, *dzfrm;
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
                                                                   dzscr_dim1], abs(d__1));
       dzfrm[i__ + *k * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-        d__2, d__3);
+                                                                         d__2, d__3);
     }
     i__2 = ie + 1;
     for (i__ = is - 1; i__ <= i__2; ++i__)

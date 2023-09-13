@@ -204,9 +204,9 @@ void         WellPackage(
           process = amps_Rank(amps_CommWorld);
 
           new_subgrid = NewSubgrid(ix, iy, iz_lower,
-            nx, ny, nz,
-            rx, ry, rz,
-            process);
+                                   nx, ny, nz,
+                                   rx, ry, rz,
+                                   process);
 
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
@@ -512,9 +512,9 @@ void         WellPackage(
             process = amps_Rank(amps_CommWorld);
 
             new_subgrid = NewSubgrid(ix, iy, iz_lower,
-              nx, ny, nz,
-              rx, ry, rz,
-              process);
+                                     nx, ny, nz,
+                                     rx, ry, rz,
+                                     process);
             dx = SubgridDX(new_subgrid);
             dy = SubgridDY(new_subgrid);
             dz = SubgridDZ(new_subgrid);
@@ -964,9 +964,9 @@ PFModule  *WellPackageNewPublicXtra(
           if ((dummy0->action) == INJECTION_WELL)
           {
             (dummy0->saturation_values) = ctalloc(double *,
-              interval_division);
+                                                  interval_division);
             (dummy0->contaminant_values) = ctalloc(double *,
-              interval_division);
+                                                   interval_division);
           }
           else if ((dummy0->action) == EXTRACTION_WELL)
           {
@@ -983,26 +983,26 @@ PFModule  *WellPackageNewPublicXtra(
               dummy0->phase_values[interval_number] = ctalloc(double, 1);
 
               sprintf(key, "Wells.%s.%s.Pressure.Value",
-                well_name,
-                NA_IndexToName(
-                  GlobalsIntervalNames[global_cycle],
-                  interval_number));
+                      well_name,
+                      NA_IndexToName(
+                                     GlobalsIntervalNames[global_cycle],
+                                     interval_number));
 
               dummy0->phase_values[interval_number][0] = GetDouble(key);
             }
             else if ((dummy0->mechanism) == FLUX_WELL)
             {
               (dummy0->phase_values[interval_number]) = ctalloc(double,
-                num_phases);
+                                                                num_phases);
 
               for (phase = 0; phase < num_phases; phase++)
               {
                 sprintf(key, "Wells.%s.%s.Flux.%s.Value",
-                  well_name,
-                  NA_IndexToName(
-                    GlobalsIntervalNames[global_cycle],
-                    interval_number),
-                  NA_IndexToName(GlobalsPhaseNames, phase));
+                        well_name,
+                        NA_IndexToName(
+                                       GlobalsIntervalNames[global_cycle],
+                                       interval_number),
+                        NA_IndexToName(GlobalsPhaseNames, phase));
 
                 dummy0->phase_values[interval_number][phase] =
                   GetDouble(key);
@@ -1018,11 +1018,11 @@ PFModule  *WellPackageNewPublicXtra(
               for (phase = 0; phase < num_phases; phase++)
               {
                 sprintf(key, "Wells.%s.%s.Saturation.%s.Value",
-                  well_name,
-                  NA_IndexToName(
-                    GlobalsIntervalNames[global_cycle],
-                    interval_number),
-                  NA_IndexToName(GlobalsPhaseNames, phase));
+                        well_name,
+                        NA_IndexToName(
+                                       GlobalsIntervalNames[global_cycle],
+                                       interval_number),
+                        NA_IndexToName(GlobalsPhaseNames, phase));
 
                 dummy0->saturation_values[interval_number][phase] =
                   GetDouble(key);
@@ -1040,13 +1040,13 @@ PFModule  *WellPackageNewPublicXtra(
                      contaminant++)
                 {
                   sprintf(key, "Wells.%s.%s.Concentration.%s.%s.Value",
-                    well_name,
-                    NA_IndexToName(
-                      GlobalsIntervalNames[global_cycle],
-                      interval_number),
-                    NA_IndexToName(GlobalsPhaseNames, phase),
-                    NA_IndexToName(GlobalsContaminatNames,
-                      contaminant));
+                          well_name,
+                          NA_IndexToName(
+                                         GlobalsIntervalNames[global_cycle],
+                                         interval_number),
+                          NA_IndexToName(GlobalsPhaseNames, phase),
+                          NA_IndexToName(GlobalsContaminatNames,
+                                         contaminant));
                   dummy0->contaminant_values[interval_number]
                   [phase + contaminant] = GetDouble(key);
                 }
@@ -1172,10 +1172,10 @@ PFModule  *WellPackageNewPublicXtra(
                 ctalloc(double, 1);
 
               sprintf(key, "Wells.%s.%s.Extraction.Pressure.Value",
-                well_name,
-                NA_IndexToName(
-                  GlobalsIntervalNames[global_cycle],
-                  interval_number));
+                      well_name,
+                      NA_IndexToName(
+                                     GlobalsIntervalNames[global_cycle],
+                                     interval_number));
 
               dummy1->phase_values_ext[interval_number][0] =
                 GetDouble(key);
@@ -1188,11 +1188,11 @@ PFModule  *WellPackageNewPublicXtra(
               for (phase = 0; phase < num_phases; phase++)
               {
                 sprintf(key, "Wells.%s.%s.Extraction.Flux.%s.Value",
-                  well_name,
-                  NA_IndexToName(
-                    GlobalsIntervalNames[global_cycle],
-                    interval_number),
-                  NA_IndexToName(GlobalsPhaseNames, phase));
+                        well_name,
+                        NA_IndexToName(
+                                       GlobalsIntervalNames[global_cycle],
+                                       interval_number),
+                        NA_IndexToName(GlobalsPhaseNames, phase));
 
                 dummy1->phase_values_ext[interval_number][phase] =
                   GetDouble(key);
@@ -1206,10 +1206,10 @@ PFModule  *WellPackageNewPublicXtra(
                 ctalloc(double, 1);
 
               sprintf(key, "Wells.%s.%s.Injection.Pressure.Value",
-                well_name,
-                NA_IndexToName(
-                  GlobalsIntervalNames[global_cycle],
-                  interval_number));
+                      well_name,
+                      NA_IndexToName(
+                                     GlobalsIntervalNames[global_cycle],
+                                     interval_number));
 
               dummy1->phase_values_inj[interval_number][0] =
                 GetDouble(key);
@@ -1222,11 +1222,11 @@ PFModule  *WellPackageNewPublicXtra(
               for (phase = 0; phase < num_phases; phase++)
               {
                 sprintf(key, "Wells.%s.%s.Injection.Flux.%s.Value",
-                  well_name,
-                  NA_IndexToName(
-                    GlobalsIntervalNames[global_cycle],
-                    interval_number),
-                  NA_IndexToName(GlobalsPhaseNames, phase));
+                        well_name,
+                        NA_IndexToName(
+                                       GlobalsIntervalNames[global_cycle],
+                                       interval_number),
+                        NA_IndexToName(GlobalsPhaseNames, phase));
 
                 dummy1->phase_values_inj[interval_number][phase] =
                   GetDouble(key);
@@ -1244,14 +1244,14 @@ PFModule  *WellPackageNewPublicXtra(
                    contaminant++)
               {
                 sprintf(key,
-                  "Wells.%s.%s.Injection.Concentration.%s.%s.Fraction",
-                  well_name,
-                  NA_IndexToName(
-                    GlobalsIntervalNames[global_cycle],
-                    interval_number),
-                  NA_IndexToName(GlobalsPhaseNames, phase),
-                  NA_IndexToName(GlobalsContaminatNames,
-                    contaminant));
+                        "Wells.%s.%s.Injection.Concentration.%s.%s.Fraction",
+                        well_name,
+                        NA_IndexToName(
+                                       GlobalsIntervalNames[global_cycle],
+                                       interval_number),
+                        NA_IndexToName(GlobalsPhaseNames, phase),
+                        NA_IndexToName(GlobalsContaminatNames,
+                                       contaminant));
                 dummy1->contaminant_fractions[interval_number]
                 [phase + contaminant] = GetDouble(key);
               }

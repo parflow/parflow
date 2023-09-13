@@ -118,11 +118,11 @@ void         PFMG(
 
       HYPRE_StructPFMGGetNumIterations(hypre_pfmg_data, &num_iterations);
       HYPRE_StructPFMGGetFinalRelativeResidualNorm(hypre_pfmg_data,
-        &rel_norm);
+                                                   &rel_norm);
 
       log_file = OpenLogFile("PFMG");
       fprintf(log_file, "PFMG num. its: %i  PFMG Final norm: %12.4e\n",
-        num_iterations, rel_norm);
+              num_iterations, rel_norm);
       CloseLogFile(log_file);
     }
   }
@@ -185,34 +185,34 @@ PFModule  *PFMGInitInstanceXtra(
     }
 
     HypreInitialize(pf_Bmat,
-      &(instance_xtra->hypre_grid),
-      &(instance_xtra->hypre_stencil),
-      &(instance_xtra->hypre_mat),
-      &(instance_xtra->hypre_b),
-      &(instance_xtra->hypre_x)
-      );
+                    &(instance_xtra->hypre_grid),
+                    &(instance_xtra->hypre_stencil),
+                    &(instance_xtra->hypre_mat),
+                    &(instance_xtra->hypre_b),
+                    &(instance_xtra->hypre_x)
+                    );
 
     /* Copy the matrix entries */
     BeginTiming(public_xtra->time_index_copy_hypre);
 
     HypreAssembleMatrixAsElements(pf_Bmat,
-      pf_Cmat,
-      &(instance_xtra->hypre_mat),
-      problem_data);
+                                  pf_Cmat,
+                                  &(instance_xtra->hypre_mat),
+                                  problem_data);
 
     EndTiming(public_xtra->time_index_copy_hypre);
 
     /* Set up the PFMG preconditioner */
     HYPRE_StructPFMGCreate(amps_CommWorld,
-      &(instance_xtra->hypre_pfmg_data));
+                           &(instance_xtra->hypre_pfmg_data));
 
     HYPRE_StructPFMGSetTol(instance_xtra->hypre_pfmg_data, 1.0e-30);
     /* Set user parameters for PFMG */
     HYPRE_StructPFMGSetMaxIter(instance_xtra->hypre_pfmg_data, max_iter);
     HYPRE_StructPFMGSetNumPreRelax(instance_xtra->hypre_pfmg_data,
-      num_pre_relax);
+                                   num_pre_relax);
     HYPRE_StructPFMGSetNumPostRelax(instance_xtra->hypre_pfmg_data,
-      num_post_relax);
+                                    num_post_relax);
     /* Jacobi = 0; weighted Jacobi = 1; red-black GS symmetric = 2; red-black GS non-symmetric = 3 */
     HYPRE_StructPFMGSetRelaxType(instance_xtra->hypre_pfmg_data, smoother);
 
@@ -222,11 +222,11 @@ PFModule  *PFMGInitInstanceXtra(
     HYPRE_StructPFMGSetSkipRelax(instance_xtra->hypre_pfmg_data, 1);
 
     HYPRE_StructPFMGSetDxyz(instance_xtra->hypre_pfmg_data,
-      instance_xtra->dxyz);
+                            instance_xtra->dxyz);
 
     HYPRE_StructPFMGSetup(instance_xtra->hypre_pfmg_data,
-      instance_xtra->hypre_mat,
-      instance_xtra->hypre_b, instance_xtra->hypre_x);
+                          instance_xtra->hypre_mat,
+                          instance_xtra->hypre_b, instance_xtra->hypre_x);
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -310,7 +310,7 @@ PFModule  *PFMGNewPublicXtra(char *name)
   if (public_xtra->raptype == 0 && public_xtra->smoother > 1)
   {
     InputError("Error: Galerkin RAPType is not compatible with Smoother <%s>.\n",
-      smoother_name, key);
+               smoother_name, key);
   }
 
   public_xtra->time_index_pfmg = RegisterTiming("PFMG");

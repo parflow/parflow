@@ -125,7 +125,7 @@ int            GeomReadTSolids(
   if ((solids_file = amps_SFopen(solids_filename, "r")) == NULL)
   {
     InputError("Error: can't open solids file %s%s\n", solids_filename,
-      "");
+               "");
   }
   /*------------------------------------------------------
    * Check the file version number
@@ -140,7 +140,7 @@ int            GeomReadTSolids(
   {
     if (!amps_Rank(amps_CommWorld))
       amps_Printf("Error: need input file version %d\n",
-        PFSOL_GEOM_T_SOLID_VERSION);
+                  PFSOL_GEOM_T_SOLID_VERSION);
     exit(1);
   }
 

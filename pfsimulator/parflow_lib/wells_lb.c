@@ -139,7 +139,7 @@ void LBWells(
 
           index = 0;
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-            index, nx_v, ny_v, nz_v, 1, 1, 1,
+                    index, nx_v, ny_v, nz_v, 1, 1, 1,
           {
             phead = head - rho_g * (Z + k * dz);
             pp[index] = phead;

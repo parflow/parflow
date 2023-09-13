@@ -99,7 +99,7 @@ void     SaturationConstitutive(
 
     ips = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+              ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
     {
       ps[ips] = satconstitutive;
     });
@@ -135,8 +135,8 @@ void     SaturationConstitutive(
       ips = 0;
       ipsi = 0;
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-        ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
-        ipsi, nx_psi, ny_psi, nz_psi, 1, 1, 1,
+                ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+                ipsi, nx_psi, ny_psi, nz_psi, 1, 1, 1,
       {
         ps[ips] -= psi[ipsi];
       });

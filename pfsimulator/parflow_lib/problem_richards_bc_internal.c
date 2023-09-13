@@ -143,9 +143,9 @@ void RichardsBCInternal(
           process = amps_Rank(amps_CommWorld);
 
           new_subgrid = NewSubgrid(ix, iy, iz,
-            nx, ny, nz,
-            rx, ry, rz,
-            process);
+                                   nx, ny, nz,
+                                   rx, ry, rz,
+                                   process);
 
           AppendSubgrid(new_subgrid, internal_bc_subgrids);
 
@@ -192,11 +192,11 @@ void RichardsBCInternal(
           cycle_number = WellDataPhysicalCycleNumber(well_data_physical);
           interval_number =
             TimeCycleDataComputeIntervalNumber(problem, time,
-              time_cycle_data,
-              cycle_number);
+                                               time_cycle_data,
+                                               cycle_number);
           well_data_value =
             WellDataPressWellIntervalValue(well_data, well,
-              interval_number);
+                                           interval_number);
           subgrid_ind = WellDataPhysicalSubgrid(well_data_physical);
           value = WellDataValuePhaseValue(well_data_value, 0);
         }
@@ -215,7 +215,7 @@ void RichardsBCInternal(
           double *fp = SubvectorData(f_sub);
 
           BoxLoopI0(i, j, k,
-            ix, iy, iz, nx, ny, nz,
+                    ix, iy, iz, nx, ny, nz,
           {
             /* Need to check if i,j,k is part of this subgrid or not */
             if (((i >= SubgridIX(subgrid)) &&
@@ -243,7 +243,7 @@ void RichardsBCInternal(
           double *up = SubmatrixStencilData(A_sub, 6);
 
           BoxLoopI0(i, j, k,
-            ix, iy, iz, nx, ny, nz,
+                    ix, iy, iz, nx, ny, nz,
           {
             /* Need to check if i,j,k is part of this subgrid or not */
             if (((i >= SubgridIX(subgrid)) &&
@@ -369,19 +369,19 @@ PFModule  *RichardsBCInternalNewPublicXtra()
           dummy0 = ctalloc(Type0, 1);
 
           sprintf(key, "InternalBC.%s.X",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->xlocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Y",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->ylocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Z",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->zlocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Value",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->value = GetDouble(key);
 
 

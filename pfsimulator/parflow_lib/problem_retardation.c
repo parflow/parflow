@@ -255,8 +255,8 @@ PFModule  *RetardationNewPublicXtra(
         index = num_contaminants * ig + i;
 
         sprintf(key, "Geom.%s.%s.Retardation.Type",
-          geom_name,
-          NA_IndexToName(GlobalsContaminatNames, i));
+                geom_name,
+                NA_IndexToName(GlobalsContaminatNames, i));
         switch_name = GetString(key);
 
         public_xtra->type[index] =
@@ -271,8 +271,8 @@ PFModule  *RetardationNewPublicXtra(
             (dummy0->value) = ctalloc(double, 1);
 
             sprintf(key, "Geom.%s.%s.Retardation.Rate",
-              geom_name,
-              NA_IndexToName(GlobalsContaminatNames, i));
+                    geom_name,
+                    NA_IndexToName(GlobalsContaminatNames, i));
             *(dummy0->value) = GetDouble(key);
 
             (public_xtra->data[index]) = (void*)dummy0;

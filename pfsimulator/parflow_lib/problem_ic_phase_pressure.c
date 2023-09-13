@@ -512,7 +512,7 @@ void         ICPhasePressure(
       {
         ref_solid = ProblemDataSolid(problem_data, geom_indices[ir]);
         elevations[ir] = CalcElevations(ref_solid, patch_indices[ir],
-          subgrids, problem_data);
+                                        subgrids, problem_data);
       }        /* End of region loop */
 
       /* Solve a nonlinear problem for hydrostatic pressure
@@ -911,7 +911,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
   NameArray type_na;
 
   type_na = NA_NewNameArray(
-    "Constant HydroStaticDepth HydroStaticPatch PFBFile NCFile");
+                            "Constant HydroStaticDepth HydroStaticPatch PFBFile NCFile");
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -1002,14 +1002,14 @@ PFModule   *ICPhasePressureNewPublicXtra()
         sprintf(key, "Geom.%s.ICPressure.RefGeom", region);
         switch_name = GetString(key);
         dummy2->geom_indices[ir] = NA_NameToIndexExitOnError(GlobalsGeomNames,
-          switch_name, key);
+                                                             switch_name, key);
 
         sprintf(key, "Geom.%s.ICPressure.RefPatch", region);
         switch_name = GetString(key);
         dummy2->patch_indices[ir] =
           NA_NameToIndexExitOnError(GeomSolidPatches(
-            GlobalsGeometries[dummy2->geom_indices[ir]]),
-            switch_name, key);
+                                                     GlobalsGeometries[dummy2->geom_indices[ir]]),
+                                    switch_name, key);
       }
 
       (public_xtra->data) = (void*)dummy2;

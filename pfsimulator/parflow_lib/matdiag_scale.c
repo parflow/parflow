@@ -135,8 +135,8 @@ void MatDiagScale(Vector *x, Matrix *A, Vector *b, int flag)
       iv = 0;
       im = 0;
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-        iv, nx_v, ny_v, nz_v, 1, 1, 1,
-        im, nx_m, ny_m, nz_m, 1, 1, 1,
+                iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                im, nx_m, ny_m, nz_m, 1, 1, 1,
       {
         dp[iv] = 1.0 / sqrt(cp[im]);
       });
@@ -172,7 +172,7 @@ void MatDiagScale(Vector *x, Matrix *A, Vector *b, int flag)
 
       iv = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-        iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         dp[iv] = 1.0 / (dp[iv]);
       });

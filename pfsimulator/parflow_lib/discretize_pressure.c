@@ -222,21 +222,21 @@ void          DiscretizePressure(
   {
     /* Assume constant density here.  Use dtmp as dummy argument. */
     PFModuleInvokeType(PhaseDensityInvoke, phase_density_module,
-      (phase, NULL, NULL, &dtmp, &phase_density[phase],
-       CALCFCN));
+                       (phase, NULL, NULL, &dtmp, &phase_density[phase],
+                        CALCFCN));
 
     PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
-      (tmobility_x[phase], tmobility_y[phase],
-       tmobility_z[phase],
-       ProblemDataPermeabilityX(problem_data),
-       ProblemDataPermeabilityY(problem_data),
-       ProblemDataPermeabilityZ(problem_data),
-       phase, phase_saturations[phase],
-       ProblemPhaseViscosity(problem, phase)));
+                       (tmobility_x[phase], tmobility_y[phase],
+                        tmobility_z[phase],
+                        ProblemDataPermeabilityX(problem_data),
+                        ProblemDataPermeabilityY(problem_data),
+                        ProblemDataPermeabilityZ(problem_data),
+                        phase, phase_saturations[phase],
+                        ProblemPhaseViscosity(problem, phase)));
 
     PFModuleInvokeType(CapillaryPressureInvoke, capillary_pressure,
-      (tcapillary[phase], phase, 0,
-       problem_data, phase_saturations[0]));
+                       (tcapillary[phase], phase, 0,
+                        problem_data, phase_saturations[0]));
 
     /* update ghost-point values */
     handle = InitVectorUpdate(tmobility_x[phase], VectorUpdateAll);
@@ -294,7 +294,7 @@ void          DiscretizePressure(
       iv = SubvectorEltIndex(f_sub, ix, iy, iz);
 
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-        iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         fp[iv] += vf * tv_p[iv];
       });
@@ -363,8 +363,8 @@ void          DiscretizePressure(
     im = SubmatrixEltIndex(A_sub, ix, iy, iz);
 
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      iv, nx_v, ny_v, nz_v, 1, 1, 1,
-      im, nx_m, ny_m, nz_m, 1, 1, 1,
+              iv, nx_v, ny_v, nz_v, 1, 1, 1,
+              im, nx_m, ny_m, nz_m, 1, 1, 1,
     {
       e_temp = -ffx * Mean(ttx_p[iv], ttx_p[iv + 1]) / dx;
       n_temp = -ffy * Mean(tty_p[iv], tty_p[iv + sy_v]) / dy;
@@ -458,20 +458,20 @@ void          DiscretizePressure(
       iv = SubvectorEltIndex(f_sub, ix, iy, iz);
 
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-        iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         e_temp = -ffx * Coeff(ttx_p[iv], ttx_p[iv + 1],
-          tmx_p[iv], tmx_p[iv + 1])
+                              tmx_p[iv], tmx_p[iv + 1])
                  / dx;
         n_temp = -ffy * Coeff(tty_p[iv], tty_p[iv + sy_v],
-          tmy_p[iv], tmy_p[iv + sy_v])
+                              tmy_p[iv], tmy_p[iv + sy_v])
                  / dy;
         u_temp = -ffz * Coeff(ttz_p[iv], ttz_p[iv + sz_v],
-          tmz_p[iv], tmz_p[iv + sz_v])
+                              tmz_p[iv], tmz_p[iv + sz_v])
                  / dz;
 
         f_temp = ffz * Coeff(ttz_p[iv], ttz_p[iv + sz_v],
-          tmz_p[iv], tmz_p[iv + sz_v]) *
+                             tmz_p[iv], tmz_p[iv + sz_v]) *
                  (phase_density[phase] * gravity);
 
         fp[iv] += f_temp;
@@ -516,7 +516,7 @@ void          DiscretizePressure(
     iv = SubvectorEltIndex(f_sub, ix, iy, iz);
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      iv, nx_v, ny_v, nz_v, 1, 1, 1,
+              iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       tmp_ptr[iv] = fp[iv];
     });
@@ -677,7 +677,7 @@ void          DiscretizePressure(
 
         /* fix capillary pressure part */
         o_temp = -ff * Coeff(tt_p[iv], tt_p[iv + sv],
-          tm_p[iv], tm_p[iv + sv]) / d;
+                             tm_p[iv], tm_p[iv + sv]) / d;
         fp[iv] += o_temp * (tc_p[iv + sv] - tc_p[iv]);
 
         /* fix gravity part */
@@ -685,7 +685,7 @@ void          DiscretizePressure(
         {
           f_temp =
             ff * Coeff(tt_p[iv], tt_p[iv + sv],
-              tm_p[iv], tm_p[iv + sv]) *
+                       tm_p[iv], tm_p[iv + sv]) *
             (phase_density[phase] * gravity);
           fp[iv] -= fdir[2] * f_temp;
         }
@@ -740,36 +740,36 @@ void          DiscretizePressure(
     {
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
       ForPatchCellsPerFace(DirichletBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int iv, im, phase;
-          double ff, d, o_temp, f_temp;
-          double *tm_p; ),
-        CellSetup({
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int iv, im, phase;
+                                  double ff, d, o_temp, f_temp;
+                                  double *tm_p; ),
+                           CellSetup({
         iv = SubvectorEltIndex(f_sub, i, j, k);
         im = SubmatrixEltIndex(A_sub, i, j, k);
       }),
-        FACE(LeftFace, {
+                           FACE(LeftFace, {
         ff = ffx;
         d = dx;
         tt_p = ttx_p;
       }),
-        FACE(RightFace, {
+                           FACE(RightFace, {
         ff = ffx;
         d = dx;
         tt_p = ttx_p;
       }),
-        FACE(DownFace, {
+                           FACE(DownFace, {
         ff = ffy;
         d = dy;
         tt_p = tty_p;
       }),
-        FACE(UpFace, {
+                           FACE(UpFace, {
         ff = ffy;
         d = dy;
         tt_p = tty_p;
       }),
-        FACE(BackFace, {
+                           FACE(BackFace, {
         ff = ffz;
         d = dz;
         tt_p = ttz_p;
@@ -782,7 +782,7 @@ void          DiscretizePressure(
           fp[iv] += (-f_temp);
         }
       }),
-        FACE(FrontFace, {
+                           FACE(FrontFace, {
         ff = ffz;
         d = dz;
         tt_p = ttz_p;
@@ -795,28 +795,28 @@ void          DiscretizePressure(
           fp[iv] += f_temp;
         }
       }),
-        CellFinalize({
+                           CellFinalize({
         o_temp = -ff * 2.0 * tt_p[iv] / d;
         cp[im] -= o_temp;
         fp[iv] -= o_temp * bc_patch_values[ival];
       }),
-        AfterAllCells(DoNothing)
-        );
+                           AfterAllCells(DoNothing)
+                           );
 
       ForPatchCellsPerFace(FluxBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int iv, dir; double ff; ),
-        CellSetup({ iv = SubvectorEltIndex(f_sub, i, j, k); }),
-        FACE(LeftFace, { ff = ffx; dir = -1; }),
-        FACE(RightFace, { ff = ffx; dir = 1; }),
-        FACE(DownFace, { ff = ffy; dir = -1; }),
-        FACE(UpFace, { ff = ffy; dir = 1; }),
-        FACE(BackFace, { ff = ffz; dir = -1; }),
-        FACE(FrontFace, { ff = ffz; dir = 1; }),
-        CellFinalize({ fp[iv] -= ff * dir * bc_patch_values[ival]; }),
-        AfterAllCells(DoNothing)
-        );
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int iv, dir; double ff; ),
+                           CellSetup({ iv = SubvectorEltIndex(f_sub, i, j, k); }),
+                           FACE(LeftFace, { ff = ffx; dir = -1; }),
+                           FACE(RightFace, { ff = ffx; dir = 1; }),
+                           FACE(DownFace, { ff = ffy; dir = -1; }),
+                           FACE(UpFace, { ff = ffy; dir = 1; }),
+                           FACE(BackFace, { ff = ffz; dir = -1; }),
+                           FACE(FrontFace, { ff = ffz; dir = 1; }),
+                           CellFinalize({ fp[iv] -= ff * dir * bc_patch_values[ival]; }),
+                           AfterAllCells(DoNothing)
+                           );
     }
   }
 
@@ -827,7 +827,7 @@ void          DiscretizePressure(
    *-----------------------------------------------------------------------*/
 
   PFModuleInvokeType(BCInternalInvoke, ProblemBCInternal(problem),
-    (problem, problem_data, A, f, time));
+                     (problem, problem_data, A, f, time));
 
   /*-----------------------------------------------------------------------
    * Set system values outside of the domain
@@ -861,7 +861,7 @@ void          DiscretizePressure(
     fp = SubvectorData(f_sub);
 
     GrGeomOutLoop(i, j, k, gr_domain,
-      r, ix, iy, iz, nx, ny, nz,
+                  r, ix, iy, iz, nx, ny, nz,
     {
       iv = SubvectorEltIndex(f_sub, i, j, k);
       im = SubmatrixEltIndex(A_sub, i, j, k);
@@ -971,7 +971,7 @@ PFModule    *DiscretizePressureInitInstanceXtra(
     stencil = NewStencil(seven_pt_shape, 7);
 
     (instance_xtra->A) = NewMatrixType(grid, NULL, stencil, ON, stencil,
-      matrix_cell_centered);
+                                       matrix_cell_centered);
     (instance_xtra->f) = NewVectorType(grid, 1, 1, vector_cell_centered);
   }
 

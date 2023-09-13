@@ -164,8 +164,8 @@ int       KINSolMatVec(
   if (*recompute)
   {
     PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval,
-      (pressure, old_pressure, &J, &JC, saturation, density, problem_data,
-       dt, time, 0));
+                       (pressure, old_pressure, &J, &JC, saturation, density, problem_data,
+                        dt, time, 0));
 
     *recompute = 0;
     StateJac(((State*)current_state)) = J;
@@ -459,7 +459,7 @@ void    RichardsJacobianEval(
   }    /* End subgrid loop */
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
-    (problem_data, grid, gr_domain, time));
+                                 (problem_data, grid, gr_domain, time));
 
   /* Get boundary pressure values for Dirichlet boundaries.   */
   /* These are needed for upstream weighting in mobilities - need boundary */
@@ -484,35 +484,35 @@ void    RichardsJacobianEval(
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
 
       ForPatchCellsPerFace(DirichletBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int pp_idx, ip; double value; ),
-        CellSetup({
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int pp_idx, ip; double value; ),
+                           CellSetup({
         pp_idx = 0;
         ip = SubvectorEltIndex(p_sub, i, j, k);
         value = bc_patch_values[ival];
       }),
-        FACE(LeftFace, { pp_idx = ip - 1; }),
-        FACE(RightFace, { pp_idx = ip + 1; }),
-        FACE(DownFace, { pp_idx = ip - sy_v; }),
-        FACE(UpFace, { pp_idx = ip + sy_v; }),
-        FACE(BackFace, { pp_idx = ip - sz_v; }),
-        FACE(FrontFace, { pp_idx = ip + sz_v; }),
-        CellFinalize({ pp[pp_idx] = value; }),
-        AfterAllCells(DoNothing)
-        );                    /* End DirichletBC Case */
+                           FACE(LeftFace, { pp_idx = ip - 1; }),
+                           FACE(RightFace, { pp_idx = ip + 1; }),
+                           FACE(DownFace, { pp_idx = ip - sy_v; }),
+                           FACE(UpFace, { pp_idx = ip + sy_v; }),
+                           FACE(BackFace, { pp_idx = ip - sz_v; }),
+                           FACE(FrontFace, { pp_idx = ip + sz_v; }),
+                           CellFinalize({ pp[pp_idx] = value; }),
+                           AfterAllCells(DoNothing)
+                           ); /* End DirichletBC Case */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
   /* Calculate rel_perm and rel_perm_der */
 
   PFModuleInvokeType(PhaseRelPermInvoke, rel_perm_module,
-    (rel_perm, pressure, density, gravity, problem_data,
-     CALCFCN));
+                     (rel_perm, pressure, density, gravity, problem_data,
+                      CALCFCN));
 
   PFModuleInvokeType(PhaseRelPermInvoke, rel_perm_module,
-    (rel_perm_der, pressure, density, gravity, problem_data,
-     CALCDER));
+                     (rel_perm_der, pressure, density, gravity, problem_data,
+                      CALCDER));
 
   /* Calculate contributions from second order derivatives and gravity */
   ForSubgridI(is, GridSubgrids(grid))
@@ -713,7 +713,7 @@ void    RichardsJacobianEval(
 
       double north_temp = y_coeff * diff
                           * RPMean(updir, 0.0, 0.0,
-        prod_no_der) * y_dir_g_c
+                                   prod_no_der) * y_dir_g_c
                           + sym_north_temp;
 
       north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //@RMM  TFG contributions non sym
@@ -736,25 +736,25 @@ void    RichardsJacobianEval(
 
       double sym_lower_temp = -z_coeff * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
                               * RPMean(lower_cond, upper_cond, prod,
-        prod_up);
+                                       prod_up);
 
       double lower_temp = -z_coeff
                           * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
                              + (-gravity * 0.5 * dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip]
                                 * RPMean(lower_cond, upper_cond, prod,
-                                  prod_up)))
+                                         prod_up)))
                           + sym_lower_temp;
 
       double sym_upper_temp = z_coeff * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
                               * -RPMean(lower_cond, upper_cond, prod,
-        prod_up);
+                                        prod_up);
 
       double upper_temp = z_coeff
                           * (diff * RPMean(lower_cond, upper_cond, 0.0,
-        prod_up_der)
+                                           prod_up_der)
                              + (-gravity * 0.5 * dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip + sz_v]
                                 * RPMean(lower_cond, upper_cond, prod,
-                                  prod_up)))
+                                         prod_up)))
                           + sym_upper_temp;
 
       PlusEquals(cp[im], -(west_temp + south_temp + lower_temp));
@@ -845,13 +845,13 @@ void    RichardsJacobianEval(
       ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(BC_ALL,
-          BeforeAllCells(DoNothing),
-          LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-          Locals(int ip, im;
-            double coeff, diff, prod, prod_der;
-            double lower_cond, upper_cond;
-            double prod_lo, prod_up; ),
-          CellSetup({
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int ip, im;
+                                    double coeff, diff, prod, prod_der;
+                                    double lower_cond, upper_cond;
+                                    double prod_lo, prod_up; ),
+                             CellSetup({
           ip = SubvectorEltIndex(p_sub, i, j, k);
           im = SubmatrixEltIndex(J_sub, i, j, k);
 
@@ -865,7 +865,7 @@ void    RichardsJacobianEval(
           lower_cond = 0.0;
           upper_cond = 0.0;
         }),
-          FACE(LeftFace,
+                             FACE(LeftFace,
         {
           diff = pp[ip - 1] - pp[ip];
           prod_der = rpdp[ip - 1] * dp[ip - 1] + rpp[ip - 1] * ddp[ip - 1];
@@ -875,7 +875,7 @@ void    RichardsJacobianEval(
           wp[im] = -coeff * diff
                    * RPMean(pp[ip - 1], pp[ip], prod_der, 0.0);
         }),
-          FACE(RightFace,
+                             FACE(RightFace,
         {
           diff = pp[ip] - pp[ip + 1];
           prod_der = rpdp[ip + 1] * dp[ip + 1] + rpp[ip + 1] * ddp[ip + 1];
@@ -885,31 +885,31 @@ void    RichardsJacobianEval(
           ep[im] = coeff * diff
                    * RPMean(pp[ip], pp[ip + 1], 0.0, prod_der);
         }),
-          FACE(DownFace,
+                             FACE(DownFace,
         {
           diff = pp[ip - sy_v] - pp[ip];
           prod_der = rpdp[ip - sy_v] * dp[ip - sy_v]
                      + rpp[ip - sy_v] * ddp[ip - sy_v];
           coeff = dt * z_mult_dat[ip] * ffy * (1.0 / dy)
                   * PMean(pp[ip - sy_v], pp[ip],
-            permyp[ip - sy_v], permyp[ip])
+                          permyp[ip - sy_v], permyp[ip])
                   / viscosity;
           sop[im] = -coeff * diff
                     * RPMean(pp[ip - sy_v], pp[ip], prod_der, 0.0);
         }),
-          FACE(UpFace,
+                             FACE(UpFace,
         {
           diff = pp[ip] - pp[ip + sy_v];
           prod_der = rpdp[ip + sy_v] * dp[ip + sy_v]
                      + rpp[ip + sy_v] * ddp[ip + sy_v];
           coeff = dt * z_mult_dat[ip] * ffy * (1.0 / dy)
                   * PMean(pp[ip], pp[ip + sy_v],
-            permyp[ip], permyp[ip + sy_v])
+                          permyp[ip], permyp[ip + sy_v])
                   / viscosity;
           np[im] = -coeff * diff
                    * RPMean(pp[ip], pp[ip + sy_v], 0.0, prod_der);
         }),
-          FACE(BackFace,
+                             FACE(BackFace,
         {
           lower_cond = (pp[ip - sz_v]) - 0.5 * dz
                        * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v])
@@ -922,16 +922,16 @@ void    RichardsJacobianEval(
           prod_lo = rpp[ip - sz_v] * dp[ip - sz_v];
           coeff = dt * ffz * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v])))
                   * PMeanDZ(permzp[ip - sz_v], permzp[ip],
-            z_mult_dat[ip - sz_v], z_mult_dat[ip])
+                            z_mult_dat[ip - sz_v], z_mult_dat[ip])
                   / viscosity;
           lp[im] = -coeff *
                    (diff * RPMean(lower_cond, upper_cond,
-            prod_der, 0.0)
+                                  prod_der, 0.0)
                     - gravity * 0.5 * dz
                     * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v]) * ddp[ip]
                     * RPMean(lower_cond, upper_cond, prod_lo, prod));
         }),
-          FACE(FrontFace,
+                             FACE(FrontFace,
         {
           lower_cond = (pp[ip]) - 0.5 * dz
                        * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])
@@ -945,18 +945,18 @@ void    RichardsJacobianEval(
           prod_up = rpp[ip + sz_v] * dp[ip + sz_v];
           coeff = dt * ffz * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
                   * PMeanDZ(permzp[ip], permzp[ip + sz_v],
-            z_mult_dat[ip], z_mult_dat[ip + sz_v])
+                            z_mult_dat[ip], z_mult_dat[ip + sz_v])
                   / viscosity;
           up[im] = -coeff *
                    (diff * RPMean(lower_cond, upper_cond,
-            0.0, prod_der)
+                                  0.0, prod_der)
                     - gravity * 0.5 * dz
                     * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip]
                     * RPMean(lower_cond, upper_cond, prod, prod_up));
         }),
-          CellFinalize(DoNothing),
-          AfterAllCells(DoNothing)
-          );                    /* End Patch Loop */
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End Patch Loop */
       }           /* End ipatch loop */
     }             /* End subgrid loop */
   }                  /* End if symm_part */
@@ -1049,7 +1049,7 @@ void    RichardsJacobianEval(
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
 
       ForPatchCellsPerFace(DirichletBC,
-        BeforeAllCells(
+                           BeforeAllCells(
       {
         /* @MCB 04/14/2020:
          * Previously two module invokes were made every iteration
@@ -1062,21 +1062,21 @@ void    RichardsJacobianEval(
 
         ThisPFModule = density_module;
         PhaseDensityConstants(0, CALCFCN, &phase_type,
-          &fcn_phase_const,
-          &phase_ref,
-          &phase_comp);
+                              &fcn_phase_const,
+                              &phase_ref,
+                              &phase_comp);
         PhaseDensityConstants(0, CALCDER, &phase_type,
-          &der_phase_const,
-          &phase_ref,
-          &phase_comp);
+                              &der_phase_const,
+                              &phase_ref,
+                              &phase_comp);
       }),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int ip, im;
-          double *op;
-          double den_d, value, o_temp;
-          double prod, prod_der, prod_val;
-          double diff, coeff, lower_cond, upper_cond; ),
-        CellSetup(
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int ip, im;
+                                  double *op;
+                                  double den_d, value, o_temp;
+                                  double prod, prod_der, prod_val;
+                                  double diff, coeff, lower_cond, upper_cond; ),
+                           CellSetup(
       {
         ip = SubvectorEltIndex(p_sub, i, j, k);
         im = SubmatrixEltIndex(J_sub, i, j, k);
@@ -1105,7 +1105,7 @@ void    RichardsJacobianEval(
         prod = rpp[ip] * dp[ip];
         prod_der = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
       }),
-        FACE(LeftFace,
+                           FACE(LeftFace,
       {
         op = wp;
         coeff = dt * ffx * z_mult_dat[ip] * (2.0 / dx) * permxp[ip] / viscosity;
@@ -1115,7 +1115,7 @@ void    RichardsJacobianEval(
                  * (diff * RPMean(value, pp[ip], 0.0, prod_der)
                     - RPMean(value, pp[ip], prod_val, prod));
       }),
-        FACE(RightFace,
+                           FACE(RightFace,
       {
         op = ep;
         coeff = dt * ffx * z_mult_dat[ip] * (2.0 / dx) * permxp[ip] / viscosity;
@@ -1125,7 +1125,7 @@ void    RichardsJacobianEval(
                  * (diff * RPMean(pp[ip], value, prod_der, 0.0)
                     + RPMean(pp[ip], value, prod, prod_val));
       }),
-        FACE(DownFace,
+                           FACE(DownFace,
       {
         op = sop;
         coeff = dt * ffy * z_mult_dat[ip] * (2.0 / dy) * permyp[ip] / viscosity;
@@ -1135,7 +1135,7 @@ void    RichardsJacobianEval(
                  * (diff * RPMean(value, pp[ip], 0.0, prod_der)
                     - RPMean(value, pp[ip], prod_val, prod));
       }),
-        FACE(UpFace,
+                           FACE(UpFace,
       {
         op = np;
         coeff = dt * ffy * z_mult_dat[ip] * (2.0 / dy) * permyp[ip] / viscosity;
@@ -1145,7 +1145,7 @@ void    RichardsJacobianEval(
                  * (diff * RPMean(pp[ip], value, prod_der, 0.0)
                     + RPMean(pp[ip], value, prod, prod_val));
       }),
-        FACE(BackFace,
+                           FACE(BackFace,
       {
         coeff = dt * ffz * (2.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
                 * permzp[ip] / viscosity;
@@ -1168,7 +1168,7 @@ void    RichardsJacobianEval(
 
 //printf("jacobian lower BC: o_temp=%f prod_der=%f op=%f \n",o_temp, prod_der, op);
       }),
-        FACE(FrontFace,
+                           FACE(FrontFace,
       {
         coeff = dt * ffz * (2.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
                 * permzp[ip] / viscosity;
@@ -1184,44 +1184,44 @@ void    RichardsJacobianEval(
                            + ((1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
                               * RPMean(lower_cond, upper_cond, prod, prod_val)));
       }),
-        CellFinalize(
+                           CellFinalize(
       {
         cp[im] += op[im];
         cp[im] -= o_temp;
         op[im] = 0.0;
       }),
-        AfterAllCells(DoNothing)
-        );                    /* End DirichletBC */
+                           AfterAllCells(DoNothing)
+                           ); /* End DirichletBC */
 
       ForPatchCellsPerFace(FluxBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int im; double *op; ),
-        CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
-        FACE(LeftFace, { op = wp; }),
-        FACE(RightFace, { op = ep; }),
-        FACE(DownFace, { op = sop; }),
-        FACE(UpFace, { op = np; }),
-        FACE(BackFace, { op = lp; }),
-        FACE(FrontFace, { op = up; }),
-        CellFinalize({
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im; double *op; ),
+                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace, { op = up; }),
+                           CellFinalize({
         cp[im] += op[im];
         op[im] = 0.0;
       }),
-        AfterAllCells(DoNothing)
-        );                    /* End FluxBC */
+                           AfterAllCells(DoNothing)
+                           ); /* End FluxBC */
 
       ForPatchCellsPerFace(OverlandBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int im, ip; double *op; ),
-        CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
-        FACE(LeftFace, { op = wp; }),
-        FACE(RightFace, { op = ep; }),
-        FACE(DownFace, { op = sop; }),
-        FACE(UpFace, { op = np; }),
-        FACE(BackFace, { op = lp; }),
-        FACE(FrontFace,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im, ip; double *op; ),
+                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace,
       {
         op = up;
         if (!ovlnd_flag[0])
@@ -1278,11 +1278,11 @@ void    RichardsJacobianEval(
               break;
         }
       }),
-        CellFinalize({
+                           CellFinalize({
         cp[im] += op[im];
         op[im] = 0.0;
       }),
-        AfterAllCells(
+                           AfterAllCells(
       {
         switch (public_xtra->type)
         {
@@ -1293,8 +1293,8 @@ void    RichardsJacobianEval(
                 if (diffusive == 0)
                 {
                   PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-                    (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                     ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                                      ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
                 }
                 else
                 {
@@ -1306,9 +1306,9 @@ void    RichardsJacobianEval(
                   //                                                    NULL, NULL, CALCFCN));
 
                   PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                    (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                     ke_der, kw_der, kn_der, ks_der,
-                     kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                                      ke_der, kw_der, kn_der, ks_der,
+                                      kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
                 }
               }
               break;
@@ -1317,19 +1317,19 @@ void    RichardsJacobianEval(
               break;
         }
       })
-        );                    /* End OverlandBC */
+                           ); /* End OverlandBC */
 
       ForPatchCellsPerFace(SeepageFaceBC,
-        BeforeAllCells({ vol = dx * dy * dz; }),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int ip, im; ),
-        CellSetup(DoNothing),
-        FACE(LeftFace, DoNothing),
-        FACE(RightFace, DoNothing),
-        FACE(DownFace, DoNothing),
-        FACE(UpFace, DoNothing),
-        FACE(BackFace, DoNothing),
-        FACE(FrontFace,
+                           BeforeAllCells({ vol = dx * dy * dz; }),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int ip, im; ),
+                           CellSetup(DoNothing),
+                           FACE(LeftFace, DoNothing),
+                           FACE(RightFace, DoNothing),
+                           FACE(DownFace, DoNothing),
+                           FACE(UpFace, DoNothing),
+                           FACE(BackFace, DoNothing),
+                           FACE(FrontFace,
       {
         ip = SubvectorEltIndex(p_sub, i, j, k);
         im = SubmatrixEltIndex(J_sub, i, j, k);
@@ -1344,22 +1344,22 @@ void    RichardsJacobianEval(
           cp[im] += 0.0;
         }
       }),
-        CellFinalize(DoNothing),
-        AfterAllCells(DoNothing)
-        );                    /* End SeepageFaceBC */
+                           CellFinalize(DoNothing),
+                           AfterAllCells(DoNothing)
+                           ); /* End SeepageFaceBC */
 
       ForPatchCellsPerFace(OverlandKinematicBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int im, ip;
-          double *op; ),
-        CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
-        FACE(LeftFace, { op = wp; }),
-        FACE(RightFace, { op = ep; }),
-        FACE(DownFace, { op = sop; }),
-        FACE(UpFace, { op = np; }),
-        FACE(BackFace, { op = lp; }),
-        FACE(FrontFace, {
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im, ip;
+                                  double *op; ),
+                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace, {
         op = up;
         /* check if overland flow kicks in */
         if (!ovlnd_flag[0])
@@ -1371,31 +1371,31 @@ void    RichardsJacobianEval(
           }
         }
       }),
-        CellFinalize({
+                           CellFinalize({
         cp[im] += op[im];
         op[im] = 0.0;                              //zero out entry in row of Jacobian
       }),
-        AfterAllCells(
+                           AfterAllCells(
       {
         PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
-          (grid, is, bc_struct, ipatch, problem_data, pressure,
-           ke_der, kw_der, kn_der, ks_der,
-           NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
+                           (grid, is, bc_struct, ipatch, problem_data, pressure,
+                            ke_der, kw_der, kn_der, ks_der,
+                            NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
       })
-        );                    /* End OverlandKinematicBC */
+                           ); /* End OverlandKinematicBC */
 
       ForPatchCellsPerFace(OverlandDiffusiveBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int im, ip;
-          double *op; ),
-        CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
-        FACE(LeftFace, { op = wp; }),
-        FACE(RightFace, { op = ep; }),
-        FACE(DownFace, { op = sop; }),
-        FACE(UpFace, { op = np; }),
-        FACE(BackFace, { op = lp; }),
-        FACE(FrontFace, {
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int im, ip;
+                                  double *op; ),
+                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
+                           FACE(LeftFace, { op = wp; }),
+                           FACE(RightFace, { op = ep; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
+                           FACE(FrontFace, {
         op = up;
         /* check if overland flow kicks in */
         if (!ovlnd_flag[0])
@@ -1407,18 +1407,18 @@ void    RichardsJacobianEval(
           }
         }
       }),
-        CellFinalize({
+                           CellFinalize({
         cp[im] += op[im];
         op[im] = 0.0;                              //zero out entry in row of Jacobian
       }),
-        AfterAllCells(
+                           AfterAllCells(
       {
         PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-          (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-           ke_der, kw_der, kn_der, ks_der,
-           kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                           (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                            ke_der, kw_der, kn_der, ks_der,
+                            kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
       })
-        );                    /* End OverlandDiffusiveBC */
+                           ); /* End OverlandDiffusiveBC */
     } /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -1543,14 +1543,14 @@ void    RichardsJacobianEval(
       ForBCStructNumPatches(ipatch, bc_struct)
       {
         ForPatchCellsPerFace(OverlandKinematicBC,
-          BeforeAllCells(DoNothing),
-          LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-          Locals(int io, io1, itop, ip, im, k1; ),
-          CellSetup(DoNothing),
-          FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-          FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-          FACE(BackFace, DoNothing),
-          FACE(FrontFace,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io, io1, itop, ip, im, k1; ),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
         {
           /* Loop over boundary patches to build JC matrix. */
           io = SubmatrixEltIndex(J_sub, i, j, iz);
@@ -1627,19 +1627,19 @@ void    RichardsJacobianEval(
           /*north term */
           np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
         }),
-          CellFinalize(DoNothing),
-          AfterAllCells(DoNothing)
-          );                    /* End OverlandKinematicBC */
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End OverlandKinematicBC */
 
         ForPatchCellsPerFace(OverlandDiffusiveBC,
-          BeforeAllCells(DoNothing),
-          LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-          Locals(int io, io1, itop, ip, im, k1; ),
-          CellSetup(DoNothing),
-          FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-          FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-          FACE(BackFace, DoNothing),
-          FACE(FrontFace,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io, io1, itop, ip, im, k1; ),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
         {
           /* Loop over boundary patches to build JC matrix.
            */
@@ -1716,19 +1716,19 @@ void    RichardsJacobianEval(
           /*north term */
           np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
         }),
-          CellFinalize(DoNothing),
-          AfterAllCells(DoNothing)
-          );                    /* End OverlandDiffusiveBC */
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End OverlandDiffusiveBC */
 
         ForPatchCellsPerFace(OverlandBC,
-          BeforeAllCells(DoNothing),
-          LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-          Locals(int io, io1, itop, ip, im, k1; ),
-          CellSetup(DoNothing),
-          FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-          FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-          FACE(BackFace, DoNothing),
-          FACE(FrontFace,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io, io1, itop, ip, im, k1; ),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                             FACE(BackFace, DoNothing),
+                             FACE(FrontFace,
         {
           /* Loop over boundary patches to build JC matrix.
            */
@@ -1828,9 +1828,9 @@ void    RichardsJacobianEval(
             np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
           }
         }),
-          CellFinalize(DoNothing),
-          AfterAllCells(DoNothing)
-          );                    /* End OverlandBC */
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+                             ); /* End OverlandBC */
       } /* End ipatch loop */
     }             /* End subgrid loop */
   }
@@ -2000,16 +2000,16 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     if (symmetric_jac)
     {
       (instance_xtra->J) = NewMatrixType(grid, NULL, stencil, ON, stencil,
-        matrix_cell_centered);
+                                         matrix_cell_centered);
       (instance_xtra->JC) = NewMatrixType(grid, NULL, stencil_C, ON, stencil_C,
-        matrix_cell_centered);
+                                          matrix_cell_centered);
     }
     else
     {
       (instance_xtra->J) = NewMatrixType(grid, NULL, stencil, OFF, stencil,
-        matrix_cell_centered);
+                                         matrix_cell_centered);
       (instance_xtra->JC) = NewMatrixType(grid, NULL, stencil_C, OFF, stencil_C,
-        matrix_cell_centered);
+                                          matrix_cell_centered);
     }
   }
 
@@ -2047,9 +2047,9 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     PFModuleReNewInstance((instance_xtra->density_module), ());
     PFModuleReNewInstanceType(BCPressureInitInstanceXtraInvoke, (instance_xtra->bc_pressure), (problem));
     PFModuleReNewInstanceType(SaturationInitInstanceXtraInvoke, (instance_xtra->saturation_module),
-      (NULL, NULL));
+                              (NULL, NULL));
     PFModuleReNewInstanceType(PhaseRelPermInitInstanceXtraInvoke, (instance_xtra->rel_perm_module),
-      (NULL, NULL));
+                              (NULL, NULL));
     PFModuleReNewInstance((instance_xtra->bc_internal), ());
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //RMM-LEC

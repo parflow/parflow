@@ -206,7 +206,7 @@ void    InternalEnergyDensity(
         if (fcn == CALCFCN)
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-            ip, nx_d, ny_d, nz_d, 1, 1, 1,
+                    ip, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             pu[ip] = constant_energy;
             pd[ip] = constant_density;
@@ -215,7 +215,7 @@ void    InternalEnergyDensity(
         else     /* fcn = CALCDER */
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-            ip, nx_d, ny_d, nz_d, 1, 1, 1,
+                    ip, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             pu[ip] = 0.0;
             pd[ip] = 0.0;
@@ -253,7 +253,7 @@ void    InternalEnergyDensity(
         if (fcn == CALCFCN)
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-            ip, nx_d, ny_d, nz_d, 1, 1, 1,
+                    ip, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             tkr = (pt[ip] + 273.15) / 647.3;
             tkr2 = tkr * tkr;
@@ -323,7 +323,7 @@ void    InternalEnergyDensity(
         {
           ip = 0;
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-            ip, nx_d, ny_d, nz_d, 1, 1, 1,
+                    ip, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             pu[ip] = 0.0;
             pd[ip] = 0.0;
@@ -410,7 +410,7 @@ PFModule  *InternalEnergyDensityNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "Phase.%s.Density.Type",
-      NA_IndexToName(GlobalsPhaseNames, i));
+            NA_IndexToName(GlobalsPhaseNames, i));
 
     switch_name = GetString(key);
 
@@ -423,7 +423,7 @@ PFModule  *InternalEnergyDensityNewPublicXtra(
         dummy_density0 = ctalloc(TypeDensity0, 1);
 
         sprintf(key, "Phase.%s.Density.Value",
-          NA_IndexToName(GlobalsPhaseNames, i));
+                NA_IndexToName(GlobalsPhaseNames, i));
         dummy_density0->constant_density = GetDouble(key);
 
         (public_xtra->data_density[i]) = (void*)dummy_density0;
@@ -447,7 +447,7 @@ PFModule  *InternalEnergyDensityNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "Phase.%s.InternalEnergy.Type",
-      NA_IndexToName(GlobalsPhaseNames, i));
+            NA_IndexToName(GlobalsPhaseNames, i));
 
     switch_name = GetString(key);
 
@@ -460,7 +460,7 @@ PFModule  *InternalEnergyDensityNewPublicXtra(
         dummy_energy0 = ctalloc(TypeEnergy0, 1);
 
         sprintf(key, "Phase.%s.InternalEnergy.Value",
-          NA_IndexToName(GlobalsPhaseNames, i));
+                NA_IndexToName(GlobalsPhaseNames, i));
         dummy_energy0->constant_energy = GetDouble(key);
 
         (public_xtra->data_energy[i]) = (void*)dummy_energy0;

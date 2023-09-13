@@ -213,7 +213,7 @@ void AddFace(int id, int face, int *vertices, int opposite_pnt)
     nodes[faces[face].nodes[j]].faces[nodes[faces[face].nodes[j]].num_faces++] = face;
     if (nodes[faces[face].nodes[j]].num_faces > MaxFaces)
       fprintf(stderr, "MaxFaces exceeded!!! %d\n",
-        nodes[faces[face].nodes[j]].num_faces);
+              nodes[faces[face].nodes[j]].num_faces);
   }
 
   /* Set up the color of the face for outputing boundary info */
@@ -345,8 +345,8 @@ int main(int argc, char **argv)
       /* This is a 6 vertices prism */
 
       sscanf(line, "%s %d %d %d %d %d %d %d %d", string,
-        &id, &vertices[0], &vertices[1], &vertices[2], &vertices[3],
-        &vertices[4], &vertices[5], &color);
+             &id, &vertices[0], &vertices[1], &vertices[2], &vertices[3],
+             &vertices[4], &vertices[5], &color);
 
       elements[id].gms_type = 1;
 
@@ -493,7 +493,7 @@ int main(int argc, char **argv)
             }
 
             AddFace(id, face, vertices,
-              elements[id].nodes[ (GE6_FaceArray[f][j + 1] + 3) % 6]);
+                    elements[id].nodes[ (GE6_FaceArray[f][j + 1] + 3) % 6]);
 
             elements[id].faces[element_face++] = face++;
             break;
@@ -510,7 +510,7 @@ int main(int argc, char **argv)
               }
 
               AddFace(id, face, vertices,
-                elements[id].nodes[ GE6_OppositeArray[f][0]]);
+                      elements[id].nodes[ GE6_OppositeArray[f][0]]);
 
               elements[id].faces[element_face++] = face++;
 
@@ -520,7 +520,7 @@ int main(int argc, char **argv)
               vertices[2] = elements[id].nodes[ GE6_FaceArray[f][1] ];
 
               AddFace(id, face, vertices,
-                elements[id].nodes[ GE6_OppositeArray[f][1]]);
+                      elements[id].nodes[ GE6_OppositeArray[f][1]]);
               elements[id].faces[element_face++] = face++;
             }
             else
@@ -532,7 +532,7 @@ int main(int argc, char **argv)
               }
 
               AddFace(id, face, vertices,
-                elements[id].nodes[ GE6_OppositeArray[f][0]]);
+                      elements[id].nodes[ GE6_OppositeArray[f][0]]);
               elements[id].faces[element_face++] = face++;
 
               /* Add the second triangle of this side */
@@ -541,7 +541,7 @@ int main(int argc, char **argv)
               vertices[2] = elements[id].nodes[ GE6_FaceArray[f][2] ];
 
               AddFace(id, face, vertices,
-                elements[id].nodes[ GE6_OppositeArray[f][1]]);
+                      elements[id].nodes[ GE6_OppositeArray[f][1]]);
               elements[id].faces[element_face++] = face++;
             }
           }
@@ -689,7 +689,7 @@ int main(int argc, char **argv)
   fprintf(pfsol, "%d\n", num_nodes);
   for (i = 1; i <= num_nodes; i++)
     fprintf(pfsol, "%.15e %.15e %.15e\n",
-      nodes[i].x, nodes[i].y, nodes[i].z);
+            nodes[i].x, nodes[i].y, nodes[i].z);
   fprintf(pfsol, "%d\n", num_colors + 1);
 
   /* Output the domain */
@@ -717,9 +717,9 @@ int main(int argc, char **argv)
       }
 
       fprintf(pfsol, "%d %d %d\n",
-        faces[j].nodes[0] - 1,
-        faces[j].nodes[1] - 1,
-        faces[j].nodes[2] - 1);
+              faces[j].nodes[0] - 1,
+              faces[j].nodes[1] - 1,
+              faces[j].nodes[2] - 1);
       faces[j].output_index = output_index++;
     }
   }
@@ -802,9 +802,9 @@ int main(int argc, char **argv)
            (faces[j].color != faces[faces[j].sister_face].color)))
       {
         fprintf(pfsol, "%d %d %d\n",
-          faces[j].nodes[0] - 1,
-          faces[j].nodes[1] - 1,
-          faces[j].nodes[2] - 1);
+                faces[j].nodes[0] - 1,
+                faces[j].nodes[1] - 1,
+                faces[j].nodes[2] - 1);
         faces[j].output_index = output_index++;
       }
     }

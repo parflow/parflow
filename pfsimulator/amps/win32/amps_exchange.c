@@ -83,7 +83,7 @@ int *dst_stride;
     for (i = 0; i < len[dim] - 1; i++)
     {
       amps_vector_copy(type, items, dim - 1, ptr_src,
-        len, ptr_dst, dst_stride);
+                       len, ptr_dst, dst_stride);
 
       *(double**)ptr_src += src_stride;
       *(double**)ptr_dst += dst_stride[dim];
@@ -128,12 +128,12 @@ void _amps_wait_exchange(amps_Handle handle)
         dst = ptr->data;
 
         amps_vector_copy(items[item].type - AMPS_INVOICE_LAST_CTYPE,
-          &items[item],
-          items[item].dim - 1,
-          &src,
-          ptr->ptr_len,
-          &dst,
-          ptr->ptr_stride);
+                         &items[item],
+                         items[item].dim - 1,
+                         &src,
+                         ptr->ptr_len,
+                         &dst,
+                         ptr->ptr_stride);
         item += items[item].dim;
       }
       else

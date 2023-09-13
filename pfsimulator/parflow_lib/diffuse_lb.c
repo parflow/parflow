@@ -115,7 +115,7 @@ void DiffuseLB(
 
   amps_Printf("Time step per iteration = %e\n\n", (lattice->step));
   amps_Printf("iter=%d; t=%e; dump=%e; stop=%e\n",
-    n_iter, (lattice->t), write_pressure_time, (lattice->stop));
+              n_iter, (lattice->t), write_pressure_time, (lattice->stop));
 
   while ((n_iter < max_iterations) && iter_flag && (lattice->t) < stop)
   {
@@ -193,7 +193,7 @@ void DiffuseLB(
     n_iter++;
     if (!(n_iter % 100))
       amps_Printf("   ... iter=%d; t=%e; dump=%e; stop=%e\n",
-        n_iter, (lattice->t), write_pressure_time, (lattice->stop));
+                  n_iter, (lattice->t), write_pressure_time, (lattice->stop));
 
     /* If dump_switch == 1, write out the pressure field
      * every so many iterations. */
@@ -520,7 +520,7 @@ double  MaxVectorValue(
 
     fi = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      fi, nx_f, ny_f, nz_f, 1, 1, 1,
+              fi, nx_f, ny_f, nz_f, 1, 1, 1,
     {
       tmp = fabs(fp[fi]);
       if (tmp > max_vector_value)
@@ -598,7 +598,7 @@ double  MaxVectorDividend(
 
     fi = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      fi, nx_f, ny_f, nz_f, 1, 1, 1,
+              fi, nx_f, ny_f, nz_f, 1, 1, 1,
     {
       if (f2p[fi] == 0.0)
         tmp = 0.0;

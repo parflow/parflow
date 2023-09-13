@@ -130,9 +130,9 @@ void    PermeabilityFace(
     pci = 0; pfi = 0;
 
     BoxLoopI2(i, j, k,
-      ix, iy, iz, nx, ny, nz,
-      pci, nx_pc, ny_pc, nz_pc, 1, 1, 1,
-      pfi, nx_pf, ny_pf, nz_pf, 1, 1, 1,
+              ix, iy, iz, nx, ny, nz,
+              pci, nx_pc, ny_pc, nz_pc, 1, 1, 1,
+              pfi, nx_pf, ny_pf, nz_pf, 1, 1, 1,
     {
       pf[pfi] = Mean(pc_l[pci], pc_u[pci]);
     });

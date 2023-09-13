@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   {
     /* SGS order of args */
     invoice = amps_NewInvoice("%&.&D(*)", &len_array, &stride_array,
-      dim, vector);
+                              dim, vector);
 
     num = amps_Size(amps_CommWorld);
 

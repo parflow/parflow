@@ -74,7 +74,7 @@ void *OpenSiloFile(const char *fname, const char *nsname, PMPIO_iomode_t ioMode,
                    void *userData)
 {
   DBfile *db_file = DBOpen(fname, DB_UNKNOWN,
-    ioMode == PMPIO_WRITE ? DB_APPEND : DB_READ);
+                           ioMode == PMPIO_WRITE ? DB_APPEND : DB_READ);
 
   return (void*)db_file;
 }
@@ -242,7 +242,7 @@ void     WriteSiloPMPIO(char *   file_prefix,
   numGroups = s_num_silo_files;
 
   bat = PMPIO_Init(numGroups, PMPIO_WRITE, amps_CommWorld, 1,
-    CreateSiloFile, OpenSiloFile, CloseSiloFile, &driver);
+                   CreateSiloFile, OpenSiloFile, CloseSiloFile, &driver);
 //    if (numGroups > 1) {
   if (strlen(file_suffix))
   {
@@ -345,7 +345,7 @@ void     WriteSiloPMPIO(char *   file_prefix,
 //           sprintf(meshname,"%s","mesh");
 //       }
     err = DBPutQuadmesh(db_file, meshname, NULL, coords, dims,
-      3, DB_FLOAT, DB_COLLINEAR, NULL);
+                        3, DB_FLOAT, DB_COLLINEAR, NULL);
     if (err < 0)
     {
       amps_Printf("Error: Silo put quadmesh failed %s\n", meshname);
@@ -364,8 +364,8 @@ void     WriteSiloPMPIO(char *   file_prefix,
     int array_index = 0;
     ai = 0;
     BoxLoopI1(i, j, k,
-      ix, iy, iz, nx, ny, nz,
-      ai, nx_v, ny_v, nz_v, 1, 1, 1,
+              ix, iy, iz, nx, ny, nz,
+              ai, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       array[array_index++] = data[ai];
     });
@@ -383,9 +383,9 @@ void     WriteSiloPMPIO(char *   file_prefix,
     // sprintf(varname, "press_%05d",  p);
 
     err = DBPutQuadvar1(db_file, varname, meshname,
-      (float*)array, dims, 3,
-      NULL, 0, DB_DOUBLE,
-      DB_ZONECENT, NULL);
+                        (float*)array, dims, 3,
+                        NULL, 0, DB_DOUBLE,
+                        DB_ZONECENT, NULL);
 
     free(array);
 

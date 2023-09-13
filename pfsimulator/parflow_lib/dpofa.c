@@ -100,7 +100,7 @@ static int c__1 = 1;
     {
       i__3 = k - 1;
       t = a[k + j * a_dim1] - ddot_(&i__3, &a[k * a_dim1 + 1], &c__1, &
-        a[j * a_dim1 + 1], &c__1);
+                                    a[j * a_dim1 + 1], &c__1);
       t /= a[k + k * a_dim1];
       a[k + j * a_dim1] = t;
       s += t * t;

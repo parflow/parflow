@@ -460,10 +460,10 @@ PFModule  *PhaseSourceNewPublicXtra()
       {
         dummy0->region_indices[ir] =
           NA_NameToIndex(GlobalsGeomNames,
-            NA_IndexToName(dummy0->regions, ir));
+                         NA_IndexToName(dummy0->regions, ir));
 
         sprintf(key, "PhaseSources.Geom.%s.Value",
-          NA_IndexToName(dummy0->regions, ir));
+                NA_IndexToName(dummy0->regions, ir));
         dummy0->values[ir] = GetDouble(key);
       }
 

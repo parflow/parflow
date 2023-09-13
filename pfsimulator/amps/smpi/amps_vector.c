@@ -47,19 +47,19 @@ int *stride;
     {
       case AMPS_INVOICE_BYTE_CTYPE:
         *buf_ptr += AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[dim],
-          stride[dim]);
+                                         stride[dim]);
         AMPS_CALL_BYTE_IN(comm, *buf_ptr, *data, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-          stride[dim]);
+                                          stride[dim]);
         *(char**)data += (len[dim] - 1) * stride[dim];
         break;
 
       case AMPS_INVOICE_CHAR_CTYPE:
         *buf_ptr += AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[dim],
-          stride[dim]);
+                                         stride[dim]);
         AMPS_CALL_CHAR_IN(comm, *buf_ptr, *data, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_CHAR_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-          stride[dim]);
+                                          stride[dim]);
         *(char**)data += (len[dim] - 1) * stride[dim];
         break;
 
@@ -161,7 +161,7 @@ int *stride;
         *buf_ptr += AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[dim], stride[dim]);
         AMPS_CALL_BYTE_OUT(comm, *data, *buf_ptr, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-          stride[dim]);
+                                          stride[dim]);
         *(char**)data += (len[dim] - 1) * stride[dim];
         break;
 
@@ -169,16 +169,16 @@ int *stride;
         *buf_ptr += AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[dim], stride[dim]);
         AMPS_CALL_CHAR_OUT(comm, *data, *buf_ptr, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_CHAR_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-          stride[dim]);
+                                          stride[dim]);
         *(char**)data += (len[dim] - 1) * stride[dim];
         break;
 
       case AMPS_INVOICE_SHORT_CTYPE:
         *buf_ptr += AMPS_CALL_SHORT_ALIGN(comm, NULL, *buf_ptr, len[dim],
-          stride[dim]);
+                                          stride[dim]);
         AMPS_CALL_SHORT_OUT(comm, *data, *buf_ptr, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_SHORT_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-          stride[dim]);
+                                           stride[dim]);
         *(short**)data += (len[dim] - 1) * stride[dim];
         break;
 
@@ -193,25 +193,25 @@ int *stride;
         *buf_ptr += AMPS_CALL_LONG_ALIGN(comm, NULL, *buf_ptr, len[dim], stride[dim]);
         AMPS_CALL_LONG_OUT(comm, *data, *buf_ptr, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_LONG_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-          stride[dim]);
+                                          stride[dim]);
         *(long**)data += (len[dim] - 1) * stride[dim];
         break;
 
       case AMPS_INVOICE_FLOAT_CTYPE:
         *buf_ptr += AMPS_CALL_FLOAT_ALIGN(comm, NULL, *buf_ptr, len[dim],
-          stride[dim]);
+                                          stride[dim]);
         AMPS_CALL_FLOAT_OUT(comm, *data, *buf_ptr, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_FLOAT_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-          stride[dim]);
+                                           stride[dim]);
         *(float**)data += (len[dim] - 1) * stride[dim];
         break;
 
       case AMPS_INVOICE_DOUBLE_CTYPE:
         *buf_ptr += AMPS_CALL_DOUBLE_ALIGN(comm, NULL, *buf_ptr, len[dim],
-          stride[dim]);
+                                           stride[dim]);
         AMPS_CALL_DOUBLE_OUT(comm, *data, *buf_ptr, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_DOUBLE_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-          stride[dim]);
+                                            stride[dim]);
         *(double**)data += (len[dim] - 1) * stride[dim];
         break;
     }
@@ -273,17 +273,17 @@ int *stride;
   {
     case AMPS_INVOICE_BYTE_CTYPE:
       align = AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[0],
-        stride[0]);
+                                   stride[0]);
       break;
 
     case AMPS_INVOICE_CHAR_CTYPE:
       align = AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[0],
-        stride[0]);
+                                   stride[0]);
       break;
 
     case AMPS_INVOICE_SHORT_CTYPE:
       align = AMPS_CALL_SHORT_ALIGN(comm, NULL, *buf_ptr, len[0],
-        stride[0]);
+                                    stride[0]);
       break;
 
     case AMPS_INVOICE_INT_CTYPE:
@@ -292,17 +292,17 @@ int *stride;
 
     case AMPS_INVOICE_LONG_CTYPE:
       align = AMPS_CALL_LONG_ALIGN(comm, NULL, *buf_ptr, len[0],
-        stride[0]);
+                                   stride[0]);
       break;
 
     case AMPS_INVOICE_FLOAT_CTYPE:
       align = AMPS_CALL_FLOAT_ALIGN(comm, NULL, *buf_ptr, len[0],
-        stride[0]);
+                                    stride[0]);
       break;
 
     case AMPS_INVOICE_DOUBLE_CTYPE:
       align = AMPS_CALL_DOUBLE_ALIGN(comm, NULL, *buf_ptr, len[0],
-        stride[0]);
+                                     stride[0]);
       break;
 
     default:
@@ -386,19 +386,19 @@ int *stride;
   {
     case AMPS_INVOICE_BYTE_CTYPE:
       size = AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[0],
-        stride[0]);
+                                   stride[0]);
       el_size = sizeof(char);
       break;
 
     case AMPS_INVOICE_CHAR_CTYPE:
       size = AMPS_CALL_CHAR_SIZEOF(comm, *buf_ptr, NULL, len[0],
-        stride[0]);
+                                   stride[0]);
       el_size = sizeof(char);
       break;
 
     case AMPS_INVOICE_SHORT_CTYPE:
       size = AMPS_CALL_SHORT_SIZEOF(comm, *buf_ptr, NULL, len[0],
-        stride[0]);
+                                    stride[0]);
       el_size = sizeof(short);
       break;
 
@@ -409,19 +409,19 @@ int *stride;
 
     case AMPS_INVOICE_LONG_CTYPE:
       size = AMPS_CALL_LONG_SIZEOF(comm, *buf_ptr, NULL, len[0],
-        stride[0]);
+                                   stride[0]);
       el_size = sizeof(long);
       break;
 
     case AMPS_INVOICE_FLOAT_CTYPE:
       size = AMPS_CALL_FLOAT_SIZEOF(comm, *buf_ptr, NULL, len[0],
-        stride[0]);
+                                    stride[0]);
       el_size = sizeof(float);
       break;
 
     case AMPS_INVOICE_DOUBLE_CTYPE:
       size = AMPS_CALL_DOUBLE_SIZEOF(comm, *buf_ptr, NULL, len[0],
-        stride[0]);
+                                     stride[0]);
       el_size = sizeof(double);
       break;
   }

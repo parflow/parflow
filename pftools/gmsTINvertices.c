@@ -53,7 +53,7 @@ int main(
   if (argc < 3)
   {
     fprintf(stderr,
-      "Usage:  gmsTINvertices <TIN input files> <TIN output file>\n");
+            "Usage:  gmsTINvertices <TIN input files> <TIN output file>\n");
     exit(1);
   }
 

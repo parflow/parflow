@@ -156,9 +156,9 @@ void BCInternal(
           process = amps_Rank(amps_CommWorld);
 
           new_subgrid = NewSubgrid(ix, iy, iz,
-            nx, ny, nz,
-            rx, ry, rz,
-            process);
+                                   nx, ny, nz,
+                                   rx, ry, rz,
+                                   process);
 
           AppendSubgrid(new_subgrid, internal_bc_subgrids);
 
@@ -200,7 +200,7 @@ void BCInternal(
         Z = RealSpaceZ(0, SubgridRZ(ibc_subgrid));
 
         BoxLoopI0(i, j, k,
-          ix, iy, iz, nx, ny, nz,
+                  ix, iy, iz, nx, ny, nz,
         {
           /* @RMM - Fixed bug in internal BC's (down below, only x coord was assigned, not y and z) and
            * changed notion of BC to be pressure head, not head potential to make more consistent with
@@ -289,7 +289,7 @@ void BCInternal(
         Z = RealSpaceZ(0, SubgridRZ(well_subgrid));
 
         BoxLoopI0(i, j, k,
-          ix, iy, iz, nx, ny, nz,
+                  ix, iy, iz, nx, ny, nz,
         {
           phead = head - dtmp * (Z + k * dz);
 
@@ -422,19 +422,19 @@ PFModule  *BCInternalNewPublicXtra()
           dummy0 = ctalloc(Type0, 1);
 
           sprintf(key, "InternalBC.%s.X",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->xlocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Y",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->ylocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Z",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->zlocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Value",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->value = GetDouble(key);
 
           (public_xtra->data[i]) = (void*)dummy0;

@@ -143,7 +143,7 @@ void      SigDiff(
           if (m >= 0)
           {
             fprintf(fp, "(%d,%d,%d) : %e, %e, %e\n",
-              i, j, k, adiff, *v1_p, *v2_p);
+                    i, j, k, adiff, *v1_p, *v2_p);
           }
 
           if (sdiff > max_sdiff)
@@ -176,7 +176,7 @@ void      SigDiff(
     }
 
     fprintf(fp, "Minimum significant digits at (% 3d, %3d, %3d) = %2d\n",
-      mi, mj, mk, sig_digs);
+            mi, mj, mk, sig_digs);
     fprintf(fp, "Maximum absolute difference = %e\n", max_adiff);
   }
 }

@@ -69,8 +69,8 @@ CommPkg  *NewVectorCommPkg(
   else
   {
     new_commpkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
-      ComputePkgRecvRegion(compute_pkg),
-      VectorDataSpace(vector), 1, SubvectorData(VectorSubvector(vector, 0)));
+                             ComputePkgRecvRegion(compute_pkg),
+                             VectorDataSpace(vector), 1, SubvectorData(VectorSubvector(vector, 0)));
   }
 
   return new_commpkg;
@@ -149,19 +149,19 @@ VectorUpdateCommHandle  *InitVectorUpdate(
       vector->boundary_fill_refine_algorithm = new xfer::RefineAlgorithm(dim);
 
       vector->boundary_fill_refine_algorithm->registerRefine(
-        vector->samrai_id,
-        vector->samrai_id,
-        vector->samrai_id,
-        tbox::Pointer < xfer::RefineOperator > (NULL));
+                                                             vector->samrai_id,
+                                                             vector->samrai_id,
+                                                             vector->samrai_id,
+                                                             tbox::Pointer < xfer::RefineOperator > (NULL));
 
       tbox::Pointer < hier::PatchLevel > level =
         hierarchy->getPatchLevel(level_number);
 
       vector->boundary_fill_schedule = vector->boundary_fill_refine_algorithm
                                        ->createSchedule(level,
-        level_number - 1,
-        hierarchy,
-        NULL);
+                                                        level_number - 1,
+                                                        hierarchy,
+                                                        NULL);
     }
     const double time = 1.0;
     vector->boundary_fill_schedule->fillData(time);
@@ -259,17 +259,17 @@ static Vector  *NewTempVector(
 
     SubvectorDataSpace(new_sub) =
       NewSubgrid(SubgridIX(subgrid) - num_ghost,
-        SubgridIY(subgrid) - num_ghost,
-        SubgridIZ(subgrid) - num_ghost,
-        SubgridNX(subgrid) + 2 * num_ghost,
-        SubgridNY(subgrid) + 2 * num_ghost,
-        SubgridNZ(subgrid) + 2 * num_ghost,
-        SubgridRX(subgrid),
-        SubgridRY(subgrid),
-        SubgridRZ(subgrid),
-        SubgridProcess(subgrid));
+                 SubgridIY(subgrid) - num_ghost,
+                 SubgridIZ(subgrid) - num_ghost,
+                 SubgridNX(subgrid) + 2 * num_ghost,
+                 SubgridNY(subgrid) + 2 * num_ghost,
+                 SubgridNZ(subgrid) + 2 * num_ghost,
+                 SubgridRX(subgrid),
+                 SubgridRY(subgrid),
+                 SubgridRZ(subgrid),
+                 SubgridProcess(subgrid));
     AppendSubgrid(SubvectorDataSpace(new_sub),
-      VectorDataSpace(new_vector));
+                  VectorDataSpace(new_vector));
 
     n = SubvectorNX(new_sub) * SubvectorNY(new_sub) * SubvectorNZ(new_sub);
 
@@ -490,8 +490,8 @@ Vector  *NewVectorType(
       tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
 
       new_vector->samrai_id = patch_descriptor->definePatchDataComponent(
-        variable_name,
-        variable->getPatchDataFactory()->cloneFactory(ghosts));
+                                                                         variable_name,
+                                                                         variable->getPatchDataFactory()->cloneFactory(ghosts));
 
 
       samrai_vector_ids[grid_type][index] = new_vector->samrai_id;
@@ -527,7 +527,7 @@ Vector  *NewVectorType(
           case vector_met:
           {
             tbox::Pointer < pdat::CellData < double >> patch_data(
-              patch->getPatchData(new_vector->samrai_id));
+                                                                  patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -544,7 +544,7 @@ Vector  *NewVectorType(
             const int side = 0;
 
             tbox::Pointer < pdat::SideData < double >> patch_data(
-              patch->getPatchData(new_vector->samrai_id));
+                                                                  patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -560,7 +560,7 @@ Vector  *NewVectorType(
           {
             const int side = 1;
             tbox::Pointer < pdat::SideData < double >> patch_data(
-              patch->getPatchData(new_vector->samrai_id));
+                                                                  patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -576,7 +576,7 @@ Vector  *NewVectorType(
           {
             const int side = 2;
             tbox::Pointer < pdat::SideData < double >> patch_data(
-              patch->getPatchData(new_vector->samrai_id));
+                                                                  patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -765,7 +765,7 @@ void    InitVector(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      iv, nx_v, ny_v, nz_v, 1, 1, 1,
+              iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vp[iv] = value;
     });
@@ -808,7 +808,7 @@ void    InitVectorAll(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix_v, iy_v, iz_v, nx_v, ny_v, nz_v,
-      iv, nx_v, ny_v, nz_v, 1, 1, 1,
+              iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vp[iv] = value;
     });
@@ -868,7 +868,7 @@ void    InitVectorInc(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      iv, nx_v, ny_v, nz_v, 1, 1, 1,
+              iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vp[iv] = value + (i + j + k) * inc;
     });
@@ -922,7 +922,7 @@ void    InitVectorRandom(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      iv, nx_v, ny_v, nz_v, 1, 1, 1,
+              iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
 #if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
       vp[iv] = dev_drand48();

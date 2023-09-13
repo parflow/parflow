@@ -143,9 +143,9 @@ int main(
   /* print out the vertices */
   for (v = 0; v < nvertices; v++)
     fprintf(outfile, "%.15e %.15e %.15e\n",
-      (vertices[v]->x),
-      (vertices[v]->y),
-      (vertices[v]->z));
+            (vertices[v]->x),
+            (vertices[v]->y),
+            (vertices[v]->z));
 
   /* print out nsolids */
   fprintf(outfile, "%d\n", nsolids);
@@ -156,7 +156,7 @@ int main(
   {
     /* print solid_name and mat_id to stdout */
     printf("solid %d: name = %s, material id = %d\n",
-      s, (solids[s]->solid_name), (solids[s]->mat_id));
+           s, (solids[s]->solid_name), (solids[s]->mat_id));
 
     triangles = (solids[s]->triangles);
     ntriangles = (solids[s]->ntriangles);
@@ -168,9 +168,9 @@ int main(
     for (t = 0; t < ntriangles; t++)
     {
       fprintf(outfile, "%d %d %d\n",
-        old_to_new[v + (triangles[t]->v0)],
-        old_to_new[v + (triangles[t]->v1)],
-        old_to_new[v + (triangles[t]->v2)]);
+              old_to_new[v + (triangles[t]->v0)],
+              old_to_new[v + (triangles[t]->v1)],
+              old_to_new[v + (triangles[t]->v2)]);
     }
 
     /* print number of patches = 0 */

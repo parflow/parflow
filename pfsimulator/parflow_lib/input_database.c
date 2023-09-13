@@ -93,10 +93,10 @@ IDB *IDB_NewDB(char *filename)
 
   /* Initalize the db structure */
   db = (IDB*)HBT_new(IDB_Compare,
-    IDB_Free,
-    IDB_Print,
-    NULL,
-    0);
+                     IDB_Free,
+                     IDB_Print,
+                     NULL,
+                     0);
 
   if ((file = amps_SFopen(filename, "r")) == NULL)
   {
@@ -110,7 +110,7 @@ IDB *IDB_NewDB(char *filename)
 
   /* Read in each of the items in the file and put them in the HBT */
   invoice = amps_NewInvoice("%i%&c%i%&c", &key_len, &key_len, key,
-    &value_len, &value_len, value);
+                            &value_len, &value_len, value);
   for (i = 0; i < num_entries; i++)
   {
     /* Read the key and value from the input file */
@@ -121,8 +121,8 @@ IDB *IDB_NewDB(char *filename)
       char s[128];
       sprintf(s, "%d", IDB_MAX_VALUE_LEN - 1);
       InputError("Error: The value associated with input database "
-        "key <%s> is too long. The maximum length is %s. ",
-        key, s);
+                 "key <%s> is too long. The maximum length is %s. ",
+                 key, s);
     }
     key[key_len] = '\0';
     value[value_len] = '\0';
@@ -260,7 +260,7 @@ double IDB_GetDouble(IDB *database, const char *key)
     if (sscanf(result->value, "%lf", &value) != 1)
     {
       InputError("Error: The key <%s> is not a valid double: value is <%s>\n",
-        key, result->value);
+                 key, result->value);
     }
 
     result->used = 1;
@@ -291,7 +291,7 @@ int IDB_GetIntDefault(IDB *        database,
     if (sscanf(result->value, "%d", &value) != 1)
     {
       InputError("Error: The key <%s> is not a valid integer: value is <%s>\n",
-        key, result->value);
+                 key, result->value);
     }
 
     result->used = 1;
@@ -333,7 +333,7 @@ int IDB_GetInt(IDB *database, const char *key)
     if (sscanf(result->value, "%d", &value) != 1)
     {
       InputError("Error: The key <%s> is not a valid int: value is <%s>\n",
-        key, result->value);
+                 key, result->value);
     }
 
     result->used = 1;

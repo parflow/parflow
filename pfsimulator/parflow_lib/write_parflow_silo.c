@@ -123,7 +123,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   sprintf(meshname, "%s_%06u", "mesh", p);
 
   err = DBPutQuadmesh(db_file, meshname, NULL, coords, dims,
-    3, DB_FLOAT, DB_COLLINEAR, NULL);
+                      3, DB_FLOAT, DB_COLLINEAR, NULL);
   if (err < 0)
   {
     amps_Printf("Error: Silo put quadmesh failed %s\n", meshname);
@@ -142,8 +142,8 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   int array_index = 0;
   ai = 0;
   BoxLoopI1(i, j, k,
-    ix, iy, iz, nx, ny, nz,
-    ai, nx_v, ny_v, nz_v, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     array[array_index++] = data[ai];
   });
@@ -154,9 +154,9 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
   sprintf(varname, "%s_%06u", variable_name, p);
   err = DBPutQuadvar1(db_file, varname, meshname,
-    (float*)array, dims, 3,
-    NULL, 0, DB_DOUBLE,
-    DB_ZONECENT, NULL);
+                      (float*)array, dims, 3,
+                      NULL, 0, DB_DOUBLE,
+                      DB_ZONECENT, NULL);
   if (err < 0)
   {
     amps_Printf("Error: Silo put quadvar1 failed %s\n", varname);
@@ -377,12 +377,12 @@ void     WriteSilo(char *   file_prefix,
       if (strlen(file_suffix))
       {
         sprintf(name, "%s/%s/%06u/data.%s.%s:%s_%06u", file_prefix, file_type, i, file_suffix, file_extn,
-          variable_name, i);
+                variable_name, i);
       }
       else
       {
         sprintf(name, "%s/%s/%06u/data.%s:%s_%06u", file_prefix, file_type, i, file_extn,
-          variable_name, i);
+                variable_name, i);
       }
       varnames[i] = name;
       vartypes[i] = DB_QUADVAR;

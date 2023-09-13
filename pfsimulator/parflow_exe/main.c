@@ -211,8 +211,8 @@ int main(int argc, char *argv [])
             fprintf(stderr, "Unknown option `-%c'.\n", optopt);
           else
             fprintf(stderr,
-              "Unknown option character `\\x%x'.\n",
-              optopt);
+                    "Unknown option character `\\x%x'.\n",
+                    optopt);
           return 1;
 
         default:
@@ -224,7 +224,7 @@ int main(int argc, char *argv [])
     if ((non_opt_argc != 1) && (non_opt_argc != 3))
     {
       fprintf(stderr, "USAGE: %s <input pfidb filename> <restart dir> <restore number>\n",
-        argv[0]);
+              argv[0]);
       return(-1);
     }
     else
@@ -301,7 +301,7 @@ int main(int argc, char *argv [])
       if (main_db->keyExists("viz_dump_dirname"))
       {
         viz_dump_dirname = main_db->getStringWithDefault(
-          "viz_dump_dirname", "./visit");
+                                                         "viz_dump_dirname", "./visit");
       }
     }
 
@@ -321,7 +321,7 @@ int main(int argc, char *argv [])
       else
       {
         TBOX_ERROR("restart_interval > 0, but key `restart_write_dirname'"
-            << " not specifed in input file");
+                   << " not specifed in input file");
       }
     }
 
@@ -342,7 +342,7 @@ int main(int argc, char *argv [])
       std::string restart_dir(restart_read_dirname);
       restart_manager->
       openRestartFile(restart_dir, restore_num,
-        amps_Size());
+                      amps_Size());
     }
 #else
     PF_UNUSED(restore_num);
@@ -423,7 +423,7 @@ int main(int argc, char *argv [])
         log_file = OpenLogFile("ParFlow Total Time");
 
         fprintf(log_file, "Total Run Time: %f seconds\n\n",
-          (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC);
+                (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC);
 
 
         {
@@ -436,8 +436,8 @@ int main(int argc, char *argv [])
           }
 
           fprintf(file, "%s,%f,%s,%s\n", "Total Runtime",
-            (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC,
-            "-nan", "0");
+                  (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC,
+                  "-nan", "0");
         }
 
         fclose(file);

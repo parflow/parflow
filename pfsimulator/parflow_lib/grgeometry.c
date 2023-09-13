@@ -409,11 +409,11 @@ void             GrGeomSolidFromInd(
    *------------------------------------------------------*/
 
   octree_bg_level = GrGeomGetOctreeInfo(&xl, &yl, &zl, &xu, &yu, &zu,
-    &ix, &iy, &iz);
+                                        &ix, &iy, &iz);
 
   GrGeomOctreeFromInd(&solid_octree, indicator_field, indicator,
-    xl, yl, zl, xu, yu, zu,
-    octree_bg_level, ix, iy, iz);
+                      xl, yl, zl, xu, yu, zu,
+                      octree_bg_level, ix, iy, iz);
 
   *solid_ptr = GrGeomNewSolid(solid_octree, NULL, 0, octree_bg_level, ix, iy, iz);
 }
@@ -459,20 +459,20 @@ void                GrGeomSolidFromGeom(
       num_patch_triangles = (solid_data->num_patch_triangles);
 
       octree_bg_level = GrGeomGetOctreeInfo(&xl, &yl, &zl, &xu, &yu, &zu,
-        &ix, &iy, &iz);
+                                            &ix, &iy, &iz);
 
       GrGeomOctreeFromTIN(&solid_octree, &patch_octrees,
-        surface, patches, num_patches, num_patch_triangles,
-        extent_array, xl, yl, zl, xu, yu, zu,
-        octree_bg_level,
-        octree_bg_level + GlobalsMaxRefLevel);
+                          surface, patches, num_patches, num_patch_triangles,
+                          extent_array, xl, yl, zl, xu, yu, zu,
+                          octree_bg_level,
+                          octree_bg_level + GlobalsMaxRefLevel);
 
       break;
     }
   }
 
   solid = GrGeomNewSolid(solid_octree, patch_octrees, num_patches,
-    octree_bg_level, ix, iy, iz);
+                         octree_bg_level, ix, iy, iz);
 
   *solid_ptr = solid;
 }

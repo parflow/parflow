@@ -334,23 +334,23 @@ typedef struct amps_HandleObject {
 
 #ifdef AMPS_MEMORY_ALLOC_CHECK
 
-#define amps_TAlloc(type, count)                                                                          \
-        {                                                                                                 \
-          (type*)ptr;                                                                                     \
-          if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count))))                               \
-              == NULL)                                                                                    \
-          amps_Printf("Error: out of memory in <%s> at line %d\n",                                        \
-  __FILE__, __LINE__);                                                                                    \
-          ptr;                                                                                            \
+#define amps_TAlloc(type, count)                                                                                                                  \
+        {                                                                                                                                         \
+          (type*)ptr;                                                                                                                             \
+          if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count))))                                                                       \
+              == NULL)                                                                                                                            \
+          amps_Printf("Error: out of memory in <%s> at line %d\n",                                                                                \
+                      __FILE__, __LINE__);                                                                                                        \
+          ptr;                                                                                                                                    \
         }
 
-#define amps_CTAlloc(type, count)                                                                                             \
-        {                                                                                                                     \
-          (type*)ptr;                                                                                                         \
-          if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL)                               \
-          amps_Printf("Error: out of memory in <%s> at line %d\n",                                                            \
-  __FILE__, __LINE__);                                                                                                        \
-          ptr;                                                                                                                \
+#define amps_CTAlloc(type, count)                                                                                                                                     \
+        {                                                                                                                                                             \
+          (type*)ptr;                                                                                                                                                 \
+          if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL)                                                                       \
+          amps_Printf("Error: out of memory in <%s> at line %d\n",                                                                                                    \
+                      __FILE__, __LINE__);                                                                                                                            \
+          ptr;                                                                                                                                                        \
         }
 
 /* note: the `else' is required to guarantee termination of the `if' */
