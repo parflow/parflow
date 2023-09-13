@@ -39,9 +39,9 @@
  *--------------------------------------------------------------------------*/
 
 void        PrintSubmatrixAll(
-  amps_File  file,
-  Submatrix *submatrix,
-  Stencil *  stencil)
+                              amps_File  file,
+                              Submatrix *submatrix,
+                              Stencil *  stencil)
 {
   int ix, iy, iz;
   int nx, ny, nz;
@@ -64,7 +64,7 @@ void        PrintSubmatrixAll(
   sz = SubmatrixSZ(submatrix);
 
   amps_Fprintf(file, "\t\tPosition(%d,%d,%d), Size (%d,%d,%d)\n",
-    ix, iy, iz, nx, ny, nz);
+               ix, iy, iz, nx, ny, nz);
 
   stencil_sz = StencilSize(stencil);
   amps_Fprintf(file, "\t\tStencilSize (%d)\n", stencil_sz);
@@ -76,7 +76,7 @@ void        PrintSubmatrixAll(
         amps_Fprintf(file, "\t\t\t(%d,%d,%d):\n", i, j, k);
         for (s = 0; s < stencil_sz; s++)
           amps_Fprintf(file, "\t\t\t\t%f\n",
-            *SubmatrixElt(submatrix, s, i, j, k));
+                       *SubmatrixElt(submatrix, s, i, j, k));
       }
 }
 
@@ -86,8 +86,8 @@ void        PrintSubmatrixAll(
  *--------------------------------------------------------------------------*/
 
 void     PrintMatrixAll(
-  char *  filename,
-  Matrix *A)
+                        char *  filename,
+                        Matrix *A)
 {
   amps_File file;
 
@@ -123,10 +123,10 @@ void     PrintMatrixAll(
  *--------------------------------------------------------------------------*/
 
 void        PrintSubmatrix(
-  amps_File  file,
-  Submatrix *submatrix,
-  Subregion *subregion,
-  Stencil *  stencil)
+                           amps_File  file,
+                           Submatrix *submatrix,
+                           Subregion *subregion,
+                           Stencil *  stencil)
 {
   int ix, iy, iz;
   int nx, ny, nz;
@@ -149,7 +149,7 @@ void        PrintSubmatrix(
   sz = SubregionSZ(subregion);
 
   amps_Fprintf(file, "\t\tPosition(%d,%d,%d), Size (%d,%d,%d)\n",
-    ix, iy, iz, nx, ny, nz);
+               ix, iy, iz, nx, ny, nz);
 
   stencil_sz = StencilSize(stencil);
   amps_Fprintf(file, "\t\tStencilSize (%d)\n", stencil_sz);
@@ -161,7 +161,7 @@ void        PrintSubmatrix(
         amps_Fprintf(file, "\t\t\t(%d,%d,%d):\n", i, j, k);
         for (s = 0; s < stencil_sz; s++)
           amps_Fprintf(file, "\t\t\t\t%f\n",
-            *SubmatrixElt(submatrix, s, i, j, k));
+                       *SubmatrixElt(submatrix, s, i, j, k));
       }
 }
 
@@ -171,8 +171,8 @@ void        PrintSubmatrix(
  *--------------------------------------------------------------------------*/
 
 void     PrintMatrix(
-  char *  filename,
-  Matrix *A)
+                     char *  filename,
+                     Matrix *A)
 {
   amps_File file;
 
@@ -195,8 +195,8 @@ void     PrintMatrix(
     amps_Fprintf(file, "Submatrix Number: %d\n", g);
 
     PrintSubmatrix(file, MatrixSubmatrix(A, g),
-      SubregionArraySubregion(MatrixRange(A), g),
-      MatrixStencil(A));
+                   SubregionArraySubregion(MatrixRange(A), g),
+                   MatrixStencil(A));
   }
 
   amps_Fprintf(file, "===================================================\n");
@@ -211,9 +211,9 @@ void     PrintMatrix(
  *--------------------------------------------------------------------------*/
 
 void     PrintSortMatrix(
-  char *  filename,
-  Matrix *A,
-  int     all)
+                         char *  filename,
+                         Matrix *A,
+                         int     all)
 {
   amps_File file;
   amps_Invoice add_invoice;
@@ -265,10 +265,10 @@ void     PrintSortMatrix(
     amps_Fprintf(file, "b:  %d\n", StencilSize(stencil));
     for (istenc = 0; istenc < StencilSize(stencil); istenc++)
       amps_Fprintf(file, "b: %d %d  %d  % d % d % d\n",
-        0, 0, istenc,
-        StencilShape(stencil)[istenc][0],
-        StencilShape(stencil)[istenc][1],
-        StencilShape(stencil)[istenc][2]);
+                   0, 0, istenc,
+                   StencilShape(stencil)[istenc][0],
+                   StencilShape(stencil)[istenc][1],
+                   StencilShape(stencil)[istenc][2]);
 
     amps_Fprintf(file, "c: %d\n", domain_num_s);
     amps_Fprintf(file, "e: %d\n", range_num_s);
@@ -279,20 +279,20 @@ void     PrintSortMatrix(
   {
     subregion = SubregionArraySubregion(domain_sra, is);
     amps_Fprintf(file, "d: %d  % 3d % 3d % 3d  % 3d % 3d % 3d",
-      SubregionLevel(subregion),
-      SubregionIX(subregion),
-      SubregionIY(subregion),
-      SubregionIZ(subregion),
-      SubregionNX(subregion),
-      SubregionNY(subregion),
-      SubregionNZ(subregion));
+                 SubregionLevel(subregion),
+                 SubregionIX(subregion),
+                 SubregionIY(subregion),
+                 SubregionIZ(subregion),
+                 SubregionNX(subregion),
+                 SubregionNY(subregion),
+                 SubregionNZ(subregion));
     amps_Fprintf(file, "  % 3d % 3d % 3d  % 3d % 3d % 3d\n",
-      SubregionSX(subregion),
-      SubregionSY(subregion),
-      SubregionSZ(subregion),
-      SubregionRX(subregion),
-      SubregionRY(subregion),
-      SubregionRZ(subregion));
+                 SubregionSX(subregion),
+                 SubregionSY(subregion),
+                 SubregionSZ(subregion),
+                 SubregionRX(subregion),
+                 SubregionRY(subregion),
+                 SubregionRZ(subregion));
   }
 
   /* print out matrix range information */
@@ -300,20 +300,20 @@ void     PrintSortMatrix(
   {
     subregion = SubregionArraySubregion(range_sra, is);
     amps_Fprintf(file, "f: %d  % 3d % 3d % 3d  % 3d % 3d % 3d",
-      SubregionLevel(subregion),
-      SubregionIX(subregion),
-      SubregionIY(subregion),
-      SubregionIZ(subregion),
-      SubregionNX(subregion),
-      SubregionNY(subregion),
-      SubregionNZ(subregion));
+                 SubregionLevel(subregion),
+                 SubregionIX(subregion),
+                 SubregionIY(subregion),
+                 SubregionIZ(subregion),
+                 SubregionNX(subregion),
+                 SubregionNY(subregion),
+                 SubregionNZ(subregion));
     amps_Fprintf(file, "  % 3d % 3d % 3d  % 3d % 3d % 3d\n",
-      SubregionSX(subregion),
-      SubregionSY(subregion),
-      SubregionSZ(subregion),
-      SubregionRX(subregion),
-      SubregionRY(subregion),
-      SubregionRZ(subregion));
+                 SubregionSX(subregion),
+                 SubregionSY(subregion),
+                 SubregionSZ(subregion),
+                 SubregionRX(subregion),
+                 SubregionRY(subregion),
+                 SubregionRZ(subregion));
   }
 
   /*----------------------------------------
@@ -347,7 +347,7 @@ void     PrintSortMatrix(
         for (i = ix; i < ix + sx * nx; i += sx)
         {
           amps_Fprintf(file, "g: %d %d  %d  % 4d % 4d % 4d",
-            0, 0, level, k, j, i);
+                       0, 0, level, k, j, i);
           for (istenc = 0; istenc < StencilSize(stencil); istenc++)
           {
             ap = SubmatrixElt(A_sub, istenc, i, j, k);

@@ -70,10 +70,10 @@ typedef struct {
  *  for function evaluations.  */
 
 void     KINSolFunctionEval(
-  int      size,
-  N_Vector pressure,
-  N_Vector fval,
-  void *   current_state)
+                            int      size,
+                            N_Vector pressure,
+                            N_Vector fval,
+                            void *   current_state)
 {
   PFModule  *nl_function_eval = StateFunc(((State*)current_state));
   ProblemData *problem_data = StateProblemData(((State*)current_state));
@@ -95,9 +95,9 @@ void     KINSolFunctionEval(
   (void)size;
 
   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
-    (pressure, fval, problem_data, saturation, old_saturation,
-    density, old_density, dt, time, old_pressure, evap_trans,
-    ovrl_bc_flx, x_velocity, y_velocity, z_velocity));
+                     (pressure, fval, problem_data, saturation, old_saturation,
+                      density, old_density, dt, time, old_pressure, evap_trans,
+                      ovrl_bc_flx, x_velocity, y_velocity, z_velocity));
 
   return;
 }
@@ -107,21 +107,21 @@ void     KINSolFunctionEval(
  *  pressure values.  This evaluation is basically an application
  *  of the stencil to the pressure array. */
 
-void NlFunctionEval(Vector * pressure,     /* Current pressure values */
-  Vector *                   fval,     /* Return values of the nonlinear function */
-  ProblemData *              problem_data,      /* Geometry data for problem */
-  Vector *                   saturation,     /* Saturation / work vector */
-  Vector *                   old_saturation,     /* Saturation values at previous time step */
-  Vector *                   density,     /* Density vector */
-  Vector *                   old_density,     /* Density values at previous time step */
-  double                     dt,     /* Time step size */
-  double                     time,     /* New time value */
-  Vector *                   old_pressure,
-  Vector *                   evap_trans,     /*sk sink term from land surface model*/
-  Vector *                   ovrl_bc_flx,     /*sk overland flow boundary fluxes*/
-  Vector *                   x_velocity,     /* velocity vectors jjb */
-  Vector *                   y_velocity,
-  Vector *                   z_velocity)
+void NlFunctionEval(Vector *      pressure, /* Current pressure values */
+                    Vector *      fval, /* Return values of the nonlinear function */
+                    ProblemData * problem_data, /* Geometry data for problem */
+                    Vector *      saturation, /* Saturation / work vector */
+                    Vector *      old_saturation, /* Saturation values at previous time step */
+                    Vector *      density, /* Density vector */
+                    Vector *      old_density, /* Density values at previous time step */
+                    double        dt, /* Time step size */
+                    double        time, /* New time value */
+                    Vector *      old_pressure,
+                    Vector *      evap_trans, /*sk sink term from land surface model*/
+                    Vector *      ovrl_bc_flx, /*sk overland flow boundary fluxes*/
+                    Vector *      x_velocity, /* velocity vectors jjb */
+                    Vector *      y_velocity,
+                    Vector *      z_velocity)
 {
   PUSH_NVTX("NlFunctionEval", 0)
 
@@ -248,10 +248,10 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
   /* Calculate pressure dependent properties: density and saturation */
 
   PFModuleInvokeType(PhaseDensityInvoke, density_module, (0, pressure, density, &dtmp, &dtmp,
-    CALCFCN));
+                                                          CALCFCN));
 
   PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation, pressure, density,
-    gravity, problem_data, CALCFCN));
+                                                           gravity, problem_data, CALCFCN));
 
 
   /* Calculate accumulation terms for the function values */
@@ -401,7 +401,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
    * flux wells.  Calculate phase source values overwriting current
    * saturation vector */
   PFModuleInvokeType(PhaseSourceInvoke, phase_source, (source, 0, problem, problem_data,
-    time));
+                                                       time));
 
   ForSubgridI(is, GridSubgrids(grid))
   {
@@ -466,7 +466,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
   }
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
-      (problem_data, grid, gr_domain, time));
+                                 (problem_data, grid, gr_domain, time));
 
   /*
    * Temporarily insert boundary pressure values for Dirichlet
@@ -514,23 +514,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
     {
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
       ForPatchCellsPerFace(DirichletBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int pp_idx, ip; double value; ),
-        CellSetup({
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int pp_idx, ip; double value; ),
+                           CellSetup({
         pp_idx = 0;
         ip = SubvectorEltIndex(p_sub, i, j, k);
         value = bc_patch_values[ival];
       }),
-        FACE(LeftFace, { pp_idx = ip - 1; }),
-        FACE(RightFace, { pp_idx = ip + 1; }),
-        FACE(DownFace, { pp_idx = ip - sy_p; }),
-        FACE(UpFace, { pp_idx = ip + sy_p; }),
-        FACE(BackFace, { pp_idx = ip - sz_p; }),
-        FACE(FrontFace, { pp_idx = ip + sz_p; }),
-        CellFinalize({ pp[pp_idx] = value; }),
-        AfterAllCells(DoNothing)
-        );                    /* End DirichletBC */
+                           FACE(LeftFace, { pp_idx = ip - 1; }),
+                           FACE(RightFace, { pp_idx = ip + 1; }),
+                           FACE(DownFace, { pp_idx = ip - sy_p; }),
+                           FACE(UpFace, { pp_idx = ip + sy_p; }),
+                           FACE(BackFace, { pp_idx = ip - sz_p; }),
+                           FACE(FrontFace, { pp_idx = ip + sz_p; }),
+                           CellFinalize({ pp[pp_idx] = value; }),
+                           AfterAllCells(DoNothing)
+                           ); /* End DirichletBC */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -538,8 +538,8 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
    * phase source values */
 
   PFModuleInvokeType(PhaseRelPermInvoke, rel_perm_module,
-    (rel_perm, pressure, density, gravity, problem_data,
-    CALCFCN));
+                     (rel_perm, pressure, density, gravity, problem_data,
+                      CALCFCN));
 
 
   /* Calculate contributions from second order derivatives and gravity */
@@ -688,12 +688,12 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
       double updir = (diff_l / dx) * x_dir_g_c - x_dir_g;
 
       double u_right = z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
-      permxp[ip], permxp[ip + 1])
-      * (diff_l / (dx * del_x_slope)) * x_dir_g_c
-      * RPMean(updir, 0.0,
-      rpp[ip] * dp[ip],
-      rpp[ip + 1] * dp[ip + 1])
-      / viscosity;
+                                                                  permxp[ip], permxp[ip + 1])
+                       * (diff_l / (dx * del_x_slope)) * x_dir_g_c
+                       * RPMean(updir, 0.0,
+                                rpp[ip] * dp[ip],
+                                rpp[ip + 1] * dp[ip + 1])
+                       / viscosity;
 
       /* Calculate right face velocity gravity terms
        * @RMM added sin* g term to test terrain-following grid
@@ -701,11 +701,11 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
        * Sx < 0 implies flow goes left to right */
 
       u_right += z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
-      permxp[ip], permxp[ip + 1])
-      * (-x_dir_g)
-      * RPMean(updir, 0.0, rpp[ip] * dp[ip],
-      rpp[ip + 1] * dp[ip + 1])
-      / viscosity;
+                                                            permxp[ip], permxp[ip + 1])
+                 * (-x_dir_g)
+                 * RPMean(updir, 0.0, rpp[ip] * dp[ip],
+                          rpp[ip + 1] * dp[ip + 1])
+                 / viscosity;
 
 
       /* Calculate front face velocity.
@@ -714,12 +714,12 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
       updir = (diff_l / dy) * y_dir_g_c - y_dir_g;
 
       double u_front = z_mult_dat[ip] * ffy * del_x_slope
-      * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
-      * (diff_l / (dy * del_y_slope)) * y_dir_g_c
-      * RPMean(updir, 0.0,
-      rpp[ip] * dp[ip],
-      rpp[ip + sy_p] * dp[ip + sy_p])
-      / viscosity;
+                       * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
+                       * (diff_l / (dy * del_y_slope)) * y_dir_g_c
+                       * RPMean(updir, 0.0,
+                                rpp[ip] * dp[ip],
+                                rpp[ip + sy_p] * dp[ip + sy_p])
+                       / viscosity;
 
       /* Calculate front face velocity gravity terms
        * @RMM added sin* g term to test terrain-following grid
@@ -728,11 +728,11 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
        */
 
       u_front += z_mult_dat[ip] * ffy * del_x_slope
-      * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
-      * (-y_dir_g)
-      * RPMean(updir, 0.0, rpp[ip] * dp[ip],
-      rpp[ip + sy_p] * dp[ip + sy_p])
-      / viscosity;
+                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
+                 * (-y_dir_g)
+                 * RPMean(updir, 0.0, rpp[ip] * dp[ip],
+                          rpp[ip + sy_p] * dp[ip + sy_p])
+                 / viscosity;
 
       /* Calculate upper face velocity.
        * diff_l >= 0 implies flow goes lower to upper
@@ -741,22 +741,22 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
 
       double lower_cond_l = pp[ip] / sep_l
-      - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
-      * dp[ip] * gravity * z_dir_g;
+                            - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
+                            * dp[ip] * gravity * z_dir_g;
 
       double upper_cond_l = pp[ip + sz_p] / sep_l
-      + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
-      * dp[ip + sz_p] * gravity * z_dir_g;
+                            + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
+                            * dp[ip + sz_p] * gravity * z_dir_g;
 
 
       diff_l = (lower_cond_l - upper_cond_l);
 
       double u_upper = ffz * del_x_slope * del_y_slope
-      * PMeanDZ(permzp[ip], permzp[ip + sz_p], z_mult_dat[ip], z_mult_dat[ip + sz_p])
-      * diff_l
-      * RPMean(lower_cond_l, upper_cond_l, rpp[ip] * dp[ip],
-      rpp[ip + sz_p] * dp[ip + sz_p])
-      / viscosity;
+                       * PMeanDZ(permzp[ip], permzp[ip + sz_p], z_mult_dat[ip], z_mult_dat[ip + sz_p])
+                       * diff_l
+                       * RPMean(lower_cond_l, upper_cond_l, rpp[ip] * dp[ip],
+                                rpp[ip + sz_p] * dp[ip + sz_p])
+                       / viscosity;
 
 /*  add in flow barrier values
  * assumes that ip is the cell face between ip and ip+1
@@ -881,16 +881,16 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
 
       ForPatchCellsPerFace(DirichletBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int dir, ip;
-        int vel_idx, vx_l, vy_l, vz_l;
-        double *vel_vec;
-        double diff, u_new, u_old, value, h;
-        double x_dir_g, y_dir_g, z_dir_g;
-        double sep, lower_cond, upper_cond;
-        double del_x_slope, del_y_slope; ),
-        CellSetup(
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int dir, ip;
+                                  int vel_idx, vx_l, vy_l, vz_l;
+                                  double *vel_vec;
+                                  double diff, u_new, u_old, value, h;
+                                  double x_dir_g, y_dir_g, z_dir_g;
+                                  double sep, lower_cond, upper_cond;
+                                  double del_x_slope, del_y_slope; ),
+                           CellSetup(
       {
         dir = 0;
         ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -920,7 +920,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         del_x_slope = 1.0;
         del_y_slope = 1.0;
       }),
-        FACE(LeftFace,
+                           FACE(LeftFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -929,28 +929,28 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - 1] - pp[ip];
         u_old = h
-        * PMean(pp[ip - 1], pp[ip], permxp[ip - 1], permxp[ip])
-        * (diff / dx * del_x_slope)
-        * RPMean(pp[ip - 1], pp[ip],
-        rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - 1], pp[ip], permxp[ip - 1], permxp[ip])
+                * (diff / dx * del_x_slope)
+                * RPMean(pp[ip - 1], pp[ip],
+                         rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h *
-        PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (-x_dir_g)
-        * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
-        rpp[ip] * dp[ip])
-        / viscosity;
+                 PMean(pp[ip - 1], pp[ip],
+                       permxp[ip - 1], permxp[ip])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
+                          rpp[ip] * dp[ip])
+                 / viscosity;
 
         diff = value - pp[ip];
         u_new = RPMean(value, pp[ip],
-        rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
+                       rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
         u_new = u_new * h
-        * (permxp[ip] / viscosity)
-        * 2.0 * (diff / dx);
+                * (permxp[ip] / viscosity)
+                * 2.0 * (diff / dx);
       }),
-        FACE(RightFace,
+                           FACE(RightFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -959,28 +959,28 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + 1];
         u_old = h
-        * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
-        * (diff / dx * del_x_slope)
-        * RPMean(pp[ip], pp[ip + 1],
-        rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
+                * (diff / dx * del_x_slope)
+                * RPMean(pp[ip], pp[ip + 1],
+                         rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (-x_dir_g)
-        * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
-        rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + 1],
+                         permxp[ip], permxp[ip + 1])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
+                          rpp[ip + 1] * dp[ip + 1])
+                 / viscosity;
 
         diff = pp[ip] - value;
         u_new = RPMean(pp[ip], value,
-        rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
+                       rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
         u_new = u_new * h
-        * (permxp[ip] / viscosity)
-        * 2.0 * (diff / dx);
+                * (permxp[ip] / viscosity)
+                * 2.0 * (diff / dx);
       }),
-        FACE(DownFace,
+                           FACE(DownFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -989,29 +989,29 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - sy_p] - pp[ip];
         u_old = h
-        * PMean(pp[ip - sy_p], pp[ip],
-        permyp[ip - sy_p], permyp[ip])
-        * (diff / dy * del_y_slope)
-        * RPMean(pp[ip - sy_p], pp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - sy_p], pp[ip],
+                        permyp[ip - sy_p], permyp[ip])
+                * (diff / dy * del_y_slope)
+                * RPMean(pp[ip - sy_p], pp[ip],
+                         rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h *
-        PMean(pp[ip], pp[ip - sy_p], permyp[ip],
-        permyp[ip - sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p])
-        / viscosity;
+                 PMean(pp[ip], pp[ip - sy_p], permyp[ip],
+                       permyp[ip - sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
+                          rpp[ip - sy_p] * dp[ip - sy_p])
+                 / viscosity;
 
 
         diff = value - pp[ip];
         u_new = RPMean(value, pp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
+                       rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
         u_new = u_new * h * (permyp[ip] / viscosity)
-        * 2.0 * (diff / dy);
+                * 2.0 * (diff / dy);
       }),
-        FACE(UpFace,
+                           FACE(UpFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -1020,29 +1020,29 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + sy_p];
         u_old = h
-        * PMean(pp[ip], pp[ip + sy_p],
-        permyp[ip], permyp[ip + sy_p])
-        * (diff / dy * del_y_slope)
-        * RPMean(pp[ip], pp[ip + sy_p],
-        rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + sy_p],
+                        permyp[ip], permyp[ip + sy_p])
+                * (diff / dy * del_y_slope)
+                * RPMean(pp[ip], pp[ip + sy_p],
+                         rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
-        permyp[ip + sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
-        rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
+                         permyp[ip + sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
+                          rpp[ip + sy_p] * dp[ip + sy_p])
+                 / viscosity;
 
 
         diff = pp[ip] - value;
         u_new = RPMean(pp[ip], value,
-        rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
+                       rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
         u_new = u_new * h * (permyp[ip] / viscosity)
-        * 2.0 * (diff / dy);
+                * 2.0 * (diff / dy);
       }),
-        FACE(BackFace,
+                           FACE(BackFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -1052,21 +1052,21 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_p]);                      //RMM
 
         lower_cond = pp[ip - sz_p] / sep
-        - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
-        z_dir_g;
+                     - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
+                     z_dir_g;
 
         upper_cond = pp[ip] / sep + (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
 
         diff = (lower_cond - upper_cond);
 
         u_old = h
-        * PMeanDZ(permzp[ip - sz_p], permzp[ip],
-        z_mult_dat[ip - sz_p], z_mult_dat[ip])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMeanDZ(permzp[ip - sz_p], permzp[ip],
+                          z_mult_dat[ip - sz_p], z_mult_dat[ip])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
+                / viscosity;
 
         sep = dz * z_mult_dat[ip];
 
@@ -1074,12 +1074,12 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         upper_cond = pp[ip] / sep + 0.25 * dp[ip] * gravity;
         diff = (lower_cond - upper_cond);
         u_new = RPMean(lower_cond, upper_cond,
-        rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
+                       rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
         u_new = u_new * h *
-        (permzp[ip] / viscosity)
-        * 2.0 * diff;
+                (permzp[ip] / viscosity)
+                * 2.0 * diff;
       }),
-        FACE(FrontFace,
+                           FACE(FrontFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -1094,22 +1094,22 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]);                      //RMM
 
         lower_cond = pp[ip] / sep - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
 
         upper_cond = pp[ip + sz_p] / sep
-        + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
-        * dp[ip + sz_p] * gravity * z_dir_g;
+                     + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
+                     * dp[ip + sz_p] * gravity * z_dir_g;
 
         diff = (lower_cond - upper_cond);
 
 
         u_old = h
-        * PMeanDZ(permzp[ip], permzp[ip + sz_p],
-        z_mult_dat[ip], z_mult_dat[ip + sz_p])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
-        / viscosity;
+                * PMeanDZ(permzp[ip], permzp[ip + sz_p],
+                          z_mult_dat[ip], z_mult_dat[ip + sz_p])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
+                / viscosity;
 
         sep = dz * z_mult_dat[ip];
 
@@ -1118,12 +1118,12 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         diff = lower_cond - upper_cond;
         u_new = RPMean(lower_cond, upper_cond,
-        rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
+                       rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
         u_new = u_new * h *
-        (permzp[ip] / viscosity)
-        * 2.0 * diff;
+                (permzp[ip] / viscosity)
+                * 2.0 * diff;
       }),
-        CellFinalize(
+                           CellFinalize(
       {
 /* Remove the boundary term computed above */
         fp[ip] -= dt * dir * u_old;
@@ -1133,20 +1133,20 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         vel_vec[vel_idx] = u_new / h;
       }),
-        AfterAllCells(DoNothing)
-        );                    /* End DirichletBC */
+                           AfterAllCells(DoNothing)
+                           ); /* End DirichletBC */
 
       ForPatchCellsPerFace(FluxBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int dir, ip;
-        int vel_idx, vx_l, vy_l, vz_l;
-        double *vel_vec;
-        double diff, u_new, u_old, h;
-        double x_dir_g, y_dir_g, z_dir_g;
-        double sep, lower_cond, upper_cond;
-        double del_x_slope, del_y_slope; ),
-        CellSetup(
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int dir, ip;
+                                  int vel_idx, vx_l, vy_l, vz_l;
+                                  double *vel_vec;
+                                  double diff, u_new, u_old, h;
+                                  double x_dir_g, y_dir_g, z_dir_g;
+                                  double sep, lower_cond, upper_cond;
+                                  double del_x_slope, del_y_slope; ),
+                           CellSetup(
       {
         dir = 0;
         ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -1173,7 +1173,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         del_x_slope = 1.0;
         del_y_slope = 1.0;
       }),
-        FACE(LeftFace,
+                           FACE(LeftFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -1182,23 +1182,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - 1] - pp[ip];
         u_old = h
-        * PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (diff / dx * del_x_slope)
-        * RPMean(pp[ip - 1], pp[ip],
-        rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - 1], pp[ip],
+                        permxp[ip - 1], permxp[ip])
+                * (diff / dx * del_x_slope)
+                * RPMean(pp[ip - 1], pp[ip],
+                         rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (-x_dir_g)
-        * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
-        rpp[ip] * dp[ip])
-        / viscosity;
+                 * PMean(pp[ip - 1], pp[ip],
+                         permxp[ip - 1], permxp[ip])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
+                          rpp[ip] * dp[ip])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(RightFace,
+                           FACE(RightFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -1207,23 +1207,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + 1];
         u_old = h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (diff / dx * del_x_slope)
-        * RPMean(pp[ip], pp[ip + 1],
-        rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + 1],
+                        permxp[ip], permxp[ip + 1])
+                * (diff / dx * del_x_slope)
+                * RPMean(pp[ip], pp[ip + 1],
+                         rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (-x_dir_g)
-        * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
-        rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + 1],
+                         permxp[ip], permxp[ip + 1])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
+                          rpp[ip + 1] * dp[ip + 1])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(DownFace,
+                           FACE(DownFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -1232,23 +1232,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - sy_p] - pp[ip];
         u_old = h
-        * PMean(pp[ip - sy_p], pp[ip],
-        permyp[ip - sy_p], permyp[ip])
-        * (diff / dy)
-        * RPMean(pp[ip - sy_p], pp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - sy_p], pp[ip],
+                        permyp[ip - sy_p], permyp[ip])
+                * (diff / dy)
+                * RPMean(pp[ip - sy_p], pp[ip],
+                         rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h *
-        PMean(pp[ip], pp[ip - sy_p], permyp[ip],
-        permyp[ip - sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p])
-        / viscosity;
+                 PMean(pp[ip], pp[ip - sy_p], permyp[ip],
+                       permyp[ip - sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
+                          rpp[ip - sy_p] * dp[ip - sy_p])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(UpFace,
+                           FACE(UpFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -1257,23 +1257,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + sy_p];
         u_old = h
-        * PMean(pp[ip], pp[ip + sy_p],
-        permyp[ip], permyp[ip + sy_p])
-        * (diff / dy)
-        * RPMean(pp[ip], pp[ip + sy_p],
-        rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + sy_p],
+                        permyp[ip], permyp[ip + sy_p])
+                * (diff / dy)
+                * RPMean(pp[ip], pp[ip + sy_p],
+                         rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
-        permyp[ip + sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
-        rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
+                         permyp[ip + sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
+                          rpp[ip + sy_p] * dp[ip + sy_p])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(BackFace,
+                           FACE(BackFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -1283,23 +1283,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_p]);                      //RMM
 
         lower_cond = (pp[ip - sz_p] / sep)
-        - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
-        z_dir_g;
+                     - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
+                     z_dir_g;
 
         upper_cond = (pp[ip] / sep) + (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
 
         diff = lower_cond - upper_cond;
         u_old = h
-        * PMeanDZ(permzp[ip - sz_p], permzp[ip],
-        z_mult_dat[ip - sz_p], z_mult_dat[ip])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMeanDZ(permzp[ip - sz_p], permzp[ip],
+                          z_mult_dat[ip - sz_p], z_mult_dat[ip])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
+                / viscosity;
         u_new = h;
       }),
-        FACE(FrontFace,
+                           FACE(FrontFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -1309,23 +1309,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]);                      //RMM
 
         lower_cond = (pp[ip] / sep) - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
 
         upper_cond = (pp[ip + sz_p] / sep)
-        + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
-        z_dir_g;
+                     + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
+                     z_dir_g;
 
         diff = lower_cond - upper_cond;
         u_old = h
-        * PMeanDZ(permzp[ip], permzp[ip + sz_p],
-        z_mult_dat[ip], z_mult_dat[ip + sz_p])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
-        / viscosity;
+                * PMeanDZ(permzp[ip], permzp[ip + sz_p],
+                          z_mult_dat[ip], z_mult_dat[ip + sz_p])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
+                / viscosity;
         u_new = h;
       }),
-        CellFinalize(
+                           CellFinalize(
       {
         /* Remove the boundary term computed above */
         fp[ip] -= dt * dir * u_old;
@@ -1335,19 +1335,19 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         vel_vec[vel_idx] = bc_patch_values[ival];
       }),
-        AfterAllCells(DoNothing)
-        );                    /* End FluxBC */
+                           AfterAllCells(DoNothing)
+                           ); /* End FluxBC */
 
       ForPatchCellsPerFace(OverlandBC,
-        BeforeAllCells(
+                           BeforeAllCells(
       {
         if (diffusive == 0)
         {
           /* Call overlandflow_eval to compute fluxes across the east, west, north, and south faces */
           PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-          (grid, is, bc_struct, ipatch,
-          problem_data, pressure, old_pressure,
-          ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
+                             (grid, is, bc_struct, ipatch,
+                              problem_data, pressure, old_pressure,
+                              ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
         }
         else
         {
@@ -1358,22 +1358,22 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
           double *dummy3 = NULL;
           double *dummy4 = NULL;
           PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-          (grid, is, bc_struct, ipatch,
-          problem_data, pressure, old_pressure,
-          ke_, kw_, kn_, ks_,
-          dummy1, dummy2, dummy3, dummy4,
-          qx_, qy_, CALCFCN));
+                             (grid, is, bc_struct, ipatch,
+                              problem_data, pressure, old_pressure,
+                              ke_, kw_, kn_, ks_,
+                              dummy1, dummy2, dummy3, dummy4,
+                              qx_, qy_, CALCFCN));
         }
       }),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int ip, io, dir;
-        int vel_idx, vx_l, vy_l, vz_l;
-        double *vel_vec;
-        double q_overlnd, u_old, u_new, diff, h;
-        double x_dir_g, y_dir_g, z_dir_g;
-        double sep, lower_cond, upper_cond;
-        double del_x_slope, del_y_slope; ),
-        CellSetup(
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int ip, io, dir;
+                                  int vel_idx, vx_l, vy_l, vz_l;
+                                  double *vel_vec;
+                                  double q_overlnd, u_old, u_new, diff, h;
+                                  double x_dir_g, y_dir_g, z_dir_g;
+                                  double sep, lower_cond, upper_cond;
+                                  double del_x_slope, del_y_slope; ),
+                           CellSetup(
       {
         dir = 0;
         ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -1403,7 +1403,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         q_overlnd = 0;
       }),
-        FACE(LeftFace,
+                           FACE(LeftFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -1412,23 +1412,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - 1] - pp[ip];
         u_old = h
-        * PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (diff / dx)
-        * RPMean(pp[ip - 1], pp[ip],
-        rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - 1], pp[ip],
+                        permxp[ip - 1], permxp[ip])
+                * (diff / dx)
+                * RPMean(pp[ip - 1], pp[ip],
+                         rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (-x_dir_g)
-        * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
-        rpp[ip] * dp[ip])
-        / viscosity;
+                 * PMean(pp[ip - 1], pp[ip],
+                         permxp[ip - 1], permxp[ip])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
+                          rpp[ip] * dp[ip])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(RightFace,
+                           FACE(RightFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -1437,23 +1437,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + 1];
         u_old = h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (diff / dx)
-        * RPMean(pp[ip], pp[ip + 1],
-        rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + 1],
+                        permxp[ip], permxp[ip + 1])
+                * (diff / dx)
+                * RPMean(pp[ip], pp[ip + 1],
+                         rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (-x_dir_g)
-        * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
-        rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + 1],
+                         permxp[ip], permxp[ip + 1])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
+                          rpp[ip + 1] * dp[ip + 1])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(DownFace,
+                           FACE(DownFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -1462,23 +1462,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - sy_p] - pp[ip];
         u_old = h
-        * PMean(pp[ip - sy_p], pp[ip],
-        permyp[ip - sy_p], permyp[ip])
-        * (diff / dy)
-        * RPMean(pp[ip - sy_p], pp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - sy_p], pp[ip],
+                        permyp[ip - sy_p], permyp[ip])
+                * (diff / dy)
+                * RPMean(pp[ip - sy_p], pp[ip],
+                         rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h *
-        PMean(pp[ip], pp[ip - sy_p], permyp[ip],
-        permyp[ip - sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p])
-        / viscosity;
+                 PMean(pp[ip], pp[ip - sy_p], permyp[ip],
+                       permyp[ip - sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
+                          rpp[ip - sy_p] * dp[ip - sy_p])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(UpFace,
+                           FACE(UpFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -1487,23 +1487,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + sy_p];
         u_old = h
-        * PMean(pp[ip], pp[ip + sy_p],
-        permyp[ip], permyp[ip + sy_p])
-        * (diff / dy)
-        * RPMean(pp[ip], pp[ip + sy_p],
-        rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + sy_p],
+                        permyp[ip], permyp[ip + sy_p])
+                * (diff / dy)
+                * RPMean(pp[ip], pp[ip + sy_p],
+                         rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
-        permyp[ip + sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
-        rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
+                         permyp[ip + sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
+                          rpp[ip + sy_p] * dp[ip + sy_p])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(BackFace,
+                           FACE(BackFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -1514,22 +1514,22 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         //  sep = dz*z_mult_dat[ip];  //RMM
 
         lower_cond = (pp[ip - sz_p] / sep)
-        - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
-        z_dir_g;
+                     - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
+                     z_dir_g;
         upper_cond = (pp[ip] / sep) + (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
 
         diff = lower_cond - upper_cond;
         u_old = h
-        * PMeanDZ(permzp[ip - sz_p], permzp[ip],
-        z_mult_dat[ip - sz_p], z_mult_dat[ip])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMeanDZ(permzp[ip - sz_p], permzp[ip],
+                          z_mult_dat[ip - sz_p], z_mult_dat[ip])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
+                / viscosity;
         u_new = h;
       }),
-        FACE(FrontFace,
+                           FACE(FrontFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -1539,39 +1539,39 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]);                      //RMM
 
         lower_cond = (pp[ip] / sep) - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
         upper_cond = (pp[ip + sz_p] / sep)
-        + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
-        z_dir_g;
+                     + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
+                     z_dir_g;
         diff = lower_cond - upper_cond;
         u_old = h
-        * PMeanDZ(permzp[ip], permzp[ip + sz_p],
-        z_mult_dat[ip], z_mult_dat[ip + sz_p])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
-        / viscosity;
+                * PMeanDZ(permzp[ip], permzp[ip + sz_p],
+                          z_mult_dat[ip], z_mult_dat[ip + sz_p])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
+                / viscosity;
         u_new = h;
 
         /* Add overland contribs */
         q_overlnd = 0.0;
         q_overlnd = vol
-        * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
-        dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-        / dz + vol * dt / dz * (exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);
+                    * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
+                    dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
+                    / dz + vol * dt / dz * (exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);
         //NBE
 
         if (overlandspinup == 1)
         {
           /* add flux loss equal to excess head  that overwrites the prior overland flux */
           q_overlnd = (vol / dz) * dt
-          * ((pfmax(pp[ip], 0.0) - 0.0)
-          + exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1)
-          * public_xtra->SpinupDampP2);                                     //@RMM
+                      * ((pfmax(pp[ip], 0.0) - 0.0)
+                         + exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1)
+                         * public_xtra->SpinupDampP2);                      //@RMM
         }
         fp[ip] += q_overlnd;
       }),
-        CellFinalize(
+                           CellFinalize(
       {
 /* Remove the boundary term computed above */
         fp[ip] -= dt * dir * u_old;
@@ -1584,18 +1584,18 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         vel_vec[vel_idx] = u_new / h;
       }),
-        AfterAllCells(DoNothing)
-        );                    /* End OverlandBC case */
+                           AfterAllCells(DoNothing)
+                           ); /* End OverlandBC case */
 
       ForPatchCellsPerFace(SeepageFaceBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int dir, ip;
-        int vel_idx, vx_l, vy_l, vz_l;
-        double *vel_vec;
-        double u_new, u_old, q_overlnd, h;
-        double del_x_slope, del_y_slope; ),
-        CellSetup(
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int dir, ip;
+                                  int vel_idx, vx_l, vy_l, vz_l;
+                                  double *vel_vec;
+                                  double u_new, u_old, q_overlnd, h;
+                                  double del_x_slope, del_y_slope; ),
+                           CellSetup(
       {
         dir = 0;
         ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -1614,7 +1614,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         del_x_slope = 1.0;
         del_y_slope = 1.0;
       }),
-        FACE(LeftFace, {
+                           FACE(LeftFace, {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
         vel_idx = vx_l;
@@ -1622,7 +1622,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         u_new = h;
       }),
-        FACE(RightFace, {
+                           FACE(RightFace, {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
         vel_idx = vx_l + 1;
@@ -1630,7 +1630,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         u_new = h;
       }),
-        FACE(DownFace, {
+                           FACE(DownFace, {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
         vel_idx = vy_l;
@@ -1638,7 +1638,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         u_new = h;
       }),
-        FACE(UpFace, {
+                           FACE(UpFace, {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
         vel_idx = vy_l + sy_v;
@@ -1646,7 +1646,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         u_new = h;
       }),
-        FACE(BackFace, {
+                           FACE(BackFace, {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
         vel_idx = vz_l;
@@ -1654,7 +1654,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         u_new = h;
       }),
-        FACE(FrontFace, {
+                           FACE(FrontFace, {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
         vel_idx = vz_l + sz_v;
@@ -1666,7 +1666,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         fp[ip] += q_overlnd;
       }),
-        CellFinalize(
+                           CellFinalize(
       {
 /* Remove the boundary condition computed above */
         fp[ip] -= dt * dir * u_old;
@@ -1678,11 +1678,11 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         vel_vec[vel_idx] = u_new / h;
       }),
-        AfterAllCells(DoNothing)
-        );                    /* End SeepageFaceBC case */
+                           AfterAllCells(DoNothing)
+                           ); /* End SeepageFaceBC case */
 
       ForPatchCellsPerFace(OverlandKinematicBC,
-        BeforeAllCells(
+                           BeforeAllCells(
       {
 /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
  * routing added */
@@ -1691,20 +1691,20 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         double *dummy3 = NULL;
         double *dummy4 = NULL;
         PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
-        (grid, is, bc_struct, ipatch, problem_data, pressure,
-        ke_, kw_, kn_, ks_,
-        dummy1, dummy2, dummy3, dummy4,
-        qx_, qy_, CALCFCN));
+                           (grid, is, bc_struct, ipatch, problem_data, pressure,
+                            ke_, kw_, kn_, ks_,
+                            dummy1, dummy2, dummy3, dummy4,
+                            qx_, qy_, CALCFCN));
       }),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int ip, io, dir;
-        int vel_idx, vx_l, vy_l, vz_l;
-        double *vel_vec;
-        double q_overlnd, u_old, u_new, diff, h;
-        double x_dir_g, y_dir_g, z_dir_g;
-        double sep, lower_cond, upper_cond;
-        double del_x_slope, del_y_slope; ),
-        CellSetup(
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int ip, io, dir;
+                                  int vel_idx, vx_l, vy_l, vz_l;
+                                  double *vel_vec;
+                                  double q_overlnd, u_old, u_new, diff, h;
+                                  double x_dir_g, y_dir_g, z_dir_g;
+                                  double sep, lower_cond, upper_cond;
+                                  double del_x_slope, del_y_slope; ),
+                           CellSetup(
       {
         ip = SubvectorEltIndex(p_sub, i, j, k);
         io = SubvectorEltIndex(x_sl_sub, i, j, 0);
@@ -1734,7 +1734,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         q_overlnd = 0;
       }),
-        FACE(LeftFace,
+                           FACE(LeftFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -1743,23 +1743,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - 1] - pp[ip];
         u_old = h
-        * PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (diff / dx)
-        * RPMean(pp[ip - 1], pp[ip],
-        rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - 1], pp[ip],
+                        permxp[ip - 1], permxp[ip])
+                * (diff / dx)
+                * RPMean(pp[ip - 1], pp[ip],
+                         rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (-x_dir_g)
-        * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
-        rpp[ip] * dp[ip])
-        / viscosity;
+                 * PMean(pp[ip - 1], pp[ip],
+                         permxp[ip - 1], permxp[ip])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
+                          rpp[ip] * dp[ip])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(RightFace,
+                           FACE(RightFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -1768,23 +1768,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + 1];
         u_old = h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (diff / dx)
-        * RPMean(pp[ip], pp[ip + 1],
-        rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + 1],
+                        permxp[ip], permxp[ip + 1])
+                * (diff / dx)
+                * RPMean(pp[ip], pp[ip + 1],
+                         rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (-x_dir_g)
-        * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
-        rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + 1],
+                         permxp[ip], permxp[ip + 1])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
+                          rpp[ip + 1] * dp[ip + 1])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(DownFace,
+                           FACE(DownFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -1793,23 +1793,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - sy_p] - pp[ip];
         u_old = h
-        * PMean(pp[ip - sy_p], pp[ip],
-        permyp[ip - sy_p], permyp[ip])
-        * (diff / dy)
-        * RPMean(pp[ip - sy_p], pp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - sy_p], pp[ip],
+                        permyp[ip - sy_p], permyp[ip])
+                * (diff / dy)
+                * RPMean(pp[ip - sy_p], pp[ip],
+                         rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h *
-        PMean(pp[ip], pp[ip - sy_p], permyp[ip],
-        permyp[ip - sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p])
-        / viscosity;
+                 PMean(pp[ip], pp[ip - sy_p], permyp[ip],
+                       permyp[ip - sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
+                          rpp[ip - sy_p] * dp[ip - sy_p])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(UpFace,
+                           FACE(UpFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -1818,23 +1818,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + sy_p];
         u_old = h
-        * PMean(pp[ip], pp[ip + sy_p],
-        permyp[ip], permyp[ip + sy_p])
-        * (diff / dy)
-        * RPMean(pp[ip], pp[ip + sy_p],
-        rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + sy_p],
+                        permyp[ip], permyp[ip + sy_p])
+                * (diff / dy)
+                * RPMean(pp[ip], pp[ip + sy_p],
+                         rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
-        permyp[ip + sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
-        rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
+                         permyp[ip + sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
+                          rpp[ip + sy_p] * dp[ip + sy_p])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(BackFace,
+                           FACE(BackFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -1845,22 +1845,22 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         //  sep = dz*z_mult_dat[ip];  //RMM
 
         lower_cond = (pp[ip - sz_p] / sep)
-        - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
-        z_dir_g;
+                     - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
+                     z_dir_g;
         upper_cond = (pp[ip] / sep) + (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
 
         diff = lower_cond - upper_cond;
         u_old = h
-        * PMeanDZ(permzp[ip - sz_p], permzp[ip],
-        z_mult_dat[ip - sz_p], z_mult_dat[ip])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMeanDZ(permzp[ip - sz_p], permzp[ip],
+                          z_mult_dat[ip - sz_p], z_mult_dat[ip])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
+                / viscosity;
         u_new = h;
       }),
-        FACE(FrontFace,
+                           FACE(FrontFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -1870,28 +1870,28 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]);                      //RMM
 
         lower_cond = (pp[ip] / sep) - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
         upper_cond = (pp[ip + sz_p] / sep)
-        + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
-        z_dir_g;
+                     + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
+                     z_dir_g;
         diff = lower_cond - upper_cond;
         u_old = h
-        * PMeanDZ(permzp[ip], permzp[ip + sz_p],
-        z_mult_dat[ip], z_mult_dat[ip + sz_p])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
-        / viscosity;
+                * PMeanDZ(permzp[ip], permzp[ip + sz_p],
+                          z_mult_dat[ip], z_mult_dat[ip + sz_p])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
+                / viscosity;
         u_new = h;
 
         q_overlnd = 0.0;
         q_overlnd = vol
-        * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
-        dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-        / dz;
+                    * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
+                    dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
+                    / dz;
         fp[ip] += q_overlnd;
       }),
-        CellFinalize(
+                           CellFinalize(
       {
 /* Remove the boundary term computed above */
         fp[ip] -= dt * dir * u_old;
@@ -1904,11 +1904,11 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         vel_vec[vel_idx] = u_new / h;
       }),
-        AfterAllCells(DoNothing)
-        );
+                           AfterAllCells(DoNothing)
+                           );
 
       ForPatchCellsPerFace(OverlandDiffusiveBC,
-        BeforeAllCells(
+                           BeforeAllCells(
       {
         /*  @RMM this is a new module for diffusive wave
          */
@@ -1917,21 +1917,21 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         double *dummy3 = NULL;
         double *dummy4 = NULL;
         PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-        (grid, is, bc_struct, ipatch,
-        problem_data, pressure, old_pressure,
-        ke_, kw_, kn_, ks_,
-        dummy1, dummy2, dummy3, dummy4,
-        qx_, qy_, CALCFCN));
+                           (grid, is, bc_struct, ipatch,
+                            problem_data, pressure, old_pressure,
+                            ke_, kw_, kn_, ks_,
+                            dummy1, dummy2, dummy3, dummy4,
+                            qx_, qy_, CALCFCN));
       }),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int ip, io, dir;
-        int vel_idx, vx_l, vy_l, vz_l;
-        double *vel_vec;
-        double q_overlnd, u_old, u_new, diff, h;
-        double x_dir_g, y_dir_g, z_dir_g;
-        double sep, lower_cond, upper_cond;
-        double del_x_slope, del_y_slope; ),
-        CellSetup(
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int ip, io, dir;
+                                  int vel_idx, vx_l, vy_l, vz_l;
+                                  double *vel_vec;
+                                  double q_overlnd, u_old, u_new, diff, h;
+                                  double x_dir_g, y_dir_g, z_dir_g;
+                                  double sep, lower_cond, upper_cond;
+                                  double del_x_slope, del_y_slope; ),
+                           CellSetup(
       {
         ip = SubvectorEltIndex(p_sub, i, j, k);
         io = SubvectorEltIndex(x_sl_sub, i, j, 0);
@@ -1961,7 +1961,7 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         q_overlnd = 0;
       }),
-        FACE(LeftFace,
+                           FACE(LeftFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -1970,23 +1970,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - 1] - pp[ip];
         u_old = h
-        * PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (diff / dx)
-        * RPMean(pp[ip - 1], pp[ip],
-        rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - 1], pp[ip],
+                        permxp[ip - 1], permxp[ip])
+                * (diff / dx)
+                * RPMean(pp[ip - 1], pp[ip],
+                         rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip - 1], pp[ip],
-        permxp[ip - 1], permxp[ip])
-        * (-x_dir_g)
-        * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
-        rpp[ip] * dp[ip])
-        / viscosity;
+                 * PMean(pp[ip - 1], pp[ip],
+                         permxp[ip - 1], permxp[ip])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip - 1], pp[ip], rpp[ip - 1] * dp[ip - 1],
+                          rpp[ip] * dp[ip])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(RightFace,
+                           FACE(RightFace,
       {
         h = ffx * z_mult_dat[ip] * del_y_slope;
         vel_vec = vx;
@@ -1995,23 +1995,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + 1];
         u_old = h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (diff / dx)
-        * RPMean(pp[ip], pp[ip + 1],
-        rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + 1],
+                        permxp[ip], permxp[ip + 1])
+                * (diff / dx)
+                * RPMean(pp[ip], pp[ip + 1],
+                         rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + 1],
-        permxp[ip], permxp[ip + 1])
-        * (-x_dir_g)
-        * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
-        rpp[ip + 1] * dp[ip + 1])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + 1],
+                         permxp[ip], permxp[ip + 1])
+                 * (-x_dir_g)
+                 * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
+                          rpp[ip + 1] * dp[ip + 1])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(DownFace,
+                           FACE(DownFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -2020,23 +2020,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = -1;
         diff = pp[ip - sy_p] - pp[ip];
         u_old = h
-        * PMean(pp[ip - sy_p], pp[ip],
-        permyp[ip - sy_p], permyp[ip])
-        * (diff / dy)
-        * RPMean(pp[ip - sy_p], pp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMean(pp[ip - sy_p], pp[ip],
+                        permyp[ip - sy_p], permyp[ip])
+                * (diff / dy)
+                * RPMean(pp[ip - sy_p], pp[ip],
+                         rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
+                / viscosity;
 
         u_old += h *
-        PMean(pp[ip], pp[ip - sy_p], permyp[ip],
-        permyp[ip - sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
-        rpp[ip - sy_p] * dp[ip - sy_p])
-        / viscosity;
+                 PMean(pp[ip], pp[ip - sy_p], permyp[ip],
+                       permyp[ip - sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip - sy_p], rpp[ip] * dp[ip],
+                          rpp[ip - sy_p] * dp[ip - sy_p])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(UpFace,
+                           FACE(UpFace,
       {
         h = ffy * z_mult_dat[ip] * del_x_slope;
         vel_vec = vy;
@@ -2045,23 +2045,23 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         dir = 1;
         diff = pp[ip] - pp[ip + sy_p];
         u_old = h
-        * PMean(pp[ip], pp[ip + sy_p],
-        permyp[ip], permyp[ip + sy_p])
-        * (diff / dy)
-        * RPMean(pp[ip], pp[ip + sy_p],
-        rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                * PMean(pp[ip], pp[ip + sy_p],
+                        permyp[ip], permyp[ip + sy_p])
+                * (diff / dy)
+                * RPMean(pp[ip], pp[ip + sy_p],
+                         rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
+                / viscosity;
 
         u_old += h
-        * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
-        permyp[ip + sy_p])
-        * (-y_dir_g)
-        * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
-        rpp[ip + sy_p] * dp[ip + sy_p])
-        / viscosity;
+                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
+                         permyp[ip + sy_p])
+                 * (-y_dir_g)
+                 * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
+                          rpp[ip + sy_p] * dp[ip + sy_p])
+                 / viscosity;
         u_new = h;
       }),
-        FACE(BackFace,
+                           FACE(BackFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -2072,22 +2072,22 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         //  sep = dz*z_mult_dat[ip];  //RMM
 
         lower_cond = (pp[ip - sz_p] / sep)
-        - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
-        z_dir_g;
+                     - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip - sz_p] * gravity *
+                     z_dir_g;
         upper_cond = (pp[ip] / sep) + (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
 
         diff = lower_cond - upper_cond;
         u_old = h
-        * PMeanDZ(permzp[ip - sz_p], permzp[ip],
-        z_mult_dat[ip - sz_p], z_mult_dat[ip])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
-        / viscosity;
+                * PMeanDZ(permzp[ip - sz_p], permzp[ip],
+                          z_mult_dat[ip - sz_p], z_mult_dat[ip])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
+                / viscosity;
         u_new = h;
       }),
-        FACE(FrontFace,
+                           FACE(FrontFace,
       {
         h = ffz * del_x_slope * del_y_slope;
         vel_vec = vz;
@@ -2097,30 +2097,30 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
         sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]);                      //RMM
 
         lower_cond = (pp[ip] / sep) - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip] * gravity *
-        z_dir_g;
+                     z_dir_g;
         upper_cond = (pp[ip + sz_p] / sep)
-        + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
-        z_dir_g;
+                     + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) * dp[ip + sz_p] * gravity *
+                     z_dir_g;
         diff = lower_cond - upper_cond;
         u_old = h
-        * PMeanDZ(permzp[ip], permzp[ip + sz_p],
-        z_mult_dat[ip], z_mult_dat[ip + sz_p])
-        * diff
-        * RPMean(lower_cond, upper_cond,
-        rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
-        / viscosity;
+                * PMeanDZ(permzp[ip], permzp[ip + sz_p],
+                          z_mult_dat[ip], z_mult_dat[ip + sz_p])
+                * diff
+                * RPMean(lower_cond, upper_cond,
+                         rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
+                / viscosity;
         u_new = h;
 
 
         q_overlnd = 0.0;
         q_overlnd = vol
-        * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
-        dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-        / dz;
+                    * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
+                    dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
+                    / dz;
 
         fp[ip] += q_overlnd;
       }),
-        CellFinalize(
+                           CellFinalize(
       {
         /* Remove the boundary term computed above */
         fp[ip] -= dt * dir * u_old;
@@ -2132,8 +2132,8 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
 
         vel_vec[vel_idx] = u_new / h;
       }),
-        AfterAllCells(DoNothing)
-        );                    /* End OverlandDiffusiveBC case */
+                           AfterAllCells(DoNothing)
+                           ); /* End OverlandDiffusiveBC case */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
@@ -2164,33 +2164,33 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
 
       ForPatchCellsPerFace(DirichletBC,
-        BeforeAllCells(DoNothing),
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(int pp_idx, ip; /*double value;*/),
-        CellSetup({
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int pp_idx, ip; /*double value;*/),
+                           CellSetup({
         pp_idx = 0;
         ip = SubvectorEltIndex(p_sub, i, j, k);
         /*value = bc_patch_values[ival];*/
       }),
-        FACE(LeftFace, { pp_idx = ip - 1; }),
-        FACE(RightFace, { pp_idx = ip + 1; }),
-        FACE(DownFace, { pp_idx = ip - sy_p; }),
-        FACE(UpFace, { pp_idx = ip + sy_p; }),
-        FACE(BackFace, { pp_idx = ip - sz_p; }),
-        FACE(FrontFace, { pp_idx = ip + sz_p; }),
-        CellFinalize({
+                           FACE(LeftFace, { pp_idx = ip - 1; }),
+                           FACE(RightFace, { pp_idx = ip + 1; }),
+                           FACE(DownFace, { pp_idx = ip - sy_p; }),
+                           FACE(UpFace, { pp_idx = ip + sy_p; }),
+                           FACE(BackFace, { pp_idx = ip - sz_p; }),
+                           FACE(FrontFace, { pp_idx = ip + sz_p; }),
+                           CellFinalize({
         pp[pp_idx] = -FLT_MAX;
         fp[pp_idx] = 0.0;
       }),
-        AfterAllCells(DoNothing)
-        );
+                           AfterAllCells(DoNothing)
+                           );
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
   FreeBCStruct(bc_struct);
 
   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, fval, NULL,
-    time, pressure, CALCFCN));
+                                                             time, pressure, CALCFCN));
 
   EndTiming(public_xtra->time_index);
 
@@ -2212,8 +2212,8 @@ void NlFunctionEval(Vector * pressure,     /* Current pressure values */
  *--------------------------------------------------------------------------*/
 
 PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
-  Grid *                                             grid,
-  double *                                           temp_data)
+                                            Grid *   grid,
+                                            double * temp_data)
 
 {
   PFModule      *this_module = ThisPFModule;
@@ -2238,15 +2238,15 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
       PFModuleNewInstance(ProblemPhaseDensity(problem), ());
     (instance_xtra->saturation_module) =
       PFModuleNewInstanceType(SaturationInitInstanceXtraInvoke,
-        ProblemSaturation(problem), (NULL, NULL));
+                              ProblemSaturation(problem), (NULL, NULL));
     (instance_xtra->rel_perm_module) =
       PFModuleNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
-        ProblemPhaseRelPerm(problem), (NULL, NULL));
+                              ProblemPhaseRelPerm(problem), (NULL, NULL));
     (instance_xtra->phase_source) =
       PFModuleNewInstance(ProblemPhaseSource(problem), ());
     (instance_xtra->bc_pressure) =
       PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
-        ProblemBCPressure(problem), (problem));
+                              ProblemBCPressure(problem), (problem));
     (instance_xtra->bc_internal) =
       PFModuleNewInstance(ProblemBCInternal(problem), ());
     (instance_xtra->overlandflow_module) =
@@ -2260,15 +2260,15 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
   {
     PFModuleReNewInstance((instance_xtra->density_module), ());
     PFModuleReNewInstanceType(SaturationInitInstanceXtraInvoke,
-      (instance_xtra->saturation_module),
-      (NULL, NULL));
+                              (instance_xtra->saturation_module),
+                              (NULL, NULL));
     PFModuleReNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
-      (instance_xtra->rel_perm_module),
-      (NULL, NULL));
+                              (instance_xtra->rel_perm_module),
+                              (NULL, NULL));
     PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
-      (instance_xtra->phase_source), (NULL));
+                              (instance_xtra->phase_source), (NULL));
     PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
-      (instance_xtra->bc_pressure), (problem));
+                              (instance_xtra->bc_pressure), (problem));
     PFModuleReNewInstance((instance_xtra->bc_internal), ());
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //@RMM

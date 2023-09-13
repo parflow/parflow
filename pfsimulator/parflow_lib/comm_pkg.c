@@ -42,13 +42,13 @@
  *--------------------------------------------------------------------------*/
 
 void     ProjectRegion(
-  Region *region,
-  int     sx,
-  int     sy,
-  int     sz,
-  int     ix,
-  int     iy,
-  int     iz)
+                       Region *region,
+                       int     sx,
+                       int     sy,
+                       int     sz,
+                       int     ix,
+                       int     iy,
+                       int     iz)
 {
   SubregionArray  *sr_array;
 
@@ -82,8 +82,8 @@ void     ProjectRegion(
  *--------------------------------------------------------------------------*/
 
 Region  *ProjectRBPoint(
-  Region *region,
-  int     rb[4][3])
+                        Region *region,
+                        int     rb[4][3])
 {
   Region          *new_region;
 
@@ -101,7 +101,7 @@ Region  *ProjectRBPoint(
     ForSubregionArrayI(j, tmp_reg)
     {
       AppendSubregionArray(RegionSubregionArray(tmp_reg, j),
-        RegionSubregionArray(new_region, j));
+                           RegionSubregionArray(new_region, j));
       SubregionArraySize(RegionSubregionArray(tmp_reg, j)) = 0;
     }
     FreeRegion(tmp_reg);
@@ -115,7 +115,7 @@ Region  *ProjectRBPoint(
  *--------------------------------------------------------------------------*/
 
 void  CreateComputePkgs(
-  Grid *grid)
+                        Grid *grid)
 {
   SubgridArray  *subgrids = GridSubgrids(grid);
 
@@ -318,7 +318,7 @@ void  CreateComputePkgs(
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_all_stencil);
 
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_all_stencil);
+                        subgrids, send_reg, recv_reg, update_all_stencil);
 
   GridComputePkg(grid, VectorUpdateAll) =
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
@@ -330,7 +330,7 @@ void  CreateComputePkgs(
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_all2_stencil);
 
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_all2_stencil);
+                        subgrids, send_reg, recv_reg, update_all2_stencil);
 
   GridComputePkg(grid, VectorUpdateAll2) =
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
@@ -342,7 +342,7 @@ void  CreateComputePkgs(
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_all_stencil);
 
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_all_stencil);
+                        subgrids, send_reg, recv_reg, update_all_stencil);
 
   /* RDF temporary until rewrite of CommRegFromStencil */
   proj_send_reg = ProjectRBPoint(send_reg, black);
@@ -374,7 +374,7 @@ void  CreateComputePkgs(
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_godunov_stencil);
 
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_godunov_stencil);
+                        subgrids, send_reg, recv_reg, update_godunov_stencil);
 
   GridComputePkg(grid, VectorUpdateGodunov) =
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
@@ -386,7 +386,7 @@ void  CreateComputePkgs(
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_velz_stencil);
 
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_velz_stencil);
+                        subgrids, send_reg, recv_reg, update_velz_stencil);
 
   GridComputePkg(grid, VectorUpdateVelZ) =
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
@@ -398,28 +398,28 @@ void  CreateComputePkgs(
   /* PGS1 */
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_pgs1_stencil);
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_pgs1_stencil);
+                        subgrids, send_reg, recv_reg, update_pgs1_stencil);
   GridComputePkg(grid, VectorUpdatePGS1) =
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
 
   /* PGS2 */
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_pgs2_stencil);
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_pgs2_stencil);
+                        subgrids, send_reg, recv_reg, update_pgs2_stencil);
   GridComputePkg(grid, VectorUpdatePGS2) =
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
 
   /* PGS3 */
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_pgs3_stencil);
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_pgs3_stencil);
+                        subgrids, send_reg, recv_reg, update_pgs3_stencil);
   GridComputePkg(grid, VectorUpdatePGS3) =
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
 
   /* PGS4 */
   CommRegFromStencil(&send_reg, &recv_reg, grid, update_pgs4_stencil);
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-    subgrids, send_reg, recv_reg, update_pgs4_stencil);
+                        subgrids, send_reg, recv_reg, update_pgs4_stencil);
   GridComputePkg(grid, VectorUpdatePGS4) =
     NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg);
 
@@ -451,7 +451,7 @@ void  CreateComputePkgs(
  *--------------------------------------------------------------------------*/
 
 void  FreeComputePkgs(
-  Grid *grid)
+                      Grid *grid)
 {
   int i;
 

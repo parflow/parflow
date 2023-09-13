@@ -65,19 +65,19 @@ void FreeBackground(Background *background)
  *--------------------------------------------------------------------------*/
 
 void ReadBackground(
-  FILE *      fd,
-  Background *background)
+                    FILE *      fd,
+                    Background *background)
 {
   fscanf(fd, "%lf %lf %lf %d %d %d %lf %lf %lf\n",
-    &BackgroundX(background),
-    &BackgroundY(background),
-    &BackgroundZ(background),
-    &BackgroundNX(background),
-    &BackgroundNY(background),
-    &BackgroundNZ(background),
-    &BackgroundDX(background),
-    &BackgroundDY(background),
-    &BackgroundDZ(background));
+         &BackgroundX(background),
+         &BackgroundY(background),
+         &BackgroundZ(background),
+         &BackgroundNX(background),
+         &BackgroundNY(background),
+         &BackgroundNZ(background),
+         &BackgroundDX(background),
+         &BackgroundDY(background),
+         &BackgroundDZ(background));
 }
 
 /*--------------------------------------------------------------------------
@@ -85,19 +85,19 @@ void ReadBackground(
  *--------------------------------------------------------------------------*/
 
 void WriteBackground(
-  FILE *      fd,
-  Background *background)
+                     FILE *      fd,
+                     Background *background)
 {
   fprintf(fd, "%f %f %f %d %d %d %f %f %f\n",
-    BackgroundX(background),
-    BackgroundY(background),
-    BackgroundZ(background),
-    BackgroundNX(background),
-    BackgroundNY(background),
-    BackgroundNZ(background),
-    BackgroundDX(background),
-    BackgroundDY(background),
-    BackgroundDZ(background));
+          BackgroundX(background),
+          BackgroundY(background),
+          BackgroundZ(background),
+          BackgroundNX(background),
+          BackgroundNY(background),
+          BackgroundNZ(background),
+          BackgroundDX(background),
+          BackgroundDY(background),
+          BackgroundDZ(background));
 }
 
 /*--------------------------------------------------------------------------
@@ -105,18 +105,18 @@ void WriteBackground(
  *--------------------------------------------------------------------------*/
 
 void PrintBackground(
-  Background *background)
+                     Background *background)
 {
   printf("%f %f %f %d %d %d %f %f %f\n",
-    BackgroundX(background),
-    BackgroundY(background),
-    BackgroundZ(background),
-    BackgroundNX(background),
-    BackgroundNY(background),
-    BackgroundNZ(background),
-    BackgroundDX(background),
-    BackgroundDY(background),
-    BackgroundDZ(background));
+         BackgroundX(background),
+         BackgroundY(background),
+         BackgroundZ(background),
+         BackgroundNX(background),
+         BackgroundNY(background),
+         BackgroundNZ(background),
+         BackgroundDX(background),
+         BackgroundDY(background),
+         BackgroundDZ(background));
 }
 
 /*--------------------------------------------------------------------------
@@ -137,7 +137,7 @@ ProblemData *NewProblemData()
  *--------------------------------------------------------------------------*/
 
 void FreeProblemData(
-  ProblemData *problem_data)
+                     ProblemData *problem_data)
 {
   if (problem_data)
   {
@@ -150,13 +150,13 @@ void FreeProblemData(
  *--------------------------------------------------------------------------*/
 
 void ReadProblemData(
-  FILE *       fd,
-  ProblemData *problem_data)
+                     FILE *       fd,
+                     ProblemData *problem_data)
 {
   fscanf(fd, "%d %d %d\n",
-    &ProblemDataNumPhases(problem_data),
-    &ProblemDataNumComponents(problem_data),
-    &ProblemDataNumWells(problem_data));
+         &ProblemDataNumPhases(problem_data),
+         &ProblemDataNumComponents(problem_data),
+         &ProblemDataNumWells(problem_data));
 }
 
 /*--------------------------------------------------------------------------
@@ -164,13 +164,13 @@ void ReadProblemData(
  *--------------------------------------------------------------------------*/
 
 void WriteProblemData(
-  FILE *       fd,
-  ProblemData *problem_data)
+                      FILE *       fd,
+                      ProblemData *problem_data)
 {
   fprintf(fd, "%d %d %d\n",
-    ProblemDataNumPhases(problem_data),
-    ProblemDataNumComponents(problem_data),
-    ProblemDataNumWells(problem_data));
+          ProblemDataNumPhases(problem_data),
+          ProblemDataNumComponents(problem_data),
+          ProblemDataNumWells(problem_data));
 }
 
 /*--------------------------------------------------------------------------
@@ -178,12 +178,12 @@ void WriteProblemData(
  *--------------------------------------------------------------------------*/
 
 void PrintProblemData(
-  ProblemData *problem_data)
+                      ProblemData *problem_data)
 {
   printf("%d %d %d\n",
-    ProblemDataNumPhases(problem_data),
-    ProblemDataNumComponents(problem_data),
-    ProblemDataNumWells(problem_data));
+         ProblemDataNumPhases(problem_data),
+         ProblemDataNumComponents(problem_data),
+         ProblemDataNumWells(problem_data));
 }
 
 /*--------------------------------------------------------------------------
@@ -206,7 +206,7 @@ WellDataHeader *NewWellDataHeader()
  *--------------------------------------------------------------------------*/
 
 void FreeWellDataHeader(
-  WellDataHeader *well_data_header)
+                        WellDataHeader *well_data_header)
 {
   if (well_data_header)
   {
@@ -223,8 +223,8 @@ void FreeWellDataHeader(
  *--------------------------------------------------------------------------*/
 
 void ReadWellDataHeader(
-  FILE *          fd,
-  WellDataHeader *well_data_header)
+                        FILE *          fd,
+                        WellDataHeader *well_data_header)
 {
   int i, string_length;
   char      *tmp_string;
@@ -243,17 +243,17 @@ void ReadWellDataHeader(
   free(tmp_string);
 
   fscanf(fd, "%lf %lf %lf %lf %lf %lf %lf\n",
-    &WellDataHeaderXLower(well_data_header),
-    &WellDataHeaderYLower(well_data_header),
-    &WellDataHeaderZLower(well_data_header),
-    &WellDataHeaderXUpper(well_data_header),
-    &WellDataHeaderYUpper(well_data_header),
-    &WellDataHeaderZUpper(well_data_header),
-    &WellDataHeaderDiameter(well_data_header));
+         &WellDataHeaderXLower(well_data_header),
+         &WellDataHeaderYLower(well_data_header),
+         &WellDataHeaderZLower(well_data_header),
+         &WellDataHeaderXUpper(well_data_header),
+         &WellDataHeaderYUpper(well_data_header),
+         &WellDataHeaderZUpper(well_data_header),
+         &WellDataHeaderDiameter(well_data_header));
 
   fscanf(fd, "%d %d\n",
-    &WellDataHeaderType(well_data_header),
-    &WellDataHeaderAction(well_data_header));
+         &WellDataHeaderType(well_data_header),
+         &WellDataHeaderAction(well_data_header));
 }
 
 /*--------------------------------------------------------------------------
@@ -261,25 +261,25 @@ void ReadWellDataHeader(
  *--------------------------------------------------------------------------*/
 
 void WriteWellDataHeader(
-  FILE *          fd,
-  WellDataHeader *well_data_header)
+                         FILE *          fd,
+                         WellDataHeader *well_data_header)
 {
   fprintf(fd, "%2d\n", WellDataHeaderNumber(well_data_header));
 
   fprintf(fd, "%s\n", WellDataHeaderName(well_data_header));
 
   fprintf(fd, "%f %f %f %f %f %f %f\n",
-    WellDataHeaderXLower(well_data_header),
-    WellDataHeaderYLower(well_data_header),
-    WellDataHeaderZLower(well_data_header),
-    WellDataHeaderXUpper(well_data_header),
-    WellDataHeaderYUpper(well_data_header),
-    WellDataHeaderZUpper(well_data_header),
-    WellDataHeaderDiameter(well_data_header));
+          WellDataHeaderXLower(well_data_header),
+          WellDataHeaderYLower(well_data_header),
+          WellDataHeaderZLower(well_data_header),
+          WellDataHeaderXUpper(well_data_header),
+          WellDataHeaderYUpper(well_data_header),
+          WellDataHeaderZUpper(well_data_header),
+          WellDataHeaderDiameter(well_data_header));
 
   fprintf(fd, "%1d %1d\n",
-    WellDataHeaderType(well_data_header),
-    WellDataHeaderAction(well_data_header));
+          WellDataHeaderType(well_data_header),
+          WellDataHeaderAction(well_data_header));
 }
 
 /*--------------------------------------------------------------------------
@@ -287,24 +287,24 @@ void WriteWellDataHeader(
  *--------------------------------------------------------------------------*/
 
 void PrintWellDataHeader(
-  WellDataHeader *well_data_header)
+                         WellDataHeader *well_data_header)
 {
   printf("%2d\n", WellDataHeaderNumber(well_data_header));
 
   printf("%s\n", WellDataHeaderName(well_data_header));
 
   printf("%f %f %f %f %f %f %f\n",
-    WellDataHeaderXLower(well_data_header),
-    WellDataHeaderYLower(well_data_header),
-    WellDataHeaderZLower(well_data_header),
-    WellDataHeaderXUpper(well_data_header),
-    WellDataHeaderYUpper(well_data_header),
-    WellDataHeaderZUpper(well_data_header),
-    WellDataHeaderDiameter(well_data_header));
+         WellDataHeaderXLower(well_data_header),
+         WellDataHeaderYLower(well_data_header),
+         WellDataHeaderZLower(well_data_header),
+         WellDataHeaderXUpper(well_data_header),
+         WellDataHeaderYUpper(well_data_header),
+         WellDataHeaderZUpper(well_data_header),
+         WellDataHeaderDiameter(well_data_header));
 
   printf("%1d %1d\n",
-    WellDataHeaderType(well_data_header),
-    WellDataHeaderAction(well_data_header));
+         WellDataHeaderType(well_data_header),
+         WellDataHeaderAction(well_data_header));
 }
 
 /*--------------------------------------------------------------------------
@@ -325,7 +325,7 @@ WellDataPhysical *NewWellDataPhysical()
  *--------------------------------------------------------------------------*/
 
 void FreeWellDataPhysical(
-  WellDataPhysical *well_data_physical)
+                          WellDataPhysical *well_data_physical)
 {
   if (well_data_physical)
   {
@@ -338,21 +338,21 @@ void FreeWellDataPhysical(
  *--------------------------------------------------------------------------*/
 
 void ReadWellDataPhysical(
-  FILE *            fd,
-  WellDataPhysical *well_data_physical)
+                          FILE *            fd,
+                          WellDataPhysical *well_data_physical)
 {
   fscanf(fd, "%d\n", &WellDataPhysicalNumber(well_data_physical));
 
   fscanf(fd, "%d %d %d %d %d %d %d %d %d\n",
-    &WellDataPhysicalIX(well_data_physical),
-    &WellDataPhysicalIY(well_data_physical),
-    &WellDataPhysicalIZ(well_data_physical),
-    &WellDataPhysicalNX(well_data_physical),
-    &WellDataPhysicalNY(well_data_physical),
-    &WellDataPhysicalNZ(well_data_physical),
-    &WellDataPhysicalRX(well_data_physical),
-    &WellDataPhysicalRY(well_data_physical),
-    &WellDataPhysicalRZ(well_data_physical));
+         &WellDataPhysicalIX(well_data_physical),
+         &WellDataPhysicalIY(well_data_physical),
+         &WellDataPhysicalIZ(well_data_physical),
+         &WellDataPhysicalNX(well_data_physical),
+         &WellDataPhysicalNY(well_data_physical),
+         &WellDataPhysicalNZ(well_data_physical),
+         &WellDataPhysicalRX(well_data_physical),
+         &WellDataPhysicalRY(well_data_physical),
+         &WellDataPhysicalRZ(well_data_physical));
 }
 
 /*--------------------------------------------------------------------------
@@ -360,21 +360,21 @@ void ReadWellDataPhysical(
  *--------------------------------------------------------------------------*/
 
 void WriteWellDataPhysical(
-  FILE *            fd,
-  WellDataPhysical *well_data_physical)
+                           FILE *            fd,
+                           WellDataPhysical *well_data_physical)
 {
   fprintf(fd, "%2d\n", WellDataHeaderNumber(well_data_physical));
 
   fprintf(fd, "%d %d %d %d %d %d %d %d %d\n",
-    WellDataPhysicalIX(well_data_physical),
-    WellDataPhysicalIY(well_data_physical),
-    WellDataPhysicalIZ(well_data_physical),
-    WellDataPhysicalNX(well_data_physical),
-    WellDataPhysicalNY(well_data_physical),
-    WellDataPhysicalNZ(well_data_physical),
-    WellDataPhysicalRX(well_data_physical),
-    WellDataPhysicalRY(well_data_physical),
-    WellDataPhysicalRZ(well_data_physical));
+          WellDataPhysicalIX(well_data_physical),
+          WellDataPhysicalIY(well_data_physical),
+          WellDataPhysicalIZ(well_data_physical),
+          WellDataPhysicalNX(well_data_physical),
+          WellDataPhysicalNY(well_data_physical),
+          WellDataPhysicalNZ(well_data_physical),
+          WellDataPhysicalRX(well_data_physical),
+          WellDataPhysicalRY(well_data_physical),
+          WellDataPhysicalRZ(well_data_physical));
 }
 
 /*--------------------------------------------------------------------------
@@ -382,20 +382,20 @@ void WriteWellDataPhysical(
  *--------------------------------------------------------------------------*/
 
 void PrintWellDataPhysical(
-  WellDataPhysical *well_data_physical)
+                           WellDataPhysical *well_data_physical)
 {
   printf("%2d\n", WellDataHeaderNumber(well_data_physical));
 
   printf("%d %d %d %d %d %d %d %d %d\n",
-    WellDataPhysicalIX(well_data_physical),
-    WellDataPhysicalIY(well_data_physical),
-    WellDataPhysicalIZ(well_data_physical),
-    WellDataPhysicalNX(well_data_physical),
-    WellDataPhysicalNY(well_data_physical),
-    WellDataPhysicalNZ(well_data_physical),
-    WellDataPhysicalRX(well_data_physical),
-    WellDataPhysicalRY(well_data_physical),
-    WellDataPhysicalRZ(well_data_physical));
+         WellDataPhysicalIX(well_data_physical),
+         WellDataPhysicalIY(well_data_physical),
+         WellDataPhysicalIZ(well_data_physical),
+         WellDataPhysicalNX(well_data_physical),
+         WellDataPhysicalNY(well_data_physical),
+         WellDataPhysicalNZ(well_data_physical),
+         WellDataPhysicalRX(well_data_physical),
+         WellDataPhysicalRY(well_data_physical),
+         WellDataPhysicalRZ(well_data_physical));
 }
 
 /*--------------------------------------------------------------------------
@@ -403,8 +403,8 @@ void PrintWellDataPhysical(
  *--------------------------------------------------------------------------*/
 
 void CopyWellDataPhysical(
-  WellDataPhysical *updt_well_data_physical,
-  WellDataPhysical *well_data_physical)
+                          WellDataPhysical *updt_well_data_physical,
+                          WellDataPhysical *well_data_physical)
 {
   WellDataHeaderNumber(updt_well_data_physical) = WellDataHeaderNumber(well_data_physical);
 
@@ -424,8 +424,8 @@ void CopyWellDataPhysical(
  *--------------------------------------------------------------------------*/
 
 WellDataValue *NewWellDataValue(
-  int num_phases,
-  int num_components)
+                                int num_phases,
+                                int num_components)
 {
   WellDataValue    *well_data_value;
 
@@ -444,7 +444,7 @@ WellDataValue *NewWellDataValue(
  *--------------------------------------------------------------------------*/
 
 void FreeWellDataValue(
-  WellDataValue *well_data_value)
+                       WellDataValue *well_data_value)
 {
   if (well_data_value)
   {
@@ -473,12 +473,12 @@ void FreeWellDataValue(
  *--------------------------------------------------------------------------*/
 
 void ReadWellDataValue(
-  FILE *         fd,
-  WellDataValue *well_data_value,
-  int            action,
-  int            type,
-  int            num_phases,
-  int            num_components)
+                       FILE *         fd,
+                       WellDataValue *well_data_value,
+                       int            action,
+                       int            type,
+                       int            num_phases,
+                       int            num_components)
 {
   int i, j, indx, num_values;
   double value;
@@ -533,12 +533,12 @@ void ReadWellDataValue(
  *--------------------------------------------------------------------------*/
 
 void WriteWellDataValue(
-  FILE *         fd,
-  WellDataValue *well_data_value,
-  int            action,
-  int            type,
-  int            num_phases,
-  int            num_components)
+                        FILE *         fd,
+                        WellDataValue *well_data_value,
+                        int            action,
+                        int            type,
+                        int            num_phases,
+                        int            num_components)
 {
   int i, j, indx, num_values;
   double value;
@@ -597,11 +597,11 @@ void WriteWellDataValue(
  *--------------------------------------------------------------------------*/
 
 void PrintWellDataValue(
-  WellDataValue *well_data_value,
-  int            action,
-  int            type,
-  int            num_phases,
-  int            num_components)
+                        WellDataValue *well_data_value,
+                        int            action,
+                        int            type,
+                        int            num_phases,
+                        int            num_components)
 {
   int i, j, indx, num_values;
   double value;
@@ -660,12 +660,12 @@ void PrintWellDataValue(
  *--------------------------------------------------------------------------*/
 
 void CopyWellDataValue(
-  WellDataValue *updt_well_data_value,
-  WellDataValue *well_data_value,
-  int            action,
-  int            type,
-  int            num_phases,
-  int            num_components)
+                       WellDataValue *updt_well_data_value,
+                       WellDataValue *well_data_value,
+                       int            action,
+                       int            type,
+                       int            num_phases,
+                       int            num_components)
 {
   int i, j, indx, num_values;
 
@@ -715,8 +715,8 @@ void CopyWellDataValue(
  *--------------------------------------------------------------------------*/
 
 WellDataStat *NewWellDataStat(
-  int num_phases,
-  int num_components)
+                              int num_phases,
+                              int num_components)
 {
   WellDataStat    *well_data_stat;
 
@@ -735,7 +735,7 @@ WellDataStat *NewWellDataStat(
  *--------------------------------------------------------------------------*/
 
 void FreeWellDataStat(
-  WellDataStat *well_data_stat)
+                      WellDataStat *well_data_stat)
 {
   if (well_data_stat)
   {
@@ -764,10 +764,10 @@ void FreeWellDataStat(
  *--------------------------------------------------------------------------*/
 
 void ReadWellDataStat(
-  FILE *        fd,
-  WellDataStat *well_data_stat,
-  int           num_phases,
-  int           num_components)
+                      FILE *        fd,
+                      WellDataStat *well_data_stat,
+                      int           num_phases,
+                      int           num_components)
 {
   int i, j, indx;
   double value;
@@ -810,10 +810,10 @@ void ReadWellDataStat(
  *--------------------------------------------------------------------------*/
 
 void WriteWellDataStat(
-  FILE *        fd,
-  WellDataStat *well_data_stat,
-  int           num_phases,
-  int           num_components)
+                       FILE *        fd,
+                       WellDataStat *well_data_stat,
+                       int           num_phases,
+                       int           num_components)
 {
   int i, j, indx;
   double value;
@@ -860,9 +860,9 @@ void WriteWellDataStat(
  *--------------------------------------------------------------------------*/
 
 void PrintWellDataStat(
-  WellDataStat *well_data_stat,
-  int           num_phases,
-  int           num_components)
+                       WellDataStat *well_data_stat,
+                       int           num_phases,
+                       int           num_components)
 {
   int i, j, indx;
   double value;
@@ -909,9 +909,9 @@ void PrintWellDataStat(
  *--------------------------------------------------------------------------*/
 
 void InitWellDataStat(
-  WellDataStat *well_data_stat,
-  int           num_phases,
-  int           num_components)
+                      WellDataStat *well_data_stat,
+                      int           num_phases,
+                      int           num_components)
 {
   int i, j, indx;
 
@@ -949,10 +949,10 @@ void InitWellDataStat(
  *--------------------------------------------------------------------------*/
 
 void UpdateWellDataStat(
-  WellDataStat *updt_well_data_stat,
-  WellDataStat *well_data_stat,
-  int           num_phases,
-  int           num_components)
+                        WellDataStat *updt_well_data_stat,
+                        WellDataStat *well_data_stat,
+                        int           num_phases,
+                        int           num_components)
 {
   int i, j, indx;
 
@@ -990,10 +990,10 @@ void UpdateWellDataStat(
  *--------------------------------------------------------------------------*/
 
 void CopyWellDataStat(
-  WellDataStat *updt_well_data_stat,
-  WellDataStat *well_data_stat,
-  int           num_phases,
-  int           num_components)
+                      WellDataStat *updt_well_data_stat,
+                      WellDataStat *well_data_stat,
+                      int           num_phases,
+                      int           num_components)
 {
   int i, j, indx;
 

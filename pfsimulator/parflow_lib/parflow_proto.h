@@ -252,11 +252,11 @@ SubgridArray *UnionSubgridArray(SubgridArray *subgrids);
 
 /* hbt.c */
 HBT *HBT_new(
-  int (*compare_method)(void *, void *),
-  void (*free_method)(void *),
-  void (*printf_method)(FILE *, void *),
-  int (*scanf_method)(FILE *, void **),
-  int malloc_flag);
+             int (*compare_method)(void *, void *),
+             void (*free_method)(void *),
+             void (*printf_method)(FILE *, void *),
+             int (*scanf_method)(FILE *, void **),
+             int malloc_flag);
 HBT_element *_new_HBT_element(HBT *tree, void *object, int sizeof_obj);
 void _free_HBT_element(HBT *tree, HBT_element *el);
 void _HBT_free(HBT *tree, HBT_element *subtree);
@@ -371,31 +371,31 @@ void InitMatrix(Matrix *A, double value);
 void Matvec(double alpha, Matrix *A, Vector *x, double beta, Vector *y);
 
 /* matvecSubMat.c */
-void MatvecSubMat(void * current_state,
-  double                 alpha,
-  Matrix *               JB,
-  Matrix *               JC,
-  Vector *               x,
-  double                 beta,
-  Vector *               y);
+void MatvecSubMat(void *   current_state,
+                  double   alpha,
+                  Matrix * JB,
+                  Matrix * JC,
+                  Vector * x,
+                  double   beta,
+                  Vector * y);
 
 /* MatvecJacF */
 void            MatvecJacF(
-  ProblemData *problem_data,
-  double       alpha,
-  Matrix *     JF,
-  Vector *     x,
-  double       beta,
-  Vector *     y);
+                           ProblemData *problem_data,
+                           double       alpha,
+                           Matrix *     JF,
+                           Vector *     x,
+                           double       beta,
+                           Vector *     y);
 
 /* MatvecJacE */
 void            MatvecJacE(
-  ProblemData *problem_data,
-  double       alpha,
-  Matrix *     JE,
-  Vector *     x,
-  double       beta,
-  Vector *     y);
+                           ProblemData *problem_data,
+                           double       alpha,
+                           Matrix *     JE,
+                           Vector *     x,
+                           double       beta,
+                           Vector *     y);
 
 /* max_field_value.c */
 double MaxFieldValue(Vector *field, Vector *phi, int dir);
@@ -498,12 +498,12 @@ int PFMGSizeOfTempData(void);
 
 void PFMGOctree(Vector *soln, Vector *rhs, double tol, int zero);
 PFModule  *PFMGOctreeInitInstanceXtra(
-  Problem *    problem,
-  Grid *       grid,
-  ProblemData *problem_data,
-  Matrix *     pf_Bmat,
-  Matrix *     pf_Cmat,
-  double *     temp_data);
+                                      Problem *    problem,
+                                      Grid *       grid,
+                                      ProblemData *problem_data,
+                                      Matrix *     pf_Bmat,
+                                      Matrix *     pf_Cmat,
+                                      double *     temp_data);
 void PFMGOctreeFreeInstanceXtra(void);
 PFModule *PFMGOctreeNewPublicXtra(char *name);
 void PFMGOctreeFreePublicXtra(void);
@@ -512,12 +512,12 @@ int PFMGOctreeSizeOfTempData(void);
 /* pf_smg.c */
 void SMG(Vector *soln, Vector *rhs, double tol, int zero);
 PFModule  *SMGInitInstanceXtra(
-  Problem *    problem,
-  Grid *       grid,
-  ProblemData *problem_data,
-  Matrix *     pf_Bmat,
-  Matrix *     pf_Cmat,
-  double *     temp_data);
+                               Problem *    problem,
+                               Grid *       grid,
+                               ProblemData *problem_data,
+                               Matrix *     pf_Bmat,
+                               Matrix *     pf_Cmat,
+                               double *     temp_data);
 void SMGFreeInstanceXtra(void);
 PFModule *SMGNewPublicXtra(char *name);
 void SMGFreePublicXtra(void);
@@ -752,35 +752,35 @@ int realSpaceZSizeOfTempData(void);
 
 
 /* DOK - overlandfloweval */
-typedef void (*OverlandFlowEvalInvoke) (Grid * grid,
-  int                                          sg,
-  BCStruct *                                   bc_struct,
-  int                                          ipatch,
-  ProblemData *                                problem_data,
-  Vector *                                     pressure,
-  Vector *                                     old_pressure,
-  double *                                     ke_v,
-  double *                                     kw_v,
-  double *                                     kn_v,
-  double *                                     ks_v,
-  double *                                     qx_v,
-  double *                                     qy_v,
-  int                                          fcn);
+typedef void (*OverlandFlowEvalInvoke) (Grid *        grid,
+                                        int           sg,
+                                        BCStruct *    bc_struct,
+                                        int           ipatch,
+                                        ProblemData * problem_data,
+                                        Vector *      pressure,
+                                        Vector *      old_pressure,
+                                        double *      ke_v,
+                                        double *      kw_v,
+                                        double *      kn_v,
+                                        double *      ks_v,
+                                        double *      qx_v,
+                                        double *      qy_v,
+                                        int           fcn);
 
-void OverlandFlowEval(Grid * grid,
-  int                        sg,
-  BCStruct *                 bc_struct,
-  int                        ipatch,
-  ProblemData *              problem_data,
-  Vector *                   pressure,
-  Vector *                   old_pressure,
-  double *                   ke_v,
-  double *                   kw_v,
-  double *                   kn_v,
-  double *                   ks_v,
-  double *                   qx_v,
-  double *                   qy_v,
-  int                        fcn);
+void OverlandFlowEval(Grid *        grid,
+                      int           sg,
+                      BCStruct *    bc_struct,
+                      int           ipatch,
+                      ProblemData * problem_data,
+                      Vector *      pressure,
+                      Vector *      old_pressure,
+                      double *      ke_v,
+                      double *      kw_v,
+                      double *      kn_v,
+                      double *      ks_v,
+                      double *      qx_v,
+                      double *      qy_v,
+                      int           fcn);
 PFModule *OverlandFlowEvalInitInstanceXtra(void);
 void OverlandFlowEvalFreeInstanceXtra(void);
 PFModule *OverlandFlowEvalNewPublicXtra(void);
@@ -788,43 +788,43 @@ void OverlandFlowEvalFreePublicXtra(void);
 int OverlandFlowEvalSizeOfTempData(void);
 
 /* @RMM - overlandflowevaldiffusive */
-typedef void (*OverlandFlowEvalDiffInvoke) (Grid * grid,
-  int                                              sg,
-  BCStruct *                                       bc_struct,
-  int                                              ipatch,
-  ProblemData *                                    problem_data,
-  Vector *                                         pressure,
-  Vector *                                         old_pressure,
-  double *                                         ke_v,
-  double *                                         kw_v,
-  double *                                         kn_v,
-  double *                                         ks_v,
-  double *                                         ke_vns,
-  double *                                         kw_vns,
-  double *                                         kn_vns,
-  double *                                         ks_vns,
-  double *                                         qx_v,
-  double *                                         qy_v,
-  int                                              fcn);
+typedef void (*OverlandFlowEvalDiffInvoke) (Grid *        grid,
+                                            int           sg,
+                                            BCStruct *    bc_struct,
+                                            int           ipatch,
+                                            ProblemData * problem_data,
+                                            Vector *      pressure,
+                                            Vector *      old_pressure,
+                                            double *      ke_v,
+                                            double *      kw_v,
+                                            double *      kn_v,
+                                            double *      ks_v,
+                                            double *      ke_vns,
+                                            double *      kw_vns,
+                                            double *      kn_vns,
+                                            double *      ks_vns,
+                                            double *      qx_v,
+                                            double *      qy_v,
+                                            int           fcn);
 
-void OverlandFlowEvalDiff(Grid * grid,
-  int                            sg,
-  BCStruct *                     bc_struct,
-  int                            ipatch,
-  ProblemData *                  problem_data,
-  Vector *                       pressure,
-  Vector *                       old_pressure,
-  double *                       ke_v,
-  double *                       kw_v,
-  double *                       kn_v,
-  double *                       ks_v,
-  double *                       ke_vns,
-  double *                       kw_vns,
-  double *                       kn_vns,
-  double *                       ks_vns,
-  double *                       qx_v,
-  double *                       qy_v,
-  int                            fcn);
+void OverlandFlowEvalDiff(Grid *        grid,
+                          int           sg,
+                          BCStruct *    bc_struct,
+                          int           ipatch,
+                          ProblemData * problem_data,
+                          Vector *      pressure,
+                          Vector *      old_pressure,
+                          double *      ke_v,
+                          double *      kw_v,
+                          double *      kn_v,
+                          double *      ks_v,
+                          double *      ke_vns,
+                          double *      kw_vns,
+                          double *      kn_vns,
+                          double *      ks_vns,
+                          double *      qx_v,
+                          double *      qy_v,
+                          int           fcn);
 PFModule *OverlandFlowEvalDiffInitInstanceXtra(void);
 void OverlandFlowEvalDiffFreeInstanceXtra(void);
 PFModule *OverlandFlowEvalDiffNewPublicXtra(void);
@@ -833,41 +833,41 @@ int OverlandFlowEvalDiffSizeOfTempData(void);
 
 
 /* overlandflow_eval_kin.c */
-typedef void (*OverlandFlowEvalKinInvoke) (Grid * grid,
-  int                                             sg,
-  BCStruct *                                      bc_struct,
-  int                                             ipatch,
-  ProblemData *                                   problem_data,
-  Vector *                                        pressure,
-  double *                                        ke_v,
-  double *                                        kw_v,
-  double *                                        kn_v,
-  double *                                        ks_v,
-  double *                                        ke_vns,
-  double *                                        kw_vns,
-  double *                                        kn_vns,
-  double *                                        ks_vns,
-  double *                                        qx_v,
-  double *                                        qy_v,
-  int                                             fcn);
+typedef void (*OverlandFlowEvalKinInvoke) (Grid *        grid,
+                                           int           sg,
+                                           BCStruct *    bc_struct,
+                                           int           ipatch,
+                                           ProblemData * problem_data,
+                                           Vector *      pressure,
+                                           double *      ke_v,
+                                           double *      kw_v,
+                                           double *      kn_v,
+                                           double *      ks_v,
+                                           double *      ke_vns,
+                                           double *      kw_vns,
+                                           double *      kn_vns,
+                                           double *      ks_vns,
+                                           double *      qx_v,
+                                           double *      qy_v,
+                                           int           fcn);
 
-void OverlandFlowEvalKin(Grid * grid,
-  int                           sg,
-  BCStruct *                    bc_struct,
-  int                           ipatch,
-  ProblemData *                 problem_data,
-  Vector *                      pressure,
-  double *                      ke_v,
-  double *                      kw_v,
-  double *                      kn_v,
-  double *                      ks_v,
-  double *                      ke_vns,
-  double *                      kw_vns,
-  double *                      kn_vns,
-  double *                      ks_vns,
-  double *                      qx_v,
-  double *                      qy_v,
-  int                           fcn);
+void OverlandFlowEvalKin(Grid *        grid,
+                         int           sg,
+                         BCStruct *    bc_struct,
+                         int           ipatch,
+                         ProblemData * problem_data,
+                         Vector *      pressure,
+                         double *      ke_v,
+                         double *      kw_v,
+                         double *      kn_v,
+                         double *      ks_v,
+                         double *      ke_vns,
+                         double *      kw_vns,
+                         double *      kn_vns,
+                         double *      ks_vns,
+                         double *      qx_v,
+                         double *      qy_v,
+                         int           fcn);
 PFModule *OverlandFlowEvalKinInitInstanceXtra(void);
 void OverlandFlowEvalKinFreeInstanceXtra(void);
 PFModule *OverlandFlowEvalKinNewPublicXtra(void);
@@ -1086,18 +1086,18 @@ PFModule *SelectTimeStepNewPublicXtra(void);
 void SelectTimeStepFreePublicXtra(void);
 int SelectTimeStepSizeOfTempData(void);
 PFModule  *WRFSelectTimeStepNewPublicXtra(
-  double initial_step,
-  double growth_factor,
-  double max_step,
-  double min_step);
+                                          double initial_step,
+                                          double growth_factor,
+                                          double max_step,
+                                          double min_step);
 void  WRFSelectTimeStepFreePublicXtra();
 
 PFModule  *WRFSelectTimeStepInitInstanceXtra();
 PFModule  *WRFSelectTimeStepNewPublicXtra(
-  double initial_step,
-  double growth_factor,
-  double max_step,
-  double min_step);
+                                          double initial_step,
+                                          double growth_factor,
+                                          double max_step,
+                                          double min_step);
 void  WRFSelectTimeStepFreePublicXtra();
 
 typedef void (*SetProblemDataInvoke) (ProblemData *problem_data);
@@ -1150,15 +1150,15 @@ int SolverRichardsSizeOfTempData(void);
 ProblemData *GetProblemDataRichards(PFModule *this_module);
 Problem  *GetProblemRichards(PFModule *this_module);
 PFModule *GetICPhasePressureRichards(PFModule *this_module);
-void AdvanceRichards(PFModule *this_module,
-  double                       start_time,   /* Starting time */
-  double                       stop_time,    /* Stopping time */
-  PFModule *                   time_step_control, /* Use this module to control timestep if supplied */
-  Vector *                     evap_trans,   /* Flux from land surface model */
-  Vector **                    pressure_out, /* Output vars */
-  Vector **                    porosity_out,
-  Vector **                    saturation_out
-  );
+void AdvanceRichards(PFModule * this_module,
+                     double     start_time,  /* Starting time */
+                     double     stop_time,   /* Stopping time */
+                     PFModule * time_step_control, /* Use this module to control timestep if supplied */
+                     Vector *   evap_trans,  /* Flux from land surface model */
+                     Vector **  pressure_out, /* Output vars */
+                     Vector **  porosity_out,
+                     Vector **  saturation_out
+                     );
 void SetupRichards(PFModule *this_module);
 
 
@@ -1228,19 +1228,19 @@ void FreeUserGrid(Grid *user_grid);
 /* vector.c */
 CommPkg *NewVectorCommPkg(Vector *vector, ComputePkg *compute_pkg);
 VectorUpdateCommHandle  *InitVectorUpdate(
-  Vector *vector,
-  int     update_mode);
+                                          Vector *vector,
+                                          int     update_mode);
 void         FinalizeVectorUpdate(
-  VectorUpdateCommHandle *handle);
+                                  VectorUpdateCommHandle *handle);
 Vector  *NewVector(
-  Grid *grid,
-  int   nc,
-  int   num_ghost);
+                   Grid *grid,
+                   int   nc,
+                   int   num_ghost);
 Vector  *NewVectorType(
-  Grid *           grid,
-  int              nc,
-  int              num_ghost,
-  enum vector_type type);
+                       Grid *           grid,
+                       int              nc,
+                       int              num_ghost,
+                       enum vector_type type);
 void FreeVector(Vector *vector);
 void InitVector(Vector *v, double value);
 void InitVectorAll(Vector *v, double value);
@@ -1315,64 +1315,64 @@ void WritePFSBinary_Subvector(amps_File file, Subvector *subvector, Subgrid *sub
 void WritePFSBinary(char *file_prefix, char *file_suffix, Vector *v, double drop_tolerance);
 
 /* write_parflow_silo.c */
-void WriteSilo(char * file_prefix,
-  char *              file_type,
-  char *              file_suffix,
-  Vector *            v,
-  double              time,
-  int                 step,
-  char *              variable_name);
+void WriteSilo(char *   file_prefix,
+               char *   file_type,
+               char *   file_suffix,
+               Vector * v,
+               double   time,
+               int      step,
+               char *   variable_name);
 void WriteSiloInit(char *file_prefix);
 void pf_mk_dir(char *filename);
 
 /* write_parflow_silo_PMPIO.c */
-void     WriteSiloPMPIO(char * file_prefix,
-  char *                       file_type,
-  char *                       file_suffix,
-  Vector *                     v,
-  double                       time,
-  int                          step,
-  char *                       variable_name);
+void     WriteSiloPMPIO(char *   file_prefix,
+                        char *   file_type,
+                        char *   file_suffix,
+                        Vector * v,
+                        double   time,
+                        int      step,
+                        char *   variable_name);
 void     WriteSiloPMPIOInit(char *file_prefix);
 
 
 /* wrf_parflow.c */
 void wrfparflowinit_(char *input_file);
-void wrfparflowadvance_(double *current_time,
-  double *                      dt,
-  float *                       wrf_flux,
-  float *                       wrf_pressure,
-  float *                       wrf_porosity,
-  float *                       wrf_saturation,
-  int *                         num_soil_layers,
-  int *                         ghost_size_i_lower,  /* Number of ghost cells */
-  int *                         ghost_size_j_lower,
-  int *                         ghost_size_i_upper,
-  int *                         ghost_size_j_upper);
+void wrfparflowadvance_(double * current_time,
+                        double * dt,
+                        float *  wrf_flux,
+                        float *  wrf_pressure,
+                        float *  wrf_porosity,
+                        float *  wrf_saturation,
+                        int *    num_soil_layers,
+                        int *    ghost_size_i_lower, /* Number of ghost cells */
+                        int *    ghost_size_j_lower,
+                        int *    ghost_size_i_upper,
+                        int *    ghost_size_j_upper);
 
-void WRF2PF(float * wrf_array,
-  int               wrf_depth,
-  int               ghost_size_i_lower,  /* Number of ghost cells */
-  int               ghost_size_j_lower,
-  int               ghost_size_i_upper,
-  int               ghost_size_j_upper,
-  Vector *          pf_vector,
-  Vector *          top);
+void WRF2PF(float *  wrf_array,
+            int      wrf_depth,
+            int      ghost_size_i_lower, /* Number of ghost cells */
+            int      ghost_size_j_lower,
+            int      ghost_size_i_upper,
+            int      ghost_size_j_upper,
+            Vector * pf_vector,
+            Vector * top);
 
-void PF2WRF(Vector *pf_vector,
-  float *           wrf_array,
-  int               wrf_depth,
-  int               ghost_size_i_lower,    /* Number of ghost cells */
-  int               ghost_size_j_lower,
-  int               ghost_size_i_upper,
-  int               ghost_size_j_upper,
-  Vector *          top);
+void PF2WRF(Vector * pf_vector,
+            float *  wrf_array,
+            int      wrf_depth,
+            int      ghost_size_i_lower,   /* Number of ghost cells */
+            int      ghost_size_j_lower,
+            int      ghost_size_i_upper,
+            int      ghost_size_j_upper,
+            Vector * top);
 
-void ComputeTop(Problem * problem,
-  ProblemData *           problem_data);
+void ComputeTop(Problem *     problem,
+                ProblemData * problem_data);
 
-void ComputePatchTop(Problem * problem,
-  ProblemData *                problem_data);
+void ComputePatchTop(Problem *     problem,
+                     ProblemData * problem_data);
 
 int CheckTime(Problem *problem, char *key, double time);
 
@@ -1380,8 +1380,8 @@ int CheckTime(Problem *problem, char *key, double time);
 void EvapTransSum(ProblemData *problem_data, double dt, Vector *evap_trans_sum, Vector *evap_trans);
 
 void OverlandSum(ProblemData *problem_data,
-  Vector *                    pressure,       /* Current pressure values */
-  double                      dt,
-  Vector *                    overland_sum);
+                 Vector *     pressure,       /* Current pressure values */
+                 double       dt,
+                 Vector *     overland_sum);
 
 Grid      *ReadProcessGrid();

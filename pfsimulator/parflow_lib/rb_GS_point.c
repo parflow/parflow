@@ -54,10 +54,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     RedBlackGSPoint(
-  Vector *x,
-  Vector *b,
-  double  tol,
-  int     zero)
+                         Vector *x,
+                         Vector *b,
+                         double  tol,
+                         int     zero)
 {
   PUSH_NVTX("RedBlackGSPoint", 5)
 
@@ -208,8 +208,8 @@ void     RedBlackGSPoint(
           iv = im = 0;
 
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-            iv, nx_v, ny_v, nz_v, sx, sy, sz,
-            im, nx_m, ny_m, nz_m, sx, sy, sz,
+                    iv, nx_v, ny_v, nz_v, sx, sy, sz,
+                    im, nx_m, ny_m, nz_m, sx, sy, sz,
           {
             x0[iv] = bp[iv] / a0[im];
 
@@ -311,44 +311,44 @@ void     RedBlackGSPoint(
 
           x0 = SubvectorElt(x_sub, ix, iy, iz);
           x1 = SubvectorElt(x_sub,
-              (ix + s[1][0]),
-              (iy + s[1][1]),
-              (iz + s[1][2]));
+                            (ix + s[1][0]),
+                            (iy + s[1][1]),
+                            (iz + s[1][2]));
           x2 = SubvectorElt(x_sub,
-              (ix + s[2][0]),
-              (iy + s[2][1]),
-              (iz + s[2][2]));
+                            (ix + s[2][0]),
+                            (iy + s[2][1]),
+                            (iz + s[2][2]));
           x3 = SubvectorElt(x_sub,
-              (ix + s[3][0]),
-              (iy + s[3][1]),
-              (iz + s[3][2]));
+                            (ix + s[3][0]),
+                            (iy + s[3][1]),
+                            (iz + s[3][2]));
           x4 = SubvectorElt(x_sub,
-              (ix + s[4][0]),
-              (iy + s[4][1]),
-              (iz + s[4][2]));
+                            (ix + s[4][0]),
+                            (iy + s[4][1]),
+                            (iz + s[4][2]));
           x5 = SubvectorElt(x_sub,
-              (ix + s[5][0]),
-              (iy + s[5][1]),
-              (iz + s[5][2]));
+                            (ix + s[5][0]),
+                            (iy + s[5][1]),
+                            (iz + s[5][2]));
           x6 = SubvectorElt(x_sub,
-              (ix + s[6][0]),
-              (iy + s[6][1]),
-              (iz + s[6][2]));
+                            (ix + s[6][0]),
+                            (iy + s[6][1]),
+                            (iz + s[6][2]));
 
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
           iv = im = 0;
 
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-            iv, nx_v, ny_v, nz_v, sx, sy, sz,
-            im, nx_m, ny_m, nz_m, sx, sy, sz,
+                    iv, nx_v, ny_v, nz_v, sx, sy, sz,
+                    im, nx_m, ny_m, nz_m, sx, sy, sz,
           {
             x0[iv] = (bp[iv] - (a1[im] * x1[iv] +
-            a2[im] * x2[iv] +
-            a3[im] * x3[iv] +
-            a4[im] * x4[iv] +
-            a5[im] * x5[iv] +
-            a6[im] * x6[iv])) / a0[im];
+                                a2[im] * x2[iv] +
+                                a3[im] * x3[iv] +
+                                a4[im] * x4[iv] +
+                                a5[im] * x5[iv] +
+                                a6[im] * x6[iv])) / a0[im];
 
             SKIP_PARALLEL_SYNC;
           });
@@ -379,11 +379,11 @@ void     RedBlackGSPoint(
  *--------------------------------------------------------------------------*/
 
 PFModule     *RedBlackGSPointInitInstanceXtra(
-  Problem *    problem,
-  Grid *       grid,
-  ProblemData *problem_data,
-  Matrix *     A,
-  double *     temp_data)
+                                              Problem *    problem,
+                                              Grid *       grid,
+                                              ProblemData *problem_data,
+                                              Matrix *     A,
+                                              double *     temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

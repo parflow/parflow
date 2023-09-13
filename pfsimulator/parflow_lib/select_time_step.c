@@ -57,12 +57,12 @@ typedef struct {
 
 void     SelectTimeStep(
 
-  double *     dt,                       /* Time step size */
-  char *       dt_info,                       /* Character flag indicating what requirement
+                        double *     dt, /* Time step size */
+                        char *       dt_info, /* Character flag indicating what requirement
                                                * chose the time step */
-  double       time,
-  Problem *    problem,
-  ProblemData *problem_data)
+                        double       time,
+                        Problem *    problem,
+                        ProblemData *problem_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -123,10 +123,10 @@ void     SelectTimeStep(
    *-----------------------------------------------------------------*/
 
   well_dt = TimeCycleDataComputeNextTransition(problem, time,
-      WellDataTimeCycleData(ProblemDataWellData(problem_data)));
+                                               WellDataTimeCycleData(ProblemDataWellData(problem_data)));
 
   bc_dt = TimeCycleDataComputeNextTransition(problem, time,
-      BCPressureDataTimeCycleData(ProblemDataBCPressureData(problem_data)));
+                                             BCPressureDataTimeCycleData(ProblemDataBCPressureData(problem_data)));
 
   /*-----------------------------------------------------------------
    * Compute the new dt value based on time stepping criterion imposed
@@ -332,10 +332,10 @@ void  WRFSelectTimeStepFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule  *WRFSelectTimeStepNewPublicXtra(
-  double initial_step,
-  double growth_factor,
-  double max_step,
-  double min_step)
+                                          double initial_step,
+                                          double growth_factor,
+                                          double max_step,
+                                          double min_step)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;

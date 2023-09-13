@@ -91,10 +91,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     MGSemi(
-  Vector *x,
-  Vector *b,
-  double  tol,
-  int     zero)
+                Vector *x,
+                Vector *b,
+                double  tol,
+                int     zero)
 {
   PUSH_NVTX("MGSemi", 2)
 
@@ -184,10 +184,10 @@ void     MGSemi(
     /* SGS not done */
     restrict_comm_pkg_l[l] =
       NewVectorCommPkg(temp_vec_l[l],
-        (instance_xtra->restrict_compute_pkg_l[l]));
+                       (instance_xtra->restrict_compute_pkg_l[l]));
     prolong_comm_pkg_l[l] =
       NewVectorCommPkg(temp_vec_l[l],
-        (instance_xtra->prolong_compute_pkg_l[l]));
+                       (instance_xtra->prolong_compute_pkg_l[l]));
   }
 
   /*-----------------------------------------------------------------------
@@ -244,8 +244,8 @@ void     MGSemi(
 
     /* restrict residual */
     MGSemiRestrict(A, temp_vec_l[0], b_l[1], P_l[0],
-      f_sra_l[0], c_sra_l[0],
-      restrict_compute_pkg_l[0], restrict_comm_pkg_l[0]);
+                   f_sra_l[0], c_sra_l[0],
+                   restrict_compute_pkg_l[0], restrict_comm_pkg_l[0]);
 
 #if 0
     /* for debugging purposes */
@@ -263,8 +263,8 @@ void     MGSemi(
 
       /* restrict residual */
       MGSemiRestrict(A_l[l], temp_vec_l[l], b_l[l + 1], P_l[l],
-        f_sra_l[l], c_sra_l[l],
-        restrict_compute_pkg_l[l], restrict_comm_pkg_l[l]);
+                     f_sra_l[l], c_sra_l[l],
+                     restrict_compute_pkg_l[l], restrict_comm_pkg_l[l]);
 #if 0
       /* for debugging purposes */
       {
@@ -291,8 +291,8 @@ void     MGSemi(
     {
       /* prolong error */
       MGSemiProlong(A_l[l], temp_vec_l[l], x_l[l + 1], P_l[l],
-        f_sra_l[l], c_sra_l[l],
-        prolong_compute_pkg_l[l], prolong_comm_pkg_l[l]);
+                    f_sra_l[l], c_sra_l[l],
+                    prolong_compute_pkg_l[l], prolong_comm_pkg_l[l]);
 #if 0
       /* for debugging purposes */
       {
@@ -312,8 +312,8 @@ void     MGSemi(
 
     /* prolong error */
     MGSemiProlong(A, temp_vec_l[0], x_l[1], P_l[0],
-      f_sra_l[0], c_sra_l[0],
-      prolong_compute_pkg_l[0], prolong_comm_pkg_l[0]);
+                  f_sra_l[0], c_sra_l[0],
+                  prolong_compute_pkg_l[0], prolong_comm_pkg_l[0]);
 #if 0
     /* for debugging purposes */
     PrintVector("e.00", temp_vec_l[0]);
@@ -340,7 +340,7 @@ void     MGSemi(
 #if 0
         if (!amps_Rank(amps_CommWorld))
           amps_Printf("Iteration (%d): ||r||_2 = %e, ||r||_2/||b||_2 = %e\n",
-            i, sqrt(r_dot_r), (b_dot_b ? sqrt(r_dot_r / b_dot_b) : 0.0));
+                      i, sqrt(r_dot_r), (b_dot_b ? sqrt(r_dot_r / b_dot_b) : 0.0));
 #endif
 
         IfLogging(1)
@@ -366,7 +366,7 @@ void     MGSemi(
   {
     if (!amps_Rank(amps_CommWorld))
       amps_Printf("Iterations = %d, ||r||_2 = %e, ||r||_2/||b||_2 = %e\n",
-        i, sqrt(r_dot_r), (b_dot_b ? sqrt(r_dot_r / b_dot_b) : 0.0));
+                  i, sqrt(r_dot_r), (b_dot_b ? sqrt(r_dot_r / b_dot_b) : 0.0));
   }
 
   /*-----------------------------------------------------------------------
@@ -417,7 +417,7 @@ void     MGSemi(
       for (j = 0; j <= i; j++)
       {
         fprintf(log_file, "% 5d    %e    %e\n",
-          j, norm_log[j], rel_norm_log[j]);
+                j, norm_log[j], rel_norm_log[j]);
       }
 
       CloseLogFile(log_file);
@@ -435,11 +435,11 @@ void     MGSemi(
  *--------------------------------------------------------------------------*/
 
 void              SetupCoarseOps(
-  Matrix **        A_l,
-  Matrix **        P_l,
-  int              num_levels,
-  SubregionArray **f_sra_l,
-  SubregionArray **c_sra_l)
+                                 Matrix **        A_l,
+                                 Matrix **        P_l,
+                                 int              num_levels,
+                                 SubregionArray **f_sra_l,
+                                 SubregionArray **c_sra_l)
 {
   SubregionArray *subregion_array;
 
@@ -497,8 +497,8 @@ void              SetupCoarseOps(
       for (k = 0; k < P_sz; k++)
       {
         if ((A_ss[j][0] == P_ss[k][0]) &&
-          (A_ss[j][1] == P_ss[k][1]) &&
-          (A_ss[j][2] == P_ss[k][2]))
+            (A_ss[j][1] == P_ss[k][1]) &&
+            (A_ss[j][2] == P_ss[k][2]))
         {
           s_num[j] = s_num[k + 1];
           s_num[k + 1] = j;
@@ -557,8 +557,8 @@ void              SetupCoarseOps(
         iA = SubmatrixEltIndex(A_sub, ix, iy, iz);
 
         BoxLoopI2(ii, jj, kk, ix, iy, iz, nx, ny, nz,
-          iP, nx_P, ny_P, nz_P, 1, 1, 1,
-          iA, nx_A, ny_A, nz_A, sx, sy, sz,
+                  iP, nx_P, ny_P, nz_P, 1, 1, 1,
+                  iA, nx_A, ny_A, nz_A, sx, sy, sz,
         {
           double ap0 = a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA];
 
@@ -642,9 +642,9 @@ void              SetupCoarseOps(
         ac6 = SubmatrixStencilData(Ac_sub, s_num[6]);
 
         iP1 = SubmatrixEltIndex(P_sub,
-            (ix + P_ss[0][0]),
-            (iy + P_ss[0][1]),
-            (iz + P_ss[0][2]));
+                                (ix + P_ss[0][0]),
+                                (iy + P_ss[0][1]),
+                                (iz + P_ss[0][2]));
 
         iA = SubmatrixEltIndex(A_sub, ix, iy, iz);
         iAc = SubmatrixEltIndex(Ac_sub, ix / sx, iy / sy, iz / sz);
@@ -666,9 +666,9 @@ void              SetupCoarseOps(
         }
 
         BoxLoopI3(ii, jj, kk, ix, iy, iz, nx, ny, nz,
-          iP1, nx_P, ny_P, nz_P, 1, 1, 1,
-          iA, nx_A, ny_A, nz_A, sx, sy, sz,
-          iAc, nx_Ac, ny_Ac, nz_Ac, 1, 1, 1,
+                  iP1, nx_P, ny_P, nz_P, 1, 1, 1,
+                  iA, nx_A, ny_A, nz_A, sx, sy, sz,
+                  iAc, nx_Ac, ny_Ac, nz_Ac, 1, 1, 1,
         {
           int iP2 = iP1 + dP12;
           int iA1 = iA - dA12;
@@ -683,8 +683,8 @@ void              SetupCoarseOps(
           ac2[iAc] = a2[iA] * p2[iP2];
 
           ac0[iAc] =
-          a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA] +
-          a1[iA] * p2[iP1] + a2[iA] * p1[iP2];
+            a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA] +
+            a1[iA] * p2[iP1] + a2[iA] * p1[iP2];
         });
       }
     }
@@ -732,10 +732,10 @@ void              SetupCoarseOps(
         iAc = SubmatrixEltIndex(Ac_sub, ix / sx, iy / sy, iz / sz);
 
         BoxLoopI1(ii, jj, kk, ix, iy, iz, nx, ny, nz,
-          iAc, nx_Ac, ny_Ac, nz_Ac, 1, 1, 1,
+                  iAc, nx_Ac, ny_Ac, nz_Ac, 1, 1, 1,
         {
           ac0[iAc] -= (ac3[iAc] + ac4[iAc] +
-          ac5[iAc] + ac6[iAc]);
+                       ac5[iAc] + ac6[iAc]);
         });
       }
     }
@@ -766,11 +766,11 @@ void              SetupCoarseOps(
  *--------------------------------------------------------------------------*/
 
 PFModule     *MGSemiInitInstanceXtra(
-  Problem *    problem,
-  Grid *       grid,
-  ProblemData *problem_data,
-  Matrix *     A,
-  double *     temp_data)
+                                     Problem *    problem,
+                                     Grid *       grid,
+                                     ProblemData *problem_data,
+                                     Matrix *     A,
+                                     double *     temp_data)
 {
   PUSH_NVTX("MGSemiInitInstanceXtra", 3)
 
@@ -1059,20 +1059,20 @@ PFModule     *MGSemiInitInstanceXtra(
 
       restrict_compute_pkg_l[l] =
         NewMGSemiRestrictComputePkg(grid_l[l], transfer_stencil,
-          sx, sy, sz, c_index, f_index);
+                                    sx, sy, sz, c_index, f_index);
       prolong_compute_pkg_l[l] =
         NewMGSemiProlongComputePkg(grid_l[l], transfer_stencil,
-          sx, sy, sz, c_index, f_index);
+                                   sx, sy, sz, c_index, f_index);
 
       /*-----------------------------------------------------------------
        * Set up A_l, P_l
        *-----------------------------------------------------------------*/
 
       A_l[l + 1] = NewMatrix(grid_l[l + 1], NULL, coarse_op_stencil,
-          ON, coarse_op_stencil);
+                             ON, coarse_op_stencil);
 
       P_l[l] = NewMatrix(grid_l[l], f_sra_l[l], transfer_stencil,
-          OFF, transfer_stencil);
+                         OFF, transfer_stencil);
     }
 
     (instance_xtra->grid_l) = grid_l;
@@ -1095,10 +1095,10 @@ PFModule     *MGSemiInitInstanceXtra(
   {
     (instance_xtra->A_l[0]) = A;
     SetupCoarseOps((instance_xtra->A_l),
-      (instance_xtra->P_l),
-      (instance_xtra->num_levels),
-      (instance_xtra->f_sra_l),
-      (instance_xtra->c_sra_l));
+                   (instance_xtra->P_l),
+                   (instance_xtra->num_levels),
+                   (instance_xtra->f_sra_l),
+                   (instance_xtra->c_sra_l));
   }
 
   /*-----------------------------------------------------------------------
@@ -1134,29 +1134,29 @@ PFModule     *MGSemiInitInstanceXtra(
     {
       (instance_xtra->smooth_l[l]) =
         PFModuleNewInstanceType(LinearSolverInitInstanceXtraInvoke,
-          (public_xtra->smooth),
-          (problem, grid_l[l], problem_data, A_l[l],
-          temp_data));
+                                (public_xtra->smooth),
+                                (problem, grid_l[l], problem_data, A_l[l],
+                                 temp_data));
     }
     (instance_xtra->solve) =
       PFModuleNewInstanceType(LinearSolverInitInstanceXtraInvoke,
-        (public_xtra->solve),
-        (problem, grid_l[l], problem_data, A_l[l],
-        temp_data));
+                              (public_xtra->solve),
+                              (problem, grid_l[l], problem_data, A_l[l],
+                               temp_data));
   }
   else
   {
     for (l = 0; l < ((instance_xtra->num_levels) - 1); l++)
     {
       PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke,
-        (instance_xtra->smooth_l[l]),
-        (problem, grid_l[l], problem_data, A_l[l],
-        temp_data));
+                                (instance_xtra->smooth_l[l]),
+                                (problem, grid_l[l], problem_data, A_l[l],
+                                 temp_data));
     }
     PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke,
-      (instance_xtra->solve),
-      (problem, grid_l[l], problem_data, A_l[l],
-      temp_data));
+                              (instance_xtra->solve),
+                              (problem, grid_l[l], problem_data, A_l[l],
+                               temp_data));
   }
 
   if (grid == NULL)

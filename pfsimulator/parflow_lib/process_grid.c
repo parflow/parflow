@@ -114,7 +114,7 @@ Grid      *ReadProcessGrid()
  *--------------------------------------------------------------------------*/
 
 void  FreeProcessGrid(
-  Grid *process_grid)
+                      Grid *process_grid)
 {
   FreeGrid(process_grid);
 }

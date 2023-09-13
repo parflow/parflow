@@ -40,35 +40,35 @@
  *-----------------------------------------------------------------------*/
 
 Databox         *NewDatabox(
-  int    nx,
-  int    ny,
-  int    nz,
-  double x,
-  double y,
-  double z,
-  double dx,
-  double dy,
-  double dz)
+                            int    nx,
+                            int    ny,
+                            int    nz,
+                            double x,
+                            double y,
+                            double z,
+                            double dx,
+                            double dy,
+                            double dz)
 {
   return NewDataboxDefault(
-           nx, ny, nz,
-           x, y, z,
-           dx, dy, dz,
-           0.0);
+                           nx, ny, nz,
+                           x, y, z,
+                           dx, dy, dz,
+                           0.0);
 }
 
 
 Databox         *NewDataboxDefault(
-  int    nx,
-  int    ny,
-  int    nz,
-  double x,
-  double y,
-  double z,
-  double dx,
-  double dy,
-  double dz,
-  double default_value)
+                                   int    nx,
+                                   int    ny,
+                                   int    nz,
+                                   double x,
+                                   double y,
+                                   double z,
+                                   double dx,
+                                   double dy,
+                                   double dz,
+                                   double default_value)
 {
   Databox         *new_databox;
   int i;
@@ -116,8 +116,8 @@ Databox         *NewDataboxDefault(
  *-----------------------------------------------------------------------*/
 
 void            GetDataboxGrid(
-  Tcl_Interp *interp,
-  Databox *   databox)
+                               Tcl_Interp *interp,
+                               Databox *   databox)
 {
   Tcl_Obj     *result = Tcl_GetObjResult(interp);
   Tcl_Obj     *double_obj;
@@ -168,16 +168,16 @@ void            GetDataboxGrid(
  * reset Databox grid info
  *-----------------------------------------------------------------------*/
 void SetDataboxGrid(
-  Databox *databox,
-  int      nx,
-  int      ny,
-  int      nz,
-  double   x,
-  double   y,
-  double   z,
-  double   dx,
-  double   dy,
-  double   dz)
+                    Databox *databox,
+                    int      nx,
+                    int      ny,
+                    int      nz,
+                    double   x,
+                    double   y,
+                    double   z,
+                    double   dx,
+                    double   dy,
+                    double   dz)
 {
   DataboxNx(databox) = nx;
   DataboxNy(databox) = ny;
@@ -197,7 +197,7 @@ void SetDataboxGrid(
  *-----------------------------------------------------------------------*/
 
 void         FreeDatabox(
-  Databox *databox)
+                         Databox *databox)
 {
   free(DataboxCoeffs(databox));
 

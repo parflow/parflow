@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     if ((d_result != (double)num))
     {
       amps_Printf("ERROR!!!!! MAX result is incorrect: %f  %d\n",
-        d_result, num);
+                  d_result, num);
       result = 1;
     }
 
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     if ((d_result != (double)1))
     {
       amps_Printf("ERROR!!!!! MIN result is incorrect: %f  %d\n",
-        d_result, 1.0);
+                  d_result, 1.0);
       result = 1;
     }
 
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     if ((d_result != (double)test))
     {
       amps_Printf("ERROR!!!!! Add result is incorrect: %f  %d\n",
-        d_result, test);
+                  d_result, test);
       result = 1;
     }
   }
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
     if ((d_result != (double)num) || (i_result != num))
     {
       amps_Printf("ERROR!!!!! MAX result is incorrect: %f  %d\n",
-        d_result, i_result);
+                  d_result, i_result);
       result = 1;
     }
 
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     if ((d_result != (double)1) || (i_result != 1))
     {
       amps_Printf("ERROR!!!!! MIN result is incorrect: %f  %d\n",
-        d_result, i_result);
+                  d_result, i_result);
       result = 1;
     }
 
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     if ((d_result != (double)test) || (i_result != test))
     {
       amps_Printf("ERROR!!!!! Add result is incorrect: %f  %d want %d\n",
-        d_result, i_result, test);
+                  d_result, i_result, test);
       result = 1;
     }
   }

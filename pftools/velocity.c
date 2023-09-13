@@ -54,8 +54,8 @@
  *-----------------------------------------------------------------------*/
 
 Databox       **CompCellVel(
-  Databox *k,
-  Databox *h)
+                            Databox *k,
+                            Databox *h)
 {
   Databox       **v;
 
@@ -84,8 +84,8 @@ Databox       **CompCellVel(
 
 #if 0      /* ADD LATER */
   if ((dx != DataboxDx(h)) ||
-    (dy != DataboxDy(h)) ||
-    (dz != DataboxDz(h)))
+      (dy != DataboxDy(h)) ||
+      (dz != DataboxDz(h)))
   {
     Error("Spacings are not compatible\n");
     return NULL;
@@ -139,17 +139,17 @@ Databox       **CompCellVel(
       for (ii = 0; ii < (nx - 1); ii++)
       {
         *vxp = -(Mean(kp[m1], kp[m2]) * (hp[m2] - hp[m1]) +
-          Mean(kp[m3], kp[m4]) * (hp[m4] - hp[m3]) +
-          Mean(kp[m5], kp[m6]) * (hp[m6] - hp[m5]) +
-          Mean(kp[m7], kp[m8]) * (hp[m8] - hp[m7])) / (4.0 * dx);
+                 Mean(kp[m3], kp[m4]) * (hp[m4] - hp[m3]) +
+                 Mean(kp[m5], kp[m6]) * (hp[m6] - hp[m5]) +
+                 Mean(kp[m7], kp[m8]) * (hp[m8] - hp[m7])) / (4.0 * dx);
         *vyp = -(Mean(kp[m1], kp[m3]) * (hp[m3] - hp[m1]) +
-          Mean(kp[m2], kp[m4]) * (hp[m4] - hp[m2]) +
-          Mean(kp[m5], kp[m7]) * (hp[m7] - hp[m5]) +
-          Mean(kp[m6], kp[m8]) * (hp[m8] - hp[m6])) / (4.0 * dy);
+                 Mean(kp[m2], kp[m4]) * (hp[m4] - hp[m2]) +
+                 Mean(kp[m5], kp[m7]) * (hp[m7] - hp[m5]) +
+                 Mean(kp[m6], kp[m8]) * (hp[m8] - hp[m6])) / (4.0 * dy);
         *vzp = -(Mean(kp[m1], kp[m5]) * (hp[m5] - hp[m1] + dz) +
-          Mean(kp[m3], kp[m7]) * (hp[m7] - hp[m3] + dz) +
-          Mean(kp[m2], kp[m6]) * (hp[m6] - hp[m2] + dz) +
-          Mean(kp[m4], kp[m8]) * (hp[m8] - hp[m4] + dz)) / (4.0 * dz);
+                 Mean(kp[m3], kp[m7]) * (hp[m7] - hp[m3] + dz) +
+                 Mean(kp[m2], kp[m6]) * (hp[m6] - hp[m2] + dz) +
+                 Mean(kp[m4], kp[m8]) * (hp[m8] - hp[m4] + dz)) / (4.0 * dz);
 
         vxp++;
         vyp++;
@@ -174,8 +174,8 @@ Databox       **CompCellVel(
  *-----------------------------------------------------------------------*/
 
 Databox       **CompVertVel(
-  Databox *k,
-  Databox *h)
+                            Databox *k,
+                            Databox *h)
 {
   Databox       **v;
 
@@ -204,8 +204,8 @@ Databox       **CompVertVel(
 
 #if 0      /* ADD LATER */
   if ((dx != DataboxDx(h)) ||
-    (dy != DataboxDy(h)) ||
-    (dz != DataboxDz(h)))
+      (dy != DataboxDy(h)) ||
+      (dz != DataboxDz(h)))
   {
     Error("Spacings are not compatible\n");
     return NULL;
@@ -273,8 +273,8 @@ Databox       **CompVertVel(
  *-----------------------------------------------------------------------*/
 
 Databox       **CompBFCVel(
-  Databox *k,
-  Databox *h)
+                           Databox *k,
+                           Databox *h)
 {
   Databox       **v;
 
@@ -308,8 +308,8 @@ Databox       **CompBFCVel(
 
 #if 0      /* ADD LATER */
   if ((dx != DataboxDx(h)) ||
-    (dy != DataboxDy(h)) ||
-    (dz != DataboxDz(h)))
+      (dy != DataboxDy(h)) ||
+      (dz != DataboxDz(h)))
   {
     Error("Spacings are not compatible\n");
     return NULL;
@@ -398,9 +398,9 @@ Databox       **CompBFCVel(
  *-----------------------------------------------------------------------*/
 
 Databox        *CompVMag(
-  Databox *vx,
-  Databox *vy,
-  Databox *vz)
+                         Databox *vx,
+                         Databox *vy,
+                         Databox *vz)
 {
   Databox        *v;
 

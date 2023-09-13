@@ -44,11 +44,11 @@
  *--------------------------------------------------------------------------*/
 
 int  NewCommPkgInfo(
-  Subregion *data_sr,
-  Subregion *comm_sr,
-  int        index,
-  int        num_vars,                   /* number of variables in the vector */
-  int *      loop_array)
+                    Subregion *data_sr,
+                    Subregion *comm_sr,
+                    int        index,
+                    int        num_vars, /* number of variables in the vector */
+                    int *      loop_array)
 {
   int    *offset = loop_array;
   int    *len_array = loop_array + 1;
@@ -76,9 +76,9 @@ int  NewCommPkgInfo(
   sz = SubregionSZ(data_sr);
 
   offset[0] = (((SubregionIX(comm_sr) - ix) / sx) +
-    ((SubregionIY(comm_sr) - iy) / sy) * nx +
-    ((SubregionIZ(comm_sr) - iz) / sz) * nx * ny +
-    index * num_vars * nx * ny * nz);
+               ((SubregionIY(comm_sr) - iy) / sy) * nx +
+               ((SubregionIZ(comm_sr) - iz) / sz) * nx * ny +
+               index * num_vars * nx * ny * nz);
 
   sx = SubregionSX(comm_sr) / sx;
   sy = SubregionSY(comm_sr) / sy;
@@ -146,11 +146,11 @@ int  NewCommPkgInfo(
  *--------------------------------------------------------------------------*/
 
 CommPkg         *NewCommPkg(
-  Region *        send_region,
-  Region *        recv_region,
-  SubregionArray *data_space,
-  int             num_vars,                           /* number of variables in the vector */
-  double *        data)
+                            Region *        send_region,
+                            Region *        recv_region,
+                            SubregionArray *data_space,
+                            int             num_vars, /* number of variables in the vector */
+                            double *        data)
 {
   CommPkg         *new_comm_pkg;
 
@@ -255,7 +255,7 @@ CommPkg         *NewCommPkg(
 
   if (num_send_procs || num_recv_procs)
     loop_array = (new_comm_pkg->loop_array)
-        = talloc(int, (num_send_subregions + num_recv_subregions) * 9);
+                   = talloc(int, (num_send_subregions + num_recv_subregions) * 9);
 
   /* set up send info */
   if (num_send_procs)
@@ -279,17 +279,17 @@ CommPkg         *NewCommPkg(
           if (SubregionProcess(comm_sr) == send_proc_array[p])
           {
             dim = NewCommPkgInfo(data_sr, comm_sr, i, num_vars,
-                loop_array);
+                                 loop_array);
 
             invoice =
               amps_NewInvoice("%&.&D(*)",
-                loop_array + 1,
-                loop_array + 5,
-                dim,
-                data + loop_array[0]);
+                              loop_array + 1,
+                              loop_array + 5,
+                              dim,
+                              data + loop_array[0]);
 
             amps_AppendInvoice(&(new_comm_pkg->send_invoices[p]),
-              invoice);
+                               invoice);
 
             num_send_subregions++;
             loop_array += 9;
@@ -321,17 +321,17 @@ CommPkg         *NewCommPkg(
           if (SubregionProcess(comm_sr) == recv_proc_array[p])
           {
             dim = NewCommPkgInfo(data_sr, comm_sr, i, num_vars,
-                loop_array);
+                                 loop_array);
 
             invoice =
               amps_NewInvoice("%&.&D(*)",
-                loop_array + 1,
-                loop_array + 5,
-                dim,
-                data + loop_array[0]);
+                              loop_array + 1,
+                              loop_array + 5,
+                              dim,
+                              data + loop_array[0]);
 
             amps_AppendInvoice(&(new_comm_pkg->recv_invoices[p]),
-              invoice);
+                               invoice);
 
             num_recv_subregions++;
             loop_array += 9;
@@ -342,12 +342,12 @@ CommPkg         *NewCommPkg(
   }
 
   new_comm_pkg->package = amps_NewPackage(amps_CommWorld,
-      new_comm_pkg->num_send_invoices,
-      new_comm_pkg->send_ranks,
-      new_comm_pkg->send_invoices,
-      new_comm_pkg->num_recv_invoices,
-      new_comm_pkg->recv_ranks,
-      new_comm_pkg->recv_invoices);
+                                          new_comm_pkg->num_send_invoices,
+                                          new_comm_pkg->send_ranks,
+                                          new_comm_pkg->send_invoices,
+                                          new_comm_pkg->num_recv_invoices,
+                                          new_comm_pkg->recv_ranks,
+                                          new_comm_pkg->recv_invoices);
 
 
 
@@ -360,7 +360,7 @@ CommPkg         *NewCommPkg(
  *--------------------------------------------------------------------------*/
 
 void FreeCommPkg(
-  CommPkg *pkg)
+                 CommPkg *pkg)
 {
   if (pkg)
   {
@@ -396,7 +396,7 @@ void FreeCommPkg(
  *--------------------------------------------------------------------------*/
 
 CommHandle  *InitCommunication(
-  CommPkg *comm_pkg)
+                               CommPkg *comm_pkg)
 {
   PUSH_NVTX("amps_IExchangePackage", 6)
   CommHandle* handle = (CommHandle*)amps_IExchangePackage(comm_pkg->package);
@@ -411,7 +411,7 @@ CommHandle  *InitCommunication(
  *--------------------------------------------------------------------------*/
 
 void         FinalizeCommunication(
-  CommHandle *handle)
+                                   CommHandle *handle)
 {
   PUSH_NVTX("amps_Wait", 1)
     (void) amps_Wait((amps_Handle)handle);

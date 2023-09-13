@@ -41,8 +41,8 @@
  *--------------------------------------------------------------------------*/
 
 Grid  *NewGrid(
-  SubgridArray *subgrids,
-  SubgridArray *all_subgrids)
+               SubgridArray *subgrids,
+               SubgridArray *all_subgrids)
 {
   Grid    *new_grid;
 
@@ -114,7 +114,7 @@ Grid  *NewGrid(
  *--------------------------------------------------------------------------*/
 
 void  FreeGrid(
-  Grid *grid)
+               Grid *grid)
 {
   if (grid)
   {
@@ -148,13 +148,13 @@ void  FreeGrid(
  *--------------------------------------------------------------------------*/
 
 int         ProjectSubgrid(
-  Subgrid *subgrid,
-  int      sx,
-  int      sy,
-  int      sz,
-  int      ix,
-  int      iy,
-  int      iz)
+                           Subgrid *subgrid,
+                           int      sx,
+                           int      sy,
+                           int      sz,
+                           int      ix,
+                           int      iy,
+                           int      iz)
 {
   int il, iu;
 
@@ -211,8 +211,8 @@ int         ProjectSubgrid(
    *------------------------------------------------------*/
 
   if (((subgrid->nx) > 0) &&
-    ((subgrid->ny) > 0) &&
-    ((subgrid->nz) > 0))
+      ((subgrid->ny) > 0) &&
+      ((subgrid->nz) > 0))
   {
     return 1;
   }
@@ -235,7 +235,7 @@ int         ProjectSubgrid(
  *--------------------------------------------------------------------------*/
 
 Subgrid    *ConvertToSubgrid(
-  Subregion *subregion)
+                             Subregion *subregion)
 {
   int sx, sy, sz;
   int ex, ey, ez;
@@ -246,8 +246,8 @@ Subgrid    *ConvertToSubgrid(
 
   /* check that (x, y, z) coords are divisible by strides */
   if ((SubregionIX(subregion) % sx) ||
-    (SubregionIY(subregion) % sy) ||
-    (SubregionIZ(subregion) % sz))
+      (SubregionIY(subregion) % sy) ||
+      (SubregionIZ(subregion) % sz))
   {
     return NULL;
   }
@@ -283,10 +283,10 @@ Subgrid    *ConvertToSubgrid(
  *--------------------------------------------------------------------------*/
 
 Subgrid  *ExtractSubgrid(
-  int      rx,
-  int      ry,
-  int      rz,
-  Subgrid *subgrid)
+                         int      rx,
+                         int      ry,
+                         int      rz,
+                         Subgrid *subgrid)
 {
   Subgrid  *new_subgrid;
 
@@ -345,7 +345,7 @@ Subgrid  *ExtractSubgrid(
   }
 
   new_subgrid = NewSubgrid(ix, iy, iz, nx, ny, nz, rx, ry, rz,
-      SubgridProcess(subgrid));
+                           SubgridProcess(subgrid));
 
   return new_subgrid;
 }
@@ -366,8 +366,8 @@ Subgrid  *ExtractSubgrid(
  *--------------------------------------------------------------------------*/
 
 Subgrid  *IntersectSubgrids(
-  Subgrid *subgrid1,
-  Subgrid *subgrid2)
+                            Subgrid *subgrid1,
+                            Subgrid *subgrid2)
 {
   Subgrid  *new_subgrid, *old;
 
@@ -376,22 +376,22 @@ Subgrid  *IntersectSubgrids(
   {
     old = subgrid1;
     new_subgrid = ExtractSubgrid(SubgridRX(subgrid1),
-        SubgridRY(subgrid1),
-        SubgridRZ(subgrid1),
-        subgrid2);
+                                 SubgridRY(subgrid1),
+                                 SubgridRZ(subgrid1),
+                                 subgrid2);
   }
   else
   {
     old = subgrid2;
     new_subgrid = ExtractSubgrid(SubgridRX(subgrid2),
-        SubgridRY(subgrid2),
-        SubgridRZ(subgrid2),
-        subgrid1);
+                                 SubgridRY(subgrid2),
+                                 SubgridRZ(subgrid2),
+                                 subgrid1);
   }
 
   /* find x bounds */
   SubgridNX(new_subgrid) = pfmin(SubgridIX(new_subgrid) + SubgridNX(new_subgrid),
-      SubgridIX(old) + SubgridNX(old));
+                                 SubgridIX(old) + SubgridNX(old));
   SubgridIX(new_subgrid) = pfmax(SubgridIX(new_subgrid), SubgridIX(old));
   if (SubgridNX(new_subgrid) > SubgridIX(new_subgrid))
     SubgridNX(new_subgrid) -= SubgridIX(new_subgrid);
@@ -400,7 +400,7 @@ Subgrid  *IntersectSubgrids(
 
   /* find y bounds */
   SubgridNY(new_subgrid) = pfmin(SubgridIY(new_subgrid) + SubgridNY(new_subgrid),
-      SubgridIY(old) + SubgridNY(old));
+                                 SubgridIY(old) + SubgridNY(old));
   SubgridIY(new_subgrid) = pfmax(SubgridIY(new_subgrid), SubgridIY(old));
   if (SubgridNY(new_subgrid) > SubgridIY(new_subgrid))
     SubgridNY(new_subgrid) -= SubgridIY(new_subgrid);
@@ -409,7 +409,7 @@ Subgrid  *IntersectSubgrids(
 
   /* find z bounds */
   SubgridNZ(new_subgrid) = pfmin(SubgridIZ(new_subgrid) + SubgridNZ(new_subgrid),
-      SubgridIZ(old) + SubgridNZ(old));
+                                 SubgridIZ(old) + SubgridNZ(old));
   SubgridIZ(new_subgrid) = pfmax(SubgridIZ(new_subgrid), SubgridIZ(old));
   if (SubgridNZ(new_subgrid) > SubgridIZ(new_subgrid))
     SubgridNZ(new_subgrid) -= SubgridIZ(new_subgrid);
@@ -435,8 +435,8 @@ empty:
  *--------------------------------------------------------------------------*/
 
 SubgridArray  *SubtractSubgrids(
-  Subgrid *subgrid1,
-  Subgrid *subgrid2)
+                                Subgrid *subgrid1,
+                                Subgrid *subgrid2)
 {
   SubgridArray  *new_a;
 
@@ -605,7 +605,7 @@ all:
  *--------------------------------------------------------------------------*/
 
 SubgridArray  *UnionSubgridArray(
-  SubgridArray *subgrids)
+                                 SubgridArray *subgrids)
 {
   SubgridArray  *new_sa;
   SubgridArray  *old_sa;
@@ -707,7 +707,7 @@ SubgridArray  *UnionSubgridArray(
       ForSubgridI(sj, new_sa)
       {
         tmp_sa1 = SubtractSubgrids(SubgridArraySubgrid(new_sa, sj),
-            SubgridArraySubgrid(old_sa, si));
+                                   SubgridArraySubgrid(old_sa, si));
 
         AppendSubgridArray(tmp_sa1, tmp_sa0);
         SubgridArraySize(tmp_sa1) = 0;
@@ -940,12 +940,12 @@ SubgridArray  *UnionSubgridArray(
 
             subgrid =
               NewSubgrid(ibox[0][0],
-                ibox[1][0],
-                ibox[2][0],
-                ibox[0][1] - ibox[0][0],
-                ibox[1][1] - ibox[1][0],
-                ibox[2][1] - ibox[2][0],
-                rx, ry, rz, 0);
+                         ibox[1][0],
+                         ibox[2][0],
+                         ibox[0][1] - ibox[0][0],
+                         ibox[1][1] - ibox[1][0],
+                         ibox[2][1] - ibox[2][0],
+                         rx, ry, rz, 0);
 
             AppendSubgrid(subgrid, new_sa);
           }

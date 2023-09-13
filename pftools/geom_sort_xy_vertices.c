@@ -75,9 +75,9 @@ typedef Vertex *EltType;
  *--------------------------------------------------------------------------*/
 
 int      *SortXYVertices(
-  Vertex **vertices,
-  int      nvertices,
-  int      return_permute)
+                         Vertex **vertices,
+                         int      nvertices,
+                         int      return_permute)
 {
   int  *permute = NULL;
   int i;

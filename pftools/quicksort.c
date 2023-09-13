@@ -60,10 +60,10 @@
  *--------------------------------------------------------------------------*/
 
 void      QuickSort(
-  int      first,
-  int      last,
-  EltType *array,
-  int *    permute)
+                    int      first,
+                    int      last,
+                    EltType *array,
+                    int *    permute)
 {
   EltType tmp_vert;
   int tmp_index = 0;

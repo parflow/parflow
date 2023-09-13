@@ -211,10 +211,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke.
  * @return The invoked method return
  */
-#define PFModuleInvokeType(type, pf_module, args)        \
-        (                                                \
-        ThisPFModule = pf_module,                        \
-        (*(type)(ThisPFModule->call)) args               \
+#define PFModuleInvokeType(type, pf_module, args)         \
+        (                                                 \
+         ThisPFModule = pf_module,                        \
+         (*(type)(ThisPFModule->call)) args               \
         )
 
 /**
@@ -233,10 +233,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke
  * @return The new module instance pointer
  */
-#define PFModuleNewInstance(pf_module, args)                          \
-        (                                                             \
-        ThisPFModule = DupPFModule(pf_module),                        \
-        (*(PFModule * (*)())(ThisPFModule->init_instance_xtra)) args  \
+#define PFModuleNewInstance(pf_module, args)                           \
+        (                                                              \
+         ThisPFModule = DupPFModule(pf_module),                        \
+         (*(PFModule * (*)())(ThisPFModule->init_instance_xtra)) args  \
         )
 
 /**
@@ -251,10 +251,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke
  * @return The new module instance pointer
  */
-#define PFModuleNewInstanceType(type, pf_module, args)        \
-        (                                                     \
-        ThisPFModule = DupPFModule(pf_module),                \
-        (*(type)(ThisPFModule->init_instance_xtra)) args      \
+#define PFModuleNewInstanceType(type, pf_module, args)         \
+        (                                                      \
+         ThisPFModule = DupPFModule(pf_module),                \
+         (*(type)(ThisPFModule->init_instance_xtra)) args      \
         )
 
 /**
@@ -275,10 +275,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke
  * @return The new module instance pointer
  */
-#define PFModuleReNewInstance(pf_module, args)                        \
-        (                                                             \
-        ThisPFModule = pf_module,                                     \
-        (*(PFModule * (*)())(ThisPFModule->init_instance_xtra)) args  \
+#define PFModuleReNewInstance(pf_module, args)                         \
+        (                                                              \
+         ThisPFModule = pf_module,                                     \
+         (*(PFModule * (*)())(ThisPFModule->init_instance_xtra)) args  \
         )
 
 /**
@@ -294,10 +294,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke.
  * @return The new module instance pointer.
  */
-#define PFModuleReNewInstanceType(type, pf_module, args)        \
-        (                                                       \
-        ThisPFModule = pf_module,                               \
-        (*(type)(ThisPFModule->init_instance_xtra)) args        \
+#define PFModuleReNewInstanceType(type, pf_module, args)         \
+        (                                                        \
+         ThisPFModule = pf_module,                               \
+         (*(type)(ThisPFModule->init_instance_xtra)) args        \
         )
 
 /**
@@ -307,11 +307,11 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  *
  * @param pf_module The module instance
  */
-#define PFModuleFreeInstance(pf_module)                       \
-        (                                                     \
-        ThisPFModule = pf_module,                             \
-        (*(void (*)())(ThisPFModule->free_instance_xtra))(),  \
-        FreePFModule(pf_module)                               \
+#define PFModuleFreeInstance(pf_module)                        \
+        (                                                      \
+         ThisPFModule = pf_module,                             \
+         (*(void (*)())(ThisPFModule->free_instance_xtra))(),  \
+         FreePFModule(pf_module)                               \
         )
 
 /**
@@ -325,10 +325,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param pf_module The module instance
  * @param args Arguments for the output method
  */
-#define PFModuleOutputType(type, pf_module, args)    \
-        (                                            \
-        ThisPFModule = pf_module,                    \
-        (*(type (*)())(ThisPFModule->output)) args   \
+#define PFModuleOutputType(type, pf_module, args)     \
+        (                                             \
+         ThisPFModule = pf_module,                    \
+         (*(type (*)())(ThisPFModule->output)) args   \
         )
 
 
@@ -343,10 +343,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param pf_module The module instance
  * @param args Arguments for the output method
  */
-#define PFModuleOutputStaticType(type, pf_module, args)                                         \
-        (                                                                                       \
-        ThisPFModule = pf_module,                                                               \
-        (*(type (*)(char file_prefix[2048], ProblemData *))(ThisPFModule->output_static)) args  \
+#define PFModuleOutputStaticType(type, pf_module, args)                                          \
+        (                                                                                        \
+         ThisPFModule = pf_module,                                                               \
+         (*(type (*)(char file_prefix[2048], ProblemData *))(ThisPFModule->output_static)) args  \
         )
 
 /**
@@ -359,16 +359,16 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the module class constructor
  * @return The new module instance
  */
-#define PFModuleNewModule(name, args)                                 \
-        (                                                             \
-        ThisPFModule = NewPFModule((void*)name,                       \
-        (void*)name ## InitInstanceXtra,                              \
-        (void*)name ## FreeInstanceXtra,                              \
-        (void*)name ## NewPublicXtra,                                 \
-        (void*)name ## FreePublicXtra,                                \
-        (void*)name ## SizeOfTempData,                                \
-        NULL, NULL),                                                  \
-        (*(PFModule * (*)())(ThisPFModule->new_public_xtra)) args     \
+#define PFModuleNewModule(name, args)                                                             \
+        (                                                                                         \
+         ThisPFModule = NewPFModule((void*)name,                                                  \
+                                    (void*)name ## InitInstanceXtra,                              \
+                                    (void*)name ## FreeInstanceXtra,                              \
+                                    (void*)name ## NewPublicXtra,                                 \
+                                    (void*)name ## FreePublicXtra,                                \
+                                    (void*)name ## SizeOfTempData,                                \
+                                    NULL, NULL),                                                  \
+         (*(PFModule * (*)())(ThisPFModule->new_public_xtra)) args                                \
         )
 
 /**
@@ -382,16 +382,16 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the module class constructor
  * @return The new module instance
  */
-#define PFModuleNewModuleType(type, name, args)                       \
-        (                                                             \
-        ThisPFModule = NewPFModule((void*)name,                       \
-        (void*)name ## InitInstanceXtra,                              \
-        (void*)name ## FreeInstanceXtra,                              \
-        (void*)name ## NewPublicXtra,                                 \
-        (void*)name ## FreePublicXtra,                                \
-        (void*)name ## SizeOfTempData,                                \
-        NULL, NULL),                                                  \
-        (*(type)(ThisPFModule->new_public_xtra)) args                 \
+#define PFModuleNewModuleType(type, name, args)                                                   \
+        (                                                                                         \
+         ThisPFModule = NewPFModule((void*)name,                                                  \
+                                    (void*)name ## InitInstanceXtra,                              \
+                                    (void*)name ## FreeInstanceXtra,                              \
+                                    (void*)name ## NewPublicXtra,                                 \
+                                    (void*)name ## FreePublicXtra,                                \
+                                    (void*)name ## SizeOfTempData,                                \
+                                    NULL, NULL),                                                  \
+         (*(type)(ThisPFModule->new_public_xtra)) args                                            \
         )
 
 /**
@@ -408,18 +408,18 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the module class constructor
  * @return The new module instance
  */
-#define PFModuleNewModuleExtendedType(type, name, args)                      \
-        (                                                                    \
-        ThisPFModule = NewPFModuleExtended((void*)name,                      \
-        (void*)name ## InitInstanceXtra,                                     \
-        (void*)name ## FreeInstanceXtra,                                     \
-        (void*)name ## NewPublicXtra,                                        \
-        (void*)name ## FreePublicXtra,                                       \
-        (void*)name ## SizeOfTempData,                                       \
-        (void*)name ## Output,                                               \
-        (void*)name ## OutputStatic,                                         \
-        NULL, NULL),                                                         \
-        (*(type)(ThisPFModule->new_public_xtra)) args                        \
+#define PFModuleNewModuleExtendedType(type, name, args)                                                          \
+        (                                                                                                        \
+         ThisPFModule = NewPFModuleExtended((void*)name,                                                         \
+                                            (void*)name ## InitInstanceXtra,                                     \
+                                            (void*)name ## FreeInstanceXtra,                                     \
+                                            (void*)name ## NewPublicXtra,                                        \
+                                            (void*)name ## FreePublicXtra,                                       \
+                                            (void*)name ## SizeOfTempData,                                       \
+                                            (void*)name ## Output,                                               \
+                                            (void*)name ## OutputStatic,                                         \
+                                            NULL, NULL),                                                         \
+         (*(type)(ThisPFModule->new_public_xtra)) args                                                           \
         )
 
 
@@ -428,11 +428,11 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  *
  * @param pf_module The module instance
  */
-#define PFModuleFreeModule(pf_module)                       \
-        (                                                   \
-        ThisPFModule = pf_module,                           \
-        (*(void (*)())(ThisPFModule->free_public_xtra))(),  \
-        FreePFModule(pf_module)                             \
+#define PFModuleFreeModule(pf_module)                        \
+        (                                                    \
+         ThisPFModule = pf_module,                           \
+         (*(void (*)())(ThisPFModule->free_public_xtra))(),  \
+         FreePFModule(pf_module)                             \
         )
 
 /**
@@ -453,10 +453,10 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  *
  * @param pf_module The module instance
  */
-#define PFModuleSizeOfTempData(pf_module)                 \
-        (                                                 \
-        ThisPFModule = pf_module,                         \
-        (*(int (*)())(ThisPFModule->sizeof_temp_data))()  \
+#define PFModuleSizeOfTempData(pf_module)                  \
+        (                                                  \
+         ThisPFModule = pf_module,                         \
+         (*(int (*)())(ThisPFModule->sizeof_temp_data))()  \
         )
 
 #endif

@@ -40,8 +40,8 @@
  *--------------------------------------------------------------------------*/
 
 GeomVertexArray  *GeomNewVertexArray(
-  GeomVertex **vertices,
-  int          nV)
+                                     GeomVertex **vertices,
+                                     int          nV)
 {
   GeomVertexArray   *new_geom_vertex_array;
 
@@ -61,7 +61,7 @@ GeomVertexArray  *GeomNewVertexArray(
  *--------------------------------------------------------------------------*/
 
 void              GeomFreeVertexArray(
-  GeomVertexArray *vertex_array)
+                                      GeomVertexArray *vertex_array)
 {
   int v;
 
@@ -84,9 +84,9 @@ void              GeomFreeVertexArray(
  *--------------------------------------------------------------------------*/
 
 GeomTIN          *GeomNewTIN(
-  GeomVertexArray *vertex_array,
-  GeomTriangle **  triangles,
-  int              nT)
+                             GeomVertexArray *vertex_array,
+                             GeomTriangle **  triangles,
+                             int              nT)
 {
   GeomTIN   *new_geom_tin;
 
@@ -124,8 +124,8 @@ void      GeomFreeTIN(GeomTIN *surface)
  *--------------------------------------------------------------------------*/
 
 GeomSolid  *GeomNewSolid(
-  void *data,
-  int   type)
+                         void *data,
+                         int   type)
 {
   GeomSolid   *new_geom_solid;
 
@@ -145,7 +145,7 @@ GeomSolid  *GeomNewSolid(
  *--------------------------------------------------------------------------*/
 
 void        GeomFreeSolid(
-  GeomSolid *solid)
+                          GeomSolid *solid)
 {
   switch (solid->type)
   {
@@ -166,9 +166,9 @@ void        GeomFreeSolid(
  *--------------------------------------------------------------------------*/
 
 int           GeomReadSolids(
-  GeomSolid ***solids_ptr,
-  char *       geom_input_name,
-  int          type)
+                             GeomSolid ***solids_ptr,
+                             char *       geom_input_name,
+                             int          type)
 {
   GeomSolid  **solids;
 
@@ -201,13 +201,13 @@ int           GeomReadSolids(
  *--------------------------------------------------------------------------*/
 
 GeomSolid  *GeomSolidFromBox(
-  double xl,
-  double yl,
-  double zl,
-  double xu,
-  double yu,
-  double zu,
-  int    type)
+                             double xl,
+                             double yl,
+                             double zl,
+                             double xu,
+                             double yu,
+                             double zu,
+                             int    type)
 {
   GeomSolid   *solid;
 
@@ -247,21 +247,21 @@ GeomSolid  *GeomSolidFromBox(
  *--------------------------------------------------------------------------*/
 
 void IntersectLineWithTriangle(
-  unsigned int line_direction,
-  double       coord_0,
-  double       coord_1,
-  double       v0_x,
-  double       v0_y,
-  double       v0_z,
-  double       v1_x,
-  double       v1_y,
-  double       v1_z,
-  double       v2_x,
-  double       v2_y,
-  double       v2_z,
-  int *        intersects,
-  double *     point,
-  int *        normal_component)
+                               unsigned int line_direction,
+                               double       coord_0,
+                               double       coord_1,
+                               double       v0_x,
+                               double       v0_y,
+                               double       v0_z,
+                               double       v1_x,
+                               double       v1_y,
+                               double       v1_z,
+                               double       v2_x,
+                               double       v2_y,
+                               double       v2_z,
+                               int *        intersects,
+                               double *     point,
+                               int *        normal_component)
 {
   double p[3];
   double q[3] = { 0, 0, 0 };

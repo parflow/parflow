@@ -52,8 +52,8 @@
  *-----------------------------------------------------------------------*/
 
 Databox       *CompFlux(
-  Databox *k,
-  Databox *h)
+                        Databox *k,
+                        Databox *h)
 {
   Databox        *flux;
 
@@ -84,8 +84,8 @@ Databox       *CompFlux(
 
 #if 0      /* ADD LATER */
   if ((dx != DataboxDx(h)) ||
-    (dy != DataboxDy(h)) ||
-    (dz != DataboxDz(h)))
+      (dy != DataboxDy(h)) ||
+      (dz != DataboxDz(h)))
   {
     Error("Spacings are not compatible\n");
     return NULL;

@@ -17,8 +17,8 @@ extern "C" {
  *-----------------------------------------------------------------------*/
 
 Databox * CompSubBox(Databox *fun,
-  int il, int jl, int kl,
-  int iu, int ju, int ku);
+                     int il, int jl, int kl,
+                     int iu, int ju, int ku);
 
 #ifdef __cplusplus
 }

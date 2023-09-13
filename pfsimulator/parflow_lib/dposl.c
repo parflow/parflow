@@ -10,10 +10,10 @@
 static int c__1 = 1;
 
 /* Subroutine */ int dposl_(
-  double *a,
-  int *   lda,
-  int *   n,
-  double *b)
+                            double *a,
+                            int *   lda,
+                            int *   n,
+                            double *b)
 {
   /* System generated locals */
   int a_dim1, a_offset, i__1, i__2;
@@ -21,19 +21,19 @@ static int c__1 = 1;
   /* Local variables */
 
   extern double ddot_(
-    int *   n,
-    double *dx,
-    int *   incx,
-    double *dy,
-    int *   incy);
+                      int *   n,
+                      double *dx,
+                      int *   incx,
+                      double *dy,
+                      int *   incy);
 
   /* Subroutine */ int daxpy_(
-    int *   n,
-    double *da,
-    double *dx,
-    int *   incx,
-    double *dy,
-    int *   incy);
+                              int *   n,
+                              double *da,
+                              double *dx,
+                              int *   incx,
+                              double *dy,
+                              int *   incy);
 
   static int k;
   static double t;
@@ -123,12 +123,12 @@ static int c__1 = 1;
 } /* dposl_ */
 
 /* Subroutine */ int daxpy_(
-  int *   n,
-  double *da,
-  double *dx,
-  int *   incx,
-  double *dy,
-  int *   incy)
+                            int *   n,
+                            double *da,
+                            double *dx,
+                            int *   incx,
+                            double *dy,
+                            int *   incy)
 {
   /* System generated locals */
   int i__1;

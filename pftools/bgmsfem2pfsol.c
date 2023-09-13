@@ -194,7 +194,7 @@ void AddFace(int id, int face, int *vertices, int opposite_pnt)
   /* compute the projection of the normal on the vector pointing to the
    * inside of the element */
   projection = opposite[0] * normal[0] + opposite[1] * normal[1] +
-    opposite[2] * normal[2];
+               opposite[2] * normal[2];
 
   /* if normal is pointing the same direction as the inwared pointing
    * vector then we need to reorder to get outward pointing normal */
@@ -213,7 +213,7 @@ void AddFace(int id, int face, int *vertices, int opposite_pnt)
     nodes[faces[face].nodes[j]].faces[nodes[faces[face].nodes[j]].num_faces++] = face;
     if (nodes[faces[face].nodes[j]].num_faces > MaxFaces)
       fprintf(stderr, "MaxFaces exceeded!!! %d\n",
-        nodes[faces[face].nodes[j]].num_faces);
+              nodes[faces[face].nodes[j]].num_faces);
   }
 
   /* Set up the color of the face for outputing boundary info */
@@ -345,8 +345,8 @@ int main(int argc, char **argv)
       /* This is a 6 vertices prism */
 
       sscanf(line, "%s %d %d %d %d %d %d %d %d", string,
-        &id, &vertices[0], &vertices[1], &vertices[2], &vertices[3],
-        &vertices[4], &vertices[5], &color);
+             &id, &vertices[0], &vertices[1], &vertices[2], &vertices[3],
+             &vertices[4], &vertices[5], &color);
 
       elements[id].gms_type = 1;
 
@@ -412,7 +412,7 @@ int main(int argc, char **argv)
       {
         /* Assumes top/bottom vertices are offset by 3 */
         if (nodes[elements[id].nodes[ j ]].z >
-          nodes[elements[id].nodes[ j + 3 ]].z)
+            nodes[elements[id].nodes[ j + 3 ]].z)
           topbot_count++;
         else
           topbot_count--;
@@ -430,7 +430,7 @@ int main(int argc, char **argv)
       for (j = 0; j < 3; j++)
       {
         if (nodes[elements[id].nodes[j]].z ==
-          nodes[elements[id].nodes[j + 3]].z)
+            nodes[elements[id].nodes[j + 3]].z)
           z_same_count++;
       }
       if (z_same_count > 2)
@@ -441,27 +441,27 @@ int main(int argc, char **argv)
 
       /* check if the element has zero volume in x or y dims */
       if ((nodes[elements[id].nodes[0]].x ==
-        nodes[elements[id].nodes[1]].x) &&
-        (nodes[elements[id].nodes[0]].y ==
-        nodes[elements[id].nodes[1]].y))
+           nodes[elements[id].nodes[1]].x) &&
+          (nodes[elements[id].nodes[0]].y ==
+           nodes[elements[id].nodes[1]].y))
       {
         printf("Skipping zero volume element z %d\n", id);
         continue;
       }
 
       if ((nodes[elements[id].nodes[0]].x ==
-        nodes[elements[id].nodes[2]].x) &&
-        (nodes[elements[id].nodes[0]].y ==
-        nodes[elements[id].nodes[2]].y))
+           nodes[elements[id].nodes[2]].x) &&
+          (nodes[elements[id].nodes[0]].y ==
+           nodes[elements[id].nodes[2]].y))
       {
         printf("Skipping zero volume element z %d\n", id);
         continue;
       }
 
       if ((nodes[elements[id].nodes[1]].x ==
-        nodes[elements[id].nodes[2]].x) &&
-        (nodes[elements[id].nodes[1]].y ==
-        nodes[elements[id].nodes[2]].y))
+           nodes[elements[id].nodes[2]].x) &&
+          (nodes[elements[id].nodes[1]].y ==
+           nodes[elements[id].nodes[2]].y))
       {
         printf("Skipping zero volume element z %d\n", id);
         continue;
@@ -487,13 +487,13 @@ int main(int argc, char **argv)
             for (j = 0; j < 3; j++)
             {
               if (nodes[elements[id].nodes[ GE6_FaceArray[f][j + 1] ]].z !=
-                nodes[elements[id].nodes[ (GE6_FaceArray[f][j + 1] + 3)
-                % 6]].z)
+                  nodes[elements[id].nodes[ (GE6_FaceArray[f][j + 1] + 3)
+                                            % 6]].z)
                 break;
             }
 
             AddFace(id, face, vertices,
-              elements[id].nodes[ (GE6_FaceArray[f][j + 1] + 3) % 6]);
+                    elements[id].nodes[ (GE6_FaceArray[f][j + 1] + 3) % 6]);
 
             elements[id].faces[element_face++] = face++;
             break;
@@ -501,7 +501,7 @@ int main(int argc, char **argv)
           case 4:
           {
             if (elements[id].nodes[ GE6_FaceArray[f][1]] <
-              elements[id].nodes[ GE6_FaceArray[f][2]])
+                elements[id].nodes[ GE6_FaceArray[f][2]])
             {
               /* Add the first triangle (face) of this side */
               for (j = 0; j < 3; j++)
@@ -510,7 +510,7 @@ int main(int argc, char **argv)
               }
 
               AddFace(id, face, vertices,
-                elements[id].nodes[ GE6_OppositeArray[f][0]]);
+                      elements[id].nodes[ GE6_OppositeArray[f][0]]);
 
               elements[id].faces[element_face++] = face++;
 
@@ -520,7 +520,7 @@ int main(int argc, char **argv)
               vertices[2] = elements[id].nodes[ GE6_FaceArray[f][1] ];
 
               AddFace(id, face, vertices,
-                elements[id].nodes[ GE6_OppositeArray[f][1]]);
+                      elements[id].nodes[ GE6_OppositeArray[f][1]]);
               elements[id].faces[element_face++] = face++;
             }
             else
@@ -532,7 +532,7 @@ int main(int argc, char **argv)
               }
 
               AddFace(id, face, vertices,
-                elements[id].nodes[ GE6_OppositeArray[f][0]]);
+                      elements[id].nodes[ GE6_OppositeArray[f][0]]);
               elements[id].faces[element_face++] = face++;
 
               /* Add the second triangle of this side */
@@ -541,7 +541,7 @@ int main(int argc, char **argv)
               vertices[2] = elements[id].nodes[ GE6_FaceArray[f][2] ];
 
               AddFace(id, face, vertices,
-                elements[id].nodes[ GE6_OppositeArray[f][1]]);
+                      elements[id].nodes[ GE6_OppositeArray[f][1]]);
               elements[id].faces[element_face++] = face++;
             }
           }
@@ -632,7 +632,7 @@ int main(int argc, char **argv)
 
         case 4:
           if (elements[id].nodes[ GE6_FaceArray[face][1]] <
-            elements[id].nodes[ GE6_FaceArray[face][2]])
+              elements[id].nodes[ GE6_FaceArray[face][2]])
           {
             for (j = 0; j < 3; j++)
               vertices[j] = elements[id].nodes[ GE6_FaceArray[face][j + 1]];
@@ -689,7 +689,7 @@ int main(int argc, char **argv)
   fprintf(pfsol, "%d\n", num_nodes);
   for (i = 1; i <= num_nodes; i++)
     fprintf(pfsol, "%.15e %.15e %.15e\n",
-      nodes[i].x, nodes[i].y, nodes[i].z);
+            nodes[i].x, nodes[i].y, nodes[i].z);
   fprintf(pfsol, "%d\n", num_colors + 1);
 
   /* Output the domain */
@@ -717,9 +717,9 @@ int main(int argc, char **argv)
       }
 
       fprintf(pfsol, "%d %d %d\n",
-        faces[j].nodes[0] - 1,
-        faces[j].nodes[1] - 1,
-        faces[j].nodes[2] - 1);
+              faces[j].nodes[0] - 1,
+              faces[j].nodes[1] - 1,
+              faces[j].nodes[2] - 1);
       faces[j].output_index = output_index++;
     }
   }
@@ -786,8 +786,8 @@ int main(int argc, char **argv)
     for (j = 0; j < num_faces; j++)
     {
       if ((faces[j].color == mat_ids[i]) &&
-        ((faces[j].sister_face == -1) ||
-        (faces[j].color != faces[faces[j].sister_face].color)))
+          ((faces[j].sister_face == -1) ||
+           (faces[j].color != faces[faces[j].sister_face].color)))
         face_count++;
     }
     fprintf(pfsol, "%d\n", face_count);
@@ -798,13 +798,13 @@ int main(int argc, char **argv)
     for (j = 0; j < num_faces; j++)
     {
       if ((faces[j].color == mat_ids[i]) &&
-        ((faces[j].sister_face == -1) ||
-        (faces[j].color != faces[faces[j].sister_face].color)))
+          ((faces[j].sister_face == -1) ||
+           (faces[j].color != faces[faces[j].sister_face].color)))
       {
         fprintf(pfsol, "%d %d %d\n",
-          faces[j].nodes[0] - 1,
-          faces[j].nodes[1] - 1,
-          faces[j].nodes[2] - 1);
+                faces[j].nodes[0] - 1,
+                faces[j].nodes[1] - 1,
+                faces[j].nodes[2] - 1);
         faces[j].output_index = output_index++;
       }
     }

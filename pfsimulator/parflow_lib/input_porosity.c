@@ -42,9 +42,9 @@ typedef struct {
  * InputPorosity
  *--------------------------------------------------------------------------*/
 void    InputPorosity(
-  GeomSolid *  geounit,
-  GrGeomSolid *gr_geounit,
-  Vector *     field)
+                      GeomSolid *  geounit,
+                      GrGeomSolid *gr_geounit,
+                      Vector *     field)
 {
   /*-----------------------------------------------------------------------
    * Local variables
@@ -102,8 +102,8 @@ void    InputPorosity(
  * InputPorosityInitInstanceXtra
  *--------------------------------------------------------------------------*/
 PFModule  *InputPorosityInitInstanceXtra(
-  Grid *  grid,
-  double *temp_data)
+                                         Grid *  grid,
+                                         double *temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

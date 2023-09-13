@@ -36,21 +36,21 @@
  * IntersectLineWithTriangle
  *--------------------------------------------------------------------------*/
 void IntersectLineWithTriangle(
-  unsigned int line_direction,
-  double       coord_0,
-  double       coord_1,
-  double       v0_x,
-  double       v0_y,
-  double       v0_z,
-  double       v1_x,
-  double       v1_y,
-  double       v1_z,
-  double       v2_x,
-  double       v2_y,
-  double       v2_z,
-  int *        intersects,
-  double *     point,
-  int *        normal_component);
+                               unsigned int line_direction,
+                               double       coord_0,
+                               double       coord_1,
+                               double       v0_x,
+                               double       v0_y,
+                               double       v0_z,
+                               double       v1_x,
+                               double       v1_y,
+                               double       v1_z,
+                               double       v2_x,
+                               double       v2_y,
+                               double       v2_z,
+                               int *        intersects,
+                               double *     point,
+                               int *        normal_component);
 
 #define XDIRECTION 0
 #define YDIRECTION 1
@@ -129,10 +129,10 @@ double Bisector(double a0, double a1)
 }
 
 MeshVertex *NextProjectionPoint(ProjectionMesh *PM,
-  double                                        max_x)
+                                double          max_x)
 {
   if ((PM->current->next)
-    && (PM->current->next->x <= max_x))
+      && (PM->current->next->x <= max_x))
     return PM->current = PM->current->next;
   else
     return PM->current = NULL;
@@ -158,9 +158,9 @@ MeshVertex *FindFirstProjectionPoint(ProjectionMesh *PM, double min_x)
 }
 
 void AddIntersectionPointToMeshVertex(MeshVertex *vertex,
-  int                                             triangle,
-  double                                          z_intersection,
-  int                                             mat_id)
+                                      int         triangle,
+                                      double      z_intersection,
+                                      int         mat_id)
 {
   IntersectionList *ptr;
   IntersectionList *new_element;
@@ -182,12 +182,12 @@ void AddIntersectionPointToMeshVertex(MeshVertex *vertex,
     while (ptr && !found && !duplicate)
     {
       if ((z_intersection == ptr->z) &&
-        (mat_id == ptr->layer_id))
+          (mat_id == ptr->layer_id))
         duplicate = TRUE;
       else if (ptr->z > z_intersection)
         found = TRUE;
       else if ((z_intersection == ptr->z) &&
-        (ptr->layer_id < mat_id))
+               (ptr->layer_id < mat_id))
         found = TRUE;
       else
         ptr = ptr->next;
@@ -199,7 +199,7 @@ void AddIntersectionPointToMeshVertex(MeshVertex *vertex,
       int tri;
 
       for (found_tri = FALSE, tri = 0;
-        !found_tri && tri < ptr->num_projection_triangles; tri++)
+           !found_tri && tri < ptr->num_projection_triangles; tri++)
       {
         if (ptr->projection_triangles[tri] == triangle)
           found_tri = TRUE;
@@ -253,8 +253,8 @@ void AddIntersectionPointToMeshVertex(MeshVertex *vertex,
 }
 
 int AddVertexToProjectionMesh(ProjectionMesh *PM,
-  double                                      x,
-  double                                      y)
+                              double          x,
+                              double          y)
 {
   int found;
   MeshVertex *ptr;
@@ -310,7 +310,7 @@ int AddVertexToProjectionMesh(ProjectionMesh *PM,
 }
 
 void AddTriangleToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin,
-  Triangle *triangle)
+                                 Triangle *triangle)
 {
   Vertex *v0, *v1, *v2;
   double a0, a1;
@@ -330,10 +330,10 @@ void AddTriangleToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin,
     PM->vertices[triangle->v0].num_triangles++] = 0;
 
   a0 = atan2(v1->y - v0->y,
-      v1->x - v0->x);
+             v1->x - v0->x);
 
   a1 = atan2(v2->y - v0->y,
-      v2->x - v0->x);
+             v2->x - v0->x);
 
   PM->triangles[PM->LastTriangle].atan2[0] = Bisector(a0, a1);
 
@@ -350,10 +350,10 @@ void AddTriangleToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin,
 
 
   a0 = atan2(v0->y - v1->y,
-      v0->x - v1->x);
+             v0->x - v1->x);
 
   a1 = atan2(v2->y - v1->y,
-      v2->x - v1->x);
+             v2->x - v1->x);
 
   PM->triangles[PM->LastTriangle].atan2[1] = Bisector(a0, a1);
 
@@ -371,10 +371,10 @@ void AddTriangleToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin,
     PM->vertices[triangle->v2].num_triangles++] = 2;
 
   a0 = atan2(v0->y - v2->y,
-      v0->x - v2->x);
+             v0->x - v2->x);
 
   a1 = atan2(v1->y - v2->y,
-      v1->x - v2->x);
+             v1->x - v2->x);
 
   PM->triangles[PM->LastTriangle].atan2[2] = Bisector(a0, a1);
 
@@ -410,8 +410,8 @@ ProjectionMesh *ConvertTINToProjectionMesh(gms_TIN *tin)
   for (index = 0; index < tin->nvertices; index++)
   {
     AddVertexToProjectionMesh(PM,
-      tin->vertices[index]->x,
-      tin->vertices[index]->y);
+                              tin->vertices[index]->x,
+                              tin->vertices[index]->y);
   }
 
   for (index = 0; index < tin->ntriangles; index++)
@@ -463,11 +463,11 @@ void AddTINToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin)
     while (projection_point)
     {
       IntersectLineWithTriangle(ZDIRECTION,
-        projection_point->x, projection_point->y,
-        v0->x, v0->y, v0->z,
-        v1->x, v1->y, v1->z,
-        v2->x, v2->y, v2->z,
-        &intersects, &z_intersection, &normal_component);
+                                projection_point->x, projection_point->y,
+                                v0->x, v0->y, v0->z,
+                                v1->x, v1->y, v1->z,
+                                v2->x, v2->y, v2->z,
+                                &intersects, &z_intersection, &normal_component);
 
       if (intersects)
       {
@@ -477,9 +477,9 @@ void AddTINToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin)
           //projection_triangle = &(PM->triangles[projection_point->triangles[i]]);
           /* Add Intersection point to the intersection list */
           AddIntersectionPointToMeshVertex(projection_point,
-            projection_point->triangles[i],
-            z_intersection,
-            tin->mat_id);
+                                           projection_point->triangles[i],
+                                           z_intersection,
+                                           tin->mat_id);
         }
       }
       projection_point = NextProjectionPoint(PM, max_x);
@@ -521,7 +521,7 @@ void ProjectionMeshTo3DMesh(ProjectionMesh *PM, char *filename)
     for (vertex_num = 0; vertex_num < 3; vertex_num++)
     {
       ptr = PM->
-        vertices[projection_triangle->vertices[vertex_num]].ilist_head;
+            vertices[projection_triangle->vertices[vertex_num]].ilist_head;
       while (ptr)
       {
         ptr->matched = FALSE;
@@ -543,17 +543,17 @@ void ProjectionMeshTo3DMesh(ProjectionMesh *PM, char *filename)
         {
           /* find matching point on v1 */
           bot_v1 = PM->vertices[projection_triangle->
-              vertices[1]].ilist_head;
+                                vertices[1]].ilist_head;
           found_v1 = FALSE;
           while (bot_v1 && !found_v1)
           {
             for (tri_v1 = 0;
-              !found_v1 && tri_v1 < bot_v1->num_projection_triangles;
-              tri_v1++)
+                 !found_v1 && tri_v1 < bot_v1->num_projection_triangles;
+                 tri_v1++)
             {
               if ((!bot_v1->matched) &&
-                (bot_v1->projection_triangles[tri_v1] == index) &&
-                (bot_v1->layer_id == bot_v0->layer_id))
+                  (bot_v1->projection_triangles[tri_v1] == index) &&
+                  (bot_v1->layer_id == bot_v0->layer_id))
                 found_v1 = TRUE;
             }
 
@@ -567,17 +567,17 @@ void ProjectionMeshTo3DMesh(ProjectionMesh *PM, char *filename)
           {
             /* find matching point on v2 */
             bot_v2 = PM->vertices[projection_triangle->
-                vertices[2]].ilist_head;
+                                  vertices[2]].ilist_head;
             found_v2 = FALSE;
             while (bot_v2 && !found_v2)
             {
               for (tri_v2 = 0;
-                !found_v2 && tri_v2 < bot_v2->num_projection_triangles;
-                tri_v2++)
+                   !found_v2 && tri_v2 < bot_v2->num_projection_triangles;
+                   tri_v2++)
               {
                 if ((!bot_v2->matched) &&
-                  (bot_v2->projection_triangles[tri_v2] == index) &&
-                  (bot_v2->layer_id == bot_v0->layer_id))
+                    (bot_v2->projection_triangles[tri_v2] == index) &&
+                    (bot_v2->layer_id == bot_v0->layer_id))
                 {
                   found_v2 = TRUE;
                 }
@@ -614,8 +614,8 @@ void ProjectionMeshTo3DMesh(ProjectionMesh *PM, char *filename)
               if (top_v0 != NULL)
               {
                 if (bot_v0->z == top_v0->z &&
-                  bot_v1->z == top_v1->z &&
-                  bot_v2->z == top_v2->z)
+                    bot_v1->z == top_v1->z &&
+                    bot_v2->z == top_v2->z)
                 {
                   zero_volume_prism++;
                 }
@@ -624,18 +624,18 @@ void ProjectionMeshTo3DMesh(ProjectionMesh *PM, char *filename)
                   fprintf(of, "E6W %d ", volume_num++);
 
                   fprintf(of, "%d %d %d ",
-                    top_v0->global_num,
-                    top_v1->global_num,
-                    top_v2->global_num);
+                          top_v0->global_num,
+                          top_v1->global_num,
+                          top_v2->global_num);
 
                   fprintf(of, "%d %d %d ",
-                    bot_v0->global_num,
-                    bot_v1->global_num,
-                    bot_v2->global_num);
+                          bot_v0->global_num,
+                          bot_v1->global_num,
+                          bot_v2->global_num);
 
                   fprintf(of, "%d\n",
-                    bot_v0->layer_id * 1000 +
-                    top_v0->layer_id);
+                          bot_v0->layer_id * 1000 +
+                          top_v0->layer_id);
                 }
               }
               /* Set the top of the next layer to the bottom of the last
@@ -664,9 +664,9 @@ void ProjectionMeshTo3DMesh(ProjectionMesh *PM, char *filename)
       if (ptr->global_num)
       {
         fprintf(of, "GN %d %.15e %.15e %.15e\n", ptr->global_num,
-          PM->vertices[index].x,
-          PM->vertices[index].y,
-          ptr->z);
+                PM->vertices[index].x,
+                PM->vertices[index].y,
+                ptr->z);
       }
       ptr = ptr->next;
     }
@@ -691,7 +691,7 @@ int main(int argc, char **argv)
   if (argc < 3)
   {
     fprintf(stderr,
-      "Usage:  projecttin <TIN with the project triangles> <TINs to project> <3D mesh output>\n");
+            "Usage:  projecttin <TIN with the project triangles> <TINs to project> <3D mesh output>\n");
     exit(1);
   }
 
@@ -754,21 +754,21 @@ int main(int argc, char **argv)
  *--------------------------------------------------------------------------*/
 
 void IntersectLineWithTriangle(
-  unsigned int line_direction,
-  double       coord_0,
-  double       coord_1,
-  double       v0_x,
-  double       v0_y,
-  double       v0_z,
-  double       v1_x,
-  double       v1_y,
-  double       v1_z,
-  double       v2_x,
-  double       v2_y,
-  double       v2_z,
-  int *        intersects,
-  double *     point,
-  int *        normal_component)
+                               unsigned int line_direction,
+                               double       coord_0,
+                               double       coord_1,
+                               double       v0_x,
+                               double       v0_y,
+                               double       v0_z,
+                               double       v1_x,
+                               double       v1_y,
+                               double       v1_z,
+                               double       v2_x,
+                               double       v2_y,
+                               double       v2_z,
+                               int *        intersects,
+                               double *     point,
+                               int *        normal_component)
 {
   double p[3], q[3];
   double A, B, C, D;

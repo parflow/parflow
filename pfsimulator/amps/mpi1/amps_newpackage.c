@@ -30,13 +30,13 @@
 
 #ifdef AMPS_MPI_NOT_USE_PERSISTENT
 
-amps_Package amps_NewPackage(amps_Comm comm,
-  int                                  num_send,
-  int *                                dest,
-  amps_Invoice *                       send_invoices,
-  int                                  num_recv,
-  int *                                src,
-  amps_Invoice *                       recv_invoices)
+amps_Package amps_NewPackage(amps_Comm      comm,
+                             int            num_send,
+                             int *          dest,
+                             amps_Invoice * send_invoices,
+                             int            num_recv,
+                             int *          src,
+                             amps_Invoice * recv_invoices)
 {
   amps_Package package;
 
@@ -78,13 +78,13 @@ void amps_FreePackage(amps_Package package)
 
 #else
 
-amps_Package amps_NewPackage(amps_Comm comm,
-  int                                  num_send,
-  int *                                dest,
-  amps_Invoice *                       send_invoices,
-  int                                  num_recv,
-  int *                                src,
-  amps_Invoice *                       recv_invoices)
+amps_Package amps_NewPackage(amps_Comm      comm,
+                             int            num_send,
+                             int *          dest,
+                             amps_Invoice * send_invoices,
+                             int            num_recv,
+                             int *          src,
+                             amps_Invoice * recv_invoices)
 {
   amps_Package package;
 

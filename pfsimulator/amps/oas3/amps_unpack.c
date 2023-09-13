@@ -38,10 +38,10 @@
 #endif
 
 int amps_unpack(
-  amps_Comm    comm,
-  amps_Invoice inv,
-  char *       buffer,
-  int          buf_size)
+                amps_Comm    comm,
+                amps_Invoice inv,
+                char *       buffer,
+                int          buf_size)
 {
   amps_InvoiceEntry *ptr;
   int len, stride;
@@ -93,7 +93,7 @@ int amps_unpack(
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {
             *((void**)(ptr->data)) = malloc(sizeof(char) *
-                (size_t)(len * stride));
+                                            (size_t)(len * stride));
             malloced = TRUE;
 
             MPI_Type_vector(len, 1, stride, MPI_BYTE, &mpi_type);
@@ -101,7 +101,7 @@ int amps_unpack(
             MPI_Type_commit(&mpi_type);
 
             MPI_Unpack(buffer, buf_size, &position,
-              *((void**)(ptr->data)), 1, mpi_type, comm);
+                       *((void**)(ptr->data)), 1, mpi_type, comm);
 
             MPI_Type_free(&mpi_type);
           }
@@ -111,7 +111,7 @@ int amps_unpack(
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              ptr->data, 1, mpi_type, comm);
+                       ptr->data, 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
         }
@@ -124,7 +124,7 @@ int amps_unpack(
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {
             *((void**)(ptr->data)) = malloc(sizeof(char) *
-                (size_t)(len * stride));
+                                            (size_t)(len * stride));
             malloced = TRUE;
 
             MPI_Type_vector(len, 1, stride, MPI_CHAR, &mpi_type);
@@ -132,7 +132,7 @@ int amps_unpack(
             MPI_Type_commit(&mpi_type);
 
             MPI_Unpack(buffer, buf_size, &position,
-              *((void**)(ptr->data)), 1, mpi_type, comm);
+                       *((void**)(ptr->data)), 1, mpi_type, comm);
 
             MPI_Type_free(&mpi_type);
           }
@@ -142,7 +142,7 @@ int amps_unpack(
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              ptr->data, 1, mpi_type, comm);
+                       ptr->data, 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
         }
@@ -154,14 +154,14 @@ int amps_unpack(
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {
             *((void**)(ptr->data)) = malloc(sizeof(short) *
-                (size_t)(len * stride));
+                                            (size_t)(len * stride));
             malloced = TRUE;
 
             MPI_Type_vector(len, 1, stride, MPI_SHORT, &mpi_type);
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              *((void**)(ptr->data)), 1, mpi_type, comm);
+                       *((void**)(ptr->data)), 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
           else
@@ -170,7 +170,7 @@ int amps_unpack(
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              ptr->data, 1, mpi_type, comm);
+                       ptr->data, 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
         }
@@ -182,14 +182,14 @@ int amps_unpack(
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {
             *((void**)(ptr->data)) = malloc(sizeof(int) *
-                (size_t)(len * stride));
+                                            (size_t)(len * stride));
             malloced = TRUE;
 
             MPI_Type_vector(len, 1, stride, MPI_INT, &mpi_type);
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              *((void**)(ptr->data)), 1, mpi_type, comm);
+                       *((void**)(ptr->data)), 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
           else
@@ -198,7 +198,7 @@ int amps_unpack(
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              ptr->data, 1, mpi_type, comm);
+                       ptr->data, 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
         }
@@ -210,14 +210,14 @@ int amps_unpack(
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {
             *((void**)(ptr->data)) = malloc(sizeof(long) *
-                (size_t)(len * stride));
+                                            (size_t)(len * stride));
             malloced = TRUE;
 
             MPI_Type_vector(len, 1, stride, MPI_LONG, &mpi_type);
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              *((void**)(ptr->data)), 1, mpi_type, comm);
+                       *((void**)(ptr->data)), 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
           else
@@ -226,7 +226,7 @@ int amps_unpack(
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              ptr->data, 1, mpi_type, comm);
+                       ptr->data, 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
         }
@@ -238,14 +238,14 @@ int amps_unpack(
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {
             *((void**)(ptr->data)) = malloc(sizeof(float) *
-                (size_t)(len * stride));
+                                            (size_t)(len * stride));
             malloced = TRUE;
 
             MPI_Type_vector(len, 1, stride, MPI_FLOAT, &mpi_type);
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              *((void**)(ptr->data)), 1, mpi_type, comm);
+                       *((void**)(ptr->data)), 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
           else
@@ -254,7 +254,7 @@ int amps_unpack(
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              ptr->data, 1, mpi_type, comm);
+                       ptr->data, 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
         }
@@ -266,14 +266,14 @@ int amps_unpack(
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {
             *((void**)(ptr->data)) = malloc(sizeof(double) *
-                (size_t)(len * stride));
+                                            (size_t)(len * stride));
             malloced = TRUE;
 
             MPI_Type_vector(len, 1, stride, MPI_DOUBLE, &mpi_type);
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              *((void**)(ptr->data)), 1, mpi_type, comm);
+                       *((void**)(ptr->data)), 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
           else
@@ -282,7 +282,7 @@ int amps_unpack(
 
             MPI_Type_commit(&mpi_type);
             MPI_Unpack(buffer, buf_size, &position,
-              ptr->data, 1, mpi_type, comm);
+                       ptr->data, 1, mpi_type, comm);
             MPI_Type_free(&mpi_type);
           }
         }
@@ -290,12 +290,12 @@ int amps_unpack(
 
       default:
         dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ?
-          *(ptr->ptr_dim) : ptr->dim;
+              *(ptr->ptr_dim) : ptr->dim;
 
         size = amps_vector_sizeof_local(comm,
-            ptr->type - AMPS_INVOICE_LAST_CTYPE,
-            NULL, &temp_pos, dim,
-            ptr->ptr_len, ptr->ptr_stride);
+                                        ptr->type - AMPS_INVOICE_LAST_CTYPE,
+                                        NULL, &temp_pos, dim,
+                                        ptr->ptr_len, ptr->ptr_stride);
 
         if (ptr->data_type == AMPS_INVOICE_POINTER)
           data = *(char**)(ptr->data) = (char*)malloc((size_t)(size));
@@ -372,12 +372,12 @@ int amps_unpack(
         for (i = 1; i < dim; i++)
         {
           MPI_Type_create_hvector(ptr->ptr_len[i], 1,
-            base_size +
-            (ptr->ptr_stride[i] - 1) * element_size,
-            *base_type, new_type);
+                                  base_size +
+                                  (ptr->ptr_stride[i] - 1) * element_size,
+                                  *base_type, new_type);
 
           base_size = base_size * ptr->ptr_len[i]
-            + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1) * element_size;
+                      + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1) * element_size;
           MPI_Type_free(base_type);
           temp_type = base_type;
           base_type = new_type;

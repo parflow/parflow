@@ -48,10 +48,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         L2ErrorNorm(
-  double       time,
-  Vector *     pressure,
-  ProblemData *problem_data,
-  double *     l2_error_norm)
+                         double       time,
+                         Vector *     pressure,
+                         ProblemData *problem_data,
+                         double *     l2_error_norm)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);

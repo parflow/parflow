@@ -30,10 +30,10 @@
 
 #ifndef AMPS_NEWHANDLE_SPECIALIZED
 amps_Handle amps_NewHandle(
-  amps_Comm    comm,
-  int          id,
-  amps_Invoice invoice,
-  amps_Package package)
+                           amps_Comm    comm,
+                           int          id,
+                           amps_Invoice invoice,
+                           amps_Package package)
 {
   amps_Handle handle;
 

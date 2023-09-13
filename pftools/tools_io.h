@@ -58,53 +58,53 @@ extern "C" {
 #ifndef CASC_HAVE_BIGENDIAN
 
 void tools_WriteInt(
-  FILE * file,
-  int *  ptr,
-  int    len);
+                    FILE * file,
+                    int *  ptr,
+                    int    len);
 
 void tools_WriteFloat(
-  FILE * file,
-  float *ptr,
-  int    len);
+                      FILE * file,
+                      float *ptr,
+                      int    len);
 
 void tools_WriteDouble(
-  FILE *  file,
-  double *ptr,
-  int     len);
+                       FILE *  file,
+                       double *ptr,
+                       int     len);
 
 void tools_ReadInt(
-  FILE * file,
-  int *  ptr,
-  int    len);
+                   FILE * file,
+                   int *  ptr,
+                   int    len);
 
 void tools_ReadDouble(
-  FILE *  file,
-  double *ptr,
-  int     len);
+                      FILE *  file,
+                      double *ptr,
+                      int     len);
 
 
 #else
 #ifdef TOOLS_CRAY
 
 void tools_WriteInt(
-  FILE * file,
-  int *  ptr,
-  int    len);
+                    FILE * file,
+                    int *  ptr,
+                    int    len);
 
 void tools_WriteDouble(
-  FILE *  file,
-  double *ptr,
-  int     len);
+                       FILE *  file,
+                       double *ptr,
+                       int     len);
 
 void tools_ReadInt(
-  FILE * file,
-  int *  ptr,
-  int    len);
+                   FILE * file,
+                   int *  ptr,
+                   int    len);
 
 void tools_ReadDouble(
-  FILE *  file,
-  double *ptr,
-  int     len);
+                      FILE *  file,
+                      double *ptr,
+                      int     len);
 
 #else
 #ifdef TOOLS_INTS_ARE_64

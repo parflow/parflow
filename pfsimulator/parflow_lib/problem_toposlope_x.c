@@ -72,9 +72,9 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         XSlope(
-  ProblemData *problem_data,
-  Vector *     x_slope,
-  Vector *     dummy)
+                    ProblemData *problem_data,
+                    Vector *     x_slope,
+                    Vector *     dummy)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -293,7 +293,7 @@ void         XSlope(
               z = RealSpaceZ(k, SubgridRZ(subgrid));
 
               data[ips] = x * y * z
-              - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
+                          - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
             });
             break;
           }        /* End case 6 */
@@ -396,8 +396,8 @@ void         XSlope(
  *--------------------------------------------------------------------------*/
 
 PFModule  *XSlopeInitInstanceXtra(
-  Grid *grid3d,
-  Grid *grid2d)
+                                  Grid *grid3d,
+                                  Grid *grid2d)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -426,7 +426,7 @@ PFModule  *XSlopeInitInstanceXtra(
       dummy2 = (Type2*)(public_xtra->data);
 
       dummy2->sx_values = NewVectorType(grid2d, 1, 1,
-          vector_cell_centered_2D);
+                                        vector_cell_centered_2D);
       ReadPFBinary((dummy2->filename), (dummy2->sx_values));
     }
 
@@ -435,7 +435,7 @@ PFModule  *XSlopeInitInstanceXtra(
       dummy3 = (Type3*)(public_xtra->data);
 
       dummy3->sx_values = NewVectorType(grid2d, 1, 1,
-          vector_cell_centered_2D);
+                                        vector_cell_centered_2D);
       ReadPFNC((dummy3->filename), (dummy3->sx_values), "slopex", 0, 2);
     }
   }
@@ -528,7 +528,7 @@ PFModule  *XSlopeNewPublicXtra()
       {
         dummy0->region_indices[ir] =
           NA_NameToIndex(GlobalsGeomNames,
-            NA_IndexToName(dummy0->regions, ir));
+                         NA_IndexToName(dummy0->regions, ir));
 
         sprintf(key, "TopoSlopesX.Geom.%s.Value", NA_IndexToName(dummy0->regions, ir));
         dummy0->values[ir] = GetDouble(key);
@@ -576,7 +576,7 @@ PFModule  *XSlopeNewPublicXtra()
     default:
     {
       InputError("Error: invalid type <%s> for key <%s>\n",
-        switch_name, key);
+                 switch_name, key);
     }
   }    /* End case statement */
 

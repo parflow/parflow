@@ -51,8 +51,8 @@ static int samrai_matrix_ids[4][2048];
  *--------------------------------------------------------------------------*/
 
 Stencil  *NewStencil(
-  int shape[][3],
-  int sz)
+                     int shape[][3],
+                     int sz)
 {
   Stencil     *new_stencil;
   StencilElt  *new_shape;
@@ -79,8 +79,8 @@ Stencil  *NewStencil(
  *--------------------------------------------------------------------------*/
 
 CommPkg   *NewMatrixUpdatePkg(
-  Matrix * matrix,
-  Stencil *ghost)
+                              Matrix * matrix,
+                              Stencil *ghost)
 {
   CommPkg     *new_commpkg = NULL;
 
@@ -113,7 +113,7 @@ CommPkg   *NewMatrixUpdatePkg(
 
 
     new_commpkg = NewCommPkg(send_reg, recv_reg,
-        MatrixDataSpace(matrix), n, SubmatrixData(submatrix));
+                             MatrixDataSpace(matrix), n, SubmatrixData(submatrix));
 
     FreeRegion(send_reg);
     FreeRegion(recv_reg);
@@ -128,7 +128,7 @@ CommPkg   *NewMatrixUpdatePkg(
  *--------------------------------------------------------------------------*/
 
 CommHandle  *InitMatrixUpdate(
-  Matrix *matrix)
+                              Matrix *matrix)
 {
   CommHandle *return_handle = NULL;
 
@@ -167,19 +167,19 @@ CommHandle  *InitMatrixUpdate(
       matrix->boundary_fill_refine_algorithm = new xfer::RefineAlgorithm(dim);
 
       matrix->boundary_fill_refine_algorithm->registerRefine(
-        matrix->samrai_id,
-        matrix->samrai_id,
-        matrix->samrai_id,
-        tbox::Pointer < xfer::RefineOperator > (NULL));
+                                                             matrix->samrai_id,
+                                                             matrix->samrai_id,
+                                                             matrix->samrai_id,
+                                                             tbox::Pointer < xfer::RefineOperator > (NULL));
 
       tbox::Pointer < hier::PatchLevel > level =
         hierarchy->getPatchLevel(level_number);
 
       matrix->boundary_fill_schedule = matrix->boundary_fill_refine_algorithm
-        ->createSchedule(level,
-          level_number - 1,
-          hierarchy,
-          NULL);
+                                       ->createSchedule(level,
+                                                        level_number - 1,
+                                                        hierarchy,
+                                                        NULL);
     }
     const double time = 1.0;
     matrix->boundary_fill_schedule->fillData(time);
@@ -195,7 +195,7 @@ CommHandle  *InitMatrixUpdate(
  *--------------------------------------------------------------------------*/
 
 void         FinalizeMatrixUpdate(
-  CommHandle *handle)
+                                  CommHandle *handle)
 {
   if (handle)
   {
@@ -209,22 +209,22 @@ void         FinalizeMatrixUpdate(
  *--------------------------------------------------------------------------*/
 
 Matrix          *NewMatrix(
-  Grid *          grid,
-  SubregionArray *range,
-  Stencil *       stencil,
-  int             symmetry,
-  Stencil *       ghost)
+                           Grid *          grid,
+                           SubregionArray *range,
+                           Stencil *       stencil,
+                           int             symmetry,
+                           Stencil *       ghost)
 {
   return NewMatrixType(grid, range, stencil, symmetry, ghost, matrix_non_samrai);
 }
 
 Matrix          *NewMatrixType(
-  Grid *           grid,
-  SubregionArray * range,
-  Stencil *        stencil,
-  int              symmetry,
-  Stencil *        ghost,
-  enum matrix_type type)
+                               Grid *           grid,
+                               SubregionArray * range,
+                               Stencil *        stencil,
+                               int              symmetry,
+                               Stencil *        ghost,
+                               enum matrix_type type)
 {
   Matrix         *new_matrix;
   Submatrix      *new_sub;
@@ -280,8 +280,8 @@ Matrix          *NewMatrixType(
         for (n = 0; n < StencilSize(stencil); n++)
         {
           if (shape[n][0] == -shape[k][0] &&
-            shape[n][1] == -shape[k][1] &&
-            shape[n][0] == -shape[k][0])
+              shape[n][1] == -shape[k][1] &&
+              shape[n][0] == -shape[k][0])
           {
             symmetric_coeff[k] = n;
           }
@@ -441,8 +441,8 @@ Matrix          *NewMatrixType(
 
     new_subregion = DuplicateSubregion(GridSubgrid(grid, i));
     if (SubgridNX(new_subregion) &&
-      SubgridNY(new_subregion) &&
-      SubgridNZ(new_subregion))
+        SubgridNY(new_subregion) &&
+        SubgridNZ(new_subregion))
     {
       SubgridIX(new_subregion) -= xl,
       SubgridIY(new_subregion) -= yl,
@@ -452,12 +452,12 @@ Matrix          *NewMatrixType(
       SubgridNZ(new_subregion) += zl + zu,
 
       ProjectSubgrid(new_subregion,
-        SubregionSX(subregion),
-        SubregionSY(subregion),
-        SubregionSZ(subregion),
-        SubregionIX(subregion),
-        SubregionIY(subregion),
-        SubregionIZ(subregion));
+                     SubregionSX(subregion),
+                     SubregionSY(subregion),
+                     SubregionSZ(subregion),
+                     SubregionIX(subregion),
+                     SubregionIY(subregion),
+                     SubregionIZ(subregion));
     }
     SubmatrixDataSpace(new_sub) = new_subregion;
     AppendSubregion(new_subregion, MatrixDataSpace(new_matrix));
@@ -543,8 +543,8 @@ Matrix          *NewMatrixType(
     case matrix_cell_centered:
     {
       variable = new pdat::CellVariable < double > (dim,
-        variable_name,
-        MatrixDataStencilSize(new_matrix));
+                                                    variable_name,
+                                                    MatrixDataStencilSize(new_matrix));
       break;
     }
 #endif
@@ -573,8 +573,8 @@ Matrix          *NewMatrixType(
       tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
 
       new_matrix->samrai_id = patch_descriptor->definePatchDataComponent(
-          variable_name,
-          variable->getPatchDataFactory()->cloneFactory(ghosts));
+                                                                         variable_name,
+                                                                         variable->getPatchDataFactory()->cloneFactory(ghosts));
 
 
       samrai_matrix_ids[grid_type][index] = new_matrix->samrai_id;
@@ -586,8 +586,8 @@ Matrix          *NewMatrixType(
 
       int i = 0;
       for (hier::PatchLevel::Iterator patch_iterator(level);
-        patch_iterator;
-        patch_iterator++, i++)
+           patch_iterator;
+           patch_iterator++, i++)
       {
         hier::Patch *patch = *patch_iterator;
 
@@ -596,7 +596,7 @@ Matrix          *NewMatrixType(
         std::cout << "In matrix box " << patch_box << std::endl;
 
         tbox::Pointer < pdat::CellData < double >> patch_data(
-          patch->getPatchData(new_matrix->samrai_id));
+                                                              patch->getPatchData(new_matrix->samrai_id));
         Submatrix *submatrix = MatrixSubmatrix(new_matrix, i);
         SubmatrixData(submatrix) = patch_data->getPointer(0);
         patch_data->fillAll(0);
@@ -632,7 +632,7 @@ Matrix          *NewMatrixType(
  *--------------------------------------------------------------------------*/
 
 void      FreeStencil(
-  Stencil *stencil)
+                      Stencil *stencil)
 {
   if (stencil)
   {
@@ -646,7 +646,7 @@ void      FreeStencil(
  *--------------------------------------------------------------------------*/
 
 void FreeMatrix(
-  Matrix *matrix)
+                Matrix *matrix)
 {
   Submatrix  *submatrix;
 
@@ -718,8 +718,8 @@ void FreeMatrix(
  *--------------------------------------------------------------------------*/
 
 void    InitMatrix(
-  Matrix *A,
-  double  value)
+                   Matrix *A,
+                   double  value)
 {
   Grid       *grid = MatrixGrid(A);
 
@@ -767,7 +767,7 @@ void    InitMatrix(
 
       im = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-        im, nx_m, ny_m, nz_m, 1, 1, 1,
+                im, nx_m, ny_m, nz_m, 1, 1, 1,
       {
         Ap[im] = value;
       });

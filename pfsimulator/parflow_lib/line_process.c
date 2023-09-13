@@ -39,14 +39,14 @@
  *--------------------------------------------------------------------------*/
 
 void  LineProc(
-  double *Z,
-  double  phi,
-  double  theta,
-  double  dzeta,
-  int     izeta,
-  int     nzeta,
-  double  Kmax,
-  double  dK)
+               double *Z,
+               double  phi,
+               double  theta,
+               double  dzeta,
+               int     izeta,
+               int     nzeta,
+               double  Kmax,
+               double  dK)
 {
   double pi = acos(-1.0);
 

@@ -51,7 +51,7 @@ void FreeVarNCData(varNCData* myVarNCData)
 }
 
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
-  char *varName, int dimensionality, bool init, int numVarIni)
+               char *varName, int dimensionality, bool init, int numVarIni)
 {
 #ifdef PARFLOW_HAVE_NETCDF
   char *default_val = "False";
@@ -161,7 +161,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
         CreateNCFileNode(file_name, v, netCDFIDs);
         int myVarID = LookUpInventory(varName, &myVarNCData, netCDFIDs);
         PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
-          nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
+                        nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
         numStepsInFile = 1;
       }
       else
@@ -172,7 +172,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
           CreateNCFileNode(file_name, v, netCDFIDs);
           int myVarID = LookUpInventory(varName, &myVarNCData, netCDFIDs);
           PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
-            nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
+                          nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
           numStepsInFile++;
         }
         else
@@ -180,7 +180,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
           numStepsInFile++;
           int myVarID = LookUpInventory(varName, &myVarNCData, netCDFIDs);
           PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
-            nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
+                          nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
           if (numStepsInFile == userSpecSteps * numVarTimeVariant)
           {
             CloseNC(netCDFIDs[0]);
@@ -284,7 +284,7 @@ void CreateNCFile(char *file_name, int *netCDFIDs)
     if (access(switch_name, F_OK | R_OK) == -1)
     {
       InputError("Error: check if the file is present and readable <%s> for key <%s>\n",
-        switch_name, key);
+                 switch_name, key);
     }
     MPI_Info romio_info;
     FILE *fp;
@@ -335,7 +335,7 @@ void CreateNCFileNode(char *file_name, Vector *v, int *netCDFIDs)
     if (access(switch_name, F_OK | R_OK) == -1)
     {
       InputError("Error: check if the file is present and readable <%s> for key <%s>\n",
-        switch_name, key);
+                 switch_name, key);
     }
     MPI_Info romio_info;
     FILE *fp;
@@ -406,7 +406,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     int timVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &timVarID);
+                         (*myVarNCData)->dimIDs, &timVarID);
     if (res == NC_ENAMEINUSE)
     {
       res = nc_inq_varid(netCDFIDs[0], varName, &timVarID);
@@ -428,7 +428,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int pressVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &pressVarID);
+                         (*myVarNCData)->dimIDs, &pressVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -470,7 +470,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int satVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &satVarID);
+                         (*myVarNCData)->dimIDs, &satVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -512,7 +512,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int maskVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &maskVarID);
+                         (*myVarNCData)->dimIDs, &maskVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -553,7 +553,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int manningsVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &manningsVarID);
+                         (*myVarNCData)->dimIDs, &manningsVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -594,7 +594,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int perm_xVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &perm_xVarID);
+                         (*myVarNCData)->dimIDs, &perm_xVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -636,7 +636,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int perm_yVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &perm_yVarID);
+                         (*myVarNCData)->dimIDs, &perm_yVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -678,7 +678,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int perm_zVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &perm_zVarID);
+                         (*myVarNCData)->dimIDs, &perm_zVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -720,7 +720,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int porosityVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &porosityVarID);
+                         (*myVarNCData)->dimIDs, &porosityVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -762,7 +762,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int specStorageVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &specStorageVarID);
+                         (*myVarNCData)->dimIDs, &specStorageVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -803,7 +803,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int slopexVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &slopexVarID);
+                         (*myVarNCData)->dimIDs, &slopexVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -842,7 +842,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int slopeyVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &slopeyVarID);
+                         (*myVarNCData)->dimIDs, &slopeyVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -882,7 +882,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int dzmultVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &dzmultVarID);
+                         (*myVarNCData)->dimIDs, &dzmultVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -924,7 +924,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int evaptransVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &evaptransVarID);
+                         (*myVarNCData)->dimIDs, &evaptransVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -966,7 +966,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[3] = netCDFIDs[4];
     int evaptrans_sumVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &evaptrans_sumVarID);
+                         (*myVarNCData)->dimIDs, &evaptrans_sumVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -1006,7 +1006,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int overland_sumVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &overland_sumVarID);
+                         (*myVarNCData)->dimIDs, &overland_sumVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -1046,7 +1046,7 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
     int overland_bc_fluxVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-        (*myVarNCData)->dimIDs, &overland_bc_fluxVarID);
+                         (*myVarNCData)->dimIDs, &overland_bc_fluxVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -1199,7 +1199,7 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dim
 }
 
 void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,
-  int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int *netCDFIDs)
+                     int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int *netCDFIDs)
 {
 #ifdef PARFLOW_HAVE_NETCDF
   if (strcmp(myVarNCData->varName, "time") == 0)

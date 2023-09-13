@@ -43,12 +43,12 @@
  *--------------------------------------------------------------------------*/
 
 BCStruct *NewBCStruct(
-  SubgridArray *subgrids,
-  GrGeomSolid * gr_domain,
-  int           num_patches,
-  int *         patch_indexes,
-  int *         bc_types,
-  double ***    values)
+                      SubgridArray *subgrids,
+                      GrGeomSolid * gr_domain,
+                      int           num_patches,
+                      int *         patch_indexes,
+                      int *         bc_types,
+                      double ***    values)
 {
   BCStruct       *new_bcstruct;
 

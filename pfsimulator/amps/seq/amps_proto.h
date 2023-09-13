@@ -40,9 +40,9 @@ void amps_FreePackage(amps_Package package);
 int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice);
 
 void _amps_Abort(
-  char *message,
-  char *filename,
-  int   line);
+                 char *message,
+                 char *filename,
+                 int   line);
 
 /* amps_print.c */
 FILE* amps_SetConsole(FILE* stream);

@@ -59,24 +59,24 @@ typedef void InstanceXtra;
  *-------------------------------------------------------------------------*/
 
 void    OverlandFlowEvalDiff(
-  Grid *       grid,                            /* data struct for computational grid */
-  int          sg,                            /* current subgrid */
-  BCStruct *   bc_struct,                            /* data struct of boundary patch values */
-  int          ipatch,                            /* current boundary patch */
-  ProblemData *problem_data,                            /* Geometry data for problem */
-  Vector *     pressure,                            /* Vector of phase pressures at each block */
-  Vector *     old_pressure,                            /* Vector of phase pressures at previous time */
-  double *     ke_v,                            /* return array corresponding to the east face KE  */
-  double *     kw_v,                            /* return array corresponding to the west face KW */
-  double *     kn_v,                            /* return array corresponding to the north face KN */
-  double *     ks_v,                            /* return array corresponding to the south face KS */
-  double *     ke_vns,                            /* return array corresponding to the nonsymetric east face KE derivative  */
-  double *     kw_vns,                            /* return array corresponding to the nonsymetricwest face KW derivative */
-  double *     kn_vns,                            /* return array corresponding to the nonsymetricnorth face KN derivative */
-  double *     ks_vns,                            /* return array corresponding to the nonsymetricsouth face KS derivative*/
-  double *     qx_v,                            /* return array corresponding to the flux in x-dir */
-  double *     qy_v,                            /* return array corresponding to the flux in y-dir */
-  int          fcn)                            /* Flag determining what to calculate
+                             Grid *       grid, /* data struct for computational grid */
+                             int          sg, /* current subgrid */
+                             BCStruct *   bc_struct, /* data struct of boundary patch values */
+                             int          ipatch, /* current boundary patch */
+                             ProblemData *problem_data, /* Geometry data for problem */
+                             Vector *     pressure, /* Vector of phase pressures at each block */
+                             Vector *     old_pressure, /* Vector of phase pressures at previous time */
+                             double *     ke_v, /* return array corresponding to the east face KE  */
+                             double *     kw_v, /* return array corresponding to the west face KW */
+                             double *     kn_v, /* return array corresponding to the north face KN */
+                             double *     ks_v, /* return array corresponding to the south face KS */
+                             double *     ke_vns, /* return array corresponding to the nonsymetric east face KE derivative  */
+                             double *     kw_vns, /* return array corresponding to the nonsymetricwest face KW derivative */
+                             double *     kn_vns, /* return array corresponding to the nonsymetricnorth face KN derivative */
+                             double *     ks_vns, /* return array corresponding to the nonsymetricsouth face KS derivative*/
+                             double *     qx_v, /* return array corresponding to the flux in x-dir */
+                             double *     qy_v, /* return array corresponding to the flux in y-dir */
+                             int          fcn) /* Flag determining what to calculate
                                                 * fcn = CALCFCN => calculate the function value
                                                 * fcn = CALCDER => calculate the function
                                                 *                  derivative */
@@ -125,18 +125,18 @@ void    OverlandFlowEvalDiff(
   if (fcn == CALCFCN)
   {
     ForPatchCellsPerFaceWithGhost(BC_ALL,
-      BeforeAllCells(DoNothing),
-      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-      Locals(int io, itop, ip = 0, ipp1, ippsy;
-      int k1, k0x, k0y, k1x, k1y;
-      double Press_x = NAN, Press_y;
-      double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag;
-      double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno; ),
-      CellSetup(DoNothing),
-      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-      FACE(BackFace, DoNothing),
-      FACE(FrontFace,
+                                  BeforeAllCells(DoNothing),
+                                  LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                                  Locals(int io, itop, ip = 0, ipp1, ippsy;
+                                         int k1, k0x, k0y, k1x, k1y;
+                                         double Press_x = NAN, Press_y;
+                                         double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag;
+                                         double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno; ),
+                                  CellSetup(DoNothing),
+                                  FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                                  FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                                  FACE(BackFace, DoNothing),
+                                  FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -224,19 +224,19 @@ void    OverlandFlowEvalDiff(
         }
       }
     }),
-      CellFinalize(DoNothing),
-      AfterAllCells(DoNothing)
-      );
+                                  CellFinalize(DoNothing),
+                                  AfterAllCells(DoNothing)
+                                  );
 
     ForPatchCellsPerFace(BC_ALL,
-      BeforeAllCells(DoNothing),
-      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-      Locals(int io; ),
-      CellSetup(DoNothing),
-      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-      FACE(BackFace, DoNothing),
-      FACE(FrontFace,
+                         BeforeAllCells(DoNothing),
+                         LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                         Locals(int io; ),
+                         CellSetup(DoNothing),
+                         FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                         FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                         FACE(BackFace, DoNothing),
+                         FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       ke_v[io] = qx_v[io];
@@ -245,24 +245,24 @@ void    OverlandFlowEvalDiff(
       ks_v[io] = qy_v[io - sy_v];
       //printf("i=%d j=%d k=%d ke_v=%d kw_v=%d kn_v=%d ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
     }),
-      CellFinalize(DoNothing),
-      AfterAllCells(DoNothing)
-      );
+                         CellFinalize(DoNothing),
+                         AfterAllCells(DoNothing)
+                         );
   }
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
     ForPatchCellsPerFace(BC_ALL,
-      BeforeAllCells(DoNothing),
-      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-      Locals(int io, itop, ip = 0, ipp1, ippsy;
-      int k1, k0x, k0y, k1x, k1y;
-      double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
-      double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag; ),
-      CellSetup(DoNothing),
-      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-      FACE(BackFace, DoNothing),
-      FACE(FrontFace,
+                         BeforeAllCells(DoNothing),
+                         LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                         Locals(int io, itop, ip = 0, ipp1, ippsy;
+                                int k1, k0x, k0y, k1x, k1y;
+                                double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
+                                double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag; ),
+                         CellSetup(DoNothing),
+                         FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                         FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                         FACE(BackFace, DoNothing),
+                         FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -298,7 +298,7 @@ void    OverlandFlowEvalDiff(
         if (Sf_x < 0)
         {
           ke_v[io] = (5.0 / 3.0) * (-sx_dat[io] - (Pupx / dx)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pdown, (2.0 / 3.0)) +
-          (8.0 / 3.0) * RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
+                     (8.0 / 3.0) * RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
 
           kw_v[io + 1] = -RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
 
@@ -311,7 +311,7 @@ void    OverlandFlowEvalDiff(
           ke_v[io] = RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
 
           kw_v[io + 1] = (5.0 / 3.0) * (-sx_dat[io] + (Pdown / dx)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0)) -
-          (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
+                         (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
 
           ke_vns[io] = kw_v[io + 1];
           kw_vns[io + 1] = ke_v[io];
@@ -320,7 +320,7 @@ void    OverlandFlowEvalDiff(
         if (Sf_y < 0)
         {
           kn_v[io] = (5.0 / 3.0) * (-sy_dat[io] - (Pupy / dy)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pdown, (2.0 / 3.0)) +
-          (8.0 / 3.0) * RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
+                     (8.0 / 3.0) * RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
 
           ks_v[io + sy_v] = -RPowerR(Pdown, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
 
@@ -333,7 +333,7 @@ void    OverlandFlowEvalDiff(
           kn_v[io] = RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
 
           ks_v[io + sy_v] = (5.0 / 3.0) * (-sy_dat[io] + (Pdown / dy)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupy, (2.0 / 3.0)) -
-          (8.0 / 3.0) * RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
+                            (8.0 / 3.0) * RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
 
           kn_vns[io] = ks_v[io + sy_v];
           ks_vns[io + sy_v] = kn_v[io];
@@ -365,7 +365,7 @@ void    OverlandFlowEvalDiff(
         {
           ke_v[io - 1] = RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
           kw_v[io] = (5.0 / 3.0) * (-sx_dat[io] + 0.0) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0)) -
-          (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
+                     (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
           ke_vns[io - 1] = kw_v[io];
           kw_vns[io] = ke_v[io - 1];
         }
@@ -396,7 +396,7 @@ void    OverlandFlowEvalDiff(
         {
           kn_vns[io - sy_v] = RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
           ks_v[io] = (5.0 / 3.0) * (-sy_dat[io] + 0.0) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupy, (2.0 / 3.0)) -
-          (8.0 / 3.0) * RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
+                     (8.0 / 3.0) * RPowerR(Pupy, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dy);
           kn_vns[io - sy_v] = ks_v[io];
           ks_vns[io] = kn_v[io - sy_v];
         }
@@ -418,16 +418,16 @@ void    OverlandFlowEvalDiff(
           {
             ke_v[io - 1] = RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
             kw_v[io] = (5.0 / 3.0) * (-sx_dat[io] + 0.0) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0)) -
-            (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
+                       (8.0 / 3.0) * RPowerR(Pupx, (5.0 / 3.0)) / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io] * dx);
             ke_vns[io - 1] = kw_v[io];
             kw_vns[io] = ke_v[io - 1];
           }
         }
       }
     }),
-      CellFinalize(DoNothing),
-      AfterAllCells(DoNothing)
-      );
+                         CellFinalize(DoNothing),
+                         AfterAllCells(DoNothing)
+                         );
   }
 }
 

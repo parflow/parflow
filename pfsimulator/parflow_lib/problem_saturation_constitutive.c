@@ -49,7 +49,7 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     SaturationConstitutive(
-  Vector **phase_saturations)
+                                Vector **phase_saturations)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -99,7 +99,7 @@ void     SaturationConstitutive(
 
     ips = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+              ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
     {
       ps[ips] = satconstitutive;
     });
@@ -135,8 +135,8 @@ void     SaturationConstitutive(
       ips = 0;
       ipsi = 0;
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-        ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
-        ipsi, nx_psi, ny_psi, nz_psi, 1, 1, 1,
+                ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+                ipsi, nx_psi, ny_psi, nz_psi, 1, 1, 1,
       {
         ps[ips] -= psi[ipsi];
       });
@@ -149,7 +149,7 @@ void     SaturationConstitutive(
  *--------------------------------------------------------------------------*/
 
 PFModule  *SaturationConstitutiveInitInstanceXtra(
-  Grid *grid)
+                                                  Grid *grid)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
@@ -191,7 +191,7 @@ void  SaturationConstitutiveFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule  *SaturationConstitutiveNewPublicXtra(
-  int num_phases)
+                                               int num_phases)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;

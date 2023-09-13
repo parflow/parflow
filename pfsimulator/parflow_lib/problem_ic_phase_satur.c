@@ -54,9 +54,9 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         ICPhaseSatur(
-  Vector *     ic_phase_satur,
-  int          phase,
-  ProblemData *problem_data)
+                          Vector *     ic_phase_satur,
+                          int          phase,
+                          ProblemData *problem_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -148,7 +148,7 @@ void         ICPhaseSatur(
     *************************************************************************/
 
     field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
-        grid, ic_phase_satur);
+                                   grid, ic_phase_satur);
 
     if (!amps_Rank(amps_CommWorld))
     {
@@ -202,7 +202,7 @@ void  ICPhaseSaturFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule   *ICPhaseSaturNewPublicXtra(
-  int num_phases)
+                                      int num_phases)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;

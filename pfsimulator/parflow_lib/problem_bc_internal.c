@@ -64,11 +64,11 @@ typedef void InstanceXtra;
  *--------------------------------------------------------------------------*/
 
 void BCInternal(
-  Problem *    problem,
-  ProblemData *problem_data,
-  Matrix *     A,
-  Vector *     f,
-  double       time)
+                Problem *    problem,
+                ProblemData *problem_data,
+                Matrix *     A,
+                Vector *     f,
+                double       time)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -156,9 +156,9 @@ void BCInternal(
           process = amps_Rank(amps_CommWorld);
 
           new_subgrid = NewSubgrid(ix, iy, iz,
-              nx, ny, nz,
-              rx, ry, rz,
-              process);
+                                   nx, ny, nz,
+                                   rx, ry, rz,
+                                   process);
 
           AppendSubgrid(new_subgrid, internal_bc_subgrids);
 
@@ -200,7 +200,7 @@ void BCInternal(
         Z = RealSpaceZ(0, SubgridRZ(ibc_subgrid));
 
         BoxLoopI0(i, j, k,
-          ix, iy, iz, nx, ny, nz,
+                  ix, iy, iz, nx, ny, nz,
         {
           /* @RMM - Fixed bug in internal BC's (down below, only x coord was assigned, not y and z) and
            * changed notion of BC to be pressure head, not head potential to make more consistent with
@@ -215,11 +215,11 @@ void BCInternal(
             k_sft = k - stencil[index][2];
 
             if (((i_sft >= SubgridIX(subgrid)) &&
-            (i_sft < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-            ((j_sft >= SubgridIY(subgrid)) &&
-            (j_sft < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-            ((k_sft >= SubgridIZ(subgrid)) &&
-            (k_sft < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+                 (i_sft < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+                ((j_sft >= SubgridIY(subgrid)) &&
+                 (j_sft < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+                ((k_sft >= SubgridIZ(subgrid)) &&
+                 (k_sft < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
             {
               mp = SubmatrixElt(A_sub, index, i_sft, j_sft, k_sft);
               SubvectorElt(f_sub, i_sft, j_sft, k_sft)[0] -= *mp * phead;
@@ -229,11 +229,11 @@ void BCInternal(
 
           /* set row elements */
           if (((i >= SubgridIX(subgrid)) &&
-          (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-          ((j >= SubgridIY(subgrid)) &&
-          (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-          ((k >= SubgridIZ(subgrid)) &&
-          (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+               (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+              ((j >= SubgridIY(subgrid)) &&
+               (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+              ((k >= SubgridIZ(subgrid)) &&
+               (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
           {
             SubmatrixElt(A_sub, 0, i, j, k)[0] = 1.0;
             for (index = 1; index < 7; index++)
@@ -289,7 +289,7 @@ void BCInternal(
         Z = RealSpaceZ(0, SubgridRZ(well_subgrid));
 
         BoxLoopI0(i, j, k,
-          ix, iy, iz, nx, ny, nz,
+                  ix, iy, iz, nx, ny, nz,
         {
           phead = head - dtmp * (Z + k * dz);
 
@@ -301,11 +301,11 @@ void BCInternal(
             k_sft = k - stencil[index][2];
 
             if (((i_sft >= SubgridIX(subgrid)) &&
-            (i_sft < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-            ((j_sft >= SubgridIY(subgrid)) &&
-            (j_sft < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-            ((k_sft >= SubgridIZ(subgrid)) &&
-            (k_sft < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+                 (i_sft < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+                ((j_sft >= SubgridIY(subgrid)) &&
+                 (j_sft < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+                ((k_sft >= SubgridIZ(subgrid)) &&
+                 (k_sft < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
             {
               mp = SubmatrixElt(A_sub, index, i_sft, j_sft, k_sft);
               SubvectorElt(f_sub, i_sft, j_sft, k_sft)[0] -= *mp * phead;
@@ -315,11 +315,11 @@ void BCInternal(
 
           /* set row elements */
           if (((i >= SubgridIX(subgrid)) &&
-          (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-          ((j >= SubgridIY(subgrid)) &&
-          (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-          ((k >= SubgridIZ(subgrid)) &&
-          (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+               (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+              ((j >= SubgridIY(subgrid)) &&
+               (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+              ((k >= SubgridIZ(subgrid)) &&
+               (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
           {
             SubmatrixElt(A_sub, 0, i, j, k)[0] = 1.0;
             for (index = 1; index < 7; index++)
@@ -422,19 +422,19 @@ PFModule  *BCInternalNewPublicXtra()
           dummy0 = ctalloc(Type0, 1);
 
           sprintf(key, "InternalBC.%s.X",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->xlocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Y",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->ylocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Z",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->zlocation = GetDouble(key);
 
           sprintf(key, "InternalBC.%s.Value",
-            NA_IndexToName(public_xtra->internal_bc_names, i));
+                  NA_IndexToName(public_xtra->internal_bc_names, i));
           dummy0->value = GetDouble(key);
 
           (public_xtra->data[i]) = (void*)dummy0;

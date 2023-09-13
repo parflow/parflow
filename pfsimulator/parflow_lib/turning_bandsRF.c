@@ -80,10 +80,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void          TurningBandsRF(
-  GeomSolid *  geounit,
-  GrGeomSolid *gr_geounit,
-  Vector *     field,
-  RFCondData * cdata)
+                             GeomSolid *  geounit,
+                             GrGeomSolid *gr_geounit,
+                             Vector *     field,
+                             RFCondData * cdata)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -186,7 +186,7 @@ void          TurningBandsRF(
   else
   {
     shear_arrays = SimShear(&shear_min, &shear_max,
-        geounit, GridSubgrids(grid), strat_type);
+                            geounit, GridSubgrids(grid), strat_type);
   }
 
   /*-----------------------------------------------------------------------
@@ -277,8 +277,8 @@ void          TurningBandsRF(
 
     /* malloc space for Z */
     nzeta = (int)((sqrt(pow((xhi - xlo), 2.0) +
-      pow((yhi - ylo), 2.0) +
-      pow((sh_zhi - sh_zlo), 2.0)) / dzeta)) + 2;
+                        pow((yhi - ylo), 2.0) +
+                        pow((sh_zhi - sh_zlo), 2.0)) / dzeta)) + 2;
     Z = talloc(double, nzeta);
 
     for (l = 0; l < num_lines; l++)
@@ -294,12 +294,12 @@ void          TurningBandsRF(
 
       /* determine izeta, and nzeta */
       zeta = (pfmin(xlo * unitx, xhi * unitx) +
-        pfmin(ylo * unity, yhi * unity) +
-        pfmin(sh_zlo * unitz, sh_zhi * unitz));
+              pfmin(ylo * unity, yhi * unity) +
+              pfmin(sh_zlo * unitz, sh_zhi * unitz));
       izeta = Index(zeta, dzeta);
       nzeta = (int)((fabs((xhi - xlo) * unitx) +
-        fabs((yhi - ylo) * unity) +
-        fabs((sh_zhi - sh_zlo) * unitz)) / dzeta) + 2;
+                     fabs((yhi - ylo) * unity) +
+                     fabs((sh_zhi - sh_zlo) * unitz)) / dzeta) + 2;
 
       /* Get the line process, Z */
       LineProc(Z, phi, theta, dzeta, izeta, nzeta, Kmax, dK);
@@ -414,8 +414,8 @@ void          TurningBandsRF(
  *--------------------------------------------------------------------------*/
 
 PFModule  *TurningBandsRFInitInstanceXtra(
-  Grid *  grid,
-  double *temp_data)
+                                          Grid *  grid,
+                                          double *temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

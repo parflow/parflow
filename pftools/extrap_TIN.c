@@ -405,7 +405,7 @@ L10:
 L20:
       i__3 = *n - k;
       saxpy_(&i__3, &t, &a[k + 1 + k * a_dim1], &c__1, &a[k + 1 + j *
-        a_dim1], &c__1);
+                                                          a_dim1], &c__1);
 /* L30: */
     }
     goto L50;
@@ -943,7 +943,7 @@ L40:
   for (i = mp1; i <= i__1; i += 5)
   {
     stemp = stemp + sx[i] * sy[i] + sx[i + 1] * sy[i + 1] + sx[i + 2] *
-      sy[i + 2] + sx[i + 3] * sy[i + 3] + sx[i + 4] * sy[i + 4];
+            sy[i + 2] + sx[i + 3] * sy[i + 3] + sx[i + 4] * sy[i + 4];
 /* L50: */
   }
 L60:

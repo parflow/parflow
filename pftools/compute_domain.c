@@ -41,12 +41,12 @@ static inline int domain_min(int a, int b)
 };
 
 void ComputeDomain(
-  SubgridArray *all_subgrids,
-  Databox *     top,
-  Databox *     bottom,
-  int           P,
-  int           Q,
-  int           R)
+                   SubgridArray *all_subgrids,
+                   Databox *     top,
+                   Databox *     bottom,
+                   int           P,
+                   int           Q,
+                   int           R)
 {
   int num_procs = P * Q * R;
   int p;
@@ -139,7 +139,7 @@ void ComputeDomain(
 }
 
 SubgridArray  *Extract2DDomain(
-  SubgridArray *all_subgrids)
+                               SubgridArray *all_subgrids)
 {
   SubgridArray  *new_subgrids;
   int s_i;

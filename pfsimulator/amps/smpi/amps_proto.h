@@ -131,6 +131,6 @@ void handler_invalid(void);
 void Fsignal(void);
 
 void _amps_Abort(
-  char *message,
-  char *filename,
-  int   line);
+                 char *message,
+                 char *filename,
+                 int   line);

@@ -38,10 +38,10 @@
  *--------------------------------------------------------------------------*/
 
 ComputePkg  *NewComputePkg(
-  Region *send_reg,
-  Region *recv_reg,
-  Region *dep_reg,
-  Region *ind_reg)
+                           Region *send_reg,
+                           Region *recv_reg,
+                           Region *dep_reg,
+                           Region *ind_reg)
 {
   ComputePkg      *new_compute_pkg;
 
@@ -63,7 +63,7 @@ ComputePkg  *NewComputePkg(
  *--------------------------------------------------------------------------*/
 
 void         FreeComputePkg(
-  ComputePkg *compute_pkg)
+                            ComputePkg *compute_pkg)
 {
   if (ComputePkgSendRegion(compute_pkg))
     FreeRegion(ComputePkgSendRegion(compute_pkg));

@@ -395,10 +395,10 @@ extern amps_Buffer *amps_BufferFreeList;
 /*---------------------------------------------------------------------------*/
 /* Functions to for align                                                    */
 /*---------------------------------------------------------------------------*/
-#define AMPS_ALIGN(type, src, dest, len, stride)       \
-        ((sizeof(type) -                               \
-        ((unsigned long)(dest) % sizeof(type)))        \
-        % sizeof(type));
+#define AMPS_ALIGN(type, src, dest, len, stride)         \
+        ((sizeof(type) -                                 \
+          ((unsigned long)(dest) % sizeof(type)))        \
+         % sizeof(type));
 
 
 #define AMPS_CALL_BYTE_ALIGN(_comm, _src, _dest, _len, _stride) \
@@ -453,93 +453,93 @@ extern amps_Buffer *amps_BufferFreeList;
 /*---------------------------------------------------------------------------*/
 
 #ifdef __CUDACC__
-#define AMPS_CONVERT_OUT(type_, cvt, comm, src, dest, len, stride)                                                                                                                           \
-        {                                                                                                                                                                                    \
-          type_ *ptr_src, *ptr_dest;                                                                                                                                                         \
-          cudaPointerAttributes attributes;                                                                                                                                                  \
-          cudaPointerGetAttributes(&attributes, src);                                                                                                                                        \
-          if (cudaGetLastError() != cudaSuccess || attributes.type < 2) {                                                                                                                    \
-            if ((char*)(src) != (char*)(dest))                                                                                                                                               \
-            if ((stride) == 1)                                                                                                                                                               \
-            bcopy((src), (dest), (len) * sizeof(type_));                                                                                                                                     \
-            else                                                                                                                                                                             \
-            for (ptr_src = (type_*)(src), ptr_dest = (type_*)(dest); ptr_src < (type_*)(src) + (len) * (stride);                                                                             \
-              ptr_src += (stride), ptr_dest++)                                                                                                                                               \
-            bcopy((ptr_src), (ptr_dest), sizeof(type_));                                                                                                                                     \
-          }else{                                                                                                                                                                             \
-            if ((char*)(src) != (char*)(dest))                                                                                                                                               \
-            {                                                                                                                                                                                \
-              const int blocksize = 1024;                                                                                                                                                    \
-              StridedCopyKernel << < (len + blocksize - 1) / blocksize, blocksize >> > (                                                                                                     \
-              (type_*)(dest), 1, (type_*)(src), stride, len);                                                                                                                                \
-              CUDA_ERRCHK(cudaPeekAtLastError());                                                                                                                                            \
-              CUDA_ERRCHK(cudaStreamSynchronize(0));                                                                                                                                         \
-            }                                                                                                                                                                                \
-          }                                                                                                                                                                                  \
+#define AMPS_CONVERT_OUT(type_, cvt, comm, src, dest, len, stride)                                                                                                                                                                                                     \
+        {                                                                                                                                                                                                                                                              \
+          type_ *ptr_src, *ptr_dest;                                                                                                                                                                                                                                   \
+          cudaPointerAttributes attributes;                                                                                                                                                                                                                            \
+          cudaPointerGetAttributes(&attributes, src);                                                                                                                                                                                                                  \
+          if (cudaGetLastError() != cudaSuccess || attributes.type < 2) {                                                                                                                                                                                              \
+            if ((char*)(src) != (char*)(dest))                                                                                                                                                                                                                         \
+            if ((stride) == 1)                                                                                                                                                                                                                                         \
+            bcopy((src), (dest), (len) * sizeof(type_));                                                                                                                                                                                                               \
+            else                                                                                                                                                                                                                                                       \
+            for (ptr_src = (type_*)(src), ptr_dest = (type_*)(dest); ptr_src < (type_*)(src) + (len) * (stride);                                                                                                                                                       \
+                 ptr_src += (stride), ptr_dest++)                                                                                                                                                                                                                      \
+            bcopy((ptr_src), (ptr_dest), sizeof(type_));                                                                                                                                                                                                               \
+          }else{                                                                                                                                                                                                                                                       \
+            if ((char*)(src) != (char*)(dest))                                                                                                                                                                                                                         \
+            {                                                                                                                                                                                                                                                          \
+              const int blocksize = 1024;                                                                                                                                                                                                                              \
+              StridedCopyKernel << < (len + blocksize - 1) / blocksize, blocksize >> > (                                                                                                                                                                               \
+                                                                                        (type_*)(dest), 1, (type_*)(src), stride, len);                                                                                                                                \
+              CUDA_ERRCHK(cudaPeekAtLastError());                                                                                                                                                                                                                      \
+              CUDA_ERRCHK(cudaStreamSynchronize(0));                                                                                                                                                                                                                   \
+            }                                                                                                                                                                                                                                                          \
+          }                                                                                                                                                                                                                                                            \
         }
 
-#define AMPS_CONVERT_IN(type_, cvt, comm, src, dest, len, stride)                                                                                                                            \
-        {                                                                                                                                                                                    \
-          char *ptr_src, *ptr_dest;                                                                                                                                                          \
-          cudaPointerAttributes attributes;                                                                                                                                                  \
-          cudaPointerGetAttributes(&attributes, src);                                                                                                                                        \
-          if (cudaGetLastError() != cudaSuccess || attributes.type < 2) {                                                                                                                    \
-            if ((src) != (dest))                                                                                                                                                             \
-            {                                                                                                                                                                                \
-              if ((stride) == 1)                                                                                                                                                             \
-              {                                                                                                                                                                              \
-                bcopy((src), (dest), (size_t)(len) * sizeof(type_));                                                                                                                         \
-              }                                                                                                                                                                              \
-              else                                                                                                                                                                           \
-              {                                                                                                                                                                              \
-                for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);                                                                                                                     \
-                  (ptr_dest) < (char*)(dest) + (size_t)((len) * (stride)) * sizeof(type_);                                                                                                   \
-                  (ptr_src) += sizeof(type_), (ptr_dest) += sizeof(type_) * (size_t)((stride)))                                                                                              \
-                bcopy(ptr_src, ptr_dest, sizeof(type_));                                                                                                                                     \
-              }                                                                                                                                                                              \
-            }                                                                                                                                                                                \
-          }else{                                                                                                                                                                             \
-            if ((src) != (dest))                                                                                                                                                             \
-            {                                                                                                                                                                                \
-              const int blocksize = 1024;                                                                                                                                                    \
-              StridedCopyKernel << < (len + blocksize - 1) / blocksize, blocksize >> > (                                                                                                     \
-              (type_*)(dest), stride, (type_*)(src), 1, len);                                                                                                                                \
-              CUDA_ERRCHK(cudaPeekAtLastError());                                                                                                                                            \
-              CUDA_ERRCHK(cudaStreamSynchronize(0));                                                                                                                                         \
-            }                                                                                                                                                                                \
-          }                                                                                                                                                                                  \
+#define AMPS_CONVERT_IN(type_, cvt, comm, src, dest, len, stride)                                                                                                                                                                                                      \
+        {                                                                                                                                                                                                                                                              \
+          char *ptr_src, *ptr_dest;                                                                                                                                                                                                                                    \
+          cudaPointerAttributes attributes;                                                                                                                                                                                                                            \
+          cudaPointerGetAttributes(&attributes, src);                                                                                                                                                                                                                  \
+          if (cudaGetLastError() != cudaSuccess || attributes.type < 2) {                                                                                                                                                                                              \
+            if ((src) != (dest))                                                                                                                                                                                                                                       \
+            {                                                                                                                                                                                                                                                          \
+              if ((stride) == 1)                                                                                                                                                                                                                                       \
+              {                                                                                                                                                                                                                                                        \
+                bcopy((src), (dest), (size_t)(len) * sizeof(type_));                                                                                                                                                                                                   \
+              }                                                                                                                                                                                                                                                        \
+              else                                                                                                                                                                                                                                                     \
+              {                                                                                                                                                                                                                                                        \
+                for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);                                                                                                                                                                                               \
+                     (ptr_dest) < (char*)(dest) + (size_t)((len) * (stride)) * sizeof(type_);                                                                                                                                                                          \
+                     (ptr_src) += sizeof(type_), (ptr_dest) += sizeof(type_) * (size_t)((stride)))                                                                                                                                                                     \
+                bcopy(ptr_src, ptr_dest, sizeof(type_));                                                                                                                                                                                                               \
+              }                                                                                                                                                                                                                                                        \
+            }                                                                                                                                                                                                                                                          \
+          }else{                                                                                                                                                                                                                                                       \
+            if ((src) != (dest))                                                                                                                                                                                                                                       \
+            {                                                                                                                                                                                                                                                          \
+              const int blocksize = 1024;                                                                                                                                                                                                                              \
+              StridedCopyKernel << < (len + blocksize - 1) / blocksize, blocksize >> > (                                                                                                                                                                               \
+                                                                                        (type_*)(dest), stride, (type_*)(src), 1, len);                                                                                                                                \
+              CUDA_ERRCHK(cudaPeekAtLastError());                                                                                                                                                                                                                      \
+              CUDA_ERRCHK(cudaStreamSynchronize(0));                                                                                                                                                                                                                   \
+            }                                                                                                                                                                                                                                                          \
+          }                                                                                                                                                                                                                                                            \
         }
 #else
-#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                                    \
-        {                                                                                                            \
-          type *ptr_src, *ptr_dest;                                                                                  \
-          if ((char*)(src) != (char*)(dest))                                                                         \
-          if ((stride) == 1)                                                                                         \
-          bcopy((src), (dest), (len) * sizeof(type));                                                                \
-          else                                                                                                       \
-          for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride);          \
-            ptr_src += (stride), ptr_dest++)                                                                         \
-          bcopy((ptr_src), (ptr_dest), sizeof(type));                                                                \
+#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                                       \
+        {                                                                                                               \
+          type *ptr_src, *ptr_dest;                                                                                     \
+          if ((char*)(src) != (char*)(dest))                                                                            \
+          if ((stride) == 1)                                                                                            \
+          bcopy((src), (dest), (len) * sizeof(type));                                                                   \
+          else                                                                                                          \
+          for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride);             \
+               ptr_src += (stride), ptr_dest++)                                                                         \
+          bcopy((ptr_src), (ptr_dest), sizeof(type));                                                                   \
         }
 
-#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                                                     \
-        {                                                                                                            \
-          char *ptr_src, *ptr_dest;                                                                                  \
-          if ((src) != (dest))                                                                                       \
-          {                                                                                                          \
-            if ((stride) == 1)                                                                                       \
-            {                                                                                                        \
-              bcopy((src), (dest), (size_t)(len) * sizeof(type));                                                    \
-            }                                                                                                        \
-            else                                                                                                     \
-            {                                                                                                        \
-              for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);                                               \
-                (ptr_dest) < (char*)(dest) + (size_t)((len) * (stride)) * sizeof(type);                              \
-                (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (size_t)((stride)))                          \
-              bcopy(ptr_src, ptr_dest, sizeof(type));                                                                \
-              ;                                                                                                      \
-            }                                                                                                        \
-          }                                                                                                          \
+#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                                                        \
+        {                                                                                                               \
+          char *ptr_src, *ptr_dest;                                                                                     \
+          if ((src) != (dest))                                                                                          \
+          {                                                                                                             \
+            if ((stride) == 1)                                                                                          \
+            {                                                                                                           \
+              bcopy((src), (dest), (size_t)(len) * sizeof(type));                                                       \
+            }                                                                                                           \
+            else                                                                                                        \
+            {                                                                                                           \
+              for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);                                                  \
+                   (ptr_dest) < (char*)(dest) + (size_t)((len) * (stride)) * sizeof(type);                              \
+                   (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (size_t)((stride)))                          \
+              bcopy(ptr_src, ptr_dest, sizeof(type));                                                                   \
+              ;                                                                                                         \
+            }                                                                                                           \
+          }                                                                                                             \
         }
 #endif
 
@@ -1091,7 +1091,7 @@ template < typename T >
 __global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
 StridedCopyKernel(T * __restrict__ dest, const int stride_dest,
-  T * __restrict__ src, const int stride_src, const int len)
+                  T * __restrict__ src, const int stride_src, const int len)
 {
   const int tid = ((blockIdx.x * blockDim.x) + threadIdx.x);
 
@@ -1107,7 +1107,7 @@ template < typename T >
 __global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
 PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data,
-  const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z)
+              const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z)
 {
   const int k = ((blockIdx.z * blockDim.z) + threadIdx.z);
 
@@ -1121,7 +1121,7 @@ PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data,
       {
         *(ptr_buf + k * len_y * len_x + j * len_x + i) =
           *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) +
-          j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);
+            j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);
       }
     }
   }
@@ -1130,7 +1130,7 @@ template < typename T >
 __global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
 UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__ ptr_data,
-  const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z)
+                const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z)
 {
   const int k = ((blockIdx.z * blockDim.z) + threadIdx.z);
 
@@ -1143,7 +1143,7 @@ UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__ ptr_data,
       if (i < len_x)
       {
         *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) +
-        j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) =
+          j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) =
           *(ptr_buf + k * len_y * len_x + j * len_x + i);
       }
     }

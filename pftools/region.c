@@ -38,12 +38,12 @@ SubregionArray  *NewSubregionArray();
  *--------------------------------------------------------------------------*/
 
 Subregion  *NewSubregion(
-  int ix,
-  int iy, int iz,
-  int nx, int ny, int nz,
-  int sx, int sy, int sz,
-  int rx, int ry, int rz,
-  int process)
+                         int ix,
+                         int iy, int iz,
+                         int nx, int ny, int nz,
+                         int sx, int sy, int sz,
+                         int rx, int ry, int rz,
+                         int process)
 {
   Subregion *new_subregion;
 
@@ -96,7 +96,7 @@ SubregionArray  *NewSubregionArray()
  *--------------------------------------------------------------------------*/
 
 SGSRegion  *NewRegion(
-  int size)
+                      int size)
 {
   SGSRegion  *new_region;
 
@@ -121,7 +121,7 @@ SGSRegion  *NewRegion(
  *--------------------------------------------------------------------------*/
 
 void  FreeSubregion(
-  Subregion *subregion)
+                    Subregion *subregion)
 {
   free(subregion);
 }
@@ -132,7 +132,7 @@ void  FreeSubregion(
  *--------------------------------------------------------------------------*/
 
 void  FreeSubregionArray(
-  SubregionArray *subregion_array)
+                         SubregionArray *subregion_array)
 {
   int i;
 
@@ -150,7 +150,7 @@ void  FreeSubregionArray(
  *--------------------------------------------------------------------------*/
 
 void  FreeRegion(
-  SGSRegion *region)
+                 SGSRegion *region)
 {
   int i;
 
@@ -170,8 +170,8 @@ void  FreeRegion(
  *--------------------------------------------------------------------------*/
 
 void  AppendSubregion(
-  Subregion *      subregion,
-  SubregionArray **subregion_array)
+                      Subregion *      subregion,
+                      SubregionArray **subregion_array)
 {
   SubregionArray  *s_array = *subregion_array;
   int s_array_sz = SubregionArraySize(s_array);
@@ -207,14 +207,14 @@ void  AppendSubregion(
  *--------------------------------------------------------------------------*/
 
 void  AppendSubregionArray(
-  SubregionArray * subregion_array_0,
-  SubregionArray **subregion_array_1)
+                           SubregionArray * subregion_array_0,
+                           SubregionArray **subregion_array_1)
 {
   int i;
 
 
   ForSubregionI(i, subregion_array_0)
   AppendSubregion(SubregionArraySubregion(subregion_array_0, i),
-    subregion_array_1);
+                  subregion_array_1);
 }
 

@@ -415,10 +415,10 @@ extern amps_Buffer *amps_BufferFreeList;
 /*---------------------------------------------------------------------------*/
 /* Functions to for align                                                    */
 /*---------------------------------------------------------------------------*/
-#define AMPS_ALIGN(type, src, dest, len, stride)       \
-        ((sizeof(type) -                               \
-        ((unsigned long)(dest) % sizeof(type)))        \
-        % sizeof(type));
+#define AMPS_ALIGN(type, src, dest, len, stride)         \
+        ((sizeof(type) -                                 \
+          ((unsigned long)(dest) % sizeof(type)))        \
+         % sizeof(type));
 
 
 #define AMPS_CALL_BYTE_ALIGN(_comm, _src, _dest, _len, _stride) \
@@ -471,16 +471,16 @@ extern amps_Buffer *amps_BufferFreeList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                               \
-        {                                                                                                       \
-          type *ptr_src, *ptr_dest;                                                                             \
-          if ((char*)(src) != (char*)(dest))                                                                    \
-          if ((stride) == 1)                                                                                    \
-          bcopy((src), (dest), (len) * sizeof(type));                                                           \
-          else                                                                                                  \
-          for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride);     \
-            ptr_src += (stride), ptr_dest++)                                                                    \
-          bcopy((ptr_src), (ptr_dest), sizeof(type));                                                           \
+#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                                  \
+        {                                                                                                          \
+          type *ptr_src, *ptr_dest;                                                                                \
+          if ((char*)(src) != (char*)(dest))                                                                       \
+          if ((stride) == 1)                                                                                       \
+          bcopy((src), (dest), (len) * sizeof(type));                                                              \
+          else                                                                                                     \
+          for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride);        \
+               ptr_src += (stride), ptr_dest++)                                                                    \
+          bcopy((ptr_src), (ptr_dest), sizeof(type));                                                              \
         }
 
 #define AMPS_CALL_BYTE_OUT(_comm, _src, _dest, _len, _stride) \
@@ -506,24 +506,24 @@ extern amps_Buffer *amps_BufferFreeList;
 
 
 
-#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                               \
-        {                                                                                      \
-          char *ptr_src, *ptr_dest;                                                            \
-          if ((src) != (dest))                                                                 \
-          {                                                                                    \
-            if ((stride) == 1)                                                                 \
-            {                                                                                  \
-              bcopy((src), (dest), (size_t)(len) * sizeof(type));                              \
-            }                                                                                  \
-            else                                                                               \
-            {                                                                                  \
-              for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);                         \
-                (ptr_dest) < (char*)(dest) + (size_t)((len) * (stride)) * sizeof(type);        \
-                (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (size_t)((stride)))    \
-              bcopy(ptr_src, ptr_dest, sizeof(type));                                          \
-              ;                                                                                \
-            }                                                                                  \
-          }                                                                                    \
+#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                                  \
+        {                                                                                         \
+          char *ptr_src, *ptr_dest;                                                               \
+          if ((src) != (dest))                                                                    \
+          {                                                                                       \
+            if ((stride) == 1)                                                                    \
+            {                                                                                     \
+              bcopy((src), (dest), (size_t)(len) * sizeof(type));                                 \
+            }                                                                                     \
+            else                                                                                  \
+            {                                                                                     \
+              for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);                            \
+                   (ptr_dest) < (char*)(dest) + (size_t)((len) * (stride)) * sizeof(type);        \
+                   (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (size_t)((stride)))    \
+              bcopy(ptr_src, ptr_dest, sizeof(type));                                             \
+              ;                                                                                   \
+            }                                                                                     \
+          }                                                                                       \
         }
 
 #define AMPS_CALL_BYTE_IN(_comm, _src, _dest, _len, _stride) \

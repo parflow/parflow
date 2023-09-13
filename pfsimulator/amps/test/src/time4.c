@@ -80,7 +80,7 @@ char *argv[];
 
   if (!me)
     amps_Printf("  wall clock time   = %lf seconds\n",
-      time_ticks / AMPS_TICKS_PER_SEC);
+                time_ticks / AMPS_TICKS_PER_SEC);
 
   amps_Finalize();
 

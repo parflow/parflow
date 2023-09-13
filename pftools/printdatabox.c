@@ -54,8 +54,8 @@
  *-----------------------------------------------------------------------*/
 
 void            PrintSimpleA(
-  FILE *   fp,
-  Databox *v)
+                             FILE *   fp,
+                             Databox *v)
 {
   int nx, ny, nz;
 
@@ -83,8 +83,8 @@ void            PrintSimpleA(
  *-----------------------------------------------------------------------*/
 
 void            PrintSimpleA2D(
-  FILE *   fp,
-  Databox *v)
+                               FILE *   fp,
+                               Databox *v)
 {
   int nx, ny, nz;
 
@@ -109,8 +109,8 @@ void            PrintSimpleA2D(
  *-----------------------------------------------------------------------*/
 
 void            PrintSimpleB(
-  FILE *   fp,
-  Databox *v)
+                             FILE *   fp,
+                             Databox *v)
 {
   int nx, ny, nz;
 
@@ -132,8 +132,8 @@ void            PrintSimpleB(
  *-----------------------------------------------------------------------*/
 
 void            PrintParflowB(
-  FILE *   fp,
-  Databox *v)
+                              FILE *   fp,
+                              Databox *v)
 {
   double X = DataboxX(v);        /* These were being set to 0.0 for some
                                   * reason...changed to set them to the
@@ -190,8 +190,8 @@ void            PrintParflowB(
  *-----------------------------------------------------------------------*/
 
 void            PrintAVSField(
-  FILE *   fp,
-  Databox *v)
+                              FILE *   fp,
+                              Databox *v)
 {
   double X = DataboxX(v);
   double Y = DataboxY(v);
@@ -450,8 +450,8 @@ Databox         *v;
  *-----------------------------------------------------------------------*/
 
 void            PrintVizamrai(
-  FILE *   fp,
-  Databox *v)
+                              FILE *   fp,
+                              Databox *v)
 {
   int NX = DataboxNx(v);
   int NY = DataboxNy(v);
@@ -549,8 +549,8 @@ void            PrintVizamrai(
 
 
 void            PrintSilo(
-  char *   filename,
-  Databox *v)
+                          char *   filename,
+                          Databox *v)
 {
 #ifdef HAVE_SILO
   double X = DataboxX(v);
@@ -666,7 +666,7 @@ void            PrintSilo(
   DBPutQuadmesh(db, "mesh", NULL, (float**)coords, dims, ndims, DB_DOUBLE, DB_COLLINEAR, NULL);
 
   DBPutQuadvar1(db, "variable", "mesh", (float*)DataboxCoeff(v, 0, 0, 0), size, ndims, NULL, 0,
-    DB_DOUBLE, DB_ZONECENT, NULL);
+                DB_DOUBLE, DB_ZONECENT, NULL);
 
   DBClose(db);
 
@@ -692,10 +692,10 @@ void            PrintSilo(
  *-----------------------------------------------------------------------*/
 
 void            PrintVTK(
-  FILE *   fp,
-  Databox *v,
-  char *   varname,
-  int      flt)
+                         FILE *   fp,
+                         Databox *v,
+                         char *   varname,
+                         int      flt)
 {
   double X = DataboxX(v);
   double Y = DataboxY(v);
@@ -752,11 +752,11 @@ void            PrintVTK(
  *-----------------------------------------------------------------------*/
 
 void            PrintTFG_VTK(
-  FILE *   fp,
-  Databox *v,
-  double * pnts,
-  char *   varname,
-  int      flt)
+                             FILE *   fp,
+                             Databox *v,
+                             double * pnts,
+                             char *   varname,
+                             int      flt)
 {
   int NX = DataboxNx(v);
   int NY = DataboxNy(v);
@@ -828,10 +828,10 @@ void            PrintTFG_VTK(
  *-----------------------------------------------------------------------*/
 
 void            PrintCLMVTK(
-  FILE *   fp,
-  Databox *v,
-  char *   varname,
-  int      flt)
+                            FILE *   fp,
+                            Databox *v,
+                            char *   varname,
+                            int      flt)
 {
   double X = DataboxX(v);
   double Y = DataboxY(v);
@@ -959,11 +959,11 @@ void            PrintCLMVTK(
  *-----------------------------------------------------------------------*/
 
 void            PrintTFG_CLMVTK(
-  FILE *   fp,
-  Databox *v,
-  double * pnts,
-  char *   varname,
-  int      flt)
+                                FILE *   fp,
+                                Databox *v,
+                                double * pnts,
+                                char *   varname,
+                                int      flt)
 {
   int NX = DataboxNx(v);
   int NY = DataboxNy(v);

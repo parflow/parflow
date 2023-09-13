@@ -41,19 +41,19 @@
  *--------------------------------------------------------------------------*/
 
 Subregion  *NewSubregion(
-  int ix,
-  int iy,
-  int iz,
-  int nx,
-  int ny,
-  int nz,
-  int sx,
-  int sy,
-  int sz,
-  int rx,
-  int ry, int
-  rz,
-  int process)
+                         int ix,
+                         int iy,
+                         int iz,
+                         int nx,
+                         int ny,
+                         int nz,
+                         int sx,
+                         int sy,
+                         int sz,
+                         int rx,
+                         int ry, int
+                         rz,
+                         int process)
 {
   Subregion *new_subregion;
 
@@ -104,7 +104,7 @@ SubregionArray  *NewSubregionArray()
  *--------------------------------------------------------------------------*/
 
 Region  *NewRegion(
-  int size)
+                   int size)
 {
   Region  *new_region;
 
@@ -140,7 +140,7 @@ void        FreeSubregion(Subregion *subregion)
  *--------------------------------------------------------------------------*/
 
 void             FreeSubregionArray(
-  SubregionArray *subregion_array)
+                                    SubregionArray *subregion_array)
 {
   int i;
 
@@ -159,7 +159,7 @@ void             FreeSubregionArray(
  *--------------------------------------------------------------------------*/
 
 void     FreeRegion(
-  Region *region)
+                    Region *region)
 {
   int i;
 
@@ -179,24 +179,24 @@ void     FreeRegion(
  *--------------------------------------------------------------------------*/
 
 Subregion  *DuplicateSubregion(
-  Subregion *subregion)
+                               Subregion *subregion)
 {
   Subregion *new_subregion;
 
 
   new_subregion = NewSubregion(SubregionIX(subregion),
-      SubregionIY(subregion),
-      SubregionIZ(subregion),
-      SubregionNX(subregion),
-      SubregionNY(subregion),
-      SubregionNZ(subregion),
-      SubregionSX(subregion),
-      SubregionSY(subregion),
-      SubregionSZ(subregion),
-      SubregionRX(subregion),
-      SubregionRY(subregion),
-      SubregionRZ(subregion),
-      SubregionProcess(subregion));
+                               SubregionIY(subregion),
+                               SubregionIZ(subregion),
+                               SubregionNX(subregion),
+                               SubregionNY(subregion),
+                               SubregionNZ(subregion),
+                               SubregionSX(subregion),
+                               SubregionSY(subregion),
+                               SubregionSZ(subregion),
+                               SubregionRX(subregion),
+                               SubregionRY(subregion),
+                               SubregionRZ(subregion),
+                               SubregionProcess(subregion));
 
   return new_subregion;
 }
@@ -208,7 +208,7 @@ Subregion  *DuplicateSubregion(
  *--------------------------------------------------------------------------*/
 
 SubregionArray  *DuplicateSubregionArray(
-  SubregionArray *subregion_array)
+                                         SubregionArray *subregion_array)
 {
   SubregionArray *new_subregion_array;
   Subregion     **new_s;
@@ -225,7 +225,7 @@ SubregionArray  *DuplicateSubregionArray(
   if (new_sz)
   {
     data_sz = ((((new_sz - 1) / SubregionArrayBlocksize) + 1) *
-      SubregionArrayBlocksize);
+               SubregionArrayBlocksize);
     new_s = talloc(Subregion *, data_sz);
     memset(new_s, 0, data_sz * sizeof(Subregion *));
 
@@ -248,7 +248,7 @@ SubregionArray  *DuplicateSubregionArray(
  *--------------------------------------------------------------------------*/
 
 Region  *DuplicateRegion(
-  Region *region)
+                         Region *region)
 {
   Region          *new_region;
   SubregionArray **new_sr_arrays;
@@ -284,8 +284,8 @@ Region  *DuplicateRegion(
  *--------------------------------------------------------------------------*/
 
 void             AppendSubregion(
-  Subregion *     subregion,
-  SubregionArray *sr_array)
+                                 Subregion *     subregion,
+                                 SubregionArray *sr_array)
 {
   int sr_array_sz = SubregionArraySize(sr_array);
 
@@ -322,8 +322,8 @@ void             AppendSubregion(
  *--------------------------------------------------------------------------*/
 
 void             DeleteSubregion(
-  SubregionArray *sr_array,
-  int             index)
+                                 SubregionArray *sr_array,
+                                 int             index)
 {
   Subregion  **subregions;
 
@@ -347,8 +347,8 @@ void             DeleteSubregion(
  *--------------------------------------------------------------------------*/
 
 void             AppendSubregionArray(
-  SubregionArray *sr_array_0,
-  SubregionArray *sr_array_1)
+                                      SubregionArray *sr_array_0,
+                                      SubregionArray *sr_array_1)
 {
   int i;
 

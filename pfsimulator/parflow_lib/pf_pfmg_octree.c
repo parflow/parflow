@@ -77,10 +77,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         PFMGOctree(
-  Vector *soln,
-  Vector *rhs,
-  double  tol,
-  int     zero)
+                        Vector *soln,
+                        Vector *rhs,
+                        double  tol,
+                        int     zero)
 {
   PFModule           *this_module = ThisPFModule;
   InstanceXtra       *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -161,9 +161,9 @@ void         PFMGOctree(
     hypre_BoxSetExtents(value_box, ilo, ihi);
 
     GrGeomInBoxLoop(i, j, k,
-      num_i, num_j, num_k,
-      gr_domain, box_size_power,
-      ix, iy, iz, nx, ny, nz,
+                    num_i, num_j, num_k,
+                    gr_domain, box_size_power,
+                    ix, iy, iz, nx, ny, nz,
     {
       ilo[0] = i;
       ilo[1] = j;
@@ -176,12 +176,12 @@ void         PFMGOctree(
       hypre_BoxSetExtents(set_box, ilo, ihi);
 
       hypre_StructVectorSetBoxValues(hypre_b,
-      set_box,
-      value_box,
-      rhs_ptr,
-      action,
-      boxnum,
-      outside);
+                                     set_box,
+                                     value_box,
+                                     rhs_ptr,
+                                     action,
+                                     boxnum,
+                                     outside);
       hypre_BoxDestroy(set_box);
     });
 
@@ -216,11 +216,11 @@ void         PFMGOctree(
 
       HYPRE_StructPFMGGetNumIterations(hypre_pfmg_data, &num_iterations);
       HYPRE_StructPFMGGetFinalRelativeResidualNorm(hypre_pfmg_data,
-        &rel_norm);
+                                                   &rel_norm);
 
       log_file = OpenLogFile("PFMG");
       fprintf(log_file, "PFMGOctree num. its: %i  PFMGOctree Final norm: %12.4e\n",
-        num_iterations, rel_norm);
+              num_iterations, rel_norm);
       CloseLogFile(log_file);
     }
   }
@@ -267,9 +267,9 @@ void         PFMGOctree(
     hypre_BoxSetExtents(value_box, ilo, ihi);
 
     GrGeomInBoxLoop(i, j, k,
-      num_i, num_j, num_k,
-      gr_domain, box_size_power,
-      ix, iy, iz, nx, ny, nz,
+                    num_i, num_j, num_k,
+                    gr_domain, box_size_power,
+                    ix, iy, iz, nx, ny, nz,
     {
       ilo[0] = i;
       ilo[1] = j;
@@ -282,12 +282,12 @@ void         PFMGOctree(
       hypre_BoxSetExtents(set_box, ilo, ihi);
 
       hypre_StructVectorSetBoxValues(hypre_x,
-      set_box,
-      value_box,
-      soln_ptr,
-      action,
-      boxnum,
-      outside);
+                                     set_box,
+                                     value_box,
+                                     soln_ptr,
+                                     action,
+                                     boxnum,
+                                     outside);
       hypre_BoxDestroy(set_box);
     });
 
@@ -301,12 +301,12 @@ void         PFMGOctree(
  *--------------------------------------------------------------------------*/
 
 PFModule  *PFMGOctreeInitInstanceXtra(
-  Problem *    problem,
-  Grid *       grid,
-  ProblemData *problem_data,
-  Matrix *     pf_Bmat,
-  Matrix *     pf_Cmat,
-  double *     temp_data)
+                                      Problem *    problem,
+                                      Grid *       grid,
+                                      ProblemData *problem_data,
+                                      Matrix *     pf_Bmat,
+                                      Matrix *     pf_Cmat,
+                                      double *     temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -402,9 +402,9 @@ PFModule  *PFMGOctreeInitInstanceXtra(
       instance_xtra->dxyz[2] = SubgridDZ(subgrid);
 
       GrGeomInBoxLoop(i, j, k,
-        num_i, num_j, num_k,
-        gr_domain, box_size_power,
-        ix, iy, iz, nx, ny, nz,
+                      num_i, num_j, num_k,
+                      gr_domain, box_size_power,
+                      ix, iy, iz, nx, ny, nz,
       {
         ilo[0] = i;
         ilo[1] = j;
@@ -439,12 +439,12 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     if (!(instance_xtra->hypre_stencil))
     {
       HYPRE_StructStencilCreate(3, stencil_size,
-        &(instance_xtra->hypre_stencil));
+                                &(instance_xtra->hypre_stencil));
 
       for (i = 0; i < stencil_size; i++)
       {
         HYPRE_StructStencilSetElement(instance_xtra->hypre_stencil, i,
-          &(MatrixDataStencil(pf_Bmat))[i * 3]);
+                                      &(MatrixDataStencil(pf_Bmat))[i * 3]);
       }
     }
 
@@ -453,8 +453,8 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     if (!(instance_xtra->hypre_mat))
     {
       HYPRE_StructMatrixCreate(amps_CommWorld, instance_xtra->hypre_grid,
-        instance_xtra->hypre_stencil,
-        &(instance_xtra->hypre_mat));
+                               instance_xtra->hypre_stencil,
+                               &(instance_xtra->hypre_mat));
       HYPRE_StructMatrixSetNumGhost(instance_xtra->hypre_mat, full_ghosts);
       HYPRE_StructMatrixSetSymmetric(instance_xtra->hypre_mat, symmetric);
       HYPRE_StructMatrixInitialize(instance_xtra->hypre_mat);
@@ -464,8 +464,8 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     if (!(instance_xtra->hypre_b))
     {
       HYPRE_StructVectorCreate(amps_CommWorld,
-        instance_xtra->hypre_grid,
-        &(instance_xtra->hypre_b));
+                               instance_xtra->hypre_grid,
+                               &(instance_xtra->hypre_b));
       HYPRE_StructVectorSetNumGhost(instance_xtra->hypre_b, no_ghosts);
       HYPRE_StructVectorInitialize(instance_xtra->hypre_b);
     }
@@ -474,8 +474,8 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     if (!(instance_xtra->hypre_x))
     {
       HYPRE_StructVectorCreate(amps_CommWorld,
-        instance_xtra->hypre_grid,
-        &(instance_xtra->hypre_x));
+                               instance_xtra->hypre_grid,
+                               &(instance_xtra->hypre_x));
       HYPRE_StructVectorSetNumGhost(instance_xtra->hypre_x, full_ghosts);
       HYPRE_StructVectorInitialize(instance_xtra->hypre_x);
     }
@@ -530,9 +530,9 @@ PFModule  *PFMGOctreeInitInstanceXtra(
           hypre_BoxSetExtents(value_box, ilo, ihi);
 
           GrGeomInBoxLoop(i, j, k,
-            num_i, num_j, num_k,
-            gr_domain, box_size_power,
-            ix, iy, iz, nx, ny, nz,
+                          num_i, num_j, num_k,
+                          gr_domain, box_size_power,
+                          ix, iy, iz, nx, ny, nz,
           {
             ilo[0] = i;
             ilo[1] = j;
@@ -563,14 +563,14 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               double *values = SubmatrixStencilData(pfB_sub, stencil * 2);
 
               hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
-              set_box,
-              value_box,
-              1,
-              &stencil_indices_symm[stencil],
-              values,
-              action,
-              boxnum,
-              outside);
+                                             set_box,
+                                             value_box,
+                                             1,
+                                             &stencil_indices_symm[stencil],
+                                             values,
+                                             action,
+                                             boxnum,
+                                             outside);
             }
 
             hypre_BoxDestroy(set_box);
@@ -599,9 +599,9 @@ PFModule  *PFMGOctreeInitInstanceXtra(
           hypre_BoxSetExtents(value_box, ilo, ihi);
 
           GrGeomInBoxLoop(i, j, k,
-            num_i, num_j, num_k,
-            gr_domain, box_size_power,
-            ix, iy, iz, nx, ny, nz,
+                          num_i, num_j, num_k,
+                          gr_domain, box_size_power,
+                          ix, iy, iz, nx, ny, nz,
           {
             ilo[0] = i;
             ilo[1] = j;
@@ -624,14 +624,14 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               double *values = SubmatrixStencilData(pfB_sub, stencil);
 
               hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
-              set_box,
-              value_box,
-              1,
-              &stencil_indices[stencil],
-              values,
-              action,
-              boxnum,
-              outside);
+                                             set_box,
+                                             value_box,
+                                             1,
+                                             &stencil_indices[stencil],
+                                             values,
+                                             action,
+                                             boxnum,
+                                             outside);
             }
 
             hypre_BoxDestroy(set_box);
@@ -699,9 +699,9 @@ PFModule  *PFMGOctreeInitInstanceXtra(
           hypre_BoxSetExtents(value_box, ilo, ihi);
 
           GrGeomInBoxLoop(i, j, k,
-            num_i, num_j, num_k,
-            gr_domain, box_size_power,
-            ix, iy, iz, nx, ny, nz,
+                          num_i, num_j, num_k,
+                          gr_domain, box_size_power,
+                          ix, iy, iz, nx, ny, nz,
           {
             ilo[0] = i;
             ilo[1] = j;
@@ -732,14 +732,14 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               double *values = SubmatrixStencilData(pfB_sub, stencil * 2);
 
               hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
-              set_box,
-              value_box,
-              1,
-              &stencil_indices_symm[stencil],
-              values,
-              action,
-              boxnum,
-              outside);
+                                             set_box,
+                                             value_box,
+                                             1,
+                                             &stencil_indices_symm[stencil],
+                                             values,
+                                             action,
+                                             boxnum,
+                                             outside);
             }
 
             hypre_BoxDestroy(set_box);
@@ -751,7 +751,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
            * diagonal, east, and north terms - DOK
            */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
-            im, nx_m, ny_m, nz_m, 1, 1, 1,
+                    im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
@@ -775,10 +775,10 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               index[1] = j;
               index[2] = ktop;
               HYPRE_StructMatrixAddToValues(instance_xtra->hypre_mat,
-              index,
-              stencil_size,
-              stencil_indices_symm,
-              coeffs_symm);
+                                            index,
+                                            stencil_size,
+                                            stencil_indices_symm,
+                                            coeffs_symm);
             }
           });
 
@@ -805,9 +805,9 @@ PFModule  *PFMGOctreeInitInstanceXtra(
           hypre_BoxSetExtents(value_box, ilo, ihi);
 
           GrGeomInBoxLoop(i, j, k,
-            num_i, num_j, num_k,
-            gr_domain, box_size_power,
-            ix, iy, iz, nx, ny, nz,
+                          num_i, num_j, num_k,
+                          gr_domain, box_size_power,
+                          ix, iy, iz, nx, ny, nz,
           {
             ilo[0] = i;
             ilo[1] = j;
@@ -830,14 +830,14 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               double *values = SubmatrixStencilData(pfB_sub, stencil);
 
               hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
-              set_box,
-              value_box,
-              1,
-              &stencil_indices[stencil],
-              values,
-              action,
-              boxnum,
-              outside);
+                                             set_box,
+                                             value_box,
+                                             1,
+                                             &stencil_indices[stencil],
+                                             values,
+                                             action,
+                                             boxnum,
+                                             outside);
             }
 
             hypre_BoxDestroy(set_box);
@@ -916,7 +916,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
            * diagonal, east, west, north, and south terms - DOK
            */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
-            im, nx_m, ny_m, nz_m, 1, 1, 1,
+                    im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
@@ -939,10 +939,10 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               index[1] = j;
               index[2] = ktop;
               HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-              index,
-              stencil_size,
-              stencil_indices_symm,
-              coeffs_symm);
+                                          index,
+                                          stencil_size,
+                                          stencil_indices_symm,
+                                          coeffs_symm);
             }
           }); // BoxLoop
         } // symmetric
@@ -956,7 +956,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
            * diagonal, east, west, north, and south terms - DOK
            */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
-            im, nx_m, ny_m, nz_m, 1, 1, 1,
+                    im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
@@ -1001,9 +1001,9 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               index[1] = j;
               index[2] = ktop;
               HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-              index,
-              stencil_size,
-              stencil_indices, coeffs);
+                                          index,
+                                          stencil_size,
+                                          stencil_indices, coeffs);
             }
           }); // BoxLoop
         } // non symmetric
@@ -1017,15 +1017,15 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
     /* Set up the PFMG preconditioner */
     HYPRE_StructPFMGCreate(amps_CommWorld,
-      &(instance_xtra->hypre_pfmg_data));
+                           &(instance_xtra->hypre_pfmg_data));
 
     HYPRE_StructPFMGSetTol(instance_xtra->hypre_pfmg_data, 1.0e-30);
     /* Set user parameters for PFMG */
     HYPRE_StructPFMGSetMaxIter(instance_xtra->hypre_pfmg_data, max_iter);
     HYPRE_StructPFMGSetNumPreRelax(instance_xtra->hypre_pfmg_data,
-      num_pre_relax);
+                                   num_pre_relax);
     HYPRE_StructPFMGSetNumPostRelax(instance_xtra->hypre_pfmg_data,
-      num_post_relax);
+                                    num_post_relax);
     /* Jacobi = 0; weighted Jacobi = 1; red-black GS symmetric = 2; red-black GS non-symmetric = 3 */
     HYPRE_StructPFMGSetRelaxType(instance_xtra->hypre_pfmg_data, smoother);
 
@@ -1035,11 +1035,11 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     HYPRE_StructPFMGSetSkipRelax(instance_xtra->hypre_pfmg_data, 1);
 
     HYPRE_StructPFMGSetDxyz(instance_xtra->hypre_pfmg_data,
-      instance_xtra->dxyz);
+                            instance_xtra->dxyz);
 
     HYPRE_StructPFMGSetup(instance_xtra->hypre_pfmg_data,
-      instance_xtra->hypre_mat,
-      instance_xtra->hypre_b, instance_xtra->hypre_x);
+                          instance_xtra->hypre_mat,
+                          instance_xtra->hypre_b, instance_xtra->hypre_x);
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -1148,22 +1148,22 @@ int  PFMGOctreeSizeOfTempData()
  */
 
 void         PFMGOctree(
-  Vector *soln,
-  Vector *rhs,
-  double  tol,
-  int     zero)
+                        Vector *soln,
+                        Vector *rhs,
+                        double  tol,
+                        int     zero)
 {
   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");
   exit(1);
 }
 
 PFModule  *PFMGOctreeInitInstanceXtra(
-  Problem *    problem,
-  Grid *       grid,
-  ProblemData *problem_data,
-  Matrix *     pf_Bmat,
-  Matrix *     pf_Cmat,
-  double *     temp_data)
+                                      Problem *    problem,
+                                      Grid *       grid,
+                                      ProblemData *problem_data,
+                                      Matrix *     pf_Bmat,
+                                      Matrix *     pf_Cmat,
+                                      double *     temp_data)
 {
   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");
   exit(1);

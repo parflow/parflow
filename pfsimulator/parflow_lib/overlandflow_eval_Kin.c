@@ -46,23 +46,23 @@ typedef void InstanceXtra;
  *-------------------------------------------------------------------------*/
 
 void    OverlandFlowEvalKin(
-  Grid *       grid,                            /* data struct for computational grid */
-  int          sg,                            /* current subgrid */
-  BCStruct *   bc_struct,                            /* data struct of boundary patch values */
-  int          ipatch,                            /* current boundary patch */
-  ProblemData *problem_data,                            /* Geometry data for problem */
-  Vector *     pressure,                            /* Vector of phase pressures at each block */
-  double *     ke_v,                            /* return array corresponding to the east face KE  */
-  double *     kw_v,                            /* return array corresponding to the west face KW */
-  double *     kn_v,                            /* return array corresponding to the north face KN */
-  double *     ks_v,                            /* return array corresponding to the south face KS */
-  double *     ke_vns,                            /* return array corresponding to the nonsymetric east face KE derivative  */
-  double *     kw_vns,                            /* return array corresponding to the nonsymetricwest face KW derivative */
-  double *     kn_vns,                            /* return array corresponding to the nonsymetricnorth face KN derivative */
-  double *     ks_vns,                            /* return array corresponding to the nonsymetricsouth face KS derivative*/
-  double *     qx_v,                            /* return array corresponding to the flux in x-dir */
-  double *     qy_v,                            /* return array corresponding to the flux in y-dir */
-  int          fcn)                            /* Flag determining what to calculate
+                            Grid *       grid,  /* data struct for computational grid */
+                            int          sg,  /* current subgrid */
+                            BCStruct *   bc_struct,  /* data struct of boundary patch values */
+                            int          ipatch,  /* current boundary patch */
+                            ProblemData *problem_data,  /* Geometry data for problem */
+                            Vector *     pressure,  /* Vector of phase pressures at each block */
+                            double *     ke_v,  /* return array corresponding to the east face KE  */
+                            double *     kw_v,  /* return array corresponding to the west face KW */
+                            double *     kn_v,  /* return array corresponding to the north face KN */
+                            double *     ks_v,  /* return array corresponding to the south face KS */
+                            double *     ke_vns,  /* return array corresponding to the nonsymetric east face KE derivative  */
+                            double *     kw_vns,  /* return array corresponding to the nonsymetricwest face KW derivative */
+                            double *     kn_vns,  /* return array corresponding to the nonsymetricnorth face KN derivative */
+                            double *     ks_vns,  /* return array corresponding to the nonsymetricsouth face KS derivative*/
+                            double *     qx_v,  /* return array corresponding to the flux in x-dir */
+                            double *     qy_v,  /* return array corresponding to the flux in y-dir */
+                            int          fcn)  /* Flag determining what to calculate
                                                 * fcn = CALCFCN => calculate the function value
                                                 * fcn = CALCDER => calculate the function
                                                 *                  derivative */
@@ -105,17 +105,17 @@ void    OverlandFlowEvalKin(
   if (fcn == CALCFCN)
   {
     ForPatchCellsPerFaceWithGhost(BC_ALL,
-      BeforeAllCells(DoNothing),
-      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-      Locals(int io, itop, ip, ipp1, ippsy;
-      int k1, k0x, k0y, k1x, k1y;
-      double Sf_x, Sf_y, Sf_mag;
-      double Press_x, Press_y; ),
-      CellSetup(DoNothing),
-      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-      FACE(BackFace, DoNothing),
-      FACE(FrontFace,
+                                  BeforeAllCells(DoNothing),
+                                  LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                                  Locals(int io, itop, ip, ipp1, ippsy;
+                                         int k1, k0x, k0y, k1x, k1y;
+                                         double Sf_x, Sf_y, Sf_mag;
+                                         double Press_x, Press_y; ),
+                                  CellSetup(DoNothing),
+                                  FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                                  FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                                  FACE(BackFace, DoNothing),
+                                  FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -139,16 +139,16 @@ void    OverlandFlowEvalKin(
           Sf_mag = ov_epsilon;
 
         Press_x = RPMean(-Sf_x, 0.0,
-        pfmax((pp[ip]), 0.0),
-        pfmax((pp[ipp1]), 0.0));
+                         pfmax((pp[ip]), 0.0),
+                         pfmax((pp[ipp1]), 0.0));
         Press_y = RPMean(-Sf_y, 0.0,
-        pfmax((pp[ip]), 0.0),
-        pfmax((pp[ippsy]), 0.0));
+                         pfmax((pp[ip]), 0.0),
+                         pfmax((pp[ippsy]), 0.0));
 
         qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io]))
-        * RPowerR(Press_x, (5.0 / 3.0));
+                   * RPowerR(Press_x, (5.0 / 3.0));
         qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5)
-        * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
+                             * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
       }
 
       //fix for lower x boundary
@@ -193,19 +193,19 @@ void    OverlandFlowEvalKin(
         }
       }
     }),
-      CellFinalize(DoNothing),
-      AfterAllCells(DoNothing)
-      );
+                                  CellFinalize(DoNothing),
+                                  AfterAllCells(DoNothing)
+                                  );
 
     ForPatchCellsPerFace(BC_ALL,
-      BeforeAllCells(DoNothing),
-      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-      Locals(int io; ),
-      CellSetup(DoNothing),
-      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-      FACE(BackFace, DoNothing),
-      FACE(FrontFace,
+                         BeforeAllCells(DoNothing),
+                         LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                         Locals(int io; ),
+                         CellSetup(DoNothing),
+                         FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                         FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                         FACE(BackFace, DoNothing),
+                         FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       ke_v[io] = qx_v[io];
@@ -213,24 +213,24 @@ void    OverlandFlowEvalKin(
       kn_v[io] = qy_v[io];
       ks_v[io] = qy_v[io - sy_v];
     }),
-      CellFinalize(DoNothing),
-      AfterAllCells(DoNothing)
-      );
+                         CellFinalize(DoNothing),
+                         AfterAllCells(DoNothing)
+                         );
   }
   else          //fcn = CALCDER calculates the derivs
   {
     ForPatchCellsPerFaceWithGhost(BC_ALL,
-      BeforeAllCells(DoNothing),
-      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-      Locals(int io, itop, ip, ipp1, ippsy;
-      int k1, k0x, k0y, k1x, k1y;
-      double Sf_x, Sf_y, Sf_mag;
-      double Press_x, Press_y, qx_temp, qy_temp; ),
-      CellSetup(DoNothing),
-      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-      FACE(BackFace, DoNothing),
-      FACE(FrontFace,
+                                  BeforeAllCells(DoNothing),
+                                  LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+                                  Locals(int io, itop, ip, ipp1, ippsy;
+                                         int k1, k0x, k0y, k1x, k1y;
+                                         double Sf_x, Sf_y, Sf_mag;
+                                         double Press_x, Press_y, qx_temp, qy_temp; ),
+                                  CellSetup(DoNothing),
+                                  FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+                                  FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                                  FACE(BackFace, DoNothing),
+                                  FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -255,11 +255,11 @@ void    OverlandFlowEvalKin(
           Sf_mag = ov_epsilon;
 
         Press_x = RPMean(-Sf_x, 0.0,
-        pfmax((pp[ip]), 0.0),
-        pfmax((pp[ipp1]), 0.0));
+                         pfmax((pp[ip]), 0.0),
+                         pfmax((pp[ipp1]), 0.0));
         Press_y = RPMean(-Sf_y, 0.0,
-        pfmax((pp[ip]), 0.0),
-        pfmax((pp[ippsy]), 0.0));
+                         pfmax((pp[ip]), 0.0),
+                         pfmax((pp[ippsy]), 0.0));
 
         qx_temp = -(5.0 / 3.0) * (Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
         qy_temp = -(5.0 / 3.0) * (Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
@@ -318,9 +318,9 @@ void    OverlandFlowEvalKin(
         }
       }
     }),
-      CellFinalize(DoNothing),
-      AfterAllCells(DoNothing)
-      );
+                                  CellFinalize(DoNothing),
+                                  AfterAllCells(DoNothing)
+                                  );
   }   // else calcder
 }     // function
 

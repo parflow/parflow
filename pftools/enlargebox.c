@@ -29,7 +29,7 @@
 #include "enlargebox.h"
 
 Databox       *EnlargeBox(Databox *inbox,
-  int new_nx, int new_ny, int new_nz)
+                          int new_nx, int new_ny, int new_nz)
 {
   Databox       *newbox;
 
@@ -67,8 +67,8 @@ Databox       *EnlargeBox(Databox *inbox,
   }
 
   if ((newbox = NewDatabox(new_nx, new_ny, new_nz,
-    x, y, z,
-    dx, dy, dz)) == NULL)
+                           x, y, z,
+                           dx, dy, dz)) == NULL)
     return((Databox*)NULL);
 
   /* First just copy the old values into the new box */

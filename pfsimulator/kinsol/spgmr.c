@@ -166,9 +166,9 @@ SpgmrMem SpgmrMalloc(integer N, int l_max, void *machEnv)
 /*************** SpgmrSolve ******************************************/
 
 int SpgmrSolve(SpgmrMem mem, void *A_data, N_Vector x, N_Vector b,
-  int pretype, int gstype, real delta, int max_restarts,
-  void *P_data, N_Vector s1, N_Vector s2, ATimesFn atimes,
-  PSolveFn psolve, real *res_norm, int *nli, int *nps)
+               int pretype, int gstype, real delta, int max_restarts,
+               void *P_data, N_Vector s1, N_Vector s2, ATimesFn atimes,
+               PSolveFn psolve, real *res_norm, int *nli, int *nps)
 {
   N_Vector *V, xcor, vtemp;
   real **Hes, *givens, *yg;
@@ -324,7 +324,7 @@ int SpgmrSolve(SpgmrMem mem, void *A_data, N_Vector x, N_Vector b,
       if (gstype == CLASSICAL_GS)
       {
         if (ClassicalGS(V, Hes, l_plus_1, l_max, &(Hes[l_plus_1][l]),
-          vtemp, yg) != 0)
+                        vtemp, yg) != 0)
           return(SPGMR_GS_FAIL);
       }
       else

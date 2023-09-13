@@ -42,9 +42,9 @@
  *
  *-----------------------------------------------------------------------*/
 void ComputeSlopeXUpwind(
-  Databox *dem,
-  double   dx,
-  Databox *sx)
+                         Databox *dem,
+                         double   dx,
+                         Databox *sx)
 {
   int i, j;
   int nx, ny;
@@ -212,9 +212,9 @@ void ComputeSlopeXUpwind(
  *
  *-----------------------------------------------------------------------*/
 void ComputeSlopeYUpwind(
-  Databox *dem,
-  double   dy,
-  Databox *sy)
+                         Databox *dem,
+                         double   dy,
+                         Databox *sy)
 {
   int i, j;
   int nx, ny;
@@ -382,8 +382,8 @@ void ComputeSlopeYUpwind(
  *
  *-----------------------------------------------------------------------*/
 void ComputeSlopeXD4(
-  Databox *dem,
-  Databox *sx)
+                     Databox *dem,
+                     Databox *sx)
 
 {
   int i, j;
@@ -876,8 +876,8 @@ void ComputeSlopeXD4(
  *
  *-----------------------------------------------------------------------*/
 void ComputeSlopeYD4(
-  Databox *dem,
-  Databox *sy)
+                     Databox *dem,
+                     Databox *sy)
 
 {
   int i, j;
@@ -1369,13 +1369,13 @@ void ComputeSlopeYD4(
  *-----------------------------------------------------------------------*/
 
 int ComputeTestParent(
-  int      i,
-  int      j,
-  int      ii,
-  int      jj,
-  Databox *dem,
-  Databox *sx,
-  Databox *sy)
+                      int      i,
+                      int      j,
+                      int      ii,
+                      int      jj,
+                      Databox *dem,
+                      Databox *sx,
+                      Databox *sy)
 {
   int test = -999;
 
@@ -1429,12 +1429,12 @@ int ComputeTestParent(
  *
  *-----------------------------------------------------------------------*/
 
-void ComputeParentMap(int i,
-  int                     j,
-  Databox *               dem,
-  Databox *               sx,
-  Databox *               sy,
-  Databox *               parentmap)
+void ComputeParentMap(int       i,
+                      int       j,
+                      Databox * dem,
+                      Databox * sx,
+                      Databox * sy,
+                      Databox * parentmap)
 {
   int ii, jj;
   int parent;
@@ -1511,10 +1511,10 @@ void ComputeParentMap(int i,
  *
  *-----------------------------------------------------------------------*/
 void ComputeUpstreamArea(
-  Databox *dem,
-  Databox *sx,
-  Databox *sy,
-  Databox *area)
+                         Databox *dem,
+                         Databox *sx,
+                         Databox *sy,
+                         Databox *area)
 {
   int i, j;
   int ii, jj;
@@ -1580,10 +1580,10 @@ void ComputeUpstreamArea(
  *-----------------------------------------------------------------------*/
 
 void ComputeFlatMap(
-  int      i,
-  int      j,
-  Databox *dem,
-  Databox *flatmap)
+                    int      i,
+                    int      j,
+                    Databox *dem,
+                    Databox *flatmap)
 {
   int ii, jj;
   int nx = DataboxNx(dem);
@@ -1664,8 +1664,8 @@ void ComputeFlatMap(
  *
  *-----------------------------------------------------------------------*/
 void ComputeFillFlats(
-  Databox *dem,
-  Databox *newdem)
+                      Databox *dem,
+                      Databox *newdem)
 {
   int flat;
   int i, j, ii, jj;
@@ -1852,8 +1852,8 @@ void ComputeFillFlats(
  *
  *-----------------------------------------------------------------------*/
 int ComputePitFill(
-  Databox *dem,
-  double   dpit)
+                   Databox *dem,
+                   double   dpit)
 {
   int nsink;
   int lmin;
@@ -1892,16 +1892,16 @@ int ComputePitFill(
       {
         // calculate slope magnitude
         smag = sqrt((*DataboxCoeff(sx, i, j, 0)) * (*DataboxCoeff(sx, i, j, 0)) +
-            (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
+                    (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
 
         // test if local minimum
         lmin = 0;
         if ((i > 0) && (j > 0) && (i < nx - 1) && (j < ny - 1))
         {
           if ((*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i - 1, j, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i + 1, j, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j - 1, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j + 1, 0)))
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i + 1, j, 0)) &&
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j - 1, 0)) &&
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j + 1, 0)))
           {
             lmin = 1;
           }
@@ -1935,16 +1935,16 @@ int ComputePitFill(
       {
         // re-calculate slope magnitude from new DEM
         smag = sqrt((*DataboxCoeff(sx, i, j, 0)) * (*DataboxCoeff(sx, i, j, 0)) +
-            (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
+                    (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
 
         // test if local minimum
         lmin = 0;
         if ((i > 0) && (j > 0) && (i < nx - 1) && (j < ny - 1))
         {
           if ((*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i - 1, j, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i + 1, j, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j - 1, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j + 1, 0)))
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i + 1, j, 0)) &&
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j - 1, 0)) &&
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j + 1, 0)))
           {
             lmin = 1;
           }
@@ -1985,8 +1985,8 @@ int ComputePitFill(
  *
  *-----------------------------------------------------------------------*/
 int ComputeMovingAvg(
-  Databox *dem,
-  double   wsize)
+                     Databox *dem,
+                     double   wsize)
 {
   int nsink;
   int lmin;
@@ -2030,16 +2030,16 @@ int ComputeMovingAvg(
       {
         // calculate slope magnitude
         smag = sqrt((*DataboxCoeff(sx, i, j, 0)) * (*DataboxCoeff(sx, i, j, 0)) +
-            (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
+                    (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
 
         // test if local minimum
         lmin = 0;
         if ((i > 0) && (j > 0) && (i < nx - 1) && (j < ny - 1))
         {
           if ((*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i - 1, j, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i + 1, j, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j - 1, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j + 1, 0)))
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i + 1, j, 0)) &&
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j - 1, 0)) &&
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j + 1, 0)))
           {
             lmin = 1;
           }
@@ -2114,16 +2114,16 @@ int ComputeMovingAvg(
       {
         // re-calculate slope magnitude from new DEM
         smag = sqrt((*DataboxCoeff(sx, i, j, 0)) * (*DataboxCoeff(sx, i, j, 0)) +
-            (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
+                    (*DataboxCoeff(sy, i, j, 0)) * (*DataboxCoeff(sy, i, j, 0)));
 
         // test if local minimum
         lmin = 0;
         if ((i > 0) && (j > 0) && (i < nx - 1) && (j < ny - 1))
         {
           if ((*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i - 1, j, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i + 1, j, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j - 1, 0)) &&
-            (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j + 1, 0)))
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i + 1, j, 0)) &&
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j - 1, 0)) &&
+              (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, i, j + 1, 0)))
           {
             lmin = 1;
           }
@@ -2161,10 +2161,10 @@ int ComputeMovingAvg(
  *
  *-----------------------------------------------------------------------*/
 void ComputeSatTransmissivity(
-  int      nlayers,
-  Databox *mask,
-  Databox *perm,
-  Databox *trans)
+                              int      nlayers,
+                              Databox *mask,
+                              Databox *perm,
+                              Databox *trans)
 {
   int i, j, k;
   int nx, ny, nz;
@@ -2244,11 +2244,11 @@ void ComputeSatTransmissivity(
  *
  *-----------------------------------------------------------------------*/
 void ComputeSatStorage(
-  Databox *mask,
-  Databox *porosity,
-  Databox *ssat,
-  Databox *sres,
-  Databox *stor)
+                       Databox *mask,
+                       Databox *porosity,
+                       Databox *ssat,
+                       Databox *sres,
+                       Databox *stor)
 {
   int i, j, k;
   int nx, ny, nz;
@@ -2269,7 +2269,7 @@ void ComputeSatStorage(
         if (*DataboxCoeff(mask, i, j, k) == 1.0)
         {
           *DataboxCoeff(stor, i, j, 0) = *DataboxCoeff(stor, i, j, 0) +
-            (*DataboxCoeff(porosity, i, j, k) * (*DataboxCoeff(ssat, i, j, k) - *DataboxCoeff(sres, i, j, 0)) * dz);
+                                         (*DataboxCoeff(porosity, i, j, k) * (*DataboxCoeff(ssat, i, j, k) - *DataboxCoeff(sres, i, j, 0)) * dz);
         }
       }
     }
@@ -2327,10 +2327,10 @@ void ComputeSatStorage(
  *         orders of magnitude smaller).
  *-----------------------------------------------------------------------*/
 void ComputeTopoIndex(
-  Databox *dem,
-  Databox *sx,
-  Databox *sy,
-  Databox *topoindex)
+                      Databox *dem,
+                      Databox *sx,
+                      Databox *sy,
+                      Databox *topoindex)
 {
   int i, j;
   int nx, ny, nz;
@@ -2375,12 +2375,12 @@ void ComputeTopoIndex(
         if ((*DataboxCoeff(sx, i, j, 0) == 0.0) && (*DataboxCoeff(sy, i, j, 0) == 0.0))
         {
           *DataboxCoeff(topoindex, i, j, 0) = (*DataboxCoeff(area, i, j, 0) /
-            ((0.000001 * dy) + (0.000001 * dx)));
+                                               ((0.000001 * dy) + (0.000001 * dx)));
         }
         else
         {
           *DataboxCoeff(topoindex, i, j, 0) = (*DataboxCoeff(area, i, j, 0)) /
-            ((fabs(*DataboxCoeff(sx, i, j, 0)) * dy) + (fabs(*DataboxCoeff(sy, i, j, 0)) * dx));
+                                              ((fabs(*DataboxCoeff(sx, i, j, 0)) * dy) + (fabs(*DataboxCoeff(sy, i, j, 0)) * dx));
         }
       }
     }
@@ -2441,13 +2441,13 @@ void ComputeTopoIndex(
  *
  *-----------------------------------------------------------------------*/
 void ComputeTopoRecharge(
-  int      river[][2],                        // array of river cells [nriver x 2]
-  int      nriver,                        // number of river points
-  Databox *trans,
-  Databox *dem,
-  Databox *sx,
-  Databox *sy,
-  Databox *recharge)
+                         int      river[][2], // array of river cells [nriver x 2]
+                         int      nriver, // number of river points
+                         Databox *trans,
+                         Databox *dem,
+                         Databox *sx,
+                         Databox *sy,
+                         Databox *recharge)
 {
   int i, j, ii, jj, iriver;
   int nx, ny, nz;
@@ -2507,12 +2507,12 @@ void ComputeTopoRecharge(
       if ((*DataboxCoeff(sx, i, j, 0) == 0.0) && (*DataboxCoeff(sy, i, j, 0) == 0.0))
       {
         tmp = ((*DataboxCoeff(trans, i, j, 0)) / (*DataboxCoeff(area, i, j, 0))) *
-          ((0.000001 * dy) + (0.000001 * dx));
+              ((0.000001 * dy) + (0.000001 * dx));
       }
       else
       {
         tmp = ((*DataboxCoeff(trans, i, j, 0)) / (*DataboxCoeff(area, i, j, 0))) *
-          ((fabs(*DataboxCoeff(sx, i, j, 0)) * dy) + (fabs(*DataboxCoeff(sy, i, j, 0)) * dx));
+              ((fabs(*DataboxCoeff(sx, i, j, 0)) * dy) + (fabs(*DataboxCoeff(sy, i, j, 0)) * dx));
       }
 
       // compute parent map (1 @ contributing cells, 0 @ outside of contrib area)
@@ -2567,13 +2567,13 @@ void ComputeTopoRecharge(
  *
  *-----------------------------------------------------------------------*/
 void ComputeEffectiveRecharge(
-  Databox *precip,
-  Databox *et,
-  Databox *runoff,
-  Databox *sx,
-  Databox *sy,
-  Databox *dem,
-  Databox *recharge)
+                              Databox *precip,
+                              Databox *et,
+                              Databox *runoff,
+                              Databox *sx,
+                              Databox *sy,
+                              Databox *dem,
+                              Databox *recharge)
 {
   int i, j, ii, jj;
   int nx, ny, nz;
@@ -2678,18 +2678,18 @@ void ComputeEffectiveRecharge(
  *
  *-----------------------------------------------------------------------*/
 void ComputeTopoDeficit(
-  int      profile,
-  double   m,
-  Databox *trans,
-  Databox *dem,
-  Databox *sx,
-  Databox *sy,
-  Databox *recharge,
-  Databox *ssat,
-  Databox *sres,
-  Databox *porosity,
-  Databox *mask,
-  Databox *deficit)
+                        int      profile,
+                        double   m,
+                        Databox *trans,
+                        Databox *dem,
+                        Databox *sx,
+                        Databox *sy,
+                        Databox *recharge,
+                        Databox *ssat,
+                        Databox *sres,
+                        Databox *porosity,
+                        Databox *mask,
+                        Databox *deficit)
 {
   int i, j, k;
   int nx, ny, nz, nz_flat;
@@ -2746,7 +2746,7 @@ void ComputeTopoDeficit(
         for (k = 0; k < nz; k++)
         {
           *DataboxCoeff(dmax, i, j, 0) = *DataboxCoeff(dmax, i, j, 0)
-            + ((*DataboxCoeff(mask, i, j, k)) * (*DataboxCoeff(porosity, i, j, k)) * dz);
+                                         + ((*DataboxCoeff(mask, i, j, k)) * (*DataboxCoeff(porosity, i, j, k)) * dz);
         }
       }
     }
@@ -2772,7 +2772,7 @@ void ComputeTopoDeficit(
           else
           {
             tmp = ((*DataboxCoeff(recharge, i, j, 0)) * (*DataboxCoeff(area, i, j, 0))) /
-              ((*DataboxCoeff(trans, i, j, 0)) * ((fabs(*DataboxCoeff(sx, i, j, 0)) * dy) + (fabs(*DataboxCoeff(sy, i, j, 0)) * dx)));
+                  ((*DataboxCoeff(trans, i, j, 0)) * ((fabs(*DataboxCoeff(sx, i, j, 0)) * dy) + (fabs(*DataboxCoeff(sy, i, j, 0)) * dx)));
 
             *DataboxCoeff(deficit, i, j, 0) = fmax((-m * log(tmp)), 0.0);
           }
@@ -2796,7 +2796,7 @@ void ComputeTopoDeficit(
           else
           {
             tmp = ((*DataboxCoeff(recharge, i, j, 0)) * (*DataboxCoeff(area, i, j, 0))) /
-              ((*DataboxCoeff(trans, i, j, 0)) * ((fabs(*DataboxCoeff(sx, i, j, 0)) * dy) + (fabs(*DataboxCoeff(sy, i, j, 0)) * dx)));
+                  ((*DataboxCoeff(trans, i, j, 0)) * ((fabs(*DataboxCoeff(sx, i, j, 0)) * dy) + (fabs(*DataboxCoeff(sy, i, j, 0)) * dx)));
 
             *DataboxCoeff(deficit, i, j, 0) = fmax(-(*DataboxCoeff(dmax, i, j, 0) * (tmp - 1.0)), 0.0);
           }
@@ -2830,13 +2830,13 @@ void ComputeTopoDeficit(
  *
  *-----------------------------------------------------------------------*/
 void ComputeTopoDeficitToWT(
-  Databox *deficit,
-  Databox *porosity,
-  Databox *ssat,
-  Databox *sres,
-  Databox *mask,
-  Databox *top,
-  Databox *wtdepth)
+                            Databox *deficit,
+                            Databox *porosity,
+                            Databox *ssat,
+                            Databox *sres,
+                            Databox *mask,
+                            Databox *top,
+                            Databox *wtdepth)
 {
   int i, j, k;
   int nx, ny;
@@ -2878,7 +2878,7 @@ void ComputeTopoDeficitToWT(
           else
           {
             D1 = D0 - dz * ((*DataboxCoeff(porosity, i, j, k)) * (*DataboxCoeff(ssat, i, j, k)) -
-              (*DataboxCoeff(porosity, i, j, k)) * (*DataboxCoeff(sres, i, j, k)));
+                            (*DataboxCoeff(porosity, i, j, k)) * (*DataboxCoeff(sres, i, j, k)));
 
             if (D1 > 0)
             {
@@ -2891,7 +2891,7 @@ void ComputeTopoDeficitToWT(
 
         // remaining deficit is less than on cell's worth of storage...distribute within cell
         Z = Z + (D0 / ((*DataboxCoeff(porosity, i, j, k)) * (*DataboxCoeff(ssat, i, j, k)) -
-          (*DataboxCoeff(porosity, i, j, k)) * (*DataboxCoeff(sres, i, j, k))));
+                       (*DataboxCoeff(porosity, i, j, k)) * (*DataboxCoeff(sres, i, j, k))));
 
         *DataboxCoeff(wtdepth, i, j, 0) = Z;
       }
@@ -2916,10 +2916,10 @@ void ComputeTopoDeficitToWT(
  *
  *-----------------------------------------------------------------------*/
 void ComputeHydroStatFromWT(
-  Databox *wtdepth,
-  Databox *top,
-  Databox *mask,
-  Databox *press0)
+                            Databox *wtdepth,
+                            Databox *top,
+                            Databox *mask,
+                            Databox *press0)
 {
   int i, j, k, ktop;
   int nx, ny;
@@ -2956,7 +2956,7 @@ void ComputeHydroStatFromWT(
           else
           {
             *DataboxCoeff(press0, i, j, k) = -(*DataboxCoeff(wtdepth, i, j, 0))
-              + ((ktop - k) * dz) + (dz / 2.0);
+                                             + ((ktop - k) * dz) + (dz / 2.0);
           }
         }
       }
@@ -2976,8 +2976,8 @@ void ComputeHydroStatFromWT(
  *
  *-----------------------------------------------------------------------*/
 void ComputeSlopeD8(
-  Databox *dem,
-  Databox *slope)
+                    Databox *dem,
+                    Databox *slope)
 {
   int i, j, ii, jj;
   int imin, jmin;
@@ -3117,17 +3117,17 @@ void ComputeSlopeD8(
               if (i == imin)             // adjacent in y
               {
                 *DataboxCoeff(slope, i, j, 0) = fabs(*DataboxCoeff(dem, i, j, 0) -
-                    *DataboxCoeff(dem, imin, jmin, 0)) / dy;
+                                                     *DataboxCoeff(dem, imin, jmin, 0)) / dy;
               }
               else if (j == jmin)        // adjacent in x
               {
                 *DataboxCoeff(slope, i, j, 0) = fabs(*DataboxCoeff(dem, i, j, 0) -
-                    *DataboxCoeff(dem, imin, jmin, 0)) / dx;
+                                                     *DataboxCoeff(dem, imin, jmin, 0)) / dx;
               }
               else
               {
                 *DataboxCoeff(slope, i, j, 0) = fabs(*DataboxCoeff(dem, i, j, 0) -
-                    *DataboxCoeff(dem, imin, jmin, 0)) / dxy;
+                                                     *DataboxCoeff(dem, imin, jmin, 0)) / dxy;
               }
             }
           }
@@ -3179,9 +3179,9 @@ void ComputeSlopeD8(
             s2 = fabs(*DataboxCoeff(dem, i, j, 0) - 0.0) / dy;
           }
           if ((*DataboxCoeff(dem, i - 1, j - 1, 0) == -9999.0) ||
-            (*DataboxCoeff(dem, i - 1, j + 1, 0) == -9999.0) ||
-            (*DataboxCoeff(dem, i + 1, j - 1, 0) == -9999.0) ||
-            (*DataboxCoeff(dem, i + 1, j + 1, 0) == -9999.0))
+              (*DataboxCoeff(dem, i - 1, j + 1, 0) == -9999.0) ||
+              (*DataboxCoeff(dem, i + 1, j - 1, 0) == -9999.0) ||
+              (*DataboxCoeff(dem, i + 1, j + 1, 0) == -9999.0))
           {
             s3 = fabs(*DataboxCoeff(dem, i, j, 0) - 0.0) / dxy;
           }
@@ -3210,8 +3210,8 @@ void ComputeSlopeD8(
  *
  *-----------------------------------------------------------------------*/
 void ComputeSegmentD8(
-  Databox *dem,
-  Databox *ds)
+                      Databox *dem,
+                      Databox *ds)
 {
   int i, j, ii, jj;
   int imin, jmin;
@@ -3411,9 +3411,9 @@ void ComputeSegmentD8(
             s2 = fabs(*DataboxCoeff(dem, i, j, 0) - 0.0) / dy;
           }
           if ((*DataboxCoeff(dem, i - 1, j - 1, 0) == -9999.0) ||
-            (*DataboxCoeff(dem, i - 1, j + 1, 0) == -9999.0) ||
-            (*DataboxCoeff(dem, i + 1, j - 1, 0) == -9999.0) ||
-            (*DataboxCoeff(dem, i + 1, j + 1, 0) == -9999.0))
+              (*DataboxCoeff(dem, i - 1, j + 1, 0) == -9999.0) ||
+              (*DataboxCoeff(dem, i + 1, j - 1, 0) == -9999.0) ||
+              (*DataboxCoeff(dem, i + 1, j + 1, 0) == -9999.0))
           {
             s3 = fabs(*DataboxCoeff(dem, i, j, 0) - 0.0) / dxy;
           }
@@ -3449,8 +3449,8 @@ void ComputeSegmentD8(
  *
  *-----------------------------------------------------------------------*/
 void ComputeChildD8(
-  Databox *dem,
-  Databox *child)
+                    Databox *dem,
+                    Databox *child)
 {
   int i, j, ii, jj;
   int imin, jmin;
@@ -3536,11 +3536,11 @@ void ComputeChildD8(
  *
  *-----------------------------------------------------------------------*/
 int ComputeTestParentD8(
-  int      i,
-  int      j,
-  int      ii,
-  int      jj,
-  Databox *dem)
+                        int      i,
+                        int      j,
+                        int      ii,
+                        int      jj,
+                        Databox *dem)
 {
   int test = -999;
   int itest, jtest;
@@ -3619,7 +3619,7 @@ int ComputeTestParentD8(
     // ** if [i,j] is also at lower elevation than [ii,jj], then [ii,jj] is D8 parent of [i,j]
     //    (child must be lower than parent, but need not be unique elevation -- only need lowest elevation!)
     else if ((imin == i) && (jmin == j)                                        // [imin,jmin] == [i,j] of potential child
-      && (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, ii, jj, 0)))        // child elevation lower than parent
+             && (*DataboxCoeff(dem, i, j, 0) < *DataboxCoeff(dem, ii, jj, 0))) // child elevation lower than parent
     {
       test = 1;
     }
@@ -3643,15 +3643,15 @@ int ComputeTestParentD8(
  *
  *---------------------------------------------------------------------*/
 void ComputeFlintsLawRec(
-  int      i,
-  int      j,
-  Databox *dem,
-  Databox *demflint,
-  Databox *child,
-  Databox *area,
-  Databox *ds,
-  double   c,
-  double   p)
+                         int      i,
+                         int      j,
+                         Databox *dem,
+                         Databox *demflint,
+                         Databox *child,
+                         Databox *area,
+                         Databox *ds,
+                         double   c,
+                         double   p)
 {
   int ii, jj;
   int nx, ny;
@@ -3711,7 +3711,7 @@ void ComputeFlintsLawRec(
         {
           // compute DEM...
           *DataboxCoeff(demflint, ii, jj, 0) = *DataboxCoeff(demflint, i, j, 0) +
-            c * pow(*DataboxCoeff(area, ii, jj, 0), p) * *DataboxCoeff(ds, ii, jj, 0);
+                                               c * pow(*DataboxCoeff(area, ii, jj, 0), p) * *DataboxCoeff(ds, ii, jj, 0);
 
           // recursive loop...
           ComputeFlintsLawRec(ii, jj, dem, demflint, child, area, ds, c, p);
@@ -3748,10 +3748,10 @@ void ComputeFlintsLawRec(
  *
  *-----------------------------------------------------------------------*/
 void ComputeFlintsLaw(
-  Databox *dem,
-  double   c,
-  double   p,
-  Databox *demflint)
+                      Databox *dem,
+                      double   c,
+                      double   p,
+                      Databox *demflint)
 {
   int i, j;
   int nx, ny, nz;
@@ -3873,11 +3873,11 @@ void ComputeFlintsLaw(
  *
  *-----------------------------------------------------------------------*/
 void ComputeFlintsLawFit(
-  Databox *dem,
-  double   c0,
-  double   p0,
-  int      maxiter,
-  Databox *demflint)
+                         Databox *dem,
+                         double   c0,
+                         double   p0,
+                         int      maxiter,
+                         Databox *demflint)
 {
   // grid vars
   int i, j, n1, n2;
@@ -4103,15 +4103,15 @@ void ComputeFlintsLawFit(
 // Additional subroutines for ComputeFlintsLawFit
 // ComputeFlintLM: Computes slopes and derivatives needed by LM fitting routine
 void ComputeFlintLM(
-  Databox *dem,                   // original dem values
-  Databox *demflint,                   // estimated dem values
-  Databox *area,                   // upstream areas  -- independent var
-  Databox *child,                   // child dem value -- constant
-  Databox *ds,                   // segment length  -- constant
-  double   c,                   // c parameter value            (not changed in this routine)
-  double   p,                   // p (exponent) parameter value (not changed in this routine)
-  Databox *dzdc,                   // derivative of Flint's law wrt. c
-  Databox *dzdp)                   // derivative of Flint's law wrt. p
+                    Databox *dem, // original dem values
+                    Databox *demflint, // estimated dem values
+                    Databox *area, // upstream areas  -- independent var
+                    Databox *child, // child dem value -- constant
+                    Databox *ds, // segment length  -- constant
+                    double   c, // c parameter value            (not changed in this routine)
+                    double   p, // p (exponent) parameter value (not changed in this routine)
+                    Databox *dzdc, // derivative of Flint's law wrt. c
+                    Databox *dzdp) // derivative of Flint's law wrt. p
 {
   int i, j;
   int nx, ny;
@@ -4168,24 +4168,24 @@ void ComputeFlintLM(
         *DataboxCoeff(dzdc, i, j, 0) = pow(*DataboxCoeff(area, i, j, 0), p) * (*DataboxCoeff(ds, i, j, 0));
 
         *DataboxCoeff(dzdp, i, j, 0) = c * pow(*DataboxCoeff(area, i, j, 0), p)
-          * log(*DataboxCoeff(area, i, j, 0))
-          * (*DataboxCoeff(ds, i, j, 0));
+                                       * log(*DataboxCoeff(area, i, j, 0))
+                                       * (*DataboxCoeff(ds, i, j, 0));
       }    // end if nodata
     }   // end loop over i
   }  // end loop over j
 }
 
 double ComputeLMCoeff(
-  Databox *demflint,                     // estimated elevations -- dependent var
-  Databox *dem,                     // actual elevations -- constant
-  Databox *area,                     // upstream areas    -- independent var
-  Databox *child,                     // child dem value   -- constant
-  Databox *ds,                     // segment length    -- constant
-  double   c,                     // c parameter value
-  double   p,                     // p parameter value
-  double   alpha[][2],                     // working space     -- [2x2] array
-  double   beta[],                     // working space     -- [2] array
-  double   chisq)                     // chisq value
+                      Databox *demflint, // estimated elevations -- dependent var
+                      Databox *dem, // actual elevations -- constant
+                      Databox *area, // upstream areas    -- independent var
+                      Databox *child, // child dem value   -- constant
+                      Databox *ds, // segment length    -- constant
+                      double   c, // c parameter value
+                      double   p, // p parameter value
+                      double   alpha[][2], // working space     -- [2x2] array
+                      double   beta[], // working space     -- [2] array
+                      double   chisq) // chisq value
 {
   int i, j;
   int ma = 2;
@@ -4282,10 +4282,10 @@ double ComputeLMCoeff(
 }
 
 void ComputeGaussJordan(
-  double a[][2],
-  int    n,
-  double b[][2],
-  int    m)
+                        double a[][2],
+                        int    n,
+                        double b[][2],
+                        int    m)
 {
   int i, icol, irow, j, k, l, ll;
   double big, dum, pivinv, temp;
@@ -4420,11 +4420,11 @@ void ComputeGaussJordan(
  *
  *-----------------------------------------------------------------------*/
 void ComputeFlintsLawByBasin(
-  Databox *dem,
-  double   c0,
-  double   p0,
-  int      maxiter,
-  Databox *demflint)
+                             Databox *dem,
+                             double   c0,
+                             double   p0,
+                             int      maxiter,
+                             Databox *demflint)
 {
   // grid vars
   int i, j, n1, n2;

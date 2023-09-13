@@ -33,8 +33,8 @@
 #include "parflow.h"
 
 double   InnerProd(
-  Vector *x,
-  Vector *y)
+                   Vector *x,
+                   Vector *y)
 {
   Grid         *grid = VectorGrid(x);
   Subgrid      *subgrid;
@@ -81,8 +81,8 @@ double   InnerProd(
     iv = 0;
 
     BoxLoopReduceI1(result,
-      i, j, k, ix, iy, iz, nx, ny, nz,
-      iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       ReduceSum(result, yp[iv] * xp[iv]);
     });

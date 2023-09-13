@@ -56,9 +56,9 @@ char *argv[];
   incr = 33;
 
   left = myrank ?
-    myrank - 1 : amps_Size(amps_CommWorld) - 1;
+         myrank - 1 : amps_Size(amps_CommWorld) - 1;
   right = (myrank == amps_Size(amps_CommWorld) - 1) ?
-    0 : myrank + 1;
+          0 : myrank + 1;
 
   if (myrank == 0)
     printf("\n#\tdist\tlen\ttime\t\tave time (us)\trate\n");
@@ -74,7 +74,7 @@ char *argv[];
     if (myrank == 0)
     {
       printf("\t%d\t%d\t%f\t%f\t%.2f\n",
-        amps_Size(amps_CommWorld), len, t, mean_time, rate);
+             amps_Size(amps_CommWorld), len, t, mean_time, rate);
       fflush(stdout);
     }
   }

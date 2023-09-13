@@ -42,12 +42,12 @@
  *--------------------------------------------------------------------------*/
 
 void         PField(
-  Grid *       grid,
-  GeomSolid *  geounit,
-  GrGeomSolid *gr_geounit,
-  Vector *     field,
-  RFCondData * cdata,
-  Statistics * stats)
+                    Grid *       grid,
+                    GeomSolid *  geounit,
+                    GrGeomSolid *gr_geounit,
+                    Vector *     field,
+                    RFCondData * cdata,
+                    Statistics * stats)
 {
   /*-----------------*
   * Local variables *
@@ -244,8 +244,8 @@ void         PField(
       k = (int)((z[n] - Z0) / dz + 0.5);
 
       if ((ix - max_search_radius <= i && i <= ix + nx + max_search_radius) &&
-        (iy - max_search_radius <= j && j <= iy + ny + max_search_radius) &&
-        (iz - max_search_radius <= k && k <= iz + nz + max_search_radius))
+          (iy - max_search_radius <= j && j <= iy + ny + max_search_radius) &&
+          (iz - max_search_radius <= k && k <= iz + nz + max_search_radius))
       {
         ci[nc_sub] = i;
         cj[nc_sub] = j;

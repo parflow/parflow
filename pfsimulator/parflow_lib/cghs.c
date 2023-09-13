@@ -72,10 +72,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     CGHS(
-  Vector *x,
-  Vector *b,
-  double  tol,
-  int     zero)
+              Vector *x,
+              Vector *b,
+              double  tol,
+              int     zero)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -164,7 +164,7 @@ void     CGHS(
 #if 0
     if (!amps_Rank(amps_CommWorld))
       amps_Printf("Iteration (%d): ||r|| = %e, ||r||/||b|| = %e\n",
-        i, sqrt(gamma), (b_dot_b ? sqrt(gamma / b_dot_b) : 0));
+                  i, sqrt(gamma), (b_dot_b ? sqrt(gamma / b_dot_b) : 0));
 #endif
 
     /* log norm info */
@@ -188,7 +188,7 @@ void     CGHS(
 
   if (!amps_Rank(amps_CommWorld))
     amps_Printf("Iterations = %d, ||r|| = %e, ||r||/||b|| = %e\n",
-      i, sqrt(gamma), (b_dot_b ? sqrt(gamma / b_dot_b) : 0));
+                i, sqrt(gamma), (b_dot_b ? sqrt(gamma / b_dot_b) : 0));
 
   /*-----------------------------------------------------------------------
    * end timing
@@ -214,7 +214,7 @@ void     CGHS(
     for (j = 0; j < i; j++)
     {
       fprintf(log_file, "% 5d    %e    %e\n",
-        (j + 1), norm_log[j], rel_norm_log[j]);
+              (j + 1), norm_log[j], rel_norm_log[j]);
     }
 
     CloseLogFile(log_file);
@@ -233,11 +233,11 @@ void     CGHS(
  *--------------------------------------------------------------------------*/
 
 PFModule     *CGHSInitInstanceXtra(
-  Problem *    problem,
-  Grid *       grid,
-  ProblemData *problem_data,
-  Matrix *     A,
-  double *     temp_data)
+                                   Problem *    problem,
+                                   Grid *       grid,
+                                   ProblemData *problem_data,
+                                   Matrix *     A,
+                                   double *     temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

@@ -91,7 +91,7 @@ function main() {
    files=$(find . -name \*.[ch] | grep -v './build\|third_party')
    for i in $files
    do
-      uncrustify -l C --replace --no-backup -c bin/parflow.cfg $i 
+      uncrustify --if-changed -l C --replace --no-backup -c bin/parflow.cfg $i 
    done
 }
 

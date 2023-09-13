@@ -74,11 +74,11 @@
 
 void PFVLinearSum(
 /* LinearSum : z = a * x + b * y              */
-  double  a,
-  Vector *x,
-  double  b,
-  Vector *y,
-  Vector *z)
+                  double  a,
+                  Vector *x,
+                  double  b,
+                  Vector *y,
+                  Vector *z)
 
 {
   double c;
@@ -215,9 +215,9 @@ void PFVLinearSum(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = a * xp[i_x] + b * yp[i_y];
     });
@@ -227,8 +227,8 @@ void PFVLinearSum(
 
 void PFVConstInit(
 /* ConstInit : z = c   */
-  double  c,
-  Vector *z)
+                  double  c,
+                  Vector *z)
 {
   Grid       *grid = VectorGrid(z);
   Subgrid    *subgrid;
@@ -265,7 +265,7 @@ void PFVConstInit(
 
     i_z = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = c;
     });
@@ -274,9 +274,9 @@ void PFVConstInit(
 
 void PFVProd(
 /* Prod : z_i = x_i * y_i   */
-  Vector *x,
-  Vector *y,
-  Vector *z)
+             Vector *x,
+             Vector *y,
+             Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -334,9 +334,9 @@ void PFVProd(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = xp[i_x] * yp[i_y];
     });
@@ -346,9 +346,9 @@ void PFVProd(
 
 void PFVDiv(
 /* Div : z_i = x_i / y_i   */
-  Vector *x,
-  Vector *y,
-  Vector *z)
+            Vector *x,
+            Vector *y,
+            Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -405,9 +405,9 @@ void PFVDiv(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = xp[i_x] / yp[i_y];
     });
@@ -417,9 +417,9 @@ void PFVDiv(
 
 void PFVScale(
 /* Scale : z = c * x   */
-  double  c,
-  Vector *x,
-  Vector *z)
+              double  c,
+              Vector *x,
+              Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -482,8 +482,8 @@ void PFVScale(
       i_x = 0;
       i_z = 0;
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-        i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-        i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+                i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                i_z, nx_z, ny_z, nz_z, 1, 1, 1,
       {
         zp[i_z] = c * xp[i_x];
       });
@@ -494,8 +494,8 @@ void PFVScale(
 
 void PFVAbs(
 /* Abs : z_i = |x_i|   */
-  Vector *x,
-  Vector *z)
+            Vector *x,
+            Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -542,8 +542,8 @@ void PFVAbs(
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = fabs(xp[i_x]);
     });
@@ -552,8 +552,8 @@ void PFVAbs(
 
 void PFVInv(
 /* Inv : z_i = 1 / x_i    */
-  Vector *x,
-  Vector *z)
+            Vector *x,
+            Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -600,8 +600,8 @@ void PFVInv(
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = ONE / xp[i_x];
     });
@@ -611,9 +611,9 @@ void PFVInv(
 
 void PFVAddConst(
 /* AddConst : z_i = x_i + b  */
-  Vector *x,
-  double  b,
-  Vector *z)
+                 Vector *x,
+                 double  b,
+                 Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -660,8 +660,8 @@ void PFVAddConst(
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = xp[i_x] + b;
     });
@@ -671,8 +671,8 @@ void PFVAddConst(
 
 double PFVDotProd(
 /* DotProd = x dot y   */
-  Vector *x,
-  Vector *y)
+                  Vector *x,
+                  Vector *y)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -723,9 +723,9 @@ double PFVDotProd(
     i_y = 0;
 
     BoxLoopReduceI2(sum,
-      i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_y, nx_y, ny_y, nz_y, 1, 1, 1,
     {
       ReduceSum(sum, xp[i_x] * yp[i_y]);
     });
@@ -742,7 +742,7 @@ double PFVDotProd(
 
 double PFVMaxNorm(
 /* MaxNorm = || x ||_{max}   */
-  Vector *x)
+                  Vector *x)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -782,8 +782,8 @@ double PFVMaxNorm(
 
     i_x = 0;
     BoxLoopReduceI1(max_val,
-      i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       double xp_abs = fabs(xp[i_x]);
       ReduceMax(max_val, xp_abs);
@@ -799,8 +799,8 @@ double PFVMaxNorm(
 
 double PFVWrmsNorm(
 /* WrmsNorm = sqrt((sum_i (x_i * w_i)^2)/length)  */
-  Vector *x,
-  Vector *w)
+                   Vector *x,
+                   Vector *w)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -851,9 +851,9 @@ double PFVWrmsNorm(
     i_w = 0;
 
     BoxLoopReduceI2(sum,
-      i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_w, nx_w, ny_w, nz_w, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       double prod = xp[i_x] * wp[i_w];
       ReduceSum(sum, prod * prod);
@@ -871,8 +871,8 @@ double PFVWrmsNorm(
 
 double PFVWL2Norm(
 /* WL2Norm = sqrt(sum_i (x_i * w_i)^2)  */
-  Vector *x,
-  Vector *w)
+                  Vector *x,
+                  Vector *w)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -923,9 +923,9 @@ double PFVWL2Norm(
     i_w = 0;
 
     BoxLoopReduceI2(sum,
-      i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_w, nx_w, ny_w, nz_w, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       const double prod = xp[i_x] * wp[i_w];
       ReduceSum(sum, prod * prod);
@@ -943,7 +943,7 @@ double PFVWL2Norm(
 
 double PFVL1Norm(
 /* L1Norm = sum_i |x_i|  */
-  Vector *x)
+                 Vector *x)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -983,8 +983,8 @@ double PFVL1Norm(
 
     i_x = 0;
     BoxLoopReduceI1(sum,
-      i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceSum(sum, fabs(xp[i_x]));
     });
@@ -999,7 +999,7 @@ double PFVL1Norm(
 
 double PFVMin(
 /* Min = min_i(x_i)   */
-  Vector *x)
+              Vector *x)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1046,8 +1046,8 @@ double PFVMin(
     {
       i_x = 0;
       BoxLoopReduceI1(min_val,
-        i, j, k, ix, iy, iz, 1, 1, 1,
-        i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                      i, j, k, ix, iy, iz, 1, 1, 1,
+                      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
       {
         ReduceSum(min_val, xp[i_x]);
       });
@@ -1055,8 +1055,8 @@ double PFVMin(
 
     i_x = 0;
     BoxLoopReduceI1(min_val,
-      i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceMin(min_val, xp[i_x]);
     });
@@ -1070,7 +1070,7 @@ double PFVMin(
 
 double PFVMax(
 /* Max = max_i(x_i)   */
-  Vector *x)
+              Vector *x)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1113,8 +1113,8 @@ double PFVMax(
     {
       i_x = 0;
       BoxLoopReduceI1(max_val,
-        i, j, k, ix, iy, iz, 1, 1, 1,
-        i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                      i, j, k, ix, iy, iz, 1, 1, 1,
+                      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
       {
         ReduceSum(max_val, xp[i_x]);
       });
@@ -1123,8 +1123,8 @@ double PFVMax(
     i_x = 0;
 
     BoxLoopReduceI1(max_val,
-      i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceMax(max_val, xp[i_x]);
     });
@@ -1140,8 +1140,8 @@ double PFVMax(
 int PFVConstrProdPos(
 /* ConstrProdPos: Returns a boolean FALSE if some c[i]!=0.0  */
 /*                and x[i]*c[i]<=0.0 */
-  Vector *c,
-  Vector *x)
+                     Vector *c,
+                     Vector *x)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1193,8 +1193,8 @@ int PFVConstrProdPos(
     i_c = 0;
     i_x = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_c, nx_c, ny_c, nz_c, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_c, nx_c, ny_c, nz_c, 1, 1, 1,
     {
       if (cp[i_c] != ZERO)
       {
@@ -1222,9 +1222,9 @@ int PFVConstrProdPos(
 
 void PFVCompare(
 /* Compare : z_i = (x_i > c)  */
-  double  c,
-  Vector *x,
-  Vector *z)
+                double  c,
+                Vector *x,
+                Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1271,8 +1271,8 @@ void PFVCompare(
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = (fabs(xp[i_x]) >= c) ? ONE : ZERO;
     });
@@ -1282,8 +1282,8 @@ void PFVCompare(
 
 int PFVInvTest(
 /* InvTest = (x_i != 0 forall i), z_i = 1 / x_i  */
-  Vector *x,
-  Vector *z)
+               Vector *x,
+               Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1335,8 +1335,8 @@ int PFVInvTest(
     i_z = 0;
     *val = 1;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       if (xp[i_x] == ZERO)
         *val = 0;
@@ -1374,8 +1374,8 @@ int PFVInvTest(
  * @param x source vector
  * @param Y destination vector
  */
-void PFVCopy(Vector *x,
-  Vector *           y)
+void PFVCopy(Vector * x,
+             Vector * y)
 {
   Grid *grid = VectorGrid(x);
   int sg;
@@ -1391,9 +1391,9 @@ void PFVCopy(Vector *x,
 
 void PFVSum(
 /* Sum : z = x + y   */
-  Vector *x,
-  Vector *y,
-  Vector *z)
+            Vector *x,
+            Vector *y,
+            Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1450,9 +1450,9 @@ void PFVSum(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = xp[i_x] + yp[i_y];
     });
@@ -1462,9 +1462,9 @@ void PFVSum(
 
 void PFVDiff(
 /* Diff : z = x - y  */
-  Vector *x,
-  Vector *y,
-  Vector *z)
+             Vector *x,
+             Vector *y,
+             Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1522,9 +1522,9 @@ void PFVDiff(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = xp[i_x] - yp[i_y];
     });
@@ -1534,8 +1534,8 @@ void PFVDiff(
 
 void PFVNeg(
 /* Neg : z = - x   */
-  Vector *x,
-  Vector *z)
+            Vector *x,
+            Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1583,8 +1583,8 @@ void PFVNeg(
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = -xp[i_x];
     });
@@ -1593,10 +1593,10 @@ void PFVNeg(
 
 void PFVScaleSum(
 /* ScaleSum : z = c * x + y   */
-  double  c,
-  Vector *x,
-  Vector *y,
-  Vector *z)
+                 double  c,
+                 Vector *x,
+                 Vector *y,
+                 Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1654,9 +1654,9 @@ void PFVScaleSum(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = c * (xp[i_x] + yp[i_y]);
     });
@@ -1666,10 +1666,10 @@ void PFVScaleSum(
 
 void PFVScaleDiff(
 /* ScaleDiff : z = c * x - y   */
-  double  c,
-  Vector *x,
-  Vector *y,
-  Vector *z)
+                  double  c,
+                  Vector *x,
+                  Vector *y,
+                  Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1727,9 +1727,9 @@ void PFVScaleDiff(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = c * (xp[i_x] - yp[i_y]);
     });
@@ -1739,10 +1739,10 @@ void PFVScaleDiff(
 
 void PFVLin1(
 /* Lin1 : z = a * x + y   */
-  double  a,
-  Vector *x,
-  Vector *y,
-  Vector *z)
+             double  a,
+             Vector *x,
+             Vector *y,
+             Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1800,9 +1800,9 @@ void PFVLin1(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = a * (xp[i_x]) + yp[i_y];
     });
@@ -1812,10 +1812,10 @@ void PFVLin1(
 
 void PFVLin2(
 /* Lin2 : z = a * x - y   */
-  double  a,
-  Vector *x,
-  Vector *y,
-  Vector *z)
+             double  a,
+             Vector *x,
+             Vector *y,
+             Vector *z)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1873,9 +1873,9 @@ void PFVLin2(
     i_y = 0;
     i_z = 0;
     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-      i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_z, nx_z, ny_z, nz_z, 1, 1, 1,
     {
       zp[i_z] = a * (xp[i_x]) - yp[i_y];
     });
@@ -1885,9 +1885,9 @@ void PFVLin2(
 
 void PFVAxpy(
 /* axpy : y = y + a * x   */
-  double  a,
-  Vector *x,
-  Vector *y)
+             double  a,
+             Vector *x,
+             Vector *y)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1935,8 +1935,8 @@ void PFVAxpy(
     i_x = 0;
     i_y = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-      i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
     {
       yp[i_y] += a * (xp[i_x]);
     });
@@ -1946,8 +1946,8 @@ void PFVAxpy(
 
 void PFVScaleBy(
 /* ScaleBy : x = x * a   */
-  double  a,
-  Vector *x)
+                double  a,
+                Vector *x)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1985,7 +1985,7 @@ void PFVScaleBy(
 
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       xp[i_x] = xp[i_x] * a;
     });
@@ -1995,10 +1995,10 @@ void PFVScaleBy(
 
 void PFVLayerCopy(
 /* NBE: Extract layer b from y and insert into layer a of x   */
-  int     a,
-  int     b,
-  Vector *x,
-  Vector *y)
+                  int     a,
+                  int     b,
+                  Vector *x,
+                  Vector *y)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;

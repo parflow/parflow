@@ -27,13 +27,13 @@
  **********************************************************************EHEADER*/
 #include "amps.h"
 
-amps_Package amps_NewPackage(amps_Comm comm,
-  int                                  num_send,
-  int *                                dest,
-  amps_Invoice *                       send_invoices,
-  int                                  num_recv,
-  int *                                src,
-  amps_Invoice *                       recv_invoices)
+amps_Package amps_NewPackage(amps_Comm      comm,
+                             int            num_send,
+                             int *          dest,
+                             amps_Invoice * send_invoices,
+                             int            num_recv,
+                             int *          src,
+                             amps_Invoice * recv_invoices)
 {
   amps_Package package;
 
@@ -80,7 +80,7 @@ amps_Package amps_NewPackage(amps_Comm comm,
           items[item].type = ptr->type;
 
           items[item].data = (ptr->data_type == AMPS_INVOICE_POINTER) ?
-            *((char**)(ptr->data)) : ptr->data;
+                             *((char**)(ptr->data)) : ptr->data;
 
           /* Store the dim of the vector */
           dim = items[item].dim =
@@ -102,10 +102,10 @@ amps_Package amps_NewPackage(amps_Comm comm,
           items[item].type = ptr->type;
 
           items[item].data = (ptr->data_type == AMPS_INVOICE_POINTER) ?
-            *((char**)(ptr->data)) : ptr->data;
+                             *((char**)(ptr->data)) : ptr->data;
 
           items[item].len = (ptr->len_type == AMPS_INVOICE_POINTER) ?
-            *(ptr->ptr_len) : ptr->len;
+                            *(ptr->ptr_len) : ptr->len;
 
           items[item].stride =
             (ptr->stride_type == AMPS_INVOICE_POINTER) ?
@@ -118,7 +118,7 @@ amps_Package amps_NewPackage(amps_Comm comm,
       }
 
       src_info = (amps_SrcInfo*)amps_new(amps_CommWorld,
-          sizeof(amps_SrcInfo));
+                                         sizeof(amps_SrcInfo));
 
       if ((src_info->send_sema = CreateSemaphore(0, 0, AMPS_MAX_MESGS, 0)) == NULL)
         printf("error allocating sema send\n");

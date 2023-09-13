@@ -63,8 +63,8 @@
  *-----------------------------------------------------------------------*/
 
 Databox        *HHead(
-  Databox *h,
-  GridType grid_type)
+                      Databox *h,
+                      GridType grid_type)
 {
   Databox        *v;
 
@@ -124,8 +124,8 @@ Databox        *HHead(
  *-----------------------------------------------------------------------*/
 
 Databox        *PHead(
-  Databox *h,
-  GridType grid_type)
+                      Databox *h,
+                      GridType grid_type)
 {
   Databox        *v;
 

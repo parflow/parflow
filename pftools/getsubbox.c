@@ -47,13 +47,13 @@
  *-----------------------------------------------------------------------*/
 
 Databox       *CompSubBox(
-  Databox *fun,
-  int      il,
-  int      jl,
-  int      kl,
-  int      iu,
-  int      ju,
-  int      ku)
+                          Databox *fun,
+                          int      il,
+                          int      jl,
+                          int      kl,
+                          int      iu,
+                          int      ju,
+                          int      ku)
 {
   Databox       *sub_fun;
 
@@ -112,7 +112,7 @@ Databox       *CompSubBox(
 
 
   if ((sub_fun = NewDatabox(nx_sub, ny_sub, nz_sub,
-    x_sub, y_sub, z_sub, dx, dy, dz)) == NULL)
+                            x_sub, y_sub, z_sub, dx, dy, dz)) == NULL)
     return((Databox*)NULL);
 
   funp = DataboxCoeffs(fun);

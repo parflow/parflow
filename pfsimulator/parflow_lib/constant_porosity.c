@@ -49,9 +49,9 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void    ConstantPorosity(
-  GeomSolid *  geounit,
-  GrGeomSolid *gr_geounit,
-  Vector *     field)
+                         GeomSolid *  geounit,
+                         GrGeomSolid *gr_geounit,
+                         Vector *     field)
 {
   /*-----------------------------------------------------------------------
    * Local variables
@@ -113,8 +113,8 @@ void    ConstantPorosity(
  *--------------------------------------------------------------------------*/
 
 PFModule  *ConstantPorosityInitInstanceXtra(
-  Grid *  grid,
-  double *temp_data)
+                                            Grid *  grid,
+                                            double *temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

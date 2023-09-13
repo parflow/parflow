@@ -106,12 +106,12 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     Saturation(
-  Vector *     phase_saturation,                   /* Vector of return saturations */
-  Vector *     phase_pressure,                   /* Vector of pressures */
-  Vector *     phase_density,                   /* Vector of densities */
-  double       gravity,                   /* Magnitude of gravity in neg. z direction */
-  ProblemData *problem_data,                   /* Contains geometry info. for the problem */
-  int          fcn)                   /* Flag determining what to calculate
+                    Vector *     phase_saturation, /* Vector of return saturations */
+                    Vector *     phase_pressure, /* Vector of pressures */
+                    Vector *     phase_density, /* Vector of densities */
+                    double       gravity, /* Magnitude of gravity in neg. z direction */
+                    ProblemData *problem_data, /* Contains geometry info. for the problem */
+                    int          fcn) /* Flag determining what to calculate
                                        * fcn = CALCFCN => calculate the function
                                        *                  value
                                        * fcn = CALCDER => calculate the function
@@ -282,7 +282,7 @@ void     Saturation(
                 {
                   double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                   psdat[ips] = s_dif / pow(1.0 + pow((alpha * head), n), m)
-                  + s_res;
+                               + s_res;
                 }
               });
             }    /* End if clause */
@@ -305,7 +305,7 @@ void     Saturation(
                 {
                   double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                   psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
-                  / (pow(1.0 + pow(alpha * head, n), m + 1));
+                               / (pow(1.0 + pow(alpha * head, n), m + 1));
                 }
               });
             }   /* End else clause */
@@ -376,8 +376,8 @@ void     Saturation(
               {
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = (s_sat - s_res) /
-                pow(1.0 + pow((alpha * head), n), m)
-                + s_res;
+                             pow(1.0 + pow((alpha * head), n), m)
+                             + s_res;
               }
             });
           }      /* End if clause */
@@ -407,7 +407,7 @@ void     Saturation(
               {
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
-                / (pow(1.0 + pow(alpha * head, n), m + 1));
+                             / (pow(1.0 + pow(alpha * head, n), m + 1));
               }
             });
           }     /* End else clause */
@@ -473,7 +473,7 @@ void     Saturation(
               {
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = alpha * s_dif / (alpha + pow(head, beta))
-                + s_res;
+                             + s_res;
               }
             });
           }      /* End if clause */
@@ -495,7 +495,7 @@ void     Saturation(
               {
                 double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = alpha * s_dif * beta * pow(head, beta - 1)
-                / pow((alpha + pow(head, beta)), 2);
+                             / pow((alpha + pow(head, beta)), 2);
               }
             });
           }     /* End else clause */
@@ -589,7 +589,7 @@ void     Saturation(
                 for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   psdat[ips] += region_coeffs[dg] * dg
-                  * pow(ppdat[ipp], (dg - 1));
+                                * pow(ppdat[ipp], (dg - 1));
                 }
               }
             });
@@ -659,8 +659,8 @@ void     Saturation(
  *--------------------------------------------------------------------------*/
 
 PFModule  *SaturationInitInstanceXtra(
-  Grid *  grid,
-  double *temp_data)
+                                      Grid *  grid,
+                                      double *temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -744,13 +744,13 @@ PFModule  *SaturationInitInstanceXtra(
       if ((dummy1->data_from_file) == 1)
       {
         ReadPFBinary((dummy1->alpha_file),
-          (dummy1->alpha_values));
+                     (dummy1->alpha_values));
         ReadPFBinary((dummy1->n_file),
-          (dummy1->n_values));
+                     (dummy1->n_values));
         ReadPFBinary((dummy1->s_res_file),
-          (dummy1->s_res_values));
+                     (dummy1->s_res_values));
         ReadPFBinary((dummy1->s_sat_file),
-          (dummy1->s_sat_values));
+                     (dummy1->s_sat_values));
       }
     }
     if (public_xtra->type == 5)
@@ -758,7 +758,7 @@ PFModule  *SaturationInitInstanceXtra(
       dummy5 = (Type5*)(public_xtra->data);
 
       ReadPFBinary((dummy5->filename),
-        (dummy5->satRF));
+                   (dummy5->satRF));
     }
   }
 
@@ -869,7 +869,7 @@ PFModule   *SaturationNewPublicXtra()
         if (dummy0->region_indices[ir] < 0)
         {
           InputError("Error: invalid geometry name <%s> for key <%s>\n",
-            region, "Phase.Saturation.GeomNames");
+                     region, "Phase.Saturation.GeomNames");
         }
 
         sprintf(key, "Geom.%s.Saturation.Value", region);
@@ -910,7 +910,7 @@ PFModule   *SaturationNewPublicXtra()
           if (dummy1->region_indices[ir] < 0)
           {
             InputError("Error: invalid geometry name <%s> for key <%s>\n",
-              region, "Phase.Saturation.GeomNames");
+                       region, "Phase.Saturation.GeomNames");
           }
 
 
@@ -1074,7 +1074,7 @@ PFModule   *SaturationNewPublicXtra()
     default:
     {
       InputError("Error: invalid type <%s> for key <%s>\n",
-        switch_name, key);
+                 switch_name, key);
     }
   }      /* End switch */
 
@@ -1232,9 +1232,9 @@ void  SaturationOutput()
 
 
 void  SaturationOutputStatic(
-  char *       file_prefix,
-  ProblemData *problem_data                            /* Contains geometry info. for the problem */
-  )
+                             char *       file_prefix,
+                             ProblemData *problem_data /* Contains geometry info. for the problem */
+                             )
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -1421,19 +1421,19 @@ void  SaturationOutputStatic(
 
   strcpy(file_postfix, "alpha");
   WritePFBinary(file_prefix, file_postfix,
-    pd_alpha);
+                pd_alpha);
 
   strcpy(file_postfix, "n");
   WritePFBinary(file_prefix, file_postfix,
-    pd_n);
+                pd_n);
 
   strcpy(file_postfix, "sres");
   WritePFBinary(file_prefix, file_postfix,
-    pd_sres);
+                pd_sres);
 
   strcpy(file_postfix, "ssat");
   WritePFBinary(file_prefix, file_postfix,
-    pd_ssat);
+                pd_ssat);
 
   FreeVector(pd_alpha);
   FreeVector(pd_n);

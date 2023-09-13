@@ -42,12 +42,12 @@
  *--------------------------------------------------------------------------*/
 
 void             ComputeRegFromStencil(
-  Region **       dep_reg_ptr,
-  Region **       ind_reg_ptr,
-  SubregionArray *cr_array,                                      /* compute region SubregionArray */
-  Region *        send_reg,
-  Region *        recv_reg,
-  Stencil *       stencil)
+                                       Region **       dep_reg_ptr,
+                                       Region **       ind_reg_ptr,
+                                       SubregionArray *cr_array, /* compute region SubregionArray */
+                                       Region *        send_reg,
+                                       Region *        recv_reg,
+                                       Stencil *       stencil)
 {
   Region          *dep_reg;
   Region          *ind_reg;
@@ -79,7 +79,7 @@ void             ComputeRegFromStencil(
   ForSubregionArrayI(i, dep_reg)
   {
     AppendSubregion(RegionSubregionArray(dep_reg, i),
-      SubregionArraySubregion(cr_array, i));
+                    SubregionArraySubregion(cr_array, i));
   }
 #endif
 
@@ -96,7 +96,7 @@ void             ComputeRegFromStencil(
     dr_array = RegionSubregionArray(dep_reg, k);
 
     AppendSubregion(DuplicateSubregion(SubregionArraySubregion(cr_array, k)),
-      ir_array);
+                    ir_array);
 
     ForSubregionI(i, dr_array)
     {
@@ -105,7 +105,7 @@ void             ComputeRegFromStencil(
       ForSubregionI(j, ir_array)
       {
         a1 = SubtractSubgrids(SubregionArraySubregion(ir_array, j),
-            SubregionArraySubregion(dr_array, i));
+                              SubregionArraySubregion(dr_array, i));
 
         AppendSubregionArray(a1, a0);
         SubregionArraySize(a1) = 0;
@@ -136,9 +136,9 @@ void             ComputeRegFromStencil(
  *--------------------------------------------------------------------------*/
 
 SubgridArray  *GetGridNeighbors(
-  SubgridArray *subgrids,
-  SubgridArray *all_subgrids,
-  Stencil *     stencil)
+                                SubgridArray *subgrids,
+                                SubgridArray *all_subgrids,
+                                Stencil *     stencil)
 {
   SubgridArray  *neighbors;
 
@@ -175,7 +175,7 @@ SubgridArray  *GetGridNeighbors(
       tmp_array = SubtractSubgrids(tmp_subgrid, subgrid);
       ForSubgridI(k, tmp_array)
       AppendSubgrid(SubgridArraySubgrid(tmp_array, k),
-        neighbor_subgrids);
+                    neighbor_subgrids);
       SubgridArraySize(tmp_array) = 0;
       FreeSubgridArray(tmp_array);
     }
@@ -196,7 +196,7 @@ SubgridArray  *GetGridNeighbors(
     ForSubgridI(j, neighbor_subgrids)
     {
       if ((tmp_subgrid = IntersectSubgrids(subgrid,
-        SubgridArraySubgrid(neighbor_subgrids, j))))
+                                           SubgridArraySubgrid(neighbor_subgrids, j))))
       {
         AppendSubgrid(subgrid, neighbors);
         FreeSubgrid(tmp_subgrid);
@@ -218,10 +218,10 @@ SubgridArray  *GetGridNeighbors(
  *--------------------------------------------------------------------------*/
 
 void  CommRegFromStencil(
-  Region **send_region_ptr,
-  Region **recv_region_ptr,
-  Grid *   grid,
-  Stencil *stencil)
+                         Region **send_region_ptr,
+                         Region **recv_region_ptr,
+                         Grid *   grid,
+                         Stencil *stencil)
 {
   Region        *send_region = NULL;
   Region        *recv_region = NULL;
@@ -293,7 +293,7 @@ void  CommRegFromStencil(
         sa2 = SubtractSubgrids(subgrid1, subgrid0);
         ForSubgridI(k, sa2)
         AppendSubgrid(SubgridArraySubgrid(sa2, k),
-          RegionSubregionArray(region0, i));
+                      RegionSubregionArray(region0, i));
         SubgridArraySize(sa2) = 0;
         FreeSubgridArray(sa2);
       }
@@ -353,13 +353,13 @@ void  CommRegFromStencil(
               case 0:
                 SubgridProcess(subgrid2) = SubgridProcess(subgrid1);
                 AppendSubgrid(subgrid2,
-                  RegionSubregionArray(region1, i));
+                              RegionSubregionArray(region1, i));
                 break;
 
               case 1:
                 SubgridProcess(subgrid2) = SubgridProcess(subgrid0);
                 AppendSubgrid(subgrid2,
-                  RegionSubregionArray(region1, j));
+                              RegionSubregionArray(region1, j));
                 break;
             }
           }

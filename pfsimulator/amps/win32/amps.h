@@ -265,10 +265,10 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 /*---------------------------------------------------------------------------*/
 /* Functions to for align                                                    */
 /*---------------------------------------------------------------------------*/
-#define AMPS_ALIGN(type, src, dest, len, stride)       \
-        ((sizeof(type) -                               \
-        ((unsigned long)(dest) % sizeof(type)))        \
-        % sizeof(type));
+#define AMPS_ALIGN(type, src, dest, len, stride)         \
+        ((sizeof(type) -                                 \
+          ((unsigned long)(dest) % sizeof(type)))        \
+         % sizeof(type));
 
 #define AMPS_CALL_CHAR_ALIGN(_comm, _src, _dest, _len, _stride) \
         AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
@@ -317,16 +317,16 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                               \
-        {                                                                                                       \
-          type *ptr_src, *ptr_dest;                                                                             \
-          if ((char*)(src) != (char*)(dest))                                                                    \
-          if ((stride) == 1)                                                                                    \
-          memcpy((dest), (src), (len) * sizeof(type));                                                          \
-          else                                                                                                  \
-          for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride);     \
-            ptr_src += (stride), ptr_dest++)                                                                    \
-          *ptr_dest = *ptr_src;                                                                                 \
+#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                                  \
+        {                                                                                                          \
+          type *ptr_src, *ptr_dest;                                                                                \
+          if ((char*)(src) != (char*)(dest))                                                                       \
+          if ((stride) == 1)                                                                                       \
+          memcpy((dest), (src), (len) * sizeof(type));                                                             \
+          else                                                                                                     \
+          for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride);        \
+               ptr_src += (stride), ptr_dest++)                                                                    \
+          *ptr_dest = *ptr_src;                                                                                    \
         }
 
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
@@ -349,16 +349,16 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 
 
 
-#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                                                      \
-        {                                                                                                             \
-          type *ptr_src, *ptr_dest;                                                                                   \
-          if ((char*)(src) != (char*)(dest))                                                                          \
-          if ((stride) == 1)                                                                                          \
-          memcpy((dest), (src), (len) * sizeof(type));                                                                \
-          else                                                                                                        \
-          for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest); (ptr_dest) < (type*)(dest) + (len) * (stride);     \
-            (ptr_src)++, (ptr_dest) += (stride))                                                                      \
-          *(ptr_dest) = *(ptr_src);                                                                                   \
+#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                                                         \
+        {                                                                                                                \
+          type *ptr_src, *ptr_dest;                                                                                      \
+          if ((char*)(src) != (char*)(dest))                                                                             \
+          if ((stride) == 1)                                                                                             \
+          memcpy((dest), (src), (len) * sizeof(type));                                                                   \
+          else                                                                                                           \
+          for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest); (ptr_dest) < (type*)(dest) + (len) * (stride);        \
+               (ptr_src)++, (ptr_dest) += (stride))                                                                      \
+          *(ptr_dest) = *(ptr_src);                                                                                      \
         }
 
 

@@ -159,7 +159,7 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
       if ((dfile = fopen(dist_filename, "w")) == NULL)
       {
         printf("AMPS Error: Can't open the distribution file %s\n",
-          dist_filename);
+               dist_filename);
         exit(1);
       }
 
@@ -201,7 +201,7 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
     if ((file = fopen(dist_filename, "r")) == NULL)
     {
       printf("AMPS Error: Can't open the distribution file %s for reading\n",
-        dist_filename);
+             dist_filename);
       AMPS_ABORT("AMPS Error");
     }
 

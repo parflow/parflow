@@ -45,11 +45,11 @@
  *--------------------------------------------------------------------------*/
 
 double         **SimShear(
-  double **     shear_min_ptr,
-  double **     shear_max_ptr,
-  GeomSolid *   geom_solid,
-  SubgridArray *subgrids,
-  int           type)
+                          double **     shear_min_ptr,
+                          double **     shear_max_ptr,
+                          GeomSolid *   geom_solid,
+                          SubgridArray *subgrids,
+                          int           type)
 {
   GrGeomSolid        *grgeom_solid;
   double             *shear_min;

@@ -39,9 +39,9 @@ extern "C" {
  *-----------------------------------------------------------------------*/
 
 void ComputeWaterTableDepth(
-  Databox *top,
-  Databox *saturation,
-  Databox *surface_storage);
+                            Databox *top,
+                            Databox *saturation,
+                            Databox *surface_storage);
 
 #ifdef __cplusplus
 }

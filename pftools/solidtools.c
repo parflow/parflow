@@ -80,13 +80,13 @@ int ScanArray(int val, int in_list[], int len) //
  *
  *-----------------------------------------------------------------------*/
 int            MakePatchySolid(
-  FILE *   fp,
-  FILE *   fp_vtk,
-  Databox *msk,
-  Databox *top,
-  Databox *bot,
-  int      sub_patches,
-  int      bin_out)
+                               FILE *   fp,
+                               FILE *   fp_vtk,
+                               Databox *msk,
+                               Databox *top,
+                               Databox *bot,
+                               int      sub_patches,
+                               int      bin_out)
 {
   int out_status = -1;
   int i, j, k, m;
@@ -576,9 +576,9 @@ int            MakePatchySolid(
             if ((km == 0) | (km == 1) | (km == 2) | (km == 3))
             {
               dx_b = ((*DataboxCoeff(bot, i + ix_off[0], j + jx_off[0], 0) - *DataboxCoeff(bot, i + ix_off[1], j + jx_off[1], 0)) / DX +
-                (*DataboxCoeff(bot, i + ix_off[2], j + jx_off[2], 0) - *DataboxCoeff(bot, i + ix_off[3], j + jx_off[3], 0)) / DX) / 2.0;
+                      (*DataboxCoeff(bot, i + ix_off[2], j + jx_off[2], 0) - *DataboxCoeff(bot, i + ix_off[3], j + jx_off[3], 0)) / DX) / 2.0;
               dy_b = ((*DataboxCoeff(bot, i + iy_off[0], j + jy_off[0], 0) - *DataboxCoeff(bot, i + iy_off[1], j + jy_off[1], 0)) / DX +
-                (*DataboxCoeff(bot, i + iy_off[2], j + jy_off[2], 0) - *DataboxCoeff(bot, i + iy_off[3], j + jy_off[3], 0)) / DX) / 2.0;
+                      (*DataboxCoeff(bot, i + iy_off[2], j + jy_off[2], 0) - *DataboxCoeff(bot, i + iy_off[3], j + jy_off[3], 0)) / DX) / 2.0;
 
               // HERE: These need a km check instead of just an i j check
               if ((km == 1) | (km == 3))
@@ -594,9 +594,9 @@ int            MakePatchySolid(
             else
             {
               dx_b = ((*DataboxCoeff(top, i + ix_off[0], j + jx_off[0], 0) - *DataboxCoeff(top, i + ix_off[1], j + jx_off[1], 0)) / DX +
-                (*DataboxCoeff(top, i + ix_off[2], j + jx_off[2], 0) - *DataboxCoeff(top, i + ix_off[3], j + jx_off[3], 0)) / DX) / 2.0;
+                      (*DataboxCoeff(top, i + ix_off[2], j + jx_off[2], 0) - *DataboxCoeff(top, i + ix_off[3], j + jx_off[3], 0)) / DX) / 2.0;
               dy_b = ((*DataboxCoeff(top, i + iy_off[0], j + jy_off[0], 0) - *DataboxCoeff(top, i + iy_off[1], j + jy_off[1], 0)) / DX +
-                (*DataboxCoeff(top, i + iy_off[2], j + jy_off[2], 0) - *DataboxCoeff(top, i + iy_off[3], j + jy_off[3], 0)) / DX) / 2.0;
+                      (*DataboxCoeff(top, i + iy_off[2], j + jy_off[2], 0) - *DataboxCoeff(top, i + iy_off[3], j + jy_off[3], 0)) / DX) / 2.0;
 
               if ((km == 5) | (km == 7))
               {
@@ -1327,8 +1327,8 @@ int            MakePatchySolid(
 //  ConvertPfsolAscii2Bin (part of pfsolidfmtconvert command)
 //  Conversion function for ASCII solid file to Binary solid file
 // ****************************************************************************
-int         ConvertPfsolAscii2Bin(FILE *fp_asc,
-  FILE *                                fp_bin)
+int         ConvertPfsolAscii2Bin(FILE * fp_asc,
+                                  FILE * fp_bin)
 {
   int out_status = -1;
 
@@ -1423,8 +1423,8 @@ int         ConvertPfsolAscii2Bin(FILE *fp_asc,
 //  ConvertPfsolBin2Ascii (part of pfsolidfmtconvert command)
 //  Conversion function for Binary solid file to ASCII solid file
 // ****************************************************************************
-int         ConvertPfsolBin2Ascii(FILE *fp_bin,
-  FILE *                                fp_asc)
+int         ConvertPfsolBin2Ascii(FILE * fp_bin,
+                                  FILE * fp_asc)
 {
   // printf("\n ERROR (pfsolbin2ascii): Routine not enabled\n");
 

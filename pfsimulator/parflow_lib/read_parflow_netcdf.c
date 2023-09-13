@@ -72,7 +72,7 @@ void OpenNCFile(char *file_name, int *ncRID)
     if (access(switch_name, F_OK | R_OK) == -1)
     {
       InputError("Error: check if the file is present and readable <%s> for key <%s>\n",
-        switch_name, key);
+                 switch_name, key);
     }
     MPI_Info romio_info;
     FILE *fp;

@@ -104,15 +104,15 @@ void  LogGlobals()
     log_file = OpenLogFile("Globals");
 
     fprintf(log_file, "Run Name: %s\n",
-      GlobalsRunName);
+            GlobalsRunName);
     fprintf(log_file, "Logging Level = %d\n",
-      GlobalsLoggingLevel);
+            GlobalsLoggingLevel);
     fprintf(log_file, "Num processes = %d\n",
-      GlobalsNumProcs);
+            GlobalsNumProcs);
     fprintf(log_file, "Process grid = (%d,%d,%d)\n",
-      GlobalsNumProcsX,
-      GlobalsNumProcsY,
-      GlobalsNumProcsZ);
+            GlobalsNumProcsX,
+            GlobalsNumProcsY,
+            GlobalsNumProcsZ);
 
     CloseLogFile(log_file);
   }

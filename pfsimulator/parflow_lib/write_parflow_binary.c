@@ -36,8 +36,8 @@
 #include <math.h>
 
 long SizeofPFBinarySubvector(
-  Subvector *subvector,
-  Subgrid *  subgrid)
+                             Subvector *subvector,
+                             Subgrid *  subgrid)
 {
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
@@ -61,8 +61,8 @@ long SizeofPFBinarySubvector(
 
   ai = 0;
   BoxLoopI1(i, j, k,
-    ix, iy, iz, nx, ny, nz,
-    ai, nx_v, ny_v, nz_v, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     size += amps_SizeofDouble;
   });
@@ -72,9 +72,9 @@ long SizeofPFBinarySubvector(
 
 
 void       WritePFBinary_Subvector(
-  amps_File  file,
-  Subvector *subvector,
-  Subgrid *  subgrid)
+                                   amps_File  file,
+                                   Subvector *subvector,
+                                   Subgrid *  subgrid)
 {
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
@@ -111,8 +111,8 @@ void       WritePFBinary_Subvector(
 
   ai = 0;
   BoxLoopI1(i, j, k,
-    ix, iy, iz, nx, ny, nz,
-    ai, nx_v, ny_v, nz_v, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     amps_WriteDouble(file, &data[ai], 1);
   });
@@ -120,9 +120,9 @@ void       WritePFBinary_Subvector(
 
 
 void     WritePFBinary(
-  char *  file_prefix,
-  char *  file_suffix,
-  Vector *v)
+                       char *  file_prefix,
+                       char *  file_suffix,
+                       Vector *v)
 {
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
@@ -206,9 +206,9 @@ void     WritePFBinary(
 }
 
 long SizeofPFSBinarySubvector(
-  Subvector *subvector,
-  Subgrid *  subgrid,
-  double     drop_tolerance)
+                              Subvector *subvector,
+                              Subgrid *  subgrid,
+                              double     drop_tolerance)
 {
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
@@ -233,8 +233,8 @@ long SizeofPFSBinarySubvector(
 
   ai = 0; n = 0;
   BoxLoopI1(i, j, k,
-    ix, iy, iz, nx, ny, nz,
-    ai, nx_v, ny_v, nz_v, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     if (fabs(data[ai]) > drop_tolerance)
     {
@@ -249,10 +249,10 @@ long SizeofPFSBinarySubvector(
 
 
 void       WritePFSBinary_Subvector(
-  amps_File  file,
-  Subvector *subvector,
-  Subgrid *  subgrid,
-  double     drop_tolerance)
+                                    amps_File  file,
+                                    Subvector *subvector,
+                                    Subgrid *  subgrid,
+                                    double     drop_tolerance)
 {
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
@@ -285,8 +285,8 @@ void       WritePFSBinary_Subvector(
 
   ai = 0; n = 0;
   BoxLoopI1(i, j, k,
-    ix, iy, iz, nx, ny, nz,
-    ai, nx_v, ny_v, nz_v, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     if (fabs(data[ai]) > drop_tolerance)
     {
@@ -298,8 +298,8 @@ void       WritePFSBinary_Subvector(
 
   ai = 0;
   BoxLoopI1(i, j, k,
-    ix, iy, iz, nx, ny, nz,
-    ai, nx_v, ny_v, nz_v, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     if (fabs(data[ai]) > drop_tolerance)
     {
@@ -312,10 +312,10 @@ void       WritePFSBinary_Subvector(
 }
 
 void     WritePFSBinary(
-  char *  file_prefix,
-  char *  file_suffix,
-  Vector *v,
-  double  drop_tolerance)
+                        char *  file_prefix,
+                        char *  file_suffix,
+                        Vector *v,
+                        double  drop_tolerance)
 {
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);

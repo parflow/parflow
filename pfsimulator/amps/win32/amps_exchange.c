@@ -27,16 +27,16 @@
  **********************************************************************EHEADER*/
 #include "amps.h"
 
-#define AMPS_COPY(type, src, len, src_stride, dest, dest_stride)         \
-        {                                                                \
-          type *ptr_src, *ptr_dest;                                      \
-          if (((src_stride) == 1) && ((dest_stride == 1)))               \
-          memcpy((dest), (src), (len) * sizeof(type));                   \
-          else                                                           \
-          for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest);       \
-            (ptr_dest) < (type*)(dest) + (len) * (dest_stride);          \
-            (ptr_src) += (src_stride), (ptr_dest) += (dest_stride))      \
-          *(ptr_dest) = *(ptr_src);                                      \
+#define AMPS_COPY(type, src, len, src_stride, dest, dest_stride)            \
+        {                                                                   \
+          type *ptr_src, *ptr_dest;                                         \
+          if (((src_stride) == 1) && ((dest_stride == 1)))                  \
+          memcpy((dest), (src), (len) * sizeof(type));                      \
+          else                                                              \
+          for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest);          \
+               (ptr_dest) < (type*)(dest) + (len) * (dest_stride);          \
+               (ptr_src) += (src_stride), (ptr_dest) += (dest_stride))      \
+          *(ptr_dest) = *(ptr_src);                                         \
         }
 
 
@@ -83,7 +83,7 @@ int *dst_stride;
     for (i = 0; i < len[dim] - 1; i++)
     {
       amps_vector_copy(type, items, dim - 1, ptr_src,
-        len, ptr_dst, dst_stride);
+                       len, ptr_dst, dst_stride);
 
       *(double**)ptr_src += src_stride;
       *(double**)ptr_dst += dst_stride[dim];
@@ -128,12 +128,12 @@ void _amps_wait_exchange(amps_Handle handle)
         dst = ptr->data;
 
         amps_vector_copy(items[item].type - AMPS_INVOICE_LAST_CTYPE,
-          &items[item],
-          items[item].dim - 1,
-          &src,
-          ptr->ptr_len,
-          &dst,
-          ptr->ptr_stride);
+                         &items[item],
+                         items[item].dim - 1,
+                         &src,
+                         ptr->ptr_len,
+                         &dst,
+                         ptr->ptr_stride);
         item += items[item].dim;
       }
       else
@@ -146,7 +146,7 @@ void _amps_wait_exchange(amps_Handle handle)
         dst = ptr->data;
 
         dst_stride = (ptr->stride_type == AMPS_INVOICE_POINTER) ?
-          *(ptr->ptr_stride) : ptr->stride;
+                     *(ptr->ptr_stride) : ptr->stride;
 
         switch (items[item].type)
         {

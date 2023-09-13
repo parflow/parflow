@@ -35,8 +35,8 @@
  *--------------------------------------------------------------------------*/
 
 int main(
-  int    argc,
-  char **argv)
+         int    argc,
+         char **argv)
 {
   gms_TIN     **TINs = NULL;
   gms_TIN     **new_TINs;
@@ -53,7 +53,7 @@ int main(
   if (argc < 3)
   {
     fprintf(stderr,
-      "Usage:  gmsTINvertices <TIN input files> <TIN output file>\n");
+            "Usage:  gmsTINvertices <TIN input files> <TIN output file>\n");
     exit(1);
   }
 
@@ -110,7 +110,7 @@ int main(
   for (v = 0; v < nvertices; v++)
   {
     if (((vertices[v]->x) != (vertices[i]->x)) ||
-      ((vertices[v]->y) != (vertices[i]->y)))
+        ((vertices[v]->y) != (vertices[i]->y)))
     {
       i++;
       vertices[i] = vertices[v];

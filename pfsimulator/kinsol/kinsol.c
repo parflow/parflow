@@ -186,7 +186,7 @@
 /**************************************************************/
 
 static boole KINAllocVectors(KINMem kin_mem, integer neq,
-  void *machEnv);
+                             void *machEnv);
 
 static int KINConstraint(KINMem kin_mem);
 
@@ -195,10 +195,10 @@ static void KINForcingTerm(KINMem kin_mem, real fnormp);
 static void KINFreeVectors(KINMem kin_mem);
 
 static int  KINInexactNewton(KINMem kin_mem, real *fnormp, real *f1normp,
-  boole *maxStepTaken);
+                             boole *maxStepTaken);
 
 static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
-  boole *maxSteptaken);
+                          boole *maxSteptaken);
 
 static boole KINInitialConstraint(KINMem kin_mem);
 
@@ -209,16 +209,16 @@ static int  KINLinSolDrv(KINMem kinmem, N_Vector bb, N_Vector xx);
 static real KINScFNorm(N_Vector vv, N_Vector scale, N_Vector wrkv);
 
 static real KINScSteplength(KINMem kin_mem,
-  N_Vector ucur, N_Vector ss, N_Vector usc);
+                            N_Vector ucur, N_Vector ss, N_Vector usc);
 
 static int KINStop(KINMem kinmem, boole maxStepTaken, int globalstratret);
 
 static int KINSolInit(void *kinmem, integer Neq,
-  N_Vector uu, SysFn func, int globalstrategy,
-  N_Vector uscale, N_Vector fscale,
-  real fnormtol, real scsteptol,
-  N_Vector constraints, boole optIn,
-  long int iopt[], real ropt[], void *f_data);
+                      N_Vector uu, SysFn func, int globalstrategy,
+                      N_Vector uscale, N_Vector fscale,
+                      real fnormtol, real scsteptol,
+                      N_Vector constraints, boole optIn,
+                      long int iopt[], real ropt[], void *f_data);
 
 
 /**************************************************************/
@@ -361,10 +361,10 @@ void *KINMalloc(integer Neq, FILE *msgfp, void *machEnv)
  *****************************************************************/
 
 static int KINSolInit(void *kinmem, integer Neq,
-  N_Vector uu, SysFn func, int globalstrategy,
-  N_Vector uscale, N_Vector fscale,
-  real fnormtol, real scsteptol, N_Vector constraints,
-  boole optIn, long int iopt[], real ropt[], void *f_data)
+                      N_Vector uu, SysFn func, int globalstrategy,
+                      N_Vector uscale, N_Vector fscale,
+                      real fnormtol, real scsteptol, N_Vector constraints,
+                      boole optIn, long int iopt[], real ropt[], void *f_data)
 
 {
   boole ioptExists, roptExists, ioptBad, roptNeg;
@@ -645,7 +645,7 @@ static int KINSolInit(void *kinmem, integer Neq,
   f1norm = HALF * fnorm * fnorm;
   if (printfl > 0)
     fprintf(fp,
-      "KINSolInit nni= %4ld  fnorm= %26.16g  nfe=%6ld \n", nni, fnorm, nfe);
+            "KINSolInit nni= %4ld  fnorm= %26.16g  nfe=%6ld \n", nni, fnorm, nfe);
 
   /* Problem has been successfully initialized */
 
@@ -688,10 +688,10 @@ static int KINSolInit(void *kinmem, integer Neq,
  *
  ****************************************************************************/
 int KINSol(void *kinmem, integer Neq,
-  N_Vector uu, SysFn func, int globalstrategy,
-  N_Vector uscale, N_Vector fscale,
-  real fnormtol, real scsteptol, N_Vector constraints,
-  boole optIn, long int iopt[], real ropt[], void *f_data)
+           N_Vector uu, SysFn func, int globalstrategy,
+           N_Vector uscale, N_Vector fscale,
+           real fnormtol, real scsteptol, N_Vector constraints,
+           boole optIn, long int iopt[], real ropt[], void *f_data)
 {
   real fnormp = 0.0, f1normp = 0.0, epsmin = 0.0;
   int ret, globalstratret = 0;
@@ -716,10 +716,10 @@ int KINSol(void *kinmem, integer Neq,
   }
 
   ret = KINSolInit(kinmem, Neq,
-      uu, func, globalstrategy,
-      uscale, fscale,
-      fnormtol, scsteptol, constraints,
-      optIn, iopt, ropt, f_data);
+                   uu, func, globalstrategy,
+                   uscale, fscale,
+                   fnormtol, scsteptol, constraints,
+                   optIn, iopt, ropt, f_data);
 
   if (ret < 0)
   {
@@ -848,7 +848,7 @@ int KINSol(void *kinmem, integer Neq,
     /*  print out the current nni, fnorm, and nfe values for printfl>0) */
     if (printfl > 0)
       fprintf(msgfp, "KINSol nni= %4ld fnorm= %26.16g nfe=%6ld\n",
-        nni, fnorm, nfe);
+              nni, fnorm, nfe);
 
     if (ret != 0)
       break;            /*  ret == 0 means keep iterating ;  != 0 means there
@@ -946,7 +946,7 @@ void KINFree(void *kinsol_mem)
 **********************************************************************/
 
 static boole KINAllocVectors(KINMem kin_mem, integer neq,
-  void *machEnv)
+                             void *machEnv)
 {
   /* Allocate unew, fval, pp, vtemp1 and vtemp2
    * Any future modifier of this code is advised to be wary
@@ -1133,7 +1133,7 @@ static boole KINInitialStop(KINMem kin_mem)
   fmax = KINScFNorm(fval, fscale, vtemp1);
   if (printfl > 1)
     fprintf(kin_mem->kin_msgfp,
-      " KINInitialStop:scaled f norm (for stopping): %12.3g\n", fmax);
+            " KINInitialStop:scaled f norm (for stopping): %12.3g\n", fmax);
   return(fmax <= POINTOH1 * fnormtol);
 }
 
@@ -1150,7 +1150,7 @@ static boole KINInitialStop(KINMem kin_mem)
 ******************************************************************/
 
 static int  KINInexactNewton(KINMem kin_mem, real *fnormp, real *f1normp,
-  boole *maxStepTaken)
+                             boole *maxStepTaken)
 {
   int ret;
   real pnorm, ratio, ratio1;
@@ -1168,7 +1168,7 @@ static int  KINInexactNewton(KINMem kin_mem, real *fnormp, real *f1normp,
   stepl = pnorm;
   if (printfl > 0)
     fprintf(msgfp,
-      " ----- in routine KINInexactNewton (pnorm= %12.4e ) -----\n", pnorm);
+            " ----- in routine KINInexactNewton (pnorm= %12.4e ) -----\n", pnorm);
   /*           check if constraints are active, and
    *              constrain the step by the constraints*/
   if (constraintsSet)
@@ -1184,7 +1184,7 @@ static int  KINInexactNewton(KINMem kin_mem, real *fnormp, real *f1normp,
 
         if (printfl > 0)
           fprintf(msgfp,
-            " --- in routine KINInexactNewton (pnorm= %12.4e \n", pnorm);
+                  " --- in routine KINInexactNewton (pnorm= %12.4e \n", pnorm);
 
         if (pnorm <= scsteptol)
           return(1);
@@ -1226,7 +1226,7 @@ static int  KINInexactNewton(KINMem kin_mem, real *fnormp, real *f1normp,
 ***************************************************************************/
 
 static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
-  boole *maxStepTaken)
+                          boole *maxStepTaken)
 {
   int ret, ivio, nfesav, rladjust = 0;
   real pnorm, ratio, ratio1, slpi, rlmin, rlength, rl, rlmax, rldiff;
@@ -1261,7 +1261,7 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
 
         if (printfl > 0)
           fprintf(msgfp, " --- in routine KINLineSearch"
-            "(ivio=1, pnorm= %12.4e )\n", pnorm);
+                  "(ivio=1, pnorm= %12.4e )\n", pnorm);
       }
       else
         break;
@@ -1275,8 +1275,8 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
 
   if (printfl > 2)
     fprintf(msgfp, "KINLineSearch -----\n"
-      "  min_lam%11.4e  f1norm%11.4e  pnorm"
-      "%11.4e\n", rlmin, f1norm, pnorm);
+            "  min_lam%11.4e  f1norm%11.4e  pnorm"
+            "%11.4e\n", rlmin, f1norm, pnorm);
   /*  now begin the iteration to find a rl value which satisfies both the
    * alpha- and beta- conditions. if rl becomes < rlmin, then terminate with a
    * 1 being returned...  */
@@ -1291,8 +1291,8 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
     alpha_cond = f1norm + alpha * slpi * rl;
     if (printfl > 2 && rladjust > 0)
       fprintf(msgfp,
-        " fnormp%15.8e  f1normp%15.8e  alpha_cond%15.8e lam%15.8e\n",
-        *fnormp, *f1normp, alpha_cond, rl);
+              " fnormp%15.8e  f1normp%15.8e  alpha_cond%15.8e lam%15.8e\n",
+              *fnormp, *f1normp, alpha_cond, rl);
     if ((*f1normp) <= alpha_cond)
       break;
 
@@ -1341,13 +1341,13 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
         beta_cond = f1norm + beta * slpi * rl;
         if (printfl > 2)
           fprintf(msgfp, "  f1normp%15.8e  beta_cond%15.8e  "
-            "lam=%15.8e\n", *f1normp, beta_cond, rl);
+                  "lam=%15.8e\n", *f1normp, beta_cond, rl);
       }
       while ((*f1normp) <= alpha_cond &&
-        (*f1normp) < beta_cond && (rl < rlmax));
+             (*f1normp) < beta_cond && (rl < rlmax));
     }
     if (rl < ONE ||
-      ((rl > ONE) && (*f1normp > alpha_cond)))
+        ((rl > ONE) && (*f1normp > alpha_cond)))
     {
       rllo = MIN(rl, rlprev);
       rldiff = ABS(rlprev - rl);
@@ -1365,7 +1365,7 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
         beta_cond = f1norm + beta * slpi * rl;
         if (printfl > 2 && rladjust > 0)
           fprintf(msgfp, "  f1normp%12.5e  alpha_cond%12.5e  "
-            "beta_cond%12.5e  lam%12.5e\n", *f1normp, alpha_cond, beta_cond, rl);
+                  "beta_cond%12.5e  lam%12.5e\n", *f1normp, alpha_cond, beta_cond, rl);
 
         if ((*f1normp) > alpha_cond)
           rldiff = rlincr;
@@ -1376,7 +1376,7 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
         }
       }
       while (*f1normp > alpha_cond ||
-        ((*f1normp < beta_cond) && (rldiff > rlmin)));
+             ((*f1normp < beta_cond) && (rldiff > rlmin)));
 
       if ((*f1normp) < beta_cond)
       {
@@ -1396,7 +1396,7 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
   nbktrk = nfe - nfesav - 1;
   if (printfl > 1 && rladjust > 0)
     fprintf(msgfp, "Number of lambda adjustments "
-      "%d\n", rladjust);
+            "%d\n", rladjust);
 
   /* scale the following two expressions by rl and ratio for
    *    subsequent use in the  KINForcingTerm routine */
@@ -1488,7 +1488,7 @@ static real KINScFNorm(N_Vector vv, N_Vector scale, N_Vector wrkv)
  * ucur is the current step      usc is the u scale factor  .*/
 
 static real KINScSteplength(KINMem kin_mem, N_Vector ucur,
-  N_Vector ss, N_Vector usc)
+                            N_Vector ss, N_Vector usc)
 {
   N_VInv(usc, vtemp1);
   N_VAbs(ucur, vtemp2);
@@ -1530,7 +1530,7 @@ static int KINStop(KINMem kinmem, boole maxStepTaken, int globalstratret)
   fmax = KINScFNorm(fval, fscale, vtemp1);
   if (printfl > 1)
     fprintf(kin_mem->kin_msgfp,
-      " scaled f norm (for stopping): %12.3g\n", fmax);
+            " scaled f norm (for stopping): %12.3g\n", fmax);
 
   if (fmax <= fnormtol)
     return(1);

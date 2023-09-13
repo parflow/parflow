@@ -39,8 +39,8 @@
  *--------------------------------------------------------------------------*/
 
 void        PrintSubvectorAll(
-  amps_File  file,
-  Subvector *subvector)
+                              amps_File  file,
+                              Subvector *subvector)
 {
   int ix, iy, iz;
   int nx, ny, nz;
@@ -56,13 +56,13 @@ void        PrintSubvectorAll(
   nz = SubvectorNZ(subvector);
 
   amps_Fprintf(file, "\t\tPosition(%d,%d,%d), Size (%d,%d,%d)\n",
-    ix, iy, iz, nx, ny, nz);
+               ix, iy, iz, nx, ny, nz);
 
   for (k = iz; k < iz + nz; k++)
     for (j = iy; j < iy + ny; j++)
       for (i = ix; i < ix + nx; i++)
         amps_Fprintf(file, "\t\t(%d,%d,%d): %f\n", i, j, k,
-          *SubvectorElt(subvector, i, j, k));
+                     *SubvectorElt(subvector, i, j, k));
 }
 
 
@@ -71,8 +71,8 @@ void        PrintSubvectorAll(
  *--------------------------------------------------------------------------*/
 
 void     PrintVectorAll(
-  char *  filename,
-  Vector *v)
+                        char *  filename,
+                        Vector *v)
 {
   amps_File file;
 
@@ -109,9 +109,9 @@ void     PrintVectorAll(
  *--------------------------------------------------------------------------*/
 
 void        PrintSubvector(
-  amps_File  file,
-  Subvector *subvector,
-  Subgrid *  subgrid)
+                           amps_File  file,
+                           Subvector *subvector,
+                           Subgrid *  subgrid)
 {
   int ix, iy, iz;
   int nx, ny, nz;
@@ -127,13 +127,13 @@ void        PrintSubvector(
   nz = SubgridNZ(subgrid);
 
   amps_Fprintf(file, "\t\tPosition(%d,%d,%d), Size (%d,%d,%d)\n",
-    ix, iy, iz, nx, ny, nz);
+               ix, iy, iz, nx, ny, nz);
 
   for (k = iz; k < iz + nz; k++)
     for (j = iy; j < iy + ny; j++)
       for (i = ix; i < ix + nx; i++)
         amps_Fprintf(file, "\t\t(%d,%d,%d): %f\n", i, j, k,
-          *SubvectorElt(subvector, i, j, k));
+                     *SubvectorElt(subvector, i, j, k));
 }
 
 
@@ -142,8 +142,8 @@ void        PrintSubvector(
  *--------------------------------------------------------------------------*/
 
 void     PrintVector(
-  char *  filename,
-  Vector *v)
+                     char *  filename,
+                     Vector *v)
 {
   amps_File file;
 

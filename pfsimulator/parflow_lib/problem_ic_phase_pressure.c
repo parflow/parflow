@@ -104,10 +104,10 @@ typedef struct {
 
 void         ICPhasePressure(
 
-  Vector *     ic_pressure,                            /* Return values of intial condition */
-  Vector *     mask,                            /* Mask of active cells needed by the LSM */
-  ProblemData *problem_data,                            /* Contains geometry information for the problem */
-  Problem *    problem)                            /* General problem information */
+                             Vector *     ic_pressure, /* Return values of intial condition */
+                             Vector *     mask, /* Mask of active cells needed by the LSM */
+                             ProblemData *problem_data, /* Contains geometry information for the problem */
+                             Problem *    problem) /* General problem information */
 
 {
   PFModule      *this_module = ThisPFModule;
@@ -282,8 +282,8 @@ void         ICPhasePressure(
         if (iterations > -1)
         {
           PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, ic_pressure,
-            temp_new_density_der, &dtmp,
-            &dtmp, CALCDER));
+                                                                 temp_new_density_der, &dtmp,
+                                                                 &dtmp, CALCDER));
         }
 
         /* Get mask values. */
@@ -352,7 +352,7 @@ void         ICPhasePressure(
                 ips = SubvectorEltIndex(ps_sub, i, j, k);
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
                 dtmp = 1.0 - 0.5 * new_density_der_data[ips] * gravity
-                * (rsz_dat[ival] - reference_elevations[ir]);
+                       * (rsz_dat[ival] - reference_elevations[ir]);
                 data[ips] = data[ips] - fcn_data[ips] / dtmp;
               });
             }
@@ -369,8 +369,8 @@ void         ICPhasePressure(
 
         /* Get density values at new pressure values. */
         PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, ic_pressure,
-          temp_new_density, &dtmp,
-          &dtmp, CALCFCN));
+                                                               temp_new_density, &dtmp,
+                                                               &dtmp, CALCFCN));
 
         /* Calculate nonlinear residual and value of the nonlinear function
          * at current pressures. */
@@ -410,8 +410,8 @@ void         ICPhasePressure(
                 ips = SubvectorEltIndex(tf_sub, i, j, k);
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
                 fcn_data[ips] = data[ips] - pressure_values[ir]
-                - 0.5 * (new_density_data[ips] + ref_den[ir])
-                * gravity * (rsz_dat[ival] - reference_elevations[ir]);
+                                - 0.5 * (new_density_data[ips] + ref_den[ir])
+                                * gravity * (rsz_dat[ival] - reference_elevations[ir]);
                 nonlin_resid += fcn_data[ips] * fcn_data[ips];
               });
             }
@@ -423,7 +423,7 @@ void         ICPhasePressure(
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
                 ref_den[ir] = new_density_data[ips];
                 fcn_data[ips] = -ref_den[ir] * gravity
-                * (rsz_dat[ival] - reference_elevations[ir]);
+                                * (rsz_dat[ival] - reference_elevations[ir]);
                 nonlin_resid += fcn_data[ips] * fcn_data[ips];
               });
             }
@@ -512,7 +512,7 @@ void         ICPhasePressure(
       {
         ref_solid = ProblemDataSolid(problem_data, geom_indices[ir]);
         elevations[ir] = CalcElevations(ref_solid, patch_indices[ir],
-            subgrids, problem_data);
+                                        subgrids, problem_data);
       }        /* End of region loop */
 
       /* Solve a nonlinear problem for hydrostatic pressure
@@ -534,8 +534,8 @@ void         ICPhasePressure(
         {
           /* Get derivative of density at new pressures. */
           PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, ic_pressure,
-            temp_new_density_der, &dtmp,
-            &dtmp, CALCDER));
+                                                                 temp_new_density_der, &dtmp,
+                                                                 &dtmp, CALCDER));
         }
 
         /* Get new pressure values. */
@@ -575,7 +575,7 @@ void         ICPhasePressure(
                 iel = (i - ix) + (j - iy) * nx;
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
                 dtmp = 1.0 - 0.5 * new_density_der_data[ips] * gravity
-                * (rsz_dat[ival] - elevations[ir][is][iel]);
+                       * (rsz_dat[ival] - elevations[ir][is][iel]);
                 data[ips] = data[ips] - fcn_data[ips] / dtmp;
               });
             }
@@ -592,8 +592,8 @@ void         ICPhasePressure(
 
         /* Get density values at new pressure values. */
         PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, ic_pressure,
-          temp_new_density, &dtmp,
-          &dtmp, CALCFCN));
+                                                               temp_new_density, &dtmp,
+                                                               &dtmp, CALCFCN));
         /* Calculate nonlinear residual and value of the nonlinear function
          * at current pressures. */
         nonlin_resid = 0.0;
@@ -633,8 +633,8 @@ void         ICPhasePressure(
                 iel = (i - ix) + (j - iy) * nx;
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
                 fcn_data[ips] = data[ips] - pressure_values[ir]
-                - 0.5 * (new_density_data[ips] + ref_den[ir])
-                * gravity * (rsz_dat[ival] - elevations[ir][is][iel]);
+                                - 0.5 * (new_density_data[ips] + ref_den[ir])
+                                * gravity * (rsz_dat[ival] - elevations[ir][is][iel]);
                 nonlin_resid += fcn_data[ips] * fcn_data[ips];
               });
             }
@@ -647,7 +647,7 @@ void         ICPhasePressure(
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
                 ref_den[ir] = new_density_data[ips];
                 fcn_data[ips] = -ref_den[ir] * gravity
-                * (rsz_dat[ival] - elevations[ir][is][iel]);
+                                * (rsz_dat[ival] - elevations[ir][is][iel]);
                 nonlin_resid += fcn_data[ips] * fcn_data[ips];
               });
             }
@@ -784,9 +784,9 @@ void         ICPhasePressure(
  *--------------------------------------------------------------------------*/
 
 PFModule  *ICPhasePressureInitInstanceXtra(
-  Problem *problem,
-  Grid *   grid,
-  double * temp_data)
+                                           Problem *problem,
+                                           Grid *   grid,
+                                           double * temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -911,7 +911,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
   NameArray type_na;
 
   type_na = NA_NewNameArray(
-      "Constant HydroStaticDepth HydroStaticPatch PFBFile NCFile");
+                            "Constant HydroStaticDepth HydroStaticPatch PFBFile NCFile");
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -1002,14 +1002,14 @@ PFModule   *ICPhasePressureNewPublicXtra()
         sprintf(key, "Geom.%s.ICPressure.RefGeom", region);
         switch_name = GetString(key);
         dummy2->geom_indices[ir] = NA_NameToIndexExitOnError(GlobalsGeomNames,
-            switch_name, key);
+                                                             switch_name, key);
 
         sprintf(key, "Geom.%s.ICPressure.RefPatch", region);
         switch_name = GetString(key);
         dummy2->patch_indices[ir] =
           NA_NameToIndexExitOnError(GeomSolidPatches(
-            GlobalsGeometries[dummy2->geom_indices[ir]]),
-            switch_name, key);
+                                                     GlobalsGeometries[dummy2->geom_indices[ir]]),
+                                    switch_name, key);
       }
 
       (public_xtra->data) = (void*)dummy2;

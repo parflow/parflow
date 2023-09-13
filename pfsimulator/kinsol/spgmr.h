@@ -234,9 +234,9 @@ SpgmrMem SpgmrMalloc(integer N, int l_max, void *machEnv);
 
 
 int SpgmrSolve(SpgmrMem mem, void *A_data, N_Vector x, N_Vector b,
-  int pretype, int gstype, real delta, int max_restarts,
-  void *P_data, N_Vector s1, N_Vector s2, ATimesFn atimes,
-  PSolveFn psolve, real *res_norm, int *nli, int *nps);
+               int pretype, int gstype, real delta, int max_restarts,
+               void *P_data, N_Vector s1, N_Vector s2, ATimesFn atimes,
+               PSolveFn psolve, real *res_norm, int *nli, int *nps);
 
 
 /* Return values for SpgmrSolve */

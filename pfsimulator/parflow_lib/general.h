@@ -95,7 +95,7 @@
 
 #define ctalloc_default(type, count)                                           \
         (type*)calloc_chk((unsigned int)(count), (unsigned int)sizeof(type),   \
-          __FILE__, __LINE__)
+                          __FILE__, __LINE__)
 
 #else
 

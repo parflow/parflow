@@ -11,10 +11,10 @@
 static int c__1 = 1;
 
 /* Subroutine */ int dpofa_(
-  double *a,
-  int *   lda,
-  int *   n,
-  int *   info)
+                            double *a,
+                            int *   lda,
+                            int *   n,
+                            int *   info)
 {
   /* System generated locals */
   int a_dim1, a_offset, i__1, i__2, i__3;
@@ -24,11 +24,11 @@ static int c__1 = 1;
 
   /* Local variables */
   extern double ddot_(
-    int *   n,
-    double *dx,
-    int *   incx,
-    double *dy,
-    int *   incy);
+                      int *   n,
+                      double *dx,
+                      int *   incx,
+                      double *dy,
+                      int *   incy);
   static int j, k;
   static double s, t;
   static int jm1;
@@ -100,7 +100,7 @@ static int c__1 = 1;
     {
       i__3 = k - 1;
       t = a[k + j * a_dim1] - ddot_(&i__3, &a[k * a_dim1 + 1], &c__1, &
-          a[j * a_dim1 + 1], &c__1);
+                                    a[j * a_dim1 + 1], &c__1);
       t /= a[k + k * a_dim1];
       a[k + j * a_dim1] = t;
       s += t * t;
@@ -122,11 +122,11 @@ L40:
 } /* dpofa_ */
 
 double ddot_(
-  int *   n,
-  double *dx,
-  int *   incx,
-  double *dy,
-  int *   incy)
+             int *   n,
+             double *dx,
+             int *   incx,
+             double *dy,
+             int *   incy)
 {
   /* System generated locals */
   int i__1;
@@ -211,7 +211,7 @@ L40:
   for (i = mp1; i <= i__1; i += 5)
   {
     dtemp = dtemp + dx[i] * dy[i] + dx[i + 1] * dy[i + 1] + dx[i + 2] *
-      dy[i + 2] + dx[i + 3] * dy[i + 3] + dx[i + 4] * dy[i + 4];
+            dy[i + 2] + dx[i + 3] * dy[i + 3] + dx[i + 4] * dy[i + 4];
 /* L50: */
   }
 L60:

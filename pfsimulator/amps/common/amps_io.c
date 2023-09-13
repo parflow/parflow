@@ -29,16 +29,16 @@
 #include "amps.h"
 
 void amps_ScanByte(
-  amps_File file,
-  char *    data,
-  int       len,
-  int       stride)
+                   amps_File file,
+                   char *    data,
+                   int       len,
+                   int       stride)
 {
   char *ptr;
   char *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-    ptr += stride)
+       ptr += stride)
   {
     if (fread(ptr, 1, 1, file) != 1)
     {
@@ -50,16 +50,16 @@ void amps_ScanByte(
 
 
 void amps_ScanChar(
-  amps_File file,
-  char *    data,
-  int       len,
-  int       stride)
+                   amps_File file,
+                   char *    data,
+                   int       len,
+                   int       stride)
 {
   char *ptr;
   char *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-    ptr += stride)
+       ptr += stride)
   {
     if (fscanf(file, "%c", ptr) != 1)
     {
@@ -70,16 +70,16 @@ void amps_ScanChar(
 }
 
 void amps_ScanShort(
-  amps_File file,
-  short *   data,
-  int       len,
-  int       stride)
+                    amps_File file,
+                    short *   data,
+                    int       len,
+                    int       stride)
 {
   short *ptr;
   short *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-    ptr += stride)
+       ptr += stride)
   {
     if (fscanf(file, "%hd ", ptr) != 1)
     {
@@ -90,16 +90,16 @@ void amps_ScanShort(
 }
 
 void amps_ScanInt(
-  amps_File file,
-  int *     data,
-  int       len,
-  int       stride)
+                  amps_File file,
+                  int *     data,
+                  int       len,
+                  int       stride)
 {
   int *ptr;
   int *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-    ptr += stride)
+       ptr += stride)
   {
     if (fscanf(file, "%d ", ptr) != 1)
     {
@@ -110,16 +110,16 @@ void amps_ScanInt(
 }
 
 void amps_ScanLong(
-  amps_File file,
-  long *    data,
-  int       len,
-  int       stride)
+                   amps_File file,
+                   long *    data,
+                   int       len,
+                   int       stride)
 {
   long *ptr;
   long *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-    ptr += stride)
+       ptr += stride)
   {
     if (fscanf(file, "%ld ", ptr) != 1)
     {
@@ -130,16 +130,16 @@ void amps_ScanLong(
 }
 
 void amps_ScanFloat(
-  amps_File file,
-  float *   data,
-  int       len,
-  int       stride)
+                    amps_File file,
+                    float *   data,
+                    int       len,
+                    int       stride)
 {
   float *ptr;
   float *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-    ptr += stride)
+       ptr += stride)
   {
     if (fscanf(file, "%f ", ptr) != 1)
     {
@@ -150,16 +150,16 @@ void amps_ScanFloat(
 }
 
 void amps_ScanDouble(
-  amps_File file,
-  double *  data,
-  int       len,
-  int       stride)
+                     amps_File file,
+                     double *  data,
+                     int       len,
+                     int       stride)
 {
   double *ptr;
   double *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-    ptr += stride)
+       ptr += stride)
   {
     if (fscanf(file, "%lf ", ptr) != 1)
     {

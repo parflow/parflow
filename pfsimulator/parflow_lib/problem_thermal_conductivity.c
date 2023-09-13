@@ -69,12 +69,12 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     ThermalConductivity(
-  Vector *     phase_thermalconductivity,                            /* Vector of return thermal conductivities */
-  Vector *     phase_pressure,                            /* Vector of pressures */
-  Vector *     phase_saturation,                            /* Vector of saturations*/
-  double       gravity,                            /* Magnitude of gravity in neg. z direction */
-  ProblemData *problem_data,                            /* Contaicwets geometry info. for the problem */
-  int          fcn)                            /* Flag determining what to calculate
+                             Vector *     phase_thermalconductivity, /* Vector of return thermal conductivities */
+                             Vector *     phase_pressure, /* Vector of pressures */
+                             Vector *     phase_saturation, /* Vector of saturations*/
+                             double       gravity, /* Magnitude of gravity in neg. z direction */
+                             ProblemData *problem_data, /* Contaicwets geometry info. for the problem */
+                             int          fcn) /* Flag determining what to calculate
                                                 * fcn = CALCFCN => calculate the function
                                                 *                  value
                                                 * fcn = CALCDER => calculate the function
@@ -322,7 +322,7 @@ void     ThermalConductivity(
  *--------------------------------------------------------------------------*/
 
 PFModule  *ThermalConductivityInitInstanceXtra(
-  Grid *grid)
+                                               Grid *grid)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -383,9 +383,9 @@ PFModule  *ThermalConductivityInitInstanceXtra(
     if ((dummy1->data_from_file) == 1)
     {
       ReadPFBinary((dummy1->cdry_file),
-        (dummy1->cdry_values));
+                   (dummy1->cdry_values));
       ReadPFBinary((dummy1->cwet_file),
-        (dummy1->cwet_values));
+                   (dummy1->cwet_values));
     }
   }
 
@@ -534,7 +534,7 @@ PFModule   *ThermalConductivityNewPublicXtra()
     default:
     {
       InputError("Error: invalid type <%s> for key <%s>\n",
-        switch_name, key);
+                 switch_name, key);
     }
   }      /* End switch */
 

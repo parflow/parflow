@@ -83,7 +83,7 @@ WellData *NewWellData()
  *--------------------------------------------------------------------------*/
 
 void FreeWellData(
-  WellData *well_data)
+                  WellData *well_data)
 {
   WellDataPhysical *well_data_physical;
   WellDataValue    *well_data_value;
@@ -295,8 +295,8 @@ void FreeWellData(
  *--------------------------------------------------------------------------*/
 
 void PrintWellData(
-  WellData *   well_data,
-  unsigned int print_mask)
+                   WellData *   well_data,
+                   unsigned int print_mask)
 {
   TimeCycleData    *time_cycle_data;
 
@@ -338,41 +338,41 @@ void PrintWellData(
           well_data_physical = WellDataFluxWellPhysical(well_data, well);
 
           amps_Printf("   sequence number = %2d\n",
-            WellDataPhysicalNumber(well_data_physical));
+                      WellDataPhysicalNumber(well_data_physical));
           amps_Printf("   name = %s\n",
-            WellDataPhysicalName(well_data_physical));
+                      WellDataPhysicalName(well_data_physical));
           amps_Printf("   x_lower, y_lower, z_lower = %f %f %f\n",
-            WellDataPhysicalXLower(well_data_physical),
-            WellDataPhysicalYLower(well_data_physical),
-            WellDataPhysicalZLower(well_data_physical));
+                      WellDataPhysicalXLower(well_data_physical),
+                      WellDataPhysicalYLower(well_data_physical),
+                      WellDataPhysicalZLower(well_data_physical));
           amps_Printf("   x_upper, y_upper, z_upper = %f %f %f\n",
-            WellDataPhysicalXUpper(well_data_physical),
-            WellDataPhysicalYUpper(well_data_physical),
-            WellDataPhysicalZUpper(well_data_physical));
+                      WellDataPhysicalXUpper(well_data_physical),
+                      WellDataPhysicalYUpper(well_data_physical),
+                      WellDataPhysicalZUpper(well_data_physical));
           amps_Printf("   diameter = %f\n",
-            WellDataPhysicalDiameter(well_data_physical));
+                      WellDataPhysicalDiameter(well_data_physical));
 
           subgrid = WellDataPhysicalSubgrid(well_data_physical);
           amps_Printf("   (ix, iy, iz) = (%d, %d, %d)\n",
-            SubgridIX(subgrid),
-            SubgridIY(subgrid),
-            SubgridIZ(subgrid));
+                      SubgridIX(subgrid),
+                      SubgridIY(subgrid),
+                      SubgridIZ(subgrid));
           amps_Printf("   (nx, ny, nz) = (%d, %d, %d)\n",
-            SubgridNX(subgrid),
-            SubgridNY(subgrid),
-            SubgridNZ(subgrid));
+                      SubgridNX(subgrid),
+                      SubgridNY(subgrid),
+                      SubgridNZ(subgrid));
           amps_Printf("   (rx, ry, rz) = (%d, %d, %d)\n",
-            SubgridRX(subgrid),
-            SubgridRY(subgrid),
-            SubgridRZ(subgrid));
+                      SubgridRX(subgrid),
+                      SubgridRY(subgrid),
+                      SubgridRZ(subgrid));
           amps_Printf("   process = %d\n",
-            SubgridProcess(subgrid));
+                      SubgridProcess(subgrid));
           amps_Printf("   size = %f\n",
-            WellDataPhysicalSize(well_data_physical));
+                      WellDataPhysicalSize(well_data_physical));
           amps_Printf("   action = %d\n",
-            WellDataPhysicalAction(well_data_physical));
+                      WellDataPhysicalAction(well_data_physical));
           amps_Printf("   method = %d\n",
-            WellDataPhysicalMethod(well_data_physical));
+                      WellDataPhysicalMethod(well_data_physical));
         }
 
         if ((print_mask & WELLDATA_PRINTVALUES))
@@ -557,41 +557,41 @@ void PrintWellData(
           well_data_physical = WellDataPressWellPhysical(well_data, well);
 
           amps_Printf("   sequence number = %2d\n",
-            WellDataPhysicalNumber(well_data_physical));
+                      WellDataPhysicalNumber(well_data_physical));
           amps_Printf("   name = %s\n",
-            WellDataPhysicalName(well_data_physical));
+                      WellDataPhysicalName(well_data_physical));
           amps_Printf("   x_lower, y_lower, z_lower = %f %f %f\n",
-            WellDataPhysicalXLower(well_data_physical),
-            WellDataPhysicalYLower(well_data_physical),
-            WellDataPhysicalZLower(well_data_physical));
+                      WellDataPhysicalXLower(well_data_physical),
+                      WellDataPhysicalYLower(well_data_physical),
+                      WellDataPhysicalZLower(well_data_physical));
           amps_Printf("   x_upper, y_upper, z_upper = %f %f %f\n",
-            WellDataPhysicalXUpper(well_data_physical),
-            WellDataPhysicalYUpper(well_data_physical),
-            WellDataPhysicalZUpper(well_data_physical));
+                      WellDataPhysicalXUpper(well_data_physical),
+                      WellDataPhysicalYUpper(well_data_physical),
+                      WellDataPhysicalZUpper(well_data_physical));
           amps_Printf("   diameter = %f\n",
-            WellDataPhysicalDiameter(well_data_physical));
+                      WellDataPhysicalDiameter(well_data_physical));
 
           subgrid = WellDataPhysicalSubgrid(well_data_physical);
           amps_Printf("   (ix, iy, iz) = (%d, %d, %d)\n",
-            SubgridIX(subgrid),
-            SubgridIY(subgrid),
-            SubgridIZ(subgrid));
+                      SubgridIX(subgrid),
+                      SubgridIY(subgrid),
+                      SubgridIZ(subgrid));
           amps_Printf("   (nx, ny, nz) = (%d, %d, %d)\n",
-            SubgridNX(subgrid),
-            SubgridNY(subgrid),
-            SubgridNZ(subgrid));
+                      SubgridNX(subgrid),
+                      SubgridNY(subgrid),
+                      SubgridNZ(subgrid));
           amps_Printf("   (rx, ry, rz) = (%d, %d, %d)\n",
-            SubgridRX(subgrid),
-            SubgridRY(subgrid),
-            SubgridRZ(subgrid));
+                      SubgridRX(subgrid),
+                      SubgridRY(subgrid),
+                      SubgridRZ(subgrid));
           amps_Printf("   process = %d\n",
-            SubgridProcess(subgrid));
+                      SubgridProcess(subgrid));
           amps_Printf("   size = %f\n",
-            WellDataPhysicalSize(well_data_physical));
+                      WellDataPhysicalSize(well_data_physical));
           amps_Printf("   action = %d\n",
-            WellDataPhysicalAction(well_data_physical));
+                      WellDataPhysicalAction(well_data_physical));
           amps_Printf("   method = %d\n",
-            WellDataPhysicalMethod(well_data_physical));
+                      WellDataPhysicalMethod(well_data_physical));
         }
 
         if ((print_mask & WELLDATA_PRINTVALUES))
@@ -772,11 +772,11 @@ void PrintWellData(
  *--------------------------------------------------------------------------*/
 
 void WriteWells(
-  char *    file_prefix,
-  Problem * problem,
-  WellData *well_data,
-  double    time,
-  int       write_header)
+                char *    file_prefix,
+                Problem * problem,
+                WellData *well_data,
+                double    time,
+                int       write_header)
 {
   TimeCycleData    *time_cycle_data;
   WellDataPhysical *well_data_physical;
@@ -824,20 +824,20 @@ void WriteWells(
       if (write_header)
       {
         fprintf(file, "%f %f %f %d %d %d %f %f %f\n",
-          BackgroundX(GlobalsBackground),
-          BackgroundY(GlobalsBackground),
-          BackgroundZ(GlobalsBackground),
-          BackgroundNX(GlobalsBackground),
-          BackgroundNY(GlobalsBackground),
-          BackgroundNZ(GlobalsBackground),
-          BackgroundDX(GlobalsBackground),
-          BackgroundDY(GlobalsBackground),
-          BackgroundDZ(GlobalsBackground));
+                BackgroundX(GlobalsBackground),
+                BackgroundY(GlobalsBackground),
+                BackgroundZ(GlobalsBackground),
+                BackgroundNX(GlobalsBackground),
+                BackgroundNY(GlobalsBackground),
+                BackgroundNZ(GlobalsBackground),
+                BackgroundDX(GlobalsBackground),
+                BackgroundDY(GlobalsBackground),
+                BackgroundDZ(GlobalsBackground));
 
         fprintf(file, "%d %d %d\n",
-          WellDataNumPhases(well_data),
-          WellDataNumContaminants(well_data),
-          WellDataNumWells(well_data));
+                WellDataNumPhases(well_data),
+                WellDataNumContaminants(well_data),
+                WellDataNumWells(well_data));
 
         for (well = 0; well < WellDataNumFluxWells(well_data); well++)
         {
@@ -849,16 +849,16 @@ void WriteWells(
           fprintf(file, "%s\n", WellDataPhysicalName(well_data_physical));
 
           fprintf(file, "%f %f %f %f %f %f %f\n",
-            WellDataPhysicalXLower(well_data_physical),
-            WellDataPhysicalYLower(well_data_physical),
-            WellDataPhysicalZLower(well_data_physical),
-            WellDataPhysicalXUpper(well_data_physical),
-            WellDataPhysicalYUpper(well_data_physical),
-            WellDataPhysicalZUpper(well_data_physical),
-            WellDataPhysicalDiameter(well_data_physical));
+                  WellDataPhysicalXLower(well_data_physical),
+                  WellDataPhysicalYLower(well_data_physical),
+                  WellDataPhysicalZLower(well_data_physical),
+                  WellDataPhysicalXUpper(well_data_physical),
+                  WellDataPhysicalYUpper(well_data_physical),
+                  WellDataPhysicalZUpper(well_data_physical),
+                  WellDataPhysicalDiameter(well_data_physical));
           fprintf(file, "1 %1d %1d\n",
-            WellDataPhysicalAction(well_data_physical),
-            WellDataPhysicalMethod(well_data_physical));
+                  WellDataPhysicalAction(well_data_physical),
+                  WellDataPhysicalMethod(well_data_physical));
         }
         for (well = 0; well < WellDataNumPressWells(well_data); well++)
         {
@@ -870,16 +870,16 @@ void WriteWells(
           fprintf(file, "%s\n", WellDataPhysicalName(well_data_physical));
 
           fprintf(file, "%f %f %f %f %f %f %f\n",
-            WellDataPhysicalXLower(well_data_physical),
-            WellDataPhysicalYLower(well_data_physical),
-            WellDataPhysicalZLower(well_data_physical),
-            WellDataPhysicalXUpper(well_data_physical),
-            WellDataPhysicalYUpper(well_data_physical),
-            WellDataPhysicalZUpper(well_data_physical),
-            WellDataPhysicalDiameter(well_data_physical));
+                  WellDataPhysicalXLower(well_data_physical),
+                  WellDataPhysicalYLower(well_data_physical),
+                  WellDataPhysicalZLower(well_data_physical),
+                  WellDataPhysicalXUpper(well_data_physical),
+                  WellDataPhysicalYUpper(well_data_physical),
+                  WellDataPhysicalZUpper(well_data_physical),
+                  WellDataPhysicalDiameter(well_data_physical));
           fprintf(file, "0 %1d %1d\n",
-            WellDataPhysicalAction(well_data_physical),
-            WellDataPhysicalMethod(well_data_physical));
+                  WellDataPhysicalAction(well_data_physical),
+                  WellDataPhysicalMethod(well_data_physical));
         }
       }
 
@@ -892,15 +892,15 @@ void WriteWells(
         fprintf(file, "%2d\n", WellDataPhysicalNumber(well_data_physical));
         subgrid = WellDataPhysicalSubgrid(well_data_physical);
         fprintf(file, "%d %d %d %d %d %d %d %d %d\n",
-          SubgridIX(subgrid),
-          SubgridIY(subgrid),
-          SubgridIZ(subgrid),
-          SubgridNX(subgrid),
-          SubgridNY(subgrid),
-          SubgridNZ(subgrid),
-          SubgridRX(subgrid),
-          SubgridRY(subgrid),
-          SubgridRZ(subgrid));
+                SubgridIX(subgrid),
+                SubgridIY(subgrid),
+                SubgridIZ(subgrid),
+                SubgridNX(subgrid),
+                SubgridNY(subgrid),
+                SubgridNZ(subgrid),
+                SubgridRX(subgrid),
+                SubgridRY(subgrid),
+                SubgridRZ(subgrid));
 
         /* Write out the current well values */
         cycle_number = WellDataPhysicalCycleNumber(well_data_physical);
@@ -945,8 +945,8 @@ void WriteWells(
               {
                 indx = phase * WellDataNumContaminants(well_data) + concentration;
                 value = WellDataValueContaminantFraction(well_data_value, indx)
-                  * fabs(WellDataValueDeltaContaminantPtr(well_data_value, indx))
-                  / WellDataPhysicalSize(well_data_physical);
+                        * fabs(WellDataValueDeltaContaminantPtr(well_data_value, indx))
+                        / WellDataPhysicalSize(well_data_physical);
                 fprintf(file, " %f", value);
               }
             }
@@ -1042,23 +1042,23 @@ void WriteWells(
         fprintf(file, "%2d\n", WellDataPhysicalNumber(well_data_physical));
         subgrid = WellDataPhysicalSubgrid(well_data_physical);
         fprintf(file, "%d %d %d %d %d %d %d %d %d\n",
-          SubgridIX(subgrid),
-          SubgridIY(subgrid),
-          SubgridIZ(subgrid),
-          SubgridNX(subgrid),
-          SubgridNY(subgrid),
-          SubgridNZ(subgrid),
-          SubgridRX(subgrid),
-          SubgridRY(subgrid),
-          SubgridRZ(subgrid));
+                SubgridIX(subgrid),
+                SubgridIY(subgrid),
+                SubgridIZ(subgrid),
+                SubgridNX(subgrid),
+                SubgridNY(subgrid),
+                SubgridNZ(subgrid),
+                SubgridRX(subgrid),
+                SubgridRY(subgrid),
+                SubgridRZ(subgrid));
 
         /* Write out the current well values */
         cycle_number = WellDataPhysicalCycleNumber(well_data_physical);
         interval_number = TimeCycleDataComputeIntervalNumber(problem,
-            time, time_cycle_data, cycle_number);
+                                                             time, time_cycle_data, cycle_number);
 
         well_data_value = WellDataPressWellIntervalValue(well_data, well,
-            interval_number);
+                                                         interval_number);
 
         if (WellDataValuePhaseValues(well_data_value))
         {
@@ -1097,8 +1097,8 @@ void WriteWells(
               {
                 indx = phase * WellDataNumContaminants(well_data) + concentration;
                 value = WellDataValueContaminantFraction(well_data_value, indx)
-                  * fabs(WellDataValueDeltaContaminantPtr(well_data_value, indx))
-                  / WellDataPhysicalSize(well_data_physical);
+                        * fabs(WellDataValueDeltaContaminantPtr(well_data_value, indx))
+                        / WellDataPhysicalSize(well_data_physical);
                 fprintf(file, " %f", value);
               }
             }

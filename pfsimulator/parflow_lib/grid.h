@@ -169,15 +169,15 @@ typedef struct {
 
 #define AppendSubgridArray(subgrid_array_0, subgrid_array_1)       \
         AppendSubregionArray((SubregionArray*)subgrid_array_0,     \
-          (SubregionArray*)subgrid_array_1)
+                             (SubregionArray*)subgrid_array_1)
 
 #define ConvertToSubregion(subgrid)  ((Subregion*)subgrid)
 
-#define SubgridEltIndex(subgrid, x, y, z)       \
-        (((x) - SubgridIX(subgrid)) +           \
-        (((y) - SubgridIY(subgrid)) +           \
-        (((z) - SubgridIZ(subgrid))) *          \
-        SubgridNY(subgrid)) *                   \
-        SubgridNX(subgrid))
+#define SubgridEltIndex(subgrid, x, y, z)         \
+        (((x) - SubgridIX(subgrid)) +             \
+         (((y) - SubgridIY(subgrid)) +            \
+          (((z) - SubgridIZ(subgrid))) *          \
+          SubgridNY(subgrid)) *                   \
+         SubgridNX(subgrid))
 
 #endif

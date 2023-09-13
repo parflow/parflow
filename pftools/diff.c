@@ -80,11 +80,11 @@
  *-----------------------------------------------------------------------*/
 
 void      SigDiff(
-  Databox *v1,
-  Databox *v2,
-  int      m,
-  double   absolute_zero,
-  FILE *   fp)
+                  Databox *v1,
+                  Databox *v2,
+                  int      m,
+                  double   absolute_zero,
+                  FILE *   fp)
 {
   double         *v1_p, *v2_p;
 
@@ -143,7 +143,7 @@ void      SigDiff(
           if (m >= 0)
           {
             fprintf(fp, "(%d,%d,%d) : %e, %e, %e\n",
-              i, j, k, adiff, *v1_p, *v2_p);
+                    i, j, k, adiff, *v1_p, *v2_p);
           }
 
           if (sdiff > max_sdiff)
@@ -176,19 +176,19 @@ void      SigDiff(
     }
 
     fprintf(fp, "Minimum significant digits at (% 3d, %3d, %3d) = %2d\n",
-      mi, mj, mk, sig_digs);
+            mi, mj, mk, sig_digs);
     fprintf(fp, "Maximum absolute difference = %e\n", max_adiff);
   }
 }
 
 
 void         MSigDiff(
-  Tcl_Interp *interp,
-  Databox *   v1,
-  Databox *   v2,
-  int         m,
-  double      absolute_zero,
-  Tcl_Obj *   result)
+                      Tcl_Interp *interp,
+                      Databox *   v1,
+                      Databox *   v2,
+                      int         m,
+                      double      absolute_zero,
+                      Tcl_Obj *   result)
 {
   double         *v1_p, *v2_p;
 
@@ -304,13 +304,13 @@ void         MSigDiff(
 
 
 double    DiffElt(
-  Databox *v1,
-  Databox *v2,
-  int      i,
-  int      j,
-  int      k,
-  int      m,
-  double   absolute_zero)
+                  Databox *v1,
+                  Databox *v2,
+                  int      i,
+                  int      j,
+                  int      k,
+                  int      m,
+                  double   absolute_zero)
 {
   double         *v1_p, *v2_p;
 

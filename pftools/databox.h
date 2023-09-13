@@ -92,7 +92,7 @@ typedef struct {
 
 #define DataboxCoeff(databox, i, j, k)       \
         (DataboxCoeffs(databox) +            \
-        (k) * DataboxNy(databox) * DataboxNx(databox) + (j) * DataboxNx(databox) + (i))
+         (k) * DataboxNy(databox) * DataboxNx(databox) + (j) * DataboxNx(databox) + (i))
 
 
 /* Defines how a grid definition is */
@@ -112,10 +112,10 @@ typedef enum {
 /* databox.c */
 Databox *NewDatabox(int nx, int ny, int nz, double x, double y, double z, double dx, double dy, double dz);
 Databox *NewDataboxDefault(int nx, int ny, int nz, double x, double y, double z, double dx, double dy, double dz,
-  double default_value);
+                           double default_value);
 void GetDataboxGrid(Tcl_Interp *interp, Databox *databox);
 void SetDataboxGrid(Databox *databox, int nx, int ny, int nz, double x, double y, double z,
-  double dx, double dy, double dz);
+                    double dx, double dy, double dz);
 void FreeDatabox(Databox *databox);
 
 #ifdef __cplusplus

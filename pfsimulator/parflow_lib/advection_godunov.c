@@ -78,18 +78,18 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     Godunov(
-  ProblemData *problem_data,
-  int          phase,
-  int          concentration,
-  Vector *     old_concentration,
-  Vector *     new_concentration,
-  Vector *     x_velocity,
-  Vector *     y_velocity,
-  Vector *     z_velocity,
-  Vector *     solid_mass_factor,
-  double       time,
-  double       deltat,
-  int          order)
+                 ProblemData *problem_data,
+                 int          phase,
+                 int          concentration,
+                 Vector *     old_concentration,
+                 Vector *     new_concentration,
+                 Vector *     x_velocity,
+                 Vector *     y_velocity,
+                 Vector *     z_velocity,
+                 Vector *     solid_mass_factor,
+                 double       time,
+                 double       deltat,
+                 int          order)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -224,18 +224,18 @@ void     Godunov(
 
   flopest =
     ((nz_cells + 1) *
-    ((ny_cells + 3) * ((nx_cells + 5) * 8 + ((nx_cells + 3) * 6)) +
-    (nx_cells + 3) * ((ny_cells + 5) * 8 + ((ny_cells + 3) * 6)) +
-    30 * (ny_cells + 3) * (nx_cells + 3))
-    +
-    (ny_cells + 1) * (nx_cells + 1) * (7 * (nz_cells + 1) + 140)
-    +
-    (nz_cells + 1) * ((ny_cells + 3) * (nx_cells + 3) * 123 +
-    (ny_cells + 1) * (nx_cells + 1) * 7 +
-    (ny_cells + 1) * (nx_cells + 1) * 10 +
-    (ny_cells + 1) * (nx_cells + 1) * 4)
-    +
-    (nz_cells * ny_cells * nx_cells + 3));
+     ((ny_cells + 3) * ((nx_cells + 5) * 8 + ((nx_cells + 3) * 6)) +
+      (nx_cells + 3) * ((ny_cells + 5) * 8 + ((ny_cells + 3) * 6)) +
+      30 * (ny_cells + 3) * (nx_cells + 3))
+     +
+     (ny_cells + 1) * (nx_cells + 1) * (7 * (nz_cells + 1) + 140)
+     +
+     (nz_cells + 1) * ((ny_cells + 3) * (nx_cells + 3) * 123 +
+                       (ny_cells + 1) * (nx_cells + 1) * 7 +
+                       (ny_cells + 1) * (nx_cells + 1) * 10 +
+                       (ny_cells + 1) * (nx_cells + 1) * 4)
+     +
+     (nz_cells * ny_cells * nx_cells + 3));
 
   compute_pkg = GridComputePkg(VectorGrid(old_concentration), VectorUpdateGodunov);
 
@@ -298,11 +298,11 @@ void     Godunov(
 
         /***** Make the call to the Godunov advection routine *****/
         CALL_ADVECT(c, cn,
-          uedge, vedge, wedge, phi,
-          slx, sly, slz,
-          lo, hi, dlo, dhi, hx, dt, fstord,
-          sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,
-          dxscr, dyscr, dzscr, dzfrm);
+                    uedge, vedge, wedge, phi,
+                    slx, sly, slz,
+                    lo, hi, dlo, dhi, hx, dt, fstord,
+                    sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,
+                    dxscr, dyscr, dzscr, dzfrm);
       }
     }
   }
@@ -349,7 +349,7 @@ void     Godunov(
 
       ci = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-        ci, nx_c, ny_c, nz_c, 1, 1, 1,
+                ci, nx_c, ny_c, nz_c, 1, 1, 1,
       {
         cn[ci] = cn[ci] * decay_factor;
 
@@ -445,36 +445,36 @@ void     Godunov(
           zvel_u = SubvectorElt(subvector_zvel, ix, iy, iz + 1);
 
           if (WellDataPhysicalAction(well_data_physical)
-            == INJECTION_WELL)
+              == INJECTION_WELL)
           {
             if (WellDataValueDeltaContaminantPtrs(well_data_value))
             {
               input_c =
                 WellDataValueContaminantFraction(well_data_value,
-                  index)
+                                                 index)
                 * fabs(WellDataValueDeltaContaminantPtr(well_data_value,
-                  index))
+                                                        index))
                 / volume;
             }
             else
             {
               input_c = WellDataValueContaminantValue(well_data_value,
-                  index);
+                                                      index);
             }
 
             if (input_c > 0.0)
             {
               xi = 0; yi = 0; zi = 0; wi = 0;
               BoxLoopI4(i, j, k,
-                ix, iy, iz, nx, ny, nz,
-                xi, nx_xv, ny_xv, nz_xv,
-                yi, nx_yv, ny_yv, nz_yv,
-                zi, nx_zv, ny_zv, nz_zv,
-                wi, nx_w, ny_w, nz_w,
+                        ix, iy, iz, nx, ny, nz,
+                        xi, nx_xv, ny_xv, nz_xv,
+                        yi, nx_yv, ny_yv, nz_yv,
+                        zi, nx_zv, ny_zv, nz_zv,
+                        wi, nx_w, ny_w, nz_w,
               {
                 flux = (xvel_u[xi] - xvel_l[xi]) / dx
-                + (yvel_u[yi] - yvel_l[yi]) / dy
-                + (zvel_u[zi] - zvel_l[zi]) / dz;
+                       + (yvel_u[yi] - yvel_l[yi]) / dy
+                       + (zvel_u[zi] - zvel_l[zi]) / dz;
 
                 scaled_flux = flux / smf[wi];
 
@@ -486,20 +486,20 @@ void     Godunov(
             }
           }
           else if (WellDataPhysicalAction(well_data_physical)
-            == EXTRACTION_WELL)
+                   == EXTRACTION_WELL)
           {
             xi = 0; yi = 0; zi = 0; wi = 0;
             BoxLoopI4(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              xi, nx_xv, ny_xv, nz_xv,
-              yi, nx_yv, ny_yv, nz_yv,
-              zi, nx_zv, ny_zv, nz_zv,
-              wi, nx_w, ny_w, nz_w,
+                      ix, iy, iz, nx, ny, nz,
+                      xi, nx_xv, ny_xv, nz_xv,
+                      yi, nx_yv, ny_yv, nz_yv,
+                      zi, nx_zv, ny_zv, nz_zv,
+                      wi, nx_w, ny_w, nz_w,
             {
               /*   compute flux for each cell and store it   */
               flux = (xvel_u[xi] - xvel_l[xi]) / dx
-              + (yvel_u[yi] - yvel_l[yi]) / dy
-              + (zvel_u[zi] - zvel_l[zi]) / dz;
+                     + (yvel_u[yi] - yvel_l[yi]) / dy
+                     + (zvel_u[zi] - zvel_l[zi]) / dz;
 
               scaled_flux = flux / smf[wi];
 
@@ -601,47 +601,47 @@ void     Godunov(
           pz = SubvectorElt(pz_sub, ix, iy, iz);
 
           if (WellDataPhysicalAction(well_data_physical)
-            == INJECTION_WELL)
+              == INJECTION_WELL)
           {
             if (WellDataValueDeltaContaminantPtrs(well_data_value))
             {
               input_c =
                 WellDataValueContaminantFraction(well_data_value,
-                  index)
+                                                 index)
                 * fabs(WellDataValueDeltaContaminantPtr(well_data_value,
-                  index))
+                                                        index))
                 / volume;
             }
             else
             {
               input_c = WellDataValueContaminantValue(well_data_value,
-                  index);
+                                                      index);
             }
 
             if (input_c > 0.0)
             {
               wi = 0; pi = 0;
               BoxLoopI2(i, j, k,
-                ix, iy, iz, nx, ny, nz,
-                pi, nx_p, ny_p, nz_p, 1, 1, 1,
-                wi, nx_w, ny_w, nz_w, 1, 1, 1,
+                        ix, iy, iz, nx, ny, nz,
+                        pi, nx_p, ny_p, nz_p, 1, 1, 1,
+                        wi, nx_w, ny_w, nz_w, 1, 1, 1,
               {
                 scaled_flux = flux / smf[wi];
 
                 if (WellDataPhysicalMethod(well_data_physical)
-                == FLUX_STANDARD)
+                    == FLUX_STANDARD)
                 {
                   weight = 1.0;
                 }
                 else if (WellDataPhysicalMethod(well_data_physical)
-                == FLUX_WEIGHTED)
+                         == FLUX_WEIGHTED)
                 {
                   weight = (px[pi] / avg_x) * (area_x / area_sum)
-                  + (py[pi] / avg_y) * (area_y / area_sum)
-                  + (pz[pi] / avg_z) * (area_z / area_sum);
+                           + (py[pi] / avg_y) * (area_y / area_sum)
+                           + (pz[pi] / avg_z) * (area_z / area_sum);
                 }
                 else if (WellDataPhysicalMethod(well_data_physical)
-                == FLUX_PATTERNED)
+                         == FLUX_PATTERNED)
                 {
                   weight = 0.0;
                 }
@@ -658,30 +658,30 @@ void     Godunov(
             }
           }
           else if (WellDataPhysicalAction(well_data_physical)
-            == EXTRACTION_WELL)
+                   == EXTRACTION_WELL)
           {
             wi = 0; pi = 0;
             BoxLoopI2(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              pi, nx_p, ny_p, nz_p, 1, 1, 1,
-              wi, nx_w, ny_w, nz_w, 1, 1, 1,
+                      ix, iy, iz, nx, ny, nz,
+                      pi, nx_p, ny_p, nz_p, 1, 1, 1,
+                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
             {
               scaled_flux = flux / smf[wi];
 
               if (WellDataPhysicalMethod(well_data_physical)
-              == FLUX_STANDARD)
+                  == FLUX_STANDARD)
               {
                 weight = 1.0;
               }
               else if (WellDataPhysicalMethod(well_data_physical)
-              == FLUX_WEIGHTED)
+                       == FLUX_WEIGHTED)
               {
                 weight = (px[pi] / avg_x) * (area_x / area_sum)
-                + (py[pi] / avg_y) * (area_y / area_sum)
-                + (pz[pi] / avg_z) * (area_z / area_sum);
+                         + (py[pi] / avg_y) * (area_y / area_sum)
+                         + (pz[pi] / avg_z) * (area_z / area_sum);
               }
               else if (WellDataPhysicalMethod(well_data_physical)
-              == FLUX_PATTERNED)
+                       == FLUX_PATTERNED)
               {
                 weight = 0.0;
               }
@@ -749,8 +749,8 @@ void     Godunov(
 
     ci = 0; wi = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      wi, nx_w, ny_w, nz_w, 1, 1, 1,
-      ci, nx_c, ny_c, nz_c, 1, 1, 1,
+              wi, nx_w, ny_w, nz_w, 1, 1, 1,
+              ci, nx_c, ny_c, nz_c, 1, 1, 1,
     {
       cn[ci] = (cn[ci] - rhs[wi]) / (1.0 + scal[wi]);
     });
@@ -818,9 +818,9 @@ void     Godunov(
           {
             wi = 0; ci = 0;
             BoxLoopI2(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              wi, nx_w, ny_w, nz_w, 1, 1, 1,
-              ci, nx_c, ny_c, nz_c, 1, 1, 1,
+                      ix, iy, iz, nx, ny, nz,
+                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
+                      ci, nx_c, ny_c, nz_c, 1, 1, 1,
             {
               cell_change = -(scal[wi] * cn[ci] + rhs[wi]);
               well_stat += cell_change * cell_volume;
@@ -830,9 +830,9 @@ void     Godunov(
           {
             wi = 0; ci = 0;
             BoxLoopI2(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              wi, nx_w, ny_w, nz_w, 1, 1, 1,
-              ci, nx_c, ny_c, nz_c, 1, 1, 1,
+                      ix, iy, iz, nx, ny, nz,
+                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
+                      ci, nx_c, ny_c, nz_c, 1, 1, 1,
             {
               cell_change = -(scal[wi] * cn[ci]);
               well_stat += cell_change * cell_volume;
@@ -902,9 +902,9 @@ void     Godunov(
           {
             wi = 0; ci = 0;
             BoxLoopI2(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              wi, nx_w, ny_w, nz_w, 1, 1, 1,
-              ci, nx_c, ny_c, nz_c, 1, 1, 1,
+                      ix, iy, iz, nx, ny, nz,
+                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
+                      ci, nx_c, ny_c, nz_c, 1, 1, 1,
             {
               cell_change = -(scal[wi] * cn[ci] + rhs[wi]);
               well_stat += cell_change * cell_volume;
@@ -914,9 +914,9 @@ void     Godunov(
           {
             wi = 0; ci = 0;
             BoxLoopI2(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              wi, nx_w, ny_w, nz_w, 1, 1, 1,
-              ci, nx_c, ny_c, nz_c, 1, 1, 1,
+                      ix, iy, iz, nx, ny, nz,
+                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
+                      ci, nx_c, ny_c, nz_c, 1, 1, 1,
             {
               cell_change = -(scal[wi] * cn[ci]);
               well_stat += cell_change * cell_volume;
@@ -942,7 +942,7 @@ void     Godunov(
    *-----------------------------------------------------------------------*/
 
   field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
-      grid, new_concentration);
+                                 grid, new_concentration);
 
 
   if (!amps_Rank(amps_CommWorld))
@@ -973,9 +973,9 @@ void     Godunov(
  *--------------------------------------------------------------------------*/
 
 PFModule  *GodunovInitInstanceXtra(
-  Problem *problem,
-  Grid *   grid,
-  double * temp_data)
+                                   Problem *problem,
+                                   Grid *   grid,
+                                   double * temp_data)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra;

@@ -45,8 +45,8 @@
 /*     Godunov advection routine */
 /* ---------------------------------------------------------------------- */
 /* Subroutine */ int advect_(s, sn, uedge, vedge, wedge, phi, slx, sly, slz,
-  lo, hi, dlo, dhi, hx, dt, fstord, sbot, stop, sbotp, sfrt, sbck,
-  sleft, sright, sfluxz, dxscr, dyscr, dzscr, dzfrm)
+                             lo, hi, dlo, dhi, hx, dt, fstord, sbot, stop, sbotp, sfrt, sbck,
+                             sleft, sright, sfluxz, dxscr, dyscr, dzscr, dzfrm)
 doublereal * s, *sn, *uedge, *vedge, *wedge, *phi, *slx, *sly, *slz;
 integer *lo, *hi, *dlo, *dhi;
 doublereal *hx, *dt;
@@ -136,22 +136,22 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
   phi_dim1 = dhi[1] + 2 - (dlo[1] - 2) + 1;
   phi_dim2 = dhi[2] + 2 - (dlo[2] - 2) + 1;
   phi_offset = dlo[1] - 2 + phi_dim1 * (dlo[2] - 2 + phi_dim2 * (dlo[3] - 2)
-    );
+                                        );
   phi -= phi_offset;
   wedge_dim1 = dhi[1] + 2 - (dlo[1] - 2) + 1;
   wedge_dim2 = dhi[2] + 2 - (dlo[2] - 2) + 1;
   wedge_offset = dlo[1] - 2 + wedge_dim1 * (dlo[2] - 2 + wedge_dim2 * (dlo[
-      3] - 2));
+                                                                         3] - 2));
   wedge -= wedge_offset;
   vedge_dim1 = dhi[1] + 1 - (dlo[1] - 1) + 1;
   vedge_dim2 = dhi[2] + 2 - (dlo[2] - 1) + 1;
   vedge_offset = dlo[1] - 1 + vedge_dim1 * (dlo[2] - 1 + vedge_dim2 * (dlo[
-      3] - 1));
+                                                                         3] - 1));
   vedge -= vedge_offset;
   uedge_dim1 = dhi[1] + 2 - (dlo[1] - 1) + 1;
   uedge_dim2 = dhi[2] + 1 - (dlo[2] - 1) + 1;
   uedge_offset = dlo[1] - 1 + uedge_dim1 * (dlo[2] - 1 + uedge_dim2 * (dlo[
-      3] - 1));
+                                                                         3] - 1));
   uedge -= uedge_offset;
   sn_dim1 = dhi[1] + 3 - (dlo[1] - 3) + 1;
   sn_dim2 = dhi[2] + 3 - (dlo[2] - 3) + 1;
@@ -198,7 +198,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
   {
     i__1 = ks - 1;
     slopez_(&s[s_offset], &slz[slz_offset], &i__1, &kc, &lo[1], &hi[1], &
-      dlo[1], &dhi[1], &dzscr[dzscr_offset], &dzfrm[dzfrm_offset]);
+            dlo[1], &dhi[1], &dzscr[dzscr_offset], &dzfrm[dzfrm_offset]);
   }
   i__1 = ke + 1;
   for (k = ks - 1; k <= i__1; ++k)
@@ -206,14 +206,14 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
     if (!firstord)
     {
       slopexy_(&s[s_offset], &slx[slx_offset], &sly[sly_offset], &k, &
-        lo[1], &hi[1], &dlo[1], &dhi[1], &dxscr[dxscr_offset], &
-        dyscr[dyscr_offset]);
+               lo[1], &hi[1], &dlo[1], &dhi[1], &dxscr[dxscr_offset], &
+               dyscr[dyscr_offset]);
       if (k <= ke)
       {
         i__2 = k + 1;
         slopez_(&s[s_offset], &slz[slz_offset], &i__2, &kp, &lo[1], &
-          hi[1], &dlo[1], &dhi[1], &dzscr[dzscr_offset], &dzfrm[
-            dzfrm_offset]);
+                hi[1], &dlo[1], &dhi[1], &dzscr[dzscr_offset], &dzfrm[
+                  dzfrm_offset]);
       }
     }
     i__2 = je + 1;
@@ -238,50 +238,50 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
         if (!firstord)
         {
           tlo_xlo__ += (half - uedge[i__ + (j + k * uedge_dim2) *
-            uedge_dim1] * dth * dxi / phi[i__ - 1 + (j + k *
-            phi_dim2) * phi_dim1]) * slx[i__ - 1 + j *
-              slx_dim1];
+                                     uedge_dim1] * dth * dxi / phi[i__ - 1 + (j + k *
+                                                                              phi_dim2) * phi_dim1]) * slx[i__ - 1 + j *
+                                                                                                           slx_dim1];
           tlo_xhi__ -= (half + uedge[i__ + (j + k * uedge_dim2) *
-            uedge_dim1] * dth * dxi * phiinv) * slx[i__ + j *
-              slx_dim1];
+                                     uedge_dim1] * dth * dxi * phiinv) * slx[i__ + j *
+                                                                             slx_dim1];
           thi_xlo__ += (half - uedge[i__ + 1 + (j + k * uedge_dim2)
-            * uedge_dim1] * dth * dxi * phiinv) * slx[i__ + j
-              * slx_dim1];
+                                     * uedge_dim1] * dth * dxi * phiinv) * slx[i__ + j
+                                                                               * slx_dim1];
           thi_xhi__ -= (half + uedge[i__ + 1 + (j + k * uedge_dim2)
-            * uedge_dim1] * dth * dxi / phi[i__ + 1 + (j + k *
-            phi_dim2) * phi_dim1]) * slx[i__ + 1 + j *
-              slx_dim1];
+                                     * uedge_dim1] * dth * dxi / phi[i__ + 1 + (j + k *
+                                                                                phi_dim2) * phi_dim1]) * slx[i__ + 1 + j *
+                                                                                                             slx_dim1];
           tlo_ylo__ += (half - vedge[i__ + (j + k * vedge_dim2) *
-            vedge_dim1] * dth * dyi / phi[i__ + (j - 1 + k *
-            phi_dim2) * phi_dim1]) * sly[i__ + (j - 1) *
-              sly_dim1];
+                                     vedge_dim1] * dth * dyi / phi[i__ + (j - 1 + k *
+                                                                          phi_dim2) * phi_dim1]) * sly[i__ + (j - 1) *
+                                                                                                       sly_dim1];
           tlo_yhi__ -= (half + vedge[i__ + (j + k * vedge_dim2) *
-            vedge_dim1] * dth * dyi * phiinv) * sly[i__ + j *
-              sly_dim1];
+                                     vedge_dim1] * dth * dyi * phiinv) * sly[i__ + j *
+                                                                             sly_dim1];
           thi_ylo__ += (half - vedge[i__ + (j + 1 + k * vedge_dim2)
-            * vedge_dim1] * dth * dyi * phiinv) * sly[i__ + j
-              * sly_dim1];
+                                     * vedge_dim1] * dth * dyi * phiinv) * sly[i__ + j
+                                                                               * sly_dim1];
           thi_yhi__ -= (half + vedge[i__ + (j + 1 + k * vedge_dim2)
-            * vedge_dim1] * dth * dyi / phi[i__ + (j + 1 + k *
-            phi_dim2) * phi_dim1]) * sly[i__ + (j + 1) *
-              sly_dim1];
+                                     * vedge_dim1] * dth * dyi / phi[i__ + (j + 1 + k *
+                                                                            phi_dim2) * phi_dim1]) * sly[i__ + (j + 1) *
+                                                                                                         sly_dim1];
           tlo_zlo__ += (half - wedge[i__ + (j + k * wedge_dim2) *
-            wedge_dim1] * dth * dzi / phi[i__ + (j + (k - 1) *
-            phi_dim2) * phi_dim1]) * slz[i__ + (j + km *
-              slz_dim2) * slz_dim1];
+                                     wedge_dim1] * dth * dzi / phi[i__ + (j + (k - 1) *
+                                                                          phi_dim2) * phi_dim1]) * slz[i__ + (j + km *
+                                                                                                              slz_dim2) * slz_dim1];
           tlo_zhi__ -= (half + wedge[i__ + (j + k * wedge_dim2) *
-            wedge_dim1] * dth * dzi * phiinv) * slz[i__ + (j
-              + kc * slz_dim2) * slz_dim1];
+                                     wedge_dim1] * dth * dzi * phiinv) * slz[i__ + (j
+                                                                                    + kc * slz_dim2) * slz_dim1];
           thi_zlo__ += (half - wedge[i__ + (j + (k + 1) *
-            wedge_dim2) * wedge_dim1] * dth * dzi * phiinv) *
-            slz[i__ + (j + kc * slz_dim2) * slz_dim1];
+                                            wedge_dim2) * wedge_dim1] * dth * dzi * phiinv) *
+                       slz[i__ + (j + kc * slz_dim2) * slz_dim1];
           thi_zhi__ -= (half + wedge[i__ + (j + (k + 1) *
-            wedge_dim2) * wedge_dim1] * dth * dzi / phi[i__ +
-            (j + (k + 1) * phi_dim2) * phi_dim1]) * slz[i__ +
-              (j + kp * slz_dim2) * slz_dim1];
+                                            wedge_dim2) * wedge_dim1] * dth * dzi / phi[i__ +
+                                                                                        (j + (k + 1) * phi_dim2) * phi_dim1]) * slz[i__ +
+                                                                                                                                    (j + kp * slz_dim2) * slz_dim1];
         }
         if (uedge[i__ + (j + k * uedge_dim2) * uedge_dim1] >= (float)
-          0.)
+            0.)
         {
           tlo_x__ = tlo_xlo__;
         }
@@ -290,7 +290,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           tlo_x__ = tlo_xhi__;
         }
         if (uedge[i__ + 1 + (j + k * uedge_dim2) * uedge_dim1] >= (
-          float)0.)
+                                                                   float)0.)
         {
           thi_x__ = thi_xlo__;
         }
@@ -299,7 +299,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           thi_x__ = thi_xhi__;
         }
         if (vedge[i__ + (j + k * vedge_dim2) * vedge_dim1] >= (float)
-          0.)
+            0.)
         {
           tlo_y__ = tlo_ylo__;
         }
@@ -308,7 +308,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           tlo_y__ = tlo_yhi__;
         }
         if (vedge[i__ + (j + 1 + k * vedge_dim2) * vedge_dim1] >= (
-          float)0.)
+                                                                   float)0.)
         {
           thi_y__ = thi_ylo__;
         }
@@ -317,7 +317,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           thi_y__ = thi_yhi__;
         }
         if (wedge[i__ + (j + k * wedge_dim2) * wedge_dim1] >= (float)
-          0.)
+            0.)
         {
           tlo_z__ = tlo_zlo__;
         }
@@ -326,7 +326,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           tlo_z__ = tlo_zhi__;
         }
         if (wedge[i__ + (j + (k + 1) * wedge_dim2) * wedge_dim1] >= (
-          float)0.)
+                                                                     float)0.)
         {
           thi_z__ = thi_zlo__;
         }
@@ -335,33 +335,33 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           thi_z__ = thi_zhi__;
         }
         sux = (uedge[i__ + 1 + (j + k * uedge_dim2) * uedge_dim1] *
-          thi_x__ - uedge[i__ + (j + k * uedge_dim2) *
-          uedge_dim1] * tlo_x__) * dxi;
+               thi_x__ - uedge[i__ + (j + k * uedge_dim2) *
+                               uedge_dim1] * tlo_x__) * dxi;
         suy = (vedge[i__ + (j + 1 + k * vedge_dim2) * vedge_dim1] *
-          thi_y__ - vedge[i__ + (j + k * vedge_dim2) *
-          vedge_dim1] * tlo_y__) * dyi;
+               thi_y__ - vedge[i__ + (j + k * vedge_dim2) *
+                               vedge_dim1] * tlo_y__) * dyi;
         suz = (wedge[i__ + (j + (k + 1) * wedge_dim2) * wedge_dim1] *
-          thi_z__ - wedge[i__ + (j + k * wedge_dim2) *
-          wedge_dim1] * tlo_z__) * dzi;
+               thi_z__ - wedge[i__ + (j + k * wedge_dim2) *
+                               wedge_dim1] * tlo_z__) * dzi;
         cux = s[i__ + (j + k * s_dim2) * s_dim1] * (uedge[i__ + 1 + (
-          j + k * uedge_dim2) * uedge_dim1] - uedge[i__ + (j +
-          k * uedge_dim2) * uedge_dim1]) * dxi;
+                                                                     j + k * uedge_dim2) * uedge_dim1] - uedge[i__ + (j +
+                                                                                                                      k * uedge_dim2) * uedge_dim1]) * dxi;
         cuy = s[i__ + (j + k * s_dim2) * s_dim1] * (vedge[i__ + (j +
-          1 + k * vedge_dim2) * vedge_dim1] - vedge[i__ + (j +
-          k * vedge_dim2) * vedge_dim1]) * dyi;
+                                                                 1 + k * vedge_dim2) * vedge_dim1] - vedge[i__ + (j +
+                                                                                                                  k * vedge_dim2) * vedge_dim1]) * dyi;
         cuz = s[i__ + (j + k * s_dim2) * s_dim1] * (wedge[i__ + (j + (
-          k + 1) * wedge_dim2) * wedge_dim1] - wedge[i__ + (j +
-          k * wedge_dim2) * wedge_dim1]) * dzi;
+                                                                      k + 1) * wedge_dim2) * wedge_dim1] - wedge[i__ + (j +
+                                                                                                                        k * wedge_dim2) * wedge_dim1]) * dzi;
         sleft[i__ + 1] = thi_xlo__ - dth * (suy + suz + cux) * phiinv;
         sright[i__] = tlo_xhi__ - dth * (suy + suz + cux) * phiinv;
         sbck[i__ + (j + 1) * sbck_dim1] = thi_ylo__ - dth * (sux +
-          suz + cuy) * phiinv;
+                                                             suz + cuy) * phiinv;
         sfrt[i__ + j * sfrt_dim1] = tlo_yhi__ - dth * (sux + suz +
-          cuy) * phiinv;
+                                                       cuy) * phiinv;
         sbotp[i__ + j * sbotp_dim1] = thi_zlo__ - dth * (sux + suy +
-          cuz) * phiinv;
+                                                         cuz) * phiinv;
         stop[i__ + j * stop_dim1] = tlo_zhi__ - dth * (sux + suy +
-          cuz) * phiinv;
+                                                       cuz) * phiinv;
       }
 /*     ::: add x contribution to sn */
       if (k >= ks && k <= ke)
@@ -372,7 +372,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           for (i__ = is; i__ <= i__3; ++i__)
           {
             if (uedge[i__ + (j + k * uedge_dim2) * uedge_dim1] >=
-              (float)0.)
+                (float)0.)
             {
               supw_m__ = sleft[i__];
             }
@@ -381,7 +381,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
               supw_m__ = sright[i__];
             }
             if (uedge[i__ + 1 + (j + k * uedge_dim2) * uedge_dim1]
-              >= (float)0.)
+                >= (float)0.)
             {
               supw_p__ = sleft[i__ + 1];
             }
@@ -390,11 +390,11 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
               supw_p__ = sright[i__ + 1];
             }
             sn[i__ + (j + k * sn_dim2) * sn_dim1] = s[i__ + (j +
-                k * s_dim2) * s_dim1] - *dt * (uedge[i__ + 1
-              + (j + k * uedge_dim2) * uedge_dim1] *
-              supw_p__ - uedge[i__ + (j + k * uedge_dim2) *
-              uedge_dim1] * supw_m__) / (dx * phi[i__ + (j
-              + k * phi_dim2) * phi_dim1]);
+                                                             k * s_dim2) * s_dim1] - *dt * (uedge[i__ + 1
+                                                                                                  + (j + k * uedge_dim2) * uedge_dim1] *
+                                                                                            supw_p__ - uedge[i__ + (j + k * uedge_dim2) *
+                                                                                                             uedge_dim1] * supw_m__) / (dx * phi[i__ + (j
+                                                                                                                                                        + k * phi_dim2) * phi_dim1]);
           }
         }
       }
@@ -409,7 +409,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
         for (i__ = is; i__ <= i__3; ++i__)
         {
           if (vedge[i__ + (j + k * vedge_dim2) * vedge_dim1] >= (
-            float)0.)
+                                                                 float)0.)
           {
             supw_m__ = sbck[i__ + j * sbck_dim1];
           }
@@ -418,7 +418,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
             supw_m__ = sfrt[i__ + j * sfrt_dim1];
           }
           if (vedge[i__ + (j + 1 + k * vedge_dim2) * vedge_dim1] >=
-            (float)0.)
+              (float)0.)
           {
             supw_p__ = sbck[i__ + (j + 1) * sbck_dim1];
           }
@@ -427,10 +427,10 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
             supw_p__ = sfrt[i__ + (j + 1) * sfrt_dim1];
           }
           sn[i__ + (j + k * sn_dim2) * sn_dim1] -= *dt * (vedge[i__
-            + (j + 1 + k * vedge_dim2) * vedge_dim1] *
-            supw_p__ - vedge[i__ + (j + k * vedge_dim2) *
-            vedge_dim1] * supw_m__) / (dy * phi[i__ + (j + k *
-            phi_dim2) * phi_dim1]);
+                                                                + (j + 1 + k * vedge_dim2) * vedge_dim1] *
+                                                          supw_p__ - vedge[i__ + (j + k * vedge_dim2) *
+                                                                           vedge_dim1] * supw_m__) / (dy * phi[i__ + (j + k *
+                                                                                                                      phi_dim2) * phi_dim1]);
         }
       }
     }
@@ -444,7 +444,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
         for (i__ = is; i__ <= i__3; ++i__)
         {
           if (wedge[i__ + (j + k * wedge_dim2) * wedge_dim1] >= (
-            float)0.)
+                                                                 float)0.)
           {
             supw = sbot[i__ + j * sbot_dim1];
           }
@@ -453,7 +453,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
             supw = stop[i__ + j * stop_dim1];
           }
           sfluxz[i__] = wedge[i__ + (j + k * wedge_dim2) *
-              wedge_dim1] * supw * dzi;
+                              wedge_dim1] * supw * dzi;
         }
         if (k == ks)
         {
@@ -462,7 +462,7 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           {
             sn[i__ + (j + k * sn_dim2) * sn_dim1] += *dt * sfluxz[
               i__] / phi[i__ + (j + k * phi_dim2) *
-                phi_dim1];
+                         phi_dim1];
           }
         }
         else if (k == ke + 1)
@@ -471,8 +471,8 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           for (i__ = is; i__ <= i__3; ++i__)
           {
             sn[i__ + (j + (k - 1) * sn_dim2) * sn_dim1] -= *dt *
-              sfluxz[i__] / phi[i__ + (j + (k - 1) *
-                phi_dim2) * phi_dim1];
+                                                           sfluxz[i__] / phi[i__ + (j + (k - 1) *
+                                                                                    phi_dim2) * phi_dim1];
           }
         }
         else
@@ -482,10 +482,10 @@ doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
           {
             sn[i__ + (j + k * sn_dim2) * sn_dim1] += *dt * sfluxz[
               i__] / phi[i__ + (j + k * phi_dim2) *
-                phi_dim1];
+                         phi_dim1];
             sn[i__ + (j + (k - 1) * sn_dim2) * sn_dim1] -= *dt *
-              sfluxz[i__] / phi[i__ + (j + (k - 1) *
-                phi_dim2) * phi_dim1];
+                                                           sfluxz[i__] / phi[i__ + (j + (k - 1) *
+                                                                                    phi_dim2) * phi_dim1];
           }
         }
       }
@@ -593,11 +593,11 @@ doublereal *dxscr, *dyscr;
     for (i__ = is - 2; i__ <= i__2; ++i__)
     {
       dxscr[i__ + dxscr_dim1] = half * (s[i__ + 1 + (j + *k * s_dim2) *
-        s_dim1] - s[i__ - 1 + (j + *k * s_dim2) * s_dim1]);
+                                          s_dim1] - s[i__ - 1 + (j + *k * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + *k * s_dim2) * s_dim1] - s[i__ - 1 +
-        (j + *k * s_dim2) * s_dim1]);
+                                                              (j + *k * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + 1 + (j + *k * s_dim2) * s_dim1] - s[i__ + (
-        j + *k * s_dim2) * s_dim1]);
+                                                                       j + *k * s_dim2) * s_dim1]);
 /* Computing MIN */
       d__1 = abs(dmin__), d__2 = abs(dpls);
       dxscr[i__ + (dxscr_dim1 << 1)] = pfmin(d__1, d__2);
@@ -606,23 +606,23 @@ doublereal *dxscr, *dyscr;
         dxscr[i__ + (dxscr_dim1 << 1)] = zero;
       }
       dxscr[i__ + dxscr_dim1 * 3] = d_sign(&one, &dxscr[i__ +
-          dxscr_dim1]);
+                                                        dxscr_dim1]);
 /* Computing MIN */
       d__2 = dxscr[i__ + (dxscr_dim1 << 1)], d__3 = (d__1 = dxscr[i__ +
-        dxscr_dim1], abs(d__1));
+                                                                  dxscr_dim1], abs(d__1));
       dxscr[i__ + (dxscr_dim1 << 2)] = dxscr[i__ + dxscr_dim1 * 3] *
-        pfmin(d__2, d__3);
+                                       pfmin(d__2, d__3);
     }
     i__2 = ie + 1;
     for (i__ = is - 1; i__ <= i__2; ++i__)
     {
       ds = two * two3rd * dxscr[i__ + dxscr_dim1] - sixth * (dxscr[i__
-        + 1 + (dxscr_dim1 << 2)] + dxscr[i__ - 1 + (dxscr_dim1 <<
-        2)]);
+                                                                   + 1 + (dxscr_dim1 << 2)] + dxscr[i__ - 1 + (dxscr_dim1 <<
+                                                                                                               2)]);
 /* Computing MIN */
       d__1 = abs(ds), d__2 = dxscr[i__ + (dxscr_dim1 << 1)];
       slx[i__ + j * slx_dim1] = dxscr[i__ + dxscr_dim1 * 3] * pfmin(d__1,
-          d__2);
+                                                                    d__2);
     }
   }
 /*     ::::: SLOPES in the Y direction */
@@ -633,11 +633,11 @@ doublereal *dxscr, *dyscr;
     for (j = js - 2; j <= i__2; ++j)
     {
       dyscr[j + dyscr_dim1] = half * (s[i__ + (j + 1 + *k * s_dim2) *
-        s_dim1] - s[i__ + (j - 1 + *k * s_dim2) * s_dim1]);
+                                        s_dim1] - s[i__ + (j - 1 + *k * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + *k * s_dim2) * s_dim1] - s[i__ + (j
-        - 1 + *k * s_dim2) * s_dim1]);
+                                                                     - 1 + *k * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + (j + 1 + *k * s_dim2) * s_dim1] - s[i__ + (
-        j + *k * s_dim2) * s_dim1]);
+                                                                       j + *k * s_dim2) * s_dim1]);
 /* Computing MIN */
       d__1 = abs(dmin__), d__2 = abs(dpls);
       dyscr[j + (dyscr_dim1 << 1)] = pfmin(d__1, d__2);
@@ -648,19 +648,19 @@ doublereal *dxscr, *dyscr;
       dyscr[j + dyscr_dim1 * 3] = d_sign(&one, &dyscr[j + dyscr_dim1]);
 /* Computing MIN */
       d__2 = dyscr[j + (dyscr_dim1 << 1)], d__3 = (d__1 = dyscr[j +
-        dyscr_dim1], abs(d__1));
+                                                                dyscr_dim1], abs(d__1));
       dyscr[j + (dyscr_dim1 << 2)] = dyscr[j + dyscr_dim1 * 3] * pfmin(
-          d__2, d__3);
+                                                                       d__2, d__3);
     }
     i__2 = je + 1;
     for (j = js - 1; j <= i__2; ++j)
     {
       ds = two * two3rd * dyscr[j + dyscr_dim1] - sixth * (dyscr[j + 1
-        + (dyscr_dim1 << 2)] + dyscr[j - 1 + (dyscr_dim1 << 2)]);
+                                                                 + (dyscr_dim1 << 2)] + dyscr[j - 1 + (dyscr_dim1 << 2)]);
 /* Computing MIN */
       d__1 = abs(ds), d__2 = dyscr[j + (dyscr_dim1 << 1)];
       sly[i__ + j * sly_dim1] = dyscr[j + dyscr_dim1 * 3] * pfmin(d__1,
-          d__2);
+                                                                  d__2);
     }
   }
   return 0;
@@ -746,11 +746,11 @@ doublereal *dzscr, *dzfrm;
     {
       kt = *k - 1;
       dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (kt + 1) * s_dim2)
-        * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
+                                          * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + kt * s_dim2) * s_dim1] - s[i__ + (j
-        + (kt - 1) * s_dim2) * s_dim1]);
+                                                                     + (kt - 1) * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] - s[i__ +
-        (j + kt * s_dim2) * s_dim1]);
+                                                                  (j + kt * s_dim2) * s_dim1]);
 /* Computing MIN */
       d__1 = abs(dmin__), d__2 = abs(dpls);
       dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1, d__2);
@@ -759,19 +759,19 @@ doublereal *dzscr, *dzfrm;
         dzscr[i__ + (dzscr_dim1 << 1)] = zero;
       }
       dzscr[i__ + dzscr_dim1 * 3] = d_sign(&one, &dzscr[i__ +
-          dzscr_dim1]);
+                                                        dzscr_dim1]);
 /* Computing MIN */
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
-        dzscr_dim1], abs(d__1));
+                                                                  dzscr_dim1], abs(d__1));
       dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-          d__2, d__3);
+                                                                         d__2, d__3);
       kt = *k + 1;
       dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (kt + 1) * s_dim2)
-        * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
+                                          * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + kt * s_dim2) * s_dim1] - s[i__ + (j
-        + (kt - 1) * s_dim2) * s_dim1]);
+                                                                     + (kt - 1) * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] - s[i__ +
-        (j + kt * s_dim2) * s_dim1]);
+                                                                  (j + kt * s_dim2) * s_dim1]);
 /* Computing MIN */
       d__1 = abs(dmin__), d__2 = abs(dpls);
       dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1, d__2);
@@ -780,18 +780,18 @@ doublereal *dzscr, *dzfrm;
         dzscr[i__ + (dzscr_dim1 << 1)] = zero;
       }
       dzscr[i__ + dzscr_dim1 * 3] = d_sign(&one, &dzscr[i__ +
-          dzscr_dim1]);
+                                                        dzscr_dim1]);
 /* Computing MIN */
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
-        dzscr_dim1], abs(d__1));
+                                                                  dzscr_dim1], abs(d__1));
       dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-          d__2, d__3);
+                                                                         d__2, d__3);
       dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (*k + 1) * s_dim2)
-        * s_dim1] - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]);
+                                          * s_dim1] - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + *k * s_dim2) * s_dim1] - s[i__ + (j
-        + (*k - 1) * s_dim2) * s_dim1]);
+                                                                     + (*k - 1) * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] - s[i__ +
-        (j + *k * s_dim2) * s_dim1]);
+                                                                  (j + *k * s_dim2) * s_dim1]);
 /* Computing MIN */
       d__1 = abs(dmin__), d__2 = abs(dpls);
       dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1, d__2);
@@ -800,23 +800,23 @@ doublereal *dzscr, *dzfrm;
         dzscr[i__ + (dzscr_dim1 << 1)] = zero;
       }
       dzscr[i__ + dzscr_dim1 * 3] = d_sign(&one, &dzscr[i__ +
-          dzscr_dim1]);
+                                                        dzscr_dim1]);
 /* Computing MIN */
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
-        dzscr_dim1], abs(d__1));
+                                                                  dzscr_dim1], abs(d__1));
       dzfrm[i__ + *k * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-          d__2, d__3);
+                                                                         d__2, d__3);
     }
     i__2 = ie + 1;
     for (i__ = is - 1; i__ <= i__2; ++i__)
     {
       ds = two * two3rd * dzscr[i__ + dzscr_dim1] - sixth * (dzfrm[i__
-        + (*k + 1) * dzfrm_dim1] + dzfrm[i__ + (*k - 1) *
-        dzfrm_dim1]);
+                                                                   + (*k + 1) * dzfrm_dim1] + dzfrm[i__ + (*k - 1) *
+                                                                                                    dzfrm_dim1]);
 /* Computing MIN */
       d__1 = abs(ds), d__2 = dzscr[i__ + (dzscr_dim1 << 1)];
       slz[i__ + (j + *kk * slz_dim2) * slz_dim1] = dzscr[i__ +
-          dzscr_dim1 * 3] * pfmin(d__1, d__2);
+                                                         dzscr_dim1 * 3] * pfmin(d__1, d__2);
     }
   }
   return 0;

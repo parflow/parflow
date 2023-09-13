@@ -60,10 +60,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         ICPhaseConcen(
-  Vector *     ic_phase_concen,
-  int          phase,
-  int          contaminant,
-  ProblemData *problem_data)
+                           Vector *     ic_phase_concen,
+                           int          phase,
+                           int          contaminant,
+                           ProblemData *problem_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -169,7 +169,7 @@ void         ICPhaseConcen(
     *************************************************************************/
 
     field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
-        grid, ic_phase_concen);
+                                   grid, ic_phase_concen);
 
     if (!amps_Rank(amps_CommWorld))
     {
@@ -223,8 +223,8 @@ void  ICPhaseConcenFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule   *ICPhaseConcenNewPublicXtra(
-  int num_phases,
-  int num_contaminants)
+                                       int num_phases,
+                                       int num_contaminants)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -260,8 +260,8 @@ PFModule   *ICPhaseConcenNewPublicXtra(
         i = phase + cont;
 
         sprintf(key, "PhaseConcen.%s.%s.Type",
-          NA_IndexToName(GlobalsPhaseNames, phase),
-          NA_IndexToName(GlobalsContaminatNames, cont));
+                NA_IndexToName(GlobalsPhaseNames, phase),
+                NA_IndexToName(GlobalsContaminatNames, cont));
 
         switch_name = GetString(key);
 
@@ -276,8 +276,8 @@ PFModule   *ICPhaseConcenNewPublicXtra(
             dummy0 = ctalloc(Type0, 1);
 
             sprintf(key, "PhaseConcen.%s.%s.GeomNames",
-              NA_IndexToName(GlobalsPhaseNames, phase),
-              NA_IndexToName(GlobalsContaminatNames, cont));
+                    NA_IndexToName(GlobalsPhaseNames, phase),
+                    NA_IndexToName(GlobalsContaminatNames, cont));
             switch_name = GetString(key);
 
             dummy0->regions = NA_NewNameArray(switch_name);
@@ -292,12 +292,12 @@ PFModule   *ICPhaseConcenNewPublicXtra(
             {
               dummy0->region_indices[ir] =
                 NA_NameToIndex(GlobalsGeomNames,
-                  NA_IndexToName(dummy0->regions, ir));
+                               NA_IndexToName(dummy0->regions, ir));
 
               sprintf(key, "PhaseConcen.%s.%s.Geom.%s.Value",
-                NA_IndexToName(GlobalsPhaseNames, phase),
-                NA_IndexToName(GlobalsContaminatNames, cont),
-                NA_IndexToName(dummy0->regions, ir));
+                      NA_IndexToName(GlobalsPhaseNames, phase),
+                      NA_IndexToName(GlobalsContaminatNames, cont),
+                      NA_IndexToName(dummy0->regions, ir));
               dummy0->values[ir] = GetDouble(key);
             }
 
@@ -312,8 +312,8 @@ PFModule   *ICPhaseConcenNewPublicXtra(
 
 
             sprintf(key, "PhaseConcen.%s.%s.FileName",
-              NA_IndexToName(GlobalsPhaseNames, phase),
-              NA_IndexToName(GlobalsContaminatNames, cont));
+                    NA_IndexToName(GlobalsPhaseNames, phase),
+                    NA_IndexToName(GlobalsContaminatNames, cont));
 
             dummy1->filename = GetString(key);
 

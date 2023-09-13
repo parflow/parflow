@@ -56,8 +56,8 @@
  *--------------------------------------------------------------------------*/
 
 int main(
-  int    argc,
-  char **argv)
+         int    argc,
+         char **argv)
 {
   gms_TIN      *mask_TIN;
   gms_TIN     **TINs;
@@ -90,7 +90,7 @@ int main(
   if (argc < 4)
   {
     fprintf(stderr,
-      "Usage:  gmstriangulate <TIN mask> <TIN input> <TIN output>\n");
+            "Usage:  gmstriangulate <TIN mask> <TIN input> <TIN output>\n");
     exit(1);
   }
 

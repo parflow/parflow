@@ -99,11 +99,11 @@ void realSpaceZ(ProblemData *problem_data, Vector *rsz)
     {
       amps_Invoice invoice = amps_NewInvoice("%d", &z);
       int srcRank = pqr_to_process(GlobalsP,
-          GlobalsQ,
-          GlobalsR - 1,
-          GlobalsNumProcsX,
-          GlobalsNumProcsY,
-          GlobalsNumProcsZ);
+                                   GlobalsQ,
+                                   GlobalsR - 1,
+                                   GlobalsNumProcsX,
+                                   GlobalsNumProcsY,
+                                   GlobalsNumProcsZ);
 
       amps_Recv(amps_CommWorld, srcRank, invoice);
       amps_FreeInvoice(invoice);
@@ -165,11 +165,11 @@ breakout:;
       amps_Invoice invoice = amps_NewInvoice("%d", &z);
 
       int dstRank = pqr_to_process(GlobalsP,
-          GlobalsQ,
-          GlobalsR + 1,
-          GlobalsNumProcsX,
-          GlobalsNumProcsY,
-          GlobalsNumProcsZ);
+                                   GlobalsQ,
+                                   GlobalsR + 1,
+                                   GlobalsNumProcsX,
+                                   GlobalsNumProcsY,
+                                   GlobalsNumProcsZ);
 
       amps_Send(amps_CommWorld, dstRank, invoice);
       amps_FreeInvoice(invoice);

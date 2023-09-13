@@ -40,10 +40,10 @@
  *--------------------------------------------------------------------------*/
 
 GeomTSolid  *GeomNewTSolid(
-  GeomTIN *surface,
-  int **   patches,                          /* arrays of surface triangle indices */
-  int      num_patches,
-  int *    num_patch_triangles)
+                           GeomTIN *surface,
+                           int **   patches, /* arrays of surface triangle indices */
+                           int      num_patches,
+                           int *    num_patch_triangles)
 {
   GeomTSolid   *new_geomtsolid;
 
@@ -64,7 +64,7 @@ GeomTSolid  *GeomNewTSolid(
  *--------------------------------------------------------------------------*/
 
 void         GeomFreeTSolid(
-  GeomTSolid *solid)
+                            GeomTSolid *solid)
 {
   int p;
 
@@ -84,8 +84,8 @@ void         GeomFreeTSolid(
  *--------------------------------------------------------------------------*/
 
 int            GeomReadTSolids(
-  GeomTSolid ***solids_data_ptr,
-  char *        geom_input_name)
+                               GeomTSolid ***solids_data_ptr,
+                               char *        geom_input_name)
 {
   GeomTSolid      **solids_data = NULL;
 
@@ -125,7 +125,7 @@ int            GeomReadTSolids(
   if ((solids_file = amps_SFopen(solids_filename, "r")) == NULL)
   {
     InputError("Error: can't open solids file %s%s\n", solids_filename,
-      "");
+               "");
   }
   /*------------------------------------------------------
    * Check the file version number
@@ -140,7 +140,7 @@ int            GeomReadTSolids(
   {
     if (!amps_Rank(amps_CommWorld))
       amps_Printf("Error: need input file version %d\n",
-        PFSOL_GEOM_T_SOLID_VERSION);
+                  PFSOL_GEOM_T_SOLID_VERSION);
     exit(1);
   }
 
@@ -295,12 +295,12 @@ int            GeomReadTSolids(
  *--------------------------------------------------------------------------*/
 
 GeomTSolid  *GeomTSolidFromBox(
-  double xl,
-  double yl,
-  double zl,
-  double xu,
-  double yu,
-  double zu)
+                               double xl,
+                               double yl,
+                               double zl,
+                               double xu,
+                               double yu,
+                               double zu)
 {
   GeomTSolid       *solid_data;
 

@@ -71,7 +71,7 @@ void  NewTiming()
  *--------------------------------------------------------------------------*/
 
 int  RegisterTiming(
-  char *name)
+                    char *name)
 {
   amps_Clock_t     *old_time = (timing->time);
   amps_CPUClock_t  *old_cpu_time = (timing->cpu_time);
@@ -137,7 +137,7 @@ void  PrintTiming()
   for (i = 0; i < (timing->size); i++)
   {
     mflops[i] = time_ticks[i] ?
-      ((timing->flops)[i] / (time_ticks[i] / AMPS_TICKS_PER_SEC)) / 1.0E6
+                ((timing->flops)[i] / (time_ticks[i] / AMPS_TICKS_PER_SEC)) / 1.0E6
                 : 0.0;
   }
 
@@ -149,18 +149,18 @@ void  PrintTiming()
     {
       amps_Fprintf(file, "%s:\n", (timing->name)[i]);
       amps_Fprintf(file, "  wall clock time   = %f seconds\n",
-        time_ticks[i] / AMPS_TICKS_PER_SEC);
+                   time_ticks[i] / AMPS_TICKS_PER_SEC);
       amps_Fprintf(file, "  wall MFLOPS = %f (%g)\n", mflops[i],
-        (timing->flops)[i]);
+                   (timing->flops)[i]);
 #ifdef CPUTiming
       if (AMPS_CPU_TICKS_PER_SEC)
       {
         amps_Fprintf(file, "  CPU  clock time   = %f seconds\n",
-          cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC);
+                     cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC);
         if (cpu_ticks[i])
           amps_Fprintf(file, "  cpu  MFLOPS = %f (%g)\n",
-            ((timing->flops)[i] / (cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC)) / 1.0E6,
-            (timing->flops)[i]);
+                       ((timing->flops)[i] / (cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC)) / 1.0E6,
+                       (timing->flops)[i]);
       }
 #endif
     }
@@ -179,8 +179,8 @@ void  PrintTiming()
     for (i = 0; i < (timing->size); i++)
     {
       fprintf(file, "%s,%f,%f,%g\n", timing->name[i],
-        time_ticks[i] / AMPS_TICKS_PER_SEC,
-        mflops[i], (timing->flops)[i]);
+              time_ticks[i] / AMPS_TICKS_PER_SEC,
+              mflops[i], (timing->flops)[i]);
     }
 
     fclose(file);
@@ -199,13 +199,13 @@ void  PrintTiming()
     for (i = 0; i < NumEvents; i++)
     {
       fprintf(file, "%d %ld %ld %ld %ld %ld %ld\n",
-        amps_Rank(amps_CommWorld),
-        EventTiming[i][MatvecStart],
-        EventTiming[i][MatvecEnd],
-        EventTiming[i][InitStart],
-        EventTiming[i][InitEnd],
-        EventTiming[i][FinalizeStart],
-        EventTiming[i][FinalizeEnd]);
+              amps_Rank(amps_CommWorld),
+              EventTiming[i][MatvecStart],
+              EventTiming[i][MatvecEnd],
+              EventTiming[i][InitStart],
+              EventTiming[i][InitEnd],
+              EventTiming[i][FinalizeStart],
+              EventTiming[i][FinalizeEnd]);
     }
     fclose(file);
   }

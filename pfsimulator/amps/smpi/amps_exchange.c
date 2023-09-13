@@ -45,10 +45,10 @@ void _amps_wait_exchange(amps_Handle handle)
   if (handle->package->num_recv + handle->package->num_send)
   {
     status = calloc((handle->package->num_recv +
-        handle->package->num_send), sizeof(MPI_Status));
+                     handle->package->num_send), sizeof(MPI_Status));
 
     MPI_Waitall(handle->package->num_recv + handle->package->num_send,
-      handle->package->recv_requests, status);
+                handle->package->recv_requests, status);
 
     fflush(NULL);
 
@@ -57,10 +57,10 @@ void _amps_wait_exchange(amps_Handle handle)
     for (i = 0; i < handle->package->num_recv; i++)
     {
       amps_unpack(amps_CommWorld, handle->package->recv_invoices[i],
-        handle->package->recv_invoices[i]->combuf);
+                  handle->package->recv_invoices[i]->combuf);
       AMPS_PACK_FREE_LETTER(amps_CommWorld,
-        handle->package->recv_invoices[i],
-        handle->package->recv_invoices[i]->combuf);
+                            handle->package->recv_invoices[i],
+                            handle->package->recv_invoices[i]->combuf);
     }
 /*
  *
@@ -88,10 +88,10 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   for (i = 0; i < package->num_send; i++)
   {
     size = amps_pack(amps_CommWorld, package->send_invoices[i],
-        &buffer);
+                     &buffer);
     MPI_Isend(package->send_invoices[i]->combuf, size,
-      MPI_BYTE, package->dest[i], 1,
-      amps_CommWorld, &(package->send_requests[i]));
+              MPI_BYTE, package->dest[i], 1,
+              amps_CommWorld, &(package->send_requests[i]));
   }
 
 /*
@@ -132,8 +132,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
               (char*)calloc(size, sizeof(char *));
 
             MPI_Irecv(package->recv_invoices[i]->combuf, size,
-              MPI_BYTE, package->src[i], 1,
-              amps_CommWorld, &(package->recv_requests[i]));
+                      MPI_BYTE, package->src[i], 1,
+                      amps_CommWorld, &(package->recv_requests[i]));
           }
           else
             done = 0;
@@ -165,10 +165,10 @@ int _amps_send_sizes(amps_Package package, int **sizes)
   for (i = 0; i < package->num_send; i++)
   {
     (*sizes)[i] = amps_pack(amps_CommWorld, package->send_invoices[i],
-        &buffer);
+                            &buffer);
     MPI_Isend(&((*sizes)[i]), 1, MPI_INT, package->dest[i],
-      0, amps_CommWorld,
-      &(package->send_requests[i]));
+              0, amps_CommWorld,
+              &(package->send_requests[i]));
   }
 
   return(0);
@@ -184,14 +184,14 @@ int _amps_recv_sizes(amps_Package package)
   for (i = 0; i < package->num_recv; i++)
   {
     MPI_Recv(&size, 1, MPI_INT, package->src[i], 0,
-      amps_CommWorld, &status);
+             amps_CommWorld, &status);
 
     package->recv_invoices[i]->combuf =
       (char*)calloc(size, sizeof(char *));
 
     MPI_Recv_init(package->recv_invoices[i]->combuf, size,
-      MPI_BYTE, package->src[i], 1, amps_CommWorld,
-      &(package->recv_requests[i]));
+                  MPI_BYTE, package->src[i], 1, amps_CommWorld,
+                  &(package->recv_requests[i]));
   }
 
   return(0);
@@ -207,16 +207,16 @@ void _amps_wait_exchange(amps_Handle handle)
   if (num)
   {
     MPI_Waitall(num, handle->package->recv_requests,
-      handle->package->status);
+                handle->package->status);
     if (handle->package->num_recv)
     {
       for (i = 0; i < handle->package->num_recv; i++)
       {
         amps_unpack(amps_CommWorld, handle->package->recv_invoices[i],
-          handle->package->recv_invoices[i]->combuf);
+                    handle->package->recv_invoices[i]->combuf);
         AMPS_PACK_FREE_LETTER(amps_CommWorld,
-          handle->package->recv_invoices[i],
-          handle->package->recv_invoices[i]->combuf);
+                              handle->package->recv_invoices[i],
+                              handle->package->recv_invoices[i]->combuf);
 /*
  *         AMPS_CLEAR_INVOICE(handle -> package -> recv_invoices[i]);
  */
@@ -286,7 +286,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   if (package->num_send)
   {
     status_array = (MPI_Status*)calloc(package->num_send,
-        sizeof(MPI_Status));
+                                       sizeof(MPI_Status));
     MPI_Waitall(package->num_send, package->send_requests, status_array);
     free(status_array);
   }
@@ -296,8 +296,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     for (i = 0; i < package->num_send; i++)
     {
       MPI_Send_init(package->send_invoices[i]->combuf,
-        send_sizes[i], MPI_BYTE, package->dest[i], 1,
-        amps_CommWorld, &(package->send_requests[i]));
+                    send_sizes[i], MPI_BYTE, package->dest[i], 1,
+                    amps_CommWorld, &(package->send_requests[i]));
     }
 
     free(send_sizes);
