@@ -73,25 +73,25 @@ typedef struct well_list_member {
  * Accessor macros: WellListMember
  *--------------------------------------------------------------------------*/
 #define WellListMemberTime(well_list_member) \
-  ((well_list_member)->time)
+        ((well_list_member)->time)
 
 #define WellListMemberWellDataPhysicals(well_list_member) \
-  ((well_list_member)->well_data_physicals)
+        ((well_list_member)->well_data_physicals)
 #define WellListMemberWellDataPhysical(well_list_member, i) \
-  ((well_list_member)->well_data_physicals[i])
+        ((well_list_member)->well_data_physicals[i])
 
 #define WellListMemberWellDataValues(well_list_member) \
-  ((well_list_member)->well_data_values)
+        ((well_list_member)->well_data_values)
 #define WellListMemberWellDataValue(well_list_member, i) \
-  ((well_list_member)->well_data_values[i])
+        ((well_list_member)->well_data_values[i])
 
 #define WellListMemberWellDataStats(well_list_member) \
-  ((well_list_member)->well_data_stats)
+        ((well_list_member)->well_data_stats)
 #define WellListMemberWellDataStat(well_list_member, i) \
-  ((well_list_member)->well_data_stats[i])
+        ((well_list_member)->well_data_stats[i])
 
 #define WellListMemberNextWellListMember(well_list_member) \
-  ((well_list_member)->next_well_list_member)
+        ((well_list_member)->next_well_list_member)
 
 /*-----------------------------------------------------------------------
  * function prototypes

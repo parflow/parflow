@@ -36,9 +36,9 @@
  *--------------------------------------------------------------------------*/
 
 void           gms_ReadSolids(
-                              gms_Solid ***solids_ptr,
-                              int *        nsolids_ptr,
-                              char *       filename)
+  gms_Solid ***solids_ptr,
+  int *        nsolids_ptr,
+  char *       filename)
 {
   FILE         *file;
   gms_CardType card_type;
@@ -136,9 +136,9 @@ void           gms_ReadSolids(
       {
         vertices[v] = ctalloc(Vertex, 1);
         fscanf(file, "%le%le%le",
-               &(vertices[v]->x),
-               &(vertices[v]->y),
-               &(vertices[v]->z));
+          &(vertices[v]->x),
+          &(vertices[v]->y),
+          &(vertices[v]->z));
       }
 
       (solids[nsolids]->vertices) = vertices;
@@ -160,10 +160,10 @@ void           gms_ReadSolids(
       {
         triangles[t] = ctalloc(Triangle, 1);
         fscanf(file, "%d%d%d%d",
-               &(triangles[t]->v0),
-               &(triangles[t]->v1),
-               &(triangles[t]->v2),
-               &tmp_index);
+          &(triangles[t]->v0),
+          &(triangles[t]->v1),
+          &(triangles[t]->v2),
+          &tmp_index);
       }
 
       (solids[nsolids]->triangles) = triangles;

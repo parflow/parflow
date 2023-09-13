@@ -91,17 +91,17 @@ typedef struct {
  * KINSolInitPC
  *--------------------------------------------------------------------------*/
 int  KINSolInitPC(
-                  int       neq,
-                  N_Vector  pressure,
-                  N_Vector  uscale,
-                  N_Vector  fval,
-                  N_Vector  fscale,
-                  N_Vector  vtemp1,
-                  N_Vector  vtemp2,
-                  void *    nl_function,
-                  double    uround,
-                  long int *nfePtr,
-                  void *    current_state)
+  int       neq,
+  N_Vector  pressure,
+  N_Vector  uscale,
+  N_Vector  fval,
+  N_Vector  fscale,
+  N_Vector  vtemp1,
+  N_Vector  vtemp2,
+  void *    nl_function,
+  double    uround,
+  long int *nfePtr,
+  void *    current_state)
 {
   PFModule    *precond = StatePrecond(((State*)current_state));
   ProblemData *problem_data = StateProblemData(((State*)current_state));
@@ -125,7 +125,7 @@ int  KINSolInitPC(
    * itself */
 
   PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond, (NULL, NULL, problem_data, NULL,
-                                                                      pressure, old_pressure, saturation, density, dt, time));
+    pressure, old_pressure, saturation, density, dt, time));
   return(0);
 }
 
@@ -134,17 +134,17 @@ int  KINSolInitPC(
  * KINSolCallPC
  *--------------------------------------------------------------------------*/
 int   KINSolCallPC(
-                   int       neq,
-                   N_Vector  pressure,
-                   N_Vector  uscale,
-                   N_Vector  fval,
-                   N_Vector  fscale,
-                   N_Vector  vtem,
-                   N_Vector  ftem,
-                   void *    nl_function,
-                   double    uround,
-                   long int *nfePtr,
-                   void *    current_state)
+  int       neq,
+  N_Vector  pressure,
+  N_Vector  uscale,
+  N_Vector  fval,
+  N_Vector  fscale,
+  N_Vector  vtem,
+  N_Vector  ftem,
+  void *    nl_function,
+  double    uround,
+  long int *nfePtr,
+  void *    current_state)
 {
   PFModule *precond = StatePrecond((State*)current_state);
 
@@ -167,28 +167,28 @@ int   KINSolCallPC(
 }
 
 void PrintFinalStats(
-                     FILE *    out_file,
-                     long int *integer_outputs_now,
-                     long int *integer_outputs_total)
+  FILE *    out_file,
+  long int *integer_outputs_now,
+  long int *integer_outputs_total)
 {
   fprintf(out_file, "\n-------------------------------------------------- \n");
   fprintf(out_file, "                    Iteration             Total\n");
   fprintf(out_file, "Nonlin. Its.:           %5ld             %5ld\n",
-          integer_outputs_now[NNI], integer_outputs_total[NNI]);
+    integer_outputs_now[NNI], integer_outputs_total[NNI]);
   fprintf(out_file, "Lin. Its.:              %5ld             %5ld\n",
-          integer_outputs_now[SPGMR_NLI], integer_outputs_total[SPGMR_NLI]);
+    integer_outputs_now[SPGMR_NLI], integer_outputs_total[SPGMR_NLI]);
   fprintf(out_file, "Func. Evals.:           %5ld             %5ld\n",
-          integer_outputs_now[NFE], integer_outputs_total[NFE]);
+    integer_outputs_now[NFE], integer_outputs_total[NFE]);
   fprintf(out_file, "PC Evals.:              %5ld             %5ld\n",
-          integer_outputs_now[SPGMR_NPE], integer_outputs_total[SPGMR_NPE]);
+    integer_outputs_now[SPGMR_NPE], integer_outputs_total[SPGMR_NPE]);
   fprintf(out_file, "PC Solves:              %5ld             %5ld\n",
-          integer_outputs_now[SPGMR_NPS], integer_outputs_total[SPGMR_NPS]);
+    integer_outputs_now[SPGMR_NPS], integer_outputs_total[SPGMR_NPS]);
   fprintf(out_file, "Lin. Conv. Fails:       %5ld             %5ld\n",
-          integer_outputs_now[SPGMR_NCFL], integer_outputs_total[SPGMR_NCFL]);
+    integer_outputs_now[SPGMR_NCFL], integer_outputs_total[SPGMR_NCFL]);
   fprintf(out_file, "Beta Cond. Fails:       %5ld             %5ld\n",
-          integer_outputs_now[NBCF], integer_outputs_total[NBCF]);
+    integer_outputs_now[NBCF], integer_outputs_total[NBCF]);
   fprintf(out_file, "Backtracks:             %5ld             %5ld\n",
-          integer_outputs_now[NBKTRK], integer_outputs_total[NBKTRK]);
+    integer_outputs_now[NBKTRK], integer_outputs_total[NBKTRK]);
   fprintf(out_file, "-------------------------------------------------- \n");
   fflush(out_file);
 }
@@ -256,20 +256,20 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
   BeginTiming(public_xtra->time_index);
 
   ret = KINSol((void*)kin_mem,          /* Memory allocated above */
-               neq,                     /* Dummy variable here */
-               pressure,                /* Initial guess @ this was "pressure before" */
-               feval,                   /* Nonlinear function */
-               globalization,           /* Globalization method */
-               uscale,                  /* Scalings for the variable */
-               fscale,                  /* Scalings for the function */
-               residual_tol,            /* Stopping tolerance on func */
-               step_tol,                /* Stop tol. for sucessive steps */
-               NULL,                    /* Constraints */
-               TRUE,                    /* Optional inputs */
-               iopt,                    /* Opt. integer inputs */
-               ropt,                    /* Opt. double inputs */
-               current_state            /* User-supplied input */
-               );
+      neq,                              /* Dummy variable here */
+      pressure,                         /* Initial guess @ this was "pressure before" */
+      feval,                            /* Nonlinear function */
+      globalization,                    /* Globalization method */
+      uscale,                           /* Scalings for the variable */
+      fscale,                           /* Scalings for the function */
+      residual_tol,                     /* Stopping tolerance on func */
+      step_tol,                         /* Stop tol. for sucessive steps */
+      NULL,                             /* Constraints */
+      TRUE,                             /* Optional inputs */
+      iopt,                             /* Opt. integer inputs */
+      ropt,                             /* Opt. double inputs */
+      current_state                     /* User-supplied input */
+      );
 
   EndTiming(public_xtra->time_index);
 
@@ -298,10 +298,10 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
  *--------------------------------------------------------------------------*/
 
 PFModule  *KinsolNonlinSolverInitInstanceXtra(
-                                              Problem *    problem,
-                                              Grid *       grid,
-                                              ProblemData *problem_data,
-                                              double *     temp_data)
+  Problem *    problem,
+  Grid *       grid,
+  ProblemData *problem_data,
+  double *     temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -351,20 +351,20 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     if (public_xtra->precond != NULL)
       instance_xtra->precond =
         PFModuleNewInstanceType(KinsolPCInitInstanceXtraInvoke, public_xtra->precond,
-                                (problem, grid, problem_data, temp_data,
-                                 NULL, NULL, NULL, NULL, 0, 0));
+          (problem, grid, problem_data, temp_data,
+          NULL, NULL, NULL, NULL, 0, 0));
     else
       instance_xtra->precond = NULL;
 
     instance_xtra->nl_function_eval =
       PFModuleNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, public_xtra->nl_function_eval,
-                              (problem, grid, temp_data));
+        (problem, grid, temp_data));
 
     if (public_xtra->richards_jacobian_eval != NULL)
       /* Initialize instance for nonsymmetric matrix */
       instance_xtra->richards_jacobian_eval =
         PFModuleNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, public_xtra->richards_jacobian_eval,
-                                (problem, grid, problem_data, temp_data, 0));
+          (problem, grid, problem_data, temp_data, 0));
     else
       instance_xtra->richards_jacobian_eval = NULL;
   }
@@ -372,16 +372,16 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
   {
     if (instance_xtra->precond != NULL)
       PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke,
-                                instance_xtra->precond,
-                                (problem, grid, problem_data, temp_data,
-                                 NULL, NULL, NULL, NULL, 0, 0));
+        instance_xtra->precond,
+        (problem, grid, problem_data, temp_data,
+        NULL, NULL, NULL, NULL, 0, 0));
 
     PFModuleReNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, instance_xtra->nl_function_eval,
-                              (problem, grid, temp_data));
+      (problem, grid, temp_data));
 
     if (instance_xtra->richards_jacobian_eval != NULL)
       PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, instance_xtra->richards_jacobian_eval,
-                                (problem, grid, problem_data, temp_data, 0));
+        (problem, grid, problem_data, temp_data, 0));
   }
 
   /*-----------------------------------------------------------------------
@@ -408,14 +408,14 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
 
     /* Initialize the gmres linear solver in KINSol */
     KINSpgmr((void*)kin_mem,           /* Memory allocated above */
-             krylov_dimension,         /* Max. Krylov dimension */
-             max_restarts,             /* Max. no. of restarts - 0 is none */
-             1,                        /* Max. calls to PC Solve w/o PC Set */
-             pcinit,                   /* PC Set function */
-             pcsolve,                  /* PC Solve function */
-             matvec,                   /* ATimes routine */
-             current_state             /* User data for PC stuff */
-             );
+      krylov_dimension,                /* Max. Krylov dimension */
+      max_restarts,                    /* Max. no. of restarts - 0 is none */
+      1,                               /* Max. calls to PC Solve w/o PC Set */
+      pcinit,                          /* PC Set function */
+      pcsolve,                         /* PC Solve function */
+      matvec,                          /* ATimes routine */
+      current_state                    /* User data for PC stuff */
+      );
 
     /* Initialize optional arguments for KINSol */
     iopt = instance_xtra->int_optional_input;
@@ -538,12 +538,12 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   (public_xtra->max_restarts) = GetIntDefault(key, 0);
 
   verbosity_switch_na = NA_NewNameArray("NoVerbosity LowVerbosity "
-                                        "NormalVerbosity HighVerbosity");
+      "NormalVerbosity HighVerbosity");
   sprintf(key, "Solver.Nonlinear.PrintFlag");
   switch_name = GetStringDefault(key, "LowVerbosity");
   (public_xtra->print_flag) = NA_NameToIndexExitOnError(verbosity_switch_na,
-							switch_name,
-							key);
+      switch_name,
+      key);
   NA_FreeNameArray(verbosity_switch_na);
 
   eta_switch_na = NA_NewNameArray("EtaConstant Walker1 Walker2");
@@ -654,9 +654,9 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   else if (switch_value > 0)
   {
     (public_xtra->precond) = PFModuleNewModuleType(
-                                                   KinsolPCNewPublicXtraInvoke,
-                                                   KinsolPC,
-                                                   (key, switch_name));
+        KinsolPCNewPublicXtraInvoke,
+        KinsolPC,
+        (key, switch_name));
     (public_xtra->pcinit) = (KINSpgmrPrecondFn)KINSolInitPC;
     (public_xtra->pcsolve) = (KINSpgmrPrecondSolveFn)KINSolCallPC;
   }
@@ -668,14 +668,14 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
   public_xtra->nl_function_eval = PFModuleNewModule(NlFunctionEval, ());
   public_xtra->neq = ((public_xtra->max_restarts) + 1)
-                     * (public_xtra->krylov_dimension);
+    * (public_xtra->krylov_dimension);
 
   if (public_xtra->matvec != NULL)
     public_xtra->richards_jacobian_eval =
       PFModuleNewModuleType(
-                            RichardsJacobianEvalNewPublicXtraInvoke,
-                            RichardsJacobianEval,
-                            ("Solver.Nonlinear.Jacobian"));
+        RichardsJacobianEvalNewPublicXtraInvoke,
+        RichardsJacobianEval,
+        ("Solver.Nonlinear.Jacobian"));
   else
     public_xtra->richards_jacobian_eval = NULL;
 
@@ -722,7 +722,7 @@ int  KinsolNonlinSolverSizeOfTempData()
 
   PFModule             *precond = (instance_xtra->precond);
   PFModule             *jacobian_eval = (instance_xtra->
-                                         richards_jacobian_eval);
+    richards_jacobian_eval);
 
   int sz = 0;
 

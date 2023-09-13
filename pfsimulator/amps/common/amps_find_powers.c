@@ -33,16 +33,16 @@
 
 
 void amps_FindPowers(
-                     int  N,
-                     int *log,
-                     int *Nnext,
-                     int *Nprev)
+  int  N,
+  int *log,
+  int *Nnext,
+  int *Nprev)
 {
   long high, high_log, low, low_log;
 
   for (high = AMPS_HIGHEST_LONG, high_log = AMPS_HIGHEST_LONG_LOG,
-       low = 1, low_log = 0; (high > N) && (low < N);
-       high >>= 1, low <<= 1, high_log--, low_log++)
+    low = 1, low_log = 0; (high > N) && (low < N);
+    high >>= 1, low <<= 1, high_log--, low_log++)
     ;
 
   if (high <= N)

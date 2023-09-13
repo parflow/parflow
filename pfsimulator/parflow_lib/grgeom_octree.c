@@ -42,7 +42,7 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level);
  *--------------------------------------------------------------------------*/
 
 int GrGeomCheckOctree(
-                      GrGeomOctree *grgeom_octree)
+  GrGeomOctree *grgeom_octree)
 {
   int i;
   int result = 0;
@@ -70,11 +70,11 @@ int GrGeomCheckOctree(
  *--------------------------------------------------------------------------*/
 
 void  GrGeomFixOctree(
-                      GrGeomOctree * grgeom_octree,
-                      GrGeomOctree **patch_octrees,
-                      int            num_patches,
-                      int            level,
-                      int            num_indices)
+  GrGeomOctree * grgeom_octree,
+  GrGeomOctree **patch_octrees,
+  int            num_patches,
+  int            level,
+  int            num_indices)
 {
   GrGeomOctree   *node, *neighbor_node, *patch_node;
   int            *fdir;
@@ -85,15 +85,15 @@ void  GrGeomFixOctree(
   j = 0;
   k = 0;
   GrGeomOctreeFaceLoop(i, j, k, fdir, node, grgeom_octree, level,
-                       0, 0, 0, num_indices, num_indices, num_indices,
+    0, 0, 0, num_indices, num_indices, num_indices,
   {
     face_index = GrGeomOctreeFaceIndex(fdir[0], fdir[1], fdir[2]);
 
     neighbor_node = GrGeomOctreeFind(&new_level, grgeom_octree,
-                                     i + fdir[0],
-                                     j + fdir[1],
-                                     k + fdir[2],
-                                     level);
+    i + fdir[0],
+    j + fdir[1],
+    k + fdir[2],
+    level);
     if (new_level == level)
     {
       if (GrGeomOctreeNodeIsInside(neighbor_node))
@@ -103,8 +103,8 @@ void  GrGeomFixOctree(
         for (p = 0; p < num_patches; p++)
         {
           patch_node = GrGeomOctreeFind(&new_level,
-                                        patch_octrees[p],
-                                        i, j, k, level);
+          patch_octrees[p],
+          i, j, k, level);
           if (new_level == level)
           {
             GrGeomOctreeClearFace(patch_node, face_index);
@@ -147,7 +147,7 @@ GrGeomOctree *GrGeomNewOctree()
  *--------------------------------------------------------------------------*/
 
 void GrGeomNewOctreeChildren(
-                             GrGeomOctree *grgeom_octree)
+  GrGeomOctree *grgeom_octree)
 {
   int i;
 
@@ -173,7 +173,7 @@ void GrGeomNewOctreeChildren(
  *--------------------------------------------------------------------------*/
 
 void GrGeomFreeOctree(
-                      GrGeomOctree *grgeom_octree)
+  GrGeomOctree *grgeom_octree)
 {
   int ic;
 
@@ -198,12 +198,12 @@ void GrGeomFreeOctree(
  *--------------------------------------------------------------------------*/
 
 GrGeomOctree   *GrGeomOctreeFind(
-                                 int *         new_level,
-                                 GrGeomOctree *grgeom_octree_root,
-                                 int           ix,
-                                 int           iy,
-                                 int           iz,
-                                 int           level)
+  int *         new_level,
+  GrGeomOctree *grgeom_octree_root,
+  int           ix,
+  int           iy,
+  int           iz,
+  int           level)
 {
   GrGeomOctree *new_node;
   unsigned int xbits, ybits, zbits;
@@ -215,7 +215,7 @@ GrGeomOctree   *GrGeomOctreeFind(
 
   /* if ix, iy, iz is "out of range", return */
   if ((ix < 0) || (iy < 0) || (iz < 0) ||
-      (ix > num_indices) || (iy > num_indices) || (iz > num_indices))
+    (ix > num_indices) || (iy > num_indices) || (iz > num_indices))
   {
     *new_level = -1;
     return NULL;
@@ -324,12 +324,12 @@ GrGeomOctree   *GrGeomOctreeFind(
  *--------------------------------------------------------------------------*/
 
 GrGeomOctree   *GrGeomOctreeAddCell(
-                                    GrGeomOctree *grgeom_octree_root,
-                                    unsigned int  cell,
-                                    int           ix,
-                                    int           iy,
-                                    int           iz,
-                                    int           level)
+  GrGeomOctree *grgeom_octree_root,
+  unsigned int  cell,
+  int           ix,
+  int           iy,
+  int           iz,
+  int           level)
 {
   GrGeomOctree *current_node;
   unsigned int xbits, ybits, zbits;
@@ -439,15 +439,15 @@ GrGeomOctree   *GrGeomOctreeAddCell(
  *--------------------------------------------------------------------------*/
 
 GrGeomOctree   *GrGeomOctreeAddFace(
-                                    GrGeomOctree *grgeom_octree_root,
-                                    int           line_direction,
-                                    int           cell_index0,
-                                    int           cell_index1,
-                                    int           face_index,
-                                    int           extent_lower,
-                                    int           extent_upper,
-                                    int           level,
-                                    int           normal_in_direction)
+  GrGeomOctree *grgeom_octree_root,
+  int           line_direction,
+  int           cell_index0,
+  int           cell_index1,
+  int           face_index,
+  int           extent_lower,
+  int           extent_upper,
+  int           level,
+  int           normal_in_direction)
 {
   GrGeomOctree *current_node = NULL;
   int ix = 0, iy = 0, iz = 0, cell_index;
@@ -496,7 +496,7 @@ GrGeomOctree   *GrGeomOctreeAddFace(
       cell = GrGeomOctreeNodeInside;
 
     current_node = GrGeomOctreeAddCell(grgeom_octree_root,
-                                       cell, ix, iy, iz, level);
+        cell, ix, iy, iz, level);
 
     GrGeomOctreeSetFace(current_node, face);
   }
@@ -527,7 +527,7 @@ GrGeomOctree   *GrGeomOctreeAddFace(
       cell = GrGeomOctreeNodeOutside;
 
     current_node = GrGeomOctreeAddCell(grgeom_octree_root,
-                                       cell, ix, iy, iz, level);
+        cell, ix, iy, iz, level);
 
     GrGeomOctreeSetFace(current_node, face);
   }
@@ -541,21 +541,21 @@ GrGeomOctree   *GrGeomOctreeAddFace(
  *--------------------------------------------------------------------------*/
 
 void GrGeomOctreeFromTIN(
-                         GrGeomOctree **    solid_octree_ptr,
-                         GrGeomOctree ***   patch_octrees_ptr,
-                         GeomTIN *          solid,
-                         int **             patches,
-                         int                num_patches,
-                         int *              num_patch_triangles,
-                         GrGeomExtentArray *extent_array,
-                         double             xlower,
-                         double             ylower,
-                         double             zlower,
-                         double             xupper,
-                         double             yupper,
-                         double             zupper,
-                         int                min_level,
-                         int                max_level)
+  GrGeomOctree **    solid_octree_ptr,
+  GrGeomOctree ***   patch_octrees_ptr,
+  GeomTIN *          solid,
+  int **             patches,
+  int                num_patches,
+  int *              num_patch_triangles,
+  GrGeomExtentArray *extent_array,
+  double             xlower,
+  double             ylower,
+  double             zlower,
+  double             xupper,
+  double             yupper,
+  double             zupper,
+  int                min_level,
+  int                max_level)
 {
   GrGeomOctree  *solid_octree;
   GrGeomOctree **patch_octrees;
@@ -808,10 +808,10 @@ void GrGeomOctreeFromTIN(
           x_center = xlower + i * dx_lines;
           y_center = ylower + j * dy_lines;
           IntersectLineWithTriangle(ZDIRECTION, x_center, y_center,
-                                    v0_x, v0_y, v0_z,
-                                    v1_x, v1_y, v1_z,
-                                    v2_x, v2_y, v2_z,
-                                    &intersects, &point, &component);
+            v0_x, v0_y, v0_z,
+            v1_x, v1_y, v1_z,
+            v2_x, v2_y, v2_z,
+            &intersects, &point, &component);
           if (intersects)
           {
             iprime = i - ixl_lines[ie];
@@ -834,10 +834,10 @@ void GrGeomOctreeFromTIN(
           x_center = xlower + i * dx_lines;
           z_center = zlower + k * dz_lines;
           IntersectLineWithTriangle(YDIRECTION, x_center, z_center,
-                                    v0_x, v0_y, v0_z,
-                                    v1_x, v1_y, v1_z,
-                                    v2_x, v2_y, v2_z,
-                                    &intersects, &point, &component);
+            v0_x, v0_y, v0_z,
+            v1_x, v1_y, v1_z,
+            v2_x, v2_y, v2_z,
+            &intersects, &point, &component);
           if (intersects)
           {
             iprime = i - ixl_lines[ie];
@@ -860,10 +860,10 @@ void GrGeomOctreeFromTIN(
           y_center = ylower + j * dy_lines;
           z_center = zlower + k * dz_lines;
           IntersectLineWithTriangle(XDIRECTION, y_center, z_center,
-                                    v0_x, v0_y, v0_z,
-                                    v1_x, v1_y, v1_z,
-                                    v2_x, v2_y, v2_z,
-                                    &intersects, &point, &component);
+            v0_x, v0_y, v0_z,
+            v1_x, v1_y, v1_z,
+            v2_x, v2_y, v2_z,
+            &intersects, &point, &component);
           if (intersects)
           {
             jprime = j - iyl_lines[ie];
@@ -955,7 +955,7 @@ void GrGeomOctreeFromTIN(
             if (ListValueLEPoint(current_member, z_upper))
             {
               while (ListValueInClosedInterval(current_member,
-                                               z_lower, z_upper))
+                z_lower, z_upper))
               {
                 if (ListValueGTPoint(current_member, z_center))
                 {
@@ -1003,16 +1003,16 @@ void GrGeomOctreeFromTIN(
             if (edge_tag[k] != 0)
             {
               GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
-                                  i, j, k, iz_lower, iz_upper, level,
-                                  edge_tag[k]);
+                i, j, k, iz_lower, iz_upper, level,
+                edge_tag[k]);
 
               t = triangle_tag[k];
               for (p = 0; p < patch_table_len[t]; p++)
               {
                 patch_octree = patch_octrees[patch_table[t][p]];
                 GrGeomOctreeAddFace(patch_octree, ZDIRECTION,
-                                    i, j, k, iz_lower, iz_upper, level,
-                                    edge_tag[k]);
+                  i, j, k, iz_lower, iz_upper, level,
+                  edge_tag[k]);
               }
             }
           }
@@ -1064,7 +1064,7 @@ void GrGeomOctreeFromTIN(
             if (ListValueLEPoint(current_member, y_upper))
             {
               while (ListValueInClosedInterval(current_member,
-                                               y_lower, y_upper))
+                y_lower, y_upper))
               {
                 if (ListValueGTPoint(current_member, y_center))
                 {
@@ -1111,16 +1111,16 @@ void GrGeomOctreeFromTIN(
             if (edge_tag[j] != 0)
             {
               GrGeomOctreeAddFace(solid_octree, YDIRECTION,
-                                  i, k, j, iy_lower, iy_upper, level,
-                                  edge_tag[j]);
+                i, k, j, iy_lower, iy_upper, level,
+                edge_tag[j]);
 
               t = triangle_tag[j];
               for (p = 0; p < patch_table_len[t]; p++)
               {
                 patch_octree = patch_octrees[patch_table[t][p]];
                 GrGeomOctreeAddFace(patch_octree, YDIRECTION,
-                                    i, k, j, iy_lower, iy_upper, level,
-                                    edge_tag[j]);
+                  i, k, j, iy_lower, iy_upper, level,
+                  edge_tag[j]);
               }
             }
           }
@@ -1172,7 +1172,7 @@ void GrGeomOctreeFromTIN(
             if (ListValueLEPoint(current_member, x_upper))
             {
               while (ListValueInClosedInterval(current_member,
-                                               x_lower, x_upper))
+                x_lower, x_upper))
               {
                 if (ListValueGTPoint(current_member, x_center))
                 {
@@ -1219,16 +1219,16 @@ void GrGeomOctreeFromTIN(
             if (edge_tag[i] != 0)
             {
               GrGeomOctreeAddFace(solid_octree, XDIRECTION,
-                                  j, k, i, ix_lower, ix_upper, level,
-                                  edge_tag[i]);
+                j, k, i, ix_lower, ix_upper, level,
+                edge_tag[i]);
 
               t = triangle_tag[i];
               for (p = 0; p < patch_table_len[t]; p++)
               {
                 patch_octree = patch_octrees[patch_table[t][p]];
                 GrGeomOctreeAddFace(patch_octree, XDIRECTION,
-                                    j, k, i, ix_lower, ix_upper, level,
-                                    edge_tag[i]);
+                  j, k, i, ix_lower, ix_upper, level,
+                  edge_tag[i]);
               }
             }
           }
@@ -1321,7 +1321,7 @@ void GrGeomOctreeFromTIN(
             if (ListValueLEPoint(current_member, z_upper))
             {
               while (ListValueInClosedInterval(current_member,
-                                               z_lower, z_upper))
+                z_lower, z_upper))
               {
                 if (ListValueGTPoint(current_member, z_center))
                 {
@@ -1540,19 +1540,19 @@ void GrGeomOctreeFromTIN(
  *--------------------------------------------------------------------------*/
 
 void    GrGeomOctreeFromInd(
-                            GrGeomOctree **solid_octree_ptr,
-                            Vector *       indicator_field,
-                            int            indicator,
-                            double         xlower,
-                            double         ylower,
-                            double         zlower,
-                            double         xupper,
-                            double         yupper,
-                            double         zupper,
-                            int            octree_bg_level,
-                            int            octree_ix,
-                            int            octree_iy,
-                            int            octree_iz)
+  GrGeomOctree **solid_octree_ptr,
+  Vector *       indicator_field,
+  int            indicator,
+  double         xlower,
+  double         ylower,
+  double         zlower,
+  double         xupper,
+  double         yupper,
+  double         zupper,
+  int            octree_bg_level,
+  int            octree_ix,
+  int            octree_iy,
+  int            octree_iz)
 {
   Grid           *grid = VectorGrid(indicator_field);
 
@@ -1659,7 +1659,7 @@ void    GrGeomOctreeFromInd(
 
         const int nx_f = SubvectorNX(subvector);
         const int ny_f = SubvectorNY(subvector);
-	const int nz_f = SubvectorNZ(subvector);
+        const int nz_f = SubvectorNZ(subvector);
 
         data = SubvectorElt(subvector, ix_all, iy_all, iz_all);
 
@@ -1667,8 +1667,8 @@ void    GrGeomOctreeFromInd(
         ind = ctalloc(int, nx_all * ny_all * nz_all);
         fi = 0;
         BoxLoopI1(i, j, k,
-                  ix_all, iy_all, iz_all, nx_all, ny_all, nz_all,
-                  fi, nx_f, ny_f, nz_f, 1, 1, 1,
+          ix_all, iy_all, iz_all, nx_all, ny_all, nz_all,
+          fi, nx_f, ny_f, nz_f, 1, 1, 1,
         {
           iprime = i - ix_all;
           jprime = j - iy_all;
@@ -1743,12 +1743,12 @@ void    GrGeomOctreeFromInd(
 
               {
                 GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
-                                    (i - ((int)(octree_ix / inc))),
-                                    (j - ((int)(octree_iy / inc))),
-                                    ((iz_all + k + 1) - ((int)(octree_iz / inc))),
-                                    k_begin, k_end,
-                                    level,
-                                    edge_tag[k]);
+                  (i - ((int)(octree_ix / inc))),
+                  (j - ((int)(octree_iy / inc))),
+                  ((iz_all + k + 1) - ((int)(octree_iz / inc))),
+                  k_begin, k_end,
+                  level,
+                  edge_tag[k]);
               }
             }
           }
@@ -1799,12 +1799,12 @@ void    GrGeomOctreeFromInd(
               if (edge_tag[j] != 0)
               {
                 GrGeomOctreeAddFace(solid_octree, YDIRECTION,
-                                    (i - ((int)(octree_ix / inc))),
-                                    (k - ((int)(octree_iz / inc))),
-                                    (iy_all + j + 1 - ((int)(octree_iy / inc))),
-                                    j_begin, j_end,
-                                    level,
-                                    edge_tag[j]);
+                  (i - ((int)(octree_ix / inc))),
+                  (k - ((int)(octree_iz / inc))),
+                  (iy_all + j + 1 - ((int)(octree_iy / inc))),
+                  j_begin, j_end,
+                  level,
+                  edge_tag[j]);
               }
             }
           }
@@ -1855,12 +1855,12 @@ void    GrGeomOctreeFromInd(
               if (edge_tag[i] != 0)
               {
                 GrGeomOctreeAddFace(solid_octree, XDIRECTION,
-                                    (j - ((int)(octree_iy / inc))),
-                                    (k - ((int)(octree_iz / inc))),
-                                    (ix_all + i + 1 - ((int)(octree_ix / inc))),
-                                    i_begin, i_end,
-                                    level,
-                                    edge_tag[i]);
+                  (j - ((int)(octree_iy / inc))),
+                  (k - ((int)(octree_iz / inc))),
+                  (ix_all + i + 1 - ((int)(octree_ix / inc))),
+                  i_begin, i_end,
+                  level,
+                  edge_tag[i]);
               }
             }
           }
@@ -1896,11 +1896,11 @@ void    GrGeomOctreeFromInd(
               {
                 /* try to find the (i, j, k, level) octree node */
                 grgeom_octree = GrGeomOctreeFind(&new_level,
-                                                 solid_octree,
-                                                 (i - ((int)(octree_ix / inc))),
-                                                 (j - ((int)(octree_iy / inc))),
-                                                 (k - ((int)(octree_iz / inc))),
-                                                 level);
+                    solid_octree,
+                    (i - ((int)(octree_ix / inc))),
+                    (j - ((int)(octree_iy / inc))),
+                    (k - ((int)(octree_iz / inc))),
+                    level);
 
                 /* Only change non-`Full' cells */
                 if (!GrGeomOctreeNodeIsFull(grgeom_octree))
@@ -2070,12 +2070,12 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
           }
 
           empty[l] &= ((outside[child_level] | empty[child_level])
-                       & !inside[child_level]);
+            & !inside[child_level]);
 
           outside[l] |= outside[child_level];
           inside[l] |= inside[child_level];
           full[l] &= ((inside[child_level] | full[child_level])
-                      & !outside[child_level]);
+            & !outside[child_level]);
 
           // Reset child level just visited for next traversal to that level
           empty[child_level] = TRUE;
@@ -2113,8 +2113,8 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
  *--------------------------------------------------------------------------*/
 
 void          GrGeomPrintOctreeStruc(
-                                     amps_File     file,
-                                     GrGeomOctree *grgeom_octree)
+  amps_File     file,
+  GrGeomOctree *grgeom_octree)
 {
   int i;
 
@@ -2236,10 +2236,10 @@ void          GrGeomPrintOctreeStruc(
  *--------------------------------------------------------------------------*/
 
 int           GrGeomPrintOctreeLevel(
-                                     amps_File     file,
-                                     GrGeomOctree *grgeom_octree,
-                                     int           level,
-                                     int           current_level)
+  amps_File     file,
+  GrGeomOctree *grgeom_octree,
+  int           level,
+  int           current_level)
 {
   int i;
 
@@ -2258,7 +2258,7 @@ int           GrGeomPrintOctreeLevel(
     {
       ret =
         GrGeomPrintOctreeLevel(file, GrGeomOctreeChild(grgeom_octree, i),
-                               level, current_level + 1);
+          level, current_level + 1);
       if (ret)
         level_printed = TRUE;
     }
@@ -2273,8 +2273,8 @@ int           GrGeomPrintOctreeLevel(
  *--------------------------------------------------------------------------*/
 
 void          GrGeomPrintOctree(
-                                char *        filename,
-                                GrGeomOctree *grgeom_octree_root)
+  char *        filename,
+  GrGeomOctree *grgeom_octree_root)
 {
   amps_File file;
 
@@ -2307,9 +2307,9 @@ void          GrGeomPrintOctree(
  *--------------------------------------------------------------------------*/
 
 void          GrGeomPrintOctreeCells(
-                                     char *        filename,
-                                     GrGeomOctree *octree,
-                                     int           last_level)
+  char *        filename,
+  GrGeomOctree *octree,
+  int           last_level)
 {
   amps_File file;
 
@@ -2334,21 +2334,21 @@ void          GrGeomPrintOctreeCells(
 
       switch (cell)
       {
-        case GrGeomOctreeNodeEmpty:
-          amps_Fprintf(file, "Empty\n");
-          break;
+          case GrGeomOctreeNodeEmpty:
+            amps_Fprintf(file, "Empty\n");
+            break;
 
-        case GrGeomOctreeNodeOutside:
-          amps_Fprintf(file, "Outside\n");
-          break;
+          case GrGeomOctreeNodeOutside:
+            amps_Fprintf(file, "Outside\n");
+            break;
 
-        case GrGeomOctreeNodeInside:
-          amps_Fprintf(file, "Inside\n");
-          break;
+          case GrGeomOctreeNodeInside:
+            amps_Fprintf(file, "Inside\n");
+            break;
 
-        case GrGeomOctreeNodeFull:
-          amps_Fprintf(file, "Full\n");
-          break;
+          case GrGeomOctreeNodeFull:
+            amps_Fprintf(file, "Full\n");
+            break;
       }
     },
     {
@@ -2358,21 +2358,21 @@ void          GrGeomPrintOctreeCells(
 
       switch (cell)
       {
-        case GrGeomOctreeNodeEmpty:
-          amps_Fprintf(file, "Empty\n");
-          break;
+          case GrGeomOctreeNodeEmpty:
+            amps_Fprintf(file, "Empty\n");
+            break;
 
-        case GrGeomOctreeNodeOutside:
-          amps_Fprintf(file, "Outside\n");
-          break;
+          case GrGeomOctreeNodeOutside:
+            amps_Fprintf(file, "Outside\n");
+            break;
 
-        case GrGeomOctreeNodeInside:
-          amps_Fprintf(file, "Inside\n");
-          break;
+          case GrGeomOctreeNodeInside:
+            amps_Fprintf(file, "Inside\n");
+            break;
 
-        case GrGeomOctreeNodeFull:
-          amps_Fprintf(file, "Full\n");
-          break;
+          case GrGeomOctreeNodeFull:
+            amps_Fprintf(file, "Full\n");
+            break;
       }
     });
   }

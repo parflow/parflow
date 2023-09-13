@@ -48,14 +48,14 @@ cJSON* js_domains = NULL;
 // Print a message on rank 0 and return 0. Note that ##__VA_ARGS__ is
 // used to allow an empty __VA_ARGS__ , which is not standard but is
 // supported by most major compilers (clang, gcc, msvc).
-#define METADATA_ERROR(message, ...) \
-  { \
-    if (!amps_Rank(amps_CommWorld) && message && message[0]) \
-    { \
-      amps_Printf(message, ##__VA_ARGS__ ); \
-    } \
-    return 0; \
-  }
+#define METADATA_ERROR(message, ...)                               \
+        {                                                          \
+          if (!amps_Rank(amps_CommWorld) && message && message[0]) \
+          {                                                        \
+            amps_Printf(message, ## __VA_ARGS__);                  \
+          }                                                        \
+          return 0;                                                \
+        }
 
 static void MetadataAddParflowBuildInfo(cJSON* pf)
 {
@@ -63,9 +63,9 @@ static void MetadataAddParflowBuildInfo(cJSON* pf)
 
   cJSON_AddItemToObject(pf, "build", build);
   cJSON_AddItemToObject(build, "version",
-                        cJSON_CreateString(PARFLOW_VERSION_STRING));
+    cJSON_CreateString(PARFLOW_VERSION_STRING));
   cJSON_AddItemToObject(build, "compiled",
-                        cJSON_CreateString(__DATE__ " " __TIME__));
+    cJSON_CreateString(__DATE__ " " __TIME__));
 }
 
 void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
@@ -125,22 +125,22 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   cJSON* topsurf = cJSON_CreateObject();
   cJSON_AddItemToObject(pf, "surface", topsurf);
   cJSON_AddItemToObject(topsurf, "cell-extent",
-                        cJSON_CreateIntArray(extent, 2));
+    cJSON_CreateIntArray(extent, 2));
   cJSON_AddItemToObject(topsurf, "spacing",
-                        cJSON_CreateDoubleArray(spacing, 3));
+    cJSON_CreateDoubleArray(spacing, 3));
   cJSON_AddItemToObject(topsurf, "origin",
-                        cJSON_CreateDoubleArray(topOrigin, 3));
+    cJSON_CreateDoubleArray(topOrigin, 3));
   cJSON* topSGD = cJSON_CreateArray();
   cJSON_AddItemToObject(topsurf, "subgrid-divisions", topSGD);
 
   cJSON* subsurf = cJSON_CreateObject();
   cJSON_AddItemToObject(pf, "subsurface", subsurf);
   cJSON_AddItemToObject(subsurf, "cell-extent",
-                        cJSON_CreateIntArray(extent, 3));
+    cJSON_CreateIntArray(extent, 3));
   cJSON_AddItemToObject(subsurf, "spacing",
-                        cJSON_CreateDoubleArray(spacing, 3));
+    cJSON_CreateDoubleArray(spacing, 3));
   cJSON_AddItemToObject(subsurf, "origin",
-                        cJSON_CreateDoubleArray(subOrigin, 3));
+    cJSON_CreateDoubleArray(subOrigin, 3));
   cJSON* subSGD = cJSON_CreateArray();
   cJSON_AddItemToObject(subsurf, "subgrid-divisions", subSGD);
 
@@ -361,22 +361,22 @@ int MetaDataHasField(cJSON* node, const char* fieldName)
 }
 
 int MetadataAddStaticField(
-                           MetadataItem parent,
-                           const char*  file_prefix,
-                           const char*  field_name,
-                           const char*  field_units,
-                           const char*  field_placement,
-                           const char*  field_domain,
-                           int          num_field_components,
-                           const char** field_component_postfixes)
+  MetadataItem parent,
+  const char*  file_prefix,
+  const char*  field_name,
+  const char*  field_units,
+  const char*  field_placement,
+  const char*  field_domain,
+  int          num_field_components,
+  const char** field_component_postfixes)
 {
   int ii;
 
   if (
-      num_field_components <= 0 ||
-      !file_prefix || !field_name ||
-      !field_placement || !field_domain ||
-      !field_component_postfixes)
+    num_field_components <= 0 ||
+    !file_prefix || !field_name ||
+    !field_placement || !field_domain ||
+    !field_component_postfixes)
   {
     return 0;
   }
@@ -416,23 +416,23 @@ int MetadataAddStaticField(
 }
 
 int MetadataAddDynamicField(
-                            MetadataItem parent,
-                            const char*  file_prefix,
-                            double       time,
-                            int          step,
-                            const char*  field_name,
-                            const char*  field_units,
-                            const char*  field_placement,
-                            const char*  field_domain,
-                            int          num_field_components,
-                            const char** field_component_postfixes)
+  MetadataItem parent,
+  const char*  file_prefix,
+  double       time,
+  int          step,
+  const char*  field_name,
+  const char*  field_units,
+  const char*  field_placement,
+  const char*  field_domain,
+  int          num_field_components,
+  const char** field_component_postfixes)
 {
   (void)time;
 
   int ii;
   if (
-      !file_prefix || !field_name ||
-      !field_placement || !field_domain)
+    !file_prefix || !field_name ||
+    !field_placement || !field_domain)
   {
     return 0;
   }
@@ -440,12 +440,12 @@ int MetadataAddDynamicField(
   if (!field_item)
   { // We truly are adding the field for the first time:
     if (
-        num_field_components <= 0 ||
-        !field_component_postfixes)
+      num_field_components <= 0 ||
+      !field_component_postfixes)
     {
       fprintf(stderr,
-              "No components provided for initial addition of field \"%s\"\n",
-              field_name);
+        "No components provided for initial addition of field \"%s\"\n",
+        field_name);
       return 0;
     }
     field_item = cJSON_CreateObject();
@@ -495,48 +495,48 @@ int MetadataAddDynamicField(
     cJSON* fdata;
     cJSON* fentry;
     if (
-        !(checkType = cJSON_GetObjectItem(field_item, "type")) ||
-        checkType->type != cJSON_String ||
-        !checkType->valuestring ||
-        strcmp(checkType->valuestring, "pfb"))
+      !(checkType = cJSON_GetObjectItem(field_item, "type")) ||
+      checkType->type != cJSON_String ||
+      !checkType->valuestring ||
+      strcmp(checkType->valuestring, "pfb"))
     {
       fprintf(stderr, "Trying to change type from %s to pfb\n", checkType->valuestring);
       return 0;
     }
 
     if (
-        !(checkPlace = cJSON_GetObjectItem(field_item, "place")) ||
-        checkPlace->type != cJSON_String ||
-        !checkPlace->valuestring ||
-        strcmp(checkPlace->valuestring, field_placement))
+      !(checkPlace = cJSON_GetObjectItem(field_item, "place")) ||
+      checkPlace->type != cJSON_String ||
+      !checkPlace->valuestring ||
+      strcmp(checkPlace->valuestring, field_placement))
     {
       fprintf(stderr, "Trying to change type from \"%s\" to \"%s\"\n",
-              checkPlace->valuestring, field_placement);
+        checkPlace->valuestring, field_placement);
       return 0;
     }
 
     if (
-        !(checkDomain = cJSON_GetObjectItem(field_item, "domain")) ||
-        checkDomain->type != cJSON_String ||
-        !checkDomain->valuestring ||
-        strcmp(checkDomain->valuestring, field_domain))
+      !(checkDomain = cJSON_GetObjectItem(field_item, "domain")) ||
+      checkDomain->type != cJSON_String ||
+      !checkDomain->valuestring ||
+      strcmp(checkDomain->valuestring, field_domain))
     {
       fprintf(stderr, "Trying to change type from \"%s\" to \"%s\"\n",
-              checkDomain->valuestring, field_domain);
+        checkDomain->valuestring, field_domain);
       return 0;
     }
 
     if (
-        !(checkTimeVarying = cJSON_GetObjectItem(field_item, "time-varying")) ||
-        checkTimeVarying->type != cJSON_True)
+      !(checkTimeVarying = cJSON_GetObjectItem(field_item, "time-varying")) ||
+      checkTimeVarying->type != cJSON_True)
     {
       fprintf(stderr, "Trying to change field from static to time-varying\n");
       return 0;
     }
 
     if (
-        !(fdata = cJSON_GetObjectItem(field_item, "data")) ||
-        fdata->type != cJSON_Array)
+      !(fdata = cJSON_GetObjectItem(field_item, "data")) ||
+      fdata->type != cJSON_Array)
     {
       fprintf(stderr, "File data not present or wrong type\n");
       return 0;
@@ -547,13 +547,13 @@ int MetadataAddDynamicField(
     {
       cJSON* times;
       if (
-          fentry->type != cJSON_Object ||
-          !cJSON_GetObjectItem(fentry, "file-series") ||
-          !(times = cJSON_GetObjectItem(fentry, "time-range")) ||
-          times->type != cJSON_Array ||
-          !times->child || !times->child->next ||
-          times->child->next->type != cJSON_Number
-          )
+        fentry->type != cJSON_Object ||
+        !cJSON_GetObjectItem(fentry, "file-series") ||
+        !(times = cJSON_GetObjectItem(fentry, "time-range")) ||
+        times->type != cJSON_Array ||
+        !times->child || !times->child->next ||
+        times->child->next->type != cJSON_Number
+        )
       {
         continue;
       }
@@ -571,21 +571,21 @@ int MetadataAddDynamicField(
 // ahead of time which time steps are available (or at least
 // have been specified as available).
 int MetadataAddForcingField(
-                            cJSON*       parent,
-                            const char*  field_name,
-                            const char*  field_units,
-                            const char*  field_placement,
-                            const char*  field_domain,
-                            int          clm_metforce,
-                            int          clm_metsub,
-                            const char*  clm_metpath,
-                            const char*  clm_metfile,
-                            int          clm_istep_start,
-                            int          clm_fstep_start,
-                            int          clm_metnt,
-                            size_t       num_field_components,
-                            const char** field_component_postfixes
-                            )
+  cJSON*       parent,
+  const char*  field_name,
+  const char*  field_units,
+  const char*  field_placement,
+  const char*  field_domain,
+  int          clm_metforce,
+  int          clm_metsub,
+  const char*  clm_metpath,
+  const char*  clm_metfile,
+  int          clm_istep_start,
+  int          clm_fstep_start,
+  int          clm_metnt,
+  size_t       num_field_components,
+  const char** field_component_postfixes
+  )
 {
   int ii;
 
@@ -674,14 +674,14 @@ int MetadataAddForcingField(
       if (clm_metsub)
       {
         snprintf(temp, 2047, "%s/%s/%s.%s.%%06d.pfb",
-                 clm_metpath, field_component_postfixes[ii],
-                 clm_metfile, field_component_postfixes[ii]
-                 );
+          clm_metpath, field_component_postfixes[ii],
+          clm_metfile, field_component_postfixes[ii]
+          );
       }
       else
       {
         snprintf(temp, 2047, "%s/%s.%s.%%06d.pfb",
-                 clm_metpath, clm_metfile, field_component_postfixes[ii]);
+          clm_metpath, clm_metfile, field_component_postfixes[ii]);
       }
     }
     else // if clm_metforce == 3
@@ -692,15 +692,15 @@ int MetadataAddForcingField(
       if (clm_metsub)
       {
         snprintf(temp, 2047, "%s/%s/%s.%s.%%06d_to_%%06d.pfb",
-                 clm_metpath, field_component_postfixes[ii],
-                 clm_metfile, field_component_postfixes[ii]
-                 );
+          clm_metpath, field_component_postfixes[ii],
+          clm_metfile, field_component_postfixes[ii]
+          );
       }
       else
       {
         snprintf(temp, 2047, "%s/%s.%s.%%06d_to_%%06d.pfb",
-                 clm_metpath, clm_metfile, field_component_postfixes[ii]
-                 );
+          clm_metpath, clm_metfile, field_component_postfixes[ii]
+          );
       }
     }
     cJSON_AddItemToObject(file_descr, "file-series", cJSON_CreateString(temp));
@@ -726,10 +726,10 @@ int MetadataAddForcingField(
 }
 
 int MetadataUpdateForcingField(
-                               cJSON*      parent,
-                               const char* field_name,
-                               int         update_timestep
-                               )
+  cJSON*      parent,
+  const char* field_name,
+  int         update_timestep
+  )
 {
   if (!parent || !field_name)
   {
@@ -744,8 +744,8 @@ int MetadataUpdateForcingField(
   cJSON* fdata;
   cJSON* fentry;
   if (
-      !(fdata = cJSON_GetObjectItem(field_item, "data")) ||
-      fdata->type != cJSON_Array)
+    !(fdata = cJSON_GetObjectItem(field_item, "data")) ||
+    fdata->type != cJSON_Array)
   {
     fprintf(stderr, "File data not present or wrong type\n");
     return 0;
@@ -756,19 +756,19 @@ int MetadataUpdateForcingField(
   {
     cJSON* times;
     if (
-        fentry->type != cJSON_Object ||
-        !cJSON_GetObjectItem(fentry, "file-series"))
+      fentry->type != cJSON_Object ||
+      !cJSON_GetObjectItem(fentry, "file-series"))
     {
       continue;
     }
     // FIXME: Handle skipped-step and variable-size steps/dumps?
     if (
-        (times = cJSON_GetObjectItem(fentry, "time-range")) &&
-        times->type == cJSON_Array &&
-        times->child && times->child->next &&
-        times->child->type == cJSON_Number &&
-        times->child->next->type == cJSON_Number
-        )
+      (times = cJSON_GetObjectItem(fentry, "time-range")) &&
+      times->type == cJSON_Array &&
+      times->child && times->child->next &&
+      times->child->type == cJSON_Number &&
+      times->child->next->type == cJSON_Number
+      )
     {
       // This is kinda hackish, but much more efficient than cJSON_ReplaceItemInArray():
       if (update_timestep < times->child->valueint)
@@ -783,12 +783,12 @@ int MetadataUpdateForcingField(
       }
     }
     else if (
-             (times = cJSON_GetObjectItem(fentry, "times-between")) &&
-             times->type == cJSON_Array &&
-             times->child && times->child->next && times->child->next->next &&
-             times->child->type == cJSON_Number &&
-             times->child->next->type == cJSON_Number
-             )
+      (times = cJSON_GetObjectItem(fentry, "times-between")) &&
+      times->type == cJSON_Array &&
+      times->child && times->child->next && times->child->next->next &&
+      times->child->type == cJSON_Number &&
+      times->child->next->type == cJSON_Number
+      )
     {
       // This is kinda hackish, but much more efficient than cJSON_ReplaceItemInArray():
       if (update_timestep < times->child->valueint)

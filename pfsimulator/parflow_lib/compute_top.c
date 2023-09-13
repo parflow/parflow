@@ -42,9 +42,9 @@
 
 #include "parflow.h"
 
-void ComputeTop(Problem *    problem,      /* General problem information */
-                ProblemData *problem_data  /* Contains geometry information for the problem */
-                )
+void ComputeTop(Problem * problem,         /* General problem information */
+  ProblemData *           problem_data     /* Contains geometry information for the problem */
+  )
 {
   GrGeomSolid   *gr_solid = ProblemDataGrDomain(problem_data);
   Vector        *top = ProblemDataIndexOfDomainTop(problem_data);
@@ -92,9 +92,9 @@ void ComputeTop(Problem *    problem,      /* General problem information */
 
     int i, j, k;
     GrGeomInLoop(i, j, k,
-                 gr_solid, grid3d_r,
-                 grid3d_ix, grid3d_iy, grid3d_iz,
-                 grid3d_nx, grid3d_ny, grid3d_nz,
+      gr_solid, grid3d_r,
+      grid3d_ix, grid3d_iy, grid3d_iz,
+      grid3d_nx, grid3d_ny, grid3d_nz,
     {
       index = SubvectorEltIndex(top_subvector, i, j, grid2d_iz);
 

@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
   /* SGS order of args */
   invoice = amps_NewInvoice("%&.&D(*)", &len_array, &stride_array,
-                            dim, vector);
+      dim, vector);
 
   num = amps_Size(amps_CommWorld);
 
@@ -119,9 +119,9 @@ int main(int argc, char *argv[])
         for (i = 0; i < v1_len; i++)
         {
           index = k *
-                  (((v1_len - 1) * v1_stride) * v2_len + v2_stride * (v2_len - 1)
-                   + v3_stride)
-                  + j * ((v1_len - 1) * v1_stride + v2_stride) + i * (v1_stride);
+            (((v1_len - 1) * v1_stride) * v2_len + v2_stride * (v2_len - 1)
+            + v3_stride)
+            + j * ((v1_len - 1) * v1_stride + v2_stride) + i * (v1_stride);
 
           if (vector[index] != index)
             result = 1;

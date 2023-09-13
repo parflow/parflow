@@ -29,10 +29,10 @@
 #include "amps.h"
 
 int amps_xsend(
-               amps_Comm    comm,
-               int          dest,
-               amps_Invoice invoice,
-               char *       buffer)
+  amps_Comm    comm,
+  int          dest,
+  amps_Invoice invoice,
+  char *       buffer)
 {
   amps_create_mpi_cont_send_type(comm, invoice);
 

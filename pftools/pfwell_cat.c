@@ -29,8 +29,8 @@
 #include "pfwell_cat.h"
 
 int main(
-         int   argc,
-         char *argv[])
+  int   argc,
+  char *argv[])
 {
   Background       *background;
   ProblemData      *problem_data;
@@ -117,26 +117,26 @@ int main(
           PrintWellDataPhysical(well_physical);
 
           ReadWellDataValue(fd,
-                            well_value,
-                            well_action[well],
-                            well_type[well],
-                            num_phases,
-                            num_components);
+            well_value,
+            well_action[well],
+            well_type[well],
+            num_phases,
+            num_components);
 
           PrintWellDataValue(well_value,
-                             well_action[well],
-                             well_type[well],
-                             num_phases,
-                             num_components);
+            well_action[well],
+            well_type[well],
+            num_phases,
+            num_components);
 
           ReadWellDataStat(fd,
-                           well_stats[well],
-                           num_phases,
-                           num_components);
+            well_stats[well],
+            num_phases,
+            num_components);
 
           PrintWellDataStat(well_stats[well],
-                            num_phases,
-                            num_components);
+            num_phases,
+            num_components);
         }
       }
     }
@@ -149,9 +149,9 @@ int main(
     for (well = 0; well < num_wells; well++)
     {
       CopyWellDataStat(well_stats_save[well],
-                       well_stats[well],
-                       num_phases,
-                       num_components);
+        well_stats[well],
+        num_phases,
+        num_components);
     }
 
     fclose(fd);
@@ -202,35 +202,35 @@ int main(
             }
 
             ReadWellDataValue(fd,
-                              well_value,
-                              well_action[well],
-                              well_type[well],
-                              num_phases,
-                              num_components);
+              well_value,
+              well_action[well],
+              well_type[well],
+              num_phases,
+              num_components);
 
             if (write_data)
             {
               PrintWellDataValue(well_value,
-                                 well_action[well],
-                                 well_type[well],
-                                 num_phases,
-                                 num_components);
+                well_action[well],
+                well_type[well],
+                num_phases,
+                num_components);
             }
 
             ReadWellDataStat(fd,
-                             well_stats[well],
-                             num_phases,
-                             num_components);
+              well_stats[well],
+              num_phases,
+              num_components);
 
             if (write_data)
             {
               UpdateWellDataStat(well_stats[well],
-                                 well_stats_save[well],
-                                 num_phases,
-                                 num_components);
+                well_stats_save[well],
+                num_phases,
+                num_components);
               PrintWellDataStat(well_stats[well],
-                                num_phases,
-                                num_components);
+                num_phases,
+                num_components);
             }
           }
           write_data = 1;
@@ -245,9 +245,9 @@ int main(
         for (well = 0; well < num_wells; well++)
         {
           CopyWellDataStat(well_stats_save[well],
-                           well_stats[well],
-                           num_phases,
-                           num_components);
+            well_stats[well],
+            num_phases,
+            num_components);
         }
       }
 

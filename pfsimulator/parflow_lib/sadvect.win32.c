@@ -49,9 +49,9 @@ integer c__1 = 1;
 /*     Godunov advection routine */
 /* ---------------------------------------------------------------------- */
 /* Subroutine */ int sadvect_(s, sn, uedge, vedge, wedge, betaedge, phi,
-                              viscos, densty, gravty, slx, sly, slz, lohi, dlohi, hx, dt, sbot,
-                              stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, dxscr, dyscr, dzscr,
-                              dzfrm)
+  viscos, densty, gravty, slx, sly, slz, lohi, dlohi, hx, dt, sbot,
+  stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, dxscr, dyscr, dzscr,
+  dzfrm)
 doublereal * s, *sn, *uedge, *vedge, *wedge, *betaedge, *phi, *viscos, *densty,
 *gravty, *slx, *sly, *slz;
 integer *lohi, *dlohi;
@@ -145,37 +145,37 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
   phi_dim1 = dlohi[7] + 2 - (dlohi[4] - 2) + 1;
   phi_dim2 = dlohi[8] + 2 - (dlohi[5] - 2) + 1;
   phi_offset = dlohi[4] - 2 + phi_dim1 * (dlohi[5] - 2 + phi_dim2 * (dlohi[
-                                                                       6] - 2));
+      6] - 2));
   phi -= phi_offset;
   betaedge_dim1 = dlohi[7] + 2 - (dlohi[4] - 2) + 1;
   betaedge_dim2 = dlohi[8] + 2 - (dlohi[5] - 2) + 1;
   betaedge_offset = dlohi[4] - 2 + betaedge_dim1 * (dlohi[5] - 2 +
-                                                    betaedge_dim2 * (dlohi[6] - 2));
+    betaedge_dim2 * (dlohi[6] - 2));
   betaedge -= betaedge_offset;
   wedge_dim1 = dlohi[7] + 2 - (dlohi[4] - 2) + 1;
   wedge_dim2 = dlohi[8] + 2 - (dlohi[5] - 2) + 1;
   wedge_offset = dlohi[4] - 2 + wedge_dim1 * (dlohi[5] - 2 + wedge_dim2 * (
-                                                                           dlohi[6] - 2));
+    dlohi[6] - 2));
   wedge -= wedge_offset;
   vedge_dim1 = dlohi[7] + 1 - (dlohi[4] - 1) + 1;
   vedge_dim2 = dlohi[8] + 2 - (dlohi[5] - 1) + 1;
   vedge_offset = dlohi[4] - 1 + vedge_dim1 * (dlohi[5] - 1 + vedge_dim2 * (
-                                                                           dlohi[6] - 1));
+    dlohi[6] - 1));
   vedge -= vedge_offset;
   uedge_dim1 = dlohi[7] + 2 - (dlohi[4] - 1) + 1;
   uedge_dim2 = dlohi[8] + 1 - (dlohi[5] - 1) + 1;
   uedge_offset = dlohi[4] - 1 + uedge_dim1 * (dlohi[5] - 1 + uedge_dim2 * (
-                                                                           dlohi[6] - 1));
+    dlohi[6] - 1));
   uedge -= uedge_offset;
   sn_dim1 = dlohi[7] + 3 - (dlohi[4] - 3) + 1;
   sn_dim2 = dlohi[8] + 3 - (dlohi[5] - 3) + 1;
   sn_offset = dlohi[4] - 3 + sn_dim1 * (dlohi[5] - 3 + sn_dim2 * (dlohi[6]
-                                                                  - 3));
+    - 3));
   sn -= sn_offset;
   s_dim1 = dlohi[7] + 3 - (dlohi[4] - 3) + 1;
   s_dim2 = dlohi[8] + 3 - (dlohi[5] - 3) + 1;
   s_offset = dlohi[4] - 3 + s_dim1 * (dlohi[5] - 3 + s_dim2 * (dlohi[6] - 3)
-                                      );
+    );
   s -= s_offset;
   --hx;
 
@@ -225,9 +225,9 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
   {
     i__1 = ks - 1;
     sslopez_(&s[s_offset], &mu0, &mu1, &wedge[wedge_offset], &betaedge[
-               betaedge_offset], &beta, &slz[slz_offset], &i__1, &kc, &lohi[
-               4], &lohi[7], &dlohi[4], &dlohi[7], &dzscr[dzscr_offset], &
-             dzfrm[dzfrm_offset]);
+        betaedge_offset], &beta, &slz[slz_offset], &i__1, &kc, &lohi[
+        4], &lohi[7], &dlohi[4], &dlohi[7], &dzscr[dzscr_offset], &
+      dzfrm[dzfrm_offset]);
   }
   i__1 = ke + 1;
   for (k = ks - 1; k <= i__1; ++k)
@@ -235,15 +235,15 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
     if (!firstord)
     {
       sslopexy_(&s[s_offset], &mu0, &mu1, &slx[slx_offset], &sly[
-                  sly_offset], &k, &lohi[4], &lohi[7], &dlohi[4], &dlohi[7],
-                &dxscr[dxscr_offset], &dyscr[dyscr_offset]);
+          sly_offset], &k, &lohi[4], &lohi[7], &dlohi[4], &dlohi[7],
+        &dxscr[dxscr_offset], &dyscr[dyscr_offset]);
       if (k <= ke)
       {
         i__2 = k + 1;
         sslopez_(&s[s_offset], &mu0, &mu1, &wedge[wedge_offset], &
-                 betaedge[betaedge_offset], &beta, &slz[slz_offset], &
-                 i__2, &kp, &lohi[4], &lohi[7], &dlohi[4], &dlohi[7], &
-                 dzscr[dzscr_offset], &dzfrm[dzfrm_offset]);
+          betaedge[betaedge_offset], &beta, &slz[slz_offset], &
+          i__2, &kp, &lohi[4], &lohi[7], &dlohi[4], &dlohi[7], &
+          dzscr[dzscr_offset], &dzfrm[dzfrm_offset]);
       }
     }
     i__2 = je + 1;
@@ -271,278 +271,278 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
         {
 /* Computing 2nd power */
           d__1 = s[i__ - 1 + (j + k * s_dim2) * s_dim1] * s[i__ - 1
-                                                            + (j + k * s_dim2) * s_dim1] * mu0i + ((float)1.
-                                                                                                   - s[i__ - 1 + (j + k * s_dim2) * s_dim1]) * ((
-                                                                                                                                                 float)1. - s[i__ - 1 + (j + k * s_dim2) * s_dim1])
-                 * mu1i;
+              + (j + k * s_dim2) * s_dim1] * mu0i + ((float)1.
+            - s[i__ - 1 + (j + k * s_dim2) * s_dim1]) * ((
+            float)1. - s[i__ - 1 + (j + k * s_dim2) * s_dim1])
+            * mu1i;
           tlo_xlo__ += (half - (s[i__ - 1 + (j + k * s_dim2) *
-                                  s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
-                                                                               - 1 + (j + k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                    s[i__ - 1 + (j + k * s_dim2) * s_dim1]) * mu1i) -
-                                s[i__ - 1 + (j + k * s_dim2) * s_dim1] * s[i__ -
-                                                                           1 + (j + k * s_dim2) * s_dim1] * mu0i * (((float)
-                                                                                                                     1. - s[i__ - 1 + (j + k * s_dim2) * s_dim1]) * (
-                                                                                                                                                                     float)-2. * mu1i)) / (d__1 * d__1) * uedge[i__ + (
-                                                                                                                                                                                                                       j + k * uedge_dim2) * uedge_dim1] * dth * dxi /
-                        phi[i__ - 1 + (j + k * phi_dim2) * phi_dim1]) *
-                       slx[i__ - 1 + j * slx_dim1];
+            s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
+            - 1 + (j + k * s_dim2) * s_dim1]) * ((float)1. -
+            s[i__ - 1 + (j + k * s_dim2) * s_dim1]) * mu1i) -
+            s[i__ - 1 + (j + k * s_dim2) * s_dim1] * s[i__ -
+            1 + (j + k * s_dim2) * s_dim1] * mu0i * (((float)
+            1. - s[i__ - 1 + (j + k * s_dim2) * s_dim1]) * (
+            float)-2. * mu1i)) / (d__1 * d__1) * uedge[i__ + (
+            j + k * uedge_dim2) * uedge_dim1] * dth * dxi /
+            phi[i__ - 1 + (j + k * phi_dim2) * phi_dim1]) *
+            slx[i__ - 1 + j * slx_dim1];
 /* Computing 2nd power */
           d__1 = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                               k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
-                                                                                                             + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
+              k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
+            + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
           tlo_xhi__ -= (half + (s[i__ + (j + k * s_dim2) * s_dim1] *
-                                (float)2. * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + k
-                                                                                                                     * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
-                                                                                                                                                             s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
-                                                                                                                                                                                   s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                                                                                                                                                                           s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__1 *
-                                                                                                                                                                                                                                                                       d__1) * uedge[i__ + (j + k * uedge_dim2) *
-                                                                                                                                                                                                                                                                                     uedge_dim1] * dth * dxi * phiinv) * slx[i__ + j *
-                                                                                                                                                                                                                                                                                                                             slx_dim1];
+            (float)2. * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + k
+            * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
+            s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
+            s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__1 *
+            d__1) * uedge[i__ + (j + k * uedge_dim2) *
+            uedge_dim1] * dth * dxi * phiinv) * slx[i__ + j *
+              slx_dim1];
 /* Computing 2nd power */
           d__1 = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                               k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
-                                                                                                             + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
+              k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
+            + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
           thi_xlo__ += (half - (s[i__ + (j + k * s_dim2) * s_dim1] *
-                                (float)2. * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + k
-                                                                                                                     * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
-                                                                                                                                                             s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
-                                                                                                                                                                                   s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                                                                                                                                                                           s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__1 *
-                                                                                                                                                                                                                                                                       d__1) * uedge[i__ + 1 + (j + k * uedge_dim2) *
-                                                                                                                                                                                                                                                                                     uedge_dim1] * dth * dxi * phiinv) * slx[i__ + j *
-                                                                                                                                                                                                                                                                                                                             slx_dim1];
+            (float)2. * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + k
+            * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
+            s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
+            s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__1 *
+            d__1) * uedge[i__ + 1 + (j + k * uedge_dim2) *
+            uedge_dim1] * dth * dxi * phiinv) * slx[i__ + j *
+              slx_dim1];
 /* Computing 2nd power */
           d__1 = s[i__ + 1 + (j + k * s_dim2) * s_dim1] * s[i__ + 1
-                                                            + (j + k * s_dim2) * s_dim1] * mu0i + ((float)1.
-                                                                                                   - s[i__ + 1 + (j + k * s_dim2) * s_dim1]) * ((
-                                                                                                                                                 float)1. - s[i__ + 1 + (j + k * s_dim2) * s_dim1])
-                 * mu1i;
+              + (j + k * s_dim2) * s_dim1] * mu0i + ((float)1.
+            - s[i__ + 1 + (j + k * s_dim2) * s_dim1]) * ((
+            float)1. - s[i__ + 1 + (j + k * s_dim2) * s_dim1])
+            * mu1i;
           thi_xhi__ -= (half + (s[i__ + 1 + (j + k * s_dim2) *
-                                  s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
-                                                                               + 1 + (j + k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                    s[i__ + 1 + (j + k * s_dim2) * s_dim1]) * mu1i) -
-                                s[i__ + 1 + (j + k * s_dim2) * s_dim1] * s[i__ +
-                                                                           1 + (j + k * s_dim2) * s_dim1] * mu0i * (((float)
-                                                                                                                     1. - s[i__ + 1 + (j + k * s_dim2) * s_dim1]) * (
-                                                                                                                                                                     float)-2. * mu1i)) / (d__1 * d__1) * uedge[i__ +
-                                                                                                                                                                                                                1 + (j + k * uedge_dim2) * uedge_dim1] * dth *
-                        dxi / phi[i__ + 1 + (j + k * phi_dim2) * phi_dim1]
-                        ) * slx[i__ + 1 + j * slx_dim1];
+            s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
+            + 1 + (j + k * s_dim2) * s_dim1]) * ((float)1. -
+            s[i__ + 1 + (j + k * s_dim2) * s_dim1]) * mu1i) -
+            s[i__ + 1 + (j + k * s_dim2) * s_dim1] * s[i__ +
+            1 + (j + k * s_dim2) * s_dim1] * mu0i * (((float)
+            1. - s[i__ + 1 + (j + k * s_dim2) * s_dim1]) * (
+            float)-2. * mu1i)) / (d__1 * d__1) * uedge[i__ +
+            1 + (j + k * uedge_dim2) * uedge_dim1] * dth *
+            dxi / phi[i__ + 1 + (j + k * phi_dim2) * phi_dim1]
+            ) * slx[i__ + 1 + j * slx_dim1];
 /* Computing 2nd power */
           d__1 = s[i__ + (j - 1 + k * s_dim2) * s_dim1] * s[i__ + (
-                                                                   j - 1 + k * s_dim2) * s_dim1] * mu0i + ((float)1.
-                                                                                                           - s[i__ + (j - 1 + k * s_dim2) * s_dim1]) * ((
-                                                                                                                                                         float)1. - s[i__ + (j - 1 + k * s_dim2) * s_dim1])
-                 * mu1i;
+              j - 1 + k * s_dim2) * s_dim1] * mu0i + ((float)1.
+            - s[i__ + (j - 1 + k * s_dim2) * s_dim1]) * ((
+            float)1. - s[i__ + (j - 1 + k * s_dim2) * s_dim1])
+            * mu1i;
           tlo_ylo__ += (half - (s[i__ + (j - 1 + k * s_dim2) *
-                                  s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
-                                                                               + (j - 1 + k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                    s[i__ + (j - 1 + k * s_dim2) * s_dim1]) * mu1i) -
-                                s[i__ + (j - 1 + k * s_dim2) * s_dim1] * s[i__ + (
-                                                                                  j - 1 + k * s_dim2) * s_dim1] * mu0i * (((float)
-                                                                                                                           1. - s[i__ + (j - 1 + k * s_dim2) * s_dim1]) * (
-                                                                                                                                                                           float)-2. * mu1i)) / (d__1 * d__1) * vedge[i__ + (
-                                                                                                                                                                                                                             j + k * vedge_dim2) * vedge_dim1] * dth * dyi /
-                        phi[i__ + (j - 1 + k * phi_dim2) * phi_dim1]) *
-                       sly[i__ + (j - 1) * sly_dim1];
+            s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
+            + (j - 1 + k * s_dim2) * s_dim1]) * ((float)1. -
+            s[i__ + (j - 1 + k * s_dim2) * s_dim1]) * mu1i) -
+            s[i__ + (j - 1 + k * s_dim2) * s_dim1] * s[i__ + (
+            j - 1 + k * s_dim2) * s_dim1] * mu0i * (((float)
+            1. - s[i__ + (j - 1 + k * s_dim2) * s_dim1]) * (
+            float)-2. * mu1i)) / (d__1 * d__1) * vedge[i__ + (
+            j + k * vedge_dim2) * vedge_dim1] * dth * dyi /
+            phi[i__ + (j - 1 + k * phi_dim2) * phi_dim1]) *
+            sly[i__ + (j - 1) * sly_dim1];
 /* Computing 2nd power */
           d__1 = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                               k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
-                                                                                                             + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
+              k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
+            + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
           tlo_yhi__ -= (half + (s[i__ + (j + k * s_dim2) * s_dim1] *
-                                (float)2. * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + k
-                                                                                                                     * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
-                                                                                                                                                             s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
-                                                                                                                                                                                   s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                                                                                                                                                                           s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__1 *
-                                                                                                                                                                                                                                                                       d__1) * vedge[i__ + (j + k * vedge_dim2) *
-                                                                                                                                                                                                                                                                                     vedge_dim1] * dth * dyi * phiinv) * sly[i__ + j *
-                                                                                                                                                                                                                                                                                                                             sly_dim1];
+            (float)2. * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + k
+            * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
+            s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
+            s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__1 *
+            d__1) * vedge[i__ + (j + k * vedge_dim2) *
+            vedge_dim1] * dth * dyi * phiinv) * sly[i__ + j *
+              sly_dim1];
 /* Computing 2nd power */
           d__1 = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                               k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
-                                                                                                             + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
+              k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
+            + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
           thi_ylo__ += (half - (s[i__ + (j + k * s_dim2) * s_dim1] *
-                                (float)2. * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + k
-                                                                                                                     * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
-                                                                                                                                                             s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
-                                                                                                                                                                                   s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                                                                                                                                                                           s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__1 *
-                                                                                                                                                                                                                                                                       d__1) * vedge[i__ + (j + 1 + k * vedge_dim2) *
-                                                                                                                                                                                                                                                                                     vedge_dim1] * dth * dyi * phiinv) * sly[i__ + j *
-                                                                                                                                                                                                                                                                                                                             sly_dim1];
+            (float)2. * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + k
+            * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
+            s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
+            s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__1 *
+            d__1) * vedge[i__ + (j + 1 + k * vedge_dim2) *
+            vedge_dim1] * dth * dyi * phiinv) * sly[i__ + j *
+              sly_dim1];
 /* Computing 2nd power */
           d__1 = s[i__ + (j + 1 + k * s_dim2) * s_dim1] * s[i__ + (
-                                                                   j + 1 + k * s_dim2) * s_dim1] * mu0i + ((float)1.
-                                                                                                           - s[i__ + (j + 1 + k * s_dim2) * s_dim1]) * ((
-                                                                                                                                                         float)1. - s[i__ + (j + 1 + k * s_dim2) * s_dim1])
-                 * mu1i;
+              j + 1 + k * s_dim2) * s_dim1] * mu0i + ((float)1.
+            - s[i__ + (j + 1 + k * s_dim2) * s_dim1]) * ((
+            float)1. - s[i__ + (j + 1 + k * s_dim2) * s_dim1])
+            * mu1i;
           thi_yhi__ -= (half + (s[i__ + (j + 1 + k * s_dim2) *
-                                  s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
-                                                                               + (j + 1 + k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                    s[i__ + (j + 1 + k * s_dim2) * s_dim1]) * mu1i) -
-                                s[i__ + (j + 1 + k * s_dim2) * s_dim1] * s[i__ + (
-                                                                                  j + 1 + k * s_dim2) * s_dim1] * mu0i * (((float)
-                                                                                                                           1. - s[i__ + (j + 1 + k * s_dim2) * s_dim1]) * (
-                                                                                                                                                                           float)-2. * mu1i)) / (d__1 * d__1) * vedge[i__ + (
-                                                                                                                                                                                                                             j + 1 + k * vedge_dim2) * vedge_dim1] * dth * dyi
-                        / phi[i__ + (j + 1 + k * phi_dim2) * phi_dim1]) *
-                       sly[i__ + (j + 1) * sly_dim1];
+            s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
+            + (j + 1 + k * s_dim2) * s_dim1]) * ((float)1. -
+            s[i__ + (j + 1 + k * s_dim2) * s_dim1]) * mu1i) -
+            s[i__ + (j + 1 + k * s_dim2) * s_dim1] * s[i__ + (
+            j + 1 + k * s_dim2) * s_dim1] * mu0i * (((float)
+            1. - s[i__ + (j + 1 + k * s_dim2) * s_dim1]) * (
+            float)-2. * mu1i)) / (d__1 * d__1) * vedge[i__ + (
+            j + 1 + k * vedge_dim2) * vedge_dim1] * dth * dyi
+            / phi[i__ + (j + 1 + k * phi_dim2) * phi_dim1]) *
+            sly[i__ + (j + 1) * sly_dim1];
           d__1 = beta * betaedge[i__ + (j + (k - 1) * betaedge_dim2)
-                                 * betaedge_dim1];
+              * betaedge_dim1];
 /* Computing 2nd power */
           d__2 = s[i__ + (j + (k - 1) * s_dim2) * s_dim1] * s[i__ +
-                                                              (j + (k - 1) * s_dim2) * s_dim1] * mu0i + ((float)
-                                                                                                         1. - s[i__ + (j + (k - 1) * s_dim2) * s_dim1]) * (
-                                                                                                                                                           (float)1. - s[i__ + (j + (k - 1) * s_dim2) *
-                                                                                                                                                                         s_dim1]) * mu1i;
+              (j + (k - 1) * s_dim2) * s_dim1] * mu0i + ((float)
+            1. - s[i__ + (j + (k - 1) * s_dim2) * s_dim1]) * (
+            (float)1. - s[i__ + (j + (k - 1) * s_dim2) *
+            s_dim1]) * mu1i;
 /* Computing 2nd power */
           d__3 = s[i__ + (j + (k - 1) * s_dim2) * s_dim1] * s[i__ +
-                                                              (j + (k - 1) * s_dim2) * s_dim1] * mu0i + ((float)
-                                                                                                         1. - s[i__ + (j + (k - 1) * s_dim2) * s_dim1]) * (
-                                                                                                                                                           (float)1. - s[i__ + (j + (k - 1) * s_dim2) *
-                                                                                                                                                                         s_dim1]) * mu1i;
+              (j + (k - 1) * s_dim2) * s_dim1] * mu0i + ((float)
+            1. - s[i__ + (j + (k - 1) * s_dim2) * s_dim1]) * (
+            (float)1. - s[i__ + (j + (k - 1) * s_dim2) *
+            s_dim1]) * mu1i;
           tlo_zlo__ += (half - ((s[i__ + (j + (k - 1) * s_dim2) *
-                                   s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
-                                                                                + (j + (k - 1) * s_dim2) * s_dim1]) * ((float)1.
-                                                                                                                       - s[i__ + (j + (k - 1) * s_dim2) * s_dim1]) *
-                                                                 mu1i) - s[i__ + (j + (k - 1) * s_dim2) * s_dim1] *
-                                 s[i__ + (j + (k - 1) * s_dim2) * s_dim1] * mu0i *
-                                 (((float)1. - s[i__ + (j + (k - 1) * s_dim2) *
-                                                 s_dim1]) * (float)-2. * mu1i)) / (d__2 * d__2) *
-                                wedge[i__ + (j + k * wedge_dim2) * wedge_dim1] + (
-                                                                                  s[i__ + (j + (k - 1) * s_dim2) * s_dim1] * (float)
-                                                                                  2. * mu0i * (((float)1. - s[i__ + (j + (k - 1) *
-                                                                                                                     s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (k
-                                                                                                                                                                     - 1) * s_dim2) * s_dim1]) * mu1i) * (((float)1. -
-                                                                                                                                                                                                           s[i__ + (j + (k - 1) * s_dim2) * s_dim1]) * ((
-                                                                                                                                                                                                                                                         float)1. - s[i__ + (j + (k - 1) * s_dim2) *
-                                                                                                                                                                                                                                                                      s_dim1]) * mu1i) + ((float)1. - s[i__ + (j + (k -
-                                                                                                                                                                                                                                                                                                                    1) * s_dim2) * s_dim1]) * (float)-2. * mu1i * (s[
-                                                                                                                                                                                                                                                                                                                                                                     i__ + (j + (k - 1) * s_dim2) * s_dim1] * s[i__ + (
-                                                                                                                                                                                                                                                                                                                                                                                                                       j + (k - 1) * s_dim2) * s_dim1] * mu0i) * (s[i__
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                    + (j + (k - 1) * s_dim2) * s_dim1] * s[i__ + (j +
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  (k - 1) * s_dim2) * s_dim1] * mu0i)) / (d__3 *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          d__3) * d__1) * dth * dzi / phi[i__ + (j + (k - 1)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 * phi_dim2) * phi_dim1]) * slz[i__ + (j + km *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       slz_dim2) * slz_dim1];
+            s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
+            + (j + (k - 1) * s_dim2) * s_dim1]) * ((float)1.
+            - s[i__ + (j + (k - 1) * s_dim2) * s_dim1]) *
+            mu1i) - s[i__ + (j + (k - 1) * s_dim2) * s_dim1] *
+            s[i__ + (j + (k - 1) * s_dim2) * s_dim1] * mu0i *
+            (((float)1. - s[i__ + (j + (k - 1) * s_dim2) *
+            s_dim1]) * (float)-2. * mu1i)) / (d__2 * d__2) *
+            wedge[i__ + (j + k * wedge_dim2) * wedge_dim1] + (
+            s[i__ + (j + (k - 1) * s_dim2) * s_dim1] * (float)
+            2. * mu0i * (((float)1. - s[i__ + (j + (k - 1) *
+            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (k
+            - 1) * s_dim2) * s_dim1]) * mu1i) * (((float)1. -
+            s[i__ + (j + (k - 1) * s_dim2) * s_dim1]) * ((
+            float)1. - s[i__ + (j + (k - 1) * s_dim2) *
+            s_dim1]) * mu1i) + ((float)1. - s[i__ + (j + (k -
+            1) * s_dim2) * s_dim1]) * (float)-2. * mu1i * (s[
+              i__ + (j + (k - 1) * s_dim2) * s_dim1] * s[i__ + (
+            j + (k - 1) * s_dim2) * s_dim1] * mu0i) * (s[i__
+            + (j + (k - 1) * s_dim2) * s_dim1] * s[i__ + (j +
+            (k - 1) * s_dim2) * s_dim1] * mu0i)) / (d__3 *
+            d__3) * d__1) * dth * dzi / phi[i__ + (j + (k - 1)
+            * phi_dim2) * phi_dim1]) * slz[i__ + (j + km *
+              slz_dim2) * slz_dim1];
           d__1 = beta * betaedge[i__ + (j + k * betaedge_dim2) *
-                                 betaedge_dim1];
+              betaedge_dim1];
 /* Computing 2nd power */
           d__2 = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                               k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
-                                                                                                             + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
+              k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
+            + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
 /* Computing 2nd power */
           d__3 = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                               k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
-                                                                                                             + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
+              k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
+            + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
           tlo_zhi__ -= (half + ((s[i__ + (j + k * s_dim2) * s_dim1]
-                                 * (float)2. * mu0i * (((float)1. - s[i__ + (j + k
-                                                                             * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                          k * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
-                                                                                                                                                                    s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
-                                                                                                                                                                                          s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                                                                                                                                                                                  s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__2 *
-                                                                                                                                                                                                                                                                              d__2) * wedge[i__ + (j + k * wedge_dim2) *
-                                                                                                                                                                                                                                                                                            wedge_dim1] + (s[i__ + (j + k * s_dim2) * s_dim1]
-                                                                                                                                                                                                                                                                                                           * (float)2. * mu0i * (((float)1. - s[i__ + (j + k
-                                                                                                                                                                                                                                                                                                                                                       * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                                                                                                                                                                                                                                                                    k * s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                         i__ + (j + k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              s[i__ + (j + k * s_dim2) * s_dim1]) * mu1i) + ((
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                float)-2. * mu1i * (s[i__ + (j + k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    mu0i) * (s[i__ + (j + k * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               i__ + (j + k * s_dim2) * s_dim1] * mu0i)) / (d__3
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * d__3) * d__1) * dth * dzi * phiinv) * slz[i__ +
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        (j + kc * slz_dim2) * slz_dim1];
+            * (float)2. * mu0i * (((float)1. - s[i__ + (j + k
+            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+            k * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
+            s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
+            s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__2 *
+            d__2) * wedge[i__ + (j + k * wedge_dim2) *
+            wedge_dim1] + (s[i__ + (j + k * s_dim2) * s_dim1]
+            * (float)2. * mu0i * (((float)1. - s[i__ + (j + k
+            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+            k * s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * ((float)1. -
+            s[i__ + (j + k * s_dim2) * s_dim1]) * mu1i) + ((
+            float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
+            float)-2. * mu1i * (s[i__ + (j + k * s_dim2) *
+            s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] *
+            mu0i) * (s[i__ + (j + k * s_dim2) * s_dim1] * s[
+              i__ + (j + k * s_dim2) * s_dim1] * mu0i)) / (d__3
+            * d__3) * d__1) * dth * dzi * phiinv) * slz[i__ +
+              (j + kc * slz_dim2) * slz_dim1];
           d__1 = beta * betaedge[i__ + (j + k * betaedge_dim2) *
-                                 betaedge_dim1];
+              betaedge_dim1];
 /* Computing 2nd power */
           d__2 = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                               k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
-                                                                                                             + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
+              k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
+            + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
 /* Computing 2nd power */
           d__3 = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                               k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
-                                                                                                             + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
+              k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__
+            + (j + k * s_dim2) * s_dim1]) * ((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * mu1i;
           thi_zlo__ += (half - ((s[i__ + (j + k * s_dim2) * s_dim1]
-                                 * (float)2. * mu0i * (((float)1. - s[i__ + (j + k
-                                                                             * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                          k * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
-                                                                                                                                                                    s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
-                                                                                                                                                                                          s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
-                                                                                                                                                                                                                                  s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__2 *
-                                                                                                                                                                                                                                                                              d__2) * wedge[i__ + (j + (k + 1) * wedge_dim2) *
-                                                                                                                                                                                                                                                                                            wedge_dim1] + (s[i__ + (j + k * s_dim2) * s_dim1]
-                                                                                                                                                                                                                                                                                                           * (float)2. * mu0i * (((float)1. - s[i__ + (j + k
-                                                                                                                                                                                                                                                                                                                                                       * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                                                                                                                                                                                                                                                                    k * s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                         i__ + (j + k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              s[i__ + (j + k * s_dim2) * s_dim1]) * mu1i) + ((
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                float)-2. * mu1i * (s[i__ + (j + k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    mu0i) * (s[i__ + (j + k * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               i__ + (j + k * s_dim2) * s_dim1] * mu0i)) / (d__3
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * d__3) * d__1) * dth * dzi * phiinv) * slz[i__ +
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        (j + kc * slz_dim2) * slz_dim1];
+            * (float)2. * mu0i * (((float)1. - s[i__ + (j + k
+            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+            k * s_dim2) * s_dim1]) * mu1i) - s[i__ + (j + k *
+            s_dim2) * s_dim1] * s[i__ + (j + k * s_dim2) *
+            s_dim1] * mu0i * (((float)1. - s[i__ + (j + k *
+            s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__2 *
+            d__2) * wedge[i__ + (j + (k + 1) * wedge_dim2) *
+            wedge_dim1] + (s[i__ + (j + k * s_dim2) * s_dim1]
+            * (float)2. * mu0i * (((float)1. - s[i__ + (j + k
+            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+            k * s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[
+              i__ + (j + k * s_dim2) * s_dim1]) * ((float)1. -
+            s[i__ + (j + k * s_dim2) * s_dim1]) * mu1i) + ((
+            float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
+            float)-2. * mu1i * (s[i__ + (j + k * s_dim2) *
+            s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] *
+            mu0i) * (s[i__ + (j + k * s_dim2) * s_dim1] * s[
+              i__ + (j + k * s_dim2) * s_dim1] * mu0i)) / (d__3
+            * d__3) * d__1) * dth * dzi * phiinv) * slz[i__ +
+              (j + kc * slz_dim2) * slz_dim1];
           d__1 = beta * betaedge[i__ + (j + (k + 1) * betaedge_dim2)
-                                 * betaedge_dim1];
+              * betaedge_dim1];
 /* Computing 2nd power */
           d__2 = s[i__ + (j + (k + 1) * s_dim2) * s_dim1] * s[i__ +
-                                                              (j + (k + 1) * s_dim2) * s_dim1] * mu0i + ((float)
-                                                                                                         1. - s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) * (
-                                                                                                                                                           (float)1. - s[i__ + (j + (k + 1) * s_dim2) *
-                                                                                                                                                                         s_dim1]) * mu1i;
+              (j + (k + 1) * s_dim2) * s_dim1] * mu0i + ((float)
+            1. - s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) * (
+            (float)1. - s[i__ + (j + (k + 1) * s_dim2) *
+            s_dim1]) * mu1i;
 /* Computing 2nd power */
           d__3 = s[i__ + (j + (k + 1) * s_dim2) * s_dim1] * s[i__ +
-                                                              (j + (k + 1) * s_dim2) * s_dim1] * mu0i + ((float)
-                                                                                                         1. - s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) * (
-                                                                                                                                                           (float)1. - s[i__ + (j + (k + 1) * s_dim2) *
-                                                                                                                                                                         s_dim1]) * mu1i;
+              (j + (k + 1) * s_dim2) * s_dim1] * mu0i + ((float)
+            1. - s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) * (
+            (float)1. - s[i__ + (j + (k + 1) * s_dim2) *
+            s_dim1]) * mu1i;
           thi_zhi__ -= (half + ((s[i__ + (j + (k + 1) * s_dim2) *
-                                   s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
-                                                                                + (j + (k + 1) * s_dim2) * s_dim1]) * ((float)1.
-                                                                                                                       - s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) *
-                                                                 mu1i) - s[i__ + (j + (k + 1) * s_dim2) * s_dim1] *
-                                 s[i__ + (j + (k + 1) * s_dim2) * s_dim1] * mu0i *
-                                 (((float)1. - s[i__ + (j + (k + 1) * s_dim2) *
-                                                 s_dim1]) * (float)-2. * mu1i)) / (d__2 * d__2) *
-                                wedge[i__ + (j + (k + 1) * wedge_dim2) *
-                                      wedge_dim1] + (s[i__ + (j + (k + 1) * s_dim2) *
-                                                       s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
-                                                                                                    + (j + (k + 1) * s_dim2) * s_dim1]) * ((float)1.
-                                                                                                                                           - s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) *
-                                                                                     mu1i) * (((float)1. - s[i__ + (j + (k + 1) *
-                                                                                                                    s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (k
-                                                                                                                                                                    + 1) * s_dim2) * s_dim1]) * mu1i) + ((float)1. -
-                                                                                                                                                                                                         s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) * (
-                                                                                                                                                                                                                                                      float)-2. * mu1i * (s[i__ + (j + (k + 1) * s_dim2)
-                                                                                                                                                                                                                                                                            * s_dim1] * s[i__ + (j + (k + 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                          s_dim1] * mu0i) * (s[i__ + (j + (k + 1) * s_dim2)
-                                                                                                                                                                                                                                                                                                               * s_dim1] * s[i__ + (j + (k + 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                             s_dim1] * mu0i)) / (d__3 * d__3) * d__1) * dth *
-                        dzi / phi[i__ + (j + (k + 1) * phi_dim2) *
-                                  phi_dim1]) * slz[i__ + (j + kp * slz_dim2) *
-                                                   slz_dim1];
+            s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
+            + (j + (k + 1) * s_dim2) * s_dim1]) * ((float)1.
+            - s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) *
+            mu1i) - s[i__ + (j + (k + 1) * s_dim2) * s_dim1] *
+            s[i__ + (j + (k + 1) * s_dim2) * s_dim1] * mu0i *
+            (((float)1. - s[i__ + (j + (k + 1) * s_dim2) *
+            s_dim1]) * (float)-2. * mu1i)) / (d__2 * d__2) *
+            wedge[i__ + (j + (k + 1) * wedge_dim2) *
+            wedge_dim1] + (s[i__ + (j + (k + 1) * s_dim2) *
+            s_dim1] * (float)2. * mu0i * (((float)1. - s[i__
+            + (j + (k + 1) * s_dim2) * s_dim1]) * ((float)1.
+            - s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) *
+            mu1i) * (((float)1. - s[i__ + (j + (k + 1) *
+            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (k
+            + 1) * s_dim2) * s_dim1]) * mu1i) + ((float)1. -
+            s[i__ + (j + (k + 1) * s_dim2) * s_dim1]) * (
+            float)-2. * mu1i * (s[i__ + (j + (k + 1) * s_dim2)
+            * s_dim1] * s[i__ + (j + (k + 1) * s_dim2) *
+            s_dim1] * mu0i) * (s[i__ + (j + (k + 1) * s_dim2)
+            * s_dim1] * s[i__ + (j + (k + 1) * s_dim2) *
+            s_dim1] * mu0i)) / (d__3 * d__3) * d__1) * dth *
+            dzi / phi[i__ + (j + (k + 1) * phi_dim2) *
+            phi_dim1]) * slz[i__ + (j + kp * slz_dim2) *
+              slz_dim1];
         }
         if (uedge[i__ + (j + k * uedge_dim2) * uedge_dim1] >= (float)
-            0.)
+          0.)
         {
           tlo_x__ = tlo_xlo__;
         }
@@ -551,7 +551,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
           tlo_x__ = tlo_xhi__;
         }
         if (uedge[i__ + 1 + (j + k * uedge_dim2) * uedge_dim1] >= (
-                                                                   float)0.)
+          float)0.)
         {
           thi_x__ = thi_xlo__;
         }
@@ -560,7 +560,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
           thi_x__ = thi_xhi__;
         }
         if (vedge[i__ + (j + k * vedge_dim2) * vedge_dim1] >= (float)
-            0.)
+          0.)
         {
           tlo_y__ = tlo_ylo__;
         }
@@ -569,7 +569,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
           tlo_y__ = tlo_yhi__;
         }
         if (vedge[i__ + (j + 1 + k * vedge_dim2) * vedge_dim1] >= (
-                                                                   float)0.)
+          float)0.)
         {
           thi_y__ = thi_ylo__;
         }
@@ -578,80 +578,80 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
           thi_y__ = thi_yhi__;
         }
         d__1 = betaedge[i__ + (j + k * betaedge_dim2) * betaedge_dim1]
-               * beta;
+          * beta;
         rpsolv_(&tlo_zlo__, &tlo_zhi__, &wedge[i__ + (j + k *
-                                                      wedge_dim2) * wedge_dim1], &d__1, &mu0, &mu1, &c__1, &
-                wc, &tlo_z__);
+          wedge_dim2) * wedge_dim1], &d__1, &mu0, &mu1, &c__1, &
+          wc, &tlo_z__);
         d__1 = beta * betaedge[i__ + (j + (k + 1) * betaedge_dim2) *
-                               betaedge_dim1];
+            betaedge_dim1];
         rpsolv_(&thi_zlo__, &thi_zhi__, &wedge[i__ + (j + (k + 1) *
-                                                      wedge_dim2) * wedge_dim1], &d__1, &mu0, &mu1, &c__1, &
-                wc, &thi_z__);
+          wedge_dim2) * wedge_dim1], &d__1, &mu0, &mu1, &c__1, &
+          wc, &thi_z__);
         sux = (uedge[i__ + 1 + (j + k * uedge_dim2) * uedge_dim1] * (
-                                                                     thi_x__ * thi_x__ * mu0i / (thi_x__ * thi_x__ * mu0i
-                                                                                                 + ((float)1. - thi_x__) * ((float)1. - thi_x__) *
-                                                                                                 mu1i)) - uedge[i__ + (j + k * uedge_dim2) *
-                                                                                                                uedge_dim1] * (tlo_x__ * tlo_x__ * mu0i / (tlo_x__ *
-                                                                                                                                                           tlo_x__ * mu0i + ((float)1. - tlo_x__) * ((float)1. -
-                                                                                                                                                                                                     tlo_x__) * mu1i))) * dxi;
+          thi_x__ * thi_x__ * mu0i / (thi_x__ * thi_x__ * mu0i
+          + ((float)1. - thi_x__) * ((float)1. - thi_x__) *
+          mu1i)) - uedge[i__ + (j + k * uedge_dim2) *
+          uedge_dim1] * (tlo_x__ * tlo_x__ * mu0i / (tlo_x__ *
+          tlo_x__ * mu0i + ((float)1. - tlo_x__) * ((float)1. -
+          tlo_x__) * mu1i))) * dxi;
         suy = (vedge[i__ + (j + 1 + k * vedge_dim2) * vedge_dim1] * (
-                                                                     thi_y__ * thi_y__ * mu0i / (thi_y__ * thi_y__ * mu0i
-                                                                                                 + ((float)1. - thi_y__) * ((float)1. - thi_y__) *
-                                                                                                 mu1i)) - vedge[i__ + (j + k * vedge_dim2) *
-                                                                                                                vedge_dim1] * (tlo_y__ * tlo_y__ * mu0i / (tlo_y__ *
-                                                                                                                                                           tlo_y__ * mu0i + ((float)1. - tlo_y__) * ((float)1. -
-                                                                                                                                                                                                     tlo_y__) * mu1i))) * dyi;
+          thi_y__ * thi_y__ * mu0i / (thi_y__ * thi_y__ * mu0i
+          + ((float)1. - thi_y__) * ((float)1. - thi_y__) *
+          mu1i)) - vedge[i__ + (j + k * vedge_dim2) *
+          vedge_dim1] * (tlo_y__ * tlo_y__ * mu0i / (tlo_y__ *
+          tlo_y__ * mu0i + ((float)1. - tlo_y__) * ((float)1. -
+          tlo_y__) * mu1i))) * dyi;
         d__1 = beta * betaedge[i__ + (j + (k + 1) * betaedge_dim2) *
-                               betaedge_dim1];
+            betaedge_dim1];
         d__2 = beta * betaedge[i__ + (j + k * betaedge_dim2) *
-                               betaedge_dim1];
+            betaedge_dim1];
         suz = (thi_z__ * thi_z__ * mu0i / (thi_z__ * thi_z__ * mu0i +
-                                           ((float)1. - thi_z__) * ((float)1. - thi_z__) * mu1i)
-               * wedge[i__ + (j + (k + 1) * wedge_dim2) * wedge_dim1]
-               + thi_z__ * thi_z__ * mu0i * (((float)1. - thi_z__) *
-                                             ((float)1. - thi_z__) * mu1i) / (thi_z__ * thi_z__ *
-                                                                              mu0i + ((float)1. - thi_z__) * ((float)1. - thi_z__) *
-                                                                              mu1i) * d__1 - (tlo_z__ * tlo_z__ * mu0i / (tlo_z__ *
-                                                                                                                          tlo_z__ * mu0i + ((float)1. - tlo_z__) * ((float)1.
-                                                                                                                                                                    - tlo_z__) * mu1i) * wedge[i__ + (j + k * wedge_dim2)
-                                                                                                                                                                                               * wedge_dim1] + tlo_z__ * tlo_z__ * mu0i * (((float)
-                                                                                                                                                                                                                                            1. - tlo_z__) * ((float)1. - tlo_z__) * mu1i) / (
-                                                                                                                                                                                                                                                                                             tlo_z__ * tlo_z__ * mu0i + ((float)1. - tlo_z__) * ((
-                                                                                                                                                                                                                                                                                                                                                  float)1. - tlo_z__) * mu1i) * d__2)) * dzi;
+          ((float)1. - thi_z__) * ((float)1. - thi_z__) * mu1i)
+          * wedge[i__ + (j + (k + 1) * wedge_dim2) * wedge_dim1]
+          + thi_z__ * thi_z__ * mu0i * (((float)1. - thi_z__) *
+          ((float)1. - thi_z__) * mu1i) / (thi_z__ * thi_z__ *
+          mu0i + ((float)1. - thi_z__) * ((float)1. - thi_z__) *
+          mu1i) * d__1 - (tlo_z__ * tlo_z__ * mu0i / (tlo_z__ *
+          tlo_z__ * mu0i + ((float)1. - tlo_z__) * ((float)1.
+          - tlo_z__) * mu1i) * wedge[i__ + (j + k * wedge_dim2)
+          * wedge_dim1] + tlo_z__ * tlo_z__ * mu0i * (((float)
+          1. - tlo_z__) * ((float)1. - tlo_z__) * mu1i) / (
+          tlo_z__ * tlo_z__ * mu0i + ((float)1. - tlo_z__) * ((
+          float)1. - tlo_z__) * mu1i) * d__2)) * dzi;
         cux = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j + k *
-                                                            s_dim2) * s_dim1] * mu0i / (s[i__ + (j + k * s_dim2) *
-                                                                                          s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] * mu0i
-                                                                                        + ((float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
-                                                                                                                                              (float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) *
-                                                                                        mu1i) * (uedge[i__ + 1 + (j + k * uedge_dim2) *
-                                                                                                       uedge_dim1] - uedge[i__ + (j + k * uedge_dim2) *
-                                                                                                                           uedge_dim1]) * dxi;
+            s_dim2) * s_dim1] * mu0i / (s[i__ + (j + k * s_dim2) *
+          s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] * mu0i
+          + ((float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
+          (float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) *
+          mu1i) * (uedge[i__ + 1 + (j + k * uedge_dim2) *
+          uedge_dim1] - uedge[i__ + (j + k * uedge_dim2) *
+          uedge_dim1]) * dxi;
         cuy = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j + k *
-                                                            s_dim2) * s_dim1] * mu0i / (s[i__ + (j + k * s_dim2) *
-                                                                                          s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] * mu0i
-                                                                                        + ((float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
-                                                                                                                                              (float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) *
-                                                                                        mu1i) * (vedge[i__ + (j + 1 + k * vedge_dim2) *
-                                                                                                       vedge_dim1] - vedge[i__ + (j + k * vedge_dim2) *
-                                                                                                                           vedge_dim1]) * dyi;
+            s_dim2) * s_dim1] * mu0i / (s[i__ + (j + k * s_dim2) *
+          s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] * mu0i
+          + ((float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
+          (float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) *
+          mu1i) * (vedge[i__ + (j + 1 + k * vedge_dim2) *
+          vedge_dim1] - vedge[i__ + (j + k * vedge_dim2) *
+          vedge_dim1]) * dyi;
         cuz = s[i__ + (j + k * s_dim2) * s_dim1] * s[i__ + (j + k *
-                                                            s_dim2) * s_dim1] * mu0i / (s[i__ + (j + k * s_dim2) *
-                                                                                          s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] * mu0i
-                                                                                        + ((float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
-                                                                                                                                              (float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) *
-                                                                                        mu1i) * (wedge[i__ + (j + (k + 1) * wedge_dim2) *
-                                                                                                       wedge_dim1] - wedge[i__ + (j + k * wedge_dim2) *
-                                                                                                                           wedge_dim1]) * dzi;
+            s_dim2) * s_dim1] * mu0i / (s[i__ + (j + k * s_dim2) *
+          s_dim1] * s[i__ + (j + k * s_dim2) * s_dim1] * mu0i
+          + ((float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) * (
+          (float)1. - s[i__ + (j + k * s_dim2) * s_dim1]) *
+          mu1i) * (wedge[i__ + (j + (k + 1) * wedge_dim2) *
+          wedge_dim1] - wedge[i__ + (j + k * wedge_dim2) *
+          wedge_dim1]) * dzi;
         sleft[i__ + 1] = thi_xlo__ - dth * (suy + suz + cux) * phiinv;
         sright[i__] = tlo_xhi__ - dth * (suy + suz + cux) * phiinv;
         sbck[i__ + (j + 1) * sbck_dim1] = thi_ylo__ - dth * (sux +
-                                                             suz + cuy) * phiinv;
+          suz + cuy) * phiinv;
         sfrt[i__ + j * sfrt_dim1] = tlo_yhi__ - dth * (sux + suz +
-                                                       cuy) * phiinv;
+          cuy) * phiinv;
         sbotp[i__ + j * sbotp_dim1] = thi_zlo__ - dth * (sux + suy +
-                                                         cuz) * phiinv;
+          cuz) * phiinv;
         stop[i__ + j * stop_dim1] = tlo_zhi__ - dth * (sux + suy +
-                                                       cuz) * phiinv;
+          cuz) * phiinv;
       }
 /*     ::: add x contribution to sn */
       if (k >= ks && k <= ke)
@@ -662,7 +662,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
           for (i__ = is; i__ <= i__3; ++i__)
           {
             if (uedge[i__ + (j + k * uedge_dim2) * uedge_dim1] >=
-                (float)0.)
+              (float)0.)
             {
               supw_m__ = sleft[i__];
             }
@@ -671,7 +671,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
               supw_m__ = sright[i__];
             }
             if (uedge[i__ + 1 + (j + k * uedge_dim2) * uedge_dim1]
-                >= (float)0.)
+              >= (float)0.)
             {
               supw_p__ = sleft[i__ + 1];
             }
@@ -680,16 +680,16 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
               supw_p__ = sright[i__ + 1];
             }
             sn[i__ + (j + k * sn_dim2) * sn_dim1] = s[i__ + (j +
-                                                             k * s_dim2) * s_dim1] - *dt * (supw_p__ *
-                                                                                            supw_p__ * mu0i / (supw_p__ * supw_p__ * mu0i
-                                                                                                               + ((float)1. - supw_p__) * ((float)1. -
-                                                                                                                                           supw_p__) * mu1i) * uedge[i__ + 1 + (j + k *
-                                                                                                                                                                                uedge_dim2) * uedge_dim1] - supw_m__ *
-                                                                                            supw_m__ * mu0i / (supw_m__ * supw_m__ * mu0i
-                                                                                                               + ((float)1. - supw_m__) * ((float)1. -
-                                                                                                                                           supw_m__) * mu1i) * uedge[i__ + (j + k *
-                                                                                                                                                                            uedge_dim2) * uedge_dim1]) / (dx * phi[i__ + (
-                                                                                                                                                                                                                          j + k * phi_dim2) * phi_dim1]);
+                k * s_dim2) * s_dim1] - *dt * (supw_p__ *
+              supw_p__ * mu0i / (supw_p__ * supw_p__ * mu0i
+              + ((float)1. - supw_p__) * ((float)1. -
+              supw_p__) * mu1i) * uedge[i__ + 1 + (j + k *
+              uedge_dim2) * uedge_dim1] - supw_m__ *
+              supw_m__ * mu0i / (supw_m__ * supw_m__ * mu0i
+              + ((float)1. - supw_m__) * ((float)1. -
+              supw_m__) * mu1i) * uedge[i__ + (j + k *
+              uedge_dim2) * uedge_dim1]) / (dx * phi[i__ + (
+              j + k * phi_dim2) * phi_dim1]);
           }
         }
       }
@@ -704,7 +704,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
         for (i__ = is; i__ <= i__3; ++i__)
         {
           if (vedge[i__ + (j + k * vedge_dim2) * vedge_dim1] >= (
-                                                                 float)0.)
+            float)0.)
           {
             supw_m__ = sbck[i__ + j * sbck_dim1];
           }
@@ -713,7 +713,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
             supw_m__ = sfrt[i__ + j * sfrt_dim1];
           }
           if (vedge[i__ + (j + 1 + k * vedge_dim2) * vedge_dim1] >=
-              (float)0.)
+            (float)0.)
           {
             supw_p__ = sbck[i__ + (j + 1) * sbck_dim1];
           }
@@ -722,14 +722,14 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
             supw_p__ = sfrt[i__ + (j + 1) * sfrt_dim1];
           }
           sn[i__ + (j + k * sn_dim2) * sn_dim1] -= *dt * (supw_p__ *
-                                                          supw_p__ * mu0i / (supw_p__ * supw_p__ * mu0i + (
-                                                                                                           (float)1. - supw_p__) * ((float)1. - supw_p__) *
-                                                                             mu1i) * vedge[i__ + (j + 1 + k * vedge_dim2) *
-                                                                                           vedge_dim1] - supw_m__ * supw_m__ * mu0i / (
-                                                                                                                                       supw_m__ * supw_m__ * mu0i + ((float)1. -
-                                                                                                                                                                     supw_m__) * ((float)1. - supw_m__) * mu1i) *
-                                                          vedge[i__ + (j + k * vedge_dim2) * vedge_dim1]) /
-                                                   (dy * phi[i__ + (j + k * phi_dim2) * phi_dim1]);
+            supw_p__ * mu0i / (supw_p__ * supw_p__ * mu0i + (
+            (float)1. - supw_p__) * ((float)1. - supw_p__) *
+            mu1i) * vedge[i__ + (j + 1 + k * vedge_dim2) *
+            vedge_dim1] - supw_m__ * supw_m__ * mu0i / (
+            supw_m__ * supw_m__ * mu0i + ((float)1. -
+            supw_m__) * ((float)1. - supw_m__) * mu1i) *
+            vedge[i__ + (j + k * vedge_dim2) * vedge_dim1]) /
+            (dy * phi[i__ + (j + k * phi_dim2) * phi_dim1]);
         }
       }
     }
@@ -743,20 +743,20 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
         for (i__ = is; i__ <= i__3; ++i__)
         {
           d__1 = beta * betaedge[i__ + (j + k * betaedge_dim2) *
-                                 betaedge_dim1];
+              betaedge_dim1];
           rpsolv_(&sbot[i__ + j * sbot_dim1], &stop[i__ + j *
-                                                    stop_dim1], &wedge[i__ + (j + k * wedge_dim2) *
-                                                                       wedge_dim1], &d__1, &mu0, &mu1, &c__1, &wc, &supw)
+            stop_dim1], &wedge[i__ + (j + k * wedge_dim2) *
+            wedge_dim1], &d__1, &mu0, &mu1, &c__1, &wc, &supw)
           ;
           d__1 = beta * betaedge[i__ + (j + k * betaedge_dim2) *
-                                 betaedge_dim1];
+              betaedge_dim1];
           sfluxz[i__] = supw * supw * mu0i / (supw * supw * mu0i + (
-                                                                    (float)1. - supw) * ((float)1. - supw) * mu1i) *
-                        wedge[i__ + (j + k * wedge_dim2) * wedge_dim1] +
-                        supw * supw * mu0i * (((float)1. - supw) * ((
-                                                                     float)1. - supw) * mu1i) / (supw * supw * mu0i + (
-                                                                                                                       (float)1. - supw) * ((float)1. - supw) * mu1i) *
-                        d__1;
+            (float)1. - supw) * ((float)1. - supw) * mu1i) *
+            wedge[i__ + (j + k * wedge_dim2) * wedge_dim1] +
+            supw * supw * mu0i * (((float)1. - supw) * ((
+            float)1. - supw) * mu1i) / (supw * supw * mu0i + (
+            (float)1. - supw) * ((float)1. - supw) * mu1i) *
+            d__1;
         }
         if (k == ks)
         {
@@ -765,7 +765,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
           {
             sn[i__ + (j + k * sn_dim2) * sn_dim1] += *dt * sfluxz[
               i__] / (dz * phi[i__ + (j + k * phi_dim2) *
-                               phi_dim1]);
+              phi_dim1]);
           }
         }
         else if (k == ke + 1)
@@ -774,8 +774,8 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
           for (i__ = is; i__ <= i__3; ++i__)
           {
             sn[i__ + (j + (k - 1) * sn_dim2) * sn_dim1] -= *dt *
-                                                           sfluxz[i__] / (dz * phi[i__ + (j + (k - 1) *
-                                                                                          phi_dim2) * phi_dim1]);
+              sfluxz[i__] / (dz * phi[i__ + (j + (k - 1) *
+              phi_dim2) * phi_dim1]);
           }
         }
         else
@@ -785,10 +785,10 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
           {
             sn[i__ + (j + k * sn_dim2) * sn_dim1] += *dt * sfluxz[
               i__] / (dz * phi[i__ + (j + k * phi_dim2) *
-                               phi_dim1]);
+              phi_dim1]);
             sn[i__ + (j + (k - 1) * sn_dim2) * sn_dim1] -= *dt *
-                                                           sfluxz[i__] / (dz * phi[i__ + (j + (k - 1) *
-                                                                                          phi_dim2) * phi_dim1]);
+              sfluxz[i__] / (dz * phi[i__ + (j + (k - 1) *
+              phi_dim2) * phi_dim1]);
           }
         }
       }
@@ -817,7 +817,7 @@ doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
 /*     Compute slopes in x and y */
 /* ---------------------------------------------------------------------- */
 /* Subroutine */ int sslopexy_(s, mu0, mu1, slx, sly, k, lo, hi, dlo, dhi,
-                               dxscr, dyscr)
+  dxscr, dyscr)
 doublereal * s, *mu0, *mu1, *slx, *sly;
 integer *k, *lo, *hi, *dlo, *dhi;
 doublereal *dxscr, *dyscr;
@@ -900,11 +900,11 @@ doublereal *dxscr, *dyscr;
     for (i__ = is - 2; i__ <= i__2; ++i__)
     {
       dxscr[i__ + dxscr_dim1] = half * (s[i__ + 1 + (j + *k * s_dim2) *
-                                          s_dim1] - s[i__ - 1 + (j + *k * s_dim2) * s_dim1]);
+        s_dim1] - s[i__ - 1 + (j + *k * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + *k * s_dim2) * s_dim1] - s[i__ - 1 +
-                                                              (j + *k * s_dim2) * s_dim1]);
+        (j + *k * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + 1 + (j + *k * s_dim2) * s_dim1] - s[i__ + (
-                                                                       j + *k * s_dim2) * s_dim1]);
+        j + *k * s_dim2) * s_dim1]);
       if (dpls * dmin__ < (float)0.)
       {
         dxscr[i__ + (dxscr_dim1 << 1)] = zero;
@@ -916,102 +916,102 @@ doublereal *dxscr, *dyscr;
         dxscr[i__ + (dxscr_dim1 << 1)] = pfmin(d__1, d__2);
 /* Computing 3rd power */
         d__1 = s[i__ - 1 + (j + *k * s_dim2) * s_dim1] * s[i__ - 1 + (
-                                                                      j + *k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[
-                                                                                                             i__ - 1 + (j + *k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                                                       s[i__ - 1 + (j + *k * s_dim2) * s_dim1]) * mu1i, d__2
+            j + *k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[
+            i__ - 1 + (j + *k * s_dim2) * s_dim1]) * ((float)1. -
+          s[i__ - 1 + (j + *k * s_dim2) * s_dim1]) * mu1i, d__2
           = d__1;
         strm = ((mu0i * (float)2. * (((float)1. - s[i__ - 1 + (j + *k
-                                                               * s_dim2) * s_dim1]) * ((float)1. - s[i__ - 1 + (j + *
-                                                                                                                k * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (
-                                                                                                                                                                     s[i__ - 1 + (j + *k * s_dim2) * s_dim1] * s[i__ - 1 +
-                                                                                                                                                                                                                 (j + *k * s_dim2) * s_dim1] * mu0i)) * (s[i__ - 1 + (
-                                                                                                                                                                                                                                                                      j + *k * s_dim2) * s_dim1] * s[i__ - 1 + (j + *k *
-                                                                                                                                                                                                                                                                                                                s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ - 1 + (
-                                                                                                                                                                                                                                                                                                                                                                     j + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ - 1
-                                                                                                                                                                                                                                                                                                                                                                                                                  + (j + *k * s_dim2) * s_dim1]) * mu1i) - (s[i__ - 1 +
-                                                                                                                                                                                                                                                                                                                                                                                                                                                              (j + *k * s_dim2) * s_dim1] * (float)2. * mu0i * (((
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  float)1. - s[i__ - 1 + (j + *k * s_dim2) * s_dim1]) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ((float)1. - s[i__ - 1 + (j + *k * s_dim2) * s_dim1])
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * mu1i) - ((float)1. - s[i__ - 1 + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         s_dim1]) * (float)-2. * mu1i * (s[i__ - 1 + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1] * s[i__ - 1 + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            s_dim1] * mu0i)) * (float)2. * (s[i__ - 1 + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         s_dim2) * s_dim1] * (float)2. * mu0i + ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   i__ - 1 + (j + *k * s_dim2) * s_dim1]) * (float)-2. *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            mu1i)) / (d__2 * (d__1 * d__1));
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ - 1 + (j + *
+          k * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (
+          s[i__ - 1 + (j + *k * s_dim2) * s_dim1] * s[i__ - 1 +
+          (j + *k * s_dim2) * s_dim1] * mu0i)) * (s[i__ - 1 + (
+          j + *k * s_dim2) * s_dim1] * s[i__ - 1 + (j + *k *
+          s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ - 1 + (
+          j + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ - 1
+          + (j + *k * s_dim2) * s_dim1]) * mu1i) - (s[i__ - 1 +
+          (j + *k * s_dim2) * s_dim1] * (float)2. * mu0i * (((
+          float)1. - s[i__ - 1 + (j + *k * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ - 1 + (j + *k * s_dim2) * s_dim1])
+          * mu1i) - ((float)1. - s[i__ - 1 + (j + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ - 1 + (j + *k *
+          s_dim2) * s_dim1] * s[i__ - 1 + (j + *k * s_dim2) *
+          s_dim1] * mu0i)) * (float)2. * (s[i__ - 1 + (j + *k *
+          s_dim2) * s_dim1] * (float)2. * mu0i + ((float)1. - s[
+            i__ - 1 + (j + *k * s_dim2) * s_dim1]) * (float)-2. *
+          mu1i)) / (d__2 * (d__1 * d__1));
 /* Computing 3rd power */
         d__1 = s[i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
-                                                                                                                                                               k * s_dim2) * s_dim1]) * mu1i, d__2 = d__1;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
+          k * s_dim2) * s_dim1]) * mu1i, d__2 = d__1;
         strc = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + *k *
-                                                           s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                      s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
-                                                                                                                                                         i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                                                                                                                                                                      s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + *k *
-                                                                                                                                                                                                                                             s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                   s_dim1] * mu0i + ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                     s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                            s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                     s[i__ + (j + *k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                               i__ + (j + *k * s_dim2) * s_dim1]) * mu1i) - ((float)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             1. - s[i__ + (j + *k * s_dim2) * s_dim1]) * (float)
-                                                                                                                                                                                                                                                                                                                                                                                   -2. * mu1i * (s[i__ + (j + *k * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                   i__ + (j + *k * s_dim2) * s_dim1] * mu0i)) * (float)
-                2. * (s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2.
-                      * mu0i + ((float)1. - s[i__ + (j + *k * s_dim2) *
-                                              s_dim1]) * (float)-2. * mu1i)) / (d__2 * (d__1 * d__1)
-                                                                                );
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
+            i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
+          s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
+          s_dim1] * mu0i + ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
+          s[i__ + (j + *k * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + *k * s_dim2) * s_dim1]) * mu1i) - ((float)
+          1. - s[i__ + (j + *k * s_dim2) * s_dim1]) * (float)
+          -2. * mu1i * (s[i__ + (j + *k * s_dim2) * s_dim1] * s[
+            i__ + (j + *k * s_dim2) * s_dim1] * mu0i)) * (float)
+          2. * (s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2.
+          * mu0i + ((float)1. - s[i__ + (j + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i)) / (d__2 * (d__1 * d__1)
+          );
 /* Computing 3rd power */
         d__1 = s[i__ + 1 + (j + *k * s_dim2) * s_dim1] * s[i__ + 1 + (
-                                                                      j + *k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[
-                                                                                                             i__ + 1 + (j + *k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                                                       s[i__ + 1 + (j + *k * s_dim2) * s_dim1]) * mu1i, d__2
+            j + *k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[
+            i__ + 1 + (j + *k * s_dim2) * s_dim1]) * ((float)1. -
+          s[i__ + 1 + (j + *k * s_dim2) * s_dim1]) * mu1i, d__2
           = d__1;
         strp = ((mu0i * (float)2. * (((float)1. - s[i__ + 1 + (j + *k
-                                                               * s_dim2) * s_dim1]) * ((float)1. - s[i__ + 1 + (j + *
-                                                                                                                k * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (
-                                                                                                                                                                     s[i__ + 1 + (j + *k * s_dim2) * s_dim1] * s[i__ + 1 +
-                                                                                                                                                                                                                 (j + *k * s_dim2) * s_dim1] * mu0i)) * (s[i__ + 1 + (
-                                                                                                                                                                                                                                                                      j + *k * s_dim2) * s_dim1] * s[i__ + 1 + (j + *k *
-                                                                                                                                                                                                                                                                                                                s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + 1 + (
-                                                                                                                                                                                                                                                                                                                                                                     j + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + 1
-                                                                                                                                                                                                                                                                                                                                                                                                                  + (j + *k * s_dim2) * s_dim1]) * mu1i) - (s[i__ + 1 +
-                                                                                                                                                                                                                                                                                                                                                                                                                                                              (j + *k * s_dim2) * s_dim1] * (float)2. * mu0i * (((
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  float)1. - s[i__ + 1 + (j + *k * s_dim2) * s_dim1]) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ((float)1. - s[i__ + 1 + (j + *k * s_dim2) * s_dim1])
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * mu1i) - ((float)1. - s[i__ + 1 + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + 1 + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1] * s[i__ + 1 + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            s_dim1] * mu0i)) * (float)2. * (s[i__ + 1 + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         s_dim2) * s_dim1] * (float)2. * mu0i + ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   i__ + 1 + (j + *k * s_dim2) * s_dim1]) * (float)-2. *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            mu1i)) / (d__2 * (d__1 * d__1));
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + 1 + (j + *
+          k * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (
+          s[i__ + 1 + (j + *k * s_dim2) * s_dim1] * s[i__ + 1 +
+          (j + *k * s_dim2) * s_dim1] * mu0i)) * (s[i__ + 1 + (
+          j + *k * s_dim2) * s_dim1] * s[i__ + 1 + (j + *k *
+          s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + 1 + (
+          j + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + 1
+          + (j + *k * s_dim2) * s_dim1]) * mu1i) - (s[i__ + 1 +
+          (j + *k * s_dim2) * s_dim1] * (float)2. * mu0i * (((
+          float)1. - s[i__ + 1 + (j + *k * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + 1 + (j + *k * s_dim2) * s_dim1])
+          * mu1i) - ((float)1. - s[i__ + 1 + (j + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + 1 + (j + *k *
+          s_dim2) * s_dim1] * s[i__ + 1 + (j + *k * s_dim2) *
+          s_dim1] * mu0i)) * (float)2. * (s[i__ + 1 + (j + *k *
+          s_dim2) * s_dim1] * (float)2. * mu0i + ((float)1. - s[
+            i__ + 1 + (j + *k * s_dim2) * s_dim1]) * (float)-2. *
+          mu1i)) / (d__2 * (d__1 * d__1));
         if (strm * strc <= (float)0. || strc * strp <= (float)0.)
         {
           dxscr[i__ + (dxscr_dim1 << 1)] = half * dxscr[i__ + (
-                                                               dxscr_dim1 << 1)];
+              dxscr_dim1 << 1)];
         }
       }
       dxscr[i__ + dxscr_dim1 * 3] = d_sign(&one, &dxscr[i__ +
-                                                        dxscr_dim1]);
+          dxscr_dim1]);
 /* Computing MIN */
       d__2 = dxscr[i__ + (dxscr_dim1 << 1)], d__3 = (d__1 = dxscr[i__ +
-                                                                  dxscr_dim1], abs(d__1));
+        dxscr_dim1], abs(d__1));
       dxscr[i__ + (dxscr_dim1 << 2)] = dxscr[i__ + dxscr_dim1 * 3] *
-                                       pfmin(d__2, d__3);
+        pfmin(d__2, d__3);
     }
     i__2 = ie + 1;
     for (i__ = is - 1; i__ <= i__2; ++i__)
     {
       ds = two * two3rd * dxscr[i__ + dxscr_dim1] - sixth * (dxscr[i__
-                                                                   + 1 + (dxscr_dim1 << 2)] + dxscr[i__ - 1 + (dxscr_dim1 <<
-                                                                                                               2)]);
+        + 1 + (dxscr_dim1 << 2)] + dxscr[i__ - 1 + (dxscr_dim1 <<
+        2)]);
 /* Computing MIN */
       d__1 = abs(ds), d__2 = dxscr[i__ + (dxscr_dim1 << 1)];
       slx[i__ + j * slx_dim1] = dxscr[i__ + dxscr_dim1 * 3] * pfmin(d__1,
-                                                                    d__2);
+          d__2);
     }
   }
 /*     ::::: SLOPES in the Y direction */
@@ -1022,11 +1022,11 @@ doublereal *dxscr, *dyscr;
     for (j = js - 2; j <= i__2; ++j)
     {
       dyscr[j + dyscr_dim1] = half * (s[i__ + (j + 1 + *k * s_dim2) *
-                                        s_dim1] - s[i__ + (j - 1 + *k * s_dim2) * s_dim1]);
+        s_dim1] - s[i__ + (j - 1 + *k * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + *k * s_dim2) * s_dim1] - s[i__ + (j
-                                                                     - 1 + *k * s_dim2) * s_dim1]);
+        - 1 + *k * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + (j + 1 + *k * s_dim2) * s_dim1] - s[i__ + (
-                                                                       j + *k * s_dim2) * s_dim1]);
+        j + *k * s_dim2) * s_dim1]);
       if (dpls * dmin__ < (float)0.)
       {
         dyscr[j + (dyscr_dim1 << 1)] = zero;
@@ -1038,100 +1038,100 @@ doublereal *dxscr, *dyscr;
         dyscr[j + (dyscr_dim1 << 1)] = pfmin(d__1, d__2);
 /* Computing 3rd power */
         d__1 = s[i__ + (j - 1 + *k * s_dim2) * s_dim1] * s[i__ + (j -
-                                                                  1 + *k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[
-                                                                                                         i__ + (j - 1 + *k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                                                   s[i__ + (j - 1 + *k * s_dim2) * s_dim1]) * mu1i, d__2
+            1 + *k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[
+            i__ + (j - 1 + *k * s_dim2) * s_dim1]) * ((float)1. -
+          s[i__ + (j - 1 + *k * s_dim2) * s_dim1]) * mu1i, d__2
           = d__1;
         strm = ((mu0i * (float)2. * (((float)1. - s[i__ + (j - 1 + *k
-                                                           * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j - 1 + *
-                                                                                                        k * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (
-                                                                                                                                                             s[i__ + (j - 1 + *k * s_dim2) * s_dim1] * s[i__ + (j
-                                                                                                                                                                                                                - 1 + *k * s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j -
-                                                                                                                                                                                                                                                                  1 + *k * s_dim2) * s_dim1] * s[i__ + (j - 1 + *k *
-                                                                                                                                                                                                                                                                                                        s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j -
-                                                                                                                                                                                                                                                                                                                                                         1 + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j
-                                                                                                                                                                                                                                                                                                                                                                                                             - 1 + *k * s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j -
-                                                                                                                                                                                                                                                                                                                                                                                                                                                               1 + *k * s_dim2) * s_dim1] * (float)2. * mu0i * (((
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  float)1. - s[i__ + (j - 1 + *k * s_dim2) * s_dim1]) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ((float)1. - s[i__ + (j - 1 + *k * s_dim2) * s_dim1])
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * mu1i) - ((float)1. - s[i__ + (j - 1 + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + (j - 1 + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  s_dim2) * s_dim1] * s[i__ + (j - 1 + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        s_dim1] * mu0i)) * (float)2. * (s[i__ + (j - 1 + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 s_dim2) * s_dim1] * (float)2. * mu0i + ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           i__ + (j - 1 + *k * s_dim2) * s_dim1]) * (float)-2. *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        mu1i)) / (d__2 * (d__1 * d__1));
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j - 1 + *
+          k * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (
+          s[i__ + (j - 1 + *k * s_dim2) * s_dim1] * s[i__ + (j
+          - 1 + *k * s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j -
+          1 + *k * s_dim2) * s_dim1] * s[i__ + (j - 1 + *k *
+          s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j -
+          1 + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j
+          - 1 + *k * s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j -
+          1 + *k * s_dim2) * s_dim1] * (float)2. * mu0i * (((
+          float)1. - s[i__ + (j - 1 + *k * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + (j - 1 + *k * s_dim2) * s_dim1])
+          * mu1i) - ((float)1. - s[i__ + (j - 1 + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + (j - 1 + *k *
+          s_dim2) * s_dim1] * s[i__ + (j - 1 + *k * s_dim2) *
+          s_dim1] * mu0i)) * (float)2. * (s[i__ + (j - 1 + *k *
+          s_dim2) * s_dim1] * (float)2. * mu0i + ((float)1. - s[
+            i__ + (j - 1 + *k * s_dim2) * s_dim1]) * (float)-2. *
+          mu1i)) / (d__2 * (d__1 * d__1));
 /* Computing 3rd power */
         d__1 = s[i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
-                                                                                                                                                               k * s_dim2) * s_dim1]) * mu1i, d__2 = d__1;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
+          k * s_dim2) * s_dim1]) * mu1i, d__2 = d__1;
         strc = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + *k *
-                                                           s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                      s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
-                                                                                                                                                         i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                                                                                                                                                                      s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + *k *
-                                                                                                                                                                                                                                             s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                   s_dim1] * mu0i + ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                     s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                            s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                     s[i__ + (j + *k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                               i__ + (j + *k * s_dim2) * s_dim1]) * mu1i) - ((float)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             1. - s[i__ + (j + *k * s_dim2) * s_dim1]) * (float)
-                                                                                                                                                                                                                                                                                                                                                                                   -2. * mu1i * (s[i__ + (j + *k * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                   i__ + (j + *k * s_dim2) * s_dim1] * mu0i)) * (float)
-                2. * (s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2.
-                      * mu0i + ((float)1. - s[i__ + (j + *k * s_dim2) *
-                                              s_dim1]) * (float)-2. * mu1i)) / (d__2 * (d__1 * d__1)
-                                                                                );
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
+            i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
+          s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
+          s_dim1] * mu0i + ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
+          s[i__ + (j + *k * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + *k * s_dim2) * s_dim1]) * mu1i) - ((float)
+          1. - s[i__ + (j + *k * s_dim2) * s_dim1]) * (float)
+          -2. * mu1i * (s[i__ + (j + *k * s_dim2) * s_dim1] * s[
+            i__ + (j + *k * s_dim2) * s_dim1] * mu0i)) * (float)
+          2. * (s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2.
+          * mu0i + ((float)1. - s[i__ + (j + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i)) / (d__2 * (d__1 * d__1)
+          );
 /* Computing 3rd power */
         d__1 = s[i__ + (j + 1 + *k * s_dim2) * s_dim1] * s[i__ + (j +
-                                                                  1 + *k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[
-                                                                                                         i__ + (j + 1 + *k * s_dim2) * s_dim1]) * ((float)1. -
-                                                                                                                                                   s[i__ + (j + 1 + *k * s_dim2) * s_dim1]) * mu1i, d__2
+            1 + *k * s_dim2) * s_dim1] * mu0i + ((float)1. - s[
+            i__ + (j + 1 + *k * s_dim2) * s_dim1]) * ((float)1. -
+          s[i__ + (j + 1 + *k * s_dim2) * s_dim1]) * mu1i, d__2
           = d__1;
         strp = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + 1 + *k
-                                                           * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + 1 + *
-                                                                                                        k * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (
-                                                                                                                                                             s[i__ + (j + 1 + *k * s_dim2) * s_dim1] * s[i__ + (j
-                                                                                                                                                                                                                + 1 + *k * s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j +
-                                                                                                                                                                                                                                                                  1 + *k * s_dim2) * s_dim1] * s[i__ + (j + 1 + *k *
-                                                                                                                                                                                                                                                                                                        s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                                                                                                                                                                                                                                                                         1 + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j
-                                                                                                                                                                                                                                                                                                                                                                                                             + 1 + *k * s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j +
-                                                                                                                                                                                                                                                                                                                                                                                                                                                               1 + *k * s_dim2) * s_dim1] * (float)2. * mu0i * (((
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  float)1. - s[i__ + (j + 1 + *k * s_dim2) * s_dim1]) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ((float)1. - s[i__ + (j + 1 + *k * s_dim2) * s_dim1])
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * mu1i) - ((float)1. - s[i__ + (j + 1 + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + 1 + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  s_dim2) * s_dim1] * s[i__ + (j + 1 + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        s_dim1] * mu0i)) * (float)2. * (s[i__ + (j + 1 + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 s_dim2) * s_dim1] * (float)2. * mu0i + ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           i__ + (j + 1 + *k * s_dim2) * s_dim1]) * (float)-2. *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        mu1i)) / (d__2 * (d__1 * d__1));
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + 1 + *
+          k * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (
+          s[i__ + (j + 1 + *k * s_dim2) * s_dim1] * s[i__ + (j
+          + 1 + *k * s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j +
+          1 + *k * s_dim2) * s_dim1] * s[i__ + (j + 1 + *k *
+          s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          1 + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j
+          + 1 + *k * s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j +
+          1 + *k * s_dim2) * s_dim1] * (float)2. * mu0i * (((
+          float)1. - s[i__ + (j + 1 + *k * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + (j + 1 + *k * s_dim2) * s_dim1])
+          * mu1i) - ((float)1. - s[i__ + (j + 1 + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + 1 + *k *
+          s_dim2) * s_dim1] * s[i__ + (j + 1 + *k * s_dim2) *
+          s_dim1] * mu0i)) * (float)2. * (s[i__ + (j + 1 + *k *
+          s_dim2) * s_dim1] * (float)2. * mu0i + ((float)1. - s[
+            i__ + (j + 1 + *k * s_dim2) * s_dim1]) * (float)-2. *
+          mu1i)) / (d__2 * (d__1 * d__1));
         if (strm * strc <= (float)0. || strc * strp <= (float)0.)
         {
           dyscr[j + (dyscr_dim1 << 1)] = half * dyscr[j + (
-                                                           dyscr_dim1 << 1)];
+              dyscr_dim1 << 1)];
         }
       }
       dyscr[j + dyscr_dim1 * 3] = d_sign(&one, &dyscr[j + dyscr_dim1]);
 /* Computing MIN */
       d__2 = dyscr[j + (dyscr_dim1 << 1)], d__3 = (d__1 = dyscr[j +
-                                                                dyscr_dim1], abs(d__1));
+        dyscr_dim1], abs(d__1));
       dyscr[j + (dyscr_dim1 << 2)] = dyscr[j + dyscr_dim1 * 3] * pfmin(
-                                                                       d__2, d__3);
+          d__2, d__3);
     }
     i__2 = je + 1;
     for (j = js - 1; j <= i__2; ++j)
     {
       ds = two * two3rd * dyscr[j + dyscr_dim1] - sixth * (dyscr[j + 1
-                                                                 + (dyscr_dim1 << 2)] + dyscr[j - 1 + (dyscr_dim1 << 2)]);
+        + (dyscr_dim1 << 2)] + dyscr[j - 1 + (dyscr_dim1 << 2)]);
 /* Computing MIN */
       d__1 = abs(ds), d__2 = dyscr[j + (dyscr_dim1 << 1)];
       sly[i__ + j * sly_dim1] = dyscr[j + dyscr_dim1 * 3] * pfmin(d__1,
-                                                                  d__2);
+          d__2);
     }
   }
   return 0;
@@ -1142,7 +1142,7 @@ doublereal *dxscr, *dyscr;
 /*     Compute slopes in z */
 /* ---------------------------------------------------------------------- */
 /* Subroutine */ int sslopez_(s, mu0, mu1, w, betaedge, beta, slz, k, kk, lo,
-                              hi, dlo, dhi, dzscr, dzfrm)
+  hi, dlo, dhi, dzscr, dzfrm)
 doublereal * s, *mu0, *mu1, *w, *betaedge, *beta, *slz;
 integer *k, *kk, *lo, *hi, *dlo, *dhi;
 doublereal *dzscr, *dzfrm;
@@ -1193,7 +1193,7 @@ doublereal *dzscr, *dzfrm;
   betaedge_dim1 = dhi[1] + 2 - (dlo[1] - 2) + 1;
   betaedge_dim2 = dhi[2] + 2 - (dlo[2] - 2) + 1;
   betaedge_offset = dlo[1] - 2 + betaedge_dim1 * (dlo[2] - 2 +
-                                                  betaedge_dim2 * (dlo[3] - 2));
+    betaedge_dim2 * (dlo[3] - 2));
   betaedge -= betaedge_offset;
   w_dim1 = dhi[1] + 2 - (dlo[1] - 2) + 1;
   w_dim2 = dhi[2] + 2 - (dlo[2] - 2) + 1;
@@ -1233,11 +1233,11 @@ doublereal *dzscr, *dzfrm;
     {
       kt = *k - 1;
       dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (kt + 1) * s_dim2)
-                                          * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
+        * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + kt * s_dim2) * s_dim1] - s[i__ + (j
-                                                                     + (kt - 1) * s_dim2) * s_dim1]);
+        + (kt - 1) * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] - s[i__ +
-                                                                  (j + kt * s_dim2) * s_dim1]);
+        (j + kt * s_dim2) * s_dim1]);
       if (dpls * dmin__ < (float)0.)
       {
         dzscr[i__ + (dzscr_dim1 << 1)] = zero;
@@ -1248,249 +1248,249 @@ doublereal *dzscr, *dzfrm;
         d__1 = abs(dmin__), d__2 = abs(dpls);
         dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1, d__2);
         d__1 = *beta * betaedge[i__ + (j + kt * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
-               mu1i, d__3 = d__2;
+            + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
+          mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + (kt - 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * (float)2. *
-               mu0i * (((float)1. - s[i__ + (j + (kt - 1) * s_dim2)
-                                      * s_dim1]) * ((float)1. - s[i__ + (j + (kt - 1) *
-                                                                         s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
-                                                                                                                            + (kt - 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
-               (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (
-                                                                     j + (kt - 1) * s_dim2) * s_dim1] * mu0i);
+          mu0i * (((float)1. - s[i__ + (j + (kt - 1) * s_dim2)
+          * s_dim1]) * ((float)1. - s[i__ + (j + (kt - 1) *
+          s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
+          + (kt - 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
+          (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (
+          j + (kt - 1) * s_dim2) * s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
-               mu1i, d__8 = d__7;
+            + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
+          mu1i, d__8 = d__7;
         strm = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (kt -
-                                                                1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (
-                                                                                                                     kt - 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
-                 2. * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[
-                         i__ + (j + (kt - 1) * s_dim2) * s_dim1] * mu0i)) * (s[
-                                                                               i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                                                                                  + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                                                                                           s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                                                                                         1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
-                                                                             mu1i) - (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * (
-                                                                                                                                   float)2. * mu0i * (((float)1. - s[i__ + (j + (kt - 1)
-                                                                                                                                                                            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (kt
-                                                                                                                                                                                                                              - 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
-                                                                                                                                                                                                                                                                     i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * (float)-2.
-                                                                                      * mu1i * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] *
-                                                                                                s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * mu0i)) * (
-                                                                                                                                                      float)2. * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]
-                                                                                                                                                                  * (float)2. * mu0i + ((float)1. - s[i__ + (j + (kt -
-                                                                                                                                                                                                                  1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
-                                                                                                                                                                                                                                                                   * (d__2 * d__2)) * w[i__ + (j + kt * w_dim2) * w_dim1]
-               + ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (
-                                                                  kt - 1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (
-                                                                                                                       j + (kt - 1) * s_dim2) * s_dim1]) * mu1i) * (((float)
-                                                                                                                                                                     1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((
-                                                                                                                                                                                                                         float)1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1])
-                                                                                                                                                                    * mu1i) + mu1i * (float)2. * (s[i__ + (j + (kt - 1) *
-                                                                                                                                                                                                           s_dim2) * s_dim1] * s[i__ + (j + (kt - 1) * s_dim2) *
-                                                                                                                                                                                                                                 s_dim1] * mu0i) * (s[i__ + (j + (kt - 1) * s_dim2) *
-                                                                                                                                                                                                                                                      s_dim1] * s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] *
-                                                                                                                                                                                                                                                    mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
-                  d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
-               d__1;
+          1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (
+          kt - 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
+          2. * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[
+            i__ + (j + (kt - 1) * s_dim2) * s_dim1] * mu0i)) * (s[
+            i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (j
+          + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
+          mu1i) - (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * (
+          float)2. * mu0i * (((float)1. - s[i__ + (j + (kt - 1)
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (kt
+          - 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
+            i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * (float)-2.
+          * mu1i * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] *
+          s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * mu0i)) * (
+          float)2. * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]
+          * (float)2. * mu0i + ((float)1. - s[i__ + (j + (kt -
+          1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
+          * (d__2 * d__2)) * w[i__ + (j + kt * w_dim2) * w_dim1]
+          + ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (
+          kt - 1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (
+          j + (kt - 1) * s_dim2) * s_dim1]) * mu1i) * (((float)
+          1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((
+          float)1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1])
+          * mu1i) + mu1i * (float)2. * (s[i__ + (j + (kt - 1) *
+          s_dim2) * s_dim1] * s[i__ + (j + (kt - 1) * s_dim2) *
+          s_dim1] * mu0i) * (s[i__ + (j + (kt - 1) * s_dim2) *
+          s_dim1] * s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] *
+          mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
+          d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
+          d__1;
         d__1 = *beta * betaedge[i__ + (j + kt * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                               kt * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + kt * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + kt * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2. * mu0i
-               * (((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
-                  ((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
-                  mu1i) - ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + kt *
-                                                                                  s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                        s_dim1] * mu0i);
+          * (((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
+          mu1i) - ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                               kt * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
         strcm = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + kt *
-                                                            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                       s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
-                                                                                                                                                          i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                                                                                                                                                                       s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + kt *
-                                                                                                                                                                                                                                              s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                                                                                                                    s_dim1] * mu0i + ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                                                             s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                      s[i__ + (j + kt * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                i__ + (j + kt * s_dim2) * s_dim1]) * mu1i) - ((float)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1. - s[i__ + (j + kt * s_dim2) * s_dim1]) * (float)
-                                                                                                                                                                                                                                                                                                                                                                                    -2. * mu1i * (s[i__ + (j + kt * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                    i__ + (j + kt * s_dim2) * s_dim1] * mu0i)) * (float)
-                 2. * (s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2.
-                       * mu0i + ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                               s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
-                                                                                 ) * w[i__ + (j + kt * w_dim2) * w_dim1] + ((mu0i * (
-                                                                                                                                     float)2. * (((float)1. - s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                s_dim1]) * ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                                          s_dim1]) * mu1i) * (((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                    s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                               s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (s[
-                                                                                                                                                                                                                                                                                                                                  i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                                               s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + kt * s_dim2)
-                                                                                                                                                                                                                                                                                                                                                                                                              * s_dim1] * s[i__ + (j + kt * s_dim2) * s_dim1] *
-                                                                                                                                                                                                                                                                                                                                                                                                            mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
-                                                                                                                            d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
-                d__1;
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
+            i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
+          s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i + ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
+          s[i__ + (j + kt * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + kt * s_dim2) * s_dim1]) * mu1i) - ((float)
+          1. - s[i__ + (j + kt * s_dim2) * s_dim1]) * (float)
+          -2. * mu1i * (s[i__ + (j + kt * s_dim2) * s_dim1] * s[
+            i__ + (j + kt * s_dim2) * s_dim1] * mu0i)) * (float)
+          2. * (s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2.
+          * mu0i + ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
+          ) * w[i__ + (j + kt * w_dim2) * w_dim1] + ((mu0i * (
+          float)2. * (((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * mu1i) * (((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (s[
+            i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
+          s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + kt * s_dim2)
+          * s_dim1] * s[i__ + (j + kt * s_dim2) * s_dim1] *
+          mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
+          d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
+          d__1;
         d__1 = *beta * betaedge[i__ + (j + (kt + 1) * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                               kt * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + kt * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + kt * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2. * mu0i
-               * (((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
-                  ((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
-                  mu1i) - ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + kt *
-                                                                                  s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                        s_dim1] * mu0i);
+          * (((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
+          mu1i) - ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                               kt * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
         strcp = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + kt *
-                                                            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                       s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
-                                                                                                                                                          i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                                                                                                                                                                       s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + kt *
-                                                                                                                                                                                                                                              s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                                                                                                                    s_dim1] * mu0i + ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                                                             s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                      s[i__ + (j + kt * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                i__ + (j + kt * s_dim2) * s_dim1]) * mu1i) - ((float)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1. - s[i__ + (j + kt * s_dim2) * s_dim1]) * (float)
-                                                                                                                                                                                                                                                                                                                                                                                    -2. * mu1i * (s[i__ + (j + kt * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                    i__ + (j + kt * s_dim2) * s_dim1] * mu0i)) * (float)
-                 2. * (s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2.
-                       * mu0i + ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                               s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
-                                                                                 ) * w[i__ + (j + (kt + 1) * w_dim2) * w_dim1] + ((
-                                                                                                                                   mu0i * (float)2. * (((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                             s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                        s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[i__ + (j
-                                                                                                                                                                                                                                                                            + kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                                                                                                                                                                                              kt * s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (
-                                                                                                                                                                                                                                                                                                                                                                                    s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt
-                                                                                                                                                                                                                                                                                                                                                                                                                                   * s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 d__7)) * d__1;
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
+            i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
+          s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i + ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
+          s[i__ + (j + kt * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + kt * s_dim2) * s_dim1]) * mu1i) - ((float)
+          1. - s[i__ + (j + kt * s_dim2) * s_dim1]) * (float)
+          -2. * mu1i * (s[i__ + (j + kt * s_dim2) * s_dim1] * s[
+            i__ + (j + kt * s_dim2) * s_dim1] * mu0i)) * (float)
+          2. * (s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2.
+          * mu0i + ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
+          ) * w[i__ + (j + (kt + 1) * w_dim2) * w_dim1] + ((
+          mu0i * (float)2. * (((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[i__ + (j
+          + kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (
+          s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt
+          * s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
+          mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
+          d__7)) * d__1;
         d__1 = *beta * betaedge[i__ + (j + (kt + 1) * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
-               mu1i, d__3 = d__2;
+            + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
+          mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + (kt + 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * (float)2. *
-               mu0i * (((float)1. - s[i__ + (j + (kt + 1) * s_dim2)
-                                      * s_dim1]) * ((float)1. - s[i__ + (j + (kt + 1) *
-                                                                         s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
-                                                                                                                            + (kt + 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
-               (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (
-                                                                     j + (kt + 1) * s_dim2) * s_dim1] * mu0i);
+          mu0i * (((float)1. - s[i__ + (j + (kt + 1) * s_dim2)
+          * s_dim1]) * ((float)1. - s[i__ + (j + (kt + 1) *
+          s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
+          + (kt + 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
+          (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (
+          j + (kt + 1) * s_dim2) * s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
-               mu1i, d__8 = d__7;
+            + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
+          mu1i, d__8 = d__7;
         strp = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (kt +
-                                                                1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (
-                                                                                                                     kt + 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
-                 2. * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[
-                         i__ + (j + (kt + 1) * s_dim2) * s_dim1] * mu0i)) * (s[
-                                                                               i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                                                                                  + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                                                                                           s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                                                                                         1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
-                                                                             mu1i) - (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * (
-                                                                                                                                   float)2. * mu0i * (((float)1. - s[i__ + (j + (kt + 1)
-                                                                                                                                                                            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (kt
-                                                                                                                                                                                                                              + 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
-                                                                                                                                                                                                                                                                     i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * (float)-2.
-                                                                                      * mu1i * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] *
-                                                                                                s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * mu0i)) * (
-                                                                                                                                                      float)2. * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]
-                                                                                                                                                                  * (float)2. * mu0i + ((float)1. - s[i__ + (j + (kt +
-                                                                                                                                                                                                                  1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
-                                                                                                                                                                                                                                                                   * (d__2 * d__2)) * w[i__ + (j + (kt + 1) * w_dim2) *
-                                                                                                                                                                                                                                                                                        w_dim1] + ((mu0i * (float)2. * (((float)1. - s[i__ + (
-                                                                                                                                                                                                                                                                                                                                              j + (kt + 1) * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                     i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * mu1i) * (((
-                                                                                                                                                                                                                                                                                                                                                                                                                                           float)1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1])
-                                                                                                                                                                                                                                                                                                                                                                                                                                         * ((float)1. - s[i__ + (j + (kt + 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          s_dim1]) * mu1i) + mu1i * (float)2. * (s[i__ + (j + (
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               kt + 1) * s_dim2) * s_dim1] * s[i__ + (j + (kt + 1) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + (kt + 1) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            s_dim2) * s_dim1] * s[i__ + (j + (kt + 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  d__7)) * d__1;
+          1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (
+          kt + 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
+          2. * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[
+            i__ + (j + (kt + 1) * s_dim2) * s_dim1] * mu0i)) * (s[
+            i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (j
+          + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
+          mu1i) - (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * (
+          float)2. * mu0i * (((float)1. - s[i__ + (j + (kt + 1)
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (kt
+          + 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
+            i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * (float)-2.
+          * mu1i * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] *
+          s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * mu0i)) * (
+          float)2. * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]
+          * (float)2. * mu0i + ((float)1. - s[i__ + (j + (kt +
+          1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
+          * (d__2 * d__2)) * w[i__ + (j + (kt + 1) * w_dim2) *
+            w_dim1] + ((mu0i * (float)2. * (((float)1. - s[i__ + (
+          j + (kt + 1) * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * mu1i) * (((
+          float)1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1])
+          * ((float)1. - s[i__ + (j + (kt + 1) * s_dim2) *
+          s_dim1]) * mu1i) + mu1i * (float)2. * (s[i__ + (j + (
+          kt + 1) * s_dim2) * s_dim1] * s[i__ + (j + (kt + 1) *
+          s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + (kt + 1) *
+          s_dim2) * s_dim1] * s[i__ + (j + (kt + 1) * s_dim2) *
+          s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
+          mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
+          d__7)) * d__1;
         if (strm * strcm <= (float)0. || strcp * strp <= (float)0.)
         {
           dzscr[i__ + (dzscr_dim1 << 1)] = half * dzscr[i__ + (
-                                                               dzscr_dim1 << 1)];
+              dzscr_dim1 << 1)];
         }
       }
       dzscr[i__ + dzscr_dim1 * 3] = d_sign(&one, &dzscr[i__ +
-                                                        dzscr_dim1]);
+          dzscr_dim1]);
 /* Computing MIN */
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
-                                                                  dzscr_dim1], abs(d__1));
+        dzscr_dim1], abs(d__1));
       dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-                                                                         d__2, d__3);
+          d__2, d__3);
       kt = *k + 1;
       dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (kt + 1) * s_dim2)
-                                          * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
+        * s_dim1] - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + kt * s_dim2) * s_dim1] - s[i__ + (j
-                                                                     + (kt - 1) * s_dim2) * s_dim1]);
+        + (kt - 1) * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] - s[i__ +
-                                                                  (j + kt * s_dim2) * s_dim1]);
+        (j + kt * s_dim2) * s_dim1]);
       if (dpls * dmin__ < (float)0.)
       {
         dzscr[i__ + (dzscr_dim1 << 1)] = zero;
@@ -1501,248 +1501,248 @@ doublereal *dzscr, *dzfrm;
         d__1 = abs(dmin__), d__2 = abs(dpls);
         dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1, d__2);
         d__1 = *beta * betaedge[i__ + (j + (kt - 1) * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
-               mu1i, d__3 = d__2;
+            + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
+          mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + (kt - 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * (float)2. *
-               mu0i * (((float)1. - s[i__ + (j + (kt - 1) * s_dim2)
-                                      * s_dim1]) * ((float)1. - s[i__ + (j + (kt - 1) *
-                                                                         s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
-                                                                                                                            + (kt - 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
-               (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (
-                                                                     j + (kt - 1) * s_dim2) * s_dim1] * mu0i);
+          mu0i * (((float)1. - s[i__ + (j + (kt - 1) * s_dim2)
+          * s_dim1]) * ((float)1. - s[i__ + (j + (kt - 1) *
+          s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
+          + (kt - 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
+          (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (
+          j + (kt - 1) * s_dim2) * s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
-               mu1i, d__8 = d__7;
+            + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
+          mu1i, d__8 = d__7;
         strm = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (kt -
-                                                                1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (
-                                                                                                                     kt - 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
-                 2. * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[
-                         i__ + (j + (kt - 1) * s_dim2) * s_dim1] * mu0i)) * (s[
-                                                                               i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                                                                                  + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                                                                                           s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                                                                                         1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
-                                                                             mu1i) - (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * (
-                                                                                                                                   float)2. * mu0i * (((float)1. - s[i__ + (j + (kt - 1)
-                                                                                                                                                                            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (kt
-                                                                                                                                                                                                                              - 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
-                                                                                                                                                                                                                                                                     i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * (float)-2.
-                                                                                      * mu1i * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] *
-                                                                                                s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * mu0i)) * (
-                                                                                                                                                      float)2. * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]
-                                                                                                                                                                  * (float)2. * mu0i + ((float)1. - s[i__ + (j + (kt -
-                                                                                                                                                                                                                  1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
-                                                                                                                                                                                                                                                                   * (d__2 * d__2)) * w[i__ + (j + kt * w_dim2) * w_dim1]
-               + ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (
-                                                                  kt - 1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (
-                                                                                                                       j + (kt - 1) * s_dim2) * s_dim1]) * mu1i) * (((float)
-                                                                                                                                                                     1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((
-                                                                                                                                                                                                                         float)1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1])
-                                                                                                                                                                    * mu1i) + mu1i * (float)2. * (s[i__ + (j + (kt - 1) *
-                                                                                                                                                                                                           s_dim2) * s_dim1] * s[i__ + (j + (kt - 1) * s_dim2) *
-                                                                                                                                                                                                                                 s_dim1] * mu0i) * (s[i__ + (j + (kt - 1) * s_dim2) *
-                                                                                                                                                                                                                                                      s_dim1] * s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] *
-                                                                                                                                                                                                                                                    mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
-                  d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
-               d__1;
+          1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (
+          kt - 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
+          2. * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[
+            i__ + (j + (kt - 1) * s_dim2) * s_dim1] * mu0i)) * (s[
+            i__ + (j + (kt - 1) * s_dim2) * s_dim1] * s[i__ + (j
+          + (kt - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) *
+          mu1i) - (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * (
+          float)2. * mu0i * (((float)1. - s[i__ + (j + (kt - 1)
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (kt
+          - 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
+            i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * (float)-2.
+          * mu1i * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] *
+          s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] * mu0i)) * (
+          float)2. * (s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]
+          * (float)2. * mu0i + ((float)1. - s[i__ + (j + (kt -
+          1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
+          * (d__2 * d__2)) * w[i__ + (j + kt * w_dim2) * w_dim1]
+          + ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (
+          kt - 1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (
+          j + (kt - 1) * s_dim2) * s_dim1]) * mu1i) * (((float)
+          1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1]) * ((
+          float)1. - s[i__ + (j + (kt - 1) * s_dim2) * s_dim1])
+          * mu1i) + mu1i * (float)2. * (s[i__ + (j + (kt - 1) *
+          s_dim2) * s_dim1] * s[i__ + (j + (kt - 1) * s_dim2) *
+          s_dim1] * mu0i) * (s[i__ + (j + (kt - 1) * s_dim2) *
+          s_dim1] * s[i__ + (j + (kt - 1) * s_dim2) * s_dim1] *
+          mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
+          d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
+          d__1;
         d__1 = *beta * betaedge[i__ + (j + kt * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                               kt * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + kt * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + kt * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2. * mu0i
-               * (((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
-                  ((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
-                  mu1i) - ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + kt *
-                                                                                  s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                        s_dim1] * mu0i);
+          * (((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
+          mu1i) - ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                               kt * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
         strcm = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + kt *
-                                                            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                       s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
-                                                                                                                                                          i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                                                                                                                                                                       s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + kt *
-                                                                                                                                                                                                                                              s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                                                                                                                    s_dim1] * mu0i + ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                                                             s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                      s[i__ + (j + kt * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                i__ + (j + kt * s_dim2) * s_dim1]) * mu1i) - ((float)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1. - s[i__ + (j + kt * s_dim2) * s_dim1]) * (float)
-                                                                                                                                                                                                                                                                                                                                                                                    -2. * mu1i * (s[i__ + (j + kt * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                    i__ + (j + kt * s_dim2) * s_dim1] * mu0i)) * (float)
-                 2. * (s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2.
-                       * mu0i + ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                               s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
-                                                                                 ) * w[i__ + (j + kt * w_dim2) * w_dim1] + ((mu0i * (
-                                                                                                                                     float)2. * (((float)1. - s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                s_dim1]) * ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                                          s_dim1]) * mu1i) * (((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                    s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                               s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (s[
-                                                                                                                                                                                                                                                                                                                                  i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                                               s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + kt * s_dim2)
-                                                                                                                                                                                                                                                                                                                                                                                                              * s_dim1] * s[i__ + (j + kt * s_dim2) * s_dim1] *
-                                                                                                                                                                                                                                                                                                                                                                                                            mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
-                                                                                                                            d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
-                d__1;
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
+            i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
+          s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i + ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
+          s[i__ + (j + kt * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + kt * s_dim2) * s_dim1]) * mu1i) - ((float)
+          1. - s[i__ + (j + kt * s_dim2) * s_dim1]) * (float)
+          -2. * mu1i * (s[i__ + (j + kt * s_dim2) * s_dim1] * s[
+            i__ + (j + kt * s_dim2) * s_dim1] * mu0i)) * (float)
+          2. * (s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2.
+          * mu0i + ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
+          ) * w[i__ + (j + kt * w_dim2) * w_dim1] + ((mu0i * (
+          float)2. * (((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * mu1i) * (((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (s[
+            i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
+          s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + kt * s_dim2)
+          * s_dim1] * s[i__ + (j + kt * s_dim2) * s_dim1] *
+          mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
+          d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
+          d__1;
         d__1 = *beta * betaedge[i__ + (j + (kt + 1) * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                               kt * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + kt * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + kt * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2. * mu0i
-               * (((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
-                  ((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
-                  mu1i) - ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + kt *
-                                                                                  s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                        s_dim1] * mu0i);
+          * (((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + (j + kt * s_dim2) * s_dim1]) *
+          mu1i) - ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                               kt * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
         strcp = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + kt *
-                                                            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                       s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
-                                                                                                                                                          i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
-                                                                                                                                                                                                       s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + kt *
-                                                                                                                                                                                                                                              s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                                                                                                                    s_dim1] * mu0i + ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                                                             s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                      s[i__ + (j + kt * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                i__ + (j + kt * s_dim2) * s_dim1]) * mu1i) - ((float)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1. - s[i__ + (j + kt * s_dim2) * s_dim1]) * (float)
-                                                                                                                                                                                                                                                                                                                                                                                    -2. * mu1i * (s[i__ + (j + kt * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                    i__ + (j + kt * s_dim2) * s_dim1] * mu0i)) * (float)
-                 2. * (s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2.
-                       * mu0i + ((float)1. - s[i__ + (j + kt * s_dim2) *
-                                               s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
-                                                                                 ) * w[i__ + (j + (kt + 1) * w_dim2) * w_dim1] + ((
-                                                                                                                                   mu0i * (float)2. * (((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                             s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
-                                                                                                                                                                                                                        s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[i__ + (j
-                                                                                                                                                                                                                                                                            + kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                                                                                                                                                                                              kt * s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (
-                                                                                                                                                                                                                                                                                                                                                                                    s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt
-                                                                                                                                                                                                                                                                                                                                                                                                                                   * s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + kt *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 d__7)) * d__1;
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
+            i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt *
+          s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i + ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
+          s[i__ + (j + kt * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + kt * s_dim2) * s_dim1]) * mu1i) - ((float)
+          1. - s[i__ + (j + kt * s_dim2) * s_dim1]) * (float)
+          -2. * mu1i * (s[i__ + (j + kt * s_dim2) * s_dim1] * s[
+            i__ + (j + kt * s_dim2) * s_dim1] * mu0i)) * (float)
+          2. * (s[i__ + (j + kt * s_dim2) * s_dim1] * (float)2.
+          * mu0i + ((float)1. - s[i__ + (j + kt * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
+          ) * w[i__ + (j + (kt + 1) * w_dim2) * w_dim1] + ((
+          mu0i * (float)2. * (((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + kt *
+          s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[i__ + (j
+          + kt * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          kt * s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (
+          s[i__ + (j + kt * s_dim2) * s_dim1] * s[i__ + (j + kt
+          * s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + kt *
+          s_dim2) * s_dim1] * s[i__ + (j + kt * s_dim2) *
+          s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
+          mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
+          d__7)) * d__1;
         d__1 = *beta * betaedge[i__ + (j + (kt + 1) * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
-               mu1i, d__3 = d__2;
+            + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
+          mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + (kt + 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * (float)2. *
-               mu0i * (((float)1. - s[i__ + (j + (kt + 1) * s_dim2)
-                                      * s_dim1]) * ((float)1. - s[i__ + (j + (kt + 1) *
-                                                                         s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
-                                                                                                                            + (kt + 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
-               (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (
-                                                                     j + (kt + 1) * s_dim2) * s_dim1] * mu0i);
+          mu0i * (((float)1. - s[i__ + (j + (kt + 1) * s_dim2)
+          * s_dim1]) * ((float)1. - s[i__ + (j + (kt + 1) *
+          s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
+          + (kt + 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
+          (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (
+          j + (kt + 1) * s_dim2) * s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
-               mu1i, d__8 = d__7;
+            + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
+          mu1i, d__8 = d__7;
         strp = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (kt +
-                                                                1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (
-                                                                                                                     kt + 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
-                 2. * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[
-                         i__ + (j + (kt + 1) * s_dim2) * s_dim1] * mu0i)) * (s[
-                                                                               i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                                                                                  + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                                                                                           s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                                                                                         1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
-                                                                             mu1i) - (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * (
-                                                                                                                                   float)2. * mu0i * (((float)1. - s[i__ + (j + (kt + 1)
-                                                                                                                                                                            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (kt
-                                                                                                                                                                                                                              + 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
-                                                                                                                                                                                                                                                                     i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * (float)-2.
-                                                                                      * mu1i * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] *
-                                                                                                s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * mu0i)) * (
-                                                                                                                                                      float)2. * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]
-                                                                                                                                                                  * (float)2. * mu0i + ((float)1. - s[i__ + (j + (kt +
-                                                                                                                                                                                                                  1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
-                                                                                                                                                                                                                                                                   * (d__2 * d__2)) * w[i__ + (j + (kt + 1) * w_dim2) *
-                                                                                                                                                                                                                                                                                        w_dim1] + ((mu0i * (float)2. * (((float)1. - s[i__ + (
-                                                                                                                                                                                                                                                                                                                                              j + (kt + 1) * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                     i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * mu1i) * (((
-                                                                                                                                                                                                                                                                                                                                                                                                                                           float)1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1])
-                                                                                                                                                                                                                                                                                                                                                                                                                                         * ((float)1. - s[i__ + (j + (kt + 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          s_dim1]) * mu1i) + mu1i * (float)2. * (s[i__ + (j + (
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               kt + 1) * s_dim2) * s_dim1] * s[i__ + (j + (kt + 1) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + (kt + 1) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            s_dim2) * s_dim1] * s[i__ + (j + (kt + 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  d__7)) * d__1;
+          1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (
+          kt + 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
+          2. * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[
+            i__ + (j + (kt + 1) * s_dim2) * s_dim1] * mu0i)) * (s[
+            i__ + (j + (kt + 1) * s_dim2) * s_dim1] * s[i__ + (j
+          + (kt + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]) *
+          mu1i) - (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * (
+          float)2. * mu0i * (((float)1. - s[i__ + (j + (kt + 1)
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (kt
+          + 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
+            i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * (float)-2.
+          * mu1i * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] *
+          s[i__ + (j + (kt + 1) * s_dim2) * s_dim1] * mu0i)) * (
+          float)2. * (s[i__ + (j + (kt + 1) * s_dim2) * s_dim1]
+          * (float)2. * mu0i + ((float)1. - s[i__ + (j + (kt +
+          1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
+          * (d__2 * d__2)) * w[i__ + (j + (kt + 1) * w_dim2) *
+            w_dim1] + ((mu0i * (float)2. * (((float)1. - s[i__ + (
+          j + (kt + 1) * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + (kt + 1) * s_dim2) * s_dim1]) * mu1i) * (((
+          float)1. - s[i__ + (j + (kt + 1) * s_dim2) * s_dim1])
+          * ((float)1. - s[i__ + (j + (kt + 1) * s_dim2) *
+          s_dim1]) * mu1i) + mu1i * (float)2. * (s[i__ + (j + (
+          kt + 1) * s_dim2) * s_dim1] * s[i__ + (j + (kt + 1) *
+          s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + (kt + 1) *
+          s_dim2) * s_dim1] * s[i__ + (j + (kt + 1) * s_dim2) *
+          s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
+          mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
+          d__7)) * d__1;
         if (strm * strcm <= (float)0. || strcp * strp <= (float)0.)
         {
           dzscr[i__ + (dzscr_dim1 << 1)] = half * dzscr[i__ + (
-                                                               dzscr_dim1 << 1)];
+              dzscr_dim1 << 1)];
         }
       }
       dzscr[i__ + dzscr_dim1 * 3] = d_sign(&one, &dzscr[i__ +
-                                                        dzscr_dim1]);
+          dzscr_dim1]);
 /* Computing MIN */
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
-                                                                  dzscr_dim1], abs(d__1));
+        dzscr_dim1], abs(d__1));
       dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-                                                                         d__2, d__3);
+          d__2, d__3);
       dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (*k + 1) * s_dim2)
-                                          * s_dim1] - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]);
+        * s_dim1] - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]);
       dmin__ = two * (s[i__ + (j + *k * s_dim2) * s_dim1] - s[i__ + (j
-                                                                     + (*k - 1) * s_dim2) * s_dim1]);
+        + (*k - 1) * s_dim2) * s_dim1]);
       dpls = two * (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] - s[i__ +
-                                                                  (j + *k * s_dim2) * s_dim1]);
+        (j + *k * s_dim2) * s_dim1]);
       if (dpls * dmin__ < (float)0.)
       {
         dzscr[i__ + (dzscr_dim1 << 1)] = zero;
@@ -1753,253 +1753,253 @@ doublereal *dzscr, *dzfrm;
         d__1 = abs(dmin__), d__2 = abs(dpls);
         dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1, d__2);
         d__1 = *beta * betaedge[i__ + (j + (*k - 1) * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (*k - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) *
-               mu1i, d__3 = d__2;
+            + (*k - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) *
+          mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + (*k - 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * (float)2. *
-               mu0i * (((float)1. - s[i__ + (j + (*k - 1) * s_dim2)
-                                      * s_dim1]) * ((float)1. - s[i__ + (j + (*k - 1) *
-                                                                         s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
-                                                                                                                            + (*k - 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
-               (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * s[i__ + (
-                                                                     j + (*k - 1) * s_dim2) * s_dim1] * mu0i);
+          mu0i * (((float)1. - s[i__ + (j + (*k - 1) * s_dim2)
+          * s_dim1]) * ((float)1. - s[i__ + (j + (*k - 1) *
+          s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
+          + (*k - 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
+          (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * s[i__ + (
+          j + (*k - 1) * s_dim2) * s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (*k - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) *
-               mu1i, d__8 = d__7;
+            + (*k - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) *
+          mu1i, d__8 = d__7;
         strm = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (*k -
-                                                                1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (*
-                                                                                                                     k - 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
-                 2. * (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * s[
-                         i__ + (j + (*k - 1) * s_dim2) * s_dim1] * mu0i)) * (s[
-                                                                               i__ + (j + (*k - 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                                                                                  + (*k - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                                                                                           s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                                                                                         1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) *
-                                                                             mu1i) - (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * (
-                                                                                                                                   float)2. * mu0i * (((float)1. - s[i__ + (j + (*k - 1)
-                                                                                                                                                                            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (*k
-                                                                                                                                                                                                                              - 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
-                                                                                                                                                                                                                                                                     i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * (float)-2.
-                                                                                      * mu1i * (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] *
-                                                                                                s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * mu0i)) * (
-                                                                                                                                                      float)2. * (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]
-                                                                                                                                                                  * (float)2. * mu0i + ((float)1. - s[i__ + (j + (*k -
-                                                                                                                                                                                                                  1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
-                                                                                                                                                                                                                                                                   * (d__2 * d__2)) * w[i__ + (j + (*k - 1) * w_dim2) *
-                                                                                                                                                                                                                                                                                        w_dim1] + ((mu0i * (float)2. * (((float)1. - s[i__ + (
-                                                                                                                                                                                                                                                                                                                                              j + (*k - 1) * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                     i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * mu1i) * (((
-                                                                                                                                                                                                                                                                                                                                                                                                                                           float)1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1])
-                                                                                                                                                                                                                                                                                                                                                                                                                                         * ((float)1. - s[i__ + (j + (*k - 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          s_dim1]) * mu1i) + mu1i * (float)2. * (s[i__ + (j + (*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               k - 1) * s_dim2) * s_dim1] * s[i__ + (j + (*k - 1) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + (*k - 1) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1] * s[i__ + (j + (*k - 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 d__7)) * d__1;
+          1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (*
+          k - 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
+          2. * (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * s[
+            i__ + (j + (*k - 1) * s_dim2) * s_dim1] * mu0i)) * (s[
+            i__ + (j + (*k - 1) * s_dim2) * s_dim1] * s[i__ + (j
+          + (*k - 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]) *
+          mu1i) - (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * (
+          float)2. * mu0i * (((float)1. - s[i__ + (j + (*k - 1)
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (*k
+          - 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
+            i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * (float)-2.
+          * mu1i * (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] *
+          s[i__ + (j + (*k - 1) * s_dim2) * s_dim1] * mu0i)) * (
+          float)2. * (s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]
+          * (float)2. * mu0i + ((float)1. - s[i__ + (j + (*k -
+          1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
+          * (d__2 * d__2)) * w[i__ + (j + (*k - 1) * w_dim2) *
+            w_dim1] + ((mu0i * (float)2. * (((float)1. - s[i__ + (
+          j + (*k - 1) * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + (*k - 1) * s_dim2) * s_dim1]) * mu1i) * (((
+          float)1. - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1])
+          * ((float)1. - s[i__ + (j + (*k - 1) * s_dim2) *
+          s_dim1]) * mu1i) + mu1i * (float)2. * (s[i__ + (j + (*
+          k - 1) * s_dim2) * s_dim1] * s[i__ + (j + (*k - 1) *
+          s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + (*k - 1) *
+          s_dim2) * s_dim1] * s[i__ + (j + (*k - 1) * s_dim2) *
+          s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
+          mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
+          d__7)) * d__1;
         d__1 = *beta * betaedge[i__ + (j + *k * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
-                                                                                                                                                               k * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
+          k * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + *k * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + *k * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2. * mu0i
-               * (((float)1. - s[i__ + (j + *k * s_dim2) * s_dim1]) *
-                  ((float)1. - s[i__ + (j + *k * s_dim2) * s_dim1]) *
-                  mu1i) - ((float)1. - s[i__ + (j + *k * s_dim2) *
-                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + *k *
-                                                                                  s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
-                                                                                                        s_dim1] * mu0i);
+          * (((float)1. - s[i__ + (j + *k * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + (j + *k * s_dim2) * s_dim1]) *
+          mu1i) - ((float)1. - s[i__ + (j + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
+          s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
-                                                                                                                                                               k * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
+          k * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
         strcm = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + *k *
-                                                            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                       s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
-                                                                                                                                                          i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                                                                                                                                                                       s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + *k *
-                                                                                                                                                                                                                                              s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                    s_dim1] * mu0i + ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                             s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                      s[i__ + (j + *k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                i__ + (j + *k * s_dim2) * s_dim1]) * mu1i) - ((float)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1. - s[i__ + (j + *k * s_dim2) * s_dim1]) * (float)
-                                                                                                                                                                                                                                                                                                                                                                                    -2. * mu1i * (s[i__ + (j + *k * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                    i__ + (j + *k * s_dim2) * s_dim1] * mu0i)) * (float)
-                 2. * (s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2.
-                       * mu0i + ((float)1. - s[i__ + (j + *k * s_dim2) *
-                                               s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
-                                                                                 ) * w[i__ + (j + *k * w_dim2) * w_dim1] + ((mu0i * (
-                                                                                                                                     float)2. * (((float)1. - s[i__ + (j + *k * s_dim2) *
-                                                                                                                                                                s_dim1]) * ((float)1. - s[i__ + (j + *k * s_dim2) *
-                                                                                                                                                                                          s_dim1]) * mu1i) * (((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                    s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                               s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (s[
-                                                                                                                                                                                                                                                                                                                                  i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                               s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + *k * s_dim2)
-                                                                                                                                                                                                                                                                                                                                                                                                              * s_dim1] * s[i__ + (j + *k * s_dim2) * s_dim1] *
-                                                                                                                                                                                                                                                                                                                                                                                                            mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
-                                                                                                                            d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
-                d__1;
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
+            i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
+          s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
+          s_dim1] * mu0i + ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
+          s[i__ + (j + *k * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + *k * s_dim2) * s_dim1]) * mu1i) - ((float)
+          1. - s[i__ + (j + *k * s_dim2) * s_dim1]) * (float)
+          -2. * mu1i * (s[i__ + (j + *k * s_dim2) * s_dim1] * s[
+            i__ + (j + *k * s_dim2) * s_dim1] * mu0i)) * (float)
+          2. * (s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2.
+          * mu0i + ((float)1. - s[i__ + (j + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
+          ) * w[i__ + (j + *k * w_dim2) * w_dim1] + ((mu0i * (
+          float)2. * (((float)1. - s[i__ + (j + *k * s_dim2) *
+          s_dim1]) * ((float)1. - s[i__ + (j + *k * s_dim2) *
+          s_dim1]) * mu1i) * (((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (s[
+            i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
+          s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + *k * s_dim2)
+          * s_dim1] * s[i__ + (j + *k * s_dim2) * s_dim1] *
+          mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 / mu1i) -
+          d__6 * d__6 * (float)2.) / (d__8 * (d__7 * d__7)) *
+          d__1;
         d__1 = *beta * betaedge[i__ + (j + (*k + 1) * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
-                                                                                                                                                               k * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
+          k * s_dim2) * s_dim1]) * mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + *k * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + *k * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2. * mu0i
-               * (((float)1. - s[i__ + (j + *k * s_dim2) * s_dim1]) *
-                  ((float)1. - s[i__ + (j + *k * s_dim2) * s_dim1]) *
-                  mu1i) - ((float)1. - s[i__ + (j + *k * s_dim2) *
-                                         s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + *k *
-                                                                                  s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
-                                                                                                        s_dim1] * mu0i);
+          * (((float)1. - s[i__ + (j + *k * s_dim2) * s_dim1]) *
+          ((float)1. - s[i__ + (j + *k * s_dim2) * s_dim1]) *
+          mu1i) - ((float)1. - s[i__ + (j + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i * (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
+          s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                              s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
-                                                                                                               *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
-                                                                                                                                                               k * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
+            s_dim2) * s_dim1] * mu0i + ((float)1. - s[i__ + (j +
+          *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *
+          k * s_dim2) * s_dim1]) * mu1i, d__8 = d__7;
         strcp = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + *k *
-                                                            s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                       s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
-                                                                                                                                                          i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
-                                                                                                                                                                                                       s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + *k *
-                                                                                                                                                                                                                                              s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                    s_dim1] * mu0i + ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                      s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                             s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
-                                                                                                                                                                                                                                                                                                                                                                                                                                      s[i__ + (j + *k * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                i__ + (j + *k * s_dim2) * s_dim1]) * mu1i) - ((float)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              1. - s[i__ + (j + *k * s_dim2) * s_dim1]) * (float)
-                                                                                                                                                                                                                                                                                                                                                                                    -2. * mu1i * (s[i__ + (j + *k * s_dim2) * s_dim1] * s[
-                                                                                                                                                                                                                                                                                                                                                                                                    i__ + (j + *k * s_dim2) * s_dim1] * mu0i)) * (float)
-                 2. * (s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2.
-                       * mu0i + ((float)1. - s[i__ + (j + *k * s_dim2) *
-                                               s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
-                                                                                 ) * w[i__ + (j + (*k + 1) * w_dim2) * w_dim1] + ((
-                                                                                                                                   mu0i * (float)2. * (((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                             s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
-                                                                                                                                                                                                                        s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[i__ + (j
-                                                                                                                                                                                                                                                                            + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
-                                                                                                                                                                                                                                                                                                                              *k * s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (
-                                                                                                                                                                                                                                                                                                                                                                                    s[i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k
-                                                                                                                                                                                                                                                                                                                                                                                                                                   * s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + *k *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 d__7)) * d__1;
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) - mu1i * (float)2. * (s[
+            i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k *
+          s_dim2) * s_dim1] * mu0i)) * (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
+          s_dim1] * mu0i + ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) - (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * (float)2. * mu0i * (((float)1. -
+          s[i__ + (j + *k * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + *k * s_dim2) * s_dim1]) * mu1i) - ((float)
+          1. - s[i__ + (j + *k * s_dim2) * s_dim1]) * (float)
+          -2. * mu1i * (s[i__ + (j + *k * s_dim2) * s_dim1] * s[
+            i__ + (j + *k * s_dim2) * s_dim1] * mu0i)) * (float)
+          2. * (s[i__ + (j + *k * s_dim2) * s_dim1] * (float)2.
+          * mu0i + ((float)1. - s[i__ + (j + *k * s_dim2) *
+          s_dim1]) * (float)-2. * mu1i)) / (d__3 * (d__2 * d__2)
+          ) * w[i__ + (j + (*k + 1) * w_dim2) * w_dim1] + ((
+          mu0i * (float)2. * (((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + *k *
+          s_dim2) * s_dim1]) * mu1i) * (((float)1. - s[i__ + (j
+          + *k * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j +
+          *k * s_dim2) * s_dim1]) * mu1i) + mu1i * (float)2. * (
+          s[i__ + (j + *k * s_dim2) * s_dim1] * s[i__ + (j + *k
+          * s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + *k *
+          s_dim2) * s_dim1] * s[i__ + (j + *k * s_dim2) *
+          s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
+          mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
+          d__7)) * d__1;
         d__1 = *beta * betaedge[i__ + (j + (*k + 1) * betaedge_dim2) *
-                                betaedge_dim1];
+            betaedge_dim1];
 /* Computing 3rd power */
         d__2 = s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (*k + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) *
-               mu1i, d__3 = d__2;
+            + (*k + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) *
+          mu1i, d__3 = d__2;
 /* Computing 2nd power */
         d__4 = s[i__ + (j + (*k + 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__5 = (float)1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1];
 /* Computing 2nd power */
         d__6 = s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * (float)2. *
-               mu0i * (((float)1. - s[i__ + (j + (*k + 1) * s_dim2)
-                                      * s_dim1]) * ((float)1. - s[i__ + (j + (*k + 1) *
-                                                                         s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
-                                                                                                                            + (*k + 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
-               (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * s[i__ + (
-                                                                     j + (*k + 1) * s_dim2) * s_dim1] * mu0i);
+          mu0i * (((float)1. - s[i__ + (j + (*k + 1) * s_dim2)
+          * s_dim1]) * ((float)1. - s[i__ + (j + (*k + 1) *
+          s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[i__ + (j
+          + (*k + 1) * s_dim2) * s_dim1]) * (float)-2. * mu1i *
+          (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * s[i__ + (
+          j + (*k + 1) * s_dim2) * s_dim1] * mu0i);
 /* Computing 3rd power */
         d__7 = s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                    + (*k + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                             s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                           1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) *
-               mu1i, d__8 = d__7;
+            + (*k + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) *
+          mu1i, d__8 = d__7;
         strp = ((mu0i * (float)2. * (((float)1. - s[i__ + (j + (*k +
-                                                                1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (*
-                                                                                                                     k + 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
-                 2. * (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * s[
-                         i__ + (j + (*k + 1) * s_dim2) * s_dim1] * mu0i)) * (s[
-                                                                               i__ + (j + (*k + 1) * s_dim2) * s_dim1] * s[i__ + (j
-                                                                                                                                  + (*k + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
-                                                                                                                                                                           s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * ((float)
-                                                                                                                                                                                                                         1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) *
-                                                                             mu1i) - (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * (
-                                                                                                                                   float)2. * mu0i * (((float)1. - s[i__ + (j + (*k + 1)
-                                                                                                                                                                            * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (*k
-                                                                                                                                                                                                                              + 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
-                                                                                                                                                                                                                                                                     i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * (float)-2.
-                                                                                      * mu1i * (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] *
-                                                                                                s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * mu0i)) * (
-                                                                                                                                                      float)2. * (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]
-                                                                                                                                                                  * (float)2. * mu0i + ((float)1. - s[i__ + (j + (*k +
-                                                                                                                                                                                                                  1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
-                                                                                                                                                                                                                                                                   * (d__2 * d__2)) * w[i__ + (j + (*k + 1) * w_dim2) *
-                                                                                                                                                                                                                                                                                        w_dim1] + ((mu0i * (float)2. * (((float)1. - s[i__ + (
-                                                                                                                                                                                                                                                                                                                                              j + (*k + 1) * s_dim2) * s_dim1]) * ((float)1. - s[
-                                                                                                                                                                                                                                                                                                                                                                                     i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * mu1i) * (((
-                                                                                                                                                                                                                                                                                                                                                                                                                                           float)1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1])
-                                                                                                                                                                                                                                                                                                                                                                                                                                         * ((float)1. - s[i__ + (j + (*k + 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          s_dim1]) * mu1i) + mu1i * (float)2. * (s[i__ + (j + (*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               k + 1) * s_dim2) * s_dim1] * s[i__ + (j + (*k + 1) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + (*k + 1) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           s_dim2) * s_dim1] * s[i__ + (j + (*k + 1) * s_dim2) *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 d__7)) * d__1;
+          1) * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (*
+          k + 1) * s_dim2) * s_dim1]) * mu1i) - mu1i * (float)
+          2. * (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * s[
+            i__ + (j + (*k + 1) * s_dim2) * s_dim1] * mu0i)) * (s[
+            i__ + (j + (*k + 1) * s_dim2) * s_dim1] * s[i__ + (j
+          + (*k + 1) * s_dim2) * s_dim1] * mu0i + ((float)1. -
+          s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * ((float)
+          1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]) *
+          mu1i) - (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * (
+          float)2. * mu0i * (((float)1. - s[i__ + (j + (*k + 1)
+          * s_dim2) * s_dim1]) * ((float)1. - s[i__ + (j + (*k
+          + 1) * s_dim2) * s_dim1]) * mu1i) - ((float)1. - s[
+            i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * (float)-2.
+          * mu1i * (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] *
+          s[i__ + (j + (*k + 1) * s_dim2) * s_dim1] * mu0i)) * (
+          float)2. * (s[i__ + (j + (*k + 1) * s_dim2) * s_dim1]
+          * (float)2. * mu0i + ((float)1. - s[i__ + (j + (*k +
+          1) * s_dim2) * s_dim1]) * (float)-2. * mu1i)) / (d__3
+          * (d__2 * d__2)) * w[i__ + (j + (*k + 1) * w_dim2) *
+            w_dim1] + ((mu0i * (float)2. * (((float)1. - s[i__ + (
+          j + (*k + 1) * s_dim2) * s_dim1]) * ((float)1. - s[
+            i__ + (j + (*k + 1) * s_dim2) * s_dim1]) * mu1i) * (((
+          float)1. - s[i__ + (j + (*k + 1) * s_dim2) * s_dim1])
+          * ((float)1. - s[i__ + (j + (*k + 1) * s_dim2) *
+          s_dim1]) * mu1i) + mu1i * (float)2. * (s[i__ + (j + (*
+          k + 1) * s_dim2) * s_dim1] * s[i__ + (j + (*k + 1) *
+          s_dim2) * s_dim1] * mu0i) * (s[i__ + (j + (*k + 1) *
+          s_dim2) * s_dim1] * s[i__ + (j + (*k + 1) * s_dim2) *
+          s_dim1] * mu0i)) * (d__4 * d__4 / mu0i + d__5 * d__5 /
+          mu1i) - d__6 * d__6 * (float)2.) / (d__8 * (d__7 *
+          d__7)) * d__1;
         if (strm * strcm <= (float)0. || strcp * strp <= (float)0.)
         {
           dzscr[i__ + (dzscr_dim1 << 1)] = half * dzscr[i__ + (
-                                                               dzscr_dim1 << 1)];
+              dzscr_dim1 << 1)];
         }
       }
       dzscr[i__ + dzscr_dim1 * 3] = d_sign(&one, &dzscr[i__ +
-                                                        dzscr_dim1]);
+          dzscr_dim1]);
 /* Computing MIN */
       d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ +
-                                                                  dzscr_dim1], abs(d__1));
+        dzscr_dim1], abs(d__1));
       dzfrm[i__ + *k * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
-                                                                         d__2, d__3);
+          d__2, d__3);
     }
     i__2 = ie + 1;
     for (i__ = is - 1; i__ <= i__2; ++i__)
     {
       ds = two * two3rd * dzscr[i__ + dzscr_dim1] - sixth * (dzfrm[i__
-                                                                   + (*k + 1) * dzfrm_dim1] + dzfrm[i__ + (*k - 1) *
-                                                                                                    dzfrm_dim1]);
+        + (*k + 1) * dzfrm_dim1] + dzfrm[i__ + (*k - 1) *
+        dzfrm_dim1]);
 /* Computing MIN */
       d__1 = abs(ds), d__2 = dzscr[i__ + (dzscr_dim1 << 1)];
       slz[i__ + (j + *kk * slz_dim2) * slz_dim1] = dzscr[i__ +
-                                                         dzscr_dim1 * 3] * pfmin(d__1, d__2);
+          dzscr_dim1 * 3] * pfmin(d__1, d__2);
     }
   }
   return 0;
@@ -2063,7 +2063,7 @@ doublereal *wc, *wrp;
 /* Computing 2nd power */
     d__2 = d__3 * d__3 / visc0[j];
     delta0 = -(d__1 * d__1 / visc0[j] * alpha[j] - d__2 * d__2 * beta[j])
-             * (visc0[j] / (x0 * (float)2.));
+      * (visc0[j] / (x0 * (float)2.));
 /* Computing 2nd power */
     d__1 = (float)1. - x1;
 /* Computing 2nd power */
@@ -2071,7 +2071,7 @@ doublereal *wc, *wrp;
 /* Computing 2nd power */
     d__2 = d__3 * d__3 / visc1[j];
     delta1 = (d__1 * d__1 / visc1[j] * alpha[j] + d__2 * d__2 * beta[j]) *
-             (visc1[j] / (((float)1. - x1) * (float)-2.));
+      (visc1[j] / (((float)1. - x1) * (float)-2.));
     if (delta0 == delta1)
     {
       deldif = (float)1.;
@@ -2116,10 +2116,10 @@ doublereal *wc, *wrp;
 /* Computing 2nd power */
       d__4 = wc[j];
       delta = (alpha[j] + beta[j] * (d__1 * d__1 / visc1[j])) * (d__2 *
-                                                                 d__2 / visc1[j]) * (visc1[j] / (((float)1. - wc[j]) * (
-                                                                                                                        float)-2.)) + (alpha[j] - beta[j] * (d__3 * d__3 / visc0[
-                                                                                                                                                               j])) * (d__4 * d__4 / visc0[j]) * (visc0[j] / (wc[j] * (
-                                                                                                                                                                                                                       float)2.));
+        d__2 / visc1[j]) * (visc1[j] / (((float)1. - wc[j]) * (
+        float)-2.)) + (alpha[j] - beta[j] * (d__3 * d__3 / visc0[
+          j])) * (d__4 * d__4 / visc0[j]) * (visc0[j] / (wc[j] * (
+        float)2.));
 /* Computing 2nd power */
       d__1 = wc[j];
 /* Computing 2nd power */
@@ -2137,11 +2137,11 @@ doublereal *wc, *wrp;
 /* Computing 2nd power */
       d__8 = (float)1. - wc[j];
       ddelta = d__1 * d__1 / visc0[j] * (2. / visc0[j]) * (alpha[j] -
-                                                           beta[j] * (d__2 * d__2 / visc0[j])) * (d__3 * d__3) -
-               d__4 * d__4 / visc1[j] * (2. / visc1[j]) * (alpha[j] +
-                                                           beta[j] * (d__5 * d__5 / visc1[j])) * (d__6 * d__6) +
-               beta[j] * (float)2. * (d__7 * d__7 / visc0[j] + d__8 *
-                                      d__8 / visc1[j]);
+        beta[j] * (d__2 * d__2 / visc0[j])) * (d__3 * d__3) -
+        d__4 * d__4 / visc1[j] * (2. / visc1[j]) * (alpha[j] +
+        beta[j] * (d__5 * d__5 / visc1[j])) * (d__6 * d__6) +
+        beta[j] * (float)2. * (d__7 * d__7 / visc0[j] + d__8 *
+        d__8 / visc1[j]);
       if (!(wc[j] <= (float)1. && wc[j] > (float)0.))
       {
         ddelta = (float)1.;
@@ -2184,8 +2184,8 @@ doublereal *wc, *wrp;
 /* Computing 2nd power */
     d__4 = (float)1. - wl[j];
     fleft = d__1 * d__1 / visc0[j] * (alpha[j] + beta[j] * (d__2 * d__2 /
-                                                            visc1[j])) / (d__3 * d__3 / visc0[j] + d__4 * d__4 / visc1[j])
-            * flag__;
+      visc1[j])) / (d__3 * d__3 / visc0[j] + d__4 * d__4 / visc1[j])
+      * flag__;
 /* Computing 2nd power */
     d__1 = wr[j];
 /* Computing 2nd power */
@@ -2195,8 +2195,8 @@ doublereal *wc, *wrp;
 /* Computing 2nd power */
     d__4 = (float)1. - wr[j];
     frght = d__1 * d__1 / visc0[j] * (alpha[j] + beta[j] * (d__2 * d__2 /
-                                                            visc1[j])) / (d__3 * d__3 / visc0[j] + d__4 * d__4 / visc1[j])
-            * flag__;
+      visc1[j])) / (d__3 * d__3 / visc0[j] + d__4 * d__4 / visc1[j])
+      * flag__;
 /* Computing 2nd power */
     d__1 = wc[j];
 /* Computing 2nd power */
@@ -2206,8 +2206,8 @@ doublereal *wc, *wrp;
 /* Computing 2nd power */
     d__4 = (float)1. - wc[j];
     fcrit = d__1 * d__1 / visc0[j] * (alpha[j] + beta[j] * (d__2 * d__2 /
-                                                            visc1[j])) / (d__3 * d__3 / visc0[j] + d__4 * d__4 / visc1[j])
-            * flag__;
+      visc1[j])) / (d__3 * d__3 / visc0[j] + d__4 * d__4 / visc1[j])
+      * flag__;
     flmin = pfmin(fleft, frght);
     wbtw = (wl[j] - wc[j]) * (wr[j] - wc[j]);
     if (fleft < frght)

@@ -45,7 +45,7 @@
  *--------------------------------------------------------------------------*/
 
 SubgridArray  *GetGridSubgrids(
-                               SubgridArray *all_subgrids)
+  SubgridArray *all_subgrids)
 {
   SubgridArray  *subgrids;
 
@@ -75,7 +75,7 @@ SubgridArray  *GetGridSubgrids(
  *--------------------------------------------------------------------------*/
 
 Grid           *CreateGrid(
-                           Grid *user_grid)
+  Grid *user_grid)
 {
   Grid        *grid;
 

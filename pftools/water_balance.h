@@ -39,33 +39,33 @@ extern "C" {
  *-----------------------------------------------------------------------*/
 
 void ComputeSurfaceStorage(
-                           Databox *top,
-                           Databox *pressure,
-                           Databox *surface_storage);
+  Databox *top,
+  Databox *pressure,
+  Databox *surface_storage);
 
 void ComputeSubsurfaceStorage(
-                              Databox *mask,
-                              Databox *porosity,
-                              Databox *pressure,
-                              Databox *saturation,
-                              Databox *specific_storage,
-                              Databox *subsurface_storage);
+  Databox *mask,
+  Databox *porosity,
+  Databox *pressure,
+  Databox *saturation,
+  Databox *specific_storage,
+  Databox *subsurface_storage);
 
 void ComputeGWStorage(
-                      Databox *mask,
-                      Databox *porosity,
-                      Databox *pressure,
-                      Databox *saturation,
-                      Databox *specific_storage,
-                      Databox *gw_storage);
+  Databox *mask,
+  Databox *porosity,
+  Databox *pressure,
+  Databox *saturation,
+  Databox *specific_storage,
+  Databox *gw_storage);
 
 void ComputeSurfaceRunoff(
-                          Databox *top,
-                          Databox *slope_x,
-                          Databox *slope_y,
-                          Databox *mannings,
-                          Databox *pressure,
-                          Databox *surface_runoff);
+  Databox *top,
+  Databox *slope_x,
+  Databox *slope_y,
+  Databox *mannings,
+  Databox *pressure,
+  Databox *surface_runoff);
 
 #ifdef __cplusplus
 }

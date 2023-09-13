@@ -130,7 +130,7 @@ typedef struct {
    */
   Vector         *index_of_domain_top;
 
-  /* 
+  /*
    * This is a NX * NY vector of patch id/index of the top
    * of the domain.
    *

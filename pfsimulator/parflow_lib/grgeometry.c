@@ -42,15 +42,15 @@
  *--------------------------------------------------------------------------*/
 
 int      GrGeomGetOctreeInfo(
-                             double *xlp,
-                             double *ylp,
-                             double *zlp,
-                             double *xup,
-                             double *yup,
-                             double *zup,
-                             int *   ixp,
-                             int *   iyp,
-                             int *   izp)
+  double *xlp,
+  double *ylp,
+  double *zlp,
+  double *xup,
+  double *yup,
+  double *zup,
+  int *   ixp,
+  int *   iyp,
+  int *   izp)
 {
   Background  *bg = GlobalsBackground;
   double dtmp;
@@ -87,8 +87,8 @@ int      GrGeomGetOctreeInfo(
  *--------------------------------------------------------------------------*/
 
 GrGeomExtentArray  *GrGeomNewExtentArray(
-                                         GrGeomExtents *extents,
-                                         int            size)
+  GrGeomExtents *extents,
+  int            size)
 {
   GrGeomExtentArray   *new_grgeom_extent_array;
 
@@ -107,7 +107,7 @@ GrGeomExtentArray  *GrGeomNewExtentArray(
  *--------------------------------------------------------------------------*/
 
 void                GrGeomFreeExtentArray(
-                                          GrGeomExtentArray *extent_array)
+  GrGeomExtentArray *extent_array)
 {
   tfree(GrGeomExtentArrayExtents(extent_array));
 
@@ -131,13 +131,13 @@ void                GrGeomFreeExtentArray(
  *--------------------------------------------------------------------------*/
 
 GrGeomExtentArray  *GrGeomCreateExtentArray(
-                                            SubgridArray *subgrids,
-                                            int           xl_ghost,
-                                            int           xu_ghost,
-                                            int           yl_ghost,
-                                            int           yu_ghost,
-                                            int           zl_ghost,
-                                            int           zu_ghost)
+  SubgridArray *subgrids,
+  int           xl_ghost,
+  int           xu_ghost,
+  int           yl_ghost,
+  int           yu_ghost,
+  int           zl_ghost,
+  int           zu_ghost)
 {
   Background         *bg = GlobalsBackground;
 
@@ -273,13 +273,13 @@ GrGeomExtentArray  *GrGeomCreateExtentArray(
  *--------------------------------------------------------------------------*/
 
 GrGeomSolid   *GrGeomNewSolid(
-                              GrGeomOctree * data,
-                              GrGeomOctree **patches,
-                              int            num_patches,
-                              int            octree_bg_level,
-                              int            octree_ix,
-                              int            octree_iy,
-                              int            octree_iz)
+  GrGeomOctree * data,
+  GrGeomOctree **patches,
+  int            num_patches,
+  int            octree_bg_level,
+  int            octree_ix,
+  int            octree_iy,
+  int            octree_iz)
 {
   GrGeomSolid   *new_grgeomsolid;
 
@@ -296,14 +296,14 @@ GrGeomSolid   *GrGeomNewSolid(
   new_grgeomsolid->interior_boxes = NULL;
 
 #if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
-  GrGeomSolidCellFlagData(new_grgeomsolid) = NULL; 
+  GrGeomSolidCellFlagData(new_grgeomsolid) = NULL;
   GrGeomSolidCellFlagDataSize(new_grgeomsolid) = 0;
   GrGeomSolidCellFlagInitialized(new_grgeomsolid) = 0;
 
   (new_grgeomsolid->ival) = talloc(int**, GrGeomOctreeNumFaces);
   for (int f = 0; f < GrGeomOctreeNumFaces; f++)
-  { 
-    (new_grgeomsolid->ival[f]) = talloc(int*, 2 * num_patches);    
+  {
+    (new_grgeomsolid->ival[f]) = talloc(int*, 2 * num_patches);
     for (int ipatch = 0; ipatch < 2 * num_patches; ipatch++)
       (new_grgeomsolid->ival[f][ipatch]) = NULL;
   }
@@ -334,7 +334,7 @@ GrGeomSolid   *GrGeomNewSolid(
  *--------------------------------------------------------------------------*/
 
 void          GrGeomFreeSolid(
-                              GrGeomSolid *solid)
+  GrGeomSolid *solid)
 {
   int i;
 
@@ -363,14 +363,15 @@ void          GrGeomFreeSolid(
 
 #if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
   // Internal _tfree_device function is used because unified memory is not active in this comp unit
-  if(GrGeomSolidCellFlagData(solid)) _tfree_device(GrGeomSolidCellFlagData(solid));
+  if (GrGeomSolidCellFlagData(solid))
+    _tfree_device(GrGeomSolidCellFlagData(solid));
 
   for (int f = 0; f < GrGeomOctreeNumFaces; f++)
   {
     for (int ipatch = 0; ipatch < 2 * GrGeomSolidNumPatches(solid); ipatch++)
     {
       int *ival = GrGeomSolidCellIval(solid, ipatch, f);
-      if(ival)
+      if (ival)
         _tfree_device(ival);
     }
     tfree(solid->ival[f]);
@@ -392,9 +393,9 @@ void          GrGeomFreeSolid(
  *--------------------------------------------------------------------------*/
 
 void             GrGeomSolidFromInd(
-                                    GrGeomSolid **solid_ptr,
-                                    Vector *      indicator_field,
-                                    int           indicator)
+  GrGeomSolid **solid_ptr,
+  Vector *      indicator_field,
+  int           indicator)
 {
   GrGeomOctree *solid_octree;
 
@@ -408,11 +409,11 @@ void             GrGeomSolidFromInd(
    *------------------------------------------------------*/
 
   octree_bg_level = GrGeomGetOctreeInfo(&xl, &yl, &zl, &xu, &yu, &zu,
-                                        &ix, &iy, &iz);
+      &ix, &iy, &iz);
 
   GrGeomOctreeFromInd(&solid_octree, indicator_field, indicator,
-                      xl, yl, zl, xu, yu, zu,
-                      octree_bg_level, ix, iy, iz);
+    xl, yl, zl, xu, yu, zu,
+    octree_bg_level, ix, iy, iz);
 
   *solid_ptr = GrGeomNewSolid(solid_octree, NULL, 0, octree_bg_level, ix, iy, iz);
 }
@@ -423,9 +424,9 @@ void             GrGeomSolidFromInd(
  *--------------------------------------------------------------------------*/
 
 void                GrGeomSolidFromGeom(
-                                        GrGeomSolid **     solid_ptr,
-                                        GeomSolid *        geom_solid,
-                                        GrGeomExtentArray *extent_array)
+  GrGeomSolid **     solid_ptr,
+  GeomSolid *        geom_solid,
+  GrGeomExtentArray *extent_array)
 {
   GrGeomSolid    *solid;
 
@@ -458,20 +459,20 @@ void                GrGeomSolidFromGeom(
       num_patch_triangles = (solid_data->num_patch_triangles);
 
       octree_bg_level = GrGeomGetOctreeInfo(&xl, &yl, &zl, &xu, &yu, &zu,
-                                            &ix, &iy, &iz);
+          &ix, &iy, &iz);
 
       GrGeomOctreeFromTIN(&solid_octree, &patch_octrees,
-                          surface, patches, num_patches, num_patch_triangles,
-                          extent_array, xl, yl, zl, xu, yu, zu,
-                          octree_bg_level,
-                          octree_bg_level + GlobalsMaxRefLevel);
+        surface, patches, num_patches, num_patch_triangles,
+        extent_array, xl, yl, zl, xu, yu, zu,
+        octree_bg_level,
+        octree_bg_level + GlobalsMaxRefLevel);
 
       break;
     }
   }
 
   solid = GrGeomNewSolid(solid_octree, patch_octrees, num_patches,
-                         octree_bg_level, ix, iy, iz);
+      octree_bg_level, ix, iy, iz);
 
   *solid_ptr = solid;
 }

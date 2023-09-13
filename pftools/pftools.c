@@ -87,11 +87,11 @@
  *-----------------------------------------------------------------------*/
 
 void           Load(
-                    int           type,
-                    char *        filename,
-                    SubgridArray *all_subgrids,
-                    Background *  background,
-                    Databox *     databox)
+  int           type,
+  char *        filename,
+  SubgridArray *all_subgrids,
+  Background *  background,
+  Databox *     databox)
 {
   switch (type)
   {
@@ -113,10 +113,10 @@ void           Load(
  *-----------------------------------------------------------------------*/
 
 int            PFDistCommand(
-                             ClientData  clientData,
-                             Tcl_Interp *interp,
-                             int         argc,
-                             char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   char *filename;
   char *filetype;
@@ -214,7 +214,7 @@ int            PFDistCommand(
      *--------------------------------------------------------------------*/
 
     all_subgrids = DistributeUserGrid(user_grid, num_procs,
-                                      num_procs_x, num_procs_y, num_procs_z);
+        num_procs_x, num_procs_y, num_procs_z);
     if (nz_manual != 0)
     {
       SubgridNZ(user_subgrid) = nz_in;  // Restore the correct nz
@@ -268,10 +268,10 @@ int            PFDistCommand(
  *-----------------------------------------------------------------------*/
 
 int            PFDistOnDomainCommand(
-                                     ClientData  clientData,
-                                     Tcl_Interp *interp,
-                                     int         argc,
-                                     char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data       *data = (Data*)clientData;
 
@@ -546,10 +546,10 @@ Data    *InitPFToolsData()
  */
 
 int       AddSubgridArray(
-                          Data *        data,
-                          SubgridArray *subgrid_array,
-                          char *        label,
-                          char *        hashkey)
+  Data *        data,
+  SubgridArray *subgrid_array,
+  char *        label,
+  char *        hashkey)
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   int new_data;                   /* 1 if the hashkey already exists        */
@@ -562,7 +562,7 @@ int       AddSubgridArray(
   {
     sprintf(hashkey, "subgridarray%d", num);
     if ((entryPtr = Tcl_CreateHashEntry(&DataMembers(data), hashkey, &new_data))
-        == NULL)
+      == NULL)
       return(0);
 
     num++;
@@ -596,10 +596,10 @@ int       AddSubgridArray(
 /*                      table entry.  One if the allocation was successful.     */
 
 int       AddData(
-                  Data *   data,
-                  Databox *databox,
-                  char *   label,
-                  char *   hashkey)
+  Data *   data,
+  Databox *databox,
+  char *   label,
+  char *   hashkey)
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   int new_data;              /* 1 if the hashkey already exists        */
@@ -612,7 +612,7 @@ int       AddData(
   {
     sprintf(hashkey, "dataset%lu", num);
     if ((entryPtr = Tcl_CreateHashEntry(&DataMembers(data), hashkey, &new_data))
-        == NULL)
+      == NULL)
       return(0);
 
     num++;
@@ -647,7 +647,7 @@ int       AddData(
 /*                                                                              */
 
 void               PFTExitProc(
-                               ClientData clientData)
+  ClientData clientData)
 {
   Tcl_HashSearch search;
   Tcl_HashEntry  *entryPtr;
@@ -693,8 +693,8 @@ void               PFTExitProc(
 /*                       0 if they are equal                                    */
 
 int keycompare(
-               const void *key1,
-               const void *key2)
+  const void *key1,
+  const void *key2)
 {
   char *endnum1;            /* Points to the end of string key1 points to   */
   char *endnum2;            /* Points to the end of string key2 points to   */
@@ -793,10 +793,10 @@ int keycompare(
  *-----------------------------------------------------------------------*/
 
 int               GetSubBoxCommand(
-                                   ClientData  clientData,
-                                   Tcl_Interp *interp,
-                                   int         argc,
-                                   char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -905,10 +905,10 @@ int               GetSubBoxCommand(
  *-----------------------------------------------------------------------*/
 
 int               EnlargeBoxCommand(
-                                    ClientData  clientData,
-                                    Tcl_Interp *interp,
-                                    int         argc,
-                                    char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -996,10 +996,10 @@ int               EnlargeBoxCommand(
  *-----------------------------------------------------------------------*/
 
 int            ReLoadPFCommand(
-                               ClientData  clientData,
-                               Tcl_Interp *interp,
-                               int         argc,
-                               char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -1086,10 +1086,10 @@ int            ReLoadPFCommand(
  *-----------------------------------------------------------------------*/
 
 int            LoadPFCommand(
-                             ClientData  clientData,
-                             Tcl_Interp *interp,
-                             int         argc,
-                             char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data       *data = (Data*)clientData;
 
@@ -1218,10 +1218,10 @@ int            LoadPFCommand(
  *-----------------------------------------------------------------------*/
 
 int            LoadSDSCommand(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data       *data = (Data*)clientData;
 
@@ -1296,10 +1296,10 @@ int            LoadSDSCommand(
  *-----------------------------------------------------------------------*/
 
 int               SavePFCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -1447,10 +1447,10 @@ int               SavePFCommand(
  *-----------------------------------------------------------------------*/
 
 int SavePFVTKCommand(
-                     ClientData  clientData,
-                     Tcl_Interp *interp,
-                     int         argc,
-                     char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -1459,7 +1459,7 @@ int SavePFVTKCommand(
   int i, j, k;
   int flt = 0;
   char          *dzlist_in;
-  char*         Endp1=0;
+  char*         Endp1 = 0;
   int dz_els;
 
   FILE          *fp = NULL;
@@ -1742,7 +1742,7 @@ int SavePFVTKCommand(
                 jmx = -1;
               }
               elev = (*DataboxCoeff(databox2, i + imn, j + jmn, nz2 - 1) + *DataboxCoeff(databox2, i + imx, j + jmn, nz2 - 1) +
-                      *DataboxCoeff(databox2, i + imn, j + jmx, nz2 - 1) + *DataboxCoeff(databox2, i + imx, j + jmx, nz2 - 1)) / 4.0;
+                *DataboxCoeff(databox2, i + imn, j + jmx, nz2 - 1) + *DataboxCoeff(databox2, i + imx, j + jmx, nz2 - 1)) / 4.0;
               Xp[n + 2] = elev - zoffset + dz * (double)k;
             }
             n = n + 3;
@@ -1838,7 +1838,7 @@ int SavePFVTKCommand(
                 jmx = -1;
               }
               elev = (*DataboxCoeff(databox2, i + imn, j + jmn, nz2 - 1) + *DataboxCoeff(databox2, i + imx, j + jmn, nz2 - 1) +
-                      *DataboxCoeff(databox2, i + imn, j + jmx, nz2 - 1) + *DataboxCoeff(databox2, i + imx, j + jmx, nz2 - 1)) / 4.0;
+                *DataboxCoeff(databox2, i + imn, j + jmx, nz2 - 1) + *DataboxCoeff(databox2, i + imx, j + jmx, nz2 - 1)) / 4.0;
               //                        Xp[n+2] = elev - zoffset + dz*(double)k; // NBE commented
               Xp[n + 2] = elev - zoffset + c_dz[k];
             }
@@ -1891,15 +1891,15 @@ int SavePFVTKCommand(
  *-----------------------------------------------------------------------*/
 
 int MakePatchySolidCommand(
-                     ClientData  clientData,
-                     Tcl_Interp *interp,
-                     int         argc,
-                     char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
   char          *filename, *vtk_filename;
-  int           i;
+  int i;
 
   FILE          *fp = NULL;
   FILE          *fp_vtk = NULL;
@@ -1921,7 +1921,7 @@ int MakePatchySolidCommand(
   tophash = NULL;
   bothash = NULL;
 
-  int msk=0, top=0, bot=0, vtk=0, sub_patch=0, bin_out=0;  //Initalize flags for the options
+  int msk = 0, top = 0, bot = 0, vtk = 0, sub_patch = 0, bin_out = 0;  //Initalize flags for the options
   // Note: bin_out is a place holder for a yet to be added BINARY solid file...
   //       vtk is a flag for writing a BINARY VTK of the solid file too
 
@@ -1955,9 +1955,10 @@ int MakePatchySolidCommand(
       vtk = 1;
       vtk_filename = argv[i + 1];
       file1_ext = strrchr(vtk_filename, '.');
-      if (strcmp(file1_ext+1,"vtk")!=0) {
+      if (strcmp(file1_ext + 1, "vtk") != 0)
+      {
         printf("ERROR (pfpatchysolid): vtk file extension must be .vtk\n");
-        printf("                       detected %s\n",file1_ext+1);
+        printf("                       detected %s\n", file1_ext + 1);
         return TCL_ERROR;
       }
     }
@@ -1966,44 +1967,46 @@ int MakePatchySolidCommand(
     {
       filename = argv[i + 1];
       file1_ext = strrchr(filename, '.');
-      if (strcmp(file1_ext+1,"pfsol")!=0) {
+      if (strcmp(file1_ext + 1, "pfsol") != 0)
+      {
         printf("ERROR (pfpatchysolid): ASCII file extension must be .pfsol\n");
-        printf("                       detected %s\n",file1_ext+1);
+        printf("                       detected %s\n", file1_ext + 1);
         return TCL_ERROR;
       }
     }
     else if ((strcmp(argv[i], "-pfsolb") == 0) || (strcmp(argv[i], "–pfsolb") == 0))
     {
-      bin_out=1;
+      bin_out = 1;
       filename = argv[i + 1];
       file1_ext = strrchr(filename, '.');
-      if (strcmp(file1_ext+1,"pfsolb")!=0) {
+      if (strcmp(file1_ext + 1, "pfsolb") != 0)
+      {
         printf("ERROR (pfpatchysolid): Binary file extension must be .pfsolb\n");
-        printf("                       detected %s\n",file1_ext+1);
+        printf("                       detected %s\n", file1_ext + 1);
         return TCL_ERROR;
       }
     }
   }
 
-  if ( (top==0) || (bot==0)) // (msk==0) ||
+  if ((top == 0) || (bot == 0)) // (msk==0) ||
   {
     printf("\n ERROR (pfpatchysolid): Missing required arguments. Please add:\n");
     // if (msk==0)
     // {
     //   printf("      -msk <Mask_dataset_ID>\n");
     // }
-    if (top==0)
+    if (top == 0)
     {
       printf("      -top <Top_surface_dataset_ID>\n");
     }
-    if (top==0)
+    if (top == 0)
     {
       printf("      -bot <Bottom_surface_dataset_ID>\n");
     }
     return TCL_ERROR;
   }
 
-  if (strcmp(filename,"SolidFile.pfsol")==0)
+  if (strcmp(filename, "SolidFile.pfsol") == 0)
   {
     printf("WARNING (pfpatchysolid): No solid file name specified, default is: SolidFile.pfsol\n");
   }
@@ -2020,13 +2023,16 @@ int MakePatchySolidCommand(
     return TCL_ERROR;
   }
 
-  if (msk==1) {
+  if (msk == 1)
+  {
     if ((databox = DataMember(data, maskkey, entryPtr)) == NULL)
     {
       SetNonExistantError(interp, maskkey);
       return TCL_ERROR;
     }
-  } else {
+  }
+  else
+  {
     // No mask provided so make one of all ones matching the size of top
     int NX = DataboxNx(top_databox);
     int NY = DataboxNy(top_databox);
@@ -2038,7 +2044,7 @@ int MakePatchySolidCommand(
     double DY = DataboxDy(top_databox);
     double DZ = DataboxDz(top_databox);
 
-    databox=NewDataboxDefault(NX,NY,NZ,X,Y,Z,DX,DY,DZ,1.0);
+    databox = NewDataboxDefault(NX, NY, NZ, X, Y, Z, DX, DY, DZ, 1.0);
   }
 
   if ((fp = fopen(filename, "wb")) == NULL)
@@ -2047,7 +2053,7 @@ int MakePatchySolidCommand(
     ReadWriteError(interp);
     return TCL_ERROR;
   }
-  if (vtk==1)
+  if (vtk == 1)
   {
     if ((fp_vtk = fopen(vtk_filename, "wb")) == NULL)
     {
@@ -2062,21 +2068,21 @@ int MakePatchySolidCommand(
   // start_time=clock();
   // double run_time;
 
-  i=MakePatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, sub_patch, bin_out);
+  i = MakePatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, sub_patch, bin_out);
 
   // end_time=clock();
   // run_time=(double)(end_time-start_time) / CLOCKS_PER_SEC;
   // printf("Elapsed time: %f\n", run_time);
 
-  if (i!=0)
+  if (i != 0)
   {
-    if (i==-2) // Flag for errors deriving from input issues
+    if (i == -2) // Flag for errors deriving from input issues
     {
       printf("\n ERROR (pfpatchysolid): Error with inputs\n");
     }
     else  // Everything else...
     {
-    printf("\n ERROR (pfpatchysolid): Other internal error\n");
+      printf("\n ERROR (pfpatchysolid): Other internal error\n");
     }
   }
 
@@ -2100,60 +2106,65 @@ int MakePatchySolidCommand(
 //   from first filename format to the second filename format
 // ----------------------------------------------------------------------------
 int pfsolFmtConvert(
-                     ClientData  clientData,
-                     Tcl_Interp *interp,
-                     int         argc,
-                     char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   char          *bin_filename, *ascii_filename;
-  char          *file1_name, *file2_name,*file1_ext, *file2_ext;
-  int           bin2asc;
+  char          *file1_name, *file2_name, *file1_ext, *file2_ext;
+  int bin2asc;
 
   FILE          *fp_bin = NULL;
   FILE          *fp_ascii = NULL;
 
   // Perform some checks before calling the appropriate routine in solidtools.c
 
-  if (argc!=3)
+  if (argc != 3)
   {
     printf("ERROR (pfsolidfmtconvert): Two input file names are required\n");
     return TCL_ERROR;
   }
 
-  file1_name=argv[1];
-  file2_name=argv[2];
+  file1_name = argv[1];
+  file2_name = argv[2];
 
   file1_ext = strrchr(file1_name, '.');
   file2_ext = strrchr(file2_name, '.');
 
-  if (!file1_ext) {
+  if (!file1_ext)
+  {
     printf("ERROR (pfsolidfmtconvert): Missing extension on file 1, must be .pfsol or .pfsolb\n");
     return TCL_ERROR;
   }
-  if (!file2_ext) {
+  if (!file2_ext)
+  {
     printf("ERROR (pfsolidfmtconvert): Missing extension on file 2, must be .pfsol or .pfsolb\n");
     return TCL_ERROR;
   }
-  if ((strcmp(file1_ext+1,"pfsol")!=0)&(strcmp(file1_ext+1,"pfsolb")!=0)) {
+  if ((strcmp(file1_ext + 1, "pfsol") != 0) & (strcmp(file1_ext + 1, "pfsolb") != 0))
+  {
     printf("ERROR (pfsolidfmtconvert): File extension on file 1 must be .pfsol or .pfsolb\n");
-    printf("                           detected .%s\n",file1_ext+1);
+    printf("                           detected .%s\n", file1_ext + 1);
     return TCL_ERROR;
   }
-  if ((strcmp(file2_ext+1,"pfsol")!=0)&(strcmp(file2_ext+1,"pfsolb")!=0)) {
+  if ((strcmp(file2_ext + 1, "pfsol") != 0) & (strcmp(file2_ext + 1, "pfsolb") != 0))
+  {
     printf("ERROR (pfsolidfmtconvert): File extension on file 2 must be .pfsol or .pfsolb\n");
-    printf("                           detected .%s\n",file2_ext+1);
+    printf("                           detected .%s\n", file2_ext + 1);
     return TCL_ERROR;
   }
-  if (strcmp(file2_ext+1,file1_ext+1)==0) {
+  if (strcmp(file2_ext + 1, file1_ext + 1) == 0)
+  {
     printf("ERROR (pfsolidfmtconvert): File extensions must be different\n");
     return TCL_ERROR;
   }
 
-  if (strcmp(file1_ext+1,"pfsol")==0)
+  if (strcmp(file1_ext + 1, "pfsol") == 0)
   {
-    ascii_filename=file1_name;
-    bin_filename=file2_name;
-    bin2asc=0;
+    ascii_filename = file1_name;
+    bin_filename = file2_name;
+    bin2asc = 0;
 
     if ((fp_ascii = fopen(ascii_filename, "r")) == NULL)
     {
@@ -2167,10 +2178,12 @@ int pfsolFmtConvert(
       ReadWriteError(interp);
       return TCL_ERROR;
     }
-  } else {
-    ascii_filename=file2_name;
-    bin_filename=file1_name;
-    bin2asc=1;
+  }
+  else
+  {
+    ascii_filename = file2_name;
+    bin_filename = file1_name;
+    bin2asc = 1;
 
     if ((fp_ascii = fopen(ascii_filename, "w")) == NULL)
     {
@@ -2186,11 +2199,14 @@ int pfsolFmtConvert(
     }
   }
 
-  int out_status=0;
-  if (bin2asc==0){
-    out_status=ConvertPfsolAscii2Bin(fp_ascii,fp_bin);
-  } else {
-    out_status=ConvertPfsolBin2Ascii(fp_bin,fp_ascii);
+  int out_status = 0;
+  if (bin2asc == 0)
+  {
+    out_status = ConvertPfsolAscii2Bin(fp_ascii, fp_bin);
+  }
+  else
+  {
+    out_status = ConvertPfsolBin2Ascii(fp_bin, fp_ascii);
   }
 
   if (fp_ascii)
@@ -2202,7 +2218,7 @@ int pfsolFmtConvert(
     fclose(fp_bin);
   }
 
-  if (out_status!=0)
+  if (out_status != 0)
   {
     printf("\n ERROR (pfsolidfmtconvert): Problem during file conversion\n");
     return TCL_ERROR;
@@ -2224,10 +2240,10 @@ int pfsolFmtConvert(
  *-----------------------------------------------------------------------*/
 
 int              SaveSDSCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -2317,10 +2333,10 @@ int              SaveSDSCommand(
  *-----------------------------------------------------------------------*/
 
 int                GetListCommand(
-                                  ClientData  clientData,
-                                  Tcl_Interp *interp,
-                                  int         argc,
-                                  char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data           *data = (Data*)clientData;
 
@@ -2371,7 +2387,7 @@ int                GetListCommand(
 
       list[i] = (char*)calloc(MAX_LABEL_SIZE, sizeof(char));
       strcpy(list[i], Tcl_DStringAppendElement(&dspair,
-                                               DataboxLabel(databox)));
+        DataboxLabel(databox)));
       Tcl_DStringFree(&dspair);
 
       entryPtr = Tcl_NextHashEntry(&search);
@@ -2436,10 +2452,10 @@ int                GetListCommand(
  *-----------------------------------------------------------------------*/
 
 int               GetEltCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -2516,10 +2532,10 @@ int               GetEltCommand(
  *-----------------------------------------------------------------------*/
 
 int               GetGridCommand(
-                                 ClientData  clientData,
-                                 Tcl_Interp *interp,
-                                 int         argc,
-                                 char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -2558,10 +2574,10 @@ int               GetGridCommand(
  *-----------------------------------------------------------------------*/
 
 int            GridTypeCommand(
-                               ClientData  clientData,
-                               Tcl_Interp *interp,
-                               int         argc,
-                               char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data       *data = (Data*)clientData;
 
@@ -2618,10 +2634,10 @@ int            GridTypeCommand(
  *-----------------------------------------------------------------------*/
 
 int               CVelCommand(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -2670,7 +2686,7 @@ int               CVelCommand(
 
   vel = CompCellVel(databoxk, databoxh);
   sprintf(label, "Darcy velocity in cells for `%s' and `%s'",
-          cond, pHead);
+    cond, pHead);
 
   component_ptr = label + strlen(label);
 
@@ -2721,10 +2737,10 @@ int               CVelCommand(
  *-----------------------------------------------------------------------*/
 
 int               VVelCommand(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -2774,7 +2790,7 @@ int               VVelCommand(
 
   vel = CompVertVel(databoxk, databoxh);
   sprintf(label, "Darcy velocity in vertices for `%s' and `%s'",
-          cond, pHead);
+    cond, pHead);
 
   component_ptr = label + strlen(label);
 
@@ -2824,10 +2840,10 @@ int               VVelCommand(
  *-----------------------------------------------------------------------*/
 
 int               BFCVelCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -2877,7 +2893,7 @@ int               BFCVelCommand(
 
   vel = CompBFCVel(databoxk, databoxh);
   sprintf(label, "Darcy velocity in vertices for `%s' and `%s'",
-          cond, pHead);
+    cond, pHead);
 
   component_ptr = label + strlen(label);
 
@@ -2929,10 +2945,10 @@ int               BFCVelCommand(
  *-----------------------------------------------------------------------*/
 
 int               VMagCommand(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -2982,7 +2998,7 @@ int               VMagCommand(
   /* same dimensions.                                */
 
   if (!SameDimensions(databoxx, databoxy) ||
-      !SameDimensions(databoxy, databoxz))
+    !SameDimensions(databoxy, databoxz))
   {
     DimensionError(interp);
     return TCL_ERROR;
@@ -2996,7 +3012,7 @@ int               VMagCommand(
   if (vmag)
   {
     sprintf(label, "Velocity magnitude of `%s', `%s', and `%s'",
-            hashkeyx, hashkeyy, hashkeyz);
+      hashkeyx, hashkeyy, hashkeyz);
 
     /* Make sure the data set pointer was added */
     /* to the hash table successfully.          */
@@ -3027,10 +3043,10 @@ int               VMagCommand(
  *-----------------------------------------------------------------------*/
 
 int               HHeadCommand(
-                               ClientData  clientData,
-                               Tcl_Interp *interp,
-                               int         argc,
-                               char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -3099,10 +3115,10 @@ int               HHeadCommand(
  *-----------------------------------------------------------------------*/
 
 int               PHeadCommand(
-                               ClientData  clientData,
-                               Tcl_Interp *interp,
-                               int         argc,
-                               char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -3170,10 +3186,10 @@ int               PHeadCommand(
  *-----------------------------------------------------------------------*/
 
 int               FluxCommand(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -3261,10 +3277,10 @@ int               FluxCommand(
  *-----------------------------------------------------------------------*/
 
 int               NewGridCommand(
-                                 ClientData  clientData,
-                                 Tcl_Interp *interp,
-                                 int         argc,
-                                 char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -3296,8 +3312,8 @@ int               NewGridCommand(
   /* integers.                                                   */
 
   if (!(num = strtok(npoints, WS)) || (sscanf(num, "%d", &nx) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &ny) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &nz) != 1))
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &ny) != 1) ||
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &nz) != 1))
   {
     NotAnIntError(interp, 1, NEWGRIDUSAGE);
     return TCL_ERROR;
@@ -3314,8 +3330,8 @@ int               NewGridCommand(
   /* Make sure that the origin is given in floating point numbers */
 
   if (!(num = strtok(origin, WS)) || (sscanf(num, "%lf", &x) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &y) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &z) != 1))
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &y) != 1) ||
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &z) != 1))
   {
     NotADoubleError(interp, 2, NEWGRIDUSAGE);
     return TCL_ERROR;
@@ -3332,8 +3348,8 @@ int               NewGridCommand(
   /* Make sure that the intervals are given in floating point numbers */
 
   if (!(num = strtok(intervals, WS)) || (sscanf(num, "%lf", &dx) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dy) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dz) != 1))
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dy) != 1) ||
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dz) != 1))
   {
     NotADoubleError(interp, 3, NEWGRIDUSAGE);
     return TCL_ERROR;
@@ -3387,10 +3403,10 @@ int               NewGridCommand(
  *-----------------------------------------------------------------------*/
 
 int               SetGridCommand(
-                                 ClientData  clientData,
-                                 Tcl_Interp *interp,
-                                 int         argc,
-                                 char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -3421,8 +3437,8 @@ int               SetGridCommand(
   /* Make sure that the number of points along each axis are all */
   /* integers.                                                   */
   if (!(num = strtok(npoints, WS)) || (sscanf(num, "%d", &nx) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &ny) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &nz) != 1))
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &ny) != 1) ||
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &nz) != 1))
   {
     NotAnIntError(interp, 1, SETGRIDUSAGE);
     goto exit;
@@ -3437,8 +3453,8 @@ int               SetGridCommand(
 
   /* Make sure that the origin is given in floating point numbers */
   if (!(num = strtok(origin, WS)) || (sscanf(num, "%lf", &x) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &y) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &z) != 1))
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &y) != 1) ||
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &z) != 1))
   {
     NotADoubleError(interp, 2, SETGRIDUSAGE);
     goto exit;
@@ -3453,8 +3469,8 @@ int               SetGridCommand(
 
   /* Make sure that the intervals are given in floating point numbers */
   if (!(num = strtok(intervals, WS)) || (sscanf(num, "%lf", &dx) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dy) != 1) ||
-      !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dz) != 1))
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dy) != 1) ||
+    !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dz) != 1))
   {
     NotADoubleError(interp, 3, SETGRIDUSAGE);
     goto exit;
@@ -3499,10 +3515,10 @@ exit:
  * Cmd. Syntax: pfnewlabel dataset newlabel
  *-----------------------------------------------------------------------*/
 int                NewLabelCommand(
-                                   ClientData  clientData,
-                                   Tcl_Interp *interp,
-                                   int         argc,
-                                   char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -3553,10 +3569,10 @@ int                NewLabelCommand(
  *-----------------------------------------------------------------------*/
 
 int               AxpyCommand(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -3625,10 +3641,10 @@ int               AxpyCommand(
  *-----------------------------------------------------------------------*/
 
 int               SumCommand(
-                             ClientData  clientData,
-                             Tcl_Interp *interp,
-                             int         argc,
-                             char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -3675,10 +3691,10 @@ int               SumCommand(
  *-----------------------------------------------------------------------*/
 
 int               CellSumCommand(
-                                 ClientData  clientData,
-                                 Tcl_Interp *interp,
-                                 int         argc,
-                                 char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;
   Data          *data = (Data*)clientData;
@@ -3773,10 +3789,10 @@ int               CellSumCommand(
  *-----------------------------------------------------------------------*/
 
 int               CellDiffCommand(
-                                  ClientData  clientData,
-                                  Tcl_Interp *interp,
-                                  int         argc,
-                                  char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;
   Data          *data = (Data*)clientData;
@@ -3871,10 +3887,10 @@ int               CellDiffCommand(
  *-----------------------------------------------------------------------*/
 
 int               CellMultCommand(
-                                  ClientData  clientData,
-                                  Tcl_Interp *interp,
-                                  int         argc,
-                                  char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;
   Data          *data = (Data*)clientData;
@@ -3969,10 +3985,10 @@ int               CellMultCommand(
  *-----------------------------------------------------------------------*/
 
 int               CellDivCommand(
-                                 ClientData  clientData,
-                                 Tcl_Interp *interp,
-                                 int         argc,
-                                 char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;
   Data          *data = (Data*)clientData;
@@ -4067,10 +4083,10 @@ int               CellDivCommand(
  *-----------------------------------------------------------------------*/
 
 int               CellSumConstCommand(
-                                      ClientData  clientData,
-                                      Tcl_Interp *interp,
-                                      int         argc,
-                                      char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;
   Data          *data = (Data*)clientData;
@@ -4157,10 +4173,10 @@ int               CellSumConstCommand(
  *-----------------------------------------------------------------------*/
 
 int               CellDiffConstCommand(
-                                       ClientData  clientData,
-                                       Tcl_Interp *interp,
-                                       int         argc,
-                                       char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;
   Data          *data = (Data*)clientData;
@@ -4247,10 +4263,10 @@ int               CellDiffConstCommand(
  *-----------------------------------------------------------------------*/
 
 int               CellMultConstCommand(
-                                       ClientData  clientData,
-                                       Tcl_Interp *interp,
-                                       int         argc,
-                                       char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;
   Data          *data = (Data*)clientData;
@@ -4337,10 +4353,10 @@ int               CellMultConstCommand(
  *-----------------------------------------------------------------------*/
 
 int               CellDivConstCommand(
-                                      ClientData  clientData,
-                                      Tcl_Interp *interp,
-                                      int         argc,
-                                      char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;
   Data          *data = (Data*)clientData;
@@ -4429,10 +4445,10 @@ int               CellDivConstCommand(
  *-----------------------------------------------------------------------*/
 
 int               GetStatsCommand(
-                                  ClientData  clientData,
-                                  Tcl_Interp *interp,
-                                  int         argc,
-                                  char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -4513,10 +4529,10 @@ int               GetStatsCommand(
  *-----------------------------------------------------------------------*/
 
 int               MDiffCommand(
-                               ClientData  clientData,
-                               Tcl_Interp *interp,
-                               int         argc,
-                               char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -4616,10 +4632,10 @@ int               MDiffCommand(
  *-----------------------------------------------------------------------*/
 
 int               SaveDiffCommand(
-                                  ClientData  clientData,
-                                  Tcl_Interp *interp,
-                                  int         argc,
-                                  char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -4772,10 +4788,10 @@ int               SaveDiffCommand(
  *-----------------------------------------------------------------------*/
 
 int               DiffEltCommand(
-                                 ClientData  clientData,
-                                 Tcl_Interp *interp,
-                                 int         argc,
-                                 char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -4918,10 +4934,10 @@ int               DiffEltCommand(
  *-----------------------------------------------------------------------*/
 
 int               DeleteCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
@@ -4959,10 +4975,10 @@ int               DeleteCommand(
  * Cmd. syntax: pfcomputetop databox
  *-----------------------------------------------------------------------*/
 int            ComputeTopCommand(
-                                 ClientData  clientData,
-                                 Tcl_Interp *interp,
-                                 int         argc,
-                                 char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5035,10 +5051,10 @@ int            ComputeTopCommand(
  * Cmd. syntax: pfcomputebottom databox
  *-----------------------------------------------------------------------*/
 int            ComputeBottomCommand(
-                                    ClientData  clientData,
-                                    Tcl_Interp *interp,
-                                    int         argc,
-                                    char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5111,10 +5127,10 @@ int            ComputeBottomCommand(
  * Cmd. syntax: pfcomputetop top data
  *-----------------------------------------------------------------------*/
 int            ExtractTopCommand(
-                                 ClientData  clientData,
-                                 Tcl_Interp *interp,
-                                 int         argc,
-                                 char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5196,10 +5212,10 @@ int            ExtractTopCommand(
  * Cmd. syntax: pfcomputedomain top bottom
  *-----------------------------------------------------------------------*/
 int            ComputeDomainCommand(
-                                    ClientData  clientData,
-                                    Tcl_Interp *interp,
-                                    int         argc,
-                                    char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5253,7 +5269,7 @@ int            ComputeDomainCommand(
    *--------------------------------------------------------------------*/
 
   SubgridArray  *all_subgrids = DistributeUserGrid(user_grid, num_procs,
-                                                   num_procs_x, num_procs_y, num_procs_z);
+      num_procs_x, num_procs_y, num_procs_z);
 
   if (!all_subgrids)
   {
@@ -5278,10 +5294,10 @@ int            ComputeDomainCommand(
 
 
 int PrintDomainCommand(
-                       ClientData  clientData,
-                       Tcl_Interp *interp,
-                       int         argc,
-                       char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5376,10 +5392,10 @@ int PrintDomainCommand(
  * that specify the processor topology.
  */
 int BuildDomainCommand(
-                       ClientData  clientData,
-                       Tcl_Interp *interp,
-                       int         argc,
-                       char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Data       *data = (Data*)clientData;
   SubgridArray *subgrid_array;
@@ -5443,10 +5459,10 @@ int BuildDomainCommand(
     nz = GetInt(interp, key);
 
     AppendSubgrid(NewSubgrid(ix, iy, iz,
-                             nx, ny, nz,
-                             rx, ry, rz,
-                             p),
-                  &subgrid_array);
+      nx, ny, nz,
+      rx, ry, rz,
+      p),
+      &subgrid_array);
   }
 
   char newhashkey[32];
@@ -5463,10 +5479,10 @@ int BuildDomainCommand(
 }
 
 int Extract2DDomainCommand(
-                           ClientData  clientData,
-                           Tcl_Interp *interp,
-                           int         argc,
-                           char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5516,10 +5532,10 @@ int Extract2DDomainCommand(
  * Cmd. syntax: pfsufacestorage top pressure
  *-----------------------------------------------------------------------*/
 int            SurfaceStorageCommand(
-                                     ClientData  clientData,
-                                     Tcl_Interp *interp,
-                                     int         argc,
-                                     char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5601,10 +5617,10 @@ int            SurfaceStorageCommand(
  * Cmd. syntax: pfsubsurfacestorage
  *-----------------------------------------------------------------------*/
 int            SubsurfaceStorageCommand(
-                                        ClientData  clientData,
-                                        Tcl_Interp *interp,
-                                        int         argc,
-                                        char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5713,10 +5729,10 @@ int            SubsurfaceStorageCommand(
  * Cmd. syntax: pfgwstorage
  *-----------------------------------------------------------------------*/
 int            GWStorageCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5826,10 +5842,10 @@ int            GWStorageCommand(
  * Cmd. syntax: pfsurfacerunoff
  *-----------------------------------------------------------------------*/
 int            SurfaceRunoffCommand(
-                                    ClientData  clientData,
-                                    Tcl_Interp *interp,
-                                    int         argc,
-                                    char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -5921,11 +5937,11 @@ int            SurfaceRunoffCommand(
       }
 
       ComputeSurfaceRunoff(top,
-                           slope_x,
-                           slope_y,
-                           mannings,
-                           pressure,
-                           surface_runoff);
+        slope_x,
+        slope_y,
+        mannings,
+        pressure,
+        surface_runoff);
     }
     else
     {
@@ -5944,10 +5960,10 @@ int            SurfaceRunoffCommand(
  * Cmd. syntax: pfwatertabledepth top saturation
  *-----------------------------------------------------------------------*/
 int            WaterTableDepthCommand(
-                                      ClientData  clientData,
-                                      Tcl_Interp *interp,
-                                      int         argc,
-                                      char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
   Data       *data = (Data*)clientData;
@@ -6035,10 +6051,10 @@ int            WaterTableDepthCommand(
  * Cmd. syntax: pfslopex dem
  *-----------------------------------------------------------------------*/
 int            SlopeXUpwindCommand(
-                                   ClientData  clientData,
-                                   Tcl_Interp *interp,
-                                   int         argc,
-                                   char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6114,10 +6130,10 @@ int            SlopeXUpwindCommand(
  * Cmd. syntax: pfslopey dem
  *-----------------------------------------------------------------------*/
 int            SlopeYUpwindCommand(
-                                   ClientData  clientData,
-                                   Tcl_Interp *interp,
-                                   int         argc,
-                                   char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6197,10 +6213,10 @@ int            SlopeYUpwindCommand(
  * Cmd. syntax: pfupstreamarea sx sy
  *-----------------------------------------------------------------------*/
 int            UpstreamAreaCommand(
-                                   ClientData  clientData,
-                                   Tcl_Interp *interp,
-                                   int         argc,
-                                   char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6294,10 +6310,10 @@ int            UpstreamAreaCommand(
  * Cmd. syntax: pffillflats dem
  *-----------------------------------------------------------------------*/
 int            FillFlatsCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6374,10 +6390,10 @@ int            FillFlatsCommand(
  * Cmd. syntax: pfpitfilldem dem dpit maxiter
  *-----------------------------------------------------------------------*/
 int            PitFillCommand(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6497,10 +6513,10 @@ int            PitFillCommand(
  * Cmd. syntax: pfmovingavgdem dem wsize maxiter
  *-----------------------------------------------------------------------*/
 int            MovingAvgCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6621,10 +6637,10 @@ int            MovingAvgCommand(
  * Cmd. syntax: pfslopexD4 dem
  *-----------------------------------------------------------------------*/
 int            SlopeXD4Command(
-                               ClientData  clientData,
-                               Tcl_Interp *interp,
-                               int         argc,
-                               char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6700,10 +6716,10 @@ int            SlopeXD4Command(
  * Cmd. syntax: pfslopeyD4 dem
  *-----------------------------------------------------------------------*/
 int            SlopeYD4Command(
-                               ClientData  clientData,
-                               Tcl_Interp *interp,
-                               int         argc,
-                               char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6779,10 +6795,10 @@ int            SlopeYD4Command(
  * Cmd. syntax: pfslopeD8 dem
  *-----------------------------------------------------------------------*/
 int            SlopeD8Command(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6857,10 +6873,10 @@ int            SlopeD8Command(
  * Cmd. syntax: pfsegmentD8 dem
  *-----------------------------------------------------------------------*/
 int            SegmentD8Command(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -6935,10 +6951,10 @@ int            SegmentD8Command(
  * Cmd. syntax: pfchildD8 dem
  *-----------------------------------------------------------------------*/
 int            ChildD8Command(
-                              ClientData  clientData,
-                              Tcl_Interp *interp,
-                              int         argc,
-                              char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7011,10 +7027,10 @@ int            ChildD8Command(
  * Cmd. syntax: pfflintslaw dem c p
  *-----------------------------------------------------------------------*/
 int            FlintsLawCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7103,10 +7119,10 @@ int            FlintsLawCommand(
  * Cmd. syntax: pfflintslawfit dem c0 p0 maxiter
  *-----------------------------------------------------------------------*/
 int            FlintsLawFitCommand(
-                                   ClientData  clientData,
-                                   Tcl_Interp *interp,
-                                   int         argc,
-                                   char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7205,10 +7221,10 @@ int            FlintsLawFitCommand(
  * Cmd. syntax: pfflintslawbybasin dem c0 p0 maxiter
  *-----------------------------------------------------------------------*/
 int            FlintsLawByBasinCommand(
-                                       ClientData  clientData,
-                                       Tcl_Interp *interp,
-                                       int         argc,
-                                       char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7304,10 +7320,10 @@ int            FlintsLawByBasinCommand(
  * Cmd. syntax: pfsattrans mask perm
  *-----------------------------------------------------------------------*/
 int            SatTransmissivityCommand(
-                                        ClientData  clientData,
-                                        Tcl_Interp *interp,
-                                        int         argc,
-                                        char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7400,10 +7416,10 @@ int            SatTransmissivityCommand(
  * Cmd. syntax: pftopoindex dem sx sy
  *-----------------------------------------------------------------------*/
 int            TopoIndexCommand(
-                                ClientData  clientData,
-                                Tcl_Interp *interp,
-                                int         argc,
-                                char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7504,10 +7520,10 @@ int            TopoIndexCommand(
  *              sy     is a Databox of slopes (y-dir) -- lets you use processed slopes!
  *-----------------------------------------------------------------------*/
 int            TopoRechargeCommand(
-                                   ClientData  clientData,
-                                   Tcl_Interp *interp,
-                                   int         argc,
-                                   char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7650,10 +7666,10 @@ int            TopoRechargeCommand(
  *              sx, sy, and dem are needed to compute upstream areas
  *-----------------------------------------------------------------------*/
 int            EffectiveRechargeCommand(
-                                        ClientData  clientData,
-                                        Tcl_Interp *interp,
-                                        int         argc,
-                                        char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7773,10 +7789,10 @@ int            EffectiveRechargeCommand(
  * Cmd. syntax: pftopodeficit profile m trans dem slopex slopey recharge ssat sres porosity mask
  *-----------------------------------------------------------------------*/
 int            TopoDeficitCommand(
-                                  ClientData  clientData,
-                                  Tcl_Interp *interp,
-                                  int         argc,
-                                  char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -7948,10 +7964,10 @@ int            TopoDeficitCommand(
  * Cmd. syntax: pftopowt deficit porosity ssat sres mask top wtdepth
  *-----------------------------------------------------------------------*/
 int            TopoDeficitToWTCommand(
-                                      ClientData  clientData,
-                                      Tcl_Interp *interp,
-                                      int         argc,
-                                      char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;
@@ -8068,10 +8084,10 @@ int            TopoDeficitToWTCommand(
  * Cmd. syntax: pfhydrostatic wtdepth top mask
  *-----------------------------------------------------------------------*/
 int            HydroStatFromWTCommand(
-                                      ClientData  clientData,
-                                      Tcl_Interp *interp,
-                                      int         argc,
-                                      char *      argv[])
+  ClientData  clientData,
+  Tcl_Interp *interp,
+  int         argc,
+  char *      argv[])
 {
   Tcl_HashEntry *entryPtr;    // Points to new hash table entry
   Data          *data = (Data*)clientData;

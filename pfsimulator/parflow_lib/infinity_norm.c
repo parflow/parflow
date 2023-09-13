@@ -38,7 +38,7 @@
  *--------------------------------------------------------------------------*/
 
 double  InfinityNorm(
-                     Vector *x)
+  Vector *x)
 {
   Grid         *grid = VectorGrid(x);
   Subgrid      *subgrid;
@@ -84,7 +84,7 @@ double  InfinityNorm(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
+      iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       tmp = fabs(xp[iv]);
       if (tmp > infinity_norm)

@@ -67,9 +67,9 @@ static int one = 1;
 //}
 
 void tools_WriteInt(
-                    FILE * file,
-                    int *  ptr,
-                    int    len)
+  FILE * file,
+  int *  ptr,
+  int    len)
 {
   int i;
   int *data;
@@ -86,9 +86,9 @@ void tools_WriteInt(
 
 
 void tools_ReadDouble(
-                      FILE *  file,
-                      double *ptr,
-                      int     len)
+  FILE *  file,
+  double *ptr,
+  int     len)
 {
   int i;
   double *data;
@@ -104,9 +104,9 @@ void tools_ReadDouble(
 
 
 void tools_ReadInt(
-                   FILE * file,
-                   int *  ptr,
-                   int    len)
+  FILE * file,
+  int *  ptr,
+  int    len)
 {
   int i;
   int *data;
@@ -127,9 +127,9 @@ void tools_ReadInt(
 #include <stdio.h>
 
 void tools_WriteFloat(
-                      FILE * file,
-                      float *ptr,
-                      int    len)
+  FILE * file,
+  float *ptr,
+  int    len)
 {
   int i;
   float *data;
@@ -155,9 +155,9 @@ void tools_WriteFloat(
 }
 
 void tools_WriteDouble(
-                       FILE *  file,
-                       double *ptr,
-                       int     len)
+  FILE *  file,
+  double *ptr,
+  int     len)
 {
   int i;
   double *data;
@@ -193,9 +193,9 @@ void tools_WriteDouble(
 }
 
 void tools_WriteInt(
-                    FILE * file,
-                    int *  ptr,
-                    int    len)
+  FILE * file,
+  int *  ptr,
+  int    len)
 {
   int i;
   int *data;
@@ -220,9 +220,9 @@ void tools_WriteInt(
 }
 
 void tools_ReadDouble(
-                      FILE *  file,
-                      double *ptr,
-                      int     len)
+  FILE *  file,
+  double *ptr,
+  int     len)
 {
   int i;
   double *data;
@@ -249,9 +249,9 @@ void tools_ReadDouble(
   }
 }
 void tools_ReadInt(
-                   FILE * file,
-                   int *  ptr,
-                   int    len)
+  FILE * file,
+  int *  ptr,
+  int    len)
 {
   int i;
   int *data;

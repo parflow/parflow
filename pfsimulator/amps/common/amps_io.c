@@ -29,18 +29,18 @@
 #include "amps.h"
 
 void amps_ScanByte(
-                   amps_File file,
-                   char *    data,
-                   int       len,
-                   int       stride)
+  amps_File file,
+  char *    data,
+  int       len,
+  int       stride)
 {
   char *ptr;
   char *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
   {
-    if(fread(ptr, 1, 1, file) != 1)
+    if (fread(ptr, 1, 1, file) != 1)
     {
       printf("AMPS Error: Can't read byte\n");
       AMPS_ABORT("AMPS Error");
@@ -50,18 +50,18 @@ void amps_ScanByte(
 
 
 void amps_ScanChar(
-                   amps_File file,
-                   char *    data,
-                   int       len,
-                   int       stride)
+  amps_File file,
+  char *    data,
+  int       len,
+  int       stride)
 {
   char *ptr;
   char *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
   {
-    if(fscanf(file, "%c", ptr) != 1)
+    if (fscanf(file, "%c", ptr) != 1)
     {
       printf("AMPS Error: Can't read char\n");
       AMPS_ABORT("AMPS Error");
@@ -70,18 +70,18 @@ void amps_ScanChar(
 }
 
 void amps_ScanShort(
-                    amps_File file,
-                    short *   data,
-                    int       len,
-                    int       stride)
+  amps_File file,
+  short *   data,
+  int       len,
+  int       stride)
 {
   short *ptr;
   short *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
   {
-    if(fscanf(file, "%hd ", ptr) != 1)
+    if (fscanf(file, "%hd ", ptr) != 1)
     {
       printf("AMPS Error: Can't read short\n");
       AMPS_ABORT("AMPS Error");
@@ -90,18 +90,18 @@ void amps_ScanShort(
 }
 
 void amps_ScanInt(
-                  amps_File file,
-                  int *     data,
-                  int       len,
-                  int       stride)
+  amps_File file,
+  int *     data,
+  int       len,
+  int       stride)
 {
   int *ptr;
   int *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
   {
-    if(fscanf(file, "%d ", ptr) != 1)
+    if (fscanf(file, "%d ", ptr) != 1)
     {
       printf("AMPS Error: Can't read int\n");
       AMPS_ABORT("AMPS Error");
@@ -110,18 +110,18 @@ void amps_ScanInt(
 }
 
 void amps_ScanLong(
-                   amps_File file,
-                   long *    data,
-                   int       len,
-                   int       stride)
+  amps_File file,
+  long *    data,
+  int       len,
+  int       stride)
 {
   long *ptr;
   long *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
   {
-    if(fscanf(file, "%ld ", ptr) != 1)
+    if (fscanf(file, "%ld ", ptr) != 1)
     {
       printf("AMPS Error: Can't read long\n");
       AMPS_ABORT("AMPS Error");
@@ -130,39 +130,38 @@ void amps_ScanLong(
 }
 
 void amps_ScanFloat(
-                    amps_File file,
-                    float *   data,
-                    int       len,
-                    int       stride)
+  amps_File file,
+  float *   data,
+  int       len,
+  int       stride)
 {
   float *ptr;
   float *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
   {
-    if(fscanf(file, "%f ", ptr) != 1)
+    if (fscanf(file, "%f ", ptr) != 1)
     {
       printf("AMPS Error: Can't read float\n");
       AMPS_ABORT("AMPS Error");
     }
-
   }
 }
 
 void amps_ScanDouble(
-                     amps_File file,
-                     double *  data,
-                     int       len,
-                     int       stride)
+  amps_File file,
+  double *  data,
+  int       len,
+  int       stride)
 {
   double *ptr;
   double *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
   {
-    if(fscanf(file, "%lf ", ptr) != 1)
+    if (fscanf(file, "%lf ", ptr) != 1)
     {
       printf("AMPS Error: Can't read double\n");
       AMPS_ABORT("AMPS Error");
@@ -241,7 +240,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len)
   /* read in each double with bytes swaped                               */
   for (i = len, data = ptr; i--;)
   {
-    if(fread(&a.number, sizeof(double), 1, (FILE*)file) != 1)
+    if (fread(&a.number, sizeof(double), 1, (FILE*)file) != 1)
     {
       printf("AMPS Error: Can't read double\n");
       AMPS_ABORT("AMPS Error");
@@ -274,7 +273,7 @@ void amps_ReadInt(amps_File file, int *ptr, int len)
 
   for (i = len, data = ptr; i--;)
   {
-    if(fread(&a.number, sizeof(int), 1, (FILE*)file) != 1)
+    if (fread(&a.number, sizeof(int), 1, (FILE*)file) != 1)
     {
       printf("AMPS Error: Can't read int\n");
       AMPS_ABORT("AMPS Error");
@@ -322,12 +321,12 @@ int len;
 
   for (i = len, data = ptr; i--;)
   {
-    if(fread(&number, sizeof(short), 1, (FILE*)file) != 1)
+    if (fread(&number, sizeof(short), 1, (FILE*)file) != 1)
     {
       printf("AMPS Error: Can't read byte\n");
       AMPS_ABORT("AMPS Error");
     }
-    
+
     *data++ = number;
   }
 }

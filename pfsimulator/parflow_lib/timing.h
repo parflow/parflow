@@ -103,39 +103,39 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
 
 #define IncFLOPCount(inc) TimingFLOPCount += (FLOPType)inc
 #define StartTiming()     TimingTimeCount -= amps_Clock(); \
-  TimingCPUCount -= amps_CPUClock()
+        TimingCPUCount -= amps_CPUClock()
 #define StopTiming()      TimingTimeCount += amps_Clock(); \
-  TimingCPUCount += amps_CPUClock()
+        TimingCPUCount += amps_CPUClock()
 
 #ifdef TIMING_WITH_SYNC
-#define BeginTiming(i)                  \
-  {                                     \
-    StopTiming();                       \
-    TimingTime(i) -= TimingTimeCount;   \
-    TimingCPUTime(i) -= TimingCPUCount; \
-    TimingFLOPS(i) -= TimingFLOPCount;  \
-    amps_Sync(amps_CommWorld);          \
-    StartTiming();                      \
-  }
+#define BeginTiming(i)                        \
+        {                                     \
+          StopTiming();                       \
+          TimingTime(i) -= TimingTimeCount;   \
+          TimingCPUTime(i) -= TimingCPUCount; \
+          TimingFLOPS(i) -= TimingFLOPCount;  \
+          amps_Sync(amps_CommWorld);          \
+          StartTiming();                      \
+        }
 #else
-#define BeginTiming(i)                  \
-  {                                     \
-    StopTiming();                       \
-    TimingTime(i) -= TimingTimeCount;   \
-    TimingCPUTime(i) -= TimingCPUCount; \
-    TimingFLOPS(i) -= TimingFLOPCount;  \
-    StartTiming();                      \
-  }
+#define BeginTiming(i)                        \
+        {                                     \
+          StopTiming();                       \
+          TimingTime(i) -= TimingTimeCount;   \
+          TimingCPUTime(i) -= TimingCPUCount; \
+          TimingFLOPS(i) -= TimingFLOPCount;  \
+          StartTiming();                      \
+        }
 #endif
 
-#define EndTiming(i)                    \
-  {                                     \
-    StopTiming();                       \
-    TimingTime(i) += TimingTimeCount;   \
-    TimingCPUTime(i) += TimingCPUCount; \
-    TimingFLOPS(i) += TimingFLOPCount;  \
-    StartTiming();                      \
-  }
+#define EndTiming(i)                          \
+        {                                     \
+          StopTiming();                       \
+          TimingTime(i) += TimingTimeCount;   \
+          TimingCPUTime(i) += TimingCPUCount; \
+          TimingFLOPS(i) += TimingFLOPCount;  \
+          StartTiming();                      \
+        }
 
 #ifdef VECTOR_UPDATE_TIMING
 

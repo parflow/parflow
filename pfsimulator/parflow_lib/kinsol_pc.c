@@ -83,16 +83,16 @@ void         KinsolPC(Vector *rhs)
  *--------------------------------------------------------------------------*/
 
 PFModule  *KinsolPCInitInstanceXtra(
-                                    Problem *    problem,
-                                    Grid *       grid,
-                                    ProblemData *problem_data,
-                                    double *     temp_data,
-                                    Vector *     pressure,
-                                    Vector *     old_pressure,
-                                    Vector *     saturation,
-                                    Vector *     density,
-                                    double       dt,
-                                    double       time)
+  Problem *    problem,
+  Grid *       grid,
+  ProblemData *problem_data,
+  double *     temp_data,
+  Vector *     pressure,
+  Vector *     old_pressure,
+  Vector *     saturation,
+  Vector *     density,
+  double       dt,
+  double       time)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -129,13 +129,13 @@ PFModule  *KinsolPCInitInstanceXtra(
   {
     (instance_xtra->discretization) =
       PFModuleNewInstanceType(
-                              RichardsJacobianEvalInitInstanceXtraInvoke,
-                              discretization, (problem, grid, problem_data, temp_data,
-                                               pc_matrix_type));
+        RichardsJacobianEvalInitInstanceXtraInvoke,
+        discretization, (problem, grid, problem_data, temp_data,
+        pc_matrix_type));
     (instance_xtra->precond) =
       PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke,
-                              precond, (problem, grid, problem_data, NULL, NULL,
-                                        temp_data));
+        precond, (problem, grid, problem_data, NULL, NULL,
+        temp_data));
 /*
  *    (instance_xtra -> precond) =
  *       PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke,
@@ -146,11 +146,11 @@ PFModule  *KinsolPCInitInstanceXtra(
   else if (pressure != NULL)
   {
     PFModuleInvokeType(RichardsJacobianEvalInvoke, (instance_xtra->discretization),
-                       (pressure, old_pressure, &PC, &JC, saturation, density, problem_data, dt,
-                        time, pc_matrix_type));
+      (pressure, old_pressure, &PC, &JC, saturation, density, problem_data, dt,
+      time, pc_matrix_type));
     PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke,
-                              (instance_xtra->precond),
-                              (NULL, NULL, problem_data, PC, JC, temp_data));
+      (instance_xtra->precond),
+      (NULL, NULL, problem_data, PC, JC, temp_data));
 /*
  *    PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke,
  *                              (instance_xtra -> precond),
@@ -160,11 +160,11 @@ PFModule  *KinsolPCInitInstanceXtra(
   else
   {
     PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke,
-                              (instance_xtra->discretization),
-                              (problem, grid, problem_data, temp_data, pc_matrix_type));
+      (instance_xtra->discretization),
+      (problem, grid, problem_data, temp_data, pc_matrix_type));
     PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke,
-                              (instance_xtra->precond),
-                              (NULL, NULL, problem_data, NULL, NULL, temp_data));
+      (instance_xtra->precond),
+      (NULL, NULL, problem_data, NULL, NULL, temp_data));
 /*
  *    PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke,
  *                          (instance_xtra -> precond),
@@ -262,8 +262,8 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
     case 1:
     {
       public_xtra->precond = PFModuleNewModuleType(
-                                                   LinearSolverNewPublicXtraInvoke,
-                                                   MGSemi, (key));
+          LinearSolverNewPublicXtraInvoke,
+          MGSemi, (key));
       break;
     }
 
@@ -271,10 +271,10 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
     {
 #ifdef HAVE_HYPRE
       public_xtra->precond = PFModuleNewModuleType(
-                                                   LinearSolverNewPublicXtraInvoke, SMG, (key));
+          LinearSolverNewPublicXtraInvoke, SMG, (key));
 #else
       InputError("Error: Invalid value <%s> for key <%s>.\n"
-                 "SMG code not compiled in.\n", switch_name, key);
+        "SMG code not compiled in.\n", switch_name, key);
 #endif
       break;
     }
@@ -283,10 +283,10 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
     {
 #ifdef HAVE_HYPRE
       public_xtra->precond = PFModuleNewModuleType(
-                                                   LinearSolverNewPublicXtraInvoke, PFMG, (key));
+          LinearSolverNewPublicXtraInvoke, PFMG, (key));
 #else
       InputError("Error: Invalid value <%s> for key <%s>.\n"
-                 "Hypre PFMG code not compiled in.\n", switch_name, key);
+        "Hypre PFMG code not compiled in.\n", switch_name, key);
 #endif
       break;
     }
@@ -295,13 +295,14 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
     {
 #ifdef HAVE_HYPRE
       public_xtra->precond = PFModuleNewModuleType(
-                                                   LinearSolverNewPublicXtraInvoke, PFMGOctree, (key));
+          LinearSolverNewPublicXtraInvoke, PFMGOctree, (key));
 #else
       InputError("Error: Invalid value <%s> for key <%s>.\n"
-                 "Hypre PFMG code not compiled in.\n", switch_name, key);
+        "Hypre PFMG code not compiled in.\n", switch_name, key);
 #endif
       break;
     }
+
     default:
     {
       InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
@@ -311,8 +312,8 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
 
   sprintf(key, "%s.Jacobian", name);
   public_xtra->discretization = PFModuleNewModuleType(
-                                                      RichardsJacobianEvalNewPublicXtraInvoke, RichardsJacobianEval,
-                                                      (key));
+      RichardsJacobianEvalNewPublicXtraInvoke, RichardsJacobianEval,
+      (key));
 
   PFModulePublicXtra(this_module) = public_xtra;
 

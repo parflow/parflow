@@ -133,6 +133,6 @@ void Fsignal(void);
 int amps_Wait(amps_Handle handle);
 
 void _amps_Abort(
-                 char *message,
-                 char *filename,
-                 int   line);
+  char *message,
+  char *filename,
+  int   line);

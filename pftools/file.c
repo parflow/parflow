@@ -34,7 +34,7 @@
 
 
 int FileType(
-             char *filename)
+  char *filename)
 {
   char *ptr;
 
@@ -58,8 +58,8 @@ int FileType(
  *-----------------------------------------------------------------------*/
 
 Databox *Read(
-              int   type,
-              char *filename)
+  int   type,
+  char *filename)
 {
   Databox *indatabox;
   double default_value = 0.0;

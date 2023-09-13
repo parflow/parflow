@@ -37,14 +37,14 @@
  *--------------------------------------------------------------------------*/
 
 void             MGSemiProlong(
-                               Matrix *        A_f,
-                               Vector *        e_f,
-                               Vector *        e_c,
-                               Matrix *        P,
-                               SubregionArray *f_sr_array,
-                               SubregionArray *c_sr_array,
-                               ComputePkg *    compute_pkg,
-                               CommPkg *       e_f_comm_pkg)
+  Matrix *        A_f,
+  Vector *        e_f,
+  Vector *        e_c,
+  Matrix *        P,
+  SubregionArray *f_sr_array,
+  SubregionArray *c_sr_array,
+  ComputePkg *    compute_pkg,
+  CommPkg *       e_f_comm_pkg)
 {
   SubregionArray *subregion_array;
 
@@ -117,8 +117,8 @@ void             MGSemiProlong(
       i_c = 0;
       i_f = 0;
       BoxLoopI2(ii, jj, kk, ix, iy, iz, nx, ny, nz,
-                i_c, nx_c, ny_c, nz_c, 1, 1, 1,
-                i_f, nx_f, ny_f, nz_f, sx, sy, sz,
+        i_c, nx_c, ny_c, nz_c, 1, 1, 1,
+        i_f, nx_f, ny_f, nz_f, sx, sy, sz,
       {
         e_fp[i_f] = e_cp[i_c];
       });
@@ -189,11 +189,11 @@ void             MGSemiProlong(
         i_c = 0;
         i_f = 0;
         BoxLoopI2(ii, jj, kk, ix, iy, iz, nx, ny, nz,
-                  i_c, nx_c, ny_c, nz_c, 1, 1, 1,
-                  i_f, nx_f, ny_f, nz_f, sx, sy, sz,
+          i_c, nx_c, ny_c, nz_c, 1, 1, 1,
+          i_f, nx_f, ny_f, nz_f, sx, sy, sz,
         {
           e_fp[i_f] = (p1[i_c] * e_fp[i_f - stride] +
-                       p2[i_c] * e_fp[i_f + stride]);
+          p2[i_c] * e_fp[i_f + stride]);
         });
       }
     }
@@ -212,13 +212,13 @@ void             MGSemiProlong(
  *--------------------------------------------------------------------------*/
 
 ComputePkg   *NewMGSemiProlongComputePkg(
-                                         Grid *   grid,
-                                         Stencil *stencil,
-                                         int      sx,
-                                         int      sy,
-                                         int      sz,
-                                         int      c_index,
-                                         int      f_index)
+  Grid *   grid,
+  Stencil *stencil,
+  int      sx,
+  int      sy,
+  int      sz,
+  int      c_index,
+  int      f_index)
 {
   ComputePkg  *compute_pkg;
 
@@ -231,7 +231,7 @@ ComputePkg   *NewMGSemiProlongComputePkg(
   CommRegFromStencil(&send_reg, &recv_reg, grid, stencil);
 
   ComputeRegFromStencil(&dep_reg, &ind_reg,
-                        GridSubgrids(grid), send_reg, recv_reg, stencil);
+    GridSubgrids(grid), send_reg, recv_reg, stencil);
 
   /* RDF temporary until rewrite of CommRegFromStencil */
   ProjectRegion(send_reg, sx, sy, sz, c_index, c_index, c_index);

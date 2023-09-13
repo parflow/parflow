@@ -59,11 +59,11 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void Porosity(
-              ProblemData * problem_data,
-              Vector *      porosity,
-              int           num_geounits,
-              GeomSolid **  geounits,
-              GrGeomSolid **gr_geounits)
+  ProblemData * problem_data,
+  Vector *      porosity,
+  int           num_geounits,
+  GeomSolid **  geounits,
+  GrGeomSolid **gr_geounits)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -151,8 +151,8 @@ void Porosity(
 
           pi = 0;
           BoxLoopI1(i, j, k,
-                    ix, iy, iz, nx, ny, nz,
-                    pi, nx_p, ny_p, nz_p, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            pi, nx_p, ny_p, nz_p, 1, 1, 1,
           {
             phi[pi] = 1.0;
           });
@@ -193,8 +193,8 @@ void Porosity(
 
           pi = 0;
           BoxLoopI1(i, j, k,
-                    ix, iy, iz, nx, ny, nz,
-                    pi, nx_p, ny_p, nz_p, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            pi, nx_p, ny_p, nz_p, 1, 1, 1,
           {
             phi[pi] = 1.0;
           });
@@ -216,8 +216,8 @@ void Porosity(
  *--------------------------------------------------------------------------*/
 
 PFModule  *PorosityInitInstanceXtra(
-                                    Grid *  grid,
-                                    double *temp_data)
+  Grid *  grid,
+  double *temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -331,7 +331,7 @@ PFModule   *PorosityNewPublicXtra()
   (public_xtra->num_geo_indexes) = num_geo_indexes;
   (public_xtra->geo_indexes) = ctalloc(int, num_geo_indexes);
   (public_xtra->PorosityFieldSimulators) = ctalloc(PFModule *,
-                                                   num_geo_indexes);
+      num_geo_indexes);
 
   for (i = 0; i < num_geo_indexes; i++)
   {
@@ -340,7 +340,7 @@ PFModule   *PorosityNewPublicXtra()
     if (ind < 0)
     {
       InputError("Error: invalid geometry name <%s> for porosity\n",
-                 geom_name, "");
+        geom_name, "");
     }
     (public_xtra->geo_indexes)[i] = ind;
 
@@ -356,20 +356,20 @@ PFModule   *PorosityNewPublicXtra()
       case 0:
       {
         (public_xtra->PorosityFieldSimulators)[i] = PFModuleNewModuleType(PorosityFieldNewPublicXtraInvoke,
-                                                                          ConstantPorosity, (geom_name));
+            ConstantPorosity, (geom_name));
         break;
       }
 
       case 1:
       {
         (public_xtra->PorosityFieldSimulators)[i] = PFModuleNewModuleType(PorosityFieldNewPublicXtraInvoke,
-                                                                          InputPorosity, (geom_name));
+            InputPorosity, (geom_name));
         break;
       }
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", sim_type_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", sim_type_name, key);
       }
     }
   }

@@ -44,9 +44,9 @@
 #include <math.h>
 
 void ComputeWaterTableDepth(
-                            Databox *top,
-                            Databox *saturation,
-                            Databox *water_table_depth)
+  Databox *top,
+  Databox *saturation,
+  Databox *water_table_depth)
 {
   int i, j;
   int nx, ny, nz;

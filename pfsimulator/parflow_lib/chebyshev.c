@@ -56,13 +56,13 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     Chebyshev(
-                   Vector *x,
-                   Vector *b,
-                   double  tol,
-                   int     zero,
-                   double  ia,
-                   double  ib,
-                   int     num_iter)
+  Vector *x,
+  Vector *b,
+  double  tol,
+  int     zero,
+  double  ia,
+  double  ib,
+  int     num_iter)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -167,11 +167,11 @@ void     Chebyshev(
  *--------------------------------------------------------------------------*/
 
 PFModule     *ChebyshevInitInstanceXtra(
-                                        Problem *    problem,
-                                        Grid *       grid,
-                                        ProblemData *problem_data,
-                                        Matrix *     A,
-                                        double *     temp_data)
+  Problem *    problem,
+  Grid *       grid,
+  ProblemData *problem_data,
+  Matrix *     A,
+  double *     temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

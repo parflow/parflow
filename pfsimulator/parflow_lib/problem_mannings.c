@@ -262,7 +262,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
               z = RealSpaceZ(k, SubgridRZ(subgrid));
 
               data[ips] = x * y * z
-                          - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
+              - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
             });
             break;
           } /* End case 6 */
@@ -325,8 +325,8 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
  *--------------------------------------------------------------------------*/
 
 PFModule  *ManningsInitInstanceXtra(
-                                    Grid *grid3d,
-                                    Grid *grid2d)
+  Grid *grid3d,
+  Grid *grid2d)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -353,7 +353,7 @@ PFModule  *ManningsInitInstanceXtra(
       dummy2 = (Type2*)(public_xtra->data);
 
       dummy2->m_values = NewVectorType(grid2d, 1, 1,
-                                       vector_cell_centered_2D);
+          vector_cell_centered_2D);
 
       ReadPFBinary((dummy2->filename), (dummy2->m_values));
     }
@@ -441,7 +441,7 @@ PFModule  *ManningsNewPublicXtra()
       {
         dummy0->region_indices[ir] =
           NA_NameToIndex(GlobalsGeomNames,
-                         NA_IndexToName(dummy0->regions, ir));
+            NA_IndexToName(dummy0->regions, ir));
 
         sprintf(key, "Mannings.Geom.%s.Value", NA_IndexToName(dummy0->regions, ir));
         dummy0->values[ir] = GetDouble(key);
@@ -478,7 +478,8 @@ PFModule  *ManningsNewPublicXtra()
 
     default:
     {
-      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);    }
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
   }       /* End case statement */
 
 

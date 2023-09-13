@@ -101,62 +101,62 @@ int main(int argc, char *argv[])
   if (me == 0)
   {
     send_invoice[0] = amps_NewInvoice("%d%5.*i%d",
-                                      &d[4],
-                                      me + 1, send,
-                                      &d[5]);
+        &d[4],
+        me + 1, send,
+        &d[5]);
 
     recv_invoice[0] = amps_NewInvoice("%d%5.*i%d",
-                                      &d[6],
-                                      me + 1, recvr,
-                                      &d[7]);
+        &d[6],
+        me + 1, recvr,
+        &d[7]);
 
 
     src[0] = me + 1;
     dest[0] = me + 1;
 
     package = amps_NewPackage(amps_CommWorld,
-                              1, dest, send_invoice, 1, src, recv_invoice);
+        1, dest, send_invoice, 1, src, recv_invoice);
   }
   else if (me == num - 1)
   {
     send_invoice[0] = amps_NewInvoice("%d%5.*i%d",
-                                      &d[0],
-                                      me + 1, send,
-                                      &d[1]);
+        &d[0],
+        me + 1, send,
+        &d[1]);
 
     recv_invoice[0] = amps_NewInvoice("%d%5.*i%d",
-                                      &d[2],
-                                      me + 1, recvl,
-                                      &d[3]);
+        &d[2],
+        me + 1, recvl,
+        &d[3]);
 
     src[0] = me - 1;
     dest[0] = me - 1;
 
     package = amps_NewPackage(amps_CommWorld,
-                              1, dest, send_invoice, 1, src, recv_invoice);
+        1, dest, send_invoice, 1, src, recv_invoice);
   }
   else
   {
     send_invoice[0] = amps_NewInvoice("%d%5.*i%d",
-                                      &d[0],
-                                      me + 1, send,
-                                      &d[1]);
+        &d[0],
+        me + 1, send,
+        &d[1]);
 
     recv_invoice[0] = amps_NewInvoice("%d%5.*i%d",
-                                      &d[2],
-                                      me + 1, recvl,
-                                      &d[3]);
+        &d[2],
+        me + 1, recvl,
+        &d[3]);
 
 
     send_invoice[1] = amps_NewInvoice("%d%5.*i%d",
-                                      &d[4],
-                                      me + 1, send,
-                                      &d[5]);
+        &d[4],
+        me + 1, send,
+        &d[5]);
 
     recv_invoice[1] = amps_NewInvoice("%d%5.*i%d",
-                                      &d[6],
-                                      me + 1, recvr,
-                                      &d[7]);
+        &d[6],
+        me + 1, recvr,
+        &d[7]);
 
 
 
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     dest[1] = me + 1;
 
     package = amps_NewPackage(amps_CommWorld,
-                              2, dest, send_invoice, 2, src, recv_invoice);
+        2, dest, send_invoice, 2, src, recv_invoice);
   }
 
   for (t = loop; t; t--)

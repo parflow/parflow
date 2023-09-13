@@ -79,10 +79,10 @@ char *buffer;
               *((void**)(ptr->data)) = cur_pos;
             else
               *((void**)(ptr->data)) = malloc(sizeof(char)
-                                              * len * stride);
+                  * len * stride);
             malloced = TRUE;
             AMPS_CALL_CHAR_IN(comm, cur_pos, *((void**)(ptr->data)),
-                              len, stride);
+              len, stride);
           }
           else
             AMPS_CALL_CHAR_IN(comm, cur_pos, ptr->data, len, stride);
@@ -100,10 +100,10 @@ char *buffer;
               *((void**)(ptr->data)) = cur_pos;
             else
               *((void**)(ptr->data)) = malloc(sizeof(short) *
-                                              len * stride);
+                  len * stride);
             malloced = TRUE;
             AMPS_CALL_SHORT_IN(comm, cur_pos, *((void**)(ptr->data)),
-                               len, stride);
+              len, stride);
           }
           else
             AMPS_CALL_SHORT_IN(comm, cur_pos, ptr->data, len, stride);
@@ -121,10 +121,10 @@ char *buffer;
               *((void**)(ptr->data)) = cur_pos;
             else
               *((void**)(ptr->data)) = malloc(sizeof(int) *
-                                              len * stride);
+                  len * stride);
             malloced = TRUE;
             AMPS_CALL_INT_IN(comm, cur_pos, *((void**)(ptr->data)),
-                             len, stride);
+              len, stride);
           }
           else
             AMPS_CALL_INT_IN(comm, cur_pos, ptr->data, len, stride);
@@ -142,10 +142,10 @@ char *buffer;
               *((void**)(ptr->data)) = cur_pos;
             else
               *((void**)(ptr->data)) = malloc(sizeof(long) *
-                                              len * stride);
+                  len * stride);
             malloced = TRUE;
             AMPS_CALL_LONG_IN(comm, cur_pos, *((void**)(ptr->data)),
-                              len, stride);
+              len, stride);
           }
           else
             AMPS_CALL_LONG_IN(comm, cur_pos, ptr->data, len, stride);
@@ -163,11 +163,11 @@ char *buffer;
               *((void**)(ptr->data)) = cur_pos;
             else
               *((void**)(ptr->data)) = malloc(sizeof(float) *
-                                              len * stride);
+                  len * stride);
             malloced = TRUE;
 
             AMPS_CALL_FLOAT_IN(comm, cur_pos, *((void**)(ptr->data)),
-                               len, stride);
+              len, stride);
           }
           else
             AMPS_CALL_FLOAT_IN(comm, cur_pos, ptr->data, len, stride);
@@ -185,11 +185,11 @@ char *buffer;
               *((void**)(ptr->data)) = cur_pos;
             else
               *((void**)(ptr->data)) = malloc(sizeof(double) *
-                                              len * stride);
+                  len * stride);
             malloced = TRUE;
 
             AMPS_CALL_DOUBLE_IN(comm, cur_pos, *((void**)(ptr->data)),
-                                len, stride);
+              len, stride);
           }
           else
             AMPS_CALL_DOUBLE_IN(comm, cur_pos, ptr->data, len, stride);
@@ -199,16 +199,16 @@ char *buffer;
 
       default:
         dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ?
-              *(ptr->ptr_dim) : ptr->dim;
+          *(ptr->ptr_dim) : ptr->dim;
 
         cur_pos += amps_vector_align(comm,
-                                     ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                     NULL, &cur_pos, dim,
-                                     ptr->ptr_len, ptr->ptr_stride);
+            ptr->type - AMPS_INVOICE_LAST_CTYPE,
+            NULL, &cur_pos, dim,
+            ptr->ptr_len, ptr->ptr_stride);
         size = amps_vector_sizeof_local(comm,
-                                        ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                        NULL, &temp_pos, dim,
-                                        ptr->ptr_len, ptr->ptr_stride);
+            ptr->type - AMPS_INVOICE_LAST_CTYPE,
+            NULL, &temp_pos, dim,
+            ptr->ptr_len, ptr->ptr_stride);
 
         if (ptr->data_type == AMPS_INVOICE_POINTER)
           data = *(char**)(ptr->data) = (char*)malloc(size);
@@ -217,13 +217,13 @@ char *buffer;
 
         temp_pos = cur_pos;
         amps_vector_in(comm, ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                       &data, &temp_pos, dim - 1, ptr->ptr_len,
-                       ptr->ptr_stride);
+          &data, &temp_pos, dim - 1, ptr->ptr_len,
+          ptr->ptr_stride);
 
         cur_pos += amps_vector_sizeof_buffer(comm,
-                                             ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                             &data, &temp_pos, dim,
-                                             ptr->ptr_len, ptr->ptr_stride);
+            ptr->type - AMPS_INVOICE_LAST_CTYPE,
+            &data, &temp_pos, dim,
+            ptr->ptr_len, ptr->ptr_stride);
     }
     ptr = ptr->next;
   }

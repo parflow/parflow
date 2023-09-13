@@ -41,15 +41,15 @@ extern "C" {
  *-----------------------------------------------------------------------*/
 
 void ComputeDomain(
-                   SubgridArray *all_subgrids,
-                   Databox *     top,
-                   Databox *     bottom,
-                   int           P,
-                   int           Q,
-                   int           R);
+  SubgridArray *all_subgrids,
+  Databox *     top,
+  Databox *     bottom,
+  int           P,
+  int           Q,
+  int           R);
 
 SubgridArray  *Extract2DDomain(
-                               SubgridArray *all_subgrids);
+  SubgridArray *all_subgrids);
 
 #ifdef __cplusplus
 }

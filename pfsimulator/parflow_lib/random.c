@@ -54,7 +54,7 @@ amps_ThreadLocalDcl(static int, Seed);
  *--------------------------------------------------------------------------*/
 
 void  SeedRand(
-               int seed)
+  int seed)
 {
   amps_ThreadLocal(Seed) = (2 * seed - 1) % M;
 }

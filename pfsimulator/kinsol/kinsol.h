@@ -73,7 +73,7 @@ BEGIN_EXTERN_C
 ******************************************************************/
 
 typedef void (*SysFn)(integer Neq, N_Vector uu,
-                      N_Vector fval, void *f_data);
+  N_Vector fval, void *f_data);
 
 /******************************************************************
  *                                                                *
@@ -457,10 +457,10 @@ enum { INEXACT_NEWTON, LINESEARCH };   /* globalstrategy */
 
 
 int KINSol(void *kinmem, integer Neq,
-           N_Vector uu, SysFn func, int globalstrategy,
-           N_Vector uscale, N_Vector fscale,
-           real fnormtol, real scsteptol, N_Vector constraints,
-           boole optIn, long int iopt[], real ropt[], void *f_data);
+  N_Vector uu, SysFn func, int globalstrategy,
+  N_Vector uscale, N_Vector fscale,
+  real fnormtol, real scsteptol, N_Vector constraints,
+  boole optIn, long int iopt[], real ropt[], void *f_data);
 
 
 /* KINSol return values */
@@ -593,7 +593,7 @@ typedef struct KINMemRec {
   int (*kin_lsetup)(struct KINMemRec *kin_mem);
 
   int (*kin_lsolve)(struct KINMemRec *kin_mem, N_Vector xx, N_Vector bb,
-                    real *res_norm);
+    real *res_norm);
 
   int (*kin_lfree)(struct KINMemRec *kin_mem);
 

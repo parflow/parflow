@@ -52,9 +52,9 @@ MPI_Comm amps_CommWorld = MPI_COMM_NULL;
 MPI_Comm amps_CommNode = MPI_COMM_NULL;
 MPI_Comm amps_CommWrite = MPI_COMM_NULL;
 
-amps_Devicestruct amps_device_globals = {.combuf_recv_size = 0, 
-                                         .combuf_send_size = 0, 
-                                         .streams_created = 0};
+amps_Devicestruct amps_device_globals = { .combuf_recv_size = 0,
+                                          .combuf_send_size = 0,
+                                          .streams_created = 0 };
 
 #ifdef AMPS_F2CLIB_FIX
 int MAIN__()
@@ -120,7 +120,7 @@ int amps_Init(int *argc, char **argv[])
 
   MPI_Init(argc, argv);
   amps_mpi_initialized = TRUE;
-  
+
   MPI_Comm_dup(MPI_COMM_WORLD, &amps_CommWorld);
   MPI_Comm_size(amps_CommWorld, &amps_size);
   MPI_Comm_rank(amps_CommWorld, &amps_rank);
@@ -139,7 +139,7 @@ int amps_Init(int *argc, char **argv[])
   checkSum &= INT_MAX;
   MPI_Comm_split(amps_CommWorld, checkSum, amps_rank, &amps_CommNode);
 #endif
-  
+
   MPI_Comm_rank(amps_CommNode, &amps_node_rank);
   MPI_Comm_size(amps_CommNode, &amps_node_size);
   int color;

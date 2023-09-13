@@ -29,8 +29,8 @@
 #include "amps.h"
 
 char *amps_recvb(
-                 int  src,
-                 int *size)
+  int  src,
+  int *size)
 {
   char *buf;
 

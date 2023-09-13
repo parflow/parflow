@@ -43,13 +43,13 @@
  *-----------------------------------------------------------------------*/
 
 void        Stats(
-                  Databox *databox,
-                  double * min,
-                  double * max,
-                  double * mean,
-                  double * sum,
-                  double * variance,
-                  double * stdev)
+  Databox *databox,
+  double * min,
+  double * max,
+  double * mean,
+  double * sum,
+  double * variance,
+  double * stdev)
 {
   double  *dp;
 

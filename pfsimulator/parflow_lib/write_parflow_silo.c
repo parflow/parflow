@@ -45,7 +45,7 @@ amps_ThreadLocalDcl(int, s_parflow_silo_filetype);
 
 #ifdef HAVE_SILO
 void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   *subgrid,
-                               char *variable_name)
+  char *variable_name)
 {
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
@@ -123,7 +123,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   sprintf(meshname, "%s_%06u", "mesh", p);
 
   err = DBPutQuadmesh(db_file, meshname, NULL, coords, dims,
-                      3, DB_FLOAT, DB_COLLINEAR, NULL);
+      3, DB_FLOAT, DB_COLLINEAR, NULL);
   if (err < 0)
   {
     amps_Printf("Error: Silo put quadmesh failed %s\n", meshname);
@@ -142,8 +142,8 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   int array_index = 0;
   ai = 0;
   BoxLoopI1(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            ai, nx_v, ny_v, nz_v, 1, 1, 1,
+    ix, iy, iz, nx, ny, nz,
+    ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     array[array_index++] = data[ai];
   });
@@ -154,9 +154,9 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
   sprintf(varname, "%s_%06u", variable_name, p);
   err = DBPutQuadvar1(db_file, varname, meshname,
-                      (float*)array, dims, 3,
-                      NULL, 0, DB_DOUBLE,
-                      DB_ZONECENT, NULL);
+      (float*)array, dims, 3,
+      NULL, 0, DB_DOUBLE,
+      DB_ZONECENT, NULL);
   if (err < 0)
   {
     amps_Printf("Error: Silo put quadvar1 failed %s\n", varname);
@@ -199,7 +199,7 @@ void     WriteSiloInit(char *file_prefix)
 {
 #ifdef HAVE_SILO
   char filename[2048];
-  
+
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
 
@@ -268,8 +268,8 @@ void     WriteSiloInit(char *file_prefix)
                              "specific_storage",
                              "mask",
                              "dz_mult",
-			     "top_zindex",
-			     "top_patch",
+                             "top_zindex",
+                             "top_patch",
                              "eflx_lh_tot",
                              "eflx_lwrad_out",
                              "eflx_sh_tot",
@@ -289,9 +289,9 @@ void     WriteSiloInit(char *file_prefix)
                              "evaptranssum",
                              "overlandsum",
                              "overland_bc_flux",
-                             0};
+                             0 };
 
-    for(int i = 0; output_types[i]; i++)
+    for (int i = 0; output_types[i]; i++)
     {
       sprintf(filename, "%s/%s", file_prefix, output_types[i]);
       pf_mk_dir(filename);
@@ -314,21 +314,20 @@ void     WriteSiloInit(char *file_prefix)
  * Silo files can store additinal metadata such as name of variable,
  * simulation time etc.  These should be added.
  */
-void     WriteSilo(char *  file_prefix,
-                   char *  file_type,
-                   char *  file_suffix,
-                   Vector *v,
-                   double  time,
-                   int     step,
-                   char *  variable_name)
+void     WriteSilo(char * file_prefix,
+  char *                  file_type,
+  char *                  file_suffix,
+  Vector *                v,
+  double                  time,
+  int                     step,
+  char *                  variable_name)
 {
-
 #ifdef HAVE_SILO
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
   Subvector      *subvector;
-  
+
   int g;
   int p, P;
 
@@ -378,12 +377,12 @@ void     WriteSilo(char *  file_prefix,
       if (strlen(file_suffix))
       {
         sprintf(name, "%s/%s/%06u/data.%s.%s:%s_%06u", file_prefix, file_type, i, file_suffix, file_extn,
-                variable_name, i);
+          variable_name, i);
       }
       else
       {
         sprintf(name, "%s/%s/%06u/data.%s:%s_%06u", file_prefix, file_type, i, file_extn,
-                variable_name, i);
+          variable_name, i);
       }
       varnames[i] = name;
       vartypes[i] = DB_QUADVAR;

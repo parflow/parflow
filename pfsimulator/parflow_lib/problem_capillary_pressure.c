@@ -55,11 +55,11 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         CapillaryPressure(
-                               Vector *     capillary_pressure,
-                               int          phase_i,
-                               int          phase_j,
-                               ProblemData *problem_data,
-                               Vector *     phase_saturation)
+  Vector *     capillary_pressure,
+  int          phase_i,
+  int          phase_j,
+  ProblemData *problem_data,
+  Vector *     phase_saturation)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -192,7 +192,7 @@ void  CapillaryPressureFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule  *CapillaryPressureNewPublicXtra(
-                                          int num_phases)
+  int num_phases)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -253,7 +253,7 @@ PFModule  *CapillaryPressureNewPublicXtra(
             NA_NameToIndex(GlobalsGeomNames, region);
 
           sprintf(key, "Geom.%s.CapPressure.%s.Value",
-                  region, phase_name);
+            region, phase_name);
           dummy0->values[ir] = GetDoubleDefault(key, 0.0);
         }
 
@@ -264,7 +264,7 @@ PFModule  *CapillaryPressureNewPublicXtra(
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
   }

@@ -54,8 +54,8 @@ static int samrai_vector_ids[5][2048];
  *--------------------------------------------------------------------------*/
 
 CommPkg  *NewVectorCommPkg(
-                           Vector *    vector,
-                           ComputePkg *compute_pkg)
+  Vector *    vector,
+  ComputePkg *compute_pkg)
 {
   CommPkg     *new_commpkg = NULL;
 
@@ -69,8 +69,8 @@ CommPkg  *NewVectorCommPkg(
   else
   {
     new_commpkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
-                             ComputePkgRecvRegion(compute_pkg),
-                             VectorDataSpace(vector), 1, SubvectorData(VectorSubvector(vector, 0)));
+        ComputePkgRecvRegion(compute_pkg),
+        VectorDataSpace(vector), 1, SubvectorData(VectorSubvector(vector, 0)));
   }
 
   return new_commpkg;
@@ -81,8 +81,8 @@ CommPkg  *NewVectorCommPkg(
  *--------------------------------------------------------------------------*/
 
 VectorUpdateCommHandle  *InitVectorUpdate(
-                                          Vector *vector,
-                                          int     update_mode)
+  Vector *vector,
+  int     update_mode)
 {
   enum ParflowGridType grid_type = invalid_grid_type;
 
@@ -149,19 +149,19 @@ VectorUpdateCommHandle  *InitVectorUpdate(
       vector->boundary_fill_refine_algorithm = new xfer::RefineAlgorithm(dim);
 
       vector->boundary_fill_refine_algorithm->registerRefine(
-                                                             vector->samrai_id,
-                                                             vector->samrai_id,
-                                                             vector->samrai_id,
-                                                             tbox::Pointer < xfer::RefineOperator > (NULL));
+        vector->samrai_id,
+        vector->samrai_id,
+        vector->samrai_id,
+        tbox::Pointer < xfer::RefineOperator > (NULL));
 
       tbox::Pointer < hier::PatchLevel > level =
         hierarchy->getPatchLevel(level_number);
 
       vector->boundary_fill_schedule = vector->boundary_fill_refine_algorithm
-                                       ->createSchedule(level,
-                                                        level_number - 1,
-                                                        hierarchy,
-                                                        NULL);
+        ->createSchedule(level,
+          level_number - 1,
+          hierarchy,
+          NULL);
     }
     const double time = 1.0;
     vector->boundary_fill_schedule->fillData(time);
@@ -185,7 +185,7 @@ VectorUpdateCommHandle  *InitVectorUpdate(
  *--------------------------------------------------------------------------*/
 
 void         FinalizeVectorUpdate(
-                                  VectorUpdateCommHandle *handle)
+  VectorUpdateCommHandle *handle)
 {
   switch (handle->vector->type)
   {
@@ -225,9 +225,9 @@ void         FinalizeVectorUpdate(
  *--------------------------------------------------------------------------*/
 
 static Vector  *NewTempVector(
-                              Grid *grid,
-                              int   nc,
-                              int   num_ghost)
+  Grid *grid,
+  int   nc,
+  int   num_ghost)
 {
   Vector    *new_vector;
   Subvector *new_sub;
@@ -244,7 +244,7 @@ static Vector  *NewTempVector(
   memset(new_vector, 0, sizeof(Vector));
 
   (new_vector->subvectors) = talloc(Subvector *, GridNumSubgrids(grid));    /* 1st arg.: variable type;
-                                                                              * 2nd arg.: # of elements to be allocated*/
+                                                                             * 2nd arg.: # of elements to be allocated*/
   memset(new_vector->subvectors, 0, GridNumSubgrids(grid) * sizeof(Subvector *));
 
   data_size = 0;
@@ -259,17 +259,17 @@ static Vector  *NewTempVector(
 
     SubvectorDataSpace(new_sub) =
       NewSubgrid(SubgridIX(subgrid) - num_ghost,
-                 SubgridIY(subgrid) - num_ghost,
-                 SubgridIZ(subgrid) - num_ghost,
-                 SubgridNX(subgrid) + 2 * num_ghost,
-                 SubgridNY(subgrid) + 2 * num_ghost,
-                 SubgridNZ(subgrid) + 2 * num_ghost,
-                 SubgridRX(subgrid),
-                 SubgridRY(subgrid),
-                 SubgridRZ(subgrid),
-                 SubgridProcess(subgrid));
+        SubgridIY(subgrid) - num_ghost,
+        SubgridIZ(subgrid) - num_ghost,
+        SubgridNX(subgrid) + 2 * num_ghost,
+        SubgridNY(subgrid) + 2 * num_ghost,
+        SubgridNZ(subgrid) + 2 * num_ghost,
+        SubgridRX(subgrid),
+        SubgridRY(subgrid),
+        SubgridRZ(subgrid),
+        SubgridProcess(subgrid));
     AppendSubgrid(SubvectorDataSpace(new_sub),
-                  VectorDataSpace(new_vector));
+      VectorDataSpace(new_vector));
 
     n = SubvectorNX(new_sub) * SubvectorNY(new_sub) * SubvectorNZ(new_sub);
 
@@ -299,7 +299,7 @@ static Vector  *NewTempVector(
  *--------------------------------------------------------------------------*/
 
 static void     AllocateVectorData(
-                                   Vector *vector)
+  Vector *vector)
 {
   Grid       *grid = VectorGrid(vector);
 
@@ -337,10 +337,10 @@ static void     AllocateVectorData(
  *--------------------------------------------------------------------------*/
 
 Vector  *NewVectorType(
-                       Grid *           grid,
-                       int              nc,
-                       int              num_ghost,
-                       enum vector_type type)
+  Grid *           grid,
+  int              nc,
+  int              num_ghost,
+  enum vector_type type)
 {
   Vector  *new_vector;
 
@@ -348,7 +348,7 @@ Vector  *NewVectorType(
 
 #ifdef HAVE_SAMRAI
   enum ParflowGridType grid_type = invalid_grid_type;
-  
+
   switch (type)
   {
     case vector_cell_centered:
@@ -403,7 +403,7 @@ Vector  *NewVectorType(
   }
 
   std::string variable_name("Vector_" + tbox::Utilities::intToString(grid_type, 1) + "_" +
-                            tbox::Utilities::intToString(index, 4));
+    tbox::Utilities::intToString(index, 4));
 
   tbox::Pointer < hier::Variable > variable;
 #else
@@ -490,8 +490,8 @@ Vector  *NewVectorType(
       tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
 
       new_vector->samrai_id = patch_descriptor->definePatchDataComponent(
-                                                                         variable_name,
-                                                                         variable->getPatchDataFactory()->cloneFactory(ghosts));
+          variable_name,
+          variable->getPatchDataFactory()->cloneFactory(ghosts));
 
 
       samrai_vector_ids[grid_type][index] = new_vector->samrai_id;
@@ -510,8 +510,8 @@ Vector  *NewVectorType(
 
       int i = 0;
       for (hier::PatchLevel::Iterator patch_iterator(level);
-           patch_iterator;
-           patch_iterator++, i++)
+        patch_iterator;
+        patch_iterator++, i++)
       {
         const hier::Patch* patch = *patch_iterator;
 
@@ -527,7 +527,7 @@ Vector  *NewVectorType(
           case vector_met:
           {
             tbox::Pointer < pdat::CellData < double >> patch_data(
-                                                                  patch->getPatchData(new_vector->samrai_id));
+              patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -544,7 +544,7 @@ Vector  *NewVectorType(
             const int side = 0;
 
             tbox::Pointer < pdat::SideData < double >> patch_data(
-                                                                  patch->getPatchData(new_vector->samrai_id));
+              patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -560,7 +560,7 @@ Vector  *NewVectorType(
           {
             const int side = 1;
             tbox::Pointer < pdat::SideData < double >> patch_data(
-                                                                  patch->getPatchData(new_vector->samrai_id));
+              patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -576,7 +576,7 @@ Vector  *NewVectorType(
           {
             const int side = 2;
             tbox::Pointer < pdat::SideData < double >> patch_data(
-                                                                  patch->getPatchData(new_vector->samrai_id));
+              patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -614,18 +614,18 @@ Vector  *NewVectorType(
 }
 
 Vector  *NewVector(
-                   Grid *grid,
-                   int   nc,
-                   int   num_ghost)
+  Grid *grid,
+  int   nc,
+  int   num_ghost)
 {
   return NewVectorType(grid, nc, num_ghost, vector_non_samrai);
 }
 
 
 Vector  *NewNoCommunicationVector(
-                                  Grid *grid,
-                                  int   nc,
-                                  int   num_ghost)
+  Grid *grid,
+  int   nc,
+  int   num_ghost)
 {
   return NewVectorType(grid, nc, num_ghost, vector_non_samrai);
 }
@@ -668,7 +668,7 @@ void FreeTempVector(Vector *vector)
  *--------------------------------------------------------------------------*/
 
 void     FreeVector(
-                    Vector *vector)
+  Vector *vector)
 {
   switch (vector->type)
   {
@@ -725,8 +725,8 @@ void     FreeVector(
  *--------------------------------------------------------------------------*/
 
 void    InitVector(
-                   Vector *v,
-                   double  value)
+  Vector *v,
+  double  value)
 {
   Grid       *grid = VectorGrid(v);
 
@@ -765,7 +765,7 @@ void    InitVector(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
+      iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vp[iv] = value;
     });
@@ -777,8 +777,8 @@ void    InitVector(
  *--------------------------------------------------------------------------*/
 
 void    InitVectorAll(
-                      Vector *v,
-                      double  value)
+  Vector *v,
+  double  value)
 {
   Grid       *grid = VectorGrid(v);
 
@@ -808,7 +808,7 @@ void    InitVectorAll(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix_v, iy_v, iz_v, nx_v, ny_v, nz_v,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
+      iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vp[iv] = value;
     });
@@ -826,9 +826,9 @@ void    InitVectorAll(
 
 
 void    InitVectorInc(
-                      Vector *v,
-                      double  value,
-                      double  inc)
+  Vector *v,
+  double  value,
+  double  inc)
 {
   Grid       *grid = VectorGrid(v);
 
@@ -868,7 +868,7 @@ void    InitVectorInc(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
+      iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vp[iv] = value + (i + j + k) * inc;
     });
@@ -881,8 +881,8 @@ void    InitVectorInc(
  *--------------------------------------------------------------------------*/
 
 void    InitVectorRandom(
-                         Vector *v,
-                         long    seed)
+  Vector *v,
+  long    seed)
 {
   Grid       *grid = VectorGrid(v);
 
@@ -922,7 +922,7 @@ void    InitVectorRandom(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
+      iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
 #if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
       vp[iv] = dev_drand48();

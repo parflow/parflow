@@ -40,19 +40,19 @@ void amps_vector_in(amps_Comm comm, int type, char **data, char **buf_ptr, int d
     {
       case AMPS_INVOICE_BYTE_CTYPE:
         *buf_ptr += AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[dim],
-                                         stride[dim]);
+            stride[dim]);
         AMPS_CALL_BYTE_IN(comm, *buf_ptr, *data, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-                                          stride[dim]);
+            stride[dim]);
         *(char**)data += (len[dim] - 1) * stride[dim];
         break;
 
       case AMPS_INVOICE_CHAR_CTYPE:
         *buf_ptr += AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[dim],
-                                         stride[dim]);
+            stride[dim]);
         AMPS_CALL_CHAR_IN(comm, *buf_ptr, *data, len[dim], stride[dim]);
         *buf_ptr += AMPS_CALL_CHAR_SIZEOF(comm, *buf_ptr, NULL, len[dim],
-                                          stride[dim]);
+            stride[dim]);
         *(char**)data += (len[dim] - 1) * stride[dim];
         break;
 
@@ -100,7 +100,7 @@ void amps_vector_in(amps_Comm comm, int type, char **data, char **buf_ptr, int d
 
       switch (type)
       {
-	case AMPS_INVOICE_BYTE_CTYPE:
+        case AMPS_INVOICE_BYTE_CTYPE:
           *(char**)data += stride[dim];
           break;
 
@@ -149,17 +149,17 @@ int amps_vector_align(amps_Comm comm, int type, char **data, char **buf_ptr, int
   {
     case AMPS_INVOICE_BYTE_CTYPE:
       align = AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[0],
-                                   stride[0]);
+          stride[0]);
       break;
-    
+
     case AMPS_INVOICE_CHAR_CTYPE:
       align = AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[0],
-                                   stride[0]);
+          stride[0]);
       break;
 
     case AMPS_INVOICE_SHORT_CTYPE:
       align = AMPS_CALL_SHORT_ALIGN(comm, NULL, *buf_ptr, len[0],
-                                    stride[0]);
+          stride[0]);
       break;
 
     case AMPS_INVOICE_INT_CTYPE:
@@ -168,17 +168,17 @@ int amps_vector_align(amps_Comm comm, int type, char **data, char **buf_ptr, int
 
     case AMPS_INVOICE_LONG_CTYPE:
       align = AMPS_CALL_LONG_ALIGN(comm, NULL, *buf_ptr, len[0],
-                                   stride[0]);
+          stride[0]);
       break;
 
     case AMPS_INVOICE_FLOAT_CTYPE:
       align = AMPS_CALL_FLOAT_ALIGN(comm, NULL, *buf_ptr, len[0],
-                                    stride[0]);
+          stride[0]);
       break;
 
     case AMPS_INVOICE_DOUBLE_CTYPE:
       align = AMPS_CALL_DOUBLE_ALIGN(comm, NULL, *buf_ptr, len[0],
-                                     stride[0]);
+          stride[0]);
       break;
   }
 
@@ -248,19 +248,19 @@ int amps_vector_sizeof_local(amps_Comm comm, int type, char **data, char **buf_p
   {
     case AMPS_INVOICE_BYTE_CTYPE:
       size = AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[0],
-                                   stride[0]);
+          stride[0]);
       el_size = sizeof(char);
       break;
-    
+
     case AMPS_INVOICE_CHAR_CTYPE:
       size = AMPS_CALL_CHAR_SIZEOF(comm, *buf_ptr, NULL, len[0],
-                                   stride[0]);
+          stride[0]);
       el_size = sizeof(char);
       break;
 
     case AMPS_INVOICE_SHORT_CTYPE:
       size = AMPS_CALL_SHORT_SIZEOF(comm, *buf_ptr, NULL, len[0],
-                                    stride[0]);
+          stride[0]);
       el_size = sizeof(short);
       break;
 
@@ -271,19 +271,19 @@ int amps_vector_sizeof_local(amps_Comm comm, int type, char **data, char **buf_p
 
     case AMPS_INVOICE_LONG_CTYPE:
       size = AMPS_CALL_LONG_SIZEOF(comm, *buf_ptr, NULL, len[0],
-                                   stride[0]);
+          stride[0]);
       el_size = sizeof(long);
       break;
 
     case AMPS_INVOICE_FLOAT_CTYPE:
       size = AMPS_CALL_FLOAT_SIZEOF(comm, *buf_ptr, NULL, len[0],
-                                    stride[0]);
+          stride[0]);
       el_size = sizeof(float);
       break;
 
     case AMPS_INVOICE_DOUBLE_CTYPE:
       size = AMPS_CALL_DOUBLE_SIZEOF(comm, *buf_ptr, NULL, len[0],
-                                     stride[0]);
+          stride[0]);
       el_size = sizeof(double);
       break;
   }

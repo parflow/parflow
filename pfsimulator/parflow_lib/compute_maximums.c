@@ -40,12 +40,12 @@
  *-------------------------------------------------------------------------*/
 
 double  ComputePhaseMaximum(
-                            double phase_u_max,
-                            double dx,
-                            double phase_v_max,
-                            double dy,
-                            double phase_w_max,
-                            double dz)
+  double phase_u_max,
+  double dx,
+  double phase_v_max,
+  double dy,
+  double phase_w_max,
+  double dz)
 {
   double maximum, tmp;
 
@@ -70,17 +70,17 @@ double  ComputePhaseMaximum(
  *-------------------------------------------------------------------------*/
 
 double  ComputeTotalMaximum(
-                            Problem *   problem,
-                            EvalStruct *eval_struct,
-                            double      s_lower,
-                            double      s_upper,
-                            double      total_u_max,
-                            double      dx,
-                            double      total_v_max,
-                            double      dy,
-                            double      total_w_max,
-                            double      beta_max,
-                            double      dz)
+  Problem *   problem,
+  EvalStruct *eval_struct,
+  double      s_lower,
+  double      s_upper,
+  double      total_u_max,
+  double      dx,
+  double      total_v_max,
+  double      dy,
+  double      total_w_max,
+  double      beta_max,
+  double      dz)
 {
   PFModule     *phase_density = ProblemPhaseDensity(problem);
 
@@ -164,7 +164,7 @@ double  ComputeTotalMaximum(
 
   /* Z direction */
   tmp = f_prime_max * (total_w_max / dz)
-        + h_prime_max * fabs(g * (den0 - den1)) * (beta_max / dz);
+    + h_prime_max * fabs(g * (den0 - den1)) * (beta_max / dz);
   if (tmp > maximum)
     maximum = tmp;
 

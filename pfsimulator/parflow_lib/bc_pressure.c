@@ -77,7 +77,7 @@ BCPressureData *NewBCPressureData()
  *--------------------------------------------------------------------------*/
 
 void FreeBCPressureData(
-                        BCPressureData *bc_pressure_data)
+  BCPressureData *bc_pressure_data)
 {
   int i, cycle_number, interval_division, interval_number;
 
@@ -97,23 +97,23 @@ void FreeBCPressureData(
           {
             cycle_number = BCPressureDataCycleNumber(bc_pressure_data, i);
             interval_division = TimeCycleDataIntervalDivision(
-                                                              time_cycle_data, cycle_number);
+                time_cycle_data, cycle_number);
             for (interval_number = 0;
-                 interval_number < interval_division;
-                 interval_number++)
+              interval_number < interval_division;
+              interval_number++)
             {
               switch (BCPressureDataType(bc_pressure_data, i))
               {
                 case DirEquilRefPatch:
                 {
                   GetBCPressureTypeStruct(DirEquilRefPatch, interval_data, bc_pressure_data,
-                                          i, interval_number);
+                    i, interval_number);
 
                   if (DirEquilRefPatchValueAtInterfaces(
-                                                        interval_data))
+                    interval_data))
                   {
                     tfree(DirEquilRefPatchValueAtInterfaces(
-                                                            interval_data));
+                      interval_data));
                   }
                   break;
                 }
@@ -121,7 +121,7 @@ void FreeBCPressureData(
                 case DirEquilPLinear:
                 {
                   GetBCPressureTypeStruct(DirEquilPLinear, interval_data, bc_pressure_data,
-                                          i, interval_number);
+                    i, interval_number);
 
                   if (DirEquilPLinearPoints(interval_data))
                   {
@@ -132,10 +132,10 @@ void FreeBCPressureData(
                     tfree(DirEquilPLinearValues(interval_data));
                   }
                   if (DirEquilPLinearValueAtInterfaces(
-                                                       interval_data))
+                    interval_data))
                   {
                     tfree(DirEquilPLinearValueAtInterfaces(
-                                                           interval_data));
+                      interval_data));
                   }
                   break;
                 }
@@ -144,7 +144,7 @@ void FreeBCPressureData(
                 case FluxConst:
                 {
                   GetBCPressureTypeStruct(FluxConst, interval_data, bc_pressure_data,
-                                          i, interval_number);
+                    i, interval_number);
                   break;
                 }
 
@@ -152,14 +152,14 @@ void FreeBCPressureData(
                 case FluxVolumetric:
                 {
                   GetBCPressureTypeStruct(FluxVolumetric, interval_data, bc_pressure_data,
-                                          i, interval_number);
+                    i, interval_number);
                   break;
                 }
 
                 case PressureFile:
                 {
                   GetBCPressureTypeStruct(PressureFile, interval_data, bc_pressure_data,
-                                          i, interval_number);
+                    i, interval_number);
 
                   if (PressureFileName(interval_data))
                   {
@@ -171,7 +171,7 @@ void FreeBCPressureData(
                 case FluxFile:
                 {
                   GetBCPressureTypeStruct(FluxFile, interval_data, bc_pressure_data,
-                                          i, interval_number);
+                    i, interval_number);
 
                   if (FluxFileName(interval_data))
                   {
@@ -181,10 +181,10 @@ void FreeBCPressureData(
                 }
               }
               if (BCPressureDataIntervalValue(bc_pressure_data, i,
-                                              interval_number))
+                interval_number))
               {
                 tfree(BCPressureDataIntervalValue(bc_pressure_data, i,
-                                                  interval_number));
+                  interval_number));
               }
             }
             tfree(BCPressureDataIntervalValues(bc_pressure_data, i));
@@ -222,7 +222,7 @@ void FreeBCPressureData(
  *--------------------------------------------------------------------------*/
 
 void PrintBCPressureData(
-                         BCPressureData *bc_pressure_data)
+  BCPressureData *bc_pressure_data)
 {
   amps_Printf("Pressure BC Information\n");
   if (BCPressureDataNumPatches(bc_pressure_data) == -1)

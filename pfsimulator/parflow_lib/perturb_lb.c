@@ -23,8 +23,8 @@
 * Perturbation function for lattice Boltzmann solver.
 **************************************************************************/
 void PerturbSystem(
-                   Lattice *lattice,
-                   Problem *problem)
+  Lattice *lattice,
+  Problem *problem)
 {
   /*------------------------------------------------------------*
   * Local variables

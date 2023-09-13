@@ -29,8 +29,8 @@
 #include "pfwell_data.h"
 
 int main(
-         int   argc,
-         char *argv[])
+  int   argc,
+  char *argv[])
 {
   WellListMember   *head;
   WellListMember   *member,
@@ -132,35 +132,35 @@ int main(
           WellListMemberWellDataStat(member, well) = NewWellDataStat(num_phases, num_components);
 
           ReadWellDataPhysical(fd,
-                               well_physical);
+            well_physical);
 
           CopyWellDataPhysical(WellListMemberWellDataPhysical(member, well),
-                               well_physical);
+            well_physical);
 
           ReadWellDataValue(fd,
-                            well_value,
-                            well_action[well],
-                            well_type[well],
-                            num_phases,
-                            num_components);
+            well_value,
+            well_action[well],
+            well_type[well],
+            num_phases,
+            num_components);
 
           CopyWellDataValue(WellListMemberWellDataValue(member, well),
-                            well_value,
-                            well_action[well],
-                            well_type[well],
-                            num_phases,
-                            num_components);
+            well_value,
+            well_action[well],
+            well_type[well],
+            num_phases,
+            num_components);
 
           ReadWellDataStat(fd,
-                           well_stat,
-                           num_phases,
-                           num_components);
+            well_stat,
+            num_phases,
+            num_components);
 
 
           CopyWellDataStat(WellListMemberWellDataStat(member, well),
-                           well_stat,
-                           num_phases,
-                           num_components);
+            well_stat,
+            num_phases,
+            num_components);
         }
 
         WellListMemberNextWellListMember(member) = NULL;
@@ -209,10 +209,10 @@ int main(
       for (well = 0; well < num_wells; well++)
       {
         WriteWellListData(files[well],
-                          WellListMemberTime(member),
-                          WellListMemberWellDataStat(member, well),
-                          num_phases,
-                          num_components);
+          WellListMemberTime(member),
+          WellListMemberWellDataStat(member, well),
+          num_phases,
+          num_components);
       }
       member = WellListMemberNextWellListMember(member);
 
@@ -277,11 +277,11 @@ int main(
 }
 
 void WriteWellListData(
-                       FILE *        fd,
-                       double        time,
-                       WellDataStat *well_data_stat,
-                       int           num_phases,
-                       int           num_components)
+  FILE *        fd,
+  double        time,
+  WellDataStat *well_data_stat,
+  int           num_phases,
+  int           num_components)
 {
   int i, j, indx;
   double value;

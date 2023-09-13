@@ -155,11 +155,11 @@ enum { SPGMR_NLI=KINSOL_IOPT_SIZE, SPGMR_NPE, SPGMR_NPS, SPGMR_NCFL };
 ******************************************************************/
 
 typedef int (*KINSpgmrPrecondFn)(integer Neq,
-                                 N_Vector uu, N_Vector uscale,
-                                 N_Vector fval, N_Vector fscale,
-                                 N_Vector vtemp1, N_Vector vtemp2,
-                                 SysFn func, real uround,
-                                 long int *nfePtr, void *P_data);
+  N_Vector uu, N_Vector uscale,
+  N_Vector fval, N_Vector fscale,
+  N_Vector vtemp1, N_Vector vtemp2,
+  SysFn func, real uround,
+  long int *nfePtr, void *P_data);
 
 
 /******************************************************************
@@ -219,11 +219,11 @@ typedef int (*KINSpgmrPrecondFn)(integer Neq,
 ******************************************************************/
 
 typedef int (*KINSpgmrPrecondSolveFn)(integer Neq,
-                                      N_Vector uu, N_Vector uscale,
-                                      N_Vector fval, N_Vector fscale,
-                                      N_Vector vtem, N_Vector ftem,
-                                      SysFn func, real u_round,
-                                      long int *nfePtr, void *P_data);
+  N_Vector uu, N_Vector uscale,
+  N_Vector fval, N_Vector fscale,
+  N_Vector vtem, N_Vector ftem,
+  SysFn func, real u_round,
+  long int *nfePtr, void *P_data);
 
 
 /********************************************************************
@@ -254,8 +254,8 @@ typedef int (*KINSpgmrPrecondSolveFn)(integer Neq,
 ********************************************************************/
 
 typedef int (*KINSpgmruserAtimesFn)(void *f_data, N_Vector v,
-                                    N_Vector z, boole *new_uu,
-                                    N_Vector uu);
+  N_Vector z, boole *new_uu,
+  N_Vector uu);
 
 
 /******************************************************************
@@ -323,10 +323,10 @@ typedef int (*KINSpgmruserAtimesFn)(void *f_data, N_Vector v,
 ******************************************************************/
 
 int KINSpgmr(void *kin_mem, int maxl, int maxlrst, int msbpre,
-             KINSpgmrPrecondFn precondset,
-             KINSpgmrPrecondSolveFn precondsolve,
-             KINSpgmruserAtimesFn userAtimes,
-             void *P_data);
+  KINSpgmrPrecondFn precondset,
+  KINSpgmrPrecondSolveFn precondsolve,
+  KINSpgmruserAtimesFn userAtimes,
+  void *P_data);
 
 END_EXTERN_C
 

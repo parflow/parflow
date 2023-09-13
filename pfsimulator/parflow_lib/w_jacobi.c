@@ -57,10 +57,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void     WJacobi(
-                 Vector *x,
-                 Vector *b,
-                 double  tol,
-                 int     zero)
+  Vector *x,
+  Vector *b,
+  double  tol,
+  int     zero)
 {
   PFModule       *this_module = ThisPFModule;
   PublicXtra     *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -174,8 +174,8 @@ void     WJacobi(
 
       iv = im = 0;
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                iv, nx_v, ny_v, nz_v, sx, sy, sz,
-                im, nx_m, ny_m, nz_m, sx, sy, sz,
+        iv, nx_v, ny_v, nz_v, sx, sy, sz,
+        im, nx_m, ny_m, nz_m, sx, sy, sz,
       {
         xp[iv] = bp[iv] / ap[im];
       });
@@ -256,15 +256,15 @@ void     WJacobi(
           for (si = 1; si < stencil_size; si++)
           {
             xp = SubvectorElt(x_sub,
-                              (ix + s[si][0]),
-                              (iy + s[si][1]),
-                              (iz + s[si][2]));
+                (ix + s[si][0]),
+                (iy + s[si][1]),
+                (iz + s[si][2]));
             ap = SubmatrixElt(A_sub, si, ix, iy, iz);
 
             iv = im = 0;
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      iv, nx_v, ny_v, nz_v, sx, sy, sz,
-                      im, nx_m, ny_m, nz_m, sx, sy, sz,
+              iv, nx_v, ny_v, nz_v, sx, sy, sz,
+              im, nx_m, ny_m, nz_m, sx, sy, sz,
             {
               tp[iv] -= ap[im] * xp[iv];
             });
@@ -273,8 +273,8 @@ void     WJacobi(
           ap = SubmatrixElt(A_sub, 0, ix, iy, iz);
           iv = im = 0;
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                    iv, nx_v, ny_v, nz_v, sx, sy, sz,
-                    im, nx_m, ny_m, nz_m, sx, sy, sz,
+            iv, nx_v, ny_v, nz_v, sx, sy, sz,
+            im, nx_m, ny_m, nz_m, sx, sy, sz,
           {
             tp[iv] /= ap[im];
           });
@@ -311,11 +311,11 @@ void     WJacobi(
  *--------------------------------------------------------------------------*/
 
 PFModule     *WJacobiInitInstanceXtra(
-                                      Problem *    problem,
-                                      Grid *       grid,
-                                      ProblemData *problem_data,
-                                      Matrix *     A,
-                                      double *     temp_data)
+  Problem *    problem,
+  Grid *       grid,
+  ProblemData *problem_data,
+  Matrix *     A,
+  double *     temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

@@ -78,11 +78,11 @@ typedef struct {
  *-------------------------------------------------------------------------*/
 
 void    PhaseDensityConstants(int phase,
-                              int fcn,
-                              int *phase_type,
-                              double *constant,
-                              double *ref_den,
-                              double *comp_const)
+  int                             fcn,
+  int *                           phase_type,
+  double *                        constant,
+  double *                        ref_den,
+  double *                        comp_const)
 {
   PFModule *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -90,13 +90,16 @@ void    PhaseDensityConstants(int phase,
   Type1 *dummy1;
 
   (*phase_type) = public_xtra->type[phase];
-  switch(*phase_type)
+  switch (*phase_type)
   {
     case 0:
-      if (fcn == CALCFCN) {
+      if (fcn == CALCFCN)
+      {
         dummy0 = (Type0*)(public_xtra->data[phase]);
         (*constant) = dummy0->constant;
-      } else {
+      }
+      else
+      {
         (*constant) = 0.0;
       }
       break;
@@ -114,12 +117,12 @@ void    PhaseDensityConstants(int phase,
  *-------------------------------------------------------------------------*/
 
 void    PhaseDensity(
-                     int     phase, /* Phase */
-                     Vector *phase_pressure, /* Vector of phase pressures at each block */
-                     Vector *density_v, /* Vector of return densities at each block */
-                     double *pressure_d, /* Double array of pressures */
-                     double *density_d, /* Double array return density */
-                     int     fcn) /* Flag determining what to calculate
+  int     phase,                    /* Phase */
+  Vector *phase_pressure,                    /* Vector of phase pressures at each block */
+  Vector *density_v,                    /* Vector of return densities at each block */
+  double *pressure_d,                    /* Double array of pressures */
+  double *density_d,                    /* Double array return density */
+  int     fcn)                    /* Flag determining what to calculate
                                    * fcn = CALCFCN => calculate the function value
                                    * fcn = CALCDER => calculate the function
                                    *                  derivative */
@@ -192,7 +195,7 @@ void    PhaseDensity(
           if (fcn == CALCFCN)
           {
             BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                      id, nx_d, ny_d, nz_d, 1, 1, 1,
+              id, nx_d, ny_d, nz_d, 1, 1, 1,
             {
               dp[id] = constant;
             });
@@ -200,7 +203,7 @@ void    PhaseDensity(
           else   /* fcn = CALCDER */
           {
             BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                      id, nx_d, ny_d, nz_d, 1, 1, 1,
+              id, nx_d, ny_d, nz_d, 1, 1, 1,
             {
               dp[id] = 0.0;
             });
@@ -263,8 +266,8 @@ void    PhaseDensity(
           if (fcn == CALCFCN)
           {
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                      id, nx_d, ny_d, nz_d, 1, 1, 1,
+              ip, nx_p, ny_p, nz_p, 1, 1, 1,
+              id, nx_d, ny_d, nz_d, 1, 1, 1,
             {
               dp[id] = ref * exp(pp[ip] * comp);
             });
@@ -272,8 +275,8 @@ void    PhaseDensity(
           else          /* fcn = CALCDER */
           {
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                      id, nx_d, ny_d, nz_d, 1, 1, 1,
+              ip, nx_p, ny_p, nz_p, 1, 1, 1,
+              id, nx_d, ny_d, nz_d, 1, 1, 1,
             {
               dp[id] = comp * ref * exp(pp[ip] * comp);
             });
@@ -340,7 +343,7 @@ void  PhaseDensityFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule  *PhaseDensityNewPublicXtra(
-                                     int num_phases)
+  int num_phases)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -369,7 +372,7 @@ PFModule  *PhaseDensityNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "Phase.%s.Density.Type",
-            NA_IndexToName(GlobalsPhaseNames, i));
+      NA_IndexToName(GlobalsPhaseNames, i));
 
     switch_name = GetString(key);
 
@@ -382,7 +385,7 @@ PFModule  *PhaseDensityNewPublicXtra(
         dummy0 = ctalloc(Type0, 1);
 
         sprintf(key, "Phase.%s.Density.Value",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         dummy0->constant = GetDouble(key);
 
         (public_xtra->data[i]) = (void*)dummy0;
@@ -395,11 +398,11 @@ PFModule  *PhaseDensityNewPublicXtra(
         dummy1 = ctalloc(Type1, 1);
 
         sprintf(key, "Phase.%s.Density.ReferenceDensity",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         dummy1->reference_density = GetDouble(key);
 
         sprintf(key, "Phase.%s.Density.CompressibiltyConstant",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         dummy1->compressibility_constant = GetDouble(key);
 
         (public_xtra->data[i]) = (void*)dummy1;
@@ -409,7 +412,7 @@ PFModule  *PhaseDensityNewPublicXtra(
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
   }

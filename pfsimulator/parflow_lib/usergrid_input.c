@@ -104,7 +104,7 @@ Grid      *ReadUserGrid()
  *--------------------------------------------------------------------------*/
 
 void  FreeUserGrid(
-                   Grid *user_grid)
+  Grid *user_grid)
 {
   FreeGrid(user_grid);
 }

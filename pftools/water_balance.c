@@ -41,9 +41,9 @@
 #include <math.h>
 
 void ComputeSurfaceStorage(
-                           Databox *top,
-                           Databox *pressure,
-                           Databox *surface_storage)
+  Databox *top,
+  Databox *pressure,
+  Databox *surface_storage)
 {
   int i, j;
   int nx, ny, nz;
@@ -81,11 +81,11 @@ void ComputeSurfaceStorage(
 }
 
 void ComputeSubsurfaceStorage(Databox *mask,
-                              Databox *porosity,
-                              Databox *pressure,
-                              Databox *saturation,
-                              Databox *specific_storage,
-                              Databox *subsurface_storage)
+  Databox *                            porosity,
+  Databox *                            pressure,
+  Databox *                            saturation,
+  Databox *                            specific_storage,
+  Databox *                            subsurface_storage)
 {
   int m;
 
@@ -120,11 +120,11 @@ void ComputeSubsurfaceStorage(Databox *mask,
 
 
 void ComputeGWStorage(Databox *mask,
-                      Databox *porosity,
-                      Databox *pressure,
-                      Databox *saturation,
-                      Databox *specific_storage,
-                      Databox *gw_storage)
+  Databox *                    porosity,
+  Databox *                    pressure,
+  Databox *                    saturation,
+  Databox *                    specific_storage,
+  Databox *                    gw_storage)
 {
   int m;
 
@@ -161,11 +161,11 @@ void ComputeGWStorage(Databox *mask,
  */
 
 void ComputeSurfaceRunoff(Databox *top,
-                          Databox *slope_x,
-                          Databox *slope_y,
-                          Databox *mannings,
-                          Databox *pressure,
-                          Databox *surface_runoff)
+  Databox *                        slope_x,
+  Databox *                        slope_y,
+  Databox *                        mannings,
+  Databox *                        pressure,
+  Databox *                        surface_runoff)
 {
   int i, j;
   int nx, ny;

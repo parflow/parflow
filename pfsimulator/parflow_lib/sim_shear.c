@@ -45,11 +45,11 @@
  *--------------------------------------------------------------------------*/
 
 double         **SimShear(
-                          double **     shear_min_ptr,
-                          double **     shear_max_ptr,
-                          GeomSolid *   geom_solid,
-                          SubgridArray *subgrids,
-                          int           type)
+  double **     shear_min_ptr,
+  double **     shear_max_ptr,
+  GeomSolid *   geom_solid,
+  SubgridArray *subgrids,
+  int           type)
 {
   GrGeomSolid        *grgeom_solid;
   double             *shear_min;
@@ -151,13 +151,13 @@ double         **SimShear(
 
         switch (type)
         {
-          case 1:
-            shear_array[ishear] = pfmin(z, shear_array[ishear]);
-            break;
+            case 1:
+              shear_array[ishear] = pfmin(z, shear_array[ishear]);
+              break;
 
-          case 2:
-            shear_array[ishear] = pfmax(z, shear_array[ishear]);
-            break;
+            case 2:
+              shear_array[ishear] = pfmax(z, shear_array[ishear]);
+              break;
         }
 
         shear_min[is] = pfmin(shear_min[is], shear_array[ishear]);

@@ -58,9 +58,9 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         Retardation(
-                         Vector *     solidmassfactor,
-                         int          contaminant,
-                         ProblemData *problem_data)
+  Vector *     solidmassfactor,
+  int          contaminant,
+  ProblemData *problem_data)
 {
   PFModule   *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -151,7 +151,7 @@ void         Retardation(
  *--------------------------------------------------------------------------*/
 
 PFModule  *RetardationInitInstanceXtra(
-                                       double *temp_data)
+  double *temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
@@ -198,7 +198,7 @@ void  RetardationFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule  *RetardationNewPublicXtra(
-                                    int num_contaminants)
+  int num_contaminants)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -255,8 +255,8 @@ PFModule  *RetardationNewPublicXtra(
         index = num_contaminants * ig + i;
 
         sprintf(key, "Geom.%s.%s.Retardation.Type",
-                geom_name,
-                NA_IndexToName(GlobalsContaminatNames, i));
+          geom_name,
+          NA_IndexToName(GlobalsContaminatNames, i));
         switch_name = GetString(key);
 
         public_xtra->type[index] =
@@ -271,8 +271,8 @@ PFModule  *RetardationNewPublicXtra(
             (dummy0->value) = ctalloc(double, 1);
 
             sprintf(key, "Geom.%s.%s.Retardation.Rate",
-                    geom_name,
-                    NA_IndexToName(GlobalsContaminatNames, i));
+              geom_name,
+              NA_IndexToName(GlobalsContaminatNames, i));
             *(dummy0->value) = GetDouble(key);
 
             (public_xtra->data[index]) = (void*)dummy0;
@@ -282,7 +282,7 @@ PFModule  *RetardationNewPublicXtra(
 
           default:
           {
-	    InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+            InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
           }
         }
       }

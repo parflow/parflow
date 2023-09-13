@@ -80,12 +80,12 @@
  *-----------------------------------------------------------------------*/
 
 int      SameDimensions(
-                        Databox *databoxp,
-                        Databox *databoxq)
+  Databox *databoxp,
+  Databox *databoxq)
 {
   if ((DataboxNx(databoxp) != DataboxNx(databoxq)) ||
-      (DataboxNy(databoxp) != DataboxNy(databoxq)) ||
-      (DataboxNz(databoxp) != DataboxNz(databoxq)))
+    (DataboxNy(databoxp) != DataboxNy(databoxq)) ||
+    (DataboxNz(databoxp) != DataboxNz(databoxq)))
   {
     return 0;
   }
@@ -99,14 +99,14 @@ int      SameDimensions(
  *-----------------------------------------------------------------------*/
 
 int     InRange(
-                int      i,
-                int      j,
-                int      k,
-                Databox *databox)
+  int      i,
+  int      j,
+  int      k,
+  Databox *databox)
 {
   if ((i < 0 || i >= DataboxNx(databox)) ||
-      (j < 0 || j >= DataboxNy(databox)) ||
-      (k < 0 || k >= DataboxNz(databox)))
+    (j < 0 || j >= DataboxNy(databox)) ||
+    (k < 0 || k >= DataboxNz(databox)))
   {
     return 0;
   }
@@ -126,19 +126,19 @@ int     InRange(
 /*                      wise                                                  */
 
 int IsValidFileType(
-                    char *option)
+  char *option)
 {
   if (strcmp(option, "pfb") == 0
-      || strcmp(option, "pfsb") == 0
-      || strcmp(option, "sa") == 0
-      || strcmp(option, "sa2d") == 0     // Added @ IMF
-      || strcmp(option, "sb") == 0
-      || strcmp(option, "fld") == 0
-      || strcmp(option, "vis") == 0
+    || strcmp(option, "pfsb") == 0
+    || strcmp(option, "sa") == 0
+    || strcmp(option, "sa2d") == 0       // Added @ IMF
+    || strcmp(option, "sb") == 0
+    || strcmp(option, "fld") == 0
+    || strcmp(option, "vis") == 0
 #ifdef HAVE_SILO
-      || strcmp(option, "silo") == 0
+    || strcmp(option, "silo") == 0
 #endif
-      || strcmp(option, "rsa") == 0)
+    || strcmp(option, "rsa") == 0)
     return(1);
   else
     return(0);
@@ -156,7 +156,7 @@ int IsValidFileType(
 /*                         extension was invalid                              */
 
 char *GetValidFileExtension(
-                            char *filename)
+  char *filename)
 {
   char *extension;
 
@@ -185,15 +185,15 @@ char *GetValidFileExtension(
  *------------------------------------------------------------------------*/
 
 void        InvalidOptionError(
-                               Tcl_Interp *interp,
-                               int         argnum,
-                               char *      usage)
+  Tcl_Interp *interp,
+  int         argnum,
+  char *      usage)
 {
   char num[256];
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "Error: Argument ", num, " is an invalid option\n",
-                   usage, (char*)NULL);
+    usage, (char*)NULL);
 }
 
 
@@ -202,15 +202,15 @@ void        InvalidOptionError(
  *------------------------------------------------------------------------*/
 
 void        InvalidArgError(
-                            Tcl_Interp *interp,
-                            int         argnum,
-                            char *      usage)
+  Tcl_Interp *interp,
+  int         argnum,
+  char *      usage)
 {
   char num[256];
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "\nError: Argument ", num, " is not a valid argument\n",
-                   usage, (char*)NULL);
+    usage, (char*)NULL);
 }
 
 /*------------------------------------------------------------------------
@@ -218,11 +218,11 @@ void        InvalidArgError(
  *------------------------------------------------------------------------*/
 
 void        WrongNumArgsError(
-                              Tcl_Interp *interp,
-                              char *      usage)
+  Tcl_Interp *interp,
+  char *      usage)
 {
   Tcl_AppendResult(interp, "\nError: Wrong number of arguments\n", usage,
-                   (char*)NULL);
+    (char*)NULL);
 }
 
 
@@ -231,15 +231,15 @@ void        WrongNumArgsError(
  *------------------------------------------------------------------------*/
 
 void        MissingOptionError(
-                               Tcl_Interp *interp,
-                               int         argnum,
-                               char *      usage)
+  Tcl_Interp *interp,
+  int         argnum,
+  char *      usage)
 {
   char num[256];
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "\nError: Option missing at argument ", num,
-                   "\n", usage, (char*)NULL);
+    "\n", usage, (char*)NULL);
 }
 
 
@@ -248,15 +248,15 @@ void        MissingOptionError(
  *-----------------------------------------------------------------------*/
 
 void        MissingFilenameError(
-                                 Tcl_Interp *interp,
-                                 int         argnum,
-                                 char *      usage)
+  Tcl_Interp *interp,
+  int         argnum,
+  char *      usage)
 {
   char num[256];
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "\nError: Filename missing after argument ", num,
-                   "\n", usage, (char*)NULL);
+    "\n", usage, (char*)NULL);
 }
 
 
@@ -265,16 +265,16 @@ void        MissingFilenameError(
  *-----------------------------------------------------------------------*/
 
 void        InvalidFileExtensionError(
-                                      Tcl_Interp *interp,
-                                      int         argnum,
-                                      char *      usage)
+  Tcl_Interp *interp,
+  int         argnum,
+  char *      usage)
 {
   char num[256];
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "\nError: Argument ", num,
-                   " is a filename with an unknown extension\n", usage,
-                   (char*)NULL);
+    " is a filename with an unknown extension\n", usage,
+    (char*)NULL);
 }
 
 
@@ -284,16 +284,16 @@ void        InvalidFileExtensionError(
  *-----------------------------------------------------------------------*/
 
 void        NotAnIntError(
-                          Tcl_Interp *interp,
-                          int         argnum,
-                          char *      usage)
+  Tcl_Interp *interp,
+  int         argnum,
+  char *      usage)
 {
   char num[256];
 
   sprintf(num, "%d", argnum);
   Tcl_ResetResult(interp);
   Tcl_AppendResult(interp, "\nError: Integer missing at argument ", num, "\n",
-                   usage, (char*)NULL);
+    usage, (char*)NULL);
 }
 
 
@@ -303,9 +303,9 @@ void        NotAnIntError(
  *-----------------------------------------------------------------------*/
 
 void        NotADoubleError(
-                            Tcl_Interp *interp,
-                            int         argnum,
-                            char *      usage)
+  Tcl_Interp *interp,
+  int         argnum,
+  char *      usage)
 {
   char num[256];
 
@@ -320,8 +320,8 @@ void        NotADoubleError(
  *-----------------------------------------------------------------------*/
 
 void        NumberNotPositiveError(
-                                   Tcl_Interp *interp,
-                                   int         argnum)
+  Tcl_Interp *interp,
+  int         argnum)
 {
   char num[256];
 
@@ -335,7 +335,7 @@ void        NumberNotPositiveError(
  *-----------------------------------------------------------------------*/
 
 void        MemoryError(
-                        Tcl_Interp *interp)
+  Tcl_Interp *interp)
 {
   Tcl_SetResult(interp, "\nError: Memory could not be allocated to perform\n       the requested operation\n", TCL_STATIC);
 }
@@ -347,11 +347,11 @@ void        MemoryError(
  *-----------------------------------------------------------------------*/
 
 void        SetNonExistantError(
-                                Tcl_Interp *interp,
-                                char *      hashkey)
+  Tcl_Interp *interp,
+  char *      hashkey)
 {
   Tcl_AppendResult(interp, "\nError: `", hashkey,
-                   "' is not a valid set name\n", (char*)NULL);
+    "' is not a valid set name\n", (char*)NULL);
 }
 
 
@@ -360,7 +360,7 @@ void        SetNonExistantError(
  *-----------------------------------------------------------------------*/
 
 void        ReadWriteError(
-                           Tcl_Interp *interp)
+  Tcl_Interp *interp)
 {
   Tcl_SetResult(interp, "\nError: The file could not be accesed or there is not enough memory available\n", TCL_STATIC);
 }
@@ -371,10 +371,10 @@ void        ReadWriteError(
  *-----------------------------------------------------------------------*/
 
 void        OutOfRangeError(
-                            Tcl_Interp *interp,
-                            int         i,
-                            int         j,
-                            int         k)
+  Tcl_Interp *interp,
+  int         i,
+  int         j,
+  int         k)
 {
   char message[256];
 
@@ -389,7 +389,7 @@ void        OutOfRangeError(
  *-----------------------------------------------------------------------*/
 
 void        DimensionError(
-                           Tcl_Interp *interp)
+  Tcl_Interp *interp)
 {
   Tcl_SetResult(interp, "\nError: The dimensions of the given data sets are not compatible\n", TCL_STATIC);
 }

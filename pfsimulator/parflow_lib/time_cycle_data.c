@@ -42,8 +42,8 @@
  *--------------------------------------------------------------------------*/
 
 TimeCycleData *NewTimeCycleData(
-                                int  number_of_cycles,
-                                int *number_of_intervals)
+  int  number_of_cycles,
+  int *number_of_intervals)
 {
   TimeCycleData *time_cycle_data;
   int cycle_number;
@@ -75,7 +75,7 @@ TimeCycleData *NewTimeCycleData(
  *--------------------------------------------------------------------------*/
 
 void FreeTimeCycleData(
-                       TimeCycleData *time_cycle_data)
+  TimeCycleData *time_cycle_data)
 {
   int cycle_number;
 
@@ -106,7 +106,7 @@ void FreeTimeCycleData(
  *--------------------------------------------------------------------------*/
 
 void PrintTimeCycleData(
-                        TimeCycleData *time_cycle_data)
+  TimeCycleData *time_cycle_data)
 {
   int cycle_number, interval_number;
 
@@ -150,10 +150,10 @@ void PrintTimeCycleData(
 #define TIME_CYCLE_SUBDIVISIONS 1000
 
 int TimeCycleDataComputeIntervalNumber(
-                                       Problem *      problem,
-                                       double         time,
-                                       TimeCycleData *time_cycle_data,
-                                       int            cycle_number)
+  Problem *      problem,
+  double         time,
+  TimeCycleData *time_cycle_data,
+  int            cycle_number)
 {
   double base_time_unit = ProblemBaseTimeUnit(problem);
   double start_time = ProblemStartTime(problem);
@@ -204,9 +204,9 @@ int TimeCycleDataComputeIntervalNumber(
  *--------------------------------------------------------------------------*/
 
 double TimeCycleDataComputeNextTransition(
-                                          Problem *      problem,
-                                          double         time,
-                                          TimeCycleData *time_cycle_data)
+  Problem *      problem,
+  double         time,
+  TimeCycleData *time_cycle_data)
 {
   double base_time_unit = ProblemBaseTimeUnit(problem);
   double start_time = ProblemStartTime(problem);

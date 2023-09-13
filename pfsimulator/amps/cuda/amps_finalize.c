@@ -71,10 +71,13 @@ int amps_Finalize()
     MPI_Finalize();
   }
 
-  if (amps_device_globals.combuf_recv_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_recv));
-  if (amps_device_globals.combuf_send_size != 0) CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_send));
+  if (amps_device_globals.combuf_recv_size != 0)
+    CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_recv));
+  if (amps_device_globals.combuf_send_size != 0)
+    CUDA_ERRCHK(cudaFree(amps_device_globals.combuf_send));
 
-  for(int i = 0; i < amps_device_globals.streams_created; i++){
+  for (int i = 0; i < amps_device_globals.streams_created; i++)
+  {
     CUDA_ERRCHK(cudaStreamDestroy(amps_device_globals.stream[i]));
   }
 

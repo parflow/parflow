@@ -62,14 +62,14 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void          PhaseVelocityFace(
-                                Vector *     xvel,
-                                Vector *     yvel,
-                                Vector *     zvel,
-                                ProblemData *problem_data,
-                                Vector *     pressure,
-                                Vector **    saturations,
-                                int          phase,
-                                double       time)
+  Vector *     xvel,
+  Vector *     yvel,
+  Vector *     zvel,
+  ProblemData *problem_data,
+  Vector *     pressure,
+  Vector **    saturations,
+  int          phase,
+  double       time)
 {
   PFModule       *this_module = ThisPFModule;
   InstanceXtra   *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -148,12 +148,12 @@ void          PhaseVelocityFace(
    *----------------------------------------------------------------------*/
 
   PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
-                     (temp_mobility_x, temp_mobility_y, temp_mobility_z,
-                      ProblemDataPermeabilityX(problem_data),
-                      ProblemDataPermeabilityY(problem_data),
-                      ProblemDataPermeabilityZ(problem_data),
-                      phase, saturations[phase],
-                      ProblemPhaseViscosity(problem, phase)));
+    (temp_mobility_x, temp_mobility_y, temp_mobility_z,
+    ProblemDataPermeabilityX(problem_data),
+    ProblemDataPermeabilityY(problem_data),
+    ProblemDataPermeabilityZ(problem_data),
+    phase, saturations[phase],
+    ProblemPhaseViscosity(problem, phase)));
 
   /*----------------------------------------------------------------------
    * exchange boundary data for mobility values
@@ -177,8 +177,8 @@ void          PhaseVelocityFace(
   else
   {
     PFModuleInvokeType(CapillaryPressureInvoke, capillary_pressure,
-                       (temp_pressure, phase, 0,
-                        problem_data, saturations[0]));
+      (temp_pressure, phase, 0,
+      problem_data, saturations[0]));
 
     Axpy(1.0, pressure, temp_pressure);
 
@@ -199,8 +199,8 @@ void          PhaseVelocityFace(
    *----------------------------------------------------------------------*/
 
   PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                     (phase, pressure_vector, temp_density, &dummy_density,
-                      &dummy_density, CALCFCN));
+    (phase, pressure_vector, temp_density, &dummy_density,
+    &dummy_density, CALCFCN));
 
   /*-----------------------------------------------------------------------
    * exchange boundary data for density values
@@ -259,10 +259,10 @@ void          PhaseVelocityFace(
     pi = 0; mi = 0; vi = 0;
 
     BoxLoopI3(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              pi, nx_p, ny_p, nz_p, 1, 1, 1,
-              mi, nx_m, ny_m, nz_m, 1, 1, 1,
-              vi, nx_v, ny_v, nz_v, 1, 1, 1,
+      ix, iy, iz, nx, ny, nz,
+      pi, nx_p, ny_p, nz_p, 1, 1, 1,
+      mi, nx_m, ny_m, nz_m, 1, 1, 1,
+      vi, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dx;
     });
@@ -320,10 +320,10 @@ void          PhaseVelocityFace(
     mi = 0; pi = 0; vi = 0;
 
     BoxLoopI3(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              pi, nx_p, ny_p, nz_p, 1, 1, 1,
-              mi, nx_m, ny_m, nz_m, 1, 1, 1,
-              vi, nx_v, ny_v, nz_v, 1, 1, 1,
+      ix, iy, iz, nx, ny, nz,
+      pi, nx_p, ny_p, nz_p, 1, 1, 1,
+      mi, nx_m, ny_m, nz_m, 1, 1, 1,
+      vi, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dy;
     });
@@ -389,15 +389,15 @@ void          PhaseVelocityFace(
     mi = 0; pi = 0; vi = 0; di = 0;
 
     BoxLoopI4(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              pi, nx_p, ny_p, nz_p,
-              mi, nx_m, ny_m, nz_m,
-              di, nx_d, ny_d, nz_d,
-              vi, nx_v, ny_v, nz_v,
+      ix, iy, iz, nx, ny, nz,
+      pi, nx_p, ny_p, nz_p,
+      mi, nx_m, ny_m, nz_m,
+      di, nx_d, ny_d, nz_d,
+      vi, nx_v, ny_v, nz_v,
     {
       vel[vi] = -Func(ml[mi], mu[mi]) *
-                ((pu[pi] - pl[pi]) / dz +
-                 0.5 * (du[di] + dl[di]) * ProblemGravity(problem));
+      ((pu[pi] - pl[pi]) / dz +
+      0.5 * (du[di] + dl[di]) * ProblemGravity(problem));
     });
 
     IncFLOPCount(flopest);
@@ -424,11 +424,11 @@ void          PhaseVelocityFace(
    * --------------------------------------------------------------------
    * --------------------------------------------------------------------
    * Fixed global boundary values for saturated solver - JJB 04/21
-   * 
+   *
    *----------------------------------------------------------------------*/
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
-                                 (problem_data, grid, gr_domain, time));
+      (problem_data, grid, gr_domain, time));
   ForSubgridI(is, GridSubgrids(grid))
   {
     subgrid = GridSubgrid(grid, is);
@@ -476,126 +476,125 @@ void          PhaseVelocityFace(
     {
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
       ForPatchCellsPerFace(DirichletBC,
-                           BeforeAllCells(DoNothing),
-                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int ip, vx_l, vy_l, vz_l;
-                                  int alpha, vel_idx;
-                                  double *mob_vec, *vel_vec;
-                                  double pdiff, value, vel_h;),
-                           CellSetup({
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
+        BeforeAllCells(DoNothing),
+        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+        Locals(int ip, vx_l, vy_l, vz_l;
+        int alpha, vel_idx;
+        double *mob_vec, *vel_vec;
+        double pdiff, value, vel_h; ),
+        CellSetup({
+        ip = SubvectorEltIndex(p_sub, i, j, k);
 
-                               vx_l = SubvectorEltIndex(vx_sub, i, j, k);
-                               vy_l = SubvectorEltIndex(vy_sub, i, j, k);
-                               vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+        vx_l = SubvectorEltIndex(vx_sub, i, j, k);
+        vy_l = SubvectorEltIndex(vy_sub, i, j, k);
+        vz_l = SubvectorEltIndex(vz_sub, i, j, k);
 
-                               alpha = 0;
-                               vel_idx = 0;
+        alpha = 0;
+        vel_idx = 0;
 
-                               mob_vec = NULL;
-                               vel_vec = NULL;
+        mob_vec = NULL;
+        vel_vec = NULL;
 
-                               vel_h = 0.0e0;
-                               pdiff = 0.0e0;
-                               value = bc_patch_values[ival];
-                             }),
-                           FACE(LeftFace, {
-                               alpha = 0;
-                               mob_vec = mx;
-                               vel_vec = vx;
-                               vel_h = dx;
-                               vel_idx = vx_l;
-                               pdiff = value - pres[ip];
-                             }),
-                           FACE(RightFace, {
-                               alpha = 0;
-                               mob_vec = mx;
-                               vel_vec = vx;
-                               vel_h = dx;
-                               vel_idx = vx_l + 1;
-                               pdiff = pres[ip] - value;
-                             }),
-                           FACE(DownFace, {
-                               alpha = 0;
-                               mob_vec = my;
-                               vel_vec = vy;
-                               vel_h = dy;
-                               vel_idx = vy_l;
-                               pdiff = value - pres[ip];
-                             }),
-                           FACE(UpFace, {
-                               alpha = 0;
-                               mob_vec = my;
-                               vel_vec = vy;
-                               vel_h = dy;
-                               vel_idx = vy_l + sy_v;
-                               pdiff = pres[ip] - value;
-                             }),
-                           FACE(BackFace, {
-                               alpha = 1;
-                               mob_vec = mz;
-                               vel_vec = vz;
-                               vel_h = dz;
-                               vel_idx = vz_l;
-                               pdiff = value - pres[ip];
-                             }),
-                           FACE(FrontFace, {
-                               alpha = -1;
-                               mob_vec = mz;
-                               vel_vec = vz;
-                               vel_h = dz;
-                               vel_idx = vz_l + sz_v;
-                               pdiff = pres[ip] - value;
-                             }),
-                           CellFinalize({
-                               vel_vec[vel_idx] = mob_vec[ip] * (pdiff / (0.5 * vel_h) - alpha * den[ip] * ProblemGravity(problem));
-                             }),
-                           AfterAllCells(DoNothing)
+        vel_h = 0.0e0;
+        pdiff = 0.0e0;
+        value = bc_patch_values[ival];
+      }),
+        FACE(LeftFace, {
+        alpha = 0;
+        mob_vec = mx;
+        vel_vec = vx;
+        vel_h = dx;
+        vel_idx = vx_l;
+        pdiff = value - pres[ip];
+      }),
+        FACE(RightFace, {
+        alpha = 0;
+        mob_vec = mx;
+        vel_vec = vx;
+        vel_h = dx;
+        vel_idx = vx_l + 1;
+        pdiff = pres[ip] - value;
+      }),
+        FACE(DownFace, {
+        alpha = 0;
+        mob_vec = my;
+        vel_vec = vy;
+        vel_h = dy;
+        vel_idx = vy_l;
+        pdiff = value - pres[ip];
+      }),
+        FACE(UpFace, {
+        alpha = 0;
+        mob_vec = my;
+        vel_vec = vy;
+        vel_h = dy;
+        vel_idx = vy_l + sy_v;
+        pdiff = pres[ip] - value;
+      }),
+        FACE(BackFace, {
+        alpha = 1;
+        mob_vec = mz;
+        vel_vec = vz;
+        vel_h = dz;
+        vel_idx = vz_l;
+        pdiff = value - pres[ip];
+      }),
+        FACE(FrontFace, {
+        alpha = -1;
+        mob_vec = mz;
+        vel_vec = vz;
+        vel_h = dz;
+        vel_idx = vz_l + sz_v;
+        pdiff = pres[ip] - value;
+      }),
+        CellFinalize({
+        vel_vec[vel_idx] = mob_vec[ip] * (pdiff / (0.5 * vel_h) - alpha * den[ip] * ProblemGravity(problem));
+      }),
+        AfterAllCells(DoNothing)
         );
 
       ForPatchCellsPerFace(FluxBC,
-                           BeforeAllCells(DoNothing),
-                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int vel_idx, vx_l, vy_l, vz_l;
-                                  double *vel_vec;
-                                  double value;),
-                           CellSetup({
+        BeforeAllCells(DoNothing),
+        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+        Locals(int vel_idx, vx_l, vy_l, vz_l;
+        double *vel_vec;
+        double value; ),
+        CellSetup({
+        vx_l = SubvectorEltIndex(vx_sub, i, j, k);
+        vy_l = SubvectorEltIndex(vy_sub, i, j, k);
+        vz_l = SubvectorEltIndex(vz_sub, i, j, k);
 
-                               vx_l = SubvectorEltIndex(vx_sub, i, j, k);
-                               vy_l = SubvectorEltIndex(vy_sub, i, j, k);
-                               vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+        vel_idx = 0;
+        vel_vec = NULL;
 
-                               vel_idx = 0;
-                               vel_vec = NULL;
-
-                               value = bc_patch_values[ival];
-                             }),
-                           FACE(LeftFace,  { 
-                               vel_vec = vx;
-                               vel_idx = vx_l;
-                             }),
-                           FACE(RightFace, { 
-                               vel_vec = vx;
-                               vel_idx = vx_l + 1;
-                             }),
-                           FACE(DownFace,  { 
-                               vel_vec = vy;
-                               vel_idx = vy_l;
-                             }),
-                           FACE(UpFace,    { 
-                               vel_vec = vy;
-                               vel_idx = vy_l + sy_v;
-                             }),
-                           FACE(BackFace,  { 
-                               vel_vec = vz;
-                               vel_idx = vz_l;
-                             }),
-                           FACE(FrontFace, { 
-                               vel_vec = vz;
-                               vel_idx = vz_l + sz_v;
-                             }),
-                           CellFinalize({ vel_vec[vel_idx] = value; }),
-                           AfterAllCells(DoNothing)
+        value = bc_patch_values[ival];
+      }),
+        FACE(LeftFace, {
+        vel_vec = vx;
+        vel_idx = vx_l;
+      }),
+        FACE(RightFace, {
+        vel_vec = vx;
+        vel_idx = vx_l + 1;
+      }),
+        FACE(DownFace, {
+        vel_vec = vy;
+        vel_idx = vy_l;
+      }),
+        FACE(UpFace, {
+        vel_vec = vy;
+        vel_idx = vy_l + sy_v;
+      }),
+        FACE(BackFace, {
+        vel_vec = vz;
+        vel_idx = vz_l;
+      }),
+        FACE(FrontFace, {
+        vel_vec = vz;
+        vel_idx = vz_l + sz_v;
+      }),
+        CellFinalize({ vel_vec[vel_idx] = value; }),
+        AfterAllCells(DoNothing)
         );
     }
   }
@@ -648,12 +647,12 @@ void          PhaseVelocityFace(
  *-------------------------------------------------------------------------*/
 
 PFModule *PhaseVelocityFaceInitInstanceXtra(
-                                            Problem *problem,
-                                            Grid *   grid,
-                                            Grid *   x_grid,
-                                            Grid *   y_grid,
-                                            Grid *   z_grid,
-                                            double * temp_data)
+  Problem *problem,
+  Grid *   grid,
+  Grid *   x_grid,
+  Grid *   y_grid,
+  Grid *   z_grid,
+  double * temp_data)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra;
@@ -707,7 +706,7 @@ PFModule *PhaseVelocityFaceInitInstanceXtra(
       PFModuleNewInstance(ProblemCapillaryPressure(problem), ());
     (instance_xtra->bc_pressure) =
       PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
-                              ProblemBCPressure(problem), (problem));
+        ProblemBCPressure(problem), (problem));
   }
   else
   {
@@ -715,7 +714,7 @@ PFModule *PhaseVelocityFaceInitInstanceXtra(
     PFModuleReNewInstance((instance_xtra->phase_density), ());
     PFModuleReNewInstance((instance_xtra->capillary_pressure), ());
     PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
-                              (instance_xtra->bc_pressure), (problem));
+      (instance_xtra->bc_pressure), (problem));
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;

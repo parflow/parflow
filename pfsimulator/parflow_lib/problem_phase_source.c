@@ -43,11 +43,11 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         PhaseSource(
-                         Vector *     phase_source,
-                         int          phase,
-                         Problem *    problem,
-                         ProblemData *problem_data,
-                         double       time)
+  Vector *     phase_source,
+  int          phase,
+  Problem *    problem,
+  ProblemData *problem_data,
+  double       time)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -256,7 +256,7 @@ void         PhaseSource(
               double z = RealSpaceZ(k, SubgridRZ(subgrid));
 
               data[ips] = x * y * z
-                          - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
+              - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
             });
             break;
           } /* End case 6 */
@@ -292,7 +292,7 @@ void         PhaseSource(
         well_value = WellDataValuePhaseValue(well_data_value, phase);
       }
       else if (WellDataPhysicalAction(well_data_physical)
-               == EXTRACTION_WELL)
+        == EXTRACTION_WELL)
 
       {
         well_value = -WellDataValuePhaseValue(well_data_value, phase);
@@ -351,29 +351,33 @@ void         PhaseSource(
           data = SubvectorElt(ps_sub, ix, iy, iz);
 
           int ip = 0;
-          int ips = 0;          
+          int ips = 0;
 
           if (WellDataPhysicalMethod(well_data_physical)
-              == FLUX_WEIGHTED)
+            == FLUX_WEIGHTED)
           {
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+              ip, nx_p, ny_p, nz_p, 1, 1, 1,
+              ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
             {
               double weight = (px[ip] / avg_x) * (area_x / area_sum)
-                      + (py[ip] / avg_y) * (area_y / area_sum)
-                      + (pz[ip] / avg_z) * (area_z / area_sum);
+              + (py[ip] / avg_y) * (area_y / area_sum)
+              + (pz[ip] / avg_z) * (area_z / area_sum);
               data[ips] += weight * flux;
             });
-          }else{
-            double weight = -FLT_MAX;            
+          }
+          else
+          {
+            double weight = -FLT_MAX;
             if (WellDataPhysicalMethod(well_data_physical)
-                == FLUX_STANDARD)weight = 1.0;
+              == FLUX_STANDARD)
+              weight = 1.0;
             else if (WellDataPhysicalMethod(well_data_physical)
-                     == FLUX_PATTERNED)weight = 0.0;
+              == FLUX_PATTERNED)
+              weight = 0.0;
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+              ip, nx_p, ny_p, nz_p, 1, 1, 1,
+              ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
             {
               data[ips] += weight * flux;
             });
@@ -431,7 +435,7 @@ void  PhaseSourceFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule  *PhaseSourceNewPublicXtra(
-                                    int num_phases)
+  int num_phases)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -466,7 +470,7 @@ PFModule  *PhaseSourceNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "PhaseSources.%s.Type",
-            NA_IndexToName(GlobalsPhaseNames, i));
+      NA_IndexToName(GlobalsPhaseNames, i));
     switch_name = GetString(key);
 
     public_xtra->type[i] = NA_NameToIndexExitOnError(type_na, switch_name, key);
@@ -478,7 +482,7 @@ PFModule  *PhaseSourceNewPublicXtra(
         dummy0 = ctalloc(Type0, 1);
 
         sprintf(key, "PhaseSources.%s.GeomNames",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         switch_name = GetString(key);
 
         dummy0->regions = NA_NewNameArray(switch_name);
@@ -492,11 +496,11 @@ PFModule  *PhaseSourceNewPublicXtra(
         {
           dummy0->region_indices[ir] =
             NA_NameToIndex(GlobalsGeomNames,
-                           NA_IndexToName(dummy0->regions, ir));
+              NA_IndexToName(dummy0->regions, ir));
 
           sprintf(key, "PhaseSources.%s.Geom.%s.Value",
-                  NA_IndexToName(GlobalsPhaseNames, i),
-                  NA_IndexToName(dummy0->regions, ir));
+            NA_IndexToName(GlobalsPhaseNames, i),
+            NA_IndexToName(dummy0->regions, ir));
           dummy0->values[ir] = GetDouble(key);
         }
 
@@ -510,7 +514,7 @@ PFModule  *PhaseSourceNewPublicXtra(
         dummy1 = ctalloc(Type1, 1);
 
         sprintf(key, "PhaseSources.%s.PredefinedFunction",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         switch_name = GetString(key);
 
         dummy1->function_type =
@@ -523,7 +527,7 @@ PFModule  *PhaseSourceNewPublicXtra(
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }     /* End case statement */
   }

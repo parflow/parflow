@@ -36,9 +36,9 @@
  *--------------------------------------------------------------------------*/
 
 Grid  *NewGrid(
-               SubgridArray *subgrids,
-               SubgridArray *all_subgrids,
-               SubgridArray *neighbors)
+  SubgridArray *subgrids,
+  SubgridArray *all_subgrids,
+  SubgridArray *neighbors)
 {
   Grid    *new_grid;
 
@@ -70,7 +70,7 @@ Grid  *NewGrid(
  *--------------------------------------------------------------------------*/
 
 void  FreeGrid(
-               Grid *grid)
+  Grid *grid)
 {
   FreeSubgridArray(GridAllSubgrids(grid));
 

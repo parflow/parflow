@@ -92,41 +92,41 @@ char *argv[];
   if (me == 0)
   {
     send_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride,
-                                      a + 0 + 0 + size);
+        a + 0 + 0 + size);
     recv_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride,
-                                      a + 0 + 0 + size + 1);
+        a + 0 + 0 + size + 1);
 
     src[0] = me + 1;
     dest[0] = me + 1;
 
     package = amps_NewPackage(amps_CommWorld,
-                              1, dest, send_invoice, 1, src, recv_invoice);
+        1, dest, send_invoice, 1, src, recv_invoice);
   }
   else if (me == num - 1)
   {
     send_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride,
-                                      a + 0 + 0 + 1);
+        a + 0 + 0 + 1);
     recv_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride,
-                                      a + 0 + 0 + 0);
+        a + 0 + 0 + 0);
 
     src[0] = me - 1;
     dest[0] = me - 1;
 
     package = amps_NewPackage(amps_CommWorld,
-                              1, dest, send_invoice, 1, src, recv_invoice);
+        1, dest, send_invoice, 1, src, recv_invoice);
   }
   else
   {
     send_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride,
-                                      a + 0 + 0 + 1);
+        a + 0 + 0 + 1);
     recv_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride,
-                                      a + 0 + 0 + 0);
+        a + 0 + 0 + 0);
 
 
     send_invoice[1] = amps_NewInvoice("%&.&D(2)", length, stride,
-                                      a + 0 + 0 + size);
+        a + 0 + 0 + size);
     recv_invoice[1] = amps_NewInvoice("%&.&D(2)", length, stride,
-                                      a + 0 + 0 + size + 1);
+        a + 0 + 0 + size + 1);
 
     src[0] = me - 1;
     dest[0] = me - 1;
@@ -135,7 +135,7 @@ char *argv[];
     dest[1] = me + 1;
 
     package = amps_NewPackage(amps_CommWorld,
-                              2, dest, send_invoice, 2, src, recv_invoice);
+        2, dest, send_invoice, 2, src, recv_invoice);
   }
 
   /* Initialize all points */
@@ -183,13 +183,13 @@ char *argv[];
         for (i = 1; i <= size + 1; i++)
         {
           if ((int)(*(a + k * (size + 2) * (size + 2) + j * (size + 2) + i))
-              != 1000000 * k + 1000 * j + i + me * size + loop)
+            != 1000000 * k + 1000 * j + i + me * size + loop)
           {
 #if 0
             amps_Printf("%d: (%d, %d, %d) = %f != %d\n",
-                        me, k, j, i,
-                        *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
-                        1000000 * k + 1000 * j + i + me * size + loop);
+              me, k, j, i,
+              *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
+              1000000 * k + 1000 * j + i + me * size + loop);
 #endif
 
 
@@ -205,13 +205,13 @@ char *argv[];
         for (i = 0; i <= size; i++)
         {
           if ((int)(*(a + k * (size + 2) * (size + 2) + j * (size + 2) + i))
-              != 1000000 * k + 1000 * j + i + me * size + loop)
+            != 1000000 * k + 1000 * j + i + me * size + loop)
           {
 #if 0
             amps_Printf("%d: (%d, %d, %d) = %f != %d\n",
-                        me, k, j, i,
-                        *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
-                        1000000 * k + 1000 * j + i + me * size + loop);
+              me, k, j, i,
+              *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
+              1000000 * k + 1000 * j + i + me * size + loop);
 #endif
             result = 1;
           }
@@ -224,13 +224,13 @@ char *argv[];
         for (i = 0; i <= size + 1; i++)
         {
           if ((int)(*(a + k * (size + 2) * (size + 2) + j * (size + 2) + i))
-              != 1000000 * k + 1000 * j + i + me * size + loop)
+            != 1000000 * k + 1000 * j + i + me * size + loop)
           {
 #if 0
             amps_Printf("%d: (%d, %d, %d) = %f != %d\n",
-                        me, k, j, i,
-                        *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
-                        1000000 * k + 1000 * j + i + me * size + loop);
+              me, k, j, i,
+              *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
+              1000000 * k + 1000 * j + i + me * size + loop);
 #endif
 
             result = 1;

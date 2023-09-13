@@ -61,7 +61,7 @@ Background  *ReadBackground()
  *--------------------------------------------------------------------------*/
 
 void         FreeBackground(
-                            Background *background)
+  Background *background)
 {
   tfree(background);
 }
@@ -72,8 +72,8 @@ void         FreeBackground(
  *--------------------------------------------------------------------------*/
 
 void         SetBackgroundBounds(
-                                 Background *background,
-                                 Grid *      grid)
+  Background *background,
+  Grid *      grid)
 {
   int ix_lower = 0, iy_lower = 0, iz_lower = 0;
   int ix_upper = 0, iy_upper = 0, iz_upper = 0;

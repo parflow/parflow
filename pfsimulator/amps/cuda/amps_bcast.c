@@ -29,10 +29,10 @@
 #include "amps.h"
 
 #define vtor(node) \
-  (node > source ? node : (node) ? node - 1 : source)
+        (node > source ? node : (node) ? node - 1 : source)
 
 #define rtov(node) \
-  (node > source ? node : (node < source) ? node + 1 : 0)
+        (node > source ? node : (node < source) ? node + 1 : 0)
 
 /*===========================================================================*/
 /**

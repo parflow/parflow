@@ -38,8 +38,8 @@
 #endif
 
 int amps_create_mpi_cont_send_type(
-                                   amps_Comm    comm,
-                                   amps_Invoice inv)
+  amps_Comm    comm,
+  amps_Invoice inv)
 {
   amps_InvoiceEntry *ptr;
   char *cur_pos;
@@ -89,7 +89,7 @@ int amps_create_mpi_cont_send_type(
         MPI_Get_address(cur_pos, &mpi_displacements[element]);
         cur_pos += AMPS_CALL_BYTE_SIZEOF(comm, cur_pos, NULL, len, 1);
         break;
-	
+
       case AMPS_INVOICE_CHAR_CTYPE:
         cur_pos += AMPS_CALL_CHAR_ALIGN(comm, NULL, cur_pos, len, 1);
         MPI_Type_vector(len, 1, 1, MPI_BYTE, &mpi_types[element]);
@@ -134,7 +134,7 @@ int amps_create_mpi_cont_send_type(
 
       default:
         dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ?
-              *(ptr->ptr_dim) : ptr->dim;
+          *(ptr->ptr_dim) : ptr->dim;
 
         /* Temporary datatypes for constructing vectors */
         if (dim > 1)
@@ -149,13 +149,13 @@ int amps_create_mpi_cont_send_type(
 
         switch (ptr->type - AMPS_INVOICE_LAST_CTYPE)
         {
-	  case AMPS_INVOICE_BYTE_CTYPE:
+          case AMPS_INVOICE_BYTE_CTYPE:
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, 1, MPI_BYTE, base_type);
             }
             break;
-	    
+
           case AMPS_INVOICE_CHAR_CTYPE:
             if (!ptr->ignore)
             {
@@ -201,21 +201,21 @@ int amps_create_mpi_cont_send_type(
 
         temp_pos = cur_pos;
         cur_pos += amps_vector_align(comm,
-                                     ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                     &data, &cur_pos, dim,
-                                     ptr->ptr_len, ptr->ptr_stride);
+            ptr->type - AMPS_INVOICE_LAST_CTYPE,
+            &data, &cur_pos, dim,
+            ptr->ptr_len, ptr->ptr_stride);
         for (i = dim - 2; i >= 0; i--)
         {
           if (i == 0)
           {
             MPI_Type_create_hvector(ptr->ptr_len[i], 1, 0,
-                                    *base_type, &mpi_types[element]);
+              *base_type, &mpi_types[element]);
             MPI_Type_free(base_type);
           }
           else
           {
             MPI_Type_create_hvector(ptr->ptr_len[i], 1, 0,
-                                    *base_type, new_type);
+              *base_type, new_type);
             MPI_Type_free(base_type);
             temp_type = base_type;
             base_type = new_type;
@@ -232,9 +232,9 @@ int amps_create_mpi_cont_send_type(
 
         temp_pos = cur_pos;
         cur_pos += amps_vector_sizeof_local(comm,
-                                            ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                            NULL, &temp_pos, dim,
-                                            ptr->ptr_len, ptr->ptr_stride);
+            ptr->type - AMPS_INVOICE_LAST_CTYPE,
+            NULL, &temp_pos, dim,
+            ptr->ptr_len, ptr->ptr_stride);
 
 
         break;
@@ -249,8 +249,8 @@ int amps_create_mpi_cont_send_type(
 }
 
 void amps_create_mpi_type(
-                          amps_Comm    comm,
-                          amps_Invoice inv)
+  amps_Comm    comm,
+  amps_Invoice inv)
 {
   amps_InvoiceEntry *ptr;
   char *data;
@@ -309,7 +309,7 @@ void amps_create_mpi_type(
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_BYTE,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -317,7 +317,7 @@ void amps_create_mpi_type(
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_CHAR,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -325,7 +325,7 @@ void amps_create_mpi_type(
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_SHORT,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -333,7 +333,7 @@ void amps_create_mpi_type(
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_INT,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -341,7 +341,7 @@ void amps_create_mpi_type(
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_LONG,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -349,7 +349,7 @@ void amps_create_mpi_type(
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_FLOAT,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -357,13 +357,13 @@ void amps_create_mpi_type(
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_DOUBLE,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
       default:
         dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ?
-              *(ptr->ptr_dim) : ptr->dim;
+          *(ptr->ptr_dim) : ptr->dim;
 
         /* Temporary datatypes for constructing vectors */
         if (dim > 1)
@@ -378,8 +378,8 @@ void amps_create_mpi_type(
 
         switch (ptr->type - AMPS_INVOICE_LAST_CTYPE)
         {
-	  case AMPS_INVOICE_BYTE_CTYPE:
-	    MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
+          case AMPS_INVOICE_BYTE_CTYPE:
+            MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
             element_size = sizeof(char);
             break;
 
@@ -421,23 +421,23 @@ void amps_create_mpi_type(
           if (i == dim - 1)
           {
             MPI_Type_create_hvector(ptr->ptr_len[i], 1,
-                                    base_size +
-                                    (ptr->ptr_stride[i] - 1) * element_size,
-                                    *base_type, &mpi_types[element]);
+              base_size +
+              (ptr->ptr_stride[i] - 1) * element_size,
+              *base_type, &mpi_types[element]);
             base_size = base_size * ptr->ptr_len[i]
-                        + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1)
-                        * element_size;
+              + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1)
+              * element_size;
             MPI_Type_free(base_type);
           }
           else
           {
             MPI_Type_create_hvector(ptr->ptr_len[i], 1,
-                                    base_size +
-                                    (ptr->ptr_stride[i] - 1) * element_size,
-                                    *base_type, new_type);
+              base_size +
+              (ptr->ptr_stride[i] - 1) * element_size,
+              *base_type, new_type);
             base_size = base_size * ptr->ptr_len[i]
-                        + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1)
-                        * element_size;
+              + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1)
+              * element_size;
             MPI_Type_free(base_type);
             temp_type = base_type;
             base_type = new_type;
@@ -463,10 +463,10 @@ void amps_create_mpi_type(
   }
 
   MPI_Type_create_struct(inv->num,
-                         mpi_block_len,
-                         mpi_displacements,
-                         mpi_types,
-                         &inv->mpi_type);
+    mpi_block_len,
+    mpi_displacements,
+    mpi_types,
+    &inv->mpi_type);
 
   for (element = 0; element < inv->num; element++)
   {

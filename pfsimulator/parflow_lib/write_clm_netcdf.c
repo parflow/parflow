@@ -20,10 +20,10 @@
  *  USA
  **********************************************************************EHEADER*/
 /*****************************************************************************
- *
- * Routines to write a Vector to a file in full or scattered form.
- *
- *****************************************************************************/
+*
+* Routines to write a Vector to a file in full or scattered form.
+*
+*****************************************************************************/
 
 #include "parflow.h"
 #include "parflow_netcdf.h"
@@ -42,7 +42,7 @@ static bool isCLMTdefined = false;
 #endif
 
 void WriteCLMNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
-                char *varName, int dimensionality)
+  char *varName, int dimensionality)
 {
 #ifdef PARFLOW_HAVE_NETCDF
   static int numCLMStepsInFile = 0;
@@ -101,7 +101,7 @@ void CreateCLMNCFile(char *file_name, int *clmIDs)
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
   char *default_val = "None";
-  
+
   sprintf(key, "NetCDF.ROMIOhints");
   switch_name = GetStringDefault(key, "None");
   if (strcmp(switch_name, default_val) != 0)
@@ -109,7 +109,7 @@ void CreateCLMNCFile(char *file_name, int *clmIDs)
     if (access(switch_name, F_OK | R_OK) == -1)
     {
       InputError("Error: check if the file is present and readable <%s> for key <%s>\n",
-                 switch_name, key);
+        switch_name, key);
     }
     MPI_Info romio_info;
     FILE *fp;
@@ -213,7 +213,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[0] = clmIDs[1];
     int timCLMVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &timCLMVarID);
+        (*myVarNCData)->dimIDs, &timCLMVarID);
     if (res == NC_ENAMEINUSE)
     {
       res = nc_inq_varid(clmIDs[0], varName, &timCLMVarID);
@@ -238,7 +238,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[3] = clmIDs[4];
     int tsoilCLMVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &tsoilCLMVarID);
+        (*myVarNCData)->dimIDs, &tsoilCLMVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -255,8 +255,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], tsoilCLMVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],tsoilCLMVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], tsoilCLMVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -278,7 +279,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int lhTotVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &lhTotVarID);
+        (*myVarNCData)->dimIDs, &lhTotVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -294,8 +295,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], lhTotVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],lhTotVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], lhTotVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -317,7 +319,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int lwradVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &lwradVarID);
+        (*myVarNCData)->dimIDs, &lwradVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -333,8 +335,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], lwradVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],lwradVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], lwradVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -356,7 +359,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int shTotVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &shTotVarID);
+        (*myVarNCData)->dimIDs, &shTotVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -372,8 +375,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], shTotVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],shTotVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], shTotVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -395,7 +399,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int soilGrndVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &soilGrndVarID);
+        (*myVarNCData)->dimIDs, &soilGrndVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -411,8 +415,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], soilGrndVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],soilGrndVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], soilGrndVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -434,7 +439,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qEvapTotVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qEvapTotVarID);
+        (*myVarNCData)->dimIDs, &qEvapTotVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -450,8 +455,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], qEvapTotVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],qEvapTotVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], qEvapTotVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -473,7 +479,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qEvapGrndVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qEvapGrndVarID);
+        (*myVarNCData)->dimIDs, &qEvapGrndVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -489,8 +495,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], qEvapGrndVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],qEvapGrndVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], qEvapGrndVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -512,7 +519,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qEvapSoiVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qEvapSoiVarID);
+        (*myVarNCData)->dimIDs, &qEvapSoiVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -528,8 +535,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], qEvapSoiVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],qEvapSoiVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], qEvapSoiVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -551,7 +559,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qEvapVegVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qEvapVegVarID);
+        (*myVarNCData)->dimIDs, &qEvapVegVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -567,8 +575,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], qEvapVegVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],qEvapVegVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], qEvapVegVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -590,7 +599,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qTranVegVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qTranVegVarID);
+        (*myVarNCData)->dimIDs, &qTranVegVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -606,8 +615,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], qTranVegVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],qTranVegVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], qTranVegVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -629,7 +639,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qInflVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qInflVarID);
+        (*myVarNCData)->dimIDs, &qInflVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -645,8 +655,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], qInflVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],qInflVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], qInflVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -668,7 +679,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int sweVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &sweVarID);
+        (*myVarNCData)->dimIDs, &sweVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -684,8 +695,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], sweVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],sweVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], sweVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -707,7 +719,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int t_grndVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &t_grndVarID);
+        (*myVarNCData)->dimIDs, &t_grndVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -723,8 +735,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], t_grndVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],t_grndVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], t_grndVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -746,7 +759,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[2] = clmIDs[4];
     int qQirrVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qQirrVarID);
+        (*myVarNCData)->dimIDs, &qQirrVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -762,8 +775,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[2] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], qQirrVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],qQirrVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], qQirrVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -786,7 +800,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     (*myVarNCData)->dimIDs[3] = clmIDs[4];
     int qQirrInstCLMVarID;
     int res = nc_def_var(clmIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
-                         (*myVarNCData)->dimIDs, &qQirrInstCLMVarID);
+        (*myVarNCData)->dimIDs, &qQirrInstCLMVarID);
     if (res != NC_ENAMEINUSE)
     {
       char *switch_name;
@@ -803,8 +817,9 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
         chunksize[3] = GetInt("NetCDF.ChunkX");
         nc_def_var_chunking(clmIDs[0], qQirrInstCLMVarID, NC_CHUNKED, chunksize);
       }
-      if (enable_netcdf_compression) {
-        nc_def_var_deflate(clmIDs[0],qQirrInstCLMVarID,0,1,compression_level);
+      if (enable_netcdf_compression)
+      {
+        nc_def_var_deflate(clmIDs[0], qQirrInstCLMVarID, 0, 1, compression_level);
       }
     }
     if (res == NC_ENAMEINUSE)
@@ -816,7 +831,7 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
 
   return 0;
 #else
-  return 0;  
+  return 0;
 #endif
 }
 
@@ -883,7 +898,7 @@ void PutCLMDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int 
       int status = nc_put_vara_double(clmIDs[0], varID, start, count, &data_nc[0]);
       if (status != NC_NOERR)
       {
-	printf("Error: nc_put_vara_double failed, error code=%d\n", status);
+        printf("Error: nc_put_vara_double failed, error code=%d\n", status);
       }
       free(data_nc);
     }
@@ -932,7 +947,7 @@ void PutCLMDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int 
       int status = nc_put_vara_double(clmIDs[0], varID, start, count, &data_nc[0]);
       if (status != NC_NOERR)
       {
-	printf("Error: nc_put_vara_double failed, error code=%d\n", status);
+        printf("Error: nc_put_vara_double failed, error code=%d\n", status);
       }
       free(data_nc);
     }

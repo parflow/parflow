@@ -44,13 +44,13 @@
  */
 
 void _amps_Abort(
-                 char *message,
-                 char *filename,
-                 int   line)
+  char *message,
+  char *filename,
+  int   line)
 {
   fprintf(stderr, "Aborting in file <%s> line : %i\n",
-          filename,
-          line);
+    filename,
+    line);
   fprintf(stderr, "%s\n", message);
   abort();
 }

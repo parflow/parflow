@@ -36,9 +36,9 @@
 #include <math.h>
 
 void ReadPFBinary_Subvector(
-                            amps_File  file,
-                            Subvector *subvector,
-                            Subgrid *  subgrid)
+  amps_File  file,
+  Subvector *subvector,
+  Subgrid *  subgrid)
 {
   int ix, iy, iz;
   int nx, ny, nz;
@@ -69,8 +69,8 @@ void ReadPFBinary_Subvector(
 
   ai = 0;
   BoxLoopI1(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            ai, nx_v, ny_v, nz_v, 1, 1, 1,
+    ix, iy, iz, nx, ny, nz,
+    ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     amps_ReadDouble(file, &data[ai], 1);
   });
@@ -78,8 +78,8 @@ void ReadPFBinary_Subvector(
 
 
 void ReadPFBinary(
-                  char *  filename,
-                  Vector *v)
+  char *  filename,
+  Vector *v)
 {
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
@@ -101,7 +101,7 @@ void ReadPFBinary(
   P = amps_Size(amps_CommWorld);
 
   if (((num_chars = strlen(filename)) < 4) ||
-      (strcmp(".pfb", &filename[num_chars - 4])))
+    (strcmp(".pfb", &filename[num_chars - 4])))
   {
     amps_Printf("Error: %s is not in pfb format\n", filename);
     exit(1);

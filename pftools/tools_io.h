@@ -58,65 +58,65 @@ extern "C" {
 #ifndef CASC_HAVE_BIGENDIAN
 
 void tools_WriteInt(
-                    FILE * file,
-                    int *  ptr,
-                    int    len);
+  FILE * file,
+  int *  ptr,
+  int    len);
 
 void tools_WriteFloat(
-                      FILE * file,
-                      float *ptr,
-                      int    len);
+  FILE * file,
+  float *ptr,
+  int    len);
 
 void tools_WriteDouble(
-                       FILE *  file,
-                       double *ptr,
-                       int     len);
+  FILE *  file,
+  double *ptr,
+  int     len);
 
 void tools_ReadInt(
-                   FILE * file,
-                   int *  ptr,
-                   int    len);
+  FILE * file,
+  int *  ptr,
+  int    len);
 
 void tools_ReadDouble(
-                      FILE *  file,
-                      double *ptr,
-                      int     len);
+  FILE *  file,
+  double *ptr,
+  int     len);
 
 
 #else
 #ifdef TOOLS_CRAY
 
 void tools_WriteInt(
-                    FILE * file,
-                    int *  ptr,
-                    int    len);
+  FILE * file,
+  int *  ptr,
+  int    len);
 
 void tools_WriteDouble(
-                       FILE *  file,
-                       double *ptr,
-                       int     len);
+  FILE *  file,
+  double *ptr,
+  int     len);
 
 void tools_ReadInt(
-                   FILE * file,
-                   int *  ptr,
-                   int    len);
+  FILE * file,
+  int *  ptr,
+  int    len);
 
 void tools_ReadDouble(
-                      FILE *  file,
-                      double *ptr,
-                      int     len);
+  FILE *  file,
+  double *ptr,
+  int     len);
 
 #else
 #ifdef TOOLS_INTS_ARE_64
 
 #define tools_WriteFloat(file, ptr, len) \
-  fwrite((ptr), sizeof(float), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(float), (len), (FILE*)(file))
 
 #define tools_WriteDouble(file, ptr, len) \
-  fwrite((ptr), sizeof(double), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
 #define tools_ReadDouble(file, ptr, len) \
-  fread((ptr), sizeof(double), (len), (FILE*)(file))
+        fread((ptr), sizeof(double), (len), (FILE*)(file))
 
 #else
 
@@ -125,19 +125,19 @@ void tools_ReadDouble(
 /****************************************************************************/
 
 #define tools_WriteInt(file, ptr, len) \
-  fwrite((ptr), sizeof(int), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(int), (len), (FILE*)(file))
 
 #define tools_WriteFloat(file, ptr, len) \
-  fwrite((ptr), sizeof(float), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(float), (len), (FILE*)(file))
 
 #define tools_WriteDouble(file, ptr, len) \
-  fwrite((ptr), sizeof(double), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
 #define tools_ReadInt(file, ptr, len) \
-  fread((ptr), sizeof(int), (len), (FILE*)(file))
+        fread((ptr), sizeof(int), (len), (FILE*)(file))
 
 #define tools_ReadDouble(file, ptr, len) \
-  fread((ptr), sizeof(double), (len), (FILE*)(file))
+        fread((ptr), sizeof(double), (len), (FILE*)(file))
 
 #endif
 #endif

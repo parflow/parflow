@@ -35,16 +35,16 @@ static struct {
 
 
 void SetPf2KinsolData(
-                      Grid *grid,
-                      int   num_ghost)
+  Grid *grid,
+  int   num_ghost)
 {
   pf2kinsol_data.grid = grid;
   pf2kinsol_data.num_ghost = num_ghost;
 }
 
 N_Vector N_VNew(
-                int   N,
-                void *machEnv)
+  int   N,
+  void *machEnv)
 {
   Grid    *grid;
   int num_ghost;
@@ -58,7 +58,7 @@ N_Vector N_VNew(
 }
 
 void N_VPrint(
-              N_Vector x)
+  N_Vector x)
 {
   Grid       *grid = VectorGrid(x);
   Subgrid    *subgrid;
@@ -95,7 +95,7 @@ void N_VPrint(
 
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       printf("%g\n", xp[i_x]);
       fflush(NULL);

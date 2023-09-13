@@ -77,11 +77,11 @@ typedef struct {
 
 void    PhaseViscosity(
 
-                       int     phase, /* Phase */
-                       Vector *pressure, /* Vector of phase pressures at each block */
-                       Vector *temperature, /* Vector of phase temperature at each block */
-                       Vector *viscosity, /* Vector of return densities at each block */
-                       int     fcn) /* Flag determining what to calculate
+  int     phase,                      /* Phase */
+  Vector *pressure,                      /* Vector of phase pressures at each block */
+  Vector *temperature,                      /* Vector of phase temperature at each block */
+  Vector *viscosity,                      /* Vector of return densities at each block */
+  int     fcn)                      /* Flag determining what to calculate
                                      * fcn = CALCFCN => calculate the function value
                                      * fcn = CALCDER => calculate the function
                                      *                  derivative */
@@ -151,7 +151,7 @@ void    PhaseViscosity(
         if (fcn == CALCFCN)
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                    id, nx_d, ny_d, nz_d, 1, 1, 1,
+            id, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             vp[id] = constant;
           });
@@ -159,7 +159,7 @@ void    PhaseViscosity(
         else     /* fcn = CALCDER */
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                    id, nx_d, ny_d, nz_d, 1, 1, 1,
+            id, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             vp[id] = 0.0;
           });
@@ -206,7 +206,7 @@ void    PhaseViscosity(
         if (fcn == CALCFCN)
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                    ip, nx_p, ny_p, nz_p, 1, 1, 1,
+            ip, nx_p, ny_p, nz_p, 1, 1, 1,
           {
             temper = tp[ip] - 273.0;
             if (temper < 0.0)
@@ -229,8 +229,8 @@ void    PhaseViscosity(
         else            /* fcn = CALCDER sjk: has to be inplemented still*/
         {
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                    ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                    id, nx_d, ny_d, nz_d, 1, 1, 1,
+            ip, nx_p, ny_p, nz_p, 1, 1, 1,
+            id, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             temper = tp[ip] - 273.0;
             if (temper < 0.0)
@@ -290,7 +290,7 @@ void  PhaseViscosityFreeInstanceXtra()
  *--------------------------------------------------------------------------*/
 
 PFModule  *PhaseViscosityNewPublicXtra(
-                                       int num_phases)
+  int num_phases)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -318,7 +318,7 @@ PFModule  *PhaseViscosityNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "Phase.%s.Viscosity.Type",
-            NA_IndexToName(GlobalsPhaseNames, i));
+      NA_IndexToName(GlobalsPhaseNames, i));
 
     switch_name = GetString(key);
 
@@ -331,7 +331,7 @@ PFModule  *PhaseViscosityNewPublicXtra(
         dummy0 = ctalloc(Type0, 1);
 
         sprintf(key, "Phase.%s.Viscosity.Value",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         dummy0->constant = GetDouble(key);
 
         (public_xtra->data[i]) = (void*)dummy0;
@@ -346,7 +346,7 @@ PFModule  *PhaseViscosityNewPublicXtra(
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
   }

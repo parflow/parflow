@@ -42,10 +42,10 @@
  *-----------------------------------------------------------------------*/
 
 void           LoadParflowB(
-                            char *        filename,
-                            SubgridArray *all_subgrids,
-                            Background *  background,
-                            Databox *     databox)
+  char *        filename,
+  SubgridArray *all_subgrids,
+  Background *  background,
+  Databox *     databox)
 {
   char output_name[MAXPATHLEN];
   FILE     *file;

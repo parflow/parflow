@@ -36,9 +36,9 @@
 #include <math.h>
 
 /* Subroutine */ int gauinv_(
-                             double *p,
-                             double *xp,
-                             int *   ierr)
+  double *p,
+  double *xp,
+  int *   ierr)
 {
   /* Initialized data */
 
@@ -104,7 +104,7 @@
 
   y = sqrt(log((float)1. / (pp * pp)));
   *xp = y + ((((y * p4 + p3) * y + p2) * y + p1) * y + p0) / ((((y * q4 +
-                                                                 q3) * y + q2) * y + q1) * y + q0);
+    q3) * y + q2) * y + q1) * y + q0);
   if (*p == pp)
   {
     *xp = -(double)(*xp);

@@ -269,7 +269,7 @@ double time;
               z = RealSpaceZ(k, SubgridRZ(subgrid));
 
               data[ips] = x * y * z
-                          - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
+              - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
             });
             break;
           } /* End case 6 */
@@ -460,10 +460,10 @@ PFModule  *PhaseSourceNewPublicXtra()
       {
         dummy0->region_indices[ir] =
           NA_NameToIndex(GlobalsGeomNames,
-                         NA_IndexToName(dummy0->regions, ir));
+            NA_IndexToName(dummy0->regions, ir));
 
         sprintf(key, "PhaseSources.Geom.%s.Value",
-                NA_IndexToName(dummy0->regions, ir));
+          NA_IndexToName(dummy0->regions, ir));
         dummy0->values[ir] = GetDouble(key);
       }
 

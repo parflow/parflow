@@ -60,11 +60,11 @@
 /* returns <0 if a < b, 0 if a=b, >0 if a > b                                */
 /*===========================================================================*/
 HBT *HBT_new(
-             int (*compare_method)(void *, void *),
-             void (*free_method)(void *),
-             void (*printf_method)(FILE *, void *),
-             int (*scanf_method)(FILE *, void **),
-             int malloc_flag)
+  int (*compare_method)(void *, void *),
+  void (*free_method)(void *),
+  void (*printf_method)(FILE *, void *),
+  int (*scanf_method)(FILE *, void **),
+  int malloc_flag)
 {
   HBT *new_tree;
 
@@ -84,9 +84,9 @@ HBT *HBT_new(
 /* Creates a new HBT element.                                            */
 /*===========================================================================*/
 HBT_element *_new_HBT_element(
-                              HBT * tree,
-                              void *object,
-                              int   sizeof_obj)
+  HBT * tree,
+  void *object,
+  int   sizeof_obj)
 {
   HBT_element *n;
 
@@ -112,8 +112,8 @@ HBT_element *_new_HBT_element(
 /* Frees a HBT element.                                                  */
 /*===========================================================================*/
 void _free_HBT_element(
-                       HBT *        tree,
-                       HBT_element *el)
+  HBT *        tree,
+  HBT_element *el)
 {
   if (tree->free)
     (*tree->free)(OBJ(el));
@@ -128,8 +128,8 @@ void _free_HBT_element(
 /* Frees elements of HBT recursively.                                    */
 /*===========================================================================*/
 void _HBT_free(
-               HBT *        tree,
-               HBT_element *subtree)
+  HBT *        tree,
+  HBT_element *subtree)
 {
   if (subtree != NULL)
   {
@@ -143,7 +143,7 @@ void _HBT_free(
 /* Frees a HBT tree.                                                     */
 /*===========================================================================*/
 void HBT_free(
-              HBT *tree)
+  HBT *tree)
 {
   _HBT_free(tree, tree->root);      /* free up any nodes still on tree   */
   free(tree);
@@ -154,8 +154,8 @@ void HBT_free(
 /* Searches HBT for key.                                                 */
 /*===========================================================================*/
 void *HBT_lookup(
-                 HBT * tree,
-                 void *obj)
+  HBT * tree,
+  void *obj)
 {
   int test;
   HBT_element *temp;
@@ -164,7 +164,7 @@ void *HBT_lookup(
 
   while (temp)
     if ((test =
-           (*tree->compare)(obj, OBJ(temp))) < 0)
+      (*tree->compare)(obj, OBJ(temp))) < 0)
       /*---------------------------------------------------------------*/
       /* Go left.                                                      */
       /*---------------------------------------------------------------*/
@@ -186,9 +186,9 @@ void *HBT_lookup(
 /* Replaces HBT for key.                                                 */
 /*===========================================================================*/
 void *HBT_replace(
-                  HBT * tree,
-                  void *obj,
-                  int   sizeof_obj)
+  HBT * tree,
+  void *obj,
+  int   sizeof_obj)
 {
   int test;
   int found = FALSE;
@@ -200,7 +200,7 @@ void *HBT_replace(
 
   while (temp)
     if ((test =
-           (*tree->compare)(obj, OBJ(temp))) < 0)
+      (*tree->compare)(obj, OBJ(temp))) < 0)
     {
       /*---------------------------------------------------------------*/
       /* Go left.                                                      */
@@ -236,9 +236,9 @@ void *HBT_replace(
 /* unbalanced while adding.                                                  */
 /*===========================================================================*/
 int HBT_insert(
-               HBT * tree,
-               void *obj,
-               int   sizeof_obj)
+  HBT * tree,
+  void *obj,
+  int   sizeof_obj)
 {
   HBT_element *temp, *inserted, *rebalance_son, *rebalance,
     *rebalance_father;
@@ -293,7 +293,7 @@ int HBT_insert(
         /* Found place to insert the new node                          */
         /*-------------------------------------------------------------*/
         if ((inserted = (LEFT(temp) =
-                           _new_HBT_element(tree, obj, sizeof_obj))) == NULL)
+          _new_HBT_element(tree, obj, sizeof_obj))) == NULL)
         {
           return HBT_MEMORY_ERROR;
         }
@@ -325,7 +325,7 @@ int HBT_insert(
         /* Found place to insert the new node                          */
         /*-------------------------------------------------------------*/
         if ((inserted = (RIGHT(temp) =
-                           _new_HBT_element(tree, obj, sizeof_obj))) == NULL)
+          _new_HBT_element(tree, obj, sizeof_obj))) == NULL)
         {
           return HBT_MEMORY_ERROR;
         }
@@ -486,8 +486,8 @@ int HBT_insert(
 /* If user is controlling allocation returns pointer to obj found.           */
 /*---------------------------------------------------------------------------*/
 void *HBT_delete(
-                 HBT * tree,
-                 void *obj)
+  HBT * tree,
+  void *obj)
 {
   /*-----------------------------------------------------------------------*/
   /* The stack keeps elements from root to the node to be deleted.         */
@@ -693,7 +693,7 @@ void *HBT_delete(
 
   /* NOTE that the element 0 is the tree HBT so we don't visit it */
   for (top_of_stack = size - 1; (top_of_stack > 0) && (!done);
-       top_of_stack--)
+    top_of_stack--)
   {
     current = element_stack[top_of_stack];
     dir = dir_stack[top_of_stack];
@@ -843,7 +843,7 @@ void *HBT_delete(
       /* of del at this new root.                                  */
       /*-----------------------------------------------------------*/
       if ((father = element_stack[top_of_stack - 1]) ==
-          (HBT_element*)tree)
+        (HBT_element*)tree)
       {
         tree->root = son;
       }
@@ -878,8 +878,8 @@ void *HBT_delete(
 /* If user is controlling allocation returns pointer to obj found.           */
 /*---------------------------------------------------------------------------*/
 void *HBT_successor(
-                    HBT * tree,
-                    void *obj)
+  HBT * tree,
+  void *obj)
 {
   /*-----------------------------------------------------------------------*/
   /* The stack keeps elements from root to the node to be deleted.         */
@@ -957,9 +957,9 @@ void *HBT_successor(
 /* Prints HBT to a file.  Recursive.                                         */
 /*===========================================================================*/
 void _HBT_printf(
-                 FILE *file,
-                 void (*printf_method)(FILE *, void *),
-                 HBT_element *tree)
+  FILE *file,
+  void (*printf_method)(FILE *, void *),
+  HBT_element *tree)
 {
   if (tree != NULL)
   {
@@ -973,8 +973,8 @@ void _HBT_printf(
 /* Print the current contents of the tree.                                   */
 /*===========================================================================*/
 void HBT_printf(
-                FILE *file,
-                HBT * tree)
+  FILE *file,
+  HBT * tree)
 {
   fprintf(file, "# %d\n", tree->height);
   fprintf(file, "# %d\n", tree->num);
@@ -987,21 +987,21 @@ void HBT_printf(
 /* Scan the current contents of the tree.                                   */
 /*===========================================================================*/
 void HBT_scanf(
-               FILE *file,
-               HBT * tree)
+  FILE *file,
+  HBT * tree)
 {
   int i;
   int height, num;
   void *obj;
   int size;
 
-  if(fscanf(file, "%d", &(height)) != 1)
+  if (fscanf(file, "%d", &(height)) != 1)
   {
     printf("ERROR: HBT_scanf failed to read height\n");
     abort();
   }
-  
-  if(fscanf(file, "%d", &(num)) != 1)
+
+  if (fscanf(file, "%d", &(num)) != 1)
   {
     printf("ERROR: HBT_scanf failed to read num\n");
     abort();

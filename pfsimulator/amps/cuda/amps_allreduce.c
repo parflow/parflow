@@ -102,7 +102,7 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
     switch (ptr->type)
     {
       case AMPS_INVOICE_BYTE_CTYPE:
-	      mpi_type = MPI_BYTE;
+        mpi_type = MPI_BYTE;
         element_size = sizeof(char);
         break;
 
@@ -147,16 +147,17 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
     struct cudaPointerAttributes attributes;
     cudaPointerGetAttributes(&attributes, (void *)data);
 
-    if(cudaGetLastError() == cudaSuccess && attributes.type > 1){
+    if (cudaGetLastError() == cudaSuccess && attributes.type > 1)
+    {
       if (stride == 1)
         CUDA_ERRCHK(cudaMemPrefetchAsync(data, (size_t)len * element_size, cudaCpuDeviceId, 0));
       else
         for (ptr_src = data;
-             ptr_src < data + len * stride * element_size;
-             ptr_src += stride * element_size)
+          ptr_src < data + len * stride * element_size;
+          ptr_src += stride * element_size)
           CUDA_ERRCHK(cudaMemPrefetchAsync(ptr_src, (size_t)element_size, cudaCpuDeviceId, 0));
 
-      CUDA_ERRCHK(cudaStreamSynchronize(0)); 
+      CUDA_ERRCHK(cudaStreamSynchronize(0));
     }
 
     /* Copy into a contigous buffer */
@@ -164,8 +165,8 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
       bcopy(data, in_buffer, (size_t)(len * element_size));
     else
       for (ptr_src = data, ptr_dest = in_buffer;
-           ptr_src < data + len * stride * element_size;
-           ptr_src += stride * element_size, ptr_dest += element_size)
+        ptr_src < data + len * stride * element_size;
+        ptr_src += stride * element_size, ptr_dest += element_size)
         bcopy(ptr_src, ptr_dest, (size_t)(element_size));
 
     MPI_Allreduce(in_buffer, out_buffer, len, mpi_type, operation, comm);
@@ -175,8 +176,8 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
       bcopy(out_buffer, data, (size_t)(len * element_size));
     else
       for (ptr_src = out_buffer, ptr_dest = data;
-           ptr_src < out_buffer + len * element_size;
-           ptr_src += element_size, ptr_dest += stride * element_size)
+        ptr_src < out_buffer + len * element_size;
+        ptr_src += element_size, ptr_dest += stride * element_size)
         bcopy(ptr_src, ptr_dest, (size_t)(element_size));
 
     free(in_buffer);
@@ -184,6 +185,6 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
 
     ptr = ptr->next;
   }
-  
+
   return 0;
 }

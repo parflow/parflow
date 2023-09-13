@@ -48,7 +48,7 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void           Domain(
-                      ProblemData *problem_data)
+  ProblemData *problem_data)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -70,7 +70,7 @@ void           Domain(
  *--------------------------------------------------------------------------*/
 
 PFModule  *DomainInitInstanceXtra(
-                                  Grid *grid)
+  Grid *grid)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

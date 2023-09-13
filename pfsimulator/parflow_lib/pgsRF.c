@@ -71,10 +71,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void         PGSRF(
-                   GeomSolid *  geounit,
-                   GrGeomSolid *gr_geounit,
-                   Vector *     field,
-                   RFCondData * cdata)
+  GeomSolid *  geounit,
+  GrGeomSolid *gr_geounit,
+  Vector *     field,
+  RFCondData * cdata)
 {
   /*-----------------*
   * Local variables *
@@ -420,8 +420,8 @@ void         PGSRF(
         k = (int)((z[n] - Z0) / dz + 0.5);
 
         if ((ix - max_search_rad <= i && i <= ix + nx + max_search_rad) &&
-            (iy - max_search_rad <= j && j <= iy + ny + max_search_rad) &&
-            (iz - max_search_rad <= k && k <= iz + nz + max_search_rad))
+          (iy - max_search_rad <= j && j <= iy + ny + max_search_rad) &&
+          (iz - max_search_rad <= k && k <= iz + nz + max_search_rad))
         {
           index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
           if (v[n] <= 0.0)
@@ -442,8 +442,8 @@ void         PGSRF(
         k = (int)((z[n] - Z0) / dz + 0.5);
 
         if ((ix - max_search_rad <= i && i <= ix + nx + max_search_rad) &&
-            (iy - max_search_rad <= j && j <= iy + ny + max_search_rad) &&
-            (iz - max_search_rad <= k && k <= iz + nz + max_search_rad))
+          (iy - max_search_rad <= j && j <= iy + ny + max_search_rad) &&
+          (iz - max_search_rad <= k && k <= iz + nz + max_search_rad))
         {
           index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
           tmpRFp[index2] = (v[n] - mean) / sigma;
@@ -679,7 +679,7 @@ void         PGSRF(
                         index3 = SubvectorEltIndex(sub_tmpRF, i + ii, j + jj, k + kk);
 
                         if (!(marker[rpx + ii][rpy + jj][rpz + kk]) &&
-                            (fabs(tmpRFp[index3]) > Tiny))
+                          (fabs(tmpRFp[index3]) > Tiny))
                         {
                           ixx[npts + cpts] = rpx + ii;
                           iyy[npts + cpts] = rpy + jj;
@@ -924,8 +924,8 @@ void         PGSRF(
  *--------------------------------------------------------------------------*/
 
 PFModule  *PGSRFInitInstanceXtra(
-                                 Grid *  grid,
-                                 double *temp_data)
+  Grid *  grid,
+  double *temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

@@ -39,7 +39,7 @@
  *--------------------------------------------------------------------------*/
 
 EvalStruct *NewEvalStruct(
-                          Problem *problem)
+  Problem *problem)
 {
   EvalStruct    *eval_struct;
 
@@ -189,16 +189,16 @@ EvalStruct *NewEvalStruct(
     for (i = 0; i < EvalNumFPoints(eval_struct); i++)
     {
       amps_Printf("   Point = %e, Value = %e\n",
-                  EvalFPoint(eval_struct, i),
-                  EvalFValue(eval_struct, i));
+        EvalFPoint(eval_struct, i),
+        EvalFValue(eval_struct, i));
     }
 
     amps_Printf("H_prime:\n");
     for (i = 0; i < EvalNumHPoints(eval_struct); i++)
     {
       amps_Printf("   Point = %e, Value = %e\n",
-                  EvalHPoint(eval_struct, i),
-                  EvalHValue(eval_struct, i));
+        EvalHPoint(eval_struct, i),
+        EvalHValue(eval_struct, i));
     }
   }
 #endif
@@ -211,7 +211,7 @@ EvalStruct *NewEvalStruct(
  *--------------------------------------------------------------------------*/
 
 void     FreeEvalStruct(
-                        EvalStruct *eval_struct)
+  EvalStruct *eval_struct)
 {
   if (EvalNumHPoints(eval_struct) > 0)
   {

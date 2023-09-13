@@ -114,15 +114,19 @@ int main(int argc, char *argv [])
 
 #ifndef NDEBUG
     /*-----------------------------------------------------------------------
-    * Wait for debugger if PARFLOW_DEBUG_RANK environment variable is set
-    *-----------------------------------------------------------------------*/
-    if(getenv("PARFLOW_DEBUG_RANK") != NULL) {
+     * Wait for debugger if PARFLOW_DEBUG_RANK environment variable is set
+     *-----------------------------------------------------------------------*/
+    if (getenv("PARFLOW_DEBUG_RANK") != NULL)
+    {
       const int mpi_debug = atoi(getenv("PARFLOW_DEBUG_RANK"));
-      if(mpi_debug == amps_Rank(amps_CommWorld)){
+      if (mpi_debug == amps_Rank(amps_CommWorld))
+      {
         volatile int i = 0;
         amps_Printf("PARFLOW_DEBUG_RANK environment variable found.\n");
         amps_Printf("Attach debugger to PID %ld (MPI rank %d) and set var i = 1 to continue\n", (long)getpid(), mpi_debug);
-        while(i == 0) {/*  change 'i' in the  debugger  */}
+        while (i == 0)
+        {              /*  change 'i' in the  debugger  */
+        }
       }
       amps_Sync(amps_CommWorld);
     }
@@ -134,21 +138,22 @@ int main(int argc, char *argv [])
 #if defined(PARFLOW_HAVE_KOKKOS)
     kokkosInit();
 #elif defined(PARFLOW_HAVE_CUDA)
-
     /*-----------------------------------------------------------------------
-    * Check CUDA compute capability, set device, and initialize RMM allocator
-    *-----------------------------------------------------------------------*/
+     * Check CUDA compute capability, set device, and initialize RMM allocator
+     *-----------------------------------------------------------------------*/
     {
       // CUDA
       if (!amps_Rank(amps_CommWorld))
       {
-        CUDA_ERR(cudaSetDevice(0));  
-      }else{
+        CUDA_ERR(cudaSetDevice(0));
+      }
+      else
+      {
         int num_devices = 0;
         CUDA_ERR(cudaGetDeviceCount(&num_devices));
         CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
       }
-    
+
       int device;
       CUDA_ERR(cudaGetDevice(&device));
 
@@ -161,23 +166,23 @@ int main(int argc, char *argv [])
 
       if (props.major < 6)
       {
-        amps_Printf("\nError: The GPU compute capability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
+        amps_Printf("\nError: The GPU compute capability %d.%d of %s is not sufficient.\n", props.major, props.minor, props.name);
         amps_Printf("\nThe minimum required GPU compute capability is 6.0.\n");
         exit(1);
       }
     }
 #endif // PARFLOW_HAVE_KOKKOS
 
-  /*-----------------------------------------------------------------------
-  * Initialize RMM pool allocator
-  *-----------------------------------------------------------------------*/
+    /*-----------------------------------------------------------------------
+     * Initialize RMM pool allocator
+     *-----------------------------------------------------------------------*/
 #ifdef PARFLOW_HAVE_RMM
-      // RMM
-      rmmOptions_t rmmOptions;
-      rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
-      rmmOptions.initial_pool_size = 1; // size = 0 initializes half the device memory
-      rmmOptions.enable_logging = false;
-      RMM_ERR(rmmInitialize(&rmmOptions));
+    // RMM
+    rmmOptions_t rmmOptions;
+    rmmOptions.allocation_mode = (rmmAllocationMode_t)(PoolAllocation | CudaManagedMemory);
+    rmmOptions.initial_pool_size = 1;   // size = 0 initializes half the device memory
+    rmmOptions.enable_logging = false;
+    RMM_ERR(rmmInitialize(&rmmOptions));
 #endif // PARFLOW_HAVE_RMM
 
     wall_clock_time = amps_Clock();
@@ -206,8 +211,8 @@ int main(int argc, char *argv [])
             fprintf(stderr, "Unknown option `-%c'.\n", optopt);
           else
             fprintf(stderr,
-                    "Unknown option character `\\x%x'.\n",
-                    optopt);
+              "Unknown option character `\\x%x'.\n",
+              optopt);
           return 1;
 
         default:
@@ -219,7 +224,7 @@ int main(int argc, char *argv [])
     if ((non_opt_argc != 1) && (non_opt_argc != 3))
     {
       fprintf(stderr, "USAGE: %s <input pfidb filename> <restart dir> <restore number>\n",
-              argv[0]);
+        argv[0]);
       return(-1);
     }
     else
@@ -239,7 +244,7 @@ int main(int argc, char *argv [])
     {
       char filename[2048];
       sprintf(filename, "%s.%06d.etrace", input_name, amps_Rank(MPI_CommWorld));
-      init_tracefile (filename);
+      init_tracefile(filename);
     }
 #endif
 
@@ -296,7 +301,7 @@ int main(int argc, char *argv [])
       if (main_db->keyExists("viz_dump_dirname"))
       {
         viz_dump_dirname = main_db->getStringWithDefault(
-                                                         "viz_dump_dirname", "./visit");
+            "viz_dump_dirname", "./visit");
       }
     }
 
@@ -316,7 +321,7 @@ int main(int argc, char *argv [])
       else
       {
         TBOX_ERROR("restart_interval > 0, but key `restart_write_dirname'"
-                   << " not specifed in input file");
+          << " not specifed in input file");
       }
     }
 
@@ -337,7 +342,7 @@ int main(int argc, char *argv [])
       std::string restart_dir(restart_read_dirname);
       restart_manager->
       openRestartFile(restart_dir, restore_num,
-                      amps_Size());
+        amps_Size());
     }
 #else
     PF_UNUSED(restore_num);
@@ -353,7 +358,7 @@ int main(int argc, char *argv [])
 
 #ifdef HAVE_SAMRAI
     GlobalsParflowSimulation = new Parflow("Parflow",
-                                           input_db->getDatabase("Parflow"));
+      input_db->getDatabase("Parflow"));
 #endif
 
     /*-----------------------------------------------------------------------
@@ -418,7 +423,7 @@ int main(int argc, char *argv [])
         log_file = OpenLogFile("ParFlow Total Time");
 
         fprintf(log_file, "Total Run Time: %f seconds\n\n",
-                (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC);
+          (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC);
 
 
         {
@@ -431,8 +436,8 @@ int main(int argc, char *argv [])
           }
 
           fprintf(file, "%s,%f,%s,%s\n", "Total Runtime",
-                  (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC,
-                  "-nan", "0");
+            (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC,
+            "-nan", "0");
         }
 
         fclose(file);
@@ -486,15 +491,15 @@ int main(int argc, char *argv [])
 #endif
 
   /*-----------------------------------------------------------------------
-  * Shutdown Kokkos
-  *-----------------------------------------------------------------------*/
+   * Shutdown Kokkos
+   *-----------------------------------------------------------------------*/
 #ifdef PARFLOW_HAVE_KOKKOS
   kokkosFinalize();
 #endif
 
   /*-----------------------------------------------------------------------
-  * Shutdown RMM pool allocator
-  *-----------------------------------------------------------------------*/
+   * Shutdown RMM pool allocator
+   *-----------------------------------------------------------------------*/
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmFinalize());
 #endif

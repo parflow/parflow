@@ -8,18 +8,18 @@
 extern double epslon_(double *x);
 
 /* Subroutine */ int ratqr_(
-                            int *   n,
-                            double *eps1,
-                            double *d,
-                            double *e,
-                            double *e2,
-                            int *   m,
-                            double *w,
-                            int *   ind,
-                            double *bd,
-                            int *   type,
-                            int *   idef,
-                            int *   ierr)
+  int *   n,
+  double *eps1,
+  double *d,
+  double *e,
+  double *e2,
+  int *   m,
+  double *w,
+  int *   ind,
+  double *bd,
+  int *   type,
+  int *   idef,
+  int *   ierr)
 {
   /* System generated locals */
   integer i__1, i__2;

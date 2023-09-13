@@ -38,30 +38,30 @@ typedef Vertex *EltType;
 
 #define QSORT_CROSSOVER 10
 
-#define Compare(result, vertex0, vertex1, compare_op) \
-  {                                                   \
-    result = 0;                                       \
-    if ((vertex0->y)compare_op(vertex1->y))           \
-      result = 1;                                     \
-    else if ((vertex0->y) == (vertex1->y))            \
-    {                                                 \
-      if ((vertex0->x)compare_op(vertex1->x))         \
-        result = 1;                                   \
-    }                                                 \
-  }
+#define Compare(result, vertex0, vertex1, compare_op)       \
+        {                                                   \
+          result = 0;                                       \
+          if ((vertex0->y)compare_op(vertex1->y))           \
+          result = 1;                                       \
+          else if ((vertex0->y) == (vertex1->y))            \
+          {                                                 \
+            if ((vertex0->x)compare_op(vertex1->x))         \
+            result = 1;                                     \
+          }                                                 \
+        }
 
 #define CompareLessThan(result, vertex0, vertex1) \
-  Compare(result, vertex0, vertex1, <)
+        Compare(result, vertex0, vertex1, <)
 
 #define CompareGreaterThan(result, vertex0, vertex1) \
-  Compare(result, vertex0, vertex1, >)
+        Compare(result, vertex0, vertex1, >)
 
-#define Swap(array, i, j, tmp) \
-  {                            \
-    tmp = array[i];            \
-    array[i] = array[j];       \
-    array[j] = tmp;            \
-  }
+#define Swap(array, i, j, tmp)       \
+        {                            \
+          tmp = array[i];            \
+          array[i] = array[j];       \
+          array[j] = tmp;            \
+        }
 
 
 /*--------------------------------------------------------------------------
@@ -75,9 +75,9 @@ typedef Vertex *EltType;
  *--------------------------------------------------------------------------*/
 
 int      *SortXYVertices(
-                         Vertex **vertices,
-                         int      nvertices,
-                         int      return_permute)
+  Vertex **vertices,
+  int      nvertices,
+  int      return_permute)
 {
   int  *permute = NULL;
   int i;

@@ -31,9 +31,9 @@
 #include <math.h>
 
 void OverlandSum(ProblemData *problem_data,
-                 Vector *     pressure,       /* Current pressure values */
-                 double       dt,
-                 Vector *     overland_sum)
+  Vector *                    pressure,       /* Current pressure values */
+  double                      dt,
+  Vector *                    overland_sum)
 {
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
@@ -79,11 +79,11 @@ void OverlandSum(ProblemData *problem_data,
   int num_patches = BCPressureDataNumPatches(bc_pressure_data);
 
   bc_struct = NewBCStruct(GridSubgrids(grid),
-                          gr_domain,
-                          num_patches,
-                          BCPressureDataPatchIndexes(bc_pressure_data),
-                          BCPressureDataBCTypes(bc_pressure_data),
-                          NULL);
+      gr_domain,
+      num_patches,
+      BCPressureDataPatchIndexes(bc_pressure_data),
+      BCPressureDataBCTypes(bc_pressure_data),
+      NULL);
 
   if (num_patches > 0)
   {

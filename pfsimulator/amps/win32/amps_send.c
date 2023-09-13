@@ -43,7 +43,7 @@ int dest;
 
   /* Set up the new buffer */
   if ((buf = (AMPS_ShMemBuffer*)malloc(sizeof(AMPS_ShMemBuffer)))
-      == NULL)
+    == NULL)
   {
     printf("AMPS Error: AMPS_ShMemBuffer allocation failed\n");
     exit(1);

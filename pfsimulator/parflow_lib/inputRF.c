@@ -60,10 +60,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void    InputRF(
-                GeomSolid *  geounit,
-                GrGeomSolid *gr_geounit,
-                Vector *     field,
-                RFCondData * cdata)
+  GeomSolid *  geounit,
+  GrGeomSolid *gr_geounit,
+  Vector *     field,
+  RFCondData * cdata)
 {
   /*-----------------------------------------------------------------------
    * Local variables
@@ -145,8 +145,8 @@ void    InputRF(
  *--------------------------------------------------------------------------*/
 
 PFModule  *InputRFInitInstanceXtra(
-                                   Grid *  grid,
-                                   double *temp_data)
+  Grid *  grid,
+  double *temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;

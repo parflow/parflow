@@ -219,11 +219,12 @@ PFModule   *FBzNewPublicXtra()
 
         break;
       }
+
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
-    }   
+    }
   }
 
   PFModulePublicXtra(this_module) = public_xtra;

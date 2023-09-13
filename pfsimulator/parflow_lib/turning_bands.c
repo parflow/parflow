@@ -203,8 +203,8 @@ void   *vxtra;
 
     /* malloc space for Z */
     nzeta = (sqrt(pow(((double)nx) * DX, 2.0) +
-                  pow(((double)ny) * DY, 2.0) +
-                  pow(((double)nz) * DZ, 2.0)) / dzeta) + 2;
+      pow(((double)ny) * DY, 2.0) +
+      pow(((double)nz) * DZ, 2.0)) / dzeta) + 2;
     Z = talloc(double, nzeta);
 
     /* zero the field subvector */
@@ -229,25 +229,25 @@ void   *vxtra;
 
       /* determine ZetaMin, Nzeta, izeta, and nzeta */
       ZetaMin = (pfmin(0, NX * DX * unitx) +
-                 pfmin(0, NY * DY * unity) +
-                 pfmin(0, NZ * DZ * unitz));
+        pfmin(0, NY * DY * unity) +
+        pfmin(0, NZ * DZ * unitz));
       NZeta = (fabs(NX * DX * unitx) +
-               fabs(NY * DY * unity) +
-               fabs(NZ * DZ * unitz)) / dzeta + 2;
+        fabs(NY * DY * unity) +
+        fabs(NZ * DZ * unitz)) / dzeta + 2;
 
       zeta = (pfmin(xt * unitx, (xt + nx * dx) * unitx) +
-              pfmin(yt * unity, (yt + ny * dy) * unity) +
-              pfmin(zt * unitz, (zt + nz * dz) * unitz));
+        pfmin(yt * unity, (yt + ny * dy) * unity) +
+        pfmin(zt * unitz, (zt + nz * dz) * unitz));
       izeta = Index(zeta, ZetaMin, dzeta, 0);
       nzeta = (fabs(nx * dx * unitx) +
-               fabs(ny * dy * unity) +
-               fabs(nz * dz * unitz)) / dzeta + 2;
+        fabs(ny * dy * unity) +
+        fabs(nz * dz * unitz)) / dzeta + 2;
 
       /*--------------------------------------------*/
       /* get the line process, Z */
 
       LineProc(Z, phi, theta, ZetaMin, NZeta, dzeta, izeta, nzeta,
-               Kmax, dK);
+        Kmax, dK);
 
       /*--------------------------------------------*/
       /* project Z onto field */
@@ -370,7 +370,7 @@ char *geom_name;
   else
   {
     NA_InputError("Error: Invalid True/False value for key <%s> was <%s>\n",
-               key, tmp);
+      key, tmp);
   }
 
   sprintf(key, "Geom.%s.Perm.Seed", geom_name);

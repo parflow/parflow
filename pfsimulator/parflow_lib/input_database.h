@@ -74,8 +74,8 @@ typedef struct NameArray__ {
 typedef NameArrayStruct *NameArray;
 
 /**
- * Prints out a database entry.  
-
+ * Prints out a database entry.
+ *
  * If it was not used during a run it is flagged as being unused.
  *
  * @param file File pointer
@@ -219,7 +219,7 @@ int IDB_GetInt(IDB *database, const char *key);
 
 /**
  * Construct a name array from an input string.
-
+ *
  * Provided string is split by whitespace and entries are created for
  * each space separated words.
  *
@@ -260,7 +260,7 @@ int NA_NameToIndex(NameArray name_array, char *name);
 
 /**
  * Returns Index in the name array for the specified name, exit if not found
-
+ *
  * Prints error message and exits if name is not found.
  *
  * @param name_array  The name array for the lookup
@@ -288,9 +288,9 @@ void InputError(const char *format, const char *s1, const char *s2);
 
 /**
  * Output error for invalid value provided to a NameArray key and exits.
- * 
- * @param name_array the NameArray 
- * @param switch_name the invalid value provided 
+ *
+ * @param name_array the NameArray
+ * @param switch_name the invalid value provided
  * @param key the database key being parsed
  */
 void NA_InputError(NameArray name_array, const char *switch_name, const char *key);

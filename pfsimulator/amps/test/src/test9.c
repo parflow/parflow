@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
   me = amps_Rank(amps_CommWorld);
 
-  if(me == 0)
+  if (me == 0)
   {
     FILE* test_file;
 
@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
     fprintf(test_file, "4 10 234 5 6\n");
     fprintf(test_file, "65555 200 234 678 890 6789 2789\n");
     fprintf(test_file, "100000 2789 78 8 1 98 987 98765\n");
-    fprintf(test_file, "12.500000 12.000500 17.400000 679.800000\n"); 
-    fprintf(test_file, "12.500000 0.078000 679.799988 0.500000\n"); 
+    fprintf(test_file, "12.500000 12.000500 17.400000 679.800000\n");
+    fprintf(test_file, "12.500000 0.078000 679.799988 0.500000\n");
 
     fclose(test_file);
   }
@@ -112,13 +112,13 @@ int main(int argc, char *argv[])
   for (; loop; loop--)
   {
     recv_invoice = amps_NewInvoice("%i%&c%&s%*i%*l%*.2d%*.&f",
-                                   &string_length,
-                                   &string_length, recvd_string,
-                                   &shorts_length, recvd_shorts,
-                                   ints_length, recvd_ints,
-                                   longs_length, recvd_longs,
-                                   doubles_length, recvd_doubles,
-                                   floats_length, &floats_stride, recvd_floats);
+        &string_length,
+        &string_length, recvd_string,
+        &shorts_length, recvd_shorts,
+        ints_length, recvd_ints,
+        longs_length, recvd_longs,
+        doubles_length, recvd_doubles,
+        floats_length, &floats_stride, recvd_floats);
 
     if (!(file = amps_SFopen(filename, "r")))
     {
@@ -135,15 +135,15 @@ int main(int argc, char *argv[])
     if (strncmp(recvd_string, string, 11))
     {
       amps_Printf("ERROR: chars do not match expected (%s) recvd (%s)\n",
-                  string, recvd_string);
+        string, recvd_string);
       result |= 1;
     }
-    
+
     for (i = 0; i < shorts_length; i++)
       if (shorts[i] != recvd_shorts[i])
       {
         amps_Printf("ERROR: shorts do not match expected (%hd) recvd (%hd)\n",
-                    shorts[i], recvd_shorts[i]);
+          shorts[i], recvd_shorts[i]);
         result |= 1;
       }
 
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
       if (ints[i] != recvd_ints[i])
       {
         amps_Printf("ERROR: ints do not match expected (%i) recvd (%i)\n",
-                    ints[i], recvd_ints[i]);
+          ints[i], recvd_ints[i]);
         result |= 1;
       }
 
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
       if (longs[i] != recvd_longs[i])
       {
         amps_Printf("ERROR: longs do not match expected (%ld) recvd (%ld)\n",
-                    longs[i], recvd_longs[i]);
+          longs[i], recvd_longs[i]);
         result |= 1;
       }
 
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
       if (doubles[i] != recvd_doubles[i])
       {
         amps_Printf("ERROR: doubles do not match (%lf) recvd (%lf)\n",
-                    doubles[i], recvd_doubles[i]);
+          doubles[i], recvd_doubles[i]);
         result |= 1;
       }
 
@@ -175,10 +175,10 @@ int main(int argc, char *argv[])
       if (floats[i] != recvd_floats[i])
       {
         amps_Printf("ERROR: floats do not match expected (%f) recvd (%f)\n",
-                    floats[i], recvd_floats[i]);
+          floats[i], recvd_floats[i]);
         result |= 1;
       }
-    
+
     amps_FreeInvoice(recv_invoice);
   }
 

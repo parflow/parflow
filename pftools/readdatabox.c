@@ -321,8 +321,8 @@ Databox         *ReadSilo(char *filename, double default_value)
  *-----------------------------------------------------------------------*/
 
 Databox         *ReadParflowB(
-                              char * file_name,
-                              double default_value)
+  char * file_name,
+  double default_value)
 {
   Databox         *v;
 
@@ -403,8 +403,8 @@ Databox         *ReadParflowB(
  *-----------------------------------------------------------------------*/
 
 Databox         *ReadParflowSB(
-                               char * file_name,
-                               double default_value)
+  char * file_name,
+  double default_value)
 {
   Databox         *v;
 
@@ -488,8 +488,8 @@ Databox         *ReadParflowSB(
  *-----------------------------------------------------------------------*/
 
 Databox         *ReadSimpleA(
-                             char * file_name,
-                             double default_value)
+  char * file_name,
+  double default_value)
 {
   Databox         *v;
 
@@ -530,8 +530,8 @@ Databox         *ReadSimpleA(
  *-----------------------------------------------------------------------*/
 
 Databox        *ReadRealSA(
-                           char * file_name,
-                           double default_value)
+  char * file_name,
+  double default_value)
 {
   Databox         *v;
 
@@ -566,8 +566,8 @@ Databox        *ReadRealSA(
     iy = (int)((y - y0) / dy + 0.5);
     iz = (int)((z - z0) / dz + 0.5);
     if ((ix > -1) && (ix < nx) &&
-        (iy > -1) && (iy < ny) &&
-        (iz > -1) && (iz < nz))
+      (iy > -1) && (iy < ny) &&
+      (iz > -1) && (iz < nz))
     {
       *DataboxCoeff(v, ix, iy, iz) = value;
     }
@@ -582,8 +582,8 @@ Databox        *ReadRealSA(
  *-----------------------------------------------------------------------*/
 
 Databox         *ReadSimpleB(
-                             char * file_name,
-                             double default_value)
+  char * file_name,
+  double default_value)
 {
   Databox         *v;
 
@@ -644,7 +644,7 @@ Databox         *ReadSimpleB(
 
 /* parse header into count token/value pairs (must be free'd afterwards) */
 static int parse_fld_header(char *header, int *count,
-                            char ***tokens, char ***values)
+  char ***tokens, char ***values)
 {
   char *ptr;
   int newlines = 0;
@@ -733,8 +733,8 @@ static void free_pairs(int count, char **token, char **value)
 #define HEADER_SIZE_INC 512
 
 Databox         *ReadAVSField(
-                              char * file_name,
-                              double default_value)
+  char * file_name,
+  double default_value)
 {
   Databox         *v;
 
@@ -1011,7 +1011,7 @@ Databox         *ReadAVSField(
  *-----------------------------------------------------------------------*/
 
 Databox         *ReadSDS(char *filename, int ds_num,
-                         double default_value)
+  double default_value)
 {
   Databox         *v;
 
@@ -1064,7 +1064,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       float32  *convert_ptr, *data;
 
       if ((data = convert_ptr = (float32*)malloc(dim[1] * dim[2] *
-                                                 sizeof(float32))) == NULL)
+        sizeof(float32))) == NULL)
       {
         exit(1);
       }
@@ -1089,7 +1089,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       float64  *convert_ptr, *data;
 
       if ((data = convert_ptr = (float64*)malloc(dim[1] * dim[2] *
-                                                 sizeof(float64))) == NULL)
+        sizeof(float64))) == NULL)
       {
         exit(1);
       }
@@ -1114,7 +1114,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       int8  *convert_ptr, *data;
 
       if ((data = convert_ptr = (int8*)malloc(dim[1] * dim[2] *
-                                              sizeof(int8))) == NULL)
+        sizeof(int8))) == NULL)
       {
         exit(1);
       }
@@ -1139,7 +1139,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       uint8  *convert_ptr, *data;
 
       if ((data = convert_ptr = (uint8*)malloc(dim[1] * dim[2] *
-                                               sizeof(uint8))) == NULL)
+        sizeof(uint8))) == NULL)
       {
         exit(1);
       }
@@ -1164,7 +1164,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       int16  *convert_ptr, *data;
 
       if ((data = convert_ptr = (int16*)malloc(dim[1] * dim[2] *
-                                               sizeof(int16))) == NULL)
+        sizeof(int16))) == NULL)
       {
         exit(1);
       }
@@ -1189,7 +1189,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       uint16  *convert_ptr, *data;
 
       if ((data = convert_ptr = (uint16*)malloc(dim[1] * dim[2] *
-                                                sizeof(uint16))) == NULL)
+        sizeof(uint16))) == NULL)
       {
         exit(1);
       }
@@ -1214,7 +1214,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       int32  *convert_ptr, *data;
 
       if ((data = convert_ptr = (int32*)malloc(dim[1] * dim[2] *
-                                               sizeof(int32))) == NULL)
+        sizeof(int32))) == NULL)
       {
         exit(1);
       }
@@ -1239,7 +1239,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       uint32  *convert_ptr, *data;
 
       if ((data = convert_ptr = (uint32*)malloc(dim[1] * dim[2] *
-                                                sizeof(uint32))) == NULL)
+        sizeof(uint32))) == NULL)
       {
         exit(1);
       }

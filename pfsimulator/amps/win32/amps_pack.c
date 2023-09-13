@@ -105,7 +105,7 @@ char **buffer;
         cur_pos += AMPS_CALL_INT_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)
           AMPS_CALL_INT_OUT(comm, data, cur_pos, len,
-                            stride);
+            stride);
         cur_pos += AMPS_CALL_INT_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
@@ -113,7 +113,7 @@ char **buffer;
         cur_pos += AMPS_CALL_LONG_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)
           AMPS_CALL_LONG_OUT(comm, data, cur_pos, len,
-                             stride);
+            stride);
         cur_pos += AMPS_CALL_LONG_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
@@ -121,7 +121,7 @@ char **buffer;
         cur_pos += AMPS_CALL_FLOAT_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)
           AMPS_CALL_FLOAT_OUT(comm, data, cur_pos, len,
-                              stride);
+            stride);
         cur_pos += AMPS_CALL_FLOAT_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
@@ -129,27 +129,27 @@ char **buffer;
         cur_pos += AMPS_CALL_DOUBLE_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)
           AMPS_CALL_DOUBLE_OUT(comm, data, cur_pos, len,
-                               stride);
+            stride);
         cur_pos += AMPS_CALL_DOUBLE_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
       default:
         dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ?
-              *(ptr->ptr_dim) : ptr->dim;
+          *(ptr->ptr_dim) : ptr->dim;
         temp_pos = cur_pos;
         cur_pos += amps_vector_align(comm,
-                                     ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                     &data, &cur_pos, dim,
-                                     ptr->ptr_len, ptr->ptr_stride);
+            ptr->type - AMPS_INVOICE_LAST_CTYPE,
+            &data, &cur_pos, dim,
+            ptr->ptr_len, ptr->ptr_stride);
         temp_pos = cur_pos;
         amps_vector_out(comm, ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                        &data, &temp_pos, dim - 1, ptr->ptr_len,
-                        ptr->ptr_stride);
+          &data, &temp_pos, dim - 1, ptr->ptr_len,
+          ptr->ptr_stride);
         temp_pos = cur_pos;
         cur_pos += amps_vector_sizeof_buffer(comm,
-                                             ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                             &data, &temp_pos, dim,
-                                             ptr->ptr_len, ptr->ptr_stride);
+            ptr->type - AMPS_INVOICE_LAST_CTYPE,
+            &data, &temp_pos, dim,
+            ptr->ptr_len, ptr->ptr_stride);
     }
     ptr = ptr->next;
   }

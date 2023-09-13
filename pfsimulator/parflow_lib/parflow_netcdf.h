@@ -37,7 +37,7 @@ typedef struct {
 /* ParFlow NetCDF4 interface declaration */
 
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
-               char *varName, int dimensionality, bool init, int numVarIni);
+  char *varName, int dimensionality, bool init, int numVarIni);
 void CreateNCFile(char *file_name, int *netCDFIDs);
 void NCDefDimensions(Vector *v, int dimensionality, int *netCDFIDs);
 void CloseNC(int ncID);
@@ -46,7 +46,7 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dim
 void find_variable_length(int nid, int varid, unsigned long dim_lengths[MAX_NC_VARS]);
 void CreateNCFileNode(char *file_name, Vector *v, int *netCDFIDs);
 void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,
-                     int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int *netCDFIDs);
+  int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int *netCDFIDs);
 void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimensionality);
 void OpenNCFile(char *file_name, int *ncRID);
 void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality);
@@ -55,7 +55,7 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
 
 /* CLM NetCDF4 interface declaration */
 void WriteCLMNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
-                char *varName, int dimensionality);
+  char *varName, int dimensionality);
 void CreateCLMNCFile(char *file_name, int *clmIDs);
 void NCCLMDefDimensions(Vector *v, int dimensionality, int *clmIDs);
 void PutCLMDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dimensionality, int *clmIDs);

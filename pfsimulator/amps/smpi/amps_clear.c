@@ -93,7 +93,7 @@ void amps_ClearInvoice(amps_Invoice inv)
   inv->flags &= ~AMPS_PACKED;
 
   if ((inv->combuf_flags & AMPS_INVOICE_OVERLAYED)
-      || (inv->combuf_flags & AMPS_INVOICE_NON_OVERLAYED))
+    || (inv->combuf_flags & AMPS_INVOICE_NON_OVERLAYED))
   {
     /* for each entry in the invoice pack null out the pointer
      * if needed  and free up space if we malloced any          */

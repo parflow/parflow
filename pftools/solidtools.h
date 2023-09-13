@@ -52,9 +52,9 @@ extern "C" {
  *-----------------------------------------------------------------------*/
 
 /* solidtools.c */
-int MakePatchySolid(FILE *fp,FILE *fp_vtk, Databox *msk, Databox *top, Databox *bot, int sub_patches, int bin_out);
-int ConvertPfsolBin2Ascii(FILE *fp_bin,FILE *fp_asc);
-int ConvertPfsolAscii2Bin(FILE *fp_asc,FILE *fp_bin);
+int MakePatchySolid(FILE *fp, FILE *fp_vtk, Databox *msk, Databox *top, Databox *bot, int sub_patches, int bin_out);
+int ConvertPfsolBin2Ascii(FILE *fp_bin, FILE *fp_asc);
+int ConvertPfsolAscii2Bin(FILE *fp_asc, FILE *fp_bin);
 
 #ifdef __cplusplus
 }

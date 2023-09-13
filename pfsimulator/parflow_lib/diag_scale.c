@@ -55,10 +55,10 @@
  *--------------------------------------------------------------------------*/
 
 void     DiagScale(
-                   Vector *x,
-                   Matrix *A,
-                   Vector *b,
-                   Vector *d)
+  Vector *x,
+  Matrix *A,
+  Vector *b,
+  Vector *d)
 {
   Grid           *grid = MatrixGrid(A);
   Subgrid        *subgrid;
@@ -118,7 +118,7 @@ void     DiagScale(
 
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
+      iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       xp[iv] = xp[iv] / dp[iv];
       bp[iv] = bp[iv] * dp[iv];
@@ -188,7 +188,7 @@ void     DiagScale(
 
             im = 0;
             BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                      im, nx_m, ny_m, nz_m, 1, 1, 1,
+              im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             cp[im] *= dp[iv] * dp[iv];
           });
@@ -205,8 +205,8 @@ void     DiagScale(
             im = 0;
             iv = 0;
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      im, nx_m, ny_m, nz_m, 1, 1, 1,
-                      iv, nx_v, ny_v, nz_v, 1, 1, 1,
+              im, nx_m, ny_m, nz_m, 1, 1, 1,
+              iv, nx_v, ny_v, nz_v, 1, 1, 1,
           {
             cp[im] *= dp[iv] * dp[iv];
             ep[im] *= dp[iv + 1] * dp[iv];

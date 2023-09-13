@@ -86,7 +86,7 @@ int ModifiedGS(N_Vector *v, real **h, int k, int p, real *new_vk_norm)
  **********************************************************************/
 
 int ClassicalGS(N_Vector *v, real **h, int k, int p, real *new_vk_norm,
-                N_Vector temp, real *s)
+  N_Vector temp, real *s)
 {
   int i, k_minus_1, i0;
   real vk_norm;

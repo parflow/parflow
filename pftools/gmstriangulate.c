@@ -34,21 +34,21 @@
  * Compare macro
  *--------------------------------------------------------------------------*/
 
-#define Compare(result, vertex0, vertex1)   \
-  {                                         \
-    result = 0;                             \
-    if ((vertex0->y) < (vertex1->y))        \
-      result = -1;                          \
-    else if ((vertex0->y) > (vertex1->y))   \
-      result = 1;                           \
-    else                                    \
-    {                                       \
-      if ((vertex0->x) < (vertex1->x))      \
-        result = -1;                        \
-      else if ((vertex0->x) > (vertex1->x)) \
-        result = 1;                         \
-    }                                       \
-  }
+#define Compare(result, vertex0, vertex1)         \
+        {                                         \
+          result = 0;                             \
+          if ((vertex0->y) < (vertex1->y))        \
+          result = -1;                            \
+          else if ((vertex0->y) > (vertex1->y))   \
+          result = 1;                             \
+          else                                    \
+          {                                       \
+            if ((vertex0->x) < (vertex1->x))      \
+            result = -1;                          \
+            else if ((vertex0->x) > (vertex1->x)) \
+            result = 1;                           \
+          }                                       \
+        }
 
 
 /*--------------------------------------------------------------------------
@@ -56,8 +56,8 @@
  *--------------------------------------------------------------------------*/
 
 int main(
-         int    argc,
-         char **argv)
+  int    argc,
+  char **argv)
 {
   gms_TIN      *mask_TIN;
   gms_TIN     **TINs;
@@ -90,7 +90,7 @@ int main(
   if (argc < 4)
   {
     fprintf(stderr,
-            "Usage:  gmstriangulate <TIN mask> <TIN input> <TIN output>\n");
+      "Usage:  gmstriangulate <TIN mask> <TIN input> <TIN output>\n");
     exit(1);
   }
 

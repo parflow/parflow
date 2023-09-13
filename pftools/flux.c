@@ -42,18 +42,18 @@
 #include "flux.h"
 
 #if 0
-#define Mean(a, b) (0.5*((a) + (b)))
+#define Mean(a, b) (0.5 * ((a) + (b)))
 #define Mean(a, b) (sqrt((a) * (b)))
 #endif
-#define Mean(a, b)    (((a) + (b)) ? ((2.0*(a)*(b)) / ((a) + (b))) : 0)
+#define Mean(a, b)    (((a) + (b)) ? ((2.0 * (a) * (b)) / ((a) + (b))) : 0)
 
 /*-----------------------------------------------------------------------
  * Compute net cell flux from conductivity and hydraulic head
  *-----------------------------------------------------------------------*/
 
 Databox       *CompFlux(
-                        Databox *k,
-                        Databox *h)
+  Databox *k,
+  Databox *h)
 {
   Databox        *flux;
 
@@ -84,8 +84,8 @@ Databox       *CompFlux(
 
 #if 0      /* ADD LATER */
   if ((dx != DataboxDx(h)) ||
-      (dy != DataboxDy(h)) ||
-      (dz != DataboxDz(h)))
+    (dy != DataboxDy(h)) ||
+    (dz != DataboxDz(h)))
   {
     Error("Spacings are not compatible\n");
     return NULL;

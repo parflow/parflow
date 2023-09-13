@@ -37,7 +37,7 @@ int stride;
   char *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
     fscanf(file, "%c", ptr);
 }
 
@@ -51,7 +51,7 @@ int stride;
   short *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
     fscanf(file, "%hd ", ptr);
 }
 
@@ -65,7 +65,7 @@ int stride;
   int *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
     fscanf(file, "%d ", ptr);
 }
 
@@ -79,7 +79,7 @@ int stride;
   long *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
     fscanf(file, "%ld ", ptr);
 }
 
@@ -93,7 +93,7 @@ int stride;
   float *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
     fscanf(file, "%f ", ptr);
 }
 
@@ -107,7 +107,7 @@ int stride;
   double *end_ptr;
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
-       ptr += stride)
+    ptr += stride)
     fscanf(file, "%lf ", ptr);
 }
 

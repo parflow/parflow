@@ -35,8 +35,8 @@
 #define to_digit(c)     ((c) - '0')
 
 void amps_AppendInvoice(
-                        amps_Invoice *invoice,
-                        amps_Invoice  append_invoice)
+  amps_Invoice *invoice,
+  amps_Invoice  append_invoice)
 {
   if (*invoice)
   {
@@ -62,7 +62,7 @@ amps_Invoice amps_new_empty_invoice()
 
 
 int amps_FreeInvoice(
-                     amps_Invoice inv)
+  amps_Invoice inv)
 {
   amps_InvoiceEntry *ptr, *next;
 
@@ -96,7 +96,7 @@ int amps_add_invoice(amps_Invoice *inv, int ignore, int type, int len_type, int 
   amps_InvoiceEntry *ptr, *new_entry;
 
   if ((new_entry = (amps_InvoiceEntry*)
-                   calloc(1, sizeof(amps_InvoiceEntry))) == NULL)
+    calloc(1, sizeof(amps_InvoiceEntry))) == NULL)
     amps_Error("amps_new_empty_invoice", OUT_OF_MEMORY, "", HALT);
 
   new_entry->next = NULL;
@@ -348,10 +348,10 @@ reswitch:
     }
 
     amps_add_invoice(&inv, ignore, type,
-                     len_type, len, ptr_len,
-                     stride_type, stride, ptr_stride,
-                     dim_type, dim, ptr_dim,
-                     ptr_data_type, ptr_data);
+      len_type, len, ptr_len,
+      stride_type, stride, ptr_stride,
+      dim_type, dim, ptr_dim,
+      ptr_data_type, ptr_data);
     num++;
   }
 
@@ -378,7 +378,7 @@ int amps_num_package_items(amps_Invoice inv)
   {
     if (ptr->type > AMPS_INVOICE_LAST_CTYPE)
       num += (ptr->dim_type == AMPS_INVOICE_POINTER) ?
-             *(ptr->ptr_dim) : ptr->dim;
+        *(ptr->ptr_dim) : ptr->dim;
     else
       num++;
 

@@ -83,16 +83,16 @@ int main(int argc, char **argv)
   {
     otherpid = mypid + 1 % nodes;
     package = amps_NewPackage(amps_CommWorld,
-                              1, &otherpid, &invoice,
-                              0, 0, NULL);
+        1, &otherpid, &invoice,
+        0, 0, NULL);
   }
   else
   {
     otherpid = (nodes + mypid - 1) % nodes;
 
     package = amps_NewPackage(amps_CommWorld,
-                              0, 0, NULL,
-                              1, &otherpid, &invoice);
+        0, 0, NULL,
+        1, &otherpid, &invoice);
 
     t_start = amps_Clock();
     t_stop = amps_Clock();
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
         {
           r_avg = ((msglen * 8) / t_avg) / (1024 * 1024);
           amps_Printf(" %7d      %6d        %lg      %7.2lf\n",
-                      8 * msglen, 8 * msglen / word_size, t_avg * 1.0E6, r_avg);
+            8 * msglen, 8 * msglen / word_size, t_avg * 1.0E6, r_avg);
         }
       }
     }

@@ -45,8 +45,8 @@
  *--------------------------------------------------------------------------*/
 
 CommPkg  *NewCharVectorUpdatePkg(
-                                 CharVector *charvector,
-                                 int         update_mode)
+  CharVector *charvector,
+  int         update_mode)
 {
   CommPkg     *new_comm_pkg;
   ComputePkg  *compute_pkg;
@@ -55,10 +55,10 @@ CommPkg  *NewCharVectorUpdatePkg(
   compute_pkg = GridComputePkg(CharVectorGrid(charvector), update_mode);
 
   new_comm_pkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
-                            ComputePkgRecvRegion(compute_pkg),
-                            CharVectorDataSpace(charvector),
-                            CharVectorNC(charvector),
-                            (double*)CharVectorData(charvector));
+      ComputePkgRecvRegion(compute_pkg),
+      CharVectorDataSpace(charvector),
+      CharVectorNC(charvector),
+      (double*)CharVectorData(charvector));
 
   return new_comm_pkg;
 }
@@ -68,8 +68,8 @@ CommPkg  *NewCharVectorUpdatePkg(
  *--------------------------------------------------------------------------*/
 
 CommHandle  *InitCharVectorUpdate(
-                                  CharVector *charvector,
-                                  int         update_mode)
+  CharVector *charvector,
+  int         update_mode)
 {
   return InitCommunication(CharVectorCommPkg(charvector, update_mode));
 }
@@ -90,9 +90,9 @@ void         FinalizeCharVectorUpdate(CommHandle *handle)
  *--------------------------------------------------------------------------*/
 
 CharVector  *NewTempCharVector(
-                               Grid *grid,
-                               int   nc,
-                               int   num_ghost)
+  Grid *grid,
+  int   nc,
+  int   num_ghost)
 {
   CharVector    *new_char_vector;
   Subcharvector *new_sub;
@@ -119,17 +119,17 @@ CharVector  *NewTempCharVector(
 
     SubcharvectorDataSpace(new_sub) =
       NewSubgrid(SubgridIX(subgrid) - num_ghost,
-                 SubgridIY(subgrid) - num_ghost,
-                 SubgridIZ(subgrid) - num_ghost,
-                 SubgridNX(subgrid) + 2 * num_ghost,
-                 SubgridNY(subgrid) + 2 * num_ghost,
-                 SubgridNZ(subgrid) + 2 * num_ghost,
-                 SubgridRX(subgrid),
-                 SubgridRY(subgrid),
-                 SubgridRZ(subgrid),
-                 SubgridProcess(subgrid));
+        SubgridIY(subgrid) - num_ghost,
+        SubgridIZ(subgrid) - num_ghost,
+        SubgridNX(subgrid) + 2 * num_ghost,
+        SubgridNY(subgrid) + 2 * num_ghost,
+        SubgridNZ(subgrid) + 2 * num_ghost,
+        SubgridRX(subgrid),
+        SubgridRY(subgrid),
+        SubgridRZ(subgrid),
+        SubgridProcess(subgrid));
     AppendSubgrid(SubcharvectorDataSpace(new_sub),
-                  CharVectorDataSpace(new_char_vector));
+      CharVectorDataSpace(new_char_vector));
 
     SubcharvectorNC(new_sub) = nc;
 
@@ -161,8 +161,8 @@ CharVector  *NewTempCharVector(
  *--------------------------------------------------------------------------*/
 
 void     SetTempCharVectorData(
-                               CharVector *charvector,
-                               char *      data)
+  CharVector *charvector,
+  char *      data)
 {
   Grid       *grid = CharVectorGrid(charvector);
 
@@ -189,9 +189,9 @@ void     SetTempCharVectorData(
  *--------------------------------------------------------------------------*/
 
 CharVector  *NewCharVector(
-                           Grid *grid,
-                           int   nc,
-                           int   num_ghost)
+  Grid *grid,
+  int   nc,
+  int   num_ghost)
 {
   CharVector  *new_char_vector;
   char  *data;
@@ -210,7 +210,7 @@ CharVector  *NewCharVector(
  *--------------------------------------------------------------------------*/
 
 void FreeTempCharVector(
-                        CharVector *charvector)
+  CharVector *charvector)
 {
   int i;
 
@@ -236,7 +236,7 @@ void FreeTempCharVector(
  *--------------------------------------------------------------------------*/
 
 void     FreeCharVector(
-                        CharVector *charvector)
+  CharVector *charvector)
 {
   tfree_amps(CharVectorData(charvector));
   FreeTempCharVector(charvector);
@@ -288,7 +288,7 @@ void InitCharVector(CharVector *v, char value)
 
       iv = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                iv, nx_v, ny_v, nz_v, 1, 1, 1,
+        iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vp[iv] = value;
       });
@@ -332,7 +332,7 @@ void InitCharVectorAll(CharVector *v, char value)
 
       iv = 0;
       BoxLoopI1(i, j, k, ix_v, iy_v, iz_v, nx_v, ny_v, nz_v,
-                iv, nx_v, ny_v, nz_v, 1, 1, 1,
+        iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vp[iv] = value;
       });
@@ -387,7 +387,7 @@ void InitCharVectorInc(CharVector *v, char value, int inc)
 
       iv = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                iv, nx_v, ny_v, nz_v, 1, 1, 1,
+        iv, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vp[iv] = (char)(value + (i + j + k) * inc);
       });
