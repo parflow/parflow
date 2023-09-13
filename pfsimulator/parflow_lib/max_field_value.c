@@ -364,7 +364,7 @@ double  MaxTotalFieldValue(
   double f_prime_max, h_prime_max = 0.0;
   double max_field_value, psi_max, ds = 0.0;
   double max_xdir_value, max_ydir_value, max_zdir_value,
-    max_total_value, max_gravity_value;
+         max_total_value, max_gravity_value;
   double tmp, tmp_max, tmp_total = 0.0, tmp_gravity = 0.0;
 
   double a, b, den0, den1, dtmp, g, constant;

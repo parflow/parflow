@@ -176,21 +176,21 @@ static const int FDIR_TABLE[6][3] = {
  * @param ny The size of the second dim [IN]
  * @param nz The size of the third dim [IN]
  */
-#define CheckCellFlagAllocation(grgeom, nx, ny, nz)                                                 \
-        {                                                                                           \
-          int flagdata_size = sizeof(char) * (nz * ny * nx);                                        \
-          if (GrGeomSolidCellFlagDataSize(grgeom) < flagdata_size)                                  \
-          {                                                                                         \
-            char *flagdata = (char*)_ctalloc_device(flagdata_size);                                 \
-                                                                                                    \
-            if (GrGeomSolidCellFlagDataSize(grgeom) > 0)                                            \
-            memcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                                       \
-                   GrGeomSolidCellFlagDataSize(grgeom));                                            \
-                                                                                                    \
-            _tfree_device(GrGeomSolidCellFlagData(grgeom));                                         \
-            GrGeomSolidCellFlagData(grgeom) = flagdata;                                             \
-            GrGeomSolidCellFlagDataSize(grgeom) = flagdata_size;                                    \
-          }                                                                                         \
+#define CheckCellFlagAllocation(grgeom, nx, ny, nz)                                                                  \
+        {                                                                                                            \
+          int flagdata_size = sizeof(char) * (nz * ny * nx);                                                         \
+          if (GrGeomSolidCellFlagDataSize(grgeom) < flagdata_size)                                                   \
+          {                                                                                                          \
+            char *flagdata = (char*)_ctalloc_device(flagdata_size);                                                  \
+                                                                                                                     \
+            if (GrGeomSolidCellFlagDataSize(grgeom) > 0)                                                             \
+            memcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                                                        \
+                   GrGeomSolidCellFlagDataSize(grgeom));                                                             \
+                                                                                                                     \
+            _tfree_device(GrGeomSolidCellFlagData(grgeom));                                                          \
+            GrGeomSolidCellFlagData(grgeom) = flagdata;                                                              \
+            GrGeomSolidCellFlagDataSize(grgeom) = flagdata_size;                                                     \
+          }                                                                                                          \
         }
 
 /** Loop definition for Kokkos. */
@@ -879,56 +879,56 @@ static const int FDIR_TABLE[6][3] = {
         }
 
 /** Loop definition for Kokkos. */
-#define GrGeomOutLoop_kokkos(i, j, k, grgeom, r,                                                                                                   \
-                             ix, iy, iz, nx, ny, nz, body)                                                                                         \
-        {                                                                                                                                          \
-          if (nx > 0 && ny > 0 && nz > 0)                                                                                                          \
-          {                                                                                                                                        \
-            if (!(GrGeomSolidCellFlagInitialized(grgeom) & (1 << 1)))                                                                              \
-            {                                                                                                                                      \
-              CheckCellFlagAllocation(grgeom, nx, ny, nz);                                                                                         \
-              char *outflag = GrGeomSolidCellFlagData(grgeom);                                                                                     \
-                                                                                                                                                   \
-              GrGeomOctree  *PV_node;                                                                                                              \
-              double PV_ref = pow(2.0, r);                                                                                                         \
-                                                                                                                                                   \
-              i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                                                                                       \
-              j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                                                                       \
-              k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;                                                                                       \
-              GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node,                                                                                       \
-                                           GrGeomSolidData(grgeom),                                                                                \
-                                           GrGeomSolidOctreeBGLevel(grgeom) + r,                                                                   \
-                                           ix, iy, iz, nx, ny, nz,                                                                                 \
-                                           TRUE,                                                                                                   \
-        {                                                                                                                                          \
-          body;                                                                                                                                    \
-          outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] |= (1 << 1);                                                                      \
-        });                                                                                                                                        \
-              GrGeomSolidCellFlagInitialized(grgeom) |= (1 << 1);                                                                                  \
-            }                                                                                                                                      \
-            else                                                                                                                                   \
-            {                                                                                                                                      \
-              char *outflag = GrGeomSolidCellFlagData(grgeom);                                                                                     \
-              auto lambda_body =                                                                                                                   \
-                KOKKOS_LAMBDA(int i, int j, int k)                                                                                                 \
-              {                                                                                                                                    \
-                i += ix;                                                                                                                           \
-                j += iy;                                                                                                                           \
-                k += iz;                                                                                                                           \
-                                                                                                                                                   \
-                if (outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] & (1 << 1))                                                             \
-                {                                                                                                                                  \
-                  body;                                                                                                                            \
-                }                                                                                                                                  \
-              };                                                                                                                                   \
-                                                                                                                                                   \
-              using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy < Kokkos::Experimental::Rank < 3 >>;                            \
-              MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { nx, ny, nz } });                                                                    \
-              Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                                                                      \
-              Kokkos::fence();                                                                                                                     \
-            }                                                                                                                                      \
-          }                                                                                                                                        \
-          (void)i; (void)j; (void)k;                                                                                                               \
+#define GrGeomOutLoop_kokkos(i, j, k, grgeom, r,                                                                                                                                            \
+                             ix, iy, iz, nx, ny, nz, body)                                                                                                                                  \
+        {                                                                                                                                                                                   \
+          if (nx > 0 && ny > 0 && nz > 0)                                                                                                                                                   \
+          {                                                                                                                                                                                 \
+            if (!(GrGeomSolidCellFlagInitialized(grgeom) & (1 << 1)))                                                                                                                       \
+            {                                                                                                                                                                               \
+              CheckCellFlagAllocation(grgeom, nx, ny, nz);                                                                                                                                  \
+              char *outflag = GrGeomSolidCellFlagData(grgeom);                                                                                                                              \
+                                                                                                                                                                                            \
+              GrGeomOctree  *PV_node;                                                                                                                                                       \
+              double PV_ref = pow(2.0, r);                                                                                                                                                  \
+                                                                                                                                                                                            \
+              i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                                                                                                                                \
+              j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                                                                                                                \
+              k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;                                                                                                                                \
+              GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node,                                                                                                                                \
+                                           GrGeomSolidData(grgeom),                                                                                                                         \
+                                           GrGeomSolidOctreeBGLevel(grgeom) + r,                                                                                                            \
+                                           ix, iy, iz, nx, ny, nz,                                                                                                                          \
+                                           TRUE,                                                                                                                                            \
+        {                                                                                                                                                                                   \
+          body;                                                                                                                                                                             \
+          outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] |= (1 << 1);                                                                                                               \
+        });                                                                                                                                                                                 \
+              GrGeomSolidCellFlagInitialized(grgeom) |= (1 << 1);                                                                                                                           \
+            }                                                                                                                                                                               \
+            else                                                                                                                                                                            \
+            {                                                                                                                                                                               \
+              char *outflag = GrGeomSolidCellFlagData(grgeom);                                                                                                                              \
+              auto lambda_body =                                                                                                                                                            \
+                KOKKOS_LAMBDA(int i, int j, int k)                                                                                                                                          \
+              {                                                                                                                                                                             \
+                i += ix;                                                                                                                                                                    \
+                j += iy;                                                                                                                                                                    \
+                k += iz;                                                                                                                                                                    \
+                                                                                                                                                                                            \
+                if (outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] & (1 << 1))                                                                                                      \
+                {                                                                                                                                                                           \
+                  body;                                                                                                                                                                     \
+                }                                                                                                                                                                           \
+              };                                                                                                                                                                            \
+                                                                                                                                                                                            \
+              using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy < Kokkos::Experimental::Rank < 3 >>;                                                                     \
+              MDPolicyType_3D mdpolicy_3d({ { 0, 0, 0 } }, { { nx, ny, nz } });                                                                                                             \
+              Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                                                                                                               \
+              Kokkos::fence();                                                                                                                                                              \
+            }                                                                                                                                                                               \
+          }                                                                                                                                                                                 \
+          (void)i; (void)j; (void)k;                                                                                                                                                        \
         }
 }
 #endif // PF_KOKKOSLOOPS_H

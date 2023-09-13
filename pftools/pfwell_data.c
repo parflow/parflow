@@ -34,8 +34,8 @@ int main(
 {
   WellListMember   *head;
   WellListMember   *member,
-    *new_member,
-    *old_member = NULL;
+                   *new_member,
+                   *old_member = NULL;
 
   Background       *background;
   ProblemData      *problem_data;

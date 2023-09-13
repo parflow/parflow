@@ -129,8 +129,8 @@ void SubsrfSim(
   SubgridArray     *subgrids;
 
   Subgrid          *subgrid,
-    *well_subgrid,
-    *tmp_subgrid;
+                   *well_subgrid,
+                   *tmp_subgrid;
 
   Subvector        *perm_x_sub, *perm_y_sub, *perm_z_sub;
   Subvector        *kx_values_sub, *ky_values_sub, *kz_values_sub;

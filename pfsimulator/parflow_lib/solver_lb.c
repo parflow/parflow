@@ -1328,7 +1328,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
 
   double       *temp_data, *temp_data_placeholder;
   int total_mobility_sz, pressure_sz, velocity_sz, satur_sz = 0,
-    concen_sz, temp_data_size, sz;
+      concen_sz, temp_data_size, sz;
   int is_multiphase;
 
   int i;

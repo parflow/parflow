@@ -570,13 +570,13 @@ typedef struct grgeom_octree {
  * @param[in] level_body code to execute if level has been reached.
  * @param[in] code_body code to execute for interior nodes
  */
-#define GrGeomOctreeInteriorLoop(i, j, k, l, node, octree, level, value_test,                                                \
-                                 level_body, code_body)                                                                      \
-        {                                                                                                                    \
-          GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test,                                              \
-                                   level_body, code_body,                                                                    \
-                                   GrGeomOctreeNodeIsFull(node),                                                             \
-                                   (GrGeomOctreeNodeIsInside(node) || GrGeomOctreeNodeIsFull(node)));                        \
+#define GrGeomOctreeInteriorLoop(i, j, k, l, node, octree, level, value_test,                                                                                 \
+                                 level_body, code_body)                                                                                                       \
+        {                                                                                                                                                     \
+          GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test,                                                                               \
+                                   level_body, code_body,                                                                                                     \
+                                   GrGeomOctreeNodeIsFull(node),                                                                                              \
+                                   (GrGeomOctreeNodeIsInside(node) || GrGeomOctreeNodeIsFull(node)));                                                         \
         }
 
 /**
@@ -610,13 +610,13 @@ typedef struct grgeom_octree {
  * @param[in] level_body code to execute if level has been reached.
  * @param[in] code_body code to execute for exterior nodes
  */
-#define GrGeomOctreeExteriorLoop(i, j, k, l, node, octree, level, value_test,                                                  \
-                                 level_body, code_body)                                                                        \
-        {                                                                                                                      \
-          GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test,                                                \
-                                   level_body, code_body,                                                                      \
-                                   GrGeomOctreeNodeIsEmpty(node),                                                              \
-                                   (GrGeomOctreeNodeIsOutside(node) || GrGeomOctreeNodeIsEmpty(node)));                        \
+#define GrGeomOctreeExteriorLoop(i, j, k, l, node, octree, level, value_test,                                                                                   \
+                                 level_body, code_body)                                                                                                         \
+        {                                                                                                                                                       \
+          GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test,                                                                                 \
+                                   level_body, code_body,                                                                                                       \
+                                   GrGeomOctreeNodeIsEmpty(node),                                                                                               \
+                                   (GrGeomOctreeNodeIsOutside(node) || GrGeomOctreeNodeIsEmpty(node)));                                                         \
         }
 
 /**
@@ -1101,87 +1101,87 @@ typedef struct grgeom_octree {
  * @param[in] nz z upper bound of index space to process
  * @param[in] body code to execute
  */
-#define GrGeomOctreeFaceLoop(i, j, k, fdir, node, octree, level_of_interest,                                \
-                             ix, iy, iz, nx, ny, nz, body)                                                  \
-        {                                                                                                   \
-          int PV_f;                                                                                         \
-          int PV_fdir[3];                                                                                   \
-                                                                                                            \
-                                                                                                            \
-          fdir = PV_fdir;                                                                                   \
-          GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest,                              \
-                                     ix, iy, iz, nx, ny, nz,                                                \
-                                     TRUE,                                                                  \
-    {                                                                                                       \
-      for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                                                   \
-      if (GrGeomOctreeHasFace(node, PV_f))                                                                  \
-      {                                                                                                     \
-        switch (PV_f)                                                                                       \
-        {                                                                                                   \
-            case GrGeomOctreeFaceL:                                                                         \
-              fdir[0] = -1; fdir[1] = 0; fdir[2] = 0;                                                       \
-              break;                                                                                        \
-            case GrGeomOctreeFaceR:                                                                         \
-              fdir[0] = 1; fdir[1] = 0; fdir[2] = 0;                                                        \
-              break;                                                                                        \
-            case GrGeomOctreeFaceD:                                                                         \
-              fdir[0] = 0; fdir[1] = -1; fdir[2] = 0;                                                       \
-              break;                                                                                        \
-            case GrGeomOctreeFaceU:                                                                         \
-              fdir[0] = 0; fdir[1] = 1; fdir[2] = 0;                                                        \
-              break;                                                                                        \
-            case GrGeomOctreeFaceB:                                                                         \
-              fdir[0] = 0; fdir[1] = 0; fdir[2] = -1;                                                       \
-              break;                                                                                        \
-            case GrGeomOctreeFaceF:                                                                         \
-              fdir[0] = 0; fdir[1] = 0; fdir[2] = 1;                                                        \
-              break;                                                                                        \
-            default:                                                                                        \
-              fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999;                                           \
-              break;                                                                                        \
-        }                                                                                                   \
-                                                                                                            \
-        body;                                                                                               \
-      }                                                                                                     \
-    })                                                                                                      \
+#define GrGeomOctreeFaceLoop(i, j, k, fdir, node, octree, level_of_interest,                                                                   \
+                             ix, iy, iz, nx, ny, nz, body)                                                                                     \
+        {                                                                                                                                      \
+          int PV_f;                                                                                                                            \
+          int PV_fdir[3];                                                                                                                      \
+                                                                                                                                               \
+                                                                                                                                               \
+          fdir = PV_fdir;                                                                                                                      \
+          GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest,                                                                 \
+                                     ix, iy, iz, nx, ny, nz,                                                                                   \
+                                     TRUE,                                                                                                     \
+    {                                                                                                                                          \
+      for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                                                                                      \
+      if (GrGeomOctreeHasFace(node, PV_f))                                                                                                     \
+      {                                                                                                                                        \
+        switch (PV_f)                                                                                                                          \
+        {                                                                                                                                      \
+            case GrGeomOctreeFaceL:                                                                                                            \
+              fdir[0] = -1; fdir[1] = 0; fdir[2] = 0;                                                                                          \
+              break;                                                                                                                           \
+            case GrGeomOctreeFaceR:                                                                                                            \
+              fdir[0] = 1; fdir[1] = 0; fdir[2] = 0;                                                                                           \
+              break;                                                                                                                           \
+            case GrGeomOctreeFaceD:                                                                                                            \
+              fdir[0] = 0; fdir[1] = -1; fdir[2] = 0;                                                                                          \
+              break;                                                                                                                           \
+            case GrGeomOctreeFaceU:                                                                                                            \
+              fdir[0] = 0; fdir[1] = 1; fdir[2] = 0;                                                                                           \
+              break;                                                                                                                           \
+            case GrGeomOctreeFaceB:                                                                                                            \
+              fdir[0] = 0; fdir[1] = 0; fdir[2] = -1;                                                                                          \
+              break;                                                                                                                           \
+            case GrGeomOctreeFaceF:                                                                                                            \
+              fdir[0] = 0; fdir[1] = 0; fdir[2] = 1;                                                                                           \
+              break;                                                                                                                           \
+            default:                                                                                                                           \
+              fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999;                                                                              \
+              break;                                                                                                                           \
+        }                                                                                                                                      \
+                                                                                                                                               \
+        body;                                                                                                                                  \
+      }                                                                                                                                        \
+    })                                                                                                                                         \
         }
 
 /**
  * @brief Loop over the faces of an octree without use of fdir array
  */
-#define GrGeomOctreeFaceLoopNoFdir(i, j, k,                                                             \
-                                   node, octree, level_of_interest,                                     \
-                                   ix, iy, iz, nx, ny, nz,                                              \
-                                   locals, setup,                                                       \
-                                   f_left, f_right,                                                     \
-                                   f_down, f_up,                                                        \
-                                   f_back, f_front,                                                     \
-                                   finalize)                                                            \
-        {                                                                                               \
-          int PV_f;                                                                                     \
-          UNPACK(locals);                                                                               \
-          GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest,                          \
-                                     ix, iy, iz, nx, ny, nz,                                            \
-                                     TRUE,                                                              \
-    {                                                                                                   \
-      for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                                               \
-      if (GrGeomOctreeHasFace(node, PV_f))                                                              \
-      {                                                                                                 \
-        setup;                                                                                          \
-                                                                                                        \
-        switch (PV_f)                                                                                   \
-        {                                                                                               \
-          f_left;                                                                                       \
-          f_right;                                                                                      \
-          f_down;                                                                                       \
-          f_up;                                                                                         \
-          f_back;                                                                                       \
-          f_front;                                                                                      \
-        }                                                                                               \
-                                                                                                        \
-        finalize;                                                                                       \
-      }                                                                                                 \
-    })                                                                                                  \
+#define GrGeomOctreeFaceLoopNoFdir(i, j, k,                                                                                                \
+                                   node, octree, level_of_interest,                                                                        \
+                                   ix, iy, iz, nx, ny, nz,                                                                                 \
+                                   locals, setup,                                                                                          \
+                                   f_left, f_right,                                                                                        \
+                                   f_down, f_up,                                                                                           \
+                                   f_back, f_front,                                                                                        \
+                                   finalize)                                                                                               \
+        {                                                                                                                                  \
+          int PV_f;                                                                                                                        \
+          UNPACK(locals);                                                                                                                  \
+          GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest,                                                             \
+                                     ix, iy, iz, nx, ny, nz,                                                                               \
+                                     TRUE,                                                                                                 \
+    {                                                                                                                                      \
+      for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                                                                                  \
+      if (GrGeomOctreeHasFace(node, PV_f))                                                                                                 \
+      {                                                                                                                                    \
+        setup;                                                                                                                             \
+                                                                                                                                           \
+        switch (PV_f)                                                                                                                      \
+        {                                                                                                                                  \
+          f_left;                                                                                                                          \
+          f_right;                                                                                                                         \
+          f_down;                                                                                                                          \
+          f_up;                                                                                                                            \
+          f_back;                                                                                                                          \
+          f_front;                                                                                                                         \
+        }                                                                                                                                  \
+                                                                                                                                           \
+        finalize;                                                                                                                          \
+      }                                                                                                                                    \
+    })                                                                                                                                     \
         }
 
 /*==========================================================================
@@ -1327,63 +1327,63 @@ typedef struct grgeom_octree {
  * @param[in] value_test boolean if tests evaluated before body execution
  * @param[in] body code to execute
  */
-#define GrGeomOctreeNodeBoxLoop(i, j, k,                                                        \
-                                num_i, num_j, num_k,                                            \
-                                node, octree,                                                   \
-                                levels_in_octree,                                               \
-                                level_of_interest,                                              \
-                                ix, iy, iz, nx, ny, nz, value_test,                             \
-                                body)                                                           \
-        {                                                                                       \
-          int PV_i, PV_j, PV_k, PV_l;                                                           \
-          int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                                   \
-                                                                                                \
-                                                                                                \
-          PV_i = i;                                                                             \
-          PV_j = j;                                                                             \
-          PV_k = k;                                                                             \
-                                                                                                \
-          GrGeomOctreeBoxLoop(PV_i, PV_j, PV_k, PV_l,                                           \
-                              node, octree, levels_in_octree,                                   \
-                              level_of_interest, value_test,                                    \
-    {                                                                                           \
-      /* find octree and region intersection */                                                 \
-      PV_ixl = pfmax(ix, PV_i);                                                                 \
-      PV_iyl = pfmax(iy, PV_j);                                                                 \
-      PV_izl = pfmax(iz, PV_k);                                                                 \
-      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc));                                          \
-      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc));                                          \
-      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc));                                          \
-                                                                                                \
-      i = PV_ixl;                                                                               \
-      j = PV_iyl;                                                                               \
-      k = PV_izl;                                                                               \
-      num_i = PV_ixu - PV_ixl;                                                                  \
-      num_j = PV_iyu - PV_iyl;                                                                  \
-      num_k = PV_izu - PV_izl;                                                                  \
-      if (num_i > 0 && num_j > 0 && num_k > 0) {                                                \
-        body;                                                                                   \
-      }                                                                                         \
-    },                                                                                          \
-    {                                                                                           \
-      /* find octree and region intersection */                                                 \
-      PV_ixl = pfmax(ix, PV_i);                                                                 \
-      PV_iyl = pfmax(iy, PV_j);                                                                 \
-      PV_izl = pfmax(iz, PV_k);                                                                 \
-      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc));                                          \
-      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc));                                          \
-      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc));                                          \
-                                                                                                \
-      i = PV_ixl;                                                                               \
-      j = PV_iyl;                                                                               \
-      k = PV_izl;                                                                               \
-      num_i = PV_ixu - PV_ixl;                                                                  \
-      num_j = PV_iyu - PV_iyl;                                                                  \
-      num_k = PV_izu - PV_izl;                                                                  \
-      if (num_i > 0 && num_j > 0 && num_k > 0) {                                                \
-        body;                                                                                   \
-      }                                                                                         \
-    })                                                                                          \
+#define GrGeomOctreeNodeBoxLoop(i, j, k,                                                                                    \
+                                num_i, num_j, num_k,                                                                        \
+                                node, octree,                                                                               \
+                                levels_in_octree,                                                                           \
+                                level_of_interest,                                                                          \
+                                ix, iy, iz, nx, ny, nz, value_test,                                                         \
+                                body)                                                                                       \
+        {                                                                                                                   \
+          int PV_i, PV_j, PV_k, PV_l;                                                                                       \
+          int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                                                               \
+                                                                                                                            \
+                                                                                                                            \
+          PV_i = i;                                                                                                         \
+          PV_j = j;                                                                                                         \
+          PV_k = k;                                                                                                         \
+                                                                                                                            \
+          GrGeomOctreeBoxLoop(PV_i, PV_j, PV_k, PV_l,                                                                       \
+                              node, octree, levels_in_octree,                                                               \
+                              level_of_interest, value_test,                                                                \
+    {                                                                                                                       \
+      /* find octree and region intersection */                                                                             \
+      PV_ixl = pfmax(ix, PV_i);                                                                                             \
+      PV_iyl = pfmax(iy, PV_j);                                                                                             \
+      PV_izl = pfmax(iz, PV_k);                                                                                             \
+      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc));                                                                      \
+      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc));                                                                      \
+      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc));                                                                      \
+                                                                                                                            \
+      i = PV_ixl;                                                                                                           \
+      j = PV_iyl;                                                                                                           \
+      k = PV_izl;                                                                                                           \
+      num_i = PV_ixu - PV_ixl;                                                                                              \
+      num_j = PV_iyu - PV_iyl;                                                                                              \
+      num_k = PV_izu - PV_izl;                                                                                              \
+      if (num_i > 0 && num_j > 0 && num_k > 0) {                                                                            \
+        body;                                                                                                               \
+      }                                                                                                                     \
+    },                                                                                                                      \
+    {                                                                                                                       \
+      /* find octree and region intersection */                                                                             \
+      PV_ixl = pfmax(ix, PV_i);                                                                                             \
+      PV_iyl = pfmax(iy, PV_j);                                                                                             \
+      PV_izl = pfmax(iz, PV_k);                                                                                             \
+      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc));                                                                      \
+      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc));                                                                      \
+      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc));                                                                      \
+                                                                                                                            \
+      i = PV_ixl;                                                                                                           \
+      j = PV_iyl;                                                                                                           \
+      k = PV_izl;                                                                                                           \
+      num_i = PV_ixu - PV_ixl;                                                                                              \
+      num_j = PV_iyu - PV_iyl;                                                                                              \
+      num_k = PV_izu - PV_izl;                                                                                              \
+      if (num_i > 0 && num_j > 0 && num_k > 0) {                                                                            \
+        body;                                                                                                               \
+      }                                                                                                                     \
+    })                                                                                                                      \
         }
 
 

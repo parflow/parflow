@@ -150,7 +150,7 @@ typedef struct {
   char *clm_metfile;            /* File name for 1D forcing *or* base name for 2D forcing */
   char *clm_metpath;            /* Path to CLM met forcing file(s) */
   double *sw1d, *lw1d, *prcp1d, /* 1D forcing variables */
-    *tas1d, *u1d, *v1d, *patm1d, *qatm1d, *lai1d, *sai1d, *z0m1d, *displa1d;    /* BH: added lai, sai, z0m, displa */
+         *tas1d, *u1d, *v1d, *patm1d, *qatm1d, *lai1d, *sai1d, *z0m1d, *displa1d; /* BH: added lai, sai, z0m, displa */
 
   int clm_beta_function;        /* CLM evap function for var sat 0=none, 1=linear, 2=cos */
   double clm_res_sat;           /* CLM residual saturation in soil sat units [-] */
@@ -1623,14 +1623,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
   /* IMF: For writing CLM output */
   Subvector *eflx_lh_tot_sub, *eflx_lwrad_out_sub, *eflx_sh_tot_sub,
-    *eflx_soil_grnd_sub, *qflx_evap_tot_sub, *qflx_evap_grnd_sub,
-    *qflx_evap_soi_sub, *qflx_evap_veg_sub, *qflx_tran_veg_sub,
-    *qflx_infl_sub, *swe_out_sub, *t_grnd_sub, *tsoil_sub, *irr_flag_sub,
-    *qflx_qirr_sub, *qflx_qirr_inst_sub;
+            *eflx_soil_grnd_sub, *qflx_evap_tot_sub, *qflx_evap_grnd_sub,
+            *qflx_evap_soi_sub, *qflx_evap_veg_sub, *qflx_tran_veg_sub,
+            *qflx_infl_sub, *swe_out_sub, *t_grnd_sub, *tsoil_sub, *irr_flag_sub,
+            *qflx_qirr_sub, *qflx_qirr_inst_sub;
 
   double *eflx_lh, *eflx_lwrad, *eflx_sh, *eflx_grnd, *qflx_tot, *qflx_grnd,
-    *qflx_soi, *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *iflag,
-    *qirr, *qirr_inst;
+         *qflx_soi, *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *iflag,
+         *qirr, *qirr_inst;
   int clm_file_dir_length;
 
   double print_cdt;

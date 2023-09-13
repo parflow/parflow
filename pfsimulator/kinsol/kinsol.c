@@ -1054,7 +1054,7 @@ static int KINConstraint(KINMem kin_mem)
 static void KINForcingTerm(KINMem kin_mem, real fnormp)
 {
   real eta_max = POINT9, eta_min = POINTOHOHOHONE,
-    eta_safe = 0.5, linmodel_norm;
+       eta_safe = 0.5, linmodel_norm;
 
   if (etaflag == ETACHOICE1)        /* Choice 1 forcing terms. */
 

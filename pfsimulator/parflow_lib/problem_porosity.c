@@ -82,8 +82,8 @@ void Porosity(
   SubgridArray     *subgrids;
 
   Subgrid          *subgrid,
-    *well_subgrid,
-    *tmp_subgrid;
+                   *well_subgrid,
+                   *tmp_subgrid;
 
   Subvector        *subvector;
 

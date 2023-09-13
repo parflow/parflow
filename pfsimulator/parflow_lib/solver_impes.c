@@ -1503,7 +1503,7 @@ PFModule *SolverImpesInitInstanceXtra()
   // SGS TODO total_mobility_sz is not being set anywhere so initialized to 0 here.
   int total_mobility_sz = 0;
   int pressure_sz, velocity_sz, satur_sz = 0,
-    concen_sz, temp_data_size, sz;
+      concen_sz, temp_data_size, sz;
   int is_multiphase;
 
   int i;

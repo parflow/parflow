@@ -241,7 +241,7 @@ int HBT_insert(
                int   sizeof_obj)
 {
   HBT_element *temp, *inserted, *rebalance_son, *rebalance,
-    *rebalance_father;
+              *rebalance_father;
   int done = 0;
   int test, test_rebalance;
   short rebalance_B;
