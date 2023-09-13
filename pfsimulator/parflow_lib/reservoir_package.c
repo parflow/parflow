@@ -122,7 +122,6 @@ void         ReservoirPackage(
   double max_capacity, min_release_capacity, Current_Storage, release_rate;
   double intake_amount_since_last_print, release_amount_since_last_print;
   /* Allocate the reservoir data */
-
   ReservoirDataNumReservoirs(reservoir_data) = (public_xtra->num_reservoirs);
 
   if ((public_xtra->num_reservoirs) > 0)
@@ -158,12 +157,15 @@ void         ReservoirPackage(
       secondary_intake_iy = IndexSpaceY((dummy0->secondary_intake_y_location), 0);
       release_ix = IndexSpaceX((dummy0->release_x_location), 0);
       release_iy = IndexSpaceY((dummy0->release_y_location), 0);
-      iz_lower = IndexSpaceZ((dummy0->z_lower), 0);
-      iz_upper = IndexSpaceZ((dummy0->z_upper), 0);
+      Vector * index_of_domain_top = ProblemDataIndexOfDomainTop(problem_data);
+      // it feels like there should be a better way to get nz than this,but I couldn't find one...
+      int grid_nz  = problem_data->FBz->grid->background->nz;
+      iz_lower = grid_nz - 1;
+      iz_upper = grid_nz - 1;
 
       nx = 1;
       ny = 1;
-      nz = iz_upper - iz_lower + 1;
+      nz = 1;
 
       rx = 0;
       ry = 0;
@@ -191,6 +193,7 @@ void         ReservoirPackage(
       dx = SubgridDX(new_secondary_intake_subgrid);
       dy = SubgridDY(new_secondary_intake_subgrid);
       dz = SubgridDZ(new_secondary_intake_subgrid);
+
 
       secondary_intake_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
 
