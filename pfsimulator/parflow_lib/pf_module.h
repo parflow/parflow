@@ -362,12 +362,12 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
 #define PFModuleNewModule(name, args)                                                                                               \
         (                                                                                                                           \
          ThisPFModule = NewPFModule((void*)name,                                                                                    \
-                                    (void*)name ## InitInstanceXtra,                                                                \
-                                    (void*)name ## FreeInstanceXtra,                                                                \
-                                    (void*)name ## NewPublicXtra,                                                                   \
-                                    (void*)name ## FreePublicXtra,                                                                  \
-                                    (void*)name ## SizeOfTempData,                                                                  \
-                                    NULL, NULL),                                                                                    \
+  (void*)name ## InitInstanceXtra,                                                                                                  \
+  (void*)name ## FreeInstanceXtra,                                                                                                  \
+  (void*)name ## NewPublicXtra,                                                                                                     \
+  (void*)name ## FreePublicXtra,                                                                                                    \
+  (void*)name ## SizeOfTempData,                                                                                                    \
+  NULL, NULL),                                                                                                                      \
          (*(PFModule * (*)())(ThisPFModule->new_public_xtra)) args                                                                  \
         )
 
@@ -385,12 +385,12 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
 #define PFModuleNewModuleType(type, name, args)                                                                                     \
         (                                                                                                                           \
          ThisPFModule = NewPFModule((void*)name,                                                                                    \
-                                    (void*)name ## InitInstanceXtra,                                                                \
-                                    (void*)name ## FreeInstanceXtra,                                                                \
-                                    (void*)name ## NewPublicXtra,                                                                   \
-                                    (void*)name ## FreePublicXtra,                                                                  \
-                                    (void*)name ## SizeOfTempData,                                                                  \
-                                    NULL, NULL),                                                                                    \
+  (void*)name ## InitInstanceXtra,                                                                                                  \
+  (void*)name ## FreeInstanceXtra,                                                                                                  \
+  (void*)name ## NewPublicXtra,                                                                                                     \
+  (void*)name ## FreePublicXtra,                                                                                                    \
+  (void*)name ## SizeOfTempData,                                                                                                    \
+  NULL, NULL),                                                                                                                      \
          (*(type)(ThisPFModule->new_public_xtra)) args                                                                              \
         )
 
@@ -411,14 +411,14 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
 #define PFModuleNewModuleExtendedType(type, name, args)                                                                                                    \
         (                                                                                                                                                  \
          ThisPFModule = NewPFModuleExtended((void*)name,                                                                                                   \
-                                            (void*)name ## InitInstanceXtra,                                                                               \
-                                            (void*)name ## FreeInstanceXtra,                                                                               \
-                                            (void*)name ## NewPublicXtra,                                                                                  \
-                                            (void*)name ## FreePublicXtra,                                                                                 \
-                                            (void*)name ## SizeOfTempData,                                                                                 \
-                                            (void*)name ## Output,                                                                                         \
-                                            (void*)name ## OutputStatic,                                                                                   \
-                                            NULL, NULL),                                                                                                   \
+  (void*)name ## InitInstanceXtra,                                                                                                                         \
+  (void*)name ## FreeInstanceXtra,                                                                                                                         \
+  (void*)name ## NewPublicXtra,                                                                                                                            \
+  (void*)name ## FreePublicXtra,                                                                                                                           \
+  (void*)name ## SizeOfTempData,                                                                                                                           \
+  (void*)name ## Output,                                                                                                                                   \
+  (void*)name ## OutputStatic,                                                                                                                             \
+  NULL, NULL),                                                                                                                                             \
          (*(type)(ThisPFModule->new_public_xtra)) args                                                                                                     \
         )
 

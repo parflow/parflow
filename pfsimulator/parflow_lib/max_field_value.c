@@ -118,8 +118,8 @@ double  MaxFieldValue(
     fi = 0;
     pi = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-              fi, nx_f, ny_f, nz_f, 1, 1, 1,
-              pi, nx_p, ny_p, nz_p, 1, 1, 1,
+      fi, nx_f, ny_f, nz_f, 1, 1, 1,
+      pi, nx_p, ny_p, nz_p, 1, 1, 1,
     {
       tmp = fabs(fp[fi]) / pfmax(plp[pi], prp[pi]);
       if (tmp > max_field_value)
@@ -259,8 +259,8 @@ double  MaxPhaseFieldValue(
       vi = 0;
       pi = 0;
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                vi, nx_v, ny_v, nz_v, 1, 1, 1,
-                pi, nx_p, ny_p, nz_p, 1, 1, 1,
+        vi, nx_v, ny_v, nz_v, 1, 1, 1,
+        pi, nx_p, ny_p, nz_p, 1, 1, 1,
       {
         psi_max = pfmax(fabs(plp[pi]), fabs(prp[pi])) * ds;
         if (psi_max != 0.0)
@@ -301,9 +301,9 @@ double  MaxPhaseFieldValue(
   }
 
   result_invoice = amps_NewInvoice("%d%d%d",
-                                   &max_xdir_value,
-                                   &max_ydir_value,
-                                   &max_zdir_value);
+    &max_xdir_value,
+    &max_ydir_value,
+    &max_zdir_value);
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Max);
   amps_FreeInvoice(result_invoice);
 
@@ -319,9 +319,9 @@ double  MaxPhaseFieldValue(
   if (!amps_Rank(amps_CommWorld))
   {
     amps_Printf("Courant Numbers : [%e , %e, %e]\n",
-                max_xdir_value,
-                max_ydir_value,
-                max_zdir_value);
+      max_xdir_value,
+      max_ydir_value,
+      max_zdir_value);
     amps_Printf("Maximum Field Value = %e\n", max_field_value);
   }
 #endif
@@ -487,9 +487,9 @@ double  MaxTotalFieldValue(
       pi = 0;
 
       BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-                vi, nx_v, ny_v, nz_v, 1, 1, 1,
-                si, nx_s, ny_s, nz_s, 1, 1, 1,
-                pi, nx_p, ny_p, nz_p, 1, 1, 1,
+        vi, nx_v, ny_v, nz_v, 1, 1, 1,
+        si, nx_s, ny_s, nz_s, 1, 1, 1,
+        pi, nx_p, ny_p, nz_p, 1, 1, 1,
       {
         if (slp[si] <= srp[si])
         {
@@ -618,11 +618,11 @@ double  MaxTotalFieldValue(
   }
 
   result_invoice = amps_NewInvoice("%d%d%d%d%d",
-                                   &max_xdir_value,
-                                   &max_ydir_value,
-                                   &max_zdir_value,
-                                   &max_total_value,
-                                   &max_gravity_value);
+    &max_xdir_value,
+    &max_ydir_value,
+    &max_zdir_value,
+    &max_total_value,
+    &max_gravity_value);
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Max);
   amps_FreeInvoice(result_invoice);
 
@@ -638,11 +638,11 @@ double  MaxTotalFieldValue(
   if (!amps_Rank(amps_CommWorld))
   {
     amps_Printf("Courant Numbers : [%e , %e, %e : (%e, %e)]\n",
-                max_xdir_value,
-                max_ydir_value,
-                max_zdir_value,
-                max_total_value,
-                max_gravity_value);
+      max_xdir_value,
+      max_ydir_value,
+      max_zdir_value,
+      max_total_value,
+      max_gravity_value);
     amps_Printf("Maximum Field Value = %e\n", max_field_value);
   }
 #endif

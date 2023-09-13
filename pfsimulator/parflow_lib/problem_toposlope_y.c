@@ -409,7 +409,7 @@ PFModule  *YSlopeInitInstanceXtra(
       dummy2 = (Type2*)(public_xtra->data);
 
       dummy2->sy_values = NewVectorType(grid2d, 1, 1,
-                                        vector_cell_centered_2D);
+        vector_cell_centered_2D);
 
       ReadPFBinary((dummy2->filename), (dummy2->sy_values));
     }
@@ -419,7 +419,7 @@ PFModule  *YSlopeInitInstanceXtra(
       dummy3 = (Type3*)(public_xtra->data);
 
       dummy3->sy_values = NewVectorType(grid2d, 1, 1,
-                                        vector_cell_centered_2D);
+        vector_cell_centered_2D);
 
       ReadPFNC((dummy3->filename), (dummy3->sy_values), "slopey", 0, 2);
     }
@@ -515,7 +515,7 @@ PFModule  *YSlopeNewPublicXtra()
       {
         dummy0->region_indices[ir] =
           NA_NameToIndex(GlobalsGeomNames,
-                         NA_IndexToName(dummy0->regions, ir));
+            NA_IndexToName(dummy0->regions, ir));
 
         sprintf(key, "TopoSlopesY.Geom.%s.Value", NA_IndexToName(dummy0->regions, ir));
         dummy0->values[ir] = GetDouble(key);

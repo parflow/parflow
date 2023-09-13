@@ -357,8 +357,8 @@ void         PhaseSource(
               == FLUX_WEIGHTED)
           {
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+              ip, nx_p, ny_p, nz_p, 1, 1, 1,
+              ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
             {
               double weight = (px[ip] / avg_x) * (area_x / area_sum)
                               + (py[ip] / avg_y) * (area_y / area_sum)
@@ -376,8 +376,8 @@ void         PhaseSource(
                      == FLUX_PATTERNED)
               weight = 0.0;
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+              ip, nx_p, ny_p, nz_p, 1, 1, 1,
+              ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
             {
               data[ips] += weight * flux;
             });
@@ -470,7 +470,7 @@ PFModule  *PhaseSourceNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "PhaseSources.%s.Type",
-            NA_IndexToName(GlobalsPhaseNames, i));
+      NA_IndexToName(GlobalsPhaseNames, i));
     switch_name = GetString(key);
 
     public_xtra->type[i] = NA_NameToIndexExitOnError(type_na, switch_name, key);
@@ -482,7 +482,7 @@ PFModule  *PhaseSourceNewPublicXtra(
         dummy0 = ctalloc(Type0, 1);
 
         sprintf(key, "PhaseSources.%s.GeomNames",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         switch_name = GetString(key);
 
         dummy0->regions = NA_NewNameArray(switch_name);
@@ -496,11 +496,11 @@ PFModule  *PhaseSourceNewPublicXtra(
         {
           dummy0->region_indices[ir] =
             NA_NameToIndex(GlobalsGeomNames,
-                           NA_IndexToName(dummy0->regions, ir));
+              NA_IndexToName(dummy0->regions, ir));
 
           sprintf(key, "PhaseSources.%s.Geom.%s.Value",
-                  NA_IndexToName(GlobalsPhaseNames, i),
-                  NA_IndexToName(dummy0->regions, ir));
+            NA_IndexToName(GlobalsPhaseNames, i),
+            NA_IndexToName(dummy0->regions, ir));
           dummy0->values[ir] = GetDouble(key);
         }
 
@@ -514,7 +514,7 @@ PFModule  *PhaseSourceNewPublicXtra(
         dummy1 = ctalloc(Type1, 1);
 
         sprintf(key, "PhaseSources.%s.PredefinedFunction",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         switch_name = GetString(key);
 
         dummy1->function_type =

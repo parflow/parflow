@@ -134,10 +134,10 @@ void wrfparflowadvance_(double * current_time,
   VectorUpdateCommHandle   *handle;
 
   WRF2PF(wrf_flux, *num_soil_layers,
-         *ghost_size_i_lower, *ghost_size_j_lower,
-         *ghost_size_i_upper, *ghost_size_j_upper,
-         amps_ThreadLocal(evap_trans),
-         ProblemDataIndexOfDomainTop(problem_data));
+    *ghost_size_i_lower, *ghost_size_j_lower,
+    *ghost_size_i_upper, *ghost_size_j_upper,
+    amps_ThreadLocal(evap_trans),
+    ProblemDataIndexOfDomainTop(problem_data));
 
   /*
    * Exchange ghost layer data for the newly set fluxes
@@ -156,30 +156,30 @@ void wrfparflowadvance_(double * current_time,
   PFModule *time_step_control;
 
   time_step_control = NewPFModule((void*)SelectTimeStep,
-                                  (void*)WRFSelectTimeStepInitInstanceXtra, \
-                                  (void*)SelectTimeStepFreeInstanceXtra,    \
-                                  (void*)WRFSelectTimeStepNewPublicXtra,    \
-                                  (void*)WRFSelectTimeStepFreePublicXtra,   \
-                                  (void*)SelectTimeStepSizeOfTempData,      \
-                                  NULL, NULL);
+    (void*)WRFSelectTimeStepInitInstanceXtra, \
+    (void*)SelectTimeStepFreeInstanceXtra,    \
+    (void*)WRFSelectTimeStepNewPublicXtra,    \
+    (void*)WRFSelectTimeStepFreePublicXtra,   \
+    (void*)SelectTimeStepSizeOfTempData,      \
+    NULL, NULL);
 
   ThisPFModule = time_step_control;
   WRFSelectTimeStepNewPublicXtra(initial_step,
-                                 growth_factor,
-                                 max_step,
-                                 min_step);
+    growth_factor,
+    max_step,
+    min_step);
   ThisPFModule = NULL;
 
   PFModule *time_step_control_instance = PFModuleNewInstance(time_step_control, ());
 
   AdvanceRichards(amps_ThreadLocal(solver),
-                  *current_time,
-                  stop_time,
-                  time_step_control_instance,
-                  amps_ThreadLocal(evap_trans),
-                  &pressure_out,
-                  &porosity_out,
-                  &saturation_out);
+    *current_time,
+    stop_time,
+    time_step_control_instance,
+    amps_ThreadLocal(evap_trans),
+    &pressure_out,
+    &porosity_out,
+    &saturation_out);
 
   PFModuleFreeInstance(time_step_control_instance);
   PFModuleFreeModule(time_step_control);
@@ -196,19 +196,19 @@ void wrfparflowadvance_(double * current_time,
   FinalizeVectorUpdate(handle);
 
   PF2WRF(pressure_out, wrf_pressure, *num_soil_layers,
-         *ghost_size_i_lower, *ghost_size_j_lower,
-         *ghost_size_i_upper, *ghost_size_j_upper,
-         ProblemDataIndexOfDomainTop(problem_data));
+    *ghost_size_i_lower, *ghost_size_j_lower,
+    *ghost_size_i_upper, *ghost_size_j_upper,
+    ProblemDataIndexOfDomainTop(problem_data));
 
   PF2WRF(porosity_out, wrf_porosity, *num_soil_layers,
-         *ghost_size_i_lower, *ghost_size_j_lower,
-         *ghost_size_i_upper, *ghost_size_j_upper,
-         ProblemDataIndexOfDomainTop(problem_data));
+    *ghost_size_i_lower, *ghost_size_j_lower,
+    *ghost_size_i_upper, *ghost_size_j_upper,
+    ProblemDataIndexOfDomainTop(problem_data));
 
   PF2WRF(saturation_out, wrf_saturation, *num_soil_layers,
-         *ghost_size_i_lower, *ghost_size_j_lower,
-         *ghost_size_i_upper, *ghost_size_j_upper,
-         ProblemDataIndexOfDomainTop(problem_data));
+    *ghost_size_i_lower, *ghost_size_j_lower,
+    *ghost_size_i_upper, *ghost_size_j_upper,
+    ProblemDataIndexOfDomainTop(problem_data));
 }
 
 

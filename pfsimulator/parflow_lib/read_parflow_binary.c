@@ -69,8 +69,8 @@ void ReadPFBinary_Subvector(
 
   ai = 0;
   BoxLoopI1(i, j, k,
-            ix, iy, iz, nx, ny, nz,
-            ai, nx_v, ny_v, nz_v, 1, 1, 1,
+    ix, iy, iz, nx, ny, nz,
+    ai, nx_v, ny_v, nz_v, 1, 1, 1,
   {
     amps_ReadDouble(file, &data[ai], 1);
   });

@@ -1091,7 +1091,7 @@ template < typename T >
 __global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
 StridedCopyKernel(T * __restrict__ dest, const int stride_dest,
-                  T * __restrict__ src, const int stride_src, const int len)
+  T * __restrict__ src, const int stride_src, const int len)
 {
   const int tid = ((blockIdx.x * blockDim.x) + threadIdx.x);
 
@@ -1107,7 +1107,7 @@ template < typename T >
 __global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
 PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data,
-              const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z)
+  const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z)
 {
   const int k = ((blockIdx.z * blockDim.z) + threadIdx.z);
 
@@ -1130,7 +1130,7 @@ template < typename T >
 __global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
 UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__ ptr_data,
-                const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z)
+  const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z)
 {
   const int k = ((blockIdx.z * blockDim.z) + threadIdx.z);
 

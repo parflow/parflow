@@ -108,15 +108,15 @@ void    OverlandFlowEval(
     if (qx_v == NULL || qy_v == NULL)  /* do not return velocity fluxes */
     {
       ForPatchCellsPerFace(BC_ALL,
-                           BeforeAllCells(DoNothing),
-                           LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                           Locals(int io, itop, ip, k1, ii, step;
-                                  double q_v[3], xdir, ydir; ),
-                           CellSetup(DoNothing),
-                           FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-                           FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                           FACE(BackFace, DoNothing),
-                           FACE(FrontFace,
+        BeforeAllCells(DoNothing),
+        LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+        Locals(int io, itop, ip, k1, ii, step;
+          double q_v[3], xdir, ydir; ),
+        CellSetup(DoNothing),
+        FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+        FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+        FACE(BackFace, DoNothing),
+        FACE(FrontFace,
       {
         io = SubvectorEltIndex(sx_sub, i, j, 0);
         itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -183,22 +183,22 @@ void    OverlandFlowEval(
         ks_v[io] = pfmax(q_v[0], 0.0) - pfmax(-q_v[1], 0.0);
         kn_v[io] = pfmax(q_v[1], 0.0) - pfmax(-q_v[2], 0.0);
       }),
-                           CellFinalize(DoNothing),
-                           AfterAllCells(DoNothing)
-                           );
+        CellFinalize(DoNothing),
+        AfterAllCells(DoNothing)
+        );
     }
     else   /* return velocity fluxes */
     {
       ForPatchCellsPerFace(BC_ALL,
-                           BeforeAllCells(DoNothing),
-                           LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                           Locals(int io, itop, ip, k1, step, ii;
-                                  double q_v[3], xdir, ydir; ),
-                           CellSetup(DoNothing),
-                           FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-                           FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                           FACE(BackFace, DoNothing),
-                           FACE(FrontFace,
+        BeforeAllCells(DoNothing),
+        LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+        Locals(int io, itop, ip, k1, step, ii;
+          double q_v[3], xdir, ydir; ),
+        CellSetup(DoNothing),
+        FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+        FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+        FACE(BackFace, DoNothing),
+        FACE(FrontFace,
       {
         io = SubvectorEltIndex(sx_sub, i, j, 0);
         itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -260,9 +260,9 @@ void    OverlandFlowEval(
         ks_v[io] = pfmax(q_v[0], 0.0) - pfmax(-q_v[1], 0.0);
         kn_v[io] = pfmax(q_v[1], 0.0) - pfmax(-q_v[2], 0.0);
       }),
-                           CellFinalize(DoNothing),
-                           AfterAllCells(DoNothing)
-                           );
+        CellFinalize(DoNothing),
+        AfterAllCells(DoNothing)
+        );
     }
   }
   else  /* fcn == CALCDER: derivs of KE,KW,KN,KS w.r.t. current cell (i,j,k) */
@@ -270,15 +270,15 @@ void    OverlandFlowEval(
     if (qx_v == NULL || qy_v == NULL)  /* Do not return derivs of velocity fluxes */
     {
       ForPatchCellsPerFace(BC_ALL,
-                           BeforeAllCells(DoNothing),
-                           LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                           Locals(int io, ip;
-                                  double xdir, ydir, q_mid; ),
-                           CellSetup(DoNothing),
-                           FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-                           FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                           FACE(BackFace, DoNothing),
-                           FACE(FrontFace,
+        BeforeAllCells(DoNothing),
+        LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+        Locals(int io, ip;
+          double xdir, ydir, q_mid; ),
+        CellSetup(DoNothing),
+        FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+        FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+        FACE(BackFace, DoNothing),
+        FACE(FrontFace,
       {
         /* compute derivs for east and west faces */
 
@@ -312,22 +312,22 @@ void    OverlandFlowEval(
         ks_v[io] = -pfmax(-q_mid, 0.0);
         kn_v[io] = pfmax(q_mid, 0.0);
       }),
-                           CellFinalize(DoNothing),
-                           AfterAllCells(DoNothing)
-                           );
+        CellFinalize(DoNothing),
+        AfterAllCells(DoNothing)
+        );
     }
     else   /* return derivs of velocity fluxes */
     {
       ForPatchCellsPerFace(BC_ALL,
-                           BeforeAllCells(DoNothing),
-                           LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                           Locals(int io, ip;
-                                  double xdir, ydir, q_mid; ),
-                           CellSetup(DoNothing),
-                           FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-                           FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                           FACE(BackFace, DoNothing),
-                           FACE(FrontFace,
+        BeforeAllCells(DoNothing),
+        LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+        Locals(int io, ip;
+          double xdir, ydir, q_mid; ),
+        CellSetup(DoNothing),
+        FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+        FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+        FACE(BackFace, DoNothing),
+        FACE(FrontFace,
       {
         /* compute derivs for east and west faces */
 
@@ -363,9 +363,9 @@ void    OverlandFlowEval(
         ks_v[io] = -pfmax(-q_mid, 0.0);
         kn_v[io] = pfmax(q_mid, 0.0);
       }),
-                           CellFinalize(DoNothing),
-                           AfterAllCells(DoNothing)
-                           );
+        CellFinalize(DoNothing),
+        AfterAllCells(DoNothing)
+        );
     }
   }
 }

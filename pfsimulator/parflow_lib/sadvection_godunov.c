@@ -204,7 +204,7 @@ void     SatGodunov(
   flopest = 0;
 
   compute_pkg = GridComputePkg(VectorGrid(old_saturation),
-                               VectorUpdateGodunov);
+    VectorUpdateGodunov);
 
   for (compute_i = 0; compute_i < 2; compute_i++)
   {
@@ -265,12 +265,12 @@ void     SatGodunov(
 
         /***** Make the call to the Godunov advection routine *****/
         CALL_SADVECT(s, sn,
-                     uedge, vedge, wedge, betaedge, phi,
-                     viscosity, density, gravity,
-                     slx, sly, slz,
-                     lohi, dlohi, hx, dt,
-                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,
-                     dxscr, dyscr, dzscr, dzfrm);
+          uedge, vedge, wedge, betaedge, phi,
+          viscosity, density, gravity,
+          slx, sly, slz,
+          lohi, dlohi, hx, dt,
+          sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,
+          dxscr, dyscr, dzscr, dzfrm);
       }
     }
   }
@@ -364,11 +364,11 @@ void     SatGodunov(
 
             xi = 0; yi = 0; zi = 0; wi = 0;
             BoxLoopI4(i, j, k,
-                      ix, iy, iz, nx, ny, nz,
-                      xi, nx_xv, ny_xv, nz_xv,
-                      yi, nx_yv, ny_yv, nz_yv,
-                      zi, nx_zv, ny_zv, nz_zv,
-                      wi, nx_w, ny_w, nz_w,
+              ix, iy, iz, nx, ny, nz,
+              xi, nx_xv, ny_xv, nz_xv,
+              yi, nx_yv, ny_yv, nz_yv,
+              zi, nx_zv, ny_zv, nz_zv,
+              wi, nx_w, ny_w, nz_w,
             {
               flux = (xvel_u[xi] - xvel_l[xi]) / dx
                      + (yvel_u[yi] - yvel_l[yi]) / dy
@@ -381,11 +381,11 @@ void     SatGodunov(
           {
             xi = 0; yi = 0; zi = 0; wi = 0;
             BoxLoopI4(i, j, k,
-                      ix, iy, iz, nx, ny, nz,
-                      xi, nx_xv, ny_xv, nz_xv,
-                      yi, nx_yv, ny_yv, nz_yv,
-                      zi, nx_zv, ny_zv, nz_zv,
-                      wi, nx_w, ny_w, nz_w,
+              ix, iy, iz, nx, ny, nz,
+              xi, nx_xv, ny_xv, nz_xv,
+              yi, nx_yv, ny_yv, nz_yv,
+              zi, nx_zv, ny_zv, nz_zv,
+              wi, nx_w, ny_w, nz_w,
             {
               /*   compute flux for each cell and store it   */
               flux = (xvel_u[xi] - xvel_l[xi]) / dx
@@ -460,8 +460,8 @@ void     SatGodunov(
 
             wi = 0;
             BoxLoopI1(i, j, k,
-                      ix, iy, iz, nx, ny, nz,
-                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
+              ix, iy, iz, nx, ny, nz,
+              wi, nx_w, ny_w, nz_w, 1, 1, 1,
             {
               scal[wi] += flux;
               rhs[wi] -= flux * input_s;
@@ -471,8 +471,8 @@ void     SatGodunov(
           {
             wi = 0;
             BoxLoopI1(i, j, k,
-                      ix, iy, iz, nx, ny, nz,
-                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
+              ix, iy, iz, nx, ny, nz,
+              wi, nx_w, ny_w, nz_w, 1, 1, 1,
             {
               scal[wi] -= flux;
             });
@@ -522,8 +522,8 @@ void     SatGodunov(
 
     si = 0; wi = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-              wi, nx_w, ny_w, nz_w, 1, 1, 1,
-              si, nx_s, ny_s, nz_s, 1, 1, 1,
+      wi, nx_w, ny_w, nz_w, 1, 1, 1,
+      si, nx_s, ny_s, nz_s, 1, 1, 1,
     {
       sn[si] = (sn[si] - dt * rhs[wi]) / (1 + dt * scal[wi]);
     });
@@ -586,9 +586,9 @@ void     SatGodunov(
           {
             wi = 0; si = 0;
             BoxLoopI2(i, j, k,
-                      ix, iy, iz, nx, ny, nz,
-                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
-                      si, nx_s, ny_s, nz_s, 1, 1, 1,
+              ix, iy, iz, nx, ny, nz,
+              wi, nx_w, ny_w, nz_w, 1, 1, 1,
+              si, nx_s, ny_s, nz_s, 1, 1, 1,
             {
               cell_change = -dt * (scal[wi] * sn[si] + rhs[wi]);
               well_stat += cell_change * cell_volume;
@@ -598,9 +598,9 @@ void     SatGodunov(
           {
             wi = 0; si = 0;
             BoxLoopI2(i, j, k,
-                      ix, iy, iz, nx, ny, nz,
-                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
-                      si, nx_s, ny_s, nz_s, 1, 1, 1,
+              ix, iy, iz, nx, ny, nz,
+              wi, nx_w, ny_w, nz_w, 1, 1, 1,
+              si, nx_s, ny_s, nz_s, 1, 1, 1,
             {
               cell_change = -dt * (scal[wi] * sn[si]);
               well_stat += cell_change * cell_volume;
@@ -667,9 +667,9 @@ void     SatGodunov(
           {
             wi = 0; si = 0;
             BoxLoopI2(i, j, k,
-                      ix, iy, iz, nx, ny, nz,
-                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
-                      si, nx_s, ny_s, nz_s, 1, 1, 1,
+              ix, iy, iz, nx, ny, nz,
+              wi, nx_w, ny_w, nz_w, 1, 1, 1,
+              si, nx_s, ny_s, nz_s, 1, 1, 1,
             {
               cell_change = -dt * (scal[wi] * sn[si] + rhs[wi]);
               well_stat += cell_change * cell_volume;
@@ -679,9 +679,9 @@ void     SatGodunov(
           {
             wi = 0; si = 0;
             BoxLoopI2(i, j, k,
-                      ix, iy, iz, nx, ny, nz,
-                      wi, nx_w, ny_w, nz_w, 1, 1, 1,
-                      si, nx_s, ny_s, nz_s, 1, 1, 1,
+              ix, iy, iz, nx, ny, nz,
+              wi, nx_w, ny_w, nz_w, 1, 1, 1,
+              si, nx_s, ny_s, nz_s, 1, 1, 1,
             {
               cell_change = -dt * (scal[wi] * sn[si]);
               well_stat += cell_change * cell_volume;
@@ -706,7 +706,7 @@ void     SatGodunov(
    *-----------------------------------------------------------------------*/
 
   field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
-                                 grid, new_saturation);
+    grid, new_saturation);
 
   if (!amps_Rank(amps_CommWorld))
   {

@@ -380,7 +380,7 @@ PFModule   *dzScaleNewPublicXtra()
       default:
       {
         InputError("Error: invalid type <%s> for key <%s>\n",
-                   switch_name, key);
+          switch_name, key);
       }
     }
   }

@@ -340,7 +340,7 @@ typedef struct amps_HandleObject {
           if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count))))                               \
               == NULL)                                                                                    \
           amps_Printf("Error: out of memory in <%s> at line %d\n",                                        \
-                      __FILE__, __LINE__);                                                                \
+  __FILE__, __LINE__);                                                                                    \
           ptr;                                                                                            \
         }
 
@@ -349,7 +349,7 @@ typedef struct amps_HandleObject {
           (type*)ptr;                                                                                                         \
           if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL)                               \
           amps_Printf("Error: out of memory in <%s> at line %d\n",                                                            \
-                      __FILE__, __LINE__);                                                                                    \
+  __FILE__, __LINE__);                                                                                                        \
           ptr;                                                                                                                \
         }
 

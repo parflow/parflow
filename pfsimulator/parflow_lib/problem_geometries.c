@@ -111,8 +111,8 @@ void resetBoundary(Vector *vector, const double value, const int ghosts)
     int fi = 0;
 
     BoxLoopI1(i, j, k,
-              ix_all, iy_all, iz_all, nx_all, ny_all, nz_all,
-              fi, nx_f, ny_f, nz_f, 1, 1, 1,
+      ix_all, iy_all, iz_all, nx_all, ny_all, nz_all,
+      fi, nx_f, ny_f, nz_f, 1, 1, 1,
     {
       if (i == ix_all ||
           j == iy_all ||
@@ -357,7 +357,7 @@ PFModule   *GeometriesNewPublicXtra()
   for (i = 0; i < num_intypes; i++)
   {
     sprintf(key, "GeomInput.%s.InputType",
-            NA_IndexToName(geom_input_na, i));
+      NA_IndexToName(geom_input_na, i));
     intype_name = GetString(key);
     intype = NA_NameToIndexExitOnError(switch_na, intype_name, key);
 
@@ -374,7 +374,7 @@ PFModule   *GeometriesNewPublicXtra()
         new_indicator_data = ctalloc(IndicatorData, 1);
 
         sprintf(key, "GeomInput.%s.GeomNames",
-                NA_IndexToName(geom_input_na, i));
+          NA_IndexToName(geom_input_na, i));
         indicator_names = GetString(key);
 
 
@@ -397,8 +397,8 @@ PFModule   *GeometriesNewPublicXtra()
         for (solids_index = 0; solids_index < num_new_solids; solids_index++)
         {
           sprintf(key, "GeomInput.%s.Value",
-                  NA_IndexToName(new_indicator_data->indicator_na,
-                                 solids_index));
+            NA_IndexToName(new_indicator_data->indicator_na,
+              solids_index));
           new_indicator_data->indicators[solids_index] = GetInt(key);
         }
 
@@ -431,8 +431,8 @@ PFModule   *GeometriesNewPublicXtra()
       {
         BeginTiming(PFSOLReadTimingIndex);
         num_new_solids = GeomReadSolids(&new_solids,
-                                        NA_IndexToName(geom_input_na, i),
-                                        GeomTSolidType);
+          NA_IndexToName(geom_input_na, i),
+          GeomTSolidType);
 
 #if 0
         if (amps_Rank() == 73)
@@ -447,7 +447,7 @@ PFModule   *GeometriesNewPublicXtra()
 
 
         sprintf(key, "GeomInput.%s.GeomNames",
-                NA_IndexToName(geom_input_na, i));
+          NA_IndexToName(geom_input_na, i));
         geom_name = GetString(key);
 
         /* Add this geom input geometries to the total array */
@@ -459,7 +459,7 @@ PFModule   *GeometriesNewPublicXtra()
         /* Get the patch names; patches exist only on the first
          * object in the input file */
         sprintf(key, "Geom.%s.Patches",
-                NA_IndexToName(GlobalsGeomNames, num_solids));
+          NA_IndexToName(GlobalsGeomNames, num_solids));
         patch_names = GetString(key);
         new_solids[0]->patches = NA_NewNameArray(patch_names);
 
@@ -473,7 +473,7 @@ PFModule   *GeometriesNewPublicXtra()
         double xl, yl, zl, xu, yu, zu;
 
         sprintf(key, "GeomInput.%s.GeomName",
-                NA_IndexToName(geom_input_na, i));
+          NA_IndexToName(geom_input_na, i));
         geom_name = GetString(key);
 
         /* Add this geom input geometries to the total array */
@@ -505,7 +505,7 @@ PFModule   *GeometriesNewPublicXtra()
         /* Get the patch names */
         sprintf(key, "Geom.%s.Patches", geom_name);
         patch_names = GetStringDefault(key,
-                                       "left right front back bottom top");
+          "left right front back bottom top");
         new_solids[0]->patches = NA_NewNameArray(patch_names);
 
         break;

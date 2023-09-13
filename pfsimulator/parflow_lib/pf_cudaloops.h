@@ -358,7 +358,7 @@ template < typename ReduceOp, typename LambdaFun, typename T >
 __global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
 DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
-          const int nx, const int ny, const int nz)
+  const int nx, const int ny, const int nz)
 {
   // Specialize BlockReduce for a 1D block of BLOCKSIZE_X * 1 * 1 threads on type T
 #ifdef __CUDA_ARCH__
@@ -466,8 +466,8 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
           int blocksize_y = BLOCKSIZE_Y;                                                                                            \
           int blocksize_z = BLOCKSIZE_Z;                                                                                            \
           grid = dim3(((nx - 1) + blocksize_x) / blocksize_x,                                                                       \
-                      ((ny - 1) + blocksize_y) / blocksize_y,                                                                       \
-                      ((nz - 1) + blocksize_z) / blocksize_z);                                                                      \
+  ((ny - 1) + blocksize_y) / blocksize_y,                                                                                           \
+  ((nz - 1) + blocksize_z) / blocksize_z);                                                                                          \
           while (dyn_blocksize && (grid.x * grid.y * grid.z < 80)                                                                   \
                  && ((blocksize_y * blocksize_z) >= 4))                                                                             \
           {                                                                                                                         \
@@ -476,8 +476,8 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
             else                                                                                                                    \
             blocksize_y /= 2;                                                                                                       \
             grid = dim3(((nx - 1) + blocksize_x) / blocksize_x,                                                                     \
-                        ((ny - 1) + blocksize_y) / blocksize_y,                                                                     \
-                        ((nz - 1) + blocksize_z) / blocksize_z);                                                                    \
+  ((ny - 1) + blocksize_y) / blocksize_y,                                                                                           \
+  ((nz - 1) + blocksize_z) / blocksize_z);                                                                                          \
           }                                                                                                                         \
           block = dim3(blocksize_x, blocksize_y, blocksize_z);                                                                      \
         }
@@ -501,7 +501,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
                                                                                                                                                             \
             if (GrGeomSolidCellFlagDataSize(grgeom) > 0)                                                                                                    \
             CUDA_ERR(cudaMemcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                                                                                  \
-                                GrGeomSolidCellFlagDataSize(grgeom), cudaMemcpyDeviceToDevice));                                                            \
+  GrGeomSolidCellFlagDataSize(grgeom), cudaMemcpyDeviceToDevice));                                                                                          \
                                                                                                                                                             \
             _tfree_device(GrGeomSolidCellFlagData(grgeom));                                                                                                 \
             GrGeomSolidCellFlagData(grgeom) = flagdata;                                                                                                     \
@@ -1215,10 +1215,10 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
               j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                                                                                                     \
               k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;                                                                                                                     \
               GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node,                                                                                                                     \
-                                           GrGeomSolidData(grgeom),                                                                                                              \
-                                           GrGeomSolidOctreeBGLevel(grgeom) + r,                                                                                                 \
-                                           ix, iy, iz, nx, ny, nz,                                                                                                               \
-                                           TRUE,                                                                                                                                 \
+  GrGeomSolidData(grgeom),                                                                                                                                                       \
+  GrGeomSolidOctreeBGLevel(grgeom) + r,                                                                                                                                          \
+  ix, iy, iz, nx, ny, nz,                                                                                                                                                        \
+  TRUE,                                                                                                                                                                          \
         {                                                                                                                                                                        \
           body;                                                                                                                                                                  \
           outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] |= (1 << 1);                                                                                                    \

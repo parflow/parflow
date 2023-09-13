@@ -118,7 +118,7 @@ typedef struct {
                                                                                                                         \
           ival = 0;                                                                                                     \
           GrGeomPatchLoop(i, j, k, fdir, PV_gr_domain, PV_patch_index,                                                  \
-                          PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz,                                               \
+  PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz,                                                                       \
     {                                                                                                                   \
       body;                                                                                                             \
       ival++;                                                                                                           \
@@ -141,7 +141,7 @@ typedef struct {
                                                                                                                               \
           ival = 0;                                                                                                           \
           GrGeomPatchLoop(i, j, k, fdir, PV_gr_domain, PV_patch_index,                                                        \
-                          PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz,                                                     \
+  PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz,                                                                             \
     {                                                                                                                         \
       body;                                                                                                                   \
       ival++;                                                                                                                 \
@@ -174,12 +174,12 @@ typedef struct {
                                                                                                                                       \
           ival = 0;                                                                                                                   \
           GrGeomPatchLoopNoFdir(i, j, k, PV_gr_domain, PV_patch_index, 0,                                                             \
-                                PV_r, PV_ix, PV_iy,                                                                                   \
-                                PV_iz, PV_nx, PV_ny, PV_nz,                                                                           \
-                                locals, setup,                                                                                        \
-                                f_left, f_right,                                                                                      \
-                                f_down, f_up,                                                                                         \
-                                f_back, f_front,                                                                                      \
+  PV_r, PV_ix, PV_iy,                                                                                                                 \
+  PV_iz, PV_nx, PV_ny, PV_nz,                                                                                                         \
+  locals, setup,                                                                                                                      \
+  f_left, f_right,                                                                                                                    \
+  f_down, f_up,                                                                                                                       \
+  f_back, f_front,                                                                                                                    \
     {                                                                                                                                 \
       finalize;                                                                                                                       \
       ival++;                                                                                                                         \
@@ -207,12 +207,12 @@ typedef struct {
                                                                                                                                             \
           ival = 0;                                                                                                                         \
           GrGeomPatchLoopNoFdir(i, j, k, PV_gr_domain, PV_patch_index, 1,                                                                   \
-                                PV_r, PV_ix, PV_iy,                                                                                         \
-                                PV_iz, PV_nx, PV_ny, PV_nz,                                                                                 \
-                                locals, setup,                                                                                              \
-                                f_left, f_right,                                                                                            \
-                                f_down, f_up,                                                                                               \
-                                f_back, f_front,                                                                                            \
+  PV_r, PV_ix, PV_iy,                                                                                                                       \
+  PV_iz, PV_nx, PV_ny, PV_nz,                                                                                                               \
+  locals, setup,                                                                                                                            \
+  f_left, f_right,                                                                                                                          \
+  f_down, f_up,                                                                                                                             \
+  f_back, f_front,                                                                                                                          \
     {                                                                                                                                       \
       finalize;                                                                                                                             \
       ival++;                                                                                                                               \
@@ -317,48 +317,48 @@ typedef struct {
  * This is to ensure each cell body statement has been set and not left as a copy+paste.
  */
 ForPatchCellsPerFace(InsertBCTypeHere,
-                     BeforeAllCells(DoNothing),
-                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                     NoLocals,
-                     CellSetup({ ~~ }),
-                     FACE(LeftFace, { ~~ }),
-                     FACE(RightFace, { ~~ }),
-                     FACE(DownFace, { ~~ }),
-                     FACE(UpFace, { ~~ }),
-                     FACE(BackFace, { ~~ }),
-                     FACE(FrontFace, { ~~ }),
-                     CellFinalize({ ~~ }),
-                     AfterAllCells(DoNothing)
-                     );
+  BeforeAllCells(DoNothing),
+  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+  NoLocals,
+  CellSetup({ ~~ }),
+  FACE(LeftFace, { ~~ }),
+  FACE(RightFace, { ~~ }),
+  FACE(DownFace, { ~~ }),
+  FACE(UpFace, { ~~ }),
+  FACE(BackFace, { ~~ }),
+  FACE(FrontFace, { ~~ }),
+  CellFinalize({ ~~ }),
+  AfterAllCells(DoNothing)
+  );
 
 /*---------------------------------------------
  * Generic example of a made-up boundary condition using ForPatchCellsPerFace
  * --------------------------------------------- */
 ForPatchCellsPerFace(NotARealBCType,
-                     BeforeAllCells({
+  BeforeAllCells({
   PFModuleInvokeType(SomeModuleInvoke, some_module, (foo, bar, baz));
 }),
-                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                     Locals(int im, ip;
-                            double some_prod;
-                            double *op; ),
-                     CellSetup({
+  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+  Locals(int im, ip;
+    double some_prod;
+    double *op; ),
+  CellSetup({
   im = SubmatrixEltIndex(J_sub, i, j, k);
   ip = SubvectorEltIndex(p_sub, i, j, k);
   some_prod = ddp[ip] * dp[ip];
 }),
-                     FACE(LeftFace, { op = wp; }),
-                     FACE(RightFace, { op = ep; }),
-                     FACE(DownFace, { op = sop; }),
-                     FACE(UpFace, { op = np; }),
-                     FACE(BackFace, { op = lp; }),
-                     FACE(FrontFace, { op = up; }),
-                     CellFinalize({
+  FACE(LeftFace, { op = wp; }),
+  FACE(RightFace, { op = ep; }),
+  FACE(DownFace, { op = sop; }),
+  FACE(UpFace, { op = np; }),
+  FACE(BackFace, { op = lp; }),
+  FACE(FrontFace, { op = up; }),
+  CellFinalize({
   cp[im] += op[im] * some_prod;
   op[im] = 0.0;
 }),
-                     AfterAllCells(DoNothing)
-                     );
+  AfterAllCells(DoNothing)
+  );
 
 #endif
 
@@ -404,11 +404,11 @@ ForPatchCellsPerFace(NotARealBCType,
           {                                                                                                                 \
             before_loop;                                                                                                    \
             BCStructPatchLoopNoFdir(loopvars,                                                                               \
-                                    locals, setup,                                                                          \
-                                    f_left, f_right,                                                                        \
-                                    f_down, f_up,                                                                           \
-                                    f_back, f_front,                                                                        \
-                                    finalize);                                                                              \
+  locals, setup,                                                                                                            \
+  f_left, f_right,                                                                                                          \
+  f_down, f_up,                                                                                                             \
+  f_back, f_front,                                                                                                          \
+  finalize);                                                                                                                \
             after_loop;                                                                                                     \
           }                                                                                                                 \
         }
@@ -432,12 +432,12 @@ ForPatchCellsPerFace(NotARealBCType,
           {                                                                                                                                     \
             before_loop;                                                                                                                        \
             BCStructPatchLoopOvrlndNoFdir(loopvars,                                                                                             \
-                                          locals,                                                                                               \
-                                          setup,                                                                                                \
-                                          f_left, f_right,                                                                                      \
-                                          f_down, f_up,                                                                                         \
-                                          f_back, f_front,                                                                                      \
-                                          finalize);                                                                                            \
+  locals,                                                                                                                                       \
+  setup,                                                                                                                                        \
+  f_left, f_right,                                                                                                                              \
+  f_down, f_up,                                                                                                                                 \
+  f_back, f_front,                                                                                                                              \
+  finalize);                                                                                                                                    \
             after_loop;                                                                                                                         \
           }                                                                                                                                     \
         }
@@ -458,11 +458,11 @@ ForPatchCellsPerFace(NotARealBCType,
  */
 #define ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is, body)                                                              \
         BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,                                                             \
-                                NoLocals,                                                                                         \
-                                body,                                                                                             \
-                                DoNothing, DoNothing,                                                                             \
-                                DoNothing, DoNothing,                                                                             \
-                                DoNothing, DoNothing,                                                                             \
-                                DoNothing);
+  NoLocals,                                                                                                                       \
+  body,                                                                                                                           \
+  DoNothing, DoNothing,                                                                                                           \
+  DoNothing, DoNothing,                                                                                                           \
+  DoNothing, DoNothing,                                                                                                           \
+  DoNothing);
 
 #endif

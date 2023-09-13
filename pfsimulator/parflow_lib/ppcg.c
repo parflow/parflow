@@ -261,10 +261,10 @@ void     PPCG(
     {
       if (two_norm)
         amps_Printf("Iter (%d): ||r||_2 = %e, ||r||_2/||b||_2 = le\n",
-                    i, sqrt(i_prod), (b_dot_b ? sqrt(i_prod / b_dot_b) : 0));
+          i, sqrt(i_prod), (b_dot_b ? sqrt(i_prod / b_dot_b) : 0));
       else
         amps_Printf("Iter (%d): ||Kr||_C = %e, ||Kr||_C/||b||_2 = %e\n",
-                    i, sqrt(i_prod), (b_dot_b ? sqrt(i_prod / b_dot_b) : 0));
+          i, sqrt(i_prod), (b_dot_b ? sqrt(i_prod / b_dot_b) : 0));
     }
 #endif
 
@@ -288,7 +288,7 @@ void     PPCG(
       degree = degree_array[degree_index];
       if (degree > 1)
         NewEndpts(alpha_vec, beta_vec, pdotAp_vec, &size,
-                  degree, &ia, &ib, &cond, eps);
+          degree, &ia, &ib, &cond, eps);
     }
 
     /* If restarting, size will be zero */
@@ -297,7 +297,7 @@ void     PPCG(
 #if 1
       if (!amps_Rank(amps_CommWorld))
         amps_Printf(">> Restart: a, b (iter) = %f, %f (%d)\n",
-                    ia, ib, i);
+          ia, ib, i);
 #endif
 
       IfLogging(1)
@@ -316,10 +316,10 @@ void     PPCG(
   {
     if (two_norm)
       amps_Printf("Iterations = %d: ||r||_2 = %e, ||r||_2/||b||_2 = %e\n",
-                  i, sqrt(i_prod), (b_dot_b ? sqrt(i_prod / b_dot_b) : 0));
+        i, sqrt(i_prod), (b_dot_b ? sqrt(i_prod / b_dot_b) : 0));
     else
       amps_Printf("Iterations = %d: ||Kr||_C = %e, ||Kr||_C/||b||_2 = %e\n",
-                  i, sqrt(i_prod), (b_dot_b ? sqrt(i_prod / b_dot_b) : 0));
+        i, sqrt(i_prod), (b_dot_b ? sqrt(i_prod / b_dot_b) : 0));
   }
 #endif
 
@@ -361,8 +361,8 @@ void     PPCG(
     for (j = 0; j < i; j++)
     {
       fprintf(log_file, "% 5d    %e    %e    %e    %d\n",
-              (j + 1), norm_log[j], rel_norm_log[j], cond_log[j],
-              restart_log[j]);
+        (j + 1), norm_log[j], rel_norm_log[j], cond_log[j],
+        restart_log[j]);
     }
 
     CloseLogFile(log_file);
@@ -434,14 +434,14 @@ PFModule  *PPCGInitInstanceXtra(
   {
     (instance_xtra->precond) =
       PFModuleNewInstanceType(ChebyshevInitInstanceXtraInvoke,
-                              (public_xtra->precond),
-                              (problem, grid, problem_data, A, temp_data));
+        (public_xtra->precond),
+        (problem, grid, problem_data, A, temp_data));
   }
   else
   {
     PFModuleReNewInstanceType(ChebyshevInitInstanceXtraInvoke,
-                              (instance_xtra->precond),
-                              (problem, grid, problem_data, A, temp_data));
+      (instance_xtra->precond),
+      (problem, grid, problem_data, A, temp_data));
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -500,7 +500,7 @@ PFModule   *PPCGNewPublicXtra(char *name)
     case 0:
     {
       (public_xtra->precond) = PFModuleNewModuleType(ChebyshevNewPublicXtraInvoke,
-                                                     Chebyshev, (key));
+        Chebyshev, (key));
       break;
     }
 

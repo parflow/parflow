@@ -208,7 +208,7 @@ PFModule   *PhaseHeatCapacityNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "Phase.%s.HeatCapacity.Type",
-            NA_IndexToName(GlobalsPhaseNames, i));
+      NA_IndexToName(GlobalsPhaseNames, i));
 
     switch_name = GetString(key);
 
@@ -223,7 +223,7 @@ PFModule   *PhaseHeatCapacityNewPublicXtra(
         dummy0 = ctalloc(Type0, 1);
 
         sprintf(key, "Phase.%s.HeatCapacity.GeomNames",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
 
         switch_name = GetString(key);
 

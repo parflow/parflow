@@ -666,7 +666,7 @@ void            PrintSilo(
   DBPutQuadmesh(db, "mesh", NULL, (float**)coords, dims, ndims, DB_DOUBLE, DB_COLLINEAR, NULL);
 
   DBPutQuadvar1(db, "variable", "mesh", (float*)DataboxCoeff(v, 0, 0, 0), size, ndims, NULL, 0,
-                DB_DOUBLE, DB_ZONECENT, NULL);
+    DB_DOUBLE, DB_ZONECENT, NULL);
 
   DBClose(db);
 

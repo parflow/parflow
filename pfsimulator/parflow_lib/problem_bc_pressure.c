@@ -116,10 +116,10 @@ BCStruct    *BCPressure(
      *---------------------------------------------------------------------*/
 
     bc_struct = NewBCStruct(subgrids, gr_domain,
-                            num_patches,
-                            BCPressureDataPatchIndexes(bc_pressure_data),
-                            BCPressureDataBCTypes(bc_pressure_data),
-                            NULL);
+      num_patches,
+      BCPressureDataPatchIndexes(bc_pressure_data),
+      BCPressureDataBCTypes(bc_pressure_data),
+      NULL);
 
     /*---------------------------------------------------------------------
      * Set up values component of bc_struct
@@ -136,7 +136,7 @@ BCStruct    *BCPressure(
 
       cycle_number = BCPressureDataCycleNumber(bc_pressure_data, ipatch);
       interval_number = TimeCycleDataComputeIntervalNumber(
-                                                           problem, time, time_cycle_data, cycle_number);
+        problem, time, time_cycle_data, cycle_number);
 
       switch (BCPressureDataType(bc_pressure_data, ipatch))
       {
@@ -160,7 +160,7 @@ BCStruct    *BCPressure(
           double         **elevations;
 
           GetBCPressureTypeStruct(DirEquilRefPatch, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           if (instance_xtra->elevations == NULL)
           {
@@ -173,7 +173,7 @@ BCStruct    *BCPressure(
           if (instance_xtra->elevations[ipatch] == NULL)
           {
             ref_solid = ProblemDataSolid(problem_data,
-                                         DirEquilRefPatchRefSolid(interval_data));
+              DirEquilRefPatchRefSolid(interval_data));
             ref_patch = DirEquilRefPatchRefPatch(interval_data);
 
             /* Calculate elevations at (x,y) points on reference patch. */
@@ -209,30 +209,30 @@ BCStruct    *BCPressure(
             dz2 = SubgridDZ(subgrid) * 0.5;
 
             ForPatchCellsPerFace(BC_ALL,
-                                 BeforeAllCells(DoNothing),
-                                 LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                 Locals(int ips, iel, iterations, phase;
-                                        double ref_press, ref_den, fcn_val, nonlin_resid;
-                                        double z, dtmp, density, density_der;
-                                        double interface_press, offset, height; ),
-                                 CellSetup({
+              BeforeAllCells(DoNothing),
+              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+              Locals(int ips, iel, iterations, phase;
+                double ref_press, ref_den, fcn_val, nonlin_resid;
+                double z, dtmp, density, density_der;
+                double interface_press, offset, height; ),
+              CellSetup({
               ref_press = DirEquilRefPatchValue(interval_data);
               PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                 (0, NULL, NULL, &ref_press, &ref_den,
-                                  CALCFCN));
+                (0, NULL, NULL, &ref_press, &ref_den,
+                 CALCFCN));
               ips = SubvectorEltIndex(z_mult_sub, i, j, k);
               iel = (i - ix) + (j - iy) * nx;
               fcn_val = 0.0;
               nonlin_resid = 1.0;
               iterations = -1;
             }),
-                                 FACE(LeftFace, { z = rsz_dat[ips]; }),
-                                 FACE(RightFace, { z = rsz_dat[ips]; }),
-                                 FACE(DownFace, { z = rsz_dat[ips]; }),
-                                 FACE(UpFace, { z = rsz_dat[ips]; }),
-                                 FACE(BackFace, { z = rsz_dat[ips] - dz2 * z_mult_dat[ips]; }),
-                                 FACE(FrontFace, { z = rsz_dat[ips] + dz2 * z_mult_dat[ips]; }),
-                                 CellFinalize(
+              FACE(LeftFace, { z = rsz_dat[ips]; }),
+              FACE(RightFace, { z = rsz_dat[ips]; }),
+              FACE(DownFace, { z = rsz_dat[ips]; }),
+              FACE(UpFace, { z = rsz_dat[ips]; }),
+              FACE(BackFace, { z = rsz_dat[ips] - dz2 * z_mult_dat[ips]; }),
+              FACE(FrontFace, { z = rsz_dat[ips] + dz2 * z_mult_dat[ips]; }),
+              CellFinalize(
             {
               /* Solve a nonlinear problem for hydrostatic pressure
                * at points on boundary patch given pressure on reference
@@ -251,8 +251,8 @@ BCStruct    *BCPressure(
                 if (iterations > -1)
                 {
                   PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                     (0, NULL, NULL, &patch_values[ival],
-                                      &density_der, CALCDER));
+                    (0, NULL, NULL, &patch_values[ival],
+                     &density_der, CALCDER));
                   dtmp = 1.0 - 0.5 * density_der * gravity
                          * (z - elevations[is][iel]);
                   patch_values[ival] = patch_values[ival] - fcn_val / dtmp;
@@ -262,8 +262,8 @@ BCStruct    *BCPressure(
                   patch_values[ival] = ref_press;
                 }
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (0, NULL, NULL, &patch_values[ival],
-                                    &density, CALCFCN));
+                  (0, NULL, NULL, &patch_values[ival],
+                   &density, CALCFCN));
 
                 fcn_val = patch_values[ival] - ref_press
                           - 0.5 * (density + ref_den) * gravity
@@ -291,16 +291,16 @@ BCStruct    *BCPressure(
               for (phase = 1; phase < num_phases; phase++)
               {
                 interface_press = DirEquilRefPatchValueAtInterface(
-                                                                   interval_data, phase);
+                  interval_data, phase);
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (phase - 1, NULL, NULL, &interface_press,
-                                    &interface_den, CALCFCN));
+                  (phase - 1, NULL, NULL, &interface_press,
+                   &interface_den, CALCFCN));
                 offset = (interface_press - ref_press)
                          / (0.5 * (interface_den + ref_den) * gravity);
                 ref_press = interface_press;
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (phase, NULL, NULL, &ref_press, &ref_den,
-                                    CALCFCN));
+                  (phase, NULL, NULL, &ref_press, &ref_den,
+                   CALCFCN));
 
                 /* Only reset pressure value if in another phase.
                  * The following "if" test determines whether this point
@@ -319,8 +319,8 @@ BCStruct    *BCPressure(
                     if (iterations > -1)
                     {
                       PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                         (phase, NULL, NULL, &patch_values[ival],
-                                          &density_der, CALCDER));
+                        (phase, NULL, NULL, &patch_values[ival],
+                         &density_der, CALCDER));
 
                       dtmp = 1.0 - 0.5 * density_der * gravity
                              * (z - height);
@@ -334,9 +334,9 @@ BCStruct    *BCPressure(
                     }
 
                     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                       (phase, NULL, NULL,
-                                        &patch_values[ival], &density,
-                                        CALCFCN));
+                      (phase, NULL, NULL,
+                       &patch_values[ival], &density,
+                       CALCFCN));
 
                     fcn_val = patch_values[ival] - ref_press
                               - 0.5 * (density + ref_den)
@@ -348,8 +348,8 @@ BCStruct    *BCPressure(
                 }                                     /* End if above interface */
               }                                       /* End phase loop */
             }),
-                                 AfterAllCells(DoNothing)
-                                 ); /* End ForPatchCellsPerFace loop */
+              AfterAllCells(DoNothing)
+              );                    /* End ForPatchCellsPerFace loop */
           }                      /* End subgrid loop */
 
 
@@ -380,7 +380,7 @@ BCStruct    *BCPressure(
           int max_its = 10;
 
           GetBCPressureTypeStruct(DirEquilPLinear, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -418,11 +418,11 @@ BCStruct    *BCPressure(
                        + DirEquilPLinearYLower(interval_data) * unity;
 
             ForPatchCellsPerFace(BC_ALL,
-                                 BeforeAllCells(DoNothing),
-                                 LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                 Locals(int ips, iterations;
-                                        double x, y, z, fcn_val, nonlin_resid; ),
-                                 CellSetup({
+              BeforeAllCells(DoNothing),
+              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+              Locals(int ips, iterations;
+                double x, y, z, fcn_val, nonlin_resid; ),
+              CellSetup({
               ips = SubvectorEltIndex(z_mult_sub, i, j, k);
               x = RealSpaceX(i, SubgridRX(subgrid));
               y = RealSpaceY(j, SubgridRY(subgrid));
@@ -431,13 +431,13 @@ BCStruct    *BCPressure(
               nonlin_resid = 1.0;
               iterations = -1;
             }),
-                                 FACE(LeftFace, { x = x - dx2; }),
-                                 FACE(RightFace, { x = x + dx2; }),
-                                 FACE(DownFace, { y = y - dy2; }),
-                                 FACE(UpFace, { y = y + dy2; }),
-                                 FACE(BackFace, { z = z - dz2 * z_mult_dat[ips]; }),
-                                 FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
-                                 CellFinalize(
+              FACE(LeftFace, { x = x - dx2; }),
+              FACE(RightFace, { x = x + dx2; }),
+              FACE(DownFace, { y = y - dy2; }),
+              FACE(UpFace, { y = y + dy2; }),
+              FACE(BackFace, { z = z - dz2 * z_mult_dat[ips]; }),
+              FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
+              CellFinalize(
             {
               /* project center of BC face onto piecewise line */
               xy = (x * unitx + y * unity - line_min) / line_length;
@@ -460,8 +460,8 @@ BCStruct    *BCPressure(
               ref_press = DirEquilPLinearValue(interval_data, ip - 1)
                           + slope * (xy - DirEquilPLinearPoint(interval_data, ip - 1));
               PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                 (0, NULL, NULL, &ref_press, &ref_den,
-                                  CALCFCN));
+                (0, NULL, NULL, &ref_press, &ref_den,
+                 CALCFCN));
 
               /* Solve a nonlinear problem for hydrostatic pressure
                * at points on boundary patch given reference pressure.
@@ -480,8 +480,8 @@ BCStruct    *BCPressure(
                 if (iterations > -1)
                 {
                   PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                     (0, NULL, NULL, &patch_values[ival],
-                                      &density_der, CALCDER));
+                    (0, NULL, NULL, &patch_values[ival],
+                     &density_der, CALCDER));
                   dtmp = 1.0 - 0.5 * density_der * gravity * z;
                   patch_values[ival] = patch_values[ival] - fcn_val / dtmp;
                 }
@@ -490,8 +490,8 @@ BCStruct    *BCPressure(
                   patch_values[ival] = ref_press;
                 }
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (0, NULL, NULL, &patch_values[ival],
-                                    &density, CALCFCN));
+                  (0, NULL, NULL, &patch_values[ival],
+                   &density, CALCFCN));
 
                 fcn_val = patch_values[ival] - ref_press
                           - 0.5 * (density + ref_den) * gravity * z;
@@ -517,16 +517,16 @@ BCStruct    *BCPressure(
               for (phase = 1; phase < num_phases; phase++)
               {
                 interface_press = DirEquilPLinearValueAtInterface(
-                                                                  interval_data, phase);
+                  interval_data, phase);
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (phase - 1, NULL, NULL, &interface_press,
-                                    &interface_den, CALCFCN));
+                  (phase - 1, NULL, NULL, &interface_press,
+                   &interface_den, CALCFCN));
                 offset = (interface_press - ref_press)
                          / (0.5 * (interface_den + ref_den) * gravity);
                 ref_press = interface_press;
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                   (phase, NULL, NULL, &ref_press, &ref_den,
-                                    CALCFCN));
+                  (phase, NULL, NULL, &ref_press, &ref_den,
+                   CALCFCN));
 
                 /* Only reset pressure value if in another phase.
                  * The following "if" test determines whether this point
@@ -545,8 +545,8 @@ BCStruct    *BCPressure(
                     if (iterations > -1)
                     {
                       PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                         (phase, NULL, NULL, &patch_values[ival],
-                                          &density_der, CALCDER));
+                        (phase, NULL, NULL, &patch_values[ival],
+                         &density_der, CALCDER));
 
                       dtmp = 1.0 - 0.5 * density_der * gravity * (z - height);
                       patch_values[ival] = patch_values[ival]
@@ -559,9 +559,9 @@ BCStruct    *BCPressure(
                     }
 
                     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                       (phase, NULL, NULL,
-                                        &patch_values[ival], &density,
-                                        CALCFCN));
+                      (phase, NULL, NULL,
+                       &patch_values[ival], &density,
+                       CALCFCN));
 
                     fcn_val = patch_values[ival] - ref_press
                               - 0.5 * (density + ref_den) * gravity
@@ -573,8 +573,8 @@ BCStruct    *BCPressure(
                 }                                     /* End if above interface */
               }                                       /* End phase loop */
             }),
-                                 AfterAllCells(DoNothing)
-                                 ); /* End ForPatchCellsPerFace */
+              AfterAllCells(DoNothing)
+              );                    /* End ForPatchCellsPerFace */
           }
           break;
         } /* End DirEquilPLinear */
@@ -585,7 +585,7 @@ BCStruct    *BCPressure(
           double flux;
 
           GetBCPressureTypeStruct(FluxConst, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           flux = FluxConstValue(interval_data);
           ForSubgridI(is, subgrids)
@@ -618,7 +618,7 @@ BCStruct    *BCPressure(
           double area, volumetric_flux;
 
           GetBCPressureTypeStruct(FluxVolumetric, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
 
           ForSubgridI(is, subgrids)
@@ -635,22 +635,22 @@ BCStruct    *BCPressure(
             area = 0.0;
             patch_values_size = 0;
             ForPatchCellsPerFace(BC_ALL,
-                                 BeforeAllCells(DoNothing),
-                                 LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                 Locals(int ips; ),
-                                 CellSetup({
+              BeforeAllCells(DoNothing),
+              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+              Locals(int ips; ),
+              CellSetup({
               patch_values_size++;
               ips = SubvectorEltIndex(z_mult_sub, i, j, k);
             }),
-                                 FACE(LeftFace, { area += dy * dz * z_mult_dat[ips]; }),
-                                 FACE(RightFace, { area += dy * dz * z_mult_dat[ips]; }),
-                                 FACE(DownFace, { area += dx * dz * z_mult_dat[ips]; }),
-                                 FACE(UpFace, { area += dx * dz * z_mult_dat[ips]; }),
-                                 FACE(BackFace, { area += dx * dy; }),
-                                 FACE(FrontFace, { area += dx * dy; }),
-                                 CellFinalize(DoNothing),
-                                 AfterAllCells(DoNothing)
-                                 );
+              FACE(LeftFace, { area += dy * dz * z_mult_dat[ips]; }),
+              FACE(RightFace, { area += dy * dz * z_mult_dat[ips]; }),
+              FACE(DownFace, { area += dx * dz * z_mult_dat[ips]; }),
+              FACE(UpFace, { area += dx * dz * z_mult_dat[ips]; }),
+              FACE(BackFace, { area += dx * dy; }),
+              FACE(FrontFace, { area += dx * dy; }),
+              CellFinalize(DoNothing),
+              AfterAllCells(DoNothing)
+              );
 
             patch_values = talloc(double, patch_values_size);
             memset(patch_values, 0, patch_values_size * sizeof(double));
@@ -684,10 +684,10 @@ BCStruct    *BCPressure(
           /* Calculate density using dtmp as dummy argument. */
           dtmp = 0.0;
           PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                             (0, NULL, NULL, &dtmp, &density, CALCFCN));
+            (0, NULL, NULL, &dtmp, &density, CALCFCN));
 
           GetBCPressureTypeStruct(PressureFile, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -741,7 +741,7 @@ BCStruct    *BCPressure(
           int itmp;
 
           GetBCPressureTypeStruct(FluxFile, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
 
           ForSubgridI(is, subgrids)
@@ -784,7 +784,7 @@ BCStruct    *BCPressure(
           int fcn_type;
 
           GetBCPressureTypeStruct(ExactSolution, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -817,136 +817,136 @@ BCStruct    *BCPressure(
               case 1:  /* p = x */
               {
                 ForPatchCellsPerFace(BC_ALL,
-                                     BeforeAllCells(DoNothing),
-                                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                     Locals(double x; ),
-                                     CellSetup({ x = RealSpaceX(i, SubgridRX(subgrid)); }),
-                                     FACE(LeftFace, { x = x - dx2; }),
-                                     FACE(RightFace, { x = x + dx2; }),
-                                     FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                                     FACE(BackFace, DoNothing), FACE(FrontFace, DoNothing),
-                                     CellFinalize({ patch_values[ival] = x; }),
-                                     AfterAllCells(DoNothing)
-                                     );
+                  BeforeAllCells(DoNothing),
+                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                  Locals(double x; ),
+                  CellSetup({ x = RealSpaceX(i, SubgridRX(subgrid)); }),
+                  FACE(LeftFace, { x = x - dx2; }),
+                  FACE(RightFace, { x = x + dx2; }),
+                  FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+                  FACE(BackFace, DoNothing), FACE(FrontFace, DoNothing),
+                  CellFinalize({ patch_values[ival] = x; }),
+                  AfterAllCells(DoNothing)
+                  );
                 break;
               }     /* End case 1 */
 
               case 2:  /* p = x + y + z */
               {
                 ForPatchCellsPerFace(BC_ALL,
-                                     BeforeAllCells(DoNothing),
-                                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                     Locals(int ips;
-                                            double x, y, z; ),
-                                     CellSetup({
+                  BeforeAllCells(DoNothing),
+                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                  Locals(int ips;
+                    double x, y, z; ),
+                  CellSetup({
                   ips = SubvectorEltIndex(z_mult_sub, i, j, k);
                   x = RealSpaceX(i, SubgridRX(subgrid));
                   y = RealSpaceY(j, SubgridRY(subgrid));
                   z = rsz_dat[ips];
                 }),
-                                     FACE(LeftFace, { x = x - dx2; }),
-                                     FACE(RightFace, { x = x + dx2; }),
-                                     FACE(DownFace, { y = y - dy2; }),
-                                     FACE(UpFace, { y = y + dy2; }),
-                                     FACE(BackFace, { z = z - dz2 * z_mult_dat[ips]; }),
-                                     FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
-                                     CellFinalize({ patch_values[ival] = x + y + z; }),
-                                     AfterAllCells(DoNothing)
-                                     );
+                  FACE(LeftFace, { x = x - dx2; }),
+                  FACE(RightFace, { x = x + dx2; }),
+                  FACE(DownFace, { y = y - dy2; }),
+                  FACE(UpFace, { y = y + dy2; }),
+                  FACE(BackFace, { z = z - dz2 * z_mult_dat[ips]; }),
+                  FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
+                  CellFinalize({ patch_values[ival] = x + y + z; }),
+                  AfterAllCells(DoNothing)
+                  );
                 break;
               }     /* End case 2 */
 
               case 3:  /* p = x^3y^2 + sinxy + 1*/
               {
                 ForPatchCellsPerFace(BC_ALL,
-                                     BeforeAllCells(DoNothing),
-                                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                     Locals(double x, y; ),
-                                     CellSetup({
+                  BeforeAllCells(DoNothing),
+                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                  Locals(double x, y; ),
+                  CellSetup({
                   x = RealSpaceX(i, SubgridRX(subgrid));
                   y = RealSpaceY(j, SubgridRY(subgrid));
                 }),
-                                     FACE(LeftFace, { x = x - dx2; }),
-                                     FACE(RightFace, { x = x + dx2; }),
-                                     FACE(DownFace, { y = y - dy2; }),
-                                     FACE(UpFace, { y = y + dy2; }),
-                                     FACE(BackFace, DoNothing), FACE(FrontFace, DoNothing),
-                                     CellFinalize({
+                  FACE(LeftFace, { x = x - dx2; }),
+                  FACE(RightFace, { x = x + dx2; }),
+                  FACE(DownFace, { y = y - dy2; }),
+                  FACE(UpFace, { y = y + dy2; }),
+                  FACE(BackFace, DoNothing), FACE(FrontFace, DoNothing),
+                  CellFinalize({
                   patch_values[ival] = x * x * x * y * y + sin(x * y) + 1;
                 }),
-                                     AfterAllCells(DoNothing)
-                                     );
+                  AfterAllCells(DoNothing)
+                  );
                 break;
               }     /* End case 3 */
 
               case 4:  /* p = x^3 y^4 + x^2 + sinxy cosy + 1 */
               {
                 ForPatchCellsPerFace(BC_ALL,
-                                     BeforeAllCells(DoNothing),
-                                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                     Locals(double x, y; ),
-                                     CellSetup({
+                  BeforeAllCells(DoNothing),
+                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                  Locals(double x, y; ),
+                  CellSetup({
                   x = RealSpaceX(i, SubgridRX(subgrid));
                   y = RealSpaceY(j, SubgridRY(subgrid));
                 }),
-                                     FACE(LeftFace, { x = x - dx2; }),
-                                     FACE(RightFace, { x = x + dx2; }),
-                                     FACE(DownFace, { y = y - dy2; }),
-                                     FACE(UpFace, { y = y + dy2; }),
-                                     FACE(BackFace, DoNothing), FACE(FrontFace, DoNothing),
-                                     CellFinalize({
+                  FACE(LeftFace, { x = x - dx2; }),
+                  FACE(RightFace, { x = x + dx2; }),
+                  FACE(DownFace, { y = y - dy2; }),
+                  FACE(UpFace, { y = y + dy2; }),
+                  FACE(BackFace, DoNothing), FACE(FrontFace, DoNothing),
+                  CellFinalize({
                   patch_values[ival] = pow(x, 3) * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1;
                 }),
-                                     AfterAllCells(DoNothing)
-                                     );
+                  AfterAllCells(DoNothing)
+                  );
                 break;
               }     /* End case 4 */
 
               case 5:  /* p = xyzt +1 */
               {
                 ForPatchCellsPerFace(BC_ALL,
-                                     BeforeAllCells(DoNothing),
-                                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                     Locals(int ips; double x, y, z; ),
-                                     CellSetup({
+                  BeforeAllCells(DoNothing),
+                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                  Locals(int ips; double x, y, z; ),
+                  CellSetup({
                   ips = SubvectorEltIndex(z_mult_sub, i, j, k);
                   x = RealSpaceX(i, SubgridRX(subgrid));
                   y = RealSpaceY(j, SubgridRY(subgrid));
                   z = rsz_dat[ips];
                 }),
-                                     FACE(LeftFace, { x = x - dx2; }),
-                                     FACE(RightFace, { x = x + dx2; }),
-                                     FACE(DownFace, { y = y - dy2; }),
-                                     FACE(UpFace, { y = y + dy2; }),
-                                     FACE(BackFace, { z = z - dz2 * z_mult_dat[ips]; }),
-                                     FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
-                                     CellFinalize({ patch_values[ival] = x * y * z * time + 1; }),
-                                     AfterAllCells(DoNothing)
-                                     );
+                  FACE(LeftFace, { x = x - dx2; }),
+                  FACE(RightFace, { x = x + dx2; }),
+                  FACE(DownFace, { y = y - dy2; }),
+                  FACE(UpFace, { y = y + dy2; }),
+                  FACE(BackFace, { z = z - dz2 * z_mult_dat[ips]; }),
+                  FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
+                  CellFinalize({ patch_values[ival] = x * y * z * time + 1; }),
+                  AfterAllCells(DoNothing)
+                  );
                 break;
               }     /* End case 5 */
 
               case 6:  /* p = xyzt +1 */
               {
                 ForPatchCellsPerFace(BC_ALL,
-                                     BeforeAllCells(DoNothing),
-                                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                                     Locals(int ips; double x, y, z; ),
-                                     CellSetup({
+                  BeforeAllCells(DoNothing),
+                  LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                  Locals(int ips; double x, y, z; ),
+                  CellSetup({
                   ips = SubvectorEltIndex(z_mult_sub, i, j, k);
                   x = RealSpaceX(i, SubgridRX(subgrid));
                   y = RealSpaceY(j, SubgridRY(subgrid));
                   z = rsz_dat[ips];
                 }),
-                                     FACE(LeftFace, { x = x - dx2; }),
-                                     FACE(RightFace, { x = x + dx2; }),
-                                     FACE(DownFace, { y = y - dy2; }),
-                                     FACE(UpFace, { y = y + dy2; }),
-                                     FACE(BackFace, { z = z - dz2 * z_mult_dat[ips]; }),
-                                     FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
-                                     CellFinalize({ patch_values[ival] = x * y * z * time + 1; }),
-                                     AfterAllCells(DoNothing)
-                                     );
+                  FACE(LeftFace, { x = x - dx2; }),
+                  FACE(RightFace, { x = x + dx2; }),
+                  FACE(DownFace, { y = y - dy2; }),
+                  FACE(UpFace, { y = y + dy2; }),
+                  FACE(BackFace, { z = z - dz2 * z_mult_dat[ips]; }),
+                  FACE(FrontFace, { z = z + dz2 * z_mult_dat[ips]; }),
+                  CellFinalize({ patch_values[ival] = x * y * z * time + 1; }),
+                  AfterAllCells(DoNothing)
+                  );
                 break;
               }     /* End case 5 */
             }       /* End switch */
@@ -960,7 +960,7 @@ BCStruct    *BCPressure(
           double flux;
 
           GetBCPressureTypeStruct(FluxConst, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
 
           flux = OverlandFlowValue(interval_data);
@@ -998,7 +998,7 @@ BCStruct    *BCPressure(
           int itmp;
 
           GetBCPressureTypeStruct(OverlandFlowPFB, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -1040,7 +1040,7 @@ BCStruct    *BCPressure(
         case SeepageFace:
         {
           GetBCPressureTypeStruct(SeepageFace, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
           double flux;
 
           flux = SeepageFaceValue(interval_data);
@@ -1070,7 +1070,7 @@ BCStruct    *BCPressure(
         case OverlandKinematic:
         {
           GetBCPressureTypeStruct(OverlandKinematic, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
           double flux;
 
           flux = OverlandKinematicValue(interval_data);
@@ -1100,7 +1100,7 @@ BCStruct    *BCPressure(
         case OverlandDiffusive:
         {
           GetBCPressureTypeStruct(OverlandDiffusive, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
           double flux;
 
           flux = OverlandDiffusiveValue(interval_data);

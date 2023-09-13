@@ -218,10 +218,10 @@ void    TotalVelocityFace(
     pi = 0; mi = 0; vi = 0;
 
     BoxLoopI3(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              pi, nx_p, ny_p, nz_p, 1, 1, 1,
-              mi, nx_m, ny_m, nz_m, 1, 1, 1,
-              vi, nx_v, ny_v, nz_v, 1, 1, 1,
+      ix, iy, iz, nx, ny, nz,
+      pi, nx_p, ny_p, nz_p, 1, 1, 1,
+      mi, nx_m, ny_m, nz_m, 1, 1, 1,
+      vi, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dx;
     });
@@ -279,10 +279,10 @@ void    TotalVelocityFace(
     mi = 0; pi = 0; vi = 0;
 
     BoxLoopI3(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              pi, nx_p, ny_p, nz_p, 1, 1, 1,
-              mi, nx_m, ny_m, nz_m, 1, 1, 1,
-              vi, nx_v, ny_v, nz_v, 1, 1, 1,
+      ix, iy, iz, nx, ny, nz,
+      pi, nx_p, ny_p, nz_p, 1, 1, 1,
+      mi, nx_m, ny_m, nz_m, 1, 1, 1,
+      vi, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dy;
     });
@@ -340,10 +340,10 @@ void    TotalVelocityFace(
     mi = 0; pi = 0; vi = 0;
 
     BoxLoopI3(i, j, k,
-              ix, iy, iz, nx, ny, nz,
-              pi, nx_p, ny_p, nz_p, 1, 1, 1,
-              mi, nx_m, ny_m, nz_m, 1, 1, 1,
-              vi, nx_v, ny_v, nz_v, 1, 1, 1,
+      ix, iy, iz, nx, ny, nz,
+      pi, nx_p, ny_p, nz_p, 1, 1, 1,
+      mi, nx_m, ny_m, nz_m, 1, 1, 1,
+      vi, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dz;
     });
@@ -359,12 +359,12 @@ void    TotalVelocityFace(
   for (phase = 0; phase < ProblemNumPhases(problem); phase++)
   {
     PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
-                       (temp_mobility_x, temp_mobility_y, temp_mobility_z,
-                        ProblemDataPermeabilityX(problem_data),
-                        ProblemDataPermeabilityY(problem_data),
-                        ProblemDataPermeabilityZ(problem_data),
-                        phase, saturations[phase],
-                        ProblemPhaseViscosity(problem, phase)));
+      (temp_mobility_x, temp_mobility_y, temp_mobility_z,
+       ProblemDataPermeabilityX(problem_data),
+       ProblemDataPermeabilityY(problem_data),
+       ProblemDataPermeabilityZ(problem_data),
+       phase, saturations[phase],
+       ProblemPhaseViscosity(problem, phase)));
 
     handle = InitVectorUpdate(temp_mobility_x, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
@@ -374,7 +374,7 @@ void    TotalVelocityFace(
     FinalizeVectorUpdate(handle);
 
     PFModuleInvokeType(CapillaryPressureInvoke, capillary_pressure,
-                       (temp_pressure, phase, 0, problem_data, saturations[0]));
+      (temp_pressure, phase, 0, problem_data, saturations[0]));
 
     handle = InitVectorUpdate(temp_pressure, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
@@ -433,10 +433,10 @@ void    TotalVelocityFace(
       pi = 0; mi = 0; vi = 0;
 
       BoxLoopI3(i, j, k,
-                ix, iy, iz, nx, ny, nz,
-                pi, nx_p, ny_p, nz_p, 1, 1, 1,
-                mi, nx_m, ny_m, nz_m, 1, 1, 1,
-                vi, nx_v, ny_v, nz_v, 1, 1, 1,
+        ix, iy, iz, nx, ny, nz,
+        pi, nx_p, ny_p, nz_p, 1, 1, 1,
+        mi, nx_m, ny_m, nz_m, 1, 1, 1,
+        vi, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi]) *
                    (pu[pi] - pl[pi]) / dx;
@@ -499,10 +499,10 @@ void    TotalVelocityFace(
       pi = 0; mi = 0; vi = 0;
 
       BoxLoopI3(i, j, k,
-                ix, iy, iz, nx, ny, nz,
-                pi, nx_p, ny_p, nz_p, 1, 1, 1,
-                mi, nx_m, ny_m, nz_m, 1, 1, 1,
-                vi, nx_v, ny_v, nz_v, 1, 1, 1,
+        ix, iy, iz, nx, ny, nz,
+        pi, nx_p, ny_p, nz_p, 1, 1, 1,
+        mi, nx_m, ny_m, nz_m, 1, 1, 1,
+        vi, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi])
                    * (pu[pi] - pl[pi]) / dy;
@@ -516,7 +516,7 @@ void    TotalVelocityFace(
      *-------------------------------------------------------------------*/
 
     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                       (phase, pressure, NULL, &dtmp, &temp_density, CALCFCN));
+      (phase, pressure, NULL, &dtmp, &temp_density, CALCFCN));
 
     base_constant = temp_density * ProblemGravity(problem);
 
@@ -570,10 +570,10 @@ void    TotalVelocityFace(
       pi = 0; mi = 0; vi = 0;
 
       BoxLoopI3(i, j, k,
-                ix, iy, iz, nx, ny, nz,
-                pi, nx_p, ny_p, nz_p, 1, 1, 1,
-                mi, nx_m, ny_m, nz_m, 1, 1, 1,
-                vi, nx_v, ny_v, nz_v, 1, 1, 1,
+        ix, iy, iz, nx, ny, nz,
+        pi, nx_p, ny_p, nz_p, 1, 1, 1,
+        mi, nx_m, ny_m, nz_m, 1, 1, 1,
+        vi, nx_v, ny_v, nz_v, 1, 1, 1,
       {
         vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi])
                    * ((pu[pi] - pl[pi]) / dz + base_constant);
@@ -631,7 +631,7 @@ void    TotalVelocityFace(
     for (ipatch = 0; ipatch < GrGeomSolidNumPatches(gr_domain); ipatch++)
     {
       GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
-                      r, ix, iy, iz, nx, ny, nz,
+        r, ix, iy, iz, nx, ny, nz,
       {
         /* primary direction x */
         if (fdir[0])
@@ -656,9 +656,9 @@ void    TotalVelocityFace(
 
         vel0_l = SubvectorElt(subvector_v0, i, j, k);
         vel0_r = SubvectorElt(subvector_v0,
-                              i + dir[dir0][0],
-                              j + dir[dir0][1],
-                              k + dir[dir0][2]);
+          i + dir[dir0][0],
+          j + dir[dir0][1],
+          k + dir[dir0][2]);
 
         /*
          * vel1_l = SubvectorElt(subvector_v1, i, j, k);

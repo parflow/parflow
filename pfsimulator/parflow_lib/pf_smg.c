@@ -115,11 +115,11 @@ void         SMG(
 
       HYPRE_StructSMGGetNumIterations(hypre_smg_data, &num_iterations);
       HYPRE_StructSMGGetFinalRelativeResidualNorm(hypre_smg_data,
-                                                  &rel_norm);
+        &rel_norm);
 
       log_file = OpenLogFile("SMG");
       fprintf(log_file, "SMG num. its: %i  SMG Final norm: %12.4e\n",
-              num_iterations, rel_norm);
+        num_iterations, rel_norm);
       CloseLogFile(log_file);
     }
   }
@@ -181,26 +181,26 @@ PFModule  *SMGInitInstanceXtra(
 
 
     HypreInitialize(pf_Bmat,
-                    &(instance_xtra->hypre_grid),
-                    &(instance_xtra->hypre_stencil),
-                    &(instance_xtra->hypre_mat),
-                    &(instance_xtra->hypre_b),
-                    &(instance_xtra->hypre_x)
-                    );
+      &(instance_xtra->hypre_grid),
+      &(instance_xtra->hypre_stencil),
+      &(instance_xtra->hypre_mat),
+      &(instance_xtra->hypre_b),
+      &(instance_xtra->hypre_x)
+      );
 
     /* Copy the matrix entries */
     BeginTiming(public_xtra->time_index_copy_hypre);
 
     HypreAssembleMatrixAsElements(pf_Bmat,
-                                  pf_Cmat,
-                                  &(instance_xtra->hypre_mat),
-                                  problem_data);
+      pf_Cmat,
+      &(instance_xtra->hypre_mat),
+      problem_data);
 
     EndTiming(public_xtra->time_index_copy_hypre);
 
     /* Set up the SMG preconditioner */
     HYPRE_StructSMGCreate(amps_CommWorld,
-                          &(instance_xtra->hypre_smg_data));
+      &(instance_xtra->hypre_smg_data));
 
     /* Set SMG to recompute rather than save data */
     HYPRE_StructSMGSetMemoryUse(instance_xtra->hypre_smg_data, 0);
@@ -209,13 +209,13 @@ PFModule  *SMGInitInstanceXtra(
     /* Set user parameters for SMG */
     HYPRE_StructSMGSetMaxIter(instance_xtra->hypre_smg_data, max_iter);
     HYPRE_StructSMGSetNumPreRelax(instance_xtra->hypre_smg_data,
-                                  num_pre_relax);
+      num_pre_relax);
     HYPRE_StructSMGSetNumPostRelax(instance_xtra->hypre_smg_data,
-                                   num_post_relax);
+      num_post_relax);
 
     HYPRE_StructSMGSetup(instance_xtra->hypre_smg_data,
-                         instance_xtra->hypre_mat,
-                         instance_xtra->hypre_b, instance_xtra->hypre_x);
+      instance_xtra->hypre_mat,
+      instance_xtra->hypre_b, instance_xtra->hypre_x);
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;

@@ -151,7 +151,7 @@ void    PhaseViscosity(
         if (fcn == CALCFCN)
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                    id, nx_d, ny_d, nz_d, 1, 1, 1,
+            id, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             vp[id] = constant;
           });
@@ -159,7 +159,7 @@ void    PhaseViscosity(
         else     /* fcn = CALCDER */
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                    id, nx_d, ny_d, nz_d, 1, 1, 1,
+            id, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             vp[id] = 0.0;
           });
@@ -206,7 +206,7 @@ void    PhaseViscosity(
         if (fcn == CALCFCN)
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                    ip, nx_p, ny_p, nz_p, 1, 1, 1,
+            ip, nx_p, ny_p, nz_p, 1, 1, 1,
           {
             temper = tp[ip] - 273.0;
             if (temper < 0.0)
@@ -229,8 +229,8 @@ void    PhaseViscosity(
         else            /* fcn = CALCDER sjk: has to be inplemented still*/
         {
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                    ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                    id, nx_d, ny_d, nz_d, 1, 1, 1,
+            ip, nx_p, ny_p, nz_p, 1, 1, 1,
+            id, nx_d, ny_d, nz_d, 1, 1, 1,
           {
             temper = tp[ip] - 273.0;
             if (temper < 0.0)
@@ -318,7 +318,7 @@ PFModule  *PhaseViscosityNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "Phase.%s.Viscosity.Type",
-            NA_IndexToName(GlobalsPhaseNames, i));
+      NA_IndexToName(GlobalsPhaseNames, i));
 
     switch_name = GetString(key);
 
@@ -331,7 +331,7 @@ PFModule  *PhaseViscosityNewPublicXtra(
         dummy0 = ctalloc(Type0, 1);
 
         sprintf(key, "Phase.%s.Viscosity.Value",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         dummy0->constant = GetDouble(key);
 
         (public_xtra->data[i]) = (void*)dummy0;

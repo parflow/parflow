@@ -186,7 +186,7 @@ void          TurningBandsRF(
   else
   {
     shear_arrays = SimShear(&shear_min, &shear_max,
-                            geounit, GridSubgrids(grid), strat_type);
+      geounit, GridSubgrids(grid), strat_type);
   }
 
   /*-----------------------------------------------------------------------
@@ -277,8 +277,8 @@ void          TurningBandsRF(
 
     /* malloc space for Z */
     nzeta = (int)((sqrt(pow((xhi - xlo), 2.0) +
-                        pow((yhi - ylo), 2.0) +
-                        pow((sh_zhi - sh_zlo), 2.0)) / dzeta)) + 2;
+      pow((yhi - ylo), 2.0) +
+      pow((sh_zhi - sh_zlo), 2.0)) / dzeta)) + 2;
     Z = talloc(double, nzeta);
 
     for (l = 0; l < num_lines; l++)

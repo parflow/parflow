@@ -214,7 +214,7 @@ int            PFDistCommand(
      *--------------------------------------------------------------------*/
 
     all_subgrids = DistributeUserGrid(user_grid, num_procs,
-                                      num_procs_x, num_procs_y, num_procs_z);
+      num_procs_x, num_procs_y, num_procs_z);
     if (nz_manual != 0)
     {
       SubgridNZ(user_subgrid) = nz_in;  // Restore the correct nz
@@ -2387,7 +2387,7 @@ int                GetListCommand(
 
       list[i] = (char*)calloc(MAX_LABEL_SIZE, sizeof(char));
       strcpy(list[i], Tcl_DStringAppendElement(&dspair,
-                                               DataboxLabel(databox)));
+        DataboxLabel(databox)));
       Tcl_DStringFree(&dspair);
 
       entryPtr = Tcl_NextHashEntry(&search);
@@ -2686,7 +2686,7 @@ int               CVelCommand(
 
   vel = CompCellVel(databoxk, databoxh);
   sprintf(label, "Darcy velocity in cells for `%s' and `%s'",
-          cond, pHead);
+    cond, pHead);
 
   component_ptr = label + strlen(label);
 
@@ -2790,7 +2790,7 @@ int               VVelCommand(
 
   vel = CompVertVel(databoxk, databoxh);
   sprintf(label, "Darcy velocity in vertices for `%s' and `%s'",
-          cond, pHead);
+    cond, pHead);
 
   component_ptr = label + strlen(label);
 
@@ -2893,7 +2893,7 @@ int               BFCVelCommand(
 
   vel = CompBFCVel(databoxk, databoxh);
   sprintf(label, "Darcy velocity in vertices for `%s' and `%s'",
-          cond, pHead);
+    cond, pHead);
 
   component_ptr = label + strlen(label);
 
@@ -3012,7 +3012,7 @@ int               VMagCommand(
   if (vmag)
   {
     sprintf(label, "Velocity magnitude of `%s', `%s', and `%s'",
-            hashkeyx, hashkeyy, hashkeyz);
+      hashkeyx, hashkeyy, hashkeyz);
 
     /* Make sure the data set pointer was added */
     /* to the hash table successfully.          */
@@ -5269,7 +5269,7 @@ int            ComputeDomainCommand(
    *--------------------------------------------------------------------*/
 
   SubgridArray  *all_subgrids = DistributeUserGrid(user_grid, num_procs,
-                                                   num_procs_x, num_procs_y, num_procs_z);
+    num_procs_x, num_procs_y, num_procs_z);
 
   if (!all_subgrids)
   {
@@ -5459,10 +5459,10 @@ int BuildDomainCommand(
     nz = GetInt(interp, key);
 
     AppendSubgrid(NewSubgrid(ix, iy, iz,
-                             nx, ny, nz,
-                             rx, ry, rz,
-                             p),
-                  &subgrid_array);
+      nx, ny, nz,
+      rx, ry, rz,
+      p),
+      &subgrid_array);
   }
 
   char newhashkey[32];
@@ -5937,11 +5937,11 @@ int            SurfaceRunoffCommand(
       }
 
       ComputeSurfaceRunoff(top,
-                           slope_x,
-                           slope_y,
-                           mannings,
-                           pressure,
-                           surface_runoff);
+        slope_x,
+        slope_y,
+        mannings,
+        pressure,
+        surface_runoff);
     }
     else
     {

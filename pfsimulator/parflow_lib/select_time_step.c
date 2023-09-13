@@ -123,10 +123,10 @@ void     SelectTimeStep(
    *-----------------------------------------------------------------*/
 
   well_dt = TimeCycleDataComputeNextTransition(problem, time,
-                                               WellDataTimeCycleData(ProblemDataWellData(problem_data)));
+    WellDataTimeCycleData(ProblemDataWellData(problem_data)));
 
   bc_dt = TimeCycleDataComputeNextTransition(problem, time,
-                                             BCPressureDataTimeCycleData(ProblemDataBCPressureData(problem_data)));
+    BCPressureDataTimeCycleData(ProblemDataBCPressureData(problem_data)));
 
   /*-----------------------------------------------------------------
    * Compute the new dt value based on time stepping criterion imposed

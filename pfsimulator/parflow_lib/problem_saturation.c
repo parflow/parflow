@@ -744,13 +744,13 @@ PFModule  *SaturationInitInstanceXtra(
       if ((dummy1->data_from_file) == 1)
       {
         ReadPFBinary((dummy1->alpha_file),
-                     (dummy1->alpha_values));
+          (dummy1->alpha_values));
         ReadPFBinary((dummy1->n_file),
-                     (dummy1->n_values));
+          (dummy1->n_values));
         ReadPFBinary((dummy1->s_res_file),
-                     (dummy1->s_res_values));
+          (dummy1->s_res_values));
         ReadPFBinary((dummy1->s_sat_file),
-                     (dummy1->s_sat_values));
+          (dummy1->s_sat_values));
       }
     }
     if (public_xtra->type == 5)
@@ -758,7 +758,7 @@ PFModule  *SaturationInitInstanceXtra(
       dummy5 = (Type5*)(public_xtra->data);
 
       ReadPFBinary((dummy5->filename),
-                   (dummy5->satRF));
+        (dummy5->satRF));
     }
   }
 
@@ -869,7 +869,7 @@ PFModule   *SaturationNewPublicXtra()
         if (dummy0->region_indices[ir] < 0)
         {
           InputError("Error: invalid geometry name <%s> for key <%s>\n",
-                     region, "Phase.Saturation.GeomNames");
+            region, "Phase.Saturation.GeomNames");
         }
 
         sprintf(key, "Geom.%s.Saturation.Value", region);
@@ -910,7 +910,7 @@ PFModule   *SaturationNewPublicXtra()
           if (dummy1->region_indices[ir] < 0)
           {
             InputError("Error: invalid geometry name <%s> for key <%s>\n",
-                       region, "Phase.Saturation.GeomNames");
+              region, "Phase.Saturation.GeomNames");
           }
 
 
@@ -1074,7 +1074,7 @@ PFModule   *SaturationNewPublicXtra()
     default:
     {
       InputError("Error: invalid type <%s> for key <%s>\n",
-                 switch_name, key);
+        switch_name, key);
     }
   }      /* End switch */
 
@@ -1421,19 +1421,19 @@ void  SaturationOutputStatic(
 
   strcpy(file_postfix, "alpha");
   WritePFBinary(file_prefix, file_postfix,
-                pd_alpha);
+    pd_alpha);
 
   strcpy(file_postfix, "n");
   WritePFBinary(file_prefix, file_postfix,
-                pd_n);
+    pd_n);
 
   strcpy(file_postfix, "sres");
   WritePFBinary(file_prefix, file_postfix,
-                pd_sres);
+    pd_sres);
 
   strcpy(file_postfix, "ssat");
   WritePFBinary(file_prefix, file_postfix,
-                pd_ssat);
+    pd_ssat);
 
   FreeVector(pd_alpha);
   FreeVector(pd_n);

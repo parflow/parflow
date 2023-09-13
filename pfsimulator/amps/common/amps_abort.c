@@ -49,8 +49,8 @@ void _amps_Abort(
                  int   line)
 {
   fprintf(stderr, "Aborting in file <%s> line : %i\n",
-          filename,
-          line);
+    filename,
+    line);
   fprintf(stderr, "%s\n", message);
   abort();
 }

@@ -153,14 +153,14 @@ Problem   *NewProblem(
 
   ProblemPhaseDensity(problem) =
     PFModuleNewModuleType(PhaseDensityNewPublicXtraInvoke,
-                          PhaseDensity, (num_phases));
+      PhaseDensity, (num_phases));
 
   problem->phase_viscosity = ctalloc(double, num_phases);
   for (i = 0; i < num_phases; i++)
   {
     /* SGS need to add switch on type */
     sprintf(key, "Phase.%s.Viscosity.Value",
-            NA_IndexToName(GlobalsPhaseNames, i));
+      NA_IndexToName(GlobalsPhaseNames, i));
     problem->phase_viscosity[i] = GetDouble(key);
   }
 
@@ -171,7 +171,7 @@ Problem   *NewProblem(
   {
     /* SGS need to add switch on type */
     sprintf(key, "Contaminants.%s.Degradation.Value",
-            NA_IndexToName(GlobalsContaminatNames, i));
+      NA_IndexToName(GlobalsContaminatNames, i));
     problem->contaminant_degradation[i] = GetDouble(key);
   }
 
@@ -184,13 +184,13 @@ Problem   *NewProblem(
 
   ProblemRetardation(problem) =
     PFModuleNewModuleType(RetardationNewPublicXtraInvoke,
-                          Retardation, (num_contaminants));
+      Retardation, (num_contaminants));
 
   if (solver != RichardsSolve)
   {
     ProblemPhaseMobility(problem) =
       PFModuleNewModuleType(PhaseMobilityNewPublicXtraInvoke,
-                            PhaseMobility, (num_phases));
+        PhaseMobility, (num_phases));
   }
   else  /* Richards case */
   {
@@ -199,7 +199,7 @@ Problem   *NewProblem(
 
   ProblemPhaseSource(problem) =
     PFModuleNewModuleType(PhaseSourceNewPublicXtraInvoke,
-                          PhaseSource, (num_phases));
+      PhaseSource, (num_phases));
 
   ProblemSpecStorage(problem) =
     PFModuleNewModule(SpecStorage, ());   //sk
@@ -242,7 +242,7 @@ Problem   *NewProblem(
   {
     ProblemCapillaryPressure(problem) =
       PFModuleNewModuleType(CapillaryPressureNewPublicXtraInvoke,
-                            CapillaryPressure, (num_phases));
+        CapillaryPressure, (num_phases));
   }
   else  /* Richards case */
   {
@@ -266,17 +266,17 @@ Problem   *NewProblem(
 
   ProblemBCPressure(problem) =
     PFModuleNewModuleType(BCPressureNewPublicXtraInvoke,
-                          BCPressure, (num_phases));
+      BCPressure, (num_phases));
 
   ProblemBCPressurePackage(problem) =
     PFModuleNewModuleType(BCPressurePackageNewPublicXtraInvoke,
-                          BCPressurePackage, (num_phases));
+      BCPressurePackage, (num_phases));
 
   if (solver != RichardsSolve)
   {
     ProblemBCPhaseSaturation(problem) =
       PFModuleNewModuleType(BCPhaseSaturationNewPublicXtraInvoke,
-                            BCPhaseSaturation, (num_phases));
+        BCPhaseSaturation, (num_phases));
   }
 
   /*-----------------------------------------------------------------------
@@ -287,7 +287,7 @@ Problem   *NewProblem(
   {
     ProblemICPhaseSatur(problem) =
       PFModuleNewModuleType(ICPhaseSaturNewPublicXtraInvoke,
-                            ICPhaseSatur, (num_phases));
+        ICPhaseSatur, (num_phases));
   }
   else
   {
@@ -297,7 +297,7 @@ Problem   *NewProblem(
 
   ProblemICPhaseConcen(problem) =
     PFModuleNewModuleType(ICPhaseConcenNewPublicXtraInvoke,
-                          ICPhaseConcen, (num_phases, num_contaminants));
+      ICPhaseConcen, (num_phases, num_contaminants));
 
   /*-----------------------------------------------------------------------
    * If know exact solution for Richards' case, get data for which
@@ -318,7 +318,7 @@ Problem   *NewProblem(
   {
     ProblemSaturationConstitutive(problem) =
       PFModuleNewModuleType(SaturationConstitutiveNewPublicXtraInvoke,
-                            SaturationConstitutive, (num_phases));
+        SaturationConstitutive, (num_phases));
   }
 
   /*----------------------------------------------------------------------
@@ -327,7 +327,7 @@ Problem   *NewProblem(
 
   ProblemWellPackage(problem) =
     PFModuleNewModuleType(WellPackageNewPublicXtraInvoke,
-                          WellPackage, (num_phases, num_contaminants));
+      WellPackage, (num_phases, num_contaminants));
 
 
   return problem;

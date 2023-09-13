@@ -68,9 +68,9 @@ int operation;
           {
             case AMPS_INVOICE_BYTE_CTYPE:
               pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(char);
                    pos_dest < end_dest;
@@ -81,9 +81,9 @@ int operation;
 
             case AMPS_INVOICE_CHAR_CTYPE:
               pos_dest += AMPS_CALL_CHAR_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_CHAR_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(char);
                    pos_dest < end_dest;
@@ -94,9 +94,9 @@ int operation;
 
             case AMPS_INVOICE_SHORT_CTYPE:
               pos_dest += AMPS_CALL_SHORT_ALIGN(comm, NULL,
-                                                pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_SHORT_ALIGN(comm, NULL,
-                                               pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(short);
                    pos_dest < end_dest;
@@ -107,9 +107,9 @@ int operation;
 
             case AMPS_INVOICE_INT_CTYPE:
               pos_dest += AMPS_CALL_INT_ALIGN(comm, NULL,
-                                              pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_INT_ALIGN(comm, NULL,
-                                             pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(int);
                    pos_dest < end_dest;
@@ -120,9 +120,9 @@ int operation;
 
             case AMPS_INVOICE_LONG_CTYPE:
               pos_dest += AMPS_CALL_LONG_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_LONG_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(long);
                    pos_dest < end_dest;
@@ -133,9 +133,9 @@ int operation;
 
             case AMPS_INVOICE_FLOAT_CTYPE:
               pos_dest += AMPS_CALL_FLOAT_ALIGN(comm, NULL,
-                                                pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_FLOAT_ALIGN(comm, NULL,
-                                               pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(float);
                    pos_dest < end_dest;
@@ -146,9 +146,9 @@ int operation;
 
             case AMPS_INVOICE_DOUBLE_CTYPE:
               pos_dest += AMPS_CALL_DOUBLE_ALIGN(comm, NULL,
-                                                 pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_DOUBLE_ALIGN(comm, NULL,
-                                                pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(double);
                    pos_dest < end_dest;
@@ -164,9 +164,9 @@ int operation;
           {
             case AMPS_INVOICE_BYTE_CTYPE:
               pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(char);
                    pos_dest < end_dest;
@@ -177,9 +177,9 @@ int operation;
 
             case AMPS_INVOICE_CHAR_CTYPE:
               pos_dest += AMPS_CALL_CHAR_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_CHAR_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(char);
                    pos_dest < end_dest;
@@ -190,9 +190,9 @@ int operation;
 
             case AMPS_INVOICE_SHORT_CTYPE:
               pos_dest += AMPS_CALL_SHORT_ALIGN(comm, NULL,
-                                                pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_SHORT_ALIGN(comm, NULL,
-                                               pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(short);
                    pos_dest < end_dest;
@@ -203,9 +203,9 @@ int operation;
 
             case AMPS_INVOICE_INT_CTYPE:
               pos_dest += AMPS_CALL_INT_ALIGN(comm, NULL,
-                                              pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_INT_ALIGN(comm, NULL,
-                                             pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(int);
                    pos_dest < end_dest;
@@ -216,9 +216,9 @@ int operation;
 
             case AMPS_INVOICE_LONG_CTYPE:
               pos_dest += AMPS_CALL_LONG_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_LONG_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(long);
                    pos_dest < end_dest;
@@ -229,9 +229,9 @@ int operation;
 
             case AMPS_INVOICE_FLOAT_CTYPE:
               pos_dest += AMPS_CALL_FLOAT_ALIGN(comm, NULL,
-                                                pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_FLOAT_ALIGN(comm, NULL,
-                                               pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(float);
                    pos_dest < end_dest;
@@ -242,9 +242,9 @@ int operation;
 
             case AMPS_INVOICE_DOUBLE_CTYPE:
               pos_dest += AMPS_CALL_DOUBLE_ALIGN(comm, NULL,
-                                                 pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_DOUBLE_ALIGN(comm, NULL,
-                                                pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(double);
                    pos_dest < end_dest;
@@ -260,9 +260,9 @@ int operation;
           {
             case AMPS_INVOICE_BYTE_CTYPE:
               pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(char);
                    pos_dest < end_dest;
@@ -272,9 +272,9 @@ int operation;
 
             case AMPS_INVOICE_CHAR_CTYPE:
               pos_dest += AMPS_CALL_CHAR_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_CHAR_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(char);
                    pos_dest < end_dest;
@@ -284,9 +284,9 @@ int operation;
 
             case AMPS_INVOICE_SHORT_CTYPE:
               pos_dest += AMPS_CALL_SHORT_ALIGN(comm, NULL,
-                                                pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_SHORT_ALIGN(comm, NULL,
-                                               pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(short);
                    pos_dest < end_dest;
@@ -296,9 +296,9 @@ int operation;
 
             case AMPS_INVOICE_INT_CTYPE:
               pos_dest += AMPS_CALL_INT_ALIGN(comm, NULL,
-                                              pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_INT_ALIGN(comm, NULL,
-                                             pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(int);
                    pos_dest < end_dest;
@@ -308,9 +308,9 @@ int operation;
 
             case AMPS_INVOICE_LONG_CTYPE:
               pos_dest += AMPS_CALL_LONG_ALIGN(comm, NULL,
-                                               pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_LONG_ALIGN(comm, NULL,
-                                              pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(long);
                    pos_dest < end_dest;
@@ -320,9 +320,9 @@ int operation;
 
             case AMPS_INVOICE_FLOAT_CTYPE:
               pos_dest += AMPS_CALL_FLOAT_ALIGN(comm, NULL,
-                                                pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_FLOAT_ALIGN(comm, NULL,
-                                               pos_src, len, 1);
+                pos_src, len, 1);
 
               for (end_dest = pos_dest + len * sizeof(float);
                    pos_dest < end_dest;
@@ -332,9 +332,9 @@ int operation;
 
             case AMPS_INVOICE_DOUBLE_CTYPE:
               pos_dest += AMPS_CALL_DOUBLE_ALIGN(comm, NULL,
-                                                 pos_dest, len, 1);
+                pos_dest, len, 1);
               pos_src += AMPS_CALL_DOUBLE_ALIGN(comm, NULL,
-                                                pos_src, len, 1);
+                pos_src, len, 1);
 
 
               for (end_dest = pos_dest + len * sizeof(double);

@@ -185,7 +185,7 @@ static const int FDIR_TABLE[6][3] = {
                                                                                                                      \
             if (GrGeomSolidCellFlagDataSize(grgeom) > 0)                                                             \
             memcpy(flagdata, GrGeomSolidCellFlagData(grgeom),                                                        \
-                   GrGeomSolidCellFlagDataSize(grgeom));                                                             \
+  GrGeomSolidCellFlagDataSize(grgeom));                                                                              \
                                                                                                                      \
             _tfree_device(GrGeomSolidCellFlagData(grgeom));                                                          \
             GrGeomSolidCellFlagData(grgeom) = flagdata;                                                              \
@@ -896,10 +896,10 @@ static const int FDIR_TABLE[6][3] = {
               j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                                                                                                                \
               k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;                                                                                                                                \
               GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node,                                                                                                                                \
-                                           GrGeomSolidData(grgeom),                                                                                                                         \
-                                           GrGeomSolidOctreeBGLevel(grgeom) + r,                                                                                                            \
-                                           ix, iy, iz, nx, ny, nz,                                                                                                                          \
-                                           TRUE,                                                                                                                                            \
+  GrGeomSolidData(grgeom),                                                                                                                                                                  \
+  GrGeomSolidOctreeBGLevel(grgeom) + r,                                                                                                                                                     \
+  ix, iy, iz, nx, ny, nz,                                                                                                                                                                   \
+  TRUE,                                                                                                                                                                                     \
         {                                                                                                                                                                                   \
           body;                                                                                                                                                                             \
           outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] |= (1 << 1);                                                                                                               \

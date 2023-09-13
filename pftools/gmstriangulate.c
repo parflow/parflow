@@ -90,7 +90,7 @@ int main(
   if (argc < 4)
   {
     fprintf(stderr,
-            "Usage:  gmstriangulate <TIN mask> <TIN input> <TIN output>\n");
+      "Usage:  gmstriangulate <TIN mask> <TIN input> <TIN output>\n");
     exit(1);
   }
 

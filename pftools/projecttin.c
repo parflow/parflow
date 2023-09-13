@@ -330,10 +330,10 @@ void AddTriangleToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin,
     PM->vertices[triangle->v0].num_triangles++] = 0;
 
   a0 = atan2(v1->y - v0->y,
-             v1->x - v0->x);
+    v1->x - v0->x);
 
   a1 = atan2(v2->y - v0->y,
-             v2->x - v0->x);
+    v2->x - v0->x);
 
   PM->triangles[PM->LastTriangle].atan2[0] = Bisector(a0, a1);
 
@@ -350,10 +350,10 @@ void AddTriangleToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin,
 
 
   a0 = atan2(v0->y - v1->y,
-             v0->x - v1->x);
+    v0->x - v1->x);
 
   a1 = atan2(v2->y - v1->y,
-             v2->x - v1->x);
+    v2->x - v1->x);
 
   PM->triangles[PM->LastTriangle].atan2[1] = Bisector(a0, a1);
 
@@ -371,10 +371,10 @@ void AddTriangleToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin,
     PM->vertices[triangle->v2].num_triangles++] = 2;
 
   a0 = atan2(v0->y - v2->y,
-             v0->x - v2->x);
+    v0->x - v2->x);
 
   a1 = atan2(v1->y - v2->y,
-             v1->x - v2->x);
+    v1->x - v2->x);
 
   PM->triangles[PM->LastTriangle].atan2[2] = Bisector(a0, a1);
 
@@ -410,8 +410,8 @@ ProjectionMesh *ConvertTINToProjectionMesh(gms_TIN *tin)
   for (index = 0; index < tin->nvertices; index++)
   {
     AddVertexToProjectionMesh(PM,
-                              tin->vertices[index]->x,
-                              tin->vertices[index]->y);
+      tin->vertices[index]->x,
+      tin->vertices[index]->y);
   }
 
   for (index = 0; index < tin->ntriangles; index++)
@@ -463,11 +463,11 @@ void AddTINToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin)
     while (projection_point)
     {
       IntersectLineWithTriangle(ZDIRECTION,
-                                projection_point->x, projection_point->y,
-                                v0->x, v0->y, v0->z,
-                                v1->x, v1->y, v1->z,
-                                v2->x, v2->y, v2->z,
-                                &intersects, &z_intersection, &normal_component);
+        projection_point->x, projection_point->y,
+        v0->x, v0->y, v0->z,
+        v1->x, v1->y, v1->z,
+        v2->x, v2->y, v2->z,
+        &intersects, &z_intersection, &normal_component);
 
       if (intersects)
       {
@@ -477,9 +477,9 @@ void AddTINToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin)
           //projection_triangle = &(PM->triangles[projection_point->triangles[i]]);
           /* Add Intersection point to the intersection list */
           AddIntersectionPointToMeshVertex(projection_point,
-                                           projection_point->triangles[i],
-                                           z_intersection,
-                                           tin->mat_id);
+            projection_point->triangles[i],
+            z_intersection,
+            tin->mat_id);
         }
       }
       projection_point = NextProjectionPoint(PM, max_x);
@@ -624,18 +624,18 @@ void ProjectionMeshTo3DMesh(ProjectionMesh *PM, char *filename)
                   fprintf(of, "E6W %d ", volume_num++);
 
                   fprintf(of, "%d %d %d ",
-                          top_v0->global_num,
-                          top_v1->global_num,
-                          top_v2->global_num);
+                    top_v0->global_num,
+                    top_v1->global_num,
+                    top_v2->global_num);
 
                   fprintf(of, "%d %d %d ",
-                          bot_v0->global_num,
-                          bot_v1->global_num,
-                          bot_v2->global_num);
+                    bot_v0->global_num,
+                    bot_v1->global_num,
+                    bot_v2->global_num);
 
                   fprintf(of, "%d\n",
-                          bot_v0->layer_id * 1000 +
-                          top_v0->layer_id);
+                    bot_v0->layer_id * 1000 +
+                    top_v0->layer_id);
                 }
               }
               /* Set the top of the next layer to the bottom of the last
@@ -664,9 +664,9 @@ void ProjectionMeshTo3DMesh(ProjectionMesh *PM, char *filename)
       if (ptr->global_num)
       {
         fprintf(of, "GN %d %.15e %.15e %.15e\n", ptr->global_num,
-                PM->vertices[index].x,
-                PM->vertices[index].y,
-                ptr->z);
+          PM->vertices[index].x,
+          PM->vertices[index].y,
+          ptr->z);
       }
       ptr = ptr->next;
     }
@@ -691,7 +691,7 @@ int main(int argc, char **argv)
   if (argc < 3)
   {
     fprintf(stderr,
-            "Usage:  projecttin <TIN with the project triangles> <TINs to project> <3D mesh output>\n");
+      "Usage:  projecttin <TIN with the project triangles> <TINs to project> <3D mesh output>\n");
     exit(1);
   }
 

@@ -353,7 +353,7 @@ PFModule  *ManningsInitInstanceXtra(
       dummy2 = (Type2*)(public_xtra->data);
 
       dummy2->m_values = NewVectorType(grid2d, 1, 1,
-                                       vector_cell_centered_2D);
+        vector_cell_centered_2D);
 
       ReadPFBinary((dummy2->filename), (dummy2->m_values));
     }
@@ -441,7 +441,7 @@ PFModule  *ManningsNewPublicXtra()
       {
         dummy0->region_indices[ir] =
           NA_NameToIndex(GlobalsGeomNames,
-                         NA_IndexToName(dummy0->regions, ir));
+            NA_IndexToName(dummy0->regions, ir));
 
         sprintf(key, "Mannings.Geom.%s.Value", NA_IndexToName(dummy0->regions, ir));
         dummy0->values[ir] = GetDouble(key);

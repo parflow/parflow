@@ -61,8 +61,8 @@ int _amps_send_sizes(amps_Package package, int **sizes)
     amps_pack(amps_CommWorld, package->send_invoices[i], package->send_invoices[i]->combuf, &streams_hired);
 
     MPI_Isend(&((*sizes)[i]), 1, MPI_INT, package->dest[i],
-              0, amps_CommWorld,
-              &(package->send_requests[i]));
+      0, amps_CommWorld,
+      &(package->send_requests[i]));
     size_acc += (*sizes)[i];
   }
 
@@ -87,7 +87,7 @@ int _amps_recv_sizes(amps_Package package)
   for (int i = 0; i < package->num_recv; i++)
   {
     MPI_Recv(&sizes[i], 1, MPI_INT, package->src[i], 0,
-             amps_CommWorld, &status);
+      amps_CommWorld, &status);
     size_acc += sizes[i];
   }
 
@@ -107,8 +107,8 @@ int _amps_recv_sizes(amps_Package package)
   {
     package->recv_invoices[i]->combuf = &amps_device_globals.combuf_recv[size_acc];
     MPI_Recv_init(package->recv_invoices[i]->combuf, sizes[i],
-                  MPI_BYTE, package->src[i], 1, amps_CommWorld,
-                  &(package->recv_requests[i]));
+      MPI_BYTE, package->src[i], 1, amps_CommWorld,
+      &(package->recv_requests[i]));
     size_acc += sizes[i];
   }
   free(sizes);
@@ -127,13 +127,13 @@ void _amps_wait_exchange(amps_Handle handle)
   if (num)
   {
     MPI_Waitall(num, handle->package->recv_requests,
-                handle->package->status);
+      handle->package->status);
     if (handle->package->num_recv)
     {
       for (i = 0; i < handle->package->num_recv; i++)
       {
         amps_unpack(amps_CommWorld, handle->package->recv_invoices[i],
-                    (char *)handle->package->recv_invoices[i]->combuf, &streams_hired);
+          (char *)handle->package->recv_invoices[i]->combuf, &streams_hired);
       }
       for (int i = 0; i < streams_hired; i++)
       {
@@ -174,7 +174,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   if (package->num_send)
   {
     status_array = (MPI_Status*)calloc(package->num_send,
-                                       sizeof(MPI_Status));
+      sizeof(MPI_Status));
     MPI_Waitall(package->num_send, package->send_requests, status_array);
     free(status_array);
   }
@@ -184,8 +184,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
     for (i = 0; i < package->num_send; i++)
     {
       MPI_Send_init(package->send_invoices[i]->combuf,
-                    send_sizes[i], MPI_BYTE, package->dest[i], 1,
-                    amps_CommWorld, &(package->send_requests[i]));
+        send_sizes[i], MPI_BYTE, package->dest[i], 1,
+        amps_CommWorld, &(package->send_requests[i]));
     }
 
     free(send_sizes);

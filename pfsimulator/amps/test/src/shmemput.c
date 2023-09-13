@@ -165,7 +165,7 @@ int main(int argc, char **argv)
         {
           r_avg = (rate_factor * msglen) / t_avg;
           printf(" %7d      %6d        %7.2lf      %7.2lf\n",
-                 msglen, msglen / word_size, t_avg, r_avg);
+            msglen, msglen / word_size, t_avg, r_avg);
         }
       }
     }

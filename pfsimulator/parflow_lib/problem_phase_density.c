@@ -195,7 +195,7 @@ void    PhaseDensity(
           if (fcn == CALCFCN)
           {
             BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                      id, nx_d, ny_d, nz_d, 1, 1, 1,
+              id, nx_d, ny_d, nz_d, 1, 1, 1,
             {
               dp[id] = constant;
             });
@@ -203,7 +203,7 @@ void    PhaseDensity(
           else   /* fcn = CALCDER */
           {
             BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                      id, nx_d, ny_d, nz_d, 1, 1, 1,
+              id, nx_d, ny_d, nz_d, 1, 1, 1,
             {
               dp[id] = 0.0;
             });
@@ -266,8 +266,8 @@ void    PhaseDensity(
           if (fcn == CALCFCN)
           {
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                      id, nx_d, ny_d, nz_d, 1, 1, 1,
+              ip, nx_p, ny_p, nz_p, 1, 1, 1,
+              id, nx_d, ny_d, nz_d, 1, 1, 1,
             {
               dp[id] = ref * exp(pp[ip] * comp);
             });
@@ -275,8 +275,8 @@ void    PhaseDensity(
           else          /* fcn = CALCDER */
           {
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                      id, nx_d, ny_d, nz_d, 1, 1, 1,
+              ip, nx_p, ny_p, nz_p, 1, 1, 1,
+              id, nx_d, ny_d, nz_d, 1, 1, 1,
             {
               dp[id] = comp * ref * exp(pp[ip] * comp);
             });
@@ -372,7 +372,7 @@ PFModule  *PhaseDensityNewPublicXtra(
   for (i = 0; i < num_phases; i++)
   {
     sprintf(key, "Phase.%s.Density.Type",
-            NA_IndexToName(GlobalsPhaseNames, i));
+      NA_IndexToName(GlobalsPhaseNames, i));
 
     switch_name = GetString(key);
 
@@ -385,7 +385,7 @@ PFModule  *PhaseDensityNewPublicXtra(
         dummy0 = ctalloc(Type0, 1);
 
         sprintf(key, "Phase.%s.Density.Value",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         dummy0->constant = GetDouble(key);
 
         (public_xtra->data[i]) = (void*)dummy0;
@@ -398,11 +398,11 @@ PFModule  *PhaseDensityNewPublicXtra(
         dummy1 = ctalloc(Type1, 1);
 
         sprintf(key, "Phase.%s.Density.ReferenceDensity",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         dummy1->reference_density = GetDouble(key);
 
         sprintf(key, "Phase.%s.Density.CompressibiltyConstant",
-                NA_IndexToName(GlobalsPhaseNames, i));
+          NA_IndexToName(GlobalsPhaseNames, i));
         dummy1->compressibility_constant = GetDouble(key);
 
         (public_xtra->data[i]) = (void*)dummy1;

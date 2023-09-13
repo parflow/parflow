@@ -574,9 +574,9 @@ typedef struct grgeom_octree {
                                  level_body, code_body)                                                                                                       \
         {                                                                                                                                                     \
           GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test,                                                                               \
-                                   level_body, code_body,                                                                                                     \
-                                   GrGeomOctreeNodeIsFull(node),                                                                                              \
-                                   (GrGeomOctreeNodeIsInside(node) || GrGeomOctreeNodeIsFull(node)));                                                         \
+  level_body, code_body,                                                                                                                                      \
+  GrGeomOctreeNodeIsFull(node),                                                                                                                               \
+  (GrGeomOctreeNodeIsInside(node) || GrGeomOctreeNodeIsFull(node)));                                                                                          \
         }
 
 /**
@@ -614,9 +614,9 @@ typedef struct grgeom_octree {
                                  level_body, code_body)                                                                                                         \
         {                                                                                                                                                       \
           GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test,                                                                                 \
-                                   level_body, code_body,                                                                                                       \
-                                   GrGeomOctreeNodeIsEmpty(node),                                                                                               \
-                                   (GrGeomOctreeNodeIsOutside(node) || GrGeomOctreeNodeIsEmpty(node)));                                                         \
+  level_body, code_body,                                                                                                                                        \
+  GrGeomOctreeNodeIsEmpty(node),                                                                                                                                \
+  (GrGeomOctreeNodeIsOutside(node) || GrGeomOctreeNodeIsEmpty(node)));                                                                                          \
         }
 
 /**
@@ -1110,8 +1110,8 @@ typedef struct grgeom_octree {
                                                                                                                                                \
           fdir = PV_fdir;                                                                                                                      \
           GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest,                                                                 \
-                                     ix, iy, iz, nx, ny, nz,                                                                                   \
-                                     TRUE,                                                                                                     \
+  ix, iy, iz, nx, ny, nz,                                                                                                                      \
+  TRUE,                                                                                                                                        \
     {                                                                                                                                          \
       for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                                                                                      \
       if (GrGeomOctreeHasFace(node, PV_f))                                                                                                     \
@@ -1161,8 +1161,8 @@ typedef struct grgeom_octree {
           int PV_f;                                                                                                                        \
           UNPACK(locals);                                                                                                                  \
           GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest,                                                             \
-                                     ix, iy, iz, nx, ny, nz,                                                                               \
-                                     TRUE,                                                                                                 \
+  ix, iy, iz, nx, ny, nz,                                                                                                                  \
+  TRUE,                                                                                                                                    \
     {                                                                                                                                      \
       for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                                                                                  \
       if (GrGeomOctreeHasFace(node, PV_f))                                                                                                 \
@@ -1344,8 +1344,8 @@ typedef struct grgeom_octree {
           PV_k = k;                                                                                                         \
                                                                                                                             \
           GrGeomOctreeBoxLoop(PV_i, PV_j, PV_k, PV_l,                                                                       \
-                              node, octree, levels_in_octree,                                                               \
-                              level_of_interest, value_test,                                                                \
+  node, octree, levels_in_octree,                                                                                           \
+  level_of_interest, value_test,                                                                                            \
     {                                                                                                                       \
       /* find octree and region intersection */                                                                             \
       PV_ixl = pfmax(ix, PV_i);                                                                                             \

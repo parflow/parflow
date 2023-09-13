@@ -118,7 +118,7 @@ char **buffer;
         cur_pos += AMPS_CALL_INT_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)
           AMPS_CALL_INT_OUT(comm, data, cur_pos, len,
-                            stride);
+            stride);
         cur_pos += AMPS_CALL_INT_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
@@ -126,7 +126,7 @@ char **buffer;
         cur_pos += AMPS_CALL_LONG_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)
           AMPS_CALL_LONG_OUT(comm, data, cur_pos, len,
-                             stride);
+            stride);
         cur_pos += AMPS_CALL_LONG_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
@@ -134,7 +134,7 @@ char **buffer;
         cur_pos += AMPS_CALL_FLOAT_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)
           AMPS_CALL_FLOAT_OUT(comm, data, cur_pos, len,
-                              stride);
+            stride);
         cur_pos += AMPS_CALL_FLOAT_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
@@ -142,7 +142,7 @@ char **buffer;
         cur_pos += AMPS_CALL_DOUBLE_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)
           AMPS_CALL_DOUBLE_OUT(comm, data, cur_pos, len,
-                               stride);
+            stride);
         cur_pos += AMPS_CALL_DOUBLE_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
@@ -151,18 +151,18 @@ char **buffer;
               *(ptr->ptr_dim) : ptr->dim;
         temp_pos = cur_pos;
         cur_pos += amps_vector_align(comm,
-                                     ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                     &data, &cur_pos, dim,
-                                     ptr->ptr_len, ptr->ptr_stride);
+          ptr->type - AMPS_INVOICE_LAST_CTYPE,
+          &data, &cur_pos, dim,
+          ptr->ptr_len, ptr->ptr_stride);
         temp_pos = cur_pos;
         amps_vector_out(comm, ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                        &data, &temp_pos, dim - 1, ptr->ptr_len,
-                        ptr->ptr_stride);
+          &data, &temp_pos, dim - 1, ptr->ptr_len,
+          ptr->ptr_stride);
         temp_pos = cur_pos;
         cur_pos += amps_vector_sizeof_buffer(comm,
-                                             ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                             &data, &temp_pos, dim,
-                                             ptr->ptr_len, ptr->ptr_stride);
+          ptr->type - AMPS_INVOICE_LAST_CTYPE,
+          &data, &temp_pos, dim,
+          ptr->ptr_len, ptr->ptr_stride);
     }
     ptr = ptr->next;
   }
@@ -231,7 +231,7 @@ amps_Invoice inv;
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_BYTE,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -239,7 +239,7 @@ amps_Invoice inv;
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_CHAR,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -247,7 +247,7 @@ amps_Invoice inv;
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_SHORT,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -255,7 +255,7 @@ amps_Invoice inv;
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_INT,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -263,7 +263,7 @@ amps_Invoice inv;
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_LONG,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -271,7 +271,7 @@ amps_Invoice inv;
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_FLOAT,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -279,7 +279,7 @@ amps_Invoice inv;
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_DOUBLE,
-                          &mpi_types[element]);
+            &mpi_types[element]);
         }
         break;
 
@@ -347,9 +347,9 @@ amps_Invoice inv;
           if (i == dim - 1)
           {
             MPI_Type_create_hvector(ptr->ptr_len[i], 1,
-                                    base_size +
-                                    (ptr->ptr_stride[i] - 1) * element_size,
-                                    *base_type, &mpi_types[element]);
+              base_size +
+              (ptr->ptr_stride[i] - 1) * element_size,
+              *base_type, &mpi_types[element]);
             base_size = base_size * ptr->ptr_len[i]
                         + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1)
                         * element_size;
@@ -358,9 +358,9 @@ amps_Invoice inv;
           else
           {
             MPI_Type_create_hvector(ptr->ptr_len[i], 1,
-                                    base_size +
-                                    (ptr->ptr_stride[i] - 1) * element_size,
-                                    *base_type, new_type);
+              base_size +
+              (ptr->ptr_stride[i] - 1) * element_size,
+              *base_type, new_type);
             base_size = base_size * ptr->ptr_len[i]
                         + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1)
                         * element_size;
@@ -389,10 +389,10 @@ amps_Invoice inv;
   }
 
   MPI_Type_create_struct(inv->num,
-                         mpi_block_len,
-                         mpi_displacements,
-                         mpi_types,
-                         &inv->mpi_type);
+    mpi_block_len,
+    mpi_displacements,
+    mpi_types,
+    &inv->mpi_type);
 
   for (element = 0; element < inv->num; element++)
   {

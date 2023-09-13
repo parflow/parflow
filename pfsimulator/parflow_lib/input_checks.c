@@ -57,7 +57,7 @@ int CheckTime(Problem *problem, char *key, double time)
     sprintf(time_string, "%f", time);
 
     InputError("Error: invalid time value <%s> for key <%s>, value should be multiple of Timing.BaseUnit\n",
-               time_string, key);
+      time_string, key);
     return_value = FALSE;
   }
 

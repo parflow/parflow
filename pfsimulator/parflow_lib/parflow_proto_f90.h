@@ -46,10 +46,10 @@
                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,                              \
                     dxscr, dyscr, dzscr, dzfrm)                                                        \
         ADVECT(s, sn, uedge, vedge, wedge, phi,                                                        \
-               slx, sly, slz,                                                                          \
-               lo, hi, dlo, dhi, hx, &dt, &fstord,                                                     \
-               sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,                                   \
-               dxscr, dyscr, dzscr, dzfrm)
+  slx, sly, slz,                                                                                       \
+  lo, hi, dlo, dhi, hx, &dt, &fstord,                                                                  \
+  sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,                                                \
+  dxscr, dyscr, dzscr, dzfrm)
 
 void ADVECT(double *s, double *sn,
             double *uedge, double *vedge, double *wedge, double *phi,
@@ -76,11 +76,11 @@ void ADVECT(double *s, double *sn,
                      sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,                                \
                      dxscr, dyscr, dzscr, dzfrm)                                                          \
         SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,                                                \
-                viscosity, density, &gravity,                                                             \
-                slx, sly, slz,                                                                            \
-                lohi, dlohi, hx, &dt,                                                                     \
-                sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,                                     \
-                dxscr, dyscr, dzscr, dzfrm)
+  viscosity, density, &gravity,                                                                           \
+  slx, sly, slz,                                                                                          \
+  lohi, dlohi, hx, &dt,                                                                                   \
+  sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,                                                   \
+  dxscr, dyscr, dzscr, dzfrm)
 
 void SADVECT(double *s, double *sn,
              double *uedge, double *vedge, double *wedge, double *betaedge, double *phi,

@@ -148,7 +148,7 @@ void         ICPhaseSatur(
     *************************************************************************/
 
     field_sum = ComputeTotalConcen(ProblemDataGrDomain(problem_data),
-                                   grid, ic_phase_satur);
+      grid, ic_phase_satur);
 
     if (!amps_Rank(amps_CommWorld))
     {

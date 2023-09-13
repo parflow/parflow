@@ -125,18 +125,18 @@ void    OverlandFlowEvalDiff(
   if (fcn == CALCFCN)
   {
     ForPatchCellsPerFaceWithGhost(BC_ALL,
-                                  BeforeAllCells(DoNothing),
-                                  LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                                  Locals(int io, itop, ip = 0, ipp1, ippsy;
-                                         int k1, k0x, k0y, k1x, k1y;
-                                         double Press_x = NAN, Press_y;
-                                         double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag;
-                                         double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno; ),
-                                  CellSetup(DoNothing),
-                                  FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-                                  FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                                  FACE(BackFace, DoNothing),
-                                  FACE(FrontFace,
+      BeforeAllCells(DoNothing),
+      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+      Locals(int io, itop, ip = 0, ipp1, ippsy;
+        int k1, k0x, k0y, k1x, k1y;
+        double Press_x = NAN, Press_y;
+        double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag;
+        double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno; ),
+      CellSetup(DoNothing),
+      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+      FACE(BackFace, DoNothing),
+      FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -224,19 +224,19 @@ void    OverlandFlowEvalDiff(
         }
       }
     }),
-                                  CellFinalize(DoNothing),
-                                  AfterAllCells(DoNothing)
-                                  );
+      CellFinalize(DoNothing),
+      AfterAllCells(DoNothing)
+      );
 
     ForPatchCellsPerFace(BC_ALL,
-                         BeforeAllCells(DoNothing),
-                         LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                         Locals(int io; ),
-                         CellSetup(DoNothing),
-                         FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-                         FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                         FACE(BackFace, DoNothing),
-                         FACE(FrontFace,
+      BeforeAllCells(DoNothing),
+      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+      Locals(int io; ),
+      CellSetup(DoNothing),
+      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+      FACE(BackFace, DoNothing),
+      FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       ke_v[io] = qx_v[io];
@@ -245,24 +245,24 @@ void    OverlandFlowEvalDiff(
       ks_v[io] = qy_v[io - sy_v];
       //printf("i=%d j=%d k=%d ke_v=%d kw_v=%d kn_v=%d ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
     }),
-                         CellFinalize(DoNothing),
-                         AfterAllCells(DoNothing)
-                         );
+      CellFinalize(DoNothing),
+      AfterAllCells(DoNothing)
+      );
   }
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
     ForPatchCellsPerFace(BC_ALL,
-                         BeforeAllCells(DoNothing),
-                         LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
-                         Locals(int io, itop, ip = 0, ipp1, ippsy;
-                                int k1, k0x, k0y, k1x, k1y;
-                                double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
-                                double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag; ),
-                         CellSetup(DoNothing),
-                         FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
-                         FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
-                         FACE(BackFace, DoNothing),
-                         FACE(FrontFace,
+      BeforeAllCells(DoNothing),
+      LoopVars(i, j, k, ival, bc_struct, ipatch, sg),
+      Locals(int io, itop, ip = 0, ipp1, ippsy;
+        int k1, k0x, k0y, k1x, k1y;
+        double Pupx = NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
+        double Sf_x = NAN, Sf_y, Sf_xo = NAN, Sf_yo = NAN, Sf_mag; ),
+      CellSetup(DoNothing),
+      FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
+      FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
+      FACE(BackFace, DoNothing),
+      FACE(FrontFace,
     {
       io = SubvectorEltIndex(sx_sub, i, j, 0);
       itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -425,9 +425,9 @@ void    OverlandFlowEvalDiff(
         }
       }
     }),
-                         CellFinalize(DoNothing),
-                         AfterAllCells(DoNothing)
-                         );
+      CellFinalize(DoNothing),
+      AfterAllCells(DoNothing)
+      );
   }
 }
 

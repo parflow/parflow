@@ -138,10 +138,10 @@ void           gms_ReadTINs(
       {
         vertices[v] = ctalloc(Vertex, 1);
         fscanf(file, "%le%le%le%d",
-               &(vertices[v]->x),
-               &(vertices[v]->y),
-               &(vertices[v]->z),
-               &tmp_index);
+          &(vertices[v]->x),
+          &(vertices[v]->y),
+          &(vertices[v]->z),
+          &tmp_index);
       }
 
       (TINs[nTINs]->vertices) = vertices;

@@ -279,17 +279,17 @@ CommPkg         *NewCommPkg(
           if (SubregionProcess(comm_sr) == send_proc_array[p])
           {
             dim = NewCommPkgInfo(data_sr, comm_sr, i, num_vars,
-                                 loop_array);
+              loop_array);
 
             invoice =
               amps_NewInvoice("%&.&D(*)",
-                              loop_array + 1,
-                              loop_array + 5,
-                              dim,
-                              data + loop_array[0]);
+                loop_array + 1,
+                loop_array + 5,
+                dim,
+                data + loop_array[0]);
 
             amps_AppendInvoice(&(new_comm_pkg->send_invoices[p]),
-                               invoice);
+              invoice);
 
             num_send_subregions++;
             loop_array += 9;
@@ -321,17 +321,17 @@ CommPkg         *NewCommPkg(
           if (SubregionProcess(comm_sr) == recv_proc_array[p])
           {
             dim = NewCommPkgInfo(data_sr, comm_sr, i, num_vars,
-                                 loop_array);
+              loop_array);
 
             invoice =
               amps_NewInvoice("%&.&D(*)",
-                              loop_array + 1,
-                              loop_array + 5,
-                              dim,
-                              data + loop_array[0]);
+                loop_array + 1,
+                loop_array + 5,
+                dim,
+                data + loop_array[0]);
 
             amps_AppendInvoice(&(new_comm_pkg->recv_invoices[p]),
-                               invoice);
+              invoice);
 
             num_recv_subregions++;
             loop_array += 9;
@@ -342,12 +342,12 @@ CommPkg         *NewCommPkg(
   }
 
   new_comm_pkg->package = amps_NewPackage(amps_CommWorld,
-                                          new_comm_pkg->num_send_invoices,
-                                          new_comm_pkg->send_ranks,
-                                          new_comm_pkg->send_invoices,
-                                          new_comm_pkg->num_recv_invoices,
-                                          new_comm_pkg->recv_ranks,
-                                          new_comm_pkg->recv_invoices);
+    new_comm_pkg->num_send_invoices,
+    new_comm_pkg->send_ranks,
+    new_comm_pkg->send_invoices,
+    new_comm_pkg->num_recv_invoices,
+    new_comm_pkg->recv_ranks,
+    new_comm_pkg->recv_invoices);
 
 
 

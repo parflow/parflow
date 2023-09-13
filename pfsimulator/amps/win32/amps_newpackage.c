@@ -118,7 +118,7 @@ amps_Package amps_NewPackage(amps_Comm      comm,
       }
 
       src_info = (amps_SrcInfo*)amps_new(amps_CommWorld,
-                                         sizeof(amps_SrcInfo));
+        sizeof(amps_SrcInfo));
 
       if ((src_info->send_sema = CreateSemaphore(0, 0, AMPS_MAX_MESGS, 0)) == NULL)
         printf("error allocating sema send\n");

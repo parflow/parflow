@@ -141,14 +141,14 @@ char *argv[];
   for (i = 1; i < amps_size; i++)
   {
     amps_sync_ready[i] = CreateEvent(0,
-                                     FALSE,
-                                     FALSE,
-                                     0);
+      FALSE,
+      FALSE,
+      0);
 
     amps_sync_done[i] = CreateEvent(0,
-                                    FALSE,
-                                    FALSE,
-                                    0);
+      FALSE,
+      FALSE,
+      0);
   }
 
   for (i = 0; i < amps_size; i++)
@@ -163,10 +163,10 @@ char *argv[];
       pass_argv[j + 1] = argv[j];
 
     thread_handle[i] = (HANDLE)_beginthreadex(NULL, 0,
-                                              (LPTHREAD_START_ROUTINE)amps_main,
-                                              (void*)pass_argv,
-                                              0,
-                                              &ThreadId);
+      (LPTHREAD_START_ROUTINE)amps_main,
+      (void*)pass_argv,
+      0,
+      &ThreadId);
   }
 
   /* Wait for all threads to finish up */
@@ -214,7 +214,7 @@ void *_amps_CTAlloc(int count, char *filename, int line)
     if ((ptr = calloc(count, 1)) == NULL)
     {
       amps_Printf("Error: out of memory in <%s> at line %d\n",
-                  filename, line);
+        filename, line);
       exit(1);
       return NULL;
     }
@@ -232,7 +232,7 @@ void *_amps_TAlloc(int count, char *filename, int line)
     if ((ptr = malloc(count)) == NULL)
     {
       amps_Printf("Error: out of memory in <%s> at line %d\n",
-                  filename, line);
+        filename, line);
       exit(1);
       return NULL;
     }

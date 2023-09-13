@@ -176,8 +176,8 @@ void SubsrfSim(
   {
     j = geo_indexes[i];
     PFModuleInvokeType(KFieldSimulatorInvoke,
-                       KFieldSimulators[i],
-                       (geounits[j], gr_geounits[j], perm_z, cdata));
+      KFieldSimulators[i],
+      (geounits[j], gr_geounits[j], perm_z, cdata));
   }
 
   /*------------------------------------------------------------------------
@@ -394,8 +394,8 @@ void SubsrfSim(
 
           pi = 0;
           BoxLoopI1(i, j, k,
-                    ix, iy, iz, nx, ny, nz,
-                    pi, nx_p, ny_p, nz_p, 1, 1, 1,
+            ix, iy, iz, nx, ny, nz,
+            pi, nx_p, ny_p, nz_p, 1, 1, 1,
           {
             perm_average_x += perm_x_elt[pi] * (cell_volume / well_volume);
             perm_average_y += perm_y_elt[pi] * (cell_volume / well_volume);
@@ -497,7 +497,7 @@ PFModule  *SubsrfSimInitInstanceXtra(
       dummy1->kx_values = NewVectorType(grid, 1, 1, vector_cell_centered);
 
       ReadPFBinary((dummy1->kx_file_name),
-                   (dummy1->kx_values));
+        (dummy1->kx_values));
     }
   }
 
@@ -512,7 +512,7 @@ PFModule  *SubsrfSimInitInstanceXtra(
       dummy1->ky_values = NewVectorType(grid, 1, 1, vector_cell_centered);
 
       ReadPFBinary((dummy1->ky_file_name),
-                   (dummy1->ky_values));
+        (dummy1->ky_values));
     }
   }
 
@@ -528,7 +528,7 @@ PFModule  *SubsrfSimInitInstanceXtra(
       dummy1->kz_values = NewVectorType(grid, 1, 1, vector_cell_centered);
 
       ReadPFBinary((dummy1->kz_file_name),
-                   (dummy1->kz_values));
+        (dummy1->kz_values));
     }
   }
 
@@ -544,15 +544,15 @@ PFModule  *SubsrfSimInitInstanceXtra(
     for (i = 0; i < num_geo_indexes; i++)
       (instance_xtra->KFieldSimulators)[i] =
         PFModuleNewInstanceType(KFieldSimulatorInitInstanceXtraInvoke,
-                                (public_xtra->KFieldSimulators)[i],
-                                (grid, temp_data));
+          (public_xtra->KFieldSimulators)[i],
+          (grid, temp_data));
   }
   else
   {
     for (i = 0; i < num_geo_indexes; i++)
       PFModuleReNewInstanceType(KFieldSimulatorInitInstanceXtraInvoke,
-                                (instance_xtra->KFieldSimulators)[i],
-                                (grid, temp_data));
+        (instance_xtra->KFieldSimulators)[i],
+        (grid, temp_data));
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -698,12 +698,12 @@ PFModule   *SubsrfSimNewPublicXtra()
     geom_name = NA_IndexToName(geo_index_na, i);
 
     public_xtra->geo_indexes[i] = NA_NameToIndex(GlobalsGeomNames,
-                                                 geom_name);
+      geom_name);
 
     if (public_xtra->geo_indexes[i] < 0)
     {
       InputError("Error: invalid geometry name <%s> for key <%s>\n",
-                 geom_name, "Geom.Perm.Names");
+        geom_name, "Geom.Perm.Names");
     }
 
     sprintf(key, "Geom.%s.Perm.Type", geom_name);
@@ -778,7 +778,7 @@ PFModule   *SubsrfSimNewPublicXtra()
         geom_name = NA_IndexToName(geo_index_na, i);
 
         dummy0->tens_indexes[i] = NA_NameToIndex(GlobalsGeomNames,
-                                                 geom_name);
+          geom_name);
 
         sprintf(key, "Geom.%s.Perm.TensorValX", geom_name);
         dummy0->kx_values[i] = GetDouble(key);
@@ -901,7 +901,7 @@ int  SubsrfSimSizeOfTempData()
   /* set `sz' to max of each of the called modules */
   for (n = 0; n < (public_xtra->num_geo_indexes); n++)
     sz = pfmax(sz,
-               PFModuleSizeOfTempData((instance_xtra->KFieldSimulators)[n]));
+      PFModuleSizeOfTempData((instance_xtra->KFieldSimulators)[n]));
 
   return sz;
 }

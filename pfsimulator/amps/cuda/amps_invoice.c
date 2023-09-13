@@ -633,10 +633,10 @@ reswitch:
     }
 
     amps_add_invoice(&inv, ignore, type,
-                     len_type, len, ptr_len,
-                     stride_type, stride, ptr_stride,
-                     dim_type, dim, ptr_dim,
-                     ptr_data_type, ptr_data);
+      len_type, len, ptr_len,
+      stride_type, stride, ptr_stride,
+      dim_type, dim, ptr_dim,
+      ptr_data_type, ptr_data);
     num++;
   }
 

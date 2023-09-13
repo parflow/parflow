@@ -203,8 +203,8 @@ void   *vxtra;
 
     /* malloc space for Z */
     nzeta = (sqrt(pow(((double)nx) * DX, 2.0) +
-                  pow(((double)ny) * DY, 2.0) +
-                  pow(((double)nz) * DZ, 2.0)) / dzeta) + 2;
+      pow(((double)ny) * DY, 2.0) +
+      pow(((double)nz) * DZ, 2.0)) / dzeta) + 2;
     Z = talloc(double, nzeta);
 
     /* zero the field subvector */
@@ -247,7 +247,7 @@ void   *vxtra;
       /* get the line process, Z */
 
       LineProc(Z, phi, theta, ZetaMin, NZeta, dzeta, izeta, nzeta,
-               Kmax, dK);
+        Kmax, dK);
 
       /*--------------------------------------------*/
       /* project Z onto field */
@@ -370,7 +370,7 @@ char *geom_name;
   else
   {
     NA_InputError("Error: Invalid True/False value for key <%s> was <%s>\n",
-                  key, tmp);
+      key, tmp);
   }
 
   sprintf(key, "Geom.%s.Perm.Seed", geom_name);

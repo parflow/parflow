@@ -82,9 +82,9 @@ void           gms_WriteTINs(
       for (v = 0; v < nvertices; v++)
       {
         fprintf(file, "%.15e %.15e %.15e  0\n",
-                (vertices[v]->x),
-                (vertices[v]->y),
-                (vertices[v]->z));
+          (vertices[v]->x),
+          (vertices[v]->y),
+          (vertices[v]->z));
       }
     }
 
@@ -95,9 +95,9 @@ void           gms_WriteTINs(
       for (t = 0; t < ntriangles; t++)
       {
         fprintf(file, "%d %d %d\n",
-                (triangles[t]->v0) + 1,
-                (triangles[t]->v1) + 1,
-                (triangles[t]->v2) + 1);
+          (triangles[t]->v0) + 1,
+          (triangles[t]->v1) + 1,
+          (triangles[t]->v2) + 1);
       }
     }
 

@@ -92,9 +92,9 @@ void ComputeTop(Problem *     problem,     /* General problem information */
 
     int i, j, k;
     GrGeomInLoop(i, j, k,
-                 gr_solid, grid3d_r,
-                 grid3d_ix, grid3d_iy, grid3d_iz,
-                 grid3d_nx, grid3d_ny, grid3d_nz,
+      gr_solid, grid3d_r,
+      grid3d_ix, grid3d_iy, grid3d_iz,
+      grid3d_nx, grid3d_ny, grid3d_nz,
     {
       index = SubvectorEltIndex(top_subvector, i, j, grid2d_iz);
 

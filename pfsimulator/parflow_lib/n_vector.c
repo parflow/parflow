@@ -95,7 +95,7 @@ void N_VPrint(
 
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       printf("%g\n", xp[i_x]);
       fflush(NULL);

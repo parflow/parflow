@@ -193,7 +193,7 @@ void        InvalidOptionError(
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "Error: Argument ", num, " is an invalid option\n",
-                   usage, (char*)NULL);
+    usage, (char*)NULL);
 }
 
 
@@ -210,7 +210,7 @@ void        InvalidArgError(
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "\nError: Argument ", num, " is not a valid argument\n",
-                   usage, (char*)NULL);
+    usage, (char*)NULL);
 }
 
 /*------------------------------------------------------------------------
@@ -222,7 +222,7 @@ void        WrongNumArgsError(
                               char *      usage)
 {
   Tcl_AppendResult(interp, "\nError: Wrong number of arguments\n", usage,
-                   (char*)NULL);
+    (char*)NULL);
 }
 
 
@@ -239,7 +239,7 @@ void        MissingOptionError(
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "\nError: Option missing at argument ", num,
-                   "\n", usage, (char*)NULL);
+    "\n", usage, (char*)NULL);
 }
 
 
@@ -256,7 +256,7 @@ void        MissingFilenameError(
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "\nError: Filename missing after argument ", num,
-                   "\n", usage, (char*)NULL);
+    "\n", usage, (char*)NULL);
 }
 
 
@@ -273,8 +273,8 @@ void        InvalidFileExtensionError(
 
   sprintf(num, "%d", argnum);
   Tcl_AppendResult(interp, "\nError: Argument ", num,
-                   " is a filename with an unknown extension\n", usage,
-                   (char*)NULL);
+    " is a filename with an unknown extension\n", usage,
+    (char*)NULL);
 }
 
 
@@ -293,7 +293,7 @@ void        NotAnIntError(
   sprintf(num, "%d", argnum);
   Tcl_ResetResult(interp);
   Tcl_AppendResult(interp, "\nError: Integer missing at argument ", num, "\n",
-                   usage, (char*)NULL);
+    usage, (char*)NULL);
 }
 
 
@@ -351,7 +351,7 @@ void        SetNonExistantError(
                                 char *      hashkey)
 {
   Tcl_AppendResult(interp, "\nError: `", hashkey,
-                   "' is not a valid set name\n", (char*)NULL);
+    "' is not a valid set name\n", (char*)NULL);
 }
 
 

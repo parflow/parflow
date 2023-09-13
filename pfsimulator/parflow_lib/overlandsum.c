@@ -79,11 +79,11 @@ void OverlandSum(ProblemData *problem_data,
   int num_patches = BCPressureDataNumPatches(bc_pressure_data);
 
   bc_struct = NewBCStruct(GridSubgrids(grid),
-                          gr_domain,
-                          num_patches,
-                          BCPressureDataPatchIndexes(bc_pressure_data),
-                          BCPressureDataBCTypes(bc_pressure_data),
-                          NULL);
+    gr_domain,
+    num_patches,
+    BCPressureDataPatchIndexes(bc_pressure_data),
+    BCPressureDataBCTypes(bc_pressure_data),
+    NULL);
 
   if (num_patches > 0)
   {

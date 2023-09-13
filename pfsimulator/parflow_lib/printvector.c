@@ -56,13 +56,13 @@ void        PrintSubvectorAll(
   nz = SubvectorNZ(subvector);
 
   amps_Fprintf(file, "\t\tPosition(%d,%d,%d), Size (%d,%d,%d)\n",
-               ix, iy, iz, nx, ny, nz);
+    ix, iy, iz, nx, ny, nz);
 
   for (k = iz; k < iz + nz; k++)
     for (j = iy; j < iy + ny; j++)
       for (i = ix; i < ix + nx; i++)
         amps_Fprintf(file, "\t\t(%d,%d,%d): %f\n", i, j, k,
-                     *SubvectorElt(subvector, i, j, k));
+          *SubvectorElt(subvector, i, j, k));
 }
 
 
@@ -127,13 +127,13 @@ void        PrintSubvector(
   nz = SubgridNZ(subgrid);
 
   amps_Fprintf(file, "\t\tPosition(%d,%d,%d), Size (%d,%d,%d)\n",
-               ix, iy, iz, nx, ny, nz);
+    ix, iy, iz, nx, ny, nz);
 
   for (k = iz; k < iz + nz; k++)
     for (j = iy; j < iy + ny; j++)
       for (i = ix; i < ix + nx; i++)
         amps_Fprintf(file, "\t\t(%d,%d,%d): %f\n", i, j, k,
-                     *SubvectorElt(subvector, i, j, k));
+          *SubvectorElt(subvector, i, j, k));
 }
 
 

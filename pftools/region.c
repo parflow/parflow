@@ -215,6 +215,6 @@ void  AppendSubregionArray(
 
   ForSubregionI(i, subregion_array_0)
   AppendSubregion(SubregionArraySubregion(subregion_array_0, i),
-                  subregion_array_1);
+    subregion_array_1);
 }
 

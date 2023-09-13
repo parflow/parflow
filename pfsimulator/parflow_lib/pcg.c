@@ -193,10 +193,10 @@ void     PCG(
     {
       if (two_norm)
         amps_Printf("Iter (%d): ||r||_2 = %e, ||r||_2/||b||_2 = %e\n",
-                    i, sqrt(i_prod), (bi_prod ? sqrt(i_prod / bi_prod) : 0));
+          i, sqrt(i_prod), (bi_prod ? sqrt(i_prod / bi_prod) : 0));
       else
         amps_Printf("Iter (%d): ||r||_C = %e, ||r||_C/||b||_C = %e\n",
-                    i, sqrt(i_prod), (bi_prod ? sqrt(i_prod / bi_prod) : 0));
+          i, sqrt(i_prod), (bi_prod ? sqrt(i_prod / bi_prod) : 0));
 
       fflush(NULL);
     }
@@ -226,10 +226,10 @@ void     PCG(
   {
     if (two_norm)
       amps_Printf("Iterations = %d: ||r||_2 = %e, ||r||_2/||b||_2 = %e\n",
-                  i, sqrt(i_prod), (bi_prod ? sqrt(i_prod / bi_prod) : 0));
+        i, sqrt(i_prod), (bi_prod ? sqrt(i_prod / bi_prod) : 0));
     else
       amps_Printf("Iterations = %d: ||r||_C = %e, ||r||_C/||b||_C = %e\n",
-                  i, sqrt(i_prod), (bi_prod ? sqrt(i_prod / bi_prod) : 0));
+        i, sqrt(i_prod), (bi_prod ? sqrt(i_prod / bi_prod) : 0));
   }
 #endif
 
@@ -271,7 +271,7 @@ void     PCG(
     for (j = 0; j < i; j++)
     {
       fprintf(log_file, "% 5d    %e    %e\n",
-              (j + 1), norm_log[j], rel_norm_log[j]);
+        (j + 1), norm_log[j], rel_norm_log[j]);
     }
 
     CloseLogFile(log_file);
@@ -343,14 +343,14 @@ PFModule  *PCGInitInstanceXtra(
   {
     (instance_xtra->precond) =
       PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke,
-                              (public_xtra->precond),
-                              (problem, grid, problem_data, A, C, temp_data));
+        (public_xtra->precond),
+        (problem, grid, problem_data, A, C, temp_data));
   }
   else
   {
     PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke,
-                              (instance_xtra->precond),
-                              (problem, grid, problem_data, A, C, temp_data));
+      (instance_xtra->precond),
+      (problem, grid, problem_data, A, C, temp_data));
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;

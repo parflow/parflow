@@ -287,7 +287,7 @@ double    *temp_data;
       temp_data += SizeOfVector(dummy1->s_values);
 
       ReadPFBinary((dummy1->filename),
-                   (dummy1->s_values));
+        (dummy1->s_values));
     }
   }
 
@@ -352,7 +352,7 @@ PFModule   *PhaseSourceNewPublicXtra()
   NameArray type_na;
 
   type_na = NA_NewNameArray(
-                            "Constant HydroStaticDepth HydroStaticPatch PFBFile");
+    "Constant HydroStaticDepth HydroStaticPatch PFBFile");
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -445,15 +445,15 @@ PFModule   *PhaseSourceNewPublicXtra()
         switch_name = GetString(key);
 
         dummy2->geom_indices[ir] = NA_NameToIndexExitOnError(GlobalsGeomNames,
-                                                             switch_name, key);
+          switch_name, key);
 
         sprintf(key, "Geom.%s.ICPressure.RefPatch", region);
         switch_name = GetString(key);
 
         dummy2->patch_indices[ir] =
           NA_NameToIndexExitOnError(GeomSolidPatches(
-                                                     GlobalsGeometries[dummy2->geom_indices[ir]]),
-                                    switch_name, key);
+            GlobalsGeometries[dummy2->geom_indices[ir]]),
+            switch_name, key);
       }
 
       (public_xtra->data) = (void*)dummy2;

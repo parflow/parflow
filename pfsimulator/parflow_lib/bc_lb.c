@@ -98,7 +98,7 @@ void LBInitializeBC(
 
       cycle_number = BCPressureDataCycleNumber(bc_pressure_data, ipatch);
       interval_number = TimeCycleDataComputeIntervalNumber(problem, time,
-                                                           time_cycle_data, cycle_number);
+        time_cycle_data, cycle_number);
 
       switch (BCPressureDataType(bc_pressure_data, ipatch))
       {
@@ -111,10 +111,10 @@ void LBInitializeBC(
           int ref_patch, iel;
 
           GetBCPressureTypeStruct(DirEquilRefPatch, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           ref_solid = ProblemDataSolid(problem_data,
-                                       DirEquilRefPatchRefSolid(interval_data));
+            DirEquilRefPatchRefSolid(interval_data));
           ref_patch = DirEquilRefPatchRefPatch(interval_data);
 
           /* Calculate elevations at (x,y) points on reference patch. */
@@ -146,7 +146,7 @@ void LBInitializeBC(
             dz2 = RealSpaceDZ(0) / 2.0;
 
             GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
-                            r, ix, iy, iz, nx, ny, nz,
+              r, ix, iy, iz, nx, ny, nz,
             {
               ival = SubvectorEltIndex(sub_p, i, j, k);
               iel = (i - ix) + (j - iy) * nx;
@@ -173,7 +173,7 @@ void LBInitializeBC(
           int ip;
 
           GetBCPressureTypeStruct(DirEquilPLinear, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -212,7 +212,7 @@ void LBInitializeBC(
                        + DirEquilPLinearYLower(interval_data) * unity;
 
             GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
-                            r, ix, iy, iz, nx, ny, nz,
+              r, ix, iy, iz, nx, ny, nz,
             {
               ival = SubvectorEltIndex(sub_p, i, j, k);
 
@@ -239,7 +239,7 @@ void LBInitializeBC(
 
               pp[ival] = DirEquilPLinearValue(interval_data, ip - 1)
                          + slope * (xy - DirEquilPLinearPoint(
-                                                              interval_data, ip - 1))
+                interval_data, ip - 1))
                          - rho_g * z;
 
               cellTypep[ival] = 0;
@@ -253,7 +253,7 @@ void LBInitializeBC(
         case FluxConst:
         {
           GetBCPressureTypeStruct(FluxConst, interval_data, bc_pressure_data,
-                                  ipatch, interval_number);
+            ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -279,7 +279,7 @@ void LBInitializeBC(
             values[ipatch][is] = patch_values;
 
             GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
-                            r, ix, iy, iz, nx, ny, nz,
+              r, ix, iy, iz, nx, ny, nz,
             {
               ival = SubvectorEltIndex(sub_p, i, j, k);
               if (cellTypep[ival])

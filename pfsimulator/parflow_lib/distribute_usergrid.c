@@ -179,14 +179,14 @@ SubgridArray   *DistributeUserGrid(
         for (r = 0; r < R; r++)
         {
           AppendSubgrid(NewSubgrid(pqr_to_xyz(p, mx, lx, x),
-                                   pqr_to_xyz(q, my, ly, y),
-                                   pqr_to_xyz(r, mz, lz, z),
-                                   pqr_to_nxyz(p, mx, lx),
-                                   pqr_to_nxyz(q, my, ly),
-                                   pqr_to_nxyz(r, mz, lz),
-                                   0, 0, 0,
-                                   pqr_to_process(p, q, r, P, Q, R)),
-                        all_subgrids);
+            pqr_to_xyz(q, my, ly, y),
+            pqr_to_xyz(r, mz, lz, z),
+            pqr_to_nxyz(p, mx, lx),
+            pqr_to_nxyz(q, my, ly),
+            pqr_to_nxyz(r, mz, lz),
+            0, 0, 0,
+            pqr_to_process(p, q, r, P, Q, R)),
+            all_subgrids);
 
           if (pqr_to_process(p, q, r, P, Q, R) == amps_Rank(amps_CommWorld))
           {

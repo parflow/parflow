@@ -138,7 +138,7 @@ typedef struct {
 
 #define AppendSubgridArray(subgrid_array_0, subgrid_array_1)       \
         AppendSubregionArray((SubregionArray*)subgrid_array_0,     \
-                             (SubregionArray**)subgrid_array_1)
+  (SubregionArray**)subgrid_array_1)
 
 
 /* grid.c */

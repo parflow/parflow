@@ -1064,7 +1064,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       float32  *convert_ptr, *data;
 
       if ((data = convert_ptr = (float32*)malloc(dim[1] * dim[2] *
-                                                 sizeof(float32))) == NULL)
+        sizeof(float32))) == NULL)
       {
         exit(1);
       }
@@ -1089,7 +1089,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       float64  *convert_ptr, *data;
 
       if ((data = convert_ptr = (float64*)malloc(dim[1] * dim[2] *
-                                                 sizeof(float64))) == NULL)
+        sizeof(float64))) == NULL)
       {
         exit(1);
       }
@@ -1114,7 +1114,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       int8  *convert_ptr, *data;
 
       if ((data = convert_ptr = (int8*)malloc(dim[1] * dim[2] *
-                                              sizeof(int8))) == NULL)
+        sizeof(int8))) == NULL)
       {
         exit(1);
       }
@@ -1139,7 +1139,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       uint8  *convert_ptr, *data;
 
       if ((data = convert_ptr = (uint8*)malloc(dim[1] * dim[2] *
-                                               sizeof(uint8))) == NULL)
+        sizeof(uint8))) == NULL)
       {
         exit(1);
       }
@@ -1164,7 +1164,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       int16  *convert_ptr, *data;
 
       if ((data = convert_ptr = (int16*)malloc(dim[1] * dim[2] *
-                                               sizeof(int16))) == NULL)
+        sizeof(int16))) == NULL)
       {
         exit(1);
       }
@@ -1189,7 +1189,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       uint16  *convert_ptr, *data;
 
       if ((data = convert_ptr = (uint16*)malloc(dim[1] * dim[2] *
-                                                sizeof(uint16))) == NULL)
+        sizeof(uint16))) == NULL)
       {
         exit(1);
       }
@@ -1214,7 +1214,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       int32  *convert_ptr, *data;
 
       if ((data = convert_ptr = (int32*)malloc(dim[1] * dim[2] *
-                                               sizeof(int32))) == NULL)
+        sizeof(int32))) == NULL)
       {
         exit(1);
       }
@@ -1239,7 +1239,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
       uint32  *convert_ptr, *data;
 
       if ((data = convert_ptr = (uint32*)malloc(dim[1] * dim[2] *
-                                                sizeof(uint32))) == NULL)
+        sizeof(uint32))) == NULL)
       {
         exit(1);
       }

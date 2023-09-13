@@ -63,9 +63,9 @@ static void MetadataAddParflowBuildInfo(cJSON* pf)
 
   cJSON_AddItemToObject(pf, "build", build);
   cJSON_AddItemToObject(build, "version",
-                        cJSON_CreateString(PARFLOW_VERSION_STRING));
+    cJSON_CreateString(PARFLOW_VERSION_STRING));
   cJSON_AddItemToObject(build, "compiled",
-                        cJSON_CreateString(__DATE__ " " __TIME__));
+    cJSON_CreateString(__DATE__ " " __TIME__));
 }
 
 void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
@@ -125,22 +125,22 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   cJSON* topsurf = cJSON_CreateObject();
   cJSON_AddItemToObject(pf, "surface", topsurf);
   cJSON_AddItemToObject(topsurf, "cell-extent",
-                        cJSON_CreateIntArray(extent, 2));
+    cJSON_CreateIntArray(extent, 2));
   cJSON_AddItemToObject(topsurf, "spacing",
-                        cJSON_CreateDoubleArray(spacing, 3));
+    cJSON_CreateDoubleArray(spacing, 3));
   cJSON_AddItemToObject(topsurf, "origin",
-                        cJSON_CreateDoubleArray(topOrigin, 3));
+    cJSON_CreateDoubleArray(topOrigin, 3));
   cJSON* topSGD = cJSON_CreateArray();
   cJSON_AddItemToObject(topsurf, "subgrid-divisions", topSGD);
 
   cJSON* subsurf = cJSON_CreateObject();
   cJSON_AddItemToObject(pf, "subsurface", subsurf);
   cJSON_AddItemToObject(subsurf, "cell-extent",
-                        cJSON_CreateIntArray(extent, 3));
+    cJSON_CreateIntArray(extent, 3));
   cJSON_AddItemToObject(subsurf, "spacing",
-                        cJSON_CreateDoubleArray(spacing, 3));
+    cJSON_CreateDoubleArray(spacing, 3));
   cJSON_AddItemToObject(subsurf, "origin",
-                        cJSON_CreateDoubleArray(subOrigin, 3));
+    cJSON_CreateDoubleArray(subOrigin, 3));
   cJSON* subSGD = cJSON_CreateArray();
   cJSON_AddItemToObject(subsurf, "subgrid-divisions", subSGD);
 
@@ -444,8 +444,8 @@ int MetadataAddDynamicField(
         !field_component_postfixes)
     {
       fprintf(stderr,
-              "No components provided for initial addition of field \"%s\"\n",
-              field_name);
+        "No components provided for initial addition of field \"%s\"\n",
+        field_name);
       return 0;
     }
     field_item = cJSON_CreateObject();
@@ -511,7 +511,7 @@ int MetadataAddDynamicField(
         strcmp(checkPlace->valuestring, field_placement))
     {
       fprintf(stderr, "Trying to change type from \"%s\" to \"%s\"\n",
-              checkPlace->valuestring, field_placement);
+        checkPlace->valuestring, field_placement);
       return 0;
     }
 
@@ -522,7 +522,7 @@ int MetadataAddDynamicField(
         strcmp(checkDomain->valuestring, field_domain))
     {
       fprintf(stderr, "Trying to change type from \"%s\" to \"%s\"\n",
-              checkDomain->valuestring, field_domain);
+        checkDomain->valuestring, field_domain);
       return 0;
     }
 
@@ -592,59 +592,59 @@ int MetadataAddForcingField(
   if (!field_name)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for null field.\n");
+      "Unable to add metadata for null field.\n");
   }
   if (num_field_components <= 0)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; invalid components (%d).\n",
-                   field_name, num_field_components);
+      "Unable to add metadata for \"%s\"; invalid components (%d).\n",
+      field_name, num_field_components);
   }
   if (!clm_metfile)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; no CLM Met file.\n", field_name);
+      "Unable to add metadata for \"%s\"; no CLM Met file.\n", field_name);
   }
   if (!clm_metpath)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; no CLM Met path.\n", field_name);
+      "Unable to add metadata for \"%s\"; no CLM Met path.\n", field_name);
   }
   if (!field_placement)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; null field placement.\n",
-                   field_name);
+      "Unable to add metadata for \"%s\"; null field placement.\n",
+      field_name);
   }
   if (!field_domain)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; null field domain.\n", field_name);
+      "Unable to add metadata for \"%s\"; null field domain.\n", field_name);
   }
   if (!field_component_postfixes)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; null field component_postfixes.\n",
-                   field_name);
+      "Unable to add metadata for \"%s\"; null field component_postfixes.\n",
+      field_name);
   }
   if (clm_metforce < 2 || clm_metforce > 3)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; Unhandled CLM Met forcing %d.\n",
-                   field_name, clm_metforce);
+      "Unable to add metadata for \"%s\"; Unhandled CLM Met forcing %d.\n",
+      field_name, clm_metforce);
   }
   if (clm_metnt <= 0)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; %d timesteps provided (> 0 required).\n",
-                   field_name, clm_metnt);
+      "Unable to add metadata for \"%s\"; %d timesteps provided (> 0 required).\n",
+      field_name, clm_metnt);
   }
   if (clm_istep_start > clm_metnt)
   {
     METADATA_ERROR(
-                   "Unable to add metadata for \"%s\"; "
-                   "start time (%d) beyond forcing timesteps provided (%d).\n",
-                   field_name, clm_istep_start, clm_metnt);
+      "Unable to add metadata for \"%s\"; "
+      "start time (%d) beyond forcing timesteps provided (%d).\n",
+      field_name, clm_istep_start, clm_metnt);
   }
 
   cJSON* field_item = cJSON_CreateObject();
@@ -674,14 +674,14 @@ int MetadataAddForcingField(
       if (clm_metsub)
       {
         snprintf(temp, 2047, "%s/%s/%s.%s.%%06d.pfb",
-                 clm_metpath, field_component_postfixes[ii],
-                 clm_metfile, field_component_postfixes[ii]
-                 );
+          clm_metpath, field_component_postfixes[ii],
+          clm_metfile, field_component_postfixes[ii]
+          );
       }
       else
       {
         snprintf(temp, 2047, "%s/%s.%s.%%06d.pfb",
-                 clm_metpath, clm_metfile, field_component_postfixes[ii]);
+          clm_metpath, clm_metfile, field_component_postfixes[ii]);
       }
     }
     else // if clm_metforce == 3
@@ -692,15 +692,15 @@ int MetadataAddForcingField(
       if (clm_metsub)
       {
         snprintf(temp, 2047, "%s/%s/%s.%s.%%06d_to_%%06d.pfb",
-                 clm_metpath, field_component_postfixes[ii],
-                 clm_metfile, field_component_postfixes[ii]
-                 );
+          clm_metpath, field_component_postfixes[ii],
+          clm_metfile, field_component_postfixes[ii]
+          );
       }
       else
       {
         snprintf(temp, 2047, "%s/%s.%s.%%06d_to_%%06d.pfb",
-                 clm_metpath, clm_metfile, field_component_postfixes[ii]
-                 );
+          clm_metpath, clm_metfile, field_component_postfixes[ii]
+          );
       }
     }
     cJSON_AddItemToObject(file_descr, "file-series", cJSON_CreateString(temp));
