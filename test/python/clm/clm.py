@@ -18,27 +18,6 @@ clm = Run(run_name, __file__)
 new_output_dir_name = get_absolute_path('test_output/clm')
 mkdir(new_output_dir_name)
 
-directories = [
-  'qflx_evap_grnd',
-  'eflx_lh_tot',
-  'qflx_evap_tot',
-  'qflx_tran_veg',
-  'correct_output',
-  'qflx_infl',
-  'swe_out',
-  'eflx_lwrad_out',
-  't_grnd',
-  'diag_out',
-  'qflx_evap_soi',
-  'eflx_soil_grnd',
-  'eflx_sh_tot',
-  'qflx_evap_veg',
-  'qflx_top_soil'
-]
-
-for directory in directories:
-    mkdir(new_output_dir_name + '/' + directory)
-
 cp('$PF_SRC/test/tcl/clm/drv_clmin.dat', new_output_dir_name)
 cp('$PF_SRC/test/tcl/clm/drv_vegm.dat', new_output_dir_name)
 cp('$PF_SRC/test/tcl/clm/drv_vegp.dat', new_output_dir_name)
