@@ -2454,7 +2454,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
       else if (public_xtra->evap_trans_file_transient)
       {
-        sprintf(filename, "%s.%05d.pfb",
+        sprintf(filename, "%s.%06d.pfb",
                 public_xtra->evap_trans_filename, (istep - 1));
         printf("%d %s %s \n", istep, filename,
                public_xtra->evap_trans_filename);
@@ -2474,7 +2474,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             {
               Loopcount = 0;
             }
-            sprintf(filename, "%s.%05d.pfb",
+            sprintf(filename, "%s.%06d.pfb",
                     public_xtra->evap_trans_filename, Loopcount);
             //printf("Using flux file %s \n",filename);
             Loopcount += 1;
