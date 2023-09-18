@@ -2,29 +2,34 @@
 # this runs CLM test case
 #-----------------------------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, cp, get_absolute_path
+from parflow.tools.io import read_pfb, write_pfb
+from parflow.tools.compare import pf_test_file
+from parflow.tools.top import compute_top, extract_top
 
-clm = Run("clm_4levels", __file__)
+run_name = "clm_4levels"
+clm = Run(run_name, __file__)
 
 #-----------------------------------------------------------------------------
 # Making output directories and copying input files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/clm_4')
-mkdir(dir_name)
+new_output_dir_name = get_absolute_path('test_output/clm_4levels')
+mkdir(new_output_dir_name)
 
 directories = ['qflx_evap_grnd', 'eflx_lh_tot', 'qflx_evap_tot', 'qflx_tran_veg', 'correct_output',
                'qflx_infl', 'swe_out', 'eflx_lwrad_out', 't_grnd', 'diag_out', 'qflx_evap_soi', 'eflx_soil_grnd',
                'eflx_sh_tot', 'qflx_evap_veg', 'qflx_top_soil']
 
 for directory in directories:
-    mkdir(dir_name + '/' + directory)
+    mkdir(new_output_dir_name + '/' + directory)
 
-cp('$PF_SRC/test/tcl/clm/drv_clmin.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/drv_vegm.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/drv_vegp.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/narr_1hr.sc3.txt.0', dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_clmin.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_vegm.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_vegp.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/narr_1hr.sc3.txt.0', new_output_dir_name)
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -294,15 +299,12 @@ clm.Solver.Drop = 1E-20
 clm.Solver.AbsTol = 1E-9
 
 clm.Solver.LSM = 'CLM'
-clm.Solver.WriteSiloCLM = True
 clm.Solver.CLM.MetForcing = '1D'
 clm.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
 clm.Solver.CLM.MetFilePath = '.'
 
 clm.Solver.CLM.RootZoneNZ = 4
 
-clm.Solver.WriteSiloEvapTrans = True
-clm.Solver.WriteSiloOverlandBCFlux = True
 clm.Solver.PrintCLM = True
 
 #---------------------------------------------------------
@@ -320,4 +322,47 @@ clm.Geom.domain.ICPressure.RefPatch = 'z_upper'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-clm.run(working_directory=dir_name)
+correct_output_dir_name = get_absolute_path("../../correct_output/clm_output")
+clm.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(6):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+mask = read_pfb(new_output_dir_name + f"/{run_name}.out.mask.pfb")
+top = compute_top(mask)
+write_pfb(new_output_dir_name + f"/{run_name}.out.top_index.pfb", top)
+
+data = read_pfb(new_output_dir_name + f"/{run_name}.out.press.00000.pfb")
+top_data = extract_top(data, top)
+write_pfb(new_output_dir_name + f"/{run_name}.out.top.press.00000.pfb", top_data)
+
+
+filename = f"/{run_name}.out.top_index.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in top_index"):
+    passed = False
+
+filename = f"/{run_name}.out.top.press.00000.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in top_clm.out.press.00000.pfb"):
+    passed = False
+
+    
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
