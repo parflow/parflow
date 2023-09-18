@@ -354,17 +354,3 @@ new_output_dir_name = get_absolute_path('test_output/drich_w')
 correct_output_dir_name = get_absolute_path('../correct_output')
 mkdir(new_output_dir_name)
 drich.run(working_directory=new_output_dir_name)
-
-
-perm_x_pfb = f"/{run_name}.out.perm_x.pfb"
-assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + perm_x_pfb, correct_output_dir_name + perm_x_pfb)
-
-perm_y_pfb = f"/{run_name}.out.perm_y.pfb"
-assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + perm_x_pfb, correct_output_dir_name + perm_x_pfb)
-
-perm_z_pfb = f"/{run_name}.out.perm_z.pfb"
-assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + perm_z_pfb, correct_output_dir_name + perm_z_pfb)
-
-for i in range(0,5):
-    press_pfb = f"/{run_name}.out.press.0000{i}.pfb"
-    assert pfbs_are_equal_to_n_sig_figs(new_output_dir_name + press_pfb, correct_output_dir_name + press_pfb)

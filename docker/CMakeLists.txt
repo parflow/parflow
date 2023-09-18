@@ -1,24 +1,20 @@
-# Get the branch name and store it in a variable
-execute_process(COMMAND bash -c "cd ${CMAKE_SOURCE_DIR} && git rev-parse --abbrev-ref HEAD | sed 's/[^a-zA-Z0-9]/-/g'" OUTPUT_VARIABLE BRANCH_NAME OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ($cd ..))
-
 add_custom_target(DockerBuildDevelopment
-        docker build --rm -t parflow-development
-        # --build-arg "BASE_IMAGE=ubuntu:20.04"
-        # --build-arg "CMAKE_URL=https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz"
-        # --build-arg "HDF5_URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
-        # --build-arg "NETCDF_URL=https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz"
-        # --build-arg "SILO_URL=https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz"
-        # --build-arg "HYPRE_VERSION=v2.19.0"
-        -f "${CMAKE_CURRENT_SOURCE_DIR}/dev/Dockerfile"
-        "${CMAKE_CURRENT_SOURCE_DIR}/.."
-        COMMENT
-        "Build docker image 'parflow-development'"
-        VERBATIM
-        )
+  docker build --rm -t parflow-development
+    # --build-arg "BASE_IMAGE=ubuntu:20.04"
+    # --build-arg "CMAKE_URL=https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz"
+    # --build-arg "HDF5_URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
+    # --build-arg "NETCDF_URL=https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz"
+    # --build-arg "SILO_URL=https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz"
+    # --build-arg "HYPRE_VERSION=v2.19.0"
+    -f "${CMAKE_CURRENT_SOURCE_DIR}/dev/Dockerfile"
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+  COMMENT
+    "Build docker image 'parflow-development'"
+  VERBATIM
+)
 
 add_custom_target(DockerRunDevelopment
-        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src -v ${CMAKE_CURRENT_SOURCE_DIR}/../..:/local parflow-development
+        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY --name=parflow-development -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src parflow-development
         COMMENT
         "Start docker image 'parflow-development' mounted to source directory to allow live rebuilding"
         VERBATIM

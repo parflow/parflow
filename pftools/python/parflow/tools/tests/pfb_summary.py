@@ -7,7 +7,7 @@
     DESCRIPTION:
         Peeks into a parflow .pfb file and display a summary of the file.
         This prints to stdout a summary of the .pfb file. It prints the file header from the first 64 bytes.
-        Then prints the intake_subgrid headers of the first 2 subgrids and the last intake_subgrid.
+        Then prints the subgrid headers of the first 2 subgrids and the last subgrid
 
         The purpose of this utility is to assist with debugging so you can view a summary of a PFB file.
 """
@@ -85,7 +85,7 @@ class PFBSummary:
                 print("... more subgrids ...")
                 printed_dots = True
         print()
-        print("Checksum of all intake_subgrid values")
+        print("Checksum of all subgrid values")
         print(checksum)
         print()
         print("Value of first cell")
@@ -116,7 +116,7 @@ class PFBSummary:
         self.header['n_subgrids'] = struct.unpack('>i', self.fp.read(4))[0]
 
     def read_subgrid_header(self):
-        """Read the intake_subgrid header from the file and return the header as a dict."""
+        """Read the subgrid header from the file and return the header as a dict."""
 
         subgrid_header = {}
         subgrid_header['ix'] = struct.unpack('>i', self.fp.read(4))[0]
@@ -131,7 +131,7 @@ class PFBSummary:
         return subgrid_header
 
     def read_subgrid_data(self, subgrid_header):
-        """Read the data of the intake_subgrid. Returns a numpy array mapped to the intake_subgrid data."""
+        """Read the data of the subgrid. Returns a numpy array mapped to the subgrid data."""
         ix = subgrid_header['ix']
         iy = subgrid_header['iy']
         iz = subgrid_header['iz']
