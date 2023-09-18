@@ -69,12 +69,7 @@ Has_Secondary_Intake_Cell:
     - Has_Secondary_Intake_Cell
   register: Reservoirs.Names
 
-ZUpper:
-  type: float
-  alias:
-    - ZUpper
-    - Zupper
-  register: Reservoirs.Names
+
 
 Min_Release_Capacity:
   type: float
@@ -99,53 +94,3 @@ Current_Storage:
   alias:
     - Current_Storage
   register: Reservoirs.Names
-
-
-ExtractionZUpper:
-  type: float
-  alias:
-    - ExtractionZUpper
-    - ExtractionZupper
-    - extractionZUpper
-    - extractionZupper
-  register: Reservoirs.Names
-
-ExtractionZLower:
-  type: float
-  alias:
-    - ExtractionZLower
-    - ExtractionZlower
-    - extractionZLower
-    - extractionZlower
-  register: Reservoirs.Names
-
-InjectionZUpper:
-  type: float
-  alias:
-    - InjectionZUpper
-    - InjectionZupper
-    - injectionZUpper
-    - injectionZupper
-  register: Reservoirs.Names
-
-InjectionZLower:
-  type: float
-  alias:
-    - InjectionZLower
-    - InjectionZlower
-    - injectionZLower
-    - injectionZlower
-  register: Reservoirs.Names
-
-ZLower:
-  type: float
-  alias:
-    - ZLower
-    - Zlower
-  register: Reservoirs.Names
-
-#ReleaseCurveFile:
-#  type: str
-#  alias:
-#    - ReleaseCurveFile
-#  register: Reservoirs.Names

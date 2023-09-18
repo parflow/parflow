@@ -211,14 +211,6 @@ void         ReservoirPackage(
         ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
         ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
         strcpy(ReservoirDataPhysicalName(reservoir_data_physical), (dummy0->name));
-//            ReservoirDataPhysicalReleaseCurveFile(reservoir_data_physical) = ctalloc(char, strlen((dummy0->release_curve_file)) + 1);
-//            strcpy(ReservoirDataPhysicalReleaseCurveFile(reservoir_data_physical), (dummy0->release_curve_file));
-        // TODO dont hardcode column names below
-//            TimeSeries* tmp_time_series = NewTimeSeries(ReservoirDataPhysicalReleaseCurveFile(reservoir_data_physical), "times", "values");
-//            reservoir_data_physical->release_curve = ctalloc(TimeSeries,1);
-//            reservoir_data_physical->release_curve = tmp_time_series;
-//            printf("Time series first value: %f\n", GetValue(reservoir_data_physical->release_curve, 0));
-//            printf("Time series second value: %f\n", GetValue(reservoir_data_physical->release_curve, 4.0));
         ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = (dummy0->intake_x_location);
         ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = (dummy0->intake_y_location);
         ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
@@ -226,14 +218,12 @@ void         ReservoirPackage(
         ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) = (dummy0->has_secondary_intake_cell);
         ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) = (dummy0->release_x_location);
         ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) = (dummy0->release_y_location);
-        ReservoirDataPhysicalZLower(reservoir_data_physical) = (dummy0->z_lower);
         ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = (dummy0->intake_x_location);
         ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) = (dummy0->intake_y_location);
         ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
         ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
         ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
         ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
-        ReservoirDataPhysicalZUpper(reservoir_data_physical) = (dummy0->z_upper);
         ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
         ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) = (dummy0->max_capacity);
         ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->min_release_capacity);
@@ -247,7 +237,6 @@ void         ReservoirPackage(
         ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
         ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
         ReservoirDataFluxReservoirPhysical(reservoir_data, flux_reservoir) = reservoir_data_physical;
-
         /* Put in values for this reservoir */
         flux_reservoir++;
     }
@@ -378,9 +367,6 @@ PFModule  *ReservoirPackageNewPublicXtra(
           sprintf(key, "Reservoirs.%s.Has_Secondary_Intake_Cell", reservoir_name);
           dummy0->has_secondary_intake_cell = GetInt(key);
 
-          sprintf(key, "Reservoirs.%s.ZUpper", reservoir_name);
-          dummy0->z_upper = GetDouble(key);
-
           sprintf(key, "Reservoirs.%s.Min_Release_Capacity", reservoir_name);
           dummy0->min_release_capacity = GetDouble(key);
 
@@ -393,8 +379,6 @@ PFModule  *ReservoirPackageNewPublicXtra(
           sprintf(key, "Reservoirs.%s.Current_Storage", reservoir_name);
           dummy0->current_storage = GetDouble(key);
 
-          sprintf(key, "Reservoirs.%s.ZLower", reservoir_name);
-          dummy0->z_lower = GetDouble(key);
           (public_xtra->num_flux_reservoirs)++;
           (public_xtra->data[i]) = (void*)dummy0;
       }

@@ -101,8 +101,6 @@ typedef struct {
 #define ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) \
   ((reservoir_data_physical)->secondary_intake_y_lower)
 
-#define ReservoirDataPhysicalZLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->z_lower)
 
 #define ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_x_upper)
@@ -116,8 +114,6 @@ typedef struct {
 #define ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_y_upper)
 
-#define ReservoirDataPhysicalZUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->z_upper)
 
 #define ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_subgrid)
@@ -134,17 +130,12 @@ typedef struct {
 #define ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) \
   ((reservoir_data_physical)->release_y_lower)
 
-#define ReservoirDataPhysicalReleaseZLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_z_lower)
-
 #define ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) \
   ((reservoir_data_physical)->release_x_upper)
 
 #define ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) \
   ((reservoir_data_physical)->release_y_upper)
 
-#define ReservoirDataPhysicalReleaseZUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_z_upper)
 
 #define ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) \
   ((reservoir_data_physical)->release_subgrid)

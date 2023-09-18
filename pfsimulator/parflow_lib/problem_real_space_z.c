@@ -45,7 +45,6 @@ typedef void InstanceXtra;
 void realSpaceZ(ProblemData *problem_data, Vector *rsz)
 {
   Grid           *grid = VectorGrid(rsz);
-
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
   Subvector      *dz_sub;
