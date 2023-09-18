@@ -69,12 +69,10 @@ Has_Secondary_Intake_Cell:
     - Has_Secondary_Intake_Cell
   register: Reservoirs.Names
 
-
-
-Min_Release_Capacity:
+Min_Release_Storage:
   type: float
   alias:
-    - Min_Release_Capacity
+    - Min_Release_Storage
   register: Reservoirs.Names
 
 Release_Rate:
@@ -83,10 +81,10 @@ Release_Rate:
     - Release_Rate
   register: Reservoirs.Names
 
-Max_Capacity:
+Max_Storage:
   type: float
   alias:
-    - Max_Capacity
+    - Max_Storage
   register: Reservoirs.Names
 
 Current_Storage:

@@ -76,7 +76,7 @@ typedef struct {
     double release_x_location;
     double release_y_location;
     double z_lower, z_upper;
-    double max_capacity, min_release_capacity, current_storage, release_rate;
+    double Max_Storage, Min_Release_Storage, current_storage, release_rate;
 } Type0;                      /* basic vertical reservoir */
 
 /*--------------------------------------------------------------------------
@@ -119,7 +119,7 @@ void         ReservoirPackage(
   double intake_x_lower, intake_x_upper, intake_y_lower, intake_y_upper, z_lower, z_upper;
   double secondary_intake_x_lower, secondary_intake_x_upper, secondary_intake_y_lower, secondary_intake_y_upper;
   double release_x_lower, release_x_upper, release_y_lower, release_y_upper;
-  double max_capacity, min_release_capacity, Current_Storage, release_rate;
+  double Max_Storage, Min_Release_Storage, Current_Storage, release_rate;
   double intake_amount_since_last_print, release_amount_since_last_print;
   /* Allocate the reservoir data */
   ReservoirDataNumReservoirs(reservoir_data) = (public_xtra->num_reservoirs);
@@ -225,8 +225,8 @@ void         ReservoirPackage(
         ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
         ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
         ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
-        ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) = (dummy0->max_capacity);
-        ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->min_release_capacity);
+        ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) = (dummy0->Max_Storage);
+        ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->Min_Release_Storage);
         ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
         ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = (0);
@@ -367,14 +367,14 @@ PFModule  *ReservoirPackageNewPublicXtra(
           sprintf(key, "Reservoirs.%s.Has_Secondary_Intake_Cell", reservoir_name);
           dummy0->has_secondary_intake_cell = GetInt(key);
 
-          sprintf(key, "Reservoirs.%s.Min_Release_Capacity", reservoir_name);
-          dummy0->min_release_capacity = GetDouble(key);
+          sprintf(key, "Reservoirs.%s.Min_Release_Storage", reservoir_name);
+          dummy0->Min_Release_Storage = GetDouble(key);
 
           sprintf(key, "Reservoirs.%s.Release_Rate", reservoir_name);
           dummy0->release_rate = GetDouble(key);
 
-          sprintf(key, "Reservoirs.%s.Max_Capacity", reservoir_name);
-          dummy0->max_capacity = GetDouble(key);
+          sprintf(key, "Reservoirs.%s.Max_Storage", reservoir_name);
+          dummy0->Max_Storage = GetDouble(key);
 
           sprintf(key, "Reservoirs.%s.Current_Storage", reservoir_name);
           dummy0->current_storage = GetDouble(key);

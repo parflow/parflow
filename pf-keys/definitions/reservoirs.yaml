@@ -74,14 +74,14 @@ Reservoirs:
       domains:
         IntValue:
 
-    Min_Release_Capacity:
+    Min_Release_Storage:
       # typos - vertical
       help: >
         [Type: double]
       domains:
         DoubleValue:
 
-    Max_Capacity:
+    Max_Storage:
       # typos - vertical
       help: >
         [Type: double]

@@ -47,7 +47,7 @@ typedef struct {
     double release_x_lower, release_y_lower, release_z_lower;
     double release_x_upper, release_y_upper, release_z_upper;
     double diameter;
-    double max_capacity, min_release_capacity, current_storage, release_rate;
+    double Max_Storage, Min_Release_Storage, current_storage, release_rate;
     double intake_amount_since_last_print, release_amount_since_last_print, release_amount_in_solver;
     Subgrid       *intake_subgrid;
     Subgrid       *secondary_intake_subgrid;
@@ -148,7 +148,7 @@ typedef struct {
 
 
 #define ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) \
-  ((reservoir_data_physical)->max_capacity)
+  ((reservoir_data_physical)->Max_Storage)
 
 #define ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) \
   ((reservoir_data_physical)->current_storage)
@@ -163,7 +163,7 @@ typedef struct {
   ((reservoir_data_physical)->release_amount_in_solver)
 
 #define ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) \
-  ((reservoir_data_physical)->min_release_capacity)
+  ((reservoir_data_physical)->Min_Release_Storage)
 
 #define ReservoirDataPhysicalReleaseRate(reservoir_data_physical) \
   ((reservoir_data_physical)->release_rate)
