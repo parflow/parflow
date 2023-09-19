@@ -377,7 +377,6 @@ SetupRichards(PFModule * this_module)
 
   double t;
   double dt = 0.0;
-  problem->current_dt = 0.0;
   double gravity = ProblemGravity(problem);
 
   double dtmp;
@@ -403,7 +402,6 @@ SetupRichards(PFModule * this_module)
 
   t = start_time;
   dt = 0.0e0;
-  problem->current_dt = 0.0;
 
   NewMetadata(this_module);
   MetadataAddParflowDomainInfo(js_domains, this_module, grid);
@@ -1656,7 +1654,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
   double t;
   double dt = 0.0;
-  problem-> current_dt = 0.0;
   double ct = 0.0;
   double cdt = 0.0;
   double print_dt;
@@ -1723,7 +1720,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                        (&cdt, &dt_info, t, problem, problem_data));
   }
   dt = cdt;
-  problem-> current_dt = cdt;
 
   /*
    * Check to see if pressure solves are requested
@@ -2554,7 +2550,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                              (&dt, &dt_info, t, problem,
                                  problem_data));
         }
-        problem->current_dt = dt;
         PFVCopy(instance_xtra->density, instance_xtra->old_density);
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
@@ -2574,7 +2569,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           if (diff_time > TIME_EPSILON)
           {
             dt = new_dt;
-            problem-> current_dt = new_dt;
           }
           else
           {
@@ -2604,7 +2598,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           if (diff_time > TIME_EPSILON)
           {
             dt = new_dt;
-            problem-> current_dt = new_dt;
           }
           else
           {
@@ -2644,7 +2637,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               if (diff_time > TIME_EPSILON)
               {
                 dt = new_dt;
-                problem-> current_dt = new_dt;
               }
               else
               {
@@ -2680,7 +2672,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             if (diff_time > TIME_EPSILON)
             {
               dt = new_dt;
-              problem-> current_dt = new_dt;
             }
             else
             {
@@ -2722,7 +2713,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           if (fabs(dt - print_dt) > TIME_EPSILON)
           {
             dt = print_dt;
-//            problem->current_dt = print_dt;
           }
           dt_info = 'p';
 
@@ -2784,7 +2774,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         if (diff_time > TIME_EPSILON)
         {
           dt = new_dt;
-          problem-> current_dt = new_dt;
         }
         else
         {
@@ -2795,7 +2784,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
 
         dt = new_dt;
-        problem-> current_dt = new_dt;
 
         dt_info = 'f';
       }
@@ -3052,7 +3040,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
         reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
         reservoir_data_physical->release_amount_since_last_print += ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
-        reservoir_data_physical->current_storage-= ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical);
+        reservoir_data_physical->current_storage-= ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
 //      interval_number = TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number);
 
 //      reservoir_data_value = ReservoirDataFluxReservoirIntervalValue(reservoir_data, reservoir, interval_number);

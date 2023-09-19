@@ -45,7 +45,6 @@ typedef struct {
   int start_count;
   double start_time;
   double stop_time;
-  double current_dt;
   double dump_interval;
 
   /* Stop execution if remaining time is less than user specified

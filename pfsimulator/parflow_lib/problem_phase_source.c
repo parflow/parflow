@@ -398,16 +398,9 @@ void         PhaseSource(
     for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++)
     {
       reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
-//      interval_number = TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number);
-
-//      reservoir_data_value = ReservoirDataFluxReservoirIntervalValue(reservoir_data, reservoir, interval_number);
-
       reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
       reservoir_release_subgrid = ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical);
-
-      double dt = problem->current_dt;
       reservoir_value = ReservoirDataPhysicalReleaseRate(reservoir_data_physical);
-      /*  Get the intersection of the reservoir with the subgrid  */
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
       flux = reservoir_value / (volume);
       //If we are overfull need to release the rest of the flux
@@ -432,8 +425,6 @@ void         PhaseSource(
         nx_ps = SubvectorNX(ps_sub);
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
-//        printf("Reservoir current capacity is %f\n", reservoir_data_physical->Current_Storage);
-        // Check if the reservoir is on
         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = 0;
         if (reservoir_data_physical->current_storage > reservoir_data_physical->Min_Release_Storage) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
@@ -465,9 +456,6 @@ void         PhaseSource(
 
             int ip = 0;
             int ips = 0;
-//            printf("Releasing flux from reservoir %f\n", flux);
-//            reservoir_data_physical->release_curve(problem_data);
-
             double weight = 1.0;
 
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -476,8 +464,6 @@ void         PhaseSource(
                       {
                         data[ips] += weight * flux;
                         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) += flux*volume;
-//                        reservoir_data_physical->release_amount_since_last_print += flux*dt*volume;
-//                        reservoir_data_physical->Current_Storage-= flux*dt*volume;
                       });
           }
         }
