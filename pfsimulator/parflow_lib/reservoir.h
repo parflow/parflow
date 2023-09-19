@@ -83,9 +83,6 @@ typedef struct {
 #define ReservoirDataPhysicalNumber(reservoir_data_physical) \
   ((reservoir_data_physical)->number)
 
-//#define ReservoirDataPhysicalReleaseCurveFile(reservoir_data_physical) \
-//  ((reservoir_data_physical)->release_curve_file)
-
 #define ReservoirDataPhysicalName(reservoir_data_physical) \
   ((reservoir_data_physical)->name)
 
@@ -147,10 +144,10 @@ typedef struct {
   ((reservoir_data_physical)->size)
 
 
-#define ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) \
+#define ReservoirDataPhysicalMaxStorage(reservoir_data_physical) \
   ((reservoir_data_physical)->Max_Storage)
 
-#define ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) \
+#define ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) \
   ((reservoir_data_physical)->current_storage)
 
 #define ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) \
@@ -162,7 +159,7 @@ typedef struct {
 #define ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) \
   ((reservoir_data_physical)->release_amount_in_solver)
 
-#define ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) \
+#define ReservoirDataPhysicalMinReleaseStorage(reservoir_data_physical) \
   ((reservoir_data_physical)->Min_Release_Storage)
 
 #define ReservoirDataPhysicalReleaseRate(reservoir_data_physical) \
@@ -185,14 +182,6 @@ typedef struct {
 #define ReservoirDataPressReservoirPhysical(reservoir_data, i) \
   ((reservoir_data)->press_reservoir_physicals[i])
 
-
-#define ReservoirDataPressReservoirIntervalValue(reservoir_data, i, interval_number) \
-  (((reservoir_data)->press_reservoir_values[i])[interval_number])
-
-
-#define ReservoirDataPressReservoirStat(reservoir_data, i) \
-  ((reservoir_data)->press_reservoir_stats[i])
-
 /*---------------------------- Flux reservoir data ------------------------------*/
 #define ReservoirDataNumFluxReservoirs(reservoir_data)      ((reservoir_data)->num_flux_reservoirs)
 
@@ -211,9 +200,6 @@ typedef struct {
 /*       Actions        */
 #define INJECTION_RESERVOIR  0
 #define EXTRACTION_RESERVOIR 1
-
-#define RESERVOIR_ON_STATUS 1
-#define RESERVOIR_OFF_STATUS 1
 
 /*       Methods        */
 /* These should match  with */

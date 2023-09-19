@@ -1325,8 +1325,6 @@ PFModule *ReservoirPackageNewPublicXtra(int num_phases, int num_contaminants);
 void ReservoirPackageFreePublicXtra(void);
 int ReservoirPackageSizeOfTempData(void);
 
-/* reservoirs_lb.c */
-void LBReservoirs(Lattice *lattice, Problem *problem, ProblemData *problem_data);
 /* write_parflow_binary.c */
 long SizeofPFBinarySubvector(Subvector *subvector, Subgrid *subgrid);
 void WritePFBinary_Subvector(amps_File file, Subvector *subvector, Subgrid *subgrid);

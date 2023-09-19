@@ -3038,8 +3038,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
       for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
         reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
-        reservoir_data_physical->release_amount_since_last_print += ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
-        reservoir_data_physical->current_storage-= ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
+        ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) += ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
+          ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) -= ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
         reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
         GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
@@ -3085,8 +3085,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                              if (pp_sp[ip] > reservoir_reset_pressure)
                              {
                                double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-                               reservoir_data_physical->current_storage = reservoir_data_physical->current_storage + pp_sp[ip] * dx * dy;
-                               reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
+                                 ReservoirDataPhysicalCurrentStorage(reservoir_data_physical)= ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) + pp_sp[ip] * dx * dy;
+                               ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) + dx*dy * pp_sp[ip];
                                pp_sp[ip] = reservoir_reset_pressure;
                              }
                            }
@@ -3132,8 +3132,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                                {
                                  printf("4\n");
                                  double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-                                 reservoir_data_physical->current_storage = reservoir_data_physical->current_storage + pp_sp[ip] * dx * dy;
-                                 reservoir_data_physical->intake_amount_since_last_print = reservoir_data_physical->intake_amount_since_last_print + dx*dy * pp_sp[ip];
+                                   ReservoirDataPhysicalCurrentStorage(reservoir_data_physical)= ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) + pp_sp[ip] * dx * dy;
+                                 ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) + dx*dy * pp_sp[ip];
                                  pp_sp[ip] = reservoir_reset_pressure;
                                }
                              }

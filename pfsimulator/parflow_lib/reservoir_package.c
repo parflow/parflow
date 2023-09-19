@@ -225,13 +225,13 @@ void         ReservoirPackage(
         ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
         ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
         ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
-        ReservoirDataPhysicalMaxCapacity(reservoir_data_physical) = (dummy0->Max_Storage);
-        ReservoirDataPhysicalMinReleaseCapacity(reservoir_data_physical) = (dummy0->Min_Release_Storage);
+        ReservoirDataPhysicalMaxStorage(reservoir_data_physical) = (dummy0->Max_Storage);
+        ReservoirDataPhysicalMinReleaseStorage(reservoir_data_physical) = (dummy0->Min_Release_Storage);
         ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
         ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = (0);
         ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
-        ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical) = (dummy0->current_storage);
+        ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) = (dummy0->current_storage);
         ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
         ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
         ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;

@@ -217,7 +217,7 @@ void WriteReservoirs(
       for (reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
         reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
 
-        fprintf(file, ",%f", ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalCurrentStorage(reservoir_data_physical));
         fprintf(file, ",%f", ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical));
         fprintf(file, ",%f", ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical));
         fprintf(file, ",%f", ReservoirDataPhysicalReleaseRate(reservoir_data_physical));
@@ -227,7 +227,7 @@ void WriteReservoirs(
       }
       for (reservoir = 0; reservoir < ReservoirDataNumPressReservoirs(reservoir_data); reservoir++) {
         reservoir_data_physical = ReservoirDataPressReservoirPhysical(reservoir_data, reservoir);
-        fprintf(file, ",%f", ReservoirDataPhysicalCurrentCapacity(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalCurrentStorage(reservoir_data_physical));
         fprintf(file, ",%f", ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical));
         fprintf(file, ",%f", ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical));
         fprintf(file, ",%f", ReservoirDataPhysicalReleaseRate(reservoir_data_physical));
