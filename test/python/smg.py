@@ -6,7 +6,7 @@
 
 import sys
 from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.fs import mkdir, get_absolute_path, rm
 from parflow.tools.compare import pf_test_file
 
 run_name = "smg"
@@ -341,7 +341,7 @@ smg.Solver.Linear.Preconditioner = 'SMG'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-new_output_dir_name = get_absolute_path('test_output/pfmg_galerkin')
+new_output_dir_name = get_absolute_path('test_output/smg')
 correct_output_dir_name = get_absolute_path('../correct_output')
 mkdir(new_output_dir_name)
 smg.run(working_directory=new_output_dir_name)
@@ -363,7 +363,7 @@ for i in range(6):
     if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
         passed = False
 
-
+rm(new_output_dir_name)
 if passed:
     print(f"{run_name} : PASSED")
 else:
