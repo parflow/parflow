@@ -2,9 +2,10 @@
 #  This runs a Little Washita test problem with variable dz
 #  in spinup mode with overland dampening turned on
 #---------------------------------------------------------
-import sys
+
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path
+from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path, rm
 from parflow.tools.compare import pf_test_file
 
 run_name = "LW_var_dz_spinup"
@@ -25,9 +26,15 @@ cp('$PF_SRC/test/input/lw.1km.slope_y.10x.pfb', new_output_dir_name)
 
 LWvdz.FileVersion = 4
 
-LWvdz.Process.Topology.P = 1
-LWvdz.Process.Topology.Q = 1
-LWvdz.Process.Topology.R = 1
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
+
+LWvdz.Process.Topology.P = args.p
+LWvdz.Process.Topology.Q = args.q
+LWvdz.Process.Topology.R = args.r
 
 #---------------------------------------------------------
 # Computational Grid
@@ -381,7 +388,7 @@ for i in range(8):
     if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
         passed = False
         
-
+rm(new_output_dir_name)
 if passed:
     print(f"{run_name} : PASSED")
 else:
