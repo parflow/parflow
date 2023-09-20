@@ -4,9 +4,9 @@
 # With a suite of overlandflow BC options
 #---------------------------------------------------------
 
-import sys
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.fs import mkdir, get_absolute_path, rm
 from parflow.tools.compare import pf_test_file
 
 overland = Run("overland_slopingslab_KWE", __file__)
@@ -15,9 +15,15 @@ overland = Run("overland_slopingslab_KWE", __file__)
 
 overland.FileVersion = 4
 
-overland.Process.Topology.P = 1
-overland.Process.Topology.Q = 1
-overland.Process.Topology.R = 1
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
+
+overland.Process.Topology.P = args.p
+overland.Process.Topology.Q = args.q
+overland.Process.Topology.R = args.r
 
 #---------------------------------------------------------
 # Computational Grid
@@ -341,7 +347,7 @@ for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
         else:
             print(f"{run_name} : FAILED")
             sys.exit(1)
-
+    rm(new_output_dir_name)
             
     overland.Solver.Nonlinear.UseJacobian =  True
     overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
@@ -368,6 +374,8 @@ for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
         else:
             print(f"{run_name} : FAILED")
             sys.exit(1)
+    rm(new_output_dir_name)
+
     
     overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
     print("##########")
@@ -392,7 +400,9 @@ for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
         else:
             print(f"{run_name} : FAILED")
             sys.exit(1)
+    rm(new_output_dir_name)
 
+    
     overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
     overland.Solver.Nonlinear.UseJacobian = False
     overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
@@ -420,8 +430,9 @@ for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
         else:
             print(f"{run_name} : FAILED")
             sys.exit(1)
-    
+    rm(new_output_dir_name)    
 
+    
     overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
     overland.Solver.Nonlinear.UseJacobian = True
     overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
@@ -447,8 +458,9 @@ for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
         else:
             print(f"{run_name} : FAILED")
             sys.exit(1)
+    rm(new_output_dir_name)
 
-
+    
     overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
     overland.Solver.Nonlinear.UseJacobian = True
     overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'    
@@ -474,3 +486,4 @@ for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
         else:
             print(f"{run_name} : FAILED")
             sys.exit(1)
+    rm(new_output_dir_name)
