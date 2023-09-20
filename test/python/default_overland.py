@@ -21,9 +21,9 @@ parser.add_argument('-q', '--q', default=1)
 parser.add_argument('-r', '--r', default=1)
 args = parser.parse_args()
 
-dover.Process.Topology.P = 1
-dover.Process.Topology.Q = 1
-dover.Process.Topology.R = 1
+dover.Process.Topology.P = args.p
+dover.Process.Topology.Q = args.q
+dover.Process.Topology.R = args.r
 
 #---------------------------------------------------------
 # Computational Grid
