@@ -66,17 +66,11 @@ typedef void InstanceXtra;
 
 typedef struct {
     char    *name;
-    char *release_curve_file;
-//  TimeSeries release_curve;
-    double intake_x_location;
-    double intake_y_location;
+    double intake_x_location, intake_y_location;
     int has_secondary_intake_cell;
-    double secondary_intake_x_location;
-    double secondary_intake_y_location;
-    double release_x_location;
-    double release_y_location;
-    double z_lower, z_upper;
-    double Max_Storage, Min_Release_Storage, current_storage, release_rate;
+    double secondary_intake_x_location, secondary_intake_y_location;
+    double release_x_location, release_y_location;
+    double max_storage, min_release_storage, current_storage, release_rate;
 } Type0;                      /* basic vertical reservoir */
 
 /*--------------------------------------------------------------------------
@@ -110,7 +104,6 @@ void         ReservoirPackage(
   double dx, dy, dz;
   int rx, ry, rz;
   int process;
-  int reservoir_action, action, mechanism, method;
 
   double          **phase_values;
   double intake_subgrid_volume;
@@ -119,7 +112,7 @@ void         ReservoirPackage(
   double intake_x_lower, intake_x_upper, intake_y_lower, intake_y_upper, z_lower, z_upper;
   double secondary_intake_x_lower, secondary_intake_x_upper, secondary_intake_y_lower, secondary_intake_y_upper;
   double release_x_lower, release_x_upper, release_y_lower, release_y_upper;
-  double Max_Storage, Min_Release_Storage, Current_Storage, release_rate;
+  double max_storage, min_release_storage, Current_Storage, release_rate;
   double intake_amount_since_last_print, release_amount_since_last_print;
   /* Allocate the reservoir data */
   ReservoirDataNumReservoirs(reservoir_data) = (public_xtra->num_reservoirs);
@@ -225,8 +218,8 @@ void         ReservoirPackage(
         ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
         ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
         ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
-        ReservoirDataPhysicalMaxStorage(reservoir_data_physical) = (dummy0->Max_Storage);
-        ReservoirDataPhysicalMinReleaseStorage(reservoir_data_physical) = (dummy0->Min_Release_Storage);
+        ReservoirDataPhysicalMaxStorage(reservoir_data_physical) = (dummy0->max_storage);
+        ReservoirDataPhysicalMinReleaseStorage(reservoir_data_physical) = (dummy0->min_release_storage);
         ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
         ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = (0);
@@ -312,6 +305,12 @@ PFModule  *ReservoirPackageNewPublicXtra(
   int contaminant;
   int num_units;
 
+  char *switch_name;
+  int switch_value;
+  NameArray switch_na;
+
+  switch_na = NA_NewNameArray("False True");
+
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -358,23 +357,31 @@ PFModule  *ReservoirPackageNewPublicXtra(
           sprintf(key, "Reservoirs.%s.Intake_Y", reservoir_name);
           dummy0->intake_y_location = GetDouble(key);
 
-          sprintf(key, "Reservoirs.%s.Secondary_Intake_X", reservoir_name);
-          dummy0->secondary_intake_x_location = GetDouble(key);
-
-          sprintf(key, "Reservoirs.%s.Secondary_Intake_Y", reservoir_name);
-          dummy0->secondary_intake_y_location = GetDouble(key);
-
           sprintf(key, "Reservoirs.%s.Has_Secondary_Intake_Cell", reservoir_name);
-          dummy0->has_secondary_intake_cell = GetInt(key);
+          switch_name = GetStringDefault(key, "False");
+          switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+          dummy0->has_secondary_intake_cell = switch_value;
 
+          if (dummy0->has_secondary_intake_cell){
+              sprintf(key, "Reservoirs.%s.Secondary_Intake_X", reservoir_name);
+              dummy0->secondary_intake_x_location = GetDouble(key);
+
+              sprintf(key, "Reservoirs.%s.Secondary_Intake_Y", reservoir_name);
+              dummy0->secondary_intake_y_location = GetDouble(key);
+
+          }
+          else{
+              dummy0->secondary_intake_x_location = -1;
+              dummy0->secondary_intake_y_location = -1;
+          };
           sprintf(key, "Reservoirs.%s.Min_Release_Storage", reservoir_name);
-          dummy0->Min_Release_Storage = GetDouble(key);
+          dummy0->min_release_storage = GetDouble(key);
 
           sprintf(key, "Reservoirs.%s.Release_Rate", reservoir_name);
           dummy0->release_rate = GetDouble(key);
 
           sprintf(key, "Reservoirs.%s.Max_Storage", reservoir_name);
-          dummy0->Max_Storage = GetDouble(key);
+          dummy0->max_storage = GetDouble(key);
 
           sprintf(key, "Reservoirs.%s.Current_Storage", reservoir_name);
           dummy0->current_storage = GetDouble(key);
@@ -403,7 +410,7 @@ void  ReservoirPackageFreePublicXtra()
   Type0         *dummy0;
 
   int num_units, num_cycles;
-  int i, interval_number, interval_division;
+  int i;
 
   if (public_xtra)
   {
@@ -422,34 +429,9 @@ void  ReservoirPackageFreePublicXtra()
         {
           tfree((dummy0->name));
         }
-        //TODO figure out why this seg faults
-    //            if ((dummy0->release_curve_file))
-    //            {
-    //              tfree((dummy0->release_curve_file));
-    //            }
-        tfree(dummy0);
-
-
       }
-
       tfree(public_xtra->data);
-      tfree(public_xtra->type);
     }
-
-    /* Free the time cycling information */
-    num_cycles = (public_xtra->num_cycles);
-
-    tfree((public_xtra->repeat_counts));
-
-    for (i = 0; i < num_cycles; i++)
-    {
-      tfree((public_xtra->intervals[i]));
-    }
-    tfree((public_xtra->intervals));
-
-    tfree((public_xtra->interval_divisions));
-
-
     tfree(public_xtra);
   }
 }

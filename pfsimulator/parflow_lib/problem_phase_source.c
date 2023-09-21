@@ -401,8 +401,8 @@ void         PhaseSource(
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
       flux = reservoir_value / (volume);
       //If we are overfull need to release the rest of the flux
-      if (reservoir_data_physical->current_storage > reservoir_data_physical->Max_Storage){
-        flux = (reservoir_data_physical->current_storage - reservoir_data_physical->Max_Storage) / (volume) ;
+      if (reservoir_data_physical->current_storage > reservoir_data_physical->max_storage){
+        flux = (reservoir_data_physical->current_storage - reservoir_data_physical->max_storage) / (volume) ;
       }
 
       ForSubgridI(is, subgrids)
@@ -423,7 +423,7 @@ void         PhaseSource(
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = 0;
-        if (reservoir_data_physical->current_storage > reservoir_data_physical->Min_Release_Storage) {
+        if (reservoir_data_physical->current_storage > reservoir_data_physical->min_release_storage) {
           reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
           /*  Get the intersection of the reservoir with the subgrid  */
           if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid))) {

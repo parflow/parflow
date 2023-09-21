@@ -70,9 +70,9 @@ Reservoirs:
       # typos - vertical
       help: >
         [Type: double] This key specifies the y location of the optional secondary intake cell
-      default: 0
+      default: False
       domains:
-        IntValue:
+        BoolDomain:
 
     Min_Release_Storage:
       # typos - vertical

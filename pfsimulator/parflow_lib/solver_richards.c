@@ -3031,10 +3031,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     }
 
     //TODO define these variables somewhere that makes more sense
-
+    ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
     if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
       double reservoir_reset_pressure = 0.0;
-      ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
       ReservoirDataPhysical *reservoir_data_physical;
       Subgrid          *tmp_subgrid, *reservoir_intake_subgrid;
       Subgrid          *reservoir_secondary_intake_subgrid;
@@ -3096,7 +3095,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             );
           }
         }
-        if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) == 1){
+        if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical)){
           reservoir_secondary_intake_subgrid = ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical);
 
           ForSubgridI(is, GridSubgrids(grid))
