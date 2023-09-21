@@ -194,9 +194,9 @@ typedef struct {
   int write_netcdf_slopes;      /* write subsurface? */
   int write_netcdf_dzmult;      /* write subsurface? */
   int numVarTimeVariant;        /*This variable is added to keep track of number of
-                                * time variant variable in NetCDF file */
+                                 * time variant variable in NetCDF file */
   int numVarIni;                /*This variable is added to keep track of number of
-                                * time invariant variable in NetCDF file */
+                                 * time invariant variable in NetCDF file */
   int write_netcdf_clm;         /* Write CLM in NetCDF file? */
   int numCLMVarTimeVariant;     /* Number of CLM variables to be written in NetCDF file */
 
@@ -471,10 +471,10 @@ SetupRichards(PFModule * this_module)
     Copy(ProblemDataTSlopeY(problem_data),
          ProblemDataSSlopeY(problem_data));
     handle =
-        InitVectorUpdate(ProblemDataSSlopeX(problem_data), VectorUpdateAll);
+      InitVectorUpdate(ProblemDataSSlopeX(problem_data), VectorUpdateAll);
     FinalizeVectorUpdate(handle);
     handle =
-        InitVectorUpdate(ProblemDataSSlopeY(problem_data), VectorUpdateAll);
+      InitVectorUpdate(ProblemDataSSlopeY(problem_data), VectorUpdateAll);
     FinalizeVectorUpdate(handle);
   }
 
@@ -506,7 +506,7 @@ SetupRichards(PFModule * this_module)
                   ProblemDataSpecificStorage(problem_data));
 
     PFModuleOutputStaticType(SaturationOutputStaticInvoke, ProblemSaturation(problem), (file_prefix, problem_data));
-
+    
     // Now add metadata entries:
     static const char* permeability_filenames[] = {
       "perm_x", "perm_y", "perm_z"
@@ -1190,7 +1190,7 @@ SetupRichards(PFModule * this_module)
     PFModuleInvokeType(PhaseDensityInvoke,
                        phase_density,
                        (0, instance_xtra->pressure, instance_xtra->density,
-                           &dtmp, &dtmp, CALCFCN));
+                        &dtmp, &dtmp, CALCFCN));
 
     handle = InitVectorUpdate(instance_xtra->density, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
@@ -1474,9 +1474,9 @@ SetupRichards(PFModule * this_module)
         "vely"
       };
       MetadataAddDynamicField(
-          js_outputs, file_prefix, t, 0, "y-velocity", "m/s", "y-face", "subsurface",
-          sizeof(vely_filenames) / sizeof(vely_filenames[0]),
-          vely_filenames);
+                              js_outputs, file_prefix, t, 0, "y-velocity", "m/s", "y-face", "subsurface",
+                              sizeof(vely_filenames) / sizeof(vely_filenames[0]),
+                              vely_filenames);
 
       sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
       WritePFBinary(file_prefix, file_postfix,
@@ -2542,7 +2542,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         {
           PFModuleInvokeType(SelectTimeStepInvoke, time_step_control,
                              (&dt, &dt_info, t, problem,
-                                 problem_data));
+                              problem_data));
         }
         else
         {
@@ -3936,7 +3936,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                  problem,
                  ProblemDataWellData(problem_data),
                  t, WELLDATA_DONTWRITEHEADER);
-
     }
 
     /*-----------------------------------------------------------------
@@ -4681,7 +4680,7 @@ SolverRichardsInitInstanceXtra()
   PFModuleReNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
                             (instance_xtra->nonlin_solver),
                             (NULL, NULL, instance_xtra->problem_data,
-                                temp_data));
+                             temp_data));
 
   /* renew set_problem_data module */
   PFModuleReNewInstanceType(SetProblemDataInitInstanceXtraInvoke,
@@ -5917,7 +5916,7 @@ ProblemData *
 GetProblemDataRichards(PFModule * this_module)
 {
   InstanceXtra *instance_xtra =
-      (InstanceXtra*)PFModuleInstanceXtra(this_module);
+    (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   return(instance_xtra->problem_data);
 }
