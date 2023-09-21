@@ -84,59 +84,36 @@ void FreeReservoirData(
     ReservoirData *reservoir_data)
 {
   ReservoirDataPhysical *reservoir_data_physical;
-  int i, cycle_number, interval_division, interval_number;
-
-  TimeCycleData   *time_cycle_data;
+  int i;
 
   if (reservoir_data)
   {
     if (ReservoirDataNumReservoirs(reservoir_data) > 0)
     {
-      time_cycle_data = ReservoirDataTimeCycleData(reservoir_data);
-
       if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
         for (i = 0; i < ReservoirDataNumFluxReservoirs(reservoir_data); i++) {
+          reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, i);
           for (i = 0; i < ReservoirDataNumFluxReservoirs(reservoir_data); i++) {
             reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, i);
-            for (i = 0; i < ReservoirDataNumFluxReservoirs(reservoir_data); i++) {
-              reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, i);
-              if (ReservoirDataPhysicalName(reservoir_data_physical)) {
-                tfree(ReservoirDataPhysicalName(reservoir_data_physical));
-              }
-              if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical)) {
-                FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
-              }
-              tfree(reservoir_data_physical);
+            if (ReservoirDataPhysicalName(reservoir_data_physical)) {
+              tfree(ReservoirDataPhysicalName(reservoir_data_physical));
             }
-            if (ReservoirDataFluxReservoirPhysicals(reservoir_data)) {
-              tfree(ReservoirDataFluxReservoirPhysicals(reservoir_data));
+            if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical)) {
+              FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
             }
+            if (ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical)) {
+              FreeSubgrid(ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical));
+            }
+            if (ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical)) {
+              FreeSubgrid(ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical));
+            }
+            tfree(reservoir_data_physical);
+          }
+          if (ReservoirDataFluxReservoirPhysicals(reservoir_data)) {
+            tfree(ReservoirDataFluxReservoirPhysicals(reservoir_data));
           }
         }
       }
-      if (ReservoirDataNumPressReservoirs(reservoir_data) > 0)
-      {
-        for (i = 0; i < ReservoirDataNumPressReservoirs(reservoir_data); i++) {
-
-          for (i = 0; i < ReservoirDataNumPressReservoirs(reservoir_data); i++) {
-            reservoir_data_physical = ReservoirDataPressReservoirPhysical(reservoir_data, i);
-            for (i = 0; i < ReservoirDataNumPressReservoirs(reservoir_data); i++) {
-              reservoir_data_physical = ReservoirDataPressReservoirPhysical(reservoir_data, i);
-              if (ReservoirDataPhysicalName(reservoir_data_physical)) {
-                tfree(ReservoirDataPhysicalName(reservoir_data_physical));
-              }
-              if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical)) {
-                FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
-              }
-              tfree(reservoir_data_physical);
-            }
-            if (ReservoirDataPressReservoirPhysicals(reservoir_data)) {
-              tfree(ReservoirDataPressReservoirPhysicals(reservoir_data));
-            }
-          }
-        }
-      FreeTimeCycleData(time_cycle_data);
-    }
     tfree(reservoir_data);
   }
       }
