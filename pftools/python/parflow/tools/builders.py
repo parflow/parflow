@@ -1176,47 +1176,32 @@ class DomainBuilder:
 
         return self
 
-    def reservoir(self, name, type, x, y, z_upper, z_lower,
-                  cycle_name, interval_name, action='Extraction',
-                  saturation=1.0, phase='water', hydrostatic_pressure=None,
-                  value=None):
+    def reservoir(self, name, Intake_X, Intake_Y, Secondary_Intake_Y,
+                  Secondary_Intake_X, Secondary_Intake_Y,Release_X, 
+                  Release_Y, Release_Rate, Max_Storage, Current_Storage,
+                  Min_Release_Storage
+                  ):
         """Setting keys necessary to define a simple reservoir
         """
 
-        if not self.run.Wells.Names:
-            self.run.Wells.Names = []
+        if not self.run.Reservoirs.Names:
+            self.run.Reservoirs.Names = []
 
-        self.run.Wells.Names += [name]
-        reservoir = self.run.Wells[name]
+        self.run.Reservoirs.Names += [name]
+        reservoir = self.run.Reservoirs[name]
         reservoir.InputType = 'Vertical'
         reservoir.Action = 'Extraction'
         reservoir.Type = type
-        reservoir.X = x
-        reservoir.Y = y
-        reservoir.ZUpper = z_upper
-        reservoir.ZLower = z_lower
-        reservoir.Method = 'Standard'
-        reservoir.Cycle = cycle_name
-        reservoir[interval_name].Saturation[phase].Value = saturation
-
-        if action == 'Extraction':
-            reservoir.Action = 'Extraction'
-            if type == 'Pressure':
-                reservoir[interval_name].Pressure.Value = hydrostatic_pressure
-                if value is not None:
-                    reservoir[interval_name].Extraction.Pressure.Value = value
-            elif type == 'Flux' and value is not None:
-                reservoir[interval_name].Extraction.Flux[phase].Value = value
-
-        if action == 'Injection':
-            reservoir.Action = 'Injection'
-            if type == 'Pressure':
-                reservoir[interval_name].Pressure.Value = hydrostatic_pressure
-                if value is not None:
-                    reservoir[interval_name].Injection.Pressure.Value = value
-            elif type == 'Flux' and value is not None:
-                reservoir[interval_name].Injection.Flux[phase].Value = value
-
+        reservoir.Intake_X = Intake_X
+        reservoir.Intake_Y = Intake_Y
+        reservoir.Secondary_Intake_X = Secondary_Intake_X
+        reservoir.Secondary_Intake_Y = Secondary_Intake_Y
+        reservoir.Release_X = Release_X
+        reservoir.Release_Y = Release_Y
+        reservoir.Release_Rate = Release_Rate
+        reservoir.Max_Storage = Max_Storage
+        reservoir.Current_Storage = Current_Storage
+        reservoir.Min_Release_Storage = Min_Release_Storage
         return self
 
     def well(self, name, type, x, y, z_upper, z_lower,

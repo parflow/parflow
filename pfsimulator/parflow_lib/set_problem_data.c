@@ -109,51 +109,51 @@ void          SetProblemData(
 
     PFModuleInvokeType(SubsrfSimInvoke, permeability,
                        (problem_data,
-                           ProblemDataPermeabilityX(problem_data),
-                           ProblemDataPermeabilityY(problem_data),
-                           ProblemDataPermeabilityZ(problem_data),
-                           ProblemDataNumSolids(problem_data),
-                           ProblemDataSolids(problem_data),
-                           ProblemDataGrSolids(problem_data)));
+                        ProblemDataPermeabilityX(problem_data),
+                        ProblemDataPermeabilityY(problem_data),
+                        ProblemDataPermeabilityZ(problem_data),
+                        ProblemDataNumSolids(problem_data),
+                        ProblemDataSolids(problem_data),
+                        ProblemDataGrSolids(problem_data)));
     PFModuleInvokeType(PorosityInvoke, porosity,
                        (problem_data,
-                           ProblemDataPorosity(problem_data),
-                           ProblemDataNumSolids(problem_data),
-                           ProblemDataSolids(problem_data),
-                           ProblemDataGrSolids(problem_data)));
+                        ProblemDataPorosity(problem_data),
+                        ProblemDataNumSolids(problem_data),
+                        ProblemDataSolids(problem_data),
+                        ProblemDataGrSolids(problem_data)));
     PFModuleInvokeType(SpecStorageInvoke, specific_storage,                   //sk
                        (problem_data,
-                           ProblemDataSpecificStorage(problem_data)));
+                        ProblemDataSpecificStorage(problem_data)));
     PFModuleInvokeType(SlopeInvoke, x_slope,                   //sk
                        (problem_data,
-                           ProblemDataTSlopeX(problem_data),
-                           ProblemDataPorosity(problem_data)));
+                        ProblemDataTSlopeX(problem_data),
+                        ProblemDataPorosity(problem_data)));
     PFModuleInvokeType(SlopeInvoke, y_slope,                   //sk
                        (problem_data,
-                           ProblemDataTSlopeY(problem_data),
-                           ProblemDataPorosity(problem_data)));
+                        ProblemDataTSlopeY(problem_data),
+                        ProblemDataPorosity(problem_data)));
     PFModuleInvokeType(ManningsInvoke, mann,                   //sk
                        (problem_data,
-                           ProblemDataMannings(problem_data),
-                           ProblemDataPorosity(problem_data)));
+                        ProblemDataMannings(problem_data),
+                        ProblemDataPorosity(problem_data)));
     PFModuleInvokeType(dzScaleInvoke, dz_mult,                   //RMM
                        (problem_data,
-                           ProblemDataZmult(problem_data)));
+                        ProblemDataZmult(problem_data)));
 
 
     PFModuleInvokeType(realSpaceZInvoke, real_space_z,
                        (problem_data,
-                           ProblemDataRealSpaceZ(problem_data)));
+                        ProblemDataRealSpaceZ(problem_data)));
 
     PFModuleInvokeType(FBxInvoke, FBx,                   //RMM
                        (problem_data,
-                           ProblemDataFBx(problem_data)));
+                        ProblemDataFBx(problem_data)));
     PFModuleInvokeType(FByInvoke, FBy,                   //RMM
                        (problem_data,
-                           ProblemDataFBy(problem_data)));
+                        ProblemDataFBy(problem_data)));
     PFModuleInvokeType(FBzInvoke, FBz,                   //RMM
                        (problem_data,
-                           ProblemDataFBz(problem_data)));
+                        ProblemDataFBz(problem_data)));
 
 
     (instance_xtra->site_data_not_formed) = 0;
@@ -168,10 +168,10 @@ void          SetProblemData(
  *--------------------------------------------------------------------------*/
 
 PFModule  *SetProblemDataInitInstanceXtra(
-    Problem *problem,
-    Grid *   grid,
-    Grid *   grid2d,
-    double * temp_data)
+                                          Problem *problem,
+                                          Grid *   grid,
+                                          Grid *   grid2d,
+                                          double * temp_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
@@ -239,26 +239,26 @@ PFModule  *SetProblemDataInitInstanceXtra(
         PFModuleNewInstance(ProblemdzScale(problem), ());
 
     (instance_xtra->FBx) =                                      //RMM
-        PFModuleNewInstance(ProblemFBx(problem), ());
+                           PFModuleNewInstance(ProblemFBx(problem), ());
     (instance_xtra->FBy) =                                      //RMM
-        PFModuleNewInstance(ProblemFBy(problem), ());
+                           PFModuleNewInstance(ProblemFBy(problem), ());
     (instance_xtra->FBz) =                                      //RMM
-        PFModuleNewInstance(ProblemFBz(problem), ());
+                           PFModuleNewInstance(ProblemFBz(problem), ());
 
     (instance_xtra->real_space_z) =
-        PFModuleNewInstance(ProblemRealSpaceZ(problem), ());
+      PFModuleNewInstance(ProblemRealSpaceZ(problem), ());
 
     (instance_xtra->site_data_not_formed) = 1;
 
     (instance_xtra->wells) =
-        PFModuleNewInstance(ProblemWellPackage(problem), ());
+      PFModuleNewInstance(ProblemWellPackage(problem), ());
 
     (instance_xtra->reservoirs) =
         PFModuleNewInstance(ProblemReservoirPackage(problem), ());
 
     (instance_xtra->bc_pressure) =
-        PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
-                                ProblemBCPressurePackage(problem), (problem));
+      PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
+                              ProblemBCPressurePackage(problem), (problem));
   }
   else
   {

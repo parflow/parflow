@@ -219,6 +219,7 @@ PFModule  *SelectTimeStepNewPublicXtra()
       dummy0->step = GetDouble("TimeStep.Value");
 
       (public_xtra->data) = (void*)dummy0;
+
       break;
     }
 

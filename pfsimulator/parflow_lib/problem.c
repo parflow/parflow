@@ -450,6 +450,7 @@ ProblemData   *NewProblemData(
 
   ProblemDataWellData(problem_data) = NewWellData();
   ProblemDataReservoirData(problem_data) = NewReservoirData();
+  
   return problem_data;
 }
 

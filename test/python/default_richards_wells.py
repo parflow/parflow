@@ -7,8 +7,7 @@
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
 
-run_name = "default_richards_wells"
-drich = Run(run_name, __file__)
+drich = Run("default_richards_wells", __file__)
 
 #---------------------------------------------------------
 
@@ -350,7 +349,6 @@ drich.Solver.Linear.Preconditioner = 'MGSemi'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-new_output_dir_name = get_absolute_path('test_output/drich_w')
-correct_output_dir_name = get_absolute_path('../correct_output')
-mkdir(new_output_dir_name)
-drich.run(working_directory=new_output_dir_name)
+dir_name = get_absolute_path('test_output/drich_w')
+mkdir(dir_name)
+drich.run(working_directory=dir_name)

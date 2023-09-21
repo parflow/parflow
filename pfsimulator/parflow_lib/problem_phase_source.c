@@ -9,7 +9,6 @@
 
 #include "parflow.h"
 #include <float.h>
-#include <sys/time.h>
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -273,7 +272,7 @@ void         PhaseSource(
   /*-----------------------------------------------------------------------
    * Put in any flux wells from the well package
    *-----------------------------------------------------------------------*/
-//  fprintf(stdout, "Number of flux wells: %d\n", WellDataNumFluxWells(well_data));
+
   if (WellDataNumFluxWells(well_data) > 0)
   {
     time_cycle_data = WellDataTimeCycleData(well_data);
@@ -367,7 +366,6 @@ void         PhaseSource(
                       + (py[ip] / avg_y) * (area_y / area_sum)
                       + (pz[ip] / avg_z) * (area_z / area_sum);
               data[ips] += weight * flux;
-              printf("Releasing flux from well %f\n", flux);
             });
           }else{
             double weight = -FLT_MAX;
@@ -383,13 +381,12 @@ void         PhaseSource(
             });
           }
           /* done with this temporary subgrid */
-
           FreeSubgrid(tmp_subgrid);
-
         }
       }
     }
   }  /* End well data */
+  
   if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0)
   {
 //    double epoch_time = problem->current_unix_epoch_time;
