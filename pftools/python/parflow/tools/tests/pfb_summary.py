@@ -7,7 +7,7 @@
     DESCRIPTION:
         Peeks into a parflow .pfb file and display a summary of the file.
         This prints to stdout a summary of the .pfb file. It prints the file header from the first 64 bytes.
-        Then prints the subgrid headers of the first 2 subgrids and the last subgrid
+        Then prints the subgrid headers of the first 2 subgrids and the last subgrid.
 
         The purpose of this utility is to assist with debugging so you can view a summary of a PFB file.
 """
