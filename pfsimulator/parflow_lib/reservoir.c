@@ -91,8 +91,7 @@ void FreeReservoirData(
     if (ReservoirDataNumReservoirs(reservoir_data) > 0)
     {
       if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
-        for (i = 0; i < ReservoirDataNumFluxReservoirs(reservoir_data); i++) {
-          reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, i);
+
           for (i = 0; i < ReservoirDataNumFluxReservoirs(reservoir_data); i++) {
             reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, i);
             if (ReservoirDataPhysicalName(reservoir_data_physical)) {
@@ -116,7 +115,6 @@ void FreeReservoirData(
       }
     tfree(reservoir_data);
   }
-      }
 }
 
 
