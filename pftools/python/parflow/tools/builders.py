@@ -1176,7 +1176,7 @@ class DomainBuilder:
 
         return self
 
-    def reservoir(self, name, Intake_X, Intake_Y, Secondary_Intake_Y,
+    def reservoir(self, name, Intake_X, Intake_Y,
                   Secondary_Intake_X, Secondary_Intake_Y,Release_X, 
                   Release_Y, Release_Rate, Max_Storage, Current_Storage,
                   Min_Release_Storage
