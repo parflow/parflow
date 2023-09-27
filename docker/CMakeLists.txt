@@ -14,7 +14,7 @@ add_custom_target(DockerBuildDevelopment
 )
 
 add_custom_target(DockerRunDevelopment
-        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY --name=parflow-development -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src parflow-development
+        docker run --rm -it --workdir /home/ubuntu/parflow/src --env=DISPLAY --cpus=.5 --name=parflow-development -e LANG=en_US.utf8 -v ${CMAKE_CURRENT_SOURCE_DIR}/..:/home/ubuntu/parflow/src parflow-development
         COMMENT
         "Start docker image 'parflow-development' mounted to source directory to allow live rebuilding"
         VERBATIM
