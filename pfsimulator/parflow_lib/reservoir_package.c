@@ -289,20 +289,14 @@ PFModule  *ReservoirPackageNewPublicXtra(
   Type0         *dummy0;
 
   int num_cycles;
-  int global_cycle;
 
 
   char *reservoir_names;
+  char * EMPTY_NAMES_LIST = "";
   char *reservoir_name;
-  char *release_curve_file;
-
-  char *cycle_name;
 
   char key[IDB_MAX_KEY_LEN];
 
-
-  int phase;
-  int contaminant;
   int num_units;
 
   char *switch_name;
@@ -317,7 +311,7 @@ PFModule  *ReservoirPackageNewPublicXtra(
 
 
 
-  reservoir_names = GetString("Reservoirs.Names");
+  reservoir_names = GetStringDefault("Reservoirs.Names", EMPTY_NAMES_LIST);
 
   public_xtra->reservoir_names = NA_NewNameArray(reservoir_names);
 
