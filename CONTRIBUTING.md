@@ -199,7 +199,7 @@ pretty familiar.  Since C doesn't have the language constructs it
 makes the infrastructure for supporting OO more visible (and error
 prone).
 
-## ParFlow Conventions
+## ParFlow C Conventions
 
 Most of ParFlow is written in ANSI C.  ParFlow has been compiled with
 C++ and used with a C++ library (the AMR framework SAMRAI) so should
@@ -224,65 +224,6 @@ The bin/pfuncrustify script is supplied to run the uncrustify tool on
 the Parflow source code.  The Uncrustify setup is in the
 bin/parflow.cfg file.  Code contributions should use the the
 pfuncrustify tool to maintain consistency.
-
-### Your First Code Contribution
-
-The ParFlow reviewers will be looking for several specific items
-on submitted code contributions.   
-
-#### License and Copyright
-
-ParFlow is released under the GNU Lesser General Public License
-(LGPL).  The full text of the license is included in the ParFlow
-LICENSE.txt file located at:
-<https://github.com/parflow/parflow/blob/master/LICENSE.txt>.  All
-contributions to ParFlow must be compatible with the LGPL.  It is
-strongly preferred to use GNU General Public License version 2.1 for
-contributions since other licenses will have to be checked to see if
-including them is allowed.  If a contributor has a particular reason
-to provide new work with a license other than GPLv2, they should
-contact the code maintainers before contributing a pull request.
-
-All new source files must contain a license statement, and all
-modifications to source files must conform to the the license in the
-original file.  You must make sure that the licensing attribution is
-correct and that the code is suitable for ParFLow inclusion. No
-contributions will be accepted if they include code (even snippets)
-from sources that have incompatible licenses.
-
-In addition to the license you should include a copyright
-statement in the header if that is required by your employer, such as:
-Copyright 2009 John Doe.  If the you work for an employer or a
-university, the you should check with how to properly identify the
-copyright holder (which may not be the contributor as an individual).
-
-Please use a header similiar to this example in ALL new code files.
-
-We will not accept code without a proper license statement.
-
-```c
-/**********************************************************************
- *
- *  Your Copyright statement if needed.
- *
- *  Please read the LICENSE file for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- ***********************************************************************/
-
-```
 
 #### Source Code Documentation
 
@@ -340,6 +281,87 @@ Documentation information should be set off from the code through
 standard C language delimiters using /* and */.  You don't need to
 state the obvious, focus on intent and purpose to help guide others
 reading your code.
+
+## ParFlow Python Conventions
+
+### Python Coding Style Guidelines
+
+ParFlow tries to follow several different style guides when writing 
+Python.
+
+[PEP-8](https://peps.python.org/pep-0008/) guidelines should be used as a
+base for naming conventions, whitespace and other basic coding style
+issues.
+
+[Google
+style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstringsa)
+Python docstrings formatting should be used.  Please document every
+method, ParFlow has not done this historically and it has made the
+code more diffult to maintain.  We are documenting now so don't follow
+the bad practices from our past.
+
+Using the [Black](https://pypi.org/project/black/) code formatter is
+highly recommended and we are planing on enforcing use of Black at
+some point.
+
+## Your First Code Contribution
+
+The ParFlow reviewers will be looking for several specific items
+on submitted code contributions.
+
+#### License and Copyright
+
+ParFlow is released under the GNU Lesser General Public License
+(LGPL).  The full text of the license is included in the ParFlow
+LICENSE.txt file located at:
+<https://github.com/parflow/parflow/blob/master/LICENSE.txt>.  All
+contributions to ParFlow must be compatible with the LGPL.  It is
+strongly preferred to use GNU General Public License version 2.1 for
+contributions since other licenses will have to be checked to see if
+including them is allowed.  If a contributor has a particular reason
+to provide new work with a license other than GPLv2, they should
+contact the code maintainers before contributing a pull request.
+
+All new source files must contain a license statement, and all
+modifications to source files must conform to the the license in the
+original file.  You must make sure that the licensing attribution is
+correct and that the code is suitable for ParFLow inclusion. No
+contributions will be accepted if they include code (even snippets)
+from sources that have incompatible licenses.
+
+In addition to the license you should include a copyright
+statement in the header if that is required by your employer, such as:
+Copyright 2009 John Doe.  If the you work for an employer or a
+university, the you should check with how to properly identify the
+copyright holder (which may not be the contributor as an individual).
+
+Please use a header similiar to this example in ALL new code files.
+
+We will not accept code without a proper license statement.
+
+```c
+/**********************************************************************
+ *
+ *  Your Copyright statement if needed.
+ *
+ *  Please read the LICENSE file for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ ***********************************************************************/
+
+```
 
 #### Testing
 

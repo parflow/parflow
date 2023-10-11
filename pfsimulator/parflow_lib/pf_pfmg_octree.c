@@ -351,6 +351,8 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
   GrGeomSolid        *gr_domain = ProblemDataGrDomain(problem_data);
 
+  PF_UNUSED(im);
+
   (void)problem;
   (void)temp_data;
 

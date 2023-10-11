@@ -31,8 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int sum(x)
-int x;
+int sum(int x)
 {
   int i, result = 0;
 
@@ -42,9 +41,7 @@ int x;
   return result;
 }
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   amps_Invoice invoice;
 
@@ -87,7 +84,7 @@ char *argv[];
     if ((d_result != (double)num))
     {
       amps_Printf("ERROR!!!!! MAX result is incorrect: %f  %d\n",
-                  d_result, i_result);
+                  d_result, num);
       result = 1;
     }
 
@@ -101,7 +98,7 @@ char *argv[];
     if ((d_result != (double)1))
     {
       amps_Printf("ERROR!!!!! MIN result is incorrect: %f  %d\n",
-                  d_result, i_result);
+                  d_result, 1.0);
       result = 1;
     }
 
@@ -116,8 +113,8 @@ char *argv[];
     test = sum(num);
     if ((d_result != (double)test))
     {
-      amps_Printf("ERROR!!!!! Add result is incorrect: %f  %d want %d\n",
-                  d_result, i_result, test);
+      amps_Printf("ERROR!!!!! Add result is incorrect: %f  %d\n",
+                  d_result, test);
       result = 1;
     }
   }

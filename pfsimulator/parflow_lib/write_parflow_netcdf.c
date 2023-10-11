@@ -151,7 +151,6 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
       static int numStepsInFile = 0;
       int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
       static char file_name[255];
-      static int numOfDefVars = 0;
 
       varNCData *myVarNCData=NULL;
 
@@ -164,7 +163,6 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
         PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
                         nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
         numStepsInFile = 1;
-        numOfDefVars = 1;
       }
       else
       {
@@ -175,7 +173,6 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
           int myVarID = LookUpInventory(varName, &myVarNCData, netCDFIDs);
           PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
                           nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
-          numOfDefVars++;
           numStepsInFile++;
         }
         else
