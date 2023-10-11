@@ -12,6 +12,10 @@ import numpy as np
 run_name = "bc_pressure_file"
 bcp = Run(run_name, __file__)
 
+new_output_dir_name = get_absolute_path('test_output/bcp')
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+
 bcp.FileVersion = 4
 
 bcp.Process.Topology.P = 1
@@ -349,9 +353,6 @@ bcp.Solver.PrintVelocities = True
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-new_output_dir_name = get_absolute_path('test_output/bcp')
-correct_output_dir_name = get_absolute_path('../correct_output')
-mkdir(new_output_dir_name)
 bcp.run(working_directory=new_output_dir_name)
 
 passed = True
