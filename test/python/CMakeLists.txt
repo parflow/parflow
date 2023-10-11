@@ -11,6 +11,8 @@ set(TESTS
   crater2D_vangtable_linear
   small_domain
   richards_hydrostatic_equilibrium
+  bc_pressure_file
+  bc_flux_file
 )
 
 if(${PARFLOW_HAVE_HYPRE})
