@@ -323,9 +323,8 @@ ifield.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 #-----------------------------------------------------------------------------
 
 ifield.dist(dir_name + '/small_domain_indicator_field.pfb')
-
-ifield.run(working_directory=dir_name)
 correct_output_dir_name = get_absolute_path('../correct_output')
+ifield.run(working_directory=dir_name)
 
 passed = True
 
