@@ -210,6 +210,7 @@ BIG ENDIAN binary bit ordering :cite:p:`endian`. The format for the file is:
       	    qflx_evap_grnd_ij
       	    qflx_evap_soi_ij
       	    qflx_evap_veg_ij
+             qflx_tran_veg_ij
       	    qflx_infl_ij
       	    swe_out_ij
       	    t_grnd_ij
