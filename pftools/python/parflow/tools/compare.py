@@ -1,6 +1,14 @@
 import os
 from parflow.tools.io import read_pfb
 
+def pf_test_equal(a, b, message):
+    pf_eps = 1e-5
+    if abs(a - b) > pf_eps:
+        print(f"FAILED : {message} {a} is not equal to {b}")
+        return False
+    
+    return True
+
 
 def msig_diff(data1, data2, m, abs_zero=0.0):
     """Python version of the C MSigDiff function.
