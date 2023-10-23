@@ -52,7 +52,8 @@ if(${PARFLOW_HAVE_SILO})
 
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND TESTS
-    # default_richards_with_silo)
+      # default_richards_with_silo
+      )
   endif()
 endif()
 
