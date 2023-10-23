@@ -38,11 +38,11 @@ if(${PARFLOW_HAVE_HYPRE})
     richards_FBx
     richards_FBy
     richards_box_proctest
-    richards_box_proctest_vardz)
+    richards_box_proctest_vardz
     water_balance_y
     water_balance_x
     water_balance_x.hardflow.nojac
-    water_balance_x.hardflow.jac
+    water_balance_x.hardflow.jac)
 endif()
 
 if(${PARFLOW_HAVE_SILO})
