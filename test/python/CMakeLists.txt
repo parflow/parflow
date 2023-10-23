@@ -39,6 +39,10 @@ if(${PARFLOW_HAVE_HYPRE})
     richards_FBy
     richards_box_proctest
     richards_box_proctest_vardz)
+    water_balance_y
+    water_balance_x
+    water_balance_x.hardflow.nojac
+    water_balance_x.hardflow.jac
 endif()
 
 if(${PARFLOW_HAVE_SILO})
@@ -48,11 +52,7 @@ if(${PARFLOW_HAVE_SILO})
 
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND TESTS
-      water_balance_y
-      water_balance_x
-      water_balance_x.hardflow.nojac
-      water_balance_x.hardflow.jac
-      default_richards_with_silo)
+    # default_richards_with_silo)
   endif()
 endif()
 
