@@ -3,21 +3,23 @@
 #  and adjusts surface pressures
 #---------------------------------------------------------
 
+import sys
 from parflow import Run
-from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path
+from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path, rm
+from parflow.tools.compare import pf_test_file
 
-LW_surface_press = Run("LW_surface_press", __file__)
+run_name = "LW_surface_press"
+
+LW_surface_press = Run(run_name, __file__)
 
 #---------------------------------------------------------
 # Copying slope files
 #---------------------------------------------------------
+new_output_dir_name = get_absolute_path('test_output/LW_surface_press')
+mkdir(new_output_dir_name)
 
-#dir_name = get_absolute_path('test_output/LW_surface_press')
-#mkdir(dir_name)
-#chdir(dir_name)
-
-#cp('../../test/input/lw.1km.slope_x.10x.pfb','.')
-#cp('../../test/input/lw.1km.slope_y.10x.pfb','.')
+cp('../../test/input/lw.1km.slope_x.10x.pfb', new_output_dir_name)
+cp('../../test/input/lw.1km.slope_y.10x.pfb', new_output_dir_name)
 
 #---------------------------------------------------------
 
@@ -285,8 +287,8 @@ LW_surface_press.TopoSlopesY.FileName = 'lw.1km.slope_y.10x.pfb'
 #  Distribute slopes
 #---------------------------------------------------------
 
-LW_surface_press.dist('lw.1km.slope_x.10x.pfb')
-LW_surface_press.dist('lw.1km.slope_y.10x.pfb')
+LW_surface_press.dist(new_output_dir_name + '/lw.1km.slope_x.10x.pfb')
+LW_surface_press.dist(new_output_dir_name + '/lw.1km.slope_y.10x.pfb')
 
 #---------------------------------------------------------
 # Mannings coefficient
@@ -357,5 +359,29 @@ LW_surface_press.Solver.ResetSurfacePressure.ResetPressure  = -0.00001
 #-----------------------------------------------------------------------------
 # Run and do tests
 #-----------------------------------------------------------------------------
+correct_output_dir_name = get_absolute_path('../correct_output')
+LW_surface_press.run(working_directory=new_output_dir_name)
 
-LW_surface_press.run()
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(0, 11):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+rm(new_output_dir_name)
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
