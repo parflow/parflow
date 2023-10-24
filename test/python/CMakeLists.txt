@@ -13,7 +13,9 @@ set(TESTS
   richards_hydrostatic_equilibrium
   bc_pressure_file
   bc_flux_file
-)
+  Dirichlet
+  LW_surface_press
+  )
 
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS
