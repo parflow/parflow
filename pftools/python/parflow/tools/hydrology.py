@@ -8,6 +8,27 @@ import parflow.tools.io
 
 # -----------------------------------------------------------------------------                        
 
+def compute_hydraulic_head(pressure, z_0, dz):
+    """
+    Compute hydraulic head from a 3D pressure ndarray considering elevation.
+    
+    This function uses the formula hh = hp + hz, where hh is the hydraulic head,
+    hp the pressure head, and hz the elevation head.
+
+    Args:
+        pressure (numpy.ndarray): 3D array of pressure values.
+        z_0 (float): Elevation of the top layer.
+        dz (float): Distance between z-layers.
+
+    Returns:
+        numpy.ndarray: 3D array of hydraulic head values.
+    """
+    num_layers = pressure.shape[0]
+    elevation = z_0 + np.arange(num_layers) * dz + dz / 2
+    hydraulic_head = pressure + elevation[:, np.newaxis, np.newaxis]
+    return hydraulic_head
+    
+
 def compute_water_table_depth(saturation, top, dz):
     """Computes the water table depth as the first cell with a saturation=1 starting from top.   
 
