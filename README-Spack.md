@@ -43,13 +43,13 @@ compile the GNU compiler suite under Spack and avoid using Clang.
 Building GCC will take considerable amount of time.
 
 ```shell
-spack install gcc@10.3.0
+spack install gcc@12.2.0
 ```
 
 Add the compiler to the set of compilers Spack can use:
 
 ```shell
-spack load gcc@10.3.0
+spack load gcc@12.2.0
 spack compiler find
 spack compilers
 ```
