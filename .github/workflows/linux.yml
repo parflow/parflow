@@ -255,7 +255,7 @@ jobs:
       if: matrix.config.amps_layer == 'oas3'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-	  git clone --depth 1 --branch OASIS3-MCT_5.1 https://gitlab.com/cerfacs/oasis3-mct.git
+          git clone --depth 1 --branch OASIS3-MCT_5.1 https://gitlab.com/cerfacs/oasis3-mct.git
           cd oasis3-mct
           export OASIS_ROOT=$(pwd)
           cd util/make_dir
