@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # $Revision: 2.1 $
 
 # Script needs an older version of python
@@ -27,8 +27,8 @@ def load_symbols(prog):
     f = os.popen("nm -Co --defined-only "+prog)
     sym = {}
     for line in f.readlines():
-        s = string.split(line)
-        val = hex_conv('0x'+string.split(s[0], ':')[1])
+        s = line.split()
+        val = hex_conv('0x'+s[0].split(':')[1])
         name = " ".join(s[2:])
         sym[val]=name
     f.close()
@@ -44,9 +44,9 @@ def trace(prog, tracefile):
     while 1:
         l = tr.readline()
         if l:
-            s = string.split(l)
+            s = l.split()
             if s[0]=="EXIT":
-                print "exit PID", s[1]
+                print("exit PID", s[1])
                 end_trace()
             s1 = hex_conv(s[1])
             if s1 in sym.keys():
@@ -59,22 +59,22 @@ def trace(prog, tracefile):
                     # was the counter counting?
                     if count==0:
                         # print function name
-                        print '\n    '+level*'   '+name,
+                        print('\n    '+level*'   '+name)
                     count=count+1
                 else:
                     # New name received. Was the counter counting?
                     if count>0:
-                        print "(total: %d times)" % (count+1),
+                        print("(total: %d times)" % (count+1))
                         # re-initialize counter
                         count=0
-                    print '\n    '+level*'   '+name,
+                    print('\n    '+level*'   '+name)
                 level=level+1
                 prevname = name
             else:
                 level=level-1
                 if name=="main":
                     if count>0:
-                        print "(total: %d times)" % (count+1),
+                        print("(total: %d times)" % (count+1))
                     end_trace()
         else:
             end_trace()
@@ -83,9 +83,9 @@ def trace(prog, tracefile):
 # Main
 if __name__=="__main__":
     if len(sys.argv)<3:
-        print "Usage: analysis <binary name> <trace file>"
+        print("Usage: analysis <binary name> <trace file>")
         sys.exit(1)
-    pyver = string.split(sys.version[:3], ".")
+    pyver = sys.version[:3].split(".")
     if pyver < ['2','0']:
         hex_conv = hex_conv_1_5
     else:

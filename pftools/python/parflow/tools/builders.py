@@ -3,7 +3,10 @@
 import os
 from pathlib import Path
 import sys
+import tempfile
 import yaml
+import subprocess
+from subprocess import Popen, PIPE
 
 import numpy as np
 
@@ -12,7 +15,7 @@ from .helper import sort_dict
 from .fs import exists
 
 from parflow.tools.database.core import PFDBObj
-from parflow.tools.io import read_clm, write_array, write_patch_matrix_as_asc
+from parflow.tools.io import read_clm, write_pfb, write_patch_matrix_as_asc
 from parflow.tools.fs import get_absolute_path
 from parflow.tools.helper import remove_prefix, with_absolute_path
 
@@ -104,7 +107,7 @@ class SolidFileBuilder:
         self.patch_ids_side = side_patch_ids
         return self
 
-    def write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False):
+    def write(self, name, xllcorner=0, yllcorner=0, cellsize=0, vtk=False, extra=None, generate_asc_files=False):
         """Writing out pfsol file with optional output to vtk
 
         Args:
@@ -112,109 +115,141 @@ class SolidFileBuilder:
             xllcorner (int, float): coordinate of lower-left corner of x-axis
             yllcorner (int, float): coordinate of lower-left corner of y-axis
             cellsize (int): size of horizontal grid cell for solid file
+            extra (list of strings): Any extra arguments to pass to
+                pfmask-to-pfsol for solid file generation; Default None
+            generate_asc_files (bool): whether to generate .asc files for top/bottom/side patch matrices.
+                Setting generate_asc_files to True results in 6 mask files being generated for top/bottom/sides:
+                <name>_top.asc, <name>_bottom.asc, <name>_front.asc, <name>_back.asc, <name>_left.asc, <name>_right.asc
+                When False (the default), asc mask files are not generated.
         """
         self.name = name
         output_file_path = get_absolute_path(name)
         if self.mask_array is None:
             raise Exception('No mask was defined')
 
-        shape = self.mask_array.shape
-        dtype = np.int16
-        left_mask = np.zeros(shape, dtype=dtype)
-        right_mask = np.zeros(shape, dtype=dtype)
-        back_mask = np.zeros(shape, dtype=dtype)
-        front_mask = np.zeros(shape, dtype=dtype)
-        bottom_mask = np.zeros(shape, dtype=dtype)
-        top_mask = np.zeros(shape, dtype=dtype)
+        temp_pfb_file = None
+        if generate_asc_files:
+            shape = self.mask_array.shape
+            dtype = np.int16
+            left_mask = np.zeros(shape, dtype=dtype)
+            right_mask = np.zeros(shape, dtype=dtype)
+            back_mask = np.zeros(shape, dtype=dtype)
+            front_mask = np.zeros(shape, dtype=dtype)
+            bottom_mask = np.zeros(shape, dtype=dtype)
+            top_mask = np.zeros(shape, dtype=dtype)
 
-        j_size, i_size = shape
-        for j in range(j_size):
-            for i in range(i_size):
-                if self.mask_array[j, i] != 0:
-                    patch_value = 0 if self.patch_ids_side is None \
-                        else self.patch_ids_side[j, i]
-                    # Left (-x)
-                    if i == 0 or self.mask_array[j, i - 1] == 0:
-                        left_mask[j, i] = patch_value if patch_value \
-                            else self.side_id
+            j_size, i_size = shape
+            for j in range(j_size):
+                for i in range(i_size):
+                    if self.mask_array[j, i] != 0:
+                        patch_value = 0 if self.patch_ids_side is None \
+                            else self.patch_ids_side[j, i]
+                        # Left (-x)
+                        if i == 0 or self.mask_array[j, i - 1] == 0:
+                            left_mask[j, i] = patch_value if patch_value \
+                                else self.side_id
 
-                    # Right (+x)
-                    if i + 1 == i_size or self.mask_array[j, i + 1] == 0:
-                        right_mask[j, i] = patch_value if patch_value \
-                            else self.side_id
+                        # Right (+x)
+                        if i + 1 == i_size or self.mask_array[j, i + 1] == 0:
+                            right_mask[j, i] = patch_value if patch_value \
+                                else self.side_id
 
-                    # Back (-y) (y flipped)
-                    if j + 1 == j_size or self.mask_array[j + 1, i] == 0:
-                        back_mask[j, i] = patch_value if patch_value \
-                            else self.side_id
+                        # Back (-y) (y flipped)
+                        if j + 1 == j_size or self.mask_array[j + 1, i] == 0:
+                            back_mask[j, i] = patch_value if patch_value \
+                                else self.side_id
 
-                    # Front (+y) (y flipped)
-                    if j == 0 or self.mask_array[j - 1, i] == 0:
-                        front_mask[j, i] = patch_value if patch_value \
-                            else self.side_id
+                        # Front (+y) (y flipped)
+                        if j == 0 or self.mask_array[j - 1, i] == 0:
+                            front_mask[j, i] = patch_value if patch_value \
+                                else self.side_id
 
-                    # Bottom (-z)
-                    patch_value = 0 if self.patch_ids_bottom is None \
-                        else self.patch_ids_bottom[j, i]
-                    bottom_mask[j, i] = patch_value if patch_value \
-                        else self.bottom_id
+                        # Bottom (-z)
+                        patch_value = 0 if self.patch_ids_bottom is None \
+                            else self.patch_ids_bottom[j, i]
+                        bottom_mask[j, i] = patch_value if patch_value \
+                            else self.bottom_id
 
-                    # Top (+z)
-                    patch_value = 0 if self.patch_ids_top is None \
-                        else self.patch_ids_top[j, i]
-                    top_mask[j, i] = patch_value if patch_value \
-                        else self.top_id
+                        # Top (+z)
+                        patch_value = 0 if self.patch_ids_top is None \
+                            else self.patch_ids_top[j, i]
+                        top_mask[j, i] = patch_value if patch_value \
+                            else self.top_id
 
-        # Generate asc / sa files
-        write_func = write_patch_matrix_as_asc
-        settings = {
-            'xllcorner': xllcorner,
-            'yllcorner': yllcorner,
-            'cellsize': cellsize,
-            'NODATA_value': 0,
-        }
-        short_name = name[:-6]
+            # Generate asc / sa files
+            write_func = write_patch_matrix_as_asc
+            settings = {
+                'xllcorner': xllcorner,
+                'yllcorner': yllcorner,
+                'cellsize': cellsize,
+                'NODATA_value': 0,
+            }
+            short_name = name[:-6]
 
-        left_file_path = get_absolute_path(f'{short_name}_left.asc')
-        write_func(left_mask, left_file_path, **settings)
+            left_file_path = get_absolute_path(f'{short_name}_left.asc')
+            write_func(left_mask, left_file_path, **settings)
 
-        right_file_path = get_absolute_path(f'{short_name}_right.asc')
-        write_func(right_mask, right_file_path, **settings)
+            right_file_path = get_absolute_path(f'{short_name}_right.asc')
+            write_func(right_mask, right_file_path, **settings)
 
-        front_file_path = get_absolute_path(f'{short_name}_front.asc')
-        write_func(front_mask, front_file_path, **settings)
+            front_file_path = get_absolute_path(f'{short_name}_front.asc')
+            write_func(front_mask, front_file_path, **settings)
 
-        back_file_path = get_absolute_path(f'{short_name}_back.asc')
-        write_func(back_mask, back_file_path, **settings)
+            back_file_path = get_absolute_path(f'{short_name}_back.asc')
+            write_func(back_mask, back_file_path, **settings)
 
-        top_file_path = get_absolute_path(f'{short_name}_top.asc')
-        write_func(top_mask, top_file_path, **settings)
+            top_file_path = get_absolute_path(f'{short_name}_top.asc')
+            write_func(top_mask, top_file_path, **settings)
 
-        bottom_file_path = get_absolute_path(f'{short_name}_bottom.asc')
-        write_func(bottom_mask, bottom_file_path, **settings)
+            bottom_file_path = get_absolute_path(f'{short_name}_bottom.asc')
+            write_func(bottom_mask, bottom_file_path, **settings)
+
+            args = [
+                f'--mask-top {top_file_path}',
+                f'--mask-bottom {bottom_file_path}',
+                f'--mask-left {left_file_path}',
+                f'--mask-right {right_file_path}',
+                f'--mask-front {front_file_path}',
+                f'--mask-back {back_file_path}',
+                f'--pfsol {output_file_path}'
+            ]
+
+        else:
+            temp_pfb_file = tempfile.NamedTemporaryFile(suffix='.pfb')
+            if self.mask_array.dtype != np.float64:
+                self.mask_array = self.mask_array.astype(np.float64)
+            write_pfb(temp_pfb_file.name, self.mask_array)
+            args = [
+                f'--mask {temp_pfb_file.name}',
+                f'--side-patch-label {self.side_id}',
+                f'--bottom-patch-label {self.bottom_id}',
+                f'--pfsol {output_file_path}'
+            ]
 
         # Trigger conversion
         print('=== pfmask-to-pfsol ===: BEGIN')
-        extra = []
+        if extra is None:
+            extra = []
         if vtk:
             extra.append('--vtk')
             extra.append(f'{output_file_path[:-6]}.vtk')
 
         exe_path = get_absolute_path('$PARFLOW_DIR/bin/pfmask-to-pfsol')
-        args = [
-            f'--mask-top {top_file_path}',
-            f'--mask-bottom {bottom_file_path}',
-            f'--mask-left {left_file_path}',
-            f'--mask-right {right_file_path}',
-            f'--mask-front {front_file_path}',
-            f'--mask-back {back_file_path}',
-            f'--pfsol {output_file_path}'
-        ] + extra
+        args = args + extra
         cmd_line = f'{exe_path} ' + ' '.join(args)
-        print(f'$ {cmd_line}')
-        os.system(cmd_line)
+        process = Popen(cmd_line.split(), stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        print('Standard output:')
+        print(stdout)
+        print('')
+        print('Standard error:')
+        print(stderr)
 
         print('=== pfmask-to-pfsol ===: END')
+
+        if temp_pfb_file is not None:
+            temp_pfb_file.close()
+
         return self
 
     def for_key(self, geom_item):
@@ -1343,14 +1378,14 @@ class CLMImporter:
             array = vegm_data[:, :, i]
             if token == 'Color':
                 # This one needs to be an integer
-                array = array.astype(np.int)
+                array = array.astype(np.int32)
 
             if array.min() == array.max():
                 # All the values are the same
                 item.Type = 'Constant'
                 item.Value = array[0, 0].item()
             else:
-                write_array(get_absolute_path(file_name), vegm_data[:, :, i])
+                write_pfb(get_absolute_path(file_name), vegm_data[:, :, i])
                 item.Type = 'PFBFile'
                 item.FileName = file_name
 

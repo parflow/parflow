@@ -1,204 +1,132 @@
-# ParFlow Release Notes 3.8.0
------------------------------
+# ParFlow Release Notes 3.12.0
+------------------------------
 
-ParFlow improvements and bug-fixes would not be possible without
-contributions of the ParFlow community.  Thank you for all the great
-contributions.
+This release contains several bug fixes and minor feature updates.
+
+ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community.  Thank you for all the great contributions.
 
 ## Overview of Changes
 
-* ParFlow Google Group
-* Default I/O mode changed to amps_sequential_io
-* CLM Solar Zenith Angle Calculation
-* Parallel NetCDF dataset compression
-* Kokkos support
-* Output of Van Genuchten variables
-* Python interface updates
-* Update Hypre testing to v2.18.2
-* MPI runner change
-* Python Interface
-* Segmentation fault at end of simulation run with Van Genuchten
-* Memory errors when rank contained no active cells
-* PFMGOctree solver 
-* GFortran compilation errors
-* CMake CI fixes
-* CLM initialization bug 
-* CMake cleanup
-* Fixed compilation issues in sequential amps layer
-* CI has moved to Google Actions
-* Sponsors acknowledgment 
-* PFModule extended to support output methods
-* Hypre SMG and PFMG
+* Documentation updates
+* 
+
 
 ## User Visible Changes
 
-### ParFlow Google Group
+### DockerHub Container has Python and TCL support.
 
-ParFlow has switched to using a Google group for discussion from the
-previous email list server.
+The DockerHub Container has been updated to support both Python and TCL input scripts.   Previously only TCL was supported.   The type of script is determined by the file extension so make sure to use .tcl for TCL and and .py for Python as per standard file extension naming.
 
-https://groups.google.com/g/parflow
+Simple examples using Docker:
 
-### Default I/O mode changed to amps_sequential_io
+```
+docker run --rm -v $(pwd):/data parflow/parflow:version-3.12.0 default_single.py
+```
 
-Change the default I/O model to amps_sequential_io because this is the
-most common I/O model being used.
+```
+docker run --rm -v $(pwd):/data parflow/parflow:version-3.12.0 default_single.tcl 1 1 1
+```
 
-### CLM Solar Zenith Angle Calculation
 
-Add slope and aspect when determining the solar zenith angle in CLM.
-A new key was added Solver.CLM.UseSlopeAspect for the inclusion of
-slopes when determining solar zenith angles
+### Dependency Updates
 
-### Parallel NetCDF dataset compression
+We have tested and updated some dependencies in ParFlow to use more current releases.  The following are used in our continuous integration builds and tests.
 
-Added configurable deflate (zlib) compression capabilities to the
-NetCDF based writing routines. The possibilities of parallel data
-compression will only work in combination with the latest NetCDF4
-v4.7.4 release.
+Ubuntu               22.04
+Ubuntu               20.04
 
-pfset NetCDF.Compression True Enable deflate based compression (default: False)
-pfset NetCDF.CompressionLevel 1 Compression level (0-9) (default: 1)
+CMake                3.25.1
+Hypre                2.26.0
+Silo                 4.11
+NetCDF-C             4.9.0
+NetCDF-Fortan        4.5.5
 
-This work was implemented as part of EoCoE-II project (www.eocoe.eu).
 
-Benchmark tests show that the datasize for regular NetCDF output files
-could be lowered by a factor of three, in addition, as less data is
-written to disk, the reduced data size can also lower the overall I/O
-footprint towards the filesystem. Therefore, depending of the selected
-setup, the compression overhead can be balanced by reduced writing
-times.
+CUDA                 11.8.0  (with OpenMPI 4.0.3)
+UCX                  1.13.1
+RMM                  0.10
 
-### Kokkos support
+Kokkos               3.3.01
 
-User instructions on how to use Kokkos backend can be found from
-README-GPU.md. 
+Dependencies not listed are coming from the Ubuntu packages.   We try to have as few version specific dependencies as possible so other release may work.
 
-Add Kokkos accelerator backend support as an alternative to the
-native ParFlow CUDA backend to support more accelerator devices. The
-implementation does not rely on any CUDA-specific arguments but still
-requires Unified Memory support from the accelerator devices. It
-should be compatible with AMD GPUs when sufficient Unified Memory
-support is available.
 
-The performance of using CUDA through the Kokkos library is slightly
-worse in comparison to the ParFlow native CUDA implementation. This is
-because a general Kokkos implementation cannot leverage certain CUDA
-features such as cudaMemset() for initialization or CUDA pinned
-host/device memory for MPI buffers. Also, Kokkos determines grid and
-block sizes for compute kernels differently.
+### Surface Pressure Threshold
 
-The RMM pool allocator for Unified Memory can be used with Kokkos
-(when using Kokkos CUDA backend) and improves the performance very
-significantly. In the future, a Unified Memory pool allocator that
-supports AMD cards is likely needed to achieve good performance.
+The surface pressure may now have a threshold applied.  This is controlled with several keys.
 
-Performance of the simulation initialization phase has
-been improved significantly when using GPUs (with CUDA and Kokkos).
+```
+pfset Solver.ResetSurfacePressure        True      ## TCL syntax
+<runname>.Solver.ResetSurfacePressure  = "True"    ## Python syntax
+```
+	  
+This key changes any surface pressure greater than a threshold value to 
+another value in between solver timesteps. It works differently than the Spinup keys and is intended to 
+help with slope errors and issues and provides some diagnostic information.  The threshold keys are specified below.
 
-### Output of Van Genuchten variables
+The threshold value is specified with ```ResetSurfacePressure```
 
-Add output for Van Genuchten values alpha, n, sres, ssat.  The new
-output will be generated when the print_subsurf_data key is set.
+```
+pfset Solver.ResetSurfacePressure.ThresholdPressure        10.0    ## TCL syntax
+<runname>.Solver.ResetSurfacePressure.ThresholdPressure  = 10.0    ## Python syntax
+```
 
-### Python interface updates
+The Solver.SpinUp key removes surface pressure in between solver timesteps.
 
-### Update Hypre testing to v2.18.2
+```
+pfset Solver.SpinUp   True        ## TCL syntax
+<runname>.Solver.SpinUp = "True"  ## Python syntax
+```
+	  
+### Top of domain indices output 
 
-The version of Hypre used for testing was updated to v2.18.2.  This
-matches XSDK 0.5 version requirements.
+The capability to output the Top Z index and Top Patch Index have been added to allow easier processing of surface values.   The new input keys are PrintTop and WriteSiloTop.
 
-### MPI runner change
+```
+pfset Solver.PrintTop False                    ## TCL syntax
+<runname>.Solver.PrintTop = False              ## Python syntax
 
-The method used to find automatically find the MPI runner (mpiexec,
-srun etc) is based purely on the CMake FindMPI script.  This should 
-be invisible to most users.
+pfset Solver.WriteSiloTop True                  ## TCL syntax
+<runname>.Solver.WriteSiloTop = True            ## Python syntax
+```
 
-### Python Interface
+The keys are used to turn on printing of the top of domain data.  'TopZIndex' is a NX * NY file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an (i,j) column does not intersect the domain. The data is written as a PFB or Silo formats.
 
-The Beta Python interface continues to be developed.  Many
-improvements and bugfixes have been made.
+### Documentation Updates
 
-* Add hydrology functions
-* CLM API bug fixes
-* CLM ET calculation
-* Allow clm_output function to return only 2D arrays
-* Add irrigation to CLM variables
-* dx/dy/dz support when writing PFB files
-* Python testing support was added
-* New feature to only show validation results for errors
-* Table builder update: adding databases, cleanup
-* Domain builder helper with examples, docs
+The read-the-docs manual has been cleaned up; many formatting and typos have been fixed from the Latex conversion.
 
 ## Bug Fixes
 
-### Segmentation fault at end of simulation run with Van Genuchten
+### CLM 
 
-Segmentation fault when freeing memory at the end of simulation. 
+Fixed an issue that was identified by @danielletijerina where some bare soil on vegetated surfaces wasn't being beta-limited in CLM. Fixes to clm_thermal.F90 were implemented. At the same time, CLM snow additions and dew corrections by LBearup were added. A snow-age fix for deep snow was implemented along with canopy dew.
 
-### Memory errors when rank contained no active cells
+### Python PFtools
+The _overland_flow_kinematic method was updated to match the outflow of ParFlow along the edges of irregular domains, which the prior Hydrology Python PFTools did not.
 
-The computation of the real space z vector was running beyond
-temporary array (zz) resulting in memory errors.
-
-### PFMGOctree solver 
-
-PFMGOctree was not inserting the surface coefficients correctly into
-the matrix with overland flow enabled.
-
-### GFortran compilaton errors
-
-Fixed GFortran compilation errors in ifnan.F90 with later GNU releases.
-Build was tested against GNU the 10.2.0 compiler suite.
-
-### CMake CI fixes
-
-On some systems, it is necessary for any binary compiled with mpi to
-be executed with the appropriate ${mpiexec} command. Setting
-PARFLOW_TEST_FORCE_MPIEXEC forces sequential tests to be executed with
-the ${MPIEXEC} command with 1 rank.
-
-### CLM initialization bug 
-
-Fixed CLM bug causing long initialization times.
-
-### CMake cleanup
-
-Updated CMake to more current usage patterns and CMake minor bugfixes.
-
-### Fixed compilation issues in sequential amps layer
-
-The AMPS sequential layer had several bugs preventing it from
-compiling. Tests are passing again with a sequential build.
+a) the slope in both x and y are corrected (by copying the corresponding value inside the mask) outside the mask edges in lower x and y as they both come into play through "slope".
+b) because the correction is now done at lower x and y edges in both slopex and slopey, this could lead to overwriting the slopes outside for grid cells that are both outside x and y lower edges. For this, the calculation in x (q_x, qeast) is done first, after adjusting slopes outside lower x edges and then the calculation in y (q_y, qnorth) is done second, after adjusting slopes outside lower y edges.
 
 ## Internal/Developer Changes
 
-### CI has moved to Google Actions
+### CI Testing Updates
 
-TravisCI integration for CI has been replaced with Google Actions.
+The GitHub Actions tests have been updated to use later Ubuntu releases.   The 18.04 tests were removed and tests were moved to to 22.04.   Currently testing is done with both 20.04 and 22.04.
+Dependencies have been updated for NetCDF, Hypre, GCC
 
-### Sponsors acknowledgment 
+### NetCDF Testing
 
-A new file has been added (SPONSORS.md) to enable acknowledgment the
-sponsors of ParFlow development.  Please feel free to submit a pull request
-if you wish to add a sponsor.
+The NetCDF testing has been updated to unify the GitHub Actions for OASIS3 tests and the other regression tests.
 
-## Testing framework refactoring
+### Regression Test Comparison Directory
 
-The testing framework has been refactored to support Python.  Directory
-structure for tests has changed.
+The TCL script pfTestFile used for regression testing has been updated to enable setting the directory for the regression test comparison files.  Example usage:
 
-### PFModule extended to support output methods
-
-Add support in PFModule for module output.  Two new methods were added
-to the PFModule 'class' to output time variant and time invariant
-data.  This allows modules to have methods on each instance for
-generating output directly from the module.  Previously the approach
-was to copy data to a problem data variable and output from the copy.
-
-### Hypre SMG and PFMG
-
-Refactored common Hypre setup code to a method to keep Hypre setup consistent.
+```
+set correct_output_dir "../../correct_output/clm_output"
+pftestFile clm.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir
+```
 
 ## Known Issues
 

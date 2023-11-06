@@ -709,7 +709,7 @@ PFModule   *SubsrfSimNewPublicXtra()
     sprintf(key, "Geom.%s.Perm.Type", geom_name);
     sim_type_name = GetString(key);
 
-    sim_type = NA_NameToIndex(switch_na, sim_type_name);
+    sim_type = NA_NameToIndexExitOnError(switch_na, sim_type_name, key);
 
     /* Assign the K field simulator method and invoke the "New" function */
     switch (sim_type)
@@ -744,16 +744,14 @@ PFModule   *SubsrfSimNewPublicXtra()
 
       default:
       {
-        InputError("Error: invalid perm type <%s> for key <%s>\n",
-                   sim_type_name, key);
-        break;
+	InputError("Invalid switch value <%s> for key <%s>", sim_type_name, key);
       }
     }
   }
 
   type_na = NA_NewNameArray("TensorByGeom TensorByFile");
   switch_name = GetString("Perm.TensorType");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "TensorByGeom TensorByFile");
 
   switch (public_xtra->type)
   {
@@ -813,6 +811,11 @@ PFModule   *SubsrfSimNewPublicXtra()
       public_xtra->data = (void*)dummy1;
 
       break;
+    }
+
+    default:
+    {
+      	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }   /*End switch */
 

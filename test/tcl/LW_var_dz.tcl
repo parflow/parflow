@@ -363,6 +363,8 @@ pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 #pfset Solver.WriteSiloSlopes True
 #pfset Solver.WriteSiloMask True
 
+pfset Solver.PrintVelocities True
+
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
@@ -407,10 +409,21 @@ if ![pftestFile $runname.out.perm_z.pfb "Max difference in perm_z" $sig_digits] 
 foreach i "00000 00002 00004 00006 00008 00010" {
     if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
     set passed 0
-}
+    }
     if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
     set passed 0
-}
+    }
+    # use abs value test to prevent machine precision effects
+    set abs_value 1e-12
+    if ![pftestFileWithAbs $runname.out.velx.$i.pfb "Max difference in x-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
+    }
+    if ![pftestFileWithAbs $runname.out.vely.$i.pfb "Max difference in y-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
+    }
+    if ![pftestFileWithAbs $runname.out.velz.$i.pfb "Max difference in z-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
+    }
 }
 
 if $passed {

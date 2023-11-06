@@ -9,7 +9,7 @@ from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
 from parflow.tools.helper import (
     map_to_child, map_to_children_of_type, map_to_parent, map_to_self,
-    remove_prefix
+    remove_prefix, filter_none
 )
 from parflow.tools.helper import normalize_location, sort_dict_by_priority
 from parflow.tools.io import read_pfidb
@@ -269,7 +269,7 @@ class PFDBObj:
         key_str = str(key)
 
         if hasattr(self, key_str):
-            return getattr(self, key_str)
+            return getattr(self, key_str, None)
 
         prefix = ''
         if hasattr(self, '_details_') and '_prefix_' in self._details_:
@@ -280,7 +280,7 @@ class PFDBObj:
             print(f'Could not find key {key}/{key_str} in '
                   f'{list(self.__dict__.keys())}')
 
-        return getattr(self, key_str)
+        return getattr(self, key_str, None)
 
     # -------------------------------------------------------------------------
 
@@ -488,7 +488,7 @@ class PFDBObj:
                     path_item[1:-1]), current_list)
                 next_list = [x for sublist in multi_list for x in sublist]
             else:
-                next_list.extend(map(map_to_child(path_item), current_list))
+                next_list.extend(filter(filter_none, map(map_to_child(path_item), current_list)))
                 if next_list and isinstance(next_list[0], list):
                     next_list = [x for sublist in next_list for x in sublist]
 
@@ -617,7 +617,15 @@ class PFDBObj:
         tokens = key.split('.')
         if len(tokens) > 1:
             value_key = tokens[-1]
-            container, = self.select('/'.join(tokens[:-1]))
+            container = None
+            query = '/'.join(tokens[:-1])
+            selection = self.select(query)
+
+            if len(selection) > 0:
+                container = selection[0]
+
+            if len(selection) > 1:
+                raise ValueError(f"Found {len(selection)} containers when selecting {query}: expected one or zero")
 
             if container is None:
                 # We need to maybe handle prefix
@@ -791,7 +799,11 @@ class PFDBObj:
             # We went through the loop above. Return...
             return parent, None
 
-        return self.select(path)[0], key
+        selection = self.select(path)
+        if len(selection) == 0:
+            return None, None
+
+        return selection[0], key
 
 
 # -----------------------------------------------------------------------------

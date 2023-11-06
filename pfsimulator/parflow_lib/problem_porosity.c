@@ -347,7 +347,7 @@ PFModule   *PorosityNewPublicXtra()
     sprintf(key, "Geom.%s.Porosity.Type", geom_name);
     sim_type_name = GetString(key);
 
-    sim_type = NA_NameToIndex(switch_na, sim_type_name);
+    sim_type = NA_NameToIndexExitOnError(switch_na, sim_type_name, key);
 
     /* Assign the Porosity field simulator method and invoke the "New"
      * function */
@@ -369,8 +369,7 @@ PFModule   *PorosityNewPublicXtra()
 
       default:
       {
-        InputError("Error: invalid porosity type <%s> for key <%s>\n",
-                   sim_type_name, key);
+	InputError("Invalid switch value <%s> for key <%s>", sim_type_name, key);
       }
     }
   }

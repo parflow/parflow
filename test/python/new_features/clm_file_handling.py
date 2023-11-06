@@ -86,7 +86,7 @@ paths = [
     'drv_vegp.dat',
 ]
 for path in paths:
-    path = Path(path)
+    path = Path(get_absolute_path(f'$PF_SRC/test/python/new_features/{path}'))
     if path.exists():
         path.unlink()
 

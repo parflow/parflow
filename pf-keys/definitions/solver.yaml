@@ -1000,6 +1000,8 @@ Solver:
             name: Vegetation.Parameters.{land_cover_name}
           __doc__: >
             One of the user-defined names for land cover types for the drv_vegp.dat file
+          __simput__:
+            type: VariableTable
 
           Description:
             help: >
@@ -1190,6 +1192,8 @@ Solver:
               name: Vegetation.Map.LandFrac.{land_cover_name}
             __doc__: >
               One of the user-defined names for land cover types for the drv_vegp.dat file
+            __simput__: 
+              type: VariableTable
 
             Type:
               help: >
@@ -1593,6 +1597,54 @@ Solver:
     domains:
       DoubleValue:
 
+  ResetSurfacePressure:
+    __doc__: >
+      [Type: logical] Check surface pressure and reset values above a threshold to a different value.
+    __value__:
+      help: >
+        [Type: boolean/string] Check surface pressure and reset values above a threshold to a different value.
+      default: False
+      domains:
+        BoolDomain:
+
+    ThresholdPressure:
+      help: >
+        [Type: double]
+      default: 0.0
+      domains:
+        DoubleValue:
+
+    ResetPressure:
+      help: >
+        [Type: double] 
+      default: 0.0
+      domains:
+        DoubleValue:
+  
+  SurfacePredictor:
+    __doc__: >
+      [Type: logical] Try to calculate if a surface cell will pond / switch from sub surface to surface flow and set pressure to a positive value.
+    __value__:
+      help: >
+        [Type: boolean/string] Try to calculate if a surface cell will pond / switch from sub surface to surface flow and set pressure to a positive value.
+      default: False
+      domains:
+        BoolDomain:
+
+    PressureValue:
+      help: >
+        [Type: double] Surface pressure value set if flux into cell exceeds capacity.
+      default: 0.00001
+      domains:
+        DoubleValue:
+      
+    PrintValues:
+      help: >
+        [Type: logical] Surface predictor print flag.
+      default: False
+      domains:
+        BoolDomain:
+
   OverlandDiffusive:
     __doc__: >
       Setting epsilon value for the diffusive overland flow formulation.
@@ -1731,6 +1783,15 @@ Solver:
     domains:
       BoolDomain:
 
+  PrintTop:
+    help: >
+      [Type: boolean/string] Key used to control writing of two PFB files for the top of the domain.  'TopZIndex' is a NX * NY
+      file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
+      (i,j) column does not intersect the domain. format.
+    default: False
+    domains:
+      BoolDomain:
+
   # missing from manual
   PrintSlopes:
     help: >
@@ -1776,8 +1837,11 @@ Solver:
 
   PrintVelocities:
     help: >
-      [Type: boolean/string] This key is used to turn on printing of the x,y, and z velocity data. The printing of the data is controlled by values in the
-      timing information section. The data is written as a PFB file.
+      [Type: boolean/string] This key is used to turn on printing of the x, y, and z velocity (Darcy flux) data. The printing of the data is controlled
+      by values in the timing information section. The x, y, and z data are written to separate PFB files. The dimensions of these files are slightly 
+      different than most PF data, with the dimension of interest representing interfaces, and the other two dimensions representing cells. E.g. the 
+      x-velocity PFB has dimensions [NX+1, NY, NZ]. This key produces files in the format of runname.out.phase<x||y||z>.00.0000.pfb when using ParFlow's
+      saturated solver and runname.out.vel<x||y||z>.00000.pfb when using the Richards equation solver.
     default: False
     domains:
       BoolDomain:
@@ -2026,6 +2090,8 @@ Solver:
         __class__: PrecondMethodItem
         __doc__: >
           Setting Solver.Linear.Preconditioner.{precond_method} keys
+        __simput__: 
+          type: VariableTable
 
         MaxIter:
           help: >
@@ -2324,6 +2390,16 @@ Solver:
       binary format as a running cumulative amount. This is integrated along all domain boundaries and is calculated any
       location that slopes at the edge of the domain point outward. This data is in units of [L3]. The printing of the data
       is controlled by values in the timing information section.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloTop:
+    help: >
+      [Type: boolean/string] Key used to control writing of two Silo files for the top of the domain.  'TopZIndex' is a NX * NY
+      file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
+      (i,j) column does not intersect the domain. format.
     default: False
     domains:
       BoolDomain:

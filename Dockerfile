@@ -1,39 +1,46 @@
-#RMM ParFlow test
-
 #-----------------------------------------------------------------------------
 # start by building the basic container
 #-----------------------------------------------------------------------------
-FROM centos:centos7
+FROM ubuntu:22.04
 MAINTAINER Steven Smith <smith84@llnl.gov>
 
-#-----------------------------------------------------------------------------
-#  Package dependencies
-#-----------------------------------------------------------------------------
-RUN yum  install -y  \
-    curl \
-    libcurl-devel \
-    gcc  \
-    gcc-c++  \
-    gcc-gfortran \
-    git \
-    m4 \
-    make \
-    openmpi \
-    openmpi-devel \
-    tcl-devel \
-    tk-devel \
-    wget \
-    which \
-    zlib \
-    zlib-devel && mkdir -p /home/parflow
+# Non interactive mode
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && \
+    ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
+    apt-get install -y tzdata && \
+    dpkg-reconfigure --frontend noninteractive tzdata && \
+    apt-get install -y \
+        build-essential \
+	wget \
+        curl \
+        libcurl4 \
+        git \
+        gfortran \
+        libopenblas-dev \
+        liblapack-dev \
+        openmpi-bin \
+        libopenmpi-dev \
+	libhdf5-openmpi-dev \
+	libhdf5-openmpi-103 \
+        python3 \
+        python3-pip \
+        python3-venv \
+        tcl-dev \
+        tk-dev \
+	cmake \
+	libxml2 \
+	libxml2-dev
+
+RUN mkdir -p /home/parflow
 
 #-----------------------------------------------------------------------------
 # Set environment vars
 #-----------------------------------------------------------------------------
-ENV CMAKE_DIR /home/parflow/cmake-3.14.5-Linux-x86_64
-ENV PARFLOW_DIR /usr/local
-ENV PATH $PATH:/usr/lib64/openmpi/bin:$CMAKE_DIR/bin:$PARFLOW_DIR/bin
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/lib64/openmpi/lib
+ENV PARFLOW_DIR /usr/opt/parflow
+ENV PARFLOW_DEP_DIR /usr/opt/parflow
+ENV PATH $PATH:$PARFLOW_DIR/bin
 
 #-----------------------------------------------------------------------------
 # Build libraries
@@ -41,59 +48,65 @@ ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/lib64/openmpi/lib
 
 #
 # HDF5
+#  New version does not work with NetCDF; use Ubunuto supplied version
+#  https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.2/src/hdf5-1.12.2.tar.bz2
 #
-WORKDIR /home/parflow
-run wget -q https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz && \ 
-    tar -xf hdf5-1.8.21.tar.gz && \
-    source /etc/profile.d/modules.sh && \
-    module load mpi/openmpi-x86_64 && \
-    cd hdf5-1.8.21 && \
-    CC=mpicc ./configure \
-      --prefix=$PARFLOW_DIR \
-      --enable-parallel && \
-    make && make install && \
-    cd .. && \
-    rm -fr hdf5-1.8.21 hdf5-1.8.21.tar.gz
+# WORKDIR /home/parflow
+# RUN wget -q https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz && \ 
+#     tar -xf hdf5-1.8.21.tar.gz && \
+#     cd hdf5-1.8.21 && \
+#     CC=mpicc ./configure \
+#       --prefix=$PARFLOW_DIR \
+#       --enable-parallel && \
+#     make && make install && \
+#     cd .. && \
+#     rm -fr hdf5-1.8.21 hdf5-1.8.21.tar.gz
 
 #
 # NetCDF
-#
+# 
 WORKDIR /home/parflow
-run wget -q https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz && \ 
-    tar -xf v4.5.0.tar.gz && \
-    source /etc/profile.d/modules.sh && \
-    module load mpi/openmpi-x86_64 && \
-    cd netcdf-c-4.5.0 && \
-    CC=mpicc CPPFLAGS=-I${PARFLOW_DIR}/include LDFLAGS=-L${PARFLOW_DIR}/lib \
-    ./configure --disable-shared --prefix=${NCDIR} && \
-   make && \
-   make install && \
-   cd .. && \
-   rm -fr netcdf-c-4.5.0 v4.5.0.tar.gz
+run wget -q https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz && \ 
+    tar -xf v4.9.0.tar.gz && \
+    cd netcdf-c-4.9.0 && \
+    CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=${PARFLOW_DIR} && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -fr netcdf-c-4.9.0 v4.9.0.tar.gz
 
 #
-# SILO && CMake
+# NetCDF Fortran
 #
 WORKDIR /home/parflow
-RUN wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.5-Linux-x86_64.tar.gz && \
-    tar -xvf cmake-3.14.5-Linux-x86_64.tar.gz && \
-    curl "https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz" -o "silo-4.10.2.tar.gz" && \
-    tar -xf silo-4.10.2.tar.gz && \
-    cd silo-4.10.2 && \
+run wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz && \ 
+    tar -xf v4.5.4.tar.gz && \
+    cd netcdf-fortran-4.5.4 && \
+    CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DIR}/include LDFLAGS=-L${PARFLOW_DIR}/lib ./configure --prefix=${PARFLOW_DIR} && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -fr netcdf-fortran-4.5.4 v4.5.4.tar.gz
+
+#
+# SILO
+#
+WORKDIR /home/parflow
+RUN wget -q https://github.com/LLNL/Silo/archive/refs/tags/4.10.2.tar.gz && \
+    tar -xf 4.10.2.tar.gz && \
+    cd Silo-4.10.2 && \
     ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && \
     make install && \
     cd .. && \
-    rm -fr silo-4.10.2 silo-4.10.2.tar.gz
+    rm -fr Silo-4.10.2 4.10.2.tar.gz
 
 #
 # Hypre
 #
 WORKDIR /home/parflow
-RUN source /etc/profile.d/modules.sh && \
-   module load mpi/openmpi-x86_64 && \
-   wget -q https://github.com/hypre-space/hypre/archive/v2.18.2.tar.gz && \
-   tar xf v2.18.2.tar.gz && \
-   cd hypre-2.18.2/src && \
+RUN  wget -q https://github.com/hypre-space/hypre/archive/v2.26.0.tar.gz && \
+   tar xf v2.26.0.tar.gz && \
+   cd hypre-2.26.0/src && \
    ./configure --prefix=$PARFLOW_DIR && \
    make install && \
    cd ../.. && \
@@ -105,13 +118,16 @@ RUN source /etc/profile.d/modules.sh && \
 
 ENV PARFLOW_MPIEXEC_EXTRA_FLAGS "--mca mpi_yield_when_idle 1 --oversubscribe --allow-run-as-root"
 
+# Disable HWLOC warnings from showing up, confusing messages, this has been fixed in later OpenMPI versions
+ENV HWLOC_HIDE_ERRORS "2"
+
 WORKDIR /home/parflow
 
 RUN git clone -b master --single-branch https://github.com/parflow/parflow.git parflow
 
 RUN mkdir -p build && \
     cd build && \
-    LDFLAGS="-lcurl" cmake ../parflow \
+    cmake ../parflow \
        -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
        -DHYPRE_ROOT=$PARFLOW_DIR \
@@ -120,6 +136,9 @@ RUN mkdir -p build && \
        -DPARFLOW_ENABLE_NETCDF=TRUE \
        -DPARFLOW_ENABLE_TIMING=TRUE \
        -DPARFLOW_HAVE_CLM=TRUE \
+       -DPARFLOW_ENABLE_PYTHON=TRUE \
+       -DPARFLOW_PYTHON_VIRTUAL_ENV=ON \
+       -DCURL_LIBRARY=/usr/lib/x86_64-linux-gnu/libcurl.so.4 \
        -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR && \
      make install && \
      cd .. && \
@@ -127,5 +146,5 @@ RUN mkdir -p build && \
 
 WORKDIR /data
 
-ENTRYPOINT ["tclsh"]
+ENTRYPOINT ["pfrun"]
 

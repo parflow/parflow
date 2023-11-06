@@ -21,6 +21,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
   real(r8) evap_trans((nx+2)*(ny+2)*(nz+2))
   real(r8) saturation((nx+2)*(ny+2)*(nz+2)),pressure((nx+2)*(ny+2)*(nz+2))
   real(r8) porosity((nx+2)*(ny+2)*(nz+2))
+  real(r8) abs_transpiration
 
   ! End of variable declaration 
 
@@ -36,11 +37,13 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
      if (clm(t)%planar_mask==1) then
         do k = 1, nlevsoi
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
+           abs_transpiration = 0.0
+           if (clm(t)%qflx_tran_veg >= 0.0) abs_transpiration = clm(t)%qflx_tran_veg
            if (k == 1) then
-              clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl + clm(t)%qflx_qirr_inst(k)
+              clm(t)%pf_flux(k)=(-abs_transpiration*clm(t)%rootfr(k)) + clm(t)%qflx_infl + clm(t)%qflx_qirr_inst(k)
         !!print*, 'Beta:',(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)),clm(t)%qflx_infl,saturation(l),pressure(l)
            else  
-              clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_qirr_inst(k)
+              clm(t)%pf_flux(k)=(-abs_transpiration*clm(t)%rootfr(k)) + clm(t)%qflx_qirr_inst(k)
            endif
            ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
            ! IMF: replaced drv%dz with clm(t)%dz to allow variable DZ...

@@ -18,11 +18,11 @@ proc eps {{base 1}} {
     set eps     [expr {$eps+1e-22}]
 }
 
-proc pftestFile {file message sig_digits} {
+proc pftestFile {file message sig_digits {correct_output_dir "../correct_output"}} {
     if [file exists $file] {
-	if [file exists ../correct_output/$file] {
+	if [file exists $correct_output_dir/$file] {
 
-	    set correct [pfload ../correct_output/$file]
+	    set correct [pfload $correct_output_dir/$file]
 	    set new     [pfload                $file]
 	    set diff [pfmdiff $new $correct $sig_digits]
 	    if {[string length $diff] != 0 } {
@@ -53,7 +53,7 @@ proc pftestFile {file message sig_digits} {
 		return 1
 	    }
 	} {
-	    puts "FAILED : regression check output file <../correct_output/$file> does not exist"
+	    puts "FAILED : regression check output file <$correct_output_dir/$file> does not exist"
 	}
     } {
 	puts "FAILED : output file <$file> not created"
@@ -61,9 +61,9 @@ proc pftestFile {file message sig_digits} {
     }
 }
 
-proc pftestFileWithAbs {file message sig_digits abs_value} {
+proc pftestFileWithAbs {file message sig_digits abs_value {correct_output_dir "../correct_output"}} {
     if [file exists $file] {
-	set correct [pfload ../correct_output/$file]
+	set correct [pfload $correct_output_dir/$file]
 	set new     [pfload                $file]
 	set diff [pfmdiff $new $correct $sig_digits]
 	if {[string length $diff] != 0 } {

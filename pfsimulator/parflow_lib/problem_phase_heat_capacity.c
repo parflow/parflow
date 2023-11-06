@@ -212,7 +212,7 @@ PFModule   *PhaseHeatCapacityNewPublicXtra(
 
     switch_name = GetString(key);
 
-    public_xtra->type[i] = NA_NameToIndex(switch_na, switch_name);
+    public_xtra->type[i] = NA_NameToIndexExitOnError(switch_na, switch_name, key);
 
     switch ((public_xtra->type[i]))
     {
@@ -254,8 +254,7 @@ PFModule   *PhaseHeatCapacityNewPublicXtra(
 
       default:
       {
-        InputError("Error: invalid type <%s> for key <%s>\n",
-                   switch_name, key);
+            InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
   }  /*End over phases */

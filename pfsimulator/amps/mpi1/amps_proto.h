@@ -41,6 +41,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
 /* amps_init.c */
 int amps_Init(int *argc, char **argv []);
 int amps_EmbeddedInit(void);
+int amps_EmbeddedInitComm(MPI_Comm com);
 
 /* amps_invoice.c */
 void amps_AppendInvoice(amps_Invoice *invoice, amps_Invoice append_invoice);
@@ -83,6 +84,7 @@ int amps_create_mpi_cont_send_type(amps_Comm comm, amps_Invoice inv);
 void amps_create_mpi_type(amps_Comm comm, amps_Invoice inv);
 
 /* amps_print.c */
+FILE* amps_SetConsole(FILE* stream);
 void amps_Printf(const char *fmt, ...);
 
 /* amps_recv.c */

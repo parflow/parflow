@@ -2,6 +2,7 @@
 include(ParflowTest)
 
 set(TESTS
+  Dirichlet.tcl
   default_single.tcl
   default_richards_wells.tcl
   forsyth2.tcl
@@ -12,6 +13,9 @@ set(TESTS
   crater2D_vangtable_linear.tcl
   small_domain.tcl
   richards_hydrostatic_equalibrium.tcl
+  LW_surface_press.tcl
+  bc_pressure_file.tcl
+  bc_flux_file.tcl
 )
 
 if(${PARFLOW_HAVE_HYPRE})
@@ -97,6 +101,14 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
       richards_box_proctest.vardz.tcl)
   endif()
 
+endif()
+
+if(${PARFLOW_HAVE_OAS3})
+  # Exclude tests that use Richards solver
+  set(TESTS "")
+  set(PARALLEL_3DTOPO_TESTS "")
+  set(PARALLEL_2DTOPO_TESTS "")
+  list(APPEND TESTS default_single.tcl)
 endif()
 
 foreach(inputfile ${TESTS})
