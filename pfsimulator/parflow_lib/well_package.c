@@ -94,10 +94,14 @@ typedef struct {
 
 
 
+
+//Will return -1 if we can't find it
 int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
   Grid           *grid = VectorGrid(problem_data->rsz);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
+  Subvector      *dz_sub;
+  Subvector      *rsz_sub;
   int subgrid_index;
   int index_space_z;
   bool found_index_space_z = false;
@@ -121,7 +125,7 @@ int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
     double* real_space_zs_data = SubvectorData(real_space_zs_subvector);
     double* dz_mult_data = SubvectorData(VectorSubvector(problem_data->dz_mult, subgrid_index));
     //I think I can set ix and iy to 0 because the dzscale does not vary in x or y
-    int i=0, j=0, k = 0;
+    int i, j, k = 0;
 
     int index;
     double current_z;
@@ -139,6 +143,7 @@ int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
                 index_space_z = k;
                 found_index_space_z = true;
               }
+
             });
   };
   if (found_index_space_z){
@@ -148,7 +153,6 @@ int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
     return -1;
   }
 };
-
 /*--------------------------------------------------------------------------
  * WellPackage
  *--------------------------------------------------------------------------*/
