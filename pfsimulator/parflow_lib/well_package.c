@@ -93,7 +93,45 @@ typedef struct {
 } Type1;                      /* basic vertical well, recirculating */
 
 
+double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
+  double dx = SubgridDX(subgrid);
+  double dy = SubgridDY(subgrid);
+  double dz = SubgridDZ(subgrid);
+  GrGeomSolid *gr_domain = problem_data->gr_domain;
 
+  double volume = 0;
+  Grid           *grid = VectorGrid(problem_data->rsz);
+  SubgridArray   *subgrids = GridSubgrids(grid);
+  Subgrid        *tmp_subgrid;
+  Subvector      *dz_sub;
+  Subvector      *rsz_sub;
+  int subgrid_index;
+  int index_space_z;
+  bool found_index_space_z = false;
+  ForSubgridI(subgrid_index, subgrids) {
+    tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
+    Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
+    double* dz_mult_data = SubvectorData(dz_mult_subvector);
+    Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
+    int nx = SubgridNX(intersection);
+    int ny = SubgridNY(intersection);
+    int nz = SubgridNZ(intersection);
+    int r = SubgridRZ(intersection);
+    int ix = SubgridIX(intersection);
+    int iy = SubgridIY(intersection);
+    int iz = SubgridIZ(intersection);
+    int i, j, k;
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                 {
+                   int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
+                    //real space z will give us the cell center...not the cell bottom. So we correct for that
+                    double dz_mult = dz_mult_data[index];
+                    volume += dz_mult * dx * dy * dz;
+            });
+  }
+  return volume;
+
+};
 
 //Will return -1 if we can't find it
 int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
@@ -104,10 +142,12 @@ int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
   Subvector      *rsz_sub;
   int subgrid_index;
   int index_space_z;
+  GrGeomSolid *gr_domain = problem_data->gr_domain;
   bool found_index_space_z = false;
   ForSubgridI(subgrid_index, subgrids) {
     subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
     Subvector  *real_space_zs_subvector = VectorSubvector(problem_data->rsz, subgrid_index);
+    double dz = SubgridDZ(subgrid);
 
     int ix = SubgridIX(subgrid);
     int iy = SubgridIY(subgrid);
@@ -121,7 +161,7 @@ int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
     int r = SubgridRZ(subgrid);
     //TODO need to already know z of bottom of grid
     //TODO need to get iz and nz without going straight to problem data
-    GrGeomSolid *gr_domain = problem_data->gr_domain;
+
     double* real_space_zs_data = SubvectorData(real_space_zs_subvector);
     double* dz_mult_data = SubvectorData(VectorSubvector(problem_data->dz_mult, subgrid_index));
     //I think I can set ix and iy to 0 because the dzscale does not vary in x or y
@@ -134,7 +174,7 @@ int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
                  {
                    index = SubvectorEltIndex(real_space_zs_subvector, i, j, k);
 //                   real space z will give us the cell center...not the cell bottom. So we correct for that
-              current_z = real_space_zs_data[index] + 0.5*dz_mult_data[index];
+              current_z = (real_space_zs_data[index] + 0.5*dz_mult_data[index]) * dz;
               printf("Current z: %f\n", current_z);
               // the checks here needs to be thought through a bit more carefully.   Is this >  or >= ???
               if (!found_index_space_z && (current_z > real_space_z))
@@ -273,7 +313,7 @@ void         WellPackage(
           dy = SubgridDY(new_subgrid);
           dz = SubgridDZ(new_subgrid);
 
-          subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
+          subgrid_volume = GetSubgridVolume(new_subgrid, problem_data);
 
           if ((dummy0->mechanism) == PRESSURE_WELL)
           {
@@ -580,7 +620,7 @@ void         WellPackage(
             dy = SubgridDY(new_subgrid);
             dz = SubgridDZ(new_subgrid);
 
-            subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
+            subgrid_volume = GetSubgridVolume(new_subgrid, problem_data);
 
             if (mechanism == PRESSURE_WELL)
             {
