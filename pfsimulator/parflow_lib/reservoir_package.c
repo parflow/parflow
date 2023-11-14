@@ -77,6 +77,19 @@ typedef struct {
  * ReservoirPackage
  *--------------------------------------------------------------------------*/
 
+bool subgrid_lives_on_this_rank(Subgrid* subgrid, SubgridArray *rank_subgrids){
+  int subgrid_index;
+  Subgrid* rank_subgrid, *tmp_subgrid;
+  ForSubgridI(subgrid_index, rank_subgrids){
+    rank_subgrid = SubgridArraySubgrid(rank_subgrids, subgrid_index);
+    if((tmp_subgrid = IntersectSubgrids(rank_subgrid, subgrid))){
+      return true;
+    }
+  }
+  return false;
+}
+
+
 void         ReservoirPackage(
     ProblemData *problem_data)
 {
@@ -84,6 +97,7 @@ void         ReservoirPackage(
   PublicXtra       *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
   Type0            *dummy0;
+  SubgridArray *rank_subgrids;
 
   Subgrid          *new_intake_subgrid;
   Subgrid          *new_secondary_intake_subgrid;
@@ -104,6 +118,7 @@ void         ReservoirPackage(
   double dx, dy, dz;
   int rx, ry, rz;
   int process;
+  int intake_cell_rank, secondary_intake_cell_rank, release_cell_rank;
 
   double          **phase_values;
   double intake_subgrid_volume;
@@ -115,7 +130,16 @@ void         ReservoirPackage(
   double max_storage, min_release_storage, Current_Storage, release_rate;
   double intake_amount_since_last_print, release_amount_since_last_print;
   /* Allocate the reservoir data */
+
   ReservoirDataNumReservoirs(reservoir_data) = (public_xtra->num_reservoirs);
+
+  rank_subgrids = GridSubgrids(VectorGrid(problem_data->rsz));
+  //-1 is the default unassigned value. We use this to check if this rank defined this value or not.
+  intake_cell_rank = -1;
+  secondary_intake_cell_rank = -1;
+  release_cell_rank= -1;
+
+
 
   if ((public_xtra->num_reservoirs) > 0)
   {
@@ -132,7 +156,6 @@ void         ReservoirPackage(
     }
   }
 
-  press_reservoir = 0;
   flux_reservoir = 0;
   sequence_number = 0;
 
@@ -172,6 +195,8 @@ void         ReservoirPackage(
                                       process);
 
 
+
+
       dx = SubgridDX(new_intake_subgrid);
       dy = SubgridDY(new_intake_subgrid);
       dz = SubgridDZ(new_intake_subgrid);
@@ -198,6 +223,38 @@ void         ReservoirPackage(
       dx = SubgridDX(new_release_subgrid);
       dy = SubgridDY(new_release_subgrid);
       dz = SubgridDZ(new_release_subgrid);
+
+      //TODO handle passing to other ranks. Rewrite to do this in sequential rank order and if any of the
+      // cell ranks is not -1 set that as the rank for that cell then pass along
+      int number_of_ranks = GlobalsP * GlobalsR * GlobalsQ;//Maybe this is what GlobalsNumProcs is?
+      bool reservoir_lives_on_multiple_ranks =
+              (intake_cell_rank == -1) ||
+              (secondary_intake_cell_rank == -1) ||
+              (release_cell_rank == -1);
+      if (number_of_ranks>1)
+      {
+        if (subgrid_lives_on_this_rank(new_intake_subgrid, rank_subgrids)){
+          intake_cell_rank = process;
+          amps_Invoice invoice = amps_NewInvoice("%d", &intake_cell_rank);
+
+          for (int receiving_rank = 0; receiving_rank<number_of_ranks; receiving_rank+=1){
+            if (receiving_rank!=process) {
+              amps_Send(amps_CommWorld, receiving_rank, invoice);
+            }
+          }
+          amps_FreeInvoice(invoice);
+        }
+
+      }
+      if (subgrid_lives_on_this_rank(new_intake_subgrid, rank_subgrids)){
+        intake_cell_rank = process;
+      }
+      if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, rank_subgrids)){
+        secondary_intake_cell_rank = process;
+      }
+      if (subgrid_lives_on_this_rank(new_release_subgrid, rank_subgrids)){
+        release_cell_rank = process;
+      }
 
       release_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
         reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
