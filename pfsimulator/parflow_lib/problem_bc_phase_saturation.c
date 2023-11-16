@@ -107,8 +107,8 @@ void          BCPhaseSaturation(
   int nx_v, ny_v;
   int sx_v, sy_v, sz_v;
 
-  int indx, ipatch, is, i, j, k, ival;
-
+  int indx, ipatch, is, i, j, k, ival=0;
+  PF_UNUSED(ival);
 
   /*-----------------------------------------------------------------------
    * Get an offset into the PublicXtra data

@@ -35,9 +35,7 @@
 
 #include <stdio.h>
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   int num;
   int me;

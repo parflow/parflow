@@ -392,66 +392,6 @@ typedef struct {
 #define BCPressureDataTimeCycleData(bc_pressure_data) \
   ((bc_pressure_data)->time_cycle_data)
 
-/*--------------------------------------------------------------------------
- * BCPressure Data constants used in the program.
- *--------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------
- * BCPressurePackage Actions
- *----------------------------------------------------------------*/
-/**
- * @name InputType Accessor
- * @brief Gets the input type at the specified index from BCPressurePackage public_xtra
- *
- * @param public_xtra public_xtra for module
- * @param i Index for input type
- */
-#define InputType(public_xtra, i) \
-  ((public_xtra)->input_types[(i)])
-
-/* Send cases wrapped in {} for sanity */
-/**
- * @name BC Patch control flow wrappers
- * @brief Wraps switch-case control flow inside self-describing macro names
- * @{
- */
-#define Do_SetupPatchTypes(public_xtra, interval, i, cases) \
-  switch (InputType(public_xtra, i))                        \
-  {                                                         \
-    cases;                                                  \
-  }
-
-#define SetupPatchType(type, body) \
-  case type:                       \
-  {                                \
-    body;                          \
-    break;                         \
-  }
-#define Do_SetupPatchIntervals(public_xtra, interval, i, cases) \
-  switch (InputType(public_xtra, i))                            \
-  {                                                             \
-    cases;                                                      \
-  }
-
-#define SetupPatchInterval(type, body) \
-  case type:                           \
-  {                                    \
-    body;                              \
-    break;                             \
-  }
-#define Do_FreePatches(public_xtra, i, ...) \
-  switch (InputType(public_xtra, i))        \
-  {                                         \
-    __VA_ARGS__;                            \
-  }
-
-#define FreePatch(type, body) \
-  case type:                  \
-  {                           \
-    body;                     \
-    break;                    \
-  }
 /** @} */
 
 #endif

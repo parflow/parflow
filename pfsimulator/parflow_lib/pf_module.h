@@ -346,7 +346,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
 #define PFModuleOutputStaticType(type, pf_module, args) \
   (                                           \
    ThisPFModule = pf_module,                  \
-   (*(type (*)())(ThisPFModule->output_static))args  \
+   (*(type (*)(char file_prefix[2048],ProblemData *))(ThisPFModule->output_static))args	\
   )
 
 /**

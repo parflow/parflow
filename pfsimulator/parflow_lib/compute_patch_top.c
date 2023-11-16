@@ -61,7 +61,8 @@ void ComputePatchTop(Problem *    problem,      /* General problem information *
   double *patch_top_data;
   double *index_top_data;
 
-  int ipatch, ival;
+  int ipatch, ival=0;
+  PF_UNUSED(ival);
 
   VectorUpdateCommHandle   *handle;
 
