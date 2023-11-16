@@ -43,6 +43,7 @@ typedef struct {
     double intake_x_upper, intake_y_upper, z_upper;
     int has_secondary_intake_cell;
     double secondary_intake_x_lower, secondary_intake_y_lower;
+    int intake_cell_mpi_rank, secondary_intake_cell_mpi_rank, release_cell_mpi_rank;
     double secondary_intake_x_upper, secondary_intake_y_upper;
     double release_x_lower, release_y_lower, release_z_lower;
     double release_x_upper, release_y_upper, release_z_upper;
@@ -53,6 +54,7 @@ typedef struct {
     Subgrid       *secondary_intake_subgrid;
     Subgrid       *release_subgrid;
     double size;
+    double mpi_flux;
 } ReservoirDataPhysical;
 
 /*------------------------------------------------------------------
@@ -62,19 +64,8 @@ typedef struct {
 typedef struct {
     int num_reservoirs;
 
-    /* Pressure reservoir section */
-    int num_press_reservoirs;
+    ReservoirDataPhysical  **reservoir_physicals;
 
-    ReservoirDataPhysical  **press_reservoir_physicals;
-
-    /* Flux reservoir section */
-    int num_flux_reservoirs;
-
-    ReservoirDataPhysical  **flux_reservoir_physicals;
-
-
-    /* time info */
-    TimeCycleData      *time_cycle_data;
 } ReservoirData;
 
 /*--------------------------------------------------------------------------
@@ -86,11 +77,17 @@ typedef struct {
 #define ReservoirDataPhysicalName(reservoir_data_physical) \
   ((reservoir_data_physical)->name)
 
+#define ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical) \
+  ((reservoir_data_physical)->intake_cell_mpi_rank)
+
 #define ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_x_lower)
 
 #define ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) \
   ((reservoir_data_physical)->intake_y_lower)
+
+#define ReservoirDataPhysicalSecondaryIntakeCellMpiRank(reservoir_data_physical) \
+  ((reservoir_data_physical)->secondary_intake_cell_mpi_rank)
 
 #define ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) \
   ((reservoir_data_physical)->secondary_intake_x_lower)
@@ -120,6 +117,9 @@ typedef struct {
 
 #define ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) \
   ((reservoir_data_physical)->has_secondary_intake_cell)
+
+#define ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical) \
+  ((reservoir_data_physical)->release_cell_mpi_rank)
 
 #define ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) \
   ((reservoir_data_physical)->release_x_lower)
@@ -170,25 +170,16 @@ typedef struct {
 /*--------------------------------------------------------------------------
  * Accessor macros: ReservoirData
  *--------------------------------------------------------------------------*/
-#define ReservoirDataNumReservoirs(reservoir_data) ((reservoir_data)->num_reservoirs)
 
-#define ReservoirDataTimeCycleData(reservoir_data) ((reservoir_data)->time_cycle_data)
 
-/*-------------------------- Pressure reservoir data ----------------------------*/
-#define ReservoirDataNumPressReservoirs(reservoir_data) ((reservoir_data)->num_press_reservoirs)
-
-#define ReservoirDataPressReservoirPhysicals(reservoir_data) \
-  ((reservoir_data)->press_reservoir_physicals)
-#define ReservoirDataPressReservoirPhysical(reservoir_data, i) \
-  ((reservoir_data)->press_reservoir_physicals[i])
 
 /*---------------------------- Flux reservoir data ------------------------------*/
-#define ReservoirDataNumFluxReservoirs(reservoir_data)      ((reservoir_data)->num_flux_reservoirs)
+#define ReservoirDataNumReservoirs(reservoir_data)      ((reservoir_data)->num_reservoirs)
 
-#define ReservoirDataFluxReservoirPhysicals(reservoir_data) \
-  ((reservoir_data)->flux_reservoir_physicals)
-#define ReservoirDataFluxReservoirPhysical(reservoir_data, i) \
-  ((reservoir_data)->flux_reservoir_physicals[i])
+#define ReservoirDataReservoirPhysicals(reservoir_data) \
+  ((reservoir_data)->reservoir_physicals)
+#define ReservoirDataReservoirPhysical(reservoir_data, i) \
+  ((reservoir_data)->reservoir_physicals[i])
 
 
 

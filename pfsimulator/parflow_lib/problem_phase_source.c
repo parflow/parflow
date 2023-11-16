@@ -387,14 +387,13 @@ void         PhaseSource(
     }
   }  /* End well data */
   
-  if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0)
+  if (ReservoirDataNumReservoirs(reservoir_data) > 0)
   {
 //    double epoch_time = problem->current_unix_epoch_time;
-    time_cycle_data = ReservoirDataTimeCycleData(reservoir_data);
 
-    for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++)
+    for (int reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++)
     {
-      reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
+      reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
       reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
       reservoir_release_subgrid = ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical);
       reservoir_value = ReservoirDataPhysicalReleaseRate(reservoir_data_physical);
@@ -424,9 +423,10 @@ void         PhaseSource(
         nz_ps = SubvectorNZ(ps_sub);
         ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = 0;
         if (reservoir_data_physical->current_storage > reservoir_data_physical->min_release_storage) {
-          reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
+          reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
           /*  Get the intersection of the reservoir with the subgrid  */
           if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid))) {
+
             /*  If an intersection;  loop over it, and insert value  */
             ix = SubgridIX(tmp_subgrid);
             iy = SubgridIY(tmp_subgrid);

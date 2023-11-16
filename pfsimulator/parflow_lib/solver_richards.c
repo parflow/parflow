@@ -3032,16 +3032,20 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
     //TODO define these variables somewhere that makes more sense
     ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
-    if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
+    if (ReservoirDataNumReservoirs(reservoir_data) > 0) {
       double reservoir_reset_pressure = 0.0;
       ReservoirDataPhysical *reservoir_data_physical;
       Subgrid          *tmp_subgrid, *reservoir_intake_subgrid;
       Subgrid          *reservoir_secondary_intake_subgrid;
-      for (int reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
-        reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
+      for (int reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
+        reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
+        int release_cell_rank, intake_cell_rank, secondary_intake_cell_rank;
+        release_cell_rank = ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical);
+        intake_cell_rank = ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical);
+        secondary_intake_cell_rank = ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical);
         ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) += ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
-          ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) -= ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
-        reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
+        ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) -= ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
+
         GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
         int i, j, k, r, is;
@@ -3058,7 +3062,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         ForSubgridI(is, GridSubgrids(grid))
         {
           subgrid = GridSubgrid(grid, is);
-          if (tmp_subgrid = IntersectSubgrids(subgrid, reservoir_intake_subgrid))
+          reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
+          if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_intake_subgrid)))
           {
             p_sub_sp = VectorSubvector(instance_xtra->pressure, is);
 
@@ -3074,6 +3079,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             double dx = SubgridDX(tmp_subgrid);
             double dy = SubgridDY(tmp_subgrid);
             int grid_nz = SubgridNZ(subgrid);
+            double flux_in = 0;
 
             pp_sp = SubvectorData(p_sub_sp);
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
@@ -3081,18 +3087,30 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                            ip = SubvectorEltIndex(p_sub_sp, i, j, k);
                            if (k == (grid_nz - 1))
                            {
-                             //   printf(" %d %d %d %d  \n",i,j,k,ip);
-                             //   printf(" pp[ip] %10.3f \n",pp[ip]);
+
                              if (pp_sp[ip] > reservoir_reset_pressure)
                              {
                                double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-                                 ReservoirDataPhysicalCurrentStorage(reservoir_data_physical)= ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) + pp_sp[ip] * dx * dy;
-                               ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) + dx*dy * pp_sp[ip];
+                               flux_in = pp_sp[ip] * dx * dy;
+                               ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) = ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) + flux_in;
+                               ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) + flux_in;
                                pp_sp[ip] = reservoir_reset_pressure;
                              }
                            }
                          }
             );
+            bool NEED_TO_SEND_MPI_INVOICE = (GlobalsNumProcs > 1) && (intake_cell_rank != release_cell_rank);
+            if (NEED_TO_SEND_MPI_INVOICE){
+              reservoir_data_physical->mpi_flux = flux_in;
+              //if these cells are the same we will send this invoice later
+              if (!ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) || (intake_cell_rank != secondary_intake_cell_rank)){
+                printf("sending flux from intake cell %f\n", reservoir_data_physical->mpi_flux);
+                amps_Invoice storage_invoice = amps_NewInvoice("%f", &reservoir_data_physical->mpi_flux);
+                int receiving_rank = ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical);
+                amps_Send(amps_CommWorld, receiving_rank, storage_invoice);
+                amps_FreeInvoice(storage_invoice);
+              }
+            }
           }
         }
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical)){
@@ -3101,7 +3119,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           ForSubgridI(is, GridSubgrids(grid))
           {
             subgrid = GridSubgrid(grid, is);
-            if (tmp_subgrid = IntersectSubgrids(subgrid, reservoir_secondary_intake_subgrid))
+            if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_secondary_intake_subgrid)))
             {
               p_sub_sp = VectorSubvector(instance_xtra->pressure, is);
 
@@ -3117,30 +3135,58 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               double dx = SubgridDX(tmp_subgrid);
               double dy = SubgridDY(tmp_subgrid);
               int grid_nz = SubgridNZ(subgrid);
+              double flux_in = 0;
 
               pp_sp = SubvectorData(p_sub_sp);
-              printf("1\n");
               GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
                            {
-                             printf("2\n");
                              ip = SubvectorEltIndex(p_sub_sp, i, j, k);
                              if (k == (grid_nz - 1))
                              {
-                               printf("pressure:%f\n", pp_sp[ip]);
                                if (pp_sp[ip] > reservoir_reset_pressure)
                                {
-                                 printf("4\n");
                                  double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
-                                   ReservoirDataPhysicalCurrentStorage(reservoir_data_physical)= ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) + pp_sp[ip] * dx * dy;
-                                 ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) + dx*dy * pp_sp[ip];
-                                 pp_sp[ip] = reservoir_reset_pressure;
+                                 flux_in = pp_sp[ip] * dx * dy;
+                                 ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) = ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) + flux_in;
+                                 ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) + flux_in;
                                }
                              }
                            }
               );
+              bool NEED_TO_SEND_MPI_INVOICE = (GlobalsNumProcs > 1) && (secondary_intake_cell_rank!= release_cell_rank);
+              if (NEED_TO_SEND_MPI_INVOICE){
+                if (intake_cell_rank != secondary_intake_cell_rank){
+                  reservoir_data_physical->mpi_flux = flux_in;
+                }
+                else{
+                  reservoir_data_physical->mpi_flux += flux_in;
+                }
+                printf("sending flux from secondary intake cell %f\n", reservoir_data_physical->mpi_flux);
+                amps_Invoice storage_invoice = amps_NewInvoice("%f", &reservoir_data_physical->mpi_flux);
+                int receiving_rank = ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical);
+                amps_Send(amps_CommWorld, receiving_rank, storage_invoice);
+                amps_FreeInvoice(storage_invoice);
+              }
             }
-          };
+          }
+        }
+        if ((GlobalsNumProcs>1 )&& (amps_Rank(amps_CommWorld) == release_cell_rank)){
+          if (release_cell_rank != intake_cell_rank){
+            amps_Invoice invoice = amps_NewInvoice("%f", &reservoir_data_physical->mpi_flux);
+            amps_Recv(amps_CommWorld, intake_cell_rank, invoice);
+            ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) += reservoir_data_physical->mpi_flux;
+            ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) += reservoir_data_physical->mpi_flux;
+            amps_FreeInvoice(invoice);
 
+          }
+          if ((release_cell_rank != secondary_intake_cell_rank) && ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) && secondary_intake_cell_rank!=intake_cell_rank){
+            amps_Invoice invoice = amps_NewInvoice("%f", &reservoir_data_physical->mpi_flux);
+            amps_Recv(amps_CommWorld, secondary_intake_cell_rank, invoice);
+            ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) += reservoir_data_physical->mpi_flux;
+            ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) += reservoir_data_physical->mpi_flux;
+            amps_FreeInvoice(invoice);
+
+          }
         }
 
         /* update pressure,  not sure if we need to do this but we might if pressures are reset along processor edges RMM */

@@ -161,3 +161,5 @@ ipython_config.py
 
 # pyenv
 .python-version
+/installer
+/cmake*

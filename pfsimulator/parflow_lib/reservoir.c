@@ -63,13 +63,8 @@ ReservoirData *NewReservoirData()
 
   ReservoirDataNumReservoirs(reservoir_data) = -1;
 
-  ReservoirDataTimeCycleData(reservoir_data) = NULL;
-
-  ReservoirDataNumPressReservoirs(reservoir_data) = -1;
-  ReservoirDataPressReservoirPhysicals(reservoir_data) = NULL;
-
-  ReservoirDataNumFluxReservoirs(reservoir_data) = -1;
-  ReservoirDataFluxReservoirPhysicals(reservoir_data) = NULL;
+  ReservoirDataNumReservoirs(reservoir_data) = -1;
+  ReservoirDataReservoirPhysicals(reservoir_data) = NULL;
 
 
   return reservoir_data;
@@ -90,10 +85,10 @@ void FreeReservoirData(
   {
     if (ReservoirDataNumReservoirs(reservoir_data) > 0)
     {
-      if (ReservoirDataNumFluxReservoirs(reservoir_data) > 0) {
+      if (ReservoirDataNumReservoirs(reservoir_data) > 0) {
 
-          for (i = 0; i < ReservoirDataNumFluxReservoirs(reservoir_data); i++) {
-            reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, i);
+          for (i = 0; i < ReservoirDataNumReservoirs(reservoir_data); i++) {
+            reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, i);
             if (ReservoirDataPhysicalName(reservoir_data_physical)) {
               tfree(ReservoirDataPhysicalName(reservoir_data_physical));
             }
@@ -108,8 +103,8 @@ void FreeReservoirData(
             }
             tfree(reservoir_data_physical);
           }
-          if (ReservoirDataFluxReservoirPhysicals(reservoir_data)) {
-            tfree(ReservoirDataFluxReservoirPhysicals(reservoir_data));
+          if (ReservoirDataReservoirPhysicals(reservoir_data)) {
+            tfree(ReservoirDataReservoirPhysicals(reservoir_data));
           }
         }
       }
@@ -125,7 +120,6 @@ void WriteReservoirs(
     double    time,
     int       write_header)
 {
-  TimeCycleData    *time_cycle_data;
   ReservoirDataPhysical *reservoir_data_physical;
 
   Subgrid          *subgrid;
@@ -144,74 +138,47 @@ void WriteReservoirs(
   if (ReservoirDataNumReservoirs(reservoir_data) > 0)
   {
     p = amps_Rank(amps_CommWorld);
-
-    if (p == 0)
-    {
+    //use an mpi rank lock to guarentee the header gets written on first line
+    if (write_header && p==0) {
       sprintf(filename, "%s.%s", file_prefix, file_suffix);
+      file = fopen(filename, "w");
+      fprintf(file, "time");
+      fprintf(file, ",name");
+      fprintf(file, ",current_storage");
+      fprintf(file, ",intake_amount_since_last_row");
+      fprintf(file, ",release_amount_since_last_row");
+      fprintf(file, ",release_rate");
 
-      if (write_header)
-      {
-        file = fopen(filename, "w");
-      }
-      else
-      {
-        file = fopen(filename, "a");
-      }
-
-      if (file == NULL)
-      {
-        amps_Printf("Error: can't open output file %s\n", filename);
-        exit(1);
-      }
-
-      if (write_header) {
-        fprintf(file, "time");
-        for (reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
-          reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
-
-          fprintf(file, ",%s_Current_Storage", ReservoirDataPhysicalName(reservoir_data_physical));
-          fprintf(file, ",%s_intake_amount_since_last_row", ReservoirDataPhysicalName(reservoir_data_physical));
-          fprintf(file, ",%s_release_amount_since_last_row", ReservoirDataPhysicalName(reservoir_data_physical));
-          fprintf(file, ",%s_release_rate", ReservoirDataPhysicalName(reservoir_data_physical));
-
-
-        }
-        for (reservoir = 0; reservoir < ReservoirDataNumPressReservoirs(reservoir_data); reservoir++) {
-          reservoir_data_physical = ReservoirDataPressReservoirPhysical(reservoir_data, reservoir);
-
-          fprintf(file, ",%s_Current_Storage", ReservoirDataPhysicalName(reservoir_data_physical));
-          fprintf(file, ",%s_intake_amount_since_last_row", ReservoirDataPhysicalName(reservoir_data_physical));
-          fprintf(file, ",%s_release_amount_since_last_row", ReservoirDataPhysicalName(reservoir_data_physical));
-          fprintf(file, ",%s_release_rate", ReservoirDataPhysicalName(reservoir_data_physical));
-
-        }
-        fprintf(file, "\n");
-      }
-      //Now print the current values
-      fprintf(file, "%f", time);
-      for (reservoir = 0; reservoir < ReservoirDataNumFluxReservoirs(reservoir_data); reservoir++) {
-        reservoir_data_physical = ReservoirDataFluxReservoirPhysical(reservoir_data, reservoir);
-
-        fprintf(file, ",%f", ReservoirDataPhysicalCurrentStorage(reservoir_data_physical));
-        fprintf(file, ",%f", ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical));
-        fprintf(file, ",%f", ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical));
-        fprintf(file, ",%f", ReservoirDataPhysicalReleaseRate(reservoir_data_physical));
-        ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = 0;
-        ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = 0;
-
-      }
-      for (reservoir = 0; reservoir < ReservoirDataNumPressReservoirs(reservoir_data); reservoir++) {
-        reservoir_data_physical = ReservoirDataPressReservoirPhysical(reservoir_data, reservoir);
-        fprintf(file, ",%f", ReservoirDataPhysicalCurrentStorage(reservoir_data_physical));
-        fprintf(file, ",%f", ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical));
-        fprintf(file, ",%f", ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical));
-        fprintf(file, ",%f", ReservoirDataPhysicalReleaseRate(reservoir_data_physical));
-        ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = 0;
-        ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = 0;
-
-      }
       fprintf(file, "\n");
       fclose(file);
+
+    }
+    for (reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
+      reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
+
+
+      if (p == ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical)) {
+        sprintf(filename, "%s.%s", file_prefix, file_suffix);
+        file = fopen(filename, "a");
+
+        if (file == NULL) {
+          amps_Printf("Error: can't open output file %s\n", filename);
+          exit(1);
+        }
+        //Now print the current values
+        fprintf(file, "%f", time);
+        reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
+        fprintf(file, ",%s", ReservoirDataPhysicalName(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalCurrentStorage(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalReleaseRate(reservoir_data_physical));
+
+        ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = 0;
+        ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = 0;
+        fprintf(file, "\n");
+        fclose(file);
+      }
     }
   }
 }

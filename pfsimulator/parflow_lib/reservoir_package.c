@@ -46,8 +46,6 @@ typedef struct {
     /* reservoir info */
     int num_units;
     int num_reservoirs;
-    int num_press_reservoirs;
-    int num_flux_reservoirs;
 
     int       *type;
     void     **data;
@@ -89,6 +87,22 @@ bool subgrid_lives_on_this_rank(Subgrid* subgrid, SubgridArray *rank_subgrids){
   return false;
 }
 
+//TODO why is this not working (maybe not important)
+//This function assumes this subgrid will be exactly one cell, which should always be true for reservoirs
+//bool determine_cell_mpi_rank(Subgrid* cell_subgrid, SubgridArray *rank_subgrids){
+//  int cell_mpi_rank;
+//  cell_mpi_rank = -1;
+//  if(subgrid_lives_on_this_rank(cell_subgrid, rank_subgrids)){
+//    cell_mpi_rank = amps_Rank(amps_CommWorld);
+//    printf("rank when comparing is %i", amps_Rank(amps_CommWorld));
+//  }
+//  amps_Invoice invoice = amps_NewInvoice("%i", &cell_mpi_rank);
+//  amps_AllReduce(amps_CommWorld, invoice, amps_Max);
+//  amps_FreeInvoice(invoice);
+//  return cell_mpi_rank;
+//
+//}
+
 
 void         ReservoirPackage(
     ProblemData *problem_data)
@@ -108,7 +122,7 @@ void         ReservoirPackage(
   ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
   ReservoirDataPhysical *reservoir_data_physical;
 
-  int i, sequence_number, phase, contaminant, indx, press_reservoir, flux_reservoir;
+  int i, sequence_number, phase, contaminant, indx, press_reservoir, reservoir_index;
 
   int intake_ix, intake_iy;
   int secondary_intake_ix, secondary_intake_iy;
@@ -117,7 +131,7 @@ void         ReservoirPackage(
   int nx, ny, nz;
   double dx, dy, dz;
   int rx, ry, rz;
-  int process;
+  int current_mpi_rank;
   int intake_cell_rank, secondary_intake_cell_rank, release_cell_rank;
 
   double          **phase_values;
@@ -135,33 +149,25 @@ void         ReservoirPackage(
 
   rank_subgrids = GridSubgrids(VectorGrid(problem_data->rsz));
   //-1 is the default unassigned value. We use this to check if this rank defined this value or not.
-  intake_cell_rank = -1;
-  secondary_intake_cell_rank = -1;
-  release_cell_rank= -1;
+  intake_cell_rank = 0;
+  secondary_intake_cell_rank = 0;
+  release_cell_rank= 0;
 
 
 
   if ((public_xtra->num_reservoirs) > 0)
   {
-    ReservoirDataNumPressReservoirs(reservoir_data) = (public_xtra->num_press_reservoirs);
-    if ((public_xtra->num_press_reservoirs) > 0)
-    {
-      ReservoirDataPressReservoirPhysicals(reservoir_data) = ctalloc(ReservoirDataPhysical *, (public_xtra->num_press_reservoirs));
-    }
-
-    ReservoirDataNumFluxReservoirs(reservoir_data) = (public_xtra->num_flux_reservoirs);
-    if ((public_xtra->num_flux_reservoirs) > 0)
-    {
-      ReservoirDataFluxReservoirPhysicals(reservoir_data) = ctalloc(ReservoirDataPhysical *, (public_xtra->num_flux_reservoirs));
-    }
+    ReservoirDataReservoirPhysicals(reservoir_data) = ctalloc(ReservoirDataPhysical *, (public_xtra->num_reservoirs));
   }
 
-  flux_reservoir = 0;
+  reservoir_index = 0;
   sequence_number = 0;
 
   if ((public_xtra->num_units) > 0)
   {
     /* Load the reservoir data */
+    //Now that there is room to know what ranks the reservoirs are on we could probably only load them onto
+    //the ranks that have them...
     for (i = 0; i < (public_xtra->num_units); i++)
     {
 
@@ -187,12 +193,12 @@ void         ReservoirPackage(
       ry = 0;
       rz = 0;
 
-      process = amps_Rank(amps_CommWorld);
+      current_mpi_rank = amps_Rank(amps_CommWorld);
 
       new_intake_subgrid = NewSubgrid(intake_ix, intake_iy, iz_lower,
                                       nx, ny, nz,
                                       rx, ry, rz,
-                                      process);
+                                      current_mpi_rank);
 
 
 
@@ -206,7 +212,7 @@ void         ReservoirPackage(
       new_secondary_intake_subgrid = NewSubgrid(secondary_intake_ix, secondary_intake_iy, iz_lower,
                                                 nx, ny, nz,
                                                 rx, ry, rz,
-                                                process);
+                                                current_mpi_rank);
 
       dx = SubgridDX(new_secondary_intake_subgrid);
       dy = SubgridDY(new_secondary_intake_subgrid);
@@ -216,9 +222,9 @@ void         ReservoirPackage(
       secondary_intake_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
 
       new_release_subgrid = NewSubgrid(release_ix, release_iy, iz_lower,
-                                      nx, ny, nz,
-                                      rx, ry, rz,
-                                      process);
+                                       nx, ny, nz,
+                                       rx, ry, rz,
+                                       current_mpi_rank);
 
       dx = SubgridDX(new_release_subgrid);
       dy = SubgridDY(new_release_subgrid);
@@ -226,46 +232,48 @@ void         ReservoirPackage(
 
       //TODO handle passing to other ranks. Rewrite to do this in sequential rank order and if any of the
       // cell ranks is not -1 set that as the rank for that cell then pass along
-      int number_of_ranks = GlobalsP * GlobalsR * GlobalsQ;//Maybe this is what GlobalsNumProcs is?
-      bool reservoir_lives_on_multiple_ranks =
-              (intake_cell_rank == -1) ||
-              (secondary_intake_cell_rank == -1) ||
-              (release_cell_rank == -1);
+      int number_of_ranks = GlobalsNumProcs;
+      //Maybe we don't need to pass at all and we can infer based on geometry. But some cells may be at diagonal to each other,
+      // which makes this harder
       if (number_of_ranks>1)
       {
-        if (subgrid_lives_on_this_rank(new_intake_subgrid, rank_subgrids)){
-          intake_cell_rank = process;
-          amps_Invoice invoice = amps_NewInvoice("%d", &intake_cell_rank);
-
-          for (int receiving_rank = 0; receiving_rank<number_of_ranks; receiving_rank+=1){
-            if (receiving_rank!=process) {
-              amps_Send(amps_CommWorld, receiving_rank, invoice);
-            }
-          }
-          amps_FreeInvoice(invoice);
+//        intake_cell_rank = determine_cell_mpi_rank(new_intake_subgrid, rank_subgrids);
+        if (subgrid_lives_on_this_rank(new_intake_subgrid, rank_subgrids)) {
+          intake_cell_rank = current_mpi_rank;
         }
-
+        amps_Invoice intake_cell_invoice = amps_NewInvoice("%i", &intake_cell_rank);
+        amps_AllReduce(amps_CommWorld, intake_cell_invoice, amps_Max);
+        amps_FreeInvoice(intake_cell_invoice);
+        if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, rank_subgrids)) {
+          secondary_intake_cell_rank = current_mpi_rank;
+        }
+        amps_Invoice secondary_intake_cell_invoice = amps_NewInvoice("%i", &secondary_intake_cell_rank);
+        amps_AllReduce(amps_CommWorld, secondary_intake_cell_invoice, amps_Max);
+        amps_FreeInvoice(secondary_intake_cell_invoice);
+        if (subgrid_lives_on_this_rank(new_release_subgrid, rank_subgrids)) {
+          release_cell_rank = current_mpi_rank;
+        }
+        amps_Invoice release_cell_invoice = amps_NewInvoice("%i", &release_cell_rank);
+        amps_AllReduce(amps_CommWorld, release_cell_invoice, amps_Max);
+        amps_FreeInvoice(release_cell_invoice);
       }
-      if (subgrid_lives_on_this_rank(new_intake_subgrid, rank_subgrids)){
-        intake_cell_rank = process;
-      }
-      if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, rank_subgrids)){
-        secondary_intake_cell_rank = process;
-      }
-      if (subgrid_lives_on_this_rank(new_release_subgrid, rank_subgrids)){
-        release_cell_rank = process;
-      }
-
+//      printf("on rank %i we think intake cell rank is %i, release cell rank is %i, and secondary intake cell rank is %i\n", current_mpi_rank, intake_cell_rank, release_cell_rank, secondary_intake_cell_rank);
       release_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
+      bool RESERVOIR_EXISTS_ON_THIS_RANK = (release_cell_rank==current_mpi_rank) || (intake_cell_rank==current_mpi_rank) || (secondary_intake_cell_rank==current_mpi_rank);
+      //adding reservoirs to only the ranks they exists on throws mpi error later for some reason...
+      if (true) {
         reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
         ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
         ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
         strcpy(ReservoirDataPhysicalName(reservoir_data_physical), (dummy0->name));
+        ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical) = intake_cell_rank;
         ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = (dummy0->intake_x_location);
         ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = (dummy0->intake_y_location);
+        ReservoirDataPhysicalSecondaryIntakeCellMpiRank(reservoir_data_physical) = secondary_intake_cell_rank;
         ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
         ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
         ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) = (dummy0->has_secondary_intake_cell);
+        ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical) = intake_cell_rank;
         ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) = (dummy0->release_x_location);
         ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) = (dummy0->release_y_location);
         ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = (dummy0->intake_x_location);
@@ -286,10 +294,13 @@ void         ReservoirPackage(
         ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
         ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
         ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
-        ReservoirDataFluxReservoirPhysical(reservoir_data, flux_reservoir) = reservoir_data_physical;
+        ReservoirDataReservoirPhysical(reservoir_data, reservoir_index) = reservoir_data_physical;
+        reservoir_data_physical -> mpi_flux = (0);
         /* Put in values for this reservoir */
-        flux_reservoir++;
+        reservoir_index++;
+      }
     }
+    ReservoirDataNumReservoirs(reservoir_data) = (reservoir_index);
   }
 }
 
@@ -383,8 +394,7 @@ PFModule  *ReservoirPackageNewPublicXtra(
 
   public_xtra->num_units = num_units;
 
-  public_xtra->num_press_reservoirs = 0;
-  public_xtra->num_flux_reservoirs = 0;
+
 
   if (num_units > 0) {
       (public_xtra->type) = ctalloc(int, num_units);
@@ -437,10 +447,9 @@ PFModule  *ReservoirPackageNewPublicXtra(
           sprintf(key, "Reservoirs.%s.Current_Storage", reservoir_name);
           dummy0->current_storage = GetDouble(key);
 
-          (public_xtra->num_flux_reservoirs)++;
+          (public_xtra->num_reservoirs)++;
           (public_xtra->data[i]) = (void*)dummy0;
       }
-      (public_xtra->num_reservoirs) =  (public_xtra->num_flux_reservoirs);
   }
 
 
