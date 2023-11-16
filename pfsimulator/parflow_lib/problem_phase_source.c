@@ -394,7 +394,6 @@ void         PhaseSource(
     for (int reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++)
     {
       reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
-      reservoir_intake_subgrid = ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical);
       reservoir_release_subgrid = ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical);
       reservoir_value = ReservoirDataPhysicalReleaseRate(reservoir_data_physical);
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
@@ -403,7 +402,6 @@ void         PhaseSource(
       if (reservoir_data_physical->current_storage > reservoir_data_physical->max_storage){
         flux = (reservoir_data_physical->current_storage - reservoir_data_physical->max_storage) / (volume) ;
       }
-
       ForSubgridI(is, subgrids)
       {
         subgrid = SubgridArraySubgrid(subgrids, is);
@@ -421,7 +419,7 @@ void         PhaseSource(
         nx_ps = SubvectorNX(ps_sub);
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
-        ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = 0;
+
         if (reservoir_data_physical->current_storage > reservoir_data_physical->min_release_storage) {
           reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
           /*  Get the intersection of the reservoir with the subgrid  */
@@ -460,7 +458,7 @@ void         PhaseSource(
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
                       {
                         data[ips] += weight * flux;
-                        ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) += flux*volume;
+                        ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = flux*volume;
                       });
           }
         }

@@ -266,14 +266,14 @@ void         ReservoirPackage(
         ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
         ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
         strcpy(ReservoirDataPhysicalName(reservoir_data_physical), (dummy0->name));
-        ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical) = intake_cell_rank;
+        ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical) = (intake_cell_rank);
         ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = (dummy0->intake_x_location);
         ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = (dummy0->intake_y_location);
-        ReservoirDataPhysicalSecondaryIntakeCellMpiRank(reservoir_data_physical) = secondary_intake_cell_rank;
+        ReservoirDataPhysicalSecondaryIntakeCellMpiRank(reservoir_data_physical) = (secondary_intake_cell_rank);
         ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
         ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
         ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) = (dummy0->has_secondary_intake_cell);
-        ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical) = intake_cell_rank;
+        ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical) = (release_cell_rank);
         ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) = (dummy0->release_x_location);
         ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) = (dummy0->release_y_location);
         ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = (dummy0->intake_x_location);
