@@ -3051,9 +3051,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                   ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
           ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) -=
                   ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
-          printf("Release amount since last print %f\n", ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical));
-          printf("Release amount in solver  %f\n", ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical));
-
         }
         GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
@@ -3180,9 +3177,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             }
           }
         }
-        if (true){
+        if (reservoir_data_physical->mpi_communicator != MPI_COMM_NULL){
+          amps_Printf("made it to reduction\n");
           amps_Invoice invoice = amps_NewInvoice("%d", &flux_in);
-          amps_AllReduce(amps_CommWorld, invoice, amps_Add);
+          amps_AllReduce(reservoir_data_physical->mpi_communicator, invoice, amps_Add);
           amps_FreeInvoice(invoice);
           printf("on rank %i reduced flux was %f\n",amps_Rank(amps_CommWorld), flux_in);
           ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) += flux_in;

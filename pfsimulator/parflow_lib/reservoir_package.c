@@ -149,9 +149,9 @@ void         ReservoirPackage(
 
   rank_subgrids = GridSubgrids(VectorGrid(problem_data->rsz));
   //-1 is the default unassigned value. We use this to check if this rank defined this value or not.
-  intake_cell_rank = 0;
-  secondary_intake_cell_rank = 0;
-  release_cell_rank= 0;
+  intake_cell_rank = -1;
+  secondary_intake_cell_rank = -1;
+  release_cell_rank= -1;
 
 
 
@@ -230,75 +230,85 @@ void         ReservoirPackage(
       dy = SubgridDY(new_release_subgrid);
       dz = SubgridDZ(new_release_subgrid);
 
-      //TODO handle passing to other ranks. Rewrite to do this in sequential rank order and if any of the
-      // cell ranks is not -1 set that as the rank for that cell then pass along
       int number_of_ranks = GlobalsNumProcs;
       //Maybe we don't need to pass at all and we can infer based on geometry. But some cells may be at diagonal to each other,
       // which makes this harder
-      if (number_of_ranks>1)
-      {
+      bool part_of_reservoir_lives_on_this_rank, part_of_reservoir_lives_on_other_rank;
+
 //        intake_cell_rank = determine_cell_mpi_rank(new_intake_subgrid, rank_subgrids);
-        if (subgrid_lives_on_this_rank(new_intake_subgrid, rank_subgrids)) {
-          intake_cell_rank = current_mpi_rank;
-        }
-        amps_Invoice intake_cell_invoice = amps_NewInvoice("%i", &intake_cell_rank);
-        amps_AllReduce(amps_CommWorld, intake_cell_invoice, amps_Max);
-        amps_FreeInvoice(intake_cell_invoice);
-        if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, rank_subgrids)) {
-          secondary_intake_cell_rank = current_mpi_rank;
-        }
-        amps_Invoice secondary_intake_cell_invoice = amps_NewInvoice("%i", &secondary_intake_cell_rank);
-        amps_AllReduce(amps_CommWorld, secondary_intake_cell_invoice, amps_Max);
-        amps_FreeInvoice(secondary_intake_cell_invoice);
-        if (subgrid_lives_on_this_rank(new_release_subgrid, rank_subgrids)) {
-          release_cell_rank = current_mpi_rank;
-        }
-        amps_Invoice release_cell_invoice = amps_NewInvoice("%i", &release_cell_rank);
-        amps_AllReduce(amps_CommWorld, release_cell_invoice, amps_Max);
-        amps_FreeInvoice(release_cell_invoice);
+      if (subgrid_lives_on_this_rank(new_intake_subgrid, rank_subgrids)) {
+        intake_cell_rank = current_mpi_rank;
       }
-//      printf("on rank %i we think intake cell rank is %i, release cell rank is %i, and secondary intake cell rank is %i\n", current_mpi_rank, intake_cell_rank, release_cell_rank, secondary_intake_cell_rank);
+      amps_Invoice intake_cell_invoice = amps_NewInvoice("%i", &intake_cell_rank);
+      amps_AllReduce(amps_CommWorld, intake_cell_invoice, amps_Max);
+      amps_FreeInvoice(intake_cell_invoice);
+      if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, rank_subgrids)) {
+        secondary_intake_cell_rank = current_mpi_rank;
+      }
+      amps_Invoice secondary_intake_cell_invoice = amps_NewInvoice("%i", &secondary_intake_cell_rank);
+      amps_AllReduce(amps_CommWorld, secondary_intake_cell_invoice, amps_Max);
+      amps_FreeInvoice(secondary_intake_cell_invoice);
+      if (subgrid_lives_on_this_rank(new_release_subgrid, rank_subgrids)) {
+        release_cell_rank = current_mpi_rank;
+      }
+      amps_Invoice release_cell_invoice = amps_NewInvoice("%i", &release_cell_rank);
+      amps_AllReduce(amps_CommWorld, release_cell_invoice, amps_Max);
+      amps_FreeInvoice(release_cell_invoice);
+
+      part_of_reservoir_lives_on_this_rank =
+              (release_cell_rank==current_mpi_rank) ||
+              (intake_cell_rank==current_mpi_rank) ||
+              (secondary_intake_cell_rank==current_mpi_rank);
+      part_of_reservoir_lives_on_other_rank =
+              (release_cell_rank!=current_mpi_rank) ||
+              (intake_cell_rank!=current_mpi_rank) ||
+              (secondary_intake_cell_rank!=current_mpi_rank);
+
+      MPI_Comm new_reservoir_communicator;
+      int split_color = MPI_UNDEFINED;
+      if (part_of_reservoir_lives_on_this_rank){
+        split_color = 1;
+      }
+      MPI_Comm_split(MPI_COMM_WORLD, split_color, current_mpi_rank, &new_reservoir_communicator);
+
       release_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
-      bool RESERVOIR_EXISTS_ON_THIS_RANK = (release_cell_rank==current_mpi_rank) || (intake_cell_rank==current_mpi_rank) || (secondary_intake_cell_rank==current_mpi_rank);
-      //adding reservoirs to only the ranks they exists on throws mpi error later for some reason...
-      if (true) {
-        reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
-        ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
-        ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
-        strcpy(ReservoirDataPhysicalName(reservoir_data_physical), (dummy0->name));
-        ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical) = (intake_cell_rank);
-        ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = (dummy0->intake_x_location);
-        ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = (dummy0->intake_y_location);
-        ReservoirDataPhysicalSecondaryIntakeCellMpiRank(reservoir_data_physical) = (secondary_intake_cell_rank);
-        ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
-        ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
-        ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) = (dummy0->has_secondary_intake_cell);
-        ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical) = (release_cell_rank);
-        ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) = (dummy0->release_x_location);
-        ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) = (dummy0->release_y_location);
-        ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = (dummy0->intake_x_location);
-        ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) = (dummy0->intake_y_location);
-        ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
-        ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
-        ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
-        ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
-        ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
-        ReservoirDataPhysicalMaxStorage(reservoir_data_physical) = (dummy0->max_storage);
-        ReservoirDataPhysicalMinReleaseStorage(reservoir_data_physical) = (dummy0->min_release_storage);
-        ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
-        ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
-        ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = (0);
-        ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
-        ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) = (dummy0->current_storage);
-        ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
-        ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
-        ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
-        ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
-        ReservoirDataReservoirPhysical(reservoir_data, reservoir_index) = reservoir_data_physical;
-        reservoir_data_physical -> mpi_flux = (0);
-        /* Put in values for this reservoir */
-        reservoir_index++;
-      }
+      reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
+      ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
+      ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
+      strcpy(ReservoirDataPhysicalName(reservoir_data_physical), (dummy0->name));
+      ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical) = (intake_cell_rank);
+      ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) = (dummy0->intake_x_location);
+      ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) = (dummy0->intake_y_location);
+      ReservoirDataPhysicalSecondaryIntakeCellMpiRank(reservoir_data_physical) = (secondary_intake_cell_rank);
+      ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
+      ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
+      ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) = (dummy0->has_secondary_intake_cell);
+      ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical) = (release_cell_rank);
+      ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) = (dummy0->release_x_location);
+      ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) = (dummy0->release_y_location);
+      ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) = (dummy0->intake_x_location);
+      ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) = (dummy0->intake_y_location);
+      ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) = (dummy0->secondary_intake_x_location);
+      ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
+      ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
+      ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
+      ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
+      ReservoirDataPhysicalMaxStorage(reservoir_data_physical) = (dummy0->max_storage);
+      ReservoirDataPhysicalMinReleaseStorage(reservoir_data_physical) = (dummy0->min_release_storage);
+      ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
+      ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
+      ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = (0);
+      ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
+      ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) = (dummy0->current_storage);
+      ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
+      ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
+      ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
+      ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
+      ReservoirDataReservoirPhysical(reservoir_data, reservoir_index) = reservoir_data_physical;
+      reservoir_data_physical->mpi_flux = (0);
+      reservoir_data_physical->mpi_communicator = new_reservoir_communicator;
+      /* Put in values for this reservoir */
+      reservoir_index++;
     }
     ReservoirDataNumReservoirs(reservoir_data) = (reservoir_index);
   }

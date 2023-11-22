@@ -55,6 +55,7 @@ typedef struct {
     Subgrid       *release_subgrid;
     double size;
     double mpi_flux;
+    MPI_Comm mpi_communicator;
 } ReservoirDataPhysical;
 
 /*------------------------------------------------------------------
