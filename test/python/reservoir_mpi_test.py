@@ -324,8 +324,8 @@ dir_name = get_absolute_path('test_output/reservoir_mpi_test_5_processors')
 mkdir(dir_name)
 sloping_slab.run(working_directory=dir_name)
 
-test = pd.read_csv("test_output/sloping_slab_5_processors/ReservoirsOutput.csv")
-baseline = pd.read_csv("test_output/sloping_slab_5_processors/ReservoirsOutput.csv")
+test = pd.read_csv(f"{dir_name}/ReservoirsOutput.csv")
+baseline = pd.read_csv(f"{dir_name}/ReservoirsOutput.csv")
 
 assert test["storage"].iloc[-1] == baseline["storage"].iloc[-1]
 
@@ -334,12 +334,12 @@ sloping_slab.Process.Topology.P = 5
 sloping_slab.Process.Topology.Q = 5
 sloping_slab.Process.Topology.R = 1
 
-dir_name = get_absolute_path('test_output/reservoir_mpi_test_5_processors')
+dir_name = get_absolute_path('test_output/reservoir_mpi_test_25_processors')
 mkdir(dir_name)
 sloping_slab.run(working_directory=dir_name)
 
-test = pd.read_csv("test_output/sloping_slab_5_processors/ReservoirsOutput.csv")
-baseline = pd.read_csv("test_output/sloping_slab_5_processors/ReservoirsOutput.csv")
+test = pd.read_csv(f"{dir_name}/ReservoirsOutput.csv")
+baseline = pd.read_csv(f"{dir_name}/ReservoirsOutput.csv")
 
 assert test["storage"].iloc[-1] == baseline["storage"].iloc[-1]
 
