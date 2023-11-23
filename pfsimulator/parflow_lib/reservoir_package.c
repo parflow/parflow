@@ -68,41 +68,24 @@ typedef struct {
     int has_secondary_intake_cell;
     double secondary_intake_x_location, secondary_intake_y_location;
     double release_x_location, release_y_location;
-    double max_storage, min_release_storage, current_storage, release_rate;
+    double max_storage, min_release_storage, storage, release_rate;
 } Type0;                      /* basic vertical reservoir */
 
 /*--------------------------------------------------------------------------
  * ReservoirPackage
  *--------------------------------------------------------------------------*/
 
-bool subgrid_lives_on_this_rank(Subgrid* subgrid, SubgridArray *rank_subgrids){
+bool subgrid_lives_on_this_rank(Subgrid* subgrid, Grid *grid){
   int subgrid_index;
   Subgrid* rank_subgrid, *tmp_subgrid;
-  ForSubgridI(subgrid_index, rank_subgrids){
-    rank_subgrid = SubgridArraySubgrid(rank_subgrids, subgrid_index);
+  ForSubgridI(subgrid_index, GridSubgrids(grid)){
+    rank_subgrid = SubgridArraySubgrid(GridSubgrids(grid), subgrid_index);
     if((tmp_subgrid = IntersectSubgrids(rank_subgrid, subgrid))){
       return true;
     }
   }
   return false;
 }
-
-//TODO why is this not working (maybe not important)
-//This function assumes this subgrid will be exactly one cell, which should always be true for reservoirs
-//bool determine_cell_mpi_rank(Subgrid* cell_subgrid, SubgridArray *rank_subgrids){
-//  int cell_mpi_rank;
-//  cell_mpi_rank = -1;
-//  if(subgrid_lives_on_this_rank(cell_subgrid, rank_subgrids)){
-//    cell_mpi_rank = amps_Rank(amps_CommWorld);
-//    printf("rank when comparing is %i", amps_Rank(amps_CommWorld));
-//  }
-//  amps_Invoice invoice = amps_NewInvoice("%i", &cell_mpi_rank);
-//  amps_AllReduce(amps_CommWorld, invoice, amps_Max);
-//  amps_FreeInvoice(invoice);
-//  return cell_mpi_rank;
-//
-//}
-
 
 void         ReservoirPackage(
     ProblemData *problem_data)
@@ -111,7 +94,6 @@ void         ReservoirPackage(
   PublicXtra       *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
   Type0            *dummy0;
-  SubgridArray *rank_subgrids;
 
   Subgrid          *new_intake_subgrid;
   Subgrid          *new_secondary_intake_subgrid;
@@ -133,6 +115,8 @@ void         ReservoirPackage(
   int rx, ry, rz;
   int current_mpi_rank;
   int intake_cell_rank, secondary_intake_cell_rank, release_cell_rank;
+  int split_color;
+  int grid_nz;
 
   double          **phase_values;
   double intake_subgrid_volume;
@@ -141,19 +125,16 @@ void         ReservoirPackage(
   double intake_x_lower, intake_x_upper, intake_y_lower, intake_y_upper, z_lower, z_upper;
   double secondary_intake_x_lower, secondary_intake_x_upper, secondary_intake_y_lower, secondary_intake_y_upper;
   double release_x_lower, release_x_upper, release_y_lower, release_y_upper;
-  double max_storage, min_release_storage, Current_Storage, release_rate;
+  double max_storage, min_release_storage, Storage, release_rate;
   double intake_amount_since_last_print, release_amount_since_last_print;
+
+  bool part_of_reservoir_lives_on_this_rank;
   /* Allocate the reservoir data */
 
   ReservoirDataNumReservoirs(reservoir_data) = (public_xtra->num_reservoirs);
-
-  rank_subgrids = GridSubgrids(VectorGrid(problem_data->rsz));
-  //-1 is the default unassigned value. We use this to check if this rank defined this value or not.
-  intake_cell_rank = -1;
-  secondary_intake_cell_rank = -1;
-  release_cell_rank= -1;
-
-
+  //it feels like there should be a better way to get the grid than this,but I couldn't find one...
+  Grid* grid = VectorGrid(problem_data->rsz);
+  grid_nz = grid->background->nz;
 
   if ((public_xtra->num_reservoirs) > 0)
   {
@@ -166,8 +147,6 @@ void         ReservoirPackage(
   if ((public_xtra->num_units) > 0)
   {
     /* Load the reservoir data */
-    //Now that there is room to know what ranks the reservoirs are on we could probably only load them onto
-    //the ranks that have them...
     for (i = 0; i < (public_xtra->num_units); i++)
     {
 
@@ -180,8 +159,13 @@ void         ReservoirPackage(
       release_ix = IndexSpaceX((dummy0->release_x_location), 0);
       release_iy = IndexSpaceY((dummy0->release_y_location), 0);
       Vector * index_of_domain_top = ProblemDataIndexOfDomainTop(problem_data);
-      // it feels like there should be a better way to get nz than this,but I couldn't find one...
-      int grid_nz  = problem_data->FBz->grid->background->nz;
+
+      intake_cell_rank = -1;
+      secondary_intake_cell_rank = -1;
+      release_cell_rank= -1;
+
+
+
       iz_lower = grid_nz - 1;
       iz_upper = grid_nz - 1;
 
@@ -199,9 +183,6 @@ void         ReservoirPackage(
                                       nx, ny, nz,
                                       rx, ry, rz,
                                       current_mpi_rank);
-
-
-
 
       dx = SubgridDX(new_intake_subgrid);
       dy = SubgridDY(new_intake_subgrid);
@@ -230,25 +211,19 @@ void         ReservoirPackage(
       dy = SubgridDY(new_release_subgrid);
       dz = SubgridDZ(new_release_subgrid);
 
-      int number_of_ranks = GlobalsNumProcs;
-      //Maybe we don't need to pass at all and we can infer based on geometry. But some cells may be at diagonal to each other,
-      // which makes this harder
-      bool part_of_reservoir_lives_on_this_rank, part_of_reservoir_lives_on_other_rank;
-
-//        intake_cell_rank = determine_cell_mpi_rank(new_intake_subgrid, rank_subgrids);
-      if (subgrid_lives_on_this_rank(new_intake_subgrid, rank_subgrids)) {
+      if (subgrid_lives_on_this_rank(new_intake_subgrid, grid)) {
         intake_cell_rank = current_mpi_rank;
       }
       amps_Invoice intake_cell_invoice = amps_NewInvoice("%i", &intake_cell_rank);
       amps_AllReduce(amps_CommWorld, intake_cell_invoice, amps_Max);
       amps_FreeInvoice(intake_cell_invoice);
-      if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, rank_subgrids)) {
+      if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, grid)) {
         secondary_intake_cell_rank = current_mpi_rank;
       }
       amps_Invoice secondary_intake_cell_invoice = amps_NewInvoice("%i", &secondary_intake_cell_rank);
       amps_AllReduce(amps_CommWorld, secondary_intake_cell_invoice, amps_Max);
       amps_FreeInvoice(secondary_intake_cell_invoice);
-      if (subgrid_lives_on_this_rank(new_release_subgrid, rank_subgrids)) {
+      if (subgrid_lives_on_this_rank(new_release_subgrid, grid)) {
         release_cell_rank = current_mpi_rank;
       }
       amps_Invoice release_cell_invoice = amps_NewInvoice("%i", &release_cell_rank);
@@ -259,16 +234,9 @@ void         ReservoirPackage(
               (release_cell_rank==current_mpi_rank) ||
               (intake_cell_rank==current_mpi_rank) ||
               (secondary_intake_cell_rank==current_mpi_rank);
-      part_of_reservoir_lives_on_other_rank =
-              (release_cell_rank!=current_mpi_rank) ||
-              (intake_cell_rank!=current_mpi_rank) ||
-              (secondary_intake_cell_rank!=current_mpi_rank);
 
       MPI_Comm new_reservoir_communicator;
-      int split_color = MPI_UNDEFINED;
-      if (part_of_reservoir_lives_on_this_rank){
-        split_color = 1;
-      }
+      split_color = part_of_reservoir_lives_on_this_rank ? 1 : MPI_UNDEFINED;
       MPI_Comm_split(MPI_COMM_WORLD, split_color, current_mpi_rank, &new_reservoir_communicator);
 
       release_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
@@ -299,13 +267,12 @@ void         ReservoirPackage(
       ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = (0);
       ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = (0);
       ReservoirDataPhysicalReleaseRate(reservoir_data_physical) = (dummy0->release_rate);
-      ReservoirDataPhysicalCurrentStorage(reservoir_data_physical) = (dummy0->current_storage);
+      ReservoirDataPhysicalStorage(reservoir_data_physical) = (dummy0->storage);
       ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) = new_intake_subgrid;
       ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) = new_secondary_intake_subgrid;
       ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
       ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
       ReservoirDataReservoirPhysical(reservoir_data, reservoir_index) = reservoir_data_physical;
-      reservoir_data_physical->mpi_flux = (0);
       reservoir_data_physical->mpi_communicator = new_reservoir_communicator;
       /* Put in values for this reservoir */
       reservoir_index++;
@@ -454,8 +421,8 @@ PFModule  *ReservoirPackageNewPublicXtra(
           sprintf(key, "Reservoirs.%s.Max_Storage", reservoir_name);
           dummy0->max_storage = GetDouble(key);
 
-          sprintf(key, "Reservoirs.%s.Current_Storage", reservoir_name);
-          dummy0->current_storage = GetDouble(key);
+          sprintf(key, "Reservoirs.%s.Storage", reservoir_name);
+          dummy0->storage = GetDouble(key);
 
           (public_xtra->num_reservoirs)++;
           (public_xtra->data[i]) = (void*)dummy0;
