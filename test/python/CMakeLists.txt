@@ -24,6 +24,8 @@ if(${PARFLOW_HAVE_HYPRE})
     LW_var_dz_spinup
     terrain_following_grid_overland
     var_dz_1D
+    reservoir_mpi_test
+    tilted_v_with_reservoir
     pfmg
     pfmg_galerkin
     smg
