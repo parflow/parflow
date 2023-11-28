@@ -1178,7 +1178,7 @@ class DomainBuilder:
 
     def reservoir(self, name, Intake_X, Intake_Y,
                   Secondary_Intake_X, Secondary_Intake_Y,Release_X, 
-                  Release_Y, Release_Rate, Max_Storage, Current_Storage,
+                  Release_Y, Release_Rate, Max_Storage, Storage,
                   Min_Release_Storage
                   ):
         """Setting keys necessary to define a simple reservoir
@@ -1200,7 +1200,7 @@ class DomainBuilder:
         reservoir.Release_Y = Release_Y
         reservoir.Release_Rate = Release_Rate
         reservoir.Max_Storage = Max_Storage
-        reservoir.Current_Storage = Current_Storage
+        reservoir.Storage = Storage
         reservoir.Min_Release_Storage = Min_Release_Storage
         return self
 

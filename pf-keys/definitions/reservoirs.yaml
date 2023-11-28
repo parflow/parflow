@@ -89,7 +89,7 @@ Reservoirs:
       domains:
         DoubleValue:
 
-    Current_Storage:
+    Storage:
       # typos - vertical
       help: >
         [Type: double]

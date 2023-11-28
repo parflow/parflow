@@ -87,8 +87,8 @@ Max_Storage:
     - Max_Storage
   register: Reservoirs.Names
 
-Current_Storage:
+Storage:
   type: float
   alias:
-    - Current_Storage
+    - Storage
   register: Reservoirs.Names
