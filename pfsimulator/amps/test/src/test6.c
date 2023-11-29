@@ -45,9 +45,7 @@ char *string = "ATestString";
 
 #define TEST_COUNT 3
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   amps_Invoice invoice;
   amps_Invoice send_invoice;

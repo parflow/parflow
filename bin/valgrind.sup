@@ -391,3 +391,17 @@
    fun:H5AC_flush
    obj:/usr/lib64/openmpi/lib/libhdf5.so.103.1.0
 }
+
+##############################################################################
+#
+# Silo
+#
+##############################################################################
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:DBClose
+   fun:WriteSilo
+   ...
+   fun:main
+}

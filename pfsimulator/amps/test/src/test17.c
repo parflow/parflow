@@ -33,9 +33,7 @@
 
 char *filename = "test17.input";
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   amps_File file;
   amps_Invoice recv_invoice;

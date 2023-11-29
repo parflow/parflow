@@ -92,13 +92,13 @@ run wget -q https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz && \
 # SILO
 #
 WORKDIR /home/parflow
-RUN curl "https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz" -o "silo-4.10.2.tar.gz" && \
-    tar -xf silo-4.10.2.tar.gz && \
-    cd silo-4.10.2 && \
+RUN wget -q https://github.com/LLNL/Silo/archive/refs/tags/4.10.2.tar.gz && \
+    tar -xf 4.10.2.tar.gz && \
+    cd Silo-4.10.2 && \
     ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && \
     make install && \
     cd .. && \
-    rm -fr silo-4.10.2 silo-4.10.2.tar.gz
+    rm -fr Silo-4.10.2 4.10.2.tar.gz
 
 #
 # Hypre
