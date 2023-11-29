@@ -3,10 +3,13 @@
 # with variable dz and a heterogenous subsurface with different K the top and bottom layers
 #---------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
-vardz = Run("var_d5z_1D", __file__)
+run_name = "var.dz.1d"
+vardz = Run(run_name, __file__)
 
 #---------------------------------------------------------
 
@@ -340,6 +343,30 @@ vardz.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 # Run and do tests
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/vardz')
-mkdir(dir_name)
-vardz.run(working_directory=dir_name)
+new_output_dir_name = get_absolute_path('test_output/var_d5z_1D')
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+vardz.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(0, 30, 5):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

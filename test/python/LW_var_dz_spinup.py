@@ -3,29 +3,38 @@
 #  in spinup mode with overland dampening turned on
 #---------------------------------------------------------
 
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path
+from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path, rm
+from parflow.tools.compare import pf_test_file
 
-LWvdz = Run("LW_var_dz_spinup", __file__)
+run_name = "LW_var_dz_spinup"
+LWvdz = Run(run_name, __file__)
 
 #---------------------------------------------------------
 # Copying slope files
 #---------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/LWvdz_s')
-mkdir(dir_name)
-chdir(dir_name)
+new_output_dir_name = get_absolute_path('test_output/LW_var_dz_spinup')
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
 
-cp('$PF_SRC/test/input/lw.1km.slope_x.10x.pfb')
-cp('$PF_SRC/test/input/lw.1km.slope_y.10x.pfb')
+cp('$PF_SRC/test/input/lw.1km.slope_x.10x.pfb', new_output_dir_name)
+cp('$PF_SRC/test/input/lw.1km.slope_y.10x.pfb', new_output_dir_name)
 
 #---------------------------------------------------------
 
 LWvdz.FileVersion = 4
 
-LWvdz.Process.Topology.P = 1
-LWvdz.Process.Topology.Q = 1
-LWvdz.Process.Topology.R = 1
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
+
+LWvdz.Process.Topology.P = args.p
+LWvdz.Process.Topology.Q = args.q
+LWvdz.Process.Topology.R = args.r
 
 #---------------------------------------------------------
 # Computational Grid
@@ -285,8 +294,8 @@ LWvdz.TopoSlopesY.FileName = 'lw.1km.slope_y.10x.pfb'
 #  Distribute slopes
 #---------------------------------------------------------
 
-LWvdz.dist('lw.1km.slope_x.10x.pfb')
-LWvdz.dist('lw.1km.slope_y.10x.pfb')
+LWvdz.dist(new_output_dir_name + '/lw.1km.slope_x.10x.pfb')
+LWvdz.dist(new_output_dir_name + '/lw.1km.slope_y.10x.pfb')
 
 #---------------------------------------------------------
 # Mannings coefficient
@@ -359,5 +368,29 @@ LWvdz.OverlandSpinupDampP2 = 0.00001
 #-----------------------------------------------------------------------------
 # Run and do tests
 #-----------------------------------------------------------------------------
+LWvdz.run(working_directory=new_output_dir_name)
 
-LWvdz.run()
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+
+for i in range(8):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+        
+rm(new_output_dir_name)
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

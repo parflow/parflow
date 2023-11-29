@@ -6,18 +6,22 @@
 # These time series are stored as columns (as many columns as IGBP vegetation classes -18) in input files.
 #-----------------------------------------------------------------------------
 
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import mkdir, cp, chdir, get_absolute_path
+from parflow.tools.fs import mkdir, cp, chdir, get_absolute_path, rm
+from parflow.tools.io import read_pfb, write_pfb
+from parflow.tools.compare import pf_test_file
+from parflow.tools.top import compute_top, extract_top
 
-clm_veg = Run("clm_forfc_veg", __file__)
+run_name = "clm_forc_veg"
+clm_veg = Run(run_name, __file__)
 
 #-----------------------------------------------------------------------------
 # Making output directories and copying input files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/clm_veg')
-mkdir(dir_name)
-chdir(dir_name)
+new_output_dir_name = get_absolute_path('test_output/clm_forc_veg')
+mkdir(new_output_dir_name)
 
 directories = [
   'qflx_evap_grnd',
@@ -38,17 +42,17 @@ directories = [
 ]
 
 for directory in directories:
-    mkdir(directory)
+    mkdir(new_output_dir_name + '/' + directory)
 
-cp('$PF_SRC/test/tcl/clm/drv_clmin.dat')
-cp('$PF_SRC/test/tcl/clm/drv_vegm.dat')
-cp('$PF_SRC/test/tcl/clm/drv_vegp.dat')
-cp('$PF_SRC/test/tcl/clm/lai.dat')
-cp('$PF_SRC/test/tcl/clm/sai.dat')
-cp('$PF_SRC/test/tcl/clm/z0m.dat')
-cp('$PF_SRC/test/tcl/clm/displa.dat')
-cp('$PF_SRC/test/tcl/clm/narr_1hr.sc3.txt.0')
-cp('$PF_SRC/test/tcl/clm/veg_map.cpfb', 'veg_map.pfb')
+cp('$PF_SRC/test/tcl/clm/drv_clmin.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_vegm.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_vegp.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/lai.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/sai.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/z0m.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/displa.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/narr_1hr.sc3.txt.0', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/veg_map.cpfb', new_output_dir_name + '/veg_map.pfb')
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -59,10 +63,15 @@ clm_veg.FileVersion = 4
 #-----------------------------------------------------------------------------
 # Process Topology
 #-----------------------------------------------------------------------------
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
 
-clm_veg.Process.Topology.P = 1
-clm_veg.Process.Topology.Q = 1
-clm_veg.Process.Topology.R = 1
+clm_veg.Process.Topology.P = args.p
+clm_veg.Process.Topology.Q = args.q
+clm_veg.Process.Topology.R = args.r
 
 #-----------------------------------------------------------------------------
 # Computational Grid
@@ -319,14 +328,11 @@ clm_veg.Solver.Drop = 1E-20
 clm_veg.Solver.AbsTol = 1E-9
 
 clm_veg.Solver.LSM = 'CLM'
-clm_veg.Solver.WriteSiloCLM = True
 clm_veg.Solver.CLM.MetForcing = '1D'
 clm_veg.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
 clm_veg.Solver.CLM.MetFilePath = '.'
 clm_veg.Solver.CLM.ForceVegetation = True
 
-clm_veg.Solver.WriteSiloEvapTrans = True
-clm_veg.Solver.WriteSiloOverlandBCFlux = True
 clm_veg.Solver.PrintCLM = True
 
 #---------------------------------------------------------
@@ -344,6 +350,49 @@ clm_veg.Geom.domain.ICPressure.RefPatch = 'z_upper'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-clm_veg.dist('veg_map.pfb')
+clm_veg.dist(new_output_dir_name + '/veg_map.pfb')
 
-clm_veg.run()
+correct_output_dir_name = get_absolute_path("../../correct_output/clm_output")
+clm_veg.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(6):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+mask = read_pfb(new_output_dir_name + f"/{run_name}.out.mask.pfb")
+top = compute_top(mask)
+write_pfb(new_output_dir_name + f"/{run_name}.out.top_index.pfb", top)
+
+data = read_pfb(new_output_dir_name + f"/{run_name}.out.press.00000.pfb")
+top_data = extract_top(data, top)
+write_pfb(new_output_dir_name + f"/{run_name}.out.top.press.00000.pfb", top_data)
+
+
+filename = f"/{run_name}.out.top_index.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in top_index"):
+    passed = False
+
+filename = f"/{run_name}.out.top.press.00000.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in top_clm.out.press.00000.pfb"):
+    passed = False
+
+rm(new_output_dir_name)    
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

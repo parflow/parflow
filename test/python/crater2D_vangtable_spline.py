@@ -2,10 +2,13 @@
 #  This is a 2D crater problem w/ time varying input and topography
 #-----------------------------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import cp, mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 
-crater = Run("crater2D_vangtable_spline", __file__)
+run_name = "crater2D_vangtable_spline"
+crater = Run(run_name, __file__)
 
 # ---------------------------------------------------------
 # Copy testing data in test directory
@@ -489,4 +492,36 @@ crater.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-crater.run(working_directory=dir_name)
+new_output_dir_name = dir_name
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+crater.run(working_directory=new_output_dir_name)
+
+passed = True
+sig_digits = 5
+abs_diff = 1e-200
+test_files = ["perm_x", "perm_y", "perm_z", "porosity"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}", sig_digits):
+        passed = False
+        
+
+for i in range(3):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                 f"Max difference in Pressure for timestep {timestep}", abs_diff, sig_digits):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                 f"Max difference in Saturation for timestep {timestep}", abs_diff, sig_digits):
+        passed = False
+
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

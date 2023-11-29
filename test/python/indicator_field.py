@@ -5,8 +5,10 @@
 import sys
 from parflow import Run
 from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
-ifield = Run("indicator_field", __file__)
+run_name = "indicator_field"
+ifield = Run(run_name, __file__)
 
 #---------------------------------------------------------
 # Copying files
@@ -14,10 +16,9 @@ ifield = Run("indicator_field", __file__)
 
 dir_name = get_absolute_path('test_output/ifield')
 mkdir(dir_name)
-chdir(dir_name)
 
-cp('$PF_SRC/test/input/small_domain.pfsol')
-cp('$PF_SRC/test/input/small_domain_indicator_field.pfb')
+cp('$PF_SRC/test/input/small_domain.pfsol', dir_name)
+cp('$PF_SRC/test/input/small_domain_indicator_field.pfb', dir_name)
 
 #---------------------------------------------------------
 
@@ -317,32 +318,36 @@ ifield.Solver.Linear.Preconditioner = 'MGSemi'
 ifield.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 ifield.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 
-ifield.Solver.PrintSubsurfData = False
-ifield.Solver.PrintPressure = False
-ifield.Solver.PrintSaturation = False
-ifield.Solver.PrintConcentration = False
-
-ifield.Solver.WriteSiloSubsurfData = True
-ifield.Solver.WriteSiloPressure = True
-ifield.Solver.WriteSiloSaturation = True
-ifield.Solver.WriteSiloConcentration = True
-
-#-----------------------------------------------------------------------------
-# Ensure generated pfidb match our expectation
-#-----------------------------------------------------------------------------
-
-generatedFile, runId = ifield.write()
-
-# Prevent regression
-with open(generatedFile) as new, open(get_absolute_path('$PF_SRC/test/correct_output/indicator_field.pfidb.ref')) as ref:
-  if new.read() != ref.read():
-    print('Generated PFIDB does not match our expectation')
-    sys.exit(1)
-
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-ifield.dist('small_domain_indicator_field.pfb')
+ifield.dist(dir_name + '/small_domain_indicator_field.pfb')
+correct_output_dir_name = get_absolute_path('../correct_output')
+ifield.run(working_directory=dir_name)
 
-ifield.run()
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z", "porosity"]
+
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(2):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
