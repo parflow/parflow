@@ -5,11 +5,14 @@
 #      Advances in Water Resources, 1995.
 #-----------------------------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import cp, mkdir, chdir, get_absolute_path
 from parflow.tools import settings
+from parflow.tools.compare import pf_test_file
 
-forsyth2 = Run("forsyth2", __file__)
+run_name = "forsyth2"
+forsyth2 = Run(run_name, __file__)
 
 #---------------------------------------------------------
 # Copy solid file
@@ -17,10 +20,8 @@ forsyth2 = Run("forsyth2", __file__)
 
 dir_name = get_absolute_path('test_output/forsyth2')
 mkdir(dir_name)
-chdir(dir_name)
-settings.set_working_directory()
 
-cp('$PF_SRC/test/input/fors2_hf.pfsol')
+cp('$PF_SRC/test/input/fors2_hf.pfsol', dir_name)
 
 #---------------------------------------------------------
 
@@ -478,4 +479,32 @@ forsyth2.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-forsyth2.run()
+new_output_dir_name = dir_name
+correct_output_dir_name = get_absolute_path('../correct_output')
+forsyth2.run(working_directory=dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(2):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
