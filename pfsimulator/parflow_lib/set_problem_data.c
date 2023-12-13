@@ -100,8 +100,7 @@ void          SetProblemData(
   PFModule      *real_space_z = (instance_xtra->real_space_z);
 
   /* Note: the order in which these modules are called is important */
-  PFModuleInvokeType(WellPackageInvoke, wells, (problem_data));
-  PFModuleInvokeType(ReservoirPackageInvoke, reservoirs, (problem_data));
+
   if ((instance_xtra->site_data_not_formed))
   {
     PFModuleInvokeType(GeometriesInvoke, geometries, (problem_data));
@@ -158,7 +157,8 @@ void          SetProblemData(
 
     (instance_xtra->site_data_not_formed) = 0;
   }
-
+  PFModuleInvokeType(WellPackageInvoke, wells, (problem_data));
+  PFModuleInvokeType(ReservoirPackageInvoke, reservoirs, (problem_data));
   PFModuleInvokeType(BCPressurePackageInvoke, bc_pressure, (problem_data));
 }
 

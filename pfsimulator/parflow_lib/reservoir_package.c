@@ -38,6 +38,52 @@
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
+// Temp solution while I get a more permanent var dz fix checked in
+double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
+  double dx = SubgridDX(subgrid);
+  double dy = SubgridDY(subgrid);
+  double dz = SubgridDZ(subgrid);
+  GrGeomSolid *gr_domain = problem_data->gr_domain;
+
+  double volume = 0;
+  Grid           *grid = VectorGrid(problem_data->rsz);
+  SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
+  Subgrid        *tmp_subgrid;
+  Subvector      *dz_sub;
+  Subvector      *rsz_sub;
+  int subgrid_index;
+  int index_space_z;
+  bool found_index_space_z = false;
+  ForSubgridI(subgrid_index, subgrids) {
+    tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
+    Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
+    double* dz_mult_data = SubvectorData(dz_mult_subvector);
+    Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
+    int nx = SubgridNX(intersection);
+    int ny = SubgridNY(intersection);
+    int nz = SubgridNZ(intersection);
+    int r = SubgridRZ(intersection);
+    int ix = SubgridIX(intersection);
+    int iy = SubgridIY(intersection);
+    int iz = SubgridIZ(intersection);
+    int i, j, k;
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                 {
+
+                   int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
+                   //real space z will give us the cell center...not the cell bottom. So we correct for that
+                   //I think if we call this function generically this line can seg fault. Need to make sure
+                   // index is good for generic case. I have ensured we only call in cases this can not seg
+                   // fault currently
+                   double dz_mult = dz_mult_data[index];
+                   volume += dz_mult * dx * dy * dz;
+                 });
+  }
+  return volume;
+
+};
+
+
 
 typedef struct {
     int num_phases;
@@ -210,7 +256,7 @@ void         ReservoirPackage(
       dx = SubgridDX(new_release_subgrid);
       dy = SubgridDY(new_release_subgrid);
       dz = SubgridDZ(new_release_subgrid);
-
+      release_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
       if (subgrid_lives_on_this_rank(new_intake_subgrid, grid)) {
         intake_cell_rank = current_mpi_rank;
       }
@@ -225,6 +271,7 @@ void         ReservoirPackage(
       amps_FreeInvoice(secondary_intake_cell_invoice);
       if (subgrid_lives_on_this_rank(new_release_subgrid, grid)) {
         release_cell_rank = current_mpi_rank;
+        release_subgrid_volume = GetSubgridVolume(new_release_subgrid, problem_data);
       }
       amps_Invoice release_cell_invoice = amps_NewInvoice("%i", &release_cell_rank);
       amps_AllReduce(amps_CommWorld, release_cell_invoice, amps_Max);
@@ -239,8 +286,10 @@ void         ReservoirPackage(
       split_color = part_of_reservoir_lives_on_this_rank ? 1 : MPI_UNDEFINED;
       MPI_Comm_split(MPI_COMM_WORLD, split_color, current_mpi_rank, &new_reservoir_communicator);
 
-      release_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
+
+
       reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
+      amps_Printf("This processor succeeded");
       ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
       ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
       strcpy(ReservoirDataPhysicalName(reservoir_data_physical), (dummy0->name));
