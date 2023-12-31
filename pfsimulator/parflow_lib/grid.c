@@ -978,3 +978,37 @@ SubgridArray  *UnionSubgridArray(
   return new_sa;
 }
 
+double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
+  double dx = SubgridDX(subgrid);
+  double dy = SubgridDY(subgrid);
+  double dz = SubgridDZ(subgrid);
+  GrGeomSolid *gr_domain = problem_data->gr_domain;
+  double volume = 0;
+  Grid           *grid = VectorGrid(problem_data->rsz);
+  SubgridArray   *subgrids = GridSubgrids(grid);
+  Subgrid        *tmp_subgrid;
+  int subgrid_index;
+  ForSubgridI(subgrid_index, subgrids) {
+    tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
+    Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
+    double* dz_mult_data = SubvectorData(dz_mult_subvector);
+    Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
+    int nx = SubgridNX(intersection);
+    int ny = SubgridNY(intersection);
+    int nz = SubgridNZ(intersection);
+    int r = SubgridRZ(intersection);
+    int ix = SubgridIX(intersection);
+    int iy = SubgridIY(intersection);
+    int iz = SubgridIZ(intersection);
+    int i, j, k;
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                 {
+                   int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
+                   //real space z will give us the cell center...not the cell bottom. So we correct for that
+                   double dz_mult = dz_mult_data[index];
+                   volume += dz_mult * dx * dy * dz;
+                 });
+  }
+  return volume;
+}
+

@@ -27,6 +27,7 @@
  **********************************************************************EHEADER*/
 
 #include "parflow.h"
+//#include "grid_utilities.c"
 
 #include <string.h>
 
@@ -93,110 +94,10 @@ typedef struct {
 } Type1;                      /* basic vertical well, recirculating */
 
 
-double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
-  double dx = SubgridDX(subgrid);
-  double dy = SubgridDY(subgrid);
-  double dz = SubgridDZ(subgrid);
-  GrGeomSolid *gr_domain = problem_data->gr_domain;
 
-  double volume = 0;
-  Grid           *grid = VectorGrid(problem_data->rsz);
-  SubgridArray   *subgrids = GridSubgrids(grid);
-  Subgrid        *tmp_subgrid;
-  Subvector      *dz_sub;
-  Subvector      *rsz_sub;
-  int subgrid_index;
-  int index_space_z;
-  bool found_index_space_z = false;
-  ForSubgridI(subgrid_index, subgrids) {
-    tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
-    Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
-    double* dz_mult_data = SubvectorData(dz_mult_subvector);
-    Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
-    int nx = SubgridNX(intersection);
-    int ny = SubgridNY(intersection);
-    int nz = SubgridNZ(intersection);
-    int r = SubgridRZ(intersection);
-    int ix = SubgridIX(intersection);
-    int iy = SubgridIY(intersection);
-    int iz = SubgridIZ(intersection);
-    int i, j, k;
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                 {
-                   int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
-                    //real space z will give us the cell center...not the cell bottom. So we correct for that
-                    double dz_mult = dz_mult_data[index];
-                    volume += dz_mult * dx * dy * dz;
-            });
-  }
-  return volume;
-
-};
-
-//Will return -1 if we can't find it
-int GetIndexSpaceZ(double real_space_z, ProblemData* problem_data){
-  Grid           *grid = VectorGrid(problem_data->rsz);
-  SubgridArray   *subgrids = GridSubgrids(grid);
-  Subgrid        *subgrid;
-  Subvector      *dz_sub;
-  Subvector      *rsz_sub;
-  int subgrid_index;
-  int index_space_z;
-  GrGeomSolid *gr_domain = problem_data->gr_domain;
-  bool found_index_space_z = false;
-  ForSubgridI(subgrid_index, subgrids) {
-    subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
-    Subvector  *real_space_zs_subvector = VectorSubvector(problem_data->rsz, subgrid_index);
-    double dz = SubgridDZ(subgrid);
-
-    int ix = SubgridIX(subgrid);
-    int iy = SubgridIY(subgrid);
-    int iz = SubgridIZ(subgrid);
-
-    int nx = 1;
-    int ny = 1;
-    int nz = SubgridNZ(subgrid);
-
-    /* RDF: assume resolution is the same in all 3 directions */
-    int r = SubgridRZ(subgrid);
-    //TODO need to already know z of bottom of grid
-    //TODO need to get iz and nz without going straight to problem data
-
-    double* real_space_zs_data = SubvectorData(real_space_zs_subvector);
-    double* dz_mult_data = SubvectorData(VectorSubvector(problem_data->dz_mult, subgrid_index));
-    //I think I can set ix and iy to 0 because the dzscale does not vary in x or y
-    int i, j, k = 0;
-
-    int index;
-    double current_z;
-
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                 {
-                   index = SubvectorEltIndex(real_space_zs_subvector, i, j, k);
-//                   real space z will give us the cell center...not the cell bottom. So we correct for that
-              current_z = (real_space_zs_data[index] + 0.5*dz_mult_data[index]) * dz;
-              printf("Current z: %f\n", current_z);
-              // the checks here needs to be thought through a bit more carefully.   Is this >  or >= ???
-              if (!found_index_space_z && (current_z > real_space_z))
-              {
-                // inside well, going up we have found index where well starts
-                index_space_z = k;
-                found_index_space_z = true;
-              }
-
-            });
-  };
-  if (found_index_space_z){
-    return index_space_z;
-  }
-  else{
-    return -1;
-  }
-};
 /*--------------------------------------------------------------------------
  * WellPackage
  *--------------------------------------------------------------------------*/
-
 void         WellPackage(
                          ProblemData *problem_data)
 {
@@ -291,8 +192,8 @@ void         WellPackage(
 
           ix = IndexSpaceX((dummy0->xlocation), 0);
           iy = IndexSpaceY((dummy0->ylocation), 0);
-          iz_lower = GetIndexSpaceZ(dummy0->z_lower, problem_data);
-          iz_upper = GetIndexSpaceZ(dummy0->z_upper, problem_data);
+          iz_lower = CalculateIndexSpaceZ(dummy0->z_lower, problem_data);
+          iz_upper = CalculateIndexSpaceZ(dummy0->z_upper, problem_data);
 
           nx = 1;
           ny = 1;
@@ -313,7 +214,7 @@ void         WellPackage(
           dy = SubgridDY(new_subgrid);
           dz = SubgridDZ(new_subgrid);
 
-          subgrid_volume = GetSubgridVolume(new_subgrid, problem_data);
+          subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
 
           if ((dummy0->mechanism) == PRESSURE_WELL)
           {
@@ -599,8 +500,8 @@ void         WellPackage(
               method = (dummy1->method_inj);
             }
 
-            iz_lower = GetIndexSpaceZ(z_lower, problem_data);
-            iz_upper = GetIndexSpaceZ(z_upper, problem_data);
+            iz_lower = CalculateIndexSpaceZ(z_lower, problem_data);
+            iz_upper = CalculateIndexSpaceZ(z_upper, problem_data);
 
             nx = 1;
             ny = 1;
@@ -620,7 +521,7 @@ void         WellPackage(
             dy = SubgridDY(new_subgrid);
             dz = SubgridDZ(new_subgrid);
 
-            subgrid_volume = GetSubgridVolume(new_subgrid, problem_data);
+            subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
 
             if (mechanism == PRESSURE_WELL)
             {

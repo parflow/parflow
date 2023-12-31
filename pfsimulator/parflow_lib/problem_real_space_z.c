@@ -261,3 +261,50 @@ int  realSpaceZSizeOfTempData()
 {
   return 0;
 }
+
+int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data){
+  Grid           *grid = VectorGrid(problem_data->rsz);
+  SubgridArray   *subgrids = GridSubgrids(grid);
+  Subgrid        *subgrid;
+  int subgrid_index;
+  int index_space_z;
+  GrGeomSolid *gr_domain = problem_data->gr_domain;
+  bool found_index_space_z = false;
+  ForSubgridI(subgrid_index, subgrids) {
+    subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
+    Subvector  *real_space_zs_subvector = VectorSubvector(problem_data->rsz, subgrid_index);
+    double dz = SubgridDZ(subgrid);
+    int ix = SubgridIX(subgrid);
+    int iy = SubgridIY(subgrid);
+    int iz = SubgridIZ(subgrid);
+    int nx = 1;
+    int ny = 1;
+    int nz = SubgridNZ(subgrid);
+    int r = SubgridRZ(subgrid);
+    double* real_space_zs_data = SubvectorData(real_space_zs_subvector);
+    double* dz_mult_data = SubvectorData(VectorSubvector(problem_data->dz_mult, subgrid_index));
+    //I think I can set ix and iy to 0 because the dzscale does not vary in x or y
+    int i, j, k = 0;
+    int index;
+    double current_z;
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                 {
+                   index = SubvectorEltIndex(real_space_zs_subvector, i, j, k);
+//                   real space z will give us the cell center...not the cell bottom. So we correct for that
+              current_z = (real_space_zs_data[index] + 0.5*dz_mult_data[index]) * dz;
+              if (!found_index_space_z && (current_z > real_space_z))
+              {
+                // inside well, going up we have found index where well starts
+                index_space_z = k;
+                found_index_space_z = true;
+              }
+            });
+  };
+  if (found_index_space_z){
+    return index_space_z;
+  }
+  else{
+    return -1;
+  }
+};
+
