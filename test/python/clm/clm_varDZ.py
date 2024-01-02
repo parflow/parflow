@@ -8,17 +8,22 @@
 # is calculated based on layer interfaces which match ParFlow layer interfaces.
 #-----------------------------------------------------------------------------
 
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import cp, mkdir, get_absolute_path
+from parflow.tools.fs import cp, mkdir, get_absolute_path, rm
+from parflow.tools.io import read_pfb, write_pfb
+from parflow.tools.compare import pf_test_file
+from parflow.tools.top import compute_top, extract_top
 
-clm = Run("clm_varDZ", __file__)
+run_name = "clm_varDZ"
+clm = Run(run_name, __file__)
 
 #-----------------------------------------------------------------------------
 # Making output directories and copying input files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/clm_vardz')
-mkdir(dir_name)
+new_output_dir_name = get_absolute_path('test_output/clm_vardz')
+mkdir(new_output_dir_name)
 
 directories = [
   'qflx_evap_grnd',
@@ -39,12 +44,12 @@ directories = [
 ]
 
 for directory in directories:
-    mkdir(dir_name + '/' + directory)
+    mkdir(new_output_dir_name + '/' + directory)
 
-cp('$PF_SRC/test/tcl/clm/drv_clmin.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/drv_vegm.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/drv_vegp.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/narr_1hr.sc3.txt.0', dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_clmin.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_vegm.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_vegp.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/narr_1hr.sc3.txt.0', new_output_dir_name)
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -55,10 +60,15 @@ clm.FileVersion = 4
 #-----------------------------------------------------------------------------
 # Process Topology
 #-----------------------------------------------------------------------------
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
 
-clm.Process.Topology.P = 1
-clm.Process.Topology.Q = 1
-clm.Process.Topology.R = 1
+clm.Process.Topology.P = args.p
+clm.Process.Topology.Q = args.q
+clm.Process.Topology.R = args.r
 
 #-----------------------------------------------------------------------------
 # Computational Grid
@@ -334,14 +344,11 @@ clm.Solver.Drop = 1E-20
 clm.Solver.AbsTol = 1E-9
 
 clm.Solver.LSM = 'CLM'
-clm.Solver.WriteSiloCLM = True
 clm.Solver.CLM.MetForcing = '1D'
 clm.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
 clm.Solver.CLM.MetFilePath = '.'
 clm.Solver.CLM.ForceVegetation = False
 
-clm.Solver.WriteSiloEvapTrans = True
-clm.Solver.WriteSiloOverlandBCFlux = True
 clm.Solver.PrintCLM = True
 
 #---------------------------------------------------------
@@ -359,4 +366,47 @@ clm.Geom.domain.ICPressure.RefPatch = 'z_upper'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-clm.run(working_directory=dir_name)
+correct_output_dir_name = get_absolute_path("../../correct_output/clm_output")
+clm.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(6):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+mask = read_pfb(new_output_dir_name + f"/{run_name}.out.mask.pfb")
+top = compute_top(mask)
+write_pfb(new_output_dir_name + f"/{run_name}.out.top_index.pfb", top)
+
+data = read_pfb(new_output_dir_name + f"/{run_name}.out.press.00000.pfb")
+top_data = extract_top(data, top)
+write_pfb(new_output_dir_name + f"/{run_name}.out.top.press.00000.pfb", top_data)
+
+
+filename = f"/{run_name}.out.top_index.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in top_index"):
+    passed = False
+
+filename = f"/{run_name}.out.top.press.00000.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in top_clm.out.press.00000.pfb"):
+    passed = False
+
+rm(new_output_dir_name)    
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

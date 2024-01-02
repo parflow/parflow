@@ -4,8 +4,10 @@
 # With a suite of overlandflow BC options
 #---------------------------------------------------------
 
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.fs import mkdir, get_absolute_path, rm
+from parflow.tools.compare import pf_test_file
 
 overland = Run("overland_slopingslab_KWE", __file__)
 
@@ -13,9 +15,15 @@ overland = Run("overland_slopingslab_KWE", __file__)
 
 overland.FileVersion = 4
 
-overland.Process.Topology.P = 1
-overland.Process.Topology.Q = 1
-overland.Process.Topology.R = 1
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
+
+overland.Process.Topology.P = args.p
+overland.Process.Topology.Q = args.q
+overland.Process.Topology.R = args.r
 
 #---------------------------------------------------------
 # Computational Grid
@@ -285,193 +293,197 @@ overland.Geom.domain.ICPressure.RefPatch = 'z_upper'
 # Python pftools
 #-----------------------------------------------------------------------------
 #set runcheck to 1 if you want to run the pass fail tests
-# runcheck = 1
-# first = 1
-# source pftest.tcl
+runcheck = 1
+first = 1
+correct_output_dir_name = get_absolute_path('../correct_output')
 
 ###############################
 # Looping over slop configurations
 ###############################
-# foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy negxnegy] {
-#   puts "$xslope $yslope $name"
-#set name negy
+x_slopes = [0.01, -0.01]
+y_slopes = [0.01, -0.01]
+names = ['posxposy', 'negxnegy']
 
-#   #### Set the slopes
-overland.TopoSlopesX.Type = "Constant"
-overland.TopoSlopesX.GeomNames = "domain"
-overland.TopoSlopesX.Geom.domain.Value = 0.01
+for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
+    print(f"{x_slope} {y_slope} {name}")
+    overland.TopoSlopesX.Type  = "Constant"
+    overland.TopoSlopesX.GeomNames = "domain"
+    overland.TopoSlopesX.Geom.domain.Value = x_slope
+    
+    overland.TopoSlopesY.Type = "Constant"
+    overland.TopoSlopesY.GeomNames = "domain"
+    overland.TopoSlopesY.Geom.domain.Value = y_slope
+    
+    overland.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
+    overland.Solver.Nonlinear.UseJacobian = False
+    overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+    
+    run_name = f"Slab.{name}.OverlandModule"
+    overland.set_name(run_name)
+    print("##########")
+    if first == 1:
+        print(overland.get_name())
+        first = 0
+    else:
+        print(f"Running {run_name} Jacobian False")
+    new_output_dir_name = get_absolute_path('test_output/' + f"run_name_jacobian_false")
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)
+    rm(new_output_dir_name)
+            
+    overland.Solver.Nonlinear.UseJacobian =  True
+    overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+    print("##########")
+    print(f"Running {run_name} Jacobian True")
+    new_output_dir_name = get_absolute_path('test_output/' + f"run_name_jacobian_true")
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)
+    rm(new_output_dir_name)
 
-overland.TopoSlopesY.Type = "Constant"
-overland.TopoSlopesY.GeomNames = "domain"
-overland.TopoSlopesY.Geom.domain.Value = 0.01
+    
+    overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
+    print("##########")
+    print(f"Running {run_name} Jacobian True Nonsymmetric Preconditioner")
+    new_output_dir_name = get_absolute_path('test_output/' + f"run_name_nonsymmetric_preconditioner")
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)
+    rm(new_output_dir_name)
 
-#   #original approach from K&M AWR 2006
-overland.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
-overland.Solver.Nonlinear.UseJacobian = False
-overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+    
+    overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
+    overland.Solver.Nonlinear.UseJacobian = False
+    overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+    run_name = f"Slab.{name}.OverlandKin"
+    overland.set_name(run_name)
+    print("##########")
+    print(f"Running {run_name}")
+    new_output_dir_name = get_absolute_path('test_output/' + f"run_name_overland_kin")
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)
+    rm(new_output_dir_name)    
 
+    
+    overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
+    overland.Solver.Nonlinear.UseJacobian = True
+    overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+    print("##########")
+    print(f"Running {run_name} Jacobian True")
+    new_output_dir_name = get_absolute_path('test_output/' + f"run_name_overland_kin_jacobian_true")
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)
+    rm(new_output_dir_name)
 
-#   set runname Slab.$name.OverlandModule
-#   puts "##########"
-#   if $first==1 {
-#     puts $runname
-#     set first 0
-#   } else {
-#     puts "Running $runname Jacobian True"
-#   }
-#   pfrun $runname
-#   pfundist $runname
-#   if $runcheck==1 {
-#     set passed 1
-#     foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#       if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#         set passed 0
-#       }
-#       if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#         set passed 0
-#       }
-#     }
-#     if $passed {
-#       puts "$runname : PASSED"
-#     } {
-#       puts "$runname : FAILED"
-#     }
-#   }
-
-# turn on analytical jacobian and re-test
-overland.Solver.Nonlinear.UseJacobian = True
-overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
-
-# set runname Slab.$name.OverlandModule
-# puts "##########"
-# puts "Running $runname Jacobian True"
-# pfrun $runname
-# pfundist $runname
-# if $runcheck==1 {
-#   set passed 1
-#   foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#     if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#       set passed 0
-#     }
-#     if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#       set passed 0
-#     }
-#   }
-#   if $passed {
-#     puts "$runname : PASSED"
-#   } {
-#     puts "$runname : FAILED"
-#   }
-# }
-
-# turn on non-symmetric Preconditioner and re-test
-overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
-
-# set runname Slab.$name.OverlandModule
-# puts "##########"
-# puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
-# pfrun $runname
-# pfundist $runname
-# if $runcheck==1 {
-#   set passed 1
-#   foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#     if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#       set passed 0
-#     }
-#     if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#       set passed 0
-#     }
-#   }
-#   if $passed {
-#     puts "$runname : PASSED"
-#   } {
-#     puts "$runname : FAILED"
-#   }
-# }
-
-# run with KWE upwinding
-overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
-overland.Solver.Nonlinear.UseJacobian = False
-overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
-
-#   set runname Slab.$name.OverlandKin
-#   puts "##########"
-#   puts "Running $runname"
-#   pfrun $runname
-#   pfundist $runname
-#   if $runcheck==1 {
-#     set passed 1
-#     foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#       if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#         set passed 0
-#       }
-#       if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#         set passed 0
-#       }
-#     }
-#     if $passed {
-#       puts "$runname : PASSED"
-#     } {
-#       puts "$runname  : FAILED"
-#     }
-#   }
-
-#   # run with KWE upwinding jacobian true
-#   pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
-#   pfset Solver.Nonlinear.UseJacobian                       True
-#   pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
-
-#     set runname Slab.$name.OverlandKin
-#     puts "##########"
-#     puts "Running $runname Jacobian True"
-#     pfrun $runname
-#     pfundist $runname
-#     if $runcheck==1 {
-#       set passed 1
-#       foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#         if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#           set passed 0
-#         }
-#         if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#           set passed 0
-#         }
-#       }
-#       if $passed {
-#         puts "$runname : PASSED"
-#       } {
-#         puts "$runname  : FAILED"
-#       }
-#     }
-
-#     # run with KWE upwinding jacobian true and nonsymmetric preconditioner
-#     pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
-#     pfset Solver.Nonlinear.UseJacobian                       True
-#     pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
-
-#       set runname Slab.$name.OverlandKin
-#       puts "##########"
-#       puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
-#       pfrun $runname
-#       pfundist $runname
-#       if $runcheck==1 {
-#         set passed 1
-#         foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#           if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#             set passed 0
-#           }
-#           if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#             set passed 0
-#           }
-#         }
-#         if $passed {
-#           puts "$runname : PASSED"
-#         } {
-#           puts "$runname  : FAILED"
-#         }
-#       }
-# }
-
-dir_name = get_absolute_path('test_output/os_kwe')
-mkdir(dir_name)
-overland.run(working_directory=dir_name)
-
+    
+    overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
+    overland.Solver.Nonlinear.UseJacobian = True
+    overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'    
+    print("##########")
+    print(f"Running {run_name} Jacobian True Nonsymmetric Preconditioner")
+    new_output_dir_name = get_absolute_path('test_output/' + f"run_name_overland_kin_jacobian_true_nonsymmetric_preconditioner")
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)
+    rm(new_output_dir_name)

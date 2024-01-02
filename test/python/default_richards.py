@@ -4,16 +4,25 @@
 #  3 nonlinear iterations.
 #---------------------------------------------------------
 
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.fs import mkdir, get_absolute_path, rm
+from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 
-drich = Run('default_richards', __file__)
+run_name = 'default_richards'
+
+drich = Run(run_name, __file__)
 
 #---------------------------------------------------------
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
 
-drich.Process.Topology.P = 1
-drich.Process.Topology.Q = 1
-drich.Process.Topology.R = 1
+drich.Process.Topology.P = args.p
+drich.Process.Topology.Q = args.q
+drich.Process.Topology.R = args.r
 
 #---------------------------------------------------------
 # Computational Grid
@@ -27,8 +36,8 @@ drich.ComputationalGrid.DX = 8.8888888888888893
 drich.ComputationalGrid.DY = 10.666666666666666
 drich.ComputationalGrid.DZ = 1.0
 
-drich.ComputationalGrid.NX = 10
-drich.ComputationalGrid.NY = 10
+drich.ComputationalGrid.NX = 18
+drich.ComputationalGrid.NY = 15
 drich.ComputationalGrid.NZ = 8
 
 #---------------------------------------------------------
@@ -331,10 +340,52 @@ drich.Solver.Linear.KrylovDimension = 10
 
 drich.Solver.Linear.Preconditioner = 'PFMG'
 
+drich.Solver.PrintVelocities = True
+
 #-----------------------------------------------------------------------------
 # Run ParFlow
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/drich')
-mkdir(dir_name)
-drich.run(working_directory=dir_name)
+new_output_dir_name = get_absolute_path('test_output/default_richards')
+mkdir(new_output_dir_name)
+correct_output_dir_name = get_absolute_path('../correct_output')
+drich.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+
+abs_value = 1e-12
+for i in range(6):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.velx.{timestep}.pfb"
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                 f"Max difference in x-velocity for timestep {timestep}", abs_value):
+        passed = False
+    filename = f"/{run_name}.out.vely.{timestep}.pfb"
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                 f"Max difference in y-velocity for timestep {timestep}", abs_value):
+        passed = False
+    filename = f"/{run_name}.out.vely.{timestep}.pfb"
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                 f"Max difference in z-velocity for timestep {timestep}", abs_value):
+        passed = False
+
+rm(new_output_dir_name)
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
