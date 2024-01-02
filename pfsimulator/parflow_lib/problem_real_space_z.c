@@ -283,23 +283,28 @@ int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data){
     int r = SubgridRZ(subgrid);
     double* real_space_zs_data = SubvectorData(real_space_zs_subvector);
     double* dz_mult_data = SubvectorData(VectorSubvector(problem_data->dz_mult, subgrid_index));
+    double cell_center, cell_height;
     //I think I can set ix and iy to 0 because the dzscale does not vary in x or y
     int i, j, k = 0;
     int index;
     double current_z;
+    //This loop goes up through the domain until the cell top is higher than the real space z provided
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
                  {
-                   index = SubvectorEltIndex(real_space_zs_subvector, i, j, k);
-//                   real space z will give us the cell center...not the cell bottom. So we correct for that
-              current_z = (real_space_zs_data[index] + 0.5*dz_mult_data[index]) * dz;
-              if (!found_index_space_z && (current_z > real_space_z))
-              {
-                // inside well, going up we have found index where well starts
-                index_space_z = k;
-                found_index_space_z = true;
-              }
-            });
+                  index = SubvectorEltIndex(real_space_zs_subvector, i, j, k);
+                  //Real space z will give us the cell center not the cell bottom. So we correct for that
+                  cell_center = real_space_zs_data[index];
+                  cell_height = 0.5*dz_mult_data[index]* dz;
+                  current_z = (cell_center + 0.5 * cell_height) ;
+                  if (!found_index_space_z && (current_z > real_space_z))
+                  {
+                    // inside well, going up we have found index where well starts
+                    index_space_z = k;
+                    found_index_space_z = true;
+                  }
+                });
   };
+  //unclear if this is the right return pattern and am open to changing
   if (found_index_space_z){
     return index_space_z;
   }
