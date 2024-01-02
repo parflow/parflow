@@ -192,20 +192,8 @@ void         WellPackage(
 
           ix = IndexSpaceX((dummy0->xlocation), 0);
           iy = IndexSpaceY((dummy0->ylocation), 0);
-          amps_Printf("About to start index space calculation\n");
           iz_lower = CalculateIndexSpaceZ(dummy0->z_lower, problem_data);
           iz_upper = CalculateIndexSpaceZ(dummy0->z_upper, problem_data);
-
-          //we need to
-          amps_Invoice iz_lower_invoice = amps_NewInvoice("%i", &iz_lower);
-          amps_AllReduce(amps_CommWorld, iz_lower_invoice, amps_Max);
-          amps_FreeInvoice(iz_lower_invoice);
-
-          amps_Invoice iz_upper_invoice = amps_NewInvoice("%i", &iz_upper);
-          amps_AllReduce(amps_CommWorld, iz_lower_invoice, amps_Max);
-          amps_FreeInvoice(iz_lower_invoice);
-
-          amps_Printf("made it past index space calculation\n");
 
           nx = 1;
           ny = 1;
@@ -225,15 +213,8 @@ void         WellPackage(
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
           dz = SubgridDZ(new_subgrid);
-          amps_Printf("About to start volume calculation\n");
-          amps_Printf("izlower: %i izupper: %i\n", iz_lower, iz_upper);
-          subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
-          amps_Invoice subgrid_volume_invoice = amps_NewInvoice("%d", &subgrid_volume);
-          amps_AllReduce(amps_CommWorld, subgrid_volume_invoice, amps_Add);
-          amps_FreeInvoice(subgrid_volume_invoice);
-          amps_Printf("made it past volume calculation\n");
-          amps_Printf("izlower: %i izupper: %i volume: %d\n", iz_lower, iz_upper, subgrid_volume);
 
+          subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
 
 
           if ((dummy0->mechanism) == PRESSURE_WELL)
@@ -519,10 +500,9 @@ void         WellPackage(
               mechanism = (dummy1->mechanism_inj);
               method = (dummy1->method_inj);
             }
-            amps_Printf("About to start index space calculation\n");
             iz_lower = CalculateIndexSpaceZ(z_lower, problem_data);
             iz_upper = CalculateIndexSpaceZ(z_upper, problem_data);
-            amps_Printf("made it past index space calculation\n");
+
             nx = 1;
             ny = 1;
             nz = iz_upper - iz_lower + 1;
@@ -540,9 +520,7 @@ void         WellPackage(
             dx = SubgridDX(new_subgrid);
             dy = SubgridDY(new_subgrid);
             dz = SubgridDZ(new_subgrid);
-            amps_Printf("about to start volume calculation\n");
             subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
-            amps_Printf("made it past volume calculation\n");
             if (mechanism == PRESSURE_WELL)
             {
               /* Put in physical data for this well */

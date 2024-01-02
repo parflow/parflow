@@ -25,6 +25,7 @@ if(${PARFLOW_HAVE_HYPRE})
     terrain_following_grid_overland
     var_dz_1D
     var_dz_with_well
+    var_dz_with_well_2_2_1
     pfmg
     pfmg_galerkin
     smg

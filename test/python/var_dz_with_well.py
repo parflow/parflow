@@ -71,7 +71,7 @@ vardz.dzScale.GeomNames = 'domain'
 vardz.dzScale.Type = 'nzList'
 vardz.dzScale.nzListNumber = 14
 vardz.Cell._0.dzScale.Value = 1
-vardz.Cell._1.dzScale.Value = 1.
+vardz.Cell._1.dzScale.Value = 2.
 vardz.Cell._2.dzScale.Value = 1.
 vardz.Cell._3.dzScale.Value = 1.
 vardz.Cell._4.dzScale.Value = 1.
@@ -309,20 +309,18 @@ vardz.Solver.Linear.Preconditioner = 'PFMG'
 vardz.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 vardz.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
-vardz.Wells.Names = ''
-vardz.Wells.Names = 'pumping_well'
-vardz.Wells.pumping_well.InputType = 'Vertical'
-vardz.Wells.pumping_well.Action = 'Extraction'
-vardz.Wells.pumping_well.Type = 'Pressure'
-vardz.Wells.pumping_well.X = 0.5
-vardz.Wells.pumping_well.Y = 0.5
-vardz.Wells.pumping_well.ZUpper = 10.5
-vardz.Wells.pumping_well.ZLower = .5
-vardz.Wells.pumping_well.Method = 'Standard'
-vardz.Wells.pumping_well.Cycle = 'constant'
-vardz.Wells.pumping_well.alltime.Pressure.Value = 0.5
-vardz.Wells.pumping_well.alltime.Saturation.water.Value = 1.0
-
+vardz.Wells.Names = 'pressure_well'
+vardz.Wells.pressure_well.InputType = 'Vertical'
+vardz.Wells.pressure_well.Action = 'Extraction'
+vardz.Wells.pressure_well.Type = 'Pressure'
+vardz.Wells.pressure_well.X = 0.5
+vardz.Wells.pressure_well.Y = 0.5
+vardz.Wells.pressure_well.ZUpper = 10.5
+vardz.Wells.pressure_well.ZLower = .5
+vardz.Wells.pressure_well.Method = 'Standard'
+vardz.Wells.pressure_well.Cycle = 'constant'
+vardz.Wells.pressure_well.alltime.Pressure.Value = 0.5
+vardz.Wells.pressure_well.alltime.Saturation.water.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Run and do tests
@@ -350,7 +348,7 @@ vardz.ComputationalGrid.DZ = 10.0
 vardz.Geom.domain.Upper.Z = 140.0
 vardz.dzScale.nzListNumber = 14
 vardz.Cell._0.dzScale.Value = .1
-vardz.Cell._1.dzScale.Value = .1
+vardz.Cell._1.dzScale.Value = .2
 vardz.Cell._2.dzScale.Value = .1
 vardz.Cell._3.dzScale.Value = .1
 vardz.Cell._4.dzScale.Value = .1
@@ -376,7 +374,7 @@ mkdir(dir_name)
 vardz.ComputationalGrid.DZ = 0.1
 vardz.Geom.domain.Upper.Z = 1.4
 vardz.Cell._0.dzScale.Value = 10
-vardz.Cell._1.dzScale.Value = 10
+vardz.Cell._1.dzScale.Value = 20
 vardz.Cell._2.dzScale.Value = 10
 vardz.Cell._3.dzScale.Value = 10
 vardz.Cell._4.dzScale.Value = 10
@@ -395,26 +393,47 @@ vardz.run(working_directory=dir_name)
 test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
 assert(np.allclose(base_case_pressure, test_case_pressure))
 
-# Next we switch to a multicolumn setup
+# Next we switch to a multicolumn setup and add a flux well in to make sure this works for both types
+# of wells
 vardz.ComputationalGrid.NX = 2
 vardz.ComputationalGrid.NY = 2
 vardz.Geom.domain.Upper.X = 2.0
 vardz.Geom.domain.Upper.Y = 2.0
 
+vardz.Wells.Names = 'pressure_well flux_well'
+
+vardz.Wells.pressure_well.InputType = 'Vertical'
+vardz.Wells.pressure_well.Action = 'Extraction'
+vardz.Wells.pressure_well.Type = 'Pressure'
+vardz.Wells.pressure_well.X = 0.5
+vardz.Wells.pressure_well.Y = 0.5
+vardz.Wells.pressure_well.ZUpper = 10.5
+vardz.Wells.pressure_well.ZLower = .5
+vardz.Wells.pressure_well.Method = 'Standard'
+vardz.Wells.pressure_well.Cycle = 'constant'
+vardz.Wells.pressure_well.alltime.Pressure.Value = 0.5
+vardz.Wells.pressure_well.alltime.Saturation.water.Value = 1.0
+
+vardz.Wells.flux_well.InputType = 'Vertical'
+vardz.Wells.flux_well.Type = 'Flux'
+vardz.Wells.flux_well.Action = 'Extraction'
+vardz.Wells.flux_well.Cycle = 'constant'
+vardz.Wells.flux_well.X = 1.5
+vardz.Wells.flux_well.Y = 0.5
+vardz.Wells.flux_well.ZLower = .5
+vardz.Wells.flux_well.ZUpper = 10.5
+vardz.Wells.flux_well.Method = 'Standard'
+vardz.Wells.flux_well.alltime.Flux.water.Value = 7.5
+
 # Multi column  base case
 dir_name = get_absolute_path('test_output/multi_column_1')
 mkdir(dir_name)
-
-vardz.ComputationalGrid.NX = 1
-vardz.ComputationalGrid.NY = 1
-vardz.Geom.domain.Upper.X = 1.0
-vardz.Geom.domain.Upper.Y = 1.0
 
 vardz.ComputationalGrid.DZ = 1.0
 vardz.Geom.domain.Upper.Z = 14.0
 vardz.dzScale.nzListNumber = 14
 vardz.Cell._0.dzScale.Value = 1
-vardz.Cell._1.dzScale.Value = 1.
+vardz.Cell._1.dzScale.Value = 2.
 vardz.Cell._2.dzScale.Value = 1.
 vardz.Cell._3.dzScale.Value = 1.
 vardz.Cell._4.dzScale.Value = 1.
@@ -438,7 +457,7 @@ vardz.ComputationalGrid.DZ = 10.0
 vardz.Geom.domain.Upper.Z = 140.0
 vardz.dzScale.nzListNumber = 14
 vardz.Cell._0.dzScale.Value = .1
-vardz.Cell._1.dzScale.Value = .1
+vardz.Cell._1.dzScale.Value = .2
 vardz.Cell._2.dzScale.Value = .1
 vardz.Cell._3.dzScale.Value = .1
 vardz.Cell._4.dzScale.Value = .1
@@ -463,7 +482,7 @@ mkdir(dir_name)
 vardz.ComputationalGrid.DZ = 0.1
 vardz.Geom.domain.Upper.Z = 1.4
 vardz.Cell._0.dzScale.Value = 10
-vardz.Cell._1.dzScale.Value = 10
+vardz.Cell._1.dzScale.Value = 20
 vardz.Cell._2.dzScale.Value = 10
 vardz.Cell._3.dzScale.Value = 10
 vardz.Cell._4.dzScale.Value = 10
@@ -476,20 +495,6 @@ vardz.Cell._10.dzScale.Value = 10
 vardz.Cell._11.dzScale.Value = 10
 vardz.Cell._12.dzScale.Value = 10
 vardz.Cell._13.dzScale.Value = 10
-
-vardz.run(working_directory=dir_name)
-
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-assert(np.allclose(base_case_pressure, test_case_pressure))
-
-#Finally we test if this works on multiple processors
-dir_name = get_absolute_path('test_output/mpi_test_1')
-vardz.Process.Topology.P = 2
-vardz.Process.Topology.Q = 2
-vardz.Process.Topology.R = 1
-mkdir(dir_name)
-
-
 
 vardz.run(working_directory=dir_name)
 

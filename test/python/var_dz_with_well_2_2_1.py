@@ -71,7 +71,7 @@ vardz.dzScale.GeomNames = 'domain'
 vardz.dzScale.Type = 'nzList'
 vardz.dzScale.nzListNumber = 14
 vardz.Cell._0.dzScale.Value = 1
-vardz.Cell._1.dzScale.Value = 1.
+vardz.Cell._1.dzScale.Value = 2.
 vardz.Cell._2.dzScale.Value = 1.
 vardz.Cell._3.dzScale.Value = 1.
 vardz.Cell._4.dzScale.Value = 1.
@@ -309,20 +309,43 @@ vardz.Solver.Linear.Preconditioner = 'PFMG'
 vardz.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 vardz.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
-vardz.Wells.Names = ''
-vardz.Wells.Names = 'pumping_well'
-vardz.Wells.pumping_well.InputType = 'Vertical'
-vardz.Wells.pumping_well.Action = 'Extraction'
-vardz.Wells.pumping_well.Type = 'Pressure'
-vardz.Wells.pumping_well.X = 0.5
-vardz.Wells.pumping_well.Y = 0.5
-vardz.Wells.pumping_well.ZUpper = 10.5
-vardz.Wells.pumping_well.ZLower = .5
-vardz.Wells.pumping_well.Method = 'Standard'
-vardz.Wells.pumping_well.Cycle = 'constant'
-vardz.Wells.pumping_well.alltime.Pressure.Value = 0.5
-vardz.Wells.pumping_well.alltime.Saturation.water.Value = 1.0
+# vardz.Wells.Names = 'pumping_well'
+# vardz.Wells.pumping_well.InputType = 'Vertical'
+# vardz.Wells.pumping_well.Action = 'Extraction'
+# vardz.Wells.pumping_well.Type = 'Pressure'
+# vardz.Wells.pumping_well.X = 0.5
+# vardz.Wells.pumping_well.Y = 0.5
+# vardz.Wells.pumping_well.ZUpper = 10.5
+# vardz.Wells.pumping_well.ZLower = .5
+# vardz.Wells.pumping_well.Method = 'Standard'
+# vardz.Wells.pumping_well.Cycle = 'constant'
+# vardz.Wells.pumping_well.alltime.Pressure.Value = 0.5
+# vardz.Wells.pumping_well.alltime.Saturation.water.Value = 1.0
 
+vardz.Wells.Names = 'pressure_well flux_well'
+
+vardz.Wells.pressure_well.InputType = 'Vertical'
+vardz.Wells.pressure_well.Action = 'Extraction'
+vardz.Wells.pressure_well.Type = 'Pressure'
+vardz.Wells.pressure_well.X = 0.5
+vardz.Wells.pressure_well.Y = 0.5
+vardz.Wells.pressure_well.ZUpper = 10.5
+vardz.Wells.pressure_well.ZLower = .5
+vardz.Wells.pressure_well.Method = 'Standard'
+vardz.Wells.pressure_well.Cycle = 'constant'
+vardz.Wells.pressure_well.alltime.Pressure.Value = 0.5
+vardz.Wells.pressure_well.alltime.Saturation.water.Value = 1.0
+
+vardz.Wells.flux_well.InputType = 'Vertical'
+vardz.Wells.flux_well.Type = 'Flux'
+vardz.Wells.flux_well.Action = 'Extraction'
+vardz.Wells.flux_well.Cycle = 'constant'
+vardz.Wells.flux_well.X = 1.5
+vardz.Wells.flux_well.Y = 0.5
+vardz.Wells.flux_well.ZLower = .5
+vardz.Wells.flux_well.ZUpper = 10.5
+vardz.Wells.flux_well.Method = 'Standard'
+vardz.Wells.flux_well.alltime.Flux.water.Value = 7.5
 
 #-----------------------------------------------------------------------------
 # Run and do tests
@@ -330,27 +353,34 @@ vardz.Wells.pumping_well.alltime.Saturation.water.Value = 1.0
 
 # For our tests we will be comparing the pressure field at the 10th timestep
 # We use np.allclose to compare instead of np.equals because changing the var
-# dz causes tiny differences from floating point arithmatic. These changes make
-# total sense and are unavoidable.
+# dz causes tiny differences from floating point arithmatic. These differences
+# make total sense and are unavoidable.
+test_case_pressure_file = "model.out.press.00010.pfb"
 
-pressure_file = "model.out.press.00010.pfb"
+# correct_pressure_file = "multi_column_var_dz_with_well.out.press.00010.pfb"
+# correct_output_dir = get_absolute_path('../correct_output')
+correct_pressure_file = "model.out.press.00010.pfb"
+correct_output_dir = get_absolute_path('test_output/multi_column_1')
+correct_pressure = pf.read_pfb(f"{correct_output_dir}/{correct_pressure_file}")
 
-# base case single column
-dir_name = get_absolute_path('test_output/single_column_1')
+# Original mutli column setup
+dir_name = get_absolute_path('test_output/mpi_multi_column_1')
 mkdir(dir_name)
+
 vardz.run(working_directory=dir_name)
 
-base_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
+test_case_pressure = pf.read_pfb(f"{dir_name}/{test_case_pressure_file}")
 
-# single column test 1
-dir_name = get_absolute_path('test_output/single_column_2')
+assert(np.allclose(correct_pressure, test_case_pressure))
+
+# Multi-column setup 2
+dir_name = get_absolute_path('test_output/mpi_multi_column_2')
 mkdir(dir_name)
 
 vardz.ComputationalGrid.DZ = 10.0
 vardz.Geom.domain.Upper.Z = 140.0
-vardz.dzScale.nzListNumber = 14
 vardz.Cell._0.dzScale.Value = .1
-vardz.Cell._1.dzScale.Value = .1
+vardz.Cell._1.dzScale.Value = .2
 vardz.Cell._2.dzScale.Value = .1
 vardz.Cell._3.dzScale.Value = .1
 vardz.Cell._4.dzScale.Value = .1
@@ -366,17 +396,18 @@ vardz.Cell._13.dzScale.Value = .1
 
 vardz.run(working_directory=dir_name)
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-assert(np.allclose(base_case_pressure, test_case_pressure))
+test_case_pressure = pf.read_pfb(f"{dir_name}/{test_case_pressure_file}")
 
-# single column test 2
-dir_name = get_absolute_path('test_output/single_column_3')
+assert(np.allclose(correct_pressure, test_case_pressure))
+
+# Multi-column setup 3
+dir_name = get_absolute_path('test_output/mpi_multi_column_3')
 mkdir(dir_name)
 
 vardz.ComputationalGrid.DZ = 0.1
 vardz.Geom.domain.Upper.Z = 1.4
 vardz.Cell._0.dzScale.Value = 10
-vardz.Cell._1.dzScale.Value = 10
+vardz.Cell._1.dzScale.Value = 20
 vardz.Cell._2.dzScale.Value = 10
 vardz.Cell._3.dzScale.Value = 10
 vardz.Cell._4.dzScale.Value = 10
@@ -392,83 +423,11 @@ vardz.Cell._13.dzScale.Value = 10
 
 vardz.run(working_directory=dir_name)
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-assert(np.allclose(base_case_pressure, test_case_pressure))
+test_case_pressure = pf.read_pfb(f"{dir_name}/{test_case_pressure_file}")
 
-# Next we switch to a multicolumn setup and create a base case
-dir_name = get_absolute_path('test_output/multi_column_1')
-mkdir(dir_name)
+assert(np.allclose(correct_pressure, test_case_pressure))
 
-vardz.ComputationalGrid.DZ = 1.0
-vardz.Geom.domain.Upper.Z = 14.0
-vardz.dzScale.nzListNumber = 14
-vardz.Cell._0.dzScale.Value = 1
-vardz.Cell._1.dzScale.Value = 1.
-vardz.Cell._2.dzScale.Value = 1.
-vardz.Cell._3.dzScale.Value = 1.
-vardz.Cell._4.dzScale.Value = 1.
-vardz.Cell._5.dzScale.Value = 1.
-vardz.Cell._6.dzScale.Value = 1.
-vardz.Cell._7.dzScale.Value = 1.
-vardz.Cell._8.dzScale.Value = 1.
-vardz.Cell._9.dzScale.Value = 1
-vardz.Cell._10.dzScale.Value = 1
-vardz.Cell._11.dzScale.Value = 1
-vardz.Cell._12.dzScale.Value = 1
-vardz.Cell._13.dzScale.Value = 1
 
-vardz.run(working_directory=dir_name)
-base_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
 
-dir_name = get_absolute_path('test_output/multi_column_2')
-mkdir(dir_name)
-
-vardz.ComputationalGrid.DZ = 10.0
-vardz.Geom.domain.Upper.Z = 140.0
-vardz.dzScale.nzListNumber = 14
-vardz.Cell._0.dzScale.Value = .1
-vardz.Cell._1.dzScale.Value = .1
-vardz.Cell._2.dzScale.Value = .1
-vardz.Cell._3.dzScale.Value = .1
-vardz.Cell._4.dzScale.Value = .1
-vardz.Cell._5.dzScale.Value = .1
-vardz.Cell._6.dzScale.Value = .1
-vardz.Cell._7.dzScale.Value = .1
-vardz.Cell._8.dzScale.Value = .1
-vardz.Cell._9.dzScale.Value = .1
-vardz.Cell._10.dzScale.Value = .1
-vardz.Cell._11.dzScale.Value = .1
-vardz.Cell._12.dzScale.Value = .1
-vardz.Cell._13.dzScale.Value = .1
-
-vardz.run(working_directory=dir_name)
-
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-assert(np.allclose(base_case_pressure, test_case_pressure))
-
-dir_name = get_absolute_path('test_output/multi_column_3')
-mkdir(dir_name)
-
-vardz.ComputationalGrid.DZ = 0.1
-vardz.Geom.domain.Upper.Z = 1.4
-vardz.Cell._0.dzScale.Value = 10
-vardz.Cell._1.dzScale.Value = 10
-vardz.Cell._2.dzScale.Value = 10
-vardz.Cell._3.dzScale.Value = 10
-vardz.Cell._4.dzScale.Value = 10
-vardz.Cell._5.dzScale.Value = 10
-vardz.Cell._6.dzScale.Value = 10
-vardz.Cell._7.dzScale.Value = 10
-vardz.Cell._8.dzScale.Value = 10
-vardz.Cell._9.dzScale.Value = 10
-vardz.Cell._10.dzScale.Value = 10
-vardz.Cell._11.dzScale.Value = 10
-vardz.Cell._12.dzScale.Value = 10
-vardz.Cell._13.dzScale.Value = 10
-
-vardz.run(working_directory=dir_name)
-
-test_case_pressure = pf.read_pfb(f"{dir_name}/{pressure_file}")
-assert(np.allclose(base_case_pressure, test_case_pressure))
 
 

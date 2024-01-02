@@ -995,7 +995,6 @@ double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
     double *dz_mult_data = SubvectorData(dz_mult_subvector);
     Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
     if (intersection) {
-      amps_Printf("Found intersection\n");
       int nx = SubgridNX(intersection);
       int ny = SubgridNY(intersection);
       int nz = SubgridNZ(intersection);
@@ -1008,13 +1007,13 @@ double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
                    {
                      int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
                      //real space z will give us the cell center...not the cell bottom. So we correct for that
-
-                     double dz_mult = dz_mult_data[k];
-                     amps_Printf("dz mult is %d\n", dz_mult);
+                     double dz_mult = dz_mult_data[index];
                      volume += dz_mult * dx * dy * dz;
                    });
     }
   }
+  //I tried doing an mpi reduction to get total volume before returning and wells still did not work
+  // when they span multiple ranks
   return volume;
 }
 
