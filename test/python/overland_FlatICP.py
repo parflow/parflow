@@ -2,8 +2,10 @@
 #  This runs a simple flat box domain with an initial mound of water in the middle
 #---------------------------------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
 overland = Run("overland_FlatICP", __file__)
 
@@ -305,6 +307,10 @@ overland.Geom.icsource.ICPressure.Value = 0.1
 overland.Geom.icsource.ICPressure.RefGeom = 'domain'
 overland.Geom.icsource.ICPressure.RefPatch = 'z_upper'
 
+
+runcheck = 1
+correct_output_dir_name = get_absolute_path('../correct_output')
+
 #-----------------------------------------------------------------------------
 # original approach from K&M AWR 2006
 #-----------------------------------------------------------------------------
@@ -312,6 +318,32 @@ overland.Geom.icsource.ICPressure.RefPatch = 'z_upper'
 overland.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
 overland.Solver.Nonlinear.UseJacobian = False
 overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+
+run_name = 'FlatICP_Overland'
+overland.set_name(run_name)
+print(run_name)
+new_output_dir_name = get_absolute_path('test_output/' + run_name)
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
+if runcheck == 1:
+    passed = True
+    for i in range(11):
+        timestep = str(i).rjust(5, '0')
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Pressure for timestep {timestep}"):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Saturation for timestep {timestep}"):
+            passed = False
+            
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
+                
 
 #-----------------------------------------------------------------------------
 # New kinematic formulation - this should exactly match the original formulation
@@ -322,6 +354,33 @@ overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
 overland.Solver.Nonlinear.UseJacobian = False
 overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
 
+run_name = 'FlatICP_OverlandKin'
+overland.set_name(run_name)
+print(f"Running {run_name}")
+new_output_dir_name = get_absolute_path('test_output/' + run_name)
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
+if runcheck == 1:
+    passed = True
+    for i in range(11):
+        timestep = str(i).rjust(5, '0')
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Pressure for timestep {timestep}"):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Saturation for timestep {timestep}"):
+            passed = False
+            
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
+
+
+
 #-----------------------------------------------------------------------------
 # Diffusive formulation
 #-----------------------------------------------------------------------------
@@ -331,21 +390,85 @@ overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
 overland.Solver.Nonlinear.UseJacobian = False
 overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
 
+run_name = 'FlatICP_OverlandDif'
+overland.set_name(run_name)
+print(f"Running {run_name}")
+new_output_dir_name = get_absolute_path('test_output/' + run_name)
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
+if runcheck == 1:
+    passed = True
+    for i in range(11):
+        timestep = str(i).rjust(5, '0')
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Pressure for timestep {timestep}"):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Saturation for timestep {timestep}"):
+            passed = False
+            
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
+
+
 # run with analytical jacobian
 overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
 overland.Solver.Nonlinear.UseJacobian = True
 overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+
+print(f"Running {run_name} Jacobian True")
+new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}_jacobian_true")
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
+if runcheck == 1:
+    passed = True
+    for i in range(11):
+        timestep = str(i).rjust(5, '0')
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Pressure for timestep {timestep}"):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Saturation for timestep {timestep}"):
+            passed = False
+            
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
+
 
 # run with analytical jacobian and nonsymmetric preconditioner
 overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
 overland.Solver.Nonlinear.UseJacobian = True
 overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 
-#-----------------------------------------------------------------------------
-# Run and Unload the ParFlow output files
-#-----------------------------------------------------------------------------
-
-dir_name = get_absolute_path('test_output/o_ficp')
-mkdir(dir_name)
-overland.run(working_directory=dir_name)
-
+print(f"Running {run_name} Jacobian True Nonsymmetric Preconditioner")
+new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}_jacobian_true_nonsymmetric_preconditioner")
+mkdir(new_output_dir_name)
+overland.run(working_directory=new_output_dir_name)
+if runcheck == 1:
+    passed = True
+    for i in range(11):
+        timestep = str(i).rjust(5, '0')
+        filename = f"/{run_name}.out.press.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Pressure for timestep {timestep}"):
+            passed = False
+        filename = f"/{run_name}.out.satur.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in Saturation for timestep {timestep}"):
+            passed = False
+            
+    if passed:
+        print(f"{run_name} : PASSED")
+    else:
+        print(f"{run_name} : FAILED")
+        sys.exit(1)
