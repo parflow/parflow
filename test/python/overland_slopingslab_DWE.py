@@ -4,8 +4,10 @@
 # With diffusive BC options
 #---------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
 overland = Run("overland_slopingslab_DWE", __file__)
 
@@ -287,153 +289,157 @@ overland.Geom.domain.ICPressure.RefPatch = 'z_upper'
 #-----------------------------------------------------------------------------
 
 #set runcheck to 1 if you want to run the pass fail tests
-# runcheck = 1
-# source pftest.tcl
-# first = 1
+runcheck = 1
+first = 1
+correct_output_dir_name = get_absolute_path('../correct_output')
 
 ###############################
 # Looping over slab configurations
 ###############################
-# foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy negxnegy] {
-#   puts "$xslope $yslope $name"
+x_slopes = [0.01, -0.01]
+y_slopes = [0.01, -0.01]
+names = ['posxposy', 'negxnegy']
 
-#   #### Set the slopes
-#   pfset TopoSlopesX.Type "Constant"
-#   pfset TopoSlopesX.GeomNames "domain"
-#   pfset TopoSlopesX.Geom.domain.Value $xslope
-
-#   pfset TopoSlopesY.Type "Constant"
-#   pfset TopoSlopesY.GeomNames "domain"
-#   pfset TopoSlopesY.Geom.domain.Value $yslope
-
-#    #new BC
-#    pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
-#    #pfset Solver.Nonlinear.UseJacobian                       True
-#    #pfset Solver.Linear.Preconditioner.PCMatrixType         FullJacobian
-
-#    set runname Slab.$name.OverlandDif
-#    if $first==1 {
-#      puts $runname
-#      set first 0
-#    } else {
-#      puts "Running $runname OverlandDiffusive"
-#    }
-#    pfrun $runname
-#    pfundist $runname
-#    if $runcheck==1 {
-#      set passed 1
-#      foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#        if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#          set passed 0
-#        }
-#        if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#          set passed 0
-#        }
-#      }
-#      if $passed {
-#        puts "$runname : PASSED"
-#      } {
-#        puts "$runname : FAILED"
-#      }
-#    }
-
-# }
+for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
+    print(f"{x_slope} {y_slope} {name}")
+    overland.TopoSlopesX.Type  = "Constant"
+    overland.TopoSlopesX.GeomNames = "domain"
+    overland.TopoSlopesX.Geom.domain.Value = x_slope
+    
+    overland.TopoSlopesY.Type = "Constant"
+    overland.TopoSlopesY.GeomNames = "domain"
+    overland.TopoSlopesY.Geom.domain.Value = y_slope
+    
+    overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
+    
+    run_name = f"Slab.{name}.OverlandDif"
+    overland.set_name(run_name)
+    if first == 1:
+        print(overland.get_name())
+        first = 0
+    else:
+        print(f"Running {run_name} OverlandDiffusive")
+    new_output_dir_name = get_absolute_path('test_output/' + run_name)
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)
+                
 
 #set to 1 if you want to run the pass fail tests
-# runcheck = 1
-# source pftest.tcl
+runcheck = 1
 
 ###############################
 # Looping over slop configurations
 ###############################
-# foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy negxnegy] {
-#   puts "$xslope $yslope $name"
+x_slopes = [0.01, -0.01]
+y_slopes = [0.01, -0.01]
+names = ['posxposy', 'negxnegy']
 
-#   #### Set the slopes
-overland.TopoSlopesX.Type = "Constant"
-overland.TopoSlopesX.GeomNames = "domain"
-overland.TopoSlopesX.Geom.domain.Value = 0.01
+for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
+    print(f"{x_slope} {y_slope} {name}")
+    overland.TopoSlopesX.Type  = "Constant"
+    overland.TopoSlopesX.GeomNames = "domain"
+    overland.TopoSlopesX.Geom.domain.Value = x_slope
+    
+    overland.TopoSlopesY.Type = "Constant"
+    overland.TopoSlopesY.GeomNames = "domain"
+    overland.TopoSlopesY.Geom.domain.Value = y_slope
+    
+    overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
+    overland.Solver.Nonlinear.UseJacobian = True
+    
+    run_name = f"Slab.{name}.OverlandDif"
+    overland.set_name(run_name)
 
-overland.TopoSlopesY.Type = "Constant"
-overland.TopoSlopesY.GeomNames = "domain"
-overland.TopoSlopesY.Geom.domain.Value = 0.01
+    print(f"Running {run_name} OverlandDiffusive Jacobian True")
+    new_output_dir_name = get_absolute_path('test_output/' + run_name)
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)
+                
 
-#   #original approach from K&M AWR 2006
-overland.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
-overland.Solver.Nonlinear.UseJacobian = False
-overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
-
-#    set runname Slab.$name.OverlandDif
-#    puts "Running $runname OverlandDiffusive Jacobian True"
-#    pfrun $runname
-#    pfundist $runname
-#    if $runcheck==1 {
-#      set passed 1
-#      foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#        if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#          set passed 0
-#        }
-#        if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#          set passed 0
-#        }
-#      }
-#      if $passed {
-#        puts "$runname : PASSED"
-#      } {
-#        puts "$runname : FAILED"
-#      }
-#    }
-
-
-# }
 
 #set to 1 if you want to run the pass fail tests
-# runcheck = 1
-# source pftest.tcl
+runcheck = 1
+
 
 ###############################
 # Looping over slop configurations
 ###############################
-# foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy negxnegy] {
-#   puts "$xslope $yslope $name"
+x_slopes = [0.01, -0.01]
+y_slopes = [0.01, -0.01]
+names = ['posxposy', 'negxnegy']
 
-#   #### Set the slopes
-#   pfset TopoSlopesX.Type "Constant"
-#   pfset TopoSlopesX.GeomNames "domain"
-#   pfset TopoSlopesX.Geom.domain.Value $xslope
+for x_slope, y_slope, name in zip(x_slopes, y_slopes, names):
+    print(f"{x_slope} {y_slope} {name}")
+    overland.TopoSlopesX.Type  = "Constant"
+    overland.TopoSlopesX.GeomNames = "domain"
+    overland.TopoSlopesX.Geom.domain.Value = x_slope
+    
+    overland.TopoSlopesY.Type = "Constant"
+    overland.TopoSlopesY.GeomNames = "domain"
+    overland.TopoSlopesY.Geom.domain.Value = y_slope
+    
+    overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
+    overland.Solver.Nonlinear.UseJacobian = True
+    overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
+    
+    run_name = f"Slab.{name}.OverlandDif"
+    overland.set_name(run_name)
 
-#   pfset TopoSlopesY.Type "Constant"
-#   pfset TopoSlopesY.GeomNames "domain"
-#   pfset TopoSlopesY.Geom.domain.Value $yslope
-
-#    #new BC
-#    pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
-#    pfset Solver.Nonlinear.UseJacobian                       True
-#    pfset Solver.Linear.Preconditioner.PCMatrixType         FullJacobian
-
-#    set runname Slab.$name.OverlandDif
-#    puts "Running $runname OverlandDiffusive Jacobian True Nonsymmetric Preconditioner"
-#    pfrun $runname
-#    pfundist $runname
-#    if $runcheck==1 {
-#      set passed 1
-#      foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-#        if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-#          set passed 0
-#        }
-#        if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-#          set passed 0
-#        }
-#      }
-#      if $passed {
-#        puts "$runname : PASSED"
-#      } {
-#        puts "$runname : FAILED"
-#      }
-#    }
-
-# }
-
-dir_name = get_absolute_path('test_output/os_dwe')
-mkdir(dir_name)
-overland.run(working_directory=dir_name)
+    print(f"Running {run_name} OverlandDiffusive Jacobian True Nonsymmetric Preconditioner")
+    new_output_dir_name = get_absolute_path('test_output/' + run_name)
+    mkdir(new_output_dir_name)
+    overland.run(working_directory=new_output_dir_name)
+    if runcheck == 1:
+        passed = True
+        for i in range(11):
+            timestep = str(i).rjust(5, '0')
+            filename = f"/{run_name}.out.press.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Pressure for timestep {timestep}"):
+                passed = False
+            filename = f"/{run_name}.out.satur.{timestep}.pfb"
+            if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                f"Max difference in Saturation for timestep {timestep}"):
+                passed = False
+        
+        if passed:
+            print(f"{run_name} : PASSED")
+        else:
+            print(f"{run_name} : FAILED")
+            sys.exit(1)

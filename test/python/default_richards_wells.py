@@ -4,13 +4,14 @@
 #  3 nonlinear iterations.
 #-----------------------------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
-drich = Run("default_richards_wells", __file__)
-
+run_name = "default_richards_wells"
+drich = Run(run_name, __file__)
 #---------------------------------------------------------
-
 drich.FileVersion = 4
 
 drich.Process.Topology.P = 1
@@ -348,7 +349,34 @@ drich.Solver.Linear.Preconditioner = 'MGSemi'
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
+new_output_dir_name = get_absolute_path('test_output/' + run_name)
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+drich.run(working_directory=new_output_dir_name)
 
-dir_name = get_absolute_path('test_output/drich_w')
-mkdir(dir_name)
-drich.run(working_directory=dir_name)
+passed = True
+
+filename = f"/{run_name}.out.perm_x.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_x"):
+    passed = False
+filename = f"/{run_name}.out.perm_y.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_y"):
+    passed = False
+filename = f"/{run_name}.out.perm_z.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, "Max difference in perm_z"):
+    passed = False
+
+timesteps = ["00000", "00001", "00002", "00003", "00004", "00005"]
+for i in timesteps:
+    filename = f"/{run_name}.out.press.{i}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {i}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{i}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {i}"):
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
