@@ -3,19 +3,22 @@
 #  it is used as a test of active/inactive efficiency
 #------------------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import cp, mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
-small_domain = Run("small_domain", __file__)
+run_name = "small_domain"
+small_domain = Run(run_name, __file__)
 
 #---------------------------------------------------------
 # Copying solid file
 #---------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/small_domain')
-mkdir(dir_name)
+new_output_dir_name = get_absolute_path('test_output/small_domain')
+mkdir(new_output_dir_name)
 
-cp('$PF_SRC/test/input/small_domain.pfsol', dir_name)
+cp('$PF_SRC/test/input/crater2D.pfsol', new_output_dir_name)
 
 #---------------------------------------------------------
 # Setting size for domain
@@ -67,7 +70,7 @@ small_domain.GeomInput.Names = 'solidinput background'
 
 small_domain.GeomInput.solidinput.InputType = 'SolidFile'
 small_domain.GeomInput.solidinput.GeomNames = 'domain'
-small_domain.GeomInput.solidinput.FileName = 'small_domain.pfsol'
+small_domain.GeomInput.solidinput.FileName = 'crater2D.pfsol'
 
 small_domain.GeomInput.background.InputType = 'Box'
 small_domain.GeomInput.background.GeomName = 'background'
@@ -317,4 +320,29 @@ small_domain.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-small_domain.run(working_directory=dir_name)
+correct_output_dir_name = get_absolute_path('../correct_output')
+small_domain.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z", "porosity"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(5):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

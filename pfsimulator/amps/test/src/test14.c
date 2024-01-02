@@ -39,9 +39,7 @@
 
 char *string = "ATestString";
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   amps_Invoice invoice;
   amps_Invoice send_invoice;

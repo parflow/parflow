@@ -358,7 +358,7 @@ PFModule   *PhaseSourceNewPublicXtra()
 
   switch_name = GetString("ICPressure.Type");
 
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "ICPressure.Type");
 
   switch_name = GetString("ICPressure.GeomNames");
   public_xtra->regions = NA_NewNameArray(switch_name);
@@ -444,28 +444,16 @@ PFModule   *PhaseSourceNewPublicXtra()
         sprintf(key, "Geom.%s.ICPressure.RefGeom", region);
         switch_name = GetString(key);
 
-        dummy2->geom_indices[ir] = NA_NameToIndex(GlobalsGeomNames,
-                                                  switch_name);
-
-        if (dummy2->geom_indices[ir] < 0)
-        {
-          InputError("Error: invalid geometry name <%s> for key <%s>\n",
-                     switch_name, key);
-        }
+        dummy2->geom_indices[ir] = NA_NameToIndexExitOnError(GlobalsGeomNames,
+							     switch_name, key);
 
         sprintf(key, "Geom.%s.ICPressure.RefPatch", region);
         switch_name = GetString(key);
 
         dummy2->patch_indices[ir] =
-          NA_NameToIndex(GeomSolidPatches(
+          NA_NameToIndexExitOnError(GeomSolidPatches(
                                           GlobalsGeometries[dummy2->geom_indices[ir]]),
-                         switch_name);
-
-        if (dummy2->patch_indices[ir] < 0)
-        {
-          InputError("Error: invalid patch name <%s> for key <%s>\n",
-                     switch_name, key);
-        }
+				    switch_name, key);
       }
 
       (public_xtra->data) = (void*)dummy2;
@@ -487,9 +475,7 @@ PFModule   *PhaseSourceNewPublicXtra()
 
     default:
     {
-      InputError("Error: invalid type <%s> for key <%s>\n",
-                 switch_name, key);
-    }
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);    }
   }
 
   NA_FreeNameArray(type_na);

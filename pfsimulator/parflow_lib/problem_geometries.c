@@ -320,7 +320,7 @@ PFModule   *GeometriesNewPublicXtra()
   NameArray geom_input_na;
 
   char *geom_input_names;
-  char key[NA_MAX_KEY_LENGTH];
+  char key[IDB_MAX_KEY_LEN];
 
   char *intype_name;
 
@@ -359,14 +359,9 @@ PFModule   *GeometriesNewPublicXtra()
     sprintf(key, "GeomInput.%s.InputType",
             NA_IndexToName(geom_input_na, i));
     intype_name = GetString(key);
-
+    intype = NA_NameToIndexExitOnError(switch_na, intype_name, key);
+    
     num_new_solids = 0;
-
-    if ((intype = NA_NameToIndex(switch_na, intype_name)) < 0)
-    {
-      InputError("Error: Geometry input type <%s> is not invalid for key <%s>",
-                 intype_name, key);
-    }
 
     switch (intype)
     {

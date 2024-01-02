@@ -382,6 +382,8 @@ pfset Solver.WriteSiloPressure True
 pfset Solver.WriteSiloSaturation True
 pfset Solver.WriteSiloConcentration True
 
+pfset Solver.PrintVelocities True
+
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
@@ -428,6 +430,17 @@ foreach i "00000 00001 00002 00003 00004" {
     }
     if ![pftestFile $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
 	set passed 0
+    }
+    # use abs value test to prevent machine precision effects
+    set abs_value 1e-12
+    if ![pftestFileWithAbs $runname.out.velx.$i.pfb "Max difference in x-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
+    }
+    if ![pftestFileWithAbs $runname.out.vely.$i.pfb "Max difference in y-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
+    }
+    if ![pftestFileWithAbs $runname.out.velz.$i.pfb "Max difference in z-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
     }
 }
 

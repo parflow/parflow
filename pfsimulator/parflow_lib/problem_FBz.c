@@ -192,14 +192,8 @@ PFModule   *FBzNewPublicXtra()
   name = "Solver.Nonlinear.FlowBarrierZ";
   switch_na = NA_NewNameArray("False True");
   switch_name = GetStringDefault(name, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, name);
   NA_FreeNameArray(switch_na);
-
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
 
   public_xtra->FB_in_z = switch_value;
   if (public_xtra->FB_in_z == 1)
@@ -207,10 +201,8 @@ PFModule   *FBzNewPublicXtra()
     name = "FBz.Type";
     switch_na = NA_NewNameArray("PFBFile");
     switch_name = GetString(name);
-    public_xtra->type = NA_NameToIndex(switch_na, switch_name);
+    public_xtra->type = NA_NameToIndexExitOnError(switch_na, switch_name, name);
     NA_FreeNameArray(switch_na);
-
-
 
     // switch for FBz Type
     //  PFBFile = 0;
@@ -227,14 +219,11 @@ PFModule   *FBzNewPublicXtra()
 
         break;
       }
-
-
       default:
       {
-        InputError("Error: invalid type <%s> for key <%s>\n",
-                   switch_name, key);
+	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
-    }
+    }   
   }
 
   PFModulePublicXtra(this_module) = public_xtra;

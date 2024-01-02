@@ -840,7 +840,7 @@ PFModule   *SaturationNewPublicXtra()
   public_xtra = ctalloc(PublicXtra, 1);
 
   switch_name = GetString("Phase.Saturation.Type");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "Phase.Saturation.Type");
 
 
   switch_name = GetString("Phase.Saturation.GeomNames");
@@ -1299,6 +1299,7 @@ void  SaturationOutputStatic(
       alphas = (dummy1->alphas);
       ns = (dummy1->ns);
       s_ress = (dummy1->s_ress);
+      double* s_difs = (dummy1->s_difs);
       data_from_file = (dummy1->data_from_file);
 
       if (data_from_file == 0) /* Soil parameters given by region */
@@ -1338,10 +1339,13 @@ void  SaturationOutputStatic(
 	      double alpha = alphas[ir];
 	      double n = ns[ir];
 	      double s_res = s_ress[ir];
+	      double s_dif = s_difs[ir];
 	      
 	      pd_alpha_dat[ips] = alpha;  //BB
 	      pd_n_dat[ips] = n;  //BB
 	      pd_sres_dat[ips] = s_res;  //BB  // no ssat???
+	      // Storing s_dif in the stucture, convert back to s_sat for output
+	      pd_ssat_dat[ips] = s_dif + s_res;
 	      
 	    });
           }     /* End subgrid loop */

@@ -195,7 +195,7 @@ PFModule   *SpecStorageNewPublicXtra()
 
   switch_name = GetString("SpecificStorage.Type");
 
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "SpecificStorage.Type");
 
 
   switch ((public_xtra->type))
@@ -235,8 +235,7 @@ PFModule   *SpecStorageNewPublicXtra()
 
     default:
     {
-      InputError("Error: invalid type <%s> for key <%s>\n",
-                 switch_name, key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
 

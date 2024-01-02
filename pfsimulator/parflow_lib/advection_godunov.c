@@ -178,7 +178,7 @@ void     Godunov(
   double dt;
   int fstord;
   double cell_volume, field_sum, total_volume, cell_change,
-    well_stat, contaminant_stat;
+    well_stat;
   double well_value, input_c, volume, flux, scaled_flux, weight = 0;
   double avg_x, avg_y, avg_z, area_x, area_y, area_z, area_sum;
 
@@ -317,7 +317,6 @@ void     Godunov(
   lambda = ProblemContaminantDegradation(problem, concentration);
   decay_factor = exp(-1.0 * lambda * dt);
 
-  contaminant_stat = 0.0;
   if (lambda != 0.0)
   {
     flopest = 3 * nx_cells * ny_cells * nz_cells;
@@ -355,7 +354,6 @@ void     Godunov(
         cn[ci] = cn[ci] * decay_factor;
 
         cell_change = cn[ci] * ((decay_factor - 1.0) / decay_factor);
-        contaminant_stat += cell_change * cell_volume;
       });
     }
 

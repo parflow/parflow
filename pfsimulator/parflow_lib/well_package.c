@@ -894,7 +894,7 @@ PFModule  *WellPackageNewPublicXtra(
 
       sprintf(key, "Wells.%s.InputType", well_name);
       switch_name = GetString(key);
-      public_xtra->type[i] = NA_NameToIndex(inputtype_na, switch_name);
+      public_xtra->type[i] = NA_NameToIndexExitOnError(inputtype_na, switch_name, key);
 
       switch ((public_xtra->type[i]))
       {
@@ -907,22 +907,11 @@ PFModule  *WellPackageNewPublicXtra(
 
           sprintf(key, "Wells.%s.Action", well_name);
           switch_name = GetString(key);
-          dummy0->action = NA_NameToIndex(action_na, switch_name);
-          if (dummy0->action < 0)
-          {
-            InputError("Error: invalid action <%s> for key <%s>\n",
-                       switch_name, key);
-          }
+          dummy0->action = NA_NameToIndexExitOnError(action_na, switch_name, key);
 
           sprintf(key, "Wells.%s.Type", well_name);
           switch_name = GetString(key);
-          dummy0->mechanism = NA_NameToIndex(mechanism_na, switch_name);
-          if (dummy0->mechanism < 0)
-          {
-            InputError("Error: invalid type <%s> for key <%s>\n",
-                       switch_name, key);
-          }
-
+          dummy0->mechanism = NA_NameToIndexExitOnError(mechanism_na, switch_name, key);
 
           sprintf(key, "Wells.%s.X", well_name);
           dummy0->xlocation = GetDouble(key);
@@ -941,34 +930,18 @@ PFModule  *WellPackageNewPublicXtra(
           {
             sprintf(key, "Wells.%s.Method", well_name);
             switch_name = GetString(key);
-            (dummy0->method) = NA_NameToIndex(methodpress_na, switch_name);
-            if ((dummy0->method) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy0->method) = NA_NameToIndexExitOnError(methodpress_na, switch_name, key);
           }
           else if ((dummy0->mechanism) == FLUX_WELL)
           {
             sprintf(key, "Wells.%s.Method", well_name);
             switch_name = GetString(key);
-            (dummy0->method) = NA_NameToIndex(methodflux_na, switch_name);
-            if ((dummy0->method) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy0->method) = NA_NameToIndexExitOnError(methodflux_na, switch_name, key);
           }
 
           sprintf(key, "Wells.%s.Cycle", well_name);
           cycle_name = GetString(key);
-          global_cycle = NA_NameToIndex(GlobalsCycleNames, cycle_name);
-
-          if (global_cycle < 0)
-          {
-            InputError("Error: Cycle name <%s> does not exist for key <%s>\n",
-                       cycle_name, key);
-          }
+          global_cycle = NA_NameToIndexExitOnError(GlobalsCycleNames, cycle_name, key);
 
           dummy0->cycle_number = i;
 
@@ -1107,23 +1080,13 @@ PFModule  *WellPackageNewPublicXtra(
           sprintf(key, "Wells.%s.ExtractionType", well_name);
           switch_name = GetString(key);
           dummy1->mechanism_ext =
-            NA_NameToIndex(mechanism_na, switch_name);
+            NA_NameToIndexExitOnError(mechanism_na, switch_name, key);
 
-          if (dummy1->mechanism_ext < 0)
-          {
-            InputError("Error: invalid extraction type <%s> for key <%s>\n",
-                       switch_name, key);
-          }
 
           sprintf(key, "Wells.%s.InjectionType", well_name);
           switch_name = GetString(key);
           dummy1->mechanism_inj =
-            NA_NameToIndex(mechanism_na, switch_name);
-          if (dummy1->mechanism_inj < 0)
-          {
-            InputError("Error: invalid injection type <%s> for key <%s>\n",
-                       switch_name, key);
-          }
+            NA_NameToIndexExitOnError(mechanism_na, switch_name, key);
 
           sprintf(key, "Wells.%s.X", well_name);
           dummy1->xlocation = GetDouble(key);
@@ -1150,58 +1113,32 @@ PFModule  *WellPackageNewPublicXtra(
           {
             sprintf(key, "Wells.%s.ExtractionMethod", well_name);
             switch_name = GetString(key);
-            (dummy1->method_ext) = NA_NameToIndex(methodpress_na, switch_name);
-            if ((dummy1->method_ext) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy1->method_ext) = NA_NameToIndexExitOnError(methodpress_na, switch_name, key);
           }
           else if ((dummy1->mechanism_ext) == FLUX_WELL)
           {
             sprintf(key, "Wells.%s.ExtractionMethod", well_name);
             switch_name = GetString(key);
-            (dummy1->method_ext) = NA_NameToIndex(methodflux_na, switch_name);
-            if ((dummy1->method_ext) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy1->method_ext) = NA_NameToIndexExitOnError(methodflux_na, switch_name, key);
           }
 
           if ((dummy1->mechanism_inj) == PRESSURE_WELL)
           {
             sprintf(key, "Wells.%s.InjectionMethod", well_name);
             switch_name = GetString(key);
-            (dummy1->method_inj) = NA_NameToIndex(methodpress_na, switch_name);
-            if ((dummy1->method_inj) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy1->method_inj) = NA_NameToIndexExitOnError(methodpress_na, switch_name, key);
           }
           else if ((dummy1->mechanism_inj) == FLUX_WELL)
           {
             sprintf(key, "Wells.%s.InjectionMethod", well_name);
             switch_name = GetString(key);
-            (dummy1->method_inj) = NA_NameToIndex(methodflux_na, switch_name);
-            if ((dummy1->method_inj) < 0)
-            {
-              InputError("Error: invalid action <%s> for key <%s>\n",
-                         switch_name, key);
-            }
+            (dummy1->method_inj) = NA_NameToIndexExitOnError(methodflux_na, switch_name, key);
           }
 
           sprintf(key, "Wells.%s.Cycle", well_name);
           cycle_name = GetString(key);
 
-          global_cycle = NA_NameToIndex(GlobalsCycleNames, cycle_name);
-
-          if (global_cycle < 0)
-          {
-            InputError("Error: invalid cycle name <%s> for key <%s>\n",
-                       cycle_name, key);
-          }
+          global_cycle = NA_NameToIndexExitOnError(GlobalsCycleNames, cycle_name, key);
 
           dummy1->cycle_number = i;
 
@@ -1346,8 +1283,7 @@ PFModule  *WellPackageNewPublicXtra(
 
         default:
         {
-          InputError("Error: invalid type <%s> for key <%s>\n",
-                     switch_name, key);
+	  InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
         }
       }
     }

@@ -4,10 +4,13 @@
 #  3 nonlinear iterations.
 #------------------------------------------------------------------
 
+import sys
 from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.fs import mkdir, get_absolute_path, rm
+from parflow.tools.compare import pf_test_file
 
-smg = Run("smg", __file__)
+run_name = "smg"
+smg = Run(run_name, __file__)
 
 #------------------------------------------------------------------
 
@@ -338,6 +341,31 @@ smg.Solver.Linear.Preconditioner = 'SMG'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/smg')
-mkdir(dir_name)
-smg.run(working_directory=dir_name)
+new_output_dir_name = get_absolute_path('test_output/smg')
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+smg.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(6):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+rm(new_output_dir_name)
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

@@ -27,6 +27,7 @@
  **********************************************************************EHEADER*/
 #include "toposlopes.h"
 #include <math.h>
+#include <stdlib.h>
 
 
 /*-----------------------------------------------------------------------
@@ -1379,7 +1380,7 @@ int ComputeTestParent(
   int test = -999;
 
   // Make sure [i,j] and [ii,jj] are adjacent
-  if ((fabs(i - ii) + fabs(j - jj)) == 1.0)
+  if ((abs(i - ii) + abs(j - jj)) == 1.0)
   {
     if (*DataboxCoeff(dem, ii, jj, 0) == -9999.0)
     {
@@ -1723,7 +1724,7 @@ void ComputeFillFlats(
           for (ii = i - 1; ii <= i + 1; ii++)
           {
             // make sure [i,j] and [ii,jj] are adjacent
-            if ((fabs(i - ii) + fabs(j - jj)) == 1.0)
+            if ((abs(i - ii) + abs(j - jj)) == 1.0)
             {
               // skip off-grid cells
               if ((ii < 0) || (jj < 0) || (ii >= nx) || (jj >= ny))
@@ -3561,7 +3562,7 @@ int ComputeTestParentD8(
   }
 
   // not neighbors
-  else if ((fabs(i - ii) > 1.0) || (fabs(j - jj) > 1.0))
+  else if ((abs(i - ii) > 1.0) || (abs(j - jj) > 1.0))
   {
     test = 0;
   }

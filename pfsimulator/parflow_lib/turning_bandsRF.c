@@ -513,12 +513,7 @@ PFModule   *TurningBandsRFNewPublicXtra(char *geom_name)
   log_normal_na = NA_NewNameArray("Normal Log NormalTruncated LogTruncated");
   sprintf(key, "Geom.%s.Perm.LogNormal", geom_name);
   tmp = GetStringDefault(key, "LogTruncated");
-  /* Convert the name to a numeric index */
-  if ((public_xtra->log_normal = NA_NameToIndex(log_normal_na, tmp)) < 0)
-  {
-    InputError("Error: Invalid LogNormal value for key <%s> was <%s>\n",
-               key, tmp);
-  }
+  public_xtra->log_normal = NA_NameToIndexExitOnError(log_normal_na, tmp, key);
   NA_FreeNameArray(log_normal_na);
 
   sprintf(key, "Geom.%s.Perm.Seed", geom_name);
@@ -527,12 +522,7 @@ PFModule   *TurningBandsRFNewPublicXtra(char *geom_name)
   strat_type_na = NA_NewNameArray("Horizontal Bottom Top");
   sprintf(key, "Geom.%s.Perm.StratType", geom_name);
   tmp = GetStringDefault(key, "Bottom");
-  /* Convert the name to a numeric index */
-  if ((public_xtra->strat_type = NA_NameToIndex(strat_type_na, tmp)) < 0)
-  {
-    InputError("Error: Invalid StratType for key <%s> was <%s>\n",
-               key, tmp);
-  }
+  public_xtra->strat_type = NA_NameToIndexExitOnError(strat_type_na, tmp, key);
   NA_FreeNameArray(strat_type_na);
 
   if (public_xtra->log_normal > 1)

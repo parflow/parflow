@@ -1,0 +1,40 @@
+
+%=============================================================================
+%=============================================================================
+
+\section{Running the Sample Problem}
+\label{Running the Sample Problem}
+
+Here, we assume that \parflow{} is already built.  The following steps
+ will allow you to run a simple test problem supplied with the
+ distribution.
+\begin{enumerate}
+
+\item
+We first create a directory in which to run the problem,
+then copy into it some supplied default input files.
+So, do the following anywhere in your \file{\$HOME} directory:
+\begin{display}\begin{verbatim}
+mkdir foo
+cd foo
+cp $PARFLOW_DIR/examples/default_single.tcl .
+chmod 640 *
+\end{verbatim}\end{display}
+We used the directory name \file{foo} above;
+you may use any name you wish\footnote{We use \emph{foo} and \emph{bar} 
+just as placeholders for whatever directory you wish you use, 
+see also http://en.wikipedia.org/wiki/Foobar}.
+The last line changes the permissions of the files so that
+you may write to them.
+
+\item
+Run \parflow{} using the pftcl file as a TCL script
+\begin{display}\begin{verbatim}
+tclsh default_single.tcl
+\end{verbatim}\end{display}
+
+\end{enumerate}
+You have now successfully run a simple \parflow{} problem.
+For more information on running \parflow{},
+see \S~\ref{Running ParFlow}.
+

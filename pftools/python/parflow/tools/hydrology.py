@@ -4,9 +4,65 @@ Helper functions to calculate standard hydrology measures
 """
 
 import numpy as np
+import parflow.tools.io
 
+# -----------------------------------------------------------------------------                        
 
-# -----------------------------------------------------------------------------
+def compute_hydraulic_head(pressure, z_0, dz):
+    """
+    Compute hydraulic head from a 3D pressure ndarray considering elevation.
+    
+    This function uses the formula hh = hp + hz, where hh is the hydraulic head,
+    hp the pressure head, and hz the elevation head.
+
+    Args:
+        pressure (numpy.ndarray): 3D array of pressure values.
+        z_0 (float): Elevation of the top layer.
+        dz (float): Distance between z-layers.
+
+    Returns:
+        numpy.ndarray: 3D array of hydraulic head values.
+    """
+    num_layers = pressure.shape[0]
+    elevation = z_0 + np.arange(num_layers) * dz + dz / 2
+    hydraulic_head = pressure + elevation[:, np.newaxis, np.newaxis]
+    return hydraulic_head
+    
+
+def compute_water_table_depth(saturation, top, dz):
+    """Computes the water table depth as the first cell with a saturation=1 starting from top.   
+
+    Depth is depth below the top surface. Negative values indicate the water table was not found, 
+    either below domain or the column at (i,j) is outside of domain.
+    
+    Args:
+        saturation: ndarray of shape (nz, nx, ny)
+        top: ndarray of shape (1, nx, ny)
+        dz: distance between grid points in the z direction
+    Returns:
+        A new ndarray water_table_depth of shape (1, nx, ny) with depth values at each (i,j) location.
+    """
+    nz, nx, ny = saturation.shape
+    water_table_depth = np.ndarray((1, nx, ny))
+    for j in range(ny):
+        for i in range(nx):
+            top_k = top[0, i, j]
+            if top_k < 0:
+                # Inactive column so set to bogus value
+                water_table_depth[0, i, j] = -9999999.0
+            elif top_k < nz:
+                # Loop down until we find saturation >= 1
+                k = top_k
+                while k >= 0 and saturation[k, i, j] < 1:
+                    k -= 1
+
+                # Make sure water table was found in the column, set to bogus value if not
+                if k >= 0:
+                    water_table_depth[0, i, j] = (top_k - k) * dz
+                else:
+                    water_table_depth[0, i, j] = -9999999.0
+            else:
+                print(f"Error: Index in top (k={top_k}) is outside of domain (nz={nz})")
 
 
 def calculate_water_table_depth(pressure, saturation, dz):
@@ -192,9 +248,14 @@ def _overland_flow(pressure_top, slopex, slopey, mannings, dx, dy):
 # -----------------------------------------------------------------------------
 
 def _overland_flow_kinematic(mask, pressure_top, slopex, slopey, mannings, dx, dy, epsilon):
+    ##### --- ######
+    #     qx       #
+    ##### --- ######
+
     # We will be tweaking the slope values for this algorithm, so we make a copy
-    slopex = slopex.copy()
-    slopey = slopey.copy()
+    slopex = np.copy(slopex)
+    slopey = np.copy(slopey)
+    mannings = np.copy(mannings)
 
     # We're only interested in the surface mask, as an ny-by-nx array
     mask = mask[-1, ...]
@@ -203,46 +264,65 @@ def _overland_flow_kinematic(mask, pressure_top, slopex, slopey, mannings, dx, d
     #  -------
     # | 0 | 1 |
     #  -------
-    # and copy the slopex values from the '1' cells to the corresponding '0' cells
+    # and copy the slopex, slopey and mannings values from the '1' cells to the corresponding '0' cells
     _x, _y = np.where(np.diff(mask, axis=1, append=0) == 1)
     slopex[(_x, _y)] = slopex[(_x, _y + 1)]
+    slopey[(_x, _y)] = slopey[(_x, _y + 1)] 
+    mannings[(_x, _y)] = mannings[(_x, _y + 1)] 
+    
+    slope = np.maximum(epsilon, np.hypot(slopex, slopey))
+    
+    # Upwind pressure - this is for the north and east face of all cells
+    # The slopes are calculated across these boundaries so the upper x boundaries are included in these
+    # calculations. The lower x boundaries are added further down as q_x0
+    pressure_top_padded = np.pad(pressure_top[:, 1:], ((0, 0,), (0, 1)))  # pad right
+    pupwindx = np.maximum(0, np.sign(slopex) * pressure_top_padded) + np.maximum(0, -np.sign(slopex) * pressure_top)
+    
+    flux_factor = np.sqrt(slope) * mannings
+    
+    # Flux across the x directions
+    q_x = -slopex / flux_factor * pupwindx ** (5 / 3) * dy
+    
+    # Fix the lower x boundary
+    # Use the slopes of the first column
+    q_x0 = -slopex[:, 0] / flux_factor[:, 0] * np.maximum(0, np.sign(slopex[:, 0]) * pressure_top[:, 0]) ** (5 / 3) * dy
+    qeast = np.hstack([q_x0[:, np.newaxis], q_x])
+
+
+    ##### --- ######
+    #   qy   #
+    ##### --- ######
 
     # Find all patterns of the form
     #  ---
     # | 0 |
     # | 1 |
     #  ---
-    # and copy the slopey values from the '1' cells to the corresponding '0' cells
     _x, _y = np.where(np.diff(mask, axis=0, append=0) == 1)
     slopey[(_x, _y)] = slopey[(_x + 1, _y)]
-
+    slopex[(_x, _y)] = slopex[(_x + 1, _y)]
+    mannings[(_x, _y)] = mannings[(_x + 1, _y)]
+    
     slope = np.maximum(epsilon, np.hypot(slopex, slopey))
+    
 
     # Upwind pressure - this is for the north and east face of all cells
-    # The slopes are calculated across these boundaries so the upper x/y boundaries are included in these
-    # calculations. The lower x/y boundaries are added further down as q_x0/q_y0
-    pressure_top_padded = np.pad(pressure_top[:, 1:], ((0, 0,), (0, 1)))  # pad right
-    pupwindx = np.maximum(0, np.sign(slopex) * pressure_top_padded) + np.maximum(0, -np.sign(slopex) * pressure_top)
+    # The slopes are calculated across these boundaries so the upper y boundaries are included in these
+    # calculations. The lower y boundaries are added further down as q_y0
     pressure_top_padded = np.pad(pressure_top[1:, :], ((0, 1,), (0, 0)))  # pad bottom
     pupwindy = np.maximum(0, np.sign(slopey) * pressure_top_padded) + np.maximum(0, -np.sign(slopey) * pressure_top)
 
     flux_factor = np.sqrt(slope) * mannings
-    # Flux across the x/y directions
-    q_x = -slopex / flux_factor * pupwindx ** (5 / 3) * dy
-    q_y = -slopey / flux_factor * pupwindy ** (5 / 3) * dx
 
-    # Fix the lower x boundary
-    # Use the slopes of the first column
-    q_x0 = -slopex[:, 0] / flux_factor[:, 0] * np.maximum(0, np.sign(slopex[:, 0]) * pressure_top[:, 0]) ** (5 / 3) * dy
-    qeast = np.hstack([q_x0[:, np.newaxis], q_x])
+    # Flux across the y direction
+    q_y = -slopey / flux_factor * pupwindy ** (5 / 3) * dx
 
     # Fix the lower y boundary
     # Use the slopes of the first row
     q_y0 = -slopey[0, :] / flux_factor[0, :] * np.maximum(0, np.sign(slopey[0, :]) * pressure_top[0, :]) ** (5 / 3) * dx
     qnorth = np.vstack([q_y0, q_y])
-
+    
     return qeast, qnorth
-
 
 # -----------------------------------------------------------------------------
 
@@ -375,7 +455,7 @@ def calculate_overland_flow(pressure, slopex, slopey, mannings, dx, dy, flow_met
         This is set using the Solver.OverlandKinematic.Epsilon key in Parflow.
     :param mask: A nz-by-ny-by-nx ndarray of mask values (bottom layer to top layer)
         If None, assumed to be an nz-by-ny-by-nx ndarray of 1s.
-    :return: A ny-by-nx ndarray of overland flow values
+    :return: A float value representing the total overland flow over the domain.
     """
     qeast, qnorth = calculate_overland_fluxes(pressure, slopex, slopey, mannings, dx, dy, flow_method=flow_method,
                                               epsilon=epsilon, mask=mask)
@@ -385,10 +465,9 @@ def calculate_overland_flow(pressure, slopex, slopey, mannings, dx, dy, flow_met
         surface_mask = mask[-1, ...]  # shape ny, nx
     else:
         surface_mask = np.ones_like(slopex)  # shape ny, nx
-
+    
     # Important to typecast mask to float to avoid values wrapping around when performing a np.diff
     surface_mask = surface_mask.astype('float')
-
     # Find edge pixels for our surface mask along each face - N/S/W/E
     # All of these have shape (ny, nx) and values as 0/1
 

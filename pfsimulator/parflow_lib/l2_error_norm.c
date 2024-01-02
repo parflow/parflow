@@ -302,8 +302,10 @@ PFModule  *L2ErrorNormNewPublicXtra()
 
   public_xtra = ctalloc(PublicXtra, 1);
 
-  switch_name = GetString("KnownSolution");
-  public_xtra->solution_type = NA_NameToIndex(switch_na, switch_name);
+  sprintf(key, "KnownSolution");
+
+  switch_name = GetString(key);
+  public_xtra->solution_type = NA_NameToIndexExitOnError(switch_na, switch_name, key);
 
   switch ((public_xtra->solution_type))
   {
@@ -355,8 +357,7 @@ PFModule  *L2ErrorNormNewPublicXtra()
 
     default:
     {
-      InputError("Error: invalid solution type <%s> for key <%s>\n",
-                 switch_name, key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       break;
     }
   }    /* End switch statement */

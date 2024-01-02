@@ -3,10 +3,16 @@
 # with different timesteps and reuse values set to match.   E.G. 1s = reuse 1, 0.1s = reuse 10.
 #-----------------------------------------------------------------------------
 
+import sys
+import os
+import math
 from parflow import Run
-from parflow.tools.fs import cp, mkdir, get_absolute_path
+from parflow.tools.fs import cp, mkdir, get_absolute_path, rm
+from parflow.tools.io import read_pfb
 
-clm = Run("clm_reuse", __file__)
+run_name = "reuse"
+
+clm = Run(run_name, __file__)
 
 #-----------------------------------------------------------------------------
 # Copying input files
@@ -29,6 +35,9 @@ stopt = 100
 
 # Reuse values to run with
 reuseValues = [1,4]
+
+# This was set for reuse = 4 test; other reuse values will fail
+relativeErrorTolerance = 0.2
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -352,10 +361,81 @@ clm.Geom.domain.ICPressure.Value = -1.0
 clm.Geom.domain.ICPressure.RefGeom = 'domain'
 clm.Geom.domain.ICPressure.RefPatch = 'z_upper'
 
-for reuseCount in reuseValues:
-  new_name = f'clm_ts_{reuseCount}'
-  new_name = clm.clone(f'{new_name}')
-  new_name.Solver.CLM.ReuseCount = reuseCount
-  new_name.TimeStep.Value = (1.0 / reuseCount)
 
-  new_name.run(working_directory=dir_name)
+# Run each of the cases
+for reuseCount in reuseValues:
+    clm.Solver.CLM.ReuseCount = reuseCount
+    clm.TimeStep.Value = 1.0 / reuseCount
+
+    new_dir_name = "clm-reuse-ts-{:.2f}".format(clm.TimeStep.Value)
+    print(f"Running: {new_dir_name}")
+
+    # Run and Unload the ParFlow output files
+    clm.run(working_directory=dir_name)
+
+    for k in range(1, stopt + 1):
+        outfile1 = "{}.out.clm_output.{:05d}.C.pfb".format(run_name, k)
+
+    rm(get_absolute_path(new_dir_name))
+    mkdir(new_dir_name)
+    new_dir_path = get_absolute_path(new_dir_name)
+    os.system("bash -c 'mv {}* {}'".format(os.path.join(dir_name, run_name), new_dir_path))
+    file_path = os.path.join(dir_name, "CLM.out.clm.log")
+    os.system("mv {} {}".format(file_path, new_dir_path))
+    file_path = os.path.join(dir_name, "clm.rst.00000.0")
+    os.system("mv {} {}".format(file_path, new_dir_path))
+
+# Dictionary to store norm values for each reuseCount
+norm = {}
+file_path = {}
+ds = {}
+
+# Post process output
+with open("swe.out.csv", "w") as sweFile:
+    sweFile.write("Time")
+    for reuseCount in reuseValues:
+        norm[reuseCount] = 0.0
+        timeStep = 1.0 / reuseCount
+        sweFile.write(",{:.10e}".format(timeStep))
+    sweFile.write("\n")
+
+    compareReuse = reuseValues[0]
+
+    for k in range(1, stopt + 1):
+        sweFile.write("{}".format(k))
+
+        for reuseCount in reuseValues:
+            timeStep = 1.0 / reuseCount
+            dirname1 = get_absolute_path("clm-reuse-ts-{:.2f}".format(timeStep))
+            file_path[reuseCount] = "{}/{}.out.clm_output.{:05d}.C.pfb".format(dirname1, run_name, k)
+            ds[reuseCount] = read_pfb(file_path[reuseCount], z_first=False)
+            
+        sweFile.write("{:d}".format(k))
+
+        for reuseCount in reuseValues:
+            if reuseCount == compareReuse:
+                norm[compareReuse] = norm.get(compareReuse) + ds[compareReuse][0, 0, 10] * ds[compareReuse][0, 0, 10]
+            else:
+                norm[reuseCount] = norm.get(reuseCount) \
+                                 + (ds[compareReuse][0, 0, 10] - ds[reuseCount][0, 0, 10]) * (ds[compareReuse][0, 0, 10] - ds[reuseCount][0, 0, 10])
+                
+        sweFile.write("\n")
+
+# Calculate the square root of the norms
+for reuseCount in reuseValues:
+    norm[reuseCount] = math.sqrt(norm[reuseCount])
+
+# Tests
+passed = True
+
+for reuseCount in reuseValues[1:]:
+    relerror = norm[reuseCount] / norm[compareReuse]
+    if relerror > relativeErrorTolerance:
+        print("FAILED: Relative error for reuse count = {} exceeds error tolerance ({} > {})".format(reuseCount, relerror, relativeErrorTolerance))
+        passed = False
+
+if passed:
+    print("clm-reuse: PASSED")
+else:
+    print("clm-reuse: FAILED")
+    sys.exit(1)
