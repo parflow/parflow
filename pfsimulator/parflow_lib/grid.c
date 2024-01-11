@@ -978,6 +978,17 @@ SubgridArray  *UnionSubgridArray(
   return new_sa;
 }
 
+/** @brief This will calculate the volume of a subgrid
+ *
+ * This function calculates the volume of a subgrid. This volume will be only the volume
+ * that lies on this rank. It also accounts for var-dz, which using the simple
+ * nx*dx*ny*dy*nz*dz does not
+ *
+ * @param subgrid The subgrid in question that we are calculating the volume of
+ * @param problem_data Expects the general problem data instance
+ *
+ * @return The subgrid volume
+ */
 //This will calculate the subgrid volume, but only for the portion that lives on this MPI rank
 double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
   double dx = SubgridDX(subgrid);

@@ -121,7 +121,7 @@ void         WellPackage(
   int ix, iy;
   int iz_lower, iz_upper;
   int nx, ny, nz;
-  double dx, dy, dz;
+  double dx, dy;
   int rx, ry, rz;
   int process;
   int well_action, action, mechanism, method;
@@ -212,10 +212,8 @@ void         WellPackage(
 
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
-          dz = SubgridDZ(new_subgrid);
 
           subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
-
 
           if ((dummy0->mechanism) == PRESSURE_WELL)
           {
