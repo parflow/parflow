@@ -262,6 +262,13 @@ int  realSpaceZSizeOfTempData()
   return 0;
 }
 
+/** @brief This will calculate index space z given a z in real space
+ *
+ * @param real_space_z The real space z
+ * @param problem_data Expects the general problem data instance
+ *
+ * @return The index space calculated
+ */
 //This function takes a real space z and calculates the index space z. It will always return a value
 //IF the real z lives on the real domain, even if it does not live on this rank
 int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data){
