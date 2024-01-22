@@ -80,6 +80,10 @@ Kitware, Inc
 IBG-3, Forschungszentrum Juelich,
 Juelich, Germany
 
+**George Artavanis**
+Princeton Unversity
+ga6@princeton.edu
+
 **Chen Yang**
 Princeton University
 chen_yang@princeton.edu
