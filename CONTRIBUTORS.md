@@ -79,3 +79,15 @@ Kitware, Inc
 **Jaro Hokkanen**
 IBG-3, Forschungszentrum Juelich,
 Juelich, Germany
+
+**George Artavanis**
+Princeton Unversity
+ga6@princeton.edu
+
+**Chen Yang**
+Princeton University
+chen_yang@princeton.edu
+
+**Benjamin West**
+University of Arizona
+benjaminwest@arizona.edu
