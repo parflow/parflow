@@ -1,10 +1,16 @@
 # this runs the Cape Cod site flow case for the Harvey and Garabedian bacterial
 # injection experiment from Maxwell, et al, 2007.
 
+import os, sys
 from parflow import Run
-from parflow.tools.fs import cp, chdir, mkdir, get_absolute_path
+from parflow.tools.fs import cp, chdir, mkdir, get_absolute_path, rm
+from parflow.tools.io import read_pfb, write_pfb, ParflowBinaryReader
+from parflow.tools.compare import pf_test_file
+from parflow.tools.hydrology import compute_hydraulic_head
 
-hflow = Run("harvey_flow_pgs", __file__)
+run_name = "harvey_flow_pgs.1"
+
+hflow = Run(run_name, __file__)
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -165,15 +171,15 @@ hflow.Geom.lower_aquifer.Perm.Seed = 1
 hflow.Geom.lower_aquifer.Perm.MaxNPts = 70
 hflow.Geom.lower_aquifer.Perm.MaxCpts = 20
 
-hflow.Geom.lower_aquifer.Perm.Type = "TurnBands"
-hflow.Geom.upper_aquifer.Perm.Type = "TurnBands"
+#hflow.Geom.lower_aquifer.Perm.Type = "TurnBands"
+#hflow.Geom.upper_aquifer.Perm.Type = "TurnBands"
 
 #-----------------------------------------------------------------------------
 # uncomment the lines below to run parallel gaussian instead
 # of parallel turning bands
 
-# hflow.Geom.lower_aquifer.Perm.Type = 'ParGauss'
-# hflow.Geom.upper_aquifer.Perm.Type = 'ParGauss'
+hflow.Geom.lower_aquifer.Perm.Type = 'ParGauss'
+hflow.Geom.upper_aquifer.Perm.Type = 'ParGauss'
 
 #pfset lower aqu and upper aq stats to pest/read in values
 #-----------------------------------------------------------------------------
@@ -313,7 +319,7 @@ hflow.Patch.top.BCPressure.alltime.Value = 0.0
 # need keys for them
 
 hflow.TopoSlopesX.Type = 'Constant'
-hflow.TopoSlopesX.GeomNames = 'domain'
+hflow.TopoSlopesX.GeomNames = ''
 hflow.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -321,7 +327,7 @@ hflow.TopoSlopesX.Geom.domain.Value = 0.0
 #---------------------------------------------------------
 
 hflow.TopoSlopesY.Type = 'Constant'
-hflow.TopoSlopesY.GeomNames = 'domain'
+hflow.TopoSlopesY.GeomNames = ''
 hflow.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
@@ -331,7 +337,7 @@ hflow.TopoSlopesY.Geom.domain.Value = 0.0
 # need a key for them
 
 hflow.Mannings.Type = 'Constant'
-hflow.Mannings.GeomNames = 'domain'
+hflow.Mannings.GeomNames = ''
 hflow.Mannings.Geom.domain.Value = 0.
 
 #-----------------------------------------------------------------------------
@@ -354,6 +360,33 @@ hflow.Solver.Drop = 1E-15
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/hflow_p')
+hflow.Geom.upper_aquifer.Perm.Seed = 33335
+hflow.Geom.lower_aquifer.Perm.Seed = 31315
+dir_name = get_absolute_path('test_output/harvey_flow_pgs')
 mkdir(dir_name)
+correct_output_dir_name = get_absolute_path('../correct_output')
 hflow.run(working_directory=dir_name)
+
+press_path = os.path.join(dir_name, "harvey_flow_pgs.1.out.press.pfb")
+pressure = read_pfb(press_path)
+header = ParflowBinaryReader(press_path).read_header()
+z, dz = header['z'], header['dz']
+hhead = compute_hydraulic_head(pressure, z, dz)
+write_pfb(os.path.join(dir_name, "harvey_flow_pgs.1.head.pfb"), hhead)
+
+passed = True
+test_files = ["perm_x", "perm_y", "perm_z", "press", "porosity"]
+for test_file in test_files:
+    filename = f"{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(os.path.join(dir_name, filename), os.path.join(correct_output_dir_name, filename), f"Max difference in {test_file}"):
+        passed = False
+filename = "harvey_flow_pgs.1.head.pfb"
+if not pf_test_file(os.path.join(dir_name, filename), os.path.join(correct_output_dir_name, filename), f"Max difference in hydraulic head"):
+    passed = False
+
+rm(dir_name)
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

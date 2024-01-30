@@ -3,10 +3,13 @@
 # with simple flow domains, like a wall or a fault.
 #---------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
-rbp = Run("rbp", __file__)
+run_name = "richards_ptest"
+rbp = Run(run_name, __file__)
 
 #---------------------------------------------------------
 
@@ -285,6 +288,25 @@ rbp.Solver.Linear.Preconditioner = 'PFMG'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/rbp')
-mkdir(dir_name)
-rbp.run(working_directory=dir_name)
+correct_output_dir_name = get_absolute_path('../correct_output')
+new_output_dir_name = get_absolute_path('test_output/richards_ptest')
+mkdir(new_output_dir_name)
+
+rbp.run(working_directory=new_output_dir_name)
+passed = True
+for i in range(11):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                        f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                        f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+        
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

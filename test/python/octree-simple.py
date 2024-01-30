@@ -2,10 +2,13 @@
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
 
+import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
-octree = Run("octree_simple", __file__)
+run_name = "octree-simple"
+octree = Run(run_name, __file__)
 
 #---------------------------------------------------------
 
@@ -335,7 +338,29 @@ octree.Solver.Linear.Preconditioner = 'PFMG'
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
+new_output_dir_name = get_absolute_path('test_output/octree-simple')
+mkdir(new_output_dir_name)
+correct_output_dir_name = get_absolute_path('../correct_output')
+octree.run(working_directory=new_output_dir_name)
 
-dir_name = get_absolute_path('test_output/octree')
-mkdir(dir_name)
-octree.run(working_directory=dir_name)
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                        f"Max difference in {test_file}", sig_digits=4):
+        passed = False
+
+for i in range(6):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                        f"Max difference in Pressure for timestep {timestep}", sig_digits=4):
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
