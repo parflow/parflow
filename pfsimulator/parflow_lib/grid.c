@@ -978,7 +978,7 @@ SubgridArray  *UnionSubgridArray(
   return new_sa;
 }
 
-/** @brief This will calculate the volume of a subgrid
+/** @brief This will calculate the volume of a subgrid that lies on this rank
  *
  * This function calculates the volume of a subgrid. This volume will be only the volume
  * that lies on this rank. It also accounts for var-dz, which using the simple

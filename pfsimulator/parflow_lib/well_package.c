@@ -209,7 +209,7 @@ void         WellPackage(
                                    nx, ny, nz,
                                    rx, ry, rz,
                                    process);
-
+          new_subgrid = IntersectSubgrids(new_subgrid)
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
 
