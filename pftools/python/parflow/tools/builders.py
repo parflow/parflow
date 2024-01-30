@@ -633,9 +633,9 @@ class TableToProperties(ABC):
         if name_registration:
             names_to_set = addon_keys
             for unit_name in valid_unit_names:
-                if unit_name.casefold() in (registered_name.casefold() for registered_name in self.name_registration):
+                if unit_name in (registered_name for registered_name in self.name_registration):
                     for prop_name in self.name_registration[unit_name]:
-                        if prop_name.casefold() not in (name_to_set.casefold() for name_to_set in names_to_set):
+                        if prop_name not in (name_to_set for name_to_set in names_to_set):
                             names_to_set[prop_name] = []
                         names_to_set[prop_name].append(unit_name)
             self.run.pfset(flat_map=names_to_set)

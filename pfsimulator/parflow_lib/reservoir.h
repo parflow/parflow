@@ -54,7 +54,10 @@ typedef struct {
     Subgrid       *secondary_intake_subgrid;
     Subgrid       *release_subgrid;
     double size;
-    MPI_Comm mpi_communicator;
+    #ifdef PARFLOW_HAVE_MPI
+      MPI_Comm mpi_communicator;
+    #endif
+
 } ReservoirDataPhysical;
 
 /*------------------------------------------------------------------

@@ -121,6 +121,14 @@ typedef struct {
  * ReservoirPackage
  *--------------------------------------------------------------------------*/
 
+/** @brief Checks whether a subgrid intersects with the current ranks subgrid
+ *
+ * Longer description of function
+ *
+ * @param subgrid the subgrid we are checking
+ * @param grid the problems grid
+ * @return True or False corresponding to whether the subgrid intersects
+ */
 bool subgrid_lives_on_this_rank(Subgrid* subgrid, Grid *grid){
   int subgrid_index;
   Subgrid* rank_subgrid, *tmp_subgrid;
@@ -222,8 +230,11 @@ void         ReservoirPackage(
       rx = 0;
       ry = 0;
       rz = 0;
-
+      #ifdef PARFLOW_HAVE_MPI
       current_mpi_rank = amps_Rank(amps_CommWorld);
+      #else
+      current_mpi_rank = 1;
+      #endif
 
       new_intake_subgrid = NewSubgrid(intake_ix, intake_iy, iz_lower,
                                       nx, ny, nz,
@@ -257,39 +268,44 @@ void         ReservoirPackage(
       dy = SubgridDY(new_release_subgrid);
       dz = SubgridDZ(new_release_subgrid);
       release_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
+
       if (subgrid_lives_on_this_rank(new_intake_subgrid, grid)) {
         intake_cell_rank = current_mpi_rank;
       }
-      amps_Invoice intake_cell_invoice = amps_NewInvoice("%i", &intake_cell_rank);
-      amps_AllReduce(amps_CommWorld, intake_cell_invoice, amps_Max);
-      amps_FreeInvoice(intake_cell_invoice);
+
       if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, grid)) {
         secondary_intake_cell_rank = current_mpi_rank;
       }
-      amps_Invoice secondary_intake_cell_invoice = amps_NewInvoice("%i", &secondary_intake_cell_rank);
-      amps_AllReduce(amps_CommWorld, secondary_intake_cell_invoice, amps_Max);
-      amps_FreeInvoice(secondary_intake_cell_invoice);
+
       if (subgrid_lives_on_this_rank(new_release_subgrid, grid)) {
         release_cell_rank = current_mpi_rank;
         release_subgrid_volume = GetSubgridVolume(new_release_subgrid, problem_data);
       }
-      amps_Invoice release_cell_invoice = amps_NewInvoice("%i", &release_cell_rank);
-      amps_AllReduce(amps_CommWorld, release_cell_invoice, amps_Max);
-      amps_FreeInvoice(release_cell_invoice);
+      //If we are multiprocessor we need to do some reductions to determine the correct ranks
+      // for the reservoirs
+      #ifdef PARFLOW_HAVE_MPI
+        amps_Invoice intake_cell_invoice = amps_NewInvoice("%i", &intake_cell_rank);
+        amps_AllReduce(amps_CommWorld, intake_cell_invoice, amps_Max);
+        amps_FreeInvoice(intake_cell_invoice);
 
-      part_of_reservoir_lives_on_this_rank =
-              (release_cell_rank==current_mpi_rank) ||
-              (intake_cell_rank==current_mpi_rank) ||
-              (secondary_intake_cell_rank==current_mpi_rank);
+        amps_Invoice secondary_intake_cell_invoice = amps_NewInvoice("%i", &secondary_intake_cell_rank);
+        amps_AllReduce(amps_CommWorld, secondary_intake_cell_invoice, amps_Max);
+        amps_FreeInvoice(secondary_intake_cell_invoice);
 
-      MPI_Comm new_reservoir_communicator;
-      split_color = part_of_reservoir_lives_on_this_rank ? 1 : MPI_UNDEFINED;
-      MPI_Comm_split(MPI_COMM_WORLD, split_color, current_mpi_rank, &new_reservoir_communicator);
+        amps_Invoice release_cell_invoice = amps_NewInvoice("%i", &release_cell_rank);
+        amps_AllReduce(amps_CommWorld, release_cell_invoice, amps_Max);
+        amps_FreeInvoice(release_cell_invoice);
+        part_of_reservoir_lives_on_this_rank =
+                (release_cell_rank==current_mpi_rank) ||
+                (intake_cell_rank==current_mpi_rank) ||
+                (secondary_intake_cell_rank==current_mpi_rank);
 
-
+        MPI_Comm new_reservoir_communicator;
+        split_color = part_of_reservoir_lives_on_this_rank ? 1 : MPI_UNDEFINED;
+        MPI_Comm_split(amps_CommWorld, split_color, current_mpi_rank, &new_reservoir_communicator);
+      #endif
 
       reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
-      amps_Printf("This processor succeeded");
       ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
       ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
       strcpy(ReservoirDataPhysicalName(reservoir_data_physical), (dummy0->name));
@@ -322,7 +338,9 @@ void         ReservoirPackage(
       ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
       ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
       ReservoirDataReservoirPhysical(reservoir_data, reservoir_index) = reservoir_data_physical;
-      reservoir_data_physical->mpi_communicator = new_reservoir_communicator;
+      #ifdef PARFLOW_HAVE_MPI
+        reservoir_data_physical->mpi_communicator = new_reservoir_communicator;
+      #endif
       /* Put in values for this reservoir */
       reservoir_index++;
     }

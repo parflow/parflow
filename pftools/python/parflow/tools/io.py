@@ -390,7 +390,7 @@ class ParflowBinaryReader:
         read_sg_info: bool=False
     ):
         self.filename = file
-        self.f = open(self.filename, 'rb+')
+        self.f = open(self.filename, 'rb')
         if not header:
             self.header = self.read_header()
         else:

@@ -71,7 +71,7 @@ void         PhaseSource(
 
   SubgridArray     *subgrids = GridSubgrids(grid);
 
-  Subgrid          *subgrid, *well_subgrid, *tmp_subgrid, *reservoir_intake_subgrid, *reservoir_release_subgrid;
+  Subgrid          *subgrid, *well_subgrid, *tmp_subgrid, *reservoir_release_subgrid;
   Subvector        *px_sub, *py_sub, *pz_sub, *ps_sub;
 
   double           *data, *px, *py, *pz;

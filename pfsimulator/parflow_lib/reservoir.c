@@ -139,9 +139,9 @@ void WriteReservoirs(
     //try to append to the file. This may not be the cleanest way to do it, and may not be necessary
     //given the amount of compute between writing the header and writing the first line, but I wanted
     //to guarantee (Comment by Ben West)
-    int HEADER_WRITTEN = 1;
+    int header_written = 1;
     if (write_header) {
-      HEADER_WRITTEN = 0;
+      header_written = 0;
       if (p==0) {
         sprintf(filename, "%s.%s", file_prefix, file_suffix);
         file = fopen(filename, "w");
@@ -153,21 +153,16 @@ void WriteReservoirs(
         fprintf(file, ",release_rate");
         fprintf(file, "\n");
         fclose(file);
-        HEADER_WRITTEN = 1;
+        header_written = 1;
       }
-      amps_Invoice intake_cell_invoice = amps_NewInvoice("%i", &HEADER_WRITTEN);
-      amps_AllReduce(amps_CommWorld, intake_cell_invoice, amps_Max);
-      amps_FreeInvoice(intake_cell_invoice);
+      MPI_Barrier(amps_CommWorld);
     }
-    if (HEADER_WRITTEN>0) {
+    if (header_written > 0) {
       for (reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
         reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
-
-
         if (p == ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical)) {
           sprintf(filename, "%s.%s", file_prefix, file_suffix);
           file = fopen(filename, "a");
-
           if (file == NULL) {
             amps_Printf("Error: can't open output file %s\n", filename);
             exit(1);

@@ -3142,13 +3142,18 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             }
           }
         }
-        if (ReservoirDataPhysicalMpiCommunicator(reservoir_data_physical) != MPI_COMM_NULL){
-          amps_Invoice invoice = amps_NewInvoice("%d", &flux_in);
-          amps_AllReduce(ReservoirDataPhysicalMpiCommunicator(reservoir_data_physical), invoice, amps_Add);
-          amps_FreeInvoice(invoice);
+        #ifdef PARFLOW_HAVE_MPI
+          if (ReservoirDataPhysicalMpiCommunicator(reservoir_data_physical) != MPI_COMM_NULL){
+            amps_Invoice invoice = amps_NewInvoice("%d", &flux_in);
+            amps_AllReduce(ReservoirDataPhysicalMpiCommunicator(reservoir_data_physical), invoice, amps_Add);
+            amps_FreeInvoice(invoice);
+            ReservoirDataPhysicalStorage(reservoir_data_physical) += flux_in;
+            ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) += flux_in;
+          }
+        #else
           ReservoirDataPhysicalStorage(reservoir_data_physical) += flux_in;
           ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) += flux_in;
-        }
+        #endif
         /* update pressure,  not sure if we need to do this but we might if pressures are reset along processor edges RMM */
       }
       handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
