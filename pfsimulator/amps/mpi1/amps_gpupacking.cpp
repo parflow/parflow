@@ -222,7 +222,6 @@ void kokkosMemCpyDeviceToDevice(char *dest, char *src, size_t size){
   Kokkos::deep_copy(dest_view, src_view);
 }
 
-
 /**
  * @brief Device-host memcopy
  *
@@ -240,7 +239,6 @@ void kokkosMemCpyDeviceToHost(char *dest, char *src, size_t size){
 #endif
   Kokkos::deep_copy(dest_view, src_view);
 }
-
 /**
  * @brief Host-device memcopy
  *
@@ -258,7 +256,6 @@ void kokkosMemCpyHostToDevice(char *dest, char *src, size_t size){
 #endif
   Kokkos::deep_copy(dest_view, src_view);
 }
-
 /**
  * @brief Host-host memcopy
  *
@@ -625,11 +622,10 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       return __LINE__;
     }
 #endif
-
     /* Run packing or unpacking kernel */
-    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;
+    using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{len_x, len_y, len_z}});
-
+    
     if(action == AMPS_PACK){
       Kokkos::parallel_for(mdpolicy_3d, KOKKOS_LAMBDA(int i, int j, int k)
       {
@@ -662,11 +658,10 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       });
       inv->flags &= ~AMPS_PACKED;
     }
-
     pos += size;  
     ptr = ptr->next;
   }
-
+  
   /* Check that the size is calculated right */
   // if(pos != amps_sizeof_invoice(amps_CommWorld, inv)){
     // printf("ERROR at %s:%d: The size does not match the invoice size\n", __FILE__, __LINE__);

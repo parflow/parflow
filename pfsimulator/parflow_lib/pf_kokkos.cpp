@@ -73,7 +73,7 @@ void kokkosInit(){
  * @brief Finalize Kokkos
  */
 void kokkosFinalize(){
-  if(Kokkos::is_initialized) Kokkos::finalize();
+  if(Kokkos::is_initialized && !Kokkos::is_finalized) Kokkos::finalize();
 }
 
 }

@@ -219,7 +219,7 @@ static const int FDIR_TABLE[6][3] = {
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;       \
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
                                                                                     \
@@ -260,7 +260,7 @@ static const int FDIR_TABLE[6][3] = {
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;       \
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
                                                                                     \
@@ -306,7 +306,7 @@ static const int FDIR_TABLE[6][3] = {
         loop_body;                                                                  \
       };                                                                            \
                                                                                     \
-    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;       \
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     Kokkos::parallel_for(mdpolicy_3d, lambda_body);                                 \
                                                                                     \
@@ -349,7 +349,7 @@ static const int FDIR_TABLE[6][3] = {
         lambda_body(i, j, k, lsum);                                                 \
       };                                                                            \
                                                                                     \
-    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;       \
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     if(std::is_same<traits::result_type, struct ReduceSumType<double>>::value)      \
@@ -411,7 +411,7 @@ static const int FDIR_TABLE[6][3] = {
         lambda_body(i, j, k, lsum);                                                 \
       };                                                                            \
                                                                                     \
-    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+    using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;       \
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                       \
     typedef function_traits<decltype(lambda_body)> traits;                          \
     if(std::is_same<traits::result_type, struct ReduceSumType<double>>::value)      \
@@ -490,7 +490,7 @@ static const int FDIR_TABLE[6][3] = {
             }                                                                       \
           };                                                                        \
                                                                                     \
-        using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+        using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;   \
         MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_nx, PV_ny, PV_nz}});          \
         Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
         Kokkos::fence();                                                            \
@@ -524,7 +524,7 @@ static const int FDIR_TABLE[6][3] = {
           }                                                                         \
         };                                                                          \
                                                                                     \
-      using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+      using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;     \
       MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});         \
       Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
       Kokkos::fence();                                                              \
@@ -596,7 +596,7 @@ static const int FDIR_TABLE[6][3] = {
               }                                                                     \
             };                                                                      \
                                                                                     \
-          using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+          using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >; \
           MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_nx, PV_ny, PV_nz}});        \
           Kokkos::parallel_for(mdpolicy_3d, lambda_body);                           \
           Kokkos::fence();                                                          \
@@ -637,7 +637,7 @@ static const int FDIR_TABLE[6][3] = {
             }                                                                       \
           };                                                                        \
                                                                                     \
-        using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+        using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;   \
         MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});       \
         Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
         Kokkos::fence();                                                            \
@@ -697,7 +697,7 @@ static const int FDIR_TABLE[6][3] = {
           };                                                                        \
         n_prev += nz * ny * nx;                                                     \
                                                                                     \
-        using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+        using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;   \
         MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                   \
         Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
         Kokkos::fence();                                                            \
@@ -809,7 +809,7 @@ static const int FDIR_TABLE[6][3] = {
             }                                                                       \
           };                                                                        \
                                                                                     \
-        using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+        using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;   \
         MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx_gpu, ny_gpu, nz_gpu}});       \
         Kokkos::parallel_for(mdpolicy_3d, lambda_body);                             \
         Kokkos::fence();                                                            \
@@ -867,7 +867,7 @@ static const int FDIR_TABLE[6][3] = {
           loop_body;                                                                \
         };                                                                          \
                                                                                     \
-      using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+      using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;     \
       MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{PV_diff_x, PV_diff_y, PV_diff_z}});\
       Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
       Kokkos::fence();                                                              \
@@ -923,7 +923,7 @@ static const int FDIR_TABLE[6][3] = {
           }                                                                         \
         };                                                                          \
                                                                                     \
-      using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;\
+      using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;     \
       MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{nx, ny, nz}});                     \
       Kokkos::parallel_for(mdpolicy_3d, lambda_body);                               \
       Kokkos::fence();                                                              \
