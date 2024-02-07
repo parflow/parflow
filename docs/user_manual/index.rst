@@ -10,7 +10,7 @@ Welcome to the ParFlow User's Manual
 
 **Reed M. Maxwell** [1]_, **Stefan J. Kollet** [2]_, **Laura E. Condon** [3]_, 
 **Steven G. Smith** [4]_, **Carol S. Woodward** [5]_, **Robert D. Falgout** [6]_, 
-**Ian M. Ferguson** [7]_, **Nicholas Engdahl** [8]_, **Jaro Hokkanen** [9]_, **Basile Hector** [10]_, **James Gilbert** [11]_, **Lindsay Bearup** [7]_, 
+**Ian M. Ferguson** [7]_, **Nicholas Engdahl** [8]_, **Jaro Hokkanen** [9]_, **George Artavanis** [1]_, **Benjamin West** [3]_, **Chen Yang** [1]_, **Basile Hector** [10]_, **James Gilbert** [11]_, **Lindsay Bearup** [7]_, 
 **Jennifer Jefferson** [12]_, **Chuck Baldwin**, **William J. Bosl** [13]_, 
 **Richard Hornung** [4]_, **Steven Ashby** [14]_, **Ketan B. Kulkarni** [15]_
 
