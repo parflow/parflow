@@ -264,7 +264,7 @@ flux_filename = "pressure_test.pfb"
 
 flux_array = np.ndarray((bcf.ComputationalGrid.NX, bcf.ComputationalGrid.NY, bcf.ComputationalGrid.NZ))
 
-write_pfb("test_output/bcf/" + flux_filename,
+write_pfb(new_output_dir_name + '/' + flux_filename,
           flux_array,
           bcf.ComputationalGrid.NX,
           bcf.ComputationalGrid.NY,

@@ -259,7 +259,7 @@ pressure_filename = "pressure_test.pfb"
 
 pressure_array = np.ndarray((bcp.ComputationalGrid.NX, bcp.ComputationalGrid.NY, bcp.ComputationalGrid.NZ))
 
-write_pfb("test_output/bcp/" + pressure_filename,
+write_pfb(new_output_dir_name + '/' +  pressure_filename,
           pressure_array,
           bcp.ComputationalGrid.NX,
           bcp.ComputationalGrid.NY,
