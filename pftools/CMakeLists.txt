@@ -66,6 +66,7 @@ install(TARGETS projecttin DESTINATION bin)
 # Mask utilities
 #-----------------------------------------------------------------------------
 add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp)
+target_compile_options(pfmask-to-pfsol PUBLIC -ffp-model=precise)
 target_include_directories(pfmask-to-pfsol PUBLIC third_party)
 target_link_libraries(pfmask-to-pfsol pftools)
 install(TARGETS pfmask-to-pfsol DESTINATION bin)
