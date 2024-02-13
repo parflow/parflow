@@ -160,7 +160,8 @@ void WriteReservoirs(
     if (header_written > 0) {
       for (reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
         reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
-        if (p == ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical)) {
+//        if (p == ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical)) {
+        if (p == 0) {
           sprintf(filename, "%s.%s", file_prefix, file_suffix);
           file = fopen(filename, "a");
           if (file == NULL) {
