@@ -198,7 +198,7 @@ def write_pfb(
             mm = np.memmap(
                 file,
                 dtype=np.float64,
-                mode='r+',
+                mode='r',
                 offset=off,
                 shape=tuple(shape),
                 order='F'
@@ -739,7 +739,7 @@ class ParflowBinaryReader:
         mm = np.memmap(
             self.f,
             dtype=np.float64,
-            mode='r+',
+            mode='r',
             offset=offset,
             shape=tuple(shape),
             order='F'
