@@ -347,18 +347,14 @@ void amps_gpu_free_bufs(){
 void amps_gpu_finalize(){
   amps_gpu_free_bufs();
   amps_gpu_destroy_streams();
-  if(Kokkos::is_initialized) Kokkos::finalize();
+  if(Kokkos::is_initialized() && !Kokkos::is_finalized()) Kokkos::finalize();
 }
 
 /**
  * @brief Initialize Kokkos if not initialized
  */
 void amps_kokkos_initialization(){
-  if(!Kokkos::is_initialized()){
-    Kokkos::InitArguments args;
-    args.ndevices = 1;
-    Kokkos::initialize(args);  
-  }
+  if(!Kokkos::is_initialized()) Kokkos::initialize();
 }
 
 /**
