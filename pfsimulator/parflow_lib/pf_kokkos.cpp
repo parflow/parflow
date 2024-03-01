@@ -64,16 +64,14 @@ void kokkosMemSet(char *ptr, size_t size){
  * @brief Initialize Kokkos
  */
 void kokkosInit(){
-  Kokkos::InitArguments args;
-  args.ndevices = 1;
-  Kokkos::initialize(args);    
+  if(!Kokkos::is_initialized()) Kokkos::initialize();
 }
 
 /**
  * @brief Finalize Kokkos
  */
 void kokkosFinalize(){
-  if(Kokkos::is_initialized) Kokkos::finalize();
+  if(Kokkos::is_initialized() && !Kokkos::is_finalized()) Kokkos::finalize();
 }
 
 }

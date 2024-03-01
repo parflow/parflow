@@ -194,7 +194,7 @@ jobs:
       if: matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/kokkos/kokkos/archive/refs/tags/3.3.01.tar.gz
+          URL=https://github.com/kokkos/kokkos/archive/refs/tags/4.2.01.tar.gz
           mkdir kokkos
           cd kokkos
           curl -L $URL | tar --strip-components=1 -xz
