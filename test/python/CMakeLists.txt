@@ -12,6 +12,10 @@ set(TESTS
   small_domain
   richards_hydrostatic_equilibrium
   indicator_field
+  bc_pressure_file
+  bc_flux_file
+  Dirichlet
+  LW_surface_press
 )
 
 if(${PARFLOW_HAVE_HYPRE})
