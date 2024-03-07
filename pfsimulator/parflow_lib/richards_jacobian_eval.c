@@ -1247,7 +1247,7 @@ void    RichardsJacobianEval(
                                case simple:
                                {
                                  double vol = dx * dy * dz;
-                                 int ip = SubvectorEltIndex(p_sub, i, j, k);
+                                int ip = SubvectorEltIndex(p_sub, i, j, k);
                                  if ((pp[ip]) > 0.0)
                                  {
                                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
@@ -1255,23 +1255,20 @@ void    RichardsJacobianEval(
                                }
                                break;
 
-                               case overland_flow:
+                               case overland_flow:   //SJK: Here I am adding only subsurface-surface, surface-subsurface interactions as per definition
                                {
-                                 if (overlandspinup == 1)
-                                 {
                                    double vol = dx * dy * dz;
                                    int ip = SubvectorEltIndex(p_sub, i, j, k);
 
-                                   if ((pp[ip]) >= 0.0)
+                                   if ((pp[ip]) > 0.0)
                                    {
-                                     cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
-//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
+                                     cp[im] += (vol / dz);                     //LEC
+                      //printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
                                    }
                                    else
                                    {
                                      cp[im] += 0.0;
                                    }
-                                 }
                                }
                                break;
                              }
@@ -1740,9 +1737,11 @@ void    RichardsJacobianEval(
                                ip = SubvectorEltIndex(p_sub, i, j, k);
                                im = SubmatrixEltIndex(J_sub, i, j, k);
 
+                               //SJK: I am revoming all subsurface contributions, because JC is only for surface-surface interactions as per definition
+                               //
                                /* First put contributions from subsurface diagonal onto diagonal of JC */
-                               cp_c[io] = cp[im];
-                               cp[im] = 0.0;         // update JB
+                               //cp_c[io] = cp[im];
+                               //cp[im] = 0.0;         // update JB
                                /* Now check off-diagonal nodes to see if any surface-surface connections exist */
                                /* West */
                                k1 = (int)top_dat[itop - 1];
@@ -1751,8 +1750,8 @@ void    RichardsJacobianEval(
                                {
                                  if (k1 == k)         /*west node is also surface node */
                                  {
-                                   wp_c[io] += wp[im];
-                                   wp[im] = 0.0;           // update JB
+                                //   wp_c[io] = wp[im];
+                                //   wp[im] = 0.0;           // update JB
                                  }
                                }
                                /* East */
@@ -1761,8 +1760,8 @@ void    RichardsJacobianEval(
                                {
                                  if (k1 == k)         /*east node is also surface node */
                                  {
-                                   ep_c[io] += ep[im];
-                                   ep[im] = 0.0;           //update JB
+                                //   ep_c[io] = ep[im];
+                                //   ep[im] = 0.0;           //update JB
                                  }
                                }
                                /* South */
@@ -1771,8 +1770,8 @@ void    RichardsJacobianEval(
                                {
                                  if (k1 == k)         /*south node is also surface node */
                                  {
-                                   sop_c[io] += sop[im];
-                                   sop[im] = 0.0;           //update JB
+                                //   sop_c[io] = sop[im];
+                                //   sop[im] = 0.0;           //update JB
                                  }
                                }
                                /* North */
@@ -1781,22 +1780,22 @@ void    RichardsJacobianEval(
                                {
                                  if (k1 == k)         /*north node is also surface node */
                                  {
-                                   np_c[io] += np[im];
-                                   np[im] = 0.0;           // Update JB
+                                //   np_c[io] = np[im];
+                                //   np[im] = 0.0;           // Update JB
                                  }
                                }
 
                                /* Now add overland contributions to JC */
                                if ((pp[ip]) > 0.0)
                                {
-                                 /*diagonal term */
-                                 cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                 /*diagonal term */ //SJK: Here I am removing the surface-subsurface, subsurface-surface interactions (vol/dz) because it's part of JB per definition
+                                 cp_c[io] += (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
                                }
                                else
                                {
                                  // Laura's version
-                                 cp_c[io] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //NBE
+                                 //cp_c[io] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //NBE
                                }
 
                                if (diffusive == 0)
@@ -1813,7 +1812,7 @@ void    RichardsJacobianEval(
                                  /*north term */
                                  np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
                                }
-                               else
+                               else 
                                {
                                  /*west term */
                                  wp_c[io] -= (vol / ffy) * dt * (kwns_der[io1]);
@@ -1827,6 +1826,7 @@ void    RichardsJacobianEval(
                                  /*north term */
                                  np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
                                }
+                               (void)im;
                              }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
