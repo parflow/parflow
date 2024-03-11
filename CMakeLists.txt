@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.14)
 
 project (PARFLOW LANGUAGES C Fortran CXX)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
 #-----------------------------------------------------------------------------
 # Set standard compiler flagsx
@@ -524,7 +524,7 @@ else(PARFLOW_ENABLE_PROFILING)
   set (PARFLOW_PROFILE_OPTS "")
 endif(PARFLOW_ENABLE_PROFILING)
 
-include_directories ("${CMAKE_SOURCE_DIR}/pfsimulator/parflow_lib")
+include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/pfsimulator/parflow_lib")
 
 include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/${PARFLOW_AMPS_LAYER}")
 include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/common")
@@ -574,6 +574,12 @@ if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
 endif ()
 
+# Optionally build the NUOPC cap
+option(PARFLOW_ENABLE_NUOPC "Enable building of the Parflow nuopc" "False")
+if ( ${PARFLOW_ENABLE_NUOPC} )
+  add_subdirectory (pfnuopc)
+endif ()
+
 #-----------------------------------------------------------------------------
 # Setup CTEST environment
 #-----------------------------------------------------------------------------
@@ -584,7 +590,7 @@ if (PARFLOW_ENABLE_LATEX)
   add_subdirectory(docs/manuals)
 endif()
 
-install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
+install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/config/ DESTINATION config)
 
 #-----------------------------------------------------------------------------
 # Doxygen

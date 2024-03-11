@@ -116,6 +116,7 @@ set (SRC_FILES_CONST advect.F
   well_package.c
   wells_lb.c
   wrf_parflow.c
+  cpl_parflow.c
   write_clm_netcdf.c
   write_parflow_binary.c
   write_parflow_netcdf.c
@@ -199,18 +200,18 @@ endif(${PARFLOW_HAVE_KOKKOS})
 
   if ( ${PARFLOW_HAVE_CUDA} )
     target_link_libraries(pfsimulator nvToolsExt)
-    target_include_directories(pfsimulator PUBLIC "../third_party/cub")
-    target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    target_include_directories(pfsimulator PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../third_party/cub>)
+    target_include_directories(pfsimulator PUBLIC $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>)
   endif ( ${PARFLOW_HAVE_CUDA} )
 
   if( ${PARFLOW_HAVE_KOKKOS} )
     target_link_libraries(pfsimulator Kokkos::kokkos)
-    target_include_directories(pfsimulator PUBLIC ${KOKKOS_INCLUDE})
+    target_include_directories(pfsimulator PUBLIC $<BUILD_INTERFACE:${KOKKOS_INCLUDE}>)
   endif( ${PARFLOW_HAVE_KOKKOS} )
 
   if( ${PARFLOW_HAVE_RMM} )
     target_link_libraries(pfsimulator rmm)
-    target_include_directories(pfsimulator PRIVATE ${RMM_INCLUDE})
+    target_include_directories(pfsimulator PRIVATE $<BUILD_INTERFACE:${RMM_INCLUDE}>)
     target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
   endif( ${PARFLOW_HAVE_RMM} )
 
@@ -254,31 +255,44 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
-target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
+target_include_directories(pfsimulator PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../third_party/cjson>)
 
 if (${PARFLOW_HAVE_MPI})
-  target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
+  target_include_directories (pfsimulator PUBLIC $<BUILD_INTERFACE:${MPI_C_INCLUDE_PATH}>)
 endif (${PARFLOW_HAVE_MPI})
 
-install (TARGETS pfsimulator DESTINATION lib)
+install (TARGETS pfsimulator EXPORT ParFlow DESTINATION lib)
+install (EXPORT ParFlow DESTINATION config)
+
+if(${PARFLOW_HAVE_CLM})
+  target_link_libraries (pfsimulator pfclm)
+endif(${PARFLOW_HAVE_CLM})
 
 if (${PARFLOW_HAVE_HYPRE})
-  target_include_directories (pfsimulator PUBLIC ${HYPRE_INCLUDE_DIR})
+  target_include_directories (pfsimulator PUBLIC $<BUILD_INTERFACE:${HYPRE_INCLUDE_DIR}>)
+  target_link_libraries (pfsimulator ${HYPRE_LIBRARIES})
 endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})
-  target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
+  target_include_directories (pfsimulator PUBLIC $<BUILD_INTERFACE:${MPI_C_INCLUDE_PATH}>)
+  target_link_libraries (pfsimulator ${MPI_LIBRARIES})
 endif (${PARFLOW_HAVE_MPI})
 
 if (${PARFLOW_HAVE_HDF5})
-  target_include_directories (pfsimulator PUBLIC "${HDF5_INCLUDE_DIRS}")
+  target_include_directories (pfsimulator PUBLIC $<BUILD_INTERFACE:${HDF5_INCLUDE_DIRS}>)
+  target_link_libraries (pfsimulator ${HDF5_LIBRARIES})
+  if (${PARFLOW_HAVE_NETCDF})
+    target_link_libraries (pfsimulator ${HDF5_HL_LIBRARIES})
+  endif (${PARFLOW_HAVE_NETCDF})
 endif (${PARFLOW_HAVE_HDF5})
 
 if (${PARFLOW_HAVE_SILO})
-  target_include_directories (pfsimulator PUBLIC "${SILO_INCLUDE_DIRS}")
+  target_include_directories (pfsimulator PUBLIC $<BUILD_INTERFACE:${SILO_INCLUDE_DIRS}>)
+  target_link_libraries (pfsimulator ${SILO_LIBRARIES})
 endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_include_directories (pfsimulator PUBLIC "${netCDF_INCLUDE_DIRS}")
-  target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
+  target_include_directories (pfsimulator PUBLIC $<BUILD_INTERFACE:${netCDF_INCLUDE_DIRS}>)
+  target_include_directories (pfsimulator PUBLIC $<BUILD_INTERFACE:${NETCDF_INCLUDE_DIRS}>)
+  target_link_libraries (pfsimulator ${NETCDF_LIBRARIES})
 endif (${PARFLOW_HAVE_NETCDF})

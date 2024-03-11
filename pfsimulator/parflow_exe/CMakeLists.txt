@@ -66,4 +66,4 @@ if ( DEFINED PARFLOW_LINKER_FLAGS)
    set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_LINKER_FLAGS})
 endif ( DEFINED PARFLOW_LINKER_FLAGS)
 
-install(TARGETS parflow DESTINATION bin)
+install(TARGETS parflow EXPORT ParFlow DESTINATION bin)

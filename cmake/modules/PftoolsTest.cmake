@@ -10,7 +10,7 @@
 #
 function (pf_add_filecompare_test testname cmd comparefile)
 
-  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} "-DPFCMD=${cmd}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunFileCompareTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} "-DPFCMD=${cmd}" -P ${PROJECT_SOURCE_DIR}/cmake/modules/RunFileCompareTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 endfunction()
 
@@ -39,7 +39,7 @@ function (pf_add_mask_test testname inputfile)
 
   list(APPEND files "${pfsolname}" "${vtkname}")
 
-  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} "-DPFCMD=${cmd}" "-DPFFILES=${files}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunFileCompareTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} "-DPFCMD=${cmd}" "-DPFFILES=${files}" -P ${PROJECT_SOURCE_DIR}/cmake/modules/RunFileCompareTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 endfunction()
 
@@ -69,7 +69,7 @@ function (pf_add_multi_mask_test testname inputfile)
   
   list(APPEND files "${pfsolname}" "${vtkname}")
 
-  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} "-DPFCMD=${cmd}" "-DPFFILES=${files}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunFileCompareTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} "-DPFCMD=${cmd}" "-DPFFILES=${files}" -P ${PROJECT_SOURCE_DIR}/cmake/modules/RunFileCompareTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 endfunction()
 

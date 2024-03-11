@@ -1,0 +1,68 @@
+################################################
+####  ESMX_Data <-> ParFlow Configuration  #####
+################################################
+
+ESMX:
+  App:
+    globalResourceControl:  true
+    logKindFlag:            ESMF_LOGKIND_Multi
+    logAppendFlag:          false
+    logFlush:               true
+    fieldDictionary:        ./fd.yaml
+    startTime:              2010-06-01T00:00:00
+    stopTime:               2010-06-01T03:00:00
+
+  Driver:
+    componentList:          [LND, GWR]
+    attributes:
+      Verbosity: low
+    runSequence: |
+      @3600
+        LND
+        LND -> GWR :remapMethod=bilinear
+        GWR
+        GWR -> LND :remapMethod=bilinear:srcMaskValues=0
+      @
+
+GWR:
+  model: ParFlow
+  petList:          [0-0]
+  attributes:
+    prep_filename: 'Little_Washita.py'
+    filename: 'LW.pfidb'
+    initialize_import: 'FLD_INIT_FILLV'
+    initialize_export: 'FLD_INIT_ZERO'
+    check_import: 'FLD_CHECK_NEXTT'
+    coord_type: 'GRD_COORD_CLMVEGTF'
+    coord_filename: 'drv_vegm.alluv.dat'
+    output_directory: './GWR_CAP_OUTPUT'
+
+LND:
+  model: ESMX_Data
+  petList:          [0]
+  attributes:
+    Verbosity: high
+  output:
+    write_final: true
+  geom:
+    minx: -98.426653
+    miny:  34.739932
+    maxx: -97.718663
+    maxy:  35.031552
+  importFields:
+    soil_moisture_fraction_layer_1:           {dim: 2, min: 0, max: 1}
+    soil_moisture_fraction_layer_2:           {dim: 2, min: 0, max: 1}
+    soil_moisture_fraction_layer_3:           {dim: 2, min: 0, max: 1}
+    soil_moisture_fraction_layer_4:           {dim: 2, min: 0, max: 1}
+    liquid_fraction_of_soil_moisture_layer_1: {dim: 2, min: 0, max: 1}
+    liquid_fraction_of_soil_moisture_layer_2: {dim: 2, min: 0, max: 1}
+    liquid_fraction_of_soil_moisture_layer_3: {dim: 2, min: 0, max: 1}
+    liquid_fraction_of_soil_moisture_layer_4: {dim: 2, min: 0, max: 1}
+    ground_water_storage:                     {dim: 2, min: 0, max: 999999}
+  exportFields:
+    precip_drip:              {dim: 2, val: 0.000024}
+    bare_soil_evaporation:    {dim: 2, val: 0.000012}
+    total_water_flux_layer_1: {dim: 2, val: -0.000024000009596}
+    total_water_flux_layer_2: {dim: 2, val: -0.000000000004798}
+    total_water_flux_layer_3: {dim: 2, val: -0.000000000004798}
+    total_water_flux_layer_4: {dim: 2, val: -0.000000000004798}
