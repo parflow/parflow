@@ -261,3 +261,65 @@ int  realSpaceZSizeOfTempData()
 {
   return 0;
 }
+
+/** @brief This will calculate index space z given a z in real space
+ *
+ * @param real_space_z The real space z
+ * @param problem_data Expects the general problem data instance
+ *
+ * @return The index space calculated
+ */
+//This function takes a real space z and calculates the index space z. It will always return a value
+//IF the real z lives on the real domain, even if it does not live on this rank
+int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data){
+  Grid           *grid = VectorGrid(problem_data->rsz);
+  SubgridArray   *subgrids = GridSubgrids(grid);
+  Subgrid        *subgrid;
+  int subgrid_index;
+  int index_space_z;
+  GrGeomSolid *gr_domain = problem_data->gr_domain;
+  bool found_index_space_z = false;
+  index_space_z = -1;
+  ForSubgridI(subgrid_index, subgrids) {
+    subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
+    Subvector  *real_space_zs_subvector = VectorSubvector(problem_data->rsz, subgrid_index);
+    double dz = SubgridDZ(subgrid);
+    int ix = SubgridIX(subgrid);
+    int iy = SubgridIY(subgrid);
+    int iz = SubgridIZ(subgrid);
+    int nx = 1;
+    int ny = 1;
+    int nz = SubgridNZ(subgrid);
+    int r = SubgridRZ(subgrid);
+    double* real_space_zs_data = SubvectorData(real_space_zs_subvector);
+    double* dz_mult_data = SubvectorData(VectorSubvector(problem_data->dz_mult, subgrid_index));
+    double cell_center, cell_height;
+    //I think I can set ix and iy to 0 because the dzscale does not vary in x or y
+    int i, j, k = 0;
+    double current_z;
+    //This loop goes up through the domain until the cell top is higher than the real space z provided
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                 {
+                  int index = SubvectorEltIndex(real_space_zs_subvector, i, j, k);
+
+                   //Real space z will give us the cell center not the cell bottom. So we correct for that
+                  cell_center = real_space_zs_data[index];
+                  cell_height = 0.5*dz_mult_data[index]* dz;
+                  current_z = (cell_center + 0.5 * cell_height) ;
+                  if (!found_index_space_z && (current_z > real_space_z))
+                  {
+                    // inside well, going up we have found index where well starts
+                    index_space_z = k;
+                    found_index_space_z = true;
+                  }
+                });
+  };
+  //Right now doing this reduction is needed to avoid seg faults later but if someone knows a
+  //good default value to return that might be possible. Tried with -1 and checking for that but
+  //ended up needing a reduction later anyways
+  amps_Invoice index_space_z_invoice = amps_NewInvoice("%i", &index_space_z);
+  amps_AllReduce(amps_CommWorld, index_space_z_invoice, amps_Max);
+  amps_FreeInvoice(index_space_z_invoice);
+  return index_space_z;
+}
+
