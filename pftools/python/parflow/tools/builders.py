@@ -1176,7 +1176,7 @@ class DomainBuilder:
 
         return self
 
-    def reservoir(self, name, Intake_X, Intake_Y,
+    def reservoir(self, name, Intake_X, Intake_Y,Has_Secondary_Intake_Cell,
                   Secondary_Intake_X, Secondary_Intake_Y,Release_X, 
                   Release_Y, Release_Rate, Max_Storage, Storage,
                   Min_Release_Storage
@@ -1189,19 +1189,22 @@ class DomainBuilder:
 
         self.run.Reservoirs.Names += [name]
         reservoir = self.run.Reservoirs[name]
-        reservoir.InputType = 'Vertical'
-        reservoir.Action = 'Extraction'
-        reservoir.Type = type
         reservoir.Intake_X = Intake_X
         reservoir.Intake_Y = Intake_Y
         reservoir.Secondary_Intake_X = Secondary_Intake_X
         reservoir.Secondary_Intake_Y = Secondary_Intake_Y
+        print(f"Has secondary intake cell is {Has_Secondary_Intake_Cell}")
+        if Has_Secondary_Intake_Cell == "True":
+            reservoir.Has_Secondary_Intake_Cell = True
+        elif Has_Secondary_Intake_Cell == "False":
+            reservoir.Has_Secondary_Intake_Cell = False
         reservoir.Release_X = Release_X
         reservoir.Release_Y = Release_Y
         reservoir.Release_Rate = Release_Rate
         reservoir.Max_Storage = Max_Storage
         reservoir.Storage = Storage
         reservoir.Min_Release_Storage = Min_Release_Storage
+        # print("we are here :)\n")
         return self
 
     def well(self, name, type, x, y, z_upper, z_lower,

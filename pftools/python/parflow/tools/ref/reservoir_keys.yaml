@@ -64,7 +64,7 @@ Secondary_Intake_Y:
   register: Reservoirs.Names
 
 Has_Secondary_Intake_Cell:
-  type: int
+  type: boolean
   alias:
     - Has_Secondary_Intake_Cell
   register: Reservoirs.Names

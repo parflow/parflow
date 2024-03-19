@@ -141,6 +141,69 @@ bool subgrid_lives_on_this_rank(Subgrid* subgrid, Grid *grid){
   return false;
 }
 
+/** @brief Sets the slops at the outlet faces of a cell to 0 to stop flow.
+ * Assumes an overland kinematic boundary condition
+ *
+ *
+ *
+ * @param i the x index of the cell in question
+ * @param j the y index of the cell in question
+ * @return Null, but modifies the problem datas x and y slopes
+ */
+void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* problem_data, Grid* grid){
+  Vector      *slope_x = ProblemDataTSlopeX(problem_data);
+  Vector      *slope_y = ProblemDataTSlopeY(problem_data);
+  Subvector   *slope_x_subvector ;
+  Subvector   *slope_y_subvector;
+  int index_slope_x;
+  int index_slope_y;
+  double *slope_x_ptr = SubvectorData(slope_x_subvector);;
+  double *slope_y_ptr = SubvectorData(slope_y_subvector);
+  int slope_i, slope_j;
+  int subgrid_index;
+  Subgrid *subgrid;
+  int subgrid_x_floor, subgrid_y_floor, subgrid_x_ceiling, subgrid_y_ceiling;
+  ForSubgridI(subgrid_index, GridSubgrids(grid)){
+    subgrid = GridSubgrid(grid, subgrid_index);
+    slope_x_subvector = VectorSubvector(slope_x, subgrid_index);
+    slope_y_subvector = VectorSubvector(slope_y, subgrid_index);
+    index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+    subgrid_x_floor = SubgridIX(subgrid);
+    subgrid_y_floor = SubgridIY(subgrid);
+    subgrid_x_ceiling = subgrid_x_floor + SubgridNX(subgrid) -1;
+    subgrid_y_ceiling = subgrid_y_floor + SubgridNY(subgrid) -1;
+
+    // Check all 4 faces, as long as they live on this subgrid. First the East face
+    if(i+1>=subgrid_x_floor && i+1<=subgrid_x_floor && j>=subgrid_y_floor && j<=subgrid_y_floor){
+      index_slope_x = SubvectorEltIndex(slope_x_subvector, i+1, j, 0);
+      if(slope_x_ptr[index_slope_x] > 0){
+        slope_x_ptr[index_slope_x] = 0;
+      }
+    }
+    // South face
+    if(i>=subgrid_x_floor && i<=subgrid_x_floor && j-1>=subgrid_y_floor && j-1<=subgrid_y_floor){
+      index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j-1, 0);
+      if(slope_y_ptr[index_slope_y] > 0){
+        slope_y_ptr[index_slope_y] = 0;
+      }
+    }
+    if(i>=subgrid_x_floor && i<=subgrid_x_floor && j>=subgrid_y_floor && j<=subgrid_y_floor){
+      index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+      if(slope_x_ptr[index_slope_x] < 0){
+        slope_x_ptr[index_slope_x] = 0;
+      }
+    }
+    // South face
+    if(i>=subgrid_x_floor && i<=subgrid_x_floor && j>=subgrid_y_floor && j<=subgrid_y_floor) {
+      index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+      if (slope_y_ptr[index_slope_y] < 0) {
+        slope_y_ptr[index_slope_y] = 0;
+      }
+    }
+
+  }
+}
+
 void         ReservoirPackage(
     ProblemData *problem_data)
 {
@@ -214,11 +277,8 @@ void         ReservoirPackage(
       release_iy = IndexSpaceY((dummy0->release_y_location), 0);
       Vector * index_of_domain_top = ProblemDataIndexOfDomainTop(problem_data);
 
-      intake_cell_rank = -1;
       secondary_intake_cell_rank = -1;
       release_cell_rank= -1;
-
-
 
       iz_lower = grid_nz - 1;
       iz_upper = grid_nz - 1;
@@ -304,6 +364,11 @@ void         ReservoirPackage(
         split_color = part_of_reservoir_lives_on_this_rank ? 1 : MPI_UNDEFINED;
         MPI_Comm_split(amps_CommWorld, split_color, current_mpi_rank, &new_reservoir_communicator);
       #endif
+//        edit the slopes to prevent stuff running through the reservoir
+      stop_outlet_flow_at_cell_overland_kinematic(intake_ix, intake_iy, problem_data, grid);
+      if (secondary_intake_cell_rank==current_mpi_rank){
+        stop_outlet_flow_at_cell_overland_kinematic(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
+      }
 
       reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
       ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
@@ -463,9 +528,9 @@ PFModule  *ReservoirPackageNewPublicXtra(
           dummy0->intake_y_location = GetDouble(key);
 
           sprintf(key, "Reservoirs.%s.Has_Secondary_Intake_Cell", reservoir_name);
-          switch_name = GetStringDefault(key, "False");
-          switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
-          dummy0->has_secondary_intake_cell = switch_value;
+//          switch_name = GetStringDefault(key, "False");
+//          switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+          dummy0->has_secondary_intake_cell = GetInt(key);
 
           if (dummy0->has_secondary_intake_cell){
               sprintf(key, "Reservoirs.%s.Secondary_Intake_X", reservoir_name);

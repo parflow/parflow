@@ -70,10 +70,10 @@ Reservoirs:
     Has_Secondary_Intake_Cell:
       # typos - vertical
       help: >
-        [Type: double] This key specifies the y location of the optional secondary intake cell
+        [Type: bool] This key specifies if the reservoir has a secondary intake cell
       default: False
       domains:
-        BoolDomain:
+        BoolValue:
 
     Min_Release_Storage:
       # typos - vertical
