@@ -139,9 +139,7 @@ void WriteReservoirs(
     //try to append to the file. This may not be the cleanest way to do it, and may not be necessary
     //given the amount of compute between writing the header and writing the first line, but I wanted
     //to guarantee (Comment by Ben West)
-    int header_written = 1;
     if (write_header) {
-      header_written = 0;
       if (p==0) {
         sprintf(filename, "%s.%s", file_prefix, file_suffix);
         file = fopen(filename, "w");
@@ -153,36 +151,33 @@ void WriteReservoirs(
         fprintf(file, ",release_rate");
         fprintf(file, "\n");
         fclose(file);
-        header_written = 1;
       }
       MPI_Barrier(amps_CommWorld);
     }
-    if (header_written > 0) {
-      for (reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
-        reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
-        if (p == ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical)) {
-//        if (p == 0) {
-          sprintf(filename, "%s.%s", file_prefix, file_suffix);
-          file = fopen(filename, "a");
-          if (file == NULL) {
-            amps_Printf("Error: can't open output file %s\n", filename);
-            exit(1);
-          }
-          //Now print the current values
-          fprintf(file, "%f", time);
-          reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
-          fprintf(file, ",%s", ReservoirDataPhysicalName(reservoir_data_physical));
-          fprintf(file, ",%f", ReservoirDataPhysicalStorage(reservoir_data_physical));
-          fprintf(file, ",%f", ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical));
-          fprintf(file, ",%f", ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical));
-          fprintf(file, ",%f", ReservoirDataPhysicalReleaseRate(reservoir_data_physical));
-
-          ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = 0;
-          ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = 0;
-          fprintf(file, "\n");
-          fclose(file);
+    for (reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
+      reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
+      if (p == 0) {
+        sprintf(filename, "%s.%s", file_prefix, file_suffix);
+        file = fopen(filename, "a");
+        if (file == NULL) {
+          amps_Printf("Error: can't open output file %s\n", filename);
+          exit(1);
         }
+        //Now print the current values
+        fprintf(file, "%f", time);
+        reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
+        fprintf(file, ",%s", ReservoirDataPhysicalName(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalStorage(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical));
+        fprintf(file, ",%f", ReservoirDataPhysicalReleaseRate(reservoir_data_physical));
+
+        ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) = 0;
+        ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = 0;
+        fprintf(file, "\n");
+        fclose(file);
       }
     }
   }
 }
+

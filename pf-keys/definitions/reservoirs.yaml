@@ -73,7 +73,7 @@ Reservoirs:
         [Type: bool] This key specifies if the reservoir has a secondary intake cell
       default: False
       domains:
-        BoolValue:
+        IntValue:
 
     Min_Release_Storage:
       # typos - vertical

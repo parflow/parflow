@@ -303,7 +303,7 @@ sloping_slab.Reservoirs.reservoir.Secondary_Intake_X = 25
 sloping_slab.Reservoirs.reservoir.Secondary_Intake_Y = 35
 sloping_slab.Reservoirs.reservoir.Release_X = 35
 sloping_slab.Reservoirs.reservoir.Release_Y = 25
-sloping_slab.Reservoirs.reservoir.Has_Secondary_Intake_Cell = True
+sloping_slab.Reservoirs.reservoir.Has_Secondary_Intake_Cell = 1
 
 sloping_slab.Reservoirs.reservoir.Max_Storage = 7000000
 sloping_slab.Reservoirs.reservoir.Storage = 5500000.0

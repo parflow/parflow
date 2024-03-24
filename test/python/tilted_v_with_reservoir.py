@@ -309,7 +309,7 @@ write_pfb_to_run_dir(slopey, 'slopey.pfb', run_dir)
 
 slopex = np.ones((gridnz, gridny, gridnx))
 slopex = np.round(slopex*-0.01,2)
-slopex[:, MIDDLE_ROW, MIDDLE_ROW] = np.round(0.00,2)
+# slopex[:, MIDDLE_ROW, MIDDLE_ROW] = np.round(0.00,2)
 write_pfb_to_run_dir(slopex, 'slopex.pfb', run_dir)
 
 overland.Reservoirs.Names = 'reservoir'
@@ -317,7 +317,7 @@ overland.Reservoirs.reservoir.Intake_X = 12.5
 overland.Reservoirs.reservoir.Intake_Y = 12.5
 overland.Reservoirs.reservoir.Release_X = 13.5
 overland.Reservoirs.reservoir.Release_Y = 12.5
-overland.Reservoirs.reservoir.Has_Secondary_Intake_Cell = False
+overland.Reservoirs.reservoir.Has_Secondary_Intake_Cell = -1
 overland.Reservoirs.reservoir.Secondary_Intake_X = -1
 overland.Reservoirs.reservoir.Secondary_Intake_Y = -1
 

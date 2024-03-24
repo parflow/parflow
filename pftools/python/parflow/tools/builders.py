@@ -1193,11 +1193,7 @@ class DomainBuilder:
         reservoir.Intake_Y = Intake_Y
         reservoir.Secondary_Intake_X = Secondary_Intake_X
         reservoir.Secondary_Intake_Y = Secondary_Intake_Y
-        print(f"Has secondary intake cell is {Has_Secondary_Intake_Cell}")
-        if Has_Secondary_Intake_Cell == "True":
-            reservoir.Has_Secondary_Intake_Cell = True
-        elif Has_Secondary_Intake_Cell == "False":
-            reservoir.Has_Secondary_Intake_Cell = False
+        reservoir.Has_Secondary_Intake_Cell = Has_Secondary_Intake_Cell
         reservoir.Release_X = Release_X
         reservoir.Release_Y = Release_Y
         reservoir.Release_Rate = Release_Rate

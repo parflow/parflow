@@ -84,6 +84,7 @@ typedef struct {
   int print_mask;               /* print mask? */
   int print_concen;             /* print concentrations? */
   int print_wells;              /* print well data? */
+  int print_reservoirs;         /* print reservoir data? */
   int print_dzmult;             /* print dz multiplier? */
   int print_evaptrans;          /* print evaptrans? */
   int print_evaptrans_sum;      /* print evaptrans_sum? */
@@ -356,6 +357,7 @@ SetupRichards(PFModule * this_module)
   int print_press = (public_xtra->print_press);
   int print_satur = (public_xtra->print_satur);
   int print_wells = (public_xtra->print_wells);
+  int print_reservoirs = (public_xtra->print_reservoirs);
   int print_velocities = (public_xtra->print_velocities);       //jjb
 
   ProblemData *problem_data = (instance_xtra->problem_data);
@@ -776,6 +778,7 @@ SetupRichards(PFModule * this_module)
     print_press = 0;
     print_satur = 0;
     print_wells = 0;
+    print_reservoirs = 0;
     print_velocities = 0;       //jjb
   }
 
@@ -1212,12 +1215,17 @@ SetupRichards(PFModule * this_module)
     any_file_dumped = 0;
 
     /*-------------------------------------------------------------------
+     * Print out the initial reservoir data?
+     *-------------------------------------------------------------------*/
+    if (print_reservoirs){
+      WriteReservoirs("ReservoirsOutput",
+                      problem,
+                      ProblemDataReservoirData(problem_data),
+                      t, RESERVOIRDATA_WRITEHEADER);
+    }
+    /*-------------------------------------------------------------------
      * Print out the initial well data?
      *-------------------------------------------------------------------*/
-    WriteReservoirs("ReservoirsOutput",
-                    problem,
-                    ProblemDataReservoirData(problem_data),
-                    t, WELLDATA_WRITEHEADER);
     if (print_wells)
     {
       WriteWells(file_prefix,
@@ -1550,6 +1558,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   int max_iterations = (public_xtra->max_iterations);
   int print_satur = (public_xtra->print_satur);
   int print_wells = (public_xtra->print_wells);
+  int print_reservoirs = (public_xtra->print_reservoirs);
 
   PFModule *problem_saturation = (instance_xtra->problem_saturation);
   PFModule *phase_density = (instance_xtra->phase_density);
@@ -3933,7 +3942,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     /*******************************************************************/
     /*                   Print the Well and Reservoir Data                           */
     /*******************************************************************/
-    if (dump_files) {
+    if (print_reservoirs && dump_files) {
       WriteReservoirs("ReservoirsOutput",
                       problem,
                       ProblemDataReservoirData(problem_data),
@@ -5389,6 +5398,11 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->print_overland_bc_flux = switch_value;
 
   sprintf(key, "%s.PrintWells", name);
+  switch_name = GetStringDefault(key, "True");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_wells = switch_value;
+
+  sprintf(key, "%s.PrintReservoirs", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_wells = switch_value;

@@ -142,7 +142,7 @@ bool subgrid_lives_on_this_rank(Subgrid* subgrid, Grid *grid){
 }
 
 /** @brief Sets the slops at the outlet faces of a cell to 0 to stop flow.
- * Assumes an overland kinematic boundary condition
+ * Assumes an overlandkinematic boundary condition
  *
  *
  *
@@ -201,6 +201,38 @@ void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* prob
       }
     }
 
+  }
+}
+
+/** @brief Sets the slops at the outlet faces of a cell to 0 to stop flow.
+ * Assumes an overlandflow boundary condition
+ *
+ *
+ *
+ * @param i the x index of the cell in question
+ * @param j the y index of the cell in question
+ * @return Null, but modifies the problem datas x and y slopes
+ */
+void stop_outlet_flow_at_cell_overland_flow(int i, int j, ProblemData* problem_data, Grid* grid){
+  Vector      *slope_x = ProblemDataTSlopeX(problem_data);
+  Vector      *slope_y = ProblemDataTSlopeY(problem_data);
+  Subvector   *slope_x_subvector ;
+  Subvector   *slope_y_subvector;
+  int index_slope_x;
+  int index_slope_y;
+  double *slope_x_ptr = SubvectorData(slope_x_subvector);;
+  double *slope_y_ptr = SubvectorData(slope_y_subvector);
+  int slope_i, slope_j;
+  int subgrid_index;
+  Subgrid *subgrid;
+  int subgrid_x_floor, subgrid_y_floor, subgrid_x_ceiling, subgrid_y_ceiling;
+  ForSubgridI(subgrid_index, GridSubgrids(grid)){
+    subgrid = GridSubgrid(grid, subgrid_index);
+    slope_x_subvector = VectorSubvector(slope_x, subgrid_index);
+    slope_y_subvector = VectorSubvector(slope_y, subgrid_index);
+    index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+    slope_x_ptr[index_slope_x] = 0;
+    slope_y_ptr[index_slope_y] = 0;
   }
 }
 
