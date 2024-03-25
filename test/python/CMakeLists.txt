@@ -25,6 +25,7 @@ if(${PARFLOW_HAVE_HYPRE})
     LW_var_dz_spinup
     terrain_following_grid_overland
     var_dz_1D
+    tilted_v_with_reservoir
     pfmg
     pfmg_galerkin
     smg
@@ -82,7 +83,8 @@ list(APPEND PARALLEL_2DTOPO_TESTS "")
 
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
-    default_single)
+    default_single
+    reservoir_mpi_test)
 
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND PARALLEL_3DTOPO_TESTS
