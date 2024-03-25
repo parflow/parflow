@@ -98,19 +98,19 @@ def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
             ny = np.max([stop_y - start_y, 1])
             nz = np.max([stop_z - start_z, 1])
             data = pfb.read_subarray(
-                start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
+                        start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
     return data
 
 
 # -----------------------------------------------------------------------------
 
 def write_pfb(
-        file, array,
-        p=1, q=1, r=1,
-        x=0.0, y=0.0, z=0.0,
-        dx=1.0, dy=1.0, dz=1.0,
-        z_first=True, dist=True,
-        **kwargs
+    file, array,
+    p=1, q=1, r=1,
+    x=0.0, y=0.0, z=0.0,
+    dx=1.0, dy=1.0, dz=1.0,
+    z_first=True, dist=True,
+    **kwargs
 ):
     """
     Write a single pfb file. The data must be a 3D numpy array with float64
@@ -156,11 +156,11 @@ def write_pfb(
     """
     if array.dtype != np.float64:
         raise ValueError(f"Arrays written to pfb must be of type np.float64!"
-                         + " Found {array.dtype} instead!")
+                          + " Found {array.dtype} instead!")
 
     if len(array.shape) == 3:
         if z_first:
-            nz, ny, nx = array.shape
+                nz, ny, nx = array.shape
         else:
             nx, ny, nz = array.shape
     elif len(array.shape) == 2:
@@ -208,12 +208,12 @@ def write_pfb(
             n_ix, n_iy, n_iz = shape
             if z_first:
                 mm[:] = array[s_iz:s_iz+n_iz,
-                        s_iy:s_iy+n_iy,
-                        s_ix:s_ix+n_ix].T.byteswap()
+                              s_iy:s_iy+n_iy,
+                              s_ix:s_ix+n_ix].T.byteswap()
             else:
                 mm[:] = array[s_ix:s_ix+n_ix,
-                        s_iy:s_iy+n_iy,
-                        s_iz:s_iz+n_iz].byteswap()
+                              s_iy:s_iy+n_iy,
+                              s_iz:s_iz+n_iz].byteswap()
             # Seek to offset + the size of the subgrid
             f.seek(off + 8 * np.prod(shape))
 
@@ -241,11 +241,11 @@ def write_dist(file, sg_offs):
 # -----------------------------------------------------------------------------
 
 def read_pfb_sequence(
-        file_seq: Iterable[str],
-        keys=None,
-        z_first: bool=True,
-        z_is: str='z',
-        read_sg_info: bool=False
+    file_seq: Iterable[str],
+    keys=None,
+    z_first: bool=True,
+    z_is: str='z',
+    read_sg_info: bool=False
 ):
     """
     An efficient wrapper to read a sequence of pfb files. This
@@ -273,9 +273,9 @@ def read_pfb_sequence(
         'z', 'time', 'variable'. Default is 'z'.
     :param read_sg_info:
         Precalculating subgrid information does not always work correctly for
-        some files, especially velocity files. If ``True``, read subgrid info
+        some files, especially velocity files. If ``True``, read subgrid info 
         directly from the pfb file (slower, but more robust)
-
+    
     :return:
         An nd array containing the data from the files.
     """
@@ -310,7 +310,7 @@ def read_pfb_sequence(
     pfb_seq = np.empty(seq_size, dtype=np.float64)
     for i, f in enumerate(file_seq):
         with ParflowBinaryReader(
-                f, precompute_subgrid_info=False, header=base_header
+            f, precompute_subgrid_info=False, header=base_header
         ) as pfb:
             pfb.subgrid_offsets = base_sg_offsets
             pfb.subgrid_locations = base_sg_locations
@@ -322,7 +322,7 @@ def read_pfb_sequence(
                 subseq_data = pfb.read_all_subgrids(mode='full', z_first=z_first)
             else:
                 subseq_data = pfb.read_subarray(
-                    start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
+                        start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
             pfb_seq[i, :, : ,:] = subseq_data
     if z_is == 'time':
         if z_first:
@@ -373,21 +373,21 @@ class ParflowBinaryReader:
     :param read_sg_info:
         Whether or not to read subgrid information directly from the pfb file.
         Precalculating subgrid information does not always work correctly for
-        some files, especially velocity files. This reads the subgrid offset
-        bytes, subgrid indices and subgrid shapes, then computes the subgrid
+        some files, especially velocity files. This reads the subgrid offset 
+        bytes, subgrid indices and subgrid shapes, then computes the subgrid 
         coordinates subgrid locations, and chunk sizes as normal
-
+        
     """
 
     def __init__(
-            self,
-            file: str,
-            precompute_subgrid_info: bool=True,
-            p: int=None,
-            q: int=None,
-            r: int=None,
-            header: Mapping[str, Number]=None,
-            read_sg_info: bool=False
+        self,
+        file: str,
+        precompute_subgrid_info: bool=True,
+        p: int=None,
+        q: int=None,
+        r: int=None,
+        header: Mapping[str, Number]=None,
+        read_sg_info: bool=False
     ):
         self.filename = file
         self.f = open(self.filename, 'rb')
@@ -402,8 +402,8 @@ class ParflowBinaryReader:
             self.header['r'] = r
 
         if not ('p' in self.header
-                and 'q' in self.header
-                and 'r' in self.header):
+            and 'q' in self.header
+            and 'r' in self.header):
             # If p, q, and r aren't given we can precompute them
             # NOTE: This is a bit of a fallback and may not always work
             eps = 1 - 1e-6
@@ -417,7 +417,7 @@ class ParflowBinaryReader:
 
         if read_sg_info:
             self.read_subgrid_info()
-
+            
     def close(self):
         self.f.close()
 
@@ -448,9 +448,9 @@ class ParflowBinaryReader:
         self.coords = self._compute_coords()
 
     def read_subgrid_info(self):
-        """ Read the header for each subgrid directly from the pfb file, rather
+        """ Read the header for each subgrid directly from the pfb file, rather 
         than calculating it via precalculate_subgrid_info """
-
+        
         sg_shapes = []
         sg_offs = []
         sg_locs = []
@@ -460,21 +460,21 @@ class ParflowBinaryReader:
         for sg_num in range(self.header['n_subgrids']):
             # Read and move past the current subgrid header
             sg_head = self.read_subgrid_header(off)
-            off += 36
-
+            off += 36 
+            
             sg_starts.append([sg_head['ix'], sg_head['iy'], sg_head['iz']])
             sg_shapes.append([sg_head['nx'], sg_head['ny'], sg_head['nz']])
             sg_offs.append(off)
 
             # Calculate subgrid locs instead of reading from file
-            sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, self.header['p'],
-                                               self.header['q'],
-                                               self.header['r'])
+            sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, self.header['p'], 
+                                                       self.header['q'], 
+                                                       self.header['r'])
             sg_locs.append((sg_p, sg_q, sg_r))
-
+            
             # Finally, move past the current subgrid before next iteration
             off += sg_head['sg_size']*8
-
+        
         self.subgrid_offsets = np.array(sg_offs)
         self.subgrid_locations = np.array(sg_locs)
         self.subgrid_start_indices = np.array(sg_starts)
@@ -860,9 +860,9 @@ def get_subgrid_loc(sel_subgrid, p, q, r):
 
 @jit(nopython=True)
 def subgrid_lower_left(
-        mg_nx, mg_ny, mg_nz,
-        sg_p, sg_q, sg_r,
-        rm_nx, rm_ny, rm_nz
+    mg_nx, mg_ny, mg_nz,
+    sg_p, sg_q, sg_r,
+    rm_nx, rm_ny, rm_nz
 ):
     """
     Get the index of the lower left corner of a subgrid.
@@ -896,9 +896,9 @@ def subgrid_lower_left(
 
 @jit(nopython=True)
 def subgrid_size(
-        mg_nx, mg_ny, mg_nz,
-        sg_p, sg_q, sg_r,
-        rm_nx, rm_ny, rm_nz
+    mg_nx, mg_ny, mg_nz,
+    sg_p, sg_q, sg_r,
+    rm_nx, rm_ny, rm_nz
 ):
     """
     Get the size of a subgrid
