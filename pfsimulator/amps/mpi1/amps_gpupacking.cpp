@@ -222,7 +222,6 @@ void kokkosMemCpyDeviceToDevice(char *dest, char *src, size_t size){
   Kokkos::deep_copy(dest_view, src_view);
 }
 
-
 /**
  * @brief Device-host memcopy
  *
@@ -240,7 +239,6 @@ void kokkosMemCpyDeviceToHost(char *dest, char *src, size_t size){
 #endif
   Kokkos::deep_copy(dest_view, src_view);
 }
-
 /**
  * @brief Host-device memcopy
  *
@@ -258,7 +256,6 @@ void kokkosMemCpyHostToDevice(char *dest, char *src, size_t size){
 #endif
   Kokkos::deep_copy(dest_view, src_view);
 }
-
 /**
  * @brief Host-host memcopy
  *
@@ -350,18 +347,14 @@ void amps_gpu_free_bufs(){
 void amps_gpu_finalize(){
   amps_gpu_free_bufs();
   amps_gpu_destroy_streams();
-  if(Kokkos::is_initialized) Kokkos::finalize();
+  if(Kokkos::is_initialized() && !Kokkos::is_finalized()) Kokkos::finalize();
 }
 
 /**
  * @brief Initialize Kokkos if not initialized
  */
 void amps_kokkos_initialization(){
-  if(!Kokkos::is_initialized()){
-    Kokkos::InitArguments args;
-    args.ndevices = 1;
-    Kokkos::initialize(args);  
-  }
+  if(!Kokkos::is_initialized()) Kokkos::initialize();
 }
 
 /**
@@ -625,11 +618,10 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       return __LINE__;
     }
 #endif
-
     /* Run packing or unpacking kernel */
-    using MDPolicyType_3D = typename Kokkos::Experimental::MDRangePolicy<Kokkos::Experimental::Rank<3> >;
+    using MDPolicyType_3D = typename Kokkos::MDRangePolicy<Kokkos::Rank<3> >;
     MDPolicyType_3D mdpolicy_3d({{0, 0, 0}}, {{len_x, len_y, len_z}});
-
+    
     if(action == AMPS_PACK){
       Kokkos::parallel_for(mdpolicy_3d, KOKKOS_LAMBDA(int i, int j, int k)
       {
@@ -662,11 +654,10 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
       });
       inv->flags &= ~AMPS_PACKED;
     }
-
     pos += size;  
     ptr = ptr->next;
   }
-
+  
   /* Check that the size is calculated right */
   // if(pos != amps_sizeof_invoice(amps_CommWorld, inv)){
     // printf("ERROR at %s:%d: The size does not match the invoice size\n", __FILE__, __LINE__);

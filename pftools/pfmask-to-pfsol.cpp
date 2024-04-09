@@ -39,6 +39,7 @@
 #include <cassert>
 #include <cmath>
 #include <limits>
+#include <cfloat>
 
 /*
  * The mask directions.
@@ -356,16 +357,16 @@ int main(int argc, char **argv)
     TCLAP::ValueArg<int> sideArg("","side-patch-label","Side index",false,3,"int");
     cmd.add( sideArg );
 
-    TCLAP::ValueArg<float> zTopArg("","z-top","Set top of domain",false,NAN,"float");
+    TCLAP::ValueArg<float> zTopArg("","z-top","Set top of domain",false,FLT_MIN,"float");
     cmd.add( zTopArg );
 
-    TCLAP::ValueArg<float> zBotArg("","z-bottom","Set bottom of domain",false,NAN,"float");
+    TCLAP::ValueArg<float> zBotArg("","z-bottom","Set bottom of domain",false,FLT_MIN,"float");
     cmd.add( zBotArg );
 
-    TCLAP::ValueArg<float> dxArg("","dx","Set DX",false,NAN,"float");
+    TCLAP::ValueArg<float> dxArg("","dx","Set DX",false,FLT_MIN,"float");
     cmd.add( dxArg );
     
-    TCLAP::ValueArg<float> dyArg("","dy","Set DY",false,NAN,"float");
+    TCLAP::ValueArg<float> dyArg("","dy","Set DY",false,FLT_MIN,"float");
     cmd.add( dyArg );
 
     TCLAP::ValueArg<string>* maskFilenamesArgs[g_maskNames.size()];
@@ -403,7 +404,7 @@ int main(int argc, char **argv)
     side = sideArg.getValue();;
     zTop = zTopArg.getValue();;
     zBot = zBotArg.getValue();;
-    dx = dyArg.getValue();
+    dx = dxArg.getValue();
     dy = dyArg.getValue();
 
   }
@@ -441,18 +442,18 @@ int main(int argc, char **argv)
   sx = DataboxX(databox[0]);
   sy = DataboxY(databox[0]);
 
-  if(isnan(dx))
+  if(dx == FLT_MIN)
   {
     dx = DataboxDx(databox[0]);
   }
 
-  if(isnan(dy))
+  if(dy == FLT_MIN)
   {
     dy = DataboxDy(databox[0]);
   }
 
   // If user specifies Top/Bottom on command line override defaults
-  if(isnan(zBot))
+  if(zBot == FLT_MIN)
   {
     sz = 0.0;
   }
@@ -461,7 +462,7 @@ int main(int argc, char **argv)
     sz = zBot;
   }
 
-  if(isnan(zTop))
+  if(zTop == FLT_MIN)
   {
     dz = DataboxDz(databox[0]);
   }
