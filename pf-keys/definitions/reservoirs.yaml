@@ -116,3 +116,11 @@ Reservoirs:
         [Type: double] This key specifies the y location of where the reservoir intakes water.
       domains:
         DoubleValue:
+
+  Overland_Flow_Solver:
+    # typos - vertical
+    help: >
+      [Type: string] This key specifies which overland flow condition is used in the domain so that the slopes around
+      the reservoirs can be adjusted properly. Supported Options are OverlandFlow and OverlandKinematic.
+    domains:
+      AnyString:

@@ -90,7 +90,6 @@ typedef struct {
     int num_contaminants;
 
     /* reservoir info */
-    int num_units;
     int num_reservoirs;
 
     int       *type;
@@ -103,6 +102,7 @@ typedef struct {
     int      **intervals;
     int       *repeat_counts;
 
+    char* overland_flow_solver;
     NameArray reservoir_names;
 } PublicXtra;
 
@@ -253,7 +253,7 @@ void         ReservoirPackage(
   ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
   ReservoirDataPhysical *reservoir_data_physical;
 
-  int i, sequence_number, phase, contaminant, indx, press_reservoir, reservoir_index;
+  int i, sequence_number, phase, contaminant, press_reservoir, reservoir_index;
 
   int intake_ix, intake_iy;
   int secondary_intake_ix, secondary_intake_iy;
@@ -293,10 +293,10 @@ void         ReservoirPackage(
   reservoir_index = 0;
   sequence_number = 0;
 
-  if ((public_xtra->num_units) > 0)
+  if ((public_xtra->num_reservoirs) > 0)
   {
     /* Load the reservoir data */
-    for (i = 0; i < (public_xtra->num_units); i++)
+    for (i = 0; i < (public_xtra->num_reservoirs); i++)
     {
 
       dummy0 = (Type0*)(public_xtra->data[i]);
@@ -506,9 +506,10 @@ PFModule  *ReservoirPackageNewPublicXtra(
 
   char key[IDB_MAX_KEY_LEN];
 
-  int num_units;
+  int num_reservoirs;
 
   char *switch_name;
+  char* overland_flow_solver;
   int switch_value;
   NameArray switch_na;
 
@@ -524,24 +525,15 @@ PFModule  *ReservoirPackageNewPublicXtra(
 
   public_xtra->reservoir_names = NA_NewNameArray(reservoir_names);
 
-  num_units = NA_Sizeof(public_xtra->reservoir_names);
+  num_reservoirs = NA_Sizeof(public_xtra->reservoir_names);
 
 
-  num_cycles = public_xtra->num_cycles = num_units;
-
-  public_xtra->interval_divisions = ctalloc(int, num_cycles);
-  public_xtra->intervals = ctalloc(int *, num_cycles);
-  public_xtra->repeat_counts = ctalloc(int, num_cycles);
-
-  public_xtra->num_units = num_units;
-
-
-
-  if (num_units > 0) {
-      (public_xtra->type) = ctalloc(int, num_units);
-      (public_xtra->data) = ctalloc(void *, num_units);
+  if (num_reservoirs > 0) {
+      (public_xtra->type) = ctalloc(int, num_reservoirs);
+      (public_xtra->data) = ctalloc(void *, num_reservoirs);
+      (public_xtra->overland_flow_solver) = GetString("Reservoirs.Overland_Flow_Solver");
       int i;
-      for (i = 0; i < num_units; i++) {
+      for (i = 0; i < num_reservoirs; i++) {
           reservoir_name = NA_IndexToName(public_xtra->reservoir_names, i);
 
           dummy0 = ctalloc(Type0, 1);
@@ -610,7 +602,7 @@ void  ReservoirPackageFreePublicXtra()
 
   Type0         *dummy0;
 
-  int num_units, num_cycles;
+  int num_reservoirs, num_cycles;
   int i;
 
   if (public_xtra)
@@ -618,10 +610,10 @@ void  ReservoirPackageFreePublicXtra()
     NA_FreeNameArray(public_xtra->reservoir_names);
 
     /* Free the reservoir information */
-    num_units = (public_xtra->num_units);
-    if (num_units > 0)
+    num_reservoirs = (public_xtra->num_reservoirs);
+    if (num_reservoirs > 0)
     {
-      for (i = 0; i < num_units; i++)
+      for (i = 0; i < num_reservoirs; i++)
       {
 
         dummy0 = (Type0*)(public_xtra->data[i]);

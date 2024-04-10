@@ -37,8 +37,6 @@
 typedef struct {
     int number;
     char          *name;
-//  char* release_curve_file;
-//  TimeSeries * release_curve;
     double intake_x_lower, intake_y_lower, z_lower;
     double intake_x_upper, intake_y_upper, z_upper;
     int has_secondary_intake_cell;
@@ -66,7 +64,7 @@ typedef struct {
 
 typedef struct {
     int num_reservoirs;
-
+    char *overland_flow_solver;
     ReservoirDataPhysical  **reservoir_physicals;
 
 } ReservoirData;

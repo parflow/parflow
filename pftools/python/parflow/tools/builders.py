@@ -1179,7 +1179,7 @@ class DomainBuilder:
     def reservoir(self, name, Intake_X, Intake_Y,Has_Secondary_Intake_Cell,
                   Secondary_Intake_X, Secondary_Intake_Y,Release_X, 
                   Release_Y, Release_Rate, Max_Storage, Storage,
-                  Min_Release_Storage
+                  Min_Release_Storage, Overland_Flow_Solver
                   ):
         """Setting keys necessary to define a simple reservoir
         """
@@ -1194,13 +1194,13 @@ class DomainBuilder:
         reservoir.Secondary_Intake_X = Secondary_Intake_X
         reservoir.Secondary_Intake_Y = Secondary_Intake_Y
         reservoir.Has_Secondary_Intake_Cell = Has_Secondary_Intake_Cell
+        reservoir.Overland_Flow_Solver = Overland_Flow_Solver
         reservoir.Release_X = Release_X
         reservoir.Release_Y = Release_Y
         reservoir.Release_Rate = Release_Rate
         reservoir.Max_Storage = Max_Storage
         reservoir.Storage = Storage
         reservoir.Min_Release_Storage = Min_Release_Storage
-        # print("we are here :)\n")
         return self
 
     def well(self, name, type, x, y, z_upper, z_lower,

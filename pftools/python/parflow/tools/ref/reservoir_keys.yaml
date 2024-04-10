@@ -92,3 +92,10 @@ Storage:
   alias:
     - Storage
   register: Reservoirs.Names
+
+Overland_Flow_Solver:
+  # typos - vertical
+  type: string
+  alias:
+    - Overland_Flow_Solver
+  register: Reservoirs.Names
