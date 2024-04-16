@@ -64,7 +64,7 @@ typedef struct {
 
 typedef struct {
     int num_reservoirs;
-    char *overland_flow_solver;
+    int overland_flow_solver;
     ReservoirDataPhysical  **reservoir_physicals;
 
 } ReservoirData;
@@ -180,6 +180,8 @@ typedef struct {
 /*---------------------------- Flux reservoir data ------------------------------*/
 #define ReservoirDataNumReservoirs(reservoir_data)      ((reservoir_data)->num_reservoirs)
 
+#define ReservoirDataOverlandFlowSolver(reservoir_data)      ((reservoir_data)->overland_flow_solver)
+
 #define ReservoirDataReservoirPhysicals(reservoir_data) \
   ((reservoir_data)->reservoir_physicals)
 #define ReservoirDataReservoirPhysical(reservoir_data, i) \
@@ -200,10 +202,12 @@ typedef struct {
 /* These should match  with */
 /* the Name Array Defs from */
 /* the  Reservoir Package input. */
-#define PRESS_STANDARD 0
 #define FLUX_STANDARD  0
 #define FLUX_WEIGHTED  1
 #define FLUX_PATTERNED 2
+
+#define OVERLAND_FLOW 0
+#define OVERLAND_KINEMATIC 1
 
 /*     Write Options      */
 #define RESERVOIRDATA_DONTWRITEHEADER 0

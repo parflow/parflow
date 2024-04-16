@@ -102,7 +102,7 @@ typedef struct {
     int      **intervals;
     int       *repeat_counts;
 
-    char* overland_flow_solver;
+    int overland_flow_solver;
     NameArray reservoir_names;
 } PublicXtra;
 
@@ -220,7 +220,7 @@ void stop_outlet_flow_at_cell_overland_flow(int i, int j, ProblemData* problem_d
   Subvector   *slope_y_subvector;
   int index_slope_x;
   int index_slope_y;
-  double *slope_x_ptr = SubvectorData(slope_x_subvector);;
+  double *slope_x_ptr = SubvectorData(slope_x_subvector);
   double *slope_y_ptr = SubvectorData(slope_y_subvector);
   int slope_i, slope_j;
   int subgrid_index;
@@ -397,7 +397,12 @@ void         ReservoirPackage(
         MPI_Comm_split(amps_CommWorld, split_color, current_mpi_rank, &new_reservoir_communicator);
       #endif
 //        edit the slopes to prevent stuff running through the reservoir
-      stop_outlet_flow_at_cell_overland_kinematic(intake_ix, intake_iy, problem_data, grid);
+      if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_FLOW){
+        stop_outlet_flow_at_cell_overland_flow(intake_ix, intake_iy, problem_data, grid);
+      }
+      else if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_KINEMATIC){
+        stop_outlet_flow_at_cell_overland_kinematic(intake_ix, intake_iy, problem_data, grid);
+      }
       if (secondary_intake_cell_rank==current_mpi_rank){
         stop_outlet_flow_at_cell_overland_kinematic(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
       }
@@ -509,7 +514,9 @@ PFModule  *ReservoirPackageNewPublicXtra(
   int num_reservoirs;
 
   char *switch_name;
-  char* overland_flow_solver;
+  int overland_flow_solver;
+  char* overland_flow_solver_name;
+
   int switch_value;
   NameArray switch_na;
 
@@ -531,7 +538,17 @@ PFModule  *ReservoirPackageNewPublicXtra(
   if (num_reservoirs > 0) {
       (public_xtra->type) = ctalloc(int, num_reservoirs);
       (public_xtra->data) = ctalloc(void *, num_reservoirs);
-      (public_xtra->overland_flow_solver) = GetString("Reservoirs.Overland_Flow_Solver");
+      overland_flow_solver_name = GetString("Reservoirs.Overland_Flow_Solver");
+      if (strcmp(overland_flow_solver_name, "OverlandFlow")==0){
+        public_xtra->overland_flow_solver = OVERLAND_FLOW;
+      }
+      else if (strcmp(overland_flow_solver_name, "OverlandKinematic")==0){
+        public_xtra->overland_flow_solver = OVERLAND_KINEMATIC;
+      }
+      else{
+        InputError("Reservoirs.Overland_Flow_Solver must be one of OverlandFlow or OverlandKinematic, not %s%s\n", overland_flow_solver_name, "");
+        return 0;
+      }
       int i;
       for (i = 0; i < num_reservoirs; i++) {
           reservoir_name = NA_IndexToName(public_xtra->reservoir_names, i);

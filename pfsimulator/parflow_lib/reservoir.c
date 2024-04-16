@@ -63,7 +63,6 @@ ReservoirData *NewReservoirData()
 
   ReservoirDataNumReservoirs(reservoir_data) = -1;
 
-  ReservoirDataNumReservoirs(reservoir_data) = -1;
   ReservoirDataReservoirPhysicals(reservoir_data) = NULL;
 
 
