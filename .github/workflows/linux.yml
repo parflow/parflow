@@ -77,7 +77,7 @@ jobs:
           }
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Package Install 22.04
       if: matrix.config.os == 'ubuntu-22.04'
@@ -102,7 +102,7 @@ jobs:
 # settings for the project (using date-timestamp for secret).
 
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       id: cache-parflow-dependencies
       env:
         cache-name: cache-parflow-dependencies
@@ -194,7 +194,7 @@ jobs:
       if: matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/kokkos/kokkos/archive/refs/tags/3.3.01.tar.gz
+          URL=https://github.com/kokkos/kokkos/archive/refs/tags/4.2.01.tar.gz
           mkdir kokkos
           cd kokkos
           curl -L $URL | tar --strip-components=1 -xz
