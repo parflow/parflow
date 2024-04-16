@@ -22,6 +22,7 @@ set(TESTS
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS
     default_richards
+    default_richards_restart
     default_richards_nocluster
     default_overland
     octree-simple
@@ -92,7 +93,8 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND PARALLEL_3DTOPO_TESTS
-      default_richards)
+      default_richards
+      default_richards_restart)
 
     list(APPEND PARALLEL_2DTOPO_TESTS
       default_overland
