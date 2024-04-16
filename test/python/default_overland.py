@@ -436,7 +436,7 @@ for i in range(5):
         timestep = str(i).rjust(5, '0')
         filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
         if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                     f"Max difference in {test_file} for timestep {timestep}", abs_value, sig_digits):
+                                     f"Max difference in {test_file} for timestep {timestep}", sig_digits, abs_value):
             passed = False
 
             

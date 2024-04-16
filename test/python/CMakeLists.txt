@@ -2,6 +2,7 @@ include(ParflowTest)
 
 set(TESTS
   default_single
+  default_single_read_porosity
   default_richards_wells
   forsyth2
   harvey_flow
@@ -86,7 +87,8 @@ list(APPEND PARALLEL_2DTOPO_TESTS "")
 
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
-    default_single)
+    default_single
+    default_single_read_porosity)
 
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND PARALLEL_3DTOPO_TESTS
