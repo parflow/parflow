@@ -3,7 +3,7 @@
 #-----------------------------------------------------------------------------
 
 from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.fs import cp, mkdir, get_absolute_path
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 import sys
 
@@ -339,12 +339,19 @@ default_single.Solver.PrintVelocities = True
 default_single.Solver.MaxIter = 5
 default_single.Solver.AbsTol = 1e-25
 
+
+#-----------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------
+new_output_dir_name = get_absolute_path('test_output/default_single_input_porosity')
+mkdir(new_output_dir_name)
+cp('../input/default_single_input_porosity.pfb', new_output_dir_name)
+
+default_single.dist(new_output_dir_name + '/default_single_input_porosity.pfb')
+
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-
-new_output_dir_name = get_absolute_path('test_output/default_single')
-mkdir(new_output_dir_name)
 default_single.run(working_directory=new_output_dir_name)
 
 #-----------------------------------------------------------------------------
@@ -392,4 +399,3 @@ if passed:
 else:
     print(f"{run_name} : FAILED")
     sys.exit(1)
-        
