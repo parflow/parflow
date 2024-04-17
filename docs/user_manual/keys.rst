@@ -589,9 +589,7 @@ result for every “real time” cycle interval length needed.
 indicate the time step number that will be associated with the first
 advection cycle in a transient problem. The value **-1** indicates that
 advection is not to be done. The value **0** indicates that advection
-should begin with the given initial conditions. Values greater than
-**0** are intended to mean “restart” from some previous “checkpoint”
-time-step, but this has not yet been implemented.
+should begin with the given initial conditions. 
 
 .. container:: list
 

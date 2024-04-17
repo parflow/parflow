@@ -2,6 +2,7 @@ include(ParflowTest)
 
 set(TESTS
   default_single
+  default_single_read_porosity
   default_richards_wells
   forsyth2
   harvey_flow
@@ -21,6 +22,7 @@ set(TESTS
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS
     default_richards
+    default_richards_restart
     default_richards_nocluster
     default_overland
     octree-simple
@@ -88,11 +90,13 @@ list(APPEND PARALLEL_2DTOPO_TESTS "")
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
     default_single
+    default_single_read_porosity
     reservoir_mpi_test)
 
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND PARALLEL_3DTOPO_TESTS
-      default_richards)
+      default_richards
+      default_richards_restart)
 
     list(APPEND PARALLEL_2DTOPO_TESTS
       default_overland
