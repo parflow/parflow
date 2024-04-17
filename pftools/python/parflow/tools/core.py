@@ -490,8 +490,6 @@ class Run(BaseRun):
         """
         # Any provided args should override the scripts ones
 
-        print(f"SGS dist file {pfb_file}")
-        
         update_run_from_args(self, self._process_args_)
 
         pfb_file_full_path = get_absolute_path(pfb_file)
@@ -502,11 +500,9 @@ class Run(BaseRun):
         with ParflowBinaryReader(pfb_file_full_path) as pfb:
             array = pfb.read_all_subgrids()
             header = pfb.header
-            print(header)
 
         dx, dy, dz = header['dx'], header['dy'], header['dz']
 
-        print(f"SGS writing file {pfb_file_full_path}")
         write_pfb(pfb_file_full_path, array,
                    p=p, q=q, r=r, dx=dx, dy=dy, dz=dz,
                    dist=True)
