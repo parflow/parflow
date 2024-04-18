@@ -2796,12 +2796,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int i, j, k, r, is;
         int ix, iy, iz;
         int nx, ny, nz;
-        int ip;
+        int ip, iv, iv_ip1, iv_im1, iv_jp1, iv_jm1;
         double dx, dy, dz;
-        double vol, vol_max, flux_in, press_pred;
+        double vol, vol_max, flux_in, press_pred, flux_darcy;
 
-        Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
-        double *pp, *sp, *et, *po_dat, *dz_dat;
+        Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub, *vz_sub, *vx_sub, *vy_sub;
+        double *pp, *sp, *et, *po_dat, *dz_dat, *vz, *vx, *vy;
 
         Subgrid *subgrid;
         Grid *grid = VectorGrid(evap_trans_sum);
@@ -2814,6 +2814,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
           s_sub = VectorSubvector(instance_xtra->saturation, is);
           po_sub = VectorSubvector(porosity, is);
+          vx_sub = VectorSubvector(instance_xtra->x_velocity, is);
+          vy_sub = VectorSubvector(instance_xtra->y_velocity, is);
+          vz_sub = VectorSubvector(instance_xtra->z_velocity, is);
 
           r = SubgridRX(subgrid);
 
@@ -2835,24 +2838,56 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           po_dat = SubvectorData(po_sub);
           sp = SubvectorData(s_sub);
 
+        vx = SubvectorData(vx_sub);
+        vy = SubvectorData(vy_sub);
+        vz = SubvectorData(vz_sub);
+
+          
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
             ip = SubvectorEltIndex(p_sub, i, j, k);
+          //iv = SubvectorEltIndex(vz_sub, i, j, k);
+          int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
+          int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
+          int vxi_im1 = SubvectorEltIndex(vx_sub, i , j, k);
+          int vyi_jm1 = SubvectorEltIndex(vy_sub, i, j , k);
+          int vzi_km1 = SubvectorEltIndex(vz_sub, i, j, k );
+
+          int vxi_p1 = SubvectorEltIndex(vx_sub, i + 1, j, k+1);
+          int vyi_p1 = SubvectorEltIndex(vy_sub, i, j + 1, k+1);
+          int vxi_im1_p1 = SubvectorEltIndex(vx_sub, i , j, k+1);
+          int vyi_jm1_p1 = SubvectorEltIndex(vy_sub, i, j , k+1);
+
+         // iv_im1 = SubvectorEltIndex(vx_sub, i-1, j, k);
+         // iv_jm1 = SubvectorEltIndex(vz_sub, i, j-1, k);
+         // iv_ip1 = SubvectorEltIndex(vz_sub, i, j, k-1);
+         // iv_jp1 = SubvectorEltIndex(vz_sub, i, j+1, k);
 
             if (k == (nz - 1))
             {
               vol = dx*dy*dz*dz_dat[ip]*po_dat[ip]*sp[ip];
               flux_in = dx*dy*dz*dz_dat[ip]*et[ip]*dt;
               vol_max = dx*dy*dz*dz_dat[ip]*po_dat[ip];
-              press_pred = (flux_in-(vol_max - vol))/(dx*dy*po_dat[ip]);
-              if (flux_in > (vol_max - vol))
+              
+            flux_darcy = vz[vzi_km1]*dx*dy*dt+(-vx[vxi]+vx[vxi_im1])*dy*dz*dz_dat[ip]*dt+(-vy[vyi]+vy[vyi_jm1])*dx*dz*dz_dat[ip]*dt;
+             //               amps_Printf("SP: Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Flux Darcy: %3.6e Pressure: %3.6e I: %d J: %d  Time: %12.4e  \n",vol, vol_max,flux_in, flux_darcy,pp[ip],i,j,t);
+             //   amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e vz_l: %3.6e  I: %d J: %d k: %d \n",vx[vxi], vx[vxi_im1], vy[vyi], vy[vyi_jm1],vz[vzi_km1],i,j,k);
+             //   amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e    k+1 \n",vx[vxi_p1], vx[vxi_im1_p1], vy[vyi_p1], vy[vyi_jm1_p1]);
+   
+            //flux_darcy = (-vx[iv]+vx[iv_im1])*dy*dz*dz_dat[ip]*dt+(-vy[iv]+vy[iv_jm1])*dx*dz*dz_dat[ip]*dt;
+            //flux_darcy = 0.0;
+            press_pred = ((flux_in+flux_darcy)-(vol_max - vol))/(dx*dy*po_dat[ip]);
+              if ((flux_in+flux_darcy) > (vol_max - vol))
               {
                 if (pp[ip] < 0.0){
 
-                  press_pred = public_xtra->surface_predictor_pressure;
-                  if (public_xtra->surface_predictor_print == 1) {
-                    amps_Printf(" Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Pressure: %3.6e I: %d J: %d  \n",vol, vol_max,flux_in,pp[ip],i,j);
-                  }
+                  if (public_xtra->surface_predictor_pressure>0.0){
+                  press_pred = public_xtra->surface_predictor_pressure;}
+              if (public_xtra->surface_predictor_print == 1) {
+                amps_Printf("SP: Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Flux Darcy: %3.6e Cell Pressure: %3.6e Pred Pressure: %3.6e I: %d J: %d  Time: %12.4e  \n",vol, vol_max,flux_in, flux_darcy,pp[ip],press_pred,i,j,t);
+                amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e vz_l: %3.6e  I: %d J: %d k: %d \n",vx[vxi], vx[vxi_im1], vy[vyi], vy[vyi_jm1],vz[vzi_km1],i,j,k);
+                amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e    k+1 \n",vx[vxi_p1], vx[vxi_im1_p1], vy[vyi_p1], vy[vyi_jm1_p1]);
+                                  }
                   pp[ip] = press_pred;
 
                 }
