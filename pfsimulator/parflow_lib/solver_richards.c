@@ -2829,25 +2829,25 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           po_dat = SubvectorData(po_sub);
           sp = SubvectorData(s_sub);
 
-        vx = SubvectorData(vx_sub);
-        vy = SubvectorData(vy_sub);
-        vz = SubvectorData(vz_sub);
+	  vx = SubvectorData(vx_sub);
+	  vy = SubvectorData(vy_sub);
+	  vz = SubvectorData(vz_sub);
 
           
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
             ip = SubvectorEltIndex(p_sub, i, j, k);
-          int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
-          int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
-          int vxi_im1 = SubvectorEltIndex(vx_sub, i , j, k);
-          int vyi_jm1 = SubvectorEltIndex(vy_sub, i, j , k);
-          int vzi_km1 = SubvectorEltIndex(vz_sub, i, j, k );
-
-          int vxi_p1 = SubvectorEltIndex(vx_sub, i + 1, j, k+1);
-          int vyi_p1 = SubvectorEltIndex(vy_sub, i, j + 1, k+1);
-          int vxi_im1_p1 = SubvectorEltIndex(vx_sub, i , j, k+1);
-          int vyi_jm1_p1 = SubvectorEltIndex(vy_sub, i, j , k+1);
-
+	    int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
+	    int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
+	    int vxi_im1 = SubvectorEltIndex(vx_sub, i , j, k);
+	    int vyi_jm1 = SubvectorEltIndex(vy_sub, i, j , k);
+	    int vzi_km1 = SubvectorEltIndex(vz_sub, i, j, k );
+	    
+	    int vxi_p1 = SubvectorEltIndex(vx_sub, i + 1, j, k+1);
+	    int vyi_p1 = SubvectorEltIndex(vy_sub, i, j + 1, k+1);
+	    int vxi_im1_p1 = SubvectorEltIndex(vx_sub, i , j, k+1);
+	    int vyi_jm1_p1 = SubvectorEltIndex(vy_sub, i, j , k+1);
+	    
             if (k == (nz - 1))
             {
               vol = dx*dy*dz*dz_dat[ip]*po_dat[ip]*sp[ip];
@@ -2858,11 +2858,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	      press_pred = ((flux_in+flux_darcy)-(vol_max - vol))/(dx*dy*po_dat[ip]);
               if ((flux_in+flux_darcy) > (vol_max - vol))
               {
-                if (pp[ip] < 0.0){
-
+                if (pp[ip] < 0.0)
+		{
                   if (public_xtra->surface_predictor_pressure>0.0)
 		  {
-		    press_pred = public_xtra->surface_predictor_pressure;}
+		    press_pred = public_xtra->surface_predictor_pressure;
+		  }
+		  
 		  if (public_xtra->surface_predictor_print == 1)
 		  {
 		    amps_Printf("SP: Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Flux Darcy: %3.6e Cell Pressure: %3.6e Pred Pressure: %3.6e I: %d J: %d  Time: %12.4e  \n",vol, vol_max,flux_in, flux_darcy,pp[ip],press_pred,i,j,t);
