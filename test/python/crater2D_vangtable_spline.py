@@ -512,11 +512,11 @@ for i in range(3):
     timestep = str(i).rjust(5, '0')
     filename = f"/{run_name}.out.press.{timestep}.pfb"
     if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in Pressure for timestep {timestep}", abs_diff, sig_digits):
+                                 f"Max difference in Pressure for timestep {timestep}", sig_digits, abs_diff):
         passed = False
     filename = f"/{run_name}.out.satur.{timestep}.pfb"
     if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in Saturation for timestep {timestep}", abs_diff, sig_digits):
+                                 f"Max difference in Saturation for timestep {timestep}", sig_digits, abs_diff):
         passed = False
 
 

@@ -1,388 +1,416 @@
-#---------------------------------------------------------
+# ---------------------------------------------------------
 #  This runs the basic default_richards test case.
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
 import sys, argparse
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path, rm
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 
-run_name = 'default_richards'
+run_name = "default_richards"
 
-drich = Run(run_name, __file__)
+default_richards = Run(run_name, __file__)
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 parser = argparse.ArgumentParser()
-parser.add_argument('-p', '--p', default=1)
-parser.add_argument('-q', '--q', default=1)
-parser.add_argument('-r', '--r', default=1)
+parser.add_argument("-p", "--p", default=1)
+parser.add_argument("-q", "--q", default=1)
+parser.add_argument("-r", "--r", default=1)
 args = parser.parse_args()
 
-drich.Process.Topology.P = args.p
-drich.Process.Topology.Q = args.q
-drich.Process.Topology.R = args.r
+default_richards.Process.Topology.P = args.p
+default_richards.Process.Topology.Q = args.q
+default_richards.Process.Topology.R = args.r
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Computational Grid
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.ComputationalGrid.Lower.X = -10.0
-drich.ComputationalGrid.Lower.Y = 10.0
-drich.ComputationalGrid.Lower.Z = 1.0
+default_richards.ComputationalGrid.Lower.X = -10.0
+default_richards.ComputationalGrid.Lower.Y = 10.0
+default_richards.ComputationalGrid.Lower.Z = 1.0
 
-drich.ComputationalGrid.DX = 8.8888888888888893
-drich.ComputationalGrid.DY = 10.666666666666666
-drich.ComputationalGrid.DZ = 1.0
+default_richards.ComputationalGrid.DX = 8.8888888888888893
+default_richards.ComputationalGrid.DY = 10.666666666666666
+default_richards.ComputationalGrid.DZ = 1.0
 
-drich.ComputationalGrid.NX = 18
-drich.ComputationalGrid.NY = 15
-drich.ComputationalGrid.NZ = 8
+default_richards.ComputationalGrid.NX = 18
+default_richards.ComputationalGrid.NY = 15
+default_richards.ComputationalGrid.NZ = 8
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # The Names of the GeomInputs
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.GeomInput.Names = "domain_input background_input source_region_input concen_region_input"
+default_richards.GeomInput.Names = (
+    "domain_input background_input source_region_input concen_region_input"
+)
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Domain Geometry Input
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.GeomInput.domain_input.InputType = 'Box'
-drich.GeomInput.domain_input.GeomName = 'domain'
+default_richards.GeomInput.domain_input.InputType = "Box"
+default_richards.GeomInput.domain_input.GeomName = "domain"
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Domain Geometry
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.Geom.domain.Lower.X = -10.0
-drich.Geom.domain.Lower.Y = 10.0
-drich.Geom.domain.Lower.Z = 1.0
+default_richards.Geom.domain.Lower.X = -10.0
+default_richards.Geom.domain.Lower.Y = 10.0
+default_richards.Geom.domain.Lower.Z = 1.0
 
-drich.Geom.domain.Upper.X = 150.0
-drich.Geom.domain.Upper.Y = 170.0
-drich.Geom.domain.Upper.Z = 9.0
+default_richards.Geom.domain.Upper.X = 150.0
+default_richards.Geom.domain.Upper.Y = 170.0
+default_richards.Geom.domain.Upper.Z = 9.0
 
-drich.Geom.domain.Patches = "left right front back bottom top"
+default_richards.Geom.domain.Patches = "left right front back bottom top"
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Background Geometry Input
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.GeomInput.background_input.InputType = 'Box'
-drich.GeomInput.background_input.GeomName = 'background'
+default_richards.GeomInput.background_input.InputType = "Box"
+default_richards.GeomInput.background_input.GeomName = "background"
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Background Geometry
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.Geom.background.Lower.X = -99999999.0
-drich.Geom.background.Lower.Y = -99999999.0
-drich.Geom.background.Lower.Z = -99999999.0
+default_richards.Geom.background.Lower.X = -99999999.0
+default_richards.Geom.background.Lower.Y = -99999999.0
+default_richards.Geom.background.Lower.Z = -99999999.0
 
-drich.Geom.background.Upper.X = 99999999.0
-drich.Geom.background.Upper.Y = 99999999.0
-drich.Geom.background.Upper.Z = 99999999.0
+default_richards.Geom.background.Upper.X = 99999999.0
+default_richards.Geom.background.Upper.Y = 99999999.0
+default_richards.Geom.background.Upper.Z = 99999999.0
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Source_Region Geometry Input
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.GeomInput.source_region_input.InputType = 'Box'
-drich.GeomInput.source_region_input.GeomName = 'source_region'
+default_richards.GeomInput.source_region_input.InputType = "Box"
+default_richards.GeomInput.source_region_input.GeomName = "source_region"
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Source_Region Geometry
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.Geom.source_region.Lower.X = 65.56
-drich.Geom.source_region.Lower.Y = 79.34
-drich.Geom.source_region.Lower.Z = 4.5
+default_richards.Geom.source_region.Lower.X = 65.56
+default_richards.Geom.source_region.Lower.Y = 79.34
+default_richards.Geom.source_region.Lower.Z = 4.5
 
-drich.Geom.source_region.Upper.X = 74.44
-drich.Geom.source_region.Upper.Y = 89.99
-drich.Geom.source_region.Upper.Z = 5.5
+default_richards.Geom.source_region.Upper.X = 74.44
+default_richards.Geom.source_region.Upper.Y = 89.99
+default_richards.Geom.source_region.Upper.Z = 5.5
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Concen_Region Geometry Input
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.GeomInput.concen_region_input.InputType = 'Box'
-drich.GeomInput.concen_region_input.GeomName = 'concen_region'
+default_richards.GeomInput.concen_region_input.InputType = "Box"
+default_richards.GeomInput.concen_region_input.GeomName = "concen_region"
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Concen_Region Geometry
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.Geom.concen_region.Lower.X = 60.0
-drich.Geom.concen_region.Lower.Y = 80.0
-drich.Geom.concen_region.Lower.Z = 4.0
+default_richards.Geom.concen_region.Lower.X = 60.0
+default_richards.Geom.concen_region.Lower.Y = 80.0
+default_richards.Geom.concen_region.Lower.Z = 4.0
 
-drich.Geom.concen_region.Upper.X = 80.0
-drich.Geom.concen_region.Upper.Y = 100.0
-drich.Geom.concen_region.Upper.Z = 6.0
+default_richards.Geom.concen_region.Upper.X = 80.0
+default_richards.Geom.concen_region.Upper.Y = 100.0
+default_richards.Geom.concen_region.Upper.Z = 6.0
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Perm
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Geom.Perm.Names = "background"
+default_richards.Geom.Perm.Names = "background"
 
-drich.Geom.background.Perm.Type = 'Constant'
-drich.Geom.background.Perm.Value = 4.0
+default_richards.Geom.background.Perm.Type = "Constant"
+default_richards.Geom.background.Perm.Value = 4.0
 
-drich.Perm.TensorType = 'TensorByGeom'
+default_richards.Perm.TensorType = "TensorByGeom"
 
-drich.Geom.Perm.TensorByGeom.Names = "background"
+default_richards.Geom.Perm.TensorByGeom.Names = "background"
 
-drich.Geom.background.Perm.TensorValX = 1.0
-drich.Geom.background.Perm.TensorValY = 1.0
-drich.Geom.background.Perm.TensorValZ = 1.0
+default_richards.Geom.background.Perm.TensorValX = 1.0
+default_richards.Geom.background.Perm.TensorValY = 1.0
+default_richards.Geom.background.Perm.TensorValZ = 1.0
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Specific Storage
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.SpecificStorage.Type = 'Constant'
-drich.SpecificStorage.GeomNames = "domain"
-drich.Geom.domain.SpecificStorage.Value = 1.0e-4
+default_richards.SpecificStorage.Type = "Constant"
+default_richards.SpecificStorage.GeomNames = "domain"
+default_richards.Geom.domain.SpecificStorage.Value = 1.0e-4
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Phases
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Phase.Names = "water"
+default_richards.Phase.Names = "water"
 
-drich.Phase.water.Density.Type = 'Constant'
-drich.Phase.water.Density.Value = 1.0
+default_richards.Phase.water.Density.Type = "Constant"
+default_richards.Phase.water.Density.Value = 1.0
 
-drich.Phase.water.Viscosity.Type = 'Constant'
-drich.Phase.water.Viscosity.Value = 1.0
+default_richards.Phase.water.Viscosity.Type = "Constant"
+default_richards.Phase.water.Viscosity.Value = 1.0
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Contaminants
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Contaminants.Names = ""
+default_richards.Contaminants.Names = ""
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Retardation
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Geom.Retardation.GeomNames = ""
+default_richards.Geom.Retardation.GeomNames = ""
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Gravity
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Gravity = 1.0
+default_richards.Gravity = 1.0
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Setup timing info
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.TimingInfo.BaseUnit = 1.0
-drich.TimingInfo.StartCount = 0
-drich.TimingInfo.StartTime = 0.0
-drich.TimingInfo.StopTime = 0.010
-drich.TimingInfo.DumpInterval = -1
-drich.TimeStep.Type = 'Constant'
-drich.TimeStep.Value = 0.001
+default_richards.TimingInfo.BaseUnit = 1.0
+default_richards.TimingInfo.StartCount = 0
+default_richards.TimingInfo.StartTime = 0.0
+default_richards.TimingInfo.StopTime = 1.0
+default_richards.TimingInfo.DumpInterval = -1
+default_richards.TimeStep.Type = "Constant"
+default_richards.TimeStep.Value = 0.001
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Porosity
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Geom.Porosity.GeomNames = 'background'
-drich.Geom.background.Porosity.Type = 'Constant'
-drich.Geom.background.Porosity.Value = 1.0
+default_richards.Geom.Porosity.GeomNames = "background"
+default_richards.Geom.background.Porosity.Type = "Constant"
+default_richards.Geom.background.Porosity.Value = 1.0
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Domain
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Domain.GeomName = 'domain'
+default_richards.Domain.GeomName = "domain"
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Relative Permeability
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Phase.RelPerm.Type = 'VanGenuchten'
-drich.Phase.RelPerm.GeomNames = 'domain'
-drich.Geom.domain.RelPerm.Alpha = 0.005
-drich.Geom.domain.RelPerm.N = 2.0
+default_richards.Phase.RelPerm.Type = "VanGenuchten"
+default_richards.Phase.RelPerm.GeomNames = "domain"
+default_richards.Geom.domain.RelPerm.Alpha = 0.005
+default_richards.Geom.domain.RelPerm.N = 2.0
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Saturation
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.Phase.Saturation.Type = 'VanGenuchten'
-drich.Phase.Saturation.GeomNames = 'domain'
-drich.Geom.domain.Saturation.Alpha = 0.005
-drich.Geom.domain.Saturation.N = 2.0
-drich.Geom.domain.Saturation.SRes = 0.2
-drich.Geom.domain.Saturation.SSat = 0.99
+default_richards.Phase.Saturation.Type = "VanGenuchten"
+default_richards.Phase.Saturation.GeomNames = "domain"
+default_richards.Geom.domain.Saturation.Alpha = 0.005
+default_richards.Geom.domain.Saturation.N = 2.0
+default_richards.Geom.domain.Saturation.SRes = 0.2
+default_richards.Geom.domain.Saturation.SSat = 0.99
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Wells
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Wells.Names = ''
+default_richards.Wells.Names = ""
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Time Cycles
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Cycle.Names = 'constant'
-drich.Cycle.constant.Names = "alltime"
-drich.Cycle.constant.alltime.Length = 1
-drich.Cycle.constant.Repeat = -1
+default_richards.Cycle.Names = "constant"
+default_richards.Cycle.constant.Names = "alltime"
+default_richards.Cycle.constant.alltime.Length = 1
+default_richards.Cycle.constant.Repeat = -1
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.BCPressure.PatchNames = "left right front back bottom top"
+default_richards.BCPressure.PatchNames = "left right front back bottom top"
 
-drich.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
-drich.Patch.left.BCPressure.Cycle = "constant"
-drich.Patch.left.BCPressure.RefGeom = 'domain'
-drich.Patch.left.BCPressure.RefPatch = 'bottom'
-drich.Patch.left.BCPressure.alltime.Value = 5.0
+default_richards.Patch.left.BCPressure.Type = "DirEquilRefPatch"
+default_richards.Patch.left.BCPressure.Cycle = "constant"
+default_richards.Patch.left.BCPressure.RefGeom = "domain"
+default_richards.Patch.left.BCPressure.RefPatch = "bottom"
+default_richards.Patch.left.BCPressure.alltime.Value = 5.0
 
-drich.Patch.right.BCPressure.Type = 'DirEquilRefPatch'
-drich.Patch.right.BCPressure.Cycle = "constant"
-drich.Patch.right.BCPressure.RefGeom = 'domain'
-drich.Patch.right.BCPressure.RefPatch = 'bottom'
-drich.Patch.right.BCPressure.alltime.Value = 3.0
+default_richards.Patch.right.BCPressure.Type = "DirEquilRefPatch"
+default_richards.Patch.right.BCPressure.Cycle = "constant"
+default_richards.Patch.right.BCPressure.RefGeom = "domain"
+default_richards.Patch.right.BCPressure.RefPatch = "bottom"
+default_richards.Patch.right.BCPressure.alltime.Value = 3.0
 
-drich.Patch.front.BCPressure.Type = 'FluxConst'
-drich.Patch.front.BCPressure.Cycle = "constant"
-drich.Patch.front.BCPressure.alltime.Value = 0.0
+default_richards.Patch.front.BCPressure.Type = "FluxConst"
+default_richards.Patch.front.BCPressure.Cycle = "constant"
+default_richards.Patch.front.BCPressure.alltime.Value = 0.0
 
-drich.Patch.back.BCPressure.Type = 'FluxConst'
-drich.Patch.back.BCPressure.Cycle = "constant"
-drich.Patch.back.BCPressure.alltime.Value = 0.0
+default_richards.Patch.back.BCPressure.Type = "FluxConst"
+default_richards.Patch.back.BCPressure.Cycle = "constant"
+default_richards.Patch.back.BCPressure.alltime.Value = 0.0
 
-drich.Patch.bottom.BCPressure.Type = 'FluxConst'
-drich.Patch.bottom.BCPressure.Cycle = "constant"
-drich.Patch.bottom.BCPressure.alltime.Value = 0.0
+default_richards.Patch.bottom.BCPressure.Type = "FluxConst"
+default_richards.Patch.bottom.BCPressure.Cycle = "constant"
+default_richards.Patch.bottom.BCPressure.alltime.Value = 0.0
 
-drich.Patch.top.BCPressure.Type = 'FluxConst'
-drich.Patch.top.BCPressure.Cycle = "constant"
-drich.Patch.top.BCPressure.alltime.Value = 0.0
+default_richards.Patch.top.BCPressure.Type = "FluxConst"
+default_richards.Patch.top.BCPressure.Cycle = "constant"
+default_richards.Patch.top.BCPressure.alltime.Value = 0.0
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Topo slopes in x-direction
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.TopoSlopesX.Type = "Constant"
-drich.TopoSlopesX.GeomNames = "domain"
-drich.TopoSlopesX.Geom.domain.Value = 0.0
+default_richards.TopoSlopesX.Type = "Constant"
+default_richards.TopoSlopesX.GeomNames = "domain"
+default_richards.TopoSlopesX.Geom.domain.Value = 0.0
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Topo slopes in y-direction
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.TopoSlopesY.Type = "Constant"
-drich.TopoSlopesY.GeomNames = "domain"
-drich.TopoSlopesY.Geom.domain.Value = 0.0
+default_richards.TopoSlopesY.Type = "Constant"
+default_richards.TopoSlopesY.GeomNames = "domain"
+default_richards.TopoSlopesY.Geom.domain.Value = 0.0
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Mannings coefficient
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.Mannings.Type = "Constant"
-drich.Mannings.GeomNames = "domain"
-drich.Mannings.Geom.domain.Value = 0.
+default_richards.Mannings.Type = "Constant"
+default_richards.Mannings.GeomNames = "domain"
+default_richards.Mannings.Geom.domain.Value = 0.0
 
-#---------------------------------------------------------
+# ---------------------------------------------------------
 # Initial conditions: water pressure
-#---------------------------------------------------------
+# ---------------------------------------------------------
 
-drich.ICPressure.Type = 'HydroStaticPatch'
-drich.ICPressure.GeomNames = 'domain'
-drich.Geom.domain.ICPressure.Value = 3.0
-drich.Geom.domain.ICPressure.RefGeom = 'domain'
-drich.Geom.domain.ICPressure.RefPatch = 'bottom'
+default_richards.ICPressure.Type = "HydroStaticPatch"
+default_richards.ICPressure.GeomNames = "domain"
+default_richards.Geom.domain.ICPressure.Value = 3.0
+default_richards.Geom.domain.ICPressure.RefGeom = "domain"
+default_richards.Geom.domain.ICPressure.RefPatch = "bottom"
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Phase sources:
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.PhaseSources.water.Type = 'Constant'
-drich.PhaseSources.water.GeomNames = 'background'
-drich.PhaseSources.water.Geom.background.Value = 0.0
+default_richards.PhaseSources.water.Type = "Constant"
+default_richards.PhaseSources.water.GeomNames = "background"
+default_richards.PhaseSources.water.Geom.background.Value = 0.0
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Exact solution specification for error calculations
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.KnownSolution = 'NoKnownSolution'
+default_richards.KnownSolution = "NoKnownSolution"
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Set solver parameters
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-drich.Solver = 'Richards'
-drich.Solver.MaxIter = 5
+default_richards.Solver = "Richards"
+default_richards.Solver.MaxIter = 50
 
-drich.Solver.Nonlinear.MaxIter = 10
-drich.Solver.Nonlinear.ResidualTol = 1e-9
-drich.Solver.Nonlinear.EtaChoice = 'EtaConstant'
-drich.Solver.Nonlinear.EtaValue = 1e-5
-drich.Solver.Nonlinear.UseJacobian = True
-drich.Solver.Nonlinear.DerivativeEpsilon = 1e-2
+default_richards.Solver.Nonlinear.MaxIter = 10
+default_richards.Solver.Nonlinear.ResidualTol = 1e-9
+default_richards.Solver.Nonlinear.EtaChoice = "EtaConstant"
+default_richards.Solver.Nonlinear.EtaValue = 1e-5
+default_richards.Solver.Nonlinear.UseJacobian = True
+default_richards.Solver.Nonlinear.DerivativeEpsilon = 1e-2
 
-drich.Solver.Linear.KrylovDimension = 10
+default_richards.Solver.Linear.KrylovDimension = 10
 
-drich.Solver.Linear.Preconditioner = 'PFMG'
+default_richards.Solver.Linear.Preconditioner = "PFMG"
 
-drich.Solver.PrintVelocities = True
+default_richards.Solver.PrintVelocities = True
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Run ParFlow
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-new_output_dir_name = get_absolute_path('test_output/default_richards')
+new_output_dir_name = get_absolute_path("test_output/default_richards")
 mkdir(new_output_dir_name)
-correct_output_dir_name = get_absolute_path('../correct_output')
-drich.run(working_directory=new_output_dir_name)
+correct_output_dir_name = get_absolute_path("../correct_output")
+default_richards.run(working_directory=new_output_dir_name)
 
 passed = True
 
 test_files = ["perm_x", "perm_y", "perm_z"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.pfb"
-    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+    if not pf_test_file(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in {test_file}",
+    ):
         passed = False
 
 
+sig_digits = 6
 abs_value = 1e-12
-for i in range(6):
-    timestep = str(i).rjust(5, '0')
+for i in range(51):
+    timestep = str(i).rjust(5, "0")
     filename = f"/{run_name}.out.press.{timestep}.pfb"
-    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+    if not pf_test_file(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in Pressure for timestep {timestep}",
+    ):
         passed = False
     filename = f"/{run_name}.out.satur.{timestep}.pfb"
-    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+    if not pf_test_file(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in Saturation for timestep {timestep}",
+    ):
         passed = False
     filename = f"/{run_name}.out.velx.{timestep}.pfb"
-    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in x-velocity for timestep {timestep}", abs_value):
+    if not pf_test_file_with_abs(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in x-velocity for timestep {timestep}",
+        sig_digits,
+        abs_value,
+    ):
         passed = False
     filename = f"/{run_name}.out.vely.{timestep}.pfb"
-    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in y-velocity for timestep {timestep}", abs_value):
+    if not pf_test_file_with_abs(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in y-velocity for timestep {timestep}",
+        sig_digits,
+        abs_value,
+    ):
         passed = False
     filename = f"/{run_name}.out.vely.{timestep}.pfb"
-    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in z-velocity for timestep {timestep}", abs_value):
+    if not pf_test_file_with_abs(
+        new_output_dir_name + filename,
+        correct_output_dir_name + filename,
+        f"Max difference in z-velocity for timestep {timestep}",
+        sig_digits,
+        abs_value,
+    ):
         passed = False
-
-rm(new_output_dir_name)
 
 if passed:
     print(f"{run_name} : PASSED")
