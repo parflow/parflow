@@ -191,8 +191,8 @@ default_single.TimingInfo.DumpInterval = -1
 #-----------------------------------------------------------------------------
 
 default_single.Geom.Porosity.GeomNames = 'background'
-default_single.Geom.background.Porosity.Type = 'Constant'
-default_single.Geom.background.Porosity.Value = 1.0
+default_single.Geom.background.Porosity.Type = 'PFBFile'
+default_single.Geom.background.Porosity.FileName = 'default_single_input_porosity.pfb'
 
 #-----------------------------------------------------------------------------
 # Domain
