@@ -296,6 +296,7 @@ sloping_slab.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
 
 
 sloping_slab.Reservoirs.Names = 'reservoir'
+sloping_slab.Reservoirs.Overland_Flow_Solver = 'OverlandFlow'
 
 sloping_slab.Reservoirs.reservoir.Intake_X = 25
 sloping_slab.Reservoirs.reservoir.Intake_Y = 25

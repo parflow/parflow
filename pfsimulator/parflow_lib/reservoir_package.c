@@ -153,12 +153,12 @@ bool subgrid_lives_on_this_rank(Subgrid* subgrid, Grid *grid){
 void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* problem_data, Grid* grid){
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
-  Subvector   *slope_x_subvector ;
+  Subvector   *slope_x_subvector;
   Subvector   *slope_y_subvector;
   int index_slope_x;
   int index_slope_y;
-  double *slope_x_ptr = SubvectorData(slope_x_subvector);;
-  double *slope_y_ptr = SubvectorData(slope_y_subvector);
+  double *slope_x_ptr;
+  double *slope_y_ptr;
   int slope_i, slope_j;
   int subgrid_index;
   Subgrid *subgrid;
@@ -167,6 +167,8 @@ void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* prob
     subgrid = GridSubgrid(grid, subgrid_index);
     slope_x_subvector = VectorSubvector(slope_x, subgrid_index);
     slope_y_subvector = VectorSubvector(slope_y, subgrid_index);
+    slope_x_ptr = SubvectorData(slope_x_subvector);
+    slope_y_ptr = SubvectorData(slope_y_subvector);
     index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
     subgrid_x_floor = SubgridIX(subgrid);
     subgrid_y_floor = SubgridIY(subgrid);
@@ -216,12 +218,12 @@ void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* prob
 void stop_outlet_flow_at_cell_overland_flow(int i, int j, ProblemData* problem_data, Grid* grid){
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
-  Subvector   *slope_x_subvector ;
+  Subvector   *slope_x_subvector;
   Subvector   *slope_y_subvector;
   int index_slope_x;
   int index_slope_y;
-  double *slope_x_ptr = SubvectorData(slope_x_subvector);
-  double *slope_y_ptr = SubvectorData(slope_y_subvector);
+  double *slope_x_ptr;
+  double *slope_y_ptr;
   int slope_i, slope_j;
   int subgrid_index;
   Subgrid *subgrid;
@@ -231,6 +233,9 @@ void stop_outlet_flow_at_cell_overland_flow(int i, int j, ProblemData* problem_d
     slope_x_subvector = VectorSubvector(slope_x, subgrid_index);
     slope_y_subvector = VectorSubvector(slope_y, subgrid_index);
     index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+    index_slope_x = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+    slope_x_ptr = SubvectorData(slope_x_subvector);
+    slope_y_ptr = SubvectorData(slope_y_subvector);
     slope_x_ptr[index_slope_x] = 0;
     slope_y_ptr[index_slope_y] = 0;
   }

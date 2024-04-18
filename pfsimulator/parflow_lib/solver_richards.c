@@ -5405,7 +5405,7 @@ SolverRichardsNewPublicXtra(char *name)
   sprintf(key, "%s.PrintReservoirs", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
-  public_xtra->print_wells = switch_value;
+  public_xtra->print_reservoirs = switch_value;
 
   // SGS TODO
   // Need to add this to the user manual, this is new for LSM stuff that was added.

@@ -289,7 +289,7 @@ overland.Patch.channel.BCPressure.Type = 'OverlandFlow'
 #-----------------------------------------------------------------------------
 # Draining right-- (negative X slope channel)
 #-----------------------------------------------------------------------------
-run_dir = get_absolute_path('test_output/tilted_v_with_reservoir')
+run_dir = get_absolute_path('test_output/tilted_v_with_reservoir_overland_flow')
 
 mkdir(run_dir)
 
@@ -309,10 +309,10 @@ write_pfb_to_run_dir(slopey, 'slopey.pfb', run_dir)
 
 slopex = np.ones((gridnz, gridny, gridnx))
 slopex = np.round(slopex*-0.01,2)
-# slopex[:, MIDDLE_ROW, MIDDLE_ROW] = np.round(0.00,2)
 write_pfb_to_run_dir(slopex, 'slopex.pfb', run_dir)
 
 overland.Reservoirs.Names = 'reservoir'
+overland.Reservoirs.Overland_Flow_Solver = 'OverlandFlow'
 overland.Reservoirs.reservoir.Intake_X = 12.5
 overland.Reservoirs.reservoir.Intake_Y = 12.5
 overland.Reservoirs.reservoir.Release_X = 13.5
@@ -326,11 +326,63 @@ overland.Reservoirs.reservoir.Storage = 50
 overland.Reservoirs.reservoir.Min_Release_Storage = 0
 overland.Reservoirs.reservoir.Release_Rate = 1
 
-
 dist_and_run(run_dir)
 
 correct_output_dir = get_absolute_path('../correct_output')
 correct_pressure = parflow.read_pfb(f"{correct_output_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
+our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
+
+assert np.array_equal(correct_pressure, our_pressure)
+
+
+
+#-----------------------------------------------------------------------------
+# Draining right-- (negative X slope channel)
+#-----------------------------------------------------------------------------
+run_dir = get_absolute_path('test_output/tilted_v_with_reservoir_overland_kinematic')
+overland.Patch.slope1.BCPressure.Type = 'OverlandKinematic'
+overland.Patch.slope2.BCPressure.Type = 'OverlandKinematic'
+overland.Patch.channel.BCPressure.Type = 'OverlandKinematic'
+
+mkdir(run_dir)
+
+
+cp(solid_fname, run_dir)
+cp(f"{inputs_dir}/tilted_v_with_reservoir_initial_pressure.pfb", run_dir)
+cp(f"{inputs_dir}/tilted_v_with_reservoir_initial_pressure.pfb.dist", run_dir)
+overland.GeomInput.domaininput.FileName = solid_fname
+
+#Make slope files
+MIDDLE_ROW = int(np.floor(gridny/2))
+slopey = np.full((gridnz, gridny, gridnx), 1.0)
+slopey[:, 0:MIDDLE_ROW, :] = np.round(-0.01,2)
+slopey[:, MIDDLE_ROW+1:, :] = np.round(0.01,2)
+# slopey[:, MIDDLE_ROW, :] = np.round(0.00,2)
+write_pfb_to_run_dir(slopey, 'slopey.pfb', run_dir)
+
+slopex = np.ones((gridnz, gridny, gridnx))
+slopex = np.round(slopex*-0.01,2)
+write_pfb_to_run_dir(slopex, 'slopex.pfb', run_dir)
+
+overland.Reservoirs.Names = 'reservoir'
+overland.Reservoirs.Overland_Flow_Solver = 'OverlandKinematic'
+overland.Reservoirs.reservoir.Intake_X = 12.5
+overland.Reservoirs.reservoir.Intake_Y = 12.5
+overland.Reservoirs.reservoir.Release_X = 13.5
+overland.Reservoirs.reservoir.Release_Y = 12.5
+overland.Reservoirs.reservoir.Has_Secondary_Intake_Cell = -1
+overland.Reservoirs.reservoir.Secondary_Intake_X = -1
+overland.Reservoirs.reservoir.Secondary_Intake_Y = -1
+
+overland.Reservoirs.reservoir.Max_Storage = 100
+overland.Reservoirs.reservoir.Storage = 50
+overland.Reservoirs.reservoir.Min_Release_Storage = 0
+overland.Reservoirs.reservoir.Release_Rate = 0
+
+dist_and_run(run_dir)
+
+correct_output_dir = get_absolute_path('../correct_output')
+correct_pressure = parflow.read_pfb(f"{correct_output_dir}/tilted_v_with_reservoir_overland_kinematic.out.press.00010.pfb")
 our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
 
 assert np.array_equal(correct_pressure, our_pressure)
