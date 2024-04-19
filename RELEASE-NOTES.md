@@ -1,3 +1,92 @@
+# ParFlow Release Notes 3.13.0
+------------------------------
+
+This release contains several bug fixes and minor feature updates.
+
+ParFlow development and bug-fixes would not be possible without contributions of the ParFlow community.  Thank you for all the great contributions.
+
+## Overview of Changes
+
+## User Visible Changes
+
+### Building ParFlow-CLM only is supported
+
+Configuration flags have been added to support building only ParFlow-CLM for use cases where only CLM is desired.
+
+### Kokkos version support updated to version 4.2.01
+
+The Kokkos supported version has been updated to version 4.2.01.  This is the version used in our regression suite.  Other versions may or may not work.
+
+### OASIS version support updated to version 5.1.
+
+The OASIS version used in the regression test suite was updated to OASIS 5.1.
+
+### vegm file reading performance improvements in Python pftools
+
+Improve speed of reading large vegm files in the Python read_vegm function.
+
+### Documentation updates
+
+Clarified top flux boundary conditions (e.g., OverlandFlow, SeepageFace) and EvapTrans files sign convention.  Typo in Haverkamp saturation formula: alpha replaced with A.  Key names "TensorByFileX" renamed to the correct "TensorFileX" key name.
+
+## Bug Fixes
+
+### Python pftools StartCount incorrect bounds check
+
+The StartCount input value was incorrectly checked to be -1 or 0.  This prevented setting to larger value for doing a restart.  Larger values are now allowed.
+
+### Python pftools reading porosity from a file not working
+
+The Python input was throwing an error if the type for the porosity input was set to PFBFile.   This has been fixed and using a PFB file for input should work in Python.
+
+### Memory corruption when using the PressureFile option
+
+The PressureFile option (and others) were causing memory corruption due to multiple frees of the filenames. Removed the incorrect free calls in the shutdown logic.  This will fix some segmentation issues seen by users.
+
+### 
+
+## Internal/Developer Changes
+
+### Direchelt boundary condition fix in nl_function_eval
+
+Z_mult was incorrectly being divided by 2 in nl_function_eval.
+
+### GitHub Actions updated
+
+The CI testing suite was using out-dated GitHub Action modules; the modules have been updated.
+
+### Added Python CI test result checks
+
+The Python tests were incorrectly not checking results of runs and passing if the test ran.   Checks have been added as in the TCL test suite to check output results for regressions.
+
+See the `pf_test_file` and `pf_test_file_with_abs` Python methods.
+
+### Python CI tests for optional external package dependencies
+
+Python CI tests are now guarded for optional package dependencies such as Hypre, Silo, etc.
+
+See the `pf_test_file` and `pf_test_file_with_abs` Python methods.
+
+### Compilation with Intel-OneAPI compiler fixes
+
+The Intel-OneAPI compiler with fast-floating-point mode does not support isnan() (always evaluates to false).   NaN sentinel value was replaced with FLT_MIN.
+
+### Improvements to C/C++ standards compliance
+
+Minor code cleanup to remove old K&R style definitions and declarations.
+
+### Updated etrace
+
+Update the etrace script to work with Python3.
+
+### 
+
+## Known Issues
+
+See https://github.com/parflow/parflow/issues for current bug/issue reports.
+
+
+********************************************************************************
 # ParFlow Release Notes 3.12.0
 ------------------------------
 

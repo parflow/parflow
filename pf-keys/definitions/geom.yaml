@@ -813,6 +813,7 @@ Geom:
           EnumDomain:
             enum_list:
               - Constant
+              - PFBFile
 
       Value:
         help: >
