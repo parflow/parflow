@@ -2,29 +2,34 @@
 # this runs CLM test case
 #-----------------------------------------------------------------------------
 
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import mkdir, cp, get_absolute_path
+from parflow.tools.fs import mkdir, cp, get_absolute_path, rm
+from parflow.tools.io import read_pfb, write_pfb
+from parflow.tools.compare import pf_test_file
+from parflow.tools.top import compute_top, extract_top
 
 #-----------------------------------------------------------------------------
 # Making output directories and copying input files
 #-----------------------------------------------------------------------------
 
-clm_jac = Run("clm_jac", __file__)
+run_name = "clm"
+clm_jac = Run(run_name, __file__)
 
-dir_name = get_absolute_path('test_output/clm_jac')
-mkdir(dir_name)
+new_output_dir_name = get_absolute_path('test_output/clm_jac')
+mkdir(new_output_dir_name)
 
 directories = ['qflx_evap_grnd', 'eflx_lh_tot', 'qflx_evap_tot', 'qflx_tran_veg', 'correct_output',
                'qflx_infl', 'swe_out', 'eflx_lwrad_out', 't_grnd', 'diag_out', 'qflx_evap_soi', 'eflx_soil_grnd',
                'eflx_sh_tot', 'qflx_evap_veg', 'qflx_top_soil']
 
 for directory in directories:
-    mkdir(dir_name + '/' + directory)
+    mkdir(new_output_dir_name + '/' + directory)
 
-cp('$PF_SRC/test/tcl/clm/drv_clmin.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/drv_vegm.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/drv_vegp.dat', dir_name)
-cp('$PF_SRC/test/tcl/clm/narr_1hr.sc3.txt.0', dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_clmin.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_vegm.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/drv_vegp.dat', new_output_dir_name)
+cp('$PF_SRC/test/tcl/clm/narr_1hr.sc3.txt.0', new_output_dir_name)
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -35,10 +40,15 @@ clm_jac.FileVersion = 4
 #-----------------------------------------------------------------------------
 # Process Topology
 #-----------------------------------------------------------------------------
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
 
-clm_jac.Process.Topology.P = 1
-clm_jac.Process.Topology.Q = 1
-clm_jac.Process.Topology.R =1
+clm_jac.Process.Topology.P = args.p
+clm_jac.Process.Topology.Q = args.q
+clm_jac.Process.Topology.R = args.r
 
 #-----------------------------------------------------------------------------
 # Computational Grid
@@ -296,13 +306,10 @@ clm_jac.Solver.Drop = 1E-20
 clm_jac.Solver.AbsTol = 1E-9
 
 clm_jac.Solver.LSM = 'CLM'
-clm_jac.Solver.WriteSiloCLM = True
 clm_jac.Solver.CLM.MetForcing = '1D'
 clm_jac.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
 clm_jac.Solver.CLM.MetFilePath = '.'
 
-clm_jac.Solver.WriteSiloEvapTrans = True
-clm_jac.Solver.WriteSiloOverlandBCFlux = True
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
@@ -319,4 +326,47 @@ clm_jac.Geom.domain.ICPressure.RefPatch = 'z_upper'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-clm_jac.run(working_directory=dir_name)
+correct_output_dir_name = get_absolute_path("../../correct_output/clm_output")
+clm_jac.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(6):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+mask = read_pfb(new_output_dir_name + "/clm.out.mask.pfb")
+top = compute_top(mask)
+write_pfb(new_output_dir_name + "/clm.out.top_index.pfb", top)
+
+data = read_pfb(new_output_dir_name + "/clm.out.press.00000.pfb")
+top_data = extract_top(data, top)
+write_pfb(new_output_dir_name + "/clm.out.top.press.00000.pfb", top_data)
+
+
+filename = "/clm.out.top_index.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in top_index"):
+    passed = False
+
+filename = "/clm.out.top.press.00000.pfb"
+if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in top_clm.out.press.00000.pfb"):
+    passed = False
+
+rm(new_output_dir_name)    
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

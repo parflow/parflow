@@ -3,18 +3,27 @@
 #  similar to that in Kollet and Maxwell (2006) AWR
 #---------------------------------------------------------
 
+import sys, argparse
 from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.fs import mkdir, get_absolute_path, rm
+from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 
-dover = Run("dover", __file__)
+run_name = "default_overland"
+dover = Run(run_name, __file__)
 
 #---------------------------------------------------------
 
 dover.FileVersion = 4
 
-dover.Process.Topology.P = 1
-dover.Process.Topology.Q = 1
-dover.Process.Topology.R = 1
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--p', default=1)
+parser.add_argument('-q', '--q', default=1)
+parser.add_argument('-r', '--r', default=1)
+args = parser.parse_args()
+
+dover.Process.Topology.P = args.p
+dover.Process.Topology.Q = args.q
+dover.Process.Topology.R = args.r
 
 #---------------------------------------------------------
 # Computational Grid
@@ -377,6 +386,8 @@ dover.Solver.PrintSubsurf = False
 dover.Solver.Drop = 1E-20
 dover.Solver.AbsTol = 1E-9
 
+dover.Solver.PrintVelocities = True
+
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
@@ -393,6 +404,45 @@ dover.Geom.domain.ICPressure.RefPatch = 'z_upper'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/dover')
-mkdir(dir_name)
-dover.run(working_directory=dir_name)
+new_output_dir_name = get_absolute_path('test_output/default_overland')
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+dover.run(working_directory=new_output_dir_name)
+
+passed = True
+sig_digits = 5
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                        f"Max difference in {test_file}", sig_digits):
+        passed = False
+
+test_files = ["press", "satur"]
+for i in range(5):
+    for test_file in test_files:
+        timestep = str(i).rjust(5, '0')
+        filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                            f"Max difference in {test_file} for timestep {timestep}", sig_digits):
+            passed = False
+
+
+abs_value = 1e-12
+test_files = ["velx", "vely", "velz"]
+for i in range(5):
+    for test_file in test_files:
+        timestep = str(i).rjust(5, '0')
+        filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
+        if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
+                                     f"Max difference in {test_file} for timestep {timestep}", abs_value, sig_digits):
+            passed = False
+
+            
+rm(new_output_dir_name)
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
