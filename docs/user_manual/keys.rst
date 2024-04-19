@@ -4933,7 +4933,7 @@ help with slope errors and issues and provides some diagnostic information.  The
       <runname>.Solver.ResetSurfacePressure.ResetPressure  = 0.0    ## Python syntax
 
 
-*logical* **Solver.SurfacePredictor** False This key activates a routine that uses the evap trans flux and available water storage in a surface cell to predict whether an unsaturated cell will pond during the next timestep. The pressure values are set with the key below.
+*logical* **Solver.SurfacePredictor** False This key activates a routine that uses the evap trans flux, Darcy flux, and available water storage in a surface cell to predict whether an unsaturated cell will pond during the next timestep. The pressure values are set with the key below.
 .. container:: list
 
    ::
@@ -4941,7 +4941,7 @@ help with slope errors and issues and provides some diagnostic information.  The
       pfset Solver.SurfacePredictor        True        ## TCL syntax
       <runname>.Solver.SurfacePredictor  = "True"    ## Python syntax
 
-*double* **Solver.SurfacePredictor.PressureValue** 0.00001 This key specifies a surface pressure if the **SurfacePredictor** key above is True and ponded conditions are predicted at a surface cell.
+*double* **Solver.SurfacePredictor.PressureValue** 0.00001 This key specifies a surface pressure if the **SurfacePredictor** key above is True and ponded conditions are predicted at a surface cell.  A negative value allows the surface predictor algorithm to esimate the new surface pressure based on surrounding fluxes.
 
 .. container:: list
 
