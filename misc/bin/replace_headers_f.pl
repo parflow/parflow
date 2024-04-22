@@ -133,7 +133,7 @@ for my $file (@filesToProcess) {
     # Do substitutions
     #
 #    $str =~ s!/*BHEADER(.*)EHEADER*/!!sgm;
-    $str =~ s!cBHEADER(.*)EHEADER\**!$cpytxt!sgm;
+    $str =~ s!cBHEADER(.*?)EHEADER\**!$cpytxt!sgm;
 
     #
     # Write new file
