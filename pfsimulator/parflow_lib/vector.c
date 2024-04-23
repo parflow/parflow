@@ -244,7 +244,7 @@ static Vector  *NewTempVector(
   memset(new_vector, 0, sizeof(Vector));
 
   (new_vector->subvectors) = talloc(Subvector *, GridNumSubgrids(grid));    /* 1st arg.: variable type;
-                                                                              * 2nd arg.: # of elements to be allocated*/
+                                                                             * 2nd arg.: # of elements to be allocated*/
   memset(new_vector->subvectors, 0, GridNumSubgrids(grid) * sizeof(Subvector *));
 
   data_size = 0;
@@ -348,7 +348,7 @@ Vector  *NewVectorType(
 
 #ifdef HAVE_SAMRAI
   enum ParflowGridType grid_type = invalid_grid_type;
-  
+
   switch (type)
   {
     case vector_cell_centered:

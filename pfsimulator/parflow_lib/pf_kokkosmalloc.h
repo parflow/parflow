@@ -37,10 +37,10 @@
 #define tfree_amps_kokkos(ptr) amps_TFree_managed(ptr)
 
 #define talloc_kokkos(type, count) \
-  ((count) ? (type*)_talloc_device(sizeof(type) * (unsigned int)(count)) : NULL)
+        ((count) ? (type*)_talloc_device(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #define ctalloc_kokkos(type, count) \
-  ((count) ? (type*)_ctalloc_device(sizeof(type) * (unsigned int)(count)) : NULL)
+        ((count) ? (type*)_ctalloc_device(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #define tfree_kokkos(ptr) if (ptr) _tfree_device(ptr); else {}
 

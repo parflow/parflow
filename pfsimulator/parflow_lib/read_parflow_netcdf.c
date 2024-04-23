@@ -46,15 +46,15 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
   Subvector      *subvector;
-  
+
   int g;
-  
+
   int ncRID, varID;
-  
+
   OpenNCFile(fileName, &ncRID);
 
   nc_inq_varid(ncRID, varName, &varID);
-  
+
   ForSubgridI(g, subgrids)
   {
     subgrid = SubgridArraySubgrid(subgrids, g);
@@ -69,7 +69,7 @@ void OpenNCFile(char *file_name, int *ncRID)
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
   char *default_val = "None";
-  
+
   sprintf(key, "NetCDF.ROMIOhints");
   switch_name = GetStringDefault(key, "None");
   if (strcmp(switch_name, default_val) != 0)
@@ -90,7 +90,7 @@ void OpenNCFile(char *file_name, int *ncRID)
       MPI_Info_set(romio_info, romio_key, value);
     }
     int res = nc_open_par(file_name, NC_MPIIO, amps_CommWorld, romio_info, ncRID);
-    if(res != NC_NOERR)
+    if (res != NC_NOERR)
     {
       amps_Printf("Error: nc_open_par failed for file <%s>\n", file_name);
     }
@@ -98,7 +98,7 @@ void OpenNCFile(char *file_name, int *ncRID)
   else
   {
     int res = nc_open_par(file_name, NC_MPIIO, amps_CommWorld, MPI_INFO_NULL, ncRID);
-    if(res != NC_NOERR)
+    if (res != NC_NOERR)
     {
       amps_Printf("Error: nc_open_par failed for file <%s>\n", file_name);
     }

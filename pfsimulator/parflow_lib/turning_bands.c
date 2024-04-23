@@ -370,7 +370,7 @@ char *geom_name;
   else
   {
     NA_InputError("Error: Invalid True/False value for key <%s> was <%s>\n",
-               key, tmp);
+                  key, tmp);
   }
 
   sprintf(key, "Geom.%s.Perm.Seed", geom_name);

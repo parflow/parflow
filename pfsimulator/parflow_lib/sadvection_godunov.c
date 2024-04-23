@@ -134,15 +134,15 @@ void     SatGodunov(
   SubregionArray   *subregion_array;
 
   Subgrid          *subgrid,
-    *well_subgrid,
-    *tmp_subgrid;
+                   *well_subgrid,
+                   *tmp_subgrid;
   Subregion        *subregion;
   Subvector        *subvector,
-    *subvector_scal,
-    *subvector_rhs,
-    *subvector_xvel,
-    *subvector_yvel,
-    *subvector_zvel;
+                   *subvector_scal,
+                   *subvector_rhs,
+                   *subvector_xvel,
+                   *subvector_yvel,
+                   *subvector_zvel;
 
   ComputePkg       *compute_pkg;
   Region           *compute_reg = NULL;
@@ -152,10 +152,10 @@ void     SatGodunov(
   int nx, ny, nz;
   double dx, dy, dz;
   int nx_s, ny_s, nz_s,
-    nx_w, ny_w, nz_w,
-    nx_xv, ny_xv, nz_xv,
-    nx_yv, ny_yv, nz_yv,
-    nx_zv, ny_zv, nz_zv;
+      nx_w, ny_w, nz_w,
+      nx_xv, ny_xv, nz_xv,
+      nx_yv, ny_yv, nz_yv,
+      nx_zv, ny_zv, nz_zv;
 
   int i, j, k, si, wi, xi, yi, zi;
   int index, flopest;

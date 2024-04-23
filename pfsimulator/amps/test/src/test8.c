@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
   int me = amps_Rank(amps_CommWorld);
 
-  if(me == 0)
+  if (me == 0)
   {
     FILE* test_file;
 

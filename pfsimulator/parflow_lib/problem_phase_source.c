@@ -370,7 +370,7 @@ void         PhaseSource(
           data = SubvectorElt(ps_sub, ix, iy, iz);
 
           int ip = 0;
-          int ips = 0;          
+          int ips = 0;
 
           if (WellDataPhysicalMethod(well_data_physical)
               == FLUX_WEIGHTED)
@@ -380,16 +380,20 @@ void         PhaseSource(
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
             {
               double weight = (px[ip] / avg_x) * (area_x / area_sum)
-                      + (py[ip] / avg_y) * (area_y / area_sum)
-                      + (pz[ip] / avg_z) * (area_z / area_sum);
+                              + (py[ip] / avg_y) * (area_y / area_sum)
+                              + (pz[ip] / avg_z) * (area_z / area_sum);
               data[ips] += weight * flux;
             });
-          }else{
-            double weight = -FLT_MAX;            
+          }
+          else
+          {
+            double weight = -FLT_MAX;
             if (WellDataPhysicalMethod(well_data_physical)
-                == FLUX_STANDARD)weight = 1.0;
+                == FLUX_STANDARD)
+              weight = 1.0;
             else if (WellDataPhysicalMethod(well_data_physical)
-                     == FLUX_PATTERNED)weight = 0.0;
+                     == FLUX_PATTERNED)
+              weight = 0.0;
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                       ip, nx_p, ny_p, nz_p, 1, 1, 1,
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
@@ -542,7 +546,7 @@ PFModule  *PhaseSourceNewPublicXtra(
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }     /* End case statement */
   }

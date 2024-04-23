@@ -80,9 +80,9 @@ typedef struct {
 #define DataGridType(data)  ((data)->grid_type)
 #define DataTotalMem(data)  ((data)->total_members)
 #define DataNum(data)       ((data)->num)
-#define DataMember(data, hashkey, entryPtr)                           \
-  (((entryPtr = Tcl_FindHashEntry(&DataMembers(data), hashkey)) != 0) \
-   ? (Databox*)Tcl_GetHashValue(entryPtr)                             \
+#define DataMember(data, hashkey, entryPtr)                                 \
+        (((entryPtr = Tcl_FindHashEntry(&DataMembers(data), hashkey)) != 0) \
+   ? (Databox*)Tcl_GetHashValue(entryPtr)                                   \
    : (Databox*)NULL)
 #define FreeData(data) (free((Data*)data))
 
@@ -151,9 +151,9 @@ int GWStorageCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *
 int SurfaceRunoffCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 int WaterTableDepthCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 
-int SavePFVTKCommand (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
-int MakePatchySolidCommand (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
-int pfsolFmtConvert (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
+int SavePFVTKCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
+int MakePatchySolidCommand(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
+int pfsolFmtConvert(ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 
 void Axpy(double alpha, Databox *X, Databox *Y);
 void Sum(Databox *X, double *sum);

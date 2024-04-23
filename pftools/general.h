@@ -41,10 +41,10 @@ extern "C" {
  *--------------------------------------------------------------------------*/
 
 #define talloc(type, count) \
-  ((count > 0) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+        ((count > 0) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 #define ctalloc(type, count) \
-  ((count > 0) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        ((count > 0) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define tfree(ptr) if (ptr) free(ptr); else

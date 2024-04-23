@@ -139,11 +139,11 @@ void  FreeUserGrid(
 
 #define USERGRID_MIN(x, y) ((x) < (y) ? (x) : (y))
 
-#define pqr_to_xyz(pqr, mxyz, lxyz, xyz)   (pqr*mxyz + USERGRID_MIN(pqr, lxyz) + xyz)
+#define pqr_to_xyz(pqr, mxyz, lxyz, xyz)   (pqr * mxyz + USERGRID_MIN(pqr, lxyz) + xyz)
 
 #define pqr_to_nxyz(pqr, mxyz, lxyz)  (pqr < lxyz ? mxyz + 1 : mxyz)
 
-#define pqr_to_process(p, q, r, P, Q, R)  ((((r)*(Q)) + (q))*(P) + (p))
+#define pqr_to_process(p, q, r, P, Q, R)  ((((r) * (Q)) + (q)) * (P) + (p))
 
 SubgridArray   *CopyGrid(
                          SubgridArray *all_subgrids)

@@ -81,10 +81,10 @@ int main(int argc, char *argv[])
       result = strcmp(recvd_string, string);
       if (result)
       {
-	result |= 1;
+        result |= 1;
         amps_Printf("############## ERROR - strings don't match\n");
       }
-	
+
 
       if (loop != temp)
       {

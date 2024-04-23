@@ -97,7 +97,7 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define SubgridArraySubgrid(subgrid_array, i) \
-  ((Subgrid*)SubregionArraySubregion(subgrid_array, i))
+        ((Subgrid*)SubregionArraySubregion(subgrid_array, i))
 #define SubgridArraySize(subgrid_array)  SubregionArraySize(subgrid_array)
 
 /*--------------------------------------------------------------------------
@@ -124,21 +124,21 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define NewSubgrid(x, y, z, nx, ny, nz, rx, ry, rz, process) \
-  ((Subgrid*)NewSubregion(x, y, z, nx, ny, nz, 1, 1, 1, rx, ry, rz, process))
+        ((Subgrid*)NewSubregion(x, y, z, nx, ny, nz, 1, 1, 1, rx, ry, rz, process))
 
 #define NewSubgridArray()  ((SubgridArray*)NewSubregionArray())
 
 #define FreeSubgrid(subgrid)  FreeSubregion((Subregion*)subgrid)
 
 #define FreeSubgridArray(subgrid_array) \
-  FreeSubregionArray((SubregionArray*)subgrid_array)
+        FreeSubregionArray((SubregionArray*)subgrid_array)
 
 #define AppendSubgrid(subgrid, subgrid_array) \
-  AppendSubregion((Subregion*)subgrid, (SubregionArray**)subgrid_array)
+        AppendSubregion((Subregion*)subgrid, (SubregionArray**)subgrid_array)
 
-#define AppendSubgridArray(subgrid_array_0, subgrid_array_1) \
-  AppendSubregionArray((SubregionArray*)subgrid_array_0,     \
-                       (SubregionArray**)subgrid_array_1)
+#define AppendSubgridArray(subgrid_array_0, subgrid_array_1)       \
+        AppendSubregionArray((SubregionArray*)subgrid_array_0,     \
+                             (SubregionArray**)subgrid_array_1)
 
 
 /* grid.c */

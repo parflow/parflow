@@ -124,7 +124,7 @@ typedef struct {
 
 #define SubmatrixData(submatrix) ((submatrix)->data)
 #define SubmatrixStencilData(submatrix, s) \
-  (((submatrix)->data) + ((submatrix)->data_index[s]))
+        (((submatrix)->data) + ((submatrix)->data_index[s]))
 
 #define SubmatrixDataSpace(submatrix)  ((submatrix)->data_space)
 
@@ -140,18 +140,18 @@ typedef struct {
 #define SubmatrixSY(submatrix)   (SubregionSY(SubmatrixDataSpace(submatrix)))
 #define SubmatrixSZ(submatrix)   (SubregionSZ(SubmatrixDataSpace(submatrix)))
 
-#define SubmatrixEltIndex(submatrix, x, y, z)                   \
-  (((x) - SubmatrixIX(submatrix)) / SubmatrixSX(submatrix) +    \
-   (((y) - SubmatrixIY(submatrix)) / SubmatrixSY(submatrix) +   \
-    (((z) - SubmatrixIZ(submatrix)) / SubmatrixSZ(submatrix)) * \
-    SubmatrixNY(submatrix)) *                                   \
-   SubmatrixNX(submatrix))
+#define SubmatrixEltIndex(submatrix, x, y, z)                         \
+        (((x) - SubmatrixIX(submatrix)) / SubmatrixSX(submatrix) +    \
+         (((y) - SubmatrixIY(submatrix)) / SubmatrixSY(submatrix) +   \
+          (((z) - SubmatrixIZ(submatrix)) / SubmatrixSZ(submatrix)) * \
+          SubmatrixNY(submatrix)) *                                   \
+         SubmatrixNX(submatrix))
 
 #define SubmatrixElt(submatrix, s, x, y, z) \
-  (SubmatrixStencilData(submatrix, s) + SubmatrixEltIndex(submatrix, x, y, z))
+        (SubmatrixStencilData(submatrix, s) + SubmatrixEltIndex(submatrix, x, y, z))
 
 #define SubmatrixSize(submatrix) SubmatrixNX((submatrix)) * SubmatrixNY((submatrix)) * \
-  SubmatrixNZ((submatrix))
+        SubmatrixNZ((submatrix))
 
 
 /*--------------------------------------------------------------------------

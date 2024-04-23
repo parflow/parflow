@@ -100,9 +100,9 @@ BoxArray* NewBoxArray(BoxList *box_list)
       BoxCopy(&(box_array->boxes[i]), &(element->box));
       for (int dim = 0; dim < DIM; dim++)
       {
-        if(i == 0 || box_array->boxlimits[dim] > box_array->boxes[i].lo[dim])
+        if (i == 0 || box_array->boxlimits[dim] > box_array->boxes[i].lo[dim])
           box_array->boxlimits[dim] = box_array->boxes[i].lo[dim];
-        if(i == 0 || box_array->boxlimits[DIM + dim] < box_array->boxes[i].up[dim])
+        if (i == 0 || box_array->boxlimits[DIM + dim] < box_array->boxes[i].up[dim])
           box_array->boxlimits[DIM + dim] = box_array->boxes[i].up[dim];
       }
       element = element->next;

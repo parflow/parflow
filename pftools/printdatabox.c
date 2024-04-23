@@ -726,7 +726,7 @@ void            PrintVTK(
     double *DTd;
     float *DTf;
     // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
-    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
+    DTf = (float*)calloc(nxyzp, tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
@@ -776,7 +776,7 @@ void            PrintTFG_VTK(
   int i;
   float *pnt;
   // pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
-  pnt = (float*)calloc(nxyzp * 3,tools_SizeofFloat);
+  pnt = (float*)calloc(nxyzp * 3, tools_SizeofFloat);
   for (i = 0; i < (nxyzp * 3); ++i)
   {
     pnt[i] = (float)pnts[i];
@@ -801,7 +801,7 @@ void            PrintTFG_VTK(
     double *DTd;
     float *DTf;
     // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
-    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
+    DTf = (float*)calloc(nxyzp, tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
 
     for (j = 0; j < (NX * NY * NZ); ++j)
@@ -881,7 +881,7 @@ void            PrintCLMVTK(
     float  *DTf;
     float  *val;
     // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
-    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
+    DTf = (float*)calloc(nxyzp, tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
@@ -1001,7 +1001,7 @@ void            PrintTFG_CLMVTK(
 //    int     i;
   float *pnt;
   // pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
-  pnt = (float*)calloc(nxyzp * 3,tools_SizeofFloat);
+  pnt = (float*)calloc(nxyzp * 3, tools_SizeofFloat);
   for (i = 0; i < (nxyzp * 3); ++i)
   {
     pnt[i] = (float)pnts[i];
@@ -1029,7 +1029,7 @@ void            PrintTFG_CLMVTK(
     float  *DTf;
     float  *val;
     // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
-    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
+    DTf = (float*)calloc(nxyzp, tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {

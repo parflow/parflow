@@ -74,8 +74,8 @@ char **argv;
   char         *end_of_file;
 
   float        *x_new,
-    *y_new,
-    *z_new;
+               *y_new,
+               *z_new;
 
   float A[9];
   float b[3];
