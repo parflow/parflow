@@ -15,7 +15,7 @@
 
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
-UNCRUSTIFY_VERSION='0.67'
+UNCRUSTIFY_VERSION='0.77.1'
 
 # Exit script
 # $1 (required): Message to print on exit
@@ -88,10 +88,10 @@ function main() {
 
    check_version
 
-   files=$(find . -name \*.[ch] | grep -v './build\|third-party')
+   files=$(find . -name \*.[ch] | grep -v './build\|third_party')
    for i in $files
    do
-      uncrustify -l C --replace --no-backup -c bin/parflow.cfg $i 
+      uncrustify --if-changed -l C --replace --no-backup -c bin/parflow.cfg $i 
    done
 }
 
