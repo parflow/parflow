@@ -49,10 +49,11 @@
 #define CLMTimingIndex  7
 #define PFSOLReadTimingIndex  8
 #define ClusteringTimingIndex 9
+#define NetcdfTimingIndex 10
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  10
+#define VectorUpdateTimingIndex  11
 #endif
-#define NetcdfTimingIndex 11
+
 
 #if defined(PF_TIMING)
 /*--------------------------------------------------------------------------

@@ -60,10 +60,10 @@ void  NewTiming()
   RegisterTiming("CLM");
   RegisterTiming("PFSOL Read");
   RegisterTiming("Clustering");
+  RegisterTiming("Netcdf I/O");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
-  RegisterTiming("Netcdf I/O");
 }
 
 
