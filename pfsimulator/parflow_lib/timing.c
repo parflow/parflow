@@ -47,7 +47,7 @@ void  NewTiming()
   timing = ctalloc(TimingType, 1);
 
   /* The order of these registers need to be in sync with the defines
-   * found in solver.h
+   * found in timing.h
    */
 
   RegisterTiming("Solver Setup");
@@ -63,6 +63,7 @@ void  NewTiming()
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
+  RegisterTiming("Netcdf I/O");
 }
 
 

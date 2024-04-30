@@ -52,7 +52,7 @@
 #ifdef VECTOR_UPDATE_TIMING
 #define VectorUpdateTimingIndex  10
 #endif
-
+#define NetcdfTimingIndex 11
 
 #if defined(PF_TIMING)
 /*--------------------------------------------------------------------------
