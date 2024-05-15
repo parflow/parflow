@@ -210,10 +210,8 @@ void stop_outlet_flow_at_cell_overland_flow(int i, int j, ProblemData* problem_d
   double *slope_x_ptr;
   double *slope_y_ptr;
   int subgrid_index;
-  Subgrid *subgrid;
-  int subgrid_x_floor, subgrid_y_floor, subgrid_x_ceiling, subgrid_y_ceiling;
   ForSubgridI(subgrid_index, GridSubgrids(grid)){
-    subgrid = GridSubgrid(grid, subgrid_index);
+    Subgrid *subgrid = GridSubgrid(grid, subgrid_index);
     slope_x_subvector = VectorSubvector(slope_x, subgrid_index);
     slope_y_subvector = VectorSubvector(slope_y, subgrid_index);
     index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
@@ -254,8 +252,6 @@ void         ReservoirPackage(
   int grid_nz;
 
   double release_subgrid_volume;
-  double intake_amount_since_last_print;
-
   bool part_of_reservoir_lives_on_this_rank;
   /* Allocate the reservoir data */
 
@@ -455,8 +451,6 @@ PFModule  *ReservoirPackageNewPublicXtra()
   PublicXtra    *public_xtra;
 
   Type0         *dummy0;
-
-  int num_cycles;
 
 
   char *reservoir_names;
