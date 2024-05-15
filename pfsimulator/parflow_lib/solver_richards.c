@@ -3101,7 +3101,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
                              if (pp_sp[ip] > reservoir_reset_pressure)
                              {
-                               double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
                                flux_in += pp_sp[ip] * dx * dy;
                                pp_sp[ip] = reservoir_reset_pressure;
                              }
@@ -3141,7 +3140,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                              {
                                if (pp_sp[ip] > reservoir_reset_pressure)
                                {
-                                 double volume = ReservoirDataPhysicalSize(reservoir_data_physical);
                                  flux_in += pp_sp[ip] * dx * dy;
                                  pp_sp[ip] = reservoir_reset_pressure;
                                }
