@@ -3052,11 +3052,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       for (int reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
         double flux_in = 0;
         reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
-        int release_cell_rank, intake_cell_rank, secondary_intake_cell_rank;
+        int release_cell_rank;
         release_cell_rank = ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical);
-        intake_cell_rank = ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical);
-        secondary_intake_cell_rank = ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical);
-
         if (release_cell_rank == amps_Rank(amps_CommWorld)) {
           ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) +=
                   ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) * dt;
@@ -3115,7 +3112,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical)){
           reservoir_secondary_intake_subgrid = ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical);
-
           ForSubgridI(is, GridSubgrids(grid))
           {
             subgrid = GridSubgrid(grid, is);
