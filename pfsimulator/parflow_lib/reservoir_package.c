@@ -211,7 +211,6 @@ void stop_outlet_flow_at_cell_overland_flow(int i, int j, ProblemData* problem_d
   double *slope_y_ptr;
   int subgrid_index;
   ForSubgridI(subgrid_index, GridSubgrids(grid)){
-    Subgrid *subgrid = GridSubgrid(grid, subgrid_index);
     slope_x_subvector = VectorSubvector(slope_x, subgrid_index);
     slope_y_subvector = VectorSubvector(slope_y, subgrid_index);
     index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
