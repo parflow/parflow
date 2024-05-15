@@ -1321,7 +1321,7 @@ void LBWells(Lattice *lattice, Problem *problem, ProblemData *problem_data);
 void ReservoirPackage(ProblemData *problem_data);
 PFModule *ReservoirPackageInitInstanceXtra(void);
 void ReservoirPackageFreeInstanceXtra(void);
-PFModule *ReservoirPackageNewPublicXtra(int num_phases, int num_contaminants);
+PFModule *ReservoirPackageNewPublicXtra(void);
 void ReservoirPackageFreePublicXtra(void);
 int ReservoirPackageSizeOfTempData(void);
 

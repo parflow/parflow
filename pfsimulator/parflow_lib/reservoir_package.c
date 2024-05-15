@@ -46,11 +46,8 @@ double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
   GrGeomSolid *gr_domain = problem_data->gr_domain;
 
   double volume = 0;
-  Grid           *grid = VectorGrid(problem_data->rsz);
   SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
   Subgrid        *tmp_subgrid;
-  Subvector      *dz_sub;
-  Subvector      *rsz_sub;
   int subgrid_index;
   int index_space_z;
   bool found_index_space_z = false;
@@ -86,21 +83,12 @@ double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
 
 
 typedef struct {
-    int num_phases;
-    int num_contaminants;
 
     /* reservoir info */
     int num_reservoirs;
 
     int       *type;
     void     **data;
-
-    /* Timing Cycle information */
-    int num_cycles;
-
-    int       *interval_divisions;
-    int      **intervals;
-    int       *repeat_counts;
 
     int overland_flow_solver;
     NameArray reservoir_names;
@@ -159,7 +147,6 @@ void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* prob
   int index_slope_y;
   double *slope_x_ptr;
   double *slope_y_ptr;
-  int slope_i, slope_j;
   int subgrid_index;
   Subgrid *subgrid;
   int subgrid_x_floor, subgrid_y_floor, subgrid_x_ceiling, subgrid_y_ceiling;
@@ -176,27 +163,27 @@ void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* prob
     subgrid_y_ceiling = subgrid_y_floor + SubgridNY(subgrid) -1;
 
     // Check all 4 faces, as long as they live on this subgrid. First the East face
-    if(i+1>=subgrid_x_floor && i+1<=subgrid_x_floor && j>=subgrid_y_floor && j<=subgrid_y_floor){
+    if(i+1>=subgrid_x_floor && i+1<=subgrid_x_ceiling && j>=subgrid_y_floor && j<=subgrid_y_ceiling){
       index_slope_x = SubvectorEltIndex(slope_x_subvector, i+1, j, 0);
       if(slope_x_ptr[index_slope_x] > 0){
         slope_x_ptr[index_slope_x] = 0;
       }
     }
     // South face
-    if(i>=subgrid_x_floor && i<=subgrid_x_floor && j-1>=subgrid_y_floor && j-1<=subgrid_y_floor){
+    if(i>=subgrid_x_floor && i<=subgrid_x_ceiling && j-1>=subgrid_y_floor && j-1<=subgrid_y_ceiling){
       index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j-1, 0);
       if(slope_y_ptr[index_slope_y] > 0){
         slope_y_ptr[index_slope_y] = 0;
       }
     }
-    if(i>=subgrid_x_floor && i<=subgrid_x_floor && j>=subgrid_y_floor && j<=subgrid_y_floor){
+    if(i>=subgrid_x_floor && i<=subgrid_x_ceiling && j>=subgrid_y_floor && j<=subgrid_y_ceiling){
       index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
       if(slope_x_ptr[index_slope_x] < 0){
         slope_x_ptr[index_slope_x] = 0;
       }
     }
     // South face
-    if(i>=subgrid_x_floor && i<=subgrid_x_floor && j>=subgrid_y_floor && j<=subgrid_y_floor) {
+    if(i>=subgrid_x_floor && i<=subgrid_x_ceiling && j>=subgrid_y_floor && j<=subgrid_y_ceiling) {
       index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
       if (slope_y_ptr[index_slope_y] < 0) {
         slope_y_ptr[index_slope_y] = 0;
@@ -224,7 +211,6 @@ void stop_outlet_flow_at_cell_overland_flow(int i, int j, ProblemData* problem_d
   int index_slope_y;
   double *slope_x_ptr;
   double *slope_y_ptr;
-  int slope_i, slope_j;
   int subgrid_index;
   Subgrid *subgrid;
   int subgrid_x_floor, subgrid_y_floor, subgrid_x_ceiling, subgrid_y_ceiling;
@@ -253,17 +239,15 @@ void         ReservoirPackage(
   Subgrid          *new_secondary_intake_subgrid;
   Subgrid          *new_release_subgrid;
 
-  TimeCycleData    *time_cycle_data;
-
   ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
   ReservoirDataPhysical *reservoir_data_physical;
 
-  int i, sequence_number, phase, contaminant, press_reservoir, reservoir_index;
+  int i, sequence_number, phase, contaminant, reservoir_index;
 
   int intake_ix, intake_iy;
   int secondary_intake_ix, secondary_intake_iy;
   int release_ix, release_iy;
-  int iz_lower, iz_upper;
+  int iz_lower;
   int nx, ny, nz;
   double dx, dy, dz;
   int rx, ry, rz;
@@ -272,11 +256,8 @@ void         ReservoirPackage(
   int split_color;
   int grid_nz;
 
-  double          **phase_values;
   double intake_subgrid_volume;
-  double secondary_intake_subgrid_volume;
   double release_subgrid_volume;
-  double intake_x_lower, intake_x_upper, intake_y_lower, intake_y_upper, z_lower, z_upper;
   double secondary_intake_x_lower, secondary_intake_x_upper, secondary_intake_y_lower, secondary_intake_y_upper;
   double release_x_lower, release_x_upper, release_y_lower, release_y_upper;
   double max_storage, min_release_storage, Storage, release_rate;
@@ -318,7 +299,6 @@ void         ReservoirPackage(
       release_cell_rank= -1;
 
       iz_lower = grid_nz - 1;
-      iz_upper = grid_nz - 1;
 
       nx = 1;
       ny = 1;
@@ -342,7 +322,6 @@ void         ReservoirPackage(
       dy = SubgridDY(new_intake_subgrid);
       dz = SubgridDZ(new_intake_subgrid);
 
-      intake_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
 
       new_secondary_intake_subgrid = NewSubgrid(secondary_intake_ix, secondary_intake_iy, iz_lower,
                                                 nx, ny, nz,
@@ -354,8 +333,6 @@ void         ReservoirPackage(
       dz = SubgridDZ(new_secondary_intake_subgrid);
 
 
-      secondary_intake_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
-
       new_release_subgrid = NewSubgrid(release_ix, release_iy, iz_lower,
                                        nx, ny, nz,
                                        rx, ry, rz,
@@ -364,7 +341,6 @@ void         ReservoirPackage(
       dx = SubgridDX(new_release_subgrid);
       dy = SubgridDY(new_release_subgrid);
       dz = SubgridDZ(new_release_subgrid);
-      release_subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
 
       if (subgrid_lives_on_this_rank(new_intake_subgrid, grid)) {
         intake_cell_rank = current_mpi_rank;
@@ -432,7 +408,6 @@ void         ReservoirPackage(
       ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) = (dummy0->secondary_intake_y_location);
       ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) = (dummy0->release_x_location);
       ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) = (dummy0->release_y_location);
-      ReservoirDataPhysicalDiameter(reservoir_data_physical) = pfmin(dx, dy);
       ReservoirDataPhysicalMaxStorage(reservoir_data_physical) = (dummy0->max_storage);
       ReservoirDataPhysicalMinReleaseStorage(reservoir_data_physical) = (dummy0->min_release_storage);
       ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) = (0);
@@ -498,9 +473,7 @@ void  ReservoirPackageFreeInstanceXtra()
  * ReservoirPackageNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *ReservoirPackageNewPublicXtra(
-    int num_phases,
-    int num_contaminants)
+PFModule  *ReservoirPackageNewPublicXtra()
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -518,14 +491,8 @@ PFModule  *ReservoirPackageNewPublicXtra(
 
   int num_reservoirs;
 
-  char *switch_name;
-  int overland_flow_solver;
+
   char* overland_flow_solver_name;
-
-  int switch_value;
-  NameArray switch_na;
-
-  switch_na = NA_NewNameArray("False True");
 
 
   public_xtra = ctalloc(PublicXtra, 1);
@@ -574,8 +541,6 @@ PFModule  *ReservoirPackageNewPublicXtra(
           dummy0->intake_y_location = GetDouble(key);
 
           sprintf(key, "Reservoirs.%s.Has_Secondary_Intake_Cell", reservoir_name);
-//          switch_name = GetStringDefault(key, "False");
-//          switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
           dummy0->has_secondary_intake_cell = GetInt(key);
 
           if (dummy0->has_secondary_intake_cell){
@@ -624,7 +589,7 @@ void  ReservoirPackageFreePublicXtra()
 
   Type0         *dummy0;
 
-  int num_reservoirs, num_cycles;
+  int num_reservoirs;
   int i;
 
   if (public_xtra)
