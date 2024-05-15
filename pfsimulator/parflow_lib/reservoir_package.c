@@ -49,8 +49,6 @@ double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
   SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
   Subgrid        *tmp_subgrid;
   int subgrid_index;
-  int index_space_z;
-  bool found_index_space_z = false;
   ForSubgridI(subgrid_index, subgrids) {
     tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
     Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
@@ -149,8 +147,8 @@ void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* prob
   double *slope_y_ptr;
   int subgrid_index;
   Subgrid *subgrid;
-  int subgrid_x_floor, subgrid_y_floor, subgrid_x_ceiling, subgrid_y_ceiling;
   ForSubgridI(subgrid_index, GridSubgrids(grid)){
+    int subgrid_x_floor, subgrid_y_floor, subgrid_x_ceiling, subgrid_y_ceiling;
     subgrid = GridSubgrid(grid, subgrid_index);
     slope_x_subvector = VectorSubvector(slope_x, subgrid_index);
     slope_y_subvector = VectorSubvector(slope_y, subgrid_index);
@@ -242,26 +240,21 @@ void         ReservoirPackage(
   ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
   ReservoirDataPhysical *reservoir_data_physical;
 
-  int i, sequence_number, phase, contaminant, reservoir_index;
+  int i, reservoir_index;
 
   int intake_ix, intake_iy;
   int secondary_intake_ix, secondary_intake_iy;
   int release_ix, release_iy;
   int iz_lower;
   int nx, ny, nz;
-  double dx, dy, dz;
   int rx, ry, rz;
   int current_mpi_rank;
   int intake_cell_rank, secondary_intake_cell_rank, release_cell_rank;
   int split_color;
   int grid_nz;
 
-  double intake_subgrid_volume;
   double release_subgrid_volume;
-  double secondary_intake_x_lower, secondary_intake_x_upper, secondary_intake_y_lower, secondary_intake_y_upper;
-  double release_x_lower, release_x_upper, release_y_lower, release_y_upper;
-  double max_storage, min_release_storage, Storage, release_rate;
-  double intake_amount_since_last_print, release_amount_since_last_print;
+  double intake_amount_since_last_print;
 
   bool part_of_reservoir_lives_on_this_rank;
   /* Allocate the reservoir data */
@@ -277,7 +270,6 @@ void         ReservoirPackage(
   }
 
   reservoir_index = 0;
-  sequence_number = 0;
 
   if ((public_xtra->num_reservoirs) > 0)
   {
@@ -293,7 +285,6 @@ void         ReservoirPackage(
       secondary_intake_iy = IndexSpaceY((dummy0->secondary_intake_y_location), 0);
       release_ix = IndexSpaceX((dummy0->release_x_location), 0);
       release_iy = IndexSpaceY((dummy0->release_y_location), 0);
-      Vector * index_of_domain_top = ProblemDataIndexOfDomainTop(problem_data);
 
       secondary_intake_cell_rank = -1;
       release_cell_rank= -1;
@@ -318,29 +309,15 @@ void         ReservoirPackage(
                                       rx, ry, rz,
                                       current_mpi_rank);
 
-      dx = SubgridDX(new_intake_subgrid);
-      dy = SubgridDY(new_intake_subgrid);
-      dz = SubgridDZ(new_intake_subgrid);
-
-
       new_secondary_intake_subgrid = NewSubgrid(secondary_intake_ix, secondary_intake_iy, iz_lower,
                                                 nx, ny, nz,
                                                 rx, ry, rz,
                                                 current_mpi_rank);
 
-      dx = SubgridDX(new_secondary_intake_subgrid);
-      dy = SubgridDY(new_secondary_intake_subgrid);
-      dz = SubgridDZ(new_secondary_intake_subgrid);
-
-
       new_release_subgrid = NewSubgrid(release_ix, release_iy, iz_lower,
                                        nx, ny, nz,
                                        rx, ry, rz,
                                        current_mpi_rank);
-
-      dx = SubgridDX(new_release_subgrid);
-      dy = SubgridDY(new_release_subgrid);
-      dz = SubgridDZ(new_release_subgrid);
 
       if (subgrid_lives_on_this_rank(new_intake_subgrid, grid)) {
         intake_cell_rank = current_mpi_rank;
@@ -349,7 +326,7 @@ void         ReservoirPackage(
       if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, grid)) {
         secondary_intake_cell_rank = current_mpi_rank;
       }
-
+      release_subgrid_volume = 1;
       if (subgrid_lives_on_this_rank(new_release_subgrid, grid)) {
         release_cell_rank = current_mpi_rank;
         release_subgrid_volume = GetSubgridVolume(new_release_subgrid, problem_data);
@@ -389,7 +366,6 @@ void         ReservoirPackage(
       }
 
       reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
-      ReservoirDataPhysicalNumber(reservoir_data_physical) = sequence_number;
       ReservoirDataPhysicalName(reservoir_data_physical) = ctalloc(char, strlen((dummy0->name)) + 1);
       strcpy(ReservoirDataPhysicalName(reservoir_data_physical), (dummy0->name));
       ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical) = (intake_cell_rank);
