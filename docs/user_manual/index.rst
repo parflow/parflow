@@ -14,7 +14,8 @@ Welcome to the ParFlow User's Manual
 **Jennifer Jefferson** [12]_, **Chuck Baldwin**, **William J. Bosl** [13]_, 
 **Richard Hornung** [4]_, **Steven Ashby** [14]_, **Ketan B. Kulkarni** [15]_
 
-updated: |today|
+| Version: |release|
+| Manual generated : |today|
 
 .. toctree::
    :maxdepth: 2
@@ -91,12 +92,9 @@ updated: |today|
 
 
 | ParFlow is released under the GNU LPGL License
-| Version 1.3, 3 November 2008
-| Copyright © 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
-| `http://fsf.org/ <http://fsf.org/>`_.
 | This manual is licensed under the GNU Free Documentation License.
 
-| Copyright © 2019 Reed M. Maxwell, Stefan J. Kollet, Laura E. Condon, 
+| Copyright © 2024 Reed M. Maxwell, Stefan J. Kollet, Laura E. Condon, 
    Ian M. Ferguson, Steven G. Smith, Carol S. Woodward, Nicholas Engdahl. 
    Permission is granted to copy, distribute and/or modify this document 
    under the terms of the GNU Free Documentation License, Version 1.3 or 
