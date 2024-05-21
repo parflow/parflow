@@ -15,7 +15,7 @@
 
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
-UNCRUSTIFY_VERSION='0.77.1'
+UNCRUSTIFY_VERSION='0.78.1'
 
 # Exit script
 # $1 (required): Message to print on exit
