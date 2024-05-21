@@ -376,6 +376,8 @@ We will not accept code without a proper license statement.
 
 #### Testing
 
+> **Note:** ParFlow will not accept Pull Requests that do not pass ALL tests
+
 Contributions with feature addtions should include tests for that
 feature.  Submissions that do not pass the test suite will not be
 accepted.  A major goal is to ensure the master branch of ParFlow
