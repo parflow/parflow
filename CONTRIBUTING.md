@@ -132,13 +132,13 @@ Enhancement suggestions are tracked as [GitHub issues](https://guides.github.com
 The ParFlow is split into two main parts.  The pftools directory
 contains the input parsing (written using Python or TCL) and the
 pfsimulator directory which contains the simulator code.  The
-stand-along execution an executable ('main') code for the stand-alone
-application is in pfsimulator/parflow_exe.  ParFlow is written as a
-library so it can be embedded inside other applications; the code for
-the library is in in the pfsimulator/parflow_lib directory. ParFlow
-can optionally be linked with CLM; the code for for CLM is in
-pfsimulator/clm.  ParFlow has an embedded a copy of KINSOL which is in
-the pfsimulator/kinsol directory.
+stand-along executable code ('main') is in pfsimulator/parflow\_exe.
+Most of ParFlow is written as a library so it can be embedded inside other
+applications; the code for the library is in in the
+pfsimulator/parflow_lib directory. ParFlow can optionally be linked
+with CLM; the code for for CLM is in pfsimulator/clm.  ParFlow has an
+embedded a copy of KINSOL which is in the pfsimulator/kinsol
+directory.
 
 ParFlow was written before the MPI standard was created.  In order to
 easily port to vendor specific message passing libraries a
@@ -159,17 +159,18 @@ Manaul](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
 
 ### ParFlow Input and Input Database
 
-ParFlow was written to be principally driven by an input file written in
-Python or TCL.  This was done to enable a much more feature rich input file than
-a standard XML/JSON file.  Expressions can be used for computing
-parameters and for loops can be used for easier setup up large numbers
-of similar input elements.  The TCL was also meant to capture the
-problem workflow in an executable script for repeat-ability.  For
-example, data post-processing could be part of a standard input script.
-Jupyter Notebooks or similar systems are examples of the intent;
-ParFlow was written before the current workflow technologies existed
-so we used a scripting language.  TCL was initially chosen since it was widely
-used at the time and a Python interface has been added.
+ParFlow was written to be principally driven by an input file written
+in Python or TCL.  This was done to enable a much more feature rich
+input file than a standard XML/JSON file.  Expressions can be used for
+computing parameters and for loops can be used for easier setup up
+large numbers of similar input elements.  The Python/TCL scripts were
+also meant to capture the problem workflow in an documented script for
+repeatability.  For example, data post-processing could be part of a
+standard input script.  Jupyter Notebooks or similar systems are
+examples of the intent; ParFlow was written before the current
+workflow technologies existed so we used a scripting language.  TCL
+was initially chosen since it was widely used at the time and a Python
+interface has been added.
 
 A ParFlow input file is simply a set of key/value assignments which go
 into a 'ParFlow Input Database'.  The pfset commands in the TCL file
@@ -392,27 +393,25 @@ tests pass and fail.
 
 Automated ParFlow testing is done with every pull request using the
 Github Action system.  The results will appear on the pull request
-page on GitHub.  You can view the CI results by selecting "Show
-all checks".  The test system runs serial as well as parallel
-problems.  The current ParFlow regression test suite is limited but
-includes tests on saturated and unsaturated subsurface flow and
-coupled ParFlow CLM systems.  The GitHub Action test is run in a Linux
-image based on Ubuntu.  The testing setup can be found in the
+page on GitHub.  You can view the CI results by selecting "Show all
+checks".  The test system runs serial as well as parallel problems.
+The current ParFlow regression test suite is limited but includes
+tests on saturated and unsaturated subsurface flow and coupled ParFlow
+CLM systems.  The GitHub Action test is run in a Linux image based on
+Ubuntu.  The testing setup can be found in the
 [linux.yml](/.github/workflows/linux.yml) file.
 
 ### Pull Requests
-
-The process described here has several goals:
-
-- Engage the community
-- Ensure ParFlow does not break
-- Maintain ParFlow's quality
-- Fix problems that are important to users
-- Provide a sustainable mechanism for accepting code contributions
 
 ParFlow uses a standard GitHub Fork-Branch-Pull workflow.  If you are
 new to GitHub workflows the [quickstart
 guide](https://docs.github.com/en/get-started/quickstart/contributing-to-projects)
 will walk you through the process.
 
+ParFlow uses this workflow to support several goals:
 
+- Engage the community
+- Ensure ParFlow does not break
+- Maintain ParFlow's quality
+- Fix problems that are important to users
+- Provide a sustainable mechanism for accepting code contributions
