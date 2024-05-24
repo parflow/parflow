@@ -91,7 +91,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
     default_single
     default_single_read_porosity
-    reservoir_mpi_test)
+    )
 
   if(${PARFLOW_HAVE_HYPRE})
     list(APPEND PARALLEL_3DTOPO_TESTS
@@ -105,7 +105,9 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
       LW_var_dz
       LW_var_dz_spinup
       overland_slopingslab_KWE
-      richards_box_proctest_vardz)
+      richards_box_proctest_vardz
+            reservoir_mpi_test
+    )
 
     if(${PARFLOW_HAVE_SILO})
       list(APPEND PARALLEL_2DTOPO_TESTS
