@@ -275,7 +275,7 @@ def dist_and_run(run_dir):
 
 
 # Make an x direction solid file
-inputs_dir = get_absolute_path('../input')
+inputs_dir = get_absolute_path('../../test/input')
 solid_name = f"{inputs_dir}/tilted_v_with_reservoir"
 solid_fname = solid_name + '.pfsol'
 
@@ -329,7 +329,7 @@ overland.Reservoirs.reservoir.Release_Rate = 1
 dist_and_run(run_dir)
 
 correct_output_dir = get_absolute_path('../correct_output')
-correct_pressure = parflow.read_pfb(f"{correct_output_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
+correct_pressure = parflow.read_pfb("correct_output_dir" + "/tilted_v_with_reservoir.out.press.00010.pfb")
 our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
 
 assert np.array_equal(correct_pressure, our_pressure)
