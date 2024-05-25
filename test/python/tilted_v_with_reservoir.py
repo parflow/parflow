@@ -328,8 +328,8 @@ overland.Reservoirs.reservoir.Release_Rate = 1
 
 dist_and_run(run_dir)
 
-correct_output_dir = get_absolute_path('../correct_output')
-correct_pressure = parflow.read_pfb("correct_output_dir" + "/tilted_v_with_reservoir.out.press.00010.pfb")
+correct_output_dir = get_absolute_path('../../test/correct_output')
+correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir.out.press.00010.pfb")
 our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
 
 assert np.array_equal(correct_pressure, our_pressure)
@@ -381,8 +381,8 @@ overland.Reservoirs.reservoir.Release_Rate = 0
 
 dist_and_run(run_dir)
 
-correct_output_dir = get_absolute_path('../correct_output')
-correct_pressure = parflow.read_pfb(f"{correct_output_dir}/tilted_v_with_reservoir_overland_kinematic.out.press.00010.pfb")
+correct_output_dir = get_absolute_path('../../test/correct_output')
+correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir_overland_kinematic.out.press.00010.pfb")
 our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
 
 assert np.array_equal(correct_pressure, our_pressure)
