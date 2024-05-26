@@ -291,7 +291,8 @@ overland.Patch.channel.BCPressure.Type = 'OverlandFlow'
 # Draining right-- (negative X slope channel)
 #-----------------------------------------------------------------------------
 run_dir = get_absolute_path('test_output/tilted_v_with_reservoir_overland_flow')
-
+correct_output_dir = get_absolute_path('../correct_output')
+print(correct_output_dir)
 mkdir(run_dir)
 
 
@@ -328,13 +329,14 @@ overland.Reservoirs.reservoir.Min_Release_Storage = 0
 overland.Reservoirs.reservoir.Release_Rate = 1
 
 dist_and_run(run_dir)
-correct_output_dir = get_absolute_path('../correct_output')
-pf_test_file(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb", correct_output_dir + "/tilted_v_with_reservoir.out.press.00010.pfb", f"Max difference in Pressure for timestep 10")
 
-# correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir.out.press.00010.pfb")
-# our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
-#
-# assert np.array_equal(correct_pressure, our_pressure)
+
+# pf_test_file(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb", correct_output_dir + "/tilted_v_with_reservoir.out.press.00010.pfb", f"Max difference in Pressure for timestep 10")
+
+correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir.out.press.00010.pfb")
+our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
+
+assert np.array_equal(correct_pressure, our_pressure)
 
 
 
@@ -383,7 +385,6 @@ overland.Reservoirs.reservoir.Release_Rate = 0
 
 dist_and_run(run_dir)
 
-correct_output_dir = get_absolute_path('../correct_output')
 correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir_overland_kinematic.out.press.00010.pfb")
 our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
 
