@@ -130,3 +130,20 @@ function (pf_add_py_parallel_test test_name topology_P topology_Q topology_R)
   )
 
 endfunction()
+
+# Add parflow testing of a single ESMX file
+function (pf_add_esmx_test test_name)
+
+  configure_file(fd.yaml ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+  configure_file(${test_name}.py ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+  add_test(
+    NAME "esmx_${test_name}"
+    COMMAND ${PARFLOW_ESMX} "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.yaml"
+  )
+  set_tests_properties(
+    "esmx_${test_name}"
+    PROPERTIES
+      ENVIRONMENT "PF_SRC=${PROJECT_SOURCE_DIR}"
+  )
+
+endfunction()

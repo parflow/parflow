@@ -24,16 +24,16 @@ run_name               = 'LW'
 
 script_path            = get_absolute_path('.') + '/'
 ### current folder for py script
-input_path             = './PARFLOW_INPUTS/'
-forcing_path           = './PARFLOW_FORCING/NLDAS_LW/'
+input_path             = '$PF_SRC/test/input/esmx/'
+#forcing_path           = './'
 clm_output_path        = './'
 pf_output_path         = './'
 
 domain_file            = 'LW.pfsol'
-subsurface_file        = 'Indicator_LW_USGS_Bedrock.pfb'
-slope_x_file           = 'slopex_LW.pfb'
-slope_y_file           = 'slopey_LW.pfb'
-initial_file           = 'press.init.233.pfb'
+subsurface_file        = 'LW_Indicator_USGS_Bedrock.pfb'
+slope_x_file           = 'LW_slopex.pfb'
+slope_y_file           = 'LW_slopey.pfb'
+initial_file           = 'LW_press.init.233.pfb'
 
 start_time             = 0
 stop_time              = 192
@@ -64,9 +64,9 @@ cp( input_path + slope_y_file )
 cp( input_path + initial_file )
 ### initial file
 
-cp( input_path + 'drv_clmin.dat', 'drv_clmin.dat' )
-cp( input_path + 'drv_vegm.alluv.dat', 'drv_vegm.alluv.dat' )
-cp( input_path + 'drv_vegp.dat', 'drv_vegp.dat' )
+cp( input_path + 'LW_drv_clmin.dat', 'LW_drv_clmin.dat' )
+cp( input_path + 'LW_drv_vegm.alluv.dat', 'LW_drv_vegm.alluv.dat' )
+cp( input_path + 'LW_drv_vegp.dat', 'LW_drv_vegp.dat' )
 
 #-----------------------------------------------------------------------------------------
 # Setup timing info

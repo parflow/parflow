@@ -33,6 +33,24 @@ include_directories(parflow_nuopc include)
 target_link_libraries(parflow_nuopc PUBLIC ESMF)
 target_link_libraries(parflow_nuopc PUBLIC pfsimulator)
 
+# configure fire behavior esmx executable
+if (PARFLOW_ENABLE_ESMX)
+  if(ESMF_VERSION VERSION_LESS "8.5.0")
+    message(FATAL_ERROR "ESMX requires ESMF version 8.5.0 or greater")
+  endif (ESMF_VERSION VERSION_LESS "8.5.0")
+  include(ExternalProject)
+  ExternalProject_Add(esmx
+    BINARY_DIR ${CMAKE_BINARY_DIR}/esmx
+    SOURCE_DIR ${ESMF_ESMXDIR}
+    CMAKE_ARGS -DESMX_BUILD_FILE=${CMAKE_CURRENT_SOURCE_DIR}/esmxBuild.yaml
+               -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    BUILD_ALWAYS TRUE
+    DEPENDS parflow_nuopc
+    EXCLUDE_FROM_ALL TRUE
+  )
+endif (PARFLOW_ENABLE_ESMX)
+
 ### Install Library
 install(TARGETS parflow_nuopc
   EXPORT ParFlow

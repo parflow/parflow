@@ -28,13 +28,13 @@ GWR:
   model: ParFlow
   petList:          [0-0]
   attributes:
-    prep_filename: 'Little_Washita.py'
+    prep_filename: 'washita_dlnd.py'
     filename: 'LW.pfidb'
     initialize_import: 'FLD_INIT_FILLV'
     initialize_export: 'FLD_INIT_ZERO'
     check_import: 'FLD_CHECK_NEXTT'
     coord_type: 'GRD_COORD_CLMVEGTF'
-    coord_filename: 'drv_vegm.alluv.dat'
+    coord_filename: 'LW_drv_vegm.alluv.dat'
     output_directory: './GWR_CAP_OUTPUT'
 
 LND:
