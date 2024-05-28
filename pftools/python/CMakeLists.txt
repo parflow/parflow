@@ -68,7 +68,7 @@ install(
     "bin"
 )
 
-install(SCRIPT "${CMAKE_SOURCE_DIR}/pftools/python/PostInstall.cmake")
+install(SCRIPT "${PROJECT_SOURCE_DIR}/pftools/python/PostInstall.cmake")
 
 add_custom_target(
   pf-python ALL

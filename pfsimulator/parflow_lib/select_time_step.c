@@ -402,3 +402,111 @@ int  WRFSelectTimeStepSizeOfTempData()
 {
   return 0;
 }
+
+/*--------------------------------------------------------------------------
+ * CPLSelectTimeStepInitInstanceXtra
+ *--------------------------------------------------------------------------*/
+
+PFModule  *CPLSelectTimeStepInitInstanceXtra()
+{
+  PFModule      *this_module = ThisPFModule;
+  InstanceXtra  *instance_xtra;
+
+  instance_xtra = NULL;
+
+  PFModuleInstanceXtra(this_module) = instance_xtra;
+  return this_module;
+}
+
+
+/*--------------------------------------------------------------------------
+ * CPLSelectTimeStepFreeInstanceXtra
+ *--------------------------------------------------------------------------*/
+
+void  CPLSelectTimeStepFreeInstanceXtra()
+{
+  PFModule      *this_module = ThisPFModule;
+  InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
+
+  if (instance_xtra)
+  {
+    tfree(instance_xtra);
+  }
+}
+
+
+/*--------------------------------------------------------------------------
+ * CPLSelectTimeStepNewPublicXtra
+ *--------------------------------------------------------------------------*/
+
+PFModule  *CPLSelectTimeStepNewPublicXtra(
+                                          double initial_step,
+                                          double growth_factor,
+                                          double max_step,
+                                          double min_step)
+{
+  PFModule      *this_module = ThisPFModule;
+  PublicXtra    *public_xtra;
+
+  Type1            *dummy1;
+
+  public_xtra = ctalloc(PublicXtra, 1);
+
+  public_xtra->type = 1;
+
+  dummy1 = ctalloc(Type1, 1);
+
+  dummy1->initial_step = initial_step;
+  dummy1->factor = growth_factor;
+  dummy1->max_step = max_step;
+  dummy1->min_step = min_step;
+
+  (public_xtra->data) = (void*)dummy1;
+
+  PFModulePublicXtra(this_module) = public_xtra;
+  return this_module;
+}
+
+/*-------------------------------------------------------------------------
+ * CPLSelectTimeStepFreePublicXtra
+ *-------------------------------------------------------------------------*/
+
+void  CPLSelectTimeStepFreePublicXtra()
+{
+  PFModule    *this_module = ThisPFModule;
+  PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+
+  Type0        *dummy0;
+  Type1        *dummy1;
+
+  if (public_xtra)
+  {
+    switch ((public_xtra->type))
+    {
+      case 0:
+      {
+        dummy0 = (Type0*)(public_xtra->data);
+        tfree(dummy0);
+        break;
+      }
+
+      case 1:
+      {
+        dummy1 = (Type1*)(public_xtra->data);
+        tfree(dummy1);
+        break;
+      }
+    }
+
+    tfree(public_xtra);
+  }
+}
+
+/*--------------------------------------------------------------------------
+ * CPLSelectTimeStepSizeOfTempData
+ *--------------------------------------------------------------------------*/
+
+int  CPLSelectTimeStepSizeOfTempData()
+{
+  return 0;
+}

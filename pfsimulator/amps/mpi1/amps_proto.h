@@ -41,6 +41,7 @@ int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out
 /* amps_init.c */
 int amps_Init(int *argc, char **argv []);
 int amps_EmbeddedInit(void);
+int amps_EmbeddedInitFComm(MPI_Fint *f_handle);
 int amps_EmbeddedInitComm(MPI_Comm com);
 
 /* amps_invoice.c */

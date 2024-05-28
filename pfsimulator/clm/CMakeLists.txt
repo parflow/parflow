@@ -70,4 +70,4 @@ set (SRC_FILES
 
 add_library(pfclm ${SRC_FILES})
 
-install (TARGETS pfclm DESTINATION lib)
+install (TARGETS pfclm EXPORT ParFlow DESTINATION lib)

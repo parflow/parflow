@@ -95,6 +95,8 @@ typedef FILE *amps_File;
 #define amps_Fopen(filename, type) fopen((filename), (type))
 #define amps_Init(argc, argv) amps_clock_init(), 0
 #define amps_EmbeddedInit() amps_clock_init(), 0
+#define amps_EmbeddedInitFComm() amps_clock_init(), 0
+#define amps_EmbeddedInitComm() amps_clock_init(), 0
 
 #define amps_IExchangePackage(package) 0
 
