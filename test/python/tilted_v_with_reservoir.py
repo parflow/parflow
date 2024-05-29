@@ -336,7 +336,7 @@ dist_and_run(run_dir)
 correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir.out.press.00010.pfb")
 our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
 
-assert np.all_close(correct_pressure, our_pressure)
+assert np.allclose(correct_pressure, our_pressure)
 
 
 
@@ -388,5 +388,5 @@ dist_and_run(run_dir)
 correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir_overland_kinematic.out.press.00010.pfb")
 our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
 
-assert np.all_close(correct_pressure, our_pressure)
+assert np.allclose(correct_pressure, our_pressure)
 
