@@ -27,7 +27,6 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
-
 #include <float.h>
 
 /*--------------------------------------------------------------------------
@@ -75,6 +74,9 @@ void         PhaseSource(
   WellDataPhysical *well_data_physical;
   WellDataValue    *well_data_value;
 
+  ReservoirData         *reservoir_data = ProblemDataReservoirData(problem_data);
+  ReservoirDataPhysical *reservoir_data_physical;
+
   TimeCycleData    *time_cycle_data;
 
   Vector           *perm_x = ProblemDataPermeabilityX(problem_data);
@@ -88,7 +90,7 @@ void         PhaseSource(
 
   SubgridArray     *subgrids = GridSubgrids(grid);
 
-  Subgrid          *subgrid, *well_subgrid, *tmp_subgrid;
+  Subgrid          *subgrid, *well_subgrid, *tmp_subgrid, *reservoir_release_subgrid;
   Subvector        *px_sub, *py_sub, *pz_sub, *ps_sub;
 
   double           *data, *px, *py, *pz;
@@ -102,10 +104,10 @@ void         PhaseSource(
 
   int is, i, j, k;
 
-  /* Locals associated with wells */
+  /* Locals associated with wells and reservoirs*/
   int well;
   int cycle_number, interval_number;
-  double volume, flux, well_value;
+  double volume, flux, well_value, reservoir_value;
 
 // SGS FIXME why is this needed?
 #undef max
@@ -370,7 +372,7 @@ void         PhaseSource(
           data = SubvectorElt(ps_sub, ix, iy, iz);
 
           int ip = 0;
-          int ips = 0;          
+          int ips = 0;
 
           if (WellDataPhysicalMethod(well_data_physical)
               == FLUX_WEIGHTED)
@@ -385,7 +387,7 @@ void         PhaseSource(
               data[ips] += weight * flux;
             });
           }else{
-            double weight = -FLT_MAX;            
+            double weight = -FLT_MAX;
             if (WellDataPhysicalMethod(well_data_physical)
                 == FLUX_STANDARD)weight = 1.0;
             else if (WellDataPhysicalMethod(well_data_physical)
@@ -397,13 +399,94 @@ void         PhaseSource(
               data[ips] += weight * flux;
             });
           }
-          /* done with this temporay subgrid */
+          /* done with this temporary subgrid */
           FreeSubgrid(tmp_subgrid);
         }
       }
     }
   }  /* End well data */
+  
+  if (ReservoirDataNumReservoirs(reservoir_data) > 0)
+  {
+//    double epoch_time = problem->current_unix_epoch_time;
+
+    for (int reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++)
+    {
+      reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
+      reservoir_release_subgrid = ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical);
+      reservoir_value = ReservoirDataPhysicalReleaseRate(reservoir_data_physical);
+      volume = ReservoirDataPhysicalSize(reservoir_data_physical);
+      flux = reservoir_value / (volume);
+      //If we are overfull need to release the rest of the flux
+      if (reservoir_data_physical->storage > reservoir_data_physical->max_storage){
+        flux = (reservoir_data_physical->storage - reservoir_data_physical->max_storage) / (volume) ;
+      }
+      ForSubgridI(is, subgrids)
+      {
+        subgrid = SubgridArraySubgrid(subgrids, is);
+
+        px_sub = VectorSubvector(perm_x, is);
+        py_sub = VectorSubvector(perm_y, is);
+        pz_sub = VectorSubvector(perm_z, is);
+
+        ps_sub = VectorSubvector(phase_source, is);
+
+        nx_p = SubvectorNX(ps_sub);
+        ny_p = SubvectorNY(ps_sub);
+        nz_p = SubvectorNZ(ps_sub);
+
+        nx_ps = SubvectorNX(ps_sub);
+        ny_ps = SubvectorNY(ps_sub);
+        nz_ps = SubvectorNZ(ps_sub);
+
+        if (reservoir_data_physical->storage > reservoir_data_physical->min_release_storage) {
+          reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
+          /*  Get the intersection of the reservoir with the subgrid  */
+          if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid))) {
+
+            /*  If an intersection;  loop over it, and insert value  */
+            ix = SubgridIX(tmp_subgrid);
+            iy = SubgridIY(tmp_subgrid);
+            iz = SubgridIZ(tmp_subgrid);
+
+            nx = SubgridNX(tmp_subgrid);
+            ny = SubgridNY(tmp_subgrid);
+            nz = SubgridNZ(tmp_subgrid);
+
+            dx = SubgridDX(tmp_subgrid);
+            dy = SubgridDY(tmp_subgrid);
+            dz = SubgridDZ(tmp_subgrid);
+
+            area_x = dy * dz;
+            area_y = dx * dz;
+            area_z = dx * dy;
+            area_sum = area_x + area_y + area_z;
+
+            px = SubvectorElt(px_sub, ix, iy, iz);
+            py = SubvectorElt(py_sub, ix, iy, iz);
+            pz = SubvectorElt(pz_sub, ix, iy, iz);
+
+            data = SubvectorElt(ps_sub, ix, iy, iz);
+
+            int ip = 0;
+            int ips = 0;
+            double weight = 1.0;
+
+            BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
+                      ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
+                      {
+                        data[ips] += weight * flux;
+                        ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = flux*volume;
+                      });
+          }
+        }
+      }
+    }
+  }
 }
+
+
 
 
 /*--------------------------------------------------------------------------

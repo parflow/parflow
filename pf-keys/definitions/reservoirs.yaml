@@ -1,0 +1,126 @@
+# reservoirs.yaml
+# Definitions of all reservoir items
+
+# -----------------------------------------------------------------------------
+# Reservoirs
+# -----------------------------------------------------------------------------
+
+Reservoirs:
+  __doc__: >
+    Here we define the reservoirs for the model.
+
+  # Reservoirs.Names not in grep
+  Names:
+    help: >
+      [Type: string] This key specifies the names for the reservoirs for which input data will be given.
+    default: ""
+    domains:
+      AnyString:
+    handlers:
+      ReservoirUpdater:
+        type: ChildrenHandler
+        class_name: ReservoirItem
+
+  .{reservoir_name}:
+    __class__: ReservoirItem
+    __rst__:
+      name: Reservoirs.{reservoir_name}
+    __doc__: >
+      Specifying properties for reservoirs
+    __simput__:
+      type: VariableTable
+      table_label: Reservoir
+
+#    ReleaseCurveFile:
+#      help: >
+#        [Type: string] This key specifies the release curve of the reservoir as a timeseries (TBD FORMATTING DOC)
+#      domains:
+#        AnyString:
+
+    Release_X:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the x location of where the reservoir releases water
+      domains:
+        DoubleValue:
+
+    Release_Y:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the y location of where the reservoir releases water
+      domains:
+        DoubleValue:
+
+    Secondary_Intake_X:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the x location of the optional secondary intake cell
+      default: -1.0
+      domains:
+        DoubleValue:
+
+    Secondary_Intake_Y:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the y location of the optional secondary intake cell
+      default: -1.0
+      domains:
+        DoubleValue:
+
+    Has_Secondary_Intake_Cell:
+      # typos - vertical
+      help: >
+        [Type: bool] This key specifies if the reservoir has a secondary intake cell
+      default: False
+      domains:
+        IntValue:
+
+    Min_Release_Storage:
+      # typos - vertical
+      help: >
+        [Type: double]
+      domains:
+        DoubleValue:
+
+    Max_Storage:
+      # typos - vertical
+      help: >
+        [Type: double]
+      domains:
+        DoubleValue:
+
+    Storage:
+      # typos - vertical
+      help: >
+        [Type: double]
+      domains:
+        DoubleValue:
+
+    Release_Rate:
+      # typos - vertical
+      help: >
+        [Type: double]
+      domains:
+        DoubleValue:
+
+    Intake_X:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the x location of where the reservoir intakes water
+      domains:
+        DoubleValue:
+
+    Intake_Y:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the y location of where the reservoir intakes water.
+      domains:
+        DoubleValue:
+
+  Overland_Flow_Solver:
+    # typos - vertical
+    help: >
+      [Type: string] This key specifies which overland flow condition is used in the domain so that the slopes around
+      the reservoirs can be adjusted properly. Supported Options are OverlandFlow and OverlandKinematic.
+    domains:
+      AnyString:
