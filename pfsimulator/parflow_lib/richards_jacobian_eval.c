@@ -61,7 +61,8 @@ typedef struct {
   enum JacobianType type;
   double SpinupDampP1; // NBE
   double SpinupDampP2; // NBE
-  int tfgupwind;  // @RMM
+  int tfgupwind;  // RMM
+  int using_MGSemi;  // RMM
 } PublicXtra;
 
 typedef struct {
@@ -329,6 +330,11 @@ void    RichardsJacobianEval(
           case OverlandDiffusive:
           {
             public_xtra->type = overland_flow;
+            /*Check to see if we have MGSemi set as the preconditioner key
+            if so, we use the simple/symmetric preconditioner type (RMM) */
+            if (public_xtra->using_MGSemi ==1) {
+            public_xtra->type = simple;
+            }
           }
           break;
         }
@@ -1250,7 +1256,11 @@ void    RichardsJacobianEval(
                                  int ip = SubvectorEltIndex(p_sub, i, j, k);
                                  if ((pp[ip]) > 0.0)
                                  {
+                                  /* If we have the "simple" or symmetric preconditioner case we default to a modified version
+                                     of Stefan's overland flow preconditioner (just for the center part) (RMM) */
                                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                                   // remove for production, here for printing / debugging
+                                   amps_Printf("Jac OVLFLOW MGSemi: CP=%f im=%d  \n", cp[im], im);
                                  }
                                }
                                break;
@@ -1359,6 +1369,17 @@ void    RichardsJacobianEval(
                            FACE(BackFace,  { op = lp; }),
                            FACE(FrontFace, {
                                op = up;
+                               /* MGSemi center part*/
+                               ip = SubvectorEltIndex(p_sub, i, j, k);
+                                 if ((pp[ip]) > 0.0)
+                                 {
+                                  if (public_xtra->using_MGSemi == 1)
+                                   {
+                                     //cp[im] += (vol / dz) * dt * (1.0 + 0.0);
+                                     cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                                     printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[im], im);
+                                   }
+                                 }
                                /* check if overland flow kicks in */
                                if (!ovlnd_flag[0])
                                {
@@ -2104,6 +2125,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   int switch_value;
   NameArray switch_na;
   NameArray upwind_switch_na;
+  NameArray precond_switch_na;
 
 
   (void)name;
@@ -2115,6 +2137,20 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   public_xtra->SpinupDampP1 = GetDoubleDefault(key, 0.0);
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
+
+/* get preconditioner to check for MGSemi to use custom overland flow formulation*/
+  precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
+  sprintf(key, "Solver.Linear.Preconditioner");
+  switch_name = GetStringDefault(key, "MGSemi");
+  if (switch_value == 1)
+  {
+   public_xtra->using_MGSemi = 1;
+  }
+  else 
+  {
+   public_xtra->using_MGSemi = 0;
+  }
+ NA_FreeNameArray(precond_switch_na);
 
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
