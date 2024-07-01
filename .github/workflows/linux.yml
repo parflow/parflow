@@ -69,7 +69,7 @@ jobs:
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
     - name: CMake Install
-      if: matrix.config.os != "macos-14"
+      if: matrix.config.os != 'macos-14'
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       run: |
