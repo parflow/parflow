@@ -466,14 +466,17 @@ pfset Solver.Nonlinear.ResidualTol                    1e-6
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       True 
+#pfset Solver.Nonlinear.UseJacobian                       False 
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
 pfset Solver.Nonlinear.StepTol				 1e-30
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      70
 pfset Solver.Linear.MaxRestarts                           2
 
-pfset Solver.Linear.Preconditioner                       PFMGOctree
-pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
+## run test with MGSemi preconditioner
+pfset Solver.Linear.Preconditioner                       MGSemi
+
+
 
 
 #-----------------------------------------------------------------------------
@@ -562,9 +565,9 @@ foreach variable $ClmVariables {
 }
 
 if $passed {
-    puts "LW : PASSED"
+    puts "LW_MGSemi : PASSED"
 } {
-    puts "LW : FAILED"
+    puts "LW_MGSemi : FAILED"
 }
 
 
