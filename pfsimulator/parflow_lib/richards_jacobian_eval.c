@@ -2166,6 +2166,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
   sprintf(key, "Solver.Linear.Preconditioner");
   switch_name = GetStringDefault(key, "MGSemi");
+  switch_value = NA_NameToIndexExitOnError(precond_switch_na, switch_name, key);
   if (switch_value == 1)
   {
    public_xtra->using_MGSemi = 1;
