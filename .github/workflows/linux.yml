@@ -221,7 +221,7 @@ jobs:
           mkdir silo
           cd silo
           curl -L $URL | tar --strip-components=1 -xz
-          FC=gfortran-13 ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
+          ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR --disable-fortran
           make -j 2 install
         fi
 
