@@ -1261,7 +1261,7 @@ void    RichardsJacobianEval(
                                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
                                    //cp[im] += (vol / dz) * (dt +1.0); (Stefan's original code)
                                    // remove for production, here for printing / debugging
-                                   amps_Printf("Jac OVLFLOW MGSemi: CP=%f im=%d  \n", cp[im], im);
+                                   //amps_Printf("Jac OVLFLOW MGSemi: CP=%f im=%d  \n", cp[im], im);
                                  }
                                }
                                break;
@@ -1384,7 +1384,7 @@ void    RichardsJacobianEval(
                                      cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
                                      //cp[im] += (vol / dz) * (dt +1.0); (Stefan's original code)
 
-                                     printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[im], im);
+                                     //amps_Printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[im], im);
                                    }
                                 }
                                /* check if overland flow kicks in */
@@ -1423,15 +1423,21 @@ void    RichardsJacobianEval(
                            FACE(BackFace, { op = lp; }),
                            FACE(FrontFace, {
                                op = up;
-                               /* MGSemi center part*/
+                               /* MGSemi center part this should basically only be active if we have
+                                  overland DWE and MGSemi chosen as preconditioner.  This logic is similar
+                                  to, or could be replaced by, the case statements in OverlandFlow above
+                                  where the FD Jacobian (case no_nonlinear), MGSemi (case simple) and PFMG 
+                                  (case overland_flow) are enumerated explicitly (RMM)
+                                  !! more testing is needed for Diffusive Wave ESP in parallel */
                                ip = SubvectorEltIndex(p_sub, i, j, k);
                                  if ((pp[ip]) > 0.0)
                                  {
                                   if (public_xtra->using_MGSemi == 1)
                                    {
-                                     //cp[im] += (vol / dz) * dt * (1.0 + 0.0);
+                                     //cp[im] += (vol / dz) * dt * (1.0 + 0.0); // this is the preconditioner for seepage face
+                                     /* This is the same preconditioner as OverlandFlow, we should provide other options (RMM)*/
                                      cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                     printf("Jac OVLDIF MGSemi: CP=%f im=%d  \n", cp[im], im);
+                                     //amps_Printf("Jac OVLDIF MGSemi: CP=%f im=%d  \n", cp[im], im);
                                    }
                                  }
                                /* check if overland flow kicks in */
