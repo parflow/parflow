@@ -16,7 +16,7 @@ jobs:
             cudaos: '',
             python: "false",
             backend: "none",
-            amps_layer: mpi1,
+            amps_layer: seq,
             netcdf: "false"
           }
 
@@ -221,7 +221,7 @@ jobs:
           mkdir silo
           cd silo
           curl -L $URL | tar --strip-components=1 -xz
-          ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
+          FC=gfortran-13 ./configure --disable-silex --disable-hzip --disable-fpzip --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
@@ -235,7 +235,7 @@ jobs:
           cd hypre
           curl -L $URL | tar --strip-components=1 -xz
           cd src
-          ./configure --prefix=$PARFLOW_DEP_DIR
+          FC=gfortran-13 ./configure --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
