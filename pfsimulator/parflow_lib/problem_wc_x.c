@@ -85,6 +85,8 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
 
     Subgrid *subgrid;
     Subvector *ps_sub;
+    Subvector *wcx_values_sub;
+    double *psdat, *wcx_values_dat;
 
     double *data;
 
@@ -111,7 +113,7 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
             region_indices = dummy0->region_indices;
             values = dummy0->values;
 
-            for (ir = 0; ir < num_regions; ir+) {
+            for (ir = 0; ir < num_regions; ir++) {
                 gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
                 value = values[ir];
                 
@@ -321,7 +323,7 @@ PFModule *XChannelWidthNewPublicXtra() {
 
     NameArray type_na;
     
-    type_na = NA_NewNameArray("Constant PFBFile NCFile")
+    type_na = NA_NewNameArray("Constant PFBFile NCFile");
 
     public_xtra = ctalloc(PublicXtra, 1); 
 
@@ -342,7 +344,7 @@ PFModule *XChannelWidthNewPublicXtra() {
             (dummy0->region_indices) = ctalloc(int, num_regions);
             (dummy0->values) = ctalloc(double, num_regions);
 
-            for (ir = 0; ir < num_regions; i++) { 
+            for (ir = 0; ir < num_regions; ir++) { 
                 (dummy0->region_indices)[ir] = NA_NameToIndex(GlobalsGeomNames, NA_IndexToName((dummy0->regions), ir));
                 sprintf(key, "ChannelWidthX.Geom.%s.Value", NA_IndexToName((dummy0->regions), ir));
                 (dummy0->values)[ir] = GetDouble(key);
@@ -371,7 +373,7 @@ PFModule *XChannelWidthNewPublicXtra() {
             break;
         }
 
-        default { 
+        default: { 
             InputError("Error: invalid type <%s> for key <%s>\n", switch_name, key);
         }
     }
