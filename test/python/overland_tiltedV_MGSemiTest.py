@@ -10,7 +10,23 @@
 import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 
+def CheckOutput(run_name, correct_root, correct_output_dir_name):
+
+    passed = True
+    sig_digits = 4
+    abs_value = 1e-12
+    test_files = ["press"]
+    for timestep in range(20):
+        for test_file in test_files:
+            filename = f"/{run_name}.out.{test_file}.{timestep:05d}.pfb"
+            correct_filename = f"/{correct_root}.out.{test_file}.{timestep:05d}.pfb"
+            result = pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + correct_filename, f"Max difference in {new_output_dir_name + filename}", abs_value, sig_digits)
+            if not result:
+                passed = False
+
+    return passed
 
 overland = Run("overland_tiltedV_KWE", __file__)
 
@@ -347,6 +363,10 @@ overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
 overland.Solver.Nonlinear.UseJacobian = False
 #overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
 
+passed=True
+
+correct_output_dir_name="../correct_output/TiltedV_OverlandKin"
+correct_root="TiltedV_OverlandKin"
 
 run_name = "TiltedV_OverlandKin_JacFalse_MGSemi"
 overland.set_name(run_name)
@@ -355,6 +375,8 @@ print(f"Running {run_name}")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 run_name = "TiltedV_OverlandKin_JacTrue_MGSemi"
 overland.set_name(run_name)
@@ -368,6 +390,8 @@ print(f"Running {run_name} Jacobian True")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 run_name = "TiltedV_OverlandKin_JacTrue_PFMG"
 overland.set_name(run_name)
@@ -381,6 +405,8 @@ print(f"Running {run_name} Jacobian True PFMG")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 run_name = "TiltedV_OverlandKin_JacFalse_PFMG"
 overland.set_name(run_name)
@@ -394,7 +420,8 @@ print(f"Running {run_name} Jacobian False PFMG")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 #-----------------------------------------------------------------------------
 # Original formulation with a zero value channel
@@ -410,11 +437,17 @@ overland.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
 overland.Solver.Linear.Preconditioner = 'PFMG'
 overland.Solver.Nonlinear.UseJacobian = False
 overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+
+correct_output_dir_name="../correct_output/TiltedV_OverlandFlow"
+correct_root="TiltedV_OverlandFlow"
+
 print("##########")
 print(f"Running {run_name} Jacobian False PFMG")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 run_name = "TiltedV_OverlandFlow_JacTrue_PFMG"
 overland.set_name(run_name)
@@ -424,6 +457,8 @@ print(f"Running {run_name} Jacobian True PFMG")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 run_name = "TiltedV_OverlandFlow_JacTrue_MGSemi"
 overland.set_name(run_name)
@@ -433,6 +468,8 @@ print(f"Running {run_name} Jacobian True MGSemi")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 run_name = "TiltedV_OverlandFlow_JacFalse_MGSemi"
 overland.set_name(run_name)
@@ -442,6 +479,10 @@ print(f"Running {run_name} Jacobian False MGSemi")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
+
+
 
 #-----------------------------------------------------------------------------
 # Diffusive wave (DWE) formulation without the zero channel
@@ -464,6 +505,9 @@ overland.TopoSlopesY.Geom.domain.Value = 0.01
 overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
 overland.Solver.Nonlinear.UseJacobian = False
 
+correct_output_dir_name="../correct_output/TiltedV_OverlandDiff"
+correct_root="TiltedV_OverlandDiff"
+
 run_name = "TiltedV_OverlandDiff_JacFalse_MGSemi"
 overland.set_name(run_name)
 print("##########")
@@ -471,6 +515,8 @@ print(f"Running {run_name}")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 # run with DWE and analytical jacobian
 run_name = "TiltedV_OverlandDiff_JacTrue_MGSemi"
@@ -483,6 +529,8 @@ print(f"Running {run_name} Jacobian True")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 # run with PFMG preconditioner DWE upwinding and analytical jacobian
 run_name = "TiltedV_OverlandDiff_JacTrue_PFMG"
@@ -496,6 +544,8 @@ print(f"Running {run_name} Jacobian True PFMG")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
 
 # run with PFMG preconditioner DWE upwinding and finite difference jacobian
 run_name = "TiltedV_OverlandDiff_JacFalse_PFMG"
@@ -509,3 +559,11 @@ print(f"Running {run_name} Jacobian False PFMG")
 new_output_dir_name = get_absolute_path('test_output/' + f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
+if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+    passed=False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
