@@ -1254,15 +1254,15 @@ void    RichardsJacobianEval(
                                {
                                  double vol = dx * dy * dz;
                                  int ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 if ((pp[ip]) > 0.0)
-                                 {
-                                  /* If we have the "simple" or symmetric preconditioner case we default to a modified version
-                                     of Stefan's overland flow preconditioner (just for the center part) (RMM) */
-                                   cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                   //cp[im] += (vol / dz) * (dt +1.0); (Stefan's original code)
-                                   // remove for production, here for printing / debugging
-                                   //amps_Printf("Jac OVLFLOW MGSemi: CP=%f im=%d  \n", cp[im], im);
-                                 }
+                                //  if ((pp[ip]) > 0.0)
+                                //  {
+                                //   /* If we have the "simple" or symmetric preconditioner case we default to a modified version
+                                //      of Stefan's overland flow preconditioner (just for the center part) (RMM) */
+                                //    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                                //    //cp[im] += (vol / dz) * (dt +1.0); (Stefan's original code)
+                                //    // remove for production, here for printing / debugging
+                                //    //amps_Printf("Jac OVLFLOW MGSemi: CP=%f im=%d  \n", cp[im], im);
+                                //  }
                                }
                                break;
 
@@ -1293,9 +1293,9 @@ void    RichardsJacobianEval(
                              }),
                            AfterAllCells(
                            {
-                             switch(public_xtra->type)
-                             {
-                               case overland_flow:
+                            //  switch(public_xtra->type)
+                            //  {
+                            //    case overland_flow:
                                  if (overlandspinup != 1)
                                  {
                                    /* Get overland flow contributions for using kinematic or diffusive - LEC */
@@ -1320,11 +1320,11 @@ void    RichardsJacobianEval(
                                                          kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
                                    }
                                  }
-								 break;
+							// 	 break;
 
-							 default:
-                                 break;
-                             }
+							//  default:
+              //                    break;
+                             //}
                            })
         ); /* End OverlandBC */
 
@@ -1345,7 +1345,7 @@ void    RichardsJacobianEval(
 
                              if ((pp[ip]) >= 0.0)
                              {
-                               cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //@RMM
+                               //cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //@RMM
 //                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
                              }
                              else
@@ -1370,23 +1370,19 @@ void    RichardsJacobianEval(
                            FACE(BackFace,  { op = lp; }),
                            FACE(FrontFace, {
                                op = up;
-                               /* MGSemi center part this should basically only be active if we have
-                                  overland KWE and MGSemi chosen as preconditioner.  This logic is similar
-                                  to, or could be replaced by, the case statements in OverlandFlow above
-                                  where the FD Jacobian (case no_nonlinear), MGSemi (case simple) and PFMG 
-                                  (case overland_flow) are enumerated explicitly (RMM)*/
-                               if (public_xtra->using_MGSemi == 1)
-                                {
-                                 ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 if ((pp[ip]) > 0.0)
-                                  {
-                                     /* This is the same preconditioner as OverlandFlow, we should provide other options (RMM)*/
-                                     cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                     //cp[im] += (vol / dz) * (dt +1.0); (Stefan's original code)
+                               
+                              //  if (public_xtra->using_MGSemi == 1)
+                              //   {
+                              //    ip = SubvectorEltIndex(p_sub, i, j, k);
+                              //    if ((pp[ip]) > 0.0)
+                              //     {
+                              //        /* This is the same preconditioner as OverlandFlow, we should provide other options (RMM)*/
+                              //        //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                              //        //cp[im] += (vol / dz) * (dt +1.0); (Stefan's original code)
 
-                                     //amps_Printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[im], im);
-                                   }
-                                }
+                              //        //amps_Printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[im], im);
+                              //      }
+                              //   } 
                                /* check if overland flow kicks in */
                                if (!ovlnd_flag[0])
                                {
@@ -1430,16 +1426,16 @@ void    RichardsJacobianEval(
                                   (case overland_flow) are enumerated explicitly (RMM)
                                   !! more testing is needed for Diffusive Wave ESP in parallel */
                                ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 if ((pp[ip]) > 0.0)
-                                 {
-                                  if (public_xtra->using_MGSemi == 1)
-                                   {
-                                     //cp[im] += (vol / dz) * dt * (1.0 + 0.0); // this is the preconditioner for seepage face
-                                     /* This is the same preconditioner as OverlandFlow, we should provide other options (RMM)*/
-                                     cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                     //amps_Printf("Jac OVLDIF MGSemi: CP=%f im=%d  \n", cp[im], im);
-                                   }
-                                 }
+                                //  if ((pp[ip]) > 0.0)
+                                //  {
+                                //   if (public_xtra->using_MGSemi == 1)
+                                //    {
+                                //     // cp[im] += (vol / dz) * dt * (1.0 + 0.0); // this is the preconditioner for seepage face
+                                //      /* This is the same preconditioner as OverlandFlow, we should provide other options (RMM)*/
+                                //      //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                                //      //amps_Printf("Jac OVLDIF MGSemi: CP=%f im=%d  \n", cp[im], im);
+                                //    }
+                                //  }
                                /* check if overland flow kicks in */
                                if (!ovlnd_flag[0])
                                {
@@ -1880,7 +1876,374 @@ void    RichardsJacobianEval(
     }             /* End subgrid loop */
   }
 
+/* MGSemi Jacobian construction; this should basically only be active if we have
+  overland KWE and MGSemi chosen as preconditioner.  This logic is similar
+  to the case statements in OverlandKinematic above
+  for PFMG/SMG/PFMGOctree(case overland_flow) are split into the surface and 
+  subsurface parts (RMM)*/
 
+  if (public_xtra->using_MGSemi == 1)
+  {
+    /* begin loop to build J for MGSemi */
+    ForSubgridI(is, GridSubgrids(grid))
+    {
+      subgrid = GridSubgrid(grid, is);
+
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+
+      double vol = dx * dy * dz;
+
+      ffx = dy * dz;
+      ffy = dx * dz;
+      ffz = dx * dy;
+
+      p_sub = VectorSubvector(pressure, is);
+
+      J_sub = MatrixSubmatrix(J, is);
+
+      kw_sub = VectorSubvector(KW, is);
+      ke_sub = VectorSubvector(KE, is);
+      kn_sub = VectorSubvector(KN, is);
+      ks_sub = VectorSubvector(KS, is);
+      kwns_sub = VectorSubvector(KWns, is);
+      kens_sub = VectorSubvector(KEns, is);
+      knns_sub = VectorSubvector(KNns, is);
+      ksns_sub = VectorSubvector(KSns, is);
+
+      top_sub = VectorSubvector(top, is);
+      sx_sub = VectorSubvector(slope_x, is);
+
+      sy_v = SubvectorNX(sx_sub);
+      nx_m = SubmatrixNX(J_sub);
+      ny_m = SubmatrixNY(J_sub);
+      sy_m = nx_m;
+      sz_m = nx_m * ny_m;
+
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+
+      pp = SubvectorData(p_sub);
+      /* for Bmat */
+      cp = SubmatrixStencilData(J_sub, 0);
+      wp = SubmatrixStencilData(J_sub, 1);
+      ep = SubmatrixStencilData(J_sub, 2);
+      sop = SubmatrixStencilData(J_sub, 3);
+      np = SubmatrixStencilData(J_sub, 4);
+      lp = SubmatrixStencilData(J_sub, 5);
+      up = SubmatrixStencilData(J_sub, 6);
+
+      kw_der = SubvectorData(kw_sub);
+      ke_der = SubvectorData(ke_sub);
+      kn_der = SubvectorData(kn_sub);
+      ks_der = SubvectorData(ks_sub);
+      kwns_der = SubvectorData(kwns_sub);
+      kens_der = SubvectorData(kens_sub);
+      knns_der = SubvectorData(knns_sub);
+      ksns_der = SubvectorData(ksns_sub);
+
+      top_dat = SubvectorData(top_sub);
+
+      ForBCStructNumPatches(ipatch, bc_struct)
+      {
+        ForPatchCellsPerFace(OverlandKinematicBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io, io1, itop, ip, im, k1;),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
+                             {
+                               /* Loop over boundary patches to build J matrix. */
+                               io = SubmatrixEltIndex(J_sub, i, j, iz);
+                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                               itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+                               /* Update J */
+                               ip = SubvectorEltIndex(p_sub, i, j, k);
+                               im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                               /* First put contributions from subsurface diagonal onto diagonal of JC */
+                               //cp_c[io] = cp[im];
+                               //cp[im] = 0.0;         // update JB
+                               /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+                               /* West */
+                              //  k1 = (int)top_dat[itop - 1];
+
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*west node is also surface node */
+                              //    {
+                              //      //wp_c[io] += wp[im];
+                              //      //wp[im] = 0.0;           // update JB
+                              //    }
+                              //  }
+                              //  /* East */
+                              //  k1 = (int)top_dat[itop + 1];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*east node is also surface node */
+                              //    {
+                              //      //ep_c[io] += ep[im];
+                              //      //ep[im] = 0.0;           //update JB
+                              //    }
+                              //  }
+                              //  /* South */
+                              //  k1 = (int)top_dat[itop - sy_v];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*south node is also surface node */
+                              //    {
+                              //      //sop_c[io] += sop[im];
+                              //      //sop[im] = 0.0;           //update JB
+                              //    }
+                              //  }
+                              //  /* North */
+                              //  k1 = (int)top_dat[itop + sy_v];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*north node is also surface node */
+                              //    {
+                              //      //np_c[io] += np[im];
+                              //      //np[im] = 0.0;           // Update JB
+                              //    }
+                              //  }
+
+                               /* Now add overland contributions to J similar to JC above */
+                               if ((pp[ip]) > 0.0)
+                               {
+                                 /*diagonal term */
+                                 cp[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                               }
+
+                               /*west term */
+                               wp[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+                               /*East term */
+                               ep[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+                               /*south term */
+                               sop[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+                               /*north term */
+                               np[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+                             }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+          ); /* End OverlandKinematicBC */
+
+        ForPatchCellsPerFace(OverlandDiffusiveBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io, io1, itop, ip, im, k1;),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
+                             {
+
+                               /* Loop over boundary patches to build JC matrix.
+                                */
+                               io = SubmatrixEltIndex(J_sub, i, j, iz);
+                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                               itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+                               /* Update J */
+                               ip = SubvectorEltIndex(p_sub, i, j, k);
+                               im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                              //  /* First put contributions from subsurface diagonal onto diagonal of JC */
+                              //  cp_c[io] = cp[im];
+                              //  cp[im] = 0.0;         // update JB
+                              //  /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+                              //  /* West */
+                              //  k1 = (int)top_dat[itop - 1];
+
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*west node is also surface node */
+                              //    {
+                              //      wp_c[io] += wp[im];
+                              //      wp[im] = 0.0;           // update JB
+                              //    }
+                              //  }
+                              //  /* East */
+                              //  k1 = (int)top_dat[itop + 1];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*east node is also surface node */
+                              //    {
+                              //      ep_c[io] += ep[im];
+                              //      ep[im] = 0.0;           //update JB
+                              //    }
+                              //  }
+                              //  /* South */
+                              //  k1 = (int)top_dat[itop - sy_v];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*south node is also surface node */
+                              //    {
+                              //      sop_c[io] += sop[im];
+                              //      sop[im] = 0.0;           //update JB
+                              //    }
+                              //  }
+                              //  /* North */
+                              //  k1 = (int)top_dat[itop + sy_v];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*north node is also surface node */
+                              //    {
+                              //      np_c[io] += np[im];
+                              //      np[im] = 0.0;           // Update JB
+                              //    }
+                              //  }
+
+                               /* Now add overland contributions to JC */
+                               if ((pp[ip]) > 0.0)
+                               {
+                                 /*diagonal term */
+                                 cp[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                               }
+                               /*west term */
+                               wp[io] -= (vol / ffy) * dt * (kwns_der[io1]);
+
+                               /*East term */
+                               ep[io] += (vol / ffy) * dt * (kens_der[io1]);
+
+                               /*south term */
+                               sop[io] -= (vol / ffx) * dt * (ksns_der[io1]);
+
+                               /*north term */
+                               np[io] += (vol / ffx) * dt * (knns_der[io1]);
+                             }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+          ); /* End OverlandDiffusiveBC */
+
+          ForPatchCellsPerFace(OverlandBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io, io1, itop, ip, im, k1;),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
+                             {
+                               /* Loop over boundary patches to build J matrix.
+                                */
+                               io = SubmatrixEltIndex(J_sub, i, j, iz);
+                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                               itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+                               /* Update J */
+                               ip = SubvectorEltIndex(p_sub, i, j, k);
+                               im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                              //  /* First put contributions from subsurface diagonal onto diagonal of JC */
+                              //  cp_c[io] = cp[im];
+                              //  cp[im] = 0.0;         // update JB
+                              //  /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+                              //  /* West */
+                              //  k1 = (int)top_dat[itop - 1];
+
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*west node is also surface node */
+                              //    {
+                              //      wp_c[io] += wp[im];
+                              //      wp[im] = 0.0;           // update JB
+                              //    }
+                              //  }
+                              //  /* East */
+                              //  k1 = (int)top_dat[itop + 1];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*east node is also surface node */
+                              //    {
+                              //      ep_c[io] += ep[im];
+                              //      ep[im] = 0.0;           //update JB
+                              //    }
+                              //  }
+                              //  /* South */
+                              //  k1 = (int)top_dat[itop - sy_v];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*south node is also surface node */
+                              //    {
+                              //      sop_c[io] += sop[im];
+                              //      sop[im] = 0.0;           //update JB
+                              //    }
+                              //  }
+                              //  /* North */
+                              //  k1 = (int)top_dat[itop + sy_v];
+                              //  if (k1 >= 0)
+                              //  {
+                              //    if (k1 == k)         /*north node is also surface node */
+                              //    {
+                              //      np_c[io] += np[im];
+                              //      np[im] = 0.0;           // Update JB
+                              //    }
+                              //  }
+
+                               /* Now add overland contributions to JC */
+                               if ((pp[ip]) > 0.0)
+                               {
+                                 /*diagonal term */
+                                 cp[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                               }
+                               else
+                               {
+                                 // Laura's version
+                                 cp[io] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //NBE
+                               }
+
+                               if (diffusive == 0)
+                               {
+                                 /*west term */
+                                 wp[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+                                 /*East term */
+                                 ep[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+                                 /*south term */
+                                 sop[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+                                 /*north term */
+                                 np[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+                               }
+                               else
+                               {
+                                 /*west term */
+                                 wp[io] -= (vol / ffy) * dt * (kwns_der[io1]);
+
+                                 /*East term */
+                                 ep[io] += (vol / ffy) * dt * (kens_der[io1]);
+
+                                 /*south term */
+                                 sop[io] -= (vol / ffx) * dt * (ksns_der[io1]);
+
+                                 /*north term */
+                                 np[io] += (vol / ffx) * dt * (knns_der[io1]);
+                               }
+                             }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+          ); /* End OverlandBC */
+      } /* End ipatch loop */
+    }             /* End subgrid loop */
+  }
 
   /* Set pressures outside domain to zero.
    * Recall: equation to solve is f = 0, so components of f outside
