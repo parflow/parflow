@@ -40,6 +40,7 @@ if(${PARFLOW_HAVE_HYPRE})
     overland_tiltedV_KWE
     overland_slopingslab_DWE
     overland_tiltedV_DWE
+    overland_tiltedV_MGSemiTest
     overland_FlatICP
     richards_FBx
     richards_FBy
