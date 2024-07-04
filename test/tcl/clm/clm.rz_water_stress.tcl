@@ -354,18 +354,20 @@ pfundist clm.rz_stress
 source ../pftest.tcl
 set passed 1
 
+set correct_output_dir "../../correct_output/clm_output"
+
 # we compare pressure, saturation and CLM output
 
 for {set i 0} { $i <= 5 } {incr i} {
     set i_string [format "%05d" $i]
-    if ![pftestFile clm.rz_stress.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits] {
+    if ![pftestFile clm.rz_stress.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir] {
     set passed 0
     }
-    if ![pftestFile clm.rz_stress.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits] {
+    if ![pftestFile clm.rz_stress.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits $correct_output_dir] {
     set passed 0
     }
     if {$i > 0} {
-    if ![pftestFile clm.rz_stress.out.clm_output.$i_string.C.pfb "Max difference in Saturation for timestep $i_string" $sig_digits] {
+    if ![pftestFile clm.rz_stress.out.clm_output.$i_string.C.pfb "Max difference in Saturation for timestep $i_string" $sig_digits $correct_output_dir] {
     set passed 0
     }
     }
