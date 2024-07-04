@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 * Print routines for pftools
 *
@@ -71,7 +71,7 @@ void            PrintSimpleA(
   fprintf(fp, "%d %d %d\n", nx, ny, nz);
 
   ptr = DataboxCoeffs(v);
-  for (m = nx * ny * nz; m--; )
+  for (m = nx * ny * nz; m--;)
     fprintf(fp, "% e\n", *ptr++);
 }
 
@@ -100,7 +100,7 @@ void            PrintSimpleA2D(
   fprintf(fp, "%d %d %d\n", nx, ny, nz);
 
   ptr = DataboxCoeffs(v);
-  for (m = nx * ny * nz; m--; )
+  for (m = nx * ny * nz; m--;)
     fprintf(fp, "% e\n", *ptr++);
 }
 
@@ -278,7 +278,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (float32*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -299,7 +299,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (float64*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -320,7 +320,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (int8*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -341,7 +341,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (uint8*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -362,7 +362,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (int16*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -383,7 +383,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (uint16*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -404,7 +404,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (int32*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -425,7 +425,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (uint32*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -725,17 +725,17 @@ void            PrintVTK(
     int j;
     double *DTd;
     float *DTf;
-    DTd = (double*)malloc(tools_SizeofDouble * nxyzp * 3);
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+    // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
       DTf[j] = (float)DTd[j];
     }
-    free(DTd);
     fprintf(fp, "SCALARS %s float\n", varname);
     fprintf(fp, "LOOKUP_TABLE default\n");
     tools_WriteFloat(fp, DTf, NX * NY * NZ);
+    free(DTf);
   }
   else
   {
@@ -775,13 +775,15 @@ void            PrintTFG_VTK(
 /* To reduce size, write points as float */
   int i;
   float *pnt;
-  pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+  // pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+  pnt = (float*)calloc(nxyzp * 3,tools_SizeofFloat);
   for (i = 0; i < (nxyzp * 3); ++i)
   {
     pnt[i] = (float)pnts[i];
   }
   fprintf(fp, "POINTS %i float\n", nxyzp);
   tools_WriteFloat(fp, pnt, nxyzp * 3);
+  free(pnt);
 
 // COMMENT THE PREVIOUS 8 AND UNCOMMENT THE FOLLOWING 3 TO FORCE DOUBLE WRITE
 //        /* Write points as double */
@@ -798,8 +800,8 @@ void            PrintTFG_VTK(
     int j;
     double *DTd;
     float *DTf;
-    DTd = (double*)malloc(tools_SizeofDouble * nxyzp * 3);
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+    // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
 
     for (j = 0; j < (NX * NY * NZ); ++j)
@@ -810,6 +812,7 @@ void            PrintTFG_VTK(
     fprintf(fp, "SCALARS %s float\n", varname);
     fprintf(fp, "LOOKUP_TABLE default\n");
     tools_WriteFloat(fp, DTf, NX * NY * NZ);
+    free(DTf);
   }
   else
   {
@@ -877,8 +880,8 @@ void            PrintCLMVTK(
     double *DTd;
     float  *DTf;
     float  *val;
-    DTd = (double*)malloc(tools_SizeofDouble * nxyzp);
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
@@ -915,6 +918,7 @@ void            PrintCLMVTK(
         }
       }
     }
+    free(DTf);
   }
   else
   {
@@ -996,13 +1000,15 @@ void            PrintTFG_CLMVTK(
   /* To reduce size, write points as float */
 //    int     i;
   float *pnt;
-  pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+  // pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+  pnt = (float*)calloc(nxyzp * 3,tools_SizeofFloat);
   for (i = 0; i < (nxyzp * 3); ++i)
   {
     pnt[i] = (float)pnts[i];
   }
   fprintf(fp, "POINTS %i float\n", nxyzp);
   tools_WriteFloat(fp, pnt, nxyzp * 3);
+  free(pnt);
 
   // COMMENT THE PREVIOUS 8 AND UNCOMMENT THE FOLLOWING 3 TO FORCE DOUBLE WRITE
   //        /* Write points as double */
@@ -1022,8 +1028,8 @@ void            PrintTFG_CLMVTK(
     double *DTd;
     float  *DTf;
     float  *val;
-    DTd = (double*)malloc(tools_SizeofDouble * nxyzp);
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
@@ -1060,6 +1066,7 @@ void            PrintTFG_CLMVTK(
         }
       }
     }
+    free(DTf);
   }
   else
   {

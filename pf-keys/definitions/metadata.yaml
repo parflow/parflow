@@ -1,0 +1,79 @@
+# metadata.yaml
+# Adding metadata to ParFlow key library
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+
+Metadata:
+  __doc__: ''
+  __rst__:
+    skip:
+
+  Title:
+    help: >
+      [Type: string] Summary explaining that run
+    domains:
+      AnyString:
+
+  Description:
+    help: >
+      [Type: string] More details on that run
+    domains:
+      AnyString:
+
+  DOI:
+    help: >
+      [Type: string] Digital Object Identifier System code
+    domains:
+      AnyString:
+
+  Authors:
+    __class__: MetadataAuthors
+    __doc__: ''
+    __rst__:
+      skip:
+
+    Names:
+      help: >
+        [Type: string] List of short names to reference a list of authors
+      domains:
+        AnyString:
+      handlers:
+        AuthorUpdater:
+          type: ChildrenHandler
+          class_name: MetadataAuthorItem
+          location: .
+
+    .{author_name}:
+      __class__: MetadataAuthorItem
+      __rst__:
+        name: Metadata.Authors.{author_name}
+      __doc__: >
+        An author
+      __simput__:
+        type: VariableTable
+
+      Name:
+        help: >
+          [Type: string] Author full name like {first_name} {last_name}
+        domains:
+          AnyString:
+
+      Email:
+        help: >
+          [Type: string] E-mail address
+        domains:
+          AnyString:
+
+      Organization:
+        help: >
+          [Type: string] Name of the company or research institute
+        domains:
+          AnyString:
+
+      URL:
+        help: >
+          [Type: string] Link to web site or social media
+        domains:
+          AnyString:

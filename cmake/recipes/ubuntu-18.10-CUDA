@@ -1,0 +1,112 @@
+#!/bin/bash
+set -exo pipefail
+
+# Set install directory
+mkdir -p pfdir && cd pfdir
+export PFDIR=$(pwd)
+export PARFLOW_DIR=$PFDIR/install && mkdir -p $PARFLOW_DIR
+
+# Install dependencies
+sudo apt-get install -y software-properties-common
+sudo add-apt-repository -y main
+sudo add-apt-repository -y universe
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157
+sudo apt-get update -qq
+sudo apt-get install -y git
+sudo apt-get install -y wget
+sudo apt-get install -y gfortran
+sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers
+sudo apt-get install -y tcl-dev tk-dev
+
+# Install GPU driver
+sudo add-apt-repository -y ppa:graphics-drivers
+sudo apt-get update -qq
+sudo apt-get install -y nvidia-driver-440
+
+# Install CMake
+wget --no-check-certificate https://cmake.org/files/v3.14/cmake-3.14.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.14.0-Linux-x86_64.tar.gz
+sudo rm -fr cmake-3.14.0-Linux-x86_64.tar.gz
+export PATH=$PFDIR/cmake-3.14.0-Linux-x86_64/bin/:$PATH
+
+# Install CUDA
+CUDA_SHORT=10.1
+CUDA_VER=10.1.105-1
+OS_VER=ubuntu1804
+wget http://developer.download.nvidia.com/compute/cuda/repos/${OS_VER}/x86_64/cuda-repo-${OS_VER}_${CUDA_VER}_amd64.deb
+sudo dpkg -i cuda-repo-${OS_VER}_${CUDA_VER}_amd64.deb
+sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${OS_VER}/x86_64/7fa2af80.pub
+sudo apt update -qq
+sudo apt install -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-}
+export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
+export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+export PATH=${CUDA_HOME}/bin:${PATH}
+
+# Install UCX for OpenMPI
+sudo apt install -y autoconf
+sudo apt install -y automake 
+sudo apt install -y libtool
+wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xvf ucx-1.8.0.tar.gz
+cd ucx-1.8.0
+./contrib/configure-release --prefix=$PFDIR/ucx-cuda --with-cuda=$CUDA_HOME --with-java=no --disable-numa && sudo make -j8 install
+cd ..
+sudo rm -fr ucx-1.8.0 ucx-1.8.0.tar.gz
+
+# Install OpenMPI
+wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz
+cd openmpi-4.0.3
+./configure --prefix=$PFDIR/openmpi-cuda --with-cuda=$CUDA_HOME --with-ucx=$PFDIR/ucx-cuda && sudo make -j8 install
+cd ..
+sudo rm -fr openmpi-4.0.3 openmpi-4.0.3.tar.gz
+export LD_LIBRARY_PATH=${PFDIR}/openmpi-cuda/lib:${LD_LIBRARY_PATH}
+export PATH=${PFDIR}/openmpi-cuda/bin:${PATH}
+sudo ldconfig
+
+#Install Hypre
+wget https://github.com/hypre-space/hypre/archive/v2.17.0.tar.gz && tar -xvf v2.17.0.tar.gz
+cd hypre-2.17.0/src
+./configure --prefix=$PFDIR/hypre && make install
+cd ../..
+sudo rm -fr hypre-2.17.0 v2.17.0.tar.gz
+
+#Install Silo
+wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz && tar -xvf silo-4.10.2.tar.gz
+cd silo-4.10.2
+./configure --prefix=$PFDIR/silo --disable-silex --disable-hzip --disable-fpzip && make install
+cd ..
+sudo rm -fr silo-4.10.2 silo-4.10.2.tar.gz
+
+# Install RMM
+git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git rmm-0.10
+cd rmm-0.10
+cmake . -DCMAKE_INSTALL_PREFIX=$PFDIR/rmm && make -j && make install
+cd ..
+sudo rm -fr rmm-0.10
+
+# Build ParFlow with CUDA
+git clone -b master --single-branch https://github.com/parflow/parflow.git parflow
+
+mkdir -p build && cd build
+CC=mpicc CXX=mpicxx FC=mpif90 
+cmake ../parflow \
+       -DCMAKE_C_FLAGS=-lcuda \
+       -DPARFLOW_AMPS_LAYER=mpi1 \
+       -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
+       -DHYPRE_ROOT=$PFDIR/hypre \
+       -DSILO_ROOT=$PFDIR/silo \
+       -DPARFLOW_ENABLE_HDF5=TRUE \
+       -DPARFLOW_ENABLE_TIMING=TRUE \
+       -DPARFLOW_HAVE_CLM=TRUE \
+       -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+       -DPARFLOW_ACCELERATOR_BACKEND=cuda \
+       -DRMM_ROOT=$PFDIR/rmm
+
+make install
+
+# Run ParFlow tests 
+# - A reboot may be required after GPU driver installation
+# - If "nvidia-smi" runs ok, the GPU driver is usually ready
+export UCX_MEMTYPE_CACHE=n
+export OMPI_MCA_rmaps_base_oversubscribe=1
+set +exo pipefail
+make test

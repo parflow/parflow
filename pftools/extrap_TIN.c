@@ -1,51 +1,51 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /****************************************************************
-* File:	extrap_TIN.c
+* File: extrap_TIN.c
 *
-* Written by:	Bill Bosl
+* Written by:   Bill Bosl
 *              Lawrence Livermore National Lab
-*		e-mail: wjbosl@llnl.gov
-*		phone:	(510) 423-2873
+*               e-mail: wjbosl@llnl.gov
+*               phone:  (510) 423-2873
 *
-* Purpose:	This program will take a gms TIN file that has
-*		NOT been triangulated and fit a least-squares
-*		plane through the surface(s) described by each set
-*		of points. It then creates new points, presumably
-*		points outside the original domain, using the
-*		computed plane. The primary use for this program
-*		will be to extrapolate reasonably linear surfaces
-*		defined by a set of points out to some larger domain.
+* Purpose:      This program will take a gms TIN file that has
+*               NOT been triangulated and fit a least-squares
+*               plane through the surface(s) described by each set
+*               of points. It then creates new points, presumably
+*               points outside the original domain, using the
+*               computed plane. The primary use for this program
+*               will be to extrapolate reasonably linear surfaces
+*               defined by a set of points out to some larger domain.
 *
-*		More than one surface may be present in the input TIN
-*		file. Each surface will be extrapolated to the same points
-*		in the order found in the input file, and a new TIN
-*		file will be written with the new points listed first.
+*               More than one surface may be present in the input TIN
+*               file. Each surface will be extrapolated to the same points
+*               in the order found in the input file, and a new TIN
+*               file will be written with the new points listed first.
 *
 ****************************************************************/
 

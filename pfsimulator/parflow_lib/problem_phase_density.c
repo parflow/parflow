@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 *  This module computes phase densities.  Currently, two types of densities
@@ -72,6 +72,42 @@ typedef struct {
   double compressibility_constant;
 } Type1;                      /* rho_ref exp(compressibility*pressure) */
 
+/*-------------------------------------------------------------------------
+ * PhaseDensityConstants
+ * Used to get the constant values for when density vector is always NULL
+ *-------------------------------------------------------------------------*/
+
+void    PhaseDensityConstants(int phase,
+                              int fcn,
+                              int *phase_type,
+                              double *constant,
+                              double *ref_den,
+                              double *comp_const)
+{
+  PFModule *this_module = ThisPFModule;
+  PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+  Type0 *dummy0;
+  Type1 *dummy1;
+
+  (*phase_type) = public_xtra->type[phase];
+  switch(*phase_type)
+  {
+    case 0:
+      if (fcn == CALCFCN) {
+        dummy0 = (Type0*)(public_xtra->data[phase]);
+        (*constant) = dummy0->constant;
+      } else {
+        (*constant) = 0.0;
+      }
+      break;
+
+    case 1:
+      dummy1 = (Type1*)(public_xtra->data[phase]);
+      (*ref_den) = dummy1->reference_density;
+      (*comp_const) = dummy1->compressibility_constant;
+      break;
+  }
+}
 
 /*-------------------------------------------------------------------------
  * PhaseDensity
@@ -337,7 +373,7 @@ PFModule  *PhaseDensityNewPublicXtra(
 
     switch_name = GetString(key);
 
-    public_xtra->type[i] = NA_NameToIndex(switch_na, switch_name);
+    public_xtra->type[i] = NA_NameToIndexExitOnError(switch_na, switch_name, key);
 
     switch ((public_xtra->type[i]))
     {
@@ -373,8 +409,7 @@ PFModule  *PhaseDensityNewPublicXtra(
 
       default:
       {
-        InputError("Error: invalid type <%s> for key <%s>\n",
-                   switch_name, key);
+	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
   }

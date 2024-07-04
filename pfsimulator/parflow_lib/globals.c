@@ -1,35 +1,34 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
-/*****************************************************************************
+/*BHEADER**********************************************************************
 *
-* Routines for manipulating global structures.
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
 *
-*****************************************************************************/
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
+
+/** @file
+ * @brief Routines for manipulating global structures.
+ */
 
 #define PARFLOW_GLOBALS
 
@@ -37,15 +36,14 @@
 #include "globals.h"
 
 #include <limits.h>
-
+#include <stddef.h>
 
 /*--------------------------------------------------------------------------
  * NewGlobals
  *--------------------------------------------------------------------------*/
-
 void   NewGlobals(char *run_name)
 {
-  globals = ctalloc(Globals, 1);
+  globals_ptr = ctalloc(Globals, 1);
 
   sprintf(GlobalsRunName, "%s", run_name);
   sprintf(GlobalsInFileName, "%s.%s", run_name, "pfidb");
@@ -79,6 +77,8 @@ void   NewGlobals(char *run_name)
   globals_ptr->interval_divisions = 0;
   globals_ptr->intervals = 0;
   globals_ptr->repeat_counts = 0;
+
+  globals_ptr->use_clustering = 0;
 }
 
 
@@ -88,7 +88,7 @@ void   NewGlobals(char *run_name)
 
 void  FreeGlobals()
 {
-  free(globals);
+  tfree(globals_ptr);
 }
 
 /*--------------------------------------------------------------------------
@@ -117,5 +117,3 @@ void  LogGlobals()
     CloseLogFile(log_file);
   }
 }
-
-

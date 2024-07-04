@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * Routines for handling ParFlow timing.
@@ -47,17 +47,20 @@ void  NewTiming()
   timing = ctalloc(TimingType, 1);
 
   /* The order of these registers need to be in sync with the defines
-   * found in solver.h
+   * found in timing.h
    */
 
   RegisterTiming("Solver Setup");
   RegisterTiming("Solver");
+  RegisterTiming("Richards Exclude 1st Time Step");
   RegisterTiming("Solver Cleanup");
   RegisterTiming("Matvec");
   RegisterTiming("PFSB I/O");
   RegisterTiming("PFB I/O");
   RegisterTiming("CLM");
   RegisterTiming("PFSOL Read");
+  RegisterTiming("Clustering");
+  RegisterTiming("Netcdf I/O");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
@@ -116,52 +119,73 @@ void  PrintTiming()
   amps_File file = NULL;
   amps_Invoice max_invoice;
 
-  double time_ticks;
-  double cpu_ticks;
-  double mflops;
+  double time_ticks[timing->size];
+  double cpu_ticks[timing->size];
+  double mflops[timing->size];
 
   int i;
 
-
-  max_invoice = amps_NewInvoice("%d%d", &time_ticks, &cpu_ticks);
-
-  IfLogging(0)
-  file = OpenLogFile("Timing");
+  max_invoice = amps_NewInvoice("%*d%*d", timing->size, &time_ticks, timing->size, &cpu_ticks);
 
   for (i = 0; i < (timing->size); i++)
   {
-    time_ticks = (double)((timing->time)[i]);
-    cpu_ticks = (double)((timing->cpu_time)[i]);
-    amps_AllReduce(amps_CommWorld, max_invoice, amps_Max);
+    time_ticks[i] = (double)((timing->time)[i]);
+    cpu_ticks[i] = (double)((timing->cpu_time)[i]);
+  }
 
-    IfLogging(0)
+  amps_AllReduce(amps_CommWorld, max_invoice, amps_Max);
+
+  for (i = 0; i < (timing->size); i++)
+  {
+    mflops[i] = time_ticks[i] ?
+                ((timing->flops)[i] / (time_ticks[i] / AMPS_TICKS_PER_SEC)) / 1.0E6
+                : 0.0;
+  }
+
+  IfLogging(0)
+  {
+    file = OpenLogFile("Timing");
+
+    for (i = 0; i < (timing->size); i++)
     {
       amps_Fprintf(file, "%s:\n", (timing->name)[i]);
       amps_Fprintf(file, "  wall clock time   = %f seconds\n",
-                   time_ticks / AMPS_TICKS_PER_SEC);
-
-      mflops = time_ticks ?
-               ((timing->flops)[i] / (time_ticks / AMPS_TICKS_PER_SEC)) / 1.0E6
-               : 0.0;
-
-      amps_Fprintf(file, "  wall MFLOPS = %f (%g)\n", mflops,
+                   time_ticks[i] / AMPS_TICKS_PER_SEC);
+      amps_Fprintf(file, "  wall MFLOPS = %f (%g)\n", mflops[i],
                    (timing->flops)[i]);
 #ifdef CPUTiming
       if (AMPS_CPU_TICKS_PER_SEC)
       {
         amps_Fprintf(file, "  CPU  clock time   = %f seconds\n",
-                     cpu_ticks / AMPS_CPU_TICKS_PER_SEC);
-        if (cpu_ticks)
+                     cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC);
+        if (cpu_ticks[i])
           amps_Fprintf(file, "  cpu  MFLOPS = %f (%g)\n",
-                       ((timing->flops)[i] / (cpu_ticks / AMPS_CPU_TICKS_PER_SEC)) / 1.0E6,
+                       ((timing->flops)[i] / (cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC)) / 1.0E6,
                        (timing->flops)[i]);
       }
 #endif
     }
-  }
 
-  IfLogging(0)
-  CloseLogFile(file);
+    CloseLogFile(file);
+
+    char filename[2048];
+    sprintf(filename, "%s.timing.csv", GlobalsOutFileName);
+
+    if ((file = fopen(filename, "w")) == NULL)
+    {
+      InputError("Error: can't open output file %s%s\n", filename, "");
+    }
+
+    fprintf(file, "Timer,Time (s),MFLOPS (mops/s),FLOP (op)\n");
+    for (i = 0; i < (timing->size); i++)
+    {
+      fprintf(file, "%s,%f,%f,%g\n", timing->name[i],
+              time_ticks[i] / AMPS_TICKS_PER_SEC,
+              mflops[i], (timing->flops)[i]);
+    }
+
+    fclose(file);
+  }
 
 #ifdef VECTOR_UPDATE_TIMING
   {

@@ -1,6 +1,6 @@
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -29,7 +29,7 @@
 package provide parflow 1.0
 
 namespace eval Parflow {
-    variable PFDB 
+    variable PFDB
     array set PFDB {FileVersion -1}
 
     variable IsArchUnix
@@ -44,7 +44,7 @@ namespace eval Parflow {
 
     #
     # Fix up filenames for Win32
-    # 
+    #
     proc FixupFilename { filename } {
 
 	if $Parflow::IsArchUnix {
@@ -52,20 +52,20 @@ namespace eval Parflow {
 	} {
 	    regsub -all \\\\ $filename "/" new_filename
 	}
-    
+
 	return $new_filename
     }
 
     variable PARFLOW_DIR [Parflow::FixupFilename $::env(PARFLOW_DIR)]
-    
+
     namespace export pfget pfset pfrun pfundist
 
     namespace export pfStructuredPoints
 
-    # 
+    #
     # Export names from the shared library
     #
-    namespace export pfloadsds 
+    namespace export pfloadsds
     namespace export pfsavesds
     namespace export pfbfcvel
     namespace export pfgetsubbox
@@ -76,6 +76,8 @@ namespace eval Parflow {
     namespace export pfdist
     namespace export pfsave
     namespace export pfvtksave
+    namespace export pfpatchysolid
+    namespace export pfsolidfmtconvert
     namespace export pfgetelt
     namespace export pfgridtype
     namespace export pfgetgrid
@@ -141,7 +143,7 @@ namespace eval Parflow {
     namespace export pfflintslaw
     namespace export pfflintslawfit
     namespace export pfflintslawbybasin
- 
+
     namespace export pfprintdata
     namespace export pfprintdiff
     namespace export pfprintlist
@@ -163,7 +165,7 @@ proc Parflow::PFWriteComplexString {file string} {
 #
 # Write an array from a file
 #
-proc Parflow::PFWriteArray {file name} { 
+proc Parflow::PFWriteArray {file name} {
     upvar $name a
 
     puts $file [array size a]
@@ -183,7 +185,7 @@ proc Parflow::pfwritedb {name} {
     #
 
     set file [open [FixupFilename $name.pfidb] "w"]
-    
+
     foreach i "Parflow::PFDB" {
 	PFWriteArray $file $i
     }
@@ -196,7 +198,7 @@ proc Parflow::pfwritedb {name} {
 # Sets a value in the database
 #
 proc Parflow::pfset { key value } {
-    
+
     set Parflow::PFDB($key) "$value"
 }
 
@@ -246,25 +248,9 @@ proc Parflow::pfrun { runname args } {
 
     #
     # Write out the current state of the database
-    # 
-    
-    pfwritedb $runname
-
     #
-    # If user does not set the hostname then use this machine
-    # as the default
-    # 
-    if [pfexists Process.Hostnames] {
-	set machines [pfget Process.Hostnames]
-    } {
-	set machines [info hostname]
-    }
 
-    set file [open .hostfile "w" ]
-    foreach name "$machines" {
-	puts $file $name
-    }
-    close $file
+    pfwritedb $runname
 
     if [pfexists Process.Topology.P] {
 	set P [pfget Process.Topology.P]
@@ -283,23 +269,18 @@ proc Parflow::pfrun { runname args } {
     } {
 	set R 1
     }
-    
+
     set NumProcs [expr $P * $Q * $R]
-   set NumNodes [expr round(($NumProcs+.01) / 2) ]
 
+    # Run parflow
+    if [pfexists Process.Command] {
+	set command [pfget Process.Command]
+	puts [format "Using command : %s" [format $command $NumProcs $runname]]
+	puts [eval exec [format $command $NumProcs $runname]]
+    } {
+	puts [eval exec sh $Parflow::PARFLOW_DIR/bin/run  $runname $NumProcs]
+    }
 
-    puts [exec sh $Parflow::PARFLOW_DIR/bin/bootmc $NumProcs]
-    puts [exec sh $Parflow::PARFLOW_DIR/bin/getmc $NumProcs]
-    #
-    # SGS this change done at some point breaks the pattern for how Parflow was setup to execute the "run" script. 
-    # Not all of the run scripts currently understand the arg change and even the ones that do are broken.
-    #
-    ##puts [eval exec $Parflow::PARFLOW_DIR/bin/run $run_args $runname]
-    puts [eval exec sh $Parflow::PARFLOW_DIR/bin/run  $runname $NumProcs $NumNodes]
-    puts [exec sh $Parflow::PARFLOW_DIR/bin/freemc]
-    puts [exec sh $Parflow::PARFLOW_DIR/bin/killmc]
-    
-    # Need to add stuff to run parflow here
 }
 
 
@@ -319,7 +300,7 @@ proc Parflow::pfundist { runname } {
 
     if [file exists $runname.00000] {
 	set files [lsort [glob -nocomplain $runname.\[0-9\]*]]
-	
+
 	file delete $runname
 	eval exec /bin/cat $files > $runname
 	eval file delete $files
@@ -338,7 +319,8 @@ proc Parflow::pfundist { runname } {
 	append filelist [glob -nocomplain $root.perm_y.*$postfix] " "
 	append filelist [glob -nocomplain $root.perm_z.*$postfix] " "
 	append filelist [glob -nocomplain $root.porosity.*$postfix] " "
-    
+        append filelist [glob -nocomplain $root.specific_storage.*$postfix] " "
+
 	append filelist [glob -nocomplain $root.press.*$postfix] " "
 	append filelist [glob -nocomplain $root.density.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.satur.?????.*$postfix] " "
@@ -353,6 +335,10 @@ proc Parflow::pfundist { runname } {
 	append filelist [glob -nocomplain $root.obf.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.mask.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.mask.*$postfix] " "
+
+	append filelist [glob -nocomplain $root.velx.*$postfix] " "
+	append filelist [glob -nocomplain $root.vely.*$postfix] " "
+	append filelist [glob -nocomplain $root.velz.*$postfix] " "
     }
 
     foreach i $filelist {
@@ -384,4 +370,3 @@ proc Parflow::pfreloadall {} {
 	}
     }
 }
-

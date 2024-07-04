@@ -1,0 +1,6 @@
+PyYAML==6.0.1
+xarray
+pandas
+numba
+numpy
+dask

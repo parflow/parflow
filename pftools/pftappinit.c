@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*
  * pftappinit.c
@@ -71,16 +71,16 @@ EXTERN EXPORT(int, Parflow_Init) (Tcl_Interp * interp);
  *
  * DllEntryPoint --
  *
- *	This wrapper function is used by Windows to invoke the
- *	initialization code for the DLL.  If we are compiling
- *	with Visual C++, this routine will be renamed to DllMain.
- *	routine.
+ *      This wrapper function is used by Windows to invoke the
+ *      initialization code for the DLL.  If we are compiling
+ *      with Visual C++, this routine will be renamed to DllMain.
+ *      routine.
  *
  * Results:
- *	Returns TRUE;
+ *      Returns TRUE;
  *
  * Side effects:
- *	None.
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -272,9 +272,11 @@ EXPORT(int, Parflow_Init)(Tcl_Interp * interp)
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
   Tcl_CreateCommand(interp, "Parflow::pfflintslawbybasin", (Tcl_CmdProc*)FlintsLawByBasinCommand,
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
-
-  //NBE: Adding another write module
   Tcl_CreateCommand(interp, "Parflow::pfvtksave", (Tcl_CmdProc*)SavePFVTKCommand,
+                    (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
+  Tcl_CreateCommand(interp, "Parflow::pfpatchysolid", (Tcl_CmdProc*)MakePatchySolidCommand,
+                    (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
+  Tcl_CreateCommand(interp, "Parflow::pfsolidfmtconvert", (Tcl_CmdProc*)pfsolFmtConvert,
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
 
 #ifdef SGS
@@ -286,7 +288,3 @@ EXPORT(int, Parflow_Init)(Tcl_Interp * interp)
 
   return Tcl_PkgProvide(interp, "parflow", "1.0");
 }
-
-
-
-

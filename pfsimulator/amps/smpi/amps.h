@@ -1,30 +1,32 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
+#ifndef amps_include
+#define amps_include
 
 #include "parflow_config.h"
 
@@ -40,9 +42,34 @@
 #endif
 #endif
 
+#include <stdbool.h>
 #include <strings.h>
 #include <stdio.h>
 #include <sys/times.h>
+
+#ifdef PARFLOW_HAVE_CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
+#ifdef PARFLOW_HAVE_RMM
+#include <rmm/rmm_api.h>
+#endif
+#endif
+
+/*
+ * Prevent inclusion of mpi C++ bindings in mpi.h includes.
+ */
+#ifndef MPI_NO_CPPBIND
+#define MPI_NO_CPPBIND
+#endif
+
+#ifndef MPICH_SKIP_MPICXX
+#define MPICH_SKIP_MPICXX
+#endif
+
+#ifndef OMPI_SKIP_MPICXX
+#define OMPI_SKIP_MPICXX
+#endif
+
 #include <mpi.h>
 
 #define AMPS_EXCHANGE_SPECIALIZED
@@ -54,13 +81,6 @@
 
 #ifndef TRUE
 #define TRUE  1
-#endif
-
-#ifndef max
-#define max(a, b)  (((a) < (b)) ? (b) : (a))
-#endif
-#ifndef min
-#define min(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
 
 /*===========================================================================*/
@@ -123,10 +143,23 @@
  *
  * @memo Global communication context
  */
-#define amps_CommWorld MPI_COMM_WORLD
+extern MPI_Comm amps_CommWorld;
 
+/* Communicators for I/O */
+extern MPI_Comm amps_CommNode;
+extern MPI_Comm amps_CommWrite;
+
+/* Global ranks and size of amps_CommWorld */
 extern int amps_rank;
 extern int amps_size;
+
+/* Node level ranks and size of nodeComm */
+extern int amps_node_rank;
+extern int amps_node_size;
+
+/* Writing proc ranks and size of writeComm */
+extern int amps_write_rank;
+extern int amps_write_size;
 
 /*===========================================================================*/
 /**
@@ -200,13 +233,14 @@ extern int amps_size;
 #define AMPS_PID 0
 
 /* These are the built-in types that are supported */
-#define AMPS_INVOICE_CHAR_CTYPE                1
-#define AMPS_INVOICE_SHORT_CTYPE               2
-#define AMPS_INVOICE_INT_CTYPE                 3
-#define AMPS_INVOICE_LONG_CTYPE                4
-#define AMPS_INVOICE_DOUBLE_CTYPE              5
-#define AMPS_INVOICE_FLOAT_CTYPE               6
-#define AMPS_INVOICE_LAST_CTYPE                7
+#define AMPS_INVOICE_BYTE_CTYPE                1
+#define AMPS_INVOICE_CHAR_CTYPE                2
+#define AMPS_INVOICE_SHORT_CTYPE               3
+#define AMPS_INVOICE_INT_CTYPE                 4
+#define AMPS_INVOICE_LONG_CTYPE                5
+#define AMPS_INVOICE_DOUBLE_CTYPE              6
+#define AMPS_INVOICE_FLOAT_CTYPE               7
+#define AMPS_INVOICE_LAST_CTYPE                8
 
 /* Flags for use with user-defined flag                                      */
 #define AMPS_INVOICE_OVERLAY                   1
@@ -367,9 +401,12 @@ extern amps_Buffer *amps_BufferFreeList;
 /* Functions to for align                                                    */
 /*---------------------------------------------------------------------------*/
 #define AMPS_ALIGN(type, src, dest, len, stride) \
-  ((sizeof(type) - \
-    ((unsigned long)(dest) % sizeof(type))) \
+  ((sizeof(type) -                               \
+    ((unsigned long)(dest) % sizeof(type)))      \
    % sizeof(type));
+
+#define AMPS_CALL_BYTE_ALIGN(_comm, _src, _dest, _len, _stride) \
+  AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_CHAR_ALIGN(_comm, _src, _dest, _len, _stride) \
   AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
@@ -395,6 +432,9 @@ extern amps_Buffer *amps_BufferFreeList;
 #define AMPS_SIZEOF(len, stride, size) \
   (len) * (size)
 
+#define AMPS_CALL_BYTE_SIZEOF(_comm, _src, _dest, _len, _stride)	\
+  AMPS_SIZEOF((_len), (_stride), sizeof(char))
+
 #define AMPS_CALL_CHAR_SIZEOF(_comm, _src, _dest, _len, _stride) \
   AMPS_SIZEOF((_len), (_stride), sizeof(char))
 
@@ -415,17 +455,22 @@ extern amps_Buffer *amps_BufferFreeList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride) \
-  { \
-    type *ptr_src, *ptr_dest; \
-    if ((char*)(src) != (char*)(dest)) \
-      if ((stride) == 1) \
-        bcopy((src), (dest), (len) * sizeof(type)); \
-      else \
+#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                         \
+  {                                                                                                       \
+    type *ptr_src, *ptr_dest;                                                                             \
+    if ((char*)(src) != (char*)(dest))                                                                    \
+    {									                                  \
+      if ((stride) == 1)                                                                                  \
+        bcopy((src), (dest), (len) * sizeof(type));                                                       \
+      else                                                                                                \
         for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride); \
-             ptr_src += (stride), ptr_dest++) \
-          bcopy((ptr_src), (ptr_dest), sizeof(type)); \
+             ptr_src += (stride), ptr_dest++)                                                             \
+          bcopy((ptr_src), (ptr_dest), sizeof(type));                                                     \
+    }									                                  \
   }
+
+#define AMPS_CALL_BYTE_OUT(_comm, _src, _dest, _len, _stride) \
+  AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
@@ -445,18 +490,23 @@ extern amps_Buffer *amps_BufferFreeList;
 #define AMPS_CALL_DOUBLE_OUT(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_OUT(double, ctohd, (_comm), (_src), (_dest), (_len), (_stride))
 
-#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride) \
-  { \
-    char *ptr_src, *ptr_dest; \
-    if ((src) != (dest)) \
-      if ((stride) == 1) \
-        bcopy((src), (dest), (len) * sizeof(type)); \
-      else \
-        for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest); \
-             (ptr_dest) < (char*)(dest) + (len) * (stride) * sizeof(type); \
+#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)               \
+  {                                                                            \
+    char *ptr_src, *ptr_dest;                                                  \
+    if ((src) != (dest))                                                       \
+    {									       \
+      if ((stride) == 1)                                                       \
+        bcopy((src), (dest), (len) * sizeof(type));                            \
+      else                                                                     \
+        for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);               \
+             (ptr_dest) < (char*)(dest) + (len) * (stride) * sizeof(type);     \
              (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (stride)) \
-          bcopy((ptr_src), (ptr_dest), sizeof(type)); \
+          bcopy((ptr_src), (ptr_dest), sizeof(type));                          \
+    }									       \
   }
+
+#define AMPS_CALL_BYTE_IN(_comm, _src, _dest, _len, _stride) \
+  AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_CHAR_IN(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
@@ -477,6 +527,9 @@ extern amps_Buffer *amps_BufferFreeList;
   AMPS_CONVERT_IN(double, htocd, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CHECK_OVERLAY(_type, _comm) 0
+
+#define AMPS_BYTE_OVERLAY(_comm) \
+  AMPS_CHECK_OVERLAY(char, _comm)
 
 #define AMPS_CHAR_OVERLAY(_comm) \
   AMPS_CHECK_OVERLAY(char, _comm)
@@ -506,20 +559,20 @@ extern amps_Buffer *amps_BufferFreeList;
 /* Internal macros used to clear buffer and letter spaces.                   */
 /*---------------------------------------------------------------------------*/
 
-#define AMPS_CLEAR_INVOICE(invoice) \
-  { \
+#define AMPS_CLEAR_INVOICE(invoice)                     \
+  {                                                     \
     (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    amps_ClearInvoice(invoice); \
+    amps_ClearInvoice(invoice);                         \
   }
 
 #define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
-  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED) \
-    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED; \
-  else \
-  { \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    amps_free((comm), (amps_letter)); \
-  } \
+  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
+    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;    \
+  else                                                    \
+  {                                                       \
+    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
+    amps_free((comm), (amps_letter));                     \
+  }                                                       \
 
 /**
  *      amps_Printf("Freeing letter: %x\n", amps_letter); \
@@ -574,9 +627,6 @@ extern amps_Buffer *amps_BufferFreeList;
 
 #define amps_new(comm, size) malloc(size)
 #define amps_free(comm, buf) free((char*)buf)
-
-
-#define amps_FreeHandle(handle) free((handle));
 
 /**
  *
@@ -741,6 +791,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * Read and Write routines to write to files in XDR format.
  *****************************************************************************/
 
+#define amps_SizeofByte sizeof(char)
 #define amps_SizeofChar sizeof(char)
 #define amps_SizeofShort sizeof(short)
 #define amps_SizeofInt sizeof(int)
@@ -753,7 +804,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @name amps\_WriteType
  *
  * There are several routines to output to a distributed file using a
- * binary binary rather than ASCII.  {\bf type} can be replaced by Char,
+ * binary binary rather than ASCII.  {\bf type} can be replaced by Byte, Char,
  * Short, Int, Long, Float, or Double to indicate the type of data to
  * output.  The type is specified to allow data conversions.  Data is
  * written using XDR format (\cite{xdr.87}).  These functions are
@@ -787,7 +838,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @name amps\_ReadType
  *
  * This set of functions is used to read binary data from a distributed file.
- * {\bf type} can be replaced by Char, Short, Int, Long, Float, or Double
+ * {\bf type} can be replaced by Byte, Char, Short, Int, Long, Float, or Double
  * to indicate the type of data to output.  The type is specified in order
  * to do conversions.  Data is converted from {\em XDR} format (\cite{xdr.87}).
  * The arguments are similar to the standard C library function
@@ -826,6 +877,9 @@ extern amps_Buffer *amps_BufferFreeList;
 /* On the nodes store numbers with wrong endian so we need to swap           */
 /*---------------------------------------------------------------------------*/
 
+#define amps_WriteByte(file, ptr, len)			\
+  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
+
 #define amps_WriteChar(file, ptr, len) \
   fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
@@ -838,6 +892,9 @@ void amps_WriteInt(amps_File file, int *ptr, int len);
   fwrite((ptr), sizeof(long), (len), (FILE*)(file))
 
 void amps_WriteDouble(amps_File file, double *ptr, int len);
+
+#define amps_ReadWrite(file, ptr, len) \
+  fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadChar(file, ptr, len) \
   fread((ptr), sizeof(char), (len), (FILE*)(file))
@@ -856,6 +913,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 
 #ifdef AMPS_INTS_ARE_64
 
+#define amps_WriteByte(file, ptr, len) \
+  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
+
 #define amps_WriteChar(file, ptr, len) \
   fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
@@ -871,6 +931,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_WriteDouble(file, ptr, len) \
   fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
+
+#define amps_ReadByte(file, ptr, len) \
+  fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadChar(file, ptr, len) \
   fread((ptr), sizeof(char), (len), (FILE*)(file))
@@ -888,6 +951,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
   fread((ptr), sizeof(double), (len), (FILE*)(file))
 
 #else
+
+#define amps_WriteByte(file, ptr, len) \
+  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_WriteChar(file, ptr, len) \
   fwrite((ptr), sizeof(char), (len), (FILE*)(file))
@@ -907,6 +973,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_WriteDouble(file, ptr, len) \
   fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
+
+#define amps_ReadByte(file, ptr, len) \
+  fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadChar(file, ptr, len) \
   fread((ptr), sizeof(char), (len), (FILE*)(file))
@@ -948,7 +1017,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  * @param count Number of items of type to allocate
  * @return Pointer to the allocated dataspace
  */
-#define amps_TAlloc(type, count) ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc(type, count) ((count>0) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /*===========================================================================*/
 /**
@@ -993,11 +1062,135 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_TFree(ptr) if (ptr) free(ptr); else
 /* note: the `else' is required to guarantee termination of the `if' */
 
-#define amps_Error(name, type, comment, operation)
+// SGS FIXME this should do something more than this
+#define amps_Error(name, type, comment, operation) \
+  printf("%s : %s\n", name, comment)
+
+#ifdef PARFLOW_HAVE_CUDA
+/*--------------------------------------------------------------------------
+ *  GPU error handling macros
+ *--------------------------------------------------------------------------*/
+
+/**
+ * @brief CUDA error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr CUDA error (of type cudaError_t) [IN]
+ */
+#define CUDA_ERRCHK( err ) (amps_cuda_error( err, __FILE__, __LINE__ ))
+static inline void amps_cuda_error(cudaError_t err, const char *file, int line) {
+	if (err != cudaSuccess) {
+		printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
+		exit(1);
+	}
+}
+
+#ifdef PARFLOW_HAVE_RMM
+/**
+ * @brief RMM error handling.
+ * 
+ * If error detected, print error message and exit.
+ *
+ * @param expr RMM error (of type rmmError_t) [IN]
+ */
+#define RMM_ERRCHK( err ) (amps_rmm_error( err, __FILE__, __LINE__ ))
+static inline void amps_rmm_error(rmmError_t err, const char *file, int line) {
+	if (err != RMM_SUCCESS) {
+		printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), file, line);
+		exit(1);
+	}
+}
+#endif
+
+/*--------------------------------------------------------------------------
+ * Define static unified memory allocation routines for CUDA
+ *--------------------------------------------------------------------------*/
+
+/**
+ * @brief Allocates unified memory.
+ * 
+ * If RMM library is available, pool allocation is used for better performance.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
+static inline void *_amps_talloc_cuda(size_t size)
+{
+  void *ptr = NULL;  
+  
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));  
+#endif
+  
+  return ptr;
+}
+
+/**
+ * @brief Allocates unified memory initialized to 0.
+ * 
+ * If RMM library is available, pool allocation is used for better performance.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
+static inline void *_amps_ctalloc_cuda(size_t size)
+{
+  void *ptr = NULL;  
+
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+#endif  
+  // memset(ptr, 0, size);
+  CUDA_ERRCHK(cudaMemset(ptr, 0, size));  
+  
+  return ptr;
+}
+
+/**
+ * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda.
+ * 
+ * @note Should not be called directly.
+ *
+ * @param ptr a void pointer to the allocated dataspace [IN]
+ */
+static inline void _amps_tfree_cuda(void *ptr)
+{
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmFree(ptr,0,__FILE__,__LINE__));
+#else
+  CUDA_ERRCHK(cudaFree(ptr));
+  // CUDA_ERRCHK(cudaFreeHost(ptr));
+#endif
+}
+
+/** 
+ * Same as \ref amps_TAlloc but allocates managed memory (CUDA required) 
+ */
+#define amps_TAlloc_managed(type, count) ((count>0) ? (type*)_amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+
+/** 
+ * Same as \ref amps_CTAlloc but allocates managed memory 
+ */
+#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
+
+/** 
+ * Same as \ref amps_TFree but deallocates managed memory 
+ */
+#define amps_TFree_managed(ptr) if (ptr) _amps_tfree_cuda(ptr); else {}
+
+#endif // PARFLOW_HAVE_CUDA
 
 #include "amps_proto.h"
 
-
-
-
-
+#endif

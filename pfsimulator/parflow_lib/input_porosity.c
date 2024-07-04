@@ -1,24 +1,30 @@
-/*BHEADER*********************************************************************
- * Copyright (c) 1995-2009, Lawrence Livermore National Security
- * LLC. Produced at the Lawrence Livermore National Laboratory. Written
- * by the Parflow Team (see the CONTRIBUTORS file)
- * <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- * This file is part of Parflow. For details, see
- * http://www.llnl.gov/casc/parflow
- * Please read the COPYRIGHT file or Our Notice and the LICENSE file
- * for the GNU Lesser General Public License.
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License (as published
- * by the Free Software Foundation) version 2.1 dated February 1999.
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- * and conditions of the GNU General Public License for more details.
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- * USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 #include "parflow.h"
 /* helper type for reading from file */
 typedef struct {
@@ -52,7 +58,6 @@ void    InputPorosity(
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
-  double field_value = (public_xtra->field_value);
   Grid           *grid = (instance_xtra->grid);
   Subgrid        *subgrid;
   Subvector      *field_sub;
@@ -95,8 +100,6 @@ void    InputPorosity(
     GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
     {
       index = SubvectorEltIndex(field_sub, i, j, k);
-      /* now assign the value from file to field */
-      //                     fieldp[index] = field_value;
       fieldp[index] = ic_values_dat[index];
     });
   }

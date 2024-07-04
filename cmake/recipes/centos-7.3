@@ -1,0 +1,49 @@
+# Install packages
+
+sudo yum -y install git
+sudo yum -y install gcc-c++
+sudo yum -y install openmpi openmpi-devel
+sudo yum -y install environment-modules
+
+# Need to logout?
+module add mpi/openmpi-x86_64
+
+sudo yum -y install epel-release
+sudo yum clean all
+
+sudo yum -y install tcl tcl-devel
+sudo yum -y install hypre-openmpi hypre-openmpi-devel
+sudo yum -y install hdf5-openmpi hdf5-openmpi-devel
+sudo yum -y install zlib-devel
+
+wget --no-check-certificate http://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz && tar -xvf cmake-3.4.3-Linux-x86_64.tar.gz
+
+wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2-bsd.tgz
+tar xf silo-4.10.2-bsd.tar.gz
+cd silo-4.10.2-bsd
+./configure --prefix=/usr/local
+make
+sudo make install
+
+cd ..
+git clone git://github.com/smithsg84/parflow.git
+
+mkdir build
+cd build
+../cmake-3.4.3-Linux-x86_64/bin/cmake \
+      -DPARFLOW_AMPS_LAYER=mpi1 \
+      -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+      -DPARFLOW_ENABLE_TIMING=TRUE \
+      -DPARFLOW_HAVE_CLM=ON \
+      -DPARFLOW_ENABLE_HYPRE=true \
+      -DPARFLOW_ENABLE_HDF5=true \
+      -DPARFLOW_ENABLE_SILO=true \
+      -DPARFLOW_ENABLE_ZLIB=true \
+      -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+      ../parflow
+
+make
+make install
+make test
+
+

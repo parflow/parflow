@@ -1,32 +1,34 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
+
+void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level);
 
 /*****************************************************************************
 *
@@ -94,7 +96,7 @@ void  GrGeomFixOctree(
                                      level);
     if (new_level == level)
     {
-      if (GrGeomOctreeCellIsInside(neighbor_node))
+      if (GrGeomOctreeNodeIsInside(neighbor_node))
       {
         GrGeomOctreeClearFace(node, face_index);
 
@@ -124,8 +126,8 @@ GrGeomOctree *GrGeomNewOctree()
 
   grgeom_octree = ctalloc(GrGeomOctree, 1);
 
-  GrGeomOctreeSetCell(grgeom_octree, GrGeomOctreeCellEmpty);
-  GrGeomOctreeSetCellLeaf(grgeom_octree);
+  GrGeomOctreeSetLeafFlag(grgeom_octree, GrGeomOctreeNodeEmpty);
+  GrGeomOctreeSetNodeLeaf(grgeom_octree);
 
   GrGeomOctreeParent(grgeom_octree) = NULL;
 
@@ -160,7 +162,7 @@ void GrGeomNewOctreeChildren(
     }
 
     /* make into a non-leaf node */
-    GrGeomOctreeClearCellLeaf(grgeom_octree);
+    GrGeomOctreeClearNodeLeaf(grgeom_octree);
   }
 }
 
@@ -242,7 +244,7 @@ GrGeomOctree   *GrGeomOctreeFind(
      * Else if this is a leaf node, stop searching
      *----------------------------------------------------------*/
 
-    else if (GrGeomOctreeCellIsLeaf(new_node))
+    else if (GrGeomOctreeNodeIsLeaf(new_node))
     {
       searching = FALSE;
     }
@@ -352,8 +354,8 @@ GrGeomOctree   *GrGeomOctreeAddCell(
     if (l == 0)
     {
       /* don't overwrite "Inside" cells */
-      if (!GrGeomOctreeCellIsInside(current_node))
-        GrGeomOctreeSetCell(current_node, cell);
+      if (!GrGeomOctreeNodeIsInside(current_node))
+        GrGeomOctreeSetLeafFlag(current_node, cell);
 
       searching = FALSE;
     }
@@ -489,9 +491,9 @@ GrGeomOctree   *GrGeomOctreeAddFace(
     }
 
     if (normal_in_direction < 0)
-      cell = GrGeomOctreeCellOutside;
+      cell = GrGeomOctreeNodeOutside;
     else if (normal_in_direction > 0)
-      cell = GrGeomOctreeCellInside;
+      cell = GrGeomOctreeNodeInside;
 
     current_node = GrGeomOctreeAddCell(grgeom_octree_root,
                                        cell, ix, iy, iz, level);
@@ -520,9 +522,9 @@ GrGeomOctree   *GrGeomOctreeAddFace(
     }
 
     if (normal_in_direction < 0)
-      cell = GrGeomOctreeCellInside;
+      cell = GrGeomOctreeNodeInside;
     else if (normal_in_direction > 0)
-      cell = GrGeomOctreeCellOutside;
+      cell = GrGeomOctreeNodeOutside;
 
     current_node = GrGeomOctreeAddCell(grgeom_octree_root,
                                        cell, ix, iy, iz, level);
@@ -1384,7 +1386,7 @@ void GrGeomOctreeFromTIN(
               }
               else if (edge_tag[k + 1] == 0)
               {
-                interior_tag[k] = GrGeomOctreeCellFull;
+                interior_tag[k] = GrGeomOctreeNodeFull;
               }
             }
             else
@@ -1406,14 +1408,14 @@ void GrGeomOctreeFromTIN(
               grgeom_octree = GrGeomOctreeFind(&new_level, solid_octree, i, j, k, level);
 
               /* Only change non-`Full' cells */
-              if (!GrGeomOctreeCellIsFull(grgeom_octree))
+              if (!GrGeomOctreeNodeIsFull(grgeom_octree))
               {
                 if ((new_level == level) || (new_level < min_level))
                 {
                   /* Only change `Empty' cells */
-                  if (GrGeomOctreeCellIsEmpty(grgeom_octree))
+                  if (GrGeomOctreeNodeIsEmpty(grgeom_octree))
                   {
-                    GrGeomOctreeSetCell(grgeom_octree, GrGeomOctreeCellFull);
+                    GrGeomOctreeSetLeafFlag(grgeom_octree, GrGeomOctreeNodeFull);
                   }
                 }
                 else
@@ -1423,7 +1425,7 @@ void GrGeomOctreeFromTIN(
                   for (ic = 0; ic < GrGeomOctreeNumChildren; ic++)
                   {
                     grgeom_child = GrGeomOctreeChild(grgeom_octree, ic);
-                    GrGeomOctreeSetCell(grgeom_child, GrGeomOctreeCellFull);
+                    GrGeomOctreeSetLeafFlag(grgeom_child, GrGeomOctreeNodeFull);
                   }
                 }
               }
@@ -1514,6 +1516,15 @@ void GrGeomOctreeFromTIN(
     tfree(patch_table[n]);
   tfree(patch_table);
   tfree(patch_table_len);
+
+  /*-------------------------------------------------------------
+   * Label branch nodes in octrees
+   *-------------------------------------------------------------*/
+  GrGeomOctreeSetBranchNodeFlags(solid_octree, max_level);
+  for (p = 0; p < num_patches; p++)
+  {
+    GrGeomOctreeSetBranchNodeFlags(patch_octrees[p], max_level);
+  }
 
   /*-------------------------------------------------------------
    * Return the octrees
@@ -1648,6 +1659,7 @@ void    GrGeomOctreeFromInd(
 
         const int nx_f = SubvectorNX(subvector);
         const int ny_f = SubvectorNY(subvector);
+	const int nz_f = SubvectorNZ(subvector);
 
         data = SubvectorElt(subvector, ix_all, iy_all, iz_all);
 
@@ -1891,14 +1903,14 @@ void    GrGeomOctreeFromInd(
                                                  level);
 
                 /* Only change non-`Full' cells */
-                if (!GrGeomOctreeCellIsFull(grgeom_octree))
+                if (!GrGeomOctreeNodeIsFull(grgeom_octree))
                 {
                   if ((new_level == level) || (new_level < min_l))
                   {
                     /* Only change `Empty' cells */
-                    if (GrGeomOctreeCellIsEmpty(grgeom_octree))
+                    if (GrGeomOctreeNodeIsEmpty(grgeom_octree))
                     {
-                      GrGeomOctreeSetCell(grgeom_octree, GrGeomOctreeCellFull);
+                      GrGeomOctreeSetLeafFlag(grgeom_octree, GrGeomOctreeNodeFull);
                     }
                   }
                   else
@@ -1908,7 +1920,7 @@ void    GrGeomOctreeFromInd(
                     for (ic = 0; ic < GrGeomOctreeNumChildren; ic++)
                     {
                       grgeom_child = GrGeomOctreeChild(grgeom_octree, ic);
-                      GrGeomOctreeSetCell(grgeom_child, GrGeomOctreeCellFull);
+                      GrGeomOctreeSetLeafFlag(grgeom_child, GrGeomOctreeNodeFull);
                     }
                   }
                 }
@@ -1932,6 +1944,19 @@ void    GrGeomOctreeFromInd(
     }
   }
 
+  /*-------------------------------------------------------------
+   * Label branch nodes in octrees
+   *-------------------------------------------------------------*/
+
+#ifdef SGS_DEBUG
+  GrGeomPrintOctree("pre-solid.txt", solid_octree);
+#endif
+
+  GrGeomOctreeSetBranchNodeFlags(solid_octree, octree_bg_level);
+
+#ifdef SGS_DEBUG
+  GrGeomPrintOctree("post-solid.txt", solid_octree);
+#endif
 
   /*-------------------------------------------------------------
    * Return the octree
@@ -1940,6 +1965,148 @@ void    GrGeomOctreeFromInd(
   *solid_octree_ptr = solid_octree;
 }
 
+/**
+ * @brief Set the branch node states in an octree.
+ *
+ * Branch nodes flags are not set during octree construction.  This
+ * function sets branch flags.  An octree traversal is done and flags
+ * are set on the branch nodes to correct on status of leaf nodes.
+ * This function assumes the leaf nodes are properly labeled.
+ *
+ * @param [in,out] octree to setup
+ * @param [in] level Maximum level in the octree
+ */
+void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
+{
+  if (octree != NULL)
+  {
+    int it;
+    int l = 0;
+    GrGeomOctree *node;
+
+    // \todo These sizes seem odd, why padding for PV_visiting at front?
+    // shouldn't size be level+1?
+    int *PV_visiting = ctalloc(int, level + 2);
+    int PV_visit_child;
+    PV_visiting++;
+    PV_visiting[0] = 0;
+
+    int *empty = ctalloc(int, level + 2);
+    int *outside = ctalloc(int, level + 2);
+    int *inside = ctalloc(int, level + 2);
+    int *full = ctalloc(int, level + 2);
+
+    for (it = 0; it < level; ++it)
+    {
+      empty[it] = TRUE;
+      full[it] = TRUE;
+    }
+
+    node = octree;
+    while (l >= 0)
+    {
+      if (GrGeomOctreeNodeIsLeaf(node))
+      {
+        /* Leaf node */
+        {
+          empty[l] &= GrGeomOctreeNodeIsEmpty(node);
+          outside[l] |= GrGeomOctreeNodeIsOutside(node);
+          inside[l] |= GrGeomOctreeNodeIsInside(node);
+          full[l] &= GrGeomOctreeNodeIsFull(node);
+        }
+        PV_visit_child = FALSE;
+      }
+      /* Branch node */
+      else if (PV_visiting[l] < GrGeomOctreeNumChildren)
+      {
+        PV_visit_child = TRUE;
+      }
+      else
+      {
+        PV_visit_child = FALSE;
+
+        // Post order traversal
+        {
+          // Child nodes have been visited on a branch node.  Update this
+          // node and this level information.
+          int child_level = l + 1;
+          if (full[child_level])
+          {
+            GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeFull);
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
+          }
+          else
+          {
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
+          }
+
+          if (empty[child_level])
+          {
+            GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeEmpty);
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
+          }
+          else
+          {
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
+          }
+
+          // Inside/Outside is | of children
+          if (inside[child_level])
+          {
+            GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeInside);
+          }
+          else
+          {
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeInside);
+          }
+
+          if (outside[child_level])
+          {
+            GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeOutside);
+          }
+          else
+          {
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeOutside);
+          }
+
+          empty[l] &= ((outside[child_level] | empty[child_level])
+                       & !inside[child_level]);
+
+          outside[l] |= outside[child_level];
+          inside[l] |= inside[child_level];
+          full[l] &= ((inside[child_level] | full[child_level])
+                      & !outside[child_level]);
+
+          // Reset child level just visited for next traversal to that level
+          empty[child_level] = TRUE;
+          outside[child_level] = FALSE;
+          inside[child_level] = FALSE;
+          full[child_level] = TRUE;
+        }
+      }
+
+      /* visit either a child or the parent node */
+      if (PV_visit_child)
+      {
+        node = GrGeomOctreeChild(node, PV_visiting[l]);
+        l++;
+        PV_visiting[l] = 0;
+      }
+      else
+      {
+        node = GrGeomOctreeParent(node);
+        l--;
+        PV_visiting[l]++;
+      }
+    }
+
+    tfree(PV_visiting - 1);
+    tfree(empty);
+    tfree(outside);
+    tfree(inside);
+    tfree(full);
+  } /* octree != NULL */
+}
 
 /*--------------------------------------------------------------------------
  * GrGeomPrintOctreeStruc
@@ -1953,7 +2120,7 @@ void          GrGeomPrintOctreeStruc(
 
   if (grgeom_octree != NULL)
   {
-    if (GrGeomOctreeCellIsEmpty(grgeom_octree))
+    if (GrGeomOctreeNodeIsEmpty(grgeom_octree))
     {
       amps_Fprintf(file, " E ");
     }
@@ -1962,7 +2129,7 @@ void          GrGeomPrintOctreeStruc(
       amps_Fprintf(file, " - ");
     }
 
-    if (GrGeomOctreeCellIsOutside(grgeom_octree))
+    if (GrGeomOctreeNodeIsOutside(grgeom_octree))
     {
       amps_Fprintf(file, " O ");
     }
@@ -1972,7 +2139,7 @@ void          GrGeomPrintOctreeStruc(
     }
 
 
-    if (GrGeomOctreeCellIsInside(grgeom_octree))
+    if (GrGeomOctreeNodeIsInside(grgeom_octree))
     {
       amps_Fprintf(file, " I ");
     }
@@ -1981,7 +2148,7 @@ void          GrGeomPrintOctreeStruc(
       amps_Fprintf(file, " - ");
     }
 
-    if (GrGeomOctreeCellIsFull(grgeom_octree))
+    if (GrGeomOctreeNodeIsFull(grgeom_octree))
     {
       amps_Fprintf(file, " F ");
     }
@@ -1990,7 +2157,7 @@ void          GrGeomPrintOctreeStruc(
       amps_Fprintf(file, " - ");
     }
 
-    if (GrGeomOctreeCellIsLeaf(grgeom_octree))
+    if (GrGeomOctreeNodeIsLeaf(grgeom_octree))
     {
       amps_Fprintf(file, " L ");
     }
@@ -2122,7 +2289,7 @@ void          GrGeomPrintOctree(
   level = 0;
   while (still_more_levels)
   {
-    amps_Fprintf(file, "\n\nlevel = %d:\n", level);
+    amps_Fprintf(file, "\n\nlevel = %d root = %p:\n", level, grgeom_octree_root);
 
     still_more_levels =
       GrGeomPrintOctreeLevel(file, grgeom_octree_root, level, 0);
@@ -2163,23 +2330,23 @@ void          GrGeomPrintOctreeCells(
     {
       amps_Fprintf(file, "%d %d %d %d: ", i, j, k, l);
 
-      cell = GrGeomOctreeCell(node) & ~GrGeomOctreeCellLeaf;
+      cell = GrGeomOctreeFlag(node) & ~GrGeomOctreeNodeLeaf;
 
       switch (cell)
       {
-        case GrGeomOctreeCellEmpty:
+        case GrGeomOctreeNodeEmpty:
           amps_Fprintf(file, "Empty\n");
           break;
 
-        case GrGeomOctreeCellOutside:
+        case GrGeomOctreeNodeOutside:
           amps_Fprintf(file, "Outside\n");
           break;
 
-        case GrGeomOctreeCellInside:
+        case GrGeomOctreeNodeInside:
           amps_Fprintf(file, "Inside\n");
           break;
 
-        case GrGeomOctreeCellFull:
+        case GrGeomOctreeNodeFull:
           amps_Fprintf(file, "Full\n");
           break;
       }
@@ -2187,23 +2354,23 @@ void          GrGeomPrintOctreeCells(
     {
       amps_Fprintf(file, "%d %d %d %d: ", i, j, k, l);
 
-      cell = GrGeomOctreeCell(node) & ~GrGeomOctreeCellLeaf;
+      cell = GrGeomOctreeFlag(node) & ~GrGeomOctreeNodeLeaf;
 
       switch (cell)
       {
-        case GrGeomOctreeCellEmpty:
+        case GrGeomOctreeNodeEmpty:
           amps_Fprintf(file, "Empty\n");
           break;
 
-        case GrGeomOctreeCellOutside:
+        case GrGeomOctreeNodeOutside:
           amps_Fprintf(file, "Outside\n");
           break;
 
-        case GrGeomOctreeCellInside:
+        case GrGeomOctreeNodeInside:
           amps_Fprintf(file, "Inside\n");
           break;
 
-        case GrGeomOctreeCellFull:
+        case GrGeomOctreeNodeFull:
           amps_Fprintf(file, "Full\n");
           break;
       }

@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * Routines to write a Vector to Silo file.
@@ -36,7 +36,10 @@
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
 #include "silo.h"
 #include <mpi.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 #include <pmpio.h>
+#pragma GCC diagnostic pop
 #endif
 
 #include <string.h>
@@ -96,15 +99,11 @@ void CloseSiloFile(void *file, void *userData)
  */
 void     WriteSiloPMPIOInit(char *file_prefix)
 {
-  char filename[2048];
-
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
+  char filename[2048];
+  
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
-  int i;
-  int j;
-
-  int err;
 
   char key[IDB_MAX_KEY_LEN];
 
@@ -117,7 +116,7 @@ void     WriteSiloPMPIOInit(char *file_prefix)
   if (strlen(compression_options))
   {
     DBSetCompression(compression_options);
-    if (err < 0)
+    if (db_errno  < 0)
     {
       amps_Printf("Error: Compression options failed for SILO.CompressionOptions=%s\n", compression_options);
       amps_Printf("       This may mean SILO was not compiled with compression enabled\n");
@@ -199,6 +198,8 @@ void     WriteSiloPMPIO(char *  file_prefix,
                         int     step,
                         char *  variable_name)
 {
+
+#if defined(HAVE_SILO) && defined(HAVE_MPI)
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
@@ -213,7 +214,6 @@ void     WriteSiloPMPIO(char *  file_prefix,
   char nsName[256];
   int i, j, k, ai;
   double         *data;
-  double mult, z_coord;            //@RMM dz scale info
 
   int err;
   int origin_dims2[1];
@@ -226,11 +226,10 @@ void     WriteSiloPMPIO(char *  file_prefix,
   int origin2[3];
 
 
-#if defined(HAVE_SILO) && defined(HAVE_MPI)
+
   int driver = DB_PDB;
   int numGroups;
   PMPIO_baton_t *bat;
-  amps_Invoice invoice;
 
   DBfile *db_file;
   DBfile *db_header_file;
@@ -243,7 +242,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
   P = amps_Size(amps_CommWorld);
   numGroups = s_num_silo_files;
 
-  bat = PMPIO_Init(numGroups, PMPIO_WRITE, MPI_COMM_WORLD, 1,
+  bat = PMPIO_Init(numGroups, PMPIO_WRITE, amps_CommWorld, 1,
                    CreateSiloFile, OpenSiloFile, CloseSiloFile, &driver);
 //    if (numGroups > 1) {
   if (strlen(file_suffix))
@@ -291,6 +290,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
 
     int nx_v = SubvectorNX(subvector);
     int ny_v = SubvectorNY(subvector);
+    int nz_v = SubvectorNZ(subvector);
 
     dims[0] = nx + 1;
     dims[1] = ny + 1;
@@ -325,7 +325,6 @@ void     WriteSiloPMPIO(char *  file_prefix,
     }
 
     coords[2] = ctalloc(float, dims[2]);
-    z_coord = SubgridZ(subgrid);
     /*  @RMM-- bare bones testing
      * for implementing variable dz into silo output
      * need to brab the vardz vector out of problem data
@@ -482,7 +481,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
       DBAddOption(optlist, DBOPT_CYCLE, &step);
       DBAddOption(optlist, DBOPT_DTIME, &time);
 
-      err = DBPutMultimesh(db_header_file, "mesh", P, meshnames, meshtypes, optlist);
+      err = DBPutMultimesh(db_header_file, "mesh", P, (const char*const*)meshnames, meshtypes, optlist);
       if (err < 0)
       {
         amps_Printf("Error: Silo put multimesh failed %s\n", filename);
@@ -496,7 +495,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
       DBAddOption(optlist, DBOPT_DTIME, &time);
 
       /* Multimesh information */
-      err = DBPutMultivar(db_header_file, variable_name, P, varnames, vartypes, optlist);
+      err = DBPutMultivar(db_header_file, variable_name, P, (const char*const*)varnames, vartypes, optlist);
       if (err < 0)
       {
         amps_Printf("Error: Silo put multivar failed %s\n", filename);

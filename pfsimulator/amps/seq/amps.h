@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #ifndef amps_include
 #define amps_include
@@ -75,8 +75,6 @@ typedef FILE *amps_File;
 #define amps_Fprintf fprintf
 #define amps_Fscanf fscanf
 
-#define amps_Printf printf
-
 #define amps_Sync(comm)
 
 #define amps_Exit(code) exit(code)
@@ -103,19 +101,19 @@ typedef FILE *amps_File;
 #define amps_Wait(handle) 0
 
 /*---------------------------------------------------------------------------*/
-/* Macros for all commands that have no function in sequentail code.         */
+/* Macros for all commands that have no function in sequential code.         */
 /*---------------------------------------------------------------------------*/
 
-#define VOID_FUNC(amps_name) printf("AMPS Error: The %s function is not implemented\n", amps_name);
+#define VOID_FUNC(amps_name) printf("AMPS Error: The %s function is not implemented\n", amps_name)
 
-#define amps_append_invoice amps_new_invoice
+#define amps_IRecv(comm, source, invoice) VOID_FUNC("amps_IRecv")
 
-#define amps_IRecv VOID_FUNC("amps_IRecv")
-
-#define amps_Recv VOID_FUNC("amps_Recv")
+#define amps_Recv(comm, source, invoice) VOID_FUNC("amps_Recv")
 
 #define amps_ISend(comm, dest, invoice) VOID_FUNC("amps_ISend")
-#define amps_Send VOID_FUNC("amps_Send")
+#define amps_Send(comm, dest, invoide) VOID_FUNC("amps_Send")
+
+#define amps_Test(handle) VOID_FUNC("amps_test")
 
 #define amps_new(comm, size) VOID_FUNC("amps_new")
 
@@ -218,8 +216,8 @@ typedef struct amps_HandleObject {
 #define PACK_HOST_TYPE 1
 #define PACK_NO_CONVERT_TYPE 2
 
-#define AMPS_ALIGN(type, dest) \
-  ((sizeof(type) - \
+#define AMPS_ALIGN(type, dest)              \
+  ((sizeof(type) -                          \
     ((unsigned long)(dest) % sizeof(type))) \
    % sizeof(type));
 
@@ -237,17 +235,17 @@ typedef struct amps_HandleObject {
 /*---------------------------------------------------------------------------*/
 #if SGS
 #define AMPS_CLEAR_INVOICE(invoice) \
-  { \
-    amps_ClearInvoice(invoice); \
+  {                                 \
+    amps_ClearInvoice(invoice);     \
   }
 
 #define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
-  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED) \
-    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED; \
-  else \
-  { \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    pvm_freebuf(amps_letter); \
+  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
+    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;    \
+  else                                                    \
+  {                                                       \
+    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
+    pvm_freebuf(amps_letter);                             \
   }
 
 #endif
@@ -336,23 +334,23 @@ typedef struct amps_HandleObject {
 
 #ifdef AMPS_MEMORY_ALLOC_CHECK
 
-#define amps_TAlloc(type, count) \
-  { \
-    (type*)ptr; \
+#define amps_TAlloc(type, count)                                      \
+  {                                                                   \
+    (type*)ptr;                                                       \
     if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count)))) \
-        == NULL) \
-      amps_Printf("Error: out of memory in <%s> at line %d\n", \
-                  __FILE__, __LINE__); \
-    ptr; \
+        == NULL)                                                      \
+      amps_Printf("Error: out of memory in <%s> at line %d\n",        \
+                  __FILE__, __LINE__);                                \
+    ptr;                                                              \
   }
 
-#define amps_CTAlloc(type, count) \
-  { \
-    (type*)ptr; \
+#define amps_CTAlloc(type, count)                                                         \
+  {                                                                                       \
+    (type*)ptr;                                                                           \
     if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL) \
-      amps_Printf("Error: out of memory in <%s> at line %d\n", \
-                  __FILE__, __LINE__); \
-    ptr; \
+      amps_Printf("Error: out of memory in <%s> at line %d\n",                            \
+                  __FILE__, __LINE__);                                                    \
+    ptr;                                                                                  \
   }
 
 /* note: the `else' is required to guarantee termination of the `if' */
@@ -364,7 +362,7 @@ typedef struct amps_HandleObject {
 
 #else
 
-#define amps_Talloc(type, count) \
+#define amps_TAlloc(type, count) \
   ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 #define amps_CTAlloc(type, count) \
@@ -377,13 +375,14 @@ typedef struct amps_HandleObject {
 
 /* These are the built-in types that are supported */
 
-#define AMPS_INVOICE_CHAR_CTYPE                1
-#define AMPS_INVOICE_SHORT_CTYPE               2
-#define AMPS_INVOICE_INT_CTYPE                 3
-#define AMPS_INVOICE_LONG_CTYPE                4
-#define AMPS_INVOICE_DOUBLE_CTYPE              5
-#define AMPS_INVOICE_FLOAT_CTYPE               6
-#define AMPS_INVOICE_LAST_CTYPE                7
+#define AMPS_INVOICE_BYTE_CTYPE                1
+#define AMPS_INVOICE_CHAR_CTYPE                2
+#define AMPS_INVOICE_SHORT_CTYPE               3
+#define AMPS_INVOICE_INT_CTYPE                 4
+#define AMPS_INVOICE_LONG_CTYPE                5
+#define AMPS_INVOICE_DOUBLE_CTYPE              6
+#define AMPS_INVOICE_FLOAT_CTYPE               7
+#define AMPS_INVOICE_LAST_CTYPE                8
 
 /* Flags for use with user-defined flag                                      */
 /* ?????? following is very confusing rename them SGS */

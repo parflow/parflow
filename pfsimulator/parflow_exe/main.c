@@ -1,38 +1,39 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * The main routine
 *
 *****************************************************************************/
-
 #include "parflow.h"
+#include "pfversion.h"
 #include "amps.h"
+#include "fgetopt.h"  /* getopt replacement since getopt is not available on Windows */
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/SAMRAI_config.h"
@@ -55,11 +56,18 @@ using namespace SAMRAI;
 
 #include "Parflow.hxx"
 
-#ifdef HAVE_CEGDB
-#include <cegdb.h>
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+#include "pf_devices.h"
 #endif
 
+#ifdef PARFLOW_HAVE_ETRACE
+#include "ptrace.h"
+#endif
+
+#include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 int main(int argc, char *argv [])
 {
@@ -101,9 +109,76 @@ int main(int argc, char *argv [])
     }
 #endif
 
-#ifdef HAVE_CEGDB
-    cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
-#endif
+    /* Set the destination stream for PF output/logging */
+    amps_SetConsole(stdout);
+
+#ifndef NDEBUG
+    /*-----------------------------------------------------------------------
+    * Wait for debugger if PARFLOW_DEBUG_RANK environment variable is set
+    *-----------------------------------------------------------------------*/
+    if(getenv("PARFLOW_DEBUG_RANK") != NULL) {
+      const int mpi_debug = atoi(getenv("PARFLOW_DEBUG_RANK"));
+      if(mpi_debug == amps_Rank(amps_CommWorld)){
+        volatile int i = 0;
+        amps_Printf("PARFLOW_DEBUG_RANK environment variable found.\n");
+        amps_Printf("Attach debugger to PID %ld (MPI rank %d) and set var i = 1 to continue\n", (long)getpid(), mpi_debug);
+        while(i == 0) {/*  change 'i' in the  debugger  */}
+      }
+      amps_Sync(amps_CommWorld);
+    }
+#endif // !NDEBUG
+
+    /*-----------------------------------------------------------------------
+     * Initialize acceleration architectures
+     *-----------------------------------------------------------------------*/
+#if defined(PARFLOW_HAVE_KOKKOS)
+    kokkosInit();
+#elif defined(PARFLOW_HAVE_CUDA)
+
+    /*-----------------------------------------------------------------------
+    * Check CUDA compute capability, set device, and initialize RMM allocator
+    *-----------------------------------------------------------------------*/
+    {
+      // CUDA
+      if (!amps_Rank(amps_CommWorld))
+      {
+        CUDA_ERR(cudaSetDevice(0));  
+      }else{
+        int num_devices = 0;
+        CUDA_ERR(cudaGetDeviceCount(&num_devices));
+        CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
+      }
+    
+      int device;
+      CUDA_ERR(cudaGetDevice(&device));
+
+      struct cudaDeviceProp props;
+      CUDA_ERR(cudaGetDeviceProperties(&props, device));
+
+      // int value;
+      // CUDA_ERR(cudaDeviceGetAttribute(&value, cudaDevAttrCanUseHostPointerForRegisteredMem, device));
+      // printf("cudaDevAttrCanUseHostPointerForRegisteredMem: %d\n", value);
+
+      if (props.major < 6)
+      {
+        amps_Printf("\nError: The GPU compute capability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
+        amps_Printf("\nThe minimum required GPU compute capability is 6.0.\n");
+        exit(1);
+      }
+    }
+#endif // PARFLOW_HAVE_KOKKOS
+
+  /*-----------------------------------------------------------------------
+  * Initialize RMM pool allocator
+  *-----------------------------------------------------------------------*/
+#ifdef PARFLOW_HAVE_RMM
+      // RMM
+      rmmOptions_t rmmOptions;
+      rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
+      rmmOptions.initial_pool_size = 1; // size = 0 initializes half the device memory
+      rmmOptions.enable_logging = false;
+      RMM_ERR(rmmInitialize(&rmmOptions));
+#endif // PARFLOW_HAVE_RMM
 
     wall_clock_time = amps_Clock();
 
@@ -111,12 +186,37 @@ int main(int argc, char *argv [])
      * Command line arguments
      *-----------------------------------------------------------------------*/
 
-
     char *restart_read_dirname = NULL;
     int is_from_restart = FALSE;
     int restore_num = 0;
+    int c;
+    char * input_name = NULL;
 
-    if ((argc != 2) && (argc != 4))
+    opterr = 0;
+    while ((c = getopt(argc, argv, "v")) != -1)
+      switch (c)
+      {
+        case 'v':
+          PrintVersionInfo(stdout);
+          return 0;
+          break;
+
+        case '?':
+          if (isprint(optopt))
+            fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+          else
+            fprintf(stderr,
+                    "Unknown option character `\\x%x'.\n",
+                    optopt);
+          return 1;
+
+        default:
+          abort();
+      }
+
+    int non_opt_argc = argc - optind;
+
+    if ((non_opt_argc != 1) && (non_opt_argc != 3))
     {
       fprintf(stderr, "USAGE: %s <input pfidb filename> <restart dir> <restore number>\n",
               argv[0]);
@@ -124,15 +224,26 @@ int main(int argc, char *argv [])
     }
     else
     {
-      if (argc == 4)
+      input_name = argv[optind];
+
+      if (non_opt_argc == 3)
       {
-        restart_read_dirname = strdup(argv[2]);
-        restore_num = atoi(argv[3]);
+        restart_read_dirname = strdup(argv[optind + 1]);
+        restore_num = atoi(argv[optind + 2]);
 
         is_from_restart = TRUE;
       }
     }
 
+#ifdef PARFLOW_HAVE_ETRACE
+    {
+      char filename[2048];
+      sprintf(filename, "%s.%06d.etrace", input_name, amps_Rank(MPI_CommWorld));
+      init_tracefile (filename);
+    }
+#endif
+
+#ifdef HAVE_SAMRAI
     /*-----------------------------------------------------------------------
      * SAMRAI initialization.
      *-----------------------------------------------------------------------*/
@@ -141,7 +252,6 @@ int main(int argc, char *argv [])
      * Create input database and parse all data in input file.
      *-----------------------------------------------------------------------*/
 
-#ifdef HAVE_SAMRAI
     std::string input_filename("samrai.input");
 
     tbox::Dimension dim(3);
@@ -229,13 +339,17 @@ int main(int argc, char *argv [])
       openRestartFile(restart_dir, restore_num,
                       amps_Size());
     }
+#else
+    PF_UNUSED(restore_num);
+    PF_UNUSED(is_from_restart);
+    PF_UNUSED(restart_read_dirname);
 #endif
 
     /*-----------------------------------------------------------------------
      * Set up globals structure
      *-----------------------------------------------------------------------*/
 
-    NewGlobals(argv[1]);
+    NewGlobals(input_name);
 
 #ifdef HAVE_SAMRAI
     GlobalsParflowSimulation = new Parflow("Parflow",
@@ -264,8 +378,12 @@ int main(int argc, char *argv [])
      * Solve the problem
      *-----------------------------------------------------------------------*/
     Solve();
-    printf("Problem solved \n");
-    fflush(NULL);
+
+    if (!amps_Rank(amps_CommWorld))
+    {
+      amps_Printf("Problem solved \n");
+      fflush(NULL);
+    }
 
     /*-----------------------------------------------------------------------
      * Log global information
@@ -293,7 +411,6 @@ int main(int argc, char *argv [])
 
     wall_clock_time = amps_Clock() - wall_clock_time;
 
-
     IfLogging(0)
     {
       if (!amps_Rank(amps_CommWorld))
@@ -302,6 +419,23 @@ int main(int argc, char *argv [])
 
         fprintf(log_file, "Total Run Time: %f seconds\n\n",
                 (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC);
+
+
+        {
+          char filename[2048];
+          sprintf(filename, "%s.timing.csv", GlobalsOutFileName);
+
+          if ((file = fopen(filename, "a")) == NULL)
+          {
+            InputError("Error: can't open output file %s%s\n", filename, "");
+          }
+
+          fprintf(file, "%s,%f,%s,%s\n", "Total Runtime",
+                  (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC,
+                  "-nan", "0");
+        }
+
+        fclose(file);
       }
     }
 
@@ -351,6 +485,19 @@ int main(int argc, char *argv [])
   tbox::SAMRAI_MPI::finalize();
 #endif
 
+  /*-----------------------------------------------------------------------
+  * Shutdown Kokkos
+  *-----------------------------------------------------------------------*/
+#ifdef PARFLOW_HAVE_KOKKOS
+  kokkosFinalize();
+#endif
+
+  /*-----------------------------------------------------------------------
+  * Shutdown RMM pool allocator
+  *-----------------------------------------------------------------------*/
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERR(rmmFinalize());
+#endif
+
   return 0;
 }
-

@@ -1,0 +1,441 @@
+# bconditions.yaml
+# setting boundary conditions
+
+# -----------------------------------------------------------------------------
+# InternalBC
+# -----------------------------------------------------------------------------
+
+InternalBC:
+  __doc__: >
+    In this section, we define internal Dirichlet boundary conditions by setting the pressure at points in the domain.
+
+  Names:
+    help: >
+      [Type: string] This key specifies the names for the internal boundary conditions. At each named point, x, y and z will specify
+      the coordinate locations and h will specify the hydraulic head value of the condition. This real location is “snapped”
+      to the nearest gridpoint in ParFlow. NOTE: Currently, ParFlow assumes that internal boundary conditions and pressure wells are separated by at
+      least one cell from any external boundary. The user should be careful of this when defining the input file and grid.
+    domains:
+      AnyString:
+    handlers:
+      IntBCUpdater:
+        type: ChildrenHandler
+        class_name: InternalBCItem
+
+  .{internal_bc_name}:
+    __class__: InternalBCItem
+    __doc__: ''
+    __rst__:
+      skip:
+
+    X:
+      help: >
+        [Type: double] This key specifies the x-coordinate, x, of the named, internal_bc_name, condition.
+      domains:
+        DoubleValue:
+
+    Y:
+      help: >
+        [Type: double] This key specifies the y-coordinate, y, of the named, internal_bc_name, condition.
+      domains:
+        DoubleValue:
+
+    Z:
+      help: >
+        [Type: double] This key specifies the z-coordinate, z, of the named, internal_bc_name, condition.
+      domains:
+        DoubleValue:
+
+    Value:
+      help: >
+        [Type: double] This key specifies the value of the named, internal_bc_name, condition.
+      domains:
+        DoubleValue:
+
+# -----------------------------------------------------------------------------
+# BCPressure
+# -----------------------------------------------------------------------------
+
+BCPressure:
+  __doc__: >
+    Here we define the pressure boundary conditions. The Dirichlet conditions below are hydrostatic conditions, and it is
+    assumed that at each phase interface the pressure is constant. It is also assumed here that all phases are distributed
+    within the domain at all times such that the lighter phases are vertically higher than the heavier phases.
+    Boundary condition input is associated with domain patches. Note that different patches may have
+    different types of boundary conditions on them.
+
+  PatchNames:
+    help: >
+      [Type: string] This key specifies the names of patches on which pressure boundary conditions will be specified. Note that these
+      must all be patches on the external boundary of the domain and these patches must “cover” that external boundary.
+    domains:
+      AnyString:
+    handlers:
+      BCItemUpdater:
+        type: ChildrenHandler
+        class_name: BCItem
+        location: ../Patch
+
+# -----------------------------------------------------------------------------
+# BCSaturation
+# -----------------------------------------------------------------------------
+
+BCSaturation:
+  __doc__: >
+    Note: this section needs to be defined only for multi-phase flow and should not be defined for the single phase and
+    Richards’ equation cases.
+    Here we define the boundary conditions for the saturations. Boundary condition input is associated with domain
+    patches. Note that different patches may have different types of boundary conditions on them.
+
+  PatchNames:
+    help: >
+      [Type: string] This key specifies the names of patches on which saturation boundary conditions will be specified. Note that
+      these must all be patches on the external boundary of the domain and these patches must “cover” that external
+      boundary.
+    domains:
+      AnyString:
+    handlers:
+      BCItemUpdater:
+        type: ChildrenHandler
+        class_name: BCItem
+        location: ../Patch
+
+# -----------------------------------------------------------------------------
+# Patches for BCPressure and BCSaturation
+# -----------------------------------------------------------------------------
+
+Patch:
+  __doc__: ''
+
+  .{patch_name}:
+    __class__: BCItem
+    __rst__:
+      skip:
+    __doc__: ''
+
+    # -----------------------------------------------------------------------------
+    # Patch.{patch_name}.BCPressure
+    # -----------------------------------------------------------------------------
+
+    BCPressure:
+      __class__: BCItemBCPressure
+      __rst__:
+        skip:
+      __doc__: ''
+
+      .{interval_name}:
+        __class__: BCPressureIntervalItem
+        __from__: /Cycle/{CycleItem}/Names
+        __rst__:
+          skip:
+        __doc__: ''
+        __simput__:
+          type: VariableTable
+
+
+        Value:
+          help: >
+            [Type: double] This key specifies the reference pressure value for the DirEquilRefPatch boundary condition or the constant flux
+            value for the FluxConst boundary condition, or the constant volumetric flux for the FluxVolumetric boundary
+            condition.
+          domains:
+            DoubleValue:
+
+        XLower:
+          help: >
+            [Type: double] This key specifies the lower x coordinate of a line in the xy-plane.
+          domains:
+            DoubleValue:
+
+        YLower:
+          help: >
+            [Type: double] This key specifies the lower y coordinate of a line in the xy-plane.
+          domains:
+            DoubleValue:
+
+        XUpper:
+          help: >
+            [Type: double] This key specifies the upper x coordinate of a line in the xy-plane.
+          domains:
+            DoubleValue:
+
+        YUpper:
+          help: >
+            [Type: double] This key specifies the upper y coordinate of a line in the xy-plane.
+          domains:
+            DoubleValue:
+
+        # NumPoints, point_numbers duplicated in manual
+        NumPoints:
+          help: >
+            [Type: int] This key specifies the number of points on which pressure data is given along the line used in the type DirEquilPLinear
+            boundary conditions.
+          domains:
+            IntValue:
+              min_value: 1
+          handlers:
+            BCPressIntPointItemUpdater:
+              type: ChildrenHandler
+              class_name: BCPressIntPointItem
+
+        FileName:
+          help: >
+            [Type: string] This key specifies the name of a properly distributed .pfb file that contains boundary data to be read for types
+            PressureFile and FluxFile. For flux data, the data must be defined over a grid consistent with the pressure field.
+            In both cases, only the values needed for the patch will be used. The rest of the data is ignored.
+          domains:
+            AnyString:
+            ValidFile:
+
+        PredefinedFunction:
+          help: >
+            [Type: string] This key specifies the predefined function that will be used to specify Dirichlet boundary conditions on patch
+            patch_name. Note that this does not change according to any cycle. Instead, time dependence is handled by
+            evaluating at the time the boundary condition value is desired. Choices for this key include X, XPlusYPlusZ,
+            X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1 and XYZTPlus1PermTensor.
+          domains:
+            EnumDomain:
+              enum_list:
+                - X
+                - XPlusYPlusZ
+                - X3Y2PlusSinXYPlus1
+                - X3Y4PlusX2PlusSinXYCosYPlus1
+                - XYZTPlus1
+                - XYZTPlus1PermTensor
+
+        .{phase_name}:
+          __class__: BCPressIntPhaseItem
+          __from__: /Phase/Names
+          __rst__:
+            skip:
+          __doc__: ''
+          __simput__:
+            type: VariableTable
+
+          IntValue:
+            help: >
+              [Type: double] Note that the reference conditions for types DirEquilPLinear and DirEquilRefPatch boundary conditions
+              are for phase 0 only. This key specifies the constant pressure value along the interface with phase phase_name for
+              cases with two phases present.
+            domains:
+              DoubleValue:
+
+        .{point_number}:
+          __prefix__: _
+          __class__: BCPressIntPointItem
+          __rst__:
+            skip:
+          __doc__: ''
+          __simput__:
+            type: VariableTable
+
+
+          Location:
+            help: >
+              [Type: double] This key specifies a number between 0 and 1 which represents the location of a point on the line on which data
+              is given for type DirEquilPLinear boundary conditions. Here 0 corresponds to the lower end of the line, and 1
+              corresponds to the upper end.
+            domains:
+              DoubleValue:
+                min_value: 0.0
+                max_value: 1.0
+
+          Value:
+            help: >
+              [Type: double] This key specifies the pressure value for phase 0 at point number point_number and z = 0 for type DirEquilPLinear
+              boundary conditions. All pressure values on the patch are determined by first projecting the boundary
+              condition coordinate onto the line, then linearly interpolating between the neighboring point pressure values on the
+              line.
+            domains:
+              DoubleValue:
+
+      # typo in manual - OverlandFow should be OverlandFlow
+      Type:
+        help: >
+          [Type: string] This key specifies the type of boundary condition data given for patch patch_name. Possible values for this key
+          are DirEquilRefPatch, DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFlow,
+          OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive and ExactSolution.
+          The choice DirEquilRefPatch specifies that the pressure on the specified patch will be in hydrostatic equilibrium
+          with a constant reference pressure given on a reference patch. The choice DirEquilPLinear specifies that the pressure
+          on the specified patch will be in hydrostatic equilibrium with pressure given along a piecewise line at elevation
+          z = 0. The choice FluxConst defines a constant normal flux boundary condition through the domain patch. This
+          flux must be specified in units of [L]=[T]. For Richards’ equation, fluxes must be specified as a mass flux and given as
+          the above flux multiplied by the density. Thus, this choice of input type for a Richards’ equation problem has units of
+          ([L]=[T])([M]=[L]3). The choice FluxVolumetric defines a volumetric flux boundary condition through the domain
+          patch. The units should be consistent with all other user input for the problem. For Richards’ equation fluxes must
+          be specified as a mass flux and given as the above flux multiplied by the density. The choice PressureFile defines
+          a hydraulic head boundary condition that is read from a properly distributed .pfb file. Only the values needed for
+          the patch are used. The choice FluxFile defines a flux boundary condition that is read form a properly distributed
+          .pfb file defined on a grid consistent with the pressure field grid. Only the values needed for the patch are used. The
+          choices OverlandFlow and OverlandFlowPFB both turn on fully-coupled overland flow routing as described in
+          [40] and in § 5.5. The key OverlandFlow corresponds to a Value key with a positive or negative value, to indicate
+          uniform fluxes (such as rainfall or evapotranspiration) over the entire domain while the key OverlandFlowPFB allows
+          a .pfb file to contain grid-based, spatially-variable fluxes. The OverlandKinematic and OverlandDiffusive
+          both turn on an kinematic and diffusive wave overland flow routing boundary that solve equation 5.18 and do the
+          upwinding internally (i.e. assuming that the user provides cell face slopes, as opposed to the traditional cell centered
+          slopes). The key SeepageFace simulates a boundary that allows flow to exit but keeps the surface pressure at zero.
+          The choice ExactSolution specifies that an exact known solution is to be applied as a Dirichlet boundary condition
+          on the respective patch. Note that this does not change according to any cycle. Instead, time dependence is handled
+          by evaluating at the time the boundary condition value is desired. The solution is specified by using a predefined
+          function (choices are described below). NOTE: These last six types of boundary condition input is for Richards’
+          equation cases only!
+        domains:
+          EnumDomain:
+            enum_list:
+              v0.0.0:
+                - DirEquilRefPatch
+                - DirEquilPLinear
+                - FluxConst
+                - FluxVolumetric
+                - PressureFile
+                - FluxFile
+                - OverlandFlow
+                - OverlandFlowPFB
+                - SeepageFace
+                - ExactSolution
+              v3.6.0:
+                - DirEquilRefPatch
+                - DirEquilPLinear
+                - FluxConst
+                - FluxVolumetric
+                - PressureFile
+                - FluxFile
+                - OverlandFlow
+                - OverlandFlowPFB
+                - SeepageFace
+                - OverlandKinematic
+                - OverlandDiffusive
+                - ExactSolution
+
+      Cycle:
+        help: >
+          [Type: string] This key specifies the time cycle to which boundary condition data for patch patch_name corresponds.
+        domains:
+          AnyString:
+
+      RefGeom:
+        help: >
+          [Type: string] This key specifies the name of the solid on which the reference patch for the DirEquilRefPatch boundary
+          condition data is given. Care should be taken to make sure the correct solid is specified in cases of layered domains.
+        domains:
+          AnyString:
+
+      RefPatch:
+        help: >
+          [Type: string] This key specifies the reference patch on which the DirEquilRefPatch boundary condition data is given. This
+          patch must be on the reference solid specified by the Patch.patch_name.BCPressure.RefGeom key.
+        domains:
+          AnyString:
+
+    # -----------------------------------------------------------------------------
+    # Patch.{patch_name}.BCSaturation
+    # -----------------------------------------------------------------------------
+
+    BCSaturation:
+      __class__: BCItemBCSaturation
+      __rst__:
+        skip:
+      __doc__: ''
+
+      .{phase_name}:
+        __class__: BCSatPhaseItem
+        __from__: /Phase/Names
+        __rst__:
+          skip:
+        __doc__: ''
+        __simput__:
+          type: VariableTable
+
+
+        Type:
+          help: >
+            [Type: string] This key specifies the type of boundary condition data given for the given phase, phase_name, on the given patch
+            patch_name. Possible values for this key are DirConstant, ConstantWTHeight and PLinearWTHeight. The
+            choice DirConstant specifies that the saturation is constant on the whole patch. The choice ConstantWTHeight
+            specifies a constant height of the water-table on the whole patch. The choice PLinearWTHeight specifies that the
+            height of the water-table on the patch will be given by a piecewise linear function.
+            Note: the types ConstantWTHeight and PLinearWTHeight assume we are running a 2-phase problem
+            where phase 0 is the water phase.
+          domains:
+            EnumDomain:
+              enum_list:
+                - DirConstant
+                - ConstantWTHeight
+                - PLinearWTHeight
+
+        Value:
+          help: >
+            [Type: double] This key specifies either the constant saturation value if DirConstant is selected or the constant water-table
+            height if ConstantWTHeight is selected.
+          domains:
+            DoubleValue:
+
+        XLower:
+          help: >
+            [Type: double] This key specifies the lower x coordinate of a line in the xy-plane if type PLinearWTHeight boundary conditions
+            are specified.
+          domains:
+            DoubleValue:
+
+        YLower:
+          help: >
+            [Type: double] This key specifies the lower y coordinate of a line in the xy-plane if type PLinearWTHeight boundary conditions
+            are specified.
+          domains:
+            DoubleValue:
+
+        XUpper:
+          help: >
+            [Type: double] This key specifies the upper x coordinate of a line in the xy-plane if type PLinearWTHeight boundary
+            conditions are specified.
+          domains:
+            DoubleValue:
+
+        YUpper:
+          help: >
+            [Type: double] This key specifies the upper y coordinate of a line in the xy-plane if type PLinearWTHeight boundary
+            conditions are specified.
+          domains:
+            DoubleValue:
+
+        # NumPoints, {point_number} key names say BCPressure instead of BCSaturation
+        NumPoints:
+          help: >
+            [Type: int] This key specifies the number of points on which saturation data is given along the line used in the type DirEquilPLinear
+            boundary conditions.
+          domains:
+            IntValue:
+              min_value: 1
+          handlers:
+            BCSatPhasePointItemUpdater:
+              type: ChildrenHandler
+              class_name: BCSatPhasePointItem
+
+        .{point_number}:
+          __prefix__: _
+          __class__: BCSatPhasePointItem
+          __doc__: ''
+          __rst__:
+            skip:
+          __simput__:
+            type: VariableTable
+
+
+          Location:
+            help: >
+              [Type: double] This key specifies a number between 0 and 1 which represents the location of a point on the line for which data is
+              given in type DirEquilPLinear boundary conditions. The line is parameterized so that 0 corresponds to the lower
+              end of the line, and 1 corresponds to the upper end.
+            domains:
+              DoubleValue:
+                min_value: 0.0
+                max_value: 1.0
+
+          Value:
+            help: >
+              [Type: double] This key specifies the water-table height for the given point if type DirEquilPLinear boundary conditions are
+              selected. All saturation values on the patch are determined by first projecting the water-table height value onto the
+              line, then linearly interpolating between the neighboring water-table height values onto the line.
+            domains:
+              DoubleValue:
+

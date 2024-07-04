@@ -1,0 +1,155 @@
+#!/bin/bash
+# NCAR Cheyenne
+# smith84@llnl.gov
+# 2018/1/30
+
+# Appends to path if not path not already present
+function appendToPath {
+   echo $PATH | grep -q $1
+   if [ $? -ne 0 ]
+   then
+      PATH=${PATH}:${1}
+   fi
+}
+
+function prependToPath {
+   echo $PATH | grep -q $1
+   if [ $? -ne 0 ]
+   then
+      PATH=${1}:${PATH}
+   fi
+}
+
+function appendToLdPath {
+
+   if [[ -z ${LD_LIBRARY_PATH+x} ]]
+   then
+      export LD_LIBRARY_PATH=${1}
+   else
+      echo $LD_LIBRARY_PATH | grep -q $1
+      if [ $? -ne 0 ]
+      then
+	 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${1}
+      fi
+   fi
+}
+
+# -----------------------------------------------------------------------------
+# Cheyenne environment settings
+# -----------------------------------------------------------------------------
+module load cmake/3.9.1
+
+export PARFLOW_PROJECT_DIR=/glade/p/ucsm0002
+export PARFLOW_DIR=${HOME}/work/smith84/parflow/install
+export SILO_DIR=${PARFLOW_PROJECT_DIR}/local/silo/4.10.2
+export HYPRE_DIR=${PARFLOW_PROJECT_DIR}/local/hypre/2.10.1
+
+if [[ ${PARFLOW_BUILD_DEPEND} = 'true' ]] 
+then 
+
+    #-----------------------------------------------------------------------------
+    # SILO build
+    #-----------------------------------------------------------------------------
+
+    echo "*****************************************************************************"
+    echo "Building in SILO"
+    echo "*****************************************************************************"
+
+    mkdir -p silo
+    mkdir -p ${SILO_DIR}
+
+    pushd silo
+
+    wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
+    tar xf silo-4.10.2.tar.gz
+
+    pushd silo-4.10.2
+
+    ./configure --disable-hzip --disable-fpzip --prefix=${SILO_DIR}
+
+    make 
+    make install
+
+    popd
+
+    popd
+
+    #-----------------------------------------------------------------------------
+    # HYPRE build
+    #-----------------------------------------------------------------------------
+
+    echo "*****************************************************************************"
+    echo "Building in HYPRE"
+    echo "*****************************************************************************"
+
+    mkdir -p hypre
+    mkdir -p ${HYPRE_DIR}
+
+    pushd hypre
+
+    wget https://github.com/LLNL/hypre/archive/v2.10.1.tar.gz
+    tar xf v2.10.1.tar.gz 
+
+    pushd hypre-2.10.1/src
+
+    ./configure --prefix=${HYPRE_DIR}
+    make 
+    make install
+
+    popd
+    popd
+
+else
+    echo "Assuming HYPRE and SILO have been built."
+    echo "To build HYPRE and SILO do :"
+    echo "  export PARFLOW_BUILD_DEPEND=true"
+    echo "Before executing this script"
+fi
+
+#-----------------------------------------------------------------------------
+# Parflow build
+#-----------------------------------------------------------------------------
+
+# Building in a directory parallel with parflow source tree
+SRC_DIR=parflow
+BUILD_DIR=build
+
+mkdir -p ${PARFLOW_DIR}
+
+echo "*****************************************************************************"
+echo "Building in ${BUILD_DIR}"
+echo "*****************************************************************************"
+
+mkdir -p ${BUILD_DIR}
+pushd ${BUILD_DIR}
+
+echo "*****************************************************************************"
+echo "Running CMake"
+echo "*****************************************************************************"
+
+cmake ../parflow \
+      -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
+      -DPARFLOW_AMPS_LAYER=mpi1 \
+      -DPARFLOW_ENABLE_TIMING=TRUE \
+      -DPARFLOW_HAVE_CLM=ON \
+      -DHYPRE_ROOT=${HYPRE_DIR} \
+      -DSILO_ROOT=${SILO_DIR} \
+      -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE
+
+make
+make install
+
+echo "*****************************************************************************"
+echo "Running make"
+echo "*****************************************************************************"
+
+make
+
+echo "*****************************************************************************"
+echo "Running make install"
+echo "*****************************************************************************"
+
+make install
+
+popd
+

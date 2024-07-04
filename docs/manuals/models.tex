@@ -1,0 +1,433 @@
+%=============================================================================
+% Chapter: Model Equations
+%=============================================================================
+
+\chapter{Model Equations}
+\label{Model_Equations}
+
+In this chapter, we discuss the model equations used by \parflow{} for its
+fully and variably saturated flow, overland flow, and multiphase flow and transport models.
+First, section \ref{Steady-State, Saturated Groundwater Flow} describes steady-state, groundwater flow (specified by solver {\bf IMPES}). Next, section \ref{Richards' Equation}
+describes the Richards' equation model (specified by solver {\bf RICHARDS}) for variably saturated flow as
+implemented in \parflow{}. Section \ref{TFG} describes the terrain following grid formulation. Next, the overland flow
+equations are presented in section \ref{Overland Flow}.
+In section \ref{Multi-Phase Flow Equations} we describe the multi-phase
+flow equations (specified by solver {\bf IMPES}), and in section \ref{Transport Equations} we describe
+the transport equations. Finally, section \ref{Notation and Units} presents some notation and units and section \ref{Water Balance}
+presents some basic water balance equations.
+\section{Steady-State, Saturated Groundwater Flow}
+\label{Steady-State, Saturated Groundwater Flow}
+Many groundwater problems are solved assuming steady-state, fully-saturated groundwater flow.  This follows the form often written as:
+\begin{eqnarray}
+\dvop \textbf{q} = Q(x)
+\label{eq:ssgw}
+\end{eqnarray}
+where $Q$ is the spatially-variable source-sink term (to represent wells, etc) and $\textbf{q}$ is the Darcy flux $[L^{2}T^{-1}]$ which is commonly written as:
+\begin{eqnarray}
+\textbf{q}=- \textbf{K} \Xgrad H
+\label{eq:Darcy}
+\end{eqnarray}
+where $\textbf{K}$ is the saturated, hydraulic conductivity tensor $[LT^{-1}]$ and $H$ $[L]$ is the head-potential.  Inspection of \ref{eqn-mass-balance} and \ref{eqn-darcy} show that these equations agree with the above formulation for a single-phase ($i=1$), fully-saturated ($S_i=S=1$), problem where the mobility, $\Xmobi$, is set to the saturated hydraulic conductivity, $\textbf{K}$, below.  This is accomplished by setting the relative permeability and viscosity terms to unity in \ref{eqn-phase-mobility} as well as the gravity and density terms in \ref{eqn-darcy}.  This is shown in the example in \S~\ref{Tutorial}, but please note that the resulting solution is in pressure-head, $h$, not head potential, $H$, and will still contain a hydrostatic pressure gradient in the $z$ direction.
+
+\section{Richards' Equation}
+\label{Richards' Equation}
+
+The form of Richards' equation implemented in \parflow{} is given as,
+\begin{eqnarray}
+S(p)S_s\frac{\partial p}{\partial t} -
+\frac{\partial (S(p)\rho(p)\phi)}{\partial t}
+- \dvop (\textbf{K}(p)\rho(p)(\nabla p - \rho(p) \Xg)) = Q, \;  {\rm in} \; \Omega,
+\label{eq:richard}
+\end{eqnarray}
+where $\Omega$ is the flow domain, $p$ is the pressure-head of water $[L]$, $S$ is the water
+saturation, $S_s$ is the specific storage coefficient $[L^{-1}]$, $\phi$ is the porosity of the medium, $\textbf{K}(p)$ is the hydraulic
+conductivity tensor $[LT^{-1}]$, and $Q$ is the water source/sink term $[L^{3}T^{-1}]$ (includes wells and surface fluxes).
+The hydraulic conductivity can be written as,
+\begin{eqnarray}
+K(p) =  \frac{\Xk k_r(p)}{\mu}
+\end{eqnarray}
+Boundary conditions can be stated as,
+\begin{eqnarray}
+p & = & p_D, \; {\rm on} \; \Gamma^D, \label{eq:bcd} \\
+-K(p)\nabla p \cdot {\bf n} & = &
+g_N, \; {\rm on} \; \Gamma^N, \label{eq:bcn}
+\end{eqnarray}
+where $\Gamma^D \cup \Gamma^N = \partial \Omega$, $\Gamma^D \neq \emptyset$,
+and ${\bf n}$ is an outward pointing, unit, normal vector to $\Omega$.
+This is the mixed form of Richards' equation.
+Note here that due to the constant (or passive) air phase pressure assumption,
+Richards' equation ignores the air phase except through its
+effects on the hydraulic conductivity, $K$.
+An initial condition,
+\begin{eqnarray}
+p = p^0(x), \; t = 0,
+\end{eqnarray}
+completes the specification of the problem.
+\section{Terrain Following Grid}
+\label{TFG}
+The terrain following grid formulation transforms the \parflow{} grid to conform to topography \cite{M13}. This alters the form of Darcy's law to include a topographic slope component:
+\begin{eqnarray}
+q_x=\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x)
+\label{eq:darcyTFG}
+\end{eqnarray}
+where $\theta_x = \arctan(S_0,x)$ and $\theta_y = \arctan(S_0,y)$ which are assumed to be the same as the {\bf TopoSlope} keys assigned for overland flow, described below.  The terrain following grid formulation can be very useful for coupled surface-subsurface flow problems where groundwater flow follows the topography.  As cells are distributed near the ground surface and can be combined with the variable $\delta Z$ capability, the number of cells in the problem can be reduced dramatically over the orthogonal formulation. For complete details on this formulation, the stencil used and the function evaluation developed, please see \cite{M13}. NOTE: in the original formulation, $\theta_x$ and $\theta_y$ for a cell face is calculated as the average of the two adjacent cell slopes (i.e. assuming a cell centered slope calculation). The {\bf TerrainFollowingGrid.SlopeUpwindFormulation} key provide options to use the slope of a grid cell directly (i.e. assuming face centered slope calculations) and removing the sine term from  \ref{eq:darcyTFG}. The {\bf Upwind} and {\bf UpwindSine} options for this key will provide consistent results with {\bf OverlandKinematic} and {\bf OverlandDiffusive} boundary conditions while the {\bf Original} option is consistent with the standard {\bf OverlandFlow} boundary condition.
+
+\section{Flow Barriers}
+\label{FB}
+The the flow barrier multipliers allow for the reduction in flow across a cell face. This slightly alters Darcy's law to include a flow reduction in each direction, show here in x:
+\begin{eqnarray}
+q_x=FB_x\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x)
+\label{eq:qFBx}
+\end{eqnarray}
+where $FB_x$, $FB_y$ and $FB_z$ are a dimensionless multipliers specified by the {\bf FBx}, {\bf FBy} and {\bf FBz} keys. This creates behavior equivalent to the Hydraulic Flow Barrier (HFB) or {\em ITFC} (flow and transport parameters at interfaces) conditions in other models.
+
+\section{Overland Flow}
+\label{Overland Flow}
+As detailed in \cite{KM06}, \parflow{} may simulate fully-coupled surface and subsurface flow via an overland flow boundary condition.  While complete details of this approach are given in that paper, a brief summary of the equations solved are presented here.  Shallow overland flow is now represented in \parflow{} by the kinematic wave equation.   In two spatial dimensions, the continuity equation can be written as:
+\begin{eqnarray}
+\frac{\partial \psi_s}{\partial t} =
+\dvop (\Xv\psi_s) + q_r(x)
+\label{eq:kinematic}
+\end{eqnarray}
+where $\Xv$ is the depth averaged velocity vector $[LT^{-1}]$; $\psi_s$ is the surface ponding depth $[L]$ and $q_r(x)$ is the a general source/sink (e.g. rainfall) rate $[LT^{-1}]$. If diffusion terms are neglected the momentum equation can be written as:
+\begin{eqnarray}
+S_{f,i} = S_{o,i}
+\label{eq:ovmom}
+\end{eqnarray}
+which is commonly referred to as the kinematic wave approximation. In Equation \ref{eq:ovmom} $S_{o,i}$ is the bed slope (gravity forcing term) $[-]$, which is equal to the friction slope $S_{f,i}$ $[L]$; $i$ stands for the $x$- and $y$-direction. Manning�s equation is used to establish a flow depth-discharge relationship:
+\begin{eqnarray}
+v_x=- \frac{\sqrt{S_{f,x}}}{n}\psi_{s}^{2/3}
+\label{eq:manningsx}
+\end{eqnarray}
+and
+\begin{eqnarray}
+v_y=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}
+\label{eq:manningsy}
+\end{eqnarray}
+where $n$ $[TL^{-1/3}]$ is the Manning's coefficient.\newline
+Though complete details of the coupled approach are given in \cite{KM06}, brief details of the approach are presented here.  The coupled approach takes Equation \ref{eq:kinematic} and adds a flux for subsurface exchanges, $q_e(x)$.
+\begin{eqnarray}
+\frac{\partial \psi_s}{\partial t} =
+\dvop (\Xv\psi_s) + q_r(x) + q_e(x)
+\label{eq:kinematic_ex}
+\end{eqnarray}
+We then assign a continuity of pressure at the top cell of the boundary between the surface and subsurface systems by setting pressure-head, $p$ in \ref{eq:richard} equal to the vertically-averaged surface pressure, $\psi_s$ as follows:
+\begin{eqnarray}
+p = \psi_s = \psi
+\label{eq:press_cont}
+\end{eqnarray}
+If we substitute this relationship back into Equation \ref{eq:kinematic_ex} as follows:
+\begin{eqnarray}
+\frac{\partial \parallel\psi,0\parallel}{\partial t} =
+\dvop (\Xv \parallel\psi,0\parallel) + q_r(x) + q_e(x)
+\label{eq:OF_BC_ex}
+\end{eqnarray}
+Where the $\parallel\psi,0\parallel$ operator chooses the greater of the two quantities, $\psi$ and $0$.  We may now solve this term for the flux $q_e(x)$ which we may set equal to flux boundary condition shown in Equation \ref{eq:bcn}.  This yields the following equation, which is referred to as the overland flow boundary condition \cite{KM06}:
+\begin{eqnarray}
+-K(\psi)\nabla \psi \cdot {\bf n}  = \frac{\partial \parallel\psi,0\parallel}{\partial t} -
+\dvop (\Xv \parallel\psi,0\parallel) - q_r(x)
+\label{eq:overland_bc}
+\end{eqnarray}
+This results a version of the kinematic wave equation that is only active when the pressure at the top cell of the subsurface domain has a ponded depth and is thus greater than zero.  This method solves both systems, where active in the domain, over common grids in a fully-integrated, fully-mass conservative manner.
+
+
+The depth-discharge relationship can also be written as
+\begin{eqnarray}
+v_x=- \frac{S_{f,x}}{n\sqrt{\overline{S_{f}}}}\psi_{s}^{2/3}
+\label{eq:manningsnew}
+\end{eqnarray}
+where $\overline{S_{f}}$ is the magnitude of the friction slope. This formulation for
+overland flow is used in the {\bf OverlandKinematic} and {\bf OverlandDiffusive} boundary conditions.  In {\bf OverlandKinematic} case the friction slope equals the bed slope following Equation \ref{eq:ovmom}. For the {\bf OverlandDiffusive} case the friction slope also includes the pressure gradient. The solution for both of these options is formulated to do the upwinding internally and assumes that the user provides face centered bedslopes ($S_{o,i}$). This is different from the original formulation which assumes the user provides grid cenered bedslopes.
+
+\section{Multi-Phase Flow Equations}
+\label{Multi-Phase Flow Equations}
+
+The flow equations are a set of {\em mass balance} and
+{\em momentum balance} (Darcy's Law) equations, given respectively by,
+\begin{equation} \label{eqn-mass-balance}
+\frac{\partial}{\partial t} ( \Xpor \XSi )
+  ~+~ \Xgrad \cdot \XVi
+  ~-~ \XQi ~=~ 0 ,
+\end{equation}
+\begin{equation} \label{eqn-darcy}
+\XVi ~+~ \Xmobi \cdot ( \Xgrad \Xpi ~-~ \Xdeni \Xg ) ~=~ 0 ,
+\end{equation}
+for $i = 0, \ldots , \Xnphases - 1$ $(\Xnphases \in \{1,2,3\})$, where
+\begin{eqnarray} \label{eqn-phase-mobility}
+\Xmobi & = & \frac{\Xk \Xkri}{\Xvisi} , \\
+\Xg    & = & [ 0, 0, -g ]^T ,
+\end{eqnarray}
+Table \ref{table-flow-units} defines the symbols in the above equations,
+and outlines the symbol dependencies and units.
+\begin{table} \center
+\caption{Notation and units for flow equations.}
+\smallskip
+\begin{tabular}{||c||c|c||}
+\hline
+symbol & quantity & units \\
+\hline\hline
+$\Xpor (\Xx,t)$ & porosity                      & []                  \\ \hline
+$\XSi (\Xx,t)$  & saturation                    & []                  \\ \hline
+$\XVi (\Xx,t)$  & Darcy velocity vector         & [$L T^{-1}$]        \\ \hline
+$\XQi (\Xx,t)$  & source/sink                   & [$T^{-1}$]          \\ \hline
+$\Xmobi$        & mobility                      & [$L^{3} T M^{-1}$]  \\ \hline
+$\Xpi (\Xx,t)$  & pressure                      & [$M L^{-1} T^{-2}$] \\ \hline
+$\Xdeni$        & mass density                  & [$M L^{-3}$]        \\ \hline
+$\Xg$           & gravity vector                & [$L T^{-2}$]        \\ \hline
+$\Xk (\Xx,t)$   & intrinsic permeability tensor & [$L^{2}$]           \\ \hline
+$\Xkri (\Xx,t)$ & relative permeability         & []                  \\ \hline
+$\Xvisi$        & viscosity                     & [$M L^{-1} T^{-1}$] \\ \hline
+$g$             & gravitational acceleration    & [$L T^{-2}$]        \\ \hline
+\end{tabular}
+\label{table-flow-units}
+\end{table}
+Here, $\Xpor$ describes the fluid capacity of the porous medium,
+and $\XSi$ describes the content of phase $i$ in the porous medium,
+where we have that $0 \le \Xpor \le 1$ and $0 \le \XSi \le 1$.
+The coefficient $\Xk$ is considered a scalar here.
+We also assume that $\Xdeni$ and $\Xvisi$ are constant.
+Also note that in \parflow{}, we assume that the relative permeability
+is given as $\Xkri (\XSi)$.
+The Darcy velocity vector is related to the {\em velocity vector}, $\Xvi$,
+by the following:
+\begin{equation} \label{eqn-Dvec-vs-vvec}
+\XVi = \Xpor \XSi \Xvi .
+\end{equation}
+
+To complete the formulation, we have the following
+$\Xnphases$ {\em consititutive relations}
+\begin{equation} \label{eqn-constitutive-sum}
+\sum_i \XSi = 1 ,
+\end{equation}
+\begin{equation} \label{eqn-constitutive-capillary}
+\Xp_{i0} ~=~ \Xp_{i0} ( \XS_0 ) ,
+~~~~~~ i = 1 , \ldots , \Xnphases - 1 .
+\end{equation}
+where, $\Xp_{ij} = \Xp_i - \Xp_j$ is the {\em capillary pressure} between
+phase $i$ and phase $j$.
+We now have the $3 \Xnphases$ equations,
+(\ref{eqn-mass-balance}), (\ref{eqn-darcy}),
+(\ref{eqn-constitutive-sum}), and (\ref{eqn-constitutive-capillary}),
+in the $3 \Xnphases$ unknowns,
+$\XSi, \XVi$, and $\Xpi$.
+
+For technical reasons, we want to rewrite the above equations.
+First, we define the {\em total mobility}, $\XmobT$,
+and the {\em total velocity}, $\XVT$, by the relations
+\begin{eqnarray}
+\XmobT ~=~ \sum_{i} \Xmobi , \label{eqn-total-mob} \\
+\XVT ~=~ \sum_{i} \XVi .     \label{eqn-total-vel}
+\end{eqnarray}
+After doing a bunch of algebra, we get the following equation
+for $\Xp_0$:
+\begin{equation} \label{eqn-pressure}
+-~ \sum_{i}
+  \left \{
+    \Xgrad \cdot \Xmobi
+      \left ( \Xgrad ( \Xp_0 ~+~ \Xp_{i0} ) ~-~ \Xdeni \Xg \right )
+    ~+~
+    \XQi
+  \right \}
+~=~ 0 .
+\end{equation}
+After doing some more algebra, we get the following $\Xnphases - 1$
+equations for $\XSi$:
+\begin{equation} \label{eqn-saturation}
+\frac{\partial}{\partial t} ( \Xpor \XSi )
+~+~
+\Xgrad \cdot
+  \left (
+     \frac{\Xmobi}{\XmobT} \XVT ~+~
+     \sum_{j \neq i} \frac{\Xmobi \Xmob_j}{\XmobT} ( \Xden_i - \Xden_j ) \Xg
+  \right )
+~+~
+\sum_{j \neq i} \Xgrad \cdot
+    \frac{\Xmobi \Xmob_j}{\XmobT} \Xgrad \Xp_{ji}
+~-~ \XQi
+~=~ 0 .
+\end{equation}
+The capillary pressures $\Xp_{ji}$ in (\ref{eqn-saturation}) are
+rewritten in terms of the constitutive relations in
+(\ref{eqn-constitutive-capillary}) so that we have
+\begin{equation} \label{eqn-derived-capillary}
+\Xp_{ji} ~=~ \Xp_{j0} ~-~ \Xp_{i0} ,
+\end{equation}
+where by definition, $\Xp_{ii} = 0$.
+Note that equations (\ref{eqn-saturation}) are analytically the
+same equations as in (\ref{eqn-mass-balance}).
+The reason we rewrite them in this latter form is because
+of the numerical scheme we are using.
+We now have the $3 \Xnphases$ equations,
+(\ref{eqn-pressure}), (\ref{eqn-saturation}),
+(\ref{eqn-total-vel}), (\ref{eqn-darcy}), and
+(\ref{eqn-constitutive-capillary}),
+in the $3 \Xnphases$ unknowns,
+$\XSi, \XVi$, and $\Xpi$.
+
+
+\section{Transport Equations}
+\label{Transport Equations}
+
+The transport equations in \parflow{} are currently defined as follows:
+\begin{eqnarray} \label{eqn-transport}
+\left ( \frac{\partial}{\partial t} (\Xpor \Xcij) ~+~ \Xdegj ~ \Xpor \Xcij \right ) & + & \Xgrad \cdot \left ( \Xcij \XVi \right ) \nonumber \\
+& = & \\
+-\left ( \frac{\partial}{\partial t} ((1 - \Xpor) \Xsolidden \XFij) ~+~  \Xdegj ~ (1 - \Xpor) \Xsolidden \XFij \right ) & + & \sum_{k}^{\XnI} \XwellrateIik \chi_{\XindIk} \left ( \Xcij - \Xcbarkij \right ) ~-~ \sum_{k}^{\XnE} \XwellrateEik \chi_{\XindEk} \Xcij \nonumber
+\end{eqnarray}
+where $i = 0, \ldots , \Xnphases - 1$ $(\Xnphases \in \{1,2,3\})$
+is the number of phases,
+$j = 0, \ldots , \Xnc - 1$ is the number of contaminants, and where
+$\Xcij$ is the concentration of contaminant $j$ in phase $i$.  Recall also,
+that $\chi_A$ is the characteristic function of set $A$, i.e. $\chi_A(x) = 1$
+if $x \in A$ and $\chi_A(x) = 0$ if $x \not\in A$.
+Table \ref{table-transport-units} defines the symbols in the above equation,
+and outlines the symbol dependencies and units.  The equation is basically
+a statement of mass conservation in a convective flow (no diffusion) with
+adsorption and degradation effects incorporated along with the addition of
+injection and extraction wells.
+\begin{table} \center
+\caption{Notation and units for transport equation.}
+\smallskip
+\begin{tabular}{||c||c|c||}
+\hline
+symbol & quantity & units \\
+\hline\hline
+$\Xpor (\Xx)$       & porosity                        & []               \\ \hline
+$\Xcij (\Xx,t)$     & concentration fraction          & []               \\ \hline
+$\XVi (\Xx,t)$      & Darcy velocity vector           & [$L T^{-1}$]     \\ \hline
+$\Xdegj$            & degradation rate                & [$T^{-1}$]       \\ \hline
+$\Xsolidden (\Xx)$  & density of the solid mass       & [$M L^{-3}$]]    \\ \hline
+$\XFij  (\Xx, t)$   & mass concentration              & [$L^{3} M^{-1}$] \\ \hline
+$\XnI$              & number of injection wells       & []               \\ \hline
+$\XwellrateIik (t)$ & injection rate                  & [$T^{-1}$]       \\ \hline
+$\XindIk (\Xx)$     & injection well region           & []               \\ \hline
+$\Xcbarkij ()$      & injected concentration fraction & []               \\ \hline
+$\XnE$              & number of extraction wells      & []               \\ \hline
+$\XwellrateEik (t)$ & extraction rate                 & [$T^{-1}$]       \\ \hline
+$\XindEk (\Xx)$     & extraction well region          & []               \\ \hline
+\end{tabular}
+\label{table-transport-units}
+\end{table}
+These equations will soon have to be generalized to include a diffusion term.
+At the present time, as an adsorption model, we take the mass concentration
+term ($\XFij$) to be instantaneous in time and a linear function of contaminant
+concentration :
+\begin{equation} \label{eqn-linear-retardation}
+\XFij = \XKdj \Xcij,
+\end{equation}
+where $\XKdj$ is the distribution coefficient of the component
+([$L^{3} M^{-1}$]).
+If \ref{eqn-linear-retardation} is substituted into \ref{eqn-transport}
+the following equation results (which is the current model used in \parflow{}) :
+\begin{eqnarray} \label{eqn-transport2}
+(\Xpor + (1 - \Xpor) \Xsolidden \XKdj) \frac{\partial}{\partial t} \Xcij & + & \Xgrad \cdot \left ( \Xcij \XVi \right ) \nonumber \\
+& = & \nonumber \\
+-~(\Xpor + (1 - \Xpor) \Xsolidden \XKdj) \Xdegj \Xcij & + & \sum_{k}^{\XnI} \XwellrateIik \chi_{\XindIk} \left ( \Xcij - \Xcbarkij \right ) ~-~ \sum_{k}^{\XnE} \XwellrateEik \chi_{\XindEk} \Xcij
+\end{eqnarray}
+
+\section{Notation and Units}
+\label{Notation and Units}
+
+In this section, we discuss other common formulations of the flow
+and transport equations, and how they relate to the equations solved
+by \parflow{}.
+
+We can rewrite equation (\ref{eqn-darcy}) as
+\begin{equation} \label{eqn-darcy-b}
+\XVi ~+~ \XKi \cdot ( \Xgrad \Xhi ~-~ \frac{\Xdeni}{\Xscale} \Xg ) ~=~ 0 ,
+\end{equation}
+where
+\begin{eqnarray} \label{eqn-cond-phead}
+\XKi & = & \Xscale \Xmobi , \\
+\Xhi & = & ( \Xpi ~-~ \Xgp ) / \Xscale .
+\end{eqnarray}
+Table \ref{table-flow-units-b} defines the symbols and their units.
+\begin{table} \center
+\caption{Notation and units for reformulated flow equations.}
+\smallskip
+\begin{tabular}{||c||c|c||}
+\hline
+symbol & quantity & units \\
+\hline\hline
+$\XVi$      & Darcy velocity vector         & [$L T^{-1}$]        \\ \hline
+$\XKi$      & hydraulic conductivity tensor & [$L T^{-1}$]        \\ \hline
+$\Xhi$      & pressure head                 & [$L$]               \\ \hline
+$\Xscale$   & constant scale factor         & [$M L^{-2} T^{-2}$] \\ \hline
+$\Xg$       & gravity vector                & [$L T^{-2}$]        \\ \hline
+\end{tabular}
+\label{table-flow-units-b}
+\end{table}
+We can then rewrite equations (\ref{eqn-pressure}) and
+(\ref{eqn-saturation}) as
+\begin{equation} \label{eqn-pressure-b}
+-~ \sum_{i}
+  \left \{
+    \Xgrad \cdot \XKi
+      \left ( \Xgrad ( \Xh_0 ~+~ \Xh_{i0} ) ~-~
+        \frac{\Xdeni}{\Xscale} \Xg \right )
+    ~+~
+    \XQi
+  \right \}
+~=~ 0 ,
+\end{equation}
+\begin{equation} \label{eqn-saturation-b}
+\frac{\partial}{\partial t} ( \Xpor \XSi )
+~+~
+\Xgrad \cdot
+  \left (
+     \frac{\XKi}{\XKT} \XVT ~+~
+     \sum_{j \neq i} \frac{\XKi \XK_j}{\XKT}
+       \left ( \frac{\Xden_i}{\Xscale} - \frac{\Xden_j}{\Xscale} \right ) \Xg
+  \right )
+~+~
+\sum_{j \neq i} \Xgrad \cdot
+    \frac{\XKi \XK_j}{\XKT} \Xgrad \Xh_{ji}
+~-~ \XQi
+~=~ 0 .
+\end{equation}
+
+Note that $\XKi$ is supposed to be a tensor, but we treat it as
+a scalar here.
+Also, note that by carefully defining the input to \parflow{}, we can
+use the units of equations (\ref{eqn-pressure-b}) and
+(\ref{eqn-saturation-b}).
+To be more precise, let us denote \parflow{} input symbols by appending
+the symbols in table \ref{table-flow-units} with $(I)$, and
+let $\Xscale = \Xden_0 g$ (this is a typical definition).
+Then, we want:
+\begin{eqnarray} \label{eqn-parflow-input}
+\Xk (I)    & = & \Xscale \Xk / \Xvis_0 ; \\
+\Xvisi (I) & = & \Xvisi / \Xvis_0 ; \\
+\Xpi (I)   & = & \Xhi ; \\
+\Xdeni (I) & = & \Xdeni / \Xden_0 ; \\
+g (I)      & = & 1 .
+\end{eqnarray}
+By doing this, $\Xk (I)$ represents hydraulic conductivity of the base
+phase $\XK_0$ (e.g. water) under saturated conditions (i.e. $k_{r0} = 1$).
+
+
+\section{Water Balance}
+\label{Water Balance}
+\parflow{} can calculate a water balance for the Richards' equation, overland flow and \code{clm} capabilities. For a schematic of the water balance in \parflow{} please see \cite{M10}. This water balance is computes using \code{pftools} commands as described in \S~\ref{Manipulating Data}.  There are two water balance storage components, subsurface and surface, and two flux calculations, overland flow and evapotranspiration.  The storage components have units $[L^3]$ while the fluxes may be instantaneous and have units $[L^3T^{-1}]$ or cumulative over an output interval with units $[L^3]$.  Examples of water balance calculations and errors are given in the scripts \code{water_balance_x.tcl} and \code{water_balance_y.tcl}.  The size of water balance errors depend on solver settings and tolerances but are typically very small, $<10^{-10} [-]$.\newline
+The water balance takes the form:
+\begin{eqnarray}
+\frac{\Delta [Vol_{subsurface} + Vol_{surface}]}{\Delta t} = Q_{overland} + Q_{evapotranspiration} + Q_{source sink}
+\label{eq:balance}
+\end{eqnarray}
+where $Vol_{subsurface}$ is the subsurface storage $[L^3]$; $Vol_{surface}$ is the surface storage $[L^3]$; $Q_{overland}$ is the overland flux $[L^3 T^{-1}]$; $Q_{evapotranspiration}$ is the evapotranspiration flux passed from \code{clm} or other LSM, etc, $[L^3 T^{-1}]$; and $Q_{source sink}$ are any other source/sink fluxes specified in the simulation $[L^3 T^{-1}]$. The surface and subsurface storage routines are calculated using the \parflow{} toolset commands \code{pfsurfacestorage} and \code{pfsubsurfacestorage} respectively.  Overland flow out of the domain is calculated by \code{pfsurfacerunoff}.  Details for the use of these commands are given in \S~\ref{PFTCL Commands} and \S~\ref{common_pftcl}. $Q_{evapotranspiration}$ must be written out by \parflow{} as a variable (as shown in \S~ref{Code Parameters}) and only contains the external fluxes passed from a module such as \code{clm} or \emph{WRF}. Note that these volume and flux quantities are calculated spatially over the domain and are returned as array values, just like any other quantity in \parflow{}.  The tools command \code{pfsum} will sum these arrays into a single value for the enrite domain. All other fluxes must be determined by the user.\newline
+The subsurface storage is calculated over all active cells in the domain, $\Omega$, and contains both compressible and incompressible parts based on Equation \ref{eq:richard}. This is computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows:
+\begin{eqnarray}
+Vol_{subsurface} = \sum_\Omega [ S(\psi)S_s \psi \Delta x \Delta y \Delta z +
+S(\psi)(\psi)\phi \Delta x \Delta y \Delta z]
+\label{eq:sub_store}
+\end{eqnarray}
+The surface storage is calculated over the upper surface boundary cells in the domain, $\Gamma$, as computed by the mask and contains based on Equation \ref{eq:kinematic}. This is again computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows:
+\begin{eqnarray}
+Vol_{surface} =  \sum_\Gamma \psi \Delta x \Delta y
+\label{eq:surf_store}
+\end{eqnarray}
+For the overland flow outflow from the domain, any cell at the top boundary that has a slope that points out of the domain and is ponded will remove water from the domain.  This is calculated, for example in the y-direction, as the multiple of Equation \ref{eq:manningsy} and the area:
+\begin{eqnarray}
+Q_{overland}=vA= -\frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}\psi \Delta x=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{5/3}\Delta x
+\label{eq:outflow}
+\end{eqnarray}

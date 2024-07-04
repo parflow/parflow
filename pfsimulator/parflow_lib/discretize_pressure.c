@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 *
@@ -144,18 +144,18 @@ void          DiscretizePressure(
   Subvector     **tc_sub;
   Subvector      *tv_sub;
 
-  double dx, dy, dz, d;
+  double dx, dy, dz, d=0.0;
 
   double         *cp, *wp, *ep, *sp, *np, *lp, *up, *op = NULL;
   double         *fp;
   double         *ttx_p, *tty_p, *ttz_p;
   double         *tmx_p, *tmy_p, *tmz_p;
-  double         *tm_p, *tt_p;
+  double         *tm_p, *tt_p=NULL;
   double        **tmx_pvec, **tmy_pvec, **tmz_pvec;
   double         *tc_p, **tc_pvec;
   double         *tv_p;
 
-  double scale, ffx, ffy, ffz, ff, vf;
+  double scale, ffx, ffy, ffz, ff=0.0, vf;
 
   double e_temp, n_temp, u_temp, f_temp;
   double o_temp;
@@ -736,84 +736,87 @@ void          DiscretizePressure(
       tmz_pvec[phase] = SubvectorData(tmz_sub[phase]);
     }
 
-    for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
+    ForBCStructNumPatches(ipatch, bc_struct)
     {
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
+      ForPatchCellsPerFace(DirichletBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int iv, im, phase;
+                                  double ff, d, o_temp, f_temp;
+                                  double *tm_p;),
+                           CellSetup({
+                               iv = SubvectorEltIndex(f_sub, i, j, k);
+                               im = SubmatrixEltIndex(A_sub, i, j, k);
+                             }),
+                           FACE(LeftFace, {
+                               ff = ffx;
+                               d = dx;
+                               tt_p = ttx_p;
+                             }),
+                           FACE(RightFace, {
+                               ff = ffx;
+                               d = dx;
+                               tt_p = ttx_p;
+                             }),
+                           FACE(DownFace, {
+                               ff = ffy;
+                               d = dy;
+                               tt_p = tty_p;
+                             }),
+                           FACE(UpFace, {
+                               ff = ffy;
+                               d = dy;
+                               tt_p = tty_p;
+                             }),
+                           FACE(BackFace, {
+                               ff = ffz;
+                               d = dz;
+                               tt_p = ttz_p;
 
-      switch (BCStructBCType(bc_struct, ipatch))
-      {
-        case DirichletBC:
-        {
-          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-          {
-            if (fdir[0])
-            {
-              ff = ffx;
-              d = dx;
-              tt_p = ttx_p;
-            }
-            else if (fdir[1])
-            {
-              ff = ffy;
-              d = dy;
-              tt_p = tty_p;
-            }
-            else if (fdir[2])
-            {
-              ff = ffz;
-              d = dz;
-              tt_p = ttz_p;
-            }
+                               for (phase = 0; phase < num_phases; phase++)
+                               {
+                                 tm_p = tmz_pvec[phase];
+                                 f_temp = ff * tm_p[iv] *
+                                          (phase_density[phase] * gravity);
+                                 fp[iv] += (-f_temp);
+                               }
+                             }),
+                           FACE(FrontFace, {
+                               ff = ffz;
+                               d = dz;
+                               tt_p = ttz_p;
 
-            iv = SubvectorEltIndex(f_sub, i, j, k);
-            im = SubmatrixEltIndex(A_sub, i, j, k);
+                               for (phase = 0; phase < num_phases; phase++)
+                               {
+                                 tm_p = tmz_pvec[phase];
+                                 f_temp = ff * tm_p[iv] *
+                                          (phase_density[phase] * gravity);
+                                 fp[iv] += f_temp;
+                               }
+                             }),
+                           CellFinalize({
+                               o_temp = -ff * 2.0 * tt_p[iv] / d;
+                               cp[im] -= o_temp;
+                               fp[iv] -= o_temp * bc_patch_values[ival];
+                             }),
+                           AfterAllCells(DoNothing)
+        );
 
-            o_temp = -ff * 2.0 * tt_p[iv] / d;
-            cp[im] -= o_temp;
-            fp[iv] -= o_temp * bc_patch_values[ival];
-
-            for (phase = 0; phase < num_phases; phase++)
-            {
-              /* RDF todo: put in capillary boundary contribution */
-
-              if (fdir[2])
-              {
-                tm_p = tmz_pvec[phase];
-                f_temp = ff * tm_p[iv] *
-                         (phase_density[phase] * gravity);
-                fp[iv] += fdir[2] * f_temp;
-              }
-            }
-          });
-
-          break;
-        }
-
-        case FluxBC:
-        {
-          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-          {
-            if (fdir[0])
-            {
-              ff = ffx;
-            }
-            else if (fdir[1])
-            {
-              ff = ffy;
-            }
-            else if (fdir[2])
-            {
-              ff = ffz;
-            }
-
-            iv = SubvectorEltIndex(f_sub, i, j, k);
-
-            fp[iv] -= ff * bc_patch_values[ival];
-          });
-
-          break;
-        }
-      }
+      ForPatchCellsPerFace(FluxBC,
+                           BeforeAllCells(DoNothing),
+                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                           Locals(int iv, dir; double ff;),
+                           CellSetup({ iv = SubvectorEltIndex(f_sub, i, j, k); }),
+                           FACE(LeftFace,  { ff = ffx; dir = -1;}),
+                           FACE(RightFace, { ff = ffx; dir = 1;}),
+                           FACE(DownFace,  { ff = ffy; dir = -1;}),
+                           FACE(UpFace,    { ff = ffy; dir = 1;}),
+                           FACE(BackFace,  { ff = ffz; dir = -1;}),
+                           FACE(FrontFace, { ff = ffz; dir = 1;}),
+                           CellFinalize({ fp[iv] -= ff * dir * bc_patch_values[ival]; }),
+                           AfterAllCells(DoNothing)
+        );
     }
   }
 
@@ -932,9 +935,6 @@ PFModule    *DiscretizePressureInitInstanceXtra(
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
 
-  int num_phases;
-
-
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
   else
@@ -948,8 +948,6 @@ PFModule    *DiscretizePressureInitInstanceXtra(
   {
     (instance_xtra->problem) = problem;
   }
-
-  num_phases = ProblemNumPhases(instance_xtra->problem);
 
   /*-----------------------------------------------------------------------
    * Initialize data associated with argument `grid'
@@ -1022,13 +1020,8 @@ void  DiscretizePressureFreeInstanceXtra()
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
-  int num_phases;
-
-
   if (instance_xtra)
   {
-    num_phases = ProblemNumPhases(instance_xtra->problem);
-
     PFModuleFreeInstance(instance_xtra->bc_pressure);
     PFModuleFreeInstance(instance_xtra->phase_mobility);
     PFModuleFreeInstance(instance_xtra->phase_density_module);

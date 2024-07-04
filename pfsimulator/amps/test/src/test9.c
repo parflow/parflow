@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /* The following needs to be in the input file test9.input */
 /*
  * 11
@@ -36,19 +36,19 @@
  * 12.5 0.078 679.8 0.5
  */
 
-#include <stdio.h>
 #include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
+#include <string.h>
 
 char *filename = "test9.input";
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   amps_File file;
   amps_Invoice recv_invoice;
 
-  int num;
   int me;
   int i;
 
@@ -90,9 +90,24 @@ char *argv[];
 
   loop = atoi(argv[1]);
 
-  num = amps_Size(amps_CommWorld);
-
   me = amps_Rank(amps_CommWorld);
+
+  if(me == 0)
+  {
+    FILE* test_file;
+
+    test_file = fopen(filename, "wb");
+
+    fprintf(test_file, "11\n");
+    fprintf(test_file, "ATestString\n");
+    fprintf(test_file, "4 10 234 5 6\n");
+    fprintf(test_file, "65555 200 234 678 890 6789 2789\n");
+    fprintf(test_file, "100000 2789 78 8 1 98 987 98765\n");
+    fprintf(test_file, "12.500000 12.000500 17.400000 679.800000\n"); 
+    fprintf(test_file, "12.500000 0.078000 679.799988 0.500000\n"); 
+
+    fclose(test_file);
+  }
 
   for (; loop; loop--)
   {
@@ -123,21 +138,13 @@ char *argv[];
                   string, recvd_string);
       result |= 1;
     }
-    else
-    {
-      result |= 0;
-    }
-
+    
     for (i = 0; i < shorts_length; i++)
       if (shorts[i] != recvd_shorts[i])
       {
         amps_Printf("ERROR: shorts do not match expected (%hd) recvd (%hd)\n",
                     shorts[i], recvd_shorts[i]);
         result |= 1;
-      }
-      else
-      {
-        result |= 0;
       }
 
     for (i = 0; i < ints_length; i++)
@@ -147,10 +154,6 @@ char *argv[];
                     ints[i], recvd_ints[i]);
         result |= 1;
       }
-      else
-      {
-        result |= 0;
-      }
 
     for (i = 0; i < longs_length; i++)
       if (longs[i] != recvd_longs[i])
@@ -158,10 +161,6 @@ char *argv[];
         amps_Printf("ERROR: longs do not match expected (%ld) recvd (%ld)\n",
                     longs[i], recvd_longs[i]);
         result |= 1;
-      }
-      else
-      {
-        result |= 0;
       }
 
     for (i = 0; i < doubles_length * 2; i += 2)
@@ -171,10 +170,6 @@ char *argv[];
                     doubles[i], recvd_doubles[i]);
         result |= 1;
       }
-      else
-      {
-        result |= 0;
-      }
 
     for (i = 0; i < floats_length * 3; i += 3)
       if (floats[i] != recvd_floats[i])
@@ -183,20 +178,11 @@ char *argv[];
                     floats[i], recvd_floats[i]);
         result |= 1;
       }
-      else
-      {
-        result |= 0;
-      }
-
-    if (result == 0)
-      amps_Printf("Success\n");
-    else
-      amps_Printf("ERROR\n");
-
+    
     amps_FreeInvoice(recv_invoice);
   }
 
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }

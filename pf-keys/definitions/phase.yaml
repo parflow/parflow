@@ -1,0 +1,626 @@
+# phase.yaml
+# Definitions of phase components of ParFlow
+# Includes Phase, PhaseConcen, Contaminants
+
+# -----------------------------------------------------------------------------
+# Phase
+# -----------------------------------------------------------------------------
+Phase:
+  __doc__: ''
+
+  Names:
+    help: >
+      [Type: string] This specifies the names of phases to be modeled. Currently only 1 or 2 phases may be modeled.
+    domains:
+      AnyString:
+    handlers:
+      PhaseUpdater:
+        type: ChildrenHandler
+        class_name: PhaseNameItem
+        location: .
+      PhaseSourceUpdater:
+        type: ChildrenHandler
+        class_name: PhaseSourceNameItem
+        location: /PhaseSources
+      PhaseConcenUpdater:
+        type: ChildrenHandler
+        class_name: PhaseConcenPhaseNameItem
+        location: /PhaseConcen
+      WellIntervalFluxPhaseItemUpdater:
+        type: ChildrenHandler
+        class_name: WellIntervalFluxPhaseItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Flux
+      ExtractionFluxPhaseUpdater:
+        type: ChildrenHandler
+        class_name: ExtractionFluxPhaseItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Extraction/Flux
+      InjectionFluxPhaseUpdater:
+        type: ChildrenHandler
+        class_name: InjectionFluxPhaseItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Injection/Flux
+      InjectionConcentrationPhaseUpdater:
+        type: ChildrenHandler
+        class_name: InjectionConcentrationPhaseItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Injection/Concentration
+      WellIntervalConcentrationPhaseItemUpdater:
+        type: ChildrenHandler
+        class_name: ConcentrationPhaseItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Concentration
+      WellIntervalSaturationPhaseItemUpdater:
+        type: ChildrenHandler
+        class_name: WellIntervalSaturationPhaseItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Saturation
+      ICSaturationPhaseUpdater:
+        type: ChildrenHandler
+        class_name: GeomICSaturationPhaseItem
+        location: /Geom/{GeomItem}/ICSaturation
+      BCSaturationPhaseUpdater:
+        type: ChildrenHandler
+        class_name: BCSatPhaseItem
+        location: /Patch/{BCItem}/BCSaturation
+      BCPressureIntervalPhaseUpdater:
+        type: ChildrenHandler
+        class_name: BCPressIntPhaseItem
+        location: /Patch/{BCItem}/BCPressure/{BCPressureIntervalItem}
+
+  RelPerm:
+    __doc__: >
+      The following keys are used to describe relative permeability input for the Richards’ equation implementation. They
+      will be ignored if a full two-phase formulation is used.
+
+    Type:
+      help: >
+        [Type: string] This key specifies the type of relative permeability function that will be used on all specified geometries. Note that
+        only one type of relative permeability may be used for the entire problem. However, parameters may be different for
+        that type in different geometries. For instance, if the problem consists of three geometries, then VanGenuchten may
+        be specified with three different sets of parameters for the three different geometries. However, once VanGenuchten
+        is specified, one geometry cannot later be specified to have Data as its relative permeability. The possible values for
+        this key are Constant, VanGenuchten, Haverkamp, Data, and Polynomial.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Constant
+            - VanGenuchten
+            - Haverkamp
+            - Data
+            - Polynomial
+
+    GeomNames:
+      help: >
+        [Type: string] This key specifies the geometries on which relative permeability will be given. The union of these geometries
+        must cover the entire computational domain.
+      domains:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        NamesToListConverter:
+          type: ListHandler                       
+
+    VanGenuchten:
+      __class__: PhaseRelPermVanGenuchten
+      __doc__: ''
+      __rst__:
+        skip:
+
+      File:
+        help: >
+          [Type: int] This key specifies whether soil parameters for the VanGenuchten function are specified in a pfb file or by region.
+          The options are either 0 for specification by region, or 1 for specification in a file. Note that either all parameters
+          are specified in files (each has their own input file) or none are specified by files. Parameters specified by files are: alpha
+          and N.
+        default: 0
+        domains:
+          IntValue:
+            min_value: 0
+            max_value: 1
+
+  Saturation:
+    __doc__: >
+      This section is only relevant to the Richards’ equation cases. All keys relating to this section will be ignored for other
+      cases. The following keys are used to define the saturation-pressure curve.
+
+    Type:
+      help: >
+        [Type: string] This key specifies the type of saturation function that will be used on all specified geometries. Note that only one
+        type of saturation may be used for the entire problem. However, parameters may be different for that type in different
+        geometries. For instance, if the problem consists of three geometries, then VanGenuchten may be specified with
+        three different sets of parameters for the three different goemetries. However, once VanGenuchten is specified, one
+        geometry cannot later be specified to have Data as its saturation. The possible values for this key are Constant,
+        VanGenuchten, Haverkamp, Data, Polynomial and PFBFile.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Constant
+            - VanGenuchten
+            - Haverkamp
+            - Data
+            - Polynomial
+            - PFBFile
+
+    GeomNames:
+      help: >
+        [Type: string] This key specifies the geometries on which saturation will be given. The union of these geometries
+        must cover the entire computational domain.
+      domains:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        NamesToListConverter:
+          type: ListHandler                       
+
+
+    VanGenuchten:
+      __class__: PhaseSaturationVanGenuchten
+      __doc__: ''
+      File:
+        help: >
+          [Type: int] This key specifies whether soil parameters for the VanGenuchten function are specified in a pfb file or by region.
+          The options are either 0 for specification by region, or 1 for specification in a file. Note that either all parameters are
+          specified in files (each has their own input file) or none are specified by files. Parameters specified by files are alpha, N,
+          SRes, and SSat.
+        default: 0
+        domains:
+          IntValue:
+            min_value: 0
+            max_value: 1
+
+  ThermalConductivity:
+    __doc__: ''
+    __rst__:
+      skip:
+
+    Function1:
+      __doc__: ''
+      __rst__:
+        skip:
+
+      File:
+        help: >
+          [Type: string] This specifies the file name for the thermal conductivity function.
+        domains:
+          AnyString:
+          ValidFile:
+
+  .{phase_name}:
+    __class__: PhaseNameItem
+    __rst__:
+      skip:
+    __doc__: ''
+    __simput__:
+      type: VariableTable
+
+    Density:
+      __rst__:
+        skip:
+      __doc__: ''
+
+      Type:
+        help: >
+          [Type: string] This key specifies whether density will be a constant value or if it will be given by an equation of state of the
+          form (rd)exp(cP), where P is pressure, rd is the density at atmospheric pressure, and c is the phase compressibility
+          constant. This key must be either Constant or EquationOfState.
+        domains:
+          EnumDomain:
+            enum_list:
+              - Constant
+              - EquationOfState
+
+      Value:
+        help: >
+          [Type: double] This specifies the value of density if this phase was specified to have a constant density value for the phase
+          phase_name.
+        domains:
+          DoubleValue:
+
+      ReferenceDensity:
+        help: >
+          [Type: double] This key specifies the reference density if an equation of state density function is specified
+          for the phase phase_name.
+        domains:
+          DoubleValue:
+
+      CompressibilityConstant:
+        help: >
+          [Type: double] This key specifies the phase compressibility constant if an equation of state density function is specified for the
+          phase phase_name.
+        domains:
+          DoubleValue:
+
+    Viscosity:
+      __rst__:
+        skip:
+      __doc__: ''
+
+      Type:
+        help: >
+          [Type: string] This key specifies whether viscosity will be a constant value. Currently, the only choice for this key is Constant.
+        default: Constant
+        domains:
+          MandatoryValue:
+          EnumDomain:
+            enum_list:
+              - Constant
+
+      Value:
+        help: >
+          [Type: double] This specifies the value of density if this phase was specified to have a constant density value for the phase
+          phase_name.
+        domains:
+          MandatoryValue:
+          DoubleValue:
+
+    Mobility:
+      __rst__:
+        skip:
+      __doc__: >
+        Here we define phase mobilities by specifying the relative permeability function. Input is specified differently depending
+        on what problem is being specified. For full multi-phase problems, the following input keys are used. See the
+        next section for the correct Richards’ equation input format.
+
+      Type:
+        help: >
+          [Type: string] This key specifies whether the mobility for phase_name will be a given constant or a polynomial of the form,
+          (S-So)^a, where S is saturation, So is irreducible saturation, and a is some exponent. The possibilities for this key
+          are Constant and Polynomial.
+        domains:
+          EnumDomain:
+            enum_list:
+              - Constant
+              - Polynomial
+
+      Value:
+        help: >
+          [Type: double] This key specifies the constant mobility value for phase phase_name.
+        domains:
+          DoubleValue:
+
+      Exponent:
+        help: >
+          [Type: double] This key specifies the exponent used in a polynomial representation of the relative permeability. Currently, only
+          a value of 2.0 is allowed for this key.
+        default: 2.0
+        domains:
+          DoubleValue:
+            min_value: 2.0
+            max_value: 2.0
+
+      IrreducibleSaturation:
+        help: >
+          [Type: double] This key specifies the irreducible saturation used in a polynomial representation of the relative permeability.
+          Currently, only a value of 0.0 is allowed for this key.
+        default: 0.0
+        domains:
+          DoubleValue:
+            min_value: 0.0
+            max_value: 0.0
+
+    # missing from manual
+    HeatCapacity:
+      __class__: PhaseNameItemHeatCapacity
+      __doc__: ''
+      __rst__:
+        skip:
+
+      GeomNames:
+        help: >
+          [Type: string] This specifies the geometry names for setting the heat capacity.
+        domains:
+          EnumDomain:
+            locations: 
+              - /GeomInput/{GeomInputItem}/GeomNames
+              - /GeomInput/{GeomInputItem}/GeomName
+        handlers:
+          PhaseNameHeatGeomItemUpdater:
+            type: ChildrenHandler
+            class_name: PhaseNameHeatGeomItem
+            location: /Phase/{PhaseNameItem}/Geom
+
+      Type:
+        help: >
+          [Type: string] This specifies the type of heat capacity.
+        domains:
+          AnyString:
+
+    # missing from manual
+    InternalEnergy:
+      __doc__: ''
+      __rst__:
+        skip:
+
+      Type:
+        help: >
+          [Type: string] This specifies the type of internal energy.
+        domains:
+          AnyString:
+
+      Value:
+        help: >
+          [Type: double] This specifies the value for the internal energy.
+        domains:
+          DoubleValue:
+
+    Geom:
+      __class__: PhaseNameItemGeom
+      __rst__:
+        skip:
+      __doc__: ''
+
+      .{geom_name}:
+        __class__: PhaseNameHeatGeomItem
+        __from__: /Phase/{PhaseNameItem}/HeatCapacity/GeomNames
+        __rst__:
+          skip:
+        __doc__: ''
+        __simput__:
+          type: VariableTable
+
+        HeatCapacity:
+          __rst__:
+            skip:
+          __doc__: ''
+
+          Value:
+            help: >
+              [Type: double] This specifies the heat capacity value for the specified geometric unit.
+            domains:
+              DoubleValue:
+
+
+# -----------------------------------------------------------------------------
+# PhaseConcen
+# -----------------------------------------------------------------------------
+
+PhaseConcen:
+  __doc__: >
+    Here we define initial concentration conditions for contaminants.
+
+  .{phase_name}:
+    __class__: PhaseConcenPhaseNameItem
+    __rst__:
+      skip:
+    __doc__: ''
+    __simput__: 
+      type: VariableTable
+
+    .{contaminant_name}:
+      __class__: PhaseConcenContaminantItem
+      __from__: /Contaminants/Names
+      __rst__:
+        skip:
+      __doc__: ''
+      __simput__: 
+        type: VariableTable
+
+
+      GeomNames:
+        help: >
+          [Type: string] This key specifies the geometries on which an initial condition will be given, if the type was set to Constant.
+          Note that geometries listed later “overlay” geometries listed earlier.
+        domains:
+          EnumDomain:
+            locations: 
+              - /GeomInput/{GeomInputItem}/GeomNames
+              - /GeomInput/{GeomInputItem}/GeomName
+        handlers:
+          PhaseConcenContaminantGeomItemUpdater:
+            type: ChildrenHandler
+            class_name: PhaseConcenContaminantGeomItem
+            location: /PhaseConcen/{PhaseConcenPhaseNameItem}/{PhaseConcenContaminantItem}/Geom
+
+      Geom:
+        __class__: PhaseConcenContaminantItemGeom
+        __doc__: ''
+        __rst__:
+          skip:
+
+        .{geom_input_name}:
+          __class__: PhaseConcenContaminantGeomItem
+          __from__: /PhaseConcen/{PhaseConcenPhaseNameItem}/{PhaseConcenContaminantItem}/GeomNames
+          __rst__:
+            skip:
+          __doc__: ''
+          __simput__: 
+            type: VariableTable
+
+
+          Value:
+            help: >
+              [Type: double] This key specifies the initial condition value assigned to all points in the named geometry, geom_input_name,
+              if the type was set to Constant.
+            domains:
+              DoubleValue:
+
+      Type:
+        help: >
+          [Type: string] This key specifies the type of initial condition that will be applied to different geometries for given phase,
+          phase_name, and the given contaminant, contaminant_name. The choices for this key are Constant or PFBFile.
+          The choice Constant will apply constants values to different geometries. The choice PFBFile will read values from
+          a “ParFlow Binary” file.
+        domains:
+          EnumDomain:
+            enum_list:
+              - Constant
+              - PFBFile
+
+      FileName:
+        help: >
+          [Type: string] This key specifies the name of the “ParFlow Binary” file which contains the initial condition values if the type
+          was set to PFBFile.
+        domains:
+          AnyString:
+          ValidFile:
+
+# -----------------------------------------------------------------------------
+# PhaseSources
+# -----------------------------------------------------------------------------
+
+PhaseSources:
+  __doc__: >
+    The following keys are used to specify phase source terms. The units of the source term are 1=T . So, for example,
+    to specify a region with constant flux rate of L3=T , one must be careful to convert this rate to the proper units by
+    dividing by the volume of the enclosing region. For Richards’ equation input, the source term must be given as a flux
+    multiplied by density.
+
+  .{phase_name}:
+    __class__: PhaseSourceNameItem
+    __rst__:
+      skip:
+    __doc__: ''
+    __simput__: 
+      type: VariableTable
+
+    Type:
+      help: >
+        [Type: string] This key specifies the type of source to use for phase phase_name. Possible values for this key are Constant and
+        PredefinedFunction. Constant type phase sources specify a constant phase source value for a given set of regions.
+        PredefinedFunction type phase sources use a preset function (choices are listed below) to specify the source. Note
+        that the PredefinedFunction type can only be used to set a single source over the entire domain and not separate
+        sources over different regions.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Constant
+            - PredefinedFunction
+
+    GeomNames:
+      help: >
+        [Type: string] This key specifies the names of the geometries on which source terms will be specified. This is used only for
+        Constant type phase sources. Regions listed later “overlay” regions listed earlier.
+      domains:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        PhaseSourceGeomUpdater:
+          type: ChildrenHandler
+          class_name: PhaseSourcePhaseGeomItem
+          location: ./Geom
+
+    PredefinedFunction:
+      help: >
+        [Type: string] This key specifies which of the predefined functions will be used for the source. Possible values for this key are
+        X, XPlusYPlusZ, X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1 and XYZTPlus1PermTensor.
+      domains:
+        EnumDomain:
+          enum_list:
+            - X
+            - XPlusYPlusZ
+            - X3Y2PlusSinXYPlus1
+            - X3Y4PlusX2PlusSinXYCosYPlus1
+            - XYZTPlus1
+            - XYZTPlus1PermTensor
+
+    Geom:
+      __class__: PhaseSourceNameItemGeom
+      __rst__:
+        skip:
+      __doc__: ''
+
+      .{geom_input_name}:
+        __class__: PhaseSourcePhaseGeomItem
+        __from__: /PhaseSources/{PhaseSourceNameItem}/GeomNames
+        __rst__:
+          skip:
+        __doc__: ''
+        __simput__:
+          type: VariableTable
+
+        Value:
+          help: >
+            [Type: double] This key specifies the value of a constant source term applied to phase phase _name on geometry geom_name.
+          domains:
+            DoubleValue:
+
+  GeomNames:
+    help: > 
+      [Type: string] This key specifies the names of the geometries on which source terms will be specified. This is used only for
+      Constant type phase sources. Regions listed later "overlay" regions listed earlier.
+    domains: 
+      EnumDomain:
+        locations:
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      PhaseSourceGeomUpdater:
+        type: ChildrenHandler
+        class_name: PhaseSourceGeomItem
+        location: ./Geom
+
+  Geom:
+    __class__: PhaseSourcesGeom
+    __rst__:
+      skip:
+    __doc__: ''
+
+    .{geom_input_name}:
+      __class__: PhaseSourceGeomItem
+      __rst__:
+        skip:
+      __doc__: ''
+      __simput__: 
+        type: VariableTable
+
+      Value:
+        help: >
+          [Type: double] This key specifies the value of a constant source term applied to phase phase _name on geometry geom_name.
+        domains:
+          DoubleValue:
+
+# -----------------------------------------------------------------------------
+# Contaminants
+# -----------------------------------------------------------------------------
+
+Contaminants:
+  __doc__: ''
+
+  Names:
+    help: >
+      [Type: string] This specifies the names of contaminants to be advected.
+    domains:
+      AnyString:
+    handlers:
+      ContaminantNameUpdater:
+        type: ChildrenHandler
+        class_name: ContNameItem
+        location: .
+      ContaminantGeomNameUpdater:
+        type: ChildrenHandler
+        class_name: GeomContItem
+        location: /Geom/{GeomItem}/
+      ConcentrationPhaseContaminantUpdater:
+        type: ChildrenHandler
+        class_name: ConcentrationPhaseContItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Concentration/{ConcentrationPhaseItem}
+      InjectionConcentrationPhaseContaminantUpdater:
+        type: ChildrenHandler
+        class_name: InjectionConcentrationPhaseContaminantItem
+        location: /Wells/{WellItem}/{WellIntervalItem}/Injection/Concentration/{InjectionConcentrationPhaseItem}
+      PhaseConcenContNameItemUpdater:
+        type: ChildrenHandler
+        class_name: PhaseConcenContaminantItem
+        location: /PhaseConcen/{PhaseConcenPhaseNameItem}/
+
+  .{contaminant_name}:
+    __class__: ContNameItem
+    __rst__:
+      skip:
+    __doc__: ''
+    __simput__: 
+      type: VariableTable
+
+    Degradation:
+      __rst__:
+        skip:
+      __doc__: ''
+
+      Value:
+        help: >
+          [Type: double] This key specifies the half-life decay rate of the named contaminant, contaminant_name. At present only first-
+          order decay reactions are implemented and it is assumed that one contaminant cannot decay into another.
+        domains:
+          DoubleValue:

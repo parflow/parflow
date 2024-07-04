@@ -1,0 +1,475 @@
+%=============================================================================
+% Chapter: Introduction
+%=============================================================================
+
+\chapter{Introduction}
+\label{Introduction}
+
+\parflow{} (\emph{PARallel FLOW}) is an integrated hydrology 
+model that simulates surface and subsurface flow.
+\parflow{} \cite{Ashby-Falgout90, Jones-Woodward01, KM06, M13} 
+is a parallel simulation platform that operates in three modes:\begin{enumerate}
+\item
+steady-state saturated; 
+\item
+variably saturated; 
+\item
+and integrated-watershed flow.
+\end{enumerate}
+\parflow{} is especially suitable for large scale problems on a range
+of single and multi-processor computing platforms. \parflow{}
+simulates saturated and variably saturated
+subsurface flow in heterogeneous porous media in three spatial
+dimensions using a mulitgrid-preconditioned conjugate gradient solver
+\cite{Ashby-Falgout90} and a Newton-Krylov nonlinear solver
+\cite{Jones-Woodward01}. \parflow{} has recently been extended to
+coupled surface-subsurface flow to enable the simulation of hillslope
+runoff and channel routing in a truly integrated fashion
+\cite{KM06}. \parflow{} is also fully-coupled with the land surface
+model \code{CLM} \cite{Dai03} as described in \cite{MM05,KM08a}.  The
+development and application of \parflow{} has been on-going for more
+than 20 years \cite{Meyerhoff14a, Meyerhoff14b, Meyerhoff11, Mikkelson13,
+RMC10, Shrestha14, SNSMM10, Siirila12a,
+Siirila12b, SMPMPK10, Williams11, Williams13, FM10, Keyes13, 
+KRM10, Condon13a, Condon13b, M13, KRM10, KRM10, SNSMM10, DMC10, AM10,
+MLMSWT10, M10, FM10, KMWSVVS10, SMPMPK10, FFKM09, KCSMMB09, MTK09, dBRM08, 
+MK08b, KM08b, KM08a, MK08a, MCT08,MCK07,MWH07,
+  KM06, MM05, TMCZPS05, MWT03, Teal02, WGM02, Jones-Woodward01, MCT00,
+  TCRM99, TBP99, TFSBA98, Ashby-Falgout90} and resulted in some of the
+most advanced numerical solvers and multigrid preconditioners for
+massively parallel computer environments that are available
+today. Many of the numerical tools developed within the \parflow{}
+platform have been turned into or are from libraries that are now
+distributed and maintained at LLNL ({\em Hypre} and {\em SUNDIALS},
+for example).  An additional advantage of \parflow{} is the use of a
+sophisticated octree-space partitioning algorithm to depict complex
+structures in three-space, such as topography, different hydrologic
+facies, and watershed boundaries. All these components implemented
+into \parflow{} enable large scale, high resolution watershed
+simulations. 
+
+\parflow{} is primarily written in \emph{C}, uses a modular
+architecture and contains a flexible communications layer to
+encapsulate parallel process interaction on a range of platforms.
+\code{CLM} is fully-integrated into \parflow{} as a module and has
+been parallelized (including I/O) and is written in \emph{FORTRAN
+  90/95}.  \parflow{} is organized into a main executable
+\file{\emph{pfdir}/pfsimulator/parflow_exe} and a library
+\file{\emph{pfdir}/pfsimulator/parflow\_lib} (where \file{\emph{pfdir}} is
+the main directory location) and is comprised of more than 190
+separate source files.  \parflow{} is structured to allow it to be
+called from within another application (\emph{e.g.} WRF, the Weather Research 
+and Forecasting atmospheric model) or as a
+stand-alone application.  There is also a directory structure for the
+message-passing layer \file{\emph{pfdir}/pfsimulator/amps} for the
+associated tools \file{\emph{pfdir}/pftools} for \code{CLM}
+\file{\emph{pfdir}/pfsimulator/clm} and a directory of test cases
+\file{\emph{pfdir}/test}.
+
+\section{How to use this manual}
+\label{how to}
+This manual describes how to use \parflow{}, and is intended for
+hydrologists, geoscientists, environmental scientists and engineers. 
+This manual is written assuming the reader has a basic understanding
+of Linux / UNIX environments, how to compose and execute scripts in various 
+programming languages (e.g. TCL), and is familiar with groundwater and 
+surface water hydrology, parallel computing, and numerical modeling in general.
+In Chapter~\ref{Getting Started}, we describe how to install \parflow{}, including
+building the code and associated libraries. Then, we lead the user through a simple
+\parflow{} run and discuss the automated test suite.  In
+Chapter~\ref{The ParFlow System}, we describe the \parflow{} system in
+more detail.  This chapter contains a lot of useful information regarding how a run is 
+constructed and most importantly contains two detailed, annotated scripts that run two
+classical \parflow{} problems, a fully saturated, heterogeneous aquifer and a variably 
+saturated, transient, coupled watershed.  Both test cases are published in the literature
+and are a terrific initial starting point for a new \parflow{} user.
+
+Chapter~\ref{Manipulating Data} describes data analysis and processing. Chapter~\ref{Model_Equations} provides the basic equations solved
+by \parflow{}.  Chapter~\ref{ParFlow Files} describes the formats of the
+various files used by \parflow{}.  These chapters are really intended to be used as reference material. 
+This manual provides some overview of \parflow{}
+some information on building the code, examples of scripts that solve certain classes of
+problems and a compendium of keys that are set for code options. 
+
+\section{Published Studies That Have Used \parflow{}}
+\label{lit_table}
+
+\parflow{} has been used in a number of research studies published in the literature. 
+What follows are tables of \parflow{} references with information on topics, types of problem and
+application.  \ref{pfref1} to \ref{pfref6} describe any coupled physics, 
+categorize the scale and domain and discuss what processes within \parflow{} are used.  For this last
+set of columns, {\bf TB}=Turning Bands, {\bf TFG}=Terrain Following Grid, {\bf VS}= Variably Saturated
+and {\bf Vdz}=Variable DZ.\\
+\newpage
+
+% new table page
+
+{\scriptsize
+\begin{table}
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details.}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\ 
+\hline{}
+
+\cite{Bearup2016}   Bearup et al. (2016) & & Hillslope Hydrologic Response; MPB & Hillslope     & Idealized & & & X & \\
+\cite{Maxwell2016} Maxwell et al. (2016) & & Residence Time Distributions       & Continental	& CONUS     & & & X & X \\	
+\cite{Reyes2015} Reyes at al. (2015)     & CLM & Surface Heterogeneity, Surface Energy Budget (SEB) & Urban Watershed Ballona Creek Watershed, CA  & & X&X &X  \\
+\cite{Condon2015a} Condon and Maxwell (2015) & & Subsurface Heterogeneity (groundwater fluxes and topography) & Continental & CONUS  & & & X & X \\
+\cite{Jefferson2015} Jefferson et al. (2015) & CLM & Active subspaces; Dimension reduction; Energy fluxes & Hillslope & Idealized   & & & & \\ 				
+\cite{Jefferson2015a} Jefferson and Maxwell (2015)& CLM & Sensitivity Analysis (evaporation parameterization) & Column & Idealized   & & & & \\ 				
+\cite{Rihani2015} Rihani et al. (2015) & ARPS, CLM & Land-atmosphere feedbacks & Hillslope & Idealized      & & X & X & \\
+
+\end{tabular}
+\label{pfref16}
+\end{table}
+
+% new table page 
+
+\begin{table}
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\ 
+\hline{}
+
+\cite{Condon2015} Condon et al. (2015) & & Subsurface Heterogeneity (groundwater fluxes and topography) & Continental & CONUS & &X &X & X  \\	
+\cite{Maxwell2016} Maxwell and Condon (2016) &  & Transpiration partitioning & Continental & CONUS & &X &X &X \\		
+\cite{Maxwell2015} Maxwell et al. (2015)& & Model Development (continental-scale) & Continental & CONUS   & &X &X & X \\			
+\cite{Beisman2015} Beisman et al. (2015)& CrunchFlow & Parallel Reactive Transport; Subsurface Nutrient Cycling & Floodplain& Idealized  & & & &      \\		
+\cite{Seck2015} Seck et al. (2015) & CLM & Spin-up behavior; Initial Conditions Watershed & Regional& Monocacy, MD and PA	& & & X	& \\
+\cite{Bhaskar2015} Bhaskar et al. (2015)& CLM & Urban Processes & Regional & Baltimore, MD              & & & X & \\
+\cite{Pribulick2016} Pribulick (2016) & CLM & Land cover and climate change & Hillslope & East River Headwaters & &X &X &X \\		
+\cite{Koch2016} Koch et al. (2016) & CLM & Seasonal Variability of soil moisture & Catchment & Wüstebach Catchment, Germany & &X &X &X \\		
+\cite{Fang2016} Fang et al. (2016) & CLM & Soil Hydraulic Conductivity & Catchment & Wüstebach catchment, Germany & &X &X &X \\	
+
+\end{tabular}
+\label{pfref15}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+
+\cite{Kollet2016} Kollet (2016) & CLM & Entropy balance considerations &  &  & & & & \\
+\cite{Gilbert2017b} Gilbert et al. (2017) & WRF & Water-table effects on Planetary Boundary Layer & Catchment & San Joaquin Valley, California & &X &X &X \\
+\cite{Schalge2019} Schalge et al. (2019) & TerrSysMP & Improving overland flow parameterization & Catchment & Two: Idealized and Rhine-Neckar, Germany & & &X & \\						
+\cite{Baroni2019} Baroni et al. (2019) & CLM & Understanding differences in model structure, identification of observations needed for model assessment and improvement & Regional & Upper Neckar, Germany & & &X & \\
+\cite{Danesh-Yazdi2018} Danesh-Yazdi et al. (2018) & SLIM & Influence of subsurface variables on solute travel time distributions and Storage Selection functions & Aquifer & Idealized &X & &X & \\
+\cite{Ajami2018} Ajami and Sharma (2018) & CLM & Comparing alternatives when disaggregating soil moisture to finer spatial resolutions & Subcatchment & Baldry subcatchment, Australia & & &X & \\
+
+\end{tabular}
+\label{pfref14}
+\end{table}
+
+% new table page
+
+\begin{table}
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\ 
+\hline{}
+
+\cite{Atchley2017} Atchely et al. (2017) & CLM & Fire disturbance on ET and water balance & Hillslope & Frijoles Canyon of Bandelier National Monument, New Mexico & & & X & \\	
+\cite{Foster2016} Foster et al. (2016) & CLM & Climate change impacts on energy budget and hydrology & Hillslope & 2-D idealized domain & &X &X &X \\
+\cite{Lopez2016} Lopez et al. (2016) &  & Urban Hydrologic Modeling & Catchment & Parker, Colorado & &X &X &X \\
+\cite{Markovich2016} Markovich et al. (2016) & CLM & Climate change impacts on energy budget and hydrology in alpine hillslopes & Hillslope & Idealized & &X &X &X \\
+\cite{Penn2016} Penn et al. (2016) & CLM & Multi-scale hydrological responses to tree mortality &  & Big Thomson Catchment, Colorado & &X &X &X \\			
+\cite{Gilbert2016} Gilbert et al. (2016) &  & sensitivity of runoff to subsurface permeability & Hillslope & Idealized & &X &X & \\			
+\cite{Kurtz2016} Kurtz et al. (2016) & TerrSysMP & land surface-subsurface modeling & Hillslope & Idealized & & &X &X \\	
+			
+\end{tabular}
+\label{pfref13}
+\end{table}
+
+% new table page
+
+\begin{table}
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\ 
+\hline{}		
+
+\cite{Rahman2016} Rahman et al. (2016) & CLM & subsurface-land surface interactions & Catchment & Rur Catchment, Germany & &X &X &X \\
+\cite{Keune2016} Keune et al. (2016) & TerrSysMP & Land surface-atmosphere feedbacks & Continental & CORDEX & &X &X &X \\
+\cite{Kollet2016} Kollet et al. (2016) &  & Model Intercomparison: Integrated hydrology and feedbacks & Hillslope & Idealized & &X &X & \\
+\cite{Jefferson2017} Jefferson et al. (2017) & CLM & Land surface models & Single Column & Idealized & & &X & \\
+\cite{Gilbert2017a} Gilbert and Maxwell (2017) & CLM & Surface water-groundwater dynamics & Catchment & San Joaquin Valley, California & &X &X &X \\
+\cite{Condon2017} Condon and Maxwell (2017) & CLM & Budyko Relationships & Continental & CONUS & &X &X &X \\					
+\cite{Sulis2017} Sulis et al. (2017) & WRF, TerrSysMP & Groudwater and atmospheric properties & Catchment & Idealized & &X &X &X \\		
+\cite{Sweetenham2017} Sweetenham et al. (2017) & CLM & Seepage through fractured rock & Catchment & Idealized & & &X & \\		
+\cite{Gebler2017} Gebler et al. (2017) & TerrSysMP & Soil moisture & Catchment & Rollesbroich catchment, Germany & &X &X &X \\				
+
+\end{tabular}
+\label{pfref12}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+
+\cite{Barnes2018} Barnes et al. (2018) & CLM & Effects of urban development on catchment hydrology & Catchment & 6 catchments near Baltimore, Maryland & &X & &X \\
+\cite{Maina2019} Maina and Siirila-Woodburn (2019) & CLM & Watershed dynamics after wildfires & Catchment & Cosumnes Watershed, California & &X & & \\
+\cite{Shrestha2018} Shrestha et al. (2018) & CLM & Evapotranspiration Partitioning & Catchment & Inde Catchment, Germany & & & & \\
+\cite{Condon2019a} Condon and Maxwell (2019) & CLM & Sensitivity of evapotranspiration and streamflow to groundwater depletion & Continental & CONUS & &X &X &X \\
+\cite{Hein2019} Hein, Condon, and Maxwell (2019) & CLM & Hydrologic response to extreme drought conditions & Regional & southern High Plains and Rocky Mountains & & &X &X \\
+\cite{Condon2019b} Condon and Maxwell (2019) &  & Software tool to develop consistent hydrological inputs for integrated hydrologic models &  &  & & &X & \\	
+\cite{Bearup2016} Bearup et al. (2016) &  & Hillslope response to insect-induced land cover change & Hillslope & Idealized & & &X & \\
+
+\end{tabular}
+\label{pfref11}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+
+\cite{Foster2019} Foster and Maxwell (2019) & CLM & Sensitivity analysis to scale effective hydraulic conductivity & Catchment & East River Basin & &X &X &X \\
+\cite{Maxwell2019} Maxwell et al. (2019) & CLM, EcoSLIM & Lagrangian particle tracking to explore transient residence time distributions & Hillslope & Idealized & & &X &X \\
+\cite{Ferguson2016} Ferguson et al. (2016) & CLM & Effects of root water uptake on water and energy budgets & catchment & Little Washita, USA & & &X & \\									
+\cite{Forrester2018} Forrester et al. (2018) & WRF & Atmospheric feedbacks caused by forest disturbance & Regional & Rocky Mountain Headwaters & &X &X &X \\						
+\cite{Fang2017} Fang et al. (2017) & CLM & Influence of landscape heterogeneity on water available to tropical rainforests & Catchment & Asu catchment, Amazonian watershed & &X &X & \\
+\cite{Gou2018} Gou et al. (2018) & CLM & Groundwater uptake and hydraulic redistribution by phreatophytes & Hillslope & Idealized & & &X & \\
+
+\end{tabular}
+\label{pfref10}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+										
+\cite{Reyes2018} Reyes et al. (2018) & CLM & Suppression in land surface temp and hydrologic regime changes from urban irrigation & Catchment & Los Angeles, CA & & &X & \\	
+\cite{Danesh-Yazdi2018} Danesh-Yazdi et al. (2018) & SLIM & Travel time distributions and analytical storage selection functions & Hillslope & Idealized &X & &X & \\						
+\cite{Gilbert2018} Gilbert and Maxwell (2018) & CLM & Revealing the role of elevation gradients in regional response to temperature change. & Regional & San Joaquin Valley, California & &X &X &X \\ 
+\cite{Zhang2018} Zhang et al. (2018) & TerrSysMP & Improved Predictions of Root Zone Soil Moisture & 2000m x 2000m x 30m  & Idealized & & & & \\	
+\cite{Baatz2017} Baatz et al. (2017) & TerrSysMP & Catchment Tomography- Spatial Parameter Estimation  & Catchment & Swist and Upper Erft Catchments (Germany) & & &X & \\	
+\cite{Kollet2018} Kollet et al. (2018) & CLM, COSMO & Experimental Terrestrial Forecasting/Monitoring System & Regional and Continental & North Rhine-Westphalia (Germany) and pan-European Domain & & &X & \\	
+
+\end{tabular}
+\label{pfref9}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+
+\cite{Sulis2018} Sulis et al. (2018) & TerrSysMP & Quantifying the Impact of Subsurface‐Land Surface Physical Processes on the Predictive Skill of Subseasonal Mesoscale Atmospheric Simulations  & Regional & North Rhine-Westphalia (Germany) & &X & & \\
+									
+\cite{Zipper2019} Zipper, Keune, and Kollet (2019) & TerrSysMP & Land Use Change Impacts on European Heat and Drought & Continental & CORDEX & & &X & \\					
+\cite{Rahman2018} Rahman et al. (2018) &  & Computationally Efficient Free Surface Groundwater Flow Boundary Condition  & Catchment & Idealized & & &X & \\								
+\cite{Woodburn2018} Woodburn et al. (2018) & CLM & Predicting the impact of land management decisions on overland flow generation & Catchment & Fukushima Prefecture, Japan & &X &X &X \\
+\cite{Moqbel2018} Moqbel and Abu-El-Sha'r (2018) & SLIM-FAST & Modeling groundwater flow and solute transport & Regional & Azraq Basin, Jordan & & & & \\								
+
+				
+
+
+\end{tabular}
+\label{pfref8}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+
+\cite{Sulis2017} Sulis et al. (2017) & WRF & Comparing model simulation of variability in simulated soil-vegetation-atmosphere interactions & Regional & North Rhine-Westphalia (Germany) & &X &X & \\
+\cite{Engdahl2015} Engdahl and Maxwell (2015) & & Residence Time Distributions & Watershed& East Inlet watershed, CO  & X& &X &  \\		
+\cite{Srivastava2014} Srivastava et al. (2014)& CLM & Global Sensitivity Analysis & Watershed & Sante Fe River Basin, FL   & & & X & \\
+\cite{Kollet2015} Kollet (2015) & CLM & Entropy Production & Hillslope & Idealized     & & & X & \\	
+\cite{Rahman2015a} Rahman et al. (2015)& TerrSysMP & Aquifer-to-atmosphere & Regional & Rur Catchment, Germany & & & X & \\	
+\cite{Fang2015} Fang et al. (2015) & CLM & Soil Moisture Dynamics & Catchment & W{\"u}stebach catchment   & & & X & \\	
+\cite{Lim2017} Lim and Welty (2017) &  & Modeling green infrastructure effects on hydrologic response & Regional & Urbanized - Washington, DC & &X &X &X \\								
+\cite{Lim2018} Lim and Welty (2018) &  & Modeling overland flow to assess uncertainty and variability in green infrastructure planning & Catchment & Urbanized - Washington, DC & &X &X &X \\
+
+\end{tabular}
+\label{pfref7}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+
+\cite{Shrestha2015} Shrestha et al. (2015) & TerrSysMP & Grid Resolution; Surface Energy Fluxes & Catchment & R{\"u}r River sub-catchment  & & & X & \\	
+\cite{Rahman2015} Rahman et al. (2015) & CLM & Dual-boundary Forcing Concept & Catchment & Rur Catchment, Germany & & & X & \\	
+\cite{Koch2016} Koch et al. (2016) &CLM	Model Comparison (HydroGeoSphere, MIKE SHE) & Catchment& W{\"u}stebach catchment & & & X & \\	
+%\cite{Ajami2014} Ajami et al. (2014)	& CLM & Spin-up processes & Watershed& Skjern River basin in Denmark; Baldry sub-catchment in Australia  & & & X & \\	
+\cite{Ajami2015} Ajami et al. (2015)& CLM& Initial Conditions& Catchment& Skjern River basin in Denmark  & & & X & \\
+\cite{Barnes2015} Barnes et al. (2015)& Slope Processing Watershed & DR5, Gwynn Falls, Baltimore, MD  & Urban subwatershed & DR5, Baltimore, MD &  &X & X & \\	
+\cite{Ajami14} Ajami et al. (2014) & CLM & Spin Up (initial conditions) & Watershed & Ringkobing Fjord &   &   & X &     \\
+\cite{Condon14a} Condon and Maxwell (2014) & CLM & Agriculture & Watershed & Little Washita, OK &   & X & X &     \\
+\cite{Condon14b} Condon and Maxwell (2014) & CLM & Agriculture & Watershed & Little Washita, OK &  & X& X &     \\
+\cite{M14} Maxwell et al. (2014) & Model Comparison & Many  & Idealized  &   &   & X & X &     \\ 
+
+\end{tabular}
+\label{pfref6}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+
+\cite{Cui14} Cui et al. (2014) & SLIM-FAST & Model Development (nitrogen biogeochemistry) & Column-Hillslope & Idealized & X &   & X &     \\
+\cite{Meyerhoff14a} Meyerhoff et al. (2014) & - & Stochastic runoff generation, conditioning & Hillslope & Idealized & X &   & X &     \\
+\cite{Meyerhoff14b} Meyerhoff et al. (2014) & SLIM-FAST & Karst Environments & Aquifer & Transects in Santa Fe River Watershed &   & X &   &       \\
+\cite{Shrestha14} Shrestha et al. (2014) & COSMO-CLM & Model Development (TerrSysMP) & Watershed & Idealized; Rur catchment &   & X & X &     \\
+\cite{Atchley13a} Atchley et al. (2013) & SLIM-FAST; CrunchFlow & Risk Assessment & Aquifer & Idealized & X &   &   &     \\ 
+\cite{Atchley13b} Atchley et al. (2013) & SLIM-FAST; CrunchFlow & Risk Assessment & Aquifer & Idealized &   & X & X &     \\
+\cite{Condon13a} Condon and Maxwell (2013) & CLM & Agriculture & Sub-Watershed & Little Washita, OK &   & X & X &     \\
+\cite{Condon13b} Condon et al. (2013) & CLM & Subsurface Heterogeneity (land surface fluxes) & Watershed & Upper Klamath, OR & X & X & X &     \\
+\cite{deRooij13} de Rooij et al. (2013) & SLIM-FAST & Model Development (surface particles) & Hillslope & Idealized  &   &   & X &     \\
+
+\end{tabular}
+\label{pfref5}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\   
+\hline{}
+
+\cite{M13} Maxwell (2013) & Model Development & Idealized &   &   &   & X & X & X   \\
+\cite{Mikkelson13} Mikkelson et al. (2013) & CLM & Mountain Pine Beetle & Hillslope & Idealized &   & X & X &     \\
+\cite{Williams13} Williams et al. (2013) & WRF & Atmosphere, DART, Data Assimilation & Watershed & Idealized & X &   & X &     \\
+\cite{Burger12} B{\"u}rger et al. (2012) & ParFlow Web & Model Development (ParFlow Web)& - & - &   &   & X &     \\
+\cite{Ferg12} Ferguson and Maxwell (2012) & CLM & Agriculture & Watershed & Little Washita, OK  &   &   & X &     \\
+\cite{SNSMM10} Siirila et al. (2012) & SLIM-FAST & Risk Assessment & Aquifer & Idealized  & X &   &   &     \\
+\cite{Siirila12a} Siirila and Maxwell (2012) & SLIM-FAST & Risk Assessment & Aquifer & Idealized  & X &   &   &     \\
+\cite{Siirila12b} Siirila and Maxwell (2012) & SLIM-FAST & Risk Assessment & Aquifer & Idealized  & X &   &   &     \\
+\cite{AM10} Atchley and Maxwell (2011) & CLM & Subsurface Heterogeneity (land surface processes) & Hillslope & Golden, CO  & X &   & X &     \\
+\cite{DMC10} Daniels et al. (2011) & - & Regional & Streamflow & Owens Valley, CA floodplain  &   &   & X &     \\
+\cite{Ferg11} Ferguson and Maxwell (2011) & CLM & Agriculture & Watershed & Little Washita, OK  &   &   & X &     \\
+
+\end{tabular}
+\label{pfref4}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\ 
+\hline{}
+
+
+\cite{MLMSWT10} Maxwell et al. (2011) & WRF & Atmosphere & Watershed  & Little Washita, OK  &   &   & X &     \\
+\cite{Meyerhoff11} Meyerhoff and Maxwell (2011) & - & Subsurface Heterogeneity (runoff generation) & Hillslope  & Idealized  & X &   & X &     \\
+\cite{Williams11} Williams and Maxwell (2011) & WRF & Atmosphere & Watershed & Idealized & X &   & X &     \\
+\cite{FM10} Ferguson and Maxwell (2010) & CLM & Agriculture & Watershed & Little Washita, OK &   &   & X &     \\
+\cite{KMWSVVS10} Kollet et al. (2010) & CLM & Computational Scaling & Hillslope & Idealized & X &   & X &     \\
+\cite{M10} Maxwell (2010) & CLM & Subsurface Heterogeneity (infiltration) & Hillslope & Rainer Mesa (Nevada Test Site) & X &   & X &     \\
+\cite{RMC10} Rihani et al. (2010) & CLM & Subsurface Heterogeneity (land energy fluxes) & Hillslope & Idealized  &   &   & X &     \\
+\cite{SMPMPK10} Sulis et al. (2010) & - & Model Comparison (CATHY) & Hillslope & Idealized &   &   & X &     \\
+\cite{FFKM09} Frei et al. (2009) & - & Groundwater-Surface water exchange & Catchment & Consumnes River & X &   & X &     \\
+\cite{KCSMMB09} Kollet et al. (2009) & CLM & Heat Transport (ParFlowE) & Column & Wagineng, NL &   &   & X &     \\
+\cite{MTK09} Maxwell et al. (2009) & SLIM & Subsurface Transport & Hillslope & Nevada Test Site &   &   & X &     \\
+
+\end{tabular}
+\label{pfref3}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\ 
+\hline{}
+ 
+\cite{K09} Kollet (2009) & CLM & Subsurface Heterogeneity (evapotranspiration) & Column, Hillslope & Idealized & X &   & X &     \\ 
+\cite{KM08b} Kollet and Maxwell (2008) & SLIM-FAST & Residence Time Distributions  & Watershed & Little Washita, OK &   &   & X &     \\
+\cite{KM08a} Kollet and Maxwell (2008) & CLM & Subsurface Heterogeneity (land energy fluxes) & Watershed & Little Washita, OK &   &   & X &     \\
+\cite{MK08b} Maxwell and Kollet (2008) & - & Subsurface Heterogeneity (runoff) & Hillslope & Idealized & X &   & X &     \\
+\cite{MK08a} Maxwell and Kollet (2008) & CLM & Climate Change (land-energy feedbacks to groudnwater) & Watershed & Little Washita, OK &   &   & X &     \\
+\cite{MWH07} Maxwell et al. (2007) & particles & Subsurface Transport & Aquifer & Cape Cod, MA & X &   &   &     \\
+\cite{MCK07} Maxwell et al. (2007) & ARPS, CLM & Model Development (ARPS) & Watershed & Little Washita, OK &   &   & X &     \\
+\cite{KM06} Kollet and Maxwell (2006) & - & Model Development (Overland Flow) \& Subsurface Heterogeneity (shallow overland flow) & Catchment & Idealized & X &   & X &     \\
+
+\end{tabular}
+\label{pfref2}
+\end{table}
+
+% new table page
+
+\begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+\caption{List of \parflow{} references with application and process details (cont.).}
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c }
+\bf{Reference} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} \\ 
+\hline{}
+
+\cite{MM05} Maxwell and Miller (2005) & CLM & Model Development (CLM) & Column & Valdai, Russia &   &   & X &     \\
+\cite{TMCZPS05} Tompson et al. (2005) & - & Subsurface Transport & Aquifer & Nevada Test Site &   &   &   &     \\
+\cite{MWT03} Maxwell et al. (2003) & - & Subsurface Transport & Aquifer & Forebay Aquifer &   &   &   &     \\
+\cite{TBP99} Tompson et al. (1999) & - & Subsurface Transport & Aquifer & Nevada Test Site &   &   &   &     \\
+\cite{TFSBA98} Tompson et al. (1998) & - & Subsurface Transport & Aquifer & LLNL Site &   &   &   &     \\
+
+\end{tabular}
+\label{pfref1}
+\end{table}
+
+}

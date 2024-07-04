@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * Constructors and destructors for matrix structure.
@@ -32,7 +32,6 @@
 *****************************************************************************/
 
 #include "parflow.h"
-
 #include "matrix.h"
 
 #ifdef HAVE_SAMRAI
@@ -42,9 +41,9 @@
 
 using namespace SAMRAI;
 
-#endif
-
 static int samrai_matrix_ids[4][2048];
+
+#endif
 
 
 /*--------------------------------------------------------------------------
@@ -353,8 +352,8 @@ Matrix          *NewMatrixType(
     }
   }
 
-  enum ParflowGridType grid_type = invalid_grid_type;
 #ifdef HAVE_SAMRAI
+  enum ParflowGridType grid_type = invalid_grid_type;
   switch (type)
   {
     case matrix_cell_centered:
@@ -508,7 +507,7 @@ Matrix          *NewMatrixType(
       case matrix_non_samrai:
       {
         Submatrix *submatrix = MatrixSubmatrix(new_matrix, i);
-        data = amps_CTAlloc(double, submatrix->data_size);
+        data = ctalloc_amps(double, submatrix->data_size);
         submatrix->allocated = TRUE;
         SubmatrixData(submatrix) = data;
 
@@ -612,6 +611,9 @@ Matrix          *NewMatrixType(
         MatrixCommPkg(new_matrix) = NewMatrixUpdatePkg(new_matrix, ghost);
 
       break;
+    default:
+      PARFLOW_ERROR("invalid matrix type");
+      break;
   }
 
   /*-----------------------------------------------------------------------
@@ -690,7 +692,7 @@ void FreeMatrix(
 
     if (submatrix->allocated)
     {
-      tfree(submatrix->data);
+      tfree_amps(submatrix->data);
     }
 
     tfree(submatrix->data_index);

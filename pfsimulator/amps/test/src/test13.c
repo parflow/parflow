@@ -1,38 +1,40 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*
  * This is a simple "ring" test.  It send a message from the host
  * to all the nodes.
  *
  */
 
-#include <stdio.h>
 #include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
 
 #define v1_len 5
 #define v2_len 4
@@ -41,12 +43,9 @@
 #define v2_stride 4
 #define v3_stride 2
 
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
   amps_Invoice invoice;
-  amps_Invoice send_invoice;
 
   int dim = 3;
   int len_array[] = { v1_len, v2_len, v3_len };
@@ -65,9 +64,6 @@ char *argv[];
   int index;
   int c;
 
-  char *recvd_string = NULL;
-  int length;
-
   int result = 0;
 
   if (amps_Init(&argc, &argv))
@@ -77,7 +73,6 @@ char *argv[];
   }
 
   loop = atoi(argv[1]);
-
 
   total_length = ((v1_len - 1) * v1_stride + 1) * v2_len + (v2_stride - 1) * (v2_len - 1);
   total_length = total_length * v3_len + (v2_stride - 1) * (v3_len - 1);
@@ -140,17 +135,6 @@ char *argv[];
     for (c = 0; c < total_length; c++)
       if (vector[c])
         result = 1;
-
-    if (result)
-    {
-      amps_Printf("ERROR!!!!! vectors do not match\n");
-      result = 1;
-    }
-    else
-    {
-      amps_Printf("Success\n");
-      result = 0;
-    }
   }
   free(vector);
 
@@ -158,6 +142,6 @@ char *argv[];
 
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }
 

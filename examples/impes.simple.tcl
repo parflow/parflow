@@ -245,3 +245,45 @@ pfset Solver.Drop   1E-15
 pfrun impes.simple 
 pfundist impes.simple
 
+#-----------------------------------------------------------------------------
+# If running as test; check output.
+# You do not need this for normal PF input files; this is done so the examples
+# are run and checked as part of our testing process.
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set TEST impes.simple
+    source pftest.tcl
+    set sig_digits 4
+
+    set passed 1
+
+    #
+    # Tests 
+    #
+    if ![pftestFile $TEST.out.press.pfb "Max difference in Pressure" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.porosity.pfb "Max difference in Porosity" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+	set passed 0
+    }
+    
+
+    if $passed {
+	puts "$TEST : PASSED"
+    } {
+	puts "$TEST : FAILED"
+    }
+}
+
+

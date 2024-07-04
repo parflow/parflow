@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 * Error header file
 *
@@ -95,6 +95,10 @@
 
 #include <tcl.h>
 #include "databox.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*-----------------------------------------------------------------------
  * Error messages
@@ -180,37 +184,32 @@ static char *DELETEUSAGE = "Usage: pfdelete dataset\n";
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
 /* Function prototypes for error checking functions */
 
-int SameDimensions ANSI_PROTO((Databox *databoxp, Databox *databoxq));
-int InRange ANSI_PROTO((int i, int j, int k, Databox *databox));
-int IsValidFileType ANSI_PROTO((char *option));
-char *GetValidFileExtension ANSI_PROTO((char *filename));
+int SameDimensions(Databox *databoxp, Databox *databoxq);
+int InRange(int i, int j, int k, Databox *databox);
+int IsValidFileType(char *option);
+char *GetValidFileExtension(char *filename);
 
 /* Function prototypes for creating error messages  */
 
-void InvalidOptionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void InvalidArgError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void WrongNumArgsError ANSI_PROTO((Tcl_Interp *interp, char *usage));
-void MissingOptionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void MissingFilenameError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void InvalidFileExtensionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void NotAnIntError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void NotADoubleError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void NumberNotPositiveError ANSI_PROTO((Tcl_Interp *interp, int argnum));
-void SetNonExistantError ANSI_PROTO((Tcl_Interp *interp, char *hashkey));
-void MemoryError ANSI_PROTO((Tcl_Interp *interp));
-void ReadWriteError ANSI_PROTO((Tcl_Interp *interp));
-void OutOfRangeError ANSI_PROTO((Tcl_Interp *interp, int i, int j, int k));
-void DimensionError ANSI_PROTO((Tcl_Interp *interp));
+void InvalidOptionError(Tcl_Interp *interp, int argnum, char *usage);
+void InvalidArgError(Tcl_Interp *interp, int argnum, char *usage);
+void WrongNumArgsError(Tcl_Interp *interp, char *usage);
+void MissingOptionError(Tcl_Interp *interp, int argnum, char *usage);
+void MissingFilenameError(Tcl_Interp *interp, int argnum, char *usage);
+void InvalidFileExtensionError(Tcl_Interp *interp, int argnum, char *usage);
+void NotAnIntError(Tcl_Interp *interp, int argnum, char *usage);
+void NotADoubleError(Tcl_Interp *interp, int argnum, char *usage);
+void NumberNotPositiveError(Tcl_Interp *interp, int argnum);
+void SetNonExistantError(Tcl_Interp *interp, char *hashkey);
+void MemoryError(Tcl_Interp *interp);
+void ReadWriteError(Tcl_Interp *interp);
+void OutOfRangeError(Tcl_Interp *interp, int i, int j, int k);
+void DimensionError(Tcl_Interp *interp);
 
-#undef ANSI_PROTO
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

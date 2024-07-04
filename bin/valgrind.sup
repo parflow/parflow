@@ -1,0 +1,407 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+#
+# Additional copyrights may follow
+#
+# $HEADER$
+#
+
+###############################################################
+#
+# OPAL suppressions
+#
+###############################################################
+
+# weirdness in init routines on Gentoo
+{
+  linux_pthread_init
+  Memcheck:Leak
+  fun:calloc
+  fun:allocate_dtv
+  fun:_dl_allocate_tls_storage
+  fun:_dl_allocate_tls
+}
+{
+  linux_pthread_init2
+  Memcheck:Leak
+  fun:calloc
+  fun:_dl_tls_setup
+  fun:__pthread_initialize_minimal
+}
+{
+  linux_pthread_init3
+  Memcheck:Leak
+  fun:memalign
+  fun:_dl_allocate_tls_storage
+  fun:_dl_allocate_tls
+  fun:__pthread_initialize_minimal
+}
+
+# The event library leaves some blocks in use that we should clean up,
+# but it would require much changing of the event library, so it
+# really isn't worth it...
+{
+  event_lib_poll
+  Memcheck:Leak
+  fun:malloc
+  fun:realloc
+  fun:opal_realloc
+  fun:poll_dispatch
+}
+
+
+###############################################################
+#
+# ORTE suppressions
+#
+###############################################################
+
+# inet_ntoa on linux mallocs a static buffer.  We can't free
+# it, so we have to live with it
+{
+  linux_inet_ntoa
+  Memcheck:Leak
+  fun:malloc
+  fun:inet_ntoa
+}
+{
+  linux_inet_ntoa_thread
+  Memcheck:Leak
+  fun:calloc
+  fun:pthread_setspecific
+  fun:inet_ntoa
+}
+
+
+###############################################################
+#
+# OMPI suppressions
+#
+###############################################################
+{
+  tcp_send
+  Memcheck:Param
+  writev(vector[...])
+  fun:writev
+  fun:mca_btl_tcp_frag_send
+  fun:mca_btl_tcp_endpoint_send
+}
+
+###############################################################
+#
+# Suppressions for various commonly-used packages
+#
+###############################################################
+
+# Portals reference implementation has a read from invalid issue
+{
+  portals_send
+  Memcheck:Param
+  socketcall.send(msg)
+  fun:send
+  fun:utcp_sendbytes
+  fun:utcp_sendto
+  fun:utcp_msg_wait
+}
+
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+###############################################################
+#
+# Extra suppressions for ParFlow
+#
+###############################################################
+{
+   MPI_init_leaks
+   Memcheck:Leak
+   ...
+   fun:PMPI_Init
+   ...
+   fun:amps_Init
+   ...
+}
+
+{
+   MPI_init_leaks
+   Memcheck:Leak
+   ...
+   fun:PMPI_Comm_split
+   ...
+   fun:amps_Init
+   ...
+}
+
+{
+   DL_Open_leaks
+   Memcheck:Leak
+   ...
+   fun:_dl_open
+   ...
+}
+
+{
+   DL_Open_leaks
+   Memcheck:Leak
+   ...
+   fun:_dl_init
+   ...
+}
+
+{
+   Clone
+   Memcheck:Leak
+   ...
+   fun:clone
+}
+
+{
+   Clone
+   Memcheck:Leak
+   ...
+   fun:opal_db_base_store
+   ...
+   fun:PMPI_Init	
+}
+
+{
+   Clone
+   Memcheck:Leak
+   ...
+   fun:orte_init
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:ompi_mtl_base_select
+   obj:*
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:MPIR_Init_thread
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:MPID_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   rt_sigaction(act->sa_mask)
+   ...
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:mv2_get_arch_hca_type
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   unlink(pathname)
+   ...
+   fun:PMPI_Finalize
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:MPIR_Init_thread
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:PMPI_Init
+}
+
+{
+  <insert_a_suppression_name_here>
+  Memcheck:Leak
+  match-leak-kinds: definite
+  fun:malloc
+  ...
+  fun:ompi_mpi_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:orte_finalize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   ...
+   fun:start_thread
+   fun:clone
+}
+
+###############################################################
+#
+# Intel F90
+#
+###############################################################
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:for_read_seq_lis
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:for_write_seq_lis
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:for_read_seq_fmt
+   ...
+}
+
+###############################################################
+#
+# GNU Fortran
+#
+###############################################################
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:write_decimal.constprop.10
+   fun:write_integer
+   fun:list_formatted_write_scalar
+   fun:_gfortrani_list_formatted_write
+   ...
+}
+
+
+##############################################################################
+#
+# CLM allocates but does not free
+#
+##############################################################################
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:clm_lsm_
+   fun:AdvanceRichards
+   fun:SolverRichards
+   fun:Solve
+   fun:main
+}
+
+##############################################################################
+#
+# HDF5
+#
+##############################################################################
+{
+   <insert_a_suppression_name_here>
+   Memcheck:User
+   obj:/usr/lib64/openmpi/lib/libopen-pal.so.40.30.1
+   fun:PMPI_File_write_at_all
+   obj:/usr/lib64/openmpi/lib/libhdf5.so.103.1.0
+   fun:H5FD_write
+   fun:H5F__accum_write
+   fun:H5PB_write
+   fun:H5F_block_write
+   fun:H5C_apply_candidate_list
+   fun:H5AC__run_sync_point
+   fun:H5AC__flush_entries
+   fun:H5AC_flush
+   obj:/usr/lib64/openmpi/lib/libhdf5.so.103.1.0
+}
+
+##############################################################################
+#
+# Silo
+#
+##############################################################################
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:DBClose
+   fun:WriteSilo
+   ...
+   fun:main
+}

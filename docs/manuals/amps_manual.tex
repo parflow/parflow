@@ -1,0 +1,3032 @@
+
+\documentstyle[11pt,makeidx,parflow]{book}
+
+%=============================================================================
+% Preamble:
+%=============================================================================
+ 
+% set margins
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.0in}
+
+% define the version number
+\input{version}
+ 
+% write out the index entries in the `.idx' file
+\makeindex
+ 
+%=============================================================================
+% Body:
+%=============================================================================
+ 
+\begin{document}
+
+%==================== Title Page
+ 
+\begin{TitlePage}
+ 
+\Title{AMPS Manual: Draft}
+\SubTitle{Another Message Passing System}
+\SubTitle{Software \PFVersion}
+\Author{Steven Smith}
+ 
+\end{TitlePage}
+ 
+%=============== Copyright Page
+ 
+\begin{CopyrightPage}
+ 
+\noindent
+Copyright \copyright{} 1995 The Regents of the University of California.
+
+\vspace{1em}\noindent
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+ 
+\end{CopyrightPage}
+
+% **end of header
+
+%=============================================================================
+% Body:
+%
+% This section contains the various chapters and appendices to appear
+% in the manual.
+%=============================================================================
+
+%=============== Print the Table of Contents
+
+\pagenumbering{roman}
+\tableofcontents
+\cleardoublepage
+\pagenumbering{arabic}
+
+%=============================================================================
+% Chapter: Introduction
+%=============================================================================
+
+\chapter{Introduction}
+\label{Introduction}
+
+{\em AMPS} (Another Message Passing System) is a message-passing system
+that was designed to be used by the {\em NMG} group at Lawrence
+Livermore National Laboratory.  {\em AMPS} is a small porting layer
+designed to maintain independence from any specific message-passing
+system.
+
+Why develop this when other systems already exist?  We were in a
+situation were we had implemented our code on using {\em Zipcode} 
+\cite{SkLe90,skjellum.smith.ea.93,smith.falgout.ea.93} but
+were looking to move to {\em MPI}.  Unfortunately, {\em MPI} was not
+yet available, support was lacking from several computer vendors, and we
+were not prepared to implement {\em MPI} ourselves.  This lead to the
+birth of {\em AMPS}.  It contains the subset of features from
+{\em Zipcode} that we needed.  By creating this subset we hoped to
+achieve greater portability than attempting to implement all of
+{\em Zipcode}.  We decided not to use any of the other message passing
+systems since most take a least common denominator approach and thus do
+not have the power of {\em Zipcode} or {\em MPI}.
+
+You will find that, by-in-large, {\em AMPS} is very similar to most
+other message passing systems.  The major difference is in how the
+content of messages is specified.  In addition to the standard message
+passing functions, {\em AMPS} provides I/O functions to provide
+portable parallel file operations. 
+
+{\em AMPS} has features to enable multi-threaded programs to be
+written.  Macros are provided for creating and accessing "thread local"
+data and the {\em AMPS} primitives can be used for inter-thread
+communication.  The potential advantage of using threads is cheaper
+communication primitives on {\em SMP} systems.  This capability is
+offset by the limitations imposed by threads.  Since the Standard C
+Library was designed before threads came into widespread use, extra
+synchronization around the Standard C Library needs to be imposed.  In
+several case studies we have found that using threads actually produce
+codes that run slower than multi-process versions.  We continue to
+experiment with different libraries and techniques to see if we can
+improve this.  In order to use threaded versions of {\em AMPS} you will
+have to ensure that you program is thread safe.  The implies careful
+use of global and static variables.  The macros provided by {\em AMPS} 
+enable declarations and use of "thread local" variables.  These should
+be used whenever you wish to have global data or static data that needs
+to be specific to a particular node.  Of course redesign an application
+specifically for a multi-threaded environment would yield better
+performance, however, we were looking at getting some advantages of
+threads while maintaining the message passing programming style.
+
+Another feature that {\em AMPS} contains which many MP systems do not
+is persistent communication objects.  The advantage of persistent
+communication objects can be clearly seen in figure (ref).  On the T3D
+we can communicate the remote locations where data is to be stored
+once and push the data across the network to the remote node using
+shared memory operations.  This is currently the fastest mechanism
+available for communication on the T3D and without persistent
+communication objects there would be additional overhead involved with
+each data exchange.  On shared memory multiprocessor machines (such as
+the SGI Power series) one can achieve similar performance to true
+shared memory operations with the additional portability that message
+passing brings.
+
+{\em AMPS} is a work in progress so there are "hooks" in place for
+future expansion.  For example, all send/receive calls have a "context"
+in their argument lists, however, the current implementation contains
+only one global context.  Hence contexts can be added, if needed, with
+little or minor modification of existing {\em AMPS} codes.
+
+{\em AMPS} is based on a SPMD model of computation.  There is a single
+node program which is executed on all the nodes of a multi-computer.
+There are no commands for creating or destroying processes other than
+the initial program load.  Process creation features may be added in the
+future (the {\em MPI} API also currently lacks process control).
+
+{\em AMPS} is currently running on top of the {\em Chameleon}, {\em
+PVM} and {\em CE/RK} message passing APIs.  The {\em CRAY T3D} port
+utilizes the {\em SHMEM} library to achieve better performance for key
+communication routines.  A multi-threaded port for Win32 is currently
+running under Microsoft Windows 95 and Microsoft Windows NT 3.51.
+This version has not yet been tested on a multi-processor machine; it
+will probably show the same performance problems as the {\em IRIX}
+multi-threaded version. A shared memory port exists for {\em IRIX}.  A
+multi-threaded port exists under {\em IRIX}, however this version is
+currently not used due to the single threaded nature of the standard C
+libraries.  How to overcome this is currently being investigated.
+
+A port to {\em MPI} is currently planed.  {\em AMPS} will hopefully be
+replaced by {\em MPI} if this proposed standard is adopted by all
+vendors (this does now appear to be happening).  There is a fairly
+direct mapping of {\em AMPS} calls to {\em MPI} and, when possible,
+function names are similar.  The major conversion issue will be the
+\code{amps_Invoice} features.
+
+%=============================================================================
+% User Guide
+%=============================================================================
+
+\chapter{User Guide}
+\label{User Guide}
+
+The following User Guide contains several examples that you can read
+through to become acquainted with {\em AMPS}.  It will be filled in
+when/if time allows.  Since the development team is currently rather
+small conversations with {\em Steve Smith} will have to take the place
+of a genuine User Guide.
+
+Information about compiling and executing AMPS programs is given in
+(???????Environment).
+
+%=============================================================================
+% Section: hello-world
+%=============================================================================
+
+\section{Hello World Example}
+\label{Hello World}
+
+This section contains an example of the ubiquitous "hello world" program.
+Each node prints the message "Hello World". 
+
+This example shows the basic outline of an {\em AMPS} program.
+First you must call \code{amps_Init}.  This function performs any
+initialization that needs to be done, including starting up of node
+programs.  Note that we pass \var{argv} and \var{argc} to
+\code{amps_Init} to enable the transfer of command line parameters to
+{\em AMPS} and the underlying message passing system.  After
+\code{amps_Init} has been called you are free to make any {\em AMPS}
+calls.
+
+You might have noticed the \var{amps\_CommWorld} value being passed
+into \code{amps_Rank}.  Many {\em AMPS} calls take a communicator
+variable.  This is to allow "contexts" of communication in later
+releases.  If you wish to know more about contexts refer to {\em
+Zipcode} and {\em MPI} documentation
+\cite{SkLe90,skjellum.smith.ea.93,smith.falgout.ea.93, mpiforum.93,
+mpiforum.94}.  Currently there is only a single context in {\em AMPS},
+the global context.  You can safely use \var{amps\_CommWorld} whenever
+a \code{amps_Comm} variable is required by an {\em AMPS} call.
+\var{amps\_CommWorld} is defined in \file{amps.h}.
+
+In this example program we call \code{amps_Rank} to get the "rank" of
+this node.  The rank of a node is an integer value which is used to
+identify a node.  A rank is similar in nature to node id numbers in
+other message passing systems.  The rank is communicator dependent; in
+different communicators the same node will have different ranks.
+
+When all message passing is completed, the function \code{amps_Finalize}
+is invoked to clean up after {\em AMPS}.  \code{amps_Finalize} also
+synchronizes the host and nodes so everyone should exit at about the
+same time.  This command is generally the last function invoked in a
+program.
+
+\subsection{Hello World Program}
+\begin{display}\begin{verbatim}
+#include <stdio.h>
+#include "amps.h"
+
+int main (argc, argv)
+int argc;
+char *argv[];
+{
+   int   me;
+
+   if (amps_Init(&argc, &argv))
+   {
+      amps_Printf("Error amps_Init\n");
+      exit(1);
+   }
+
+   me = amps_Rank(amps_CommWorld);
+
+   amps_Printf("Hello World! from node (%d)\n", me);
+
+   amps_Finalize();
+
+   return 0;
+}
+
+\end{verbatim}\end{display}
+
+%=============================================================================
+% Chapter: Platform Notes
+%=============================================================================
+
+\chapter{Platform Notes}
+\label{Platform Notes}
+
+{\em AMPS} is layered on the top of many different message passing and
+shared memory APIs. Some of these ports have restrictions or unique
+features. For a several of the ports shortcuts were taken in the
+development of {\em AMPS} to overcome limitations on that platform.
+This chapter contains information on the various ports that users need
+to be aware of.
+
+%=============================================================================
+% Cray T3D
+%=============================================================================
+
+\section{CRAY T3D}
+\label{CRAY T3D}
+
+The port on the {\em CRAY T3D} is based on both {\em CRAY PVM} and {\em CRAY
+SHMEM} API's.  The {\em PVM} library is currently used for most of the
+communication; the {\em SHMEM} library is used for the
+\code{amps_Package} and for small collective operations (i.e.
+\code{amps_AllReduce}.  This split came about since {\em PVM} was for
+the initial port and the {\em SHMEM} addition was made in the most
+time critical operations for \parflow{}.  
+
+Because the {\em SHMEM} operations must access memory addresses that
+are valid on the local as well as the remote node, the use of {\em
+SHMEM} was difficult to implement in an efficient manor.  Our solution
+was to allocate a large pool of memory to be used by the
+\code{amps_TAlloc} and \code{amps_CTAlloc} operations.  Since all
+nodes allocate this large using \code{shmalloc} we are guaranteed that
+it is at the same address on all machines.  We can then freely use
+\code{shmem_put} to write to the remote location.  This has enabled us
+to achieve very good performance.
+
+The problem with this method is that the shared memory region must be
+pre-allocated.  The size of this regions is controlled using the the
+\code{AMPS_SHMEM_SIZE} environment variable.  This variable is the
+total number of bytes that can be used by the {\em AMPS} memory
+allocation routines during the course of your program.  By default
+\parflow{} uses a size of 43200000 bytes.  
+
+Currently the \code{amps_TFree} routine does not return the memory
+allocated back to a free pool.  Once memory is allocated it can NOT be
+returned for later use.  We can add a heap algorithm to the shared
+memory pool but it was not needed for \parflow{} so we delayed the
+implementation.  Hopefully later versions of the {\em CRAY} architecture will
+not have some of the current addressing restrictions so we won't have
+to deal with this.
+
+%=============================================================================
+% SGI IRIX
+%=============================================================================
+
+\section{SGI IRIX}
+\label{SGI IRIX}
+
+The port the SGI's IRIX operating system is based on their IRIX IPC
+API.  The shared memory mechanism is done using memory mapped files.
+{\em AMPS} creates the shared files in the directory specified by the
+\code{AMPS_SHMEM_FILEDIR} environment variable.  You should set this to
+point to a directory which has enough space to allocate a file of size
+\code{AMPS_SHMEM_SIZE} bytes.  \code{AMPS_SHMEM_SIZE} controls the
+total amount of memory that can be allocated using the {\em AMPS}
+memory allocation functions.  It is important to not that IRIX will
+check to make sure that the directory has sufficient space for the
+file and {\em AMPS} will fail if it does not.  The file will NOT be
+allocated all at once (i.e. it will grow each time you allocate more
+space) but IRIX checks when the file is created to see if there is
+enough space to potentially allocate a file of size
+\code{AMPS_SHMEM_SIZE}.  This really makes no sense to me since the
+space could be chewed up by other applications between the
+initialization step and when the file actually gets to be that big; I
+thus don't really see the point of doing the check.
+
+By default \parflow{} sets \code{AMPS_SHMEM_FILEDIR} to \code{/usr/tmp} and
+\code{AMPS_SHMEM_SIZE} to 100000000.
+
+
+%=============================================================================
+% SGI IRIX
+%=============================================================================
+
+\section{SGI IRIX MT}
+\label{SGI IRIX MT}
+
+This port is very similar to the SGI IRIX port except it uses
+the \code{sproc} call rather than \code{fork} to create the multiple
+``threads of control''.  This is not really a multi-threaded version
+in a technical sense but I will refer to it in that way since it is
+close.  
+
+So far this experiment has not been very successful.  The reason is the
+time spent in a lock around the Standard C Library routines.  Since
+the C library was not constructed to be thread safe a lock which
+creates a bottle-neck.  During the timing tests I found that the
+problem setup (where most of the Standard C Library calls are made)
+was taking longer than the \code{fork} version but once things were up
+and running there was some small improvement.  I am currently looking
+into ways to improve this port (at a very low priority).
+
+%=============================================================================
+% CE/RK
+%=============================================================================
+
+\section{CE/RK}
+\label{CE/RK}
+
+The {\em Cosmic Environment/Reactive Kernel (CE/RK)} port has a minor
+problem in that the node executables need to be in the current working
+directory.  The \parflow{} run script will create a soft-link to fix
+this problem.  You also must do the \code{getmc} process from the
+directory that you want to run in.
+
+Output from nodes under {\em CE/RK} is done by doing some complicated
+stuff with the \code{tty} device.  So attempting to redirect standard
+output is not very successful.
+
+%=============================================================================
+% PVM
+%=============================================================================
+
+\section{PVM}
+\label{PVM}
+
+There are no special features.
+
+%=============================================================================
+% Chameleon
+%=============================================================================
+
+\section{Chameleon}
+\label{Chameleon}
+
+On the {\em IBM-SP1}, {\em AMPS} distributed files can actually be
+distributed.  This feature was never fully fleshed out and since we
+have not really run on this machine much it probably doesn't work all
+that great.
+
+Under workstations a hack was needed to get the current working
+directory to work with the auto-mounter.  The {\em Chameleon} process
+gets the ``real'' mount point not the auto-mounter ``mount'' point.
+This is fixed in later implementations of the auto-mounter (i.e. {\em
+Solaris 2.x}).  The \code{CHAMELEON_CWD} is environment variable is
+used to set this explicitly.  You should set this before executing an
+{\em AMPS} program.
+
+
+%=============================================================================
+% Reference Manual
+%=============================================================================
+
+\chapter{Reference Manual}
+\label{Reference Manual}
+
+%=============================================================================
+% Set Up Reference Manual Headers
+%=============================================================================
+
+The reference manual consists of descriptions of the {\em AMPS} C functions, a
+few important structures, and some constants that are available for use.
+
+%=============================================================================
+% Include Reference Files Here!!!!
+%=============================================================================
+
+%=============================================================================
+% C Interface Reference Manual
+%=============================================================================
+
+\section{C Interface}
+\label{C Interface}
+
+%=============================================================================
+% Reference: amps_AllReduce
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_AllReduce}
+\label{amps_AllReduce}
+
+\index{\cindex{combine}}
+\index{\cindex{reduction}}
+
+\index{\findex{amps\_AllReduce}}
+\begin{deftypefn}{Library Function}{int}{amps\_AllReduce}
+(amps_Comm \var{comm}, amps_Invoice \var{invoice}, int \var{operation}) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The collective operation \code{amps_AllReduce} is used to take information
+from each node of a context, perform an operation on the data, and return
+the combined result to the all the nodes.  This operation is also called
+a combine in some message passing systems.  The supported operation are
+\code{amps_Max} and \code{amps_Add}.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+double       d;
+int          i;
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+/* find maximum of i and d on all nodes*/
+amps_AllReduce(amps_CommWorld, invoice, amps_Max);
+
+/* find sum of i and d on all nodes*/
+amps_AllReduce(amps_CommWorld, invoice, amps_Add);
+
+amps_FreeInvoice(invoice);
+
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+Currently vectors are not allowed in invoices that are used in reduction
+operations.
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_BCast
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_BCast}
+\label{amps_BCast}
+
+\index{\cindex{broadcast}}
+\index{\cindex{fanout}}
+
+\index{\findex{amps\_BCast}}
+\begin{deftypefn}{Library Function}{int}{amps\_BCast}
+(amps_Comm \var{comm}, int \var{Rank}, amps_Invoice \var{invoice}) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The collective operation \code{amps_BCast} is used to communicate 
+information from one node to all the other nodes who are members
+of a context.  \var{rank} is the rank of the node that contains
+the information to be communicated.  \var{comm} is the communication
+context (group of nodes) that should receive the information.
+
+In order to allow more symmetry in the code on the source and destination
+nodes, overlay-ed variables are valid after an \code{amps_BCast} until a
+\code{amps_Clear} is invoked on both the source and destination
+nodes.  This differs from some systems were the buffer is considered
+destroyed on the source node once the broadcast is invoked.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int length, source_rank;
+char *string;
+
+me = amps_Rank(amps_CommWorld);
+
+if(me == source_rank)
+{
+        /* source knows the length */
+        length = strlen(string)+1;
+        invoice = amps_NewInvoice("%i%*c", &length, length, string);
+}
+else
+{
+        /* receiving nodes do not know length so user overlayed variable */
+        invoice = amps_NewInvoice("%i%&\%", &length, &length, &recvd_string);
+}
+
+/* broadcast a character array and it's length */
+amps_BCast(amps_CommWorld, source_rank, invoice);
+
+amps_FreeInvoice(invoice);
+\end{verbatim}\end{display}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Clear
+%=============================================================================
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Clear}
+\label{amps_Clear}
+
+\index{\cindex{overlayed variables, freeing}}
+\index{\cindex{freeing overlayed variables}}
+\index{\cindex{deallocating overlayed variables}}
+
+\index{\findex{amps\_Clear}}
+\begin{deftypefn}{Library Function}{void}{amps\_Clear}
+(amps_Invoice \var{invoice})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+This function is used to free overlayed variables in the
+\var{invoice}.  \code{amps_Clear} is used after a receive operation
+and when you have finished manipulating the overlayed variables that
+were received.  After the \var{invoice} has been cleared it is illegal
+to access the overlayed variables.  Overlayed variables are generally
+used for temporary values that need to be received but don't need to
+be kept for around for an extended period of time.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int me, i;
+double *d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%*\\d", 10, &d);
+
+amps_Recv(amps_CommWorld, me-1, invoice);
+
+for(i=0; i<10; i++)
+{
+        do_work(d[i]);
+}
+
+amps_Clear(invoice);
+
+/* can't access d array after clear */
+
+amps_FreeInvoice(invoice);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\NOTES
+
+In message passing systems that use buffers, overlayed variables are
+located in the buffer.  This eliminates a copy.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_NewInvoice}{amps\_NewInvoice}. \\
+\vref{amps_Clear}{amps\_Clear}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Create
+%=============================================================================
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Create}
+\label{amps_Create}
+
+\index{\cindex{overlayed variables, creating}}
+\index{\cindex{creating overlayed variables}}
+\index{\cindex{allocating overlayed variables}}
+
+\index{\findex{amps\_Create}}
+\begin{deftypefn}{Library Function}{void}{amps\_Create}
+(amps_Comm \var{comm}, amps_Invoice \var{invoice})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+This call allocates overlayed variables that are specified in the
+\var{invoice}.  This is used when you wish to send a message using
+overlayed variables.  The usual sequence is: \code{amps_Create} is
+called, the variables are manipulated, and the message is sent.  After
+the message has been sent it is illegal to access the overlayed
+variables.  Overlayed variables are generally used for temporary values
+that need to be calculated and then sent.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int me, i;
+double *d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%*\\d", 10, &d);
+
+amps_Create(amps_CommWorld, invoice);
+for(i=0; i<10; i++)
+{
+        d[i] = do_work();
+}
+
+amps_Send(amps_CommWorld, me+1, invoice);
+
+/* can't access d array after send */
+
+amps_FreeInvoice(invoice);
+
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\NOTES
+In message passing systems that use buffers, overlayed variables are
+located in the buffer.  This eliminates a copy.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_ISend}{amps\_ISend}. \\
+\vref{amps_Recv}{amps\_Recv}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_CTAlloc
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_CTAlloc}
+\label{amps_CTAlloc}
+
+\index{\cindex{persistent communication objects}}
+
+\index{\findex{amps\_CTAlloc}}
+\begin{deftypefn}{Library Macro}{\var{type *}}{amps\_CTAlloc}
+(\var{type}, \var{size})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_CTAlloc} is used to allocate memory for objects used
+in the \code{amps_Packages}.  Since these objects must be in
+shared memory they need to be allocated using this macro.
+A space is allocated for \var{size} number of \var{type} objects.
+This space is cleared (set to 0) before being returned to the user.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_TAlloc}{amps\_TAlloc}. \\
+\vref{amps_IExchangePackage}{amps\_IExchangePackage}. \\
+\vref{amps_NewPackage}{amps\_NewPackage}. \\
+\vref{amps_TFree}{amps\_TFree}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Fclose
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Fclose}
+\label{amps_Fclose}
+
+\index{\cindex{input}}
+\index{\cindex{output}}
+\index{\cindex{distributed files}}
+\index{\cindex{I/O}}
+\index{\cindex{close}}
+
+\index{\findex{amps\_Fclose}}
+\begin{deftypefn}{Library Function}{int}{amps\_Fclose}
+(amps_File \var{file})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_Fclose} is used to close a distributed file.  Every file
+that is opened should be closed.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+
+char *filename;
+double d;
+
+file = amps_Fopen(filename,"w");
+
+amps_Fprintf(file, "%lf", d);
+
+amps_Fclose(file);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Fopen}{amps\_Fopen}. \\
+\vref{amps_Fprintf}{amps\_Fprintf}. \\
+\vref{amps_Write}{amps\_Write}. \\
+\vref{amps_Fscanf}{amps\_Fscanf}. \\
+\vref{amps_ReadType}{amps\_Read\var{type}}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_FFclose
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_FFclose}
+\label{amps_FFclose}
+
+\index{\cindex{input}}
+\index{\cindex{output}}
+\index{\cindex{distributed fixed files}}
+\index{\cindex{I/O}}
+\index{\cindex{close}}
+
+\index{\findex{amps\_FFclose}}
+\begin{deftypefn}{Library Function}{int}{amps\_FFclose}
+(amps_File \var{file})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_FFclose} is used to close a fixed file.  Every file
+that is opened should be closed.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+
+char *filename;
+double d;
+long NotUsed;
+
+file = amps_FFopen(amps_CommWorld, filename, "rb", NotUsed);
+
+amps_ReadDouble(file, &d, 1);
+
+amps_FFclose(file);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Fopen}{amps\_Fopen}. \\
+\vref{amps_Fprintf}{amps\_Fprintf}. \\
+\vref{amps_Write}{amps\_Write}. \\
+\vref{amps_Fscanf}{amps\_Fscanf}. \\
+\vref{amps_ReadType}{amps\_Read\var{type}}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_FFopen
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_FFopen}
+\label{amps_FFopen}
+
+\index{\cindex{input}}
+\index{\cindex{output}}
+\index{\cindex{distributed fixed files}}
+\index{\cindex{I/O}}
+\index{\cindex{opening a file}}
+
+\index{\findex{amps\_FFopen}}
+\begin{deftypefn}{Library Function}{amps_File}{amps\_FFopen}
+(amps_Comm \var{comm}, char *\var{filename}, char *\var{type}, long \var{size})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The \code{amps_FFopen} command is used to open a fixed file.  This
+file is written to and read from using the \code{amps_Fprintf},
+\code{amps_Fscanf}, \code{amps_Read\var{type}}, and
+\code{amps_Write\var{type}} commands just as you would for a normal
+UNIX file.  You must ensure that the distributed file exists on all
+nodes before attempting to open it for reading.  Two arguments to
+\code{amps_FFopen} are the same as for \code{fopen}: \var{filename} is
+the name of the file to and \var{type} is the mode to open.
+\var{comm} is the communicator that specifies the nodes which are
+opening the file, \var{size} specifies the size (in bytes) of the
+local contribution to the total size of the file.  \var{size} is not
+used when doing an open for a read (the information is in the
+associated \code{.dist} file).
+
+The macros \code{amps_Sizeof\var{type}} are used to
+determine the size (in bytes) of the standard C types.  You should not
+use the Standard C \code{sizeof} routine since {\em AMPS} writes
+binary output using {\em XDR} format (\cite{xdr.87}).
+
+\code{amps_FFopen} returns NULL if the the file open fails.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+
+char *filename;
+double d;
+
+file = amps_FFopen(amps_CommWorld, filename, "wb", amps_SizeofDouble);
+
+amps_WriteDouble(file, &d, 1);
+
+amps_FFclose(file);
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+There should be some commands to take a normal file and distribute it to
+the nodes.  This presents a problem since {\em AMPS} does not know how
+you want to split up the file to the nodes.  This is being worked on;
+basically the {\em AMPS} I/O calls are a hack until some standard can
+be arrived at.  The functionality is sufficient for \parflow{} at
+the current time.
+
+When you are reading/writing to a file with binary data be sure and
+use the ``b'' to signal a binary file.  This is used for portability to
+the Win32 where binary and text files are treated differently.  Most
+UNIX programmers do not use this feature of the ANSI C standard.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_FFclose}{amps\_FFclose}. \\
+\vref{amps_Fprintf}{amps\_Fprintf}. \\
+\vref{amps_Write}{amps\_Write}. \\
+\vref{amps_Fscanf}{amps\_Fscanf}. \\
+\vref{amps_ReadType}{amps\_Read\var{type}}. \\
+
+\end{deftypefn}
+%=============================================================================
+% Reference: amps_Finalize
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+\subsection{amps\_Finalize}
+\label{amps_Finalize}
+
+\index{\cindex{exiting}}
+
+\index{\findex{amps\_Finalize}}
+\begin{deftypefn}{Library Function}{int}{amps\_Finalize}(void)
+
+\DESCRIPTION
+
+Every {\em AMPS} program must call this function to exit from the
+message passing environment.  This must be the last call to an
+{\em AMPS} routine.  \code{amps_Finalize} might synchronize the 
+of the node programs;  this might be necessary to correctly free up
+memory resources and communication structures.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+
+int main( int argc, char *argv)
+{
+   amps_Init(argc, argv);
+   
+   amps_Printf("Hello World");
+
+   amps_Finalize();
+}
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+There is currently no way to forcibly kill another node.  Exiting do
+to an error condition is problematic.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Init}{amps\_Init}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Fopen
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Fopen}
+\label{amps_Fopen}
+
+\index{\cindex{input}}
+\index{\cindex{output}}
+\index{\cindex{distributed files}}
+\index{\cindex{I/O}}
+\index{\cindex{opening a file}}
+
+\index{\findex{amps\_Fopen}}
+\begin{deftypefn}{Library Function}{amps_File}{amps\_Fopen}
+(char *\var{filename}, char *\var{filename}, char *\var{type})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The \code{amps_Fopen} command is used to open a distributed file.  In
+the distributed file model there is a disk (possibly virtual) associated
+with each node.  This file is written to and read from using the
+\code{amps_Fprintf} and \code{amps_Fscanf} commands just as you would
+for a normal UNIX file.  You must ensure that the distributed
+file exists on all nodes before attempting to open it for reading.  The
+arguments to \code{amps_File} are the same as for \code{fopen}:
+\var{filename} is the name of the file to and \var{type} is the mode to
+open.
+
+\code{amps_Fopen} returns NULL if the the file open fails.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+
+char *filename;
+double d;
+
+file = amps_Fopen(filename,"w");
+
+amps_Fprintf(file, "%lf", d);
+
+amps_Fclose(file);
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+There should be some commands to take a normal file and distribute it
+to the nodes.  This presents a problem since {\em AMPS} does not
+know how you want to split up the file to the nodes.  This is being 
+worked on; basically the {\em AMPS} I/O calls are a hack until some standard
+can be arrived at.  The functionality is sufficient for \parflow{} at
+the current time.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Fclose}{amps\_Fclose}. \\
+\vref{amps_Fprintf}{amps\_Fprintf}. \\
+\vref{amps_Write}{amps\_Write}. \\
+\vref{amps_Fscanf}{amps\_Fscanf}. \\
+\vref{amps_ReadType}{amps\_Read\var{type}}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Fprintf
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Fprintf}
+\label{amps_Fprintf}
+
+\index{\cindex{output to a distributed file}}
+\index{\cindex{printing to a distributed file}}
+\index{\cindex{distributed files}}
+\index{\cindex{I/O}}
+
+
+\index{\findex{amps\_Fprintf}}
+\begin{deftypefn}{Library Function}{int}{amps\_Fprintf}
+(amps_File \var{file}, char *\var{fmt}, ...) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The routine \code{amps_Fprintf} is used to output to a distributed file.
+The arguments are similar to the standard C library \code{fprintf} with
+the \code{FILE} argument replaced by a \code{amps_File} argument.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+
+char *filename;
+double d;
+
+file = amps_Fopen(filename,"w");
+
+amps_Fprintf(file, "%lf\n", &d);
+
+amps_Fclose(file);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Fopen}{amps\_Fopen}. \\
+\vref{amps_Fclose}{amps\_Fclose}. \\
+\vref{amps_Write}{amps\_Write}. \\
+\vref{amps_Fscanf}{amps\_Fscanf}. \\
+\vref{amps_ReadType}{amps\_Read\var{type}}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_FreeInvoice
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_FreeInvoice}
+\label{amps_FreeInvoice}
+
+\index{\cindex{invoice, freeing}}
+\index{\cindex{freeing invoice}}
+
+\index{\findex{amps\_FreeInvoice}}
+\begin{deftypefn}{Library Function}{void}{amps\_FreeInvoice}
+(amps_FreeInvoice \var{invoice})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+When an invoice is no longer needed it should be freed with
+\code{amps_FreeInvoice}.  Access to overlayed variables in an invoice is
+not allowed after the invoice has been freed.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int me, i;
+double d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+amps_Send(amps_CommWorld, me+1, invoice);
+
+amps_Recv(amps_CommWorld, me-1, invoice);
+
+amps_FreeInvoice(invoice);
+
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_NewInvoice}{amps\_NewInvoice}. \\
+
+\end{deftypefn}
+
+
+%=============================================================================
+% Reference: amps_FreePackage
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_FreePackage}
+\label{amps_FreePackage}
+
+\index{\cindex{persistent communication objects}}
+
+\index{\findex{amps\_FreePackage}}
+\begin{deftypefn}{Library Function}{void}{amps\_FreePackage}
+(amps_Package \var{package})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_FreePackage} deletes all memory and communication structures
+associated with \var{package}.  The \var{package} should not be freed
+until all communication operations on that object have been completed
+(in most cases this will imply some synchronization).  The invoices are
+not deleted and must be freed with calls to \code{amps_FreeInvoice}. 
+
+\begin{display}\begin{verbatim}
+Need example here
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_NewPackage}{amps\_NewPackage}. \\
+\vref{amps_Package}{amps\_Package}. \\
+\vref{amps_IExchangePackage}{amps\_IExchangePackage}. \\
+\vref{amps_Wait}{amps\_Wait}. \\
+
+\end{deftypefn}
+
+
+%=============================================================================
+% Reference: amps_Fscanf
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Fscanf}
+\label{amps_Fscanf}
+
+\index{\cindex{input from a distributed file}}
+\index{\cindex{reading a distributed file}}
+\index{\cindex{distributed file}}
+\index{\cindex{I/O}}
+
+
+\index{\findex{amps\_Fscanf}}
+\begin{deftypefn}{Library Function}{int}{amps\_Fscanf}
+(amps_File \var{file}, char *\var{fmt}, ...) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The function \code{amps_Fscanf} is used to read from a distributed file.
+Each node's accesses to a distributed file are independent of each
+other.  The arguments are similar to the standard C library function
+\code{fscanf} except that it works on \code{amps_File} instead of the
+standard \code{FILE} type.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_File file;
+
+char *filename;
+double d;
+
+file = amps_Fopen(filename,"r");
+
+amps_Fscanf(file, "%lf", &d);
+
+amps_Fclose(file);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Fopen}{amps\_Fopen}. \\
+\vref{amps_Fclose}{amps\_Fclose}. \\
+\vref{amps_Fprintf}{amps\_Fprintf}. \\
+\vref{amps_Write}{amps\_Write}. \\
+\vref{amps_ReadType}{amps\_Read\var{type}}. \\
+
+\end{deftypefn}
+
+
+%=============================================================================
+% Reference: amps_IExchangePackage
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_IExchangePackage}
+\label{amps_IExchangePackage}
+
+\index{\cindex{persistent communication objects}}
+
+\index{\findex{amps\_IExchangePackage}}
+\begin{deftypefn}{Library Function}{amps_Handle}{amps\_IExchangePackage}
+(amps_Package \var{package})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The \code{amps_IExchangePackage} initiates the communication of the
+invoices found in the \var{package} structure that is passed in.  Once a
+\code{amps_IExchangePackage} it is illegal to access the
+variables that are being communicated.  An \code{amps_IExchangePackage}
+is always followed by an \code{amps_Wait} on the \var{handle} that is
+returned. 
+
+\begin{display}\begin{verbatim}
+
+      /* Initialize exchange of boundary points */
+      handle = amps_IExchangePackage(package);
+ 
+      /* Compute on the "interior points" */
+
+      /* Wait for the exchange to complete */
+      amps_Wait(handle);
+
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_NewPackage}{amps\_NewPackage}. \\
+\vref{amps_Package}{amps\_Package}. \\
+\vref{amps_FreePackage}{amps\_FreePackage}. \\
+\vref{amps_Wait}{amps\_Wait}. \\
+
+\end{deftypefn}
+
+
+%=============================================================================
+% Reference: amps_Init
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+\subsection{amps\_Init}
+\label{amps_Init}
+%  node-name,  next,  previous,  up
+
+\index{\cindex{initialization}}
+
+\index{\findex{amps\_Init}}
+\begin{deftypefn}{Library Function}{int}{amps\_Init}(int \var{argc}, char \var{argv}[])
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+Every {\em AMPS} program must call this function to initialize the
+message passing environment.  This must be done before any other
+{\em AMPS} calls.  \code{amps_Init} does a synchronization on all the
+nodes and the host (if it exists).  \var{argc} and \var{argv} should be
+the \var{argc} and \var{argv} that were passed to \code{main}.  On some
+ports command line arguments can be used to control the underlying
+message passing system.  For example, on {\em Chameleon} the
+\code{-trace} flag can be use to create a log of communication events.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+
+int main( int argc, char *argv)
+{
+   amps_Init(argc, argv);
+   
+   amps_Printf("Hello World");
+
+   amps_Finalize();
+}
+\end{verbatim}\end{display}
+
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Finalize}{amps\_Finalize} \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_IRecv
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_IRecv}
+\label{amps_IRecv}
+
+\index{\cindex{receiving}}
+\index{\cindex{non-blocking receive}}
+
+\index{\findex{amps\_IRecv}}
+\begin{deftypefn}{Library Function}{amps_Handle}{amps\_IRecv}
+(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice}) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_IRecv} is a non-blocking receive operation which returns a
+\code{amps_Handle}.  It receives a message from the node with \var{rank}
+within the \var{comm} context.  This operation will attempt to post a
+receive and then return even if the receive operation is not completed.
+The \var{handle} is passed to \code{amps_Test} to test for completion
+and to \code{amps_Wait} to block waiting for completion to occur.
+After a test succeeds or the wait returns it is legal to access
+variables within the \var{invoice}.  Any attempt to access variables
+used in the \var{invoice} between the posting of the \code{amps_IRecv}
+command and the successful \code{amps_Test} or \code{amps_Wait} is not
+permitted (since these variables might be changing).  Every \code{amps_IRecv} 
+must have an associated \code{amps_Wait} to finalize the receive.
+
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+amps_Handle  handle;
+int me, i;
+double d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+handle = amps_IRecv(amps_CommWorld, me+1, invoice);
+
+while(amps_Test(handle))
+{
+        /* do more work */
+}
+amps_Wait(handle);
+
+amps_FreeInvoice(invoice);
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+If a non-blocking receive is not available then \code{amps_IRecv} does
+nothing and the receive operation is done in the \code{amps_Wait}
+routine.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Send}{amps\_Send}. \\
+\vref{amps_ISend}{amps\_ISend}. \\
+\vref{amps_Recv}{amps\_Recv}. \\
+\vref{amps_Test}{amps\_Test}. \\
+\vref{amps_Wait}{amps\_Wait}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_ISend
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_ISend}
+\label{amps_ISend}
+
+\index{\cindex{sending}}
+\index{\cindex{non-blocking send}}
+
+\index{\findex{amps\_ISend}}
+\begin{deftypefn}{Library Function}{amps_Handle}{amps\_ISend}
+(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice}) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_ISend} is similar to \code{amps_Send} but it is guaranteed
+not to block if the message cannot be sent immediately.
+\code{amps_Test} can be used to determine when the sending operation has
+completed by giving it the \var{handle} object that is returned from
+\code{amps_ISend}.  Similarly, \code{amps_Wait} can be used to block
+until an initiated send has completed.  Every \code{amps_ISend} must be
+have an associated \code{amps_Wait} to finalize the send.  None of these
+tests imply that the receiving side has received the message.  There are
+no functions in {\em AMPS} to do synchronous communication (where a send
+does not return until the receive has been completed).  The difference
+between the two sending functions is whether they block waiting for the
+local sending action to be completed.  On some systems \code{amps_Send}
+will be synchronous with the receive but this is not guaranteed.  If there
+is computation that can take place it is best to use \code{amps_ISend}
+rather than \code{amps_Send} to attempt to overlap computation and
+communication.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+amps_Handle  handle;
+int me, i;
+double d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+handle = amps_ISend(amps_CommWorld, me+1, invoice);
+
+/* do some work */
+
+amps_Wait(handle);
+
+amps_FreeInvoice(invoice);
+
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+On most ports \code{amps_ISend} and \code{amps_Send} are identical.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Recv}{amps\_Recv}. \\
+\vref{amps_IRecv}{amps\_IRecv}. \\
+\vref{amps_Test}{amps\_Test}. \\
+\vref{amps_Wait}{amps\_Wait}. \\
+
+\end{deftypefn}
+
+
+%=============================================================================
+% Reference: amps_NewInvoice
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_NewInvoice}
+\label{amps_NewInvoice}
+
+\index{\cindex{invoice, creating}}
+\index{\cindex{creating invoice}}
+
+\index{\findex{amps\_NewInvoice}}
+\begin{deftypefn}{Library Function}{amps_Invoice}{amps\_NewInvoice}
+(const char *\var{fmt}, ...)
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+Invoice creation is the most difficult part of {\em AMPS}.  Part of the
+difficulty of invoice construction arises from the many options that
+were included.  While a simpler interface is possible we wanted to
+develop a system which was flexible enough to enable efficient
+implementations on existing and future platforms.
+
+\code{amps_NewInvoice} constructs an \code{amps_Invoice}.  It takes a
+variable number of arguments, starting with a format string
+(\var{fmt}) similar to the commonly used \code{printf} strings.  The
+format string contains one or more conversion specifications.  A
+conversion specification is introduced by a percent sign \code{%} and
+is followed by
+
+\begin{itemize}
+
+\item
+        A positive integer indicating the length (number of items to
+        convert), or a `\code{*}' or `\code{&}' indicating
+        argument-list specification of an integer expression or
+        address (see below).  If no integer is specified the default
+        is one item.
+
+\item
+        An optional stride factor indicated by a `.' followed by a
+        positive integer indicating the stride; optionally a
+        `\code{*}' or `\code{&}' may be specified, signifying
+        argument-list specification of an integer expression or
+        address (see below).  If no stride is specified the default is
+        one.
+
+\item
+        An optional `\code{@}' character indicating that the variable
+        is overlaid (see below).
+
+\item
+        A character specifying an internal type.
+
+\end{itemize}
+
+There is a special class of conversion specifications called vectors
+which have a slightly different syntax (see below).
+
+For both the length or stride, `\code{*}' or `\code{&}' can replace
+the hard-coded integer in the format string.  If `\code{*}' is used,
+then the next argument on the argument list is used as an integer
+expression specifying the length (or stride).  `\code{*}' allows the
+size of an invoice item (or stride) to be specified at invoice
+construction time.  Both the length or stride factor can be indirected
+by using `\code{&}' instead of an integer.  The `\code{&}' indicates
+that a pointer to an integer follows on the argument list, this
+integer will be dereferenced for the length (or stride) when the
+invoice is used.  When `\code{&}' is used, the length (or stride) is
+not evaluated immediately, but is deferred until the actual packing of
+the data occurs.  `\code{&}'-indirection consequently allows
+variable-size invoices to be constructed at runtime; we call this
+feature deferred sizing.  Note that one must be cautious of the scope
+of C variables when using `\code{&}'.  For example, it is improper to
+create an invoice in a subroutine that has a local variable as a
+stride factor and then attempt to pass this invoice out and use it
+elsewhere, since the stride factor points at a variable that no longer
+is in scope.
+
+The built-in types are: 
+
+\begin{tabular}{ll}
+b & byte \\
+c & character \\
+s & short \\
+i & int \\
+l & long \\
+f & float \\
+d & double
+\end{tabular}
+
+For each conversion specification in the format string, a pointer to an
+array of that type must be passed as an argument.  This array is where
+{\em AMPS} will pack/unpack variables.  If the `\code{@}' overlay
+operator option is used then a pointer to a pointer to an array must be
+passed.  The overlay operator is used to prevent an extra copy from
+being made on systems with communications buffers.  The overlay operator
+indicates that {\em AMPS} is responsible for allocating and
+deallocating storage for that array.  On systems which use
+communications buffers, {\em AMPS} ``overlays'' the user variable on
+top of the communications buffer.  This enables the ``trick'' of
+manipulating values inside of a communications buffer.  Without the
+overlay operator, a copy is implied in all cases which would introduce
+greater overhead.  On systems that allow gather/scatter communication
+this notation is not needed since data can be moved from the network
+directly into scattered user-space.  This feature should be used only
+for temporary variables that will be discarded.  The communications
+buffer space can not be freed until the user releases this space with
+the \code{amps_Clear} function.
+
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int i[10];
+double d[10]; 
+
+invoice = amps_NewInvoice("%10i %5.2d", i, d);
+\end{verbatim}\end{display}
+
+This specifies that the user wishes to send all the elements of the
+integer array \var{i} and the even elements of the double array \var{d}.
+
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int i[10];
+double d[10]; 
+int length;
+
+length = 10;
+invoice = amps_NewInvoice(&invoice, "%*i %5.2d", length, i, d);
+\end{verbatim}\end{display}
+
+This invoice contains the same information as the previous example but uses
+the `\code{*}' operator to control the length of the integer array.
+
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int i[10];
+double d[10]; 
+int length;
+
+invoice = amps_NewInvoice("%&i %5.2d", &length, i, d);
+length = 10;
+amps_Send(amps_CommWorld, 0, invoice);
+length = 5;
+amps_Send(amps_CommWorld, 0, invoice);
+\end{verbatim}\end{display}
+In this example, the deferred sizing feature is demonstrated.  In the
+first use of the invoice the entire array \var{i} would be packed; in
+the second use only the first five elements of \var{i} would be
+packed.
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int *i;
+double d[10]; 
+
+invoice = amps_NewInvoice("%10\\i %5.2d", &i, d);
+
+\end{verbatim}\end{display}
+
+
+% \begin{figure} 
+% \epsfxsize=3.2in
+% \epsfbox[0 0 634 431]{overlay.eps}
+% \caption{Overlay example for an invoice ``10\i\ \%5.2d''}
+% \label{overlay-fig}
+% \end{figure}
+
+The example above demonstrates the use of the overlaid feature.  In this
+case the array \var{i} is overlaid.  Figure 2 (???) indicates what would
+happen if this invoice were used in a receive operation on a system that
+used contiguous communications buffers.  The values for array \var{d}
+would be copied from the communications buffer.  The pointer for array
+\var{i} would be directed towards the communications buffer to avoid a
+copy.
+
+As was indicated earlier there is a separate class of conversion
+specifiers that allow easier communications of larger blocks of data.
+These are called vectors in {\em AMPS}.  A vector is an n-dimensional
+object which can have a different length and stride in each dimension.
+A vector specifier is introduced by the `\code{%}' sign and is followed
+by `\code{&.&}' to indicate two arrays on the argument list.  These two
+arrays contain the lengths and striding for each of the dimensions of
+the vector.  Next the type of the vector is specified by one of the
+following:
+
+\begin{tabular}{ll}
+B & character vector \\
+C & character vector \\
+S & short vector \\
+I & int vector \\
+L & long vector \\
+F & float vector \\
+D & double vector
+\end{tabular}
+
+The type is followed by `\code{(dim)}' where \code{dim} can be replaced
+by a positive integer indicating the dimension or a `\code{*}' or
+`\code{&}' indicating argument-list specification of an integer
+expression or address of an integer.   The dimension indicates the
+number of items that should be striding over for that dimension.
+
+For example the following invoice specification picks out the element
+of the array marked by an `x'.
+\EXAMPLE
+\begin{display}\begin{verbatim}
+ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 21 22 23 24 25 26 27 28
+ x     x     x           x     x     x           x   x    x           x     x     x
+
+amps_Invoice invoice;
+int array[29]
+int len = { 3, 4 };
+int stride = { 2, 3 };
+
+invoice = amps_NewInvoice("&.&I(2)", len, stride, array);
+
+\end{verbatim}\end{display}
+
+The vector type (as it's name implies) is often used to communicate
+"parts" of an n-dimensional matrix or vector.  The vector type is useful
+for communication of boundary data in matrices and vectors.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_FreeInvoice}{amps\_FreeInvoice}. \\
+\vref{amps_Create}{amps\_Create}. \\
+\vref{amps_Clear}{amps\_Clear}. \\
+
+\end{deftypefn}
+
+
+%=============================================================================
+% Reference: amps_NewPackage
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_NewPackage}
+\label{amps_NewPackage}
+
+\index{\cindex{persistent communication objects}}
+
+\index{\findex{amps\_NewPackage}}
+\begin{deftypefn}{Library Function}{amps_Package}{amps\_NewPackage}
+(amps_Comm \var{comm}, int \var{num\_send}, int *\var{dests},
+amps_Invoice *\var{send\_invoices}, int \var{num\_recv}, int
+*\var{srcs}, amps_Invoice *\var{recv\_invoices})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+Since {\em AMPS} was driven by the communication requirements of the
+\parflow{} project some features were added increase the
+performance of key \parflow{} communication routines.  The most
+costly communication in \parflow{} involves the updating of
+boundary data (ghost points) between processes.  Persistent
+communication objects were added to {\em AMPS} to enable better
+performance on shared memory (or shared memory like) machines.
+\code{amps_Package}'s are collections of \code{amps_Invoices}.  They
+are used encapsulate information about repeated communication patterns
+and provide a single handle to many separate pieces of user data.
+
+\code{amps_NewPackage} is used to create persistent communication
+objects called \code{amps_Package}s.  Once created, the package can be
+used in the \code{amps_IExchangePackage} call to initiate the
+communication.  The package can contain several sources and
+destinations so complex communication patterns can be contained in a
+single call.  You can think of it as a wrapper for doing several
+\code{amps_ISend}s at one time.  In order to set up a
+\code{amps_Package} you need to construct the \code{amps_Invoice}s
+that will be used.  A separate invoice is needed for each source and
+destination, separate invoices to the same processor are allowed but
+you must ensure that the order on the sending node and receiving node
+match.  The \var{num\_send} and \var{num\_recv} parameters indicated
+the number of nodes to send and receive from.  The integer arrays
+\var{dests} and \var{srcs} contain the ranks in \var{comm} to send and
+receive from.  The two invoice arrays correspond to the \var{dests}
+and \var{srcs} arrays and contain the invoice associated with that
+source or destination.
+
+The invoices used in \code{amps_Package}s are more restrictive to
+achieve better performance.  All length and stride information must be
+fully specified at the time of the \code{amps_NewPackage} call.  This
+impacts the use of the deferred sizing capabilities of invoices.  
+
+All data to be communicated must be located in "shared address space".
+The only way to do this is by allocating the space using the
+\code{amps_TAlloc} and \code{amps_CTAlloc} routines.  This restriction
+is due to the implementation of shared memory on some platforms. 
+
+The \code{amps_NewPackage} call may contain communication to exchange
+information about items contained in the invoices.  This allows for
+invocations of \code{amps_IExchangePackage} to push or pull data without
+contacting the source or destination (since it already knows where to
+get or put the data).  On architectures like the {\em CRAY T3D} this enables
+the use of faster communication primitives.  On shared memory machines
+all buffering can be avoided (in this case \code{amps_IExchangePackage}
+can use memory copies).
+
+\begin{display}\begin{verbatim}
+
+double a;
+
+amps_Invoice send_invoice[2];
+amps_Invoice recv_invoice[2];
+
+int length[2];
+int stride[2];
+ 
+int src[2];
+int dest[2];
+
+length[0] = size+2;
+length[1] = size+2;
+stride[0] = size+2;
+stride[1] = (size+2);
+
+/* a is the array to be communicated so it must be allocated with 
+   amps_CTAlloc */ 
+a = amps_CTAlloc(double, (size+2)*(size+2)*(size+2));
+
+send_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride, a+0+0+1);
+recv_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride, a+0+0+0);
+
+/* ????? this does not look correct */      
+send_invoice[1] = amps_NewInvoice("%&.&D(2)", length, stride, a+0+0+size);
+recv_invoice[1] = amps_NewInvoice("%&.&D(2)", length, stride, a+0+0+size+1);
+      
+src[0] = me-1;
+dest[0] = me-1;
+      
+src[1] = me+1;
+dest[1] = me+1;
+      
+package = amps_NewPackage(amps_CommWorld,
+                             2, dest, send_invoice, 2, src, recv_invoice);
+ 
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_IExchangePackage}{amps\_IExchangePackage}. \\
+\vref{amps_Package}{amps\_Package}. \\
+\vref{amps_FreePackage}{amps\_FreePackage}. \\
+\vref{amps_Wait}{amps\_Wait}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Printf
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Printf}
+\label{amps_Printf}
+
+\index{\cindex{printing}}
+\index{\cindex{output}}
+\index{\cindex{standard output}}
+
+\index{\findex{amps\_Printf}}
+\begin{deftypefn}{Library Function}{int}{amps\_Printf}
+                 (const char *\var{fmt}, ...)
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+This routine is used to print information to the standard output device.
+Where the output actually ends up is dependent on the underlying message
+passing system.  On some systems it will appear on the console where the
+program was run; on others it will be placed in a file.  The arguments
+are the same as for the standard C \code{printf} function.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+int main( int argc, char *argv)
+{
+   amps_Init(argc, argv);
+   
+   amps_Printf("Hello World");
+
+   amps_Finalize();
+}
+\end{verbatim}\end{display}
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Rank
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Rank}
+\label{amps_Rank}
+
+\index{\cindex{rank}}
+\index{\cindex{node id}}
+\index{\cindex{process id}}
+
+\index{\findex{amps\_Rank}}
+\begin{deftypefn}{Library Function}{int}{amps\_Rank}
+                 (amps_Comm \var{comm})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+Returns the rank of the node within the \var{comm}
+communicator context.  Ranks range from 0 to
+\code{amps_Size(\var{comm})} $-1$.  Ranks are used to identify nodes
+in a similar manner to node numbers in other message passing systems.  A
+node may have several ranks, one for each context that it is a member
+of.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+
+int my_rank;
+my_rank = amps_Rank(amps_CommWorld);
+
+\end{verbatim}\end{display}
+
+
+%=========================== NOTES ===========================================
+\NOTES
+
+Currently there is only a single communicator, \code{amps_CommWorld}.
+(\vref{amps_CommWorld}{amps\_CommWorld}).
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Comm}{amps\_Comm}. \\
+\vref{amps_CommWorld}{amps\_CommWorld}. \\
+\vref{amps_Size}{amps\_Size}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Read
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Read\var{type}}
+\label{amps_ReadType}
+
+\index{\cindex{input from a distributed file (binary)}}
+\index{\cindex{binary input from a distributed file}}
+\index{\cindex{reading a distributed file (binary)}}
+\index{\cindex{distributed file}}
+\index{\cindex{I/O}}
+
+
+\index{\findex{amps\_Read\var{type}}}
+\begin{deftypefn}{Library Function}{int}{amps\_Read\var{type}}
+(amps_File \var{file}, \var{type} *\var{ptr}, int \var{len}) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+This set of functions is used to read binary data from a distributed file.
+ \var{type} can be replaced by Byte, Char, Short, Int, Long, Float, or Double
+to indicate the type of data to output.  The type is specified in order
+to do conversions.  Data is converted from {\em XDR} format (\cite{xdr.87}).
+The arguments are similar to the standard C library function
+\code{read}.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+
+char *filename;
+double d[10];
+
+file = amps_Fopen(filename,"rb");
+
+amps_ReadDouble(file, d, 10);
+
+amps_Fclose(file);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Fopen}{amps\_Fopen}. \\
+\vref{amps_Fclose}{amps\_Fclose}. \\
+\vref{amps_Fprintf}{amps\_Fprintf}. \\
+\vref{amps_Write}{amps\_Write}. \\
+\vref{amps_Fscanf}{amps\_Fscanf}. \\
+
+\end{deftypefn}
+
+
+%=============================================================================
+% Reference: amps_Recv
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Recv}
+\label{amps_Recv}
+
+\index{\cindex{receiving}}
+\index{\cindex{blocking receive}}
+
+\index{\findex{amps\_Recv}}
+\begin{deftypefn}{Library Function}{int}{amps\_Recv}
+(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice}) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_Recv} is a blocking receive operation.  It receives a message
+from the node with \var{rank} within the \var{comm} context.  This
+operation will not return until the receive operation has been
+completed.  The received data is unpacked into the the data locations
+specified in the \var{invoice}.  After the return it is legal to access
+overlayed variables (which must be freed with \code{amps_Clear}).
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int me, i;
+double d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+amps_Send(amps_CommWorld, me+1, invoice);
+
+amps_Recv(amps_CommWorld, me-1, invoice);
+
+amps_FreeInvoice(invoice);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Send}{amps\_Send}. \\
+\vref{amps_ISend}{amps\_ISend}. \\
+\vref{amps_IRecv}{amps\_IRecv}. \\
+\vref{amps_Clear}{amps\_Clear}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Send
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Send}
+\label{amps_Send}
+
+\index{\cindex{sending}}
+\index{\cindex{blocking send}}
+
+\index{\findex{amps\_Send}}
+\begin{deftypefn}{Library Function}{int}{amps\_Send}
+(amps_Comm \var{comm}, int \var{rank}, amps_Invoice invoice) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+Sends a message to the node with \var{rank} in the \var{comm} context.
+The contents of the message are described by the \var{invoice} as
+indicated in \vref{amps_NewInvoice}{amps\_NewInvoice}.  After a return
+from send it is invalid to access any overlaid variables.  This
+version of send is possibly blocking.  
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+int me, i;
+double d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+amps_Send(amps_CommWorld, me+1, invoice);
+
+amps_Recv(amps_CommWorld, me-1, invoice);
+
+amps_FreeInvoice(invoice);
+
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+Since {\em AMPS} is layered on other message passing systems there is
+some loosely defined behavior.  \code{amps_Send} is to be implemented
+in a way that starts and completes a send operation on the source
+side.  Since some systems have synchronization or do queuing on the
+sending side this function can block until a receive is posted on the
+node specified by \var{rank}.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_ISend}{amps\_ISend}. \\
+\vref{amps_Recv}{amps\_Recv}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_SFBCast
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_SFBCast}
+\label{amps_SFBCast}
+
+\index{\cindex{input}}
+\index{\cindex{shared file}}
+\index{\cindex{I/O}}
+\index{\cindex{distributing shared file}}
+
+\index{\findex{amps\_SFBCast}}
+\begin{deftypefn}{Library Function}{int}{amps\_SFBCast}
+(amps_Comm \var{comm} , amps_File \var{file} , amps_Invoice \var{invoice}) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_SFBCast} is used to read data from a shared file.  Note
+that the input is described by an \code{amps_Invoice} rather than the
+standard \code{printf} syntax.  This is to allow a closer mapping to
+the communication routines.  Due to this change be careful; items in
+the input file must match what is in the invoice description.  As it's
+name implies this function reads from a file and broadcasts the data
+in the file to all the nodes who are in the \var{comm} context.  Think
+of it as doing an \code{amps_BCAST} with a file replacing the node as
+the source.  The data is stored in ASCII format and read in using
+the Standard C library function \code{scanf} so it's formatting rules
+apply.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+amps_Invoice invoice;
+
+file = amps_SFopen(filename, "r");
+
+amps_SFBCast(amps_CommWorld, file, invoice);
+
+amps_SFclose(file);
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+The file to be opened normally resides on the front-end of the MPP.  On
+some systems with local disk space the shared files might reside on node
+0.  This issue has not been completely resolved.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_SFopen}{amps\_SFopen}. \\
+\vref{amps_SFclose}{amps\_SFclose}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_SFclose
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_SFclose}
+\label{amps_SFclose}
+
+\index{\cindex{input}}
+\index{\cindex{shared file}}
+\index{\cindex{I/O}}
+\index{\cindex{close}}
+
+\index{\findex{amps\_SFclose}}
+\begin{deftypefn}{Library Function}{int}{amps\_SFclose}
+(amps_Comm \var{comm}, amps_File \var{file}, amps_Invoice \var{invoice}) 
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+
+A shared file is closed by invoking the \code{amps_SFclose} function.
+This routine must be called by all members of the communicator that opened
+the file.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+amps_Invoice invoice;
+
+file = amps_SFopen(filename, "r");
+
+amps_SFBCast(amps_CommWorld, file, invoice);
+
+amps_SFclose(file);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_SFopen}{amps\_SFopen}. \\
+\vref{amps_SFBCast}{amps\_SFBCast}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_SFopen
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_SFopen}
+\label{amps_SFopen}
+
+\index{\cindex{input}}
+\index{\cindex{open}}
+\index{\cindex{shared file}}
+\index{\cindex{I/O}}
+\index{\cindex{distributing shared file}}
+
+\index{\findex{amps\_SFOpen}}
+\begin{deftypefn}{Library Function}{amps_File}{amps\_SFOpen}
+(amps_Comm \var{comm}, char *\var{filename}, char *\var{type})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+There are three types files in {\em AMPS}, shared, fixed and distributed.  The
+\code{amps_SFOpen} command opens a shared file.  Shared files are opened
+and operated on by an entire context of nodes specified by the
+\var{comm} communicator.  Shared files provide a simple way to distribute
+information from an input file to a group of nodes.  This routine must
+be called by all members of the communicator and all node members must
+call the same shared I/O routines in the same order on the opened file.
+The returned \code{amps_File} must be closed by \code{amps_SFclose}
+(\vref{amps_SFclose}{amps\_SFclose}).
+
+A \var{NULL} return value indicates the open failed.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_File file;
+amps_Invoice invoice;
+
+file = amps_SFopen(filename, "r");
+
+amps_SFBCast(amps_CommWorld, file, invoice);
+
+amps_SFclose(file);
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+Currently the only supported \var{type} is "r" hence shared files
+are read only.
+
+The only operation currently supported for shared files is
+\code{amps_SFBCast}.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_SFclose}{amps\_SFclose}. \\
+\vref{amps_SFBCast}{amps\_SFBCast}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Size
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+\subsection{amps\_Size}
+\label{amps_Size}
+
+\index{\cindex{number of nodes}}
+\index{\cindex{nodes, number of}}
+\index{\cindex{size of machine}}
+
+\index{\findex{amps\_Size}}
+\begin{deftypefn}{Library Function}{int}{amps\_Size}
+                 (amps_Comm \var{comm})
+
+\DESCRIPTION
+
+Returns the number of nodes that are members of the \var{comm}
+communicator.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+
+int num;
+num = amps_Size(amps_CommWorld);
+
+\end{verbatim}\end{display}
+
+
+%=========================== NOTES ===========================================
+\NOTES
+
+Currently there is only a single communicator so the size returned will
+always be the entire current node partition (\vref{amps_CommWorld}{amps\_CommWorld}).
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Comm}{amps\_Comm}. \\
+\vref{amps_CommWorld}{amps\_CommWorld}. \\
+\vref{amps_Rank}{amps\_Rank}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Sync
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Sync}
+\label{amps_Sync}
+
+\index{\findex{amps\_Sync}}
+\begin{deftypefn}{Library Function}{int}{amps\_Sync}
+(amps_Comm \var{comm})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The collective operation \code{amps_Sync} is used to provide a barrier
+mechanism.  All nodes making this call will block until every node has
+called \code{amps_Sync}.
+
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+double       d;
+int          i;
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+/* find maximum of i and d on all nodes*/
+amps_AllReduce(amps_CommWorld, invoice, amps_Max);
+
+/* find sum of i and d on all nodes*/
+amps_AllReduce(amps_CommWorld, invoice, amps_Add);
+
+amps_FreeInvoice(invoice);
+
+amps_Sync(amps_CommAll);
+
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+Since \code{amps_Sync} is implemented on the barrier mechanism of the
+machine the code is running on, one should be careful of the name "Sync".
+This does not imply that all the node process are started simultaneously
+after the call.  All \code{amps_Sync} guarantees is that no process is allowed
+past the call until all nodes in the communicator have made the call.
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_TAlloc
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_TAlloc}
+\label{amps_TAlloc}
+
+\index{\cindex{persistent communication objects}}
+
+\index{\findex{amps\_TAlloc}}
+\begin{deftypefn}{Library Macro}{\var{type *}}{amps\_TAlloc}
+(\var{type}, \var{size})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_TAlloc} is used to allocate memory for objects used
+in the \code{amps_Packages}.  Since these objects must be in
+shared memory they need to be allocated using this macro.
+A space is allocated for \var{size} number of \var{type} objects.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_CTAlloc}{amps\_CTAlloc}. \\
+\vref{amps_IExchangePackage}{amps\_IExchangePackage}. \\
+\vref{amps_NewPackage}{amps\_NewPackage}. \\
+\vref{amps_TFree}{amps\_TFree}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Test
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Test}
+\label{amps_Test}
+
+\index{\cindex{testing for message completion}}
+
+\index{\findex{amps\_Test}}
+\begin{deftypefn}{Library Function}{int}{amps\_Test}
+(amps_Handle \var{handle})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_Test} is used to test if a non-blocking communication is
+completed.  A non-zero return value indicates success, zero indicates
+that the operation has not completed.  \var{handle} is the
+communications handle that was returned by the \code{amps_ISend} or
+\code{amps_IRecv} commands.  Do not use \code{amps_Test} in a busy
+loop, \code{amps_Wait} is used for this purpose (see
+\vref{amps_Wait}{amps\_Wait}).
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+amps_Handle  handle;
+int me, i;
+double d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+handle = amps_ISend(amps_CommWorld, me+1, invoice);
+
+/* do some work */
+
+amps_Wait(handle);
+
+handle = amps_IRecv(amps_CommWorld, me+1, invoice);
+
+while(amps_Test(handle))
+{
+        /* do more work */
+}
+amps_Wait(handle);
+
+amps_FreeInvoice(invoice);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_ISend}{amps\_ISend}. \\
+\vref{amps_IRecv}{amps\_IRecv}. \\
+\vref{amps_Wait}{amps\_Wait}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_TAlloc
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_TFree}
+\label{amps_TFree}
+
+\index{\cindex{persistent communication objects}}
+
+\index{\findex{amps\_TFree}}
+\begin{deftypefn}{Library Macro}{}{amps\_TFree}
+(\var{ptr})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_TFree} is used to deallocate memory for objects 
+that were allocated by \code{amps_TAlloc} or 
+\code{amps_TCalloc}.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_CTAlloc}{amps\_CTAlloc}. \\
+\vref{amps_TAlloc}{amps\_CAlloc}. \\
+\vref{amps_IExchangePackage}{amps\_IExchangePackage}. \\
+\vref{amps_NewPackage}{amps\_NewPackage}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_ThreadLocal
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_ThreadLocal}
+\label{amps_ThreadLocal}
+
+\index{\cindex{threads}}
+\index{\cindex{global variables}}
+\index{\cindex{static variables}}
+
+\index{\findex{amps\_ThreadLocal}}
+\begin{deftypefn}{Library Macro}{}{amps\_ThreadLocal}
+(\var{variable_name})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+Since {\em AMPS} supports a threaded execution environment global and
+static variables must be treated as thread local for most programs to
+function correctly.  \code{amps_ThreadLocal} is used to access
+variables that are global to a node.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+
+/* An integer which is to be global (thread local)*/
+amps_ThreadLocalDcl(int, mine);
+
+void foo(void)
+{
+	/* set a global variable */
+	amps_ThreadLocal(mine) = 5;
+}
+
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_ThreadLocalDcl}{amps\_ThreadLocalDcl}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_ThreadLocalDcl
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_ThreadLocalDcl}
+\label{amps_ThreadLocalDcl}
+
+\index{\cindex{threads}}
+\index{\cindex{global variables}}
+\index{\cindex{static variables}}
+
+\index{\findex{amps\_ThreadLocalDcl}}
+\begin{deftypefn}{Library Macro}{}{amps\_ThreadLocalDcl}
+(\var{type}, \var{variable_name})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+Since {\em AMPS} supports a threaded execution environment global and
+static variables must be treated as thread local for most programs to
+function correctly.  \code{amps_ThreadLocalDcl} is used declare a
+variable which should have ``node scope''.  Each node will have get
+it's own variable using the \code{amps_ThreadLocalDcl} macro.
+Normally all global and static variables need to be declared and
+accessed using the {\em AMPS} routines.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+
+/* An integer which is to be global (thread local)*/
+amps_ThreadLocalDcl(int, mine);
+
+void foo(void)
+{
+	/* set a global variable */
+	amps_ThreadLocal(mine) = 5;
+}
+
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_ThreadLocal}{amps\_ThreadLocal}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Wait
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Wait}
+\label{amps_Wait}
+
+\index{\cindex{waiting for message completion}}
+\index{\cindex{message completion}}
+\index{\cindex{waiting for exchange completion}}
+\index{\cindex{exchange completion}}
+
+\index{\findex{amps\_Wait}}
+\begin{deftypefn}{Library Function}{int}{amps\_Wait}
+(amps_Handle \var{handle})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+\code{amps_Wait} is used to block until the communication initiated by
+them has completed.  \var{handle} is the communications handle that
+was returned by the \code{amps_ISend}, \code{amps_IRecv}, or
+\code{amps_IExchangePackage} commands.  You must always do an
+\code{amps_Wait} on to finalize an initiated non-blocking
+communication.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+
+\begin{display}\begin{verbatim}
+amps_Invoice invoice;
+amps_Handle  handle;
+int me, i;
+double d;
+
+me = amps_Rank(amps_CommWorld);
+
+invoice = amps_NewInvoice("%i%d", &i, &d);
+
+handle = amps_ISend(amps_CommWorld, me+1, invoice);
+
+/* do some work */
+
+amps_Wait(handle);
+
+handle = amps_IRecv(amps_CommWorld, me+1, invoice);
+
+while(amps_Test(handle))
+{
+        /* do more work */
+}
+amps_Wait(handle);
+
+amps_FreeInvoice(invoice);
+\end{verbatim}\end{display}
+
+%=========================== NOTES ===========================================
+\NOTES
+
+The requirement for to always finish an initiated communication with
+\code{amps_Wait} is under consideration.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_ISend}{amps\_ISend}. \\
+\vref{amps_IRecv}{amps\_IRecv}. \\
+\vref{amps_Test}{amps\_Test}. \\
+
+\end{deftypefn}
+
+%=============================================================================
+% Reference: amps_Write
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Write}
+\label{amps_Write}
+
+\index{\cindex{output to a distributed file (binary)}}
+\index{\cindex{binary output to a distributed file}}
+\index{\cindex{printing to a distributed file (binary)}}
+\index{\cindex{distributed files}}
+\index{\cindex{I/O}}
+
+\index{\findex{amps\_Write\var{type}}}
+\begin{deftypefn}{Library Function}{int}{amps\_Write\var{type}}
+(amps_File \var{file}, \var{type} *\var{ptr}, int \var{len})
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+There are several routines to output to a distributed file using a
+binary binary rather than ASCII.  \var{type} can be replaced by Char,
+Short, Int, Long, Float, or Double to indicate the type of data to
+output.  The type is specified to allow data conversions.  Data is
+written using XDR format (\cite{xdr.87}).  These functions are
+similar in nature to the standard C library routine \code{write}.
+
+%=========================== EXAMPLES ========================================
+\EXAMPLE
+\begin{display}\begin{verbatim}
+amps_File file;
+
+char *filename;
+double d[10];
+
+file = amps_Fopen(filename,"wb");
+
+amps_WriteDouble(file, d, 10);
+
+amps_Fclose(file);
+\end{verbatim}\end{display}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Fopen}{amps\_Fopen}. \\
+\vref{amps_Fclose}{amps\_Fclose}. \\
+\vref{amps_Fprintf}{amps\_Fprintf}. \\
+\vref{amps_Fscanf}{amps\_Fscanf}. \\
+\vref{amps_ReadType}{amps\_Read\var{type}}. \\
+
+\end{deftypefn}
+
+
+% ****************************************************************************
+% ****************************************************************************
+% Begin Structures Reference Manual
+% ****************************************************************************
+% ****************************************************************************
+
+\newpage
+
+\section{Structures}
+\label{Structures}
+
+
+This section describes the structures that you will need to understand
+in order to use {\em AMPS}.  You will not need to understand the
+internals of these structures just how they are used in {\em AMPS}
+functions.  Attempting to look inside these data structures will lead
+to unportable code.  The structures will be completely different for the
+various ports of {\em AMPS}.
+
+%=============================================================================
+% Reference: amps_Comm
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Comm}
+\label{amps_Comm}
+
+\index{\cindex{communicator}}
+\index{\cindex{communication context}}
+\index{\cindex{contexts}}
+
+\index{\tindex{amps_Comm}}
+\begin{deftp}{Communicator}{amps\_Comm}
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+A \code{amps_Comm} provides a means to achieve a context of
+communication.  A context of communication provides a space for passing
+messages that guarantees that messages will not interfere with each other.
+  Messages in one context cannot be received in another context.
+Communicators also provide the scope for collective operations.  All
+nodes that are members of a context participate in all collective
+operations on that context.
+
+%=========================== NOTES ===========================================
+\NOTES
+
+Currently there is only a single communicator, \code{amps_CommWorld}.
+(\vref{amps_CommWorld}{amps\_CommWorld}).  There is no function to create a new
+communicator.  
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_CommWorld}{amps\_CommWorld}. \\
+\vref{amps_AllReduce}{amps\_AllReduce}. \\
+\vref{amps_BCast}{amps\_BCast}. \\
+\vref{amps_SFBCast}{amps\_SFBCast}. \\
+
+\end{deftp}
+
+%=============================================================================
+% Reference: amps_File
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_File}
+\label{amps_File}
+
+\index{\cindex{I/O}}
+\index{\cindex{files}}
+
+\index{\tindex{amps_File}}
+\begin{deftp}{File Handle}{amps\_File}
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+The \code{amps_File} structure is returned from either a
+\code{amps_Fopen}, \code{amps_FFopen}, or \code{amps_SFopen} call.  This
+structure is used in a similar manner to the standard C \code{FILE}
+structure.  All file operations take an \code{amps_File} variable as an
+argument.
+
+There are three types of files in \code{AMPS}.  A shared file is used
+when you have a single file that you wish to read on all nodes.  This
+enables quick distribution of item like runtime parameters.  Shared
+files can be operated on by the \code{amps_SFBCast} function.  A
+distributed file has a single filename for opening and closing but is
+logically (if not physically) distributed.  Each node reads and write
+to the file as if it where local to that node.  A fixed file is a
+shared file which has segments of the file allocated for each node.
+The length parameter to the open \code{amps_FFopen} call indicates the
+amount of data that each node will be writing.  In the actual file
+each node writes out data at a byte offset equal to the sum of the
+sizes specified by all lower ranked nodes in the process group.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Fopen}{amps\_Fopen}. \\
+\vref{amps_SFopen}{amps\_SFopen}. \\
+
+\end{deftp}
+
+%=============================================================================
+% Reference: amps_Invoice
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Invoice}
+\label{amps_Invoice}
+
+\index{\cindex{invoices}}
+\index{\cindex{packing a message}}
+
+\index{\tindex{amps_Invoice}}
+\begin{deftp}{Message Descriptor}{amps\_Invoice}
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+This structure is used to describe what variables you wish to have
+sent in an \code{AMPS} communication.  They provide the mechanism to
+inform {\em AMPS} of the variables you wish to communicate.  It
+provides see (\vref{amps_NewInvoice}{amps\_NewInvoice}) for
+information on how to construct an \code{amps_Invoice} structure.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_NewInvoice}{amps\_NewInvoice}. \\
+\vref{amps_FreeInvoice}{amps\_FreeInvoice}. \\
+\vref{amps_Create}{amps\_Create}. \\
+\vref{amps_Clear}{amps\_Clear}. \\
+
+\end{deftp}
+
+% ****************************************************************************
+
+%=============================================================================
+% Reference: amps_Package
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Package}
+\label{amps_Package}
+
+\index{\cindex{invoices}}
+\index{\cindex{packing a message}}
+
+\index{\tindex{amps_Package}}
+\begin{deftp}{Message Descriptor}{amps\_Package}
+
+
+%=========================== DESCRIPTION =====================================
+\DESCRIPTION
+
+This structure is a combination of \code{amps_Invoice} with sources
+and destinations to encapsulate a more complicated communication
+operation.  They are used for operations where are done repeatedly;
+they trade startup costs for better performance in the actual data
+exchange.  Since the construction of a \code{amps_Package} is a
+communication operation; information can be sent around about where
+information is to be stored.  This enables optimizations strategies on
+shared memory machines.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_NewPackage}{amps\_NewPackage}. \\
+\vref{amps_NewPackage}{amps\_IExchangePackage}. \\
+\vref{amps_FreePackage}{amps\_FreePackage}. \\
+
+\end{deftp}
+
+% ****************************************************************************
+% ****************************************************************************
+% End Structures Reference Manual
+% ****************************************************************************
+% ****************************************************************************
+
+% ****************************************************************************
+% ****************************************************************************
+% Begin Variables Reference Manual
+% ****************************************************************************
+% ****************************************************************************
+
+\noindent\rule{\textwidth}{1mm}
+
+\section{Variables}
+\label{Variables}
+
+This section outlines the variables that are defined by {\em AMPS} for
+use by users.  
+
+
+% ****************************************************************************
+% ****************************************************************************
+% End Variables Reference Manual
+% ****************************************************************************
+% ****************************************************************************
+
+% ****************************************************************************
+% ****************************************************************************
+% Begin Constants Reference Manual
+% ****************************************************************************
+% ****************************************************************************
+
+\newpage
+
+\section{Constants}
+\label{Constants}
+
+
+This section describes the constants that are defined in {\em AMPS}.
+
+%=============================================================================
+% Reference: amps_Add
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Add}
+\label{amps_Add}
+
+\index{\vindex{amps\_Add}}
+\begin{deftypevr}{Reduction Operation}{int}{amps\_Add}
+\DESCRIPTION
+
+The \code{amps_Add} value is as a flag in calls to \code{amps_AllReduce} to 
+specify the reduction operation that is to be invoked.  The \code{amps_Add}
+operation computes the addition of each of the elements of the
+invoice passed into \code{amps_AllReduce}.  
+
+%=========================== NOTES ===========================================
+\NOTES
+For character types the \code{amps_Add} does not make an very much
+sense.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_AllReduce}{amps\_AllReduce}. \\
+\vref{amps_Max}{amps\_Max}. \\
+
+\end{deftypevr}
+
+%=============================================================================
+% Reference: amps_CommWorld
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_CommWorld}
+\label{amps_CommWorld}
+
+\index{\vindex{amps\_CommWorld}}
+\begin{deftypevr}{Global Communicator}{amps_Comm}{amps\_CommWorld}
+
+\DESCRIPTION
+
+The \code{amps_CommWorld} communicator provides a global communication
+context that includes all the nodes.  It is created by the
+\code{amps_Init} function and destroyed by \code{amps_Finalize}.
+
+%=========================== NOTES ===========================================
+\NOTES
+Currently there is only the global communication context. 
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_Comm}{amps\_Comm}. \\
+\vref{amps_Init}{amps\_Init}. \\
+\vref{amps_Finalize}{amps\_Finalize}. \\
+
+\end{deftypevr}
+
+%=============================================================================
+% Reference: amps_Max
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Max}
+\label{amps_Max}
+
+\index{\vindex{amps\_Max}}
+\begin{deftypevr}{Reduction Operation}{int}{amps\_Max}
+\DESCRIPTION
+
+The \code{amps_Max} is used in calls to \code{amps_AllReduce} to 
+specify the reduction operation that is to be invoked.  The \code{amps_Max}
+operation computes the maximum of each of the elements of the
+invoice.  
+
+%=========================== NOTES ===========================================
+\NOTES
+For character types the \code{amps_Max} operation is based on the numeric
+value of the character which is not necessarily the alphabetic ordering
+you might expect.
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_AllReduce}{amps\_AllReduce}. \\
+\vref{amps_Add}{amps\_Add}. \\
+
+\end{deftypevr}
+
+%=============================================================================
+% Reference: amps_SizeofType
+%=============================================================================
+
+\noindent\rule{\textwidth}{1mm}
+
+\subsection{amps\_Sizeof\var{Type}}
+\label{amps_SizeofType}
+
+\index{\vindex{amps_Sizeof\var{type}}}
+\begin{deftypevr}{Compute Sizeof}{int}{amps\_Sizeof\var{type}}
+\DESCRIPTION
+
+The macros \code{amps_Sizeof\var{type}} are used to
+determine the size (in bytes) of the standard C types.  You should not
+use the Standard C \code{sizeof} routine since {\em AMPS} writes
+binary output using XDR format (\cite{xdr.87}).
+
+Supported types are:
+
+\begin{tabular}{ll}
+Char & character \\
+Short & short \\
+Int & integer \\
+Long & long integer \\
+Float & float \\
+Double & double
+\end{tabular}
+
+%=========================== SEE ALSO ========================================
+\SEEALSO
+\vref{amps_FFopen}{amps\_FFopen}. \\
+\vref{amps_FFclose}{amps\_FFclose}. \\
+\vref{amps_Write}{amps\_Write}. \\
+
+\end{deftypevr}
+
+
+%=============== Print the References here
+
+%\nocite{AMGT89,AFST94a,TAFSFL94b,MVAS89}
+\bibliographystyle{plain}
+\bibliography{parflow}
+
+%=============== Print the Index here
+
+\printindex
+
+\end{document}

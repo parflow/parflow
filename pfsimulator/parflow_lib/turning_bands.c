@@ -369,7 +369,7 @@ char *geom_name;
     xtra->log_normal = 0;
   else
   {
-    InputError("Error: Invalid True/False value for key <%s> was <%s>\n",
+    NA_InputError("Error: Invalid True/False value for key <%s> was <%s>\n",
                key, tmp);
   }
 

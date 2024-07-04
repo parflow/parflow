@@ -72,8 +72,8 @@ subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf)
   integer  i, j, L           !loop indices
   real(r8) bd                !bulk density of dry soil material [kg/m^3]
   real(r8) tkm               !mineral conductivity
-  real(r8) zlak(1:nlevlak)   !temporary z
-  real(r8) dzlak(1:nlevlak)  !temporary dz
+  real(r8) zlak(1:10)   !temporary z; currenly hard coded initialization
+  real(r8) dzlak(1:10)  !temporary dz; currenly hard coded initialization
   real(r8) xksat
   real(r8) pf_porosity(nlevsoi)  !porosity from PF, replaces watsat clm var
 

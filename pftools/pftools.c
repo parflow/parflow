@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /****************************************************************************
  * Program to interactively read, print, etc. different file formats.
  *
@@ -57,6 +57,7 @@
 
 #include "readdatabox.h"
 #include "printdatabox.h"
+#include "solidtools.h"
 #include "velocity.h"
 #include "head.h"
 #include "flux.h"
@@ -124,6 +125,7 @@ int            PFDistCommand(
   int num_procs_y;
   int num_procs_z;
   int num_procs;
+  int nz_manual = 0;
 
   Background    *background;
   Grid          *user_grid;
@@ -133,16 +135,43 @@ int            PFDistCommand(
 
   char command[1024];
 
-  if (argc != 2)
+  // Setup and error checking for manual nz spec
+  if ((argc == 2) || (argc == 4))
   {
-    WrongNumArgsError(interp, LOADPFUSAGE);
+    if (argc == 4) /* Check that third argument is -nz */
+    {
+      if (strcmp(argv[1], "-nz") != 0)
+      {
+        printf("Error: Expected optional argument is: -nz \n");
+        printf("  argument read as: %s \n", argv[1]);
+        return TCL_ERROR;
+      }
+      nz_manual = atoi(argv[2]);
+      if (nz_manual < 1)
+      {
+        printf("Error: -nz must be greater than 0 \n");
+        return TCL_ERROR;
+      }
+    }
+  }
+  else
+  {
+    /*WrongNumArgsError(interp, LOADPFUSAGE); */
+    printf("Error: Invalid number of arguments passed to pfdist \n");
+    printf("       2 or 4 allowed, %d passed by user \n", argc);
     return TCL_ERROR;
   }
 
-  filename = argv[1];
+  if (argc > 2)
+  {
+    filename = argv[3];
+  }
+  else
+  {
+    filename = argv[1];
+  }
 
   /* Make sure the file extension is valid */
-
   if ((filetype = GetValidFileExtension(filename)) == (char*)NULL)
   {
     InvalidFileExtensionError(interp, 1, LOADPFUSAGE);
@@ -167,6 +196,13 @@ int            PFDistCommand(
     background = ReadBackground(interp);
     user_grid = ReadUserGrid(interp);
 
+    int nz_in;
+    Subgrid     *user_subgrid = GridSubgrid(user_grid, 0);
+    if (nz_manual != 0)
+    {
+      nz_in = SubgridNZ(user_subgrid); // Save the correct nz
+      SubgridNZ(user_subgrid) = nz_manual; // Set the manual nz
+    }
     /*--------------------------------------------------------------------
      * Get inbox from input_filename
      *--------------------------------------------------------------------*/
@@ -179,7 +215,10 @@ int            PFDistCommand(
 
     all_subgrids = DistributeUserGrid(user_grid, num_procs,
                                       num_procs_x, num_procs_y, num_procs_z);
-
+    if (nz_manual != 0)
+    {
+      SubgridNZ(user_subgrid) = nz_in;  // Restore the correct nz
+    }
     if (!all_subgrids)
     {
       printf("Incorrect process allocation input\n");
@@ -469,7 +508,7 @@ double GetDouble(Tcl_Interp *interp, char *key)
 /* Function InitPFToolsData - This function is used to allocate memory          */
 /* for the structure used to store data set (databoxes).  Other values          */
 /* used to keep track of the databoxes are also initialized here.               */
-/*										*/
+/*                                                                              */
 /* Parameters - None                                                            */
 /*                                                                              */
 /* Return value - Data * - a pointer to the Data structure if one               */
@@ -563,16 +602,15 @@ int       AddData(
                   char *   hashkey)
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
-  int new_data;                   /* 1 if the hashkey already exists        */
-  int num;                   /* The number of the data set to be added */
+  int new_data;              /* 1 if the hashkey already exists        */
+  unsigned long num;          /* The number of the data set to be added */
 
   num = DataNum(data);
 
   /* Keep tring to find a unique hash key */
-
   do
   {
-    sprintf(hashkey, "dataset%d", num);
+    sprintf(hashkey, "dataset%lu", num);
     if ((entryPtr = Tcl_CreateHashEntry(&DataMembers(data), hashkey, &new_data))
         == NULL)
       return(0);
@@ -605,8 +643,8 @@ int       AddData(
 /* ----------                                                                   */
 /* ClientData clientData - a pointer to the Data structure                      */
 /*                                                                              */
-/* Return value - void								*/
-/*								                */
+/* Return value - void                                                          */
+/*                                                                              */
 
 void               PFTExitProc(
                                ClientData clientData)
@@ -645,13 +683,13 @@ void               PFTExitProc(
 /*                                                                              */
 /* Parameters                                                                   */
 /* ----------                                                                   */
-/* char *key1 - A hash key to be compared					*/
-/* char *key2 - A hash key to be compared					*/
-/*										*/
+/* char *key1 - A hash key to be compared                                       */
+/* char *key2 - A hash key to be compared                                       */
+/*                                                                              */
 /* Return value - int - Note: hashkeys have the form: datasetn where n is an    */
 /*                            integer.                                          */
-/*                      -1 if n1 in key1 is less than n2 in key2		*/
-/*                       1 if n1 in key1 is greater than n2 in key2		*/
+/*                      -1 if n1 in key1 is less than n2 in key2                */
+/*                       1 if n1 in key1 is greater than n2 in key2             */
 /*                       0 if they are equal                                    */
 
 int keycompare(
@@ -678,7 +716,7 @@ int keycompare(
   while (*endnum1 != ' ')
   {
     /* Point number1 to the begining of the number */
-    /* substring.				    */
+    /* substring.                                   */
 
     if (!number1 && isdigit(*endnum1))
       number1 = endnum1;
@@ -734,14 +772,14 @@ int keycompare(
 /* The procedures below have the parameters necessary to make them Tcl commands.*/
 /* When a PFTools command is executed from within Tcl, Tcl will send four       */
 /* arguments to the procedure which implements the command.  They are described */
-/* here.									*/
-/*										*/
+/* here.                                                                        */
+/*                                                                              */
 /* ClientData clientData - Points to data that a Tcl command may need acess to. */
 /*                         In the case of the PFTools commands, it will point   */
 /*                         to the Data structure which contains the hash table  */
 /*                         of data box pointers.                                */
 /* Tcl_Interp *interp    - The interpreter being used to execute PFTools        */
-/*                         commands.						*/
+/*                         commands.                                            */
 /* int argc              - The number of agruments in the PFTools command       */
 /* char *argv            - each of the arguments in the command                 */
 
@@ -1421,7 +1459,7 @@ int SavePFVTKCommand(
   int i, j, k;
   int flt = 0;
   char          *dzlist_in;
-  char*         Endp1;
+  char*         Endp1=0;
   int dz_els;
 
   FILE          *fp = NULL;
@@ -1846,6 +1884,333 @@ int SavePFVTKCommand(
 }
 
 // END of PFVsave
+/* -------------------------------------------------------------------------------------- */
+
+/*-----------------------------------------------------------------------
+ * routine for `pfpatchysolid' command
+ *-----------------------------------------------------------------------*/
+
+int MakePatchySolidCommand(
+                     ClientData  clientData,
+                     Tcl_Interp *interp,
+                     int         argc,
+                     char *      argv[])
+{
+  Data          *data = (Data*)clientData;
+
+  char          *filename, *vtk_filename;
+  int           i;
+
+  FILE          *fp = NULL;
+  FILE          *fp_vtk = NULL;
+  char          *maskkey, *tophash, *bothash;
+  Tcl_HashEntry *entryPtr;
+  Databox       *databox, *top_databox, *bot_databox;
+
+  // Fail based on an invalid number of arguments
+  if ((argc < 5) || (argc > 13))
+  {
+    printf("\n ERROR (pfpatchysolid): Invalid number of arguments\n");
+    return TCL_ERROR;
+  }
+
+  // Initialize
+  filename = "SolidFile.pfsol";
+  vtk_filename = NULL;
+  maskkey = NULL;
+  tophash = NULL;
+  bothash = NULL;
+
+  int msk=0, top=0, bot=0, vtk=0, sub_patch=0, bin_out=0;  //Initalize flags for the options
+  // Note: bin_out is a place holder for a yet to be added BINARY solid file...
+  //       vtk is a flag for writing a BINARY VTK of the solid file too
+
+  // Scan through the argument list and match up the options
+  for (i = 1; i < argc; ++i)
+  {
+    if ((strcmp(argv[i], "-msk") == 0) || (strcmp(argv[i], "–msk") == 0))
+    {
+      msk = 1;
+      maskkey = argv[i + 1];
+    }
+    if ((strcmp(argv[i], "-top") == 0) || (strcmp(argv[i], "–top") == 0))
+    {
+      top = 1;
+      tophash = argv[i + 1];
+    }
+    if ((strcmp(argv[i], "-bot") == 0) || (strcmp(argv[i], "–bot") == 0))
+    {
+      bot = 1;
+      bothash = argv[i + 1];
+    }
+    if ((strcmp(argv[i], "-sub") == 0) || (strcmp(argv[i], "–sub") == 0))
+    {
+      /* Subdivide patches by face direction */
+      sub_patch = 1;
+    }
+
+    char          *file1_ext;
+    if ((strcmp(argv[i], "-vtk") == 0) || (strcmp(argv[i], "–vtk") == 0))
+    {
+      vtk = 1;
+      vtk_filename = argv[i + 1];
+      file1_ext = strrchr(vtk_filename, '.');
+      if (strcmp(file1_ext+1,"vtk")!=0) {
+        printf("ERROR (pfpatchysolid): vtk file extension must be .vtk\n");
+        printf("                       detected %s\n",file1_ext+1);
+        return TCL_ERROR;
+      }
+    }
+
+    if ((strcmp(argv[i], "-pfsol") == 0) || (strcmp(argv[i], "–pfsol") == 0))
+    {
+      filename = argv[i + 1];
+      file1_ext = strrchr(filename, '.');
+      if (strcmp(file1_ext+1,"pfsol")!=0) {
+        printf("ERROR (pfpatchysolid): ASCII file extension must be .pfsol\n");
+        printf("                       detected %s\n",file1_ext+1);
+        return TCL_ERROR;
+      }
+    }
+    else if ((strcmp(argv[i], "-pfsolb") == 0) || (strcmp(argv[i], "–pfsolb") == 0))
+    {
+      bin_out=1;
+      filename = argv[i + 1];
+      file1_ext = strrchr(filename, '.');
+      if (strcmp(file1_ext+1,"pfsolb")!=0) {
+        printf("ERROR (pfpatchysolid): Binary file extension must be .pfsolb\n");
+        printf("                       detected %s\n",file1_ext+1);
+        return TCL_ERROR;
+      }
+    }
+  }
+
+  if ( (top==0) || (bot==0)) // (msk==0) ||
+  {
+    printf("\n ERROR (pfpatchysolid): Missing required arguments. Please add:\n");
+    // if (msk==0)
+    // {
+    //   printf("      -msk <Mask_dataset_ID>\n");
+    // }
+    if (top==0)
+    {
+      printf("      -top <Top_surface_dataset_ID>\n");
+    }
+    if (top==0)
+    {
+      printf("      -bot <Bottom_surface_dataset_ID>\n");
+    }
+    return TCL_ERROR;
+  }
+
+  if (strcmp(filename,"SolidFile.pfsol")==0)
+  {
+    printf("WARNING (pfpatchysolid): No solid file name specified, default is: SolidFile.pfsol\n");
+  }
+
+  /* Make sure the MAIN datasets exists */
+  if ((top_databox = DataMember(data, tophash, entryPtr)) == NULL)
+  {
+    SetNonExistantError(interp, maskkey);
+    return TCL_ERROR;
+  }
+  if ((bot_databox = DataMember(data, bothash, entryPtr)) == NULL)
+  {
+    SetNonExistantError(interp, maskkey);
+    return TCL_ERROR;
+  }
+
+  if (msk==1) {
+    if ((databox = DataMember(data, maskkey, entryPtr)) == NULL)
+    {
+      SetNonExistantError(interp, maskkey);
+      return TCL_ERROR;
+    }
+  } else {
+    // No mask provided so make one of all ones matching the size of top
+    int NX = DataboxNx(top_databox);
+    int NY = DataboxNy(top_databox);
+    int NZ = DataboxNz(top_databox);
+    double X = DataboxX(top_databox);
+    double Y = DataboxY(top_databox);
+    double Z = DataboxZ(top_databox);
+    double DX = DataboxDx(top_databox);
+    double DY = DataboxDy(top_databox);
+    double DZ = DataboxDz(top_databox);
+
+    databox=NewDataboxDefault(NX,NY,NZ,X,Y,Z,DX,DY,DZ,1.0);
+  }
+
+  if ((fp = fopen(filename, "wb")) == NULL)
+  {
+    printf("\n ERROR (pfpatchysolid): pfsol output file could not be opened\n");
+    ReadWriteError(interp);
+    return TCL_ERROR;
+  }
+  if (vtk==1)
+  {
+    if ((fp_vtk = fopen(vtk_filename, "wb")) == NULL)
+    {
+      printf("\n ERROR (pfpatchysolid): vtk output file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+  }
+
+  // #include <time.h>
+  // clock_t start_time, end_time;
+  // start_time=clock();
+  // double run_time;
+
+  i=MakePatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, sub_patch, bin_out);
+
+  // end_time=clock();
+  // run_time=(double)(end_time-start_time) / CLOCKS_PER_SEC;
+  // printf("Elapsed time: %f\n", run_time);
+
+  if (i!=0)
+  {
+    if (i==-2) // Flag for errors deriving from input issues
+    {
+      printf("\n ERROR (pfpatchysolid): Error with inputs\n");
+    }
+    else  // Everything else...
+    {
+    printf("\n ERROR (pfpatchysolid): Other internal error\n");
+    }
+  }
+
+  /* Close the file, if still opened */
+  if (fp)
+  {
+    fclose(fp);
+  }
+  if (fp_vtk)
+  {
+    fclose(fp_vtk);
+  }
+  return TCL_OK;
+}
+
+// END of PFPATCHYSOLID
+
+// ----------------------------------------------------------------------------
+//  Convert an ascii solid file (.pfsol) to a binary solid (.pfsolb)or vice versa
+//   order of specified files determines function based on file extension. Converts
+//   from first filename format to the second filename format
+// ----------------------------------------------------------------------------
+int pfsolFmtConvert(
+                     ClientData  clientData,
+                     Tcl_Interp *interp,
+                     int         argc,
+                     char *      argv[])
+{
+  char          *bin_filename, *ascii_filename;
+  char          *file1_name, *file2_name,*file1_ext, *file2_ext;
+  int           bin2asc;
+
+  FILE          *fp_bin = NULL;
+  FILE          *fp_ascii = NULL;
+
+  // Perform some checks before calling the appropriate routine in solidtools.c
+
+  if (argc!=3)
+  {
+    printf("ERROR (pfsolidfmtconvert): Two input file names are required\n");
+    return TCL_ERROR;
+  }
+
+  file1_name=argv[1];
+  file2_name=argv[2];
+
+  file1_ext = strrchr(file1_name, '.');
+  file2_ext = strrchr(file2_name, '.');
+
+  if (!file1_ext) {
+    printf("ERROR (pfsolidfmtconvert): Missing extension on file 1, must be .pfsol or .pfsolb\n");
+    return TCL_ERROR;
+  }
+  if (!file2_ext) {
+    printf("ERROR (pfsolidfmtconvert): Missing extension on file 2, must be .pfsol or .pfsolb\n");
+    return TCL_ERROR;
+  }
+  if ((strcmp(file1_ext+1,"pfsol")!=0)&(strcmp(file1_ext+1,"pfsolb")!=0)) {
+    printf("ERROR (pfsolidfmtconvert): File extension on file 1 must be .pfsol or .pfsolb\n");
+    printf("                           detected .%s\n",file1_ext+1);
+    return TCL_ERROR;
+  }
+  if ((strcmp(file2_ext+1,"pfsol")!=0)&(strcmp(file2_ext+1,"pfsolb")!=0)) {
+    printf("ERROR (pfsolidfmtconvert): File extension on file 2 must be .pfsol or .pfsolb\n");
+    printf("                           detected .%s\n",file2_ext+1);
+    return TCL_ERROR;
+  }
+  if (strcmp(file2_ext+1,file1_ext+1)==0) {
+    printf("ERROR (pfsolidfmtconvert): File extensions must be different\n");
+    return TCL_ERROR;
+  }
+
+  if (strcmp(file1_ext+1,"pfsol")==0)
+  {
+    ascii_filename=file1_name;
+    bin_filename=file2_name;
+    bin2asc=0;
+
+    if ((fp_ascii = fopen(ascii_filename, "r")) == NULL)
+    {
+      printf("\n ERROR (pfsolidfmtconvert): ascii file file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+    if ((fp_bin = fopen(bin_filename, "wb")) == NULL)
+    {
+      printf("\n ERROR (pfsolidfmtconvert): binary file file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+  } else {
+    ascii_filename=file2_name;
+    bin_filename=file1_name;
+    bin2asc=1;
+
+    if ((fp_ascii = fopen(ascii_filename, "w")) == NULL)
+    {
+      printf("\n ERROR (pfsolidfmtconvert): ascii file file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+    if ((fp_bin = fopen(bin_filename, "rb")) == NULL)
+    {
+      printf("\n ERROR (pfsolidfmtconvert): binary file file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+  }
+
+  int out_status=0;
+  if (bin2asc==0){
+    out_status=ConvertPfsolAscii2Bin(fp_ascii,fp_bin);
+  } else {
+    out_status=ConvertPfsolBin2Ascii(fp_bin,fp_ascii);
+  }
+
+  if (fp_ascii)
+  {
+    fclose(fp_ascii);
+  }
+  if (fp_bin)
+  {
+    fclose(fp_bin);
+  }
+
+  if (out_status!=0)
+  {
+    printf("\n ERROR (pfsolidfmtconvert): Problem during file conversion\n");
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
 /* -------------------------------------------------------------------------------------- */
 
 #ifdef HAVE_HDF4
@@ -3039,6 +3404,8 @@ int               SetGridCommand(
   double x, y, z;
   double dx, dy, dz;
 
+  int return_code = TCL_ERROR;
+
   /* Five arguments must be given */
   if (argc != 5)
   {
@@ -3046,9 +3413,9 @@ int               SetGridCommand(
     return TCL_ERROR;
   }
 
-  npoints = argv[1];
-  origin = argv[2];
-  intervals = argv[3];
+  npoints = strdup(argv[1]);
+  origin = strdup(argv[2]);
+  intervals = strdup(argv[3]);
   hashkey = argv[4];
 
   /* Make sure that the number of points along each axis are all */
@@ -3058,14 +3425,14 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &nz) != 1))
   {
     NotAnIntError(interp, 1, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* there should only be three numbers in the npoints list */
   if (strtok(NULL, WS))
   {
     InvalidArgError(interp, 1, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Make sure that the origin is given in floating point numbers */
@@ -3074,7 +3441,7 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &z) != 1))
   {
     NotADoubleError(interp, 2, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* There should only be three numbers in the origin list */
@@ -3090,26 +3457,35 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dz) != 1))
   {
     NotADoubleError(interp, 3, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* There should only be three numbers in the intervals list */
   if (strtok(NULL, WS))
   {
     InvalidArgError(interp, 3, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Make sure dataset exists */
   if ((databox = DataMember(data, hashkey, entryPtr)) == NULL)
   {
     SetNonExistantError(interp, hashkey);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Swap grid values */
   SetDataboxGrid(databox, nx, ny, nz, x, y, z, dx, dy, dz);
-  return TCL_OK;
+
+  return_code = TCL_OK;
+
+exit:
+
+  free(npoints);
+  free(origin);
+  free(intervals);
+
+  return return_code;
 }
 
 
@@ -4410,7 +4786,7 @@ int               DiffEltCommand(
   int sd;
   int i, j, k;
   double diff;
-  double abs_zero;
+  double abs_zero = 0;
 
   Tcl_Obj       *result;
 
@@ -4861,7 +5237,7 @@ int            ComputeDomainCommand(
 
   if (num_procs_z > 1)
   {
-    // SGS Add error message here!
+    fprintf(stderr, "Error: Process.Topology.R must be 1 for pfcomputedomain to work\n");
     return TCL_ERROR;
   }
 
@@ -5652,7 +6028,7 @@ int            WaterTableDepthCommand(
  * Description: Compute slopes in x-direction at all [i,j] using 1st order
  *              upwind finite difference scheme
  *
- * Notes:	local maxima: slope set to max downward gradient
+ * Notes:       local maxima: slope set to max downward gradient
  *              local minima: slope set to zero (no drainage in x-dir)
  *              otherwise:    1st order upwind finite difference
  *
@@ -6851,7 +7227,7 @@ int            FlintsLawByBasinCommand(
   /* Check if one argument following command  */
   if (argc == 1)
   {
-    WrongNumArgsError(interp, PFFLINTSLAWFITUSAGE);
+    WrongNumArgsError(interp, PFFLINTSLAWBYBASINUSAGE);
     return TCL_ERROR;
   }
 
@@ -7777,4 +8153,3 @@ int            HydroStatFromWTCommand(
   }
   return TCL_OK;
 }
-

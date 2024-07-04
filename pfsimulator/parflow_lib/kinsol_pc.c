@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 #include "kinsol_dependences.h"
@@ -88,6 +88,7 @@ PFModule  *KinsolPCInitInstanceXtra(
                                     ProblemData *problem_data,
                                     double *     temp_data,
                                     Vector *     pressure,
+                                    Vector *     old_pressure,
                                     Vector *     saturation,
                                     Vector *     density,
                                     double       dt,
@@ -145,7 +146,7 @@ PFModule  *KinsolPCInitInstanceXtra(
   else if (pressure != NULL)
   {
     PFModuleInvokeType(RichardsJacobianEvalInvoke, (instance_xtra->discretization),
-                       (pressure, &PC, &JC, saturation, density, problem_data, dt,
+                       (pressure, old_pressure, &PC, &JC, saturation, density, problem_data, dt,
                         time, pc_matrix_type));
     PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke,
                               (instance_xtra->precond),
@@ -213,7 +214,7 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
   precond_na = NA_NewNameArray("FullJacobian PFSymmetric SymmetricPart Picard");
   sprintf(key, "%s.PCMatrixType", name);
   switch_name = GetStringDefault(key, "PFSymmetric");
-  switch_value = NA_NameToIndex(precond_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(precond_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -242,15 +243,14 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(precond_na);
 
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
-  switch_value = NA_NameToIndex(precond_switch_na, pc_name);
   sprintf(key, "%s.%s", name, pc_name);
+  switch_value = NA_NameToIndexExitOnError(precond_switch_na, pc_name, key);
   switch (switch_value)
   {
     case 0:
@@ -301,6 +301,10 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
                  "Hypre PFMG code not compiled in.\n", switch_name, key);
 #endif
       break;
+    }
+    default:
+    {
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(precond_switch_na);

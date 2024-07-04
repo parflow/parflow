@@ -45,7 +45,7 @@ c----------------------------------------------------------------------
      $     viscos,densty,gravty,
      $     slx,sly,slz,
      $     lohi,dlohi,hx,dt,
-     $     sbot,stop,sbotp,sfrt,sbck,sleft,sright,sfluxz,
+     $     sbot,s_top,sbotp,sfrt,sbck,sleft,sright,sfluxz,
      $     dxscr,dyscr,dzscr,dzfrm) 
       implicit none
 
@@ -91,7 +91,7 @@ c     ::: argument declarations
 
       real*8   sbot(dlohi(1,1)-3:dlohi(1,2)+3,
      $              dlohi(2,1)-3:dlohi(2,2)+3)
-      real*8   stop(dlohi(1,1)-3:dlohi(1,2)+3,
+      real*8   s_top(dlohi(1,1)-3:dlohi(1,2)+3,
      $              dlohi(2,1)-3:dlohi(2,2)+3)
       real*8  sbotp(dlohi(1,1)-3:dlohi(1,2)+3,
      $              dlohi(2,1)-3:dlohi(2,2)+3)
@@ -132,6 +132,21 @@ c     ::: argument declarations
       real*8  fi,fpi,hi,hpi,Qi,Qpi
       real*8  m0i,m1i
       real*8  phiinv
+      
+      real*8  temp1
+      dimension temp1(1)
+      real*8  temp2
+      dimension temp2(1)
+      real*8  temp3
+      dimension temp3(1)
+      real*8  temp4
+      dimension temp4(1)
+      real*8  temp5
+      dimension temp5(1)
+      real*8  temp6
+      dimension temp6(1)
+      real*8  temp7
+      dimension temp7(1)
 
       data    half/0.5d0/
       data firstord /.false./
@@ -347,13 +362,24 @@ C              phiinv = 1./phi(i-1,j,k) was a mistake, I believe
                   thi_y = thi_yhi
                endif
 
-               call rpsolv(tlo_zlo,tlo_zhi,wedge(i,j,k),
-     $                     betaedge(i,j,k)*beta,mu0,mu1,
-     $                     1,wc,tlo_z)
+               temp1(1) = tlo_zlo
+               temp2(1) = tlo_zhi
+               temp3(1) = betaedge(i,j,k)*beta
+               temp4(1) = mu0
+               temp5(1) = mu1
+               temp6(1) = wc
+               temp7(1) = tlo_z
+               call rpsolv(temp1,temp2,wedge(i,j,k),
+     $                     temp3,temp4,temp5,
+     $                     1,temp6,temp7)
 
-               call rpsolv(thi_zlo,thi_zhi,wedge(i,j,k+1),
-     $                     beta*betaedge(i,j,k+1),mu0,mu1,
-     $                     1,wc,thi_z)
+               temp1(1) = thi_zlo
+               temp2(1) = thi_zhi
+               temp3(1) = beta*betaedge(i,j,k+1)
+               temp7(1) = thi_z
+               call rpsolv(temp1,temp2,wedge(i,j,k+1),
+     $                     temp3,temp4,temp5,
+     $                     1,temp6,temp7)
 
                sux = (uedge(i+1,j,k)*fi(thi_x,mu0i,mu1i)
      $             -  uedge(  i,j,k)*fi(tlo_x,mu0i,mu1i))*dxi
@@ -385,7 +411,7 @@ C              phiinv = 1./phi(i-1,j,k) was a mistake, I believe
 
                sbotp(i,j)  =
      $              thi_zlo - dth*( sux + suy + cuz ) * phiinv
-               stop(i,j)   =
+               s_top(i,j)   =
      $              tlo_zhi - dth*( sux + suy + cuz ) * phiinv
 
             enddo
@@ -457,10 +483,15 @@ c     ::: add z contributions to sn
             do j=js,je
 
                do i=is,ie
-
-                  call rpsolv(sbot(i,j),stop(i,j),wedge(i,j,k),
-     $                        beta*betaedge(i,j,k),mu0,mu1,
-     $                        1,wc,supw)
+                  
+                  temp1(1) = beta*betaedge(i,j,k)
+                  temp2(1) = mu0
+                  temp3(1) = mu1
+                  temp4(1) = wc
+                  temp5(1) = supw
+                  call rpsolv(sbot(i,j),s_top(i,j),wedge(i,j,k),
+     $                        temp1,temp2,temp3,
+     $                        1,temp4,temp5)
                   sfluxz(i) =
      $            Qi(supw,mu0i,mu1i,wedge(i,j,k),beta*betaedge(i,j,k))
 
@@ -987,7 +1018,7 @@ c
 c
 c     linear interpolation--newtons method.
 c
-      do 30 k = 1, 5
+      do 31 k = 1, 5
       do 30 j = 1, jmax
 c     delta =
 c    $        alpha(j)*(amob1(wc(j),visc1(j))/dmob1(wc(j),visc1(j))
@@ -1018,7 +1049,8 @@ c    $                +amob0(wc(j),visc0(j))**2/dmob0(wc(j),visc0(j)))
       if (wc(j).le.0..or.wc(j).ge.1.) then
         wc(j) = 2.
       endif
-  30  continue
+  30  enddo
+  31  enddo
 c    
 c     solve riemann problem.
 c

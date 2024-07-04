@@ -3,13 +3,14 @@
 subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,           &
 start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx,gny,rank,sw_pf,lw_pf,    &
 prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,                               &
+slope_x_pf,slope_y_pf,                                                                                 &
 eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,                                                     &
 qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
-write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
+write_CLM_binary,slope_accounting_CLM,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
-clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
+clm_last_rst,clm_daily_rst,rz_water_stress_typepf, pf_nlevsoi, pf_nlevlak)
 
   !=========================================================================
   !
@@ -47,11 +48,14 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
   ! integer, parameter :: numrad      =   2   !number of solar radiation bands: vis, nir
   ! integer, parameter :: numcol      =   8   !number of soil color types
 
+  integer  :: pf_nlevsoi                         ! number of soil levels, passed from PF
+  integer  :: pf_nlevlak                         ! number of lake levels, passed from PF
+ 
   !=== Local Variables =====================================================
 
   ! basic indices, counters
   integer  :: t                                   ! tile space counter
-  integer  :: l                                   ! layer counter 
+  integer  :: l,ll                                   ! layer counter 
   integer  :: r,c                                 ! row,column indices
   integer  :: ierr                                ! error output 
 
@@ -95,7 +99,7 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
   real(r8) :: qflx_in_pf((nx+2)*(ny+2)*3)        ! h2o_flux (infil) output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: swe_pf((nx+2)*(ny+2)*3)            ! swe              output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: t_g_pf((nx+2)*(ny+2)*3)            ! t_grnd           output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
-  real(r8) :: t_soi_pf((nx+2)*(ny+2)*(nlevsoi+2))!tsoil             output var to send to ParFlow, on grid w/ ghost nodes for current proc, but nz=10 (3D)
+  real(r8) :: t_soi_pf((nx+2)*(ny+2)*(pf_nlevsoi+2))!tsoil             output var to send to ParFlow, on grid w/ ghost nodes for current proc, but nz=10 (3D)
   real(r8) :: sw_pf((nx+2)*(ny+2)*3)             ! SW rad, passed from PF
   real(r8) :: lw_pf((nx+2)*(ny+2)*3)             ! LW rad, passed from PF
   real(r8) :: prcp_pf((nx+2)*(ny+2)*3)           ! Precip, passed from PF
@@ -110,15 +114,19 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
   real(r8) :: displa_pf((nx+2)*(ny+2)*3)         ! BH: displacement height, passed from PF
   real(r8) :: irr_flag_pf((nx+2)*(ny+2)*3)       ! irrigation flag for deficit-based scheduling -- 1 = irrigate, 0 = no-irrigate
   real(r8) :: qirr_pf((nx+2)*(ny+2)*3)           ! irrigation applied above ground -- spray or drip (2D)
-  real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
+  real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(pf_nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
+
+  real(r8) :: slope_x_pf((nx+2)*(ny+2)*3)        ! Slope in x-direction from PF
+  real(r8) :: slope_y_pf((nx+2)*(ny+2)*3)        ! Slope in y-direction from PF
 
   ! output keys
-  real(r8) :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
+  integer :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
   integer  :: clm_forc_veg                       ! BH: whether vegetation (LAI, SAI, z0m, displa) is being forced 0=no, 1=yes
   integer  :: clm_output_dir_length              ! for output directory
   integer  :: clm_bin_output_dir                 ! output directory
   integer  :: write_CLM_binary                   ! whether to write CLM output as binary 
+  integer  :: slope_accounting_CLM               ! account for slope is solar zenith angle calculations
   character (LEN=clm_output_dir_length) :: clm_output_dir ! output dir location
 
   ! ET keys
@@ -146,8 +154,9 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
   integer, allocatable :: counter(:,:) 
   real(r8) :: total
   character*100 :: RI
+  real(r8) :: u         ! Tempoary UNDEF Variable
 
-   real(r8) pf_porosity(nlevsoi)  !porosity from PF, replaces watsat clm var
+  real(r8) pf_porosity(pf_nlevsoi)  !porosity from PF, replaces watsat clm var
 
   save
 
@@ -156,7 +165,6 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
   !=========================================================================
   !=== Initialize CLM
   !=========================================================================
-
 
   !=== Open CLM text output
   write(RI,*)  rank
@@ -176,7 +184,11 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
   drv%ts = dt*3600.d0          ! Assume PF in hours, CLM in seconds
   j_incr = nx_f
   k_incr = nx_f*ny_f
- 
+
+  !=== levels passed from PF
+  nlevsoi = pf_nlevsoi
+  nlevlak = pf_nlevlak
+
   !=== Check if initialization is necessary
   if (time == start_time) then 
      
@@ -197,6 +209,12 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
      allocate (grid(drv%nc,drv%nr),stat=ierr) ; call drv_astp(ierr) 
      do r=1,drv%nr                              ! rows
         do c=1,drv%nc                           ! columns
+           grid(c,r)%smpmax = u                 ! SGS Added initialization to address valgrind issues
+           grid(c,r)%scalez = u
+           grid(c,r)%hkdepth = u
+           grid(c,r)%wtfact = u
+           grid(c,r)%trsmx0 = u
+           grid(c,r)%pondmx = u
            allocate (grid(c,r)%fgrd(drv%nt))
            allocate (grid(c,r)%pveg(drv%nt))
         enddo                                   ! columns
@@ -280,110 +298,71 @@ clm_last_rst,clm_daily_rst,rz_water_stress_typepf)
      write(999,*) 'global  NX:',gnx, ' global NY:', gny
      write(999,*) 'DRV-NC:',drv%nc,' DRV-NR:',drv%nr, 'DRV-NCH:',drv%nch
      write(999,*) ' Processor Number:',rank, ' local vector start:',ip
-     flush(999)
      endif
      !=== Read in vegetation data and set tile information accordingly
      if (clm_write_logs==1) write(999,*) "Read in vegetation data and set tile information accordingly"
-
      call drv_readvegtf (drv, grid, tile, clm, nx, ny, ix, iy, gnx, gny, rank)
 
 
      !=== Transfer grid variables to tile space 
      if (clm_write_logs==1) write(999,*) "Transfer grid variables to tile space ", drv%nch
-
      do t = 1, drv%nch
         call drv_g2clm (drv%udef, drv, grid, tile(t), clm(t))   
      enddo
 
      !=== Read vegetation parameter data file for IGBP classification
      if (clm_write_logs==1) write(999,*) "Read vegetation parameter data file for IGBP classification"
-
      call drv_readvegpf (drv, grid, tile, clm)  
 
 
      !=== Initialize CLM and DIAG variables
      if (clm_write_logs==1) write(999,*) "Initialize CLM and DIAG variables"
-
      do t=1,drv%nch 
         clm%kpatch = t
 
-
-!=== Initialize the CLM topography mask  @RMM  moved up from loop below
-!    This is two components:
-!    1) a x-y mask of 0 o 1 for active inactive and
-!    2) a z/k mask that takes three values
-!      (1)= top of LS/PF domain
-!      (2)= top-nlevsoi and
-!      (3)= the bottom of the LS/PF domain.
-
-i=tile(t)%col
-j=tile(t)%row
-counter(i,j) = 0
-clm(t)%topo_mask(3) = 1
-
-do k = nz, 1, -1 ! PF loop over z
-l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
-if (topo(l) > 0) then
-counter(i,j) = counter(i,j) + 1
-if (counter(i,j) == 1) then
-clm(t)%topo_mask(1) = k
-clm(t)%planar_mask = 1
-end if
-endif
-
-if (topo(l) == 0 .and. topo(l+k_incr) > 0) clm(t)%topo_mask(3) = k+1
-
-enddo ! k
-
-clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
-
-! set clm watsat, tksatu from PF porosity
-do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
-! convert clm space to parflow space, note that PF space has ghost nodes
-l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-! put ParFlow porosity in a temp variable passed to clm_ini
-pf_porosity(k)       = porosity(l)
-!print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
-
-!clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
-end do !k
-        call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf) !Initialize CLM Variables
-     enddo
-
-     !=== Initialize the CLM topography mask 
-     !    This is two components: 
-     !    1) a x-y mask of 0 o 1 for active inactive and 
-     !    2) a z/k mask that takes three values 
-     !      (1)= top of LS/PF domain 
-     !      (2)= top-nlevsoi and 
+        !=== Initialize the CLM topography mask  @RMM  moved up from loop below
+        !    This is two components:
+        !    1) a x-y mask of 0 o 1 for active inactive and
+     !    2) a z/k mask that takes three values
+     !      (1)= top of LS/PF domain
+     !      (2)= top-nlevsoi and
      !      (3)= the bottom of the LS/PF domain.
      if (clm_write_logs==1) write(999,*) "Initialize the CLM topography mask"
 
+     i=tile(t)%col
+     j=tile(t)%row
+     counter(i,j) = 0
+     clm(t)%topo_mask(3) = 1
 
-!     do t=1,drv%nch
+     do k = nz, 1, -1 ! PF loop over z
+        l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
+        if (topo(l) > 0) then
+           counter(i,j) = counter(i,j) + 1
+           if (counter(i,j) == 1) then
+              clm(t)%topo_mask(1) = k
+              clm(t)%planar_mask = 1
+           end if
+        endif
 
-!        i=tile(t)%col
-!        j=tile(t)%row
-!        counter(i,j) = 0
-!        clm(t)%topo_mask(3) = 1
+        if (topo(l) == 0 .and. topo(l+k_incr) > 0) clm(t)%topo_mask(3) = k+1
 
-!        do k = nz, 1, -1 ! PF loop over z
-!           l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
-!           if (topo(l) > 0) then
-!              counter(i,j) = counter(i,j) + 1
-!              if (counter(i,j) == 1) then
-!                 clm(t)%topo_mask(1) = k
-!                 clm(t)%planar_mask = 1
-!              end if
-!           endif
+     enddo ! k
 
-!           if (topo(l) == 0 .and. topo(l+k_incr) > 0) clm(t)%topo_mask(3) = k+1
+     clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
 
-!        enddo ! k
+     ! set clm watsat, tksatu from PF porosity
+     do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
+        ! convert clm space to parflow space, note that PF space has ghost nodes
+        l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+        ! put ParFlow porosity in a temp variable passed to clm_ini
+        pf_porosity(k)       = porosity(l)
+        !print*, 'k=',k,'l=',l,'porosity=',porosity(l),'pf_poro=',pf_porosity(k)
 
-!        clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
+        !clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
+     end do !k
 
-!     enddo ! t
+        call drv_clmini (drv, grid, pf_porosity,tile(t), clm(t), istep_pf) !Initialize CLM Variables
+     enddo ! t
 
      !=== IMF:
      !    Check planar mask...
@@ -404,7 +383,7 @@ end do !k
 
         i = tile(t)%col
         j = tile(t)%row
-		
+
 		!!!! BH: modification of the interfaces depths and layers thicknesses to match PF definitions
 	    clm(t)%zi(0)            = 0.   
     
@@ -424,9 +403,11 @@ end do !k
                     l1          = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k1-1))
                     total       = total + (drv%dz * pf_dz_mult(l1))
                  enddo
-                 clm%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
-		clm%zi(k)	= total + drv%dz * pf_dz_mult(l)! basile
+                 clm(t)%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
+		clm(t)%zi(k)	= total + drv%dz * pf_dz_mult(l)! basile
+ 
               endif
+    
            enddo
 
 
@@ -484,7 +465,22 @@ end do !k
 		   endif ! active/inactive
 
      enddo !t 
-           
+   
+   !! Loop over the tile space to assign slopes
+
+      do t=1,drv%nch
+
+        i=tile(t)%col
+        j=tile(t)%row
+      ll =  (1+i) + (nx+2)*(j) + (nx+2)*(ny+2)
+      if (slope_accounting_CLM==1) then
+      clm(t)%slope_x = slope_x_pf(ll)
+      clm(t)%slope_y = slope_y_pf(ll)
+      else
+      clm(t)%slope_x = 0.0d0
+      clm(t)%slope_y = 0.0d0
+      end if
+      end do ! t
 
      !=== Loop over CLM tile space to set keys/constants from PF
      !    (watsat, residual sat, irrigation keys)
@@ -553,10 +549,9 @@ end do !k
   write(9919,*)
   write(9919,*) "CLM starting time =", time, "gmt =", drv%gmt,"istep_pf =",istep_pf 
   write(9919,*) "CLM day =", drv%da, "month =", drv%mo,"year =", drv%yr
-  flush(9919)
   end if ! CLM log
 
-
+  
   !=== Read in the atmospheric forcing for off-line run
   !    (values no longer read by drv_getforce, passed from PF)
   !    (drv_getforce is modified to convert arrays from PF input to CLM space)
@@ -565,7 +560,8 @@ end do !k
   !BH: this replaces values from clm_dynvegpar called previously from drv_clmini and 
   !BH: replaces values from drv_readvegpf
   call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
-	patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg)
+  patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg)
+
   !=== Actual time loop
   !    (loop over CLM tile space, call 1D CLM at each point)
   do t = 1, drv%nch     
@@ -582,10 +578,11 @@ end do !k
      call drv_1dout (drv, tile,clm,clm_write_logs)
   endif
 
+
   !=== Call 2D output routine
   !     Only call for clm_dump_interval steps (not time units, integer units)
   !     Only call if write_CLM_binary is True
-  if (mod(dble(istep_pf),clm_dump_interval)==0)  then
+  if (mod((istep_pf),clm_dump_interval)==0)  then
      if (write_CLM_binary==1) then
 
         ! Call subroutine to open (2D-) output files
@@ -599,7 +596,7 @@ end do !k
 
      end if ! write_CLM_binary
   end if ! mod of istep and dump_interval
-
+  
 
   !=== Copy values from 2D CLM arrays to PF arrays for printing from PF (as Silo)
   do t=1,drv%nch
@@ -665,41 +662,56 @@ end do !k
   if (clm_write_logs==1) then
   write(999,*) "End of time advance:" 
   write(999,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
-  flush(999)
   endif
  if (rank==0) then
     write(9919,*) "End of time advance:"
     write(9919,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
-  flush(9919)
  end if !! rank 0, write log info
 
-! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
+  ! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
   ! ----------------------------------
   ! NBE: Added more control over writing of the RST files
-  !  if (clm_next == 1) then
-     if (clm_last_rst==1) then
-      d_stp=0
-     else
-      d_stp = istep_pf
-     endif
+    if (clm_last_rst==1) then
+       d_stp=0
+    else
+       d_stp = istep_pf
+    endif
+    
+    if (clm_daily_rst==1) then
 
-      if (clm_daily_rst==1) then
+       ! Restarts occur at daily boundaries and at end of the run.
        if ( (drv%gmt==0.0).or.(drv%endtime==1) ) then
-         if (rank==0) write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
           !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
           if (rank==0) then
-                open(393, file="clm_restart.tcl",action="write")
-                write(393,*) "set istep ",istep_pf
-                close(393)
+             write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
+             open(393, file="clm_restart.tcl",action="write")
+             write(393,*) "set istep ",istep_pf
+             close(393)
           end if  !  write istep corresponding to restart step
+             
+          call drv_restart(2,drv,tile,clm,rank,d_stp)
 
-            call drv_restart(2,drv,tile,clm,rank,d_stp)
-             end if
-      else
-       call drv_restart(2,drv,tile,clm,rank,d_stp)
-      endif
+       end if
+    else
+       ! Restarts occur at start of each CLM reuse sequence.
+       if (clm_next == 1) then
 
-   ! endif
+          !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
+          if (rank==0) then
+             write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
+             open(393, file="clm_restart.tcl",action="write")
+             write(393,*) "set istep ",istep_pf
+             close(393)
+          end if  !  write istep corresponding to restart step
+             
+          call drv_restart(2,drv,tile,clm,rank,d_stp)
+
+       end if
+
+    end if
   ! ---------------------------------
 
   !=== Call routine to calculate CLM flux passed to PF

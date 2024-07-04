@@ -1,0 +1,227 @@
+# netcdf.yaml
+# Definitions of NetCDF outputs
+
+# -----------------------------------------------------------------------------
+# NetCDF
+# -----------------------------------------------------------------------------
+
+NetCDF:
+  __doc__: >
+    NetCDF4 parallel I/O is being implemented in ParFlow. As of now only output capability is implemented. Input
+    functionality will be added in later version. Currently user has option of printing 3-D time varying pressure or
+    saturation or both in a single NetCDF file containing multiple time steps. User should configure ParFlow
+    (pfsimulator part) "- -with-netcdf" option and link the appropriate NetCDF4 library. Naming convention of output
+    files is analogues to binary file names. Following options are available for NetCDF4 output along with various
+    performance tuning options. User is advised to explore NetCDF4 chunking and ROMIO hints option for better I/O
+    performance. HDF5 Library version 1.8.16 or higher is required for NetCDF4 parallel I/O
+
+  NumStepsPerFile:
+    help: >
+      [Type: int] This key sets number of time steps user wishes to output in a NetCDF4 file. Once the time step count increases
+      beyond this number, a new file is automatically created.
+    domains:
+      IntValue:
+      RequiresModule: NETCDF
+
+  WritePressure:
+    help: >
+      [Type: boolean/string] This key sets pressure variable to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteSaturation:
+    help: >
+      [Type: boolean/string] This key sets saturation variable to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteMannings:
+    help: >
+      [Type: boolean/string] This key sets Mannings coefficients to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteSubsurface:
+    help: >
+      [Type: boolean/string] This key sets subsurface data(permeabilities, porosity, specific storage) to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteSlopes:
+    help: >
+      [Type: boolean/string] This key sets x and y slopes to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteMask:
+    help: >
+      [Type: boolean/string] This key sets mask to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteDZMultiplier:
+    help: >
+      [Type: boolean/string] This key sets DZ multipliers to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteEvapTrans:
+    help: >
+      [Type: boolean/string] This key sets Evaptrans to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteEvapTransSum:
+    help: >
+      [Type: boolean/string] This key sets Evaptrans sum to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteOverlandSum:
+    help: >
+      [Type: boolean/string] This key sets overland sum to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  WriteOverlandBCFlux:
+    help: >
+      [Type: boolean/string] This key sets overland bc flux to be written in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  Chunking:
+    help: >
+      [Type: boolean/string] This key sets chunking for each time varying 3-D variable in NetCDF4 file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  ChunkX:
+    help: >
+      [Type: int] This key sets chunking size in x-direction.
+    domains:
+      IntValue:
+        min_value: 1
+      RequiresModule: NETCDF
+
+  ChunkY:
+    help: >
+      [Type: int] This key sets chunking size in y-direction.
+    domains:
+      IntValue:
+        min_value: 1
+      RequiresModule: NETCDF
+
+  ChunkZ:
+    help: >
+      [Type: int] This key sets chunking size in z-direction.
+    domains:
+      IntValue:
+        min_value: 1
+      RequiresModule: NETCDF
+
+  ROMIOhints:
+    help: >
+      [Type: string] This key sets ROMIO hints file to be passed on to NetCDF4 interface.If this key is set, the file must be present
+      and readable in experiment directory.
+    domains:
+      AnyString:
+      RequiresModule: NETCDF
+
+  NodeLevelIO:
+    help: >
+      [Type: boolean/string] This key sets flag for node level collective I/O.
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  EvapTransFileTransient:
+    help: >
+      [Type: boolean/string] This key sets flag for transient evaptrans forcing to be read from a NetCDF file.
+    domains:
+      BoolDomain:
+      RequiresModule: NETCDF
+
+  EvapTrans:
+    __class__: NetcdfEvapTrans
+    __doc__: ''
+    __rst__:
+      skip:
+
+    FileName:
+      help: >
+        [Type: string] This key sets flag for transient evaptrans forcing to be read from a NetCDF file.
+      domains:
+        AnyString:
+        RequiresModule: NETCDF
+        ValidFile:
+
+  CLMNumStepsPerFile:
+    help: >
+      [Type: int] This key sets number of time steps to be written to a single NetCDF file.
+    domains:
+      IntValue:
+        min_value: 1
+      RequiresModule:
+        - NETCDF
+        - CLM
+
+  WriteCLM:
+    help: >
+      [Type: boolean/string] This key sets CLM variables to be written in a NetCDF file.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule:
+        - NETCDF
+        - CLM
+
+  Compression:
+    help: >
+      [Type: boolean/string]  This key enables in-transit deflate compression for all NetCDF
+      variables using zlib. To use this feature, NetCDF4 v4.7.4 must be
+      available, which supports the necessary parallel zlib compression. The
+      compression quality can be influenced by the chunk sizes and the
+      overall data distribution. Compressed variables in NetCDF files can be
+      opened in serial mode also within older versions of NetCDF4.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule:
+        - NETCDF
+
+  CompressionLevel:
+    help: >
+      [Type: int]  This key sets the deflate compression level (if NetCDF.Compression
+      is enabled), which influence the overall compression quality. zlib supports values
+      between 0 (no compression), 1 (fastest compression) - 9 (slowest compression,smallest files).
+    default: 1
+    domains:
+      IntValue:
+         min_value: 0
+         max_value: 9
+      RequiresModule:
+        - NETCDF

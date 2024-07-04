@@ -1,0 +1,459 @@
+# wells.yaml
+# Definitions of all well items
+
+# -----------------------------------------------------------------------------
+# Wells
+# -----------------------------------------------------------------------------
+
+Wells:
+  __doc__: >
+    Here we define the wells for the model.
+
+  # Wells.Names not in grep
+  Names:
+    help: >
+      [Type: string] This key specifies the names fo the wells for which input data will be given.
+    domains:
+      AnyString:
+    handlers:
+      WellUpdater:
+        type: ChildrenHandler
+        class_name: WellItem
+
+  .{well_name}:
+    __class__: WellItem
+    __rst__:
+      name: Wells.{well_name}
+    __doc__: >
+      Specifying properties for wells
+    __simput__:
+      type: VariableTable
+      table_label: Well
+
+    # Setting key Wells.{well_name}.{interval_name}...
+    .{interval_name}:
+      __class__: WellIntervalItem
+      __from__: /Cycle/{CycleItem}/Names
+      __rst__:
+        skip:
+      __doc__: >
+        This is to set properties for named wells within specified cycles.
+      __simput__:
+        type: VariableTable
+        table_label: Interval
+        match_condition: 
+          siblingParamKey: Wells/well_name_/Cycle
+          foreignNameKey: Cycle/cycle_name_
+
+
+      Pressure:
+        __class__: WellIntervalItemPressure
+        __rst__:
+          skip:
+        __doc__: >
+          Setting pressure for a named well within a specified cycle.
+        Value:
+          __rst__:
+            name: Wells.{well_name}.{interval_name}.Pressure.Value
+          help: >
+            [Type: double] This key specifies the hydrostatic pressure value for a vertical well if the type key is set to Pressure.
+            Note This value gives the pressure of the primary phase (water) at z = 0. The other phase pressures (if any) are
+            computed from the physical relationships that exist between the phases.
+          domains:
+            DoubleValue:
+
+      # Setting key Wells.{well_name}.{interval_name}.Saturation.{phase_name}.Value
+      Saturation:
+        __class__: WellIntervalItemSaturation
+        __rst__:
+          skip:
+        __doc__: ''
+
+        .{phase_name}:
+          __class__: WellIntervalSaturationPhaseItem
+          __from__: /Phase/Names
+          __rst__:
+            skip:
+          __doc__: ''
+          __simput__: 
+            type: VariableTable
+            table_label: Phase
+
+          Value:
+            __rst__:
+              name: Wells.{well_name}.{interval_name}.Saturation.{phase_name}.Value
+            help: >
+              [Type: double] This key specifies the saturation value of a vertical well.
+            domains:
+              DoubleValue:
+                min_value: 0.0
+                max_value: 1.0
+
+      # Setting key Wells.{well_name}.{interval_name}.Flux.{phase_name}.Value
+      Flux:
+        __class__: WellIntervalItemFlux
+        __rst__:
+          skip:
+        __doc__: ''
+
+        .{phase_name}:
+          __class__: WellIntervalFluxPhaseItem
+          __from__: /Phase/Names
+          __rst__:
+            skip:
+          __doc__: ''
+          __simput__:
+            type: VariableTable
+            table_label: Phase
+
+          # typos in the description - vertical, assign
+          Value:
+            __rst__:
+              name: Wells.{well_name}.{interval_name}.Flux.{phase_name}.Value
+            help: >
+              [Type: double] This key specifies the volumetric flux for a vertical well if the type key is set to Flux.
+              Note only a positive number should be entered, ParFlow assigns the correct sign based on the chosen action
+              for the well.
+            domains:
+              DoubleValue:
+
+      Concentration:
+        __class__: WellIntervalItemConcentration
+        __doc__: >
+          Setting contaminant value of vertical well.
+
+        # Setting key Wells.{well_name}.{interval_name}.Concentration.{phase_name}.{contaminant_name}.Value
+        .{phase_name}:
+          __class__: ConcentrationPhaseItem
+          __from__: /Phase/Names
+          __rst__:
+            skip:
+          __doc__: ''
+          __simput__: 
+            type: VariableTable
+            table_label: Phase
+
+          .{contaminant_name}:
+            __class__: ConcentrationPhaseContItem
+            __from__: /Contaminants/Names
+            __rst__:
+              skip:
+            __doc__: ''
+            __simput__: 
+              type: VariableTable
+              table_label: Contaminant
+
+
+            Value:
+              help: >
+                [Type: double] This key specifies the contaminant value of a vertical well.
+              domains:
+                DoubleValue:
+
+      Extraction:
+        __rst__:
+          skip:
+        __doc__: >
+          Setting extraction pressure for a named well within a specified cycle.
+        Pressure:
+          __class__: WellIntervalItemExtractionPressure
+          __rst__:
+            skip:
+          __doc__: >
+            Setting extraction pressure for a named well within a specified cycle.
+          Value:
+            __rst__:
+              name: Wells.{well_name}.{interval_name}.Extraction.Pressure.Value
+            help: >
+              [Type: double] This key specifies the hydrostatic pressure value for an extraction well if the extraction type key is set to
+              Pressure. Note This value gives the pressure of the primary phase (water) at z = 0. The other phase pressures (if any) are
+              computed from the physical relationships that exist between the phases.
+            domains:
+              DoubleValue:
+        # Setting key Wells.{well_name}.{interval_name}.Extraction.Flux.{phase_name}.Value
+        Flux:
+          __class__: WellIntervalItemExtractionFlux
+          __rst__:
+            skip:
+          __doc__: >
+            Setting flux for a named well within a specified cycle for a specific phase in an extraction well.
+
+          .{phase_name}:
+            __class__: ExtractionFluxPhaseItem
+            __from__: /Phase/Names
+            __rst__:
+              skip:
+            __doc__: ''
+            __simput__: 
+              type: VariableTable
+              table_label: Phase
+            # typos in the description - assign
+            Value:
+              __rst__:
+                name: Wells.{well_name}.{interval_name}.Extraction.Flux.{phase_name}.Value
+              help: >
+                [Type: double] This key specifies the volumetric flux for an extraction well if the extraction type key is set to Flux.
+                Note only a positive number should be entered, ParFlow assigns the correct sign based on the chosen action
+                for the well.
+              domains:
+                DoubleValue:
+
+      Injection:
+        __rst__:
+          skip:
+        __doc__: >
+          Setting extraction pressure for a named well within a specified cycle.
+        Pressure:
+          __class__: WellIntervalItemInjectionPressure
+          __rst__:
+            skip:
+          __doc__: >
+            Setting extraction pressure for a named well within a specified cycle.
+          Value:
+            __rst__:
+              name: Wells.{well_name}.{interval_name}.Injection.Pressure.Value
+            help: >
+              [Type: double] This key specifies the hydrostatic pressure value for an extraction well if the extraction type key is set to
+              Pressure. Note This value gives the pressure of the primary phase (water) at z = 0. The other phase pressures (if any) are
+              computed from the physical relationships that exist between the phases.
+            domains:
+              DoubleValue:
+        # Setting key Wells.{well_name}.{interval_name}.Injection.Flux.{phase_name}.Value
+        Flux:
+          __class__: WellIntervalItemInjectionFlux
+          __rst__:
+            skip:
+          __doc__: >
+            Setting flux for a named well within a specified cycle for a specific phase in an injection well.
+
+          .{phase_name}:
+            __class__: InjectionFluxPhaseItem
+            __from__: /Phase/Names
+            __rst__:
+              skip:
+            __doc__: ''
+            __simput__: 
+              type: VariableTable
+              table_label: Phase
+            # typos in the description - assign
+            Value:
+              __rst__:
+                name: Wells.{well_name}.{interval_name}.Injection.Flux.{phase_name}.Value
+              help: >
+                [Type: double] This key specifies the volumetric flux for an injection well if the injection type key is set to Flux.
+                Note only a positive number should be entered, ParFlow assigns the correct sign based on the chosen action
+                for the well.
+              domains:
+                DoubleValue:
+
+        # Setting key Wells.{well_name}.{interval_name}.Injection.Concentration.{phase_name}.{contaminant_name}.Fraction
+        Concentration:
+          __rst__:
+            skip:
+          __doc__: >
+            Setting the fraction of the extracted contaminant which gets resupplied to the injection well.
+
+          .{phase_name}:
+            __class__: InjectionConcentrationPhaseItem
+            __from__: /Phase/Names
+            __rst__:
+              skip:
+            __doc__: ''
+            __simput__:
+              type: VariableTable
+              table_label: Phase
+
+            .{contaminant_name}:
+              __class__: InjectionConcentrationPhaseContaminantItem
+              __from__: /Contaminants/Names
+              __rst__:
+                skip:
+              __doc__: ''
+              __simput__:
+                type: VariableTable
+                table_label: Phase
+              Fraction:
+                help: >
+                  [Type: double] This key specifies the fraction of the extracted contaminant which gets resupplied to the injection well.
+                domains:
+                  DoubleValue:
+                    min_value: 0.0
+                    max_value: 1.0
+
+    InputType:
+      help: >
+        [Type: string] This key specifies the type of well to be defined for the given well, well_name. This key can be either Vertical or
+        Recirc. The value Vertical indicates that this is a single segmented well whose action will be specified by the user.
+        The value Recirc indicates that this is a dual segmented, recirculating, well with one segment being an extraction
+        well and another being an injection well. The extraction well filters out a specified fraction of each contaminant and
+        recirculates the remainder to the injection well where the diluted fluid is injected back in. The phase saturations at
+        the extraction well are passed without modification to the injection well.
+        Note with the recirculating well, several input options are not needed as the extraction well will provide these
+        values to the injection well.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Vertical
+            - Recirc
+
+    Action:
+      help: >
+        [Type: string] This key specifies the pumping action of the well. This key can be either Injection or Extraction. A value of
+        Injection indicates that this is an injection well. A value of Extraction indicates that this is an extraction well.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Injection
+            - Extraction
+
+    Type:
+      # type is wrong in manual (should be string). Also, multiple typos
+      help: >
+        [Type: string] This key specifies the mechanism by which the well works (how ParFlow works with the well data) if the input
+        type key is set to Vertical. This key can be either Pressure or Flux. A value of Pressure indicates that the
+        data provided for the well is in terms of hydrostatic pressure and ParFlow will ensure that the computed pressure
+        field satisfies this condition in the computational cells which define the well. A value of Flux indicates that the data
+        provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this condition in
+        the computational cells which define the well.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Pressure
+            - Flux
+
+    ExtractionType:
+      help: >
+        [Type: string] This key specifies the mechanism by which the extraction well works (how ParFlow works with the well data)
+        if the input type key is set to Recirc. This key can be either Pressure or Flux. A value of Pressure indicates
+        that the data provided for the well is in terms of hydrostatic pressure and ParFlow will ensure that the computed
+        pressure field satisfies this condition in the computational cells which define the well. A value of Flux indicates
+        that the data provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this
+        condition in the computational cells which define the well.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Pressure
+            - Flux
+
+    InjectionType:
+      help: >
+        [Type: string] This key specifies the mechanism by which the injection well works (how ParFlow works with the well data)
+        if the input type key is set to Recirc. This key can be either Pressure or Flux. A value of Pressure indicates
+        that the data provided for the well is in terms of hydrostatic pressure and ParFlow will ensure that the computed
+        pressure field satisfies this condition in the computational cells which define the well. A value of Flux indicates
+        that the data provided is in terms of volumetric flux rates and ParFlow will ensure that the flux field satisfies this
+        condition in the computational cells which define the well.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Pressure
+            - Flux
+
+    X:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the x location of the vertical well if the input type is set to Vertical or of both the extraction
+        and injection wells if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    Y:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the y location of the vertical well if the input type is set to Vertical or of both the extraction
+        and injection wells if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    ZUpper:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of a vertical well if the input type is set to Vertical.
+      domains:
+        DoubleValue:
+
+    ExtractionZUpper:
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of a extraction well if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    InjectionZUpper:
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of an injection well if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    ZLower:
+      # typos - vertical
+      help: >
+        [Type: double] This key specifies the z location of the lower extent of a vertical well if the input type is set to Vertical.
+      domains:
+        DoubleValue:
+
+    ExtractionZLower:
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of a extraction well if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    InjectionZLower:
+      help: >
+        [Type: double] This key specifies the z location of the upper extent of an injection well if the input type is set to Recirc.
+      domains:
+        DoubleValue:
+
+    Method:
+      help: >
+        [Type: string] This key specifies a method by which pressure or flux for a vertical well will be weighted before assignment to
+        computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be either
+        Standard,Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the pressure
+        or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the cells
+        permeability divided by the sum of all cell permeabilities which define the well. The value of Patterned is not
+        implemented.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Standard
+            - Weighted
+            - Patterned
+
+    ExtractionMethod:
+      help: >
+        [Type: string] This key specifies a method by which pressure or flux for an extraction well will be weighted before assignment
+        to computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be
+        either Standard, Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the
+        pressure or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the
+        cells permeability divided by the sum of all cell permeabilities which define the well. The value of Patterned is not
+        implemented.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Standard
+            - Weighted
+            - Patterned
+
+    InjectionMethod:
+      help: >
+        [Type: string] This key specifies a method by which pressure or flux for an injection well will be weighted before assignment
+        to computational cells. This key can only be Standard if the type key is set to Pressure; or this key can be
+        either Standard, Weighted or Patterned if the type key is set to Flux. A value of Standard indicates that the
+        pressure or flux data will be used as is. A value of Weighted indicates that the flux data is to be weighted by the
+        cells permeability divided by the sum of all cell permeabilities which define the well. The value of Patterned is not
+        implemented.
+      domains:
+        EnumDomain:
+          enum_list:
+            - Standard
+            - Weighted
+            - Patterned
+
+    Cycle:
+      help: >
+        [Type: string] This key specifies the time cycles to which data for the well well_name corresponds.
+      domains:
+        EnumDomain:
+          locations: 
+            - /Cycle/Names
+      __simput__: 
+        table_column_order: 1

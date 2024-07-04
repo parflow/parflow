@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 #include "parflow_netcdf.h"
@@ -838,7 +838,7 @@ PFModule  *ICPhasePressureInitInstanceXtra(
   if (PFModuleInstanceXtra(this_module) == NULL)
   {
     (instance_xtra->phase_density) =
-      PFModuleNewInstance(ProblemPhaseDensity(problem), ());
+      PFModuleNewInstanceType(NewDefault, ProblemPhaseDensity(problem), ());
   }
   else
   {
@@ -880,7 +880,7 @@ void  ICPhasePressureFreeInstanceXtra()
 
     PFModuleFreeInstance(instance_xtra->phase_density);
 
-    free(instance_xtra);
+    tfree(instance_xtra);
   }
 }
 
@@ -917,7 +917,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
   switch_name = GetString("ICPressure.Type");
 
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "ICPressure.Type");
 
   switch_name = GetString("ICPressure.GeomNames");
   public_xtra->regions = NA_NewNameArray(switch_name);
@@ -996,35 +996,21 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
         dummy2->region_indices[ir] =
           NA_NameToIndex(GlobalsGeomNames, region);
-
         sprintf(key, "Geom.%s.ICPressure.Value", region);
         dummy2->pressure_values[ir] = GetDouble(key);
 
         sprintf(key, "Geom.%s.ICPressure.RefGeom", region);
         switch_name = GetString(key);
-
-        dummy2->geom_indices[ir] = NA_NameToIndex(GlobalsGeomNames,
-                                                  switch_name);
-
-        if (dummy2->geom_indices[ir] < 0)
-        {
-          InputError("Error: invalid geometry name <%s> for key <%s>\n",
-                     switch_name, key);
-        }
+        dummy2->geom_indices[ir] = NA_NameToIndexExitOnError(GlobalsGeomNames,
+							     switch_name, key);
 
         sprintf(key, "Geom.%s.ICPressure.RefPatch", region);
         switch_name = GetString(key);
-
         dummy2->patch_indices[ir] =
-          NA_NameToIndex(GeomSolidPatches(
+          NA_NameToIndexExitOnError(GeomSolidPatches(
                                           GlobalsGeometries[dummy2->geom_indices[ir]]),
-                         switch_name);
+				    switch_name, key);
 
-        if (dummy2->patch_indices[ir] < 0)
-        {
-          InputError("Error: invalid patch name <%s> for key <%s>\n",
-                     switch_name, key);
-        }
       }
 
       (public_xtra->data) = (void*)dummy2;
@@ -1057,8 +1043,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
     default:
     {
-      InputError("Error: invalid type <%s> for key <%s>\n",
-                 switch_name, key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
 

@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 *
@@ -151,7 +151,23 @@ int  Exp2(int p)
 
 void recordMemoryInfo()
 {
-#ifdef HAVE_MALLINFO
+#ifdef PARFLOW_HAVE_MALLINFO2
+  /*
+   * Access information from mallinfo
+   */
+  struct mallinfo2 my_mallinfo = mallinfo2();
+
+  /* Get all the memory currently allocated to user by malloc, etc. */
+  int used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks
+                 + my_mallinfo.uordblks;
+
+  /* Record high-water mark for memory used. */
+  if (amps_ThreadLocal(s_max_memory) < used_mem)
+  {
+    amps_ThreadLocal(s_max_memory) = used_mem;
+  }
+#else
+#ifdef PARFLOW_HAVE_MALLINFO
   /*
    * Access information from mallinfo
    */
@@ -167,6 +183,7 @@ void recordMemoryInfo()
     amps_ThreadLocal(s_max_memory) = used_mem;
   }
 #endif
+#endif
 }
 
 
@@ -181,7 +198,7 @@ void recordMemoryInfo()
  */
 void printMaxMemory(FILE *log_file)
 {
-#ifdef HAVE_MALLINFO
+#if defined(PARFLOW_HAVE_MALLINFO) || defined(PARFLOW_HAVE_MALLINFO2)
   /*
    * Step through all nodes (>0) and send max memory to processor 0,
    * which subsequently writes it out.
@@ -282,7 +299,40 @@ void printMemoryInfo(FILE *log_file)
 {
   (void)log_file;
 
-#ifdef HAVE_MALLINFO
+#ifdef PARFLOW_HAVE_MALLINFO2
+  /* Get malloc info structure */
+  struct mallinfo2 my_mallinfo = mallinfo2();
+
+  /* Get total memory reserved by the system for malloc currently*/
+  size_t reserved_mem = my_mallinfo.arena;
+
+  /* Get all the memory currently allocated to user by malloc, etc. */
+  size_t used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks +
+                 my_mallinfo.uordblks;
+
+  /* Get memory not currently allocated to user but malloc controls */
+  size_t free_mem = my_mallinfo.fsmblks + my_mallinfo.fordblks;
+
+  /* Get number of items currently allocated */
+  size_t number_allocated = my_mallinfo.ordblks + my_mallinfo.smblks;
+
+  (void)log_file;
+
+  /* Record high-water mark for memory used. */
+  if (amps_ThreadLocal(s_max_memory) < used_mem)
+  {
+    amps_ThreadLocal(s_max_memory) = used_mem;
+  }
+
+  /* Print out concise malloc info line */
+  fprintf(log_file,
+          "Memory in use : %zu MB in %zu allocs, %zu MB reserved ( %zu unused)\n",
+          used_mem / (1024 * 1024),
+          number_allocated,
+          reserved_mem / (1024 * 1024),
+          free_mem / (1024 * 1024));
+#else
+#ifdef PARFLOW_HAVE_MALLINFO
   /* Get malloc info structure */
   struct mallinfo my_mallinfo = mallinfo();
 
@@ -314,5 +364,6 @@ void printMemoryInfo(FILE *log_file)
           number_allocated,
           reserved_mem / (1024 * 1024),
           free_mem / (1024 * 1024));
+#endif
 #endif
 }

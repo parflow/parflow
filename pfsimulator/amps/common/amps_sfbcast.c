@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "amps.h"
 
@@ -66,7 +66,6 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 {
   amps_InvoiceEntry *ptr;
   int stride, len;
-  int malloced = 0;
 
   if (!amps_Rank(comm))
   {
@@ -95,12 +94,21 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 
       switch (ptr->type)
       {
+	case AMPS_INVOICE_BYTE_CTYPE:
+          if (ptr->data_type == AMPS_INVOICE_POINTER)
+          {
+            *((void**)(ptr->data)) = (void*)malloc(sizeof(char) * (size_t)(len * stride));
+            amps_ScanByte(file, *( char**)(ptr->data), len, stride);
+          }
+          else
+            amps_ScanByte(file, (char*)ptr->data, len, stride);
+          break;
+
         case AMPS_INVOICE_CHAR_CTYPE:
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {
             *((void**)(ptr->data)) = (void*)malloc(sizeof(char) * (size_t)(len * stride));
             amps_ScanChar(file, *( char**)(ptr->data), len, stride);
-            malloced = TRUE;
           }
           else
             amps_ScanChar(file, (char*)ptr->data, len, stride);
@@ -111,7 +119,6 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
           {
             *((void**)(ptr->data)) = (void*)malloc(sizeof(short) * (size_t)(len * stride));
             amps_ScanShort(file, *( short**)(ptr->data), len, stride);
-            malloced = TRUE;
           }
           else
             amps_ScanShort(file, (short*)ptr->data, len, stride);
@@ -123,7 +130,6 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
           {
             *((void**)(ptr->data)) = (void*)malloc(sizeof(int) * (size_t)(len * stride));
             amps_ScanInt(file, *( int**)(ptr->data), len, stride);
-            malloced = TRUE;
           }
           else
             amps_ScanInt(file, (int*)ptr->data, len, stride);
@@ -135,7 +141,6 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
           {
             *((void**)(ptr->data)) = (void*)malloc(sizeof(long) * (size_t)(len * stride));
             amps_ScanLong(file, *( long**)(ptr->data), len, stride);
-            malloced = TRUE;
           }
           else
             amps_ScanLong(file, (long*)ptr->data, len, stride);
@@ -147,7 +152,6 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
           {
             *((void**)(ptr->data)) = (void*)malloc(sizeof(float) * (size_t)(len * stride));
             amps_ScanFloat(file, *( float**)(ptr->data), len, stride);
-            malloced = TRUE;
           }
           else
             amps_ScanFloat(file, (float*)ptr->data, len, stride);
@@ -159,7 +163,6 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
           {
             *((void**)(ptr->data)) = (void*)malloc(sizeof(double) * (size_t)(len * stride));
             amps_ScanDouble(file, *( double**)(ptr->data), len, stride);
-            malloced = TRUE;
           }
           else
             amps_ScanDouble(file, (double*)ptr->data, len, stride);

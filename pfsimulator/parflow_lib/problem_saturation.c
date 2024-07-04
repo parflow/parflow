@@ -1,33 +1,34 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 
+#include <string.h>
 #include <float.h>
 
 /*--------------------------------------------------------------------------
@@ -115,7 +116,7 @@ void     Saturation(
                                        *                  value
                                        * fcn = CALCDER => calculate the function
                                        *                  derivative */
-{
+{ 
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
@@ -152,9 +153,7 @@ void     Saturation(
   int ix, iy, iz, r;
   int nx, ny, nz;
 
-  int i, j, k, ips, ipp, ipd, ipRF;
-
-  int n_index, alpha_index, s_res_index, s_sat_index;
+  int i, j, k;
 
   int            *region_indices, num_regions, ir;
 
@@ -202,7 +201,7 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
               psdat[ips] = values[ir];
             });
           }
@@ -210,7 +209,7 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
               psdat[ips] = 0.0;
             });
           }     /* End else clause */
@@ -223,7 +222,6 @@ void     Saturation(
     {
       int data_from_file;
       double *alphas, *ns, *s_ress, *s_difs;
-      double head, alpha, n, s_res, s_dif, s_sat, m;
 
       Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
 
@@ -268,21 +266,21 @@ void     Saturation(
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
-                ips = SubvectorEltIndex(ps_sub, i, j, k);
-                ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                int ips = SubvectorEltIndex(ps_sub, i, j, k);
+                int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                alpha = alphas[ir];
-                n = ns[ir];
-                m = 1.0e0 - (1.0e0 / n);
-                s_res = s_ress[ir];
-                s_dif = s_difs[ir];
+                double alpha = alphas[ir];
+                double n = ns[ir];
+                double m = 1.0e0 - (1.0e0 / n);
+                double s_res = s_ress[ir];
+                double s_dif = s_difs[ir];
 
                 if (ppdat[ipp] >= 0.0)
                   psdat[ips] = s_dif + s_res;
                 else
                 {
-                  head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                  double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                   psdat[ips] = s_dif / pow(1.0 + pow((alpha * head), n), m)
                                + s_res;
                 }
@@ -292,21 +290,20 @@ void     Saturation(
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
-                ips = SubvectorEltIndex(ps_sub, i, j, k);
-                ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                ipd = SubvectorEltIndex(pd_sub, i, j, k);
+                int ips = SubvectorEltIndex(ps_sub, i, j, k);
+                int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                alpha = alphas[ir];
-                n = ns[ir];
-                m = 1.0e0 - (1.0e0 / n);
-                s_res = s_ress[ir];
-                s_dif = s_difs[ir];
+                double alpha = alphas[ir];
+                double n = ns[ir];
+                double m = 1.0e0 - (1.0e0 / n);
+                double s_dif = s_difs[ir];
 
                 if (ppdat[ipp] >= 0.0)
                   psdat[ips] = 0.0;
                 else
                 {
-                  head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                  double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                   psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
                                / (pow(1.0 + pow(alpha * head, n), m + 1));
                 }
@@ -358,26 +355,26 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
-              s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
-              s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
+              int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              int s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
+              int s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
 
-              alpha = alpha_values_dat[alpha_index];
-              n = n_values_dat[n_index];
-              m = 1.0e0 - (1.0e0 / n);
-              s_res = s_res_values_dat[s_res_index];
-              s_sat = s_sat_values_dat[s_sat_index];
+              double alpha = alpha_values_dat[alpha_index];
+              double n = n_values_dat[n_index];
+              double m = 1.0e0 - (1.0e0 / n);
+              double s_res = s_res_values_dat[s_res_index];
+              double s_sat = s_sat_values_dat[s_sat_index];
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = s_sat;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = (s_sat - s_res) /
                              pow(1.0 + pow((alpha * head), n), m)
                              + s_res;
@@ -388,27 +385,27 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
-              s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
-              s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
+              int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              int s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
+              int s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
 
-              alpha = alpha_values_dat[alpha_index];
-              n = n_values_dat[n_index];
-              m = 1.0e0 - (1.0e0 / n);
-              s_res = s_res_values_dat[s_res_index];
-              s_sat = s_sat_values_dat[s_sat_index];
-              s_dif = s_sat - s_res;
+              double alpha = alpha_values_dat[alpha_index];
+              double n = n_values_dat[n_index];
+              double m = 1.0e0 - (1.0e0 / n);
+              double s_res = s_res_values_dat[s_res_index];
+              double s_sat = s_sat_values_dat[s_sat_index];
+              double s_dif = s_sat - s_res;
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = 0.0;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
                              / (pow(1.0 + pow(alpha * head, n), m + 1));
               }
@@ -422,7 +419,6 @@ void     Saturation(
     case 2: /* Haverkamp et.al. saturation curve */
     {
       double *alphas, *betas, *s_ress, *s_difs;
-      double head, alpha, beta, s_res, s_dif;
 
       dummy2 = (Type2*)(public_xtra->data);
 
@@ -462,20 +458,20 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              alpha = alphas[ir];
-              beta = betas[ir];
-              s_res = s_ress[ir];
-              s_dif = s_difs[ir];
+              double alpha = alphas[ir];
+              double beta = betas[ir];
+              double s_res = s_ress[ir];
+              double s_dif = s_difs[ir];
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = s_dif + s_res;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = alpha * s_dif / (alpha + pow(head, beta))
                              + s_res;
               }
@@ -485,20 +481,19 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
-              ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-              alpha = alphas[ir];
-              beta = betas[ir];
-              s_res = s_ress[ir];
-              s_dif = s_difs[ir];
+              double alpha = alphas[ir];
+              double beta = betas[ir];
+              double s_dif = s_difs[ir];
 
               if (ppdat[ipp] >= 0.0)
                 psdat[ips] = 0.0;
               else
               {
-                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                double head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
                 psdat[ips] = alpha * s_dif * beta * pow(head, beta - 1)
                              / pow((alpha + pow(head, beta)), 2);
               }
@@ -524,7 +519,7 @@ void     Saturation(
 
     case 4: /* Polynomial function of pressure saturation curve */
     {
-      int     *degrees, dg;
+      int     *degrees;
       double **coefficients, *region_coeffs;
 
       dummy4 = (Type4*)(public_xtra->data);
@@ -564,15 +559,15 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
               if (ppdat[ipp] == 0.0)
                 psdat[ips] = region_coeffs[0];
               else
               {
                 psdat[ips] = 0.0;
-                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   psdat[ips] += region_coeffs[dg] * pow(ppdat[ipp], dg);
                 }
@@ -583,15 +578,15 @@ void     Saturation(
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-              ips = SubvectorEltIndex(ps_sub, i, j, k);
-              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              int ips = SubvectorEltIndex(ps_sub, i, j, k);
+              int ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
               if (ppdat[ipp] == 0.0)
                 psdat[ips] = 0.0;
               else
               {
                 psdat[ips] = 0.0;
-                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                for (int dg = 0; dg < degrees[ir] + 1; dg++)
                 {
                   psdat[ips] += region_coeffs[dg] * dg
                                 * pow(ppdat[ipp], (dg - 1));
@@ -638,8 +633,8 @@ void     Saturation(
         {
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
-            ips = SubvectorEltIndex(ps_sub, i, j, k);
-            ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
+            int ips = SubvectorEltIndex(ps_sub, i, j, k);
+            int ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
 
             psdat[ips] = satRFdat[ipRF];
           });
@@ -648,8 +643,7 @@ void     Saturation(
         {
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
-            ips = SubvectorEltIndex(ps_sub, i, j, k);
-            ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
+            int ips = SubvectorEltIndex(ps_sub, i, j, k);
 
             psdat[ips] = 0.0;
           });
@@ -698,6 +692,11 @@ PFModule  *SaturationInitInstanceXtra(
           FreeVector(dummy1->alpha_values);
           FreeVector(dummy1->s_res_values);
           FreeVector(dummy1->s_sat_values);
+
+	  dummy1->n_values = NULL;
+	  dummy1->alpha_values = NULL;
+	  dummy1->s_res_values = NULL;
+	  dummy1->s_sat_values = NULL;
         }
       }
       if (public_xtra->type == 5)
@@ -776,10 +775,37 @@ void  SaturationFreeInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
+  PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
 
   if (instance_xtra)
   {
+    if (public_xtra->type == 1)
+    {
+      Type1* dummy1 = (Type1*)(public_xtra->data);
+      if ((dummy1->data_from_file) == 1)
+      {
+	/* Data will be shared by all instances */
+	if (dummy1->n_values)
+	{
+	  FreeVector(dummy1->n_values);
+	  FreeVector(dummy1->alpha_values);
+	  FreeVector(dummy1->s_res_values);
+	  FreeVector(dummy1->s_sat_values);
+
+	  dummy1->n_values = NULL;
+	  dummy1->alpha_values = NULL;
+	  dummy1->s_res_values = NULL;
+	  dummy1->s_sat_values = NULL;
+	}
+      }
+    }
+    if (public_xtra->type == 5)
+    {
+      Type5* dummy5 = (Type5*)(public_xtra->data);
+      FreeVector(dummy5->satRF);
+    }
+
     tfree(instance_xtra);
   }
 }
@@ -814,7 +840,7 @@ PFModule   *SaturationNewPublicXtra()
   public_xtra = ctalloc(PublicXtra, 1);
 
   switch_name = GetString("Phase.Saturation.Type");
-  public_xtra->type = NA_NameToIndex(type_na, switch_name);
+  public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "Phase.Saturation.Type");
 
 
   switch_name = GetString("Phase.Saturation.GeomNames");
@@ -1097,19 +1123,15 @@ void  SaturationFreePublicXtra()
       {
         dummy1 = (Type1*)(public_xtra->data);
 
-        if (dummy1->data_from_file == 1)
-        {
-          FreeVector(dummy1->alpha_values);
-          FreeVector(dummy1->n_values);
-          FreeVector(dummy1->s_res_values);
-          FreeVector(dummy1->s_sat_values);
-        }
+        if (dummy1->data_from_file == 0)
+	{
+	  tfree(dummy1->region_indices);
+	  tfree(dummy1->alphas);
+	  tfree(dummy1->ns);
+	  tfree(dummy1->s_ress);
+	  tfree(dummy1->s_difs);
+	}
 
-        tfree(dummy1->region_indices);
-        tfree(dummy1->alphas);
-        tfree(dummy1->ns);
-        tfree(dummy1->s_ress);
-        tfree(dummy1->s_difs);
         tfree(dummy1);
 
         break;
@@ -1162,8 +1184,6 @@ void  SaturationFreePublicXtra()
       {
         dummy5 = (Type5*)(public_xtra->data);
 
-        FreeVector(dummy5->satRF);
-
         tfree(dummy5);
 
         break;
@@ -1202,3 +1222,223 @@ int  SaturationSizeOfTempData()
 
   return sz;
 }
+
+void  SaturationOutput()
+{
+  //PFModule    *this_module = ThisPFModule;
+  //PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+  printf("SaturationOutput does nothing\n");
+}
+
+
+void  SaturationOutputStatic(
+			     char *file_prefix,
+			     ProblemData *problem_data /* Contains geometry info. for the problem */
+			     )
+{
+  PFModule      *this_module = ThisPFModule;
+  PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+
+  Type1         *dummy1;
+
+  Grid          *grid = VectorGrid(ProblemDataSpecificStorage(problem_data));
+
+  GrGeomSolid   *gr_solid;
+
+  Subvector     *n_values_sub;
+  Subvector     *alpha_values_sub;
+  Subvector     *s_res_values_sub;
+  Subvector     *s_sat_values_sub;
+
+  double        *n_values_dat, *alpha_values_dat;
+  double        *s_res_values_dat, *s_sat_values_dat;
+
+  SubgridArray  *subgrids = GridSubgrids(grid);
+
+  Subgrid       *subgrid;
+
+  int sg;
+
+  int ix, iy, iz, r;
+  int nx, ny, nz;
+
+  int i, j, k;
+
+  int            *region_indices, num_regions, ir;
+
+  Subvector      *pd_alpha_sub;         //BB
+  Subvector      *pd_n_sub;         //BB
+  Subvector      *pd_sres_sub;         //BB
+  Subvector      *pd_ssat_sub;         //BB
+  double *pd_alpha_dat, *pd_n_dat, *pd_sres_dat, *pd_ssat_dat;    //BB
+
+  Vector *pd_alpha = NewVectorType(grid, 1, 1, vector_cell_centered);
+  Vector *pd_n = NewVectorType(grid, 1, 1, vector_cell_centered);
+  Vector *pd_sres = NewVectorType(grid, 1, 1, vector_cell_centered);
+  Vector *pd_ssat = NewVectorType(grid, 1, 1, vector_cell_centered);
+
+  /* Initialize saturations */
+  InitVector(pd_alpha, 0.0); 
+  InitVector(pd_n, 0.0);
+  InitVector(pd_sres, 0.0);
+  InitVector(pd_ssat, 0.0);
+
+  switch ((public_xtra->type))
+  {
+    case 1: /* Van Genuchten saturation curve */
+    {
+      int data_from_file;
+      double *alphas, *ns, *s_ress;
+
+      Vector *n_values, *alpha_values, *s_res_values, *s_sat_values;
+
+      dummy1 = (Type1*)(public_xtra->data);
+
+      num_regions = (dummy1->num_regions);
+      region_indices = (dummy1->region_indices);
+      alphas = (dummy1->alphas);
+      ns = (dummy1->ns);
+      s_ress = (dummy1->s_ress);
+      double* s_difs = (dummy1->s_difs);
+      data_from_file = (dummy1->data_from_file);
+
+      if (data_from_file == 0) /* Soil parameters given by region */
+      {
+        for (ir = 0; ir < num_regions; ir++)
+        {
+          gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
+
+          ForSubgridI(sg, subgrids)
+          {
+            subgrid = SubgridArraySubgrid(subgrids, sg);
+
+            pd_alpha_sub = VectorSubvector(pd_alpha, sg);   //BB
+            pd_n_sub = VectorSubvector(pd_n, sg);           //BB
+            pd_sres_sub = VectorSubvector(pd_sres, sg);     //BB
+            pd_ssat_sub = VectorSubvector(pd_ssat, sg);     //BB
+
+            ix = SubgridIX(subgrid);
+            iy = SubgridIY(subgrid);
+            iz = SubgridIZ(subgrid);
+
+            nx = SubgridNX(subgrid);
+            ny = SubgridNY(subgrid);
+            nz = SubgridNZ(subgrid);
+
+            r = SubgridRX(subgrid);
+
+            pd_alpha_dat = SubvectorData(pd_alpha_sub);   //BB
+            pd_n_dat = SubvectorData(pd_n_sub);           //BB
+            pd_sres_dat = SubvectorData(pd_sres_sub);     //BB
+            pd_ssat_dat = SubvectorData(pd_ssat_sub);     //BB
+
+	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+	    {
+	      int ips = SubvectorEltIndex(pd_alpha_sub, i, j, k);
+	      
+	      double alpha = alphas[ir];
+	      double n = ns[ir];
+	      double s_res = s_ress[ir];
+	      double s_dif = s_difs[ir];
+	      
+	      pd_alpha_dat[ips] = alpha;  //BB
+	      pd_n_dat[ips] = n;  //BB
+	      pd_sres_dat[ips] = s_res;  //BB  // no ssat???
+	      // Storing s_dif in the stucture, convert back to s_sat for output
+	      pd_ssat_dat[ips] = s_dif + s_res;
+	      
+	    });
+          }     /* End subgrid loop */
+        }       /* End loop over regions */
+      }         /* End if data not from file */
+      else
+      {
+        gr_solid = ProblemDataGrDomain(problem_data);
+        n_values = dummy1->n_values;
+        alpha_values = dummy1->alpha_values;
+        s_res_values = dummy1->s_res_values;
+        s_sat_values = dummy1->s_sat_values;
+
+        ForSubgridI(sg, subgrids)
+        {
+          subgrid = SubgridArraySubgrid(subgrids, sg);
+
+          n_values_sub = VectorSubvector(n_values, sg);
+          alpha_values_sub = VectorSubvector(alpha_values, sg);
+          s_res_values_sub = VectorSubvector(s_res_values, sg);
+          s_sat_values_sub = VectorSubvector(s_sat_values, sg);
+
+          pd_alpha_sub = VectorSubvector(pd_alpha, sg);   //BB
+          pd_n_sub = VectorSubvector(pd_n, sg);           //BB
+          pd_sres_sub = VectorSubvector(pd_sres, sg);     //BB
+          pd_ssat_sub = VectorSubvector(pd_ssat, sg);     //BB
+
+          ix = SubgridIX(subgrid);
+          iy = SubgridIY(subgrid);
+          iz = SubgridIZ(subgrid);
+
+          nx = SubgridNX(subgrid);
+          ny = SubgridNY(subgrid);
+          nz = SubgridNZ(subgrid);
+
+          r = SubgridRX(subgrid);
+
+          n_values_dat = SubvectorData(n_values_sub);
+          alpha_values_dat = SubvectorData(alpha_values_sub);
+          s_res_values_dat = SubvectorData(s_res_values_sub);
+          s_sat_values_dat = SubvectorData(s_sat_values_sub);
+
+          pd_alpha_dat = SubvectorData(pd_alpha_sub);   //BB
+          pd_n_dat = SubvectorData(pd_n_sub);           //BB
+          pd_sres_dat = SubvectorData(pd_sres_sub);     //BB
+          pd_ssat_dat = SubvectorData(pd_ssat_sub);     //BB
+
+	  GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+          {
+	    int ips = SubvectorEltIndex(pd_alpha_sub, i, j, k);
+	    
+	    int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+	    int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+	    int s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
+	    int s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
+	    
+	    double alpha = alpha_values_dat[alpha_index];
+	    double n = n_values_dat[n_index];
+	    double s_res = s_res_values_dat[s_res_index];
+	    double s_sat = s_sat_values_dat[s_sat_index];
+	    
+	    pd_alpha_dat[ips] = alpha;  //BB
+	    pd_n_dat[ips] = n;  //BB
+	    pd_sres_dat[ips] = s_res;  //BB
+	    pd_ssat_dat[ips] = s_sat;  //BB
+	  });
+        }       /* End subgrid loop */
+      }         /* End if data_from_file */
+      break;
+    }        /* End case 1 */
+  }          /* End switch */
+
+  char file_postfix[2048];
+  
+  strcpy(file_postfix, "alpha");
+  WritePFBinary(file_prefix, file_postfix,
+		pd_alpha);
+  
+  strcpy(file_postfix, "n");
+  WritePFBinary(file_prefix, file_postfix,
+		pd_n);
+  
+  strcpy(file_postfix, "sres");
+  WritePFBinary(file_prefix, file_postfix,
+		pd_sres);
+  
+  strcpy(file_postfix, "ssat");
+  WritePFBinary(file_prefix, file_postfix,
+		pd_ssat);
+
+  FreeVector(pd_alpha);
+  FreeVector(pd_n);
+  FreeVector(pd_sres);
+  FreeVector(pd_ssat);
+}
+

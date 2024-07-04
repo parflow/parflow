@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -84,8 +84,6 @@ void dzScale(ProblemData *problem_data, Vector *dz_mult)
   int nx, ny, nz;
   int r;
   int is, i, j, k, ips, ipicv;
-  int ii;
-
 
   /*-----------------------------------------------------------------------
    * dz Scale
@@ -197,10 +195,8 @@ void dzScale(ProblemData *problem_data, Vector *dz_mult)
         Type2    *dummy2;
         dummy2 = (Type2*)(public_xtra->data);
 
-        int num_dz;
         double  *values;
 
-        num_dz = (dummy2->num_dz);
         values = (dummy2->values);
 
         GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
@@ -292,7 +288,6 @@ PFModule   *dzScaleNewPublicXtra()
   char *switch_name;
   int switch_value;
   char *region;
-  char *nzListValues;
   char key[IDB_MAX_KEY_LEN];
   char *name;
   NameArray switch_na;
@@ -304,13 +299,8 @@ PFModule   *dzScaleNewPublicXtra()
   name = "Solver.Nonlinear.VariableDz";
   switch_na = NA_NewNameArray("False True");
   switch_name = GetStringDefault(name, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid value <%s> for key <%s>\n",
-               switch_name, key);
-  }
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, name);
+  NA_FreeNameArray(switch_na);
 
   public_xtra->variable_dz = switch_value;
   if (public_xtra->variable_dz == 1)
@@ -318,13 +308,13 @@ PFModule   *dzScaleNewPublicXtra()
     name = "dzScale.Type";
     switch_na = NA_NewNameArray("Constant PFBFile nzList");
     switch_name = GetString(name);
-    public_xtra->type = NA_NameToIndex(switch_na, switch_name);
+    public_xtra->type = NA_NameToIndexExitOnError(switch_na, switch_name, name);
+    NA_FreeNameArray(switch_na);
 
     name = "dzScale.GeomNames";
     switch_name = GetString(name);
     public_xtra->regions = NA_NewNameArray(switch_name);
     num_regions = NA_Sizeof(public_xtra->regions);
-
 
     // switch for dzScale.Type
     // Constant = 0; PFBFile = 1;
@@ -395,8 +385,6 @@ PFModule   *dzScaleNewPublicXtra()
     }
   }
 
-  NA_FreeNameArray(switch_na);
-
   PFModulePublicXtra(this_module) = public_xtra;
   return this_module;
 }
@@ -414,39 +402,40 @@ void  dzScaleFreePublicXtra()
   Type1       *dummy1;
   Type2       *dummy2;
 
-
-  if (public_xtra->variable_dz)
+  if (public_xtra)
   {
-    NA_FreeNameArray(public_xtra->regions);
-
-    switch ((public_xtra->type))
+    if (public_xtra->variable_dz)
     {
-      case 0:
-      {
-        dummy0 = (Type0*)(public_xtra->data);
-        tfree(dummy0->region_indices);
-        tfree(dummy0->values);
-        tfree(dummy0);
-        break;
-      }
+      NA_FreeNameArray(public_xtra->regions);
 
-      case 1:
+      switch ((public_xtra->type))
       {
-        dummy1 = (Type1*)(public_xtra->data);
-        tfree(dummy1);
-        break;
-      }
+        case 0:
+        {
+          dummy0 = (Type0*)(public_xtra->data);
+          tfree(dummy0->region_indices);
+          tfree(dummy0->values);
+          tfree(dummy0);
+          break;
+        }
 
-      case 2:
-      {
-        dummy2 = (Type2*)(public_xtra->data);
-        tfree(dummy2);
-        break;
+        case 1:
+        {
+          dummy1 = (Type1*)(public_xtra->data);
+          tfree(dummy1);
+          break;
+        }
+
+        case 2:
+        {
+          dummy2 = (Type2*)(public_xtra->data);
+          tfree(dummy2->values);
+          tfree(dummy2);
+          break;
+        }
       }
     }
-  }
-  else
-  {
+
     tfree(public_xtra);
   }
 }

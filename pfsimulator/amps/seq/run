@@ -1,7 +1,7 @@
 #!/bin/sh
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -27,29 +27,68 @@
 #  USA
 #**********************************************************************EHEADER
 
+#-----------------------------------------------------------------------------
+#
+# Program usage 
+#
+#-----------------------------------------------------------------------------
+usage () {
+   echo "usage: $0 run [-hvpg] pfidb_file num_procs"
+   echo "    -h               help"
+   echo "    -v               verbose"
+   echo "    -p executable    executable to run"
+   echo ""
+   echo "Runs parflow on using mpi startup command (e.g. mpiexec, mpirun etc)."
+}
+
 #=============================================================================
 #
-# Loop to parse users arguments
+# Verbose logging
 #
 #=============================================================================
+pflog () {
+   if [ $VERBOSE -eq 1 ]
+   then
+      echo "pfrun: $@"
+   fi
+}
+
+if [ -f ~/.parflowrc ] 
+then
+   . ~/.parflowrc
+fi
+
+#=============================================================================
+#
+# Parse users arguments
+#
+#=============================================================================
+VERBOSE=0
 PROGRAM=""
-while getopts hp: c
+DEBUG=""
+while getopts vmhp: c
 do
-	case $c in
-	hp) 
-		echo "usage: $0 run runname process_group"
-		echo "Runs parflow on the allocated cube."
-	        exit 0;;
-	p) 
-	       PROGRAM=$2
-	       shift 
-	       shift;;
-esac
+   case $c in
+      h)
+	 usage;
+	 exit 1;;
+      v)
+	 VERBOSE=1
+	 shift;
+	 ;;
+      p) 
+	 PROGRAM=$2
+	 shift 
+	 shift;;
+   esac
 done
 
-if [ "$MALLOC_DEBUG" ]; then
-	rm -f malloc.log.????
+if [ ! \( "$#" -eq 2 \) ]; then
+  usage
+  exit 1
 fi
+
+PFSCRIPT=$1
 
 if [ -z "$PROGRAM" ]
 then
@@ -59,11 +98,15 @@ then
 	PROGRAM=parflow
 fi
 
-$PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
-
-if [ -f ./malloc.log.0000 ]; then
-	grep "^known" malloc.log.* 
+if [ -z ${PARFLOW_MEMORYCHECK_COMMAND} ]
+then
+   CMD="$PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+else
+   CMD="${PARFLOW_MEMORYCHECK_COMMAND} ${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
 fi
 
+pflog "executing command : $CMD" 
+eval $CMD
+return_code=$?
 
-
+exit ${return_code}

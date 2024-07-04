@@ -1,0 +1,290 @@
+#!/bin/bash
+# NERSC Cori
+# smith84@llnl.gov
+# 2023/04/05
+
+# Script to build ParFlow on Perlmutter.  To run:
+#
+#  export PARFLOW_DIR=/global/common/software/parflow/perlmutter-v3.12.0-2023-04-04
+#  bash  parflow/cmake/recipes/nersc-perlmutter
+#
+# This build ParFlow and installs in the indicated directory.  It is
+# useful to copy the environment needed as well.  Copy this script to
+# $PARFLOW_DIR/setenv.sh and edit to remove the build instruction and
+# set the PARFLOW_DIR in the script for users.
+#
+
+# Appends to path if not path not already present
+function appendToPath {
+   echo $PATH | grep -q $1
+   if [ $? -ne 0 ]
+   then
+      PATH=${PATH}:${1}
+   fi
+}
+
+function prependToPath {
+   echo $PATH | grep -q $1
+   if [ $? -ne 0 ]
+   then
+      PATH=${1}:${PATH}
+   fi
+}
+
+function appendToLdPath {
+
+   if [[ -z ${LD_LIBRARY_PATH+x} ]]
+   then
+      export LD_LIBRARY_PATH=${1}
+   else
+      echo $LD_LIBRARY_PATH | grep -q $1
+      if [ $? -ne 0 ]
+      then
+	 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${1}
+      fi
+   fi
+}
+
+module load cray-hdf5-parallel
+module load cray-netcdf-hdf5parallel
+module load cmake/3.24.3
+
+# Parflow installation directory
+if [[ ${PARFLOW_DIR+x} ]]
+then
+   echo "Installing Parflow to $PARFLOW_DIR"
+else
+   echo "ERROR: Set PARFLOW_DIR to install directory befor running, something like:"
+   echo "       export PARFLOW_DIR=/global/project/projectdirs/m2511/parflow/cori-3.6.0-2019-08-01"
+   exit
+fi
+
+mkdir -p ${PARFLOW_DIR}
+
+# Use some symbols set by Cray modules; hopefully a little more portable this way.
+#export PARFLOW_HYPRE_DIR=${CRAY_TPSL_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}/haswell
+export PARFLOW_HYPRE_DIR=${PARFLOW_DIR}
+export PARFLOW_NETCDF_DIR=${NETCDF_DIR}
+export PARFLOW_HDF5_DIR=${HDF5_ROOT}
+export PARFLOW_SILO_DIR=${PARFLOW_DIR}
+export HYPRE_DIR=${PARFLOW_DIR}
+export PARFLOW_SLURM_DIR=/usr
+#export PARFLOW_TCL_DIR=/usr
+export PARFLOW_TCL_DIR=$PARFLOW_DIR
+
+prependToPath ${PARFLOW_DIR}/bin
+
+# Parallel build fails in CLM
+# PARFLOW_MAKE_OPTIONS="-j 8"
+PARFLOW_MAKE_OPTIONS=""
+
+export PARFLOW_CC=cc
+export PARFLOW_CXX=CC
+export PARFLOW_FC=ftn
+
+export PARFLOW_CFLAGS='-dynamic'
+
+appendToLdPath $PARFLOW_SLURM_DIR/lib64
+#appendToLdPath $PARFLOW_PFTOOLS_HDF5_DIR/lib
+#appendToLdPath $PARFLOW_TCL_DIR/lib
+
+# Building in a directory parallel with parflow source tree
+SRC_DIR=parflow
+
+# TCL doesn't load the pftools.so correctly on compute nodes.   This
+# was an attempt to build TCL from source.   It didn't work.
+# echo "*****************************************************************************"
+# echo "Building in TCL"
+# echo "*****************************************************************************"
+
+# wget https://prdownloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz
+# tar xf tcl8.6.9-src.tar.gz 
+# pushd tcl8.6.9/unix/
+# CC="${PARFLOW_CC} -dynamic" ./configure --prefix=${PARFLOW_DIR}
+# make 
+# make install
+# popd
+
+if true
+then
+   echo "*****************************************************************************"
+   echo "Building in TCL"
+   echo "*****************************************************************************"
+   TCL_VERSION=8.6.9
+
+   if [ ! -f tcl$TCL_VERSION-src.tar.gz ]
+   then
+      wget https://prdownloads.sourceforge.net/tcl/tcl$TCL_VERSION-src.tar.gz      
+   fi
+   tar xf tcl$TCL_VERSION-src.tar.gz      
+   pushd tcl$TCL_VERSION/unix/
+   CC="${PARFLOW_CC} -dynamic" ./configure --prefix=${PARFLOW_DIR}
+   make
+   make install
+   popd
+fi
+
+if true
+then
+   echo "*****************************************************************************"
+   echo "Building in Silo"
+   echo "*****************************************************************************"
+   SILO_VERSION=4.10.2
+
+   if [ ! -f silo-$SILO_VERSION.tgz ]
+   then
+      wget https://wci.llnl.gov/sites/wci/files/2021-01/silo-$SILO_VERSION.tgz
+   fi
+   tar xf silo-$SILO_VERSION.tgz
+   pushd silo-$SILO_VERSION
+   CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} ./configure --prefix=$PARFLOW_DIR \
+     --enable-shared=no \
+     --enable-hzip=no \
+     --enable-fpzip=no
+   make
+   make install
+   popd
+fi
+
+if true
+then
+   #-----------------------------------------------------------------------------
+   # HYPRE build
+   #-----------------------------------------------------------------------------
+
+   echo "*****************************************************************************"
+   echo "Building in HYPRE"
+   echo "*****************************************************************************"
+
+   HYPRE_VERSION=2.18.2
+
+   if [ ! -f v$HYPRE_VERSION.tar.gz ]
+   then
+      wget https://github.com/hypre-space/hypre/archive/v$HYPRE_VERSION.tar.gz
+   fi
+
+   tar xf v$HYPRE_VERSION.tar.gz 
+
+   pushd hypre-$HYPRE_VERSION/src
+
+   CC=cc ./configure --prefix=${HYPRE_DIR}
+   make 
+   make install
+
+   popd
+fi
+
+if true
+then
+   (
+      BUILD_DIR=build-pftools
+      
+      echo "*****************************************************************************"
+      echo "Building in pftools in ${BUILD_DIR}"
+      echo "*****************************************************************************"
+      
+      mkdir -p ${BUILD_DIR}
+      pushd ${BUILD_DIR}
+      
+      echo "*****************************************************************************"
+      echo "Running CMake"
+      echo "*****************************************************************************"
+      
+      # Force shared library builds, by default Cori is doing static.  Need to set for both 
+      # C and Fortran othewrise Cmake will not build dynamic do to rules in the Cray cmake modules.
+      export CRAYPE_LINK_TYPE=dynamic
+      
+      CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} FC=${PARFLOW_FC} cmake ../parflow \
+	-DPARFLOW_ENABLE_TOOLS=TRUE \
+	-DPARFLOW_ENABLE_SIMULATOR=FALSE \
+	-DCMAKE_BUILD_TYPE=RELEASE \
+	-DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+	-DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
+	-DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
+	-DHDF5_USE_STATIC_LIBRARIES=True \
+	-DPARFLOW_ENABLE_ZLIB=True \
+	-DSILO_ROOT=${PARFLOW_SILO_DIR} \
+	-DNETCDF_INCLUDE_DIR=${PARFLOW_NETCDF_DIR}/include \
+	-DNETCDF_LIBRARY=${PARFLOW_NETCDF_DIR}/lib/libnetcdf.a \
+	-DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6 \
+	-DTCL_LIBRARY=${PARFLOW_TCL_DIR}/lib/libtcl8.6.so \
+	-DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR}
+      
+      echo "*****************************************************************************"
+      echo "Running make"
+      echo "*****************************************************************************"
+      
+      make
+      
+      echo "*****************************************************************************"
+      echo "Running make install"
+      echo "*****************************************************************************"
+      
+      make install
+      
+      popd
+   )
+fi
+
+if true
+then
+   (
+      BUILD_DIR=build-pfsimulator
+      
+      echo "*****************************************************************************"
+      echo "Building pfsimulator in ${BUILD_DIR}"
+      echo "*****************************************************************************"
+      
+      mkdir -p ${BUILD_DIR}
+      pushd ${BUILD_DIR}
+      
+      echo "*****************************************************************************"
+      echo "Running CMake"
+      echo "*****************************************************************************"
+
+      # Force shared library builds, by default Cori is doing static.  Need to set for both 
+      # C and Fortran otherwise Cmake will not build dynamic do to rules in the Cray cmake modules.
+      export CRAYPE_LINK_TYPE=dynamic
+      
+      # -parallel was needed due to way Hypre was compiled, unresolved symbols if not used.
+      FC=${PARFLOW_FC} CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} cmake ../parflow \
+	-DPARFLOW_ENABLE_TOOLS=FALSE \
+	-DPARFLOW_ENABLE_SIMULATOR=TRUE \
+	-DCMAKE_BUILD_TYPE=RELEASE \
+	-DPARFLOW_ENABLE_TIMING=TRUE \
+	-DPARFLOW_HAVE_CLM=ON \
+	-DPARFLOW_AMPS_LAYER=mpi1 \
+	-DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+	-DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
+	-DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
+	-DHDF5_USE_STATIC_LIBRARIES=True \
+	-DPARFLOW_ENABLE_ZLIB=True \
+	-DSILO_ROOT=${PARFLOW_SILO_DIR} \
+	-DNETCDF_INCLUDE_DIR=${PARFLOW_NETCDF_DIR}/include \
+	-DNETCDF_LIBRARY=${PARFLOW_NETCDF_DIR}/lib/libnetcdf.a \
+	-DPARFLOW_ENABLE_SLURM=true \
+	-DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6 \
+	-DTCL_LIBRARY=${PARFLOW_TCL_DIR}/lib/libtcl8.6.so \
+	-DMPIEXEC_EXECUTABLE=$(which srun) \
+	-DPARFLOW_TEST_FORCE_MPIEXEC=true \
+	-DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR}
+      
+      
+      echo "*****************************************************************************"
+      echo "Running make"
+      echo "*****************************************************************************"
+      
+      make
+      
+      echo "*****************************************************************************"
+      echo "Running make install"
+      echo "*****************************************************************************"
+      make install
+      
+      popd
+   )
+fi
+
+#
+# salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu --account=m2983
+#
