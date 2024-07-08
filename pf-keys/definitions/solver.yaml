@@ -1802,7 +1802,6 @@ Solver:
       BoolDomain:
 
   # missing from manual
-  # TODO: change comment to match channel width
   PrintChannelWidth:
     help: >
       [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the

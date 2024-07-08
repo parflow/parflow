@@ -1009,7 +1009,7 @@ PFModule *YSlopeNewPublicXtra(void);
 void YSlopeFreePublicXtra(void);
 int YSlopeSizeOfTempData(void);
 
-typedef void (*ChannelWidthInvoke) (ProblemData *problem_data, Vector *x_wc, Vector *dummy);
+typedef void (*ChannelWidthInvoke) (ProblemData *problem_data, Vector *wc_x, Vector *dummy);
 typedef PFModule *(*ChannelWidthInitInstanceXtraInvoke) (Grid *grid3d, Grid *grid2d);
 /* problem_wc_x.c */
 void XChannelWidth(ProblemData *problem_data, Vector *x_wc, Vector *dummy);
@@ -1020,7 +1020,7 @@ void XChannelWidthFreePublicXtra(void);
 int XChannelWidthSizeOfTempData(void);
 
 /* problem_wc_y.c */
-void YChannelWidth(ProblemData *problem_data, Vector *y_slope, Vector *dummy);
+void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy);
 PFModule *YChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d);
 void YChannelWidthFreeInstanceXtra(void);
 PFModule *YChannelWidthNewPublicXtra(void);

@@ -53,8 +53,6 @@ typedef struct {
   PFModule  *specific_storage;  //sk
   PFModule  *x_slope;  //sk
   PFModule  *y_slope;  //sk
-  PFModule  *wc_x;
-  PFModule  *wc_y;
   PFModule  *mann;  //sk
   PFModule  *dz_mult;   //RMM
   PFModule  *FBx;   //RMM
@@ -91,8 +89,6 @@ void          SetProblemData(
   PFModule      *specific_storage = (instance_xtra->specific_storage);    //sk
   PFModule      *x_slope = (instance_xtra->x_slope);         //sk
   PFModule      *y_slope = (instance_xtra->y_slope);         //sk
-  PFModule      *wc_x = (instance_xtra->wc_x);
-  PFModule      *wc_y = (instance_xtra->wc_y);
   PFModule      *mann = (instance_xtra->mann);            //sk
   PFModule      *dz_mult = (instance_xtra->dz_mult);                //rmm
   PFModule      *FBx = (instance_xtra->FBx);                //rmm
@@ -133,14 +129,6 @@ void          SetProblemData(
                        (problem_data,
                         ProblemDataTSlopeY(problem_data),
                         ProblemDataPorosity(problem_data)));
-    PFModuleInvokeType(ChannelWidthInvoke, wc_x,                   //sk
-                       (problem_data,
-                        ProblemDataChannelWidthX(problem_data),
-                        ProblemDataPorosity(problem_data)));   
-    PFModuleInvokeType(ChannelWidthInvoke, wc_y,                   //sk
-                       (problem_data,
-                        ProblemDataChannelWidthY(problem_data),
-                        ProblemDataPorosity(problem_data)));       
     PFModuleInvokeType(ManningsInvoke, mann,                   //sk
                        (problem_data,
                         ProblemDataMannings(problem_data),
@@ -240,14 +228,8 @@ PFModule  *SetProblemDataInitInstanceXtra(
                                                        ProblemXSlope(problem), (grid, grid2d));
     (instance_xtra->y_slope) =                                       //sk
                                PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke,
-                                                       ProblemYSlope(problem), (grid, grid2d));//sk
-    (instance_xtra->wc_x)    = 
-                               PFModuleNewInstanceType(ChannelWidthInitInstanceXtraInvoke,
-                                                       ProblemXChannelWidth(problem), (grid, grid2d));
-    (instance_xtra->wc_y)    = 
-                               PFModuleNewInstanceType(ChannelWidthInitInstanceXtraInvoke,
-                                                       ProblemYChannelWidth(problem), (grid, grid2d));
-    (instance_xtra->mann) =                                       
+                                                       ProblemYSlope(problem), (grid, grid2d));
+    (instance_xtra->mann) =                                       //sk
                             PFModuleNewInstanceType(ManningsInitInstanceXtraInvoke,
                                                     ProblemMannings(problem), (grid, grid2d));
     (instance_xtra->dz_mult) =                                      //RMM
@@ -289,10 +271,6 @@ PFModule  *SetProblemDataInitInstanceXtra(
                               (instance_xtra->x_slope), (grid, grid2d));        //sk
     PFModuleReNewInstanceType(SlopeInitInstanceXtraInvoke,
                               (instance_xtra->y_slope), (grid, grid2d));        //sk
-    PFModuleReNewInstanceType(ChannelWidthInitInstanceXtraInvoke,
-                              (instance_xtra->wc_x), (grid, grid2d));
-    PFModuleReNewInstanceType(ChannelWidthInitInstanceXtraInvoke,
-                              (instance_xtra->wc_y), (grid, grid2d));
     PFModuleReNewInstanceType(ManningsInitInstanceXtraInvoke,
                               (instance_xtra->mann), (grid, grid2d));        //sk
     PFModuleReNewInstance((instance_xtra->dz_mult), ());        //RMM

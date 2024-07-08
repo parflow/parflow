@@ -610,7 +610,7 @@ SetupRichards(PFModule * this_module)
                            sizeof(slope_filenames) / sizeof(slope_filenames[0]),
                            slope_filenames);
   }
-
+  
   if (public_xtra->print_channelwidth)
   {
     strcpy(file_postfix, "wc_x");
@@ -621,14 +621,15 @@ SetupRichards(PFModule * this_module)
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataChannelWidthY(problem_data));
 
-    static const char* channelwidth_filenames[] = {
+    static const char* slope_filenames[] = {
       "wc_x", "wc_y"
     };
     MetadataAddStaticField(
-                           js_inputs, file_prefix, "wc", NULL, "cell", "surface",
-                           sizeof(channelwidth_filenames) / sizeof(channelwidth_filenames[0]),
-                           channelwidth_filenames);
+                           js_inputs, file_prefix, "channel_width", NULL, "cell", "surface",
+                           sizeof(slope_filenames) / sizeof(slope_filenames[0]),
+                           slope_filenames);
   }
+
 
   if (public_xtra->write_silo_slopes)
   {

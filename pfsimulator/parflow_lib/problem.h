@@ -222,8 +222,6 @@ typedef struct {
 #define ProblemSpecStorage(problem)               ((problem)->specific_storage)   //sk
 #define ProblemXSlope(problem)                    ((problem)->x_slope)   //sk
 #define ProblemYSlope(problem)                    ((problem)->y_slope)   //sk
-#define ProblemXChannelWidth(problem)             ((problem)->wc_x)
-#define ProblemYChannelWidth(problem)             ((problem)->wc_y)
 #define ProblemFBx(problem)                      ((problem)->FBx)    //RMM
 #define ProblemFBy(problem)                      ((problem)->FBy)    //RMM
 #define ProblemFBz(problem)                      ((problem)->FBz)    //RMM
@@ -305,3 +303,4 @@ typedef struct {
 
 
 #endif
+

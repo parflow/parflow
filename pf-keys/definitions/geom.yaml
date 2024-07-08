@@ -1511,7 +1511,6 @@ ChannelWidth:
 ChannelWidthX:
   __doc__: >
     Setting data for channel width in the X direction
-
   GeomNames:
     help: >
       [Type: string] This key specifies all of the geometries on which a different x topographic slope values will be assigned. Topographic
@@ -1573,7 +1572,6 @@ ChannelWidthX:
 ChannelWidthY:
   __doc__: >
     Setting data for channel width in the Y direction
-
   GeomNames:
     help: >
       [Type: string] This key specifies all of the geometries on which a different y channel width values will be assigned. Channel width values
@@ -1779,3 +1777,4 @@ FBz:
       EnumDomain:
         enum_list:
           - PFBFile
+
