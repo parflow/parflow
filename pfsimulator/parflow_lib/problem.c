@@ -420,6 +420,8 @@ ProblemData   *NewProblemData(
   ProblemDataSpecificStorage(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);  //sk
   ProblemDataTSlopeX(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //sk
   ProblemDataTSlopeY(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //sk
+  ProblemDataChannelWidthX(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataChannelWidthY(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataMannings(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);  //sk
 
   /* @RMM added vectors for subsurface slopes for terrain-following grid */
@@ -479,6 +481,8 @@ void          FreeProblemData(
     FreeVector(ProblemDataSpecificStorage(problem_data));   //sk
     FreeVector(ProblemDataTSlopeX(problem_data));   //sk
     FreeVector(ProblemDataTSlopeY(problem_data));   //sk
+    FreeVector(ProblemDataChannelWidthX(problem_data));
+    FreeVector(ProblemDataChannelWidthY(problem_data));
     FreeVector(ProblemDataMannings(problem_data));   //sk
     FreeVector(ProblemDataSSlopeX(problem_data));   //RMM
     FreeVector(ProblemDataSSlopeY(problem_data));   //RMM

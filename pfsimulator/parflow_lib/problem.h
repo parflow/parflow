@@ -103,6 +103,8 @@ typedef struct {
   /*sk**  overland flow*/
   PFModule  *x_slope;
   PFModule  *y_slope;
+  PFModule  *wc_x;
+  PFModule  *wc_y;
   PFModule  *mann;
   PFModule  *overlandflow_eval;        //DOK
   PFModule  *overlandflow_eval_diff;         //@RMM
@@ -157,6 +159,8 @@ typedef struct {
   /*sk  overland flow*/
   Vector *x_slope;
   Vector *y_slope;
+  Vector *wc_x;
+  Vector *wc_y;
   Vector *mann;
 
   /* @RMM terrain grid */
@@ -218,6 +222,8 @@ typedef struct {
 #define ProblemSpecStorage(problem)               ((problem)->specific_storage)   //sk
 #define ProblemXSlope(problem)                    ((problem)->x_slope)   //sk
 #define ProblemYSlope(problem)                    ((problem)->y_slope)   //sk
+#define ProblemXChannelWidth(problem)             ((problem)->wc_x)
+#define ProblemYChannelWidth(problem)             ((problem)->wc_y)
 #define ProblemFBx(problem)                      ((problem)->FBx)    //RMM
 #define ProblemFBy(problem)                      ((problem)->FBy)    //RMM
 #define ProblemFBz(problem)                      ((problem)->FBz)    //RMM
@@ -278,6 +284,8 @@ typedef struct {
 #define ProblemDataSpecificStorage(problem_data)((problem_data)->specific_storage)   //sk
 #define ProblemDataTSlopeX(problem_data)        ((problem_data)->x_slope)   //sk
 #define ProblemDataTSlopeY(problem_data)        ((problem_data)->y_slope)   //sk
+#define ProblemDataChannelWidthX(problem_data)  ((problem_data)->wc_x)
+#define ProblemDataChannelWidthY(problem_data)  ((problem_data)->wc_y)
 #define ProblemDataMannings(problem_data)       ((problem_data)->mann)   //sk
 #define ProblemDataSSlopeX(problem_data)        ((problem_data)->x_sslope)   //RMM
 #define ProblemDataSSlopeY(problem_data)        ((problem_data)->y_sslope)   //RMM
