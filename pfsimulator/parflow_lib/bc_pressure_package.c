@@ -440,6 +440,27 @@ void         BCPressurePackage(
 	    break;
 	  } /* End OverlandDiffusive */
 
+          case GroundwaterFlow:
+          {
+            NewBCPressureTypeStruct(GroundwaterFlow, interval_data);
+
+            BCPressureDataBCType(bc_pressure_data, i) = GroundwaterFlowBC;
+
+            GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
+
+            GroundwaterFlowSpecificYield(interval_data) = 
+                data->SpecificYields[interval_number];
+            GroundwaterFlowAquiferDepth(interval_data) = 
+                data->AquiferDepths[interval_number];
+            GroundwaterFlowAquiferRecharge(interval_data) = 
+                data->AquiferRecharges[interval_number];
+
+            BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
+                = (void*)interval_data;
+
+            break;
+          } /* End GroundwaterFlow */
+
 	  default:
 	  {
 	    PARFLOW_ERROR("Invalid BC input type");
@@ -1009,7 +1030,37 @@ PFModule  *BCPressurePackageNewPublicXtra(
 	  
 	  break;
         } /* End OverlandDiffusive */
-	
+
+        case GroundwaterFlow:
+        {
+
+          // 1.
+          // Create public groundwaterflow class that 
+          // holds int[num_patches], which are the interval numbers
+          // that get updated with the cycle in BCPressure()
+
+          // 2.
+          // read groundwaterflow variables and store them 
+          // in the 'data' structure
+          // ReadGroundwaterFlowParameters(data->SpecificYields, data->AquiferDepths, data->AquiferRecharges, patch_name, interval_division, global_cycle)
+          void** Sy = NULL; // Specific Yield
+          void** Ad = NULL; // Aquifer Depth
+          void** Ar = NULL; // Aquifer Recharge
+
+          NewGroundwaterFlowParameters(Sy, Ad, Ar, 
+              patch_name, interval_division, global_cycle);
+          
+          // 3.
+          // store the 'data' structure in 'public_xtra'
+          NewTypeStruct(GroundwaterFlow, data);
+          data->SpecificYields   = Sy;
+          data->AquiferDepths    = Ad;
+          data->AquiferRecharges = Ar;
+
+          StoreTypeStruct(public_xtra, data, i);
+          break;
+        } /* End GroundwaterFlow */
+
       } /* End switch types */
     } /* End for patches */
   } /* if patches */
@@ -1170,6 +1221,16 @@ void  BCPressurePackageFreePublicXtra()
             tfree(data->values);
             tfree(data);
 	    break;
+          }
+
+          case GroundwaterFlow:
+          {
+            GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
+            FreeGroundwaterFlowParameters(
+                data->SpecificYields, data->AquiferDepths, 
+                data->AquiferRecharges, interval_division);
+            tfree(data);
+            break;
           }
 
 	  default:
