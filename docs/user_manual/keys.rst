@@ -5667,6 +5667,19 @@ described below, will also need to be changed.
       pfset Solver.CLM.RootZoneNZ      4     ## TCL syntax
       <runname>.Solver.CLM.RootZoneNZ = 4    ## Python syntax
 
+*integer* **Solver.CLM.RZWaterStress** 0 This key sets the distribution
+of transpiration over the root zone and changes the behavior of plant water limitations.
+water stress approaches result in different cut-offs for transpiration.  Two options are currently
+implemented both use the beta-type water stress defined above.  Option 0 (default) will limit transpiration when the top soil
+layer drops below wilting point, option 1 limits each layer independently.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.CLM.RZWaterStress 1          ## TCL syntax
+      <runname>.Solver.CLM.RZWaterStress = 1    ## Python syntax
+      
 *integer* **Solver.CLM.SoiLayer** 7 This key sets the soil layer, and
 thus the soil depth, that ``CLM`` uses for the seasonal temperature 
 adjustment for all leaf and stem area indices.

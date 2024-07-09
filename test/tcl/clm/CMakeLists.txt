@@ -6,7 +6,7 @@ if(${PARFLOW_HAVE_CLM})
       clm_forc_veg.tcl
       clm_varDZ.tcl
       clm_slope.tcl
-      clm.rz_water_stress.tcl)
+      clm_rz_water_stress.tcl)
   endif()
 endif()
 

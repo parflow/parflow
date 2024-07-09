@@ -345,8 +345,8 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 #-----------------------------------------------------------------------------
 
 
-pfrun clm.rz_stress 
-pfundist clm.rz_stress
+pfrun clm_rz_water_stress 
+pfundist clm_rz_water_stress
 
 #
 # Tests 
@@ -360,16 +360,16 @@ set correct_output_dir "../../correct_output/clm_output"
 
 for {set i 0} { $i <= 5 } {incr i} {
     set i_string [format "%05d" $i]
-    if ![pftestFile clm.rz_stress.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir] {
-    set passed 0
+    if ![pftestFile clm_rz_water_stress.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir] {
+	set passed 0
     }
-    if ![pftestFile clm.rz_stress.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits $correct_output_dir] {
-    set passed 0
+    if ![pftestFile clm_rz_water_stress.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits $correct_output_dir] {
+	set passed 0
     }
     if {$i > 0} {
-    if ![pftestFile clm.rz_stress.out.clm_output.$i_string.C.pfb "Max difference in Saturation for timestep $i_string" $sig_digits $correct_output_dir] {
-    set passed 0
-    }
+	if ![pftestFile clm_rz_water_stress.out.clm_output.$i_string.C.pfb "Max difference in Saturation for timestep $i_string" $sig_digits $correct_output_dir] {
+	    set passed 0
+	}
     }
 
 }
@@ -377,8 +377,8 @@ for {set i 0} { $i <= 5 } {incr i} {
 
 
 if $passed {
-    puts "clm.rz_stress : PASSED"
+    puts "clm_rz_stress : PASSED"
 } {
-    puts "clm.rz_stress : FAILED"
+    puts "clm_rz_stress : FAILED"
 }
 
