@@ -5669,9 +5669,11 @@ described below, will also need to be changed.
 
 *integer* **Solver.CLM.RZWaterStress** 0 This key sets the distribution
 of transpiration over the root zone and changes the behavior of plant water limitations.
-water stress approaches result in different cut-offs for transpiration.  Two options are currently
-implemented both use the beta-type water stress defined above.  Option 0 (default) will limit transpiration when the top soil
-layer drops below wilting point, option 1 limits each layer independently.
+As discussed in :cite:p:`Ferguson2016` water stress approaches result in
+different cut-offs for transpiration ().  Two options are currently
+implemented both use the beta-type water stress defined above.  Option 0
+(default) will limit transpiration when the top soil layer drops below
+wilting point, option 1 limits each layer independently.
 
 .. container:: list
 
