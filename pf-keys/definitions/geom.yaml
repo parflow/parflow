@@ -1513,8 +1513,8 @@ ChannelWidthX:
     Setting data for channel width in the X direction
   GeomNames:
     help: >
-      [Type: string] This key specifies all of the geometries on which a different x topographic slope values will be assigned. Topographic
-      slopes may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper surface of the
+      [Type: string] This key specifies all of the geometries on which different channel width x values will be assigned. Channel widths
+      may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper surface of the
       computational domain. 
     domains:
       EnumDomain:
@@ -1534,6 +1534,7 @@ ChannelWidthX:
       Constant which indicates that a constant is to be assigned to all grid cells within a geometry and PFBFile which
       indicates that all values are read in from a distributed, grid-based ParFlow binary file. If NetCDF is used, NCFile can be
       specified, which will read in slopes from a NetCDF file.
+    default: Constant
     domains:
       EnumDomain:
         enum_list:
@@ -1566,6 +1567,7 @@ ChannelWidthX:
         help: >
           [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
           to constant.
+        default: 0.0
         domains:
           DoubleValue:
 
@@ -1595,6 +1597,7 @@ ChannelWidthY:
       Constant which indicates that a constant is to be assigned to all grid cells within a geometry and PFBFile which
       indicates that all values are read in from a distributed, grid-based ParFlow binary file. If NetCDF is used, NCFile can be
       specified, which will read in slopes from a NetCDF file.
+    default: Constant
     domains:
       EnumDomain:
         enum_list:
@@ -1626,6 +1629,7 @@ ChannelWidthY:
         help: >
           [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
           to constant.
+        default: 0.0
         domains:
           DoubleValue:
 

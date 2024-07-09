@@ -2202,6 +2202,21 @@ Solver:
       domains:
         BoolDomain:
 
+    ChannelWidthExistX:
+      help: >
+        [Type: boolean/string] This key specifies whether channel width is used to be used in the X direction, default is false. The default
+        indicates a false or ChannelWidthX value of 0 everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+    ChannelWidthExistY:
+      help: >
+        [Type: boolean/string] This key specifies whether channel width is used to be used in the Y direction, default is false. The default
+        indicates a false or ChannelWidthY value of 0 everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+
     ResidualTol:
       help: >
         [Type: double] This key specifies the tolerance that measures how much the relative reduction in the nonlinear residual should

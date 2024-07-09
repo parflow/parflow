@@ -233,10 +233,16 @@ domain_example.TopoSlopesY.Type              = 'Constant'
 domain_example.TopoSlopesY.GeomNames         = 'domain'
 domain_example.TopoSlopesY.Geom.domain.Value = 0.0
 
+#---------------------------------------------------------
+# Channel width in x-direction
+#---------------------------------------------------------
 domain_example.ChannelWidthX.Type            = 'Constant'
 domain_example.ChannelWidthX.GeomNames       = 'domain'
 domain_example.ChannelWidthX.Geom.domain.Value = 1.0
 
+#---------------------------------------------------------
+# Channel width in y-direction
+#---------------------------------------------------------
 domain_example.ChannelWidthY.Type            = 'Constant'
 domain_example.ChannelWidthY.GeomNames       = 'domain'
 domain_example.ChannelWidthY.Geom.domain.Value = 1.0

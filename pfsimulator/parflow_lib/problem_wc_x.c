@@ -99,6 +99,8 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
 
     (void) dummy;
 
+    InitVectorAll(wc_x, 0.0);
+
     switch ((public_xtra->type)) {
         case 0: {
             int num_regions;
@@ -319,67 +321,82 @@ PFModule *XChannelWidthNewPublicXtra() {
 
     char key[IDB_MAX_KEY_LEN];
 
+    char *name;
+
     char *switch_name; 
+    char *switch_exist_name;
 
     NameArray type_na;
-    
-    type_na = NA_NewNameArray("Constant PFBFile NCFile");
+    NameArray switch_na;
 
-    public_xtra = ctalloc(PublicXtra, 1); 
+    int switch_val;
 
-    switch_name = GetString("ChannelWidthX.Type");
+    name = "Solver.Nonlinear.ChannelWidthExistX";
+    switch_na = NA_NewNameArray("False True");
+    switch_exist_name = GetStringDefault(name, "False");
+    switch_val = NA_NameToIndexExitOnError(switch_na, switch_exist_name, name);
+    NA_FreeNameArray(switch_na);
 
-    public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "ChannelWidthX.Type");
+    if (switch_val == 1) 
+    {
+        type_na = NA_NewNameArray("Constant PFBFile NCFile");
 
-    switch((public_xtra->type)) {
-        case 0: {
-            dummy0 = ctalloc(Type0, 1);
+        public_xtra = ctalloc(PublicXtra, 1); 
 
-            switch_name = GetString("ChannelWidthX.GeomNames");
+        switch_name = GetString("ChannelWidthX.Type");
 
-            dummy0->regions = NA_NewNameArray(switch_name);
+        public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "ChannelWidthX.Type");
 
-            num_regions = (dummy0->num_regions) = NA_Sizeof(dummy0->regions);
+        switch((public_xtra->type)) {
+            case 0: {
+                dummy0 = ctalloc(Type0, 1);
 
-            (dummy0->region_indices) = ctalloc(int, num_regions);
-            (dummy0->values) = ctalloc(double, num_regions);
+                switch_name = GetString("ChannelWidthX.GeomNames");
 
-            for (ir = 0; ir < num_regions; ir++) { 
-                (dummy0->region_indices)[ir] = NA_NameToIndex(GlobalsGeomNames, NA_IndexToName((dummy0->regions), ir));
-                sprintf(key, "ChannelWidthX.Geom.%s.Value", NA_IndexToName((dummy0->regions), ir));
-                (dummy0->values)[ir] = GetDouble(key);
+                dummy0->regions = NA_NewNameArray(switch_name);
+
+                num_regions = (dummy0->num_regions) = NA_Sizeof(dummy0->regions);
+
+                (dummy0->region_indices) = ctalloc(int, num_regions);
+                (dummy0->values) = ctalloc(double, num_regions);
+
+                for (ir = 0; ir < num_regions; ir++) { 
+                    (dummy0->region_indices)[ir] = NA_NameToIndex(GlobalsGeomNames, NA_IndexToName((dummy0->regions), ir));
+                    sprintf(key, "ChannelWidthX.Geom.%s.Value", NA_IndexToName((dummy0->regions), ir));
+                    (dummy0->values)[ir] = GetDouble(key);
+                }
+
+                (public_xtra->data) = (void *) dummy0;
+
+                break;
+            }
+            
+            case 1: {
+                dummy1 = ctalloc(Type1, 1);
+
+                dummy1->filename = GetString("ChannelWidthX.FileName");
+
+                (public_xtra->data) = (void *) dummy1;
+                break;
+            }
+            
+            case 2: {
+                dummy2 = ctalloc(Type2, 1);
+
+                dummy2->filename = GetString("ChannelWidthX.FileName");
+
+                (public_xtra->data) = (void *) dummy2;
+                break;
             }
 
-            (public_xtra->data) = (void *) dummy0;
-
-            break;
-        }
-        
-        case 1: {
-            dummy1 = ctalloc(Type1, 1);
-
-            dummy1->filename = GetString("ChannelWidthX.FileName");
-
-            (public_xtra->data) = (void *) dummy1;
-            break;
-        }
-        
-        case 2: {
-            dummy2 = ctalloc(Type2, 1);
-
-            dummy2->filename = GetString("ChannelWidthX.FileName");
-
-            (public_xtra->data) = (void *) dummy2;
-            break;
+            default: { 
+                InputError("Error: invalid type <%s> for key <%s>\n", switch_name, key);
+            }
         }
 
-        default: { 
-            InputError("Error: invalid type <%s> for key <%s>\n", switch_name, key);
-        }
+        NA_FreeNameArray(type_na);
     }
-
-    NA_FreeNameArray(type_na);
-
+    
     PFModulePublicXtra(this_module) = public_xtra;
     return this_module;
 }

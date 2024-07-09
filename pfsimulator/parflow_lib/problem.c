@@ -210,6 +210,12 @@ Problem   *NewProblem(
   ProblemYSlope(problem) =
     PFModuleNewModule(YSlope, ());   //sk
 
+  ProblemXChannelWidth(problem) = 
+    PFModuleNewModule(XChannelWidth, ());
+
+  ProblemYChannelWidth(problem) = 
+    PFModuleNewModule(YChannelWidth, ());
+
   ProblemMannings(problem) =
     PFModuleNewModule(Mannings, ());   //sk
 
@@ -379,6 +385,8 @@ void      FreeProblem(
   PFModuleFreeModule(ProblemSpecStorage(problem));  //sk
   PFModuleFreeModule(ProblemXSlope(problem));  //sk
   PFModuleFreeModule(ProblemYSlope(problem));
+  PFModuleFreeModule(ProblemXChannelWidth(problem));
+  PFModuleFreeModule(ProblemYChannelWidth(problem));
   PFModuleFreeModule(ProblemMannings(problem));
   PFModuleFreeModule(ProblemdzScale(problem));    //RMM
   PFModuleFreeModule(ProblemFBx(problem));    //RMM
