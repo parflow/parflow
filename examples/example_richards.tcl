@@ -401,8 +401,11 @@ pfset Geom.domain.SpecificStorage.Value 1.0e-4
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun default_richards
-pfundist default_richards
+
+set TEST example_richards
+
+pfrun $TEST
+pfundist $TEST
 
 #-----------------------------------------------------------------------------
 # If running as test; check output.
@@ -410,7 +413,6 @@ pfundist default_richards
 # are run and checked as part of our testing process.
 #-----------------------------------------------------------------------------
 if { [info exists ::env(PF_TEST) ] } {
-    set TEST default_richards
     source pftest.tcl
     set sig_digits 4
 
