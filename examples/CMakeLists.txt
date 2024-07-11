@@ -50,8 +50,10 @@ install(FILES
   correct_output/example_single.out.press.00000.pfb
   DESTINATION examples/correct_output)
 
-set(PY_TESTS example_single)
+if (PARFLOW_ENABLE_PYTHON)
+  set(PY_TESTS example_single)
 
-foreach(inputfile ${PY_TESTS})
-  pf_add_py_test(${inputfile})
-endforeach()
+  foreach(inputfile ${PY_TESTS})
+    pf_add_py_test(${inputfile})
+  endforeach()
+endif()
