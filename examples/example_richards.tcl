@@ -11,9 +11,45 @@ namespace import Parflow::*
 
 pfset FileVersion 4
 
-pfset Process.Topology.P 1
-pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+#-----------------------------------------------------------------------------
+# Process command line arguments
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set running_as_test 1
+} else {
+    set running_as_test 0
+}
+
+set arglen [llength $argv]
+set index 0
+set parsed_argv {}
+
+while {$index < $arglen} {
+    set arg [lindex $argv $index]
+    switch -exact $arg {
+        -t {
+            set running_as_test 1
+        }
+	default  {
+	    lappend parsed_argv $arg
+	}
+    }
+    incr index
+}
+
+#-----------------------------------------------------------------------------
+# Process Topology
+#-----------------------------------------------------------------------------
+
+if  { [llength $parsed_argv] == 3 } {
+    pfset Process.Topology.P        [lindex $parsed_argv 0]
+    pfset Process.Topology.Q        [lindex $parsed_argv 1]
+    pfset Process.Topology.R        [lindex $parsed_argv 2]
+} else {
+    pfset Process.Topology.P        1
+    pfset Process.Topology.Q        1
+    pfset Process.Topology.R        1
+}
 
 #---------------------------------------------------------
 # Computational Grid
@@ -412,7 +448,7 @@ pfundist $TEST
 # You do not need this for normal PF input files; this is done so the examples
 # are run and checked as part of our testing process.
 #-----------------------------------------------------------------------------
-if { [info exists ::env(PF_TEST) ] } {
+if { $running_as_test } {
     source pftest.tcl
     set sig_digits 4
 
