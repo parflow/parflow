@@ -1,6 +1,7 @@
-*.csv
-*.out.*
-*.output.*
-*.pfidb
-*.pfb.dist
-*_output.*
+/*.csv
+/*.out.*
+/*.output.*
+/*.pfidb
+/*.pfb.dist
+/*_output.*
+/test_output
