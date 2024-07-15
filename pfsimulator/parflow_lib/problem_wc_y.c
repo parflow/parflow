@@ -29,6 +29,7 @@
 #include "parflow.h"
 #include "parflow_netcdf.h"
 
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -36,6 +37,7 @@
 typedef struct {
   int type;
   void  *data;
+  int wcy_exists;
 } PublicXtra;
 
 typedef struct {
@@ -99,27 +101,67 @@ void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy){
 
     (void) dummy;
 
-    switch ((public_xtra->type)) {
-        case 0: {
-            int num_regions;
-            int *region_indices;
-            double *values;
-            double value;
-            int ir;
+    InitVectorAll(wc_y, 0.0);
 
-            dummy0 = (Type0 *) public_xtra->data;
+    if (public_xtra->wcy_exists == 1) {
 
-            num_regions = dummy0->num_regions;
-            region_indices = dummy0->region_indices;
-            values = dummy0->values;
+        switch ((public_xtra->type)) {
+            case 0: {
+                int num_regions;
+                int *region_indices;
+                double *values;
+                double value;
+                int ir;
 
-            for (ir = 0; ir < num_regions; ir++) {
-                gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
-                value = values[ir];
+                dummy0 = (Type0 *) public_xtra->data;
+
+                num_regions = dummy0->num_regions;
+                region_indices = dummy0->region_indices;
+                values = dummy0->values;
+
+                for (ir = 0; ir < num_regions; ir++) {
+                    gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
+                    value = values[ir];
+                    
+                    ForSubgridI(is, subgrids) {
+                        subgrid = SubgridArraySubgrid(subgrids, is);
+                        ps_sub = VectorSubvector(wc_y, is);
+
+                        ix = SubgridIX(subgrid);
+                        iy = SubgridIY(subgrid);
+                        iz = SubgridIZ(subgrid);
+
+                        nx = SubgridNX(subgrid);
+                        ny = SubgridNY(subgrid);
+                        nz = SubgridNZ(subgrid);
+
+                        r = SubgridRX(subgrid);
+
+                        data = SubvectorData(ps_sub);
+
+                        GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz, 
+                        { 
+                            ips = SubvectorEltIndex(ps_sub, i, j, 0);
+                            data[ips] = value;
+                        });
+                    }
+                }
+                break;
+            }
+
+            case 1: {
+                Vector *wcy_val;
                 
+                dummy1 = (Type1 *) public_xtra->data;
+
+                wcy_val = dummy1->wcy_values;
+
+                gr_domain = ProblemDataGrDomain(problem_data);
+
                 ForSubgridI(is, subgrids) {
                     subgrid = SubgridArraySubgrid(subgrids, is);
                     ps_sub = VectorSubvector(wc_y, is);
+                    wcy_values_sub = VectorSubvector(wcy_val, is);
 
                     ix = SubgridIX(subgrid);
                     iy = SubgridIY(subgrid);
@@ -131,90 +173,55 @@ void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy){
 
                     r = SubgridRX(subgrid);
 
-                    data = SubvectorData(ps_sub);
+                    psdat = SubvectorData(ps_sub);
+                    wcy_values_dat = SubvectorData(wcy_values_sub);
 
-                    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz, 
-                    { 
+                    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, {
                         ips = SubvectorEltIndex(ps_sub, i, j, 0);
-                        data[ips] = value;
+                        ipicv = SubvectorEltIndex(wcy_values_sub, i, j, 0);
+
+                        psdat[ips] = wcy_values_dat[ipicv];
+                    })
+                }
+                break;
+            }
+
+            case 2: {
+                Vector *wcy_val;
+
+                dummy2 = (Type2 *) public_xtra->data;
+
+                wcy_val = dummy2->wcy_values;
+
+                gr_domain = ProblemDataGrDomain(problem_data);
+
+                ForSubgridI(is, subgrids) {
+                    subgrid = SubgridArraySubgrid(subgrids, is);
+                    ps_sub = VectorSubvector(wc_y, is);
+                    wcy_values_sub = VectorSubvector(wcy_val, is);
+
+                    ix = SubgridIX(subgrid);
+                    iy = SubgridIY(subgrid);
+                    iz = SubgridIZ(subgrid);
+
+                    nx = SubgridNX(subgrid);
+                    ny = SubgridNY(subgrid);
+                    nz = SubgridNZ(subgrid);
+
+                    r = SubgridRX(subgrid);
+
+                    psdat = SubvectorData(ps_sub);
+                    wcy_values_dat = SubvectorData(wcy_values_sub);
+
+                    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, {
+                        ips = SubvectorEltIndex(ps_sub, i, j, 0);
+                        ipicv = SubvectorEltIndex(wcy_values_sub, i, j, 0);
+
+                        psdat[ips] = wcy_values_dat[ipicv];
                     });
                 }
+                break;
             }
-            break;
-        }
-
-        case 1: {
-            Vector *wcy_val;
-            
-            dummy1 = (Type1 *) public_xtra->data;
-
-            wcy_val = dummy1->wcy_values;
-
-            gr_domain = ProblemDataGrDomain(problem_data);
-
-            ForSubgridI(is, subgrids) {
-                subgrid = SubgridArraySubgrid(subgrids, is);
-                ps_sub = VectorSubvector(wc_y, is);
-                wcy_values_sub = VectorSubvector(wcy_val, is);
-
-                ix = SubgridIX(subgrid);
-                iy = SubgridIY(subgrid);
-                iz = SubgridIZ(subgrid);
-
-                nx = SubgridNX(subgrid);
-                ny = SubgridNY(subgrid);
-                nz = SubgridNZ(subgrid);
-
-                r = SubgridRX(subgrid);
-
-                psdat = SubvectorData(ps_sub);
-                wcy_values_dat = SubvectorData(wcy_values_sub);
-
-                GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, {
-                    ips = SubvectorEltIndex(ps_sub, i, j, 0);
-                    ipicv = SubvectorEltIndex(wcy_values_sub, i, j, 0);
-
-                    psdat[ips] = wcy_values_dat[ipicv];
-                })
-            }
-            break;
-        }
-
-        case 2: {
-            Vector *wcy_val;
-
-            dummy2 = (Type2 *) public_xtra->data;
-
-            wcy_val = dummy2->wcy_values;
-
-            gr_domain = ProblemDataGrDomain(problem_data);
-
-            ForSubgridI(is, subgrids) {
-                subgrid = SubgridArraySubgrid(subgrids, is);
-                ps_sub = VectorSubvector(wc_y, is);
-                wcy_values_sub = VectorSubvector(wcy_val, is);
-
-                ix = SubgridIX(subgrid);
-                iy = SubgridIY(subgrid);
-                iz = SubgridIZ(subgrid);
-
-                nx = SubgridNX(subgrid);
-                ny = SubgridNY(subgrid);
-                nz = SubgridNZ(subgrid);
-
-                r = SubgridRX(subgrid);
-
-                psdat = SubvectorData(ps_sub);
-                wcy_values_dat = SubvectorData(wcy_values_sub);
-
-                GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, {
-                    ips = SubvectorEltIndex(ps_sub, i, j, 0);
-                    ipicv = SubvectorEltIndex(wcy_values_sub, i, j, 0);
-
-                    psdat[ips] = wcy_values_dat[ipicv];
-                });
-            }
-            break;
         }
     }
 
@@ -251,22 +258,25 @@ PFModule *YChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d) {
     if (grid2d != NULL) {
         (instance_xtra->grid2d) = grid2d;
 
-        if (public_xtra->type == 1) {
-            dummy1 = (Type1 *) (public_xtra->data);
-            
-            dummy1->wcy_values = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+        if (public_xtra->wcy_exists) {
+            if (public_xtra->type == 1) {
+                dummy1 = (Type1 *) (public_xtra->data);
+                
+                dummy1->wcy_values = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
-            ReadPFBinary((dummy1->filename), (dummy1->wcy_values));
-        }
+                ReadPFBinary((dummy1->filename), (dummy1->wcy_values));
+            }
 
-        if (public_xtra->type == 2) {
-            dummy2 = (Type2 *) (public_xtra->data);
+            if (public_xtra->type == 2) {
+                dummy2 = (Type2 *) (public_xtra->data);
 
-            dummy2->wcy_values = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+                dummy2->wcy_values = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
-            ReadPFNC((dummy2->filename), (dummy2->wcy_values), "wc_y", 0, 2);
+                ReadPFNC((dummy2->filename), (dummy2->wcy_values), "wc_y", 0, 2);
+            }
         }
     }
+    
 
     PFModuleInstanceXtra(this_module) = instance_xtra;
     return this_module;
@@ -286,14 +296,16 @@ void YChannelWidthFreeInstanceXtra() {
     Type1 *dummy1;
     Type2 *dummy2;
 
-    if (public_xtra->type == 1) {
-        dummy1 = (Type1 *) (public_xtra->data);
-        FreeVector(dummy1->wcy_values);
-    }
-    
-    if (public_xtra->type == 2) {
-        dummy2 = (Type2 *) (public_xtra->data);
-        FreeVector(dummy2->wcy_values);
+    if (public_xtra->wcy_exists == 1) {
+        if (public_xtra->type == 1) {
+            dummy1 = (Type1 *) (public_xtra->data);
+            FreeVector(dummy1->wcy_values);
+        }
+        
+        if (public_xtra->type == 2) {
+            dummy2 = (Type2 *) (public_xtra->data);
+            FreeVector(dummy2->wcy_values);
+        }
     }
 
     if (instance_xtra) {
@@ -319,67 +331,84 @@ PFModule *YChannelWidthNewPublicXtra() {
 
     char key[IDB_MAX_KEY_LEN];
 
+    char *name;
+
     char *switch_name; 
+    char *switch_exist_name;
 
     NameArray type_na;
-    
-    type_na = NA_NewNameArray("Constant PFBFile NCFile");
+    NameArray switch_na;
+    int switch_val;
 
     public_xtra = ctalloc(PublicXtra, 1); 
 
-    switch_name = GetString("ChannelWidthY.Type");
+    name = "Solver.Nonlinear.ChannelWidthExistY";
+    switch_na = NA_NewNameArray("False True");
+    switch_exist_name = GetStringDefault(name, "False");
+    switch_val = NA_NameToIndexExitOnError(switch_na, switch_exist_name, name);
+    NA_FreeNameArray(switch_na);
 
-    public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "ChannelWidthY.Type");
+    public_xtra->wcy_exists = switch_val;
 
-    switch((public_xtra->type)) {
-        case 0: {
-            dummy0 = ctalloc(Type0, 1);
+    if (public_xtra->wcy_exists == 1) 
+    {
+        type_na = NA_NewNameArray("Constant PFBFile NCFile");
 
-            switch_name = GetString("ChannelWidthY.GeomNames");
+        switch_name = GetString("ChannelWidthY.Type");
 
-            dummy0->regions = NA_NewNameArray(switch_name);
+        public_xtra->type = NA_NameToIndexExitOnError(type_na, switch_name, "ChannelWidthY.Type");
 
-            num_regions = (dummy0->num_regions) = NA_Sizeof(dummy0->regions);
+        switch((public_xtra->type)) {
+            case 0: {
+                dummy0 = ctalloc(Type0, 1);
 
-            (dummy0->region_indices) = ctalloc(int, num_regions);
-            (dummy0->values) = ctalloc(double, num_regions);
+                switch_name = GetString("ChannelWidthY.GeomNames");
 
-            for (ir = 0; ir < num_regions; ir++) { 
-                (dummy0->region_indices)[ir] = NA_NameToIndex(GlobalsGeomNames, NA_IndexToName((dummy0->regions), ir));
-                sprintf(key, "ChannelWidthY.Geom.%s.Value", NA_IndexToName((dummy0->regions), ir));
-                (dummy0->values)[ir] = GetDouble(key);
+                dummy0->regions = NA_NewNameArray(switch_name);
+
+                num_regions = (dummy0->num_regions) = NA_Sizeof(dummy0->regions);
+
+                (dummy0->region_indices) = ctalloc(int, num_regions);
+                (dummy0->values) = ctalloc(double, num_regions);
+
+                for (ir = 0; ir < num_regions; ir++) { 
+                    (dummy0->region_indices)[ir] = NA_NameToIndex(GlobalsGeomNames, NA_IndexToName((dummy0->regions), ir));
+                    sprintf(key, "ChannelWidthY.Geom.%s.Value", NA_IndexToName((dummy0->regions), ir));
+                    (dummy0->values)[ir] = GetDouble(key);
+                }
+
+                (public_xtra->data) = (void *) dummy0;
+
+                break;
+            }
+            
+            case 1: {
+                dummy1 = ctalloc(Type1, 1);
+
+                dummy1->filename = GetString("ChannelWidthY.FileName");
+
+                (public_xtra->data) = (void *) dummy1;
+                break;
+            }
+            
+            case 2: {
+                dummy2 = ctalloc(Type2, 1);
+
+                dummy2->filename = GetString("ChannelWidthY.FileName");
+
+                (public_xtra->data) = (void *) dummy2;
+                break;
             }
 
-            (public_xtra->data) = (void *) dummy0;
-
-            break;
-        }
-        
-        case 1: {
-            dummy1 = ctalloc(Type1, 1);
-
-            dummy1->filename = GetString("ChannelWidthY.FileName");
-
-            (public_xtra->data) = (void *) dummy1;
-            break;
-        }
-        
-        case 2: {
-            dummy2 = ctalloc(Type2, 1);
-
-            dummy2->filename = GetString("ChannelWidthY.FileName");
-
-            (public_xtra->data) = (void *) dummy2;
-            break;
+            default: { 
+                InputError("Error: invalid type <%s> for key <%s>\n", switch_name, key);
+            }
         }
 
-        default: { 
-            InputError("Error: invalid type <%s> for key <%s>\n", switch_name, key);
-        }
+        NA_FreeNameArray(type_na);
+
     }
-
-    NA_FreeNameArray(type_na);
-
+    
     PFModulePublicXtra(this_module) = public_xtra;
     return this_module;
 }
@@ -397,32 +426,34 @@ void YChannelWidthFreePublicXtra() {
     Type0 *dummy0;
 
     if (public_xtra) {
-        switch ((public_xtra->type)) {
-            case 0: {
-                dummy0 = (Type0 *) (public_xtra->data);
+        if (public_xtra->wcy_exists) {
+            switch ((public_xtra->type)) {
+                case 0: {
+                    dummy0 = (Type0 *) (public_xtra->data);
 
-                NA_FreeNameArray(dummy0->regions);
+                    NA_FreeNameArray(dummy0->regions);
 
-                tfree(dummy0->region_indices);
-                tfree(dummy0->values);
-                tfree(dummy0);
-                break;
-            }
+                    tfree(dummy0->region_indices);
+                    tfree(dummy0->values);
+                    tfree(dummy0);
+                    break;
+                }
 
-            case 1: {
-                Type1 *dummy1;
-                dummy1 = (Type1 *) (public_xtra->data);
-                
-                tfree(dummy1);
-                break;
-            }
+                case 1: {
+                    Type1 *dummy1;
+                    dummy1 = (Type1 *) (public_xtra->data);
+                    
+                    tfree(dummy1);
+                    break;
+                }
 
-            case 2: {
-                Type2 *dummy2;
-                dummy2 = (Type2 *) (public_xtra->data);
-                
-                tfree(dummy2);
-                break;
+                case 2: {
+                    Type2 *dummy2;
+                    dummy2 = (Type2 *) (public_xtra->data);
+                    
+                    tfree(dummy2);
+                    break;
+                }
             }
         }
 
