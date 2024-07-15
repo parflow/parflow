@@ -465,15 +465,43 @@ class ParflowBinaryReader:
             sg_starts.append([sg_head['ix'], sg_head['iy'], sg_head['iz']])
             sg_shapes.append([sg_head['nx'], sg_head['ny'], sg_head['nz']])
             sg_offs.append(off)
+            
+            # Finally, move past the current subgrid before next iteration
+            off += sg_head['sg_size']*8
 
+        # Calculate p, q, r from subgrid shapes
+        p, q, r = 0, 0, 0
+        x, y, z = 0, 0, 0
+        
+        for shape in sg_shapes:
+            if x == self.header['nx']:
+                break
+            p = p + 1
+            x = x + shape[0]
+            
+        for shape in sg_shapes[::p]:
+            if y == self.header['ny']:
+                break
+            q = q + 1
+            y = y + shape[1]
+
+        for shape in sg_shapes[::p * q]:
+            if z == self.header['nz']:
+                break
+            r = r + 1
+            z = z + shape[2]
+
+        self.header['p'] = p
+        self.header['q'] = q
+        self.header['r'] = r
+            
+        for sg_num in range(self.header['n_subgrids']):            
             # Calculate subgrid locs instead of reading from file
             sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, self.header['p'], 
                                                        self.header['q'], 
                                                        self.header['r'])
             sg_locs.append((sg_p, sg_q, sg_r))
-            
-            # Finally, move past the current subgrid before next iteration
-            off += sg_head['sg_size']*8
+        
         
         self.subgrid_offsets = np.array(sg_offs)
         self.subgrid_locations = np.array(sg_locs)
