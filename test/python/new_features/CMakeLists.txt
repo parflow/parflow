@@ -17,6 +17,7 @@ set(TESTS
   normalize_location
   os_function
   # pfb_mask
+  pfb_reader
   pfidb_pfset
   pfset_test
   selection_methods
