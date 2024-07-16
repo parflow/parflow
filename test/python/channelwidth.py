@@ -398,7 +398,7 @@ wc_test.run(working_directory=base)
 data_wcx = read_pfb(os.path.join(base, "channel_width_example.out.wc_x.pfb"))
 data_wcy = read_pfb(os.path.join(base, "channel_width_example.out.wc_y.pfb"))
 
-if not np.array_equal(data_wcx, ones_array) or not np.array_equal(data_wcx, ones_array) :
+if not np.array_equal(data_wcx, ones_array) or not np.array_equal(data_wcy, ones_array):
     print(f"{run_name} : FAILED")
     sys.exit(1)
 

@@ -96,7 +96,6 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
     int r;
 
     int is, i, j, k, ips, ipicv;
-    double time = 0.0;
 
     (void) dummy;
 
