@@ -36,7 +36,7 @@
 typedef struct {
   int type;
   void  *data;
-  int wcx_exists;
+  int wcx_exists;              /* check to see whether or not channel width X is used */
 } PublicXtra;
 
 typedef struct {
@@ -63,9 +63,9 @@ typedef struct {
 
 /*
 * XChannelWidth
-    * Description: 
+    * Description: Populates region data for channel width in X direction
     * Inputs: Problem data, channel width information, and a dummy vector
-    * Outputs:
+    * Outputs: Returns nothing but is called in channel width X invoke
 */
 void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
     PFModule *this_module = ThisPFModule;
@@ -231,8 +231,8 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
 
 /*
 * XChannelWidthInitInstanceXtra
-    * Description: 
-    * Inputs: 
+    * Description: Initializes InstanceXtra object for channel width X problem
+    * Inputs: 2d and 3d grid
     * Outputs: PFModule *this_module
 */
 PFModule *XChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d) {
@@ -284,7 +284,7 @@ PFModule *XChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d) {
 
 /* 
 * XChannelWidthFreeInstanceXtra
-    * Description:
+    * Description: Frees the InstanceXtra object for channel width X problem
     * Inputs: None
     * Outputs: None
 */

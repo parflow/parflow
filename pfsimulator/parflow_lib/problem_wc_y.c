@@ -37,7 +37,7 @@
 typedef struct {
   int type;
   void  *data;
-  int wcy_exists;
+  int wcy_exists;              /* check to see whether or not channel width Y is used */
 } PublicXtra;
 
 typedef struct {
@@ -64,9 +64,9 @@ typedef struct {
 
 /*
 * YChannelWidth
-    * Description: 
+    * Description: Populates region data for channel width in Y direction
     * Inputs: Problem data, channel width information, and a dummy vector
-    * Outputs:
+    * Outputs:Returns nothing but is called in channel width Y invoke
 */
 void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy){
     PFModule *this_module = ThisPFModule;
@@ -232,8 +232,8 @@ void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy){
 
 /*
 * YChannelWidthInitInstanceXtra
-    * Description: 
-    * Inputs: 
+    * Description: Initializes InstanceXtra object for channel width Y problem
+    * Inputs: 2d and 3d grid
     * Outputs: PFModule *this_module
 */
 PFModule *YChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d) {
@@ -284,7 +284,7 @@ PFModule *YChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d) {
 
 /* 
 * YChannelWidthFreeInstanceXtra
-    * Description:
+    * Description: Frees the InstanceXtra object for channel width Y problem
     * Inputs: None
     * Outputs: None
 */
@@ -415,7 +415,7 @@ PFModule *YChannelWidthNewPublicXtra() {
 
 /*
 * YChannelWidthFreePublicXtra
-    * Description: Frees the PublicXtra object associated with XChannelWidth.
+    * Description: Frees the PublicXtra object associated with YChannelWidth.
     * Inputs: None
     * Outputs: None
 */
