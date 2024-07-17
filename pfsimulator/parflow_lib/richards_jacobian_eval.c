@@ -333,7 +333,7 @@ void    RichardsJacobianEval(
             /*Check to see if we have MGSemi set as the preconditioner key
             if so, we use the simple/symmetric preconditioner type (RMM) */
             if (public_xtra->using_MGSemi ==1) {
-            public_xtra->type = simple;
+            //public_xtra->type = simple;
             }
           }
           break;
@@ -1254,15 +1254,16 @@ void    RichardsJacobianEval(
                                {
                                  double vol = dx * dy * dz;
                                  int ip = SubvectorEltIndex(p_sub, i, j, k);
-                                //  if ((pp[ip]) > 0.0)
-                                //  {
-                                //   /* If we have the "simple" or symmetric preconditioner case we default to a modified version
-                                //      of Stefan's overland flow preconditioner (just for the center part) (RMM) */
-                                //    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                //    //cp[im] += (vol / dz) * (dt +1.0); (Stefan's original code)
-                                //    // remove for production, here for printing / debugging
-                                //    //amps_Printf("Jac OVLFLOW MGSemi: CP=%f im=%d  \n", cp[im], im);
-                                //  }
+                                  if ((pp[ip]) > 0.0)
+                                  {
+                                    if (public_xtra->using_MGSemi == 1)
+                                    {
+                                      cp[im] += 0.0;
+                                    } else {
+                                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                                   }
+                                  }
+                                  
                                }
                                break;
 
@@ -1293,38 +1294,44 @@ void    RichardsJacobianEval(
                              }),
                            AfterAllCells(
                            {
-                            //  switch(public_xtra->type)
-                            //  {
-                            //    case overland_flow:
-                                 if (overlandspinup != 1)
-                                 {
-                                   /* Get overland flow contributions for using kinematic or diffusive - LEC */
-                                   if (diffusive == 0)
-                                   {
+                //               switch(public_xtra->type)
+                //               {
+                //                 case overland_flow:
+                //                  if (overlandspinup != 1)
+                //                  {
+                //                    /* Get overland flow contributions for using kinematic or diffusive - LEC */
+                //                    if (diffusive == 0)
+                //                    {
                                      PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
                                                         (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                          ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-                                   }
-                                   else
-                                   {
-                                     /* Test running Diffuisve calc FCN */
-                                     //double *dummy1, *dummy2, *dummy3, *dummy4;
-                                     //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                     //                                             ke_der, kw_der, kn_der, ks_der,
-                                     //       dummy1, dummy2, dummy3, dummy4,
-                                     //                                                    NULL, NULL, CALCFCN));
+                //                    }
+                //                    else
+                //                    {
+                //                      /* Test running Diffuisve calc FCN */
+                //                      //double *dummy1, *dummy2, *dummy3, *dummy4;
+                //                      //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+                //                      //                                             ke_der, kw_der, kn_der, ks_der,
+                //                      //       dummy1, dummy2, dummy3, dummy4,
+                //                      //                                                    NULL, NULL, CALCFCN));
 
-                                     PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                                                        (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                                                         ke_der, kw_der, kn_der, ks_der,
-                                                         kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                                   }
-                                 }
-							// 	 break;
+                //                      PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                //                                         (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                //                                          ke_der, kw_der, kn_der, ks_der,
+                //                                          kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                //                    }
+                //                  }
+                //               }
+							 	//  break;
 
-							//  default:
-              //                    break;
-                             //}
+							  // default:
+                //                 break;
+                //                                          if(public_xtra->using_MGSemi==1) {
+                              // PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                              //                           (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                              //                            ke_der, kw_der, kn_der, ks_der,
+                              //                            kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                          //  }
                            })
         ); /* End OverlandBC */
 
@@ -1345,7 +1352,7 @@ void    RichardsJacobianEval(
 
                              if ((pp[ip]) >= 0.0)
                              {
-                               //cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //@RMM
+                               cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //@RMM
 //                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
                              }
                              else
@@ -1383,12 +1390,14 @@ void    RichardsJacobianEval(
                               //        //amps_Printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[im], im);
                               //      }
                               //   } 
+                              amps_Printf("Jac OVLKIN \n");
                                /* check if overland flow kicks in */
                                if (!ovlnd_flag[0])
                                {
                                  ip = SubvectorEltIndex(p_sub, i, j, k);
                                  if ((pp[ip]) > 0.0)
                                  {
+                                  amps_Printf("Jac OVLKIN OVLD  \n");
                                    ovlnd_flag[0] = 1;
                                  }
                                }
@@ -1399,6 +1408,7 @@ void    RichardsJacobianEval(
                              }),
                            AfterAllCells(
                            {
+                            amps_Printf("Jac OVLKIN call module  \n");
                              PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
                                                 (grid, is, bc_struct, ipatch, problem_data, pressure,
                                                  ke_der, kw_der, kn_der, ks_der,
@@ -1443,6 +1453,7 @@ void    RichardsJacobianEval(
                                  if ((pp[ip]) > 0.0)
                                  {
                                    ovlnd_flag[0] = 1;
+                                   amps_Printf("Jac OVLDIF ovldn_flag  \n");
                                  }
                                }
                              }),
@@ -1452,6 +1463,7 @@ void    RichardsJacobianEval(
                              }),
                            AfterAllCells(
                            {
+                            amps_Printf("Jac OVLDIFF call module \n");
                              PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                                                 (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                  ke_der, kw_der, kn_der, ks_der,
@@ -1505,7 +1517,7 @@ void    RichardsJacobianEval(
   }
 
   /* Build submatrix JC if overland flow case */
-  if (ovlnd_flag[0] && public_xtra->type == overland_flow)
+  if (ovlnd_flag[0] && public_xtra->type == overland_flow && public_xtra->using_MGSemi!=1)
   {
     /* begin loop to build JC */
     ForSubgridI(is, GridSubgrids(grid))
@@ -1961,6 +1973,7 @@ void    RichardsJacobianEval(
                              FACE(BackFace,  DoNothing),
                              FACE(FrontFace,
                              {
+                              amps_Printf("Jac OVLKIN formulate \n");
                                /* Loop over boundary patches to build J matrix. */
                                io = SubmatrixEltIndex(J_sub, i, j, iz);
                                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
@@ -2020,21 +2033,22 @@ void    RichardsJacobianEval(
                                if ((pp[ip]) > 0.0)
                                {
                                  /*diagonal term */
-                                 cp[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                 cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                                //amps_Printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[io], io);
                                }
 
                                /*west term */
-                               wp[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+                               wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
 
                                /*East term */
-                               ep[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+                               ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
 
                                /*south term */
-                               sop[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+                               sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
 
                                /*north term */
-                               np[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+                               np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
                              }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
@@ -2111,20 +2125,20 @@ void    RichardsJacobianEval(
                                if ((pp[ip]) > 0.0)
                                {
                                  /*diagonal term */
-                                 cp[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                 cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
                                }
                                /*west term */
-                               wp[io] -= (vol / ffy) * dt * (kwns_der[io1]);
+                               wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
 
                                /*East term */
-                               ep[io] += (vol / ffy) * dt * (kens_der[io1]);
+                               ep[im] += (vol / ffy) * dt * (kens_der[io1]);
 
                                /*south term */
-                               sop[io] -= (vol / ffx) * dt * (ksns_der[io1]);
+                               sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
 
                                /*north term */
-                               np[io] += (vol / ffx) * dt * (knns_der[io1]);
+                               np[im] += (vol / ffx) * dt * (knns_der[io1]);
                              }),
                              CellFinalize(DoNothing),
                              AfterAllCells(DoNothing)
@@ -2200,42 +2214,43 @@ void    RichardsJacobianEval(
                                if ((pp[ip]) > 0.0)
                                {
                                  /*diagonal term */
-                                 cp[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                                 //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                                  cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
                                }
                                else
                                {
                                  // Laura's version
-                                 cp[io] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //NBE
+                                 cp[im] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //NBE
                                }
 
                                if (diffusive == 0)
                                {
                                  /*west term */
-                                 wp[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+                                  wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
 
-                                 /*East term */
-                                 ep[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+                                //  /*East term */
+                                  ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
 
-                                 /*south term */
-                                 sop[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+                                //  /*south term */
+                                  sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
 
-                                 /*north term */
-                                 np[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+                                //  /*north term */
+                                  np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
                                }
                                else
                                {
                                  /*west term */
-                                 wp[io] -= (vol / ffy) * dt * (kwns_der[io1]);
+                                 wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
 
                                  /*East term */
-                                 ep[io] += (vol / ffy) * dt * (kens_der[io1]);
+                                 ep[im] += (vol / ffy) * dt * (kens_der[io1]);
 
                                  /*south term */
-                                 sop[io] -= (vol / ffx) * dt * (ksns_der[io1]);
+                                 sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
 
                                  /*north term */
-                                 np[io] += (vol / ffx) * dt * (knns_der[io1]);
+                                 np[im] += (vol / ffx) * dt * (knns_der[io1]);
                                }
                              }),
                              CellFinalize(DoNothing),
@@ -2532,7 +2547,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(precond_switch_na, switch_name, key);
   if (switch_value == 1)
   {
-   public_xtra->using_MGSemi = 1;
+   public_xtra->using_MGSemi = 1;  // this is basically a switch to make MGsemi=True *and* Jacobian=True
   }
   else 
   {
@@ -2581,6 +2596,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
     case 0:
     {
       public_xtra->type = no_nonlinear_jacobian;
+      public_xtra->using_MGSemi = 0;  //RMM try to allow for different cases like MGSemi but FD jacobian
       break;
     }
 
