@@ -330,11 +330,9 @@ void    RichardsJacobianEval(
           case OverlandDiffusive:
           {
             public_xtra->type = overland_flow;
-            /*Check to see if we have MGSemi set as the preconditioner key
-            if so, we use the simple/symmetric preconditioner type (RMM) */
-            if (public_xtra->using_MGSemi ==1) {
-            //public_xtra->type = simple;
-            }
+            /*If we have MGSemi set as the preconditioner key
+            we still set the type to overland_flow 
+            but later use the simple/symmetric preconditioner (RMM) */
           }
           break;
         }
@@ -676,23 +674,23 @@ void    RichardsJacobianEval(
 
 
       double sym_west_temp = (-x_coeff
-                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM TFG contributions, sym
+                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //RMM TFG contributions, sym
 
 
       double west_temp = (-x_coeff * diff
                    * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g_c
                   + sym_west_temp;
 
-      west_temp += (x_coeff * dx * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g; //@RMM TFG contributions, non sym
+      west_temp += (x_coeff * dx * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g; //RMM TFG contributions, non sym
 
       double sym_east_temp = (-x_coeff
-                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM added sym TFG contributions
+                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //RMM added sym TFG contributions
 
       double east_temp = (x_coeff * diff
                    * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g_c
                   + sym_east_temp;
 
-      east_temp += -(x_coeff * dx * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g; //@RMM  TFG contributions non sym
+      east_temp += -(x_coeff * dx * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g; //RMM  TFG contributions non sym
 
       /* diff >= 0 implies flow goes south to north */
       diff = pp[ip] - pp[ip + sy_v];
@@ -705,24 +703,24 @@ void    RichardsJacobianEval(
                 / viscosity;
 
       double sym_south_temp = -y_coeff
-                       * RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //@RMM TFG contributions, SYMM
+                       * RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //RMM TFG contributions, SYMM
 
       double south_temp = -y_coeff * diff
                    * RPMean(updir, 0.0, prod_der, 0.0) * y_dir_g_c
                    + sym_south_temp;
 
-      south_temp += (y_coeff * dy * RPMean(updir, 0.0, prod_der, 0.0)) * y_dir_g; //@RMM TFG contributions, non sym
+      south_temp += (y_coeff * dy * RPMean(updir, 0.0, prod_der, 0.0)) * y_dir_g; //RMM TFG contributions, non sym
 
 
       double sym_north_temp = y_coeff
-                       * -RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //@RMM  TFG contributions non SYMM
+                       * -RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //RMM  TFG contributions non SYMM
 
       double north_temp = y_coeff * diff
                    * RPMean(updir, 0.0, 0.0,
                             prod_no_der) * y_dir_g_c
                    + sym_north_temp;
 
-      north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //@RMM  TFG contributions non sym
+      north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //RMM  TFG contributions non sym
 
       double sep = (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]));
       /* diff >= 0 implies flow goes lower to upper */
@@ -826,9 +824,9 @@ void    RichardsJacobianEval(
 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
-      /* @RMM added to provide access to zmult */
+      /* RMM added to provide access to zmult */
       z_mult_sub = VectorSubvector(z_mult, is);
-      /* @RMM added to provide variable dz */
+      /* RMM added to provide variable dz */
       z_mult_dat = SubvectorData(z_mult_sub);
 
       cp = SubmatrixStencilData(J_sub, 0);
@@ -1058,7 +1056,7 @@ void    RichardsJacobianEval(
       ForPatchCellsPerFace(DirichletBC,
                            BeforeAllCells(
                            {
-                             /* @MCB 04/14/2020:
+                             /* MCB 04/14/2020:
                                 Previously two module invokes were made every iteration
                                 of the loop.  However, these calls were only retrieving
                                 a scalar and (potentially) multipling it against the BC
@@ -1237,7 +1235,7 @@ void    RichardsJacobianEval(
                                }
                              }
 
-                             /* @MCB: This used to be after the loop.
+                             /* MCB: This used to be after the loop.
                                 Either we would enter another BC loop, but only work on the front face
                                 Or we'd make a module call
                                 Second BC loops have been fused here, on the front face calculation.
@@ -1256,14 +1254,8 @@ void    RichardsJacobianEval(
                                  int ip = SubvectorEltIndex(p_sub, i, j, k);
                                   if ((pp[ip]) > 0.0)
                                   {
-                                    if (public_xtra->using_MGSemi == 1)
-                                    {
-                                      cp[im] += 0.0;
-                                    } else {
                                     cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                   }
-                                  }
-                                  
+                                   }       
                                }
                                break;
 
@@ -1277,7 +1269,6 @@ void    RichardsJacobianEval(
                                    if ((pp[ip]) >= 0.0)
                                    {
                                      cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
-//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
                                    }
                                    else
                                    {
@@ -1294,44 +1285,38 @@ void    RichardsJacobianEval(
                              }),
                            AfterAllCells(
                            {
-                //               switch(public_xtra->type)
-                //               {
-                //                 case overland_flow:
-                //                  if (overlandspinup != 1)
-                //                  {
-                //                    /* Get overland flow contributions for using kinematic or diffusive - LEC */
-                //                    if (diffusive == 0)
-                //                    {
+                               switch(public_xtra->type)
+                               {
+                                 case overland_flow:
+                                  if (overlandspinup != 1)
+                                  {
+                                    /* Get overland flow contributions for using kinematic or diffusive - LEC */
+                                    if (diffusive == 0)
+                                    {
                                      PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
                                                         (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                          ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-                //                    }
-                //                    else
-                //                    {
-                //                      /* Test running Diffuisve calc FCN */
-                //                      //double *dummy1, *dummy2, *dummy3, *dummy4;
-                //                      //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
-                //                      //                                             ke_der, kw_der, kn_der, ks_der,
-                //                      //       dummy1, dummy2, dummy3, dummy4,
-                //                      //                                                    NULL, NULL, CALCFCN));
+                                    }
+                                    else
+                                    {
+                                      /* Test running Diffuisve calc FCN */
+                                      //double *dummy1, *dummy2, *dummy3, *dummy4;
+                                      //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                      //                                             ke_der, kw_der, kn_der, ks_der,
+                                      //       dummy1, dummy2, dummy3, dummy4,
+                                      //                                                    NULL, NULL, CALCFCN));
 
-                //                      PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                //                                         (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                //                                          ke_der, kw_der, kn_der, ks_der,
-                //                                          kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                //                    }
-                //                  }
-                //               }
-							 	//  break;
+                                      PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                                                         (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                                                          ke_der, kw_der, kn_der, ks_der,
+                                                          kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                                  }
+                               }
+							 	  break;
 
-							  // default:
-                //                 break;
-                //                                          if(public_xtra->using_MGSemi==1) {
-                              // PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                              //                           (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                              //                            ke_der, kw_der, kn_der, ks_der,
-                              //                            kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                          //  }
+							   default:
+                                 break;
+                                }
                            })
         ); /* End OverlandBC */
 
@@ -1352,8 +1337,7 @@ void    RichardsJacobianEval(
 
                              if ((pp[ip]) >= 0.0)
                              {
-                               cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //@RMM
-//                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
+                               cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //RMM
                              }
                              else
                              {
@@ -1377,27 +1361,12 @@ void    RichardsJacobianEval(
                            FACE(BackFace,  { op = lp; }),
                            FACE(FrontFace, {
                                op = up;
-                               
-                              //  if (public_xtra->using_MGSemi == 1)
-                              //   {
-                              //    ip = SubvectorEltIndex(p_sub, i, j, k);
-                              //    if ((pp[ip]) > 0.0)
-                              //     {
-                              //        /* This is the same preconditioner as OverlandFlow, we should provide other options (RMM)*/
-                              //        //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                              //        //cp[im] += (vol / dz) * (dt +1.0); (Stefan's original code)
-
-                              //        //amps_Printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[im], im);
-                              //      }
-                              //   } 
-                              amps_Printf("Jac OVLKIN \n");
                                /* check if overland flow kicks in */
                                if (!ovlnd_flag[0])
                                {
                                  ip = SubvectorEltIndex(p_sub, i, j, k);
                                  if ((pp[ip]) > 0.0)
                                  {
-                                  amps_Printf("Jac OVLKIN OVLD  \n");
                                    ovlnd_flag[0] = 1;
                                  }
                                }
@@ -1408,7 +1377,6 @@ void    RichardsJacobianEval(
                              }),
                            AfterAllCells(
                            {
-                            amps_Printf("Jac OVLKIN call module  \n");
                              PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
                                                 (grid, is, bc_struct, ipatch, problem_data, pressure,
                                                  ke_der, kw_der, kn_der, ks_der,
@@ -1429,23 +1397,6 @@ void    RichardsJacobianEval(
                            FACE(BackFace, { op = lp; }),
                            FACE(FrontFace, {
                                op = up;
-                               /* MGSemi center part this should basically only be active if we have
-                                  overland DWE and MGSemi chosen as preconditioner.  This logic is similar
-                                  to, or could be replaced by, the case statements in OverlandFlow above
-                                  where the FD Jacobian (case no_nonlinear), MGSemi (case simple) and PFMG 
-                                  (case overland_flow) are enumerated explicitly (RMM)
-                                  !! more testing is needed for Diffusive Wave ESP in parallel */
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
-                                //  if ((pp[ip]) > 0.0)
-                                //  {
-                                //   if (public_xtra->using_MGSemi == 1)
-                                //    {
-                                //     // cp[im] += (vol / dz) * dt * (1.0 + 0.0); // this is the preconditioner for seepage face
-                                //      /* This is the same preconditioner as OverlandFlow, we should provide other options (RMM)*/
-                                //      //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                //      //amps_Printf("Jac OVLDIF MGSemi: CP=%f im=%d  \n", cp[im], im);
-                                //    }
-                                //  }
                                /* check if overland flow kicks in */
                                if (!ovlnd_flag[0])
                                {
@@ -1453,7 +1404,6 @@ void    RichardsJacobianEval(
                                  if ((pp[ip]) > 0.0)
                                  {
                                    ovlnd_flag[0] = 1;
-                                   amps_Printf("Jac OVLDIF ovldn_flag  \n");
                                  }
                                }
                              }),
@@ -1463,7 +1413,6 @@ void    RichardsJacobianEval(
                              }),
                            AfterAllCells(
                            {
-                            amps_Printf("Jac OVLDIFF call module \n");
                              PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                                                 (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                  ke_der, kw_der, kn_der, ks_der,
@@ -1516,7 +1465,7 @@ void    RichardsJacobianEval(
     FinalizeVectorUpdate(vector_update_handle);
   }
 
-  /* Build submatrix JC if overland flow case */
+  /* Build submatrix JC if overland flow case and *not* MGSemi*/
   if (ovlnd_flag[0] && public_xtra->type == overland_flow && public_xtra->using_MGSemi!=1)
   {
     /* begin loop to build JC */
@@ -1893,6 +1842,12 @@ void    RichardsJacobianEval(
   to the case statements in OverlandKinematic above
   for PFMG/SMG/PFMGOctree(case overland_flow) are split into the surface and 
   subsurface parts (RMM)*/
+
+/* MGSemi center part this should basically only be active if we have
+                                  overland DWE and MGSemi chosen as preconditioner.  This logic is similar
+                                  to, or could be replaced by, the case statements in OverlandFlow above
+                                  where the FD Jacobian (case no_nonlinear), MGSemi (case simple) and PFMG 
+                                  (case overland_flow) are enumerated explicitly (RMM)*/
 
   if (public_xtra->using_MGSemi == 1)
   {
