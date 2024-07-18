@@ -89,6 +89,8 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
     Subvector *wcx_values_sub;
     double *psdat, *wcx_values_dat;
 
+    double dx = SubgridDX(subgrid);
+
     double *data;
 
     int ix, iy, iz;
@@ -99,7 +101,7 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
 
     (void) dummy;
 
-    InitVectorAll(wc_x, 0.0);
+    InitVectorAll(wc_x, dx);
 
     if (public_xtra->wcx_exists == 1) {
         
