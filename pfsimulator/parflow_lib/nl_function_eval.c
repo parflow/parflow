@@ -140,11 +140,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
   PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
-
+  PFModule    *groundwaterflow_eval = ProblemGroundwaterFlowEval(problem);
 
   /* Re-use saturation vector to save memory */
   Vector      *rel_perm = saturation;
   Vector      *source = saturation;
+  Vector      *groundwaterflow_f = saturation;
 
   /* Overland flow variables */  //sk
   Vector      *KW, *KE, *KN, *KS;
@@ -796,6 +797,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     p_sub = VectorSubvector(pressure, is);
     op_sub = VectorSubvector(old_pressure, is);
     os_sub = VectorSubvector(old_saturation, is);
+    Subvector* groundwater_sub = VectorSubvector(groundwaterflow_f, is);
 
     /* @RMM added to provide access to x/y slopes */
     x_ssl_sub = VectorSubvector(x_ssl, is);
@@ -866,6 +868,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     pp = SubvectorData(p_sub);
     opp = SubvectorData(op_sub);
     osp = SubvectorData(os_sub);
+    double* q_groundwater = SubvectorData(groundwater_sub);
 
     /* @RMM  added to provide slopes to terrain fns */
     x_ssl_dat = SubvectorData(x_ssl_sub);
@@ -2133,8 +2136,176 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                            }),
                            AfterAllCells(DoNothing)
         ); /* End OverlandDiffusiveBC case */
-    }          /* End ipatch loop */
-  }            /* End subgrid loop */
+
+      ForPatchCellsPerFace(
+        GroundwaterFlowBC,
+        BeforeAllCells(DoNothing),
+        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+        Locals(
+          int dir, ip;
+          int vel_idx, vx_l, vy_l, vz_l;
+          double *vel_vec;
+          double u_old = 0.0;
+          double x_dir_g, y_dir_g, z_dir_g;
+        ),
+        CellSetup(
+        {
+          dir = 0;
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+
+          vel_idx = 0;
+          vx_l = SubvectorEltIndex(vx_sub, i, j, k);
+          vy_l = SubvectorEltIndex(vy_sub, i, j, k);
+          vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+          vel_vec = NULL;
+
+          u_old = 0.0e0;
+
+          x_dir_g = 0.0;
+          y_dir_g = 0.0;
+          z_dir_g = 1.0;
+        }),
+        FACE(LeftFace,
+        {
+          double h = ffx * z_mult_dat[ip];
+          vel_vec = vx;
+          vel_idx = vx_l;
+
+          dir = -1;
+          double diff = pp[ip - 1] - pp[ip];
+          u_old = h * PMean(pp[ip - 1], pp[ip], permxp[ip - 1], permxp[ip])
+              * (diff / dx - x_dir_g)
+              * RPMean(pp[ip - 1], pp[ip],
+                  rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip])
+              / viscosity;
+        }),
+        FACE(RightFace,
+        {
+          double h = ffx * z_mult_dat[ip];
+          vel_vec = vx;
+          vel_idx = vx_l + 1;
+
+          dir = 1;
+          double diff = pp[ip] - pp[ip + 1];
+          u_old = h * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
+              * (diff / dx - x_dir_g)
+              * RPMean(pp[ip], pp[ip + 1],
+                      rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1])
+              / viscosity;
+        }),
+        FACE(DownFace,
+        {
+          double h = ffy * z_mult_dat[ip];
+          vel_vec = vy;
+          vel_idx = vy_l;
+
+          dir = -1;
+          double diff = pp[ip - sy_p] - pp[ip];
+          u_old = h * (diff / dy - y_dir_g)
+              * PMean(pp[ip - sy_p], pp[ip], permyp[ip - sy_p], permyp[ip])
+              * RPMean(pp[ip - sy_p], pp[ip],
+                  rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip])
+              / viscosity;
+        }),
+        FACE(UpFace,
+        {
+          double h = ffy * z_mult_dat[ip];
+          vel_vec = vy;
+          vel_idx = vy_l + sy_v;
+
+          dir = 1;
+          double diff = pp[ip] - pp[ip + sy_p];
+          u_old = h * (diff / dy - y_dir_g)
+              * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
+              * RPMean(pp[ip], pp[ip + sy_p],
+                  rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p])
+              / viscosity;
+        }),
+        FACE(BackFace,
+        {
+          double h = ffz;
+          vel_vec = vz;
+          vel_idx = vz_l;
+
+          dir = -1;
+          double sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_p]); //RMM
+
+          double lower_cond = (pp[ip - sz_p] / sep) - (z_mult_dat[ip - sz_p] 
+              / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) 
+              * dp[ip - sz_p] * gravity * z_dir_g;
+
+          double upper_cond = (pp[ip] / sep) 
+              + (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip - sz_p])) 
+              * dp[ip] * gravity * z_dir_g;
+
+          double diff = lower_cond - upper_cond;
+          u_old = h * diff
+              * PMeanDZ(permzp[ip - sz_p], permzp[ip],
+                  z_mult_dat[ip - sz_p], z_mult_dat[ip])
+              * RPMean(lower_cond, upper_cond,
+                  rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip])
+              / viscosity;
+        }),
+        FACE(FrontFace,
+        {
+          double h = ffz;
+          vel_vec = vz;
+          vel_idx = vz_l + sz_v;
+
+          dir = 1;
+          double sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]); //RMM
+
+          double lower_cond = (pp[ip] / sep) 
+              - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) 
+              * dp[ip] * gravity * z_dir_g;
+
+          double upper_cond = (pp[ip + sz_p] / sep) + (z_mult_dat[ip + sz_p] 
+              / (z_mult_dat[ip] + z_mult_dat[ip + sz_p])) 
+              * dp[ip + sz_p] * gravity * z_dir_g;
+
+          double diff = lower_cond - upper_cond;
+          u_old = h * diff
+              * PMeanDZ(permzp[ip], permzp[ip + sz_p],
+                  z_mult_dat[ip], z_mult_dat[ip + sz_p])
+              * RPMean(lower_cond, upper_cond,
+                  rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p])
+              / viscosity;
+        }),
+        CellFinalize(
+        {
+          /* Remove the boundary term computed above */
+          fp[ip] -= dt * dir * u_old;
+          vel_vec[vel_idx] = bc_patch_values[ival];
+        }),
+        AfterAllCells(DoNothing)
+      ); /* End GroundwaterFlowBC */
+
+      ForPatchCellsPerFace(
+        GroundwaterFlowBC,
+        BeforeAllCells({
+          PFModuleInvokeType(GroundwaterFlowEvalInvoke, groundwaterflow_eval, 
+              (q_groundwater, bc_struct, subgrid, p_sub, pp, opp, dt,
+              permxp, permyp, permzp, z_mult_dat, ipatch, is));
+        }), 
+        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+        Locals( int ip = 0; ),
+        CellSetup({
+          ip = SubvectorEltIndex(p_sub, i, j, k);
+        }),
+        FACE(LeftFace,  DoNothing),
+        FACE(RightFace, DoNothing),
+        FACE(DownFace,  DoNothing),
+        FACE(UpFace,    DoNothing),
+        FACE(BackFace,  DoNothing),
+        FACE(FrontFace, DoNothing),
+        CellFinalize(
+        {
+          fp[ip] += q_groundwater[ip];
+        }),
+        AfterAllCells(DoNothing)
+      );    /* End GroundwaterFlow case */
+    }       /* End ipatch loop */
+  }         /* End subgrid loop */
 
   /*
    * Reset values inserted for the DirichletBC back to the decoupled
@@ -2186,6 +2357,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
+  PFModuleFreeInstance(groundwaterflow_eval);
   FreeBCStruct(bc_struct);
 
   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, fval, NULL,

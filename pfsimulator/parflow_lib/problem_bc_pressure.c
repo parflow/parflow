@@ -79,6 +79,7 @@ BCStruct    *BCPressure(
   int num_phases = (public_xtra->num_phases);
 
   Problem        *problem = (instance_xtra->problem);
+  PFModule* groundwaterflow_eval = ProblemGroundwaterFlowEval(problem);
 
   SubgridArray   *subgrids = GridSubgrids(grid);
 
@@ -128,6 +129,9 @@ BCStruct    *BCPressure(
     values = talloc(double **, num_patches);
     memset(values, 0, num_patches * sizeof(double **));
     BCStructValues(bc_struct) = values;
+
+    PFModuleReNewInstance(groundwaterflow_eval, 
+        (num_patches, SubgridArraySize(subgrids)));
 
     for (ipatch = 0; ipatch < num_patches; ipatch++)
     {
@@ -1133,11 +1137,15 @@ BCStruct    *BCPressure(
           GetBCPressureTypeStruct(GroundwaterFlow, interval_data, 
               bc_pressure_data, ipatch, interval_number);
 
+          GroundwaterFlowInstanceXtra* instance_xtra_gwf = 
+              PFModuleInstanceXtra(groundwaterflow_eval);
+          double*** Sy = instance_xtra_gwf->SpecificYield;
+          double*** Ad = instance_xtra_gwf->AquiferDepth;
+          double*** Ar = instance_xtra_gwf->AquiferRecharge;
+
           ForSubgridI(is, subgrids)
           {
-            subgrid = SubgridArraySubgrid(subgrids, is);
-
-            /* compute patch_values_size (this isn't really needed yet) */
+            /* compute patch_values_size */
             patch_values_size = 0;
             ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is,
             {
@@ -1147,6 +1155,20 @@ BCStruct    *BCPressure(
             patch_values = talloc(double, patch_values_size);
             memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
+
+            Sy[ipatch][is] = talloc(double, patch_values_size);
+            Ad[ipatch][is] = talloc(double, patch_values_size);
+            Ar[ipatch][is] = talloc(double, patch_values_size);
+            memset(Sy[ipatch][is], 0, patch_values_size * sizeof(double));
+            memset(Ad[ipatch][is], 0, patch_values_size * sizeof(double));
+            memset(Ar[ipatch][is], 0, patch_values_size * sizeof(double));
+
+            SetGroundwaterFlowParameter(Sy[ipatch][is], 
+                interval_data->SpecificYield,   bc_struct, ipatch, is);
+            SetGroundwaterFlowParameter(Ad[ipatch][is], 
+                interval_data->AquiferDepth,    bc_struct, ipatch, is);
+            SetGroundwaterFlowParameter(Ar[ipatch][is], 
+                interval_data->AquiferRecharge, bc_struct, ipatch, is);
 
             ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is,
             {
