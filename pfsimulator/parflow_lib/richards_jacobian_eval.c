@@ -1928,7 +1928,6 @@ void    RichardsJacobianEval(
                              FACE(BackFace,  DoNothing),
                              FACE(FrontFace,
                              {
-                              amps_Printf("Jac OVLKIN formulate \n");
                                /* Loop over boundary patches to build J matrix. */
                                io = SubmatrixEltIndex(J_sub, i, j, iz);
                                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
@@ -1938,59 +1937,12 @@ void    RichardsJacobianEval(
                                ip = SubvectorEltIndex(p_sub, i, j, k);
                                im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                               /* First put contributions from subsurface diagonal onto diagonal of JC */
-                               //cp_c[io] = cp[im];
-                               //cp[im] = 0.0;         // update JB
-                               /* Now check off-diagonal nodes to see if any surface-surface connections exist */
-                               /* West */
-                              //  k1 = (int)top_dat[itop - 1];
-
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*west node is also surface node */
-                              //    {
-                              //      //wp_c[io] += wp[im];
-                              //      //wp[im] = 0.0;           // update JB
-                              //    }
-                              //  }
-                              //  /* East */
-                              //  k1 = (int)top_dat[itop + 1];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*east node is also surface node */
-                              //    {
-                              //      //ep_c[io] += ep[im];
-                              //      //ep[im] = 0.0;           //update JB
-                              //    }
-                              //  }
-                              //  /* South */
-                              //  k1 = (int)top_dat[itop - sy_v];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*south node is also surface node */
-                              //    {
-                              //      //sop_c[io] += sop[im];
-                              //      //sop[im] = 0.0;           //update JB
-                              //    }
-                              //  }
-                              //  /* North */
-                              //  k1 = (int)top_dat[itop + sy_v];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*north node is also surface node */
-                              //    {
-                              //      //np_c[io] += np[im];
-                              //      //np[im] = 0.0;           // Update JB
-                              //    }
-                              //  }
-
                                /* Now add overland contributions to J similar to JC above */
                                if ((pp[ip]) > 0.0)
                                {
                                  /*diagonal term */
                                  cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-                                //amps_Printf("Jac OVLKIN MGSemi: CP=%f im=%d  \n", cp[io], io);
                                }
 
                                /*west term */
@@ -2029,52 +1981,6 @@ void    RichardsJacobianEval(
                                /* Update J */
                                ip = SubvectorEltIndex(p_sub, i, j, k);
                                im = SubmatrixEltIndex(J_sub, i, j, k);
-
-                              //  /* First put contributions from subsurface diagonal onto diagonal of JC */
-                              //  cp_c[io] = cp[im];
-                              //  cp[im] = 0.0;         // update JB
-                              //  /* Now check off-diagonal nodes to see if any surface-surface connections exist */
-                              //  /* West */
-                              //  k1 = (int)top_dat[itop - 1];
-
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*west node is also surface node */
-                              //    {
-                              //      wp_c[io] += wp[im];
-                              //      wp[im] = 0.0;           // update JB
-                              //    }
-                              //  }
-                              //  /* East */
-                              //  k1 = (int)top_dat[itop + 1];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*east node is also surface node */
-                              //    {
-                              //      ep_c[io] += ep[im];
-                              //      ep[im] = 0.0;           //update JB
-                              //    }
-                              //  }
-                              //  /* South */
-                              //  k1 = (int)top_dat[itop - sy_v];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*south node is also surface node */
-                              //    {
-                              //      sop_c[io] += sop[im];
-                              //      sop[im] = 0.0;           //update JB
-                              //    }
-                              //  }
-                              //  /* North */
-                              //  k1 = (int)top_dat[itop + sy_v];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*north node is also surface node */
-                              //    {
-                              //      np_c[io] += np[im];
-                              //      np[im] = 0.0;           // Update JB
-                              //    }
-                              //  }
 
                                /* Now add overland contributions to JC */
                                if ((pp[ip]) > 0.0)
@@ -2119,51 +2025,7 @@ void    RichardsJacobianEval(
                                ip = SubvectorEltIndex(p_sub, i, j, k);
                                im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                              //  /* First put contributions from subsurface diagonal onto diagonal of JC */
-                              //  cp_c[io] = cp[im];
-                              //  cp[im] = 0.0;         // update JB
-                              //  /* Now check off-diagonal nodes to see if any surface-surface connections exist */
-                              //  /* West */
-                              //  k1 = (int)top_dat[itop - 1];
-
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*west node is also surface node */
-                              //    {
-                              //      wp_c[io] += wp[im];
-                              //      wp[im] = 0.0;           // update JB
-                              //    }
-                              //  }
-                              //  /* East */
-                              //  k1 = (int)top_dat[itop + 1];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*east node is also surface node */
-                              //    {
-                              //      ep_c[io] += ep[im];
-                              //      ep[im] = 0.0;           //update JB
-                              //    }
-                              //  }
-                              //  /* South */
-                              //  k1 = (int)top_dat[itop - sy_v];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*south node is also surface node */
-                              //    {
-                              //      sop_c[io] += sop[im];
-                              //      sop[im] = 0.0;           //update JB
-                              //    }
-                              //  }
-                              //  /* North */
-                              //  k1 = (int)top_dat[itop + sy_v];
-                              //  if (k1 >= 0)
-                              //  {
-                              //    if (k1 == k)         /*north node is also surface node */
-                              //    {
-                              //      np_c[io] += np[im];
-                              //      np[im] = 0.0;           // Update JB
-                              //    }
-                              //  }
+                             
 
                                /* Now add overland contributions to JC */
                                if ((pp[ip]) > 0.0)
