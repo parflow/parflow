@@ -206,12 +206,6 @@ typedef struct {
 #define OVERLAND_KINEMATIC 1
 
 /*     Write Options      */
-#define RESERVOIRDATA_DONTWRITEHEADER 0
 #define RESERVOIRDATA_WRITEHEADER     1
-
-/*     Print Flags      */
-#define RESERVOIRDATA_PRINTPHYSICAL  0x0001
-#define RESERVOIRDATA_PRINTVALUES    0x0002
-#define RESERVOIRDATA_PRINTSTATS     0x0004
 
 #endif
