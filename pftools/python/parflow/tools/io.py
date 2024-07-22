@@ -401,22 +401,22 @@ class ParflowBinaryReader:
             self.header['q'] = q
             self.header['r'] = r
 
-        if not ('p' in self.header
-            and 'q' in self.header
-            and 'r' in self.header):
+#        if not ('p' in self.header
+#            and 'q' in self.header
+#            and 'r' in self.header):
             # If p, q, and r aren't given we can precompute them
             # NOTE: This is a bit of a fallback and may not always work
-            eps = 1 - 1e-6
-            first_sg_head = self.read_subgrid_header()
-            self.header['p'] = int((self.header['nx'] / first_sg_head['nx']) + eps)
-            self.header['q'] = int((self.header['ny'] / first_sg_head['ny']) + eps)
-            self.header['r'] = int((self.header['nz'] / first_sg_head['nz']) + eps)
+#            eps = 1 - 1e-6
+#            first_sg_head = self.read_subgrid_header()
+#            self.header['p'] = int((self.header['nx'] / first_sg_head['nx']) + eps)
+#            self.header['q'] = int((self.header['ny'] / first_sg_head['ny']) + eps)
+#            self.header['r'] = int((self.header['nz'] / first_sg_head['nz']) + eps)
 
-        if precompute_subgrid_info:
-            self.compute_subgrid_info()
+#        if precompute_subgrid_info:
+#            self.compute_subgrid_info()
 
-        if read_sg_info:
-            self.read_subgrid_info()
+#        if read_sg_info
+        self.read_subgrid_info()
             
     def close(self):
         self.f.close()
