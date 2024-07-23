@@ -392,16 +392,18 @@ pfset Solver.MaxIter 5
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun default_single
-pfundist default_single
+set TEST example_single
+
+pfrun $TEST
+pfundist $TEST
 
 #-----------------------------------------------------------------------------
 # If running as test; check output.
 # You do not need this for normal PF input files; this is done so the examples
 # are run and checked as part of our testing process.
 #-----------------------------------------------------------------------------
+
 if { $running_as_test } {
-    set TEST default_single
     source pftest.tcl
     set sig_digits 4
 
