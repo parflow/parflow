@@ -4332,9 +4332,9 @@ occurs at the end of the run when all collected data is written.
 
    ::
 
-      pfset Solver.PrintReservoirss False          ## TCL syntax
+      pfset Solver.PrintReservoirs False          ## TCL syntax
 
-      <runname>.Solver.PrintReservoirss = False    ## Python syntax
+      <runname>.Solver.PrintReservoirs = False    ## Python syntax
 
 *string* **Solver.PrintLSMSink** False This key is used to turn on
 printing of the flux array passed from ``CLM`` to ParFlow. 

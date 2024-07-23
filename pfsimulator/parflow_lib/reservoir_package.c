@@ -109,8 +109,6 @@ typedef struct {
 
 /** @brief Checks whether a subgrid intersects with the current ranks subgrid
  *
- * Longer description of function
- *
  * @param subgrid the subgrid we are checking
  * @param grid the problems grid
  * @return True or False corresponding to whether the subgrid intersects
