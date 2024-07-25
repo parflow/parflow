@@ -2302,7 +2302,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         {
           fp[ip] += q_groundwater[ip];
         }),
-        AfterAllCells(DoNothing)
+        AfterAllCells({
+          PFModuleFreeInstance(groundwaterflow_eval);
+        })
       );    /* End GroundwaterFlow case */
     }       /* End ipatch loop */
   }         /* End subgrid loop */
@@ -2357,7 +2359,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
-  PFModuleFreeInstance(groundwaterflow_eval);
   FreeBCStruct(bc_struct);
 
   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, fval, NULL,

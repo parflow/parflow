@@ -1152,6 +1152,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
+            // patch_values is not used, but needs to be allocated,
+            // otherwise FreeBCStruct will try to free a NULL pointer
             patch_values = talloc(double, patch_values_size);
             memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
@@ -1180,7 +1182,7 @@ BCStruct    *BCPressure(
       }
     }
   }
-  //}
+  
   return bc_struct;
 }
 

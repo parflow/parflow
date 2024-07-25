@@ -191,7 +191,7 @@ void GroundwaterFlowEval(
     int isubgrid) // current subgrid
 {
   PFModule     *this_module = ThisPFModule;
-  PublicXtra   *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+  // PublicXtra   *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra *instance_xtra = 
       (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
@@ -206,11 +206,12 @@ void GroundwaterFlowEval(
       double *Ar = instance_xtra->AquiferRecharge[ipatch][isubgrid];
 
       double dx = 0.0, dy = 0.0, dz = 0.0;
-      double dvol = 0.0, dxdy = 0.0, dxdz = 0.0, dydz = 0.0;
+      //double dvol = 0.0, 
+      double dxdy = 0.0, dxdz = 0.0, dydz = 0.0;
 
       int stride_xp = 1;
       int stride_yp = SubvectorNX(p_sub);
-      int stride_zp = SubvectorNY(p_sub) * stride_yp;
+      // int stride_zp = SubvectorNY(p_sub) * stride_yp;
 
       int ip = 0;
       int mid = 0; // middle cell index
@@ -218,22 +219,22 @@ void GroundwaterFlowEval(
       int rgt = +stride_xp; // right cell index
       int dwn = -stride_yp; // down  cell index
       int top = +stride_yp; // top   cell index
-      int bck = -stride_zp; // back  cell index
-      int frt = +stride_zp; // front cell index
+      // int bck = -stride_zp; // back  cell index
+      // int frt = +stride_zp; // front cell index
 
       double area = 0.0;
 
       double q_storage = 0.0, q_divergence = 0.0, q_recharge = 0.0;
 
       double T_lft = 0.0, T_rgt = 0.0, T_dwn = 0.0;
-      double T_top = 0.0, T_bck = 0.0, T_frt = 0.0;
+      double T_top = 0.0;//, T_bck = 0.0, T_frt = 0.0;
 
       double old_head_mid = 0.0, new_head_mid = 0.0;
       double new_head_lft = 0.0, new_head_rgt = 0.0, new_head_dwn = 0.0;
-      double new_head_top = 0.0, new_head_bck = 0.0, new_head_frt = 0.0;
+      double new_head_top = 0.0;//, new_head_bck = 0.0, new_head_frt = 0.0;
 
       double dh_lft = 0.0, dh_rgt = 0.0, dh_dwn = 0.0;
-      double dh_top = 0.0, dh_bck = 0.0, dh_frt = 0.0;
+      double dh_top = 0.0;//, dh_bck = 0.0, dh_frt = 0.0;
       double dh_dt  = 0.0;
     ),
     CellSetup({
@@ -244,7 +245,7 @@ void GroundwaterFlowEval(
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid) * z_mult[ip];
 
-      dvol = dx*dy*dz*z_mult[ip]; // infinitesimal volume
+      // dvol = dx*dy*dz*z_mult[ip]; // infinitesimal volume
       dxdy = dx*dy;
       dxdz = dx*dz*z_mult[ip];
       dydz = dy*dz*z_mult[ip];
@@ -374,8 +375,7 @@ PFModule* GroundwaterFlowEvalInitInstanceXtra(int num_patches, int subgrid_size)
 /*--------------------------------------------------------------------------
  * GroundwaterFlowEvalFreeInstanceXtra
  *--------------------------------------------------------------------------*/
-
-void GroundwaterFlowEvalFreeInstanceXtra()
+void GroundwaterFlowEvalFreeInstanceXtra(Grid *grid)
 {
   PFModule* this_module = ThisPFModule;
   InstanceXtra* instance_xtra = 
@@ -384,6 +384,18 @@ void GroundwaterFlowEvalFreeInstanceXtra()
   if(!instance_xtra) return; 
   
   for(int ipatch = 0; ipatch < instance_xtra->num_patches; ++ipatch) {
+    for(int is = 0; is < instance_xtra->subgrid_size; ++is) {
+      if(instance_xtra->SpecificYield[ipatch][is] != NULL) {
+        tfree(instance_xtra->SpecificYield[ipatch][is]);
+      }
+      if(instance_xtra->AquiferDepth[ipatch][is] != NULL) {
+        tfree(instance_xtra->AquiferDepth[ipatch][is]);
+      }
+      if(instance_xtra->AquiferRecharge[ipatch][is] != NULL) {
+        tfree(instance_xtra->AquiferRecharge[ipatch][is]);
+      }
+    }
+
     tfree(instance_xtra->SpecificYield[ipatch]);
     tfree(instance_xtra->AquiferDepth[ipatch]);
     tfree(instance_xtra->AquiferRecharge[ipatch]);
