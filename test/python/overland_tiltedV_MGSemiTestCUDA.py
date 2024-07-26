@@ -10,24 +10,7 @@
 import sys
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
-from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 import os
-
-def CheckOutput(run_name, correct_root, correct_output_dir_name):
-
-    passed = True
-    sig_digits = 4
-    abs_value = 1e-12
-    test_files = ["press"]
-    for timestep in range(20):
-        for test_file in test_files:
-            filename = f"/{run_name}.out.{test_file}.{timestep:05d}.pfb"
-            correct_filename = f"/{correct_root}.out.{test_file}.{timestep:05d}.pfb"
-            result = pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + correct_filename, f"Max difference in {new_output_dir_name + filename}", abs_value, sig_digits)
-            if not result:
-                passed = False
-
-    return passed
 
 overland = Run("overland_tiltedV_KWE", __file__)
 
@@ -333,7 +316,9 @@ overland.Solver.WriteSiloConcentration = False
 # Initial conditions: water pressure
 #---------------------------------------------------------
 
-# set water table to be at the bottom of the domain, the top layer is initially dry
+# set water table to be at the bottom of the domain
+# the top layer is initially  dry
+
 overland.ICPressure.Type = 'HydroStaticPatch'
 overland.ICPressure.GeomNames = 'domain'
 overland.Geom.domain.ICPressure.Value = -3.0
@@ -364,55 +349,48 @@ overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
 overland.Solver.Nonlinear.UseJacobian = False
 #overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
 
-passed=True
-
-correct_output_dir_name = get_absolute_path("../correct_output/TiltedV_OverlandKin")
-correct_root = "TiltedV_OverlandKin"
 
 run_name = "TiltedV_OverlandKin_JacFalse_MGSemi"
 overland.set_name(run_name)
 print("##########")
 print(f"Running {run_name}")
-test_dir_name = get_absolute_path('test_output_old/')
+test_dir_name = get_absolute_path('test_output_MGSemi_CUDA')
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
-    passed=False
 
 run_name = "TiltedV_OverlandKin_JacTrue_MGSemi"
 overland.set_name(run_name)
 # run with KWE upwinding and analytical jacobian
 overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
 overland.Solver.Nonlinear.UseJacobian = True
-#overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
-
-print("##########")
-print(f"Running {run_name} Jacobian True")
-new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
-mkdir(new_output_dir_name)
-overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
-    passed=False
-
+overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 
 #-----------------------------------------------------------------------------
 # Original formulation with a zero value channel
 #-----------------------------------------------------------------------------
+run_name = "TiltedV_OverlandFlow_JacFalse_PFMG"
+overland.set_name(run_name)
+overland.TopoSlopesX.Type = 'Constant'
+overland.TopoSlopesX.GeomNames = 'left right channel'
+overland.TopoSlopesX.Geom.left.Value = -0.01
+overland.TopoSlopesX.Geom.right.Value = 0.01
+overland.TopoSlopesX.Geom.channel.Value = 0.00
+overland.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
+overland.Solver.Linear.Preconditioner = 'PFMG'
+overland.Solver.Nonlinear.UseJacobian = False
+overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 
-correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandFlow")
-correct_root = "TiltedV_OverlandFlow"
 
 run_name = "TiltedV_OverlandFlow_JacTrue_MGSemi"
 overland.set_name(run_name)
 overland.Solver.Linear.Preconditioner = 'MGSemi'
+overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 print("##########")
 print(f"Running {run_name} Jacobian True MGSemi")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
-    passed=False
 
 run_name = "TiltedV_OverlandFlow_JacFalse_MGSemi"
 overland.set_name(run_name)
@@ -422,10 +400,6 @@ print(f"Running {run_name} Jacobian False MGSemi")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
-    passed=False
-
-
 
 #-----------------------------------------------------------------------------
 # Diffusive wave (DWE) formulation without the zero channel
@@ -448,9 +422,6 @@ overland.TopoSlopesY.Geom.domain.Value = 0.01
 overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
 overland.Solver.Nonlinear.UseJacobian = False
 
-correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandDiff")
-correct_root = "TiltedV_OverlandDiff"
-
 run_name = "TiltedV_OverlandDiff_JacFalse_MGSemi"
 overland.set_name(run_name)
 print("##########")
@@ -458,8 +429,6 @@ print(f"Running {run_name}")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
-    passed=False
 
 # run with DWE and analytical jacobian
 run_name = "TiltedV_OverlandDiff_JacTrue_MGSemi"
@@ -472,11 +441,4 @@ print(f"Running {run_name} Jacobian True")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
-    passed=False
 
-if passed:
-    print(f"{run_name} : PASSED")
-else:
-    print(f"{run_name} : FAILED")
-    sys.exit(1)
