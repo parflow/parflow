@@ -477,7 +477,7 @@ pfset Solver.Linear.MaxRestarts                           2
 ## run test with MGSemi preconditioner
 pfset Solver.Linear.Preconditioner                       MGSemi
 #pfset Solver.Linear.Preconditioner                       PFMG
-
+pfset Solver.Linear.Preconditioner.PCMatrixType       FullJacobian
 
 
 
