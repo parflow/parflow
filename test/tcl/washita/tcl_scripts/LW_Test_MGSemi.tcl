@@ -463,11 +463,7 @@ pfset Solver.MaxConvergenceFailures                   8
 pfset Solver.Nonlinear.MaxIter                        80
 pfset Solver.Nonlinear.ResidualTol                    1e-6
 
-## new solver settings for Terrain Following Grid
-pfset Solver.Nonlinear.EtaChoice                         EtaConstant
-pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       True 
-#pfset Solver.Nonlinear.UseJacobian                       False 
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-14
 pfset Solver.Nonlinear.StepTol				 1e-30
 pfset Solver.Nonlinear.Globalization                     LineSearch
@@ -476,7 +472,6 @@ pfset Solver.Linear.MaxRestarts                           2
 
 ## run test with MGSemi preconditioner
 pfset Solver.Linear.Preconditioner                       MGSemi
-#pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.PCMatrixType       FullJacobian
 
 

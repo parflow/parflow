@@ -362,7 +362,7 @@ overland.TopoSlopesY.Geom.domain.Value = 0.01
 # run with KWE upwinding
 overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
 overland.Solver.Nonlinear.UseJacobian = False
-#overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 
 passed=True
 
@@ -385,7 +385,7 @@ overland.set_name(run_name)
 # run with KWE upwinding and analytical jacobian
 overland.Patch.z_upper.BCPressure.Type = 'OverlandKinematic'
 overland.Solver.Nonlinear.UseJacobian = True
-#overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 
 print("##########")
 print(f"Running {run_name} Jacobian True")
@@ -402,7 +402,16 @@ if not CheckOutput(run_name, correct_root, correct_output_dir_name):
 
 correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandFlow")
 correct_root = "TiltedV_OverlandFlow"
-
+## need to change the channel slopes for Overland Flow which is cell-centered
+overland.TopoSlopesX.Type = 'Constant'
+overland.TopoSlopesX.GeomNames = 'left right channel'
+overland.TopoSlopesX.Geom.left.Value = -0.01
+overland.TopoSlopesX.Geom.right.Value = 0.01
+overland.TopoSlopesX.Geom.channel.Value = 0.00
+overland.TopoSlopesY.Type = 'Constant'
+overland.TopoSlopesY.GeomNames = 'domain'
+overland.TopoSlopesY.Geom.domain.Value = 0.01
+overland.Patch.z_upper.BCPressure.Type = 'OverlandFlow'
 run_name = "TiltedV_OverlandFlow_JacTrue_MGSemi"
 overland.set_name(run_name)
 overland.Solver.Linear.Preconditioner = 'MGSemi'
@@ -465,7 +474,7 @@ if not CheckOutput(run_name, correct_root, correct_output_dir_name):
 run_name = "TiltedV_OverlandDiff_JacTrue_MGSemi"
 overland.set_name(run_name)
 overland.Solver.Nonlinear.UseJacobian = True
-#overland.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
+overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 
 print("##########")
 print(f"Running {run_name} Jacobian True")

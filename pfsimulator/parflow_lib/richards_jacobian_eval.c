@@ -1837,17 +1837,18 @@ void    RichardsJacobianEval(
     }             /* End subgrid loop */
   }
 
-/* MGSemi Jacobian construction; this should basically only be active if we have
-  overland KWE and MGSemi chosen as preconditioner.  This logic is similar
+/* MGSemi Jacobian construction; this should (will) only be active if we have
+  one of the overland flow cases (KWE, DWE, Overland) and MGSemi chosen as preconditioner.  
+  This is set by the overland_flow variable.  This logic is similar
   to the case statements in OverlandKinematic above
-  for PFMG/SMG/PFMGOctree(case overland_flow) are split into the surface and 
+  for PFMG/SMG/PFMGOctree(case overland_flow) which are split into the surface and 
   subsurface parts (RMM)*/
 
-/* MGSemi center part this should basically only be active if we have
-                                  overland DWE and MGSemi chosen as preconditioner.  This logic is similar
-                                  to, or could be replaced by, the case statements in OverlandFlow above
-                                  where the FD Jacobian (case no_nonlinear), MGSemi (case simple) and PFMG 
-                                  (case overland_flow) are enumerated explicitly (RMM)*/
+/* The MGSemi center part this is  only be active if we have
+ and MGSemi chosen as preconditioner.  This logic is similar
+  to, and was patterned after, the case statements in OverlandFlow above
+  where the FD Jacobian (case no_nonlinear), MGSemi (case simple) and PFMG 
+  (case overland_flow) are enumerated explicitly (RMM)*/
 
   if (public_xtra->using_MGSemi == 1)
   {
@@ -1929,9 +1930,7 @@ void    RichardsJacobianEval(
                              FACE(FrontFace,
                              {
                                /* Loop over boundary patches to build J matrix. */
-                               io = SubmatrixEltIndex(J_sub, i, j, iz);
                                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                               itop = SubvectorEltIndex(top_sub, i, j, 0);
 
                                /* Update J */
                                ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -1972,17 +1971,13 @@ void    RichardsJacobianEval(
                              FACE(FrontFace,
                              {
 
-                               /* Loop over boundary patches to build JC matrix.
+                               /* Loop over boundary patches to build J matrix.
                                 */
-                               io = SubmatrixEltIndex(J_sub, i, j, iz);
                                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                               itop = SubvectorEltIndex(top_sub, i, j, 0);
-
-                               /* Update J */
                                ip = SubvectorEltIndex(p_sub, i, j, k);
                                im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                               /* Now add overland contributions to JC */
+                               /* Now add overland contributions */
                                if ((pp[ip]) > 0.0)
                                {
                                  /*diagonal term */
@@ -2017,27 +2012,22 @@ void    RichardsJacobianEval(
                              {
                                /* Loop over boundary patches to build J matrix.
                                 */
-                               io = SubmatrixEltIndex(J_sub, i, j, iz);
                                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                               itop = SubvectorEltIndex(top_sub, i, j, 0);
-
-                               /* Update J */
                                ip = SubvectorEltIndex(p_sub, i, j, k);
                                im = SubmatrixEltIndex(J_sub, i, j, k);
 
-                             
-
-                               /* Now add overland contributions to JC */
+                               /* Now add overland contributions to the jacobian */
                                if ((pp[ip]) > 0.0)
                                {
                                  /*diagonal term */
-                                 //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                                 /* original preconditioner from KM2006 here for historical reasons; performance is much slower than newer formulation below */
+                                 //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);  
                                   cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                                               + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
                                }
                                else
                                {
-                                 // Laura's version
+                                 // Laura's version; old diffusive wave formulation which is now replaced by DWE
                                  cp[im] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //NBE
                                }
 
@@ -2364,7 +2354,8 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(precond_switch_na, switch_name, key);
   if (switch_value == 1)
   {
-   public_xtra->using_MGSemi = 1;  // this is basically a switch to make MGsemi=True *and* Jacobian=True
+    /* (RMM) Include a variable track if MGSemi=True *and* Jacobian=True */
+   public_xtra->using_MGSemi = 1;  
   }
   else 
   {
@@ -2372,7 +2363,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   }
  NA_FreeNameArray(precond_switch_na);
 
-  ///* parameters for upwinding formulation for TFG */
+  /* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
   sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
   switch_name = GetStringDefault(key, "Original");
@@ -2413,7 +2404,8 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
     case 0:
     {
       public_xtra->type = no_nonlinear_jacobian;
-      public_xtra->using_MGSemi = 0;  //RMM try to allow for different cases like MGSemi but FD jacobian
+      /*(RMM) set back to zero so that cases like MGSemi with FD jacobian (FALSE) are not affected*/
+      public_xtra->using_MGSemi = 0;  
       break;
     }
 
