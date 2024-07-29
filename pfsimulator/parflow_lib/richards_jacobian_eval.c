@@ -1922,7 +1922,7 @@ void    RichardsJacobianEval(
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io, io1, itop, ip, im, k1;),
+                             Locals(int io1, ip, im;),
                              CellSetup(DoNothing),
                              FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
                              FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
