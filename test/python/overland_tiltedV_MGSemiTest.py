@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 # MGSemi preconditioner test for overland flow with tilted V
 # running different configurations of tilted V, OverlandKinematic, OverlandFlow and OverlandDiffusive
-# with and without analytical jacobian and with MGSemi and PFMG preconditioners
+# with and without analytical jacobian and with MGSemi preconditioner
 # The results should be almost identical for the different configurations
 # The test is to check the correctness of the MGSemi preconditioner
 # RMM, 2024-07-02
@@ -13,7 +13,7 @@ from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 import os
 
-def CheckOutput(run_name, correct_root, correct_output_dir_name):
+def check_output(run_name, correct_root, correct_output_dir_name):
 
     passed = True
     sig_digits = 4
@@ -377,7 +377,7 @@ test_dir_name = get_absolute_path('test_output_old/')
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+if not check_output(run_name, correct_root, correct_output_dir_name):
     passed=False
 
 run_name = "TiltedV_OverlandKin_JacTrue_MGSemi"
@@ -392,7 +392,7 @@ print(f"Running {run_name} Jacobian True")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+if not check_output(run_name, correct_root, correct_output_dir_name):
     passed=False
 
 
@@ -420,7 +420,7 @@ print(f"Running {run_name} Jacobian True MGSemi")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+if not check_output(run_name, correct_root, correct_output_dir_name):
     passed=False
 
 run_name = "TiltedV_OverlandFlow_JacFalse_MGSemi"
@@ -431,7 +431,7 @@ print(f"Running {run_name} Jacobian False MGSemi")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+if not check_output(run_name, correct_root, correct_output_dir_name):
     passed=False
 
 
@@ -440,7 +440,7 @@ if not CheckOutput(run_name, correct_root, correct_output_dir_name):
 # Diffusive wave (DWE) formulation without the zero channel
 # Note: The difference in configuration here is to be consistent with the way
 # the upwinding is handled for the new and original formulations.
-# Tests with Jacobian True and False and run for both MGSemi and PFMG preconditioners
+# Tests with Jacobian True and False and run for both MGSemi preconditioner
 # Results should be almost identical for the different configurations
 #-----------------------------------------------------------------------------
 overland.TopoSlopesX.Type = 'Constant'
@@ -467,7 +467,7 @@ print(f"Running {run_name}")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+if not check_output(run_name, correct_root, correct_output_dir_name):
     passed=False
 
 # run with DWE and analytical jacobian
@@ -481,7 +481,7 @@ print(f"Running {run_name} Jacobian True")
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
-if not CheckOutput(run_name, correct_root, correct_output_dir_name):
+if not check_output(run_name, correct_root, correct_output_dir_name):
     passed=False
 
 if passed:
