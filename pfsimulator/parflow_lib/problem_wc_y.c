@@ -90,7 +90,7 @@ void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy){
     Subvector *wcy_values_sub;
     double *psdat, *wcy_values_dat;
 
-    double dy = SubgridDY(subgrid);
+    // double dy = SubgridDY(subgrid);
     double *data;
 
     int ix, iy, iz;
@@ -101,7 +101,7 @@ void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy){
 
     (void) dummy;
 
-    InitVectorAll(wc_y, dy);
+    InitVectorAll(wc_y, 0.0);
 
     if (public_xtra->wcy_exists == 1) {
 
