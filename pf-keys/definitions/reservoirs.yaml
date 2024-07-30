@@ -31,94 +31,91 @@ Reservoirs:
       type: VariableTable
       table_label: Reservoir
 
-#    ReleaseCurveFile:
-#      help: >
-#        [Type: string] This key specifies the release curve of the reservoir as a timeseries (TBD FORMATTING DOC)
-#      domains:
-#        AnyString:
-
     Release_X:
-      # typos - vertical
       help: >
-        [Type: double] This key specifies the x location of where the reservoir releases water
+        [Type: double] This key specifies the x location of where the reservoir releases water. This 
+        cell will always be placed on the domain surface.
       domains:
         DoubleValue:
 
     Release_Y:
-      # typos - vertical
       help: >
-        [Type: double] This key specifies the y location of where the reservoir releases water
-      domains:
-        DoubleValue:
-
-    Secondary_Intake_X:
-      # typos - vertical
-      help: >
-        [Type: double] This key specifies the x location of the optional secondary intake cell
-      default: -1.0
-      domains:
-        DoubleValue:
-
-    Secondary_Intake_Y:
-      # typos - vertical
-      help: >
-        [Type: double] This key specifies the y location of the optional secondary intake cell
-      default: -1.0
-      domains:
-        DoubleValue:
-
-    Has_Secondary_Intake_Cell:
-      # typos - vertical
-      help: >
-        [Type: bool] This key specifies if the reservoir has a secondary intake cell
-      default: False
-      domains:
-        IntValue:
-
-    Min_Release_Storage:
-      # typos - vertical
-      help: >
-        [Type: double]
-      domains:
-        DoubleValue:
-
-    Max_Storage:
-      # typos - vertical
-      help: >
-        [Type: double]
-      domains:
-        DoubleValue:
-
-    Storage:
-      # typos - vertical
-      help: >
-        [Type: double]
-      domains:
-        DoubleValue:
-
-    Release_Rate:
-      # typos - vertical
-      help: >
-        [Type: double]
+        [Type: double] This key specifies the y location of where the reservoir releases water. This 
+        cell will always be placed on the domain surface.
       domains:
         DoubleValue:
 
     Intake_X:
-      # typos - vertical
       help: >
         [Type: double] This key specifies the x location of where the reservoir intakes water
       domains:
         DoubleValue:
 
     Intake_Y:
-      # typos - vertical
+
       help: >
         [Type: double] This key specifies the y location of where the reservoir intakes water.
       domains:
         DoubleValue:
 
+    Secondary_Intake_X:
+
+      help: >
+        [Type: double] This key specifies the x location of the optional secondary intake cell. This 
+        cell will always be placed on the domain surface.
+      default: -1.0
+      domains:
+        DoubleValue:
+
+    Secondary_Intake_Y:
+
+      help: >
+        [Type: double] This key specifies the y location of the optional secondary intake cell. This 
+        cell will always be placed on the domain surface.
+      default: -1.0
+      domains:
+        DoubleValue:
+
+    Has_Secondary_Intake_Cell:
+
+      help: >
+        [Type: bool] This key specifies if the reservoir has a secondary intake cell. This 
+        cell will always be placed on the domain surface.
+      default: False
+      domains:
+        IntValue:
+
+    Min_Release_Storage:
+
+      help: >
+        [Type: double] This key specifies the storage amount below which the reservoir will stop releasing water
+      domains:
+        DoubleValue:
+
+    Max_Storage:
+
+      help: >
+        [Type: double] This key specifies the storage amount above which the reservoir will release extra water 
+        if necessary to not rise above it
+      domains:
+        DoubleValue:
+
+    Storage:
+
+      help: >
+        [Type: double] This key specifies the amount of water stored in the reservoir as a volume. Has same length
+        units as the problem domain i.e. if domain is sized in meters this will be in m^3
+      domains:
+        DoubleValue:
+
+    Release_Rate:
+      help: >
+        [Type: double] This key specifies the rate in volume/time [L^3 T^-1] that the reservoir release water.
+        The amount of time over which this amount is released is independent of solver timestep size
+      domains:
+        DoubleValue:
+
   Overland_Flow_Solver:
-    # typos - vertical
     help: >
       [Type: string] This key specifies which overland flow condition is used in the domain so that the slopes around
       the reservoirs can be adjusted properly. Supported Options are OverlandFlow and OverlandKinematic.

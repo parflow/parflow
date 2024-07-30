@@ -3097,6 +3097,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
                          {
                            ip = SubvectorEltIndex(p_sub_sp, i, j, k);
+                           // this assumes a domain where the top of the grid is the same as 
+                           // the top of the domain
                            if (k == (grid_nz - 1))
                            {
 
@@ -3136,6 +3138,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
               GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
                            {
                              ip = SubvectorEltIndex(p_sub_sp, i, j, k);
+                             // this assumes a domain where the top of the grid is the same as 
+                             // the top of the domain
                              if (k == (grid_nz - 1))
                              {
                                if (pp_sp[ip] > reservoir_reset_pressure)

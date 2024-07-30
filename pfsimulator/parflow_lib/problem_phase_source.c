@@ -408,8 +408,6 @@ void         PhaseSource(
   
   if (ReservoirDataNumReservoirs(reservoir_data) > 0)
   {
-//    double epoch_time = problem->current_unix_epoch_time;
-
     for (int reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++)
     {
       reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
@@ -456,11 +454,6 @@ void         PhaseSource(
             dx = SubgridDX(tmp_subgrid);
             dy = SubgridDY(tmp_subgrid);
             dz = SubgridDZ(tmp_subgrid);
-
-            area_x = dy * dz;
-            area_y = dx * dz;
-            area_z = dx * dy;
-            area_sum = area_x + area_y + area_z;
 
             px = SubvectorElt(px_sub, ix, iy, iz);
             py = SubvectorElt(py_sub, ix, iy, iz);

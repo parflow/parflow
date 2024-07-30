@@ -82,29 +82,27 @@ void FreeReservoirData(
 
   if (reservoir_data)
   {
-    if (ReservoirDataNumReservoirs(reservoir_data) > 0)
-    {
-      if (ReservoirDataNumReservoirs(reservoir_data) > 0) {
 
-          for (i = 0; i < ReservoirDataNumReservoirs(reservoir_data); i++) {
-            reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, i);
-            if (ReservoirDataPhysicalName(reservoir_data_physical)) {
-              tfree(ReservoirDataPhysicalName(reservoir_data_physical));
-            }
-            if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical)) {
-              FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
-            }
-            if (ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical)) {
-              FreeSubgrid(ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical));
-            }
-            if (ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical)) {
-              FreeSubgrid(ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical));
-            }
-            tfree(reservoir_data_physical);
+    if (ReservoirDataNumReservoirs(reservoir_data) > 0) {
+
+        for (i = 0; i < ReservoirDataNumReservoirs(reservoir_data); i++) {
+          reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, i);
+          if (ReservoirDataPhysicalName(reservoir_data_physical)) {
+            tfree(ReservoirDataPhysicalName(reservoir_data_physical));
           }
-          if (ReservoirDataReservoirPhysicals(reservoir_data)) {
-            tfree(ReservoirDataReservoirPhysicals(reservoir_data));
+          if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical)) {
+            FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
           }
+          if (ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical)) {
+            FreeSubgrid(ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical));
+          }
+          if (ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical)) {
+            FreeSubgrid(ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical));
+          }
+          tfree(reservoir_data_physical);
+        }
+        if (ReservoirDataReservoirPhysicals(reservoir_data)) {
+          tfree(ReservoirDataReservoirPhysicals(reservoir_data));
         }
       }
     tfree(reservoir_data);
@@ -134,10 +132,6 @@ void WriteReservoirs(
   if (ReservoirDataNumReservoirs(reservoir_data) > 0)
   {
     p = amps_Rank(amps_CommWorld);
-    //We are essentially using header written to ensure the header gets written before any other processors
-    //try to append to the file. This may not be the cleanest way to do it, and may not be necessary
-    //given the amount of compute between writing the header and writing the first line, but I wanted
-    //to guarantee (Comment by Ben West)
     if (write_header) {
       if (p==0) {
         sprintf(filename, "%s.%s", file_prefix, file_suffix);
@@ -151,7 +145,6 @@ void WriteReservoirs(
         fprintf(file, "\n");
         fclose(file);
       }
-      MPI_Barrier(amps_CommWorld);
     }
     for (reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
       reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
@@ -162,7 +155,6 @@ void WriteReservoirs(
           amps_Printf("Error: can't open output file %s\n", filename);
           exit(1);
         }
-        //Now print the current values
         fprintf(file, "%f", time);
         reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
         fprintf(file, ",%s", ReservoirDataPhysicalName(reservoir_data_physical));

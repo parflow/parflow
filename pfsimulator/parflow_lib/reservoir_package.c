@@ -27,18 +27,48 @@
  **********************************************************************EHEADER*/
 
 #include "parflow.h"
-//#include "time_series.h"
-//#include "time_series.c"
 #include <stdio.h>
 #include <string.h>
-
-#define PRESSURE_RESERVOIR   0
-#define FLUX_RESERVOIR       1
 
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
-// Temp solution while I get a more permanent var dz fix checked in
+typedef struct {
+
+    /* reservoir info */
+    int num_reservoirs;
+
+    int       *type;
+    void     **data;
+
+    int overland_flow_solver;
+    NameArray reservoir_names;
+} PublicXtra;
+
+typedef void InstanceXtra;
+
+typedef struct {
+    char    *name;
+    double intake_x_location, intake_y_location;
+    int has_secondary_intake_cell;
+    double secondary_intake_x_location, secondary_intake_y_location;
+    double release_x_location, release_y_location;
+    double max_storage, min_release_storage, storage, release_rate;
+} Type0;                      /* basic vertical reservoir */
+
+/*--------------------------------------------------------------------------
+ * ReservoirPackage
+ *--------------------------------------------------------------------------*/
+
+// Temp solution while I get this fix checked in as part of it's own independent module that handles
+// var dz correctly
+/** @brief Calculates a subgrids total volume, accounting for variable dz. Assumes subgrid is fully 
+ * contained within the current rank.
+ *
+ * @param subgrid the subgrid we are checking
+ * @param problem_data the problems problem data structure
+ * @return True or False corresponding to whether the subgrid intersects
+ */
 double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
   double dx = SubgridDX(subgrid);
   double dy = SubgridDY(subgrid);
@@ -66,46 +96,13 @@ double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
                  {
 
                    int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
-                   //real space z will give us the cell center...not the cell bottom. So we correct for that
-                   //I think if we call this function generically this line can seg fault. Need to make sure
-                   // index is good for generic case. I have ensured we only call in cases this can not seg
-                   // fault currently
                    double dz_mult = dz_mult_data[index];
                    volume += dz_mult * dx * dy * dz;
                  });
   }
   return volume;
-
 };
 
-
-
-typedef struct {
-
-    /* reservoir info */
-    int num_reservoirs;
-
-    int       *type;
-    void     **data;
-
-    int overland_flow_solver;
-    NameArray reservoir_names;
-} PublicXtra;
-
-typedef void InstanceXtra;
-
-typedef struct {
-    char    *name;
-    double intake_x_location, intake_y_location;
-    int has_secondary_intake_cell;
-    double secondary_intake_x_location, secondary_intake_y_location;
-    double release_x_location, release_y_location;
-    double max_storage, min_release_storage, storage, release_rate;
-} Type0;                      /* basic vertical reservoir */
-
-/*--------------------------------------------------------------------------
- * ReservoirPackage
- *--------------------------------------------------------------------------*/
 
 /** @brief Checks whether a subgrid intersects with the current ranks subgrid
  *
@@ -291,11 +288,11 @@ void         ReservoirPackage(
       rx = 0;
       ry = 0;
       rz = 0;
-      #ifdef PARFLOW_HAVE_MPI
+#ifdef PARFLOW_HAVE_MPI
       current_mpi_rank = amps_Rank(amps_CommWorld);
-      #else
+#else
       current_mpi_rank = 1;
-      #endif
+#endif
 
       new_intake_subgrid = NewSubgrid(intake_ix, intake_iy, iz_lower,
                                       nx, ny, nz,
@@ -326,28 +323,21 @@ void         ReservoirPackage(
       }
       //If we are multiprocessor we need to do some reductions to determine the correct ranks
       // for the reservoirs
-      #ifdef PARFLOW_HAVE_MPI
-        amps_Invoice intake_cell_invoice = amps_NewInvoice("%i", &intake_cell_rank);
-        amps_AllReduce(amps_CommWorld, intake_cell_invoice, amps_Max);
-        amps_FreeInvoice(intake_cell_invoice);
+#ifdef PARFLOW_HAVE_MPI
+      amps_Invoice reservoir_cells_invoice = amps_NewInvoice("%i%i%i", &intake_cell_rank, &secondary_intake_cell_rank, &release_cell_rank);
+      amps_AllReduce(amps_CommWorld, reservoir_cells_invoice, amps_Max);
+      amps_FreeInvoice(reservoir_cells_invoice);
 
-        amps_Invoice secondary_intake_cell_invoice = amps_NewInvoice("%i", &secondary_intake_cell_rank);
-        amps_AllReduce(amps_CommWorld, secondary_intake_cell_invoice, amps_Max);
-        amps_FreeInvoice(secondary_intake_cell_invoice);
+      part_of_reservoir_lives_on_this_rank =
+              (release_cell_rank==current_mpi_rank) ||
+              (intake_cell_rank==current_mpi_rank) ||
+              (secondary_intake_cell_rank==current_mpi_rank);
 
-        amps_Invoice release_cell_invoice = amps_NewInvoice("%i", &release_cell_rank);
-        amps_AllReduce(amps_CommWorld, release_cell_invoice, amps_Max);
-        amps_FreeInvoice(release_cell_invoice);
-        part_of_reservoir_lives_on_this_rank =
-                (release_cell_rank==current_mpi_rank) ||
-                (intake_cell_rank==current_mpi_rank) ||
-                (secondary_intake_cell_rank==current_mpi_rank);
-
-        MPI_Comm new_reservoir_communicator;
-        split_color = part_of_reservoir_lives_on_this_rank ? 1 : MPI_UNDEFINED;
-        MPI_Comm_split(amps_CommWorld, split_color, current_mpi_rank, &new_reservoir_communicator);
-      #endif
-//        edit the slopes to prevent stuff running through the reservoir
+      MPI_Comm new_reservoir_communicator;
+      split_color = part_of_reservoir_lives_on_this_rank ? 1 : MPI_UNDEFINED;
+      MPI_Comm_split(amps_CommWorld, split_color, current_mpi_rank, &new_reservoir_communicator);
+#endif
+//     edit the slopes to prevent stuff running through the reservoir
       if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_FLOW){
         stop_outlet_flow_at_cell_overland_flow(intake_ix, intake_iy, problem_data, grid);
       }
@@ -389,9 +379,9 @@ void         ReservoirPackage(
       ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) = new_release_subgrid;
       ReservoirDataPhysicalSize(reservoir_data_physical) = release_subgrid_volume;
       ReservoirDataReservoirPhysical(reservoir_data, reservoir_index) = reservoir_data_physical;
-      #ifdef PARFLOW_HAVE_MPI
-        reservoir_data_physical->mpi_communicator = new_reservoir_communicator;
-      #endif
+#ifdef PARFLOW_HAVE_MPI
+      reservoir_data_physical->mpi_communicator = new_reservoir_communicator;
+#endif
       /* Put in values for this reservoir */
       reservoir_index++;
     }
@@ -403,18 +393,11 @@ void         ReservoirPackage(
 /*--------------------------------------------------------------------------
  * ReservoirPackageInitInstanceXtra
  *--------------------------------------------------------------------------*/
-
 PFModule *ReservoirPackageInitInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
 
-#if 0
-  if (PFModuleInstanceXtra(this_module) == NULL)
-    instance_xtra = ctalloc(InstanceXtra, 1);
-  else
-    instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
-#endif
   instance_xtra = NULL;
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -458,14 +441,11 @@ PFModule  *ReservoirPackageNewPublicXtra()
 
   int num_reservoirs;
 
-
-  char* overland_flow_solver_name;
-
+  char          *switch_name;
+  int switch_value;
+  NameArray overland_flow_solver_na, overland_flow_solver_switch_na;
 
   public_xtra = ctalloc(PublicXtra, 1);
-
-
-
 
   reservoir_names = GetStringDefault("Reservoirs.Names", EMPTY_NAMES_LIST);
 
@@ -477,19 +457,31 @@ PFModule  *ReservoirPackageNewPublicXtra()
   if (num_reservoirs > 0) {
       (public_xtra->type) = ctalloc(int, num_reservoirs);
       (public_xtra->data) = ctalloc(void *, num_reservoirs);
-      overland_flow_solver_name = GetString("Reservoirs.Overland_Flow_Solver");
-      if (strcmp(overland_flow_solver_name, "OverlandFlow")==0){
-        public_xtra->overland_flow_solver = OVERLAND_FLOW;
+      overland_flow_solver_na = NA_NewNameArray("OverlandFlow OverlandKinematic");
+      sprintf(key, "Reservoirs.Overland_Flow_Solver");
+      switch_name = GetStringDefault(key, "MGSemi");
+      switch_value = NA_NameToIndexExitOnError(overland_flow_solver_na, switch_name, key);
+      switch (switch_value)
+      {
+        case 0:
+        {
+          public_xtra->overland_flow_solver = OVERLAND_FLOW;
+          break;
+        }
+
+        case 1:
+        {
+          public_xtra->overland_flow_solver = OVERLAND_KINEMATIC;
+          break;
+        }
+
+        default:
+        {
+           InputError("Reservoirs.Overland_Flow_Solver must be one of OverlandFlow or OverlandKinematic, not %s%s\n", overland_flow_solver_name, "");
+        }
       }
-      else if (strcmp(overland_flow_solver_name, "OverlandKinematic")==0){
-        public_xtra->overland_flow_solver = OVERLAND_KINEMATIC;
-      }
-      else{
-        InputError("Reservoirs.Overland_Flow_Solver must be one of OverlandFlow or OverlandKinematic, not %s%s\n", overland_flow_solver_name, "");
-        return 0;
-      }
-      int i;
-      for (i = 0; i < num_reservoirs; i++) {
+      
+      for (int i = 0; i < num_reservoirs; i++) {
           reservoir_name = NA_IndexToName(public_xtra->reservoir_names, i);
 
           dummy0 = ctalloc(Type0, 1);

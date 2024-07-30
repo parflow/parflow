@@ -7,10 +7,11 @@ import os
 import parflow
 from parflow import Run
 from parflow.tools.fs import mkdir, cp, get_absolute_path
-from parflow.tools.compare import pf_test_file
+from parflow.tools.compare import pf_test_file_with_abs
+import sys
 
-
-overland = Run("tilted_v_with_reservoir", __file__)
+run_name = "tilted_v_with_reservoir_overland_kinematic"
+overland = Run(run_name, __file__)
 
 #-----------------------------------------------------------------------------
 
@@ -283,73 +284,20 @@ solid_fname = solid_name + '.pfsol'
 #-----------------------------------------------------------------------------
 # setup the overland patch types
 #-----------------------------------------------------------------------------
-overland.Patch.slope1.BCPressure.Type = 'OverlandFlow'
-overland.Patch.slope2.BCPressure.Type = 'OverlandFlow'
-overland.Patch.channel.BCPressure.Type = 'OverlandFlow'
-
-#-----------------------------------------------------------------------------
-# Draining right-- (negative X slope channel)
-#-----------------------------------------------------------------------------
-run_dir = get_absolute_path('test_output/tilted_v_with_reservoir_overland_flow')
-correct_output_dir = get_absolute_path('../correct_output')
-print(correct_output_dir)
-mkdir(run_dir)
-
-
-cp(solid_fname, run_dir)
-cp(f"{inputs_dir}/tilted_v_with_reservoir_initial_pressure.pfb", run_dir)
-cp(f"{inputs_dir}/tilted_v_with_reservoir_initial_pressure.pfb.dist", run_dir)
-overland.GeomInput.domaininput.FileName = solid_fname
-
-#Make slope files
-MIDDLE_ROW = int(np.floor(gridny/2))
-slopey = np.full((gridnz, gridny, gridnx), 1.0)
-slopey[:, 0:MIDDLE_ROW, :] = np.round(-0.01,2)
-slopey[:, MIDDLE_ROW:, :] = np.round(0.01,2)
-slopey[:, MIDDLE_ROW, :] = np.round(0.00,2)
-write_pfb_to_run_dir(slopey, 'slopey.pfb', run_dir)
-
-slopex = np.ones((gridnz, gridny, gridnx))
-slopex = np.round(slopex*-0.01,2)
-write_pfb_to_run_dir(slopex, 'slopex.pfb', run_dir)
-
-overland.Reservoirs.Names = 'reservoir'
-overland.Reservoirs.Overland_Flow_Solver = 'OverlandFlow'
-overland.Reservoirs.reservoir.Intake_X = 12.5
-overland.Reservoirs.reservoir.Intake_Y = 12.5
-overland.Reservoirs.reservoir.Release_X = 13.5
-overland.Reservoirs.reservoir.Release_Y = 12.5
-overland.Reservoirs.reservoir.Has_Secondary_Intake_Cell = -1
-overland.Reservoirs.reservoir.Secondary_Intake_X = -1
-overland.Reservoirs.reservoir.Secondary_Intake_Y = -1
-
-overland.Reservoirs.reservoir.Max_Storage = 100
-overland.Reservoirs.reservoir.Storage = 50
-overland.Reservoirs.reservoir.Min_Release_Storage = 0
-overland.Reservoirs.reservoir.Release_Rate = 1
-
-dist_and_run(run_dir)
-
-
-# pf_test_file(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb", correct_output_dir + "/tilted_v_with_reservoir.out.press.00010.pfb", f"Max difference in Pressure for timestep 10")
-
-correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir.out.press.00010.pfb")
-our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
-
-assert np.allclose(correct_pressure, our_pressure)
-
-
-
-#-----------------------------------------------------------------------------
-# Draining right-- (negative X slope channel)
-#-----------------------------------------------------------------------------
-run_dir = get_absolute_path('test_output/tilted_v_with_reservoir_overland_kinematic')
 overland.Patch.slope1.BCPressure.Type = 'OverlandKinematic'
 overland.Patch.slope2.BCPressure.Type = 'OverlandKinematic'
 overland.Patch.channel.BCPressure.Type = 'OverlandKinematic'
 
-mkdir(run_dir)
+#-----------------------------------------------------------------------------
+# Draining right-- (negative X slope channel)
+#-----------------------------------------------------------------------------
+correct_output_dir = get_absolute_path('../correct_output')
+print(correct_output_dir)
 
+
+run_dir = get_absolute_path('test_output/tilted_v_with_reservoir_overland_kinematic')
+
+mkdir(run_dir)
 
 cp(solid_fname, run_dir)
 cp(f"{inputs_dir}/tilted_v_with_reservoir_initial_pressure.pfb", run_dir)
@@ -385,8 +333,23 @@ overland.Reservoirs.reservoir.Release_Rate = 0
 
 dist_and_run(run_dir)
 
-correct_pressure = parflow.read_pfb(correct_output_dir + "/tilted_v_with_reservoir_overland_kinematic.out.press.00010.pfb")
-our_pressure = parflow.read_pfb(f"{run_dir}/tilted_v_with_reservoir.out.press.00010.pfb")
+passed = True
 
-assert np.allclose(correct_pressure, our_pressure)
+i=9     
+timestep = str(i).rjust(5, '0')
 
+sig_digits = 4
+abs_value = 1e-12
+
+test_files = ["press"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
+    if not pf_test_file_with_abs(run_dir + filename, correct_output_dir + filename, f"Max difference in {filename}", sig_digits, abs_value):
+        passed = False
+
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
