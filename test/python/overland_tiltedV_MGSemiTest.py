@@ -366,14 +366,14 @@ overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 
 passed=True
 
-correct_output_dir_name = get_absolute_path("../correct_output/TiltedV_OverlandKin")
-correct_root = "TiltedV_OverlandKin"
+correct_output_dir_name = get_absolute_path("../correct_output/TiltedV_OverlandKin_MGSemi")
+correct_root = "TiltedV_OverlandKin_MGSemi"
 
 run_name = "TiltedV_OverlandKin_JacFalse_MGSemi"
 overland.set_name(run_name)
 print("##########")
 print(f"Running {run_name}")
-test_dir_name = get_absolute_path('test_output_old/')
+test_dir_name = get_absolute_path('test_output/')
 new_output_dir_name = os.path.join(test_dir_name, f"{run_name}")
 mkdir(new_output_dir_name)
 overland.run(working_directory=new_output_dir_name)
@@ -400,8 +400,8 @@ if not check_output(run_name, correct_root, correct_output_dir_name):
 # Original formulation with a zero value channel
 #-----------------------------------------------------------------------------
 
-correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandFlow")
-correct_root = "TiltedV_OverlandFlow"
+correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandFlow_MGSemi")
+correct_root = "TiltedV_OverlandFlow_MGSemi"
 ## need to change the channel slopes for Overland Flow which is cell-centered
 overland.TopoSlopesX.Type = 'Constant'
 overland.TopoSlopesX.GeomNames = 'left right channel'
@@ -457,8 +457,8 @@ overland.TopoSlopesY.Geom.domain.Value = 0.01
 overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
 overland.Solver.Nonlinear.UseJacobian = False
 
-correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandDiff")
-correct_root = "TiltedV_OverlandDiff"
+correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandDiff_MGSemi")
+correct_root = "TiltedV_OverlandDiff_MGSemi"
 
 run_name = "TiltedV_OverlandDiff_JacFalse_MGSemi"
 overland.set_name(run_name)
