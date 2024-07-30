@@ -61,7 +61,7 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 // Temp solution while I get this fix checked in as part of it's own independent module that handles
-// var dz correctly
+// var dz correctly. Works for all cases that I am aware of. (Ben West)
 /** @brief Calculates a subgrids total volume, accounting for variable dz. Assumes subgrid is fully 
  * contained within the current rank.
  *
@@ -268,7 +268,7 @@ void         ReservoirPackage(
     {
 
       dummy0 = (Type0*)(public_xtra->data[i]);
-
+      reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
       intake_ix = IndexSpaceX((dummy0->intake_x_location), 0);
       intake_iy = IndexSpaceY((dummy0->intake_y_location), 0);
       secondary_intake_ix = IndexSpaceX((dummy0->secondary_intake_x_location), 0);

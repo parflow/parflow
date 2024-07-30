@@ -550,7 +550,9 @@ inputs (TCL).
 
 Reservoirs
 ~~~~~~~~~~
-Here we define reservoirs for the model. The format for this section of input
+Here we define reservoirs for the model. Currently reservoirs have only been tested on domains
+where the top of domain lies at the top of the grid. This applies to all box domains and some 
+terrain following grid domains. The format for this section of input
 is:
 
 *string* **Reservoirs.Names** no default This key specifies the names of the
