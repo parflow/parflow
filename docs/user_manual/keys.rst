@@ -578,8 +578,10 @@ on the domain surface.
 the y location of where the reservoir intakes water. This cell will always be placed
 on the domain surface.
 
-*double* **Reservoirs.\ *reservoir_name*.Has_Secondary_Intake_Cell** no default This key specifies if 
-the reservoir has a secondary intake cell. This cell will always be placed on the domain surface.
+.. This value is set as an int because bools do not work with the table reader right now
+*int* **Reservoirs.\ *reservoir_name*.Has_Secondary_Intake_Cell** no default This key specifies if 
+the reservoir has a secondary intake cell, with 0 evaluating to false and 1 evaluating to true. This
+cell will always be placed on the domain surface.
 
 *double* **Reservoirs.\ *reservoir_name*.Secondary_Intake_X** no default This optional key 
 specifies the x location of where the reservoir's secondary intake cell intakes water. This 

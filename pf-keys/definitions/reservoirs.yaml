@@ -77,10 +77,11 @@ Reservoirs:
         DoubleValue:
 
     Has_Secondary_Intake_Cell:
-
+    # This value is set as an int because bools do not work with the table reader right now
       help: >
-        [Type: bool] This key specifies if the reservoir has a secondary intake cell. This 
-        cell will always be placed on the domain surface.
+        [Type: bool] This key specifies if the reservoir has a secondary intake cell, 
+        with 0 evaluating to false and 1 evaluating to true. This cell will always be 
+        placed on the domain surface.
       default: False
       domains:
         IntValue:
@@ -95,8 +96,8 @@ Reservoirs:
     Max_Storage:
 
       help: >
-        [Type: double] This key specifies the storage amount above which the reservoir will release extra water 
-        if necessary to not rise above it
+        [Type: double] This key specifies a reservoir's maximum storage. If storage rises above this value, a 
+        reservoir will release extra water if necessary to get back down to this amount by the next timestep.
       domains:
         DoubleValue:
 
