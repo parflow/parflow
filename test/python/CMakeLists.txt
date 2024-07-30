@@ -31,7 +31,8 @@ if(${PARFLOW_HAVE_HYPRE})
     LW_var_dz_spinup
     terrain_following_grid_overland
     var_dz_1D
-    tilted_v_with_reservoir
+    tilted_v_with_reservoir_overland_flow
+    tilted_v_with_reservoir_overland_kinematic
     pfmg
     pfmg_galerkin
     smg
