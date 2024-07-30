@@ -8,9 +8,12 @@ from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
 import pandas as pd
 import parflow as pf
+from parflow.tools.compare import pf_test_file_with_abs
 import numpy as np
+import sys
 
-sloping_slab = Run("model", __file__)
+run_name = "reservoir_mpi_test"
+sloping_slab = Run(run_name, __file__)
 
 #---------------------------------------------------------
 
@@ -300,11 +303,11 @@ sloping_slab.Solver.Linear.Preconditioner.PCMatrixType = 'PFSymmetric'
 sloping_slab.Reservoirs.Names = 'reservoir'
 sloping_slab.Reservoirs.Overland_Flow_Solver = 'OverlandFlow'
 
-sloping_slab.Reservoirs.reservoir.Intake_X = 35
+sloping_slab.Reservoirs.reservoir.Intake_X = 25
 sloping_slab.Reservoirs.reservoir.Intake_Y = 25
-sloping_slab.Reservoirs.reservoir.Secondary_Intake_X = 35
+sloping_slab.Reservoirs.reservoir.Secondary_Intake_X = 25
 sloping_slab.Reservoirs.reservoir.Secondary_Intake_Y = 35
-sloping_slab.Reservoirs.reservoir.Release_X = 45
+sloping_slab.Reservoirs.reservoir.Release_X = 35
 sloping_slab.Reservoirs.reservoir.Release_Y = 25
 sloping_slab.Reservoirs.reservoir.Has_Secondary_Intake_Cell = 1
 
@@ -320,37 +323,48 @@ mkdir(base_case_dir)
 sloping_slab.run(working_directory=base_case_dir)
 
 # test that when a reservoir spans two ranks we get the correct answer
-sloping_slab.Process.Topology.P = 2
+sloping_slab.Process.Topology.P = 5
 sloping_slab.Process.Topology.Q = 1
 sloping_slab.Process.Topology.R = 1
 
-dir_name = get_absolute_path('test_output/reservoir_mpi_test_5_processors')
-mkdir(dir_name)
-sloping_slab.run(working_directory=dir_name)
+passed = True
 
-test = pd.read_csv(f"{dir_name}/ReservoirsOutput.csv")
-baseline = pd.read_csv(f"{base_case_dir}/ReservoirsOutput.csv")
-print(test["storage"].iloc[-1])
-print(baseline["storage"].iloc[0])
-print(baseline["storage"].iloc[1])
+test1_dir = get_absolute_path('test_output/reservoir_mpi_test_5_processors')
+mkdir(test1_dir)
+sloping_slab.run(working_directory=test1_dir)
 
-correct_pressure = pf.read_pfb(base_case_dir + "/model.out.press.00010.pfb")
-our_pressure = pf.read_pfb(f"{dir_name}/model.out.press.00010.pfb")
-# assert np.allclose(correct_pressure, our_pressure)
-# assert test["storage"].iloc[-1] == baseline["storage"].iloc[-1]
+
+i=10   
+timestep = str(i).rjust(5, '0')
+
+sig_digits = 4
+abs_value = 1e-12
+
+test_files = ["press"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
+    if not pf_test_file_with_abs(test1_dir + filename, base_case_dir + filename, f"Max difference in {filename}", sig_digits, abs_value):
+        passed = False
+
 
 # test that when a reservoir spans three ranks we get the correct answer
 sloping_slab.Process.Topology.P = 5
 sloping_slab.Process.Topology.Q = 5
 sloping_slab.Process.Topology.R = 1
 
-dir_name = get_absolute_path('test_output/reservoir_mpi_test_25_processors')
-mkdir(dir_name)
-sloping_slab.run(working_directory=dir_name)
+test2_dir = get_absolute_path('test_output/reservoir_mpi_test_25_processors')
+mkdir(test2_dir)
+sloping_slab.run(working_directory=test2_dir)
 
-test = pd.read_csv(f"{dir_name}/ReservoirsOutput.csv")
-baseline = pd.read_csv(f"{base_case_dir}/ReservoirsOutput.csv")
-print(test["storage"].iloc[-1])
-print(baseline["storage"].iloc[-1])
-# assert test["storage"].iloc[-1] == baseline["storage"].iloc[-1]
+test_files = ["press"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
+    if not pf_test_file_with_abs(test2_dir + filename, base_case_dir + filename, f"Max difference in {filename}", sig_digits, abs_value):
+        passed = False
 
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

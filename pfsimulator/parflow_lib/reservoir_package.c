@@ -340,12 +340,15 @@ void         ReservoirPackage(
 //     edit the slopes to prevent stuff running through the reservoir
       if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_FLOW){
         stop_outlet_flow_at_cell_overland_flow(intake_ix, intake_iy, problem_data, grid);
+        if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical)){
+          stop_outlet_flow_at_cell_overland_flow(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
+        }
       }
       else if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_KINEMATIC){
         stop_outlet_flow_at_cell_overland_kinematic(intake_ix, intake_iy, problem_data, grid);
-      }
-      if (secondary_intake_cell_rank==current_mpi_rank){
-        stop_outlet_flow_at_cell_overland_kinematic(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
+        if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical)){
+          stop_outlet_flow_at_cell_overland_kinematic(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
+        }
       }
 
       reservoir_data_physical = ctalloc(ReservoirDataPhysical, 1);
@@ -459,7 +462,7 @@ PFModule  *ReservoirPackageNewPublicXtra()
       (public_xtra->data) = ctalloc(void *, num_reservoirs);
       overland_flow_solver_na = NA_NewNameArray("OverlandFlow OverlandKinematic");
       sprintf(key, "Reservoirs.Overland_Flow_Solver");
-      switch_name = GetStringDefault(key, "MGSemi");
+      switch_name = GetString(key);
       switch_value = NA_NameToIndexExitOnError(overland_flow_solver_na, switch_name, key);
       switch (switch_value)
       {
@@ -477,7 +480,7 @@ PFModule  *ReservoirPackageNewPublicXtra()
 
         default:
         {
-           InputError("Reservoirs.Overland_Flow_Solver must be one of OverlandFlow or OverlandKinematic, not %s%s\n", overland_flow_solver_name, "");
+           InputError("Reservoirs.Overland_Flow_Solver must be one of OverlandFlow or OverlandKinematic, not %s%s\n", switch_name, "");
         }
       }
       
