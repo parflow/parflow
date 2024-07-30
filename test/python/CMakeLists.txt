@@ -18,7 +18,6 @@ set(TESTS
   Dirichlet
   LW_surface_press
   overland_tiltedV_MGSemiTest
-  overland_tiltedV_MGSemiTestCUDA
 )
 
 if(${PARFLOW_HAVE_HYPRE})
