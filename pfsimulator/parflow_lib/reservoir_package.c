@@ -504,6 +504,13 @@ PFModule  *ReservoirPackageNewPublicXtra()
 
           sprintf(key, "Reservoirs.%s.Has_Secondary_Intake_Cell", reservoir_name);
           dummy0->has_secondary_intake_cell = GetInt(key);
+          // I would use a name array to do this validation, but the input is an int. Long term there
+          // needs to be a fix for bool values that are nested under a dynamic key (e.g. the reservoir name)
+          // within the table reader code
+          if (!(dummy0->has_secondary_intake_cell == 0 ||dummy0->has_secondary_intake_cell == 1)){
+            InputError("Reservoirs.%s.HasSecondaryIntakeCell must be one of 0 (if false) or 1 (if true),\
+                        not %i\n", reservoir_name, dummy0->has_secondary_intake_cell);
+          }
 
           if (dummy0->has_secondary_intake_cell){
               sprintf(key, "Reservoirs.%s.Secondary_Intake_X", reservoir_name);
