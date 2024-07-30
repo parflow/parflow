@@ -446,7 +446,7 @@ PFModule  *ReservoirPackageNewPublicXtra()
 
   char          *switch_name;
   int switch_value;
-  NameArray overland_flow_solver_na, overland_flow_solver_switch_na;
+  NameArray overland_flow_solver_na;
 
   public_xtra = ctalloc(PublicXtra, 1);
 
