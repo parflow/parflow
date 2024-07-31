@@ -367,7 +367,7 @@ overland.Solver.Linear.Preconditioner.PCMatrixType = 'FullJacobian'
 passed=True
 
 correct_output_dir_name = get_absolute_path("../correct_output/TiltedV_OverlandKin_MGSemi")
-correct_root = "TiltedV_OverlandKin_MGSemi"
+correct_root = "TiltedV_OverlandKin"
 
 run_name = "TiltedV_OverlandKin_JacFalse_MGSemi"
 overland.set_name(run_name)
@@ -401,7 +401,7 @@ if not check_output(run_name, correct_root, correct_output_dir_name):
 #-----------------------------------------------------------------------------
 
 correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandFlow_MGSemi")
-correct_root = "TiltedV_OverlandFlow_MGSemi"
+correct_root = "TiltedV_OverlandFlow"
 ## need to change the channel slopes for Overland Flow which is cell-centered
 overland.TopoSlopesX.Type = 'Constant'
 overland.TopoSlopesX.GeomNames = 'left right channel'
@@ -458,7 +458,7 @@ overland.Patch.z_upper.BCPressure.Type = 'OverlandDiffusive'
 overland.Solver.Nonlinear.UseJacobian = False
 
 correct_output_dir_name = get_absolute_path(f"{correct_output_dir_name}/../TiltedV_OverlandDiff_MGSemi")
-correct_root = "TiltedV_OverlandDiff_MGSemi"
+correct_root = "TiltedV_OverlandDiff"
 
 run_name = "TiltedV_OverlandDiff_JacFalse_MGSemi"
 overland.set_name(run_name)
