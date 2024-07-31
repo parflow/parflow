@@ -139,6 +139,10 @@ foreach(inputfile ${PARALLEL_3DTOPO_TESTS})
   pf_add_py_parallel_test(${inputfile} 1 4 1)
   pf_add_py_parallel_test(${inputfile} 4 1 1)
   pf_add_py_parallel_test(${inputfile} 2 2 2)
+  if(((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP})))
+    #These tests should pass with CUDA or OMP, but they take a very long time
+    continue()
+  endif(((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP})))
   pf_add_py_parallel_test(${inputfile} 3 3 3)
 
 endforeach()
