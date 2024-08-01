@@ -562,9 +562,9 @@ foreach variable $ClmVariables {
 }
 
 if $passed {
-    puts "default_single : PASSED"
+    puts "LW : PASSED"
 } {
-    puts "default_single : FAILED"
+    puts "LW : FAILED"
 }
 
 
