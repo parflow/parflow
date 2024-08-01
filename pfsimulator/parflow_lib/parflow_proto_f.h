@@ -132,7 +132,7 @@ void SADVECT(double *s, double *sn,
                      clm_dump_interval, clm_1d_out, clm_forc_veg, clm_file_dir, clm_file_dir_length, clm_bin_out_dir, write_CLM_binary, slope_accounting_CLM,                                       \
                      clm_beta_function, clm_veg_function, clm_veg_wilting, clm_veg_fieldc, clm_res_sat,                                                                        \
                      clm_irr_type, clm_irr_cycle, clm_irr_rate, clm_irr_start, clm_irr_stop,                                                                                   \
-                     clm_irr_threshold, qirr, qirr_inst, iflag, clm_irr_thresholdtype, soi_z, clm_next, clm_write_logs, clm_last_rst, clm_daily_rst, clm_nlevsoi, clm_nlevlak) \
+                     clm_irr_threshold, qirr, qirr_inst, iflag, clm_irr_thresholdtype, soi_z, clm_next, clm_write_logs, clm_last_rst, clm_daily_rst, clm_water_stress_type, clm_nlevsoi, clm_nlevlak) \
   CLM_LSM(pressure_data, saturation_data, evap_trans_data, mask, porosity_data,                                                                                                \
           dz_mult_data, &istep, &dt, &t, &start_time, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &nz_rz, &ip, &p, &q, &r, &gnx, &gny, &rank,                 \
           sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                         \
@@ -144,7 +144,7 @@ void SADVECT(double *s, double *sn,
           &clm_dump_interval, &clm_1d_out, &clm_forc_veg, clm_file_dir, &clm_file_dir_length, &clm_bin_out_dir,                                                                \
           &write_CLM_binary, &slope_accounting_CLM, &clm_beta_function, &clm_veg_function, &clm_veg_wilting, &clm_veg_fieldc,                                                                         \
           &clm_res_sat, &clm_irr_type, &clm_irr_cycle, &clm_irr_rate, &clm_irr_start, &clm_irr_stop,                                                                           \
-          &clm_irr_threshold, qirr, qirr_inst, iflag, &clm_irr_thresholdtype, &soi_z, &clm_next, &clm_write_logs, &clm_last_rst, &clm_daily_rst, &clm_nlevsoi, &clm_nlevlak);
+          &clm_irr_threshold, qirr, qirr_inst, iflag, &clm_irr_thresholdtype, &soi_z, &clm_next, &clm_write_logs, &clm_last_rst, &clm_daily_rst, &clm_water_stress_type, &clm_nlevsoi, &clm_nlevlak);
 
 void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_data, double *mask, double *porosity_data,
              double *dz_mult_data, int *istep, double *dt, double *t, double *start_time,
@@ -160,9 +160,9 @@ void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_
              int *clm_veg_function, double *clm_veg_wilting, double *clm_veg_fieldc, double *clm_res_sat,
              int *clm_irr_type, int *clm_irr_cycle, double *clm_irr_rate, double *clm_irr_start, double *clm_irr_stop,
              double *clm_irr_threshold, double *qirr, double *qirr_inst, double *iflag, int *clm_irr_thresholdtype, int *soi_z,
-             int *clm_next, int *clm_write_logs, int *clm_last_rst, int *clm_daily_rst, int *clm_nlevsoi, int *clm_nlevlak);
+             int *clm_next, int *clm_write_logs, int *clm_last_rst, int *clm_daily_rst, int *clm_water_stress_type, int *clm_nlevsoi, int *clm_nlevlak);
 
-/* @RMM CRUNCHFLOW.F90*/
+    /* @RMM CRUNCHFLOW.F90*/
 //#define CRUNCHFLOW crunchflow_
 //#define CALL_CRUNCHFLOW();
 

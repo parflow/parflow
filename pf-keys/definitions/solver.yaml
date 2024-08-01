@@ -380,10 +380,12 @@ Solver:
           min_value: 1 # can we set the max value to whatever the user sets to NZ?
         RequiresModule: CLM
 
-    # Not in grep or manual, but in a script somewhere (per LT)
     RZWaterStress:
       help: >
-        [Type: ???]
+        [Type: int] This key sets the distribution of transpiration over the root zone and changes the behavior of plant water limitations.
+        Water stress approaches result in different cut-offs for transpiration.  Two options are currently
+        implemented both use the beta-type water stress defined above.  Option 0 (default) will limit transpiration when the top soil
+        layer drops below wilting point, option 1 limits each layer independently.
       domains:
         RequiresModule: CLM
 

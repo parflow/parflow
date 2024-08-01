@@ -16,7 +16,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
   integer i,j,k,l,t,ip
   integer nx,ny,nz, j_incr, k_incr
   ! real(r8) begwatb,endwatb !@ beginning and ending water balance over ENTIRE domain
-  real(r8) tot_infl_mm,tot_tran_veg_mm,tot_drain_mm !@ total mm of h2o from infiltration and transpiration
+  real(r8) tot_infl_mm,tot_tran_veg_mm,tot_drain_mm, total_soil_resistance !@ total mm of h2o from infiltration and transpiration
   real(r8) error !@ mass balance error over entire domain
   real(r8) evap_trans((nx+2)*(ny+2)*(nz+2))
   real(r8) saturation((nx+2)*(ny+2)*(nz+2)),pressure((nx+2)*(ny+2)*(nz+2))
@@ -35,6 +35,15 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
      i=tile(t)%col
      j=tile(t)%row
      if (clm(t)%planar_mask==1) then
+        !! RZ water stress * T distribution
+        if (clm(t)%rzwaterstress == 1) then
+        total_soil_resistance = 0.0d0
+        do k = 1, nlevsoi
+        total_soil_resistance = total_soil_resistance + clm(t)%soil_resistance(k)*clm(t)%rootfr(k)
+        end do  !k over soil column
+        end if
+
+        if (clm(t)%rzwaterstress == 0)  then  !! check what kind of water stress formulation we are using to distribute T
         do k = 1, nlevsoi
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
            abs_transpiration = 0.0
@@ -48,7 +57,26 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
            ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
            ! IMF: replaced drv%dz with clm(t)%dz to allow variable DZ...
            evap_trans(l) = clm(t)%pf_flux(k) * 3.6d0 / clm(t)%dz(k)
-        enddo
+        enddo  !! soil loop for uniform T
+        else    !! weighted Transpiration over RZ by water stress
+        !!  first check to see if total_soil_resistance is zero, set to 1.  This should only happen if T is turned off (and btran ==0)
+        if(total_soil_resistance == 0.0) total_soil_resistance = 1.0d0
+
+        do k = 1, nlevsoi
+            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
+        if (k == 1) then
+            clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)*clm(t)%soil_resistance(k))/ (total_soil_resistance)  &
+            + clm(t)%qflx_infl + clm(t)%qflx_qirr_inst(k)
+        else
+            clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)*clm(t)%soil_resistance(k))/ (total_soil_resistance)  &
+            + clm(t)%qflx_qirr_inst(k)
+        endif
+        ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
+        ! IMF: replaced drv%dz with clm(t)%dz to allow variable DZ...
+        evap_trans(l) = clm(t)%pf_flux(k) * 3.6d0 / clm(t)%dz(k)
+        enddo   !! end loop for non-uniform T
+        end if   !! if for rzwaterstress
+
      ! else
      !    do k = 1, nlevsoi
      !       l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
