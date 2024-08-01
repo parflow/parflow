@@ -27,6 +27,7 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
+//#include "grid_utilities.c"
 
 #include <string.h>
 
@@ -92,10 +93,11 @@ typedef struct {
   double **contaminant_fractions;
 } Type1;                      /* basic vertical well, recirculating */
 
+
+
 /*--------------------------------------------------------------------------
  * WellPackage
  *--------------------------------------------------------------------------*/
-
 void         WellPackage(
                          ProblemData *problem_data)
 {
@@ -119,7 +121,7 @@ void         WellPackage(
   int ix, iy;
   int iz_lower, iz_upper;
   int nx, ny, nz;
-  double dx, dy, dz;
+  double dx, dy;
   int rx, ry, rz;
   int process;
   int well_action, action, mechanism, method;
@@ -190,8 +192,8 @@ void         WellPackage(
 
           ix = IndexSpaceX((dummy0->xlocation), 0);
           iy = IndexSpaceY((dummy0->ylocation), 0);
-          iz_lower = IndexSpaceZ((dummy0->z_lower), 0);
-          iz_upper = IndexSpaceZ((dummy0->z_upper), 0);
+          iz_lower = CalculateIndexSpaceZ(dummy0->z_lower, problem_data);
+          iz_upper = CalculateIndexSpaceZ(dummy0->z_upper, problem_data);
 
           nx = 1;
           ny = 1;
@@ -210,9 +212,8 @@ void         WellPackage(
 
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
-          dz = SubgridDZ(new_subgrid);
 
-          subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
+          subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
 
           if ((dummy0->mechanism) == PRESSURE_WELL)
           {
@@ -497,9 +498,8 @@ void         WellPackage(
               mechanism = (dummy1->mechanism_inj);
               method = (dummy1->method_inj);
             }
-
-            iz_lower = IndexSpaceZ(z_lower, 0);
-            iz_upper = IndexSpaceZ(z_upper, 0);
+            iz_lower = CalculateIndexSpaceZ(z_lower, problem_data);
+            iz_upper = CalculateIndexSpaceZ(z_upper, problem_data);
 
             nx = 1;
             ny = 1;
@@ -518,9 +518,7 @@ void         WellPackage(
             dx = SubgridDX(new_subgrid);
             dy = SubgridDY(new_subgrid);
             dz = SubgridDZ(new_subgrid);
-
-            subgrid_volume = (nx * dx) * (ny * dy) * (nz * dz);
-
+            subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
             if (mechanism == PRESSURE_WELL)
             {
               /* Put in physical data for this well */
