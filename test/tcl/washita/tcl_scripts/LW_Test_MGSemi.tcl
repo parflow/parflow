@@ -265,6 +265,7 @@ pfset Patch.y-upper.BCPressure.Cycle		      "constant"
 pfset Patch.y-upper.BCPressure.alltime.Value	      0.0
 
 pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
+#pfset Patch.z-upper.BCPressure.Type		      SeepageFace
 pfset Patch.z-upper.BCPressure.Cycle		      "constant"
 pfset Patch.z-upper.BCPressure.alltime.Value	      0.0
 
@@ -462,18 +463,17 @@ pfset Solver.MaxConvergenceFailures                   8
 pfset Solver.Nonlinear.MaxIter                        80
 pfset Solver.Nonlinear.ResidualTol                    1e-6
 
-## new solver settings for Terrain Following Grid
-pfset Solver.Nonlinear.EtaChoice                         EtaConstant
-pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       True 
-pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
+pfset Solver.Nonlinear.DerivativeEpsilon                 1e-14
 pfset Solver.Nonlinear.StepTol				 1e-30
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      70
 pfset Solver.Linear.MaxRestarts                           2
 
-pfset Solver.Linear.Preconditioner                       PFMGOctree
-pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
+## run test with MGSemi preconditioner
+pfset Solver.Linear.Preconditioner                       MGSemi
+pfset Solver.Linear.Preconditioner.PCMatrixType       FullJacobian
+
 
 
 #-----------------------------------------------------------------------------
@@ -562,9 +562,9 @@ foreach variable $ClmVariables {
 }
 
 if $passed {
-    puts "LW : PASSED"
+    puts "LW_MGSemi : PASSED"
 } {
-    puts "LW : FAILED"
+    puts "LW_MGSemi : FAILED"
 }
 
 
