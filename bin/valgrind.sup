@@ -498,3 +498,77 @@
    ...
    fun:main
 }
+
+##############################################################################
+#
+# CUDA
+# These supressions are overly version specific
+#
+##############################################################################
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   obj:/usr/lib64/libcuda.so.555.42.06
+   ...
+   obj:/usr/lib64/libcuda.so.555.42.06
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   obj:/usr/lib64/libcuda.so.555.42.06
+   ...
+   obj:/usr/lib64/libcuda.so.555.42.06
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   obj:/usr/lib64/libcuda.so.555.42.06
+   ...
+   fun:libcudart_static_963dbe518da27ad62a57079a1a0c90814a2710ec
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:UnknownInlinedFun
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.2.5
+   fun:ucs_pthread_create
+   obj:/usr/lib64/libucs.so.0.0.0
+   obj:/usr/lib64/libucs.so.0.0.0
+   fun:ucs_async_set_event_handler
+   obj:/usr/lib64/libucs.so.0.0.0
+   fun:ucs_rcache_create
+   obj:*
+   obj:*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:UnknownInlinedFun
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.2.5
+   obj:/usr/lib64/libcuda.so.555.42.06
+   obj:/usr/lib64/libcuda.so.555.42.06
+   obj:/usr/lib64/libcuda.so.555.42.06
+   obj:/usr/lib64/libcuda.so.555.42.06
+   obj:/usr/lib64/libcuda.so.555.42.06
+   ...
+}
+
