@@ -21,6 +21,7 @@ BaseRun:
     - Contaminants
     - Domain
     - Wells
+    - Reservoirs
     - TopoSlopesX
     - TopoSlopesY
     - Mannings

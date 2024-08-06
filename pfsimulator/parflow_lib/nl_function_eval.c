@@ -222,7 +222,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   VectorUpdateCommHandle  *handle;
 
   BeginTiming(public_xtra->time_index);
-
   /* Initialize function values to zero. */
   PFVConstInit(0.0, fval);
 

@@ -392,7 +392,7 @@ int main(int argc, char **argv)
     }
     else
     {
-      for(int i = 0; i < g_maskNames.size (); ++i)
+      for(int i = 0; i < g_maskNames.size(); ++i)
       {
 	inFilenames[i] = maskFilenamesArgs[i] -> getValue();
       }
@@ -428,7 +428,7 @@ int main(int argc, char **argv)
   } 
   else
   {
-    for(int i = 0; i < inFilenames.size (); ++i)
+    for(int i = 0; i < inFilenames.size(); ++i)
     {
       char* c_filename = strdup(inFilenames[i].c_str());
       databox[i] = loadFile(c_filename);

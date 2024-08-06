@@ -3598,6 +3598,17 @@ end of the run when all collected data is written.
 pfset Solver.PrintWells False
 \end{verbatim}\end{display}
 
+\pfkey{string}{Solver.PrintReservoirs}{True}
+{
+This key is used to turn on collection and printing of the
+reservoirs data.  The data is collected at intervals given by values
+in the timing information section.  Printing occurs at the
+end of the run when all collected data is written.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Printeservoirs False
+\end{verbatim}\end{display}
+
 \pfkey{string}{Solver.PrintLSMSink}{False}
 {
 This key is used to turn on printing of the

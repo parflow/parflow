@@ -311,6 +311,10 @@ class TableToProperties(ABC):
         self.column_index = {}
         self.props_in_row_header = True
         self.table_comments = []
+        self.empty_value_tokens = {
+            "-",
+            ""
+        }
         yaml_key_def = Path(__file__).parent / self.reference_file
         with open(yaml_key_def, 'r') as file:
             self.definition = yaml.safe_load(file)
@@ -348,7 +352,7 @@ class TableToProperties(ABC):
             registrations = []
             for alias, col_idx in self.column_index.items():
                 str_value = tokens[col_idx]
-                if str_value == '-':
+                if str_value in self.empty_value_tokens:
                     continue
 
                 key = self.alias_to_pfkey[alias]
@@ -416,7 +420,7 @@ class TableToProperties(ABC):
 
                 container = self.output[unit_name]
                 value_str = tokens[self.column_index[unit_name]]
-                if value_str == '-':
+                if value_str in self.empty_value_tokens:
                     continue
 
                 value = value_convert(value_str)
@@ -461,6 +465,8 @@ class TableToProperties(ABC):
                     self.name_registration[unit_name] = set()
 
         if self.props_in_row_header is None:
+            print("Raising invalid table format, first line tokens are:\n")
+            print(first_line_tokens)
             raise Exception('Invalid table format')
 
         return True
@@ -583,7 +589,7 @@ class TableToProperties(ABC):
 
         return self
 
-    def apply(self, run=None, name_registration=True):
+    def apply(self, run=None, name_registration=True, infer_key_names=False):
         """Method to apply the loaded properties to a given
            run object.
 
@@ -603,6 +609,14 @@ class TableToProperties(ABC):
         else:
             self.run = run
 
+        # new names are user specified names such as s1 s2 s3 for soil permeability
+        if infer_key_names and name_registration:
+            new_names = ""
+            for name in self.output:
+                if isinstance(self.output[name], dict):
+                    new_names = new_names + name + " "
+            self.key_root.Names = new_names
+
         valid_unit_names = []
         addon_keys = {}
         for name in self.output:
@@ -619,9 +633,9 @@ class TableToProperties(ABC):
         if name_registration:
             names_to_set = addon_keys
             for unit_name in valid_unit_names:
-                if unit_name in self.name_registration:
+                if unit_name in (registered_name for registered_name in self.name_registration):
                     for prop_name in self.name_registration[unit_name]:
-                        if prop_name not in names_to_set:
+                        if prop_name not in (name_to_set for name_to_set in names_to_set):
                             names_to_set[prop_name] = []
                         names_to_set[prop_name].append(unit_name)
             self.run.pfset(flat_map=names_to_set)
@@ -799,6 +813,32 @@ class SubsurfacePropertiesBuilder(TableToProperties):
     @property
     def db_prefix(self):
         return 'subsurface_'
+
+
+class ReservoirPropertiesBuilder(TableToProperties):
+
+    def __init__(self, run=None):
+        super().__init__(run)
+
+    @property
+    def reference_file(self):
+        return 'ref/reservoir_keys.yaml'
+
+    @property
+    def key_root(self):
+        return self.run.Reservoirs
+
+    @property
+    def unit_string(self):
+        return 'Reservoirs'
+
+    @property
+    def default_db(self):
+        return 'conus_1'
+
+    @property
+    def db_prefix(self):
+        return 'reservoirs_'
 
 
 # -----------------------------------------------------------------------------
@@ -1134,6 +1174,33 @@ class DomainBuilder:
         self.run.Solver.CLM.FieldCapacity = 0.98
         self.run.Solver.CLM.IrrigationType = 'none'
 
+        return self
+
+    def reservoir(self, name, Intake_X, Intake_Y,Has_Secondary_Intake_Cell,
+                  Secondary_Intake_X, Secondary_Intake_Y,Release_X, 
+                  Release_Y, Release_Rate, Max_Storage, Storage,
+                  Min_Release_Storage, Overland_Flow_Solver
+                  ):
+        """Setting keys necessary to define a simple reservoir
+        """
+
+        if not self.run.Reservoirs.Names:
+            self.run.Reservoirs.Names = []
+
+        self.run.Reservoirs.Names += [name]
+        reservoir = self.run.Reservoirs[name]
+        reservoir.Intake_X = Intake_X
+        reservoir.Intake_Y = Intake_Y
+        reservoir.Secondary_Intake_X = Secondary_Intake_X
+        reservoir.Secondary_Intake_Y = Secondary_Intake_Y
+        reservoir.Has_Secondary_Intake_Cell = Has_Secondary_Intake_Cell
+        reservoir.Overland_Flow_Solver = Overland_Flow_Solver
+        reservoir.Release_X = Release_X
+        reservoir.Release_Y = Release_Y
+        reservoir.Release_Rate = Release_Rate
+        reservoir.Max_Storage = Max_Storage
+        reservoir.Storage = Storage
+        reservoir.Min_Release_Storage = Min_Release_Storage
         return self
 
     def well(self, name, type, x, y, z_upper, z_lower,

@@ -1,0 +1,124 @@
+# reservoirs.yaml
+# Definitions of all reservoir items
+
+# -----------------------------------------------------------------------------
+# Reservoirs
+# -----------------------------------------------------------------------------
+
+Reservoirs:
+  __doc__: >
+    Here we define the reservoirs for the model.
+
+  # Reservoirs.Names not in grep
+  Names:
+    help: >
+      [Type: string] This key specifies the names for the reservoirs for which input data will be given.
+    default: ""
+    domains:
+      AnyString:
+    handlers:
+      ReservoirUpdater:
+        type: ChildrenHandler
+        class_name: ReservoirItem
+
+  .{reservoir_name}:
+    __class__: ReservoirItem
+    __rst__:
+      name: Reservoirs.{reservoir_name}
+    __doc__: >
+      Specifying properties for reservoirs
+    __simput__:
+      type: VariableTable
+      table_label: Reservoir
+
+    Release_X:
+      help: >
+        [Type: double] This key specifies the x location of where the reservoir releases water. This 
+        cell will always be placed on the domain surface.
+      domains:
+        DoubleValue:
+
+    Release_Y:
+      help: >
+        [Type: double] This key specifies the y location of where the reservoir releases water. This 
+        cell will always be placed on the domain surface.
+      domains:
+        DoubleValue:
+
+    Intake_X:
+      help: >
+        [Type: double] This key specifies the x location of where the reservoir intakes water
+      domains:
+        DoubleValue:
+
+    Intake_Y:
+
+      help: >
+        [Type: double] This key specifies the y location of where the reservoir intakes water.
+      domains:
+        DoubleValue:
+
+    Secondary_Intake_X:
+
+      help: >
+        [Type: double] This key specifies the x location of the optional secondary intake cell. This 
+        cell will always be placed on the domain surface.
+      default: -1.0
+      domains:
+        DoubleValue:
+
+    Secondary_Intake_Y:
+
+      help: >
+        [Type: double] This key specifies the y location of the optional secondary intake cell. This 
+        cell will always be placed on the domain surface.
+      default: -1.0
+      domains:
+        DoubleValue:
+
+    Has_Secondary_Intake_Cell:
+    # This value is set as an int because bools do not work with the table reader right now
+      help: >
+        [Type: bool] This key specifies if the reservoir has a secondary intake cell, 
+        with 0 evaluating to false and 1 evaluating to true. This cell will always be 
+        placed on the domain surface.
+      default: False
+      domains:
+        IntValue:
+
+    Min_Release_Storage:
+
+      help: >
+        [Type: double] This key specifies the storage amount below which the reservoir will stop releasing water
+      domains:
+        DoubleValue:
+
+    Max_Storage:
+
+      help: >
+        [Type: double] This key specifies a reservoir's maximum storage. If storage rises above this value, a 
+        reservoir will release extra water if necessary to get back down to this amount by the next timestep.
+      domains:
+        DoubleValue:
+
+    Storage:
+
+      help: >
+        [Type: double] This key specifies the amount of water stored in the reservoir as a volume. Has same length
+        units as the problem domain i.e. if domain is sized in meters this will be in m^3
+      domains:
+        DoubleValue:
+
+    Release_Rate:
+      help: >
+        [Type: double] This key specifies the rate in volume/time [L^3 T^-1] that the reservoir release water.
+        The amount of time over which this amount is released is independent of solver timestep size
+      domains:
+        DoubleValue:
+
+  Overland_Flow_Solver:
+    help: >
+      [Type: string] This key specifies which overland flow condition is used in the domain so that the slopes around
+      the reservoirs can be adjusted properly. Supported Options are OverlandFlow and OverlandKinematic.
+    domains:
+      AnyString:
