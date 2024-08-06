@@ -285,6 +285,44 @@
    fun:ompi_mpi_finalize
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:mca_btl_smcuda_sendi
+   fun:mca_bml_base_sendi
+   fun:mca_pml_ob1_send_inline
+   fun:mca_pml_ob1_isend
+   fun:PMPI_Isend
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:mca_btl_smcuda_sendi
+   fun:mca_bml_base_sendi
+   fun:mca_pml_ob1_send_inline
+   fun:mca_pml_ob1_send
+   fun:PMPI_Send
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:mca_btl_smcuda_sendi
+   fun:mca_bml_base_sendi
+   fun:mca_pml_ob1_send_inline
+   fun:mca_pml_ob1_send
+   fun:PMPI_Send
+   fun:hypre_DataExchangeList
+   fun:hypre_StructAssumedPartitionCreate
+   fun:hypre_BoxManAssemble
+   fun:hypre_StructGridAssemble
+   fun:HypreAssembleGrid
+   fun:PFMGInitInstanceXtra
+   fun:KinsolPCInitInstanceXtra
+}
 
 {
    <insert_a_suppression_name_here>
