@@ -23,6 +23,8 @@ BaseRun:
     - Wells
     - TopoSlopesX
     - TopoSlopesY
+    - ChannelWidthX
+    - ChannelWidthY
     - Mannings
     - ICPressure
     - InternalBC

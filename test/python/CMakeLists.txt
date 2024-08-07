@@ -17,6 +17,7 @@ set(TESTS
   bc_flux_file
   Dirichlet
   LW_surface_press
+  channelwidth
   overland_tiltedV_MGSemiTest
 )
 
