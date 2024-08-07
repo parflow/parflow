@@ -90,7 +90,6 @@ void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy){
     Subvector *wcy_values_sub;
     double *psdat, *wcy_values_dat;
 
-    // double dy = SubgridDY(subgrid);
     double *data;
 
     int ix, iy, iz;

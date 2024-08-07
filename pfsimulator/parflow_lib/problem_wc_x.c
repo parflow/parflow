@@ -89,8 +89,6 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy){
     Subvector *wcx_values_sub;
     double *psdat, *wcx_values_dat;
 
-    // double dx = SubgridDX(subgrid);
-
     double *data;
 
     int ix, iy, iz;
