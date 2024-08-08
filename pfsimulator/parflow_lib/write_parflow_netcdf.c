@@ -1,24 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  This file is part of Parflow. For details, see
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * Routines to write a Vector to a file in full or scattered form.
@@ -58,6 +64,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
   static int netCDFIDs[5]; /* Here we store file and dimension IDs */
+  BeginTiming(NetcdfTimingIndex);
   sprintf(key, "NetCDF.NodeLevelIO");
   switch_name = GetStringDefault(key, "False");
   if (strcmp(switch_name, default_val) != 0)
@@ -151,7 +158,6 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
       static int numStepsInFile = 0;
       int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
       static char file_name[255];
-      static int numOfDefVars = 0;
 
       varNCData *myVarNCData=NULL;
 
@@ -164,7 +170,6 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
         PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
                         nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
         numStepsInFile = 1;
-        numOfDefVars = 1;
       }
       else
       {
@@ -175,7 +180,6 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
           int myVarID = LookUpInventory(varName, &myVarNCData, netCDFIDs);
           PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
                           nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, netCDFIDs);
-          numOfDefVars++;
           numStepsInFile++;
         }
         else
@@ -268,6 +272,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
     }
     FreeVarNCData(myVarNCData);
   }
+  EndTiming(NetcdfTimingIndex);
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
 #endif

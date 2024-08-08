@@ -2,10 +2,13 @@
 #  This is a 2D crater problem w/ time varying input and topography
 #-----------------------------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import cp, mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file
 
-crater = Run("crater", __file__)
+run_name = "crater"
+crater = Run(run_name, __file__)
 
 # ---------------------------------------------------------
 # Copy testing data in test directory
@@ -468,8 +471,36 @@ crater.Solver.Linear.Preconditioner = 'MGSemi'
 crater.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 crater.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 100
 
+crater.Solver.PrintTop = True
+
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-crater.run(working_directory=dir_name)
+new_output_dir_name = dir_name
+correct_output_dir_name = get_absolute_path('../correct_output')
+crater.run(working_directory=new_output_dir_name)
+
+passed = True
+
+test_files = ["perm_x", "perm_y", "perm_z", "porosity", "top_patch", "top_zindex"]
+
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(11):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

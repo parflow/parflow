@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /****************************************************************************
  *
@@ -1055,7 +1055,6 @@ SetupRichards(PFModule * this_module)
       if (public_xtra->clm_forc_veg == 1)
       {
         /*Reading file LAI */ /*BH*/
-        /*sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile); */
         sprintf(filename, "%s/%s", public_xtra->clm_metpath,
                 "lai.dat");
 
@@ -1067,7 +1066,6 @@ SetupRichards(PFModule * this_module)
         }
         /*assume nc remains the same BH */
         // Read 1D met file to arrays of length nc
-        //(public_xtra -> lai1d) = ctalloc(double,nc*18);
         if ((metf1d = amps_SFopen(filename, "r")) == NULL)
         {
           amps_Printf("Error: can't open file %s \n", filename);
@@ -1087,7 +1085,6 @@ SetupRichards(PFModule * this_module)
         amps_SFclose(metf1d);
 
         /*Reading file SAI */ /*BH*/
-        /*sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile); */
         sprintf(filename, "%s/%s", public_xtra->clm_metpath,
                 "sai.dat");
 
@@ -1099,7 +1096,6 @@ SetupRichards(PFModule * this_module)
         }
         /*assume nc remains the same BH */
         // Read 1D met file to arrays of length nc
-        //(public_xtra -> sai1d) = ctalloc(double,nc*18);
         if ((metf1d = amps_SFopen(filename, "r")) == NULL)
         {
           amps_Printf("Error: can't open file %s \n", filename);
@@ -1131,7 +1127,6 @@ SetupRichards(PFModule * this_module)
         }
         /*assume nc remains the same BH */
         // Read 1D met file to arrays of length nc
-        //(public_xtra -> z0m1d) = ctalloc(double,nc*18);
         if ((metf1d = amps_SFopen(filename, "r")) == NULL)
         {
           amps_Printf("Error: can't open file %s \n", filename);
@@ -1151,7 +1146,6 @@ SetupRichards(PFModule * this_module)
         amps_SFclose(metf1d);
 
         /*Reading file displa */ /*BH*/
-        /*sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile); */
         sprintf(filename, "%s/%s", public_xtra->clm_metpath,
                 "displa.dat");
 
@@ -1163,7 +1157,6 @@ SetupRichards(PFModule * this_module)
         }
         /*assume nc remains the same BH */
         // Read 1D met file to arrays of length nc
-        //(public_xtra -> displa1d) = ctalloc(double,nc*18);
         if ((metf1d = amps_SFopen(filename, "r")) == NULL)
         {
           amps_Printf("Error: can't open file %s \n", filename);
@@ -2839,10 +2832,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int nx, ny, nz;
         int ip;
         double dx, dy, dz;
-        double vol, vol_max, flux_in, press_pred;
+        double vol, vol_max, flux_in, press_pred, flux_darcy;
 
-        Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub;
-        double *pp, *sp, *et, *po_dat, *dz_dat;
+        Subvector *p_sub, *s_sub, *et_sub, *po_sub, *dz_sub, *vz_sub, *vx_sub, *vy_sub;
+        double *pp, *sp, *et, *po_dat, *dz_dat, *vz, *vx, *vy;
 
         Subgrid *subgrid;
         Grid *grid = VectorGrid(evap_trans_sum);
@@ -2855,6 +2848,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           dz_sub = VectorSubvector(instance_xtra->dz_mult, is);
           s_sub = VectorSubvector(instance_xtra->saturation, is);
           po_sub = VectorSubvector(porosity, is);
+          vx_sub = VectorSubvector(instance_xtra->x_velocity, is);
+          vy_sub = VectorSubvector(instance_xtra->y_velocity, is);
+          vz_sub = VectorSubvector(instance_xtra->z_velocity, is);
 
           r = SubgridRX(subgrid);
 
@@ -2876,26 +2872,49 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           po_dat = SubvectorData(po_sub);
           sp = SubvectorData(s_sub);
 
+	  vx = SubvectorData(vx_sub);
+	  vy = SubvectorData(vy_sub);
+	  vz = SubvectorData(vz_sub);
+
+          
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
             ip = SubvectorEltIndex(p_sub, i, j, k);
-
+	    int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
+	    int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
+	    int vxi_im1 = SubvectorEltIndex(vx_sub, i , j, k);
+	    int vyi_jm1 = SubvectorEltIndex(vy_sub, i, j , k);
+	    int vzi_km1 = SubvectorEltIndex(vz_sub, i, j, k );
+	    
+	    int vxi_p1 = SubvectorEltIndex(vx_sub, i + 1, j, k+1);
+	    int vyi_p1 = SubvectorEltIndex(vy_sub, i, j + 1, k+1);
+	    int vxi_im1_p1 = SubvectorEltIndex(vx_sub, i , j, k+1);
+	    int vyi_jm1_p1 = SubvectorEltIndex(vy_sub, i, j , k+1);
+	    
             if (k == (nz - 1))
             {
               vol = dx*dy*dz*dz_dat[ip]*po_dat[ip]*sp[ip];
               flux_in = dx*dy*dz*dz_dat[ip]*et[ip]*dt;
               vol_max = dx*dy*dz*dz_dat[ip]*po_dat[ip];
-              press_pred = (flux_in-(vol_max - vol))/(dx*dy*po_dat[ip]);
-              if (flux_in > (vol_max - vol))
+              
+	      flux_darcy = vz[vzi_km1]*dx*dy*dt+(-vx[vxi]+vx[vxi_im1])*dy*dz*dz_dat[ip]*dt+(-vy[vyi]+vy[vyi_jm1])*dx*dz*dz_dat[ip]*dt;
+	      press_pred = ((flux_in+flux_darcy)-(vol_max - vol))/(dx*dy*po_dat[ip]);
+              if ((flux_in+flux_darcy) > (vol_max - vol))
               {
-                if (pp[ip] < 0.0){
-
-                  press_pred = public_xtra->surface_predictor_pressure;
-                  if (public_xtra->surface_predictor_print == 1) {
-                    amps_Printf(" Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Pressure: %3.6e I: %d J: %d  \n",vol, vol_max,flux_in,pp[ip],i,j);
-                  }
+                if (pp[ip] < 0.0)
+		{
+                  if (public_xtra->surface_predictor_pressure>0.0)
+		  {
+		    press_pred = public_xtra->surface_predictor_pressure;
+		  }
+		  
+		  if (public_xtra->surface_predictor_print == 1)
+		  {
+		    amps_Printf("SP: Cell vol: %3.6e vol_max: %3.6e flux_in: %3.6e  Flux Darcy: %3.6e Cell Pressure: %3.6e Pred Pressure: %3.6e I: %d J: %d  Time: %12.4e  \n",vol, vol_max,flux_in, flux_darcy,pp[ip],press_pred,i,j,t);
+		    amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e vz_l: %3.6e  I: %d J: %d k: %d \n",vx[vxi], vx[vxi_im1], vy[vyi], vy[vyi_jm1],vz[vzi_km1],i,j,k);
+		    amps_Printf("SP: vx_r: %3.6e vx_l: %3.6e vy_r: %3.6e vy_l: %3.6e    k+1 \n",vx[vxi_p1], vx[vxi_im1_p1], vy[vyi_p1], vy[vyi_jm1_p1]);
+		  }
                   pp[ip] = press_pred;
-
                 }
               }
             }
@@ -2987,22 +3006,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
         {
           ip = SubvectorEltIndex(p_sub_sp, i, j, k);
-          // printf(" %d %d %d %d  \n",i,j,k,ip);
-          // printf(" pp[ip] %10.3f \n",pp[ip]);
-          // printf(" NZ: %d \n",nz);
           if (k == (nz - 1))
           {
-            //   printf(" %d %d %d %d  \n",i,j,k,ip);
-            //   printf(" pp[ip] %10.3f \n",pp[ip]);
-
             if (pp_sp[ip] > 0.0)
             {
               printf(" pressure-> 0 %d %d %d %10.3f \n", i, j, k,
                      pp_sp[ip]); pp_sp[ip] = 0.0;
             }
           }
-        }
-                     );
+        });
       }
     }
 
@@ -3046,14 +3058,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
         {
           ip = SubvectorEltIndex(p_sub_sp, i, j, k);
-          // printf(" %d %d %d %d  \n",i,j,k,ip);
-          // printf(" pp[ip] %10.3f \n",pp[ip]);
-          // printf(" NZ: %d \n",nz);
           if (k == (nz - 1))
           {
-            //   printf(" %d %d %d %d  \n",i,j,k,ip);
-            //   printf(" pp[ip] %10.3f \n",pp[ip]);
-
             if (pp_sp[ip] > public_xtra->threshold_pressure)
             {
               amps_Printf(" time: %10.3f  pressure reset: %d %d %d %10.3f \n",t, i, j, k,
@@ -4562,8 +4568,8 @@ SolverRichardsInitInstanceXtra()
   nonlin_sz = PFModuleSizeOfTempData(instance_xtra->nonlin_solver);
 
   /* Compute size for problem parameters */
-  parameter_sz = PFModuleSizeOfTempData(instance_xtra->problem_saturation)
-                 + PFModuleSizeOfTempData(instance_xtra->phase_rel_perm);
+  parameter_sz = PFModuleSizeOfTempData(instance_xtra->problem_saturation);
+  parameter_sz  += PFModuleSizeOfTempData(instance_xtra->phase_rel_perm);
 
   /* set temp_data size to max of velocity_sz, concen_sz, and ic_sz. */
   /* The temp vector space for the nonlinear solver is added in because */
@@ -4616,9 +4622,10 @@ SolverRichardsInitInstanceXtra()
                             (instance_xtra->advect_concen),
                             (NULL, NULL, temp_data_placeholder));
 
-  temp_data_placeholder +=
-    pfmax(PFModuleSizeOfTempData(instance_xtra->retardation),
-          PFModuleSizeOfTempData(instance_xtra->advect_concen));
+  int size_retardation = PFModuleSizeOfTempData(instance_xtra->retardation);
+  int size_advect = PFModuleSizeOfTempData(instance_xtra->advect_concen);
+  temp_data_placeholder += pfmax(size_retardation, size_advect);
+ 
   /* set temporary vector data used for advection */
 
   temp_data += temp_data_size;
@@ -4789,22 +4796,6 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.CLM.CLMFileDir", name);
   public_xtra->clm_file_dir = GetStringDefault(key, "");
-
-  //CPS moved outside CLM def
-  /* @RMM added switch for terrain-following grid */
-  /* RMM set terrain grid (default=False) */
-  //   sprintf(key, "%s.TerrainFollowingGrid", name);
-  //   switch_name = GetStringDefault(key, "False");
-  //   switch_value = NA_NameToIndex(switch_na, switch_name);
-  //   if(switch_value < 0)
-  //   {
-  //       InputError("Error: invalid value <%s> for key <%s>\n",
-  //                  switch_name, key );
-  //   }
-  //   public_xtra -> terrain_following_grid = switch_value;
-
-  //   if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");}
-  //CPS
 
   // NBE: Keys for the single file CLM output
   sprintf(key, "%s.CLM.SingleFile", name);

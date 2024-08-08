@@ -3,6 +3,25 @@
 #  similar to that in Kollet and Maxwell (2006) AWR
 #---------------------------------------------------------
 
+
+#---------------------------------------------------------
+# Import ParFlow
+#---------------------------------------------------------
+
+import sys
+import os
+import numpy as np
+from parflow import Run
+from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.io import read_pfb, write_pfb, ParflowBinaryReader
+from parflow.tools.top import compute_top
+from parflow.tools import hydrology
+from parflow.tools.compare import pf_test_equal
+
+run_name = "water_balance"
+
+wbx = Run(run_name, __file__)
+
 #---------------------------------------------------------
 # Some controls for the test
 #---------------------------------------------------------
@@ -23,14 +42,6 @@ use_slopes = -1
 rain_flux = -0.05
 rec_flux = 0.0
 
-#---------------------------------------------------------
-# Import ParFlow
-#---------------------------------------------------------
-
-from parflow import Run
-from parflow.tools.fs import mkdir, get_absolute_path
-
-wbx = Run("water_balance_x", __file__)
 
 #---------------------------------------------------------
 
@@ -427,17 +438,14 @@ wbx.Solver.Linear.Preconditioner.PFMG.Smoother = 'RBGaussSeidelNonSymmetric'
 wbx.Solver.Linear.Preconditioner.PFMG.NumPreRelax = 1
 wbx.Solver.Linear.Preconditioner.PFMG.NumPostRelax = 1
 
-wbx.Solver.WriteSiloSubsurfData = True
-wbx.Solver.WriteSiloPressure = True
-wbx.Solver.WriteSiloSaturation = True
-wbx.Solver.WriteSiloConcentration = True
-wbx.Solver.WriteSiloSlopes = True
-wbx.Solver.WriteSiloMask = True
-wbx.Solver.WriteSiloEvapTrans = True
-wbx.Solver.WriteSiloEvapTransSum = True
-wbx.Solver.WriteSiloOverlandSum = True
-wbx.Solver.WriteSiloMannings = True
-wbx.Solver.WriteSiloSpecificStorage = True
+wbx.Solver.PrintSubsurfData = True
+wbx.Solver.PrintConcentration = True
+wbx.Solver.PrintSlopes = True
+wbx.Solver.PrintEvapTrans = True
+wbx.Solver.PrintEvapTransSum = True
+wbx.Solver.PrintOverlandSum = True
+wbx.Solver.PrintMannings = True
+wbx.Solver.PrintSpecificStorage = True
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
@@ -456,6 +464,137 @@ wbx.Geom.domain.ICPressure.RefPatch = 'z_upper'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/wbx_hj')
-mkdir(dir_name)
-wbx.run(working_directory=dir_name)
+
+new_output_dir_name = get_absolute_path('test_output/water_balance_x')
+correct_output_dir_name = get_absolute_path('../correct_output')
+mkdir(new_output_dir_name)
+wbx.run(working_directory=new_output_dir_name)
+
+passed = True
+verbose = True
+
+bc_dict = { 0: wbx.Patch.z_upper.BCPressure.r0.Value,
+            1: wbx.Patch.z_upper.BCPressure.r1.Value,
+            2: wbx.Patch.z_upper.BCPressure.r2.Value,
+            3: wbx.Patch.z_upper.BCPressure.r3.Value,
+            4: wbx.Patch.z_upper.BCPressure.r4.Value,
+            5: wbx.Patch.z_upper.BCPressure.r5.Value,
+            6: wbx.Patch.z_upper.BCPressure.r6.Value
+          }
+
+slope_x = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.slope_x.pfb"))
+slope_y = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.slope_y.pfb"))
+mannings = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.mannings.pfb"))
+specific_storage = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.specific_storage.pfb"))
+porosity = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.porosity.pfb"))
+mask = read_pfb(os.path.join(new_output_dir_name, f"{run_name}.out.mask.pfb"))
+top = compute_top(mask)
+
+surface_area_of_domain = (wbx.ComputationalGrid.DX *
+                          wbx.ComputationalGrid.DY *
+                          wbx.ComputationalGrid.NX *
+                          wbx.ComputationalGrid.NY
+                         )
+
+prev_total_water_balance = 0.0
+
+for i in range(20):
+    if verbose:
+        print("======================================================")
+        print(f"Timestep {i}")
+        print("======================================================")
+
+    total_water_in_domain = 0.0
+
+    filename = os.path.join(new_output_dir_name, f"{run_name}.out.press.{i:05d}.pfb")
+    pressure = read_pfb(filename)
+    header = ParflowBinaryReader(filename).read_header()
+    dx, dy, dz = header['dx'], header['dy'], header['dz']
+    surface_storage = hydrology.calculate_surface_storage(pressure, dx, dy, mask)
+    write_pfb(f"surface_storage.{i}.pfb", surface_storage)
+    total_surface_storage = np.sum(surface_storage)
+    if verbose:
+        print(f"Surface storage\t\t\t\t\t : {total_surface_storage:.16e}")
+
+    total_water_in_domain += total_surface_storage
+
+    filename = f"{run_name}.out.satur.{i:05d}.pfb"
+    saturation = read_pfb(os.path.join(new_output_dir_name, filename))
+    water_table_depth = hydrology.calculate_water_table_depth(saturation, top, dz)
+    write_pfb(f"water_table_depth.{i}.pfb", water_table_depth)
+    nz = header['nz']
+    subsurface_storage = hydrology.calculate_subsurface_storage(porosity, pressure, saturation, specific_storage, dx, dy, np.array([dz] * nz), mask)
+    write_pfb(f"subsurface_storage.{i}.pfb", subsurface_storage)
+    total_subsurface_storage = np.sum(subsurface_storage)
+    if verbose:
+        print(f"Subsurface storage\t\t\t\t : {total_subsurface_storage:.16e}")
+
+    total_water_in_domain += total_subsurface_storage
+
+    if verbose:
+        print(f"Total water in domain\t\t\t\t : {total_water_in_domain:.16e}")
+        print("")
+
+    total_surface_runoff = 0.0
+    if i > 0:
+        surface_runoff = hydrology.calculate_overland_flow(pressure, slope_x[0], slope_y[0], mannings[0],
+                                                           dx, dy, flow_method="OverlandFlow", mask=mask)
+        total_surface_runoff = surface_runoff * wbx.TimingInfo.DumpInterval
+        if verbose:
+            print(f"Surface runoff from pftools\t\t\t : {total_surface_runoff:.16e}")
+
+        filename = f"{run_name}.out.overlandsum.{i:05d}.pfb"
+        surface_runoff2 = read_pfb(os.path.join(new_output_dir_name, filename))
+        total_surface_runoff2 = np.sum(surface_runoff2)
+        if verbose:
+            print(f"Surface runoff from pfsimulator\t\t\t : {total_surface_runoff2:.16e}")
+
+        if not pf_test_equal(total_surface_runoff, total_surface_runoff2, "Surface runoff comparison"):
+            passed = False
+
+    if i < 1:
+        bc_index = 0
+    elif 1 <= i < 7:
+        bc_index = i - 1
+    else:
+        bc_index = 6
+
+    bc_flux = bc_dict[bc_index]
+    boundary_flux = bc_flux * surface_area_of_domain * wbx.TimingInfo.DumpInterval
+
+    if verbose:
+        print(f"BC flux\t\t\t\t\t\t : {boundary_flux:.16e}")
+
+    expected_difference = boundary_flux + total_surface_runoff
+    if verbose:
+        print(f"Total Flux\t\t\t\t\t : {expected_difference:.16e}")
+
+    if i > 0:
+        if verbose:
+            print("")
+            print(f"Diff from prev total\t\t\t\t : {total_water_in_domain - prev_total_water_balance:.16e}")
+
+        if expected_difference != 0.0:
+            percent_diff = (abs((prev_total_water_balance - total_water_in_domain) - expected_difference) /
+                            abs(expected_difference) * 100)
+            if verbose:
+                print(f"Percent diff from expected difference\t\t : {percent_diff:.12e}")
+
+        expected_water_balance = prev_total_water_balance - expected_difference
+        percent_diff = abs((total_water_in_domain - expected_water_balance) / expected_water_balance * 100)
+        if verbose:
+            print(f"Percent diff from expected total water sum\t : {percent_diff:.12e}")
+
+        if percent_diff > 0.005:
+            print("Error: Water balance is not correct")
+            passed = False
+
+    prev_total_water_balance = total_water_in_domain
+
+if verbose:
+    print("\n\n")
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")

@@ -199,7 +199,6 @@ endif(${PARFLOW_HAVE_KOKKOS})
 
   if ( ${PARFLOW_HAVE_CUDA} )
     target_link_libraries(pfsimulator nvToolsExt)
-    target_include_directories(pfsimulator PUBLIC "../third_party/cub")
     target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
   endif ( ${PARFLOW_HAVE_CUDA} )
 

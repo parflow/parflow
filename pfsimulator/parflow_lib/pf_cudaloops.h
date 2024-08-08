@@ -33,7 +33,7 @@
 extern "C++"{
 
 #include <tuple>
-#include "cub.cuh"
+#include <cub/cub.cuh>
 
 /*--------------------------------------------------------------------------
  * CUDA blocksize definitions

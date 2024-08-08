@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow\@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -38,7 +38,7 @@ my $cpytxt = "";
 $cpytxt = <<END;
 C BHEADER**********************************************************************
 C 
-C   Copyright (c) 1995-2009, Lawrence Livermore National Security,
+C   Copyright (c) 1995-2024, Lawrence Livermore National Security,
 C   LLC. Produced at the Lawrence Livermore National Laboratory. Written
 C   by the Parflow Team (see the CONTRIBUTORS file)
 C   <parflow\@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -133,7 +133,7 @@ for my $file (@filesToProcess) {
     # Do substitutions
     #
 #    $str =~ s!/*BHEADER(.*)EHEADER*/!!sgm;
-    $str =~ s!cBHEADER(.*)EHEADER\**!$cpytxt!sgm;
+    $str =~ s!cBHEADER(.*?)EHEADER\**!$cpytxt!sgm;
 
     #
     # Write new file

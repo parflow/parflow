@@ -3,19 +3,22 @@
 # with simple flow domains, like a wall or a fault.
 #------------------------------------------------------------------
 
+import sys
 from parflow import Run, write_pfb
 from parflow.tools.fs import get_absolute_path, mkdir, chdir
+from parflow.tools.compare import pf_test_file
 import numpy as np
 
-rich_fbx = Run("richards_FBx", __file__)
+run_name = "richards_FBx"
+rich_fbx = Run(run_name, __file__)
 
 #---------------------------------------------------------
 # Creating and navigating to output directory
 #---------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/rich_fbx')
-mkdir(dir_name)
-chdir(dir_name)
+correct_output_dir_name = get_absolute_path('../correct_output')
+new_output_dir_name = get_absolute_path('test_output/richards_fbx')
+mkdir(new_output_dir_name)
 
 #------------------------------------------------------------------
 
@@ -181,8 +184,8 @@ FBx_data = np.full((20, 20, 20), 1.0)
 # from cell 10 (index 9) to cell 11
 # reduction of 1E-3
 FBx_data[:, :, 9] = 0.001
-write_pfb(get_absolute_path('Flow_Barrier_X.pfb'), FBx_data)
-rich_fbx.dist('Flow_Barrier_X.pfb')
+write_pfb(get_absolute_path(new_output_dir_name + '/Flow_Barrier_X.pfb'), FBx_data)
+rich_fbx.dist(new_output_dir_name + '/Flow_Barrier_X.pfb')
 
 #-----------------------------------------------------------------------------
 # Wells
@@ -304,4 +307,22 @@ rich_fbx.Solver.Linear.Preconditioner = 'PFMG'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-rich_fbx.run()
+rich_fbx.run(working_directory=new_output_dir_name)
+passed = True
+for i in range(11):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/{run_name}.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                        f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/{run_name}.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename,
+                        f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+        
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
+                

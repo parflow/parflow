@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*
  * SGS TODO this needs some work in the overland flow current
@@ -61,7 +61,8 @@ typedef struct {
   enum JacobianType type;
   double SpinupDampP1; // NBE
   double SpinupDampP2; // NBE
-  int tfgupwind;  // @RMM
+  int tfgupwind;  // RMM
+  int using_MGSemi;  // RMM
 } PublicXtra;
 
 typedef struct {
@@ -329,6 +330,9 @@ void    RichardsJacobianEval(
           case OverlandDiffusive:
           {
             public_xtra->type = overland_flow;
+            /*If we have MGSemi set as the preconditioner key
+            we still set the type to overland_flow 
+            but later use the simple/symmetric preconditioner (RMM) */
           }
           break;
         }
@@ -616,7 +620,7 @@ void    RichardsJacobianEval(
       double prod_up_der = rpdp[ip + sz_v] * dp[ip + sz_v]
                     + rpp[ip + sz_v] * ddp[ip + sz_v];
 
-      //@RMM  tfgupwind == 0 (default) should give original behavior
+      //RMM  tfgupwind == 0 (default) should give original behavior
       // tfgupwind 1 should still use sine but upwind
       // tfgupwdin 2 just upwind
 
@@ -670,23 +674,23 @@ void    RichardsJacobianEval(
 
 
       double sym_west_temp = (-x_coeff
-                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM TFG contributions, sym
+                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //RMM TFG contributions, sym
 
 
       double west_temp = (-x_coeff * diff
                    * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g_c
                   + sym_west_temp;
 
-      west_temp += (x_coeff * dx * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g; //@RMM TFG contributions, non sym
+      west_temp += (x_coeff * dx * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g; //RMM TFG contributions, non sym
 
       double sym_east_temp = (-x_coeff
-                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM added sym TFG contributions
+                       * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //RMM added sym TFG contributions
 
       double east_temp = (x_coeff * diff
                    * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g_c
                   + sym_east_temp;
 
-      east_temp += -(x_coeff * dx * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g; //@RMM  TFG contributions non sym
+      east_temp += -(x_coeff * dx * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g; //RMM  TFG contributions non sym
 
       /* diff >= 0 implies flow goes south to north */
       diff = pp[ip] - pp[ip + sy_v];
@@ -699,24 +703,24 @@ void    RichardsJacobianEval(
                 / viscosity;
 
       double sym_south_temp = -y_coeff
-                       * RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //@RMM TFG contributions, SYMM
+                       * RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //RMM TFG contributions, SYMM
 
       double south_temp = -y_coeff * diff
                    * RPMean(updir, 0.0, prod_der, 0.0) * y_dir_g_c
                    + sym_south_temp;
 
-      south_temp += (y_coeff * dy * RPMean(updir, 0.0, prod_der, 0.0)) * y_dir_g; //@RMM TFG contributions, non sym
+      south_temp += (y_coeff * dy * RPMean(updir, 0.0, prod_der, 0.0)) * y_dir_g; //RMM TFG contributions, non sym
 
 
       double sym_north_temp = y_coeff
-                       * -RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //@RMM  TFG contributions non SYMM
+                       * -RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //RMM  TFG contributions non SYMM
 
       double north_temp = y_coeff * diff
                    * RPMean(updir, 0.0, 0.0,
                             prod_no_der) * y_dir_g_c
                    + sym_north_temp;
 
-      north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //@RMM  TFG contributions non sym
+      north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //RMM  TFG contributions non sym
 
       double sep = (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]));
       /* diff >= 0 implies flow goes lower to upper */
@@ -820,9 +824,9 @@ void    RichardsJacobianEval(
 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
-      /* @RMM added to provide access to zmult */
+      /* RMM added to provide access to zmult */
       z_mult_sub = VectorSubvector(z_mult, is);
-      /* @RMM added to provide variable dz */
+      /* RMM added to provide variable dz */
       z_mult_dat = SubvectorData(z_mult_sub);
 
       cp = SubmatrixStencilData(J_sub, 0);
@@ -991,9 +995,9 @@ void    RichardsJacobianEval(
     dy = SubgridDY(subgrid);
     dz = SubgridDZ(subgrid);
 
-    /* @RMM added to provide access to zmult */
+    /* RMM added to provide access to zmult */
     z_mult_sub = VectorSubvector(z_mult, is);
-    /* @RMM added to provide variable dz */
+    /* RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
     double vol = dx * dy * dz;
@@ -1052,7 +1056,7 @@ void    RichardsJacobianEval(
       ForPatchCellsPerFace(DirichletBC,
                            BeforeAllCells(
                            {
-                             /* @MCB 04/14/2020:
+                             /* MCB 04/14/2020:
                                 Previously two module invokes were made every iteration
                                 of the loop.  However, these calls were only retrieving
                                 a scalar and (potentially) multipling it against the BC
@@ -1231,7 +1235,7 @@ void    RichardsJacobianEval(
                                }
                              }
 
-                             /* @MCB: This used to be after the loop.
+                             /* MCB: This used to be after the loop.
                                 Either we would enter another BC loop, but only work on the front face
                                 Or we'd make a module call
                                 Second BC loops have been fused here, on the front face calculation.
@@ -1248,10 +1252,10 @@ void    RichardsJacobianEval(
                                {
                                  double vol = dx * dy * dz;
                                  int ip = SubvectorEltIndex(p_sub, i, j, k);
-                                 if ((pp[ip]) > 0.0)
-                                 {
-                                   cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                                 }
+                                  if ((pp[ip]) > 0.0)
+                                  {
+                                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                                   }       
                                }
                                break;
 
@@ -1265,7 +1269,6 @@ void    RichardsJacobianEval(
                                    if ((pp[ip]) >= 0.0)
                                    {
                                      cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
-//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
                                    }
                                    else
                                    {
@@ -1282,38 +1285,38 @@ void    RichardsJacobianEval(
                              }),
                            AfterAllCells(
                            {
-                             switch(public_xtra->type)
-                             {
-                               case overland_flow:
-                                 if (overlandspinup != 1)
-                                 {
-                                   /* Get overland flow contributions for using kinematic or diffusive - LEC */
-                                   if (diffusive == 0)
-                                   {
+                               switch(public_xtra->type)
+                               {
+                                 case overland_flow:
+                                  if (overlandspinup != 1)
+                                  {
+                                    /* Get overland flow contributions for using kinematic or diffusive - LEC */
+                                    if (diffusive == 0)
+                                    {
                                      PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
                                                         (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                          ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-                                   }
-                                   else
-                                   {
-                                     /* Test running Diffuisve calc FCN */
-                                     //double *dummy1, *dummy2, *dummy3, *dummy4;
-                                     //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                     //                                             ke_der, kw_der, kn_der, ks_der,
-                                     //       dummy1, dummy2, dummy3, dummy4,
-                                     //                                                    NULL, NULL, CALCFCN));
+                                    }
+                                    else
+                                    {
+                                      /* Test running Diffuisve calc FCN */
+                                      //double *dummy1, *dummy2, *dummy3, *dummy4;
+                                      //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                      //                                             ke_der, kw_der, kn_der, ks_der,
+                                      //       dummy1, dummy2, dummy3, dummy4,
+                                      //                                                    NULL, NULL, CALCFCN));
 
-                                     PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                                                        (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                                                         ke_der, kw_der, kn_der, ks_der,
-                                                         kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                                   }
-                                 }
-								 break;
+                                      PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                                                         (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                                                          ke_der, kw_der, kn_der, ks_der,
+                                                          kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                                  }
+                               }
+							 	  break;
 
-							 default:
+							   default:
                                  break;
-                             }
+                                }
                            })
         ); /* End OverlandBC */
 
@@ -1334,8 +1337,7 @@ void    RichardsJacobianEval(
 
                              if ((pp[ip]) >= 0.0)
                              {
-                               cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //@RMM
-//                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
+                               cp[im] += (vol / dz) * dt * (1.0 + 0.0);                       //RMM
                              }
                              else
                              {
@@ -1426,7 +1428,7 @@ void    RichardsJacobianEval(
 
 
 
-  if (public_xtra->type == overland_flow)
+  if (public_xtra->type == overland_flow || public_xtra->using_MGSemi==1)
   {
     // SGS always have to do communication here since
     // each processor may/may not be doing overland flow.
@@ -1463,8 +1465,8 @@ void    RichardsJacobianEval(
     FinalizeVectorUpdate(vector_update_handle);
   }
 
-  /* Build submatrix JC if overland flow case */
-  if (ovlnd_flag[0] && public_xtra->type == overland_flow)
+  /* Build submatrix JC if overland flow case and *not* MGSemi*/
+  if (ovlnd_flag[0] && public_xtra->type == overland_flow && public_xtra->using_MGSemi!=1)
   {
     /* begin loop to build JC */
     ForSubgridI(is, GridSubgrids(grid))
@@ -1835,7 +1837,235 @@ void    RichardsJacobianEval(
     }             /* End subgrid loop */
   }
 
+/* MGSemi Jacobian construction; this should (will) only be active if we have
+  one of the overland flow cases (KWE, DWE, Overland) and MGSemi chosen as preconditioner.  
+  This is set by the overland_flow variable.  This logic is similar
+  to the case statements in OverlandKinematic above
+  for PFMG/SMG/PFMGOctree(case overland_flow) which are split into the surface and 
+  subsurface parts (RMM)*/
 
+/* The MGSemi center part this is  only be active if we have
+ and MGSemi chosen as preconditioner.  This logic is similar
+  to, and was patterned after, the case statements in OverlandFlow above
+  where the FD Jacobian (case no_nonlinear), MGSemi (case simple) and PFMG 
+  (case overland_flow) are enumerated explicitly (RMM)*/
+
+  if (public_xtra->using_MGSemi == 1)
+  {
+    /* begin loop to build J for MGSemi */
+    ForSubgridI(is, GridSubgrids(grid))
+    {
+      subgrid = GridSubgrid(grid, is);
+
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+
+      double vol = dx * dy * dz;
+
+      ffx = dy * dz;
+      ffy = dx * dz;
+      ffz = dx * dy;
+
+      p_sub = VectorSubvector(pressure, is);
+
+      J_sub = MatrixSubmatrix(J, is);
+
+      kw_sub = VectorSubvector(KW, is);
+      ke_sub = VectorSubvector(KE, is);
+      kn_sub = VectorSubvector(KN, is);
+      ks_sub = VectorSubvector(KS, is);
+      kwns_sub = VectorSubvector(KWns, is);
+      kens_sub = VectorSubvector(KEns, is);
+      knns_sub = VectorSubvector(KNns, is);
+      ksns_sub = VectorSubvector(KSns, is);
+
+      top_sub = VectorSubvector(top, is);
+      sx_sub = VectorSubvector(slope_x, is);
+
+      sy_v = SubvectorNX(sx_sub);
+      nx_m = SubmatrixNX(J_sub);
+      ny_m = SubmatrixNY(J_sub);
+      sy_m = nx_m;
+      sz_m = nx_m * ny_m;
+
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+
+      pp = SubvectorData(p_sub);
+      /* for Bmat */
+      cp = SubmatrixStencilData(J_sub, 0);
+      wp = SubmatrixStencilData(J_sub, 1);
+      ep = SubmatrixStencilData(J_sub, 2);
+      sop = SubmatrixStencilData(J_sub, 3);
+      np = SubmatrixStencilData(J_sub, 4);
+      lp = SubmatrixStencilData(J_sub, 5);
+      up = SubmatrixStencilData(J_sub, 6);
+
+      kw_der = SubvectorData(kw_sub);
+      ke_der = SubvectorData(ke_sub);
+      kn_der = SubvectorData(kn_sub);
+      ks_der = SubvectorData(ks_sub);
+      kwns_der = SubvectorData(kwns_sub);
+      kens_der = SubvectorData(kens_sub);
+      knns_der = SubvectorData(knns_sub);
+      ksns_der = SubvectorData(ksns_sub);
+
+      top_dat = SubvectorData(top_sub);
+
+      ForBCStructNumPatches(ipatch, bc_struct)
+      {
+        ForPatchCellsPerFace(OverlandKinematicBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io1, ip, im;),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
+                             {
+                               /* Loop over boundary patches to build J matrix. */
+                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+
+                               /* Update J */
+                               ip = SubvectorEltIndex(p_sub, i, j, k);
+                               im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                               /* Now add overland contributions to J similar to JC above */
+                               if ((pp[ip]) > 0.0)
+                               {
+                                 /*diagonal term */
+                                 cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                               }
+
+                               /*west term */
+                               wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+                               /*East term */
+                               ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+                               /*south term */
+                               sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+                               /*north term */
+                               np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+                             }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+          ); /* End OverlandKinematicBC */
+
+        ForPatchCellsPerFace(OverlandDiffusiveBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io1, ip, im;),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
+                             {
+
+                               /* Loop over boundary patches to build J matrix.
+                                */
+                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                               ip = SubvectorEltIndex(p_sub, i, j, k);
+                               im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                               /* Now add overland contributions */
+                               if ((pp[ip]) > 0.0)
+                               {
+                                 /*diagonal term */
+                                 cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                             + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                               }
+                               /*west term */
+                               wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
+
+                               /*East term */
+                               ep[im] += (vol / ffy) * dt * (kens_der[io1]);
+
+                               /*south term */
+                               sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
+
+                               /*north term */
+                               np[im] += (vol / ffx) * dt * (knns_der[io1]);
+                             }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+          ); /* End OverlandDiffusiveBC */
+
+          ForPatchCellsPerFace(OverlandBC,
+                             BeforeAllCells(DoNothing),
+                             LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                             Locals(int io1, ip, im;),
+                             CellSetup(DoNothing),
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
+                             {
+                               /* Loop over boundary patches to build J matrix.
+                                */
+                               io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                               ip = SubvectorEltIndex(p_sub, i, j, k);
+                               im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                               /* Now add overland contributions to the jacobian */
+                               if ((pp[ip]) > 0.0)
+                               {
+                                 /*diagonal term */
+                                 /* original preconditioner from KM2006 here for historical reasons; performance is much slower than newer formulation below */
+                                 //cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);  
+                                  cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                               }
+                               else
+                               {
+                                 // Laura's version; old diffusive wave formulation which is now replaced by DWE
+                                 cp[im] += 0.0 + dt * (vol / dz) * (public_xtra->SpinupDampP1 * exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //NBE
+                               }
+
+                               if (diffusive == 0)
+                               {
+                                 /*west term */
+                                  wp[im] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+                                //  /*East term */
+                                  ep[im] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+                                //  /*south term */
+                                  sop[im] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+                                //  /*north term */
+                                  np[im] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+                               }
+                               else
+                               {
+                                 /*west term */
+                                 wp[im] -= (vol / ffy) * dt * (kwns_der[io1]);
+
+                                 /*East term */
+                                 ep[im] += (vol / ffy) * dt * (kens_der[io1]);
+
+                                 /*south term */
+                                 sop[im] -= (vol / ffx) * dt * (ksns_der[io1]);
+
+                                 /*north term */
+                                 np[im] += (vol / ffx) * dt * (knns_der[io1]);
+                               }
+                             }),
+                             CellFinalize(DoNothing),
+                             AfterAllCells(DoNothing)
+          ); /* End OverlandBC */
+      } /* End ipatch loop */
+    }             /* End subgrid loop */
+  }
 
   /* Set pressures outside domain to zero.
    * Recall: equation to solve is f = 0, so components of f outside
@@ -2104,6 +2334,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   int switch_value;
   NameArray switch_na;
   NameArray upwind_switch_na;
+  NameArray precond_switch_na;
 
 
   (void)name;
@@ -2116,7 +2347,23 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
 
-  ///* parameters for upwinding formulation for TFG */
+/* get preconditioner to check for MGSemi to use custom overland flow formulation*/
+  precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
+  sprintf(key, "Solver.Linear.Preconditioner");
+  switch_name = GetStringDefault(key, "MGSemi");
+  switch_value = NA_NameToIndexExitOnError(precond_switch_na, switch_name, key);
+  if (switch_value == 1)
+  {
+    /* (RMM) Include a variable track if MGSemi=True *and* Jacobian=True */
+   public_xtra->using_MGSemi = 1;  
+  }
+  else 
+  {
+   public_xtra->using_MGSemi = 0;
+  }
+ NA_FreeNameArray(precond_switch_na);
+
+  /* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
   sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
   switch_name = GetStringDefault(key, "Original");
@@ -2157,6 +2404,8 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
     case 0:
     {
       public_xtra->type = no_nonlinear_jacobian;
+      /*(RMM) set back to zero so that cases like MGSemi with FD jacobian (FALSE) are not affected*/
+      public_xtra->using_MGSemi = 0;  
       break;
     }
 

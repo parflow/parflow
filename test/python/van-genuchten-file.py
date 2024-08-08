@@ -4,27 +4,30 @@
 #  3 nonlinear iterations.
 #---------------------------------------------------------
 
+import sys
 from parflow import Run
 from parflow.tools.fs import cp, mkdir, get_absolute_path, chdir
+from parflow.tools.compare import pf_test_file
 
-vgf = Run("van-genuchten-file", __file__)
+run_name = "default_richards"
+vgf = Run(run_name, __file__)
 
 #---------------------------------------------------------
 # Creating and navigating to output directory
 #---------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/vgf')
-mkdir(dir_name)
-chdir(dir_name)
+new_output_dir_name = get_absolute_path('test_output/van-genuchten-file')
+mkdir(new_output_dir_name)
+correct_output_dir_name = get_absolute_path('../correct_output')
 
 #---------------------------------------------------------
 # Copying parameter files
 #---------------------------------------------------------
 
-cp('$PF_SRC/test/input/van-genuchten-alpha.pfb')
-cp('$PF_SRC/test/input/van-genuchten-n.pfb')
-cp('$PF_SRC/test/input/van-genuchten-sr.pfb')
-cp('$PF_SRC/test/input/van-genuchten-ssat.pfb')
+cp('$PF_SRC/test/input/van-genuchten-alpha.pfb', new_output_dir_name)
+cp('$PF_SRC/test/input/van-genuchten-n.pfb', new_output_dir_name)
+cp('$PF_SRC/test/input/van-genuchten-sr.pfb', new_output_dir_name)
+cp('$PF_SRC/test/input/van-genuchten-ssat.pfb', new_output_dir_name)
 
 #---------------------------------------------------------
 
@@ -46,8 +49,8 @@ vgf.ComputationalGrid.DX = 8.8888888888888893
 vgf.ComputationalGrid.DY = 10.666666666666666
 vgf.ComputationalGrid.DZ = 1.0
 
-vgf.ComputationalGrid.NX = 10
-vgf.ComputationalGrid.NY = 10
+vgf.ComputationalGrid.NX = 18
+vgf.ComputationalGrid.NY = 15
 vgf.ComputationalGrid.NZ = 8
 
 #---------------------------------------------------------
@@ -365,9 +368,33 @@ vgf.Solver.Linear.Preconditioner = 'PFMG'
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-vgf.dist('van-genuchten-alpha.pfb')
-vgf.dist('van-genuchten-n.pfb')
-vgf.dist('van-genuchten-sr.pfb')
-vgf.dist('van-genuchten-ssat.pfb')
+vgf.dist(new_output_dir_name + '/van-genuchten-alpha.pfb')
+vgf.dist(new_output_dir_name + '/van-genuchten-n.pfb')
+vgf.dist(new_output_dir_name + '/van-genuchten-sr.pfb')
+vgf.dist(new_output_dir_name + '/van-genuchten-ssat.pfb')
 
-vgf.run()
+
+vgf.run(working_directory=new_output_dir_name)
+
+passed = True
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/default_richards.out.{test_file}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}"):
+        passed = False
+
+for i in range(6):
+    timestep = str(i).rjust(5, '0')
+    filename = f"/default_richards.out.press.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Pressure for timestep {timestep}"):
+        passed = False
+    filename = f"/default_richards.out.satur.{timestep}.pfb"
+    if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in Saturation for timestep {timestep}"):
+        passed = False
+
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)

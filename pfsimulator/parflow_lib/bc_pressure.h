@@ -1,11 +1,30 @@
-/*BHEADER*********************************************************************
-* (c) 1995   The Regents of the University of California
+/*BHEADER**********************************************************************
 *
-* See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
-* notice, contact person, and disclaimer.
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
 *
-* $Revision: 1.1.1.1 $
-*********************************************************************EHEADER*/
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #ifndef _BC_PRESSURE_HEADER
 #define _BC_PRESSURE_HEADER
@@ -392,66 +411,6 @@ typedef struct {
 #define BCPressureDataTimeCycleData(bc_pressure_data) \
   ((bc_pressure_data)->time_cycle_data)
 
-/*--------------------------------------------------------------------------
- * BCPressure Data constants used in the program.
- *--------------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------
- * BCPressurePackage Actions
- *----------------------------------------------------------------*/
-/**
- * @name InputType Accessor
- * @brief Gets the input type at the specified index from BCPressurePackage public_xtra
- *
- * @param public_xtra public_xtra for module
- * @param i Index for input type
- */
-#define InputType(public_xtra, i) \
-  ((public_xtra)->input_types[(i)])
-
-/* Send cases wrapped in {} for sanity */
-/**
- * @name BC Patch control flow wrappers
- * @brief Wraps switch-case control flow inside self-describing macro names
- * @{
- */
-#define Do_SetupPatchTypes(public_xtra, interval, i, cases) \
-  switch (InputType(public_xtra, i))                        \
-  {                                                         \
-    cases;                                                  \
-  }
-
-#define SetupPatchType(type, body) \
-  case type:                       \
-  {                                \
-    body;                          \
-    break;                         \
-  }
-#define Do_SetupPatchIntervals(public_xtra, interval, i, cases) \
-  switch (InputType(public_xtra, i))                            \
-  {                                                             \
-    cases;                                                      \
-  }
-
-#define SetupPatchInterval(type, body) \
-  case type:                           \
-  {                                    \
-    body;                              \
-    break;                             \
-  }
-#define Do_FreePatches(public_xtra, i, ...) \
-  switch (InputType(public_xtra, i))        \
-  {                                         \
-    __VA_ARGS__;                            \
-  }
-
-#define FreePatch(type, body) \
-  case type:                  \
-  {                           \
-    body;                     \
-    break;                    \
-  }
 /** @} */
 
 #endif

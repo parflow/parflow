@@ -2,6 +2,7 @@
 include(ParflowTest)
 
 set(TESTS
+  Dirichlet.tcl
   default_single.tcl
   default_richards_wells.tcl
   forsyth2.tcl
@@ -13,6 +14,8 @@ set(TESTS
   small_domain.tcl
   richards_hydrostatic_equalibrium.tcl
   LW_surface_press.tcl
+  bc_pressure_file.tcl
+  bc_flux_file.tcl
 )
 
 if(${PARFLOW_HAVE_HYPRE})

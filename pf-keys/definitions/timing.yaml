@@ -35,7 +35,6 @@ TimingInfo:
     domains:
       IntValue:
         min_value: -1
-        max_value: 0
 
   StartTime:
     help: >

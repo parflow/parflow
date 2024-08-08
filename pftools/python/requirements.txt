@@ -1,5 +1,6 @@
-PyYAML==5.4
+PyYAML==6.0.1
 xarray
+pandas
 numba
 numpy
 dask
