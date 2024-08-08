@@ -6,6 +6,7 @@ from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 import sys
+from parflow.tools.io import read_pfsb
 
 run_name = "default_single"
 default_single = Run(run_name, __file__)
@@ -377,15 +378,14 @@ for test_file in test_files:
     if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", sig_digits, abs_value):
         passed = False
 
-# This doesn't work yet, test does not work for pfsb files.
-# test_files = ["concen.0.00"]
-# for i in range(0,5):
-#     timestep = str(i).rjust(5, '0')
-#     for test_file in test_files:
-#         filename = f"/{run_name}.out.{test_file}.{timestep}.pfsb"
-#         if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}", sig_digits):
-#             passed = False
-
+        
+test_files = ["concen.0.00"]
+for i in range(0,5):
+    timestep = str(i).rjust(5, '0')
+    for test_file in test_files:
+        filename = f"/{run_name}.out.{test_file}.{timestep}.pfsb"
+        if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}", sig_digits):
+            passed = False
 
 if passed:
     print(f"{run_name} : PASSED")
