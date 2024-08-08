@@ -56,6 +56,35 @@ except ImportError:
     from yaml import Dumper as YAMLDumper
 
 
+
+def read_pfsb(file_path):
+    """
+    Read a ParFlow scattered binary file (pfsb) and return the data.
+
+    The data will be returned as a numpy array of shape (nz, ny, nx).
+    To avoid confusion, there is no option to toggle 'z_first' on and
+    off. 
+    """
+    with open(file_path, 'rb') as f:
+        # Read the header
+        x, y, z = struct.unpack('>ddd', f.read(24))
+        nx, ny, nz = struct.unpack('>iii', f.read(12))
+        dx, dy, dz = struct.unpack('>ddd', f.read(24))
+        num_subgrids = struct.unpack('>i', f.read(4))[0]
+        data = np.zeros((nz, ny, nx), dtype=np.float64)
+        
+        for _ in range(num_subgrids):
+            # Skip most of subgrid header
+            f.seek(36, 1)
+            num_nonzero_data = struct.unpack('>i', f.read(4))[0]
+
+            for idx in range(num_nonzero_data):
+                i, j, k = struct.unpack('>iii', f.read(12))
+                data[k, j, i] = struct.unpack('>d', f.read(8))[0]
+
+    return data
+
+
 def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
              read_sg_info: bool=True):
     """
