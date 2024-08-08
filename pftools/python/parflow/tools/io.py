@@ -56,9 +56,6 @@ except ImportError:
     from yaml import Dumper as YAMLDumper
 
 
-import struct
-import numpy as np
-
 
 def read_pfsb(file_path):
     """
