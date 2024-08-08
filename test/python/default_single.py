@@ -6,7 +6,6 @@ from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
 from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
 import sys
-from parflow.tools.io import read_pfsb
 
 run_name = "default_single"
 default_single = Run(run_name, __file__)
