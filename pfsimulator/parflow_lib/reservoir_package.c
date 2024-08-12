@@ -69,7 +69,7 @@ typedef struct {
  * @param problem_data the problems problem data structure
  * @return the volume of the subgrid
  */
-double get_subgrid_volume(Subgrid *subgrid, ProblemData* problem_data){
+double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
   double dx = SubgridDX(subgrid);
   double dy = SubgridDY(subgrid);
   double dz = SubgridDZ(subgrid);
@@ -110,7 +110,7 @@ double get_subgrid_volume(Subgrid *subgrid, ProblemData* problem_data){
  * @param grid the problems grid
  * @return True or False corresponding to whether the subgrid intersects
  */
-bool subgrid_lives_on_this_rank(Subgrid* subgrid, Grid *grid){
+bool SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid){
   int subgrid_index;
   Subgrid* rank_subgrid, *tmp_subgrid;
   ForSubgridI(subgrid_index, GridSubgrids(grid)){
@@ -131,7 +131,7 @@ bool subgrid_lives_on_this_rank(Subgrid* subgrid, Grid *grid){
  * @param j the y index of the cell in question
  * @return Null, but modifies the problem datas x and y slopes
  */
-void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* problem_data, Grid* grid){
+void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_data, Grid* grid){
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
   Subvector   *slope_x_subvector;
@@ -195,7 +195,7 @@ void stop_outlet_flow_at_cell_overland_kinematic(int i, int j, ProblemData* prob
  * @param j the y index of the cell in question
  * @return Null, but modifies the problem datas x and y slopes
  */
-void stop_outlet_flow_at_cell_overland_flow(int i, int j, ProblemData* problem_data, Grid* grid){
+void StopOutletFlowAtCellOverlandFlow(int i, int j, ProblemData* problem_data, Grid* grid){
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
   Subvector   *slope_x_subvector;
@@ -309,17 +309,17 @@ void         ReservoirPackage(
                                        rx, ry, rz,
                                        current_mpi_rank);
 
-      if (subgrid_lives_on_this_rank(new_intake_subgrid, grid)) {
+      if (SubgridLivesOnThisRank(new_intake_subgrid, grid)) {
         intake_cell_rank = current_mpi_rank;
       }
 
-      if (subgrid_lives_on_this_rank(new_secondary_intake_subgrid, grid)) {
+      if (SubgridLivesOnThisRank(new_secondary_intake_subgrid, grid)) {
         secondary_intake_cell_rank = current_mpi_rank;
       }
       release_subgrid_volume = 1;
-      if (subgrid_lives_on_this_rank(new_release_subgrid, grid)) {
+      if (SubgridLivesOnThisRank(new_release_subgrid, grid)) {
         release_cell_rank = current_mpi_rank;
-        release_subgrid_volume = get_subgrid_volume(new_release_subgrid, problem_data);
+        release_subgrid_volume = GetSubgridVolume(new_release_subgrid, problem_data);
       }
       //If we are multiprocessor we need to do some reductions to determine the correct ranks
       // for the reservoirs
@@ -339,15 +339,15 @@ void         ReservoirPackage(
 #endif
 //     edit the slopes to prevent stuff running through the reservoir
       if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_FLOW){
-        stop_outlet_flow_at_cell_overland_flow(intake_ix, intake_iy, problem_data, grid);
+        StopOutletFlowAtCellOverlandFlow(intake_ix, intake_iy, problem_data, grid);
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical)){
-          stop_outlet_flow_at_cell_overland_flow(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
+          StopOutletFlowAtCellOverlandFlow(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
         }
       }
       else if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_KINEMATIC){
-        stop_outlet_flow_at_cell_overland_kinematic(intake_ix, intake_iy, problem_data, grid);
+        StopOutletFlowAtCellOverlandKinematic(intake_ix, intake_iy, problem_data, grid);
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical)){
-          stop_outlet_flow_at_cell_overland_kinematic(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
+          StopOutletFlowAtCellOverlandKinematic(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
         }
       }
 
