@@ -4,137 +4,142 @@
 
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+from parflow.tools.compare import pf_test_file, pf_test_file_with_abs
+import sys
 
-dsingle = Run("dsingle", __file__)
+run_name = "default_single"
+default_single = Run(run_name, __file__)
+
+correct_output_dir_name = get_absolute_path('../correct_output')
 
 #-----------------------------------------------------------------------------
 
-dsingle.FileVersion = 4
+default_single.FileVersion = 4
 
 #-----------------------------------------------------------------------------
 # Process Topology
 #-----------------------------------------------------------------------------
 
-dsingle.Process.Topology.P = 1
-dsingle.Process.Topology.Q = 1
-dsingle.Process.Topology.R = 1
+default_single.Process.Topology.P = 1
+default_single.Process.Topology.Q = 1
+default_single.Process.Topology.R = 1
 
 #-----------------------------------------------------------------------------
 # Computational Grid
 #-----------------------------------------------------------------------------
 
-dsingle.ComputationalGrid.Lower.X = -10.0
-dsingle.ComputationalGrid.Lower.Y = 10.0
-dsingle.ComputationalGrid.Lower.Z = 1.0
+default_single.ComputationalGrid.Lower.X = -10.0
+default_single.ComputationalGrid.Lower.Y = 10.0
+default_single.ComputationalGrid.Lower.Z = 1.0
 
-dsingle.ComputationalGrid.DX = 8.8888888888888893
-dsingle.ComputationalGrid.DY = 10.666666666666666
-dsingle.ComputationalGrid.DZ = 1.0
+default_single.ComputationalGrid.DX = 8.8888888888888893
+default_single.ComputationalGrid.DY = 10.666666666666666
+default_single.ComputationalGrid.DZ = 1.0
 
-dsingle.ComputationalGrid.NX = 18
-dsingle.ComputationalGrid.NY = 15
-dsingle.ComputationalGrid.NZ = 8
+default_single.ComputationalGrid.NX = 18
+default_single.ComputationalGrid.NY = 15
+default_single.ComputationalGrid.NZ = 8
 
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
 #-----------------------------------------------------------------------------
 
-dsingle.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
+default_single.GeomInput.Names = 'domain_input background_input source_region_input concen_region_input'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry Input
 #-----------------------------------------------------------------------------
 
-dsingle.GeomInput.domain_input.InputType = 'Box'
-dsingle.GeomInput.domain_input.GeomName = 'domain'
+default_single.GeomInput.domain_input.InputType = 'Box'
+default_single.GeomInput.domain_input.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Domain Geometry
 #-----------------------------------------------------------------------------
 
-dsingle.Geom.domain.Lower.X = -10.0
-dsingle.Geom.domain.Lower.Y = 10.0
-dsingle.Geom.domain.Lower.Z = 1.0
+default_single.Geom.domain.Lower.X = -10.0
+default_single.Geom.domain.Lower.Y = 10.0
+default_single.Geom.domain.Lower.Z = 1.0
 
-dsingle.Geom.domain.Upper.X = 150.0
-dsingle.Geom.domain.Upper.Y = 170.0
-dsingle.Geom.domain.Upper.Z = 9.0
+default_single.Geom.domain.Upper.X = 150.0
+default_single.Geom.domain.Upper.Y = 170.0
+default_single.Geom.domain.Upper.Z = 9.0
 
-dsingle.Geom.domain.Patches = 'left right front back bottom top'
+default_single.Geom.domain.Patches = 'left right front back bottom top'
 
 #-----------------------------------------------------------------------------
 # Background Geometry Input
 #-----------------------------------------------------------------------------
 
-dsingle.GeomInput.background_input.InputType = 'Box'
-dsingle.GeomInput.background_input.GeomName = 'background'
+default_single.GeomInput.background_input.InputType = 'Box'
+default_single.GeomInput.background_input.GeomName = 'background'
 
 #-----------------------------------------------------------------------------
 # Background Geometry
 #-----------------------------------------------------------------------------
 
-dsingle.Geom.background.Lower.X = -99999999.0
-dsingle.Geom.background.Lower.Y = -99999999.0
-dsingle.Geom.background.Lower.Z = -99999999.0
+default_single.Geom.background.Lower.X = -99999999.0
+default_single.Geom.background.Lower.Y = -99999999.0
+default_single.Geom.background.Lower.Z = -99999999.0
 
-dsingle.Geom.background.Upper.X = 99999999.0
-dsingle.Geom.background.Upper.Y = 99999999.0
-dsingle.Geom.background.Upper.Z = 99999999.0
+default_single.Geom.background.Upper.X = 99999999.0
+default_single.Geom.background.Upper.Y = 99999999.0
+default_single.Geom.background.Upper.Z = 99999999.0
 
 #-----------------------------------------------------------------------------
 # Source_Region Geometry Input
 #-----------------------------------------------------------------------------
 
-dsingle.GeomInput.source_region_input.InputType = 'Box'
-dsingle.GeomInput.source_region_input.GeomName = 'source_region'
+default_single.GeomInput.source_region_input.InputType = 'Box'
+default_single.GeomInput.source_region_input.GeomName = 'source_region'
 
 #-----------------------------------------------------------------------------
 # Source_Region Geometry
 #-----------------------------------------------------------------------------
 
-dsingle.Geom.source_region.Lower.X = 65.56
-dsingle.Geom.source_region.Lower.Y = 79.34
-dsingle.Geom.source_region.Lower.Z = 4.5
+default_single.Geom.source_region.Lower.X = 65.56
+default_single.Geom.source_region.Lower.Y = 79.34
+default_single.Geom.source_region.Lower.Z = 4.5
 
-dsingle.Geom.source_region.Upper.X = 74.44
-dsingle.Geom.source_region.Upper.Y = 89.99
-dsingle.Geom.source_region.Upper.Z = 5.5
+default_single.Geom.source_region.Upper.X = 74.44
+default_single.Geom.source_region.Upper.Y = 89.99
+default_single.Geom.source_region.Upper.Z = 5.5
 
 #-----------------------------------------------------------------------------
 # Concen_Region Geometry Input
 #-----------------------------------------------------------------------------
 
-dsingle.GeomInput.concen_region_input.InputType = 'Box'
-dsingle.GeomInput.concen_region_input.GeomName = 'concen_region'
+default_single.GeomInput.concen_region_input.InputType = 'Box'
+default_single.GeomInput.concen_region_input.GeomName = 'concen_region'
 
 #-----------------------------------------------------------------------------
 # Concen_Region Geometry
 #-----------------------------------------------------------------------------
 
-dsingle.Geom.concen_region.Lower.X = 60.0
-dsingle.Geom.concen_region.Lower.Y = 80.0
-dsingle.Geom.concen_region.Lower.Z = 4.0
+default_single.Geom.concen_region.Lower.X = 60.0
+default_single.Geom.concen_region.Lower.Y = 80.0
+default_single.Geom.concen_region.Lower.Z = 4.0
 
-dsingle.Geom.concen_region.Upper.X = 80.0
-dsingle.Geom.concen_region.Upper.Y = 100.0
-dsingle.Geom.concen_region.Upper.Z = 6.0
+default_single.Geom.concen_region.Upper.X = 80.0
+default_single.Geom.concen_region.Upper.Y = 100.0
+default_single.Geom.concen_region.Upper.Z = 6.0
 
 #-----------------------------------------------------------------------------
 # Perm
 #-----------------------------------------------------------------------------
 
-dsingle.Geom.Perm.Names = 'background'
+default_single.Geom.Perm.Names = 'background'
 
-dsingle.Geom.background.Perm.Type = 'Constant'
-dsingle.Geom.background.Perm.Value = 4.0
+default_single.Geom.background.Perm.Type = 'Constant'
+default_single.Geom.background.Perm.Value = 4.0
 
-dsingle.Perm.TensorType = 'TensorByGeom'
+default_single.Perm.TensorType = 'TensorByGeom'
 
-dsingle.Geom.Perm.TensorByGeom.Names = 'background'
+default_single.Geom.Perm.TensorByGeom.Names = 'background'
 
-dsingle.Geom.background.Perm.TensorValX = 1.0
-dsingle.Geom.background.Perm.TensorValY = 1.0
-dsingle.Geom.background.Perm.TensorValZ = 1.0
+default_single.Geom.background.Perm.TensorValX = 1.0
+default_single.Geom.background.Perm.TensorValY = 1.0
+default_single.Geom.background.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
@@ -142,147 +147,147 @@ dsingle.Geom.background.Perm.TensorValZ = 1.0
 
 # specific storage does not figure into the impes (fully sat) case but we still
 # need a key for it
-dsingle.SpecificStorage.Type = 'Constant'
-dsingle.SpecificStorage.GeomNames = ''
-dsingle.Geom.domain.SpecificStorage.Value = 1.0e-4
+default_single.SpecificStorage.Type = 'Constant'
+default_single.SpecificStorage.GeomNames = ''
+default_single.Geom.domain.SpecificStorage.Value = 1.0e-4
 
 #-----------------------------------------------------------------------------
 # Phases
 #-----------------------------------------------------------------------------
 
-dsingle.Phase.Names = 'water'
+default_single.Phase.Names = 'water'
 
-dsingle.Phase.water.Density.Type = 'Constant'
-dsingle.Phase.water.Density.Value = 1.0
+default_single.Phase.water.Density.Type = 'Constant'
+default_single.Phase.water.Density.Value = 1.0
 
-dsingle.Phase.water.Viscosity.Type = 'Constant'
-dsingle.Phase.water.Viscosity.Value = 1.0
+default_single.Phase.water.Viscosity.Type = 'Constant'
+default_single.Phase.water.Viscosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
 
-dsingle.Contaminants.Names = 'tce'
-dsingle.Contaminants.tce.Degradation.Value = 0.0
+default_single.Contaminants.Names = 'tce'
+default_single.Contaminants.tce.Degradation.Value = 0.0
 
 #-----------------------------------------------------------------------------
 # Gravity
 #-----------------------------------------------------------------------------
 
-dsingle.Gravity = 1.0
+default_single.Gravity = 1.0
 
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-dsingle.TimingInfo.BaseUnit = 1.0
-dsingle.TimingInfo.StartCount = 0
-dsingle.TimingInfo.StartTime = 0.0
-dsingle.TimingInfo.StopTime = 1000.0
-dsingle.TimingInfo.DumpInterval = -1
+default_single.TimingInfo.BaseUnit = 1.0
+default_single.TimingInfo.StartCount = 0
+default_single.TimingInfo.StartTime = 0.0
+default_single.TimingInfo.StopTime = 1000.0
+default_single.TimingInfo.DumpInterval = -1
 
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
 
-dsingle.Geom.Porosity.GeomNames = 'background'
-dsingle.Geom.background.Porosity.Type = 'Constant'
-dsingle.Geom.background.Porosity.Value = 1.0
+default_single.Geom.Porosity.GeomNames = 'background'
+default_single.Geom.background.Porosity.Type = 'Constant'
+default_single.Geom.background.Porosity.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Domain
 #-----------------------------------------------------------------------------
 
-dsingle.Domain.GeomName = 'domain'
+default_single.Domain.GeomName = 'domain'
 
 #-----------------------------------------------------------------------------
 # Mobility
 #-----------------------------------------------------------------------------
 
-dsingle.Phase.water.Mobility.Type = 'Constant'
-dsingle.Phase.water.Mobility.Value = 1.0
+default_single.Phase.water.Mobility.Type = 'Constant'
+default_single.Phase.water.Mobility.Value = 1.0
 
 #-----------------------------------------------------------------------------
 # Retardation
 #-----------------------------------------------------------------------------
 
-dsingle.Geom.Retardation.GeomNames = 'background'
-dsingle.Geom.background.tce.Retardation.Type = 'Linear'
-dsingle.Geom.background.tce.Retardation.Rate = 0.0
+default_single.Geom.Retardation.GeomNames = 'background'
+default_single.Geom.background.tce.Retardation.Type = 'Linear'
+default_single.Geom.background.tce.Retardation.Rate = 0.0
 
 #-----------------------------------------------------------------------------
 # Time Cycles
 #-----------------------------------------------------------------------------
 
-dsingle.Cycle.Names = 'constant'
-dsingle.Cycle.constant.Names = 'alltime'
-dsingle.Cycle.constant.alltime.Length = 1
-dsingle.Cycle.constant.Repeat = -1
+default_single.Cycle.Names = 'constant'
+default_single.Cycle.constant.Names = 'alltime'
+default_single.Cycle.constant.alltime.Length = 1
+default_single.Cycle.constant.Repeat = -1
 
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
 
-dsingle.Wells.Names = 'snoopy'
+default_single.Wells.Names = 'snoopy'
 
-dsingle.Wells.snoopy.InputType = 'Recirc'
+default_single.Wells.snoopy.InputType = 'Recirc'
 
-dsingle.Wells.snoopy.Cycle = 'constant'
+default_single.Wells.snoopy.Cycle = 'constant'
 
-dsingle.Wells.snoopy.ExtractionType = 'Flux'
-dsingle.Wells.snoopy.InjectionType = 'Flux'
+default_single.Wells.snoopy.ExtractionType = 'Flux'
+default_single.Wells.snoopy.InjectionType = 'Flux'
 
-dsingle.Wells.snoopy.X = 71.0
-dsingle.Wells.snoopy.Y = 90.0
-dsingle.Wells.snoopy.ExtractionZLower = 5.0
-dsingle.Wells.snoopy.ExtractionZUpper = 5.0
-dsingle.Wells.snoopy.InjectionZLower = 2.0
-dsingle.Wells.snoopy.InjectionZUpper = 2.0
+default_single.Wells.snoopy.X = 71.0
+default_single.Wells.snoopy.Y = 90.0
+default_single.Wells.snoopy.ExtractionZLower = 5.0
+default_single.Wells.snoopy.ExtractionZUpper = 5.0
+default_single.Wells.snoopy.InjectionZLower = 2.0
+default_single.Wells.snoopy.InjectionZUpper = 2.0
 
-dsingle.Wells.snoopy.ExtractionMethod = 'Standard'
-dsingle.Wells.snoopy.InjectionMethod = 'Standard'
+default_single.Wells.snoopy.ExtractionMethod = 'Standard'
+default_single.Wells.snoopy.InjectionMethod = 'Standard'
 
 #-----------------------------------------------------------------------------
 # Assigning well with newly assigned interval name
 #-----------------------------------------------------------------------------
 
-dsingle.Wells.snoopy.alltime.Extraction.Flux.water.Value = 5.0
-dsingle.Wells.snoopy.alltime.Injection.Flux.water.Value = 7.5
-dsingle.Wells.snoopy.alltime.Injection.Concentration.water.tce.Fraction = 0.1
+default_single.Wells.snoopy.alltime.Extraction.Flux.water.Value = 5.0
+default_single.Wells.snoopy.alltime.Injection.Flux.water.Value = 7.5
+default_single.Wells.snoopy.alltime.Injection.Concentration.water.tce.Fraction = 0.1
 
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
 
-dsingle.BCPressure.PatchNames = 'left right front back bottom top'
+default_single.BCPressure.PatchNames = 'left right front back bottom top'
 
-dsingle.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
-dsingle.Patch.left.BCPressure.Cycle = 'constant'
-dsingle.Patch.left.BCPressure.RefGeom = 'domain'
-dsingle.Patch.left.BCPressure.RefPatch = 'bottom'
-dsingle.Patch.left.BCPressure.alltime.Value = 14.0
+default_single.Patch.left.BCPressure.Type = 'DirEquilRefPatch'
+default_single.Patch.left.BCPressure.Cycle = 'constant'
+default_single.Patch.left.BCPressure.RefGeom = 'domain'
+default_single.Patch.left.BCPressure.RefPatch = 'bottom'
+default_single.Patch.left.BCPressure.alltime.Value = 14.0
 
-dsingle.Patch.right.BCPressure.Type = 'DirEquilRefPatch'
-dsingle.Patch.right.BCPressure.Cycle = 'constant'
-dsingle.Patch.right.BCPressure.RefGeom = 'domain'
-dsingle.Patch.right.BCPressure.RefPatch = 'bottom'
-dsingle.Patch.right.BCPressure.alltime.Value = 9.0
+default_single.Patch.right.BCPressure.Type = 'DirEquilRefPatch'
+default_single.Patch.right.BCPressure.Cycle = 'constant'
+default_single.Patch.right.BCPressure.RefGeom = 'domain'
+default_single.Patch.right.BCPressure.RefPatch = 'bottom'
+default_single.Patch.right.BCPressure.alltime.Value = 9.0
 
-dsingle.Patch.front.BCPressure.Type = 'FluxConst'
-dsingle.Patch.front.BCPressure.Cycle = 'constant'
-dsingle.Patch.front.BCPressure.alltime.Value = 0.0
+default_single.Patch.front.BCPressure.Type = 'FluxConst'
+default_single.Patch.front.BCPressure.Cycle = 'constant'
+default_single.Patch.front.BCPressure.alltime.Value = 0.0
 
-dsingle.Patch.back.BCPressure.Type = 'FluxConst'
-dsingle.Patch.back.BCPressure.Cycle = 'constant'
-dsingle.Patch.back.BCPressure.alltime.Value = 0.0
+default_single.Patch.back.BCPressure.Type = 'FluxConst'
+default_single.Patch.back.BCPressure.Cycle = 'constant'
+default_single.Patch.back.BCPressure.alltime.Value = 0.0
 
-dsingle.Patch.bottom.BCPressure.Type = 'FluxConst'
-dsingle.Patch.bottom.BCPressure.Cycle = 'constant'
-dsingle.Patch.bottom.BCPressure.alltime.Value = 0.0
+default_single.Patch.bottom.BCPressure.Type = 'FluxConst'
+default_single.Patch.bottom.BCPressure.Cycle = 'constant'
+default_single.Patch.bottom.BCPressure.alltime.Value = 0.0
 
-dsingle.Patch.top.BCPressure.Type = 'FluxConst'
-dsingle.Patch.top.BCPressure.Cycle = 'constant'
-dsingle.Patch.top.BCPressure.alltime.Value = 0.0
+default_single.Patch.top.BCPressure.Type = 'FluxConst'
+default_single.Patch.top.BCPressure.Cycle = 'constant'
+default_single.Patch.top.BCPressure.alltime.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
@@ -290,17 +295,17 @@ dsingle.Patch.top.BCPressure.alltime.Value = 0.0
 # topo slopes do not figure into the impes (fully sat) case but we still
 # need keys for them
 
-dsingle.TopoSlopesX.Type = 'Constant'
-dsingle.TopoSlopesX.GeomNames = ''
-dsingle.TopoSlopesX.Geom.domain.Value = 0.0
+default_single.TopoSlopesX.Type = 'Constant'
+default_single.TopoSlopesX.GeomNames = ''
+default_single.TopoSlopesX.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
 
-dsingle.TopoSlopesY.Type = 'Constant'
-dsingle.TopoSlopesY.GeomNames = ''
-dsingle.TopoSlopesY.Geom.domain.Value = 0.0
+default_single.TopoSlopesY.Type = 'Constant'
+default_single.TopoSlopesY.GeomNames = ''
+default_single.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
 # Mannings coefficient
@@ -308,33 +313,83 @@ dsingle.TopoSlopesY.Geom.domain.Value = 0.0
 # mannings roughnesses do not figure into the impes (fully sat) case but we still
 # need a key for them
 
-dsingle.Mannings.Type = 'Constant'
-dsingle.Mannings.GeomNames = ''
-dsingle.Mannings.Geom.domain.Value = 0.0
+default_single.Mannings.Type = 'Constant'
+default_single.Mannings.GeomNames = ''
+default_single.Mannings.Geom.domain.Value = 0.0
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-dsingle.PhaseSources.water.Type = 'Constant'
-dsingle.PhaseSources.water.GeomNames = 'background'
-dsingle.PhaseSources.water.Geom.background.Value = 0.0
+default_single.PhaseSources.water.Type = 'Constant'
+default_single.PhaseSources.water.GeomNames = 'background'
+default_single.PhaseSources.water.Geom.background.Value = 0.0
 
-dsingle.PhaseConcen.water.tce.Type = 'Constant'
-dsingle.PhaseConcen.water.tce.GeomNames = 'concen_region'
-dsingle.PhaseConcen.water.tce.Geom.concen_region.Value = 0.8
+default_single.PhaseConcen.water.tce.Type = 'Constant'
+default_single.PhaseConcen.water.tce.GeomNames = 'concen_region'
+default_single.PhaseConcen.water.tce.Geom.concen_region.Value = 0.8
+
+default_single.Solver.PrintVelocities = True
 
 #-----------------------------------------------------------------------------
 # The Solver Impes MaxIter default value changed so to get previous
 # results we need to set it back to what it was
 #-----------------------------------------------------------------------------
 
-dsingle.Solver.MaxIter = 5
+default_single.Solver.MaxIter = 5
+default_single.Solver.AbsTol = 1e-25
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-dir_name = get_absolute_path('test_output/dsingle')
-mkdir(dir_name)
-dsingle.run(working_directory=dir_name)
+new_output_dir_name = get_absolute_path('test_output/default_single')
+mkdir(new_output_dir_name)
+default_single.run(working_directory=new_output_dir_name)
+
+#-----------------------------------------------------------------------------
+# Check results for regression
+#-----------------------------------------------------------------------------
+
+passed = True
+
+i=0        
+timestep = str(i).rjust(5, '0')
+
+sig_digits = 4
+abs_value = 1e-12
+
+test_files = ["press"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", sig_digits, abs_value):
+        passed = False
+
+test_files = ["perm_x", "perm_y", "perm_z"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.pfb"
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", sig_digits, abs_value):
+        passed = False
+
+test_files = ["phasex", "phasey", "phasez"]
+for test_file in test_files:
+    filename = f"/{run_name}.out.{test_file}.0.{timestep}.pfb"
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", sig_digits, abs_value):
+        passed = False
+
+# This doesn't work yet, test does not work for pfsb files.
+# test_files = ["concen.0.00"]
+# for i in range(0,5):
+#     timestep = str(i).rjust(5, '0')
+#     for test_file in test_files:
+#         filename = f"/{run_name}.out.{test_file}.{timestep}.pfsb"
+#         if not pf_test_file(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {test_file}", sig_digits):
+#             passed = False
+
+
+if passed:
+    print(f"{run_name} : PASSED")
+else:
+    print(f"{run_name} : FAILED")
+    sys.exit(1)
+        
