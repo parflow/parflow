@@ -69,7 +69,7 @@ typedef struct {
  * @param problem_data the problems problem data structure
  * @return the volume of the subgrid
  */
-double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
+double get_subgrid_volume(Subgrid *subgrid, ProblemData* problem_data){
   double dx = SubgridDX(subgrid);
   double dy = SubgridDY(subgrid);
   double dz = SubgridDZ(subgrid);
