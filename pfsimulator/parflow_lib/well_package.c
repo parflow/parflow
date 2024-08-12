@@ -209,7 +209,6 @@ void         WellPackage(
                                    nx, ny, nz,
                                    rx, ry, rz,
                                    process);
-          new_subgrid = IntersectSubgrids(new_subgrid)
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
 
@@ -517,7 +516,6 @@ void         WellPackage(
                                      process);
             dx = SubgridDX(new_subgrid);
             dy = SubgridDY(new_subgrid);
-            dz = SubgridDZ(new_subgrid);
             subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
             if (mechanism == PRESSURE_WELL)
             {
