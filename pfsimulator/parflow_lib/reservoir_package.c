@@ -319,7 +319,7 @@ void         ReservoirPackage(
       release_subgrid_volume = 1;
       if (subgrid_lives_on_this_rank(new_release_subgrid, grid)) {
         release_cell_rank = current_mpi_rank;
-        release_subgrid_volume = GetSubgridVolume(new_release_subgrid, problem_data);
+        release_subgrid_volume = get_subgrid_volume(new_release_subgrid, problem_data);
       }
       //If we are multiprocessor we need to do some reductions to determine the correct ranks
       // for the reservoirs
