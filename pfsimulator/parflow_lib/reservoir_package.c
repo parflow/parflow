@@ -67,7 +67,7 @@ typedef struct {
  *
  * @param subgrid the subgrid we are checking
  * @param problem_data the problems problem data structure
- * @return True or False corresponding to whether the subgrid intersects
+ * @return the volume of the subgrid
  */
 double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
   double dx = SubgridDX(subgrid);
