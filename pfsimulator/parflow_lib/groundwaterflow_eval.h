@@ -31,45 +31,26 @@
 
 #include "parflow.h"
 
-typedef void GroundwaterFlowPublicXtra;
+double ParameterAt(void *parameter, int ival);
 
-typedef struct {
+void* NewGroundwaterFlowParameter(char *patch_name, char *parameter_name);
 
-  double*** SpecificYield;   // [ipatch][isubgrid][icell] - Updated every step
-  double*** AquiferDepth;    // [ipatch][isubgrid][icell] - Updated every step
-  double*** AquiferRecharge; // [ipatch][isubgrid][icell] - Updated every step
-  int num_patches;  // ipatch varies between [0, num_patches[
-  int subgrid_size; // isubgrid varies between [0, subgrid_size[
-
-} GroundwaterFlowInstanceXtra;
-
-void NewGroundwaterFlowParameters(void** Sy, void** Ad, void** Ar, 
-    char* patch_name, int global_cycle, int interval_division);
-
-void FreeGroundwaterFlowParameters(
-    void** Sy, void** Ad, void** Ar, int interval_division);
-
-void FreeGroundwaterFlowParameter(void* parameter);
-
-void SetGroundwaterFlowParameter(
-    double* values, void* parameter, BCStruct* bc_struct, int ipatch, int is);
-
+void FreeGroundwaterFlowParameter(void *parameter);
 
 
 typedef void (*GroundwaterFlowEvalInvoke)(
-    double* q_groundwater, BCStruct* bc_struct, Subgrid* subgrid, 
-    Subvector* p_sub, double* new_pressure, double* old_pressure, 
-    double dt, double* perm_x, double* perm_y, double* perm_z, 
-    double* z_mult, int ipatch, int isubgrid);
+    double *q_groundwater, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *perm_x, double *perm_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
 
 void GroundwaterFlowEval(
-    double* q_groundwater, BCStruct* bc_struct, Subgrid* subgrid, 
-    Subvector* p_sub, double* new_pressure, double* old_pressure, 
-    double dt, double* perm_x, double* perm_y, double* perm_z, 
-    double* z_mult, int ipatch, int isubgrid);
+    double *q_groundwater, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *perm_x, double *perm_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
 
-PFModule* GroundwaterFlowEvalInitInstanceXtra(
-    int num_patches, int subgrid_size);
+PFModule* GroundwaterFlowEvalInitInstanceXtra();
 
 void GroundwaterFlowEvalFreeInstanceXtra();
 

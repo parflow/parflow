@@ -238,9 +238,6 @@ Problem   *NewProblem(
   ProblemOverlandFlowEvalKin(problem) =
     PFModuleNewModule(OverlandFlowEvalKin, ());
 
-  ProblemGroundwaterFlowEval(problem) =
-    PFModuleNewModule(GroundwaterFlowEval, ());
-
   if (solver != RichardsSolve)
   {
     ProblemCapillaryPressure(problem) =
@@ -397,7 +394,6 @@ void      FreeProblem(
   PFModuleFreeModule(ProblemOverlandFlowEval(problem));  //DOK
   PFModuleFreeModule(ProblemOverlandFlowEvalDiff(problem));   //@RMM
   PFModuleFreeModule(ProblemOverlandFlowEvalKin(problem));
-  PFModuleFreeModule(ProblemGroundwaterFlowEval(problem));
 
   PFModuleFreeModule(ProblemDomain(problem));
 

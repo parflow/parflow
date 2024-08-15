@@ -53,6 +53,8 @@ typedef struct {
   int    *patch_indexes;  /* num_patches patch indexes */
   int    *cycle_numbers;  /* num_patches cycle numbers */
   void  **data;           /* num_patches pointers to Type structures */
+  
+  PFModule  *groundwaterflow_eval;
 } PublicXtra;
 
 typedef struct {
@@ -446,15 +448,6 @@ void         BCPressurePackage(
 
             BCPressureDataBCType(bc_pressure_data, i) = GroundwaterFlowBC;
 
-            GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
-
-            GroundwaterFlowSpecificYield(interval_data) = 
-                data->SpecificYields[interval_number];
-            GroundwaterFlowAquiferDepth(interval_data) = 
-                data->AquiferDepths[interval_number];
-            GroundwaterFlowAquiferRecharge(interval_data) = 
-                data->AquiferRecharges[interval_number];
-
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
                 = (void*)interval_data;
 
@@ -470,6 +463,15 @@ void         BCPressurePackage(
       } /* End for interval */
     } /* End for patch */
   }
+}
+
+PFModule* BCPressurePackageGroundwaterFlowModule(
+    PFModule *bc_pressure_package, int ipatch) 
+{
+  PublicXtra *public_xtra = 
+      (PublicXtra*)PFModulePublicXtra(bc_pressure_package);
+  GetTypeStruct(GroundwaterFlow, data, public_xtra, ipatch);
+  return GroundwaterFlowModule(data);
 }
 
 /*--------------------------------------------------------------------------
@@ -557,6 +559,9 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
   /* allocate space for the public_xtra structure */
   public_xtra = ctalloc(PublicXtra, 1);
+
+  (public_xtra->groundwaterflow_eval) = 
+      PFModuleNewModule(GroundwaterFlowEval, ());
 
   (public_xtra->num_phases) = num_phases;
 
@@ -1033,29 +1038,12 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
         case GroundwaterFlow:
         {
-
-          // 1.
-          // Create public groundwaterflow class that 
-          // holds int[num_patches], which are the interval numbers
-          // that get updated with the cycle in BCPressure()
-
-          // 2.
-          // read groundwaterflow variables and store them 
-          // in the 'data' structure
-          // ReadGroundwaterFlowParameters(data->SpecificYields, data->AquiferDepths, data->AquiferRecharges, patch_name, interval_division, global_cycle)
-          void** Sy = NULL; // Specific Yield
-          void** Ad = NULL; // Aquifer Depth
-          void** Ar = NULL; // Aquifer Recharge
-
-          NewGroundwaterFlowParameters(Sy, Ad, Ar, 
-              patch_name, interval_division, global_cycle);
-          
-          // 3.
-          // store the 'data' structure in 'public_xtra'
           NewTypeStruct(GroundwaterFlow, data);
-          data->SpecificYields   = Sy;
-          data->AquiferDepths    = Ad;
-          data->AquiferRecharges = Ar;
+
+          // GroundwaterFlowModule(data) = PFModuleNewModule(
+          //     GroundwaterFlowEval, (patch_name));
+          GroundwaterFlowModule(data) = PFModuleNewInstance(
+              public_xtra->groundwaterflow_eval, (patch_name));
 
           StoreTypeStruct(public_xtra, data, i);
           break;
@@ -1226,9 +1214,8 @@ void  BCPressurePackageFreePublicXtra()
           case GroundwaterFlow:
           {
             GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
-            FreeGroundwaterFlowParameters(
-                data->SpecificYields, data->AquiferDepths, 
-                data->AquiferRecharges, interval_division);
+            // PFModuleFreeModule(GroundwaterFlowModule(data));
+            PFModuleFreeInstance(GroundwaterFlowModule(data));
             tfree(data);
             break;
           }
@@ -1259,6 +1246,8 @@ void  BCPressurePackageFreePublicXtra()
 
       tfree((public_xtra->interval_divisions));
     }
+
+    PFModuleFreeModule(public_xtra->groundwaterflow_eval);
 
     tfree(public_xtra);
   }

@@ -140,7 +140,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
   PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
-  PFModule    *groundwaterflow_eval = ProblemGroundwaterFlowEval(problem);
 
   /* Re-use saturation vector to save memory */
   Vector      *rel_perm = saturation;
@@ -2283,9 +2282,16 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       ForPatchCellsPerFace(
         GroundwaterFlowBC,
         BeforeAllCells({
+
+          PFModule *bc_pressure_package = ProblemBCPressurePackage(problem);
+          PFModule *groundwaterflow_eval = 
+              BCPressurePackageGroundwaterFlowModule(
+                bc_pressure_package, ipatch);
+
           PFModuleInvokeType(GroundwaterFlowEvalInvoke, groundwaterflow_eval, 
-              (q_groundwater, bc_struct, subgrid, p_sub, pp, opp, dt,
-              permxp, permyp, permzp, z_mult_dat, ipatch, is));
+              (q_groundwater, bc_struct, subgrid, p_sub, opp, dt,
+              permxp, permyp, z_mult_dat, ipatch, is, problem_data));
+
         }), 
         LoopVars(i, j, k, ival, bc_struct, ipatch, is),
         Locals( int ip = 0; ),
@@ -2296,15 +2302,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         FACE(RightFace, DoNothing),
         FACE(DownFace,  DoNothing),
         FACE(UpFace,    DoNothing),
-        FACE(BackFace,  DoNothing),
-        FACE(FrontFace, DoNothing),
-        CellFinalize(
-        {
+        FACE(BackFace,  {
           fp[ip] += q_groundwater[ip];
         }),
-        AfterAllCells({
-          PFModuleFreeInstance(groundwaterflow_eval);
-        })
+        FACE(FrontFace, DoNothing),
+        CellFinalize(DoNothing),
+        AfterAllCells(DoNothing)
       );    /* End GroundwaterFlow case */
     }       /* End ipatch loop */
   }         /* End subgrid loop */

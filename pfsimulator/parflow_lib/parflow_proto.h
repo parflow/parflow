@@ -33,6 +33,8 @@ typedef PFModule *(*BCPressurePackageNewPublicXtraInvoke) (int num_phases);
 
 /* bc_pressure_package.c */
 void BCPressurePackage(ProblemData *problem_data);
+PFModule *BCPressurePackageGroundwaterFlowModule(
+    PFModule *bc_pressure_package, int ipatch);
 PFModule *BCPressurePackageInitInstanceXtra(Problem *problem);
 void BCPressurePackageFreeInstanceXtra(void);
 PFModule *BCPressurePackageNewPublicXtra(int num_phases);
@@ -873,6 +875,9 @@ void OverlandFlowEvalKinFreeInstanceXtra(void);
 PFModule *OverlandFlowEvalKinNewPublicXtra(void);
 void OverlandFlowEvalKinFreePublicXtra(void);
 int OverlandFlowEvalKinSizeOfTempData(void);
+
+/* groundwaterflow_eval.c */
+
 
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases);

@@ -143,9 +143,7 @@
     double *values;              \
   })                             \
   BC_TYPE(GroundwaterFlow, {     \
-    void **SpecificYields;       \
-    void **AquiferDepths;        \
-    void **AquiferRecharges;     \
+    PFModule *groundwaterflow;   \
   })
 
 
@@ -245,9 +243,6 @@
     double value;                \
   })                             \
   BC_TYPE(GroundwaterFlow, {     \
-    void *SpecificYield;         \
-    void *AquiferDepth;          \
-    void *AquiferRecharge;       \
   })
 
 
@@ -384,14 +379,8 @@ typedef struct {
     #define OverlandDiffusiveValue(patch) \
   ((patch)->value)
 /*--------------------------------------------------------------------------*/
-#define GroundwaterFlowSpecificYield(patch) \
-  ((patch)->SpecificYield)
-/*--------------------------------------------------------------------------*/
-#define GroundwaterFlowAquiferDepth(patch) \
-  ((patch)->AquiferDepth)
-/*--------------------------------------------------------------------------*/
-#define GroundwaterFlowAquiferRecharge(patch) \
-  ((patch)->AquiferRecharge)
+#define GroundwaterFlowModule(patch) \
+  ((patch)->groundwaterflow)
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
  *--------------------------------------------------------------------------*/
