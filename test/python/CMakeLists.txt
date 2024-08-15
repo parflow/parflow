@@ -13,15 +13,15 @@ set(TESTS
   small_domain
   richards_hydrostatic_equilibrium
   indicator_field
-  bc_pressure_file
-  bc_flux_file
-  Dirichlet
   LW_surface_press
   overland_tiltedV_MGSemiTest
 )
 
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS
+    bc_pressure_file
+    bc_flux_file
+    Dirichlet    
     default_richards
     default_richards_restart
     default_richards_nocluster
