@@ -865,7 +865,8 @@ PFModule  *WellPackageNewPublicXtra(
   (public_xtra->num_phases) = num_phases;
   (public_xtra->num_contaminants) = num_contaminants;
 
-  well_names = GetString("Wells.Names");
+  char* EMPTY_NAMES_LIST = "";
+  well_names = GetStringDefault("Wells.Names", EMPTY_NAMES_LIST);
 
   public_xtra->well_names = NA_NewNameArray(well_names);
 

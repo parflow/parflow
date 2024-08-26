@@ -297,7 +297,7 @@ drich.TopoSlopesY.GeomNames = 'domain'
 drich.TopoSlopesY.Geom.domain.Value = 0.0
 
 #---------------------------------------------------------
-# Mannings coefficient 
+# Mannings coefficient
 #---------------------------------------------------------
 
 drich.Mannings.Type = 'Constant'
