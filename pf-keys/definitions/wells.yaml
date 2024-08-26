@@ -12,7 +12,8 @@ Wells:
   # Wells.Names not in grep
   Names:
     help: >
-      [Type: string] This key specifies the names fo the wells for which input data will be given.
+      [Type: string] This key specifies the names for the wells for which input data will be given.
+    default: ""
     domains:
       AnyString:
     handlers:

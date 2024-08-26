@@ -115,6 +115,8 @@ set (SRC_FILES_CONST advect.F
   well.c
   well_package.c
   wells_lb.c
+  reservoir.c
+  reservoir_package.c
   wrf_parflow.c
   write_clm_netcdf.c
   write_parflow_binary.c

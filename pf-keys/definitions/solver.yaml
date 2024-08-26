@@ -1853,6 +1853,14 @@ Solver:
     default: True
     domains:
       BoolDomain:
+  
+  PrintReservoirs:
+    help: >
+      [Type: boolean/string] This key is used to turn on collection and printing of the reservoir data. The data is collected at intervals given by
+      values in the timing information section. Printing occurs at the end of the run when all collected data is written.
+    default: True
+    domains:
+      BoolDomain:
 
   # WritePfbSlopes is missing from the manual.
   WritePfbSlopes:

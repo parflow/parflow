@@ -17,6 +17,7 @@ YAML_MODULES_TO_PROCESS = [
     'geom',
     'solver',
     'wells',
+    'reservoirs',
     'timing',
     'phase',
     'bconditions',
