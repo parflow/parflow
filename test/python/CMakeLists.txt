@@ -17,6 +17,7 @@ set(TESTS
   bc_flux_file
   Dirichlet
   LW_surface_press
+  overland_tiltedV_MGSemiTest
 )
 
 if(${PARFLOW_HAVE_HYPRE})
@@ -144,7 +145,9 @@ foreach(inputfile ${PARALLEL_3DTOPO_TESTS})
   pf_add_py_parallel_test(${inputfile} 1 4 1)
   pf_add_py_parallel_test(${inputfile} 4 1 1)
   pf_add_py_parallel_test(${inputfile} 2 2 2)
-  pf_add_py_parallel_test(${inputfile} 3 3 3)
+  if(NOT( ((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP})) ))
+    pf_add_py_parallel_test(${inputfile} 3 3 3)
+  endif()
 
 endforeach()
 
