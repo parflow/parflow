@@ -1,0 +1,101 @@
+# -----------------------------------------------------------------------------
+# Definition anatomy
+# -----------------------------------------------------------------------------
+#
+# run.Geom.{name}.{PARFLOW_KEY}:
+#   alias:
+#     - Short names that can be used inside your table definition
+#   addon:
+#     If provided those other key/value will be set under
+#       Geom.{name}.{KEY_1} = {VALUE_1}
+#       Geom.{name}.{KEY_2} = {VALUE_2}
+#   register:
+#     If provided the {name} will be added to a set() with the name
+#     run.{VALUE} = [] + {name}.
+#
+# -----------------------------------------------------------------------------
+
+key:
+  type: str
+  alias:
+    - key
+    - name
+    - Name
+    - Key
+
+# -----------------------------------------------------------------------------
+# Reservoir Parameters
+# -----------------------------------------------------------------------------
+
+Release_X:
+  type: float
+  alias:
+    - Release_X
+  register: Reservoirs.Names
+
+Release_Y:
+  type: float
+  alias:
+    - Release_Y
+  register: Reservoirs.Names
+
+Intake_X:
+  type: float
+  alias:
+    - Intake_X
+  register: Reservoirs.Names
+
+Intake_Y:
+  type: float
+  alias:
+    - Intake_Y
+  register: Reservoirs.Names
+
+Secondary_Intake_X:
+  type: float
+  alias:
+    - Secondary_Intake_X
+  register: Reservoirs.Names
+
+Secondary_Intake_Y:
+  type: float
+  alias:
+    - Secondary_Intake_Y
+  register: Reservoirs.Names
+
+Has_Secondary_Intake_Cell:
+  type: int
+  alias:
+    - Has_Secondary_Intake_Cell
+  register: Reservoirs.Names
+
+Min_Release_Storage:
+  type: float
+  alias:
+    - Min_Release_Storage
+  register: Reservoirs.Names
+
+Release_Rate:
+  type: float
+  alias:
+    - Release_Rate
+  register: Reservoirs.Names
+
+Max_Storage:
+  type: float
+  alias:
+    - Max_Storage
+  register: Reservoirs.Names
+
+Storage:
+  type: float
+  alias:
+    - Storage
+  register: Reservoirs.Names
+
+Overland_Flow_Solver:
+  # typos - vertical
+  type: string
+  alias:
+    - Overland_Flow_Solver
+  register: Reservoirs.Names
