@@ -546,6 +546,76 @@ inputs (TCL).
       pfset Geom.domain.Patches           "z-upper x-lower y-lower \
                                             	x-upper y-upper z-lower"
 
+.. _Reservoirs:
+
+Reservoirs
+~~~~~~~~~~
+Here we define reservoirs for the model. Currently reservoirs have only been tested on domains
+where the top of domain lies at the top of the grid. This applies to all box domains and some 
+terrain following grid domains. The format for this section of input
+is:
+
+*string* **Reservoirs.Names** no default This key specifies the names of the
+reservoirs for which input data will be given.
+
+.. container:: list
+
+   ::
+
+      Reservoirs.Names "reservoir_1 reservoir_2 reservoir_3"
+
+*double* **Reservoirs.\ *reservoir_name*.Release_X** no default This key specifies 
+the x location of where the reservoir releases water. This cell will always be placed
+on the domain surface.
+
+*double* **Reservoirs.\ *reservoir_name*.Release_Y** no default This key specifies 
+the y location of where the reservoir releases water. This cell will always be placed
+on the domain surface.
+
+*double* **Reservoirs.\ *reservoir_name*.Intake_X** no default This key specifies 
+the x location of where the reservoir intakes water. This cell will always be placed
+on the domain surface.
+
+*double* **Reservoirs.\ *reservoir_name*.Intake_Y** no default This key specifies 
+the y location of where the reservoir intakes water. This cell will always be placed
+on the domain surface.
+
+.. This value is set as an int because bools do not work with the table reader right now
+*int* **Reservoirs.\ *reservoir_name*.Has_Secondary_Intake_Cell** no default This key specifies if 
+the reservoir has a secondary intake cell, with 0 evaluating to false and 1 evaluating to true. This
+cell will always be placed on the domain surface.
+
+*double* **Reservoirs.\ *reservoir_name*.Secondary_Intake_X** no default This optional key 
+specifies the x location of where the reservoir's secondary intake cell intakes water. This 
+cell will always be placed on the domain surface. This key is only used when the reservoir has
+a secondary intake cell, in which case it is required.
+
+*double* **Reservoirs.\ *reservoir_name*.Secondary_Intake_Y** no default This optional key 
+specifies the y location of where the reservoir's secondary intake cell intakes water. This 
+cell will always be placed on the domain surface. This key is only used when the reservoir has
+a secondary intake cell, in which case it is required.
+
+*double* **Reservoirs.\ *reservoir_name*.Min_Release_Storage** no default This key specifies 
+the storage amount below which the reservoir will stop releasing water. Has units [L\ :sup:`3`].
+
+*double* **Reservoirs.\ *reservoir_name*.Max_Storage** no default This key specifies a reservoirs 
+maximum storage. If storage rises above this value, a reservoir will release extra water if necessary
+to get back down to this amount by the next timestep. Has units [L\ :sup:`3`]
+
+*double* **Reservoirs.\ *reservoir_name*.Storage** no default This key specifies the amount of water 
+stored in the reservoir as a volume. Has same length units as the problem domain i.e. if domain is 
+sized in meters this will be in m\ :sup:`3`.
+
+*double* **Reservoirs.\ *reservoir_name*.Release_Rate** no default [Type: double] This key specifies 
+the rate in volume/time [L\ :sup:`3` \ :sup:`-1`] that the reservoir release water. The amount of time over which 
+this amount is released is independent of solver timestep size.
+
+Overland_Flow_Solver
+
+*string* **Reservoirs.Overland_Flow_Solver** no default This key specifies which overland flow 
+condition is used in the domain so that the slopes aroundthe reservoirs can be adjusted properly. 
+Supported Options are **OverlandFlow** and **OverlandKinematic**.
+
 .. _Timing Information:
 
 Timing Information
@@ -4322,6 +4392,19 @@ occurs at the end of the run when all collected data is written.
       pfset Solver.PrintWells False          ## TCL syntax
 
       <runname>.Solver.PrintWells = False    ## Python syntax
+
+*string* **Solver.PrintReservoirs** True This key is used to turn on
+collection and printing of the reservoir data. The data is collected at
+intervals given by values in the timing information section. Printing
+occurs at the end of the run when all collected data is written.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintReservoirs False          ## TCL syntax
+
+      <runname>.Solver.PrintReservoirs = False    ## Python syntax
 
 *string* **Solver.PrintLSMSink** False This key is used to turn on
 printing of the flux array passed from ``CLM`` to ParFlow. 

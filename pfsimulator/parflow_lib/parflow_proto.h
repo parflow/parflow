@@ -1303,8 +1303,27 @@ PFModule *WellPackageNewPublicXtra(int num_phases, int num_contaminants);
 void WellPackageFreePublicXtra(void);
 int WellPackageSizeOfTempData(void);
 
+/* reservoir.c */
+ReservoirData *NewReservoirData(void);
+void FreeReservoirData(ReservoirData *reservoir_data);
+void PrintReservoirData(ReservoirData *reservoir_data, unsigned int print_mask);
+void WriteReservoirs(char *file_prefix, Problem *problem, ReservoirData *reservoir_data, double time, int write_header);
+
+typedef void (*ReservoirPackageInvoke) (ProblemData *problem_data);
+typedef PFModule *(*ReservoirPackageNewPublicXtraInvoke) (int num_phases, int num_contaminants);
+
+
+
 /* wells_lb.c */
 void LBWells(Lattice *lattice, Problem *problem, ProblemData *problem_data);
+
+/* reservoir_package.c */
+void ReservoirPackage(ProblemData *problem_data);
+PFModule *ReservoirPackageInitInstanceXtra(void);
+void ReservoirPackageFreeInstanceXtra(void);
+PFModule *ReservoirPackageNewPublicXtra(void);
+void ReservoirPackageFreePublicXtra(void);
+int ReservoirPackageSizeOfTempData(void);
 
 /* write_parflow_binary.c */
 long SizeofPFBinarySubvector(Subvector *subvector, Subgrid *subgrid);
