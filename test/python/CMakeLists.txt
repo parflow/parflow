@@ -14,6 +14,7 @@ set(TESTS
   richards_hydrostatic_equilibrium
   indicator_field
   LW_surface_press
+  channelwidth
   overland_tiltedV_MGSemiTest
 )
 

@@ -1009,6 +1009,24 @@ PFModule *YSlopeNewPublicXtra(void);
 void YSlopeFreePublicXtra(void);
 int YSlopeSizeOfTempData(void);
 
+typedef void (*ChannelWidthInvoke) (ProblemData *problem_data, Vector *wc_x, Vector *dummy);
+typedef PFModule *(*ChannelWidthInitInstanceXtraInvoke) (Grid *grid3d, Grid *grid2d);
+/* problem_wc_x.c */
+void XChannelWidth(ProblemData *problem_data, Vector *x_wc, Vector *dummy);
+PFModule *XChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d);
+void XChannelWidthFreeInstanceXtra(void);
+PFModule *XChannelWidthNewPublicXtra(void);
+void XChannelWidthFreePublicXtra(void);
+int XChannelWidthSizeOfTempData(void);
+
+/* problem_wc_y.c */
+void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy);
+PFModule *YChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d);
+void YChannelWidthFreeInstanceXtra(void);
+PFModule *YChannelWidthNewPublicXtra(void);
+void YChannelWidthFreePublicXtra(void);
+int YChannelWidthSizeOfTempData(void);
+
 /* random.c */
 void SeedRand(int seed);
 double Rand(void);
