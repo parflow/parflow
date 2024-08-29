@@ -77,7 +77,7 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 void          SetProblemData(
-                             ProblemData *problem_data)
+    ProblemData *problem_data)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -87,6 +87,7 @@ void          SetProblemData(
   PFModule      *permeability = (instance_xtra->permeability);
   PFModule      *porosity = (instance_xtra->porosity);
   PFModule      *wells = (instance_xtra->wells);
+  PFModule      *reservoirs = (instance_xtra->reservoirs);
   PFModule      *bc_pressure = (instance_xtra->bc_pressure);
   PFModule      *specific_storage = (instance_xtra->specific_storage);    //sk
   PFModule      *x_slope = (instance_xtra->x_slope);         //sk
@@ -102,7 +103,7 @@ void          SetProblemData(
   PFModule      *real_space_z = (instance_xtra->real_space_z);
 
   /* Note: the order in which these modules are called is important */
-  PFModuleInvokeType(WellPackageInvoke, wells, (problem_data));
+
   if ((instance_xtra->site_data_not_formed))
   {
     PFModuleInvokeType(GeometriesInvoke, geometries, (problem_data));
@@ -167,7 +168,8 @@ void          SetProblemData(
 
     (instance_xtra->site_data_not_formed) = 0;
   }
-
+  PFModuleInvokeType(WellPackageInvoke, wells, (problem_data));
+  PFModuleInvokeType(ReservoirPackageInvoke, reservoirs, (problem_data));
   PFModuleInvokeType(BCPressurePackageInvoke, bc_pressure, (problem_data));
 }
 
@@ -225,19 +227,19 @@ PFModule  *SetProblemDataInitInstanceXtra(
   if (PFModuleInstanceXtra(this_module) == NULL)
   {
     (instance_xtra->geometries) =
-      PFModuleNewInstanceType(GeometriesInitInstanceXtraInvoke, ProblemGeometries(problem), (grid));
+        PFModuleNewInstanceType(GeometriesInitInstanceXtraInvoke, ProblemGeometries(problem), (grid));
     (instance_xtra->domain) =
-      PFModuleNewInstanceType(DomainInitInstanceXtraInvoke, ProblemDomain(problem), (grid));
+        PFModuleNewInstanceType(DomainInitInstanceXtraInvoke, ProblemDomain(problem), (grid));
     (instance_xtra->permeability) =
-      PFModuleNewInstanceType(SubsrfSimInitInstanceXtraInvoke, ProblemPermeability(problem), (grid, temp_data));
+        PFModuleNewInstanceType(SubsrfSimInitInstanceXtraInvoke, ProblemPermeability(problem), (grid, temp_data));
     (instance_xtra->porosity) =
-      PFModuleNewInstanceType(SubsrfSimInitInstanceXtraInvoke,
-                              ProblemPorosity(problem), (grid, temp_data));
+        PFModuleNewInstanceType(SubsrfSimInitInstanceXtraInvoke,
+                                ProblemPorosity(problem), (grid, temp_data));
     (instance_xtra->specific_storage) =                                       //sk
-                                        PFModuleNewInstance(ProblemSpecStorage(problem), ());
+        PFModuleNewInstance(ProblemSpecStorage(problem), ());
     (instance_xtra->x_slope) =                                       //sk
-                               PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke,
-                                                       ProblemXSlope(problem), (grid, grid2d));
+        PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke,
+                                ProblemXSlope(problem), (grid, grid2d));
     (instance_xtra->y_slope) =                                       //sk
                                PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke,
                                                        ProblemYSlope(problem), (grid, grid2d));
@@ -248,10 +250,10 @@ PFModule  *SetProblemDataInitInstanceXtra(
                                PFModuleNewInstanceType(ChannelWidthInitInstanceXtraInvoke,
                                                        ProblemYChannelWidth(problem), (grid, grid2d));
     (instance_xtra->mann) =                                       //sk
-                            PFModuleNewInstanceType(ManningsInitInstanceXtraInvoke,
-                                                    ProblemMannings(problem), (grid, grid2d));
+        PFModuleNewInstanceType(ManningsInitInstanceXtraInvoke,
+                                ProblemMannings(problem), (grid, grid2d));
     (instance_xtra->dz_mult) =                                      //RMM
-                               PFModuleNewInstance(ProblemdzScale(problem), ());
+        PFModuleNewInstance(ProblemdzScale(problem), ());
 
     (instance_xtra->FBx) =                                      //RMM
                            PFModuleNewInstance(ProblemFBx(problem), ());
@@ -267,6 +269,9 @@ PFModule  *SetProblemDataInitInstanceXtra(
 
     (instance_xtra->wells) =
       PFModuleNewInstance(ProblemWellPackage(problem), ());
+
+    (instance_xtra->reservoirs) =
+        PFModuleNewInstance(ProblemReservoirPackage(problem), ());
 
     (instance_xtra->bc_pressure) =
       PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
@@ -302,6 +307,7 @@ PFModule  *SetProblemDataInitInstanceXtra(
 
     PFModuleReNewInstance((instance_xtra->real_space_z), ());
     PFModuleReNewInstance((instance_xtra->wells), ());
+    PFModuleReNewInstance((instance_xtra->reservoirs), ());
     PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
                               (instance_xtra->bc_pressure), (problem));
   }
@@ -326,6 +332,7 @@ void  SetProblemDataFreeInstanceXtra()
   {
     PFModuleFreeInstance(instance_xtra->bc_pressure);
     PFModuleFreeInstance(instance_xtra->wells);
+    PFModuleFreeInstance(instance_xtra->reservoirs);
 
     PFModuleFreeInstance(instance_xtra->geometries);
     PFModuleFreeInstance(instance_xtra->domain);
