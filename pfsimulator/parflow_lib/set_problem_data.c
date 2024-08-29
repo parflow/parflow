@@ -49,6 +49,7 @@ typedef struct {
   PFModule  *permeability;
   PFModule  *porosity;
   PFModule  *wells;
+  PFModule *reservoirs;
   PFModule  *bc_pressure;
   PFModule  *specific_storage;  //sk
   PFModule  *x_slope;  //sk
