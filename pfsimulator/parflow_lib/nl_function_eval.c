@@ -144,7 +144,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   /* Re-use saturation vector to save memory */
   Vector      *rel_perm = saturation;
   Vector      *source = saturation;
-  Vector      *groundwaterflow_f = saturation;
 
   /* Overland flow variables */  //sk
   Vector      *KW, *KE, *KN, *KS;
@@ -796,7 +795,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     p_sub = VectorSubvector(pressure, is);
     op_sub = VectorSubvector(old_pressure, is);
     os_sub = VectorSubvector(old_saturation, is);
-    Subvector* groundwater_sub = VectorSubvector(groundwaterflow_f, is);
 
     /* @RMM added to provide access to x/y slopes */
     x_ssl_sub = VectorSubvector(x_ssl, is);
@@ -867,7 +865,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     pp = SubvectorData(p_sub);
     opp = SubvectorData(op_sub);
     osp = SubvectorData(os_sub);
-    double* q_groundwater = SubvectorData(groundwater_sub);
 
     /* @RMM  added to provide slopes to terrain fns */
     x_ssl_dat = SubvectorData(x_ssl_sub);
@@ -2288,23 +2285,20 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               BCPressurePackageGroundwaterFlowModule(
                 bc_pressure_package, ipatch);
 
+          /* GWF BC terms are added inside the module */
           PFModuleInvokeType(GroundwaterFlowEvalInvoke, groundwaterflow_eval, 
-              (q_groundwater, bc_struct, subgrid, p_sub, opp, dt,
-              permxp, permyp, z_mult_dat, ipatch, is, problem_data));
+              ((void*)fp, CALCFCN, bc_struct, subgrid, p_sub, opp, dt, 
+              rpp, NULL, permxp, permyp, z_mult_dat, ipatch, is, problem_data));
 
         }), 
         LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals( int ip = 0; ),
-        CellSetup({
-          ip = SubvectorEltIndex(p_sub, i, j, k);
-        }),
+        Locals(),
+        CellSetup(DoNothing),
         FACE(LeftFace,  DoNothing),
         FACE(RightFace, DoNothing),
         FACE(DownFace,  DoNothing),
         FACE(UpFace,    DoNothing),
-        FACE(BackFace,  {
-          fp[ip] += q_groundwater[ip];
-        }),
+        FACE(BackFace,  DoNothing),
         FACE(FrontFace, DoNothing),
         CellFinalize(DoNothing),
         AfterAllCells(DoNothing)
