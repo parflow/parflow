@@ -877,12 +877,45 @@ void OverlandFlowEvalKinFreePublicXtra(void);
 int OverlandFlowEvalKinSizeOfTempData(void);
 
 /* groundwaterflow_eval.c */
+double ParameterAt(void *parameter, int ival);
+void* NewGroundwaterFlowParameter(char *patch_name, char *parameter_name);
+void FreeGroundwaterFlowParameter(void *parameter);
 
+typedef void (*GroundwaterFlowEvalInvoke)(
+    void *groundwater_out, int flag, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
 
+void GroundwaterFlowEval(
+    void *groundwater_out, int flag, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
+
+void GroundwaterFlowEvalNLFunc(
+    double *q_groundwater, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
+
+void GroundwaterFlowEvalJacob(
+    Submatrix *J_sub, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
+
+typedef PFModule* (*GroundwaterFlowEvalInitInstanceXtraInvoke)(char*);
+PFModule* GroundwaterFlowEvalInitInstanceXtra(char* patch_name);
+void GroundwaterFlowEvalFreeInstanceXtra();
+PFModule* GroundwaterFlowEvalNewPublicXtra();
+void GroundwaterFlowEvalFreePublicXtra();
+int GroundwaterFlowEvalSizeOfTempData();
+
+/* problem_ic_phase_satur.c */
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases);
 
-/* problem_ic_phase_satur.c */
 void ICPhaseSatur(Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 PFModule *ICPhaseSaturInitInstanceXtra(void);
 void ICPhaseSaturFreeInstanceXtra(void);
@@ -1397,6 +1430,8 @@ void ComputeTop(Problem *    problem,
 
 void ComputePatchTop(Problem *    problem,
 		     ProblemData *problem_data);
+
+void ComputeBottom(Problem  *problem, ProblemData *problem_data);
 
 int CheckTime(Problem *problem, char *key, double time);
 

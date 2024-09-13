@@ -1040,8 +1040,6 @@ PFModule  *BCPressurePackageNewPublicXtra(
         {
           NewTypeStruct(GroundwaterFlow, data);
 
-          // GroundwaterFlowModule(data) = PFModuleNewModule(
-          //     GroundwaterFlowEval, (patch_name));
           GroundwaterFlowModule(data) = PFModuleNewInstanceType(
               GroundwaterFlowEvalInitInstanceXtraInvoke,
               (public_xtra->groundwaterflow_eval), (patch_name));
