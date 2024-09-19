@@ -2273,12 +2273,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           fp[ip] -= dt * dir * u_old;
           vel_vec[vel_idx] = bc_patch_values[ival];
         }),
-        AfterAllCells(DoNothing)
-      ); /* End GroundwaterFlowBC */
-
-      ForPatchCellsPerFace(
-        GroundwaterFlowBC,
-        BeforeAllCells({
+        AfterAllCells({
 
           PFModule *bc_pressure_package = ProblemBCPressurePackage(problem);
           PFModule *groundwaterflow_eval = 
@@ -2290,19 +2285,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               ((void*)fp, CALCFCN, bc_struct, subgrid, p_sub, opp, dt, 
               rpp, NULL, permxp, permyp, z_mult_dat, ipatch, is, problem_data));
 
-        }), 
-        LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-        Locals(),
-        CellSetup(DoNothing),
-        FACE(LeftFace,  DoNothing),
-        FACE(RightFace, DoNothing),
-        FACE(DownFace,  DoNothing),
-        FACE(UpFace,    DoNothing),
-        FACE(BackFace,  DoNothing),
-        FACE(FrontFace, DoNothing),
-        CellFinalize(DoNothing),
-        AfterAllCells(DoNothing)
-      );    /* End GroundwaterFlow case */
+        })
+      ); /* End GroundwaterFlowBC */
     }       /* End ipatch loop */
   }         /* End subgrid loop */
 

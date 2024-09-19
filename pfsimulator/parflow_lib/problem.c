@@ -497,6 +497,7 @@ void          FreeProblemData(
     FreeVector(ProblemDataRealSpaceZ(problem_data));
     FreeVector(ProblemDataIndexOfDomainTop(problem_data));
     FreeVector(ProblemDataPatchIndexOfDomainTop(problem_data));
+    FreeVector(ProblemDataIndexOfDomainBottom(problem_data));
 
     tfree(problem_data);
   }
