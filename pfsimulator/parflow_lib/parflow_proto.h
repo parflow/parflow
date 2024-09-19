@@ -33,6 +33,8 @@ typedef PFModule *(*BCPressurePackageNewPublicXtraInvoke) (int num_phases);
 
 /* bc_pressure_package.c */
 void BCPressurePackage(ProblemData *problem_data);
+PFModule *BCPressurePackageGroundwaterFlowModule(
+    PFModule *bc_pressure_package, int ipatch);
 PFModule *BCPressurePackageInitInstanceXtra(Problem *problem);
 void BCPressurePackageFreeInstanceXtra(void);
 PFModule *BCPressurePackageNewPublicXtra(int num_phases);
@@ -874,10 +876,50 @@ PFModule *OverlandFlowEvalKinNewPublicXtra(void);
 void OverlandFlowEvalKinFreePublicXtra(void);
 int OverlandFlowEvalKinSizeOfTempData(void);
 
+/* groundwaterflow_eval.c */
+// double ParameterAt(void *parameter, int ival);
+// void* NewGroundwaterFlowParameter(char *patch_name, char *parameter_name);
+Vector* NewGroundwaterFlowParameter(
+    ProblemData *problem_data, ParameterUnion par);
+// void FreeGroundwaterFlowParameter(void *parameter);
+
+typedef void (*GroundwaterFlowEvalInvoke)(
+    void *groundwater_out, int flag, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
+
+void GroundwaterFlowEval(
+    void *groundwater_out, int flag, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
+
+void GroundwaterFlowEvalNLFunc(
+    double *q_groundwater, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
+
+void GroundwaterFlowEvalJacob(
+    Submatrix *J_sub, BCStruct *bc_struct, Subgrid *subgrid, 
+    Subvector *p_sub, double *old_pressure, double dt, 
+    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
+    int ipatch, int isubgrid, ProblemData *problem_data);
+
+typedef PFModule* (*GroundwaterFlowEvalInitInstanceXtraInvoke)(
+    ProblemData *problem_data, ParameterUnion Sy, ParameterUnion Ad);
+PFModule* GroundwaterFlowEvalInitInstanceXtra(
+    ProblemData *problem_data, ParameterUnion Sy, ParameterUnion Ad);
+void GroundwaterFlowEvalFreeInstanceXtra();
+PFModule* GroundwaterFlowEvalNewPublicXtra();
+void GroundwaterFlowEvalFreePublicXtra();
+int GroundwaterFlowEvalSizeOfTempData();
+
+/* problem_ic_phase_satur.c */
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases);
 
-/* problem_ic_phase_satur.c */
 void ICPhaseSatur(Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 PFModule *ICPhaseSaturInitInstanceXtra(void);
 void ICPhaseSaturFreeInstanceXtra(void);
@@ -1392,6 +1434,8 @@ void ComputeTop(Problem *    problem,
 
 void ComputePatchTop(Problem *    problem,
 		     ProblemData *problem_data);
+
+void ComputeBottom(Problem  *problem, ProblemData *problem_data);
 
 int CheckTime(Problem *problem, char *key, double time);
 

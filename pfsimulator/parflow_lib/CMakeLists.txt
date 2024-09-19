@@ -12,6 +12,7 @@ set (SRC_FILES_CONST advect.F
   compute_maximums.c
   compute_top.c
   compute_patch_top.c
+  compute_bottom.c
   compute_total_concentration.c
   constantRF.c
   constant_porosity.c
@@ -30,6 +31,7 @@ set (SRC_FILES_CONST advect.F
   grgeom_list.c
   grgeom_octree.c
   grid.c
+  groundwaterflow_eval.c
   hbt.c
   index_space.c
   infinity_norm.c

@@ -3119,7 +3119,7 @@ specifies the type of boundary condition data given for patch
 *patch_name*. Possible values for this key are **DirEquilRefPatch,
 DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile,
 OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic,
-OverlandDiffusive** and **ExactSolution**. The choice
+OverlandDiffusive**, **ExactSolution** and **GroundwaterFlow**. The choice
 **DirEquilRefPatch** specifies that the pressure on the specified patch
 will be in hydrostatic equilibrium with a constant reference pressure
 given on a reference patch. The choice **DirEquilPLinear** specifies
@@ -3160,8 +3160,11 @@ solution is to be applied as a Dirichlet boundary condition on the
 respective patch. Note that this does not change according to any cycle.
 Instead, time dependence is handled by evaluating at the time the
 boundary condition value is desired. The solution is specified by using
-a predefined function (choices are described below). NOTE: These last
-six types of boundary condition input is for *Richards’ equation cases
+a predefined function (choices are described below). 
+The choice {\bf GroundwaterFlow} turns on groundwater interactions with a 
+deep aquifer as described in :cite:t:`Rahman2018`. The aquifer is set with the 
+Specific Yield and Thickness parameters, detailed below. NOTE: These last
+seven types of boundary condition input are for *Richards’ equation cases
 only!*
 
 .. container:: list
@@ -3356,6 +3359,38 @@ The choices for this key correspond to pressures as follows.
 
 **XYZTPlus1PermTensor**: 
    :math:`p = xyzt + 1`
+
+
+*string*
+**Patch.\ *patch_name*.BCPressure.GroundwaterFlow.\ *parameter*.Type**
+no default
+This key is required when the GroundwaterFlow boundary condition is chosen.
+It must be specified for both GroundwaterFlow parameters *SpecificYield* and *AquiferDepth*. 
+This key specifies the type of the GroundwaterFlow parameter: *Constant* will set the parameter to a value set in the key **Patch.\ *patch_name*.BCPressure.GroundwaterFlow.\ *parameter*.Value**, while *FileName* will set the parameter to values read from the file provided in the key **Patch.\ *patch_name*.BCPressure.GroundwaterFlow.\ *parameter*.FileName**.
+
+.. container:: list
+   ::
+
+      pfset Patch.bottom.BCPressure.GroundwaterFlow.SpecificYield.Type Constant
+      pfset Patch.bottom.BCPressure.GroundwaterFlow.AquiferDepth.Type FileName
+
+*double*
+**Patch.\ *patch_name*.BCPressure.GroundwaterFlow.\ *parameter*.Value**
+no default
+This key will set the GroundwaterFlow *parameter* to a constant value.
+
+.. container:: list
+   ::
+      pfset Patch.bottom.BCPressure.GroundwaterFlow.SpecificYield.Value 0.1
+
+*string*
+**Patch.\ *patch_name*.BCPressure.GroundwaterFlow.\ *parameter*.FileName**
+no default
+This key will set the GroundwaterFlow *parameter* to the values read from the provided file.
+
+.. container:: list
+   ::
+      pfset Patch.bottom.BCPressure.GroundwaterFlow.AquiferDepth.FileName "filename"
 
 Example Script:
 

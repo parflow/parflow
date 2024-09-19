@@ -108,6 +108,7 @@ typedef struct {
   PFModule  *overlandflow_eval;        //DOK
   PFModule  *overlandflow_eval_diff;         //@RMM
   PFModule  *overlandflow_eval_kin;  //@MCB
+  PFModule  *groundwaterflow_eval;
 
   /* @RMM Variable dZ */
   PFModule  *dz_mult;           //rmm
@@ -138,6 +139,14 @@ typedef struct {
    * -1 means domain is not present at the i,j index.
    */
   Vector         *patch_index_of_domain_top;
+
+  /*
+   * This is a NX * NY vector of Z indices to the bottom
+   * of the domain.
+   *
+   * -1 means domain is not present at that i,j index.
+   */
+  Vector         *index_of_domain_bottom;
 
   Vector         *permeability_x;
   Vector         *permeability_y;
@@ -229,6 +238,8 @@ typedef struct {
 #define ProblemOverlandFlowEval(problem)          ((problem)->overlandflow_eval)   //DOK
 #define ProblemOverlandFlowEvalDiff(problem)          ((problem)->overlandflow_eval_diff)   //@RMM
 #define ProblemOverlandFlowEvalKin(problem)  ((problem)->overlandflow_eval_kin) //@MCB
+#define ProblemGroundwaterFlowEval(problem)  \
+    ((problem)->groundwaterflow_eval)
 
 #define ProblemdzScale(problem)            ((problem)->dz_mult)    //RMM
 #define ProblemRealSpaceZ(problem)            ((problem)->real_space_z)
@@ -268,6 +279,7 @@ typedef struct {
 
 #define ProblemDataIndexOfDomainTop(problem_data)  ((problem_data)->index_of_domain_top)
 #define ProblemDataPatchIndexOfDomainTop(problem_data)  ((problem_data)->patch_index_of_domain_top)
+#define ProblemDataIndexOfDomainBottom(problem_data)  ((problem_data)->index_of_domain_bottom)
 
 #define ProblemDataPermeabilityX(problem_data)  ((problem_data)->permeability_x)
 #define ProblemDataPermeabilityY(problem_data)  ((problem_data)->permeability_y)
