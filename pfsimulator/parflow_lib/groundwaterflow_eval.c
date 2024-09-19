@@ -35,111 +35,45 @@
     (2*((da)*(b) + (a)*(db)) - (hm)*((da) + (db))) / ((a)+(b)) \
   )
 
-typedef struct {
-  void* data;
-  int type;
-} GroundwaterFlowParameter;
 
 typedef void PublicXtra;
 
 typedef struct {
-  void *SpecificYield;
-  void *AquiferDepth;
+  Vector *SpecificYield;
+  Vector *AquiferDepth;
 } InstanceXtra;
 
-double ParameterAt(void *parameter, int ival) {
-  GroundwaterFlowParameter *par = (GroundwaterFlowParameter*)parameter;
-  switch(par->type) {
-    case Constant:
-    {
-      return *((double*)par->data);
-    }
-    case PFBFile: // [todo] implement parameters read from file
-    {
-      return 0.0;
-    }
-    default:
-    {
-      return 0.0;
-    }
-  }
-}
 
-void* NewGroundwaterFlowParameter(char *patch_name, char *parameter_name)
+Vector* NewGroundwaterFlowParameter(
+    ProblemData *problem_data, ParameterUnion par)
 {
-  GroundwaterFlowParameter *par = ctalloc(GroundwaterFlowParameter, 1);
-  // Valid types of parameter value assignment
-  NameArray type_na = NA_NewNameArray("Constant PFBFile");
+  Vector *bottom = ProblemDataIndexOfDomainBottom(problem_data);
+  Grid   *grid2d = VectorGrid(bottom);
+  Vector *par_v  = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
-  // entry key from which to read info
-  char key[IDB_MAX_KEY_LEN];
-  sprintf(key, "Patch.%s.BCPressure.GroundwaterFlow.%s.Type", 
-      patch_name, parameter_name);
-
-  char* type_name = GetString(key);
-  int type = NA_NameToIndexExitOnError(type_na, type_name, key);
-  par->type = type;
-
-  switch(type) 
+  switch(ParameterUnionID(par))
   {
-    case Constant:
+    case 0: // is double value
     {
-      sprintf(key, "Patch.%s.BCPressure.GroundwaterFlow.%s.Value", 
-          patch_name, parameter_name);
+      InitVector(par_v, ParameterUnionDataDouble(par));
+      break;
+    }
 
-      double *data = ctalloc(double, 1);
-      (*data) = GetDouble(key);
-      par->data = (void*)data;
-      break;
-    }
-    case PFBFile:
+    case 1: // is filename string
     {
-      sprintf(key, "Patch.%s.BCPressure.GroundwaterFlow.%s.FileName", 
-          patch_name, parameter_name);
-      char *data = GetString(key);
-      par->data = (void*)data;
+      ReadPFBinary(ParameterUnionDataString(par), par_v);
       break;
     }
+
     default:
     {
-      par->data = NULL;
+      InitVector(par_v, 0.0);
       break;
     }
   }
 
-  NA_FreeNameArray(type_na);
-
-  return (void*)par;
+  return par_v;
 }
-
-
-void FreeGroundwaterFlowParameter(void *parameter) 
-{
-  GroundwaterFlowParameter *par = (GroundwaterFlowParameter*)parameter;
-  if(!par) return;
-
-  switch(par->type) 
-  {
-    case Constant:
-    {
-      tfree(par->data);
-      break;
-    }
-    case PFBFile: // not implemented yet
-    {
-      tfree(par->data);
-      break;
-    }
-    default:
-    {
-      break;
-    }
-  }
-
-  tfree(par);
-  return;
-}
-
 
 
 /*--------------------------------------------------------------------------
@@ -208,6 +142,11 @@ void GroundwaterFlowEvalNLFunc(
   Vector    *bottom      = ProblemDataIndexOfDomainBottom(problem_data);
   Subvector *bottom_sub  = VectorSubvector(bottom, isubgrid);
   double    *bottom_dat  = SubvectorData(bottom_sub);
+
+  Subvector *Sy_sub = VectorSubvector(instance_xtra->SpecificYield, isubgrid);
+  double    *Sy_dat = SubvectorData(Sy_sub);
+  Subvector *Ad_sub = VectorSubvector(instance_xtra->AquiferDepth,  isubgrid);
+  double    *Ad_dat = SubvectorData(Ad_sub);
 
   int i = 0, j = 0, k = 0, ival = 0;
   ForPatchCellsPerFace(
@@ -315,16 +254,12 @@ void GroundwaterFlowEvalNLFunc(
       ip_lwr = SubvectorEltIndex(p_sub, i, j-1, is_lwr_edge ? k_mid : k_lwr);
       ip_upr = SubvectorEltIndex(p_sub, i, j+1, is_upr_edge ? k_mid : k_upr);
 
-      Sy = ParameterAt(instance_xtra->SpecificYield, ibot_mid);
-      Ad_mid = ParameterAt(instance_xtra->AquiferDepth, ibot_mid);
-      Ad_lft = ParameterAt(instance_xtra->AquiferDepth, 
-          is_lft_edge ? ibot_mid : ibot_lft);
-      Ad_rgt = ParameterAt(instance_xtra->AquiferDepth, 
-          is_rgt_edge ? ibot_mid : ibot_rgt);
-      Ad_lwr = ParameterAt(instance_xtra->AquiferDepth, 
-          is_lwr_edge ? ibot_mid : ibot_lwr);
-      Ad_upr = ParameterAt(instance_xtra->AquiferDepth, 
-          is_upr_edge ? ibot_mid : ibot_upr);
+      Sy = Sy_dat[ibot_mid];
+      Ad_mid = Ad_dat[ibot_mid];
+      Ad_lft = is_lft_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_lft];
+      Ad_rgt = is_rgt_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_rgt];
+      Ad_lwr = is_lwr_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_lwr];
+      Ad_upr = is_upr_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_upr];
 
       // compute pressure head in adjacent cells
 
@@ -437,6 +372,11 @@ void GroundwaterFlowEvalJacob(
   Subvector *bottom_sub  = VectorSubvector(bottom, isubgrid);
   double    *bottom_dat  = SubvectorData(bottom_sub);
   
+  Subvector *Sy_sub = VectorSubvector(instance_xtra->SpecificYield, isubgrid);
+  double    *Sy_dat = SubvectorData(Sy_sub);
+  Subvector *Ad_sub = VectorSubvector(instance_xtra->AquiferDepth,  isubgrid);
+  double    *Ad_dat = SubvectorData(Ad_sub);
+
   double *cp  = SubmatrixStencilData(J_sub, 0);
   double *wp  = SubmatrixStencilData(J_sub, 1);
   double *ep  = SubmatrixStencilData(J_sub, 2);
@@ -589,16 +529,12 @@ void GroundwaterFlowEvalJacob(
       ip_lwr = SubvectorEltIndex(p_sub, i, j-1, is_lwr_edge ? k_mid : k_lwr);
       ip_upr = SubvectorEltIndex(p_sub, i, j+1, is_upr_edge ? k_mid : k_upr);
 
-      Sy = ParameterAt(instance_xtra->SpecificYield, ibot_mid);
-      Ad_mid = ParameterAt(instance_xtra->AquiferDepth, ibot_mid);
-      Ad_lft = ParameterAt(instance_xtra->AquiferDepth, 
-          is_lft_edge ? ibot_mid : ibot_lft);
-      Ad_rgt = ParameterAt(instance_xtra->AquiferDepth, 
-          is_rgt_edge ? ibot_mid : ibot_rgt);
-      Ad_lwr = ParameterAt(instance_xtra->AquiferDepth, 
-          is_lwr_edge ? ibot_mid : ibot_lwr);
-      Ad_upr = ParameterAt(instance_xtra->AquiferDepth, 
-          is_upr_edge ? ibot_mid : ibot_upr);
+      Sy = Sy_dat[ibot_mid];
+      Ad_mid = Ad_dat[ibot_mid];
+      Ad_lft = is_lft_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_lft];
+      Ad_rgt = is_rgt_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_rgt];
+      Ad_lwr = is_lwr_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_lwr];
+      Ad_upr = is_upr_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_upr];
 
       // no special cases in the middle (everything is known)
       new_head_mid = new_pressure[ip_mid] + 0.5*(Ad_mid + dz*z_mult[ip_mid]);
@@ -801,15 +737,14 @@ void GroundwaterFlowEvalJacob(
  * GroundwaterFlowEvalInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule* GroundwaterFlowEvalInitInstanceXtra(char *patch_name)
+PFModule* GroundwaterFlowEvalInitInstanceXtra(
+    ProblemData *problem_data, ParameterUnion Sy, ParameterUnion Ad)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra = ctalloc(InstanceXtra, 1);
 
-  instance_xtra->SpecificYield = 
-      NewGroundwaterFlowParameter(patch_name, "SpecificYield");
-  instance_xtra->AquiferDepth  = 
-      NewGroundwaterFlowParameter(patch_name, "AquiferDepth");
+  instance_xtra->SpecificYield = NewGroundwaterFlowParameter(problem_data, Sy);
+  instance_xtra->AquiferDepth  = NewGroundwaterFlowParameter(problem_data, Ad);
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
   return this_module;
@@ -824,12 +759,12 @@ void GroundwaterFlowEvalFreeInstanceXtra()
   InstanceXtra *instance_xtra = 
       (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
-  FreeGroundwaterFlowParameter(instance_xtra->SpecificYield);
-  FreeGroundwaterFlowParameter(instance_xtra->AquiferDepth);
-
   if(instance_xtra)
   {
+    FreeVector(instance_xtra->SpecificYield);
+    FreeVector(instance_xtra->AquiferDepth);
     tfree(instance_xtra);
+    instance_xtra = NULL;
   }
 }
 

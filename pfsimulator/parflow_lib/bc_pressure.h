@@ -144,6 +144,8 @@
   })                             \
   BC_TYPE(GroundwaterFlow, {     \
     PFModule *groundwaterflow;   \
+    ParameterUnion SpcYield;     \
+    ParameterUnion AqDepth;      \
   })
 
 
@@ -381,6 +383,12 @@ typedef struct {
 /*--------------------------------------------------------------------------*/
 #define GroundwaterFlowModule(patch) \
   ((patch)->groundwaterflow)
+/*--------------------------------------------------------------------------*/
+#define GroundwaterFlowSpecificYield(patch) \
+  ((patch)->SpcYield)
+/*--------------------------------------------------------------------------*/
+#define GroundwaterFlowAquiferDepth(patch) \
+  ((patch)->AqDepth)
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
  *--------------------------------------------------------------------------*/

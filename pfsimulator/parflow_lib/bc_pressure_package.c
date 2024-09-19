@@ -53,8 +53,6 @@ typedef struct {
   int    *patch_indexes;  /* num_patches patch indexes */
   int    *cycle_numbers;  /* num_patches cycle numbers */
   void  **data;           /* num_patches pointers to Type structures */
-  
-  PFModule  *groundwaterflow_eval;
 } PublicXtra;
 
 typedef struct {
@@ -79,6 +77,8 @@ void         BCPressurePackage(
 {
   PFModule         *this_module = ThisPFModule;
   PublicXtra       *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+  InstanceXtra     *instance_xtra = 
+      (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   BCPressureData   *bc_pressure_data
     = ProblemDataBCPressureData(problem_data);
@@ -448,6 +448,17 @@ void         BCPressurePackage(
 
             BCPressureDataBCType(bc_pressure_data, i) = GroundwaterFlowBC;
 
+            GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
+
+            // because the module instance wasn't created before, it is now.
+            PFModule *groundwaterflow_eval = 
+                ProblemGroundwaterFlowEval(instance_xtra->problem);
+
+            GroundwaterFlowModule(data) = PFModuleNewInstanceType(
+                GroundwaterFlowEvalInitInstanceXtraInvoke,
+                groundwaterflow_eval, (problem_data, data->SpcYield, 
+                data->AqDepth));
+
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
                 = (void*)interval_data;
 
@@ -559,9 +570,6 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
   /* allocate space for the public_xtra structure */
   public_xtra = ctalloc(PublicXtra, 1);
-
-  (public_xtra->groundwaterflow_eval) = 
-      PFModuleNewModule(GroundwaterFlowEval, ());
 
   (public_xtra->num_phases) = num_phases;
 
@@ -1040,9 +1048,37 @@ PFModule  *BCPressurePackageNewPublicXtra(
         {
           NewTypeStruct(GroundwaterFlow, data);
 
-          GroundwaterFlowModule(data) = PFModuleNewInstanceType(
-              GroundwaterFlowEvalInitInstanceXtraInvoke,
-              (public_xtra->groundwaterflow_eval), (patch_name));
+          // this cannot be defined here because the module is not available
+          // therefore, it will be defined in BCPressurePackage()
+          GroundwaterFlowModule(data) = NULL;
+
+          char key_d[IDB_MAX_KEY_LEN], key_f[IDB_MAX_KEY_LEN];
+
+          sprintf(key_d, 
+              "Patch.%s.BCPressure.GroundwaterFlow.SpecificYield.Value", 
+              patch_name);
+          sprintf(key_f, 
+              "Patch.%s.BCPressure.GroundwaterFlow.SpecificYield.FileName", 
+              patch_name);
+
+          GetParameterUnion(
+            GroundwaterFlowSpecificYield(data), { 
+            ParameterUnionString(0, key_d); 
+            ParameterUnionDouble(1, key_f); 
+          });
+
+          sprintf(key_d, 
+              "Patch.%s.BCPressure.GroundwaterFlow.AquiferDepth.Value", 
+              patch_name);
+          sprintf(key_f, 
+              "Patch.%s.BCPressure.GroundwaterFlow.AquiferDepth.FileName", 
+              patch_name);
+
+          GetParameterUnion(
+            GroundwaterFlowAquiferDepth(data), { 
+            ParameterUnionString(0, key_d); 
+            ParameterUnionDouble(1, key_f); 
+          });
 
           StoreTypeStruct(public_xtra, data, i);
           break;
@@ -1213,8 +1249,9 @@ void  BCPressurePackageFreePublicXtra()
           case GroundwaterFlow:
           {
             GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
-            // PFModuleFreeModule(GroundwaterFlowModule(data));
-            PFModuleFreeInstance(GroundwaterFlowModule(data));
+            if(GroundwaterFlowModule(data)) {
+              PFModuleFreeInstance(GroundwaterFlowModule(data));
+            }
             tfree(data);
             break;
           }
@@ -1245,8 +1282,6 @@ void  BCPressurePackageFreePublicXtra()
 
       tfree((public_xtra->interval_divisions));
     }
-
-    PFModuleFreeModule(public_xtra->groundwaterflow_eval);
 
     tfree(public_xtra);
   }

@@ -108,6 +108,7 @@ typedef struct {
   PFModule  *overlandflow_eval;        //DOK
   PFModule  *overlandflow_eval_diff;         //@RMM
   PFModule  *overlandflow_eval_kin;  //@MCB
+  PFModule  *groundwaterflow_eval;
 
   /* @RMM Variable dZ */
   PFModule  *dz_mult;           //rmm
@@ -237,6 +238,8 @@ typedef struct {
 #define ProblemOverlandFlowEval(problem)          ((problem)->overlandflow_eval)   //DOK
 #define ProblemOverlandFlowEvalDiff(problem)          ((problem)->overlandflow_eval_diff)   //@RMM
 #define ProblemOverlandFlowEvalKin(problem)  ((problem)->overlandflow_eval_kin) //@MCB
+#define ProblemGroundwaterFlowEval(problem)  \
+    ((problem)->groundwaterflow_eval)
 
 #define ProblemdzScale(problem)            ((problem)->dz_mult)    //RMM
 #define ProblemRealSpaceZ(problem)            ((problem)->real_space_z)

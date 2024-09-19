@@ -877,9 +877,11 @@ void OverlandFlowEvalKinFreePublicXtra(void);
 int OverlandFlowEvalKinSizeOfTempData(void);
 
 /* groundwaterflow_eval.c */
-double ParameterAt(void *parameter, int ival);
-void* NewGroundwaterFlowParameter(char *patch_name, char *parameter_name);
-void FreeGroundwaterFlowParameter(void *parameter);
+// double ParameterAt(void *parameter, int ival);
+// void* NewGroundwaterFlowParameter(char *patch_name, char *parameter_name);
+Vector* NewGroundwaterFlowParameter(
+    ProblemData *problem_data, ParameterUnion par);
+// void FreeGroundwaterFlowParameter(void *parameter);
 
 typedef void (*GroundwaterFlowEvalInvoke)(
     void *groundwater_out, int flag, BCStruct *bc_struct, Subgrid *subgrid, 
@@ -905,8 +907,10 @@ void GroundwaterFlowEvalJacob(
     double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, double *z_mult, 
     int ipatch, int isubgrid, ProblemData *problem_data);
 
-typedef PFModule* (*GroundwaterFlowEvalInitInstanceXtraInvoke)(char*);
-PFModule* GroundwaterFlowEvalInitInstanceXtra(char* patch_name);
+typedef PFModule* (*GroundwaterFlowEvalInitInstanceXtraInvoke)(
+    ProblemData *problem_data, ParameterUnion Sy, ParameterUnion Ad);
+PFModule* GroundwaterFlowEvalInitInstanceXtra(
+    ProblemData *problem_data, ParameterUnion Sy, ParameterUnion Ad);
 void GroundwaterFlowEvalFreeInstanceXtra();
 PFModule* GroundwaterFlowEvalNewPublicXtra();
 void GroundwaterFlowEvalFreePublicXtra();

@@ -57,6 +57,7 @@
 #include "matrix.h"
 #include "vector.h"
 #include "pf_module.h"
+#include "parameter_union.h"
 #include "geometry.h"
 #include "grgeometry.h"
 #include "geostats.h"
