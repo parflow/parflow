@@ -337,9 +337,6 @@ sloping_slab.run(working_directory=test1_dir)
 i=10   
 timestep = str(i).rjust(5, '0')
 
-sig_digits = 4
-abs_value = 1e-12
-
 test_files = ["press"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
