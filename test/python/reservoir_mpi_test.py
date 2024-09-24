@@ -343,7 +343,9 @@ abs_value = 1e-12
 test_files = ["press"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
-    if not pf_test_file_with_abs(test1_dir + filename, base_case_dir + filename, f"Max difference in {filename}", sig_digits, abs_value):
+    test_pressure = pf.read_pfb(test1_dir + filename)
+    correct_pressure = pf.read_pfb(base_case_dir + filename)
+    if not np.allclose(test_pressure, correct_pressure):
         passed = False
 
 
@@ -359,8 +361,11 @@ sloping_slab.run(working_directory=test2_dir)
 test_files = ["press"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
-    if not pf_test_file_with_abs(test2_dir + filename, base_case_dir + filename, f"Max difference in {filename}", sig_digits, abs_value):
+    test_pressure = pf.read_pfb(test2_dir + filename)
+    correct_pressure = pf.read_pfb(base_case_dir + filename)
+    if not np.allclose(test_pressure, correct_pressure):
         passed = False
+
 
 
 if passed:

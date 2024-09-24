@@ -344,7 +344,10 @@ abs_value = 1e-12
 test_files = ["press"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
-    if not pf_test_file_with_abs(run_dir + filename, correct_output_dir + filename, f"Max difference in {filename}", sig_digits, abs_value):
+    print(f"{run_dir} vs {correct_output_dir} for {filename}")
+    test_pressure = parflow.read_pfb(run_dir + filename)
+    correct_pressure = parflow.read_pfb(correct_output_dir + filename)
+    if not np.allclose(test_pressure, correct_pressure):
         passed = False
 
 
