@@ -1,5 +1,5 @@
 import os
-from parflow.tools.io import read_pfb
+from parflow.tools.io import read_pfb, read_pfsb
 
 def pf_test_equal(a, b, message):
     pf_eps = 1e-5
@@ -126,10 +126,16 @@ def pf_test_file(file, correct_file, message, sig_digits=6):
         raise FileNotFoundError(f"FAILED : regression check output file <{correct_file}> does not exist")
 
     try:
-        data = read_pfb(file)
-        correct_data = read_pfb(correct_file)
+        if file.endswith(".pfb"):
+            data = read_pfb(file)
+            correct_data = read_pfb(correct_file)
+        elif file.endswith(".pfsb"):
+            data = read_pfsb(file)
+            correct_data = read_pfsb(correct_file)
+        else:
+            raise ValueError("Unknown parflow file type.")
     except Exception as e:
-        print("Error: Failed to load data from files.", e)
+        print("Error: Failed to load data from files...", e)
         return False
     
     result = msig_diff(data, correct_data, sig_digits)
