@@ -404,7 +404,6 @@ for i in range(51):
         correct_output_dir_name + filename,
         f"Max difference in z-velocity for timestep {timestep}",
         abs_value, sig_digits):            
-    ):
         passed = False
 
 if passed:
