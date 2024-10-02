@@ -22,7 +22,6 @@ jobs:
             cmake --build .
             cp uncrustify /usr/local/bin && chmod a+x /usr/local/bin/uncrustify
             cd ../..
-            cd parflow
             ./bin/pfformat --check
 
   build:
