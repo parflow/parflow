@@ -618,7 +618,7 @@ void            MatvecSubMat(
           });
         }
 
-	/* Now compute matvec contributions from JC */
+        /* Now compute matvec contributions from JC */
         yp = SubvectorData(y_sub);
         xp = SubvectorData(x_sub);
         for (si = 0; si < 5; si++)     /* loop over only c,w,e,s,n */

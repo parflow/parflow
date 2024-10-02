@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   amps_File file;
   amps_Invoice recv_invoice;
 
-  /* Number of times to execute SFBcast; default test is 1 */  
+  /* Number of times to execute SFBcast; default test is 1 */
   int loop = 1;
 
   int me;
@@ -68,13 +68,13 @@ int main(int argc, char *argv[])
 
   me = amps_Rank(amps_CommWorld);
 
-  if(me == 0)
+  if (me == 0)
   {
     FILE* test_file;
 
     test_file = fopen(filename, "wb");
 
-    for(unsigned char i = 0; i < length; i++)
+    for (unsigned char i = 0; i < length; i++)
     {
       fwrite(&i, 1, 1, test_file);
     }
@@ -92,16 +92,16 @@ int main(int argc, char *argv[])
 
     amps_SFBCast(amps_CommWorld, file, recv_invoice);
 
-    for(unsigned char i = 0; i < length; i++)
+    for (unsigned char i = 0; i < length; i++)
     {
       if (buffer[i] != i)
       {
-	amps_Printf("ERROR - byte buffers do not match\n");
-	result = 1;
-	break;
+        amps_Printf("ERROR - byte buffers do not match\n");
+        result = 1;
+        break;
       }
     }
-    
+
     amps_SFclose(file);
   }
 

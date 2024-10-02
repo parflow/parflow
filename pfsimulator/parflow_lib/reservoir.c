@@ -75,47 +75,52 @@ ReservoirData *NewReservoirData()
  *--------------------------------------------------------------------------*/
 
 void FreeReservoirData(
-    ReservoirData *reservoir_data)
+                       ReservoirData *reservoir_data)
 {
   ReservoirDataPhysical *reservoir_data_physical;
   int i;
 
   if (reservoir_data)
   {
-
-    if (ReservoirDataNumReservoirs(reservoir_data) > 0) {
-
-        for (i = 0; i < ReservoirDataNumReservoirs(reservoir_data); i++) {
-          reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, i);
-          if (ReservoirDataPhysicalName(reservoir_data_physical)) {
-            tfree(ReservoirDataPhysicalName(reservoir_data_physical));
-          }
-          if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical)) {
-            FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
-          }
-          if (ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical)) {
-            FreeSubgrid(ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical));
-          }
-          if (ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical)) {
-            FreeSubgrid(ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical));
-          }
-          tfree(reservoir_data_physical);
+    if (ReservoirDataNumReservoirs(reservoir_data) > 0)
+    {
+      for (i = 0; i < ReservoirDataNumReservoirs(reservoir_data); i++)
+      {
+        reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, i);
+        if (ReservoirDataPhysicalName(reservoir_data_physical))
+        {
+          tfree(ReservoirDataPhysicalName(reservoir_data_physical));
         }
-        if (ReservoirDataReservoirPhysicals(reservoir_data)) {
-          tfree(ReservoirDataReservoirPhysicals(reservoir_data));
+        if (ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical))
+        {
+          FreeSubgrid(ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical));
         }
+        if (ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical))
+        {
+          FreeSubgrid(ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical));
+        }
+        if (ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical))
+        {
+          FreeSubgrid(ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical));
+        }
+        tfree(reservoir_data_physical);
       }
+      if (ReservoirDataReservoirPhysicals(reservoir_data))
+      {
+        tfree(ReservoirDataReservoirPhysicals(reservoir_data));
+      }
+    }
     tfree(reservoir_data);
   }
 }
 
 
 void WriteReservoirs(
-    char *    file_prefix,
-    Problem * problem,
-    ReservoirData *reservoir_data,
-    double    time,
-    int       write_header)
+                     char *         file_prefix,
+                     Problem *      problem,
+                     ReservoirData *reservoir_data,
+                     double         time,
+                     int            write_header)
 {
   ReservoirDataPhysical *reservoir_data_physical;
 
@@ -132,8 +137,10 @@ void WriteReservoirs(
   if (ReservoirDataNumReservoirs(reservoir_data) > 0)
   {
     p = amps_Rank(amps_CommWorld);
-    if (write_header) {
-      if (p==0) {
+    if (write_header)
+    {
+      if (p == 0)
+      {
         sprintf(filename, "%s.%s", file_prefix, file_suffix);
         file = fopen(filename, "w");
         fprintf(file, "time");
@@ -146,12 +153,15 @@ void WriteReservoirs(
         fclose(file);
       }
     }
-    for (reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++) {
+    for (reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++)
+    {
       reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
-      if (p == 0) {
+      if (p == 0)
+      {
         sprintf(filename, "%s.%s", file_prefix, file_suffix);
         file = fopen(filename, "a");
-        if (file == NULL) {
+        if (file == NULL)
+        {
           amps_Printf("Error: can't open output file %s\n", filename);
           exit(1);
         }

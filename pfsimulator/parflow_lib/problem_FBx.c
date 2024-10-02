@@ -218,7 +218,7 @@ PFModule   *FBxNewPublicXtra()
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
     NA_FreeNameArray(switch_na);

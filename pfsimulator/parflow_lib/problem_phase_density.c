@@ -77,9 +77,9 @@ typedef struct {
  * Used to get the constant values for when density vector is always NULL
  *-------------------------------------------------------------------------*/
 
-void    PhaseDensityConstants(int phase,
-                              int fcn,
-                              int *phase_type,
+void    PhaseDensityConstants(int     phase,
+                              int     fcn,
+                              int *   phase_type,
                               double *constant,
                               double *ref_den,
                               double *comp_const)
@@ -90,13 +90,16 @@ void    PhaseDensityConstants(int phase,
   Type1 *dummy1;
 
   (*phase_type) = public_xtra->type[phase];
-  switch(*phase_type)
+  switch (*phase_type)
   {
     case 0:
-      if (fcn == CALCFCN) {
+      if (fcn == CALCFCN)
+      {
         dummy0 = (Type0*)(public_xtra->data[phase]);
         (*constant) = dummy0->constant;
-      } else {
+      }
+      else
+      {
         (*constant) = 0.0;
       }
       break;
@@ -409,7 +412,7 @@ PFModule  *PhaseDensityNewPublicXtra(
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
   }

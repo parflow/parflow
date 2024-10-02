@@ -199,7 +199,7 @@ void     WriteSiloInit(char *file_prefix)
 {
 #ifdef HAVE_SILO
   char filename[2048];
-  
+
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
 
@@ -268,8 +268,8 @@ void     WriteSiloInit(char *file_prefix)
                              "specific_storage",
                              "mask",
                              "dz_mult",
-			     "top_zindex",
-			     "top_patch",
+                             "top_zindex",
+                             "top_patch",
                              "eflx_lh_tot",
                              "eflx_lwrad_out",
                              "eflx_sh_tot",
@@ -289,9 +289,9 @@ void     WriteSiloInit(char *file_prefix)
                              "evaptranssum",
                              "overlandsum",
                              "overland_bc_flux",
-                             0};
+                             0 };
 
-    for(int i = 0; output_types[i]; i++)
+    for (int i = 0; output_types[i]; i++)
     {
       sprintf(filename, "%s/%s", file_prefix, output_types[i]);
       pf_mk_dir(filename);
@@ -322,13 +322,12 @@ void     WriteSilo(char *  file_prefix,
                    int     step,
                    char *  variable_name)
 {
-
 #ifdef HAVE_SILO
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
   Subvector      *subvector;
-  
+
   int g;
   int p, P;
 

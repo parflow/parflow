@@ -205,20 +205,20 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
       AMPS_ABORT("AMPS Error");
     }
 
-    if(fscanf(file, "%ld", &start) != 1)
+    if (fscanf(file, "%ld", &start) != 1)
     {
       printf("AMPS Error: Can't read start in file %s\n", dist_filename);
       AMPS_ABORT("AMPS Error");
     }
-    
+
     for (p = 1; p < amps_Size(comm); p++)
     {
-      if(fscanf(file, "%ld", &start) != 1)
+      if (fscanf(file, "%ld", &start) != 1)
       {
-	printf("AMPS Error: Can't read start in file %s\n", dist_filename);
-	AMPS_ABORT("AMPS Error");
+        printf("AMPS Error: Can't read start in file %s\n", dist_filename);
+        AMPS_ABORT("AMPS Error");
       }
-      
+
       amps_Send(comm, p, invoice);
     }
     fclose(file);

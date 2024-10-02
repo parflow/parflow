@@ -424,7 +424,7 @@ void          PhaseVelocityFace(
    * --------------------------------------------------------------------
    * --------------------------------------------------------------------
    * Fixed global boundary values for saturated solver - JJB 04/21
-   * 
+   *
    *----------------------------------------------------------------------*/
 
   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure,
@@ -481,122 +481,121 @@ void          PhaseVelocityFace(
                            Locals(int ip, vx_l, vy_l, vz_l;
                                   int alpha, vel_idx;
                                   double *mob_vec, *vel_vec;
-                                  double pdiff, value, vel_h;),
+                                  double pdiff, value, vel_h; ),
                            CellSetup({
-                               ip = SubvectorEltIndex(p_sub, i, j, k);
+        ip = SubvectorEltIndex(p_sub, i, j, k);
 
-                               vx_l = SubvectorEltIndex(vx_sub, i, j, k);
-                               vy_l = SubvectorEltIndex(vy_sub, i, j, k);
-                               vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+        vx_l = SubvectorEltIndex(vx_sub, i, j, k);
+        vy_l = SubvectorEltIndex(vy_sub, i, j, k);
+        vz_l = SubvectorEltIndex(vz_sub, i, j, k);
 
-                               alpha = 0;
-                               vel_idx = 0;
+        alpha = 0;
+        vel_idx = 0;
 
-                               mob_vec = NULL;
-                               vel_vec = NULL;
+        mob_vec = NULL;
+        vel_vec = NULL;
 
-                               vel_h = 0.0e0;
-                               pdiff = 0.0e0;
-                               value = bc_patch_values[ival];
-                             }),
+        vel_h = 0.0e0;
+        pdiff = 0.0e0;
+        value = bc_patch_values[ival];
+      }),
                            FACE(LeftFace, {
-                               alpha = 0;
-                               mob_vec = mx;
-                               vel_vec = vx;
-                               vel_h = dx;
-                               vel_idx = vx_l;
-                               pdiff = value - pres[ip];
-                             }),
+        alpha = 0;
+        mob_vec = mx;
+        vel_vec = vx;
+        vel_h = dx;
+        vel_idx = vx_l;
+        pdiff = value - pres[ip];
+      }),
                            FACE(RightFace, {
-                               alpha = 0;
-                               mob_vec = mx;
-                               vel_vec = vx;
-                               vel_h = dx;
-                               vel_idx = vx_l + 1;
-                               pdiff = pres[ip] - value;
-                             }),
+        alpha = 0;
+        mob_vec = mx;
+        vel_vec = vx;
+        vel_h = dx;
+        vel_idx = vx_l + 1;
+        pdiff = pres[ip] - value;
+      }),
                            FACE(DownFace, {
-                               alpha = 0;
-                               mob_vec = my;
-                               vel_vec = vy;
-                               vel_h = dy;
-                               vel_idx = vy_l;
-                               pdiff = value - pres[ip];
-                             }),
+        alpha = 0;
+        mob_vec = my;
+        vel_vec = vy;
+        vel_h = dy;
+        vel_idx = vy_l;
+        pdiff = value - pres[ip];
+      }),
                            FACE(UpFace, {
-                               alpha = 0;
-                               mob_vec = my;
-                               vel_vec = vy;
-                               vel_h = dy;
-                               vel_idx = vy_l + sy_v;
-                               pdiff = pres[ip] - value;
-                             }),
+        alpha = 0;
+        mob_vec = my;
+        vel_vec = vy;
+        vel_h = dy;
+        vel_idx = vy_l + sy_v;
+        pdiff = pres[ip] - value;
+      }),
                            FACE(BackFace, {
-                               alpha = 1;
-                               mob_vec = mz;
-                               vel_vec = vz;
-                               vel_h = dz;
-                               vel_idx = vz_l;
-                               pdiff = value - pres[ip];
-                             }),
+        alpha = 1;
+        mob_vec = mz;
+        vel_vec = vz;
+        vel_h = dz;
+        vel_idx = vz_l;
+        pdiff = value - pres[ip];
+      }),
                            FACE(FrontFace, {
-                               alpha = -1;
-                               mob_vec = mz;
-                               vel_vec = vz;
-                               vel_h = dz;
-                               vel_idx = vz_l + sz_v;
-                               pdiff = pres[ip] - value;
-                             }),
+        alpha = -1;
+        mob_vec = mz;
+        vel_vec = vz;
+        vel_h = dz;
+        vel_idx = vz_l + sz_v;
+        pdiff = pres[ip] - value;
+      }),
                            CellFinalize({
-                               vel_vec[vel_idx] = mob_vec[ip] * (pdiff / (0.5 * vel_h) - alpha * den[ip] * ProblemGravity(problem));
-                             }),
+        vel_vec[vel_idx] = mob_vec[ip] * (pdiff / (0.5 * vel_h) - alpha * den[ip] * ProblemGravity(problem));
+      }),
                            AfterAllCells(DoNothing)
-        );
+                           );
 
       ForPatchCellsPerFace(FluxBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int vel_idx, vx_l, vy_l, vz_l;
                                   double *vel_vec;
-                                  double value;),
+                                  double value; ),
                            CellSetup({
+        vx_l = SubvectorEltIndex(vx_sub, i, j, k);
+        vy_l = SubvectorEltIndex(vy_sub, i, j, k);
+        vz_l = SubvectorEltIndex(vz_sub, i, j, k);
 
-                               vx_l = SubvectorEltIndex(vx_sub, i, j, k);
-                               vy_l = SubvectorEltIndex(vy_sub, i, j, k);
-                               vz_l = SubvectorEltIndex(vz_sub, i, j, k);
+        vel_idx = 0;
+        vel_vec = NULL;
 
-                               vel_idx = 0;
-                               vel_vec = NULL;
-
-                               value = bc_patch_values[ival];
-                             }),
-                           FACE(LeftFace,  { 
-                               vel_vec = vx;
-                               vel_idx = vx_l;
-                             }),
-                           FACE(RightFace, { 
-                               vel_vec = vx;
-                               vel_idx = vx_l + 1;
-                             }),
-                           FACE(DownFace,  { 
-                               vel_vec = vy;
-                               vel_idx = vy_l;
-                             }),
-                           FACE(UpFace,    { 
-                               vel_vec = vy;
-                               vel_idx = vy_l + sy_v;
-                             }),
-                           FACE(BackFace,  { 
-                               vel_vec = vz;
-                               vel_idx = vz_l;
-                             }),
-                           FACE(FrontFace, { 
-                               vel_vec = vz;
-                               vel_idx = vz_l + sz_v;
-                             }),
+        value = bc_patch_values[ival];
+      }),
+                           FACE(LeftFace, {
+        vel_vec = vx;
+        vel_idx = vx_l;
+      }),
+                           FACE(RightFace, {
+        vel_vec = vx;
+        vel_idx = vx_l + 1;
+      }),
+                           FACE(DownFace, {
+        vel_vec = vy;
+        vel_idx = vy_l;
+      }),
+                           FACE(UpFace, {
+        vel_vec = vy;
+        vel_idx = vy_l + sy_v;
+      }),
+                           FACE(BackFace, {
+        vel_vec = vz;
+        vel_idx = vz_l;
+      }),
+                           FACE(FrontFace, {
+        vel_vec = vz;
+        vel_idx = vz_l + sz_v;
+      }),
                            CellFinalize({ vel_vec[vel_idx] = value; }),
                            AfterAllCells(DoNothing)
-        );
+                           );
     }
   }
 

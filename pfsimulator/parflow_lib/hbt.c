@@ -241,7 +241,7 @@ int HBT_insert(
                int   sizeof_obj)
 {
   HBT_element *temp, *inserted, *rebalance_son, *rebalance,
-    *rebalance_father;
+              *rebalance_father;
   int done = 0;
   int test, test_rebalance;
   short rebalance_B;
@@ -995,13 +995,13 @@ void HBT_scanf(
   void *obj;
   int size;
 
-  if(fscanf(file, "%d", &(height)) != 1)
+  if (fscanf(file, "%d", &(height)) != 1)
   {
     printf("ERROR: HBT_scanf failed to read height\n");
     abort();
   }
-  
-  if(fscanf(file, "%d", &(num)) != 1)
+
+  if (fscanf(file, "%d", &(num)) != 1)
   {
     printf("ERROR: HBT_scanf failed to read num\n");
     abort();
