@@ -82,8 +82,8 @@ void Porosity(
   SubgridArray     *subgrids;
 
   Subgrid          *subgrid,
-    *well_subgrid,
-    *tmp_subgrid;
+                   *well_subgrid,
+                   *tmp_subgrid;
 
   Subvector        *subvector;
 
@@ -369,7 +369,7 @@ PFModule   *PorosityNewPublicXtra()
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", sim_type_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", sim_type_name, key);
       }
     }
   }

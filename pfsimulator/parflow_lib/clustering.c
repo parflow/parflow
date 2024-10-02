@@ -107,6 +107,7 @@ void HistogramBoxAddTags(HistogramBox *histogram_box, int dim, int global_index,
 HistogramBox* NewHistogramBox(Box *box)
 {
   HistogramBox* histogram_box = talloc(HistogramBox, 1);
+
   memset(histogram_box, 0, sizeof(HistogramBox));
 
   BoxCopy(&(histogram_box->box), box);
@@ -839,7 +840,7 @@ void ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
       {
         int ip = SubvectorEltIndex(d_sub, i, j, k);
         int this_face_tag = 1 << PV_f;
-        
+
         DoubleTags v;
         v.as_double = dp[ip];
         v.as_tags = v.as_tags | this_face_tag;
@@ -938,7 +939,7 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
       {
         int ip = SubvectorEltIndex(d_sub, i, j, k);
         int this_face_tag = 1 << PV_f;
-        
+
         DoubleTags v;
         v.as_double = dp[ip];
         v.as_tags = v.as_tags | this_face_tag;

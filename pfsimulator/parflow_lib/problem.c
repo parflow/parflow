@@ -330,8 +330,8 @@ Problem   *NewProblem(
                           WellPackage, (num_phases, num_contaminants));
 
   ProblemReservoirPackage(problem) =
-      PFModuleNewModuleType(ReservoirPackageNewPublicXtraInvoke,
-                            ReservoirPackage, (num_phases, num_contaminants));
+    PFModuleNewModuleType(ReservoirPackageNewPublicXtraInvoke,
+                          ReservoirPackage, (num_phases, num_contaminants));
 
   return problem;
 }
@@ -450,7 +450,7 @@ ProblemData   *NewProblemData(
 
   ProblemDataWellData(problem_data) = NewWellData();
   ProblemDataReservoirData(problem_data) = NewReservoirData();
-  
+
   return problem_data;
 }
 

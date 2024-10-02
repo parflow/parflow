@@ -81,61 +81,63 @@ int ReadAndCheckFile(char* filename, int loop)
       result |= 1;
     }
 
-    if(amps_Fscanf(file, "%d ", &string_length) != 1)
+    if (amps_Fscanf(file, "%d ", &string_length) != 1)
     {
       amps_Printf("ERROR: reading int\n");
       result |= 1;
-    };
-    
-    if(amps_Fscanf(file, "%s", recvd_string) != 1)
+    }
+    ;
+
+    if (amps_Fscanf(file, "%s", recvd_string) != 1)
     {
       amps_Printf("ERROR: reading string\n");
       result |= 1;
-    };
+    }
+    ;
 
     for (i = 0; i < shorts_length; i++)
     {
-      if(amps_Fscanf(file, "%hd ", &recvd_shorts[i]) != 1)
+      if (amps_Fscanf(file, "%hd ", &recvd_shorts[i]) != 1)
       {
-	amps_Printf("ERROR: reading short\n");
-	result |= 1;
+        amps_Printf("ERROR: reading short\n");
+        result |= 1;
       }
     }
 
     for (i = 0; i < ints_length; i++)
     {
-      if(amps_Fscanf(file, "%d ", &recvd_ints[i]) != 1)
+      if (amps_Fscanf(file, "%d ", &recvd_ints[i]) != 1)
       {
-	amps_Printf("ERROR: reading short\n");
-	result |= 1;
+        amps_Printf("ERROR: reading short\n");
+        result |= 1;
       }
     }
 
     for (i = 0; i < longs_length; i++)
     {
-      if(amps_Fscanf(file, "%ld ", &recvd_longs[i]) != 1)
+      if (amps_Fscanf(file, "%ld ", &recvd_longs[i]) != 1)
       {
-	amps_Printf("ERROR: reading short\n");
-	result |= 1;
+        amps_Printf("ERROR: reading short\n");
+        result |= 1;
       }
     }
 
     for (i = 0; i < doubles_length; i++)
     {
-      if(amps_Fscanf(file, "%lf ", &recvd_doubles[i]) != 1)
+      if (amps_Fscanf(file, "%lf ", &recvd_doubles[i]) != 1)
       {
-	amps_Printf("ERROR: reading short\n");
-	result |= 1;
-	amps_Exit(1);
+        amps_Printf("ERROR: reading short\n");
+        result |= 1;
+        amps_Exit(1);
       }
     }
 
     for (i = 0; i < floats_length; i++)
     {
-      if(amps_Fscanf(file, "%f ", &recvd_floats[i]) != 1)
+      if (amps_Fscanf(file, "%f ", &recvd_floats[i]) != 1)
       {
-	amps_Printf("ERROR: reading short\n");
-	result |= 1;
+        amps_Printf("ERROR: reading short\n");
+        result |= 1;
       }
     }
 
@@ -196,7 +198,7 @@ int main(int argc, char *argv[])
 {
   char *in_filename = "test9.input";
   char *out_filename = "test10.input";
-  
+
   amps_File file;
   amps_Invoice recv_invoice;
 
@@ -235,7 +237,7 @@ int main(int argc, char *argv[])
 
   me = amps_Rank(amps_CommWorld);
 
-  if(me == 0)
+  if (me == 0)
   {
     FILE* test_file;
 
@@ -246,8 +248,8 @@ int main(int argc, char *argv[])
     fprintf(test_file, "4 10 234 5 6\n");
     fprintf(test_file, "65555 200 234 678 890 6789 2789\n");
     fprintf(test_file, "100000 2789 78 8 1 98 987 98765\n");
-    fprintf(test_file, "12.500000 12.000500 17.400000 679.800000\n"); 
-    fprintf(test_file, "12.500000 0.078000 679.799988 0.500000\n"); 
+    fprintf(test_file, "12.500000 12.000500 17.400000 679.800000\n");
+    fprintf(test_file, "12.500000 0.078000 679.799988 0.500000\n");
 
     fclose(test_file);
   }

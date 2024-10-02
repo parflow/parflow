@@ -42,10 +42,10 @@
 #include "flux.h"
 
 #if 0
-#define Mean(a, b) (0.5*((a) + (b)))
+#define Mean(a, b) (0.5 * ((a) + (b)))
 #define Mean(a, b) (sqrt((a) * (b)))
 #endif
-#define Mean(a, b)    (((a) + (b)) ? ((2.0*(a)*(b)) / ((a) + (b))) : 0)
+#define Mean(a, b)    (((a) + (b)) ? ((2.0 * (a) * (b)) / ((a) + (b))) : 0)
 
 /*-----------------------------------------------------------------------
  * Compute net cell flux from conductivity and hydraulic head
@@ -65,9 +65,9 @@ Databox       *CompFlux(
 
   double qxp, qxm, qyp, qym, qzp, qzm;
   int cell,
-    cell_xm1, cell_xp1,
-    cell_ym1, cell_yp1,
-    cell_zm1, cell_zp1;
+      cell_xm1, cell_xp1,
+      cell_ym1, cell_yp1,
+      cell_zm1, cell_zp1;
   int ii, jj, kk;
 
   nx = DataboxNx(k);

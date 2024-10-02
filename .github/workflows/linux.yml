@@ -3,6 +3,30 @@ name: ParFlow CI Test
 on: [push, pull_request]
 
 jobs:
+  style-check:
+     runs-on: ubuntu-22.04
+     name: Check Style
+     steps:
+       - name: Checkout commit
+         uses: actions/checkout@v4
+       - name: Build Uncrustify
+         run: |
+            sudo apt-get -qq update
+            sudo apt-get -qq install curl cmake build-essential
+            curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
+            tar -xf uncrustify-0.79.0.tar.gz
+            cd uncrustify-uncrustify-0.79.0
+            mkdir build
+            cd build
+            cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+            make
+            sudo make install
+            cd ../..
+            rm -fr uncrustify-uncrustify-0.79.0 uncrustify-0.79.0.tar.gz
+       - name: Run Uncrustify
+         run: |
+            ./bin/pfformat --check
+
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}

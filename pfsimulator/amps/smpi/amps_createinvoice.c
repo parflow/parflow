@@ -86,91 +86,91 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
       case AMPS_INVOICE_BYTE_CTYPE:
         cur_pos += AMPS_CALL_BYTE_ALIGN(comm, NULL, cur_pos, len, stride);
         if (ptr->data_type == AMPS_INVOICE_POINTER)
-	{
+        {
           if (stride == 1)
             *((void**)(ptr->data)) = cur_pos;
           else
             *((void**)(ptr->data)) =
               malloc(sizeof(char) * len * stride);
-	}
+        }
         cur_pos += AMPS_CALL_BYTE_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
       case AMPS_INVOICE_CHAR_CTYPE:
         cur_pos += AMPS_CALL_CHAR_ALIGN(comm, NULL, cur_pos, len, stride);
         if (ptr->data_type == AMPS_INVOICE_POINTER)
-	{
+        {
           if (stride == 1)
             *((void**)(ptr->data)) = cur_pos;
           else
             *((void**)(ptr->data)) =
               malloc(sizeof(char) * len * stride);
-	}
+        }
         cur_pos += AMPS_CALL_CHAR_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
       case AMPS_INVOICE_SHORT_CTYPE:
         cur_pos += AMPS_CALL_SHORT_ALIGN(comm, NULL, cur_pos, len, stride);
         if (ptr->data_type == AMPS_INVOICE_POINTER)
-	{
+        {
           if (stride == 1)
             *((void**)(ptr->data)) = cur_pos;
           else
             *((void**)(ptr->data)) =
               malloc(sizeof(short) * len * stride);
-	}
+        }
         cur_pos += AMPS_CALL_SHORT_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
       case AMPS_INVOICE_INT_CTYPE:
         cur_pos += AMPS_CALL_INT_ALIGN(comm, NULL, cur_pos, len, stride);
         if (ptr->data_type == AMPS_INVOICE_POINTER)
-	{
+        {
           if (stride == 1)
             *((void**)(ptr->data)) = cur_pos;
           else
             *((void**)(ptr->data)) =
               malloc(sizeof(int) * len * stride);
-	}
+        }
         cur_pos += AMPS_CALL_INT_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
       case AMPS_INVOICE_LONG_CTYPE:
         cur_pos += AMPS_CALL_LONG_ALIGN(comm, NULL, cur_pos, len, stride);
         if (ptr->data_type == AMPS_INVOICE_POINTER)
-	{
+        {
           if (stride == 1)
             *((void**)(ptr->data)) = cur_pos;
           else
             *((void**)(ptr->data)) =
               malloc(sizeof(long) * len * stride);
-	}
+        }
         cur_pos += AMPS_CALL_LONG_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
       case AMPS_INVOICE_FLOAT_CTYPE:
         cur_pos += AMPS_CALL_FLOAT_ALIGN(comm, NULL, cur_pos, len, stride);
         if (ptr->data_type == AMPS_INVOICE_POINTER)
-	{
+        {
           if (stride == 1)
             *((void**)(ptr->data)) = cur_pos;
           else
             *((void**)(ptr->data)) =
               malloc(sizeof(float) * len * stride);
-	}
+        }
         cur_pos += AMPS_CALL_FLOAT_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
 
       case AMPS_INVOICE_DOUBLE_CTYPE:
         cur_pos += AMPS_CALL_DOUBLE_ALIGN(comm, NULL, cur_pos, len, stride);
         if (ptr->data_type == AMPS_INVOICE_POINTER)
-	{
+        {
           if (stride == 1)
             *((void**)(ptr->data)) = cur_pos;
           else
             *((void**)(ptr->data)) =
               malloc(sizeof(double) * len * stride);
-	}
+        }
         cur_pos += AMPS_CALL_DOUBLE_SIZEOF(comm, cur_pos, NULL, len, stride);
         break;
     }

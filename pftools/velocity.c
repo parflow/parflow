@@ -43,10 +43,10 @@
 
 
 #if 0
-#define Mean(a, b) (0.5*((a) + (b)))
+#define Mean(a, b) (0.5 * ((a) + (b)))
 #define Mean(a, b) (sqrt((a) * (b)))
 #endif
-#define Mean(a, b) (2*((a) * (b)) / ((a) + (b)))
+#define Mean(a, b) (2 * ((a) * (b)) / ((a) + (b)))
 
 
 /*-----------------------------------------------------------------------

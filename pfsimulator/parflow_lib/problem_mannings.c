@@ -478,7 +478,8 @@ PFModule  *ManningsNewPublicXtra()
 
     default:
     {
-      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);    }
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
   }       /* End case statement */
 
 

@@ -1659,7 +1659,7 @@ void    GrGeomOctreeFromInd(
 
         const int nx_f = SubvectorNX(subvector);
         const int ny_f = SubvectorNY(subvector);
-	const int nz_f = SubvectorNZ(subvector);
+        const int nz_f = SubvectorNZ(subvector);
 
         data = SubvectorElt(subvector, ix_all, iy_all, iz_all);
 
@@ -2334,21 +2334,21 @@ void          GrGeomPrintOctreeCells(
 
       switch (cell)
       {
-        case GrGeomOctreeNodeEmpty:
-          amps_Fprintf(file, "Empty\n");
-          break;
+          case GrGeomOctreeNodeEmpty:
+            amps_Fprintf(file, "Empty\n");
+            break;
 
-        case GrGeomOctreeNodeOutside:
-          amps_Fprintf(file, "Outside\n");
-          break;
+          case GrGeomOctreeNodeOutside:
+            amps_Fprintf(file, "Outside\n");
+            break;
 
-        case GrGeomOctreeNodeInside:
-          amps_Fprintf(file, "Inside\n");
-          break;
+          case GrGeomOctreeNodeInside:
+            amps_Fprintf(file, "Inside\n");
+            break;
 
-        case GrGeomOctreeNodeFull:
-          amps_Fprintf(file, "Full\n");
-          break;
+          case GrGeomOctreeNodeFull:
+            amps_Fprintf(file, "Full\n");
+            break;
       }
     },
     {
@@ -2358,21 +2358,21 @@ void          GrGeomPrintOctreeCells(
 
       switch (cell)
       {
-        case GrGeomOctreeNodeEmpty:
-          amps_Fprintf(file, "Empty\n");
-          break;
+          case GrGeomOctreeNodeEmpty:
+            amps_Fprintf(file, "Empty\n");
+            break;
 
-        case GrGeomOctreeNodeOutside:
-          amps_Fprintf(file, "Outside\n");
-          break;
+          case GrGeomOctreeNodeOutside:
+            amps_Fprintf(file, "Outside\n");
+            break;
 
-        case GrGeomOctreeNodeInside:
-          amps_Fprintf(file, "Inside\n");
-          break;
+          case GrGeomOctreeNodeInside:
+            amps_Fprintf(file, "Inside\n");
+            break;
 
-        case GrGeomOctreeNodeFull:
-          amps_Fprintf(file, "Full\n");
-          break;
+          case GrGeomOctreeNodeFull:
+            amps_Fprintf(file, "Full\n");
+            break;
       }
     });
   }
