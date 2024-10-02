@@ -11,7 +11,7 @@ jobs:
          uses: actions/checkout@v4
        - name: Build Uncrustify
          run:
-            sudo apt-fet -qq update
+            sudo apt-get -qq update
             sudo apt-get -qq install curl cmake build-essential
             curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
             tar -xf uncrustify-0.79.0.tar.gz
