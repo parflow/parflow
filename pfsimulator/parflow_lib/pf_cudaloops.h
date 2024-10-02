@@ -106,7 +106,7 @@ struct function_traits < ReturnType (ClassType::*)(Args...) const >
 
   template < size_t i >
   struct arg {
-    typedef typename std::tuple_element < i, std::tuple < Args... >> ::type type;
+    typedef typename std::tuple_element < i, std::tuple < Args... > > ::type type;
     // the i-th argument is equivalent to the i-th tuple element of a tuple
     // composed of those arguments.
   };
@@ -379,7 +379,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
   T thread_data;
 
   // Initialize thread_data depending on reduction operation
-  if (std::is_same < ReduceOp, struct ReduceSumType < T >> ::value)
+  if (std::is_same < ReduceOp, struct ReduceSumType < T > > ::value)
     thread_data = 0;
   else
     thread_data = init_val;
@@ -389,7 +389,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     thread_data = loop_fun(i, j, k).value;
 
   // Perform reductions
-  if (std::is_same < ReduceOp, struct ReduceSumType < T >> ::value)
+  if (std::is_same < ReduceOp, struct ReduceSumType < T > > ::value)
   {
     // Compute the block-wide sum for thread0
     T aggregate = BlockReduce(temp_storage).Sum(thread_data);
@@ -400,7 +400,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
       atomicAdd(rslt, aggregate);
     }
   }
-  else if (std::is_same < ReduceOp, struct ReduceMaxType < T >> ::value)
+  else if (std::is_same < ReduceOp, struct ReduceMaxType < T > > ::value)
   {
     // Compute the block-wide sum for thread0
     T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max());
@@ -417,7 +417,7 @@ DotKernel(LambdaFun loop_fun, const T init_val, T * __restrict__ rslt,
     //   AtomicMax(rslt, thread_data);
     // }
   }
-  else if (std::is_same < ReduceOp, struct ReduceMinType < T >> ::value)
+  else if (std::is_same < ReduceOp, struct ReduceMinType < T > > ::value)
   {
     // Compute the block-wide sum for thread0
     T aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Min());

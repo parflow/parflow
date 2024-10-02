@@ -231,7 +231,7 @@ void            PrintAVSField(
  * print a Databox in HDF SDS format
  *-----------------------------------------------------------------------*/
 
-int             PrintSDS(filename, type, v)
+int PrintSDS(filename, type, v)
 char            *filename;
 int type;
 Databox         *v;

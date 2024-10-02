@@ -71,7 +71,7 @@ typedef struct {
  *    Phase
  *--------------------------------------------------------------------------*/
 
-void         PhaseSource(phase_source, phase, problem, problem_data, time)
+void PhaseSource(phase_source, phase, problem, problem_data, time)
 
 Vector * phase _source;
 int phase;

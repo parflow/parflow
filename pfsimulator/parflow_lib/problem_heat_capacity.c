@@ -50,7 +50,7 @@ typedef struct {
 /*--------------------------------------------------------------------------
  * HeatCapacity
  *--------------------------------------------------------------------------*/
-void         HeatCapacity(problem_data, heat_capacity)
+void HeatCapacity(problem_data, heat_capacity)
 Vector * heat_capacity;
 ProblemData *problem_data;
 {

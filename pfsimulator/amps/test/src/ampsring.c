@@ -82,7 +82,7 @@ char *argv[];
   amps_Finalize();
 }
 
-double          ring_sync(reps, len, left, right)
+double ring_sync(reps, len, left, right)
 int reps, len, left, right;
 {
   amps_Invoice invoice;

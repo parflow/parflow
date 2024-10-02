@@ -94,7 +94,7 @@ typedef struct {
  * Turn
  *--------------------------------------------------------------------------*/
 
-void    Turn(field, vxtra)
+void Turn(field, vxtra)
 Vector * field;
 void   *vxtra;
 {
@@ -388,7 +388,7 @@ char *geom_name;
  * FreeTurn
  *--------------------------------------------------------------------------*/
 
-void           FreeTurn(xtra)
+void FreeTurn(xtra)
 void *xtra;
 {
   free(xtra);

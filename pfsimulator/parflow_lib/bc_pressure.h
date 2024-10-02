@@ -268,8 +268,8 @@ BC_INTERVAL_TYPE_TABLE
  */
 #define GetBCPressureTypeStruct(type, varname, bc_pressure_data, ipatch, interval_number)        \
         BCPressureType ## type * varname                                                         \
-          = (BCPressureType ## type*) BCPressureDataIntervalValue(bc_pressure_data,              \
-                                                                  (ipatch), (interval_number));  \
+          = (BCPressureType ## type*)BCPressureDataIntervalValue(bc_pressure_data,               \
+                                                                 (ipatch), (interval_number));   \
         PF_UNUSED(varname)
 
 /*----------------------------------------------------------------
