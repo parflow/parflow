@@ -18,10 +18,12 @@ jobs:
             cd uncrustify-uncrustify-0.79.0
             mkdir build
             cd build
-            cmake ..
-            cmake --build .
-            cp uncrustify /usr/local/bin && chmod a+x /usr/local/bin/uncrustify
+            cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+            make
+            make install
             cd ../..
+       - name: Run Uncrustify
+         run: |
             ./bin/pfformat --check
 
   build:
