@@ -14,7 +14,7 @@ LW_Timing = Run("LW_Timing", __file__)
 # file mkdir "Outputs"
 # cd "./Outputs"
 
-LW_Timing. = 'FileVersion 4'
+LW_Timing.FileVersion = 'FileVersion 4'
 
 #-----------------------------------------------------------------------------
 # Set Processor topology 
@@ -139,9 +139,9 @@ LW_Timing.Geom.g8.Perm.Value = 0.68
 
 LW_Timing.Perm.TensorType = 'TensorByGeom'
 LW_Timing.Geom.Perm.TensorByGeom.Names = 'domain'
-LW_Timing.Geom.domain.Perm.TensorValX = 1.0d0
-LW_Timing.Geom.domain.Perm.TensorValY = 1.0d0
-LW_Timing.Geom.domain.Perm.TensorValZ = 1.0d0
+LW_Timing.Geom.domain.Perm.TensorValX = 1.0
+LW_Timing.Geom.domain.Perm.TensorValY = 1.0
+LW_Timing.Geom.domain.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
@@ -242,7 +242,7 @@ LW_Timing.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions
 #-----------------------------------------------------------------------------
-LW_Timing.BCPressure.PatchNames = [pfget Geom.domain.Patches]
+LW_Timing.BCPressure.PatchNames = LW_Timing.Geom.domain.Patches
 
 LW_Timing.Patch.x_lower.BCPressure.Type = 'FluxConst'
 LW_Timing.Patch.x_lower.BCPressure.Cycle = 'constant'
@@ -397,7 +397,7 @@ LW_Timing.Solver.CLM.Print1dOut = False
 LW_Timing.Solver.BinaryOutDir = False
 LW_Timing.Solver.CLM.CLMDumpInterval = 1000000
 
-LW_Timing.Solver.CLM.MetForcing = 3D
+LW_Timing.Solver.CLM.MetForcing = '3D'
 LW_Timing.Solver.CLM.MetFileName = 'NLDAS'
 LW_Timing.Solver.CLM.MetFilePath = '.'
 LW_Timing.Solver.CLM.MetFileNT = 24
@@ -503,7 +503,7 @@ path = "../../clm_input"
 
 path = "../../NLDAS"
 
-files = [glob "$path/NLDAS.DSWR.*.pfb"]
+#files = [glob "$path/NLDAS.DSWR.*.pfb"]
 
 time_periods = []
 # foreach file $files {
@@ -511,7 +511,7 @@ time_periods = []
 #     lappend time_periods $time
 # }
 
-NldasVariables = [list "DSWR" "DLWR" "APCP" "Temp" "UGRD" "VGRD" "Press" "SPFH"]
+#NldasVariables = [list "DSWR" "DLWR" "APCP" "Temp" "UGRD" "VGRD" "Press" "SPFH"]
 
 # foreach time_period $time_periods {
 #     foreach variable $NldasVariables {
@@ -537,10 +537,10 @@ NldasVariables = [list "DSWR" "DLWR" "APCP" "Temp" "UGRD" "VGRD" "Press" "SPFH"]
 #-----------------------------------------------------------------------------
 # pfundist $runname
 
-StartTime = [expr int([pfget TimingInfo.StartTime])]
-StopTime = [expr int([pfget TimingInfo.StopTime])]
+#StartTime = [expr int([pfget TimingInfo.StartTime])]
+#StopTime = [expr int([pfget TimingInfo.StopTime])]
 
-ClmVariables = [list "eflx_lh_tot" "qflx_evap_soi" "swe_out" "eflx_lwrad_out" "qflx_evap_tot" "t_grnd" "eflx_sh_tot" "qflx_evap_veg" "t_soil" "eflx_soil_grnd" "qflx_infl" "qflx_evap_grnd" "qflx_tran_veg" ]
+#ClmVariables = [list "eflx_lh_tot" "qflx_evap_soi" "swe_out" "eflx_lwrad_out" "qflx_evap_tot" "t_grnd" "eflx_sh_tot" "qflx_evap_veg" "t_soil" "eflx_soil_grnd" "qflx_infl" "qflx_evap_grnd" "qflx_tran_veg" ]
 # for {set i $StartTime} { $i <= $StopTime } {incr i} { 
 #     set step [format "%05d" $i]
 #     foreach variable $ClmVariables {
@@ -558,8 +558,8 @@ sig_digits = 4
 
 passed = 1
 
-ParflowVariables = [list "satur" "press"]
-step = [format "%05d" 0]
+#ParflowVariables = [list "satur" "press"]
+#step = [format "%05d" 0]
 # foreach variable $ParflowVariables {
 #     set file $runname.out.$variable.$step.pfb 
 #     if ![pftestFile $file "Max difference in $file" $sig_digits] {
@@ -567,7 +567,7 @@ step = [format "%05d" 0]
 #     }
 # }
 
-step = [format "%05d" 12]
+#step = [format "%05d" 12]
 # foreach variable $ClmVariables {
 #     set file $runname.out.$variable.$step.pfb 
 #     if ![pftestFile $file "Max difference in $file" $sig_digits] { 

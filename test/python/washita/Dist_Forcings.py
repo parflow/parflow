@@ -35,7 +35,7 @@ Dist_Forcings.ComputationalGrid.NY = 41
 Dist_Forcings.ComputationalGrid.NZ = 24
 
 name = 'NLDAS'
-var = [list "APCP" "DLWR" "DSWR" "Press" "SPFH" "Temp" "UGRD" "VGRD"]
+#var = ["APCP" "DLWR" "DSWR" "Press" "SPFH" "Temp" "UGRD" "VGRD"]
 
 end = 4
 #   for {set i 0} {$i <= $end} {incr i} {

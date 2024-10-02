@@ -35,7 +35,7 @@ clm_samrai.Process.Topology.P = P
 clm_samrai.Process.Topology.Q = Q
 clm_samrai.Process.Topology.R = R
 
-NumProcs = [expr $P * $Q * $R]
+NumProcs = P * Q * R
 
 #-----------------------------------------------------------------------------
 # Computational Grid
@@ -264,7 +264,7 @@ clm_samrai.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
-clm_samrai.BCPressure.PatchNames = [pfget Geom.domain.Patches]
+clm_samrai.BCPressure.PatchNames = clm_samrai.Geom.domain.Patches
 #  
 clm_samrai.Patch.x_lower.BCPressure.Type = 'FluxConst'
 clm_samrai.Patch.x_lower.BCPressure.Cycle = 'constant'
@@ -353,9 +353,9 @@ clm_samrai.Solver.Linear.Preconditioner.PFMGOctree.BoxSizePowerOf2 = 2
 #  
 clm_samrai.Solver.LSM = 'CLM'
 clm_samrai.Solver.WriteSiloCLM = True
-clm_samrai.Solver.CLM.MetForcing = 1D
+clm_samrai.Solver.CLM.MetForcing = '1D'
 clm_samrai.Solver.CLM.MetFileName = 'narr_1hr.sc3.txt.0'
-clm_samrai.Solver.CLM.MetFilePath = ./
+clm_samrai.Solver.CLM.MetFilePath = './'
 
 
 clm_samrai.Solver.WriteSiloEvapTrans = True
@@ -374,7 +374,7 @@ clm_samrai.Geom.domain.ICPressure.RefPatch = 'z_upper'
 
 
 
-num_processors = [expr [pfget Process.Topology.P] * [pfget Process.Topology.Q] * [pfget Process.Topology.R]]
+#num_processors = NumProcs
 # for {set i 0} { $i <= $num_processors } {incr i} {
 #     file delete drv_vegm.dat.$i
 #     file copy  drv_vegm.dat drv_vegm.dat.$i
@@ -416,13 +416,13 @@ passed = 1
 #     }
 # }
 
-mask = [pfload clm.out.mask.pfb]
-top = [Parflow::pfcomputetop $mask]
+#mask = [pfload clm.out.mask.pfb]
+#top = [Parflow::pfcomputetop $mask]
 
 # pfsave $top -pfb "clm.out.top_index.pfb"
 
-data = [pfload clm.out.press.00000.pfb]
-top_data = [Parflow::pfextracttop $top $data]
+#data = [pfload clm.out.press.00000.pfb]
+#top_data = [Parflow::pfextracttop $top $data]
 
 # pfsave $data -pfb "clm.out.press.00000.pfb"
 # pfsave $top_data -pfb "clm.out.top.press.00000.pfb"
