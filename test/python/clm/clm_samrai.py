@@ -5,6 +5,7 @@
 #
 from parflow import Run
 from parflow.tools.fs import mkdir, get_absolute_path
+import sys
 
 clm_samrai = Run("clm_samrai", __file__)
 
@@ -28,7 +29,7 @@ P = 1
 Q = 1
 R = 1
 
-NumPatches = [lindex $argv 3]
+NumPatches =  sys.argv[1]
 
 clm_samrai.Process.Topology.P = P
 clm_samrai.Process.Topology.Q = Q

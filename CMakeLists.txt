@@ -543,7 +543,7 @@ if (PARFLOW_ENABLE_PYTHON)
   set(PARFLOW_PYTHON_DEPENDS)
   set(PARFLOW_HAVE_PYTHON)
 
-  option(PARFLOW_PYTHON_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
+  option(PARFLOW_PYTHON_VIRTUAL_ENV "Use local Python virtual environment" "TRUE")
   if (PARFLOW_PYTHON_VIRTUAL_ENV)
     set(PARFLOW_PYTHON "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/python3")
     add_custom_command(
