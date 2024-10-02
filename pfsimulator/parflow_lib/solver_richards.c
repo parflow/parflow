@@ -387,9 +387,10 @@ SetupRichards(PFModule * this_module)
 
   int any_file_dumped;
 
+  char filename[128];
+
 #ifdef HAVE_CLM
   /* IMF: for CLM met forcings (local to SetupRichards) */
-  char filename[128];
   int n, nc, c;                 /*Added c BH */
   int ch;
   double sw, lw, prcp, tas, u, v, patm, qatm, lai, sai, z0m, displa;    // forcing vars added vegetation BH
@@ -854,11 +855,27 @@ SetupRichards(PFModule * this_module)
 
     if (public_xtra->evap_trans_file)
     {
+      sprintf(filename, "%s", public_xtra->evap_trans_filename);
       ReadPFBinary(public_xtra->evap_trans_filename, instance_xtra->evap_trans);
 
       handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
     }
+#ifndef HAVE_CLM
+    //printf("DEBUG: public_xtra->nc_evap_trans_file_transient = %i \n", public_xtra->nc_evap_trans_file_transient);
+    if (public_xtra->nc_evap_trans_file_transient)
+     {
+       strcpy(filename, public_xtra->nc_evap_trans_filename);
+       /*KKu: evaptrans is the name of the variable expected in NetCDF file */
+       /*Here looping similar to pfb is not implemented. All steps are assumed to be
+        * present in the single NetCDF file*/
+       //printf("DEBUG: read evap_trans file %s for step %i \n", filename, instance_xtra->file_number);
+       ReadPFNC(filename, instance_xtra->evap_trans, "evaptrans", instance_xtra->file_number, 3);
+       //printf("DEBUG: evap_trans max min: %e %e \n",PFVMax(instance_xtra->evap_trans),PFVMin(instance_xtra->evap_trans));
+       handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+       FinalizeVectorUpdate(handle);
+     }
+#endif
 
     /* IMF: the following are only used w/ CLM */
 #ifdef HAVE_CLM
@@ -1571,6 +1588,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     evap_trans = instance_xtra->evap_trans;
   }
 
+  char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
 #ifdef HAVE_OAS3
   Grid *grid = (instance_xtra->grid);
   Subgrid *subgrid;
@@ -1618,7 +1636,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   /*BH*/ double *displa_data = NULL;
   /*BH*/ double *veg_map_data = NULL;
   /*BH*/                        /*will fail if veg_map_data is declared as int */
-  char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
+
   Subvector *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub, *lai_forc_sub, *sai_forc_sub, *z0m_forc_sub, *displa_forc_sub, *veg_map_forc_sub;      /*BH: added LAI/SAI/Z0M/DISPLA/vegmap */
 
   /* Slopes */
@@ -1750,8 +1768,33 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       ct += cdt;
 
+      // Read in evap_trans even if not HAVE_CLM
+#ifndef HAVE_CLM
+      /******************************************/
+      /*    read transient evap trans flux file */
+      /******************************************/
+      //printf("DEBUG: 2. public_xtra->nc_evap_trans_file_transient %i \n", public_xtra->nc_evap_trans_file_transient);
+      if (public_xtra->nc_evap_trans_file_transient)
+      {
+        strcpy(filename, public_xtra->nc_evap_trans_filename);
+        /*KKu: evaptrans is the name of the variable expected in NetCDF file */
+        /*Here looping similar to pfb is not implemented. All steps are assumed to be
+         * present in the single NetCDF file*/
+        //printf("DEBUG: read evap_trans file %s for step %i \n", filename, instance_xtra->file_number);
+        ReadPFNC(filename, evap_trans, "evaptrans", instance_xtra->file_number, 3);
+        //printf("DEBUG: evap_trans max min: %e %e \n",PFVMax(evap_trans),PFVMin(evap_trans));
+        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+        FinalizeVectorUpdate(handle);
+      }
+#endif
       //CPS oasis exchange
 #ifdef HAVE_OAS3
+      // In case `nc_evap_trans_file_transient` is not set in namelist, make
+      // sure `evap_trans` is set to zero at beginning of each loop.
+      if (!public_xtra->nc_evap_trans_file_transient)
+      {
+       InitVectorAll(evap_trans, 0.0);
+      }
       ForSubgridI(is, GridSubgrids(grid))
       {
         int ix, iy, nx, ny, nz, nx_f, ny_f;
@@ -2440,8 +2483,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
 
 
-      //#endif   //End of call to CLM
-
+#endif
+#ifdef HAVE_CLM
       /******************************************/
       /*    read transient evap trans flux file */
       /******************************************/
