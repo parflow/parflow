@@ -22,6 +22,7 @@ jobs:
             make
             sudo make install
             cd ../..
+	    rm -fr uncrustify-uncrustify-0.79.0 uncrustify-0.79.0.tar.gz
        - name: Run Uncrustify
          run: |
             ./bin/pfformat --check
