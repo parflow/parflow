@@ -99,6 +99,7 @@ typedef struct {
 
   /*****  packages  *****/
   PFModule  *well_package;
+  PFModule  *reservoir_package;
 
   /*sk**  overland flow*/
   PFModule  *x_slope;
@@ -152,6 +153,7 @@ typedef struct {
 
 
   WellData       *well_data;
+  ReservoirData       *reservoir_data;
   BCPressureData *bc_pressure_data;
 
   /*sk  overland flow*/
@@ -246,6 +248,7 @@ typedef struct {
 
 /* packages */
 #define ProblemWellPackage(problem)               ((problem)->well_package)
+#define ProblemReservoirPackage(problem)               ((problem)->reservoir_package)
 
 /* error calculations */
 #define ProblemL2ErrorNorm(problem)               ((problem)->l2_error_norm)
@@ -274,6 +277,7 @@ typedef struct {
 #define ProblemDataFBy(problem_data)            ((problem_data)->FBy)    //RMM
 #define ProblemDataFBz(problem_data)            ((problem_data)->FBz)    //RMM
 #define ProblemDataWellData(problem_data)       ((problem_data)->well_data)
+#define ProblemDataReservoirData(problem_data)       ((problem_data)->reservoir_data)
 #define ProblemDataBCPressureData(problem_data) ((problem_data)->bc_pressure_data)
 #define ProblemDataSpecificStorage(problem_data)((problem_data)->specific_storage)   //sk
 #define ProblemDataTSlopeX(problem_data)        ((problem_data)->x_slope)   //sk

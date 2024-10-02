@@ -51,6 +51,8 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
 
   int ncRID, varID;
 
+  BeginTiming(NetcdfTimingIndex);
+
   OpenNCFile(fileName, &ncRID);
 
   nc_inq_varid(ncRID, varName, &varID);
@@ -62,6 +64,8 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
     ReadNCFile(ncRID, varID, subvector, subgrid, varName, tStep, dimensionality);
   }
   nc_close(ncRID);
+
+  EndTiming(NetcdfTimingIndex);
 }
 
 void OpenNCFile(char *file_name, int *ncRID)

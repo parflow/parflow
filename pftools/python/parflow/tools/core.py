@@ -497,7 +497,7 @@ class Run(BaseRun):
         q = kwargs.get('Q', self.Process.Topology.Q)
         r = kwargs.get('R', self.Process.Topology.R)
 
-        with ParflowBinaryReader(pfb_file_full_path) as pfb:
+        with ParflowBinaryReader(pfb_file_full_path, read_sg_info=True) as pfb:
             array = pfb.read_all_subgrids()
             header = pfb.header
 

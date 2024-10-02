@@ -17,6 +17,7 @@
 # $HEADER$
 #
 
+
 ###############################################################
 #
 # OPAL suppressions
@@ -115,7 +116,6 @@
   fun:utcp_msg_wait
 }
 
-
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -175,6 +175,28 @@
    fun:opal_db_base_store
    ...
    fun:PMPI_Init	
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   writev(vector[1])
+   ...
+   fun:clone
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:patcher_open
+   fun:open_components
+   fun:mca_base_framework_components_open
+   fun:opal_memory_base_open
+   fun:mca_base_framework_open
+   ...
 }
 
 {
@@ -247,6 +269,97 @@
    ...
 }
 
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:opal_interval_tree_reader_get_token
+   fun:opal_interval_tree_traverse
+   fun:mca_rcache_base_vma_tree_find_all
+   fun:mca_rcache_base_vma_find_all
+   fun:mca_rcache_rgpusm_finalize
+   fun:mca_rcache_base_module_destroy
+   fun:mca_btl_smcuda_del_procs
+   fun:mca_bml_r2_del_procs
+   fun:mca_pml_ob1_del_procs
+   fun:ompi_mpi_finalize
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:mca_btl_smcuda_sendi
+   fun:mca_bml_base_sendi
+   fun:mca_pml_ob1_send_inline
+   fun:mca_pml_ob1_isend
+   fun:PMPI_Isend
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:mca_btl_smcuda_sendi
+   fun:mca_bml_base_sendi
+   fun:mca_pml_ob1_send_inline
+   fun:mca_pml_ob1_send
+   fun:PMPI_Send
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:mca_btl_smcuda_sendi
+   fun:mca_bml_base_sendi
+   fun:mca_pml_ob1_send_inline
+   fun:mca_pml_ob1_send
+   fun:PMPI_Send
+   fun:hypre_DataExchangeList
+   fun:hypre_StructAssumedPartitionCreate
+   fun:hypre_BoxManAssemble
+   fun:hypre_StructGridAssemble
+   fun:HypreAssembleGrid
+   fun:PFMGInitInstanceXtra
+   fun:KinsolPCInitInstanceXtra
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:opal_interval_tree_reader_return_token
+   fun:opal_interval_tree_traverse
+   fun:mca_rcache_base_vma_tree_find_all
+   fun:mca_rcache_base_vma_find_all
+   fun:mca_rcache_rgpusm_finalize
+   fun:mca_rcache_base_module_destroy
+   fun:mca_btl_smcuda_del_procs
+   fun:mca_bml_r2_del_procs
+   fun:mca_pml_ob1_del_procs
+   fun:ompi_mpi_finalize
+   fun:PMPI_Finalize
+   ...
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:opal_thread_compare_exchange_strong_32
+   fun:opal_interval_tree_reader_get_token
+   fun:opal_interval_tree_traverse
+   fun:mca_rcache_base_vma_tree_find_all
+   fun:mca_rcache_base_vma_find_all
+   fun:mca_rcache_rgpusm_finalize
+   fun:mca_rcache_base_module_destroy
+   fun:mca_btl_smcuda_del_procs
+   fun:mca_bml_r2_del_procs
+   fun:mca_pml_ob1_del_procs
+   fun:ompi_mpi_finalize
+   ...
+}
+
+
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
@@ -305,6 +418,24 @@
    ...
    fun:start_thread
    fun:clone
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:opal_free_list_grow_st
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:PMPI_Send
+   fun:amps_Send
+   fun:amps_BCast
+   fun:amps_SFBCast
 }
 
 ###############################################################
@@ -405,3 +536,77 @@
    ...
    fun:main
 }
+
+##############################################################################
+#
+# CUDA
+# These supressions are overly version specific
+#
+##############################################################################
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   obj:/usr/lib64/libcuda.so.555.42.06
+   ...
+   obj:/usr/lib64/libcuda.so.555.42.06
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   obj:/usr/lib64/libcuda.so.555.42.06
+   ...
+   obj:/usr/lib64/libcuda.so.555.42.06
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   obj:/usr/lib64/libcuda.so.555.42.06
+   ...
+   fun:libcudart_static_963dbe518da27ad62a57079a1a0c90814a2710ec
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:UnknownInlinedFun
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.2.5
+   fun:ucs_pthread_create
+   obj:/usr/lib64/libucs.so.0.0.0
+   obj:/usr/lib64/libucs.so.0.0.0
+   fun:ucs_async_set_event_handler
+   obj:/usr/lib64/libucs.so.0.0.0
+   fun:ucs_rcache_create
+   obj:*
+   obj:*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:UnknownInlinedFun
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.2.5
+   obj:/usr/lib64/libcuda.so.555.42.06
+   obj:/usr/lib64/libcuda.so.555.42.06
+   obj:/usr/lib64/libcuda.so.555.42.06
+   obj:/usr/lib64/libcuda.so.555.42.06
+   obj:/usr/lib64/libcuda.so.555.42.06
+   ...
+}
+

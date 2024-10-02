@@ -64,6 +64,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
   static int netCDFIDs[5]; /* Here we store file and dimension IDs */
+  BeginTiming(NetcdfTimingIndex);
   sprintf(key, "NetCDF.NodeLevelIO");
   switch_name = GetStringDefault(key, "False");
   if (strcmp(switch_name, default_val) != 0)
@@ -271,6 +272,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
     }
     FreeVarNCData(myVarNCData);
   }
+  EndTiming(NetcdfTimingIndex);
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
 #endif

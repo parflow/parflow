@@ -782,7 +782,7 @@ void PhaseVelocityFaceFreePublicXtra()
 
   if (public_xtra)
   {
-    free(public_xtra);
+    tfree(public_xtra);
   }
 }
 

@@ -56,6 +56,35 @@ except ImportError:
     from yaml import Dumper as YAMLDumper
 
 
+
+def read_pfsb(file_path):
+    """
+    Read a ParFlow scattered binary file (pfsb) and return the data.
+
+    The data will be returned as a numpy array of shape (nz, ny, nx).
+    To avoid confusion, there is no option to toggle 'z_first' on and
+    off. 
+    """
+    with open(file_path, 'rb') as f:
+        # Read the header
+        x, y, z = struct.unpack('>ddd', f.read(24))
+        nx, ny, nz = struct.unpack('>iii', f.read(12))
+        dx, dy, dz = struct.unpack('>ddd', f.read(24))
+        num_subgrids = struct.unpack('>i', f.read(4))[0]
+        data = np.zeros((nz, ny, nx), dtype=np.float64)
+        
+        for _ in range(num_subgrids):
+            # Skip most of subgrid header
+            f.seek(36, 1)
+            num_nonzero_data = struct.unpack('>i', f.read(4))[0]
+
+            for idx in range(num_nonzero_data):
+                i, j, k = struct.unpack('>iii', f.read(12))
+                data[k, j, i] = struct.unpack('>d', f.read(8))[0]
+
+    return data
+
+
 def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
              read_sg_info: bool=True):
     """
@@ -401,22 +430,7 @@ class ParflowBinaryReader:
             self.header['q'] = q
             self.header['r'] = r
 
-        if not ('p' in self.header
-            and 'q' in self.header
-            and 'r' in self.header):
-            # If p, q, and r aren't given we can precompute them
-            # NOTE: This is a bit of a fallback and may not always work
-            eps = 1 - 1e-6
-            first_sg_head = self.read_subgrid_header()
-            self.header['p'] = int((self.header['nx'] / first_sg_head['nx']) + eps)
-            self.header['q'] = int((self.header['ny'] / first_sg_head['ny']) + eps)
-            self.header['r'] = int((self.header['nz'] / first_sg_head['nz']) + eps)
-
-        if precompute_subgrid_info:
-            self.compute_subgrid_info()
-
-        if read_sg_info:
-            self.read_subgrid_info()
+        self.read_subgrid_info()
             
     def close(self):
         self.f.close()
@@ -465,15 +479,43 @@ class ParflowBinaryReader:
             sg_starts.append([sg_head['ix'], sg_head['iy'], sg_head['iz']])
             sg_shapes.append([sg_head['nx'], sg_head['ny'], sg_head['nz']])
             sg_offs.append(off)
+            
+            # Finally, move past the current subgrid before next iteration
+            off += sg_head['sg_size']*8
 
+        # Calculate p, q, r from subgrid shapes
+        p, q, r = 0, 0, 0
+        x, y, z = 0, 0, 0
+        
+        for shape in sg_shapes:
+            if x == self.header['nx']:
+                break
+            p = p + 1
+            x = x + shape[0]
+            
+        for shape in sg_shapes[::p]:
+            if y == self.header['ny']:
+                break
+            q = q + 1
+            y = y + shape[1]
+
+        for shape in sg_shapes[::p * q]:
+            if z == self.header['nz']:
+                break
+            r = r + 1
+            z = z + shape[2]
+
+        self.header['p'] = p
+        self.header['q'] = q
+        self.header['r'] = r
+            
+        for sg_num in range(self.header['n_subgrids']):            
             # Calculate subgrid locs instead of reading from file
             sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, self.header['p'], 
                                                        self.header['q'], 
                                                        self.header['r'])
             sg_locs.append((sg_p, sg_q, sg_r))
-            
-            # Finally, move past the current subgrid before next iteration
-            off += sg_head['sg_size']*8
+        
         
         self.subgrid_offsets = np.array(sg_offs)
         self.subgrid_locations = np.array(sg_locs)
