@@ -863,17 +863,17 @@ SetupRichards(PFModule * this_module)
 #ifndef HAVE_CLM
     //printf("DEBUG: public_xtra->nc_evap_trans_file_transient = %i \n", public_xtra->nc_evap_trans_file_transient);
     if (public_xtra->nc_evap_trans_file_transient)
-     {
-       strcpy(filename, public_xtra->nc_evap_trans_filename);
-       /*KKu: evaptrans is the name of the variable expected in NetCDF file */
-       /*Here looping similar to pfb is not implemented. All steps are assumed to be
-        * present in the single NetCDF file*/
-       //printf("DEBUG: read evap_trans file %s for step %i \n", filename, instance_xtra->file_number);
-       ReadPFNC(filename, instance_xtra->evap_trans, "evaptrans", instance_xtra->file_number, 3);
-       //printf("DEBUG: evap_trans max min: %e %e \n",PFVMax(instance_xtra->evap_trans),PFVMin(instance_xtra->evap_trans));
-       handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
-       FinalizeVectorUpdate(handle);
-     }
+    {
+      strcpy(filename, public_xtra->nc_evap_trans_filename);
+      /*KKu: evaptrans is the name of the variable expected in NetCDF file */
+      /*Here looping similar to pfb is not implemented. All steps are assumed to be
+       * present in the single NetCDF file*/
+      //printf("DEBUG: read evap_trans file %s for step %i \n", filename, instance_xtra->file_number);
+      ReadPFNC(filename, instance_xtra->evap_trans, "evaptrans", instance_xtra->file_number, 3);
+      //printf("DEBUG: evap_trans max min: %e %e \n",PFVMax(instance_xtra->evap_trans),PFVMin(instance_xtra->evap_trans));
+      handle = InitVectorUpdate(instance_xtra->evap_trans, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+    }
 #endif
 
     /* IMF: the following are only used w/ CLM */
@@ -1793,7 +1793,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       // sure `evap_trans` is set to zero at beginning of each loop.
       if (!public_xtra->nc_evap_trans_file_transient)
       {
-       InitVectorAll(evap_trans, 0.0);
+        InitVectorAll(evap_trans, 0.0);
       }
       ForSubgridI(is, GridSubgrids(grid))
       {
@@ -2479,10 +2479,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
       handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
-
-
-
-
 #endif
 #ifdef HAVE_CLM
       /******************************************/
