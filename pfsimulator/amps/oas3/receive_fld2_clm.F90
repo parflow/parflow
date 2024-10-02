@@ -49,7 +49,6 @@ REAL(KIND=8), INTENT(INOUT)        :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! sourc
 
                                                                          ! All vecotrs from parflow on grid w/ ghost nodes for current proc
 !Local Variables 
-
 INTEGER                            :: i, j, k, l
 INTEGER                            :: isecs                              ! Parflow model time in seconds
 INTEGER                            :: j_incr, k_incr                     ! convert 1D vector to 3D i,j,k array
@@ -96,22 +95,20 @@ CHARACTER(len=19)                  :: foupname
     ENDDO
  ENDDO
 
-!
  DO k = 1, nlevsoil
    IF( trcv(k)%laction )  CALL oas_pfl_rcv( k, isecs, frcv(:,:,k),nx, ny, info )
  ENDDO
 !
- evap_trans = 0.   !CPS initialize for masking
- DO i = 1, nx
-   DO j = 1, ny
-     DO k = 1, nlevsoil 
-       IF (topo_mask(i,j) .gt. 0) THEN                    !CPS mask bug fix
-         l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))  !
-         evap_trans(l) = frcv(i,j,k)
-       END IF
-     ENDDO
-   ENDDO
- ENDDO
+DO i = 1, nx
+  DO j = 1, ny
+    DO k = 1, nlevsoil 
+      IF ((topo_mask(i,j) .gt. 0) .and. (mask_land_sub(i,j) .gt. 0)) THEN                    !CPS mask bug fix
+        l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))  !
+        evap_trans(l) = evap_trans(l) + frcv(i,j,k)
+      END IF
+    ENDDO
+  ENDDO
+ENDDO
 
 ! Debug ouput file
  IF ( IOASISDEBUGLVL == 1 ) THEN
