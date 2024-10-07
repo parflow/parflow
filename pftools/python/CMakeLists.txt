@@ -62,13 +62,10 @@ install(
 )
 install(
   PROGRAMS
-    "${CMAKE_CURRENT_SOURCE_DIR}/py-setup"
     "${CMAKE_CURRENT_SOURCE_DIR}/pfpython"
   DESTINATION
     "bin"
 )
-
-install(SCRIPT "${CMAKE_SOURCE_DIR}/pftools/python/PostInstall.cmake")
 
 add_custom_target(
   pf-python ALL
@@ -89,7 +86,7 @@ add_custom_target(PythonCreatePackage
   COMMAND
       ${PARFLOW_PYTHON} setup.py sdist bdist_wheel
   COMMAND
-      twine check "${CMAKE_CURRENT_BINARY_DIR}/dist/*"
+      ${CMAKE_INSTALL_PREFIX}/py-env/bin/twine check "${CMAKE_CURRENT_BINARY_DIR}/dist/*"
   COMMENT
       "Updating the pftools Python package"
   VERBATIM
@@ -101,7 +98,7 @@ add_custom_target(PythonPublishPackage
   WORKING_DIRECTORY
       "${CMAKE_CURRENT_BINARY_DIR}"
   COMMAND
-      twine upload dist/*
+      ${CMAKE_INSTALL_PREFIX}/py-env/bin/twine upload dist/*
   COMMENT
       "Publishing the pftools Python package"
   VERBATIM

@@ -1,17 +1,5 @@
 
 # -----------------------------------------------------------------------------
-# Make sure our Python has the module that we need
-# -----------------------------------------------------------------------------
-
-include(FindPythonModules)
-find_python_module("yaml" yaml_found)
-if (NOT yaml_found AND NOT PARFLOW_PYTHON_VIRTUAL_ENV)
-  message(STATUS
-    "Please install yaml to generate ParFlow keys for Python module or use the VirtualEnv option.")
-  return()
-endif()
-
-# -----------------------------------------------------------------------------
 # Build generated python file for key definitions
 # -----------------------------------------------------------------------------
 

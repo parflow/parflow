@@ -118,12 +118,29 @@ function main() {
       fi
    done
 
-   if $failed ;
+   # Disable this for now while Python is being refactored.
+   # if $check
+   # then
+   #    if output=$(pfpython -m black . --check)
+   #    then
+   # 	 log 'pfformat PASSED %s\n' $i
+   #    else
+   # 	 printf 'pfFormat FAILED\nPython black output was «%s»\n' "$output\n"
+   # 	 failed=true
+   #    fi
+   # else
+   #    pfpython -m black .
+   # fi
+
+   if $check
    then
-      printf 'pfFormat style check : FAILED\n'
-      exit -1
-   else
-      printf 'pfFormat style check : PASSED\n'
+      if $failed ;
+      then
+	 printf 'pfFormat style check : FAILED\n'
+	 exit -1
+      else
+	 printf 'pfFormat style check : PASSED\n'
+      fi
    fi
 }
 
