@@ -21,9 +21,9 @@ jobs:
          env:
            cache-name: cache-parflow-dependencies
            cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-        with:
-          path: "~/depend"
-          key: cache-check-style-${{ secrets.CACHE_VERSION }}
+         with:
+           path: "~/depend"
+           key: cache-check-style-${{ secrets.CACHE_VERSION }}
 
        - name: Directory Setup
          run: |
