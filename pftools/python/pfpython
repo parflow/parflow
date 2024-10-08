@@ -2,6 +2,6 @@
 export PARFLOW_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 VIRTUAL_ENV="$PARFLOW_DIR/py-env"
 
-[ ! -d "$VIRTUAL_ENV" ] && $PARFLOW_DIR/bin/py-setup
+[ ! -d "$VIRTUAL_ENV" ] && echo "ERROR in ParFlow installation.  Python environment not found at $VIRTUAL_ENV"
 
 $VIRTUAL_ENV/bin/python $@

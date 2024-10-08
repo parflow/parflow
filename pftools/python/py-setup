@@ -1,8 +1,0 @@
-#!/bin/bash
-PARFLOW_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-
-rm -rf "$PARFLOW_DIR/py-env"
-python3 -m venv "$PARFLOW_DIR/py-env"
-"$PARFLOW_DIR/py-env/bin/pip3" install --upgrade pip wheel setuptools
-"$PARFLOW_DIR/py-env/bin/pip3" install -r "$PARFLOW_DIR/python/requirements_all.txt"
-"$PARFLOW_DIR/py-env/bin/pip3" install "$PARFLOW_DIR/python"
