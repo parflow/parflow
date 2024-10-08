@@ -12,7 +12,7 @@ jobs:
        - name: Build Uncrustify
          run: |
             sudo apt-get -qq update
-            sudo apt-get -qq install curl cmake build-essential
+            sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev 
             curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
             tar -xf uncrustify-0.79.0.tar.gz
             cd uncrustify-uncrustify-0.79.0
