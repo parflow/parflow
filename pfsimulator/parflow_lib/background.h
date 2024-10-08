@@ -69,18 +69,18 @@ typedef struct {
 #define BackgroundNZ(bg)  ((bg)->NZ)
 
 #define BackgroundXLower(bg) \
-  (BackgroundX(bg) + BackgroundIX(bg) * BackgroundDX(bg))
+        (BackgroundX(bg) + BackgroundIX(bg) * BackgroundDX(bg))
 #define BackgroundYLower(bg) \
-  (BackgroundY(bg) + BackgroundIY(bg) * BackgroundDY(bg))
+        (BackgroundY(bg) + BackgroundIY(bg) * BackgroundDY(bg))
 #define BackgroundZLower(bg) \
-  (BackgroundZ(bg) + BackgroundIZ(bg) * BackgroundDZ(bg))
+        (BackgroundZ(bg) + BackgroundIZ(bg) * BackgroundDZ(bg))
 
 #define BackgroundXUpper(bg) \
-  (BackgroundX(bg) + (BackgroundIX(bg) + BackgroundNX(bg)) * BackgroundDX(bg))
+        (BackgroundX(bg) + (BackgroundIX(bg) + BackgroundNX(bg)) * BackgroundDX(bg))
 #define BackgroundYUpper(bg) \
-  (BackgroundY(bg) + (BackgroundIY(bg) + BackgroundNY(bg)) * BackgroundDY(bg))
+        (BackgroundY(bg) + (BackgroundIY(bg) + BackgroundNY(bg)) * BackgroundDY(bg))
 #define BackgroundZUpper(bg) \
-  (BackgroundZ(bg) + (BackgroundIZ(bg) + BackgroundNZ(bg)) * BackgroundDZ(bg))
+        (BackgroundZ(bg) + (BackgroundIZ(bg) + BackgroundNZ(bg)) * BackgroundDZ(bg))
 
 
 #endif

@@ -302,6 +302,7 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
 #endif
       break;
     }
+
     default:
     {
       InputError("Invalid switch value <%s> for key <%s>", switch_name, key);

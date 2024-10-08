@@ -216,13 +216,13 @@ typedef struct amps_HandleObject {
 #define PACK_HOST_TYPE 1
 #define PACK_NO_CONVERT_TYPE 2
 
-#define AMPS_ALIGN(type, dest)              \
-  ((sizeof(type) -                          \
-    ((unsigned long)(dest) % sizeof(type))) \
-   % sizeof(type));
+#define AMPS_ALIGN(type, dest)                    \
+        ((sizeof(type) -                          \
+          ((unsigned long)(dest) % sizeof(type))) \
+         % sizeof(type));
 
 #define AMPS_SIZEOF(type, len, stride) \
-  ((sizeof(type) * (len) * (stride)))
+        ((sizeof(type) * (len) * (stride)))
 
 /*---------------------------------------------------------------------------*/
 /* Macros for Invoice creation and deletion.                                 */
@@ -234,19 +234,19 @@ typedef struct amps_HandleObject {
 /* Internal macros used to clear buffer and letter spaces.                   */
 /*---------------------------------------------------------------------------*/
 #if SGS
-#define AMPS_CLEAR_INVOICE(invoice) \
-  {                                 \
-    amps_ClearInvoice(invoice);     \
-  }
+#define AMPS_CLEAR_INVOICE(invoice)       \
+        {                                 \
+          amps_ClearInvoice(invoice);     \
+        }
 
-#define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
-  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
-    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;    \
-  else                                                    \
-  {                                                       \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
-    pvm_freebuf(amps_letter);                             \
-  }
+#define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter)       \
+        if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
+        (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;      \
+        else                                                    \
+        {                                                       \
+          (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
+          pvm_freebuf(amps_letter);                             \
+        }
 
 #endif
 
@@ -286,47 +286,47 @@ typedef struct amps_HandleObject {
 #define amps_SizeofDouble sizeof(double)
 
 #define amps_WriteChar(file, ptr, len) \
-  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_WriteShort(file, ptr, len) \
-  fwrite((ptr), sizeof(short), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(short), (len), (FILE*)(file))
 
 #define amps_WriteLong(file, ptr, len) \
-  fwrite((ptr), sizeof(long), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(long), (len), (FILE*)(file))
 
 #define amps_WriteFloat(file, ptr, len) \
-  fwrite((ptr), sizeof(float), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(float), (len), (FILE*)(file))
 
 #ifdef CASC_HAVE_BIGENDIAN
 
 #define amps_WriteInt(file, ptr, len) \
-  fwrite((ptr), sizeof(int), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(int), (len), (FILE*)(file))
 
 #define amps_WriteDouble(file, ptr, len) \
-  fwrite((ptr), sizeof(double), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
 #endif
 
 
 #define amps_ReadChar(file, ptr, len) \
-  fread((ptr), sizeof(char), (len), (FILE*)(file))
+        fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadShort(file, ptr, len) \
-  fread((ptr), sizeof(short), (len), (FILE*)(file))
+        fread((ptr), sizeof(short), (len), (FILE*)(file))
 
 #define amps_ReadLong(file, ptr, len) \
-  fread((ptr), sizeof(long), (len), (FILE*)(file))
+        fread((ptr), sizeof(long), (len), (FILE*)(file))
 
 #define amps_ReadFloat(file, ptr, len) \
-  fread((ptr), sizeof(float), (len), (FILE*)(file))
+        fread((ptr), sizeof(float), (len), (FILE*)(file))
 
 #ifdef CASC_HAVE_BIGENDIAN
 
 #define amps_ReadInt(file, ptr, len) \
-  fread((ptr), sizeof(int), (len), (FILE*)(file))
+        fread((ptr), sizeof(int), (len), (FILE*)(file))
 
 #define amps_ReadDouble(file, ptr, len) \
-  fread((ptr), sizeof(double), (len), (FILE*)(file))
+        fread((ptr), sizeof(double), (len), (FILE*)(file))
 
 #endif
 
@@ -334,24 +334,24 @@ typedef struct amps_HandleObject {
 
 #ifdef AMPS_MEMORY_ALLOC_CHECK
 
-#define amps_TAlloc(type, count)                                      \
-  {                                                                   \
-    (type*)ptr;                                                       \
-    if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count)))) \
-        == NULL)                                                      \
-      amps_Printf("Error: out of memory in <%s> at line %d\n",        \
-                  __FILE__, __LINE__);                                \
-    ptr;                                                              \
-  }
+#define amps_TAlloc(type, count)                                            \
+        {                                                                   \
+          (type*)ptr;                                                       \
+          if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count)))) \
+              == NULL)                                                      \
+          amps_Printf("Error: out of memory in <%s> at line %d\n",          \
+                      __FILE__, __LINE__);                                  \
+          ptr;                                                              \
+        }
 
-#define amps_CTAlloc(type, count)                                                         \
-  {                                                                                       \
-    (type*)ptr;                                                                           \
-    if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL) \
-      amps_Printf("Error: out of memory in <%s> at line %d\n",                            \
-                  __FILE__, __LINE__);                                                    \
-    ptr;                                                                                  \
-  }
+#define amps_CTAlloc(type, count)                                                               \
+        {                                                                                       \
+          (type*)ptr;                                                                           \
+          if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL) \
+          amps_Printf("Error: out of memory in <%s> at line %d\n",                              \
+                      __FILE__, __LINE__);                                                      \
+          ptr;                                                                                  \
+        }
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr); else
@@ -363,10 +363,10 @@ typedef struct amps_HandleObject {
 #else
 
 #define amps_TAlloc(type, count) \
-  ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+        ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 #define amps_CTAlloc(type, count) \
-  ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr); else

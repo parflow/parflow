@@ -141,8 +141,8 @@ PFModule  *SMGInitInstanceXtra(
                                Problem *    problem,
                                Grid *       grid,
                                ProblemData *problem_data,
-			       Matrix *     pf_Bmat,
-			       Matrix *     pf_Cmat,
+                               Matrix *     pf_Bmat,
+                               Matrix *     pf_Cmat,
                                double *     temp_data)
 {
 #ifdef HAVE_HYPRE
@@ -181,20 +181,20 @@ PFModule  *SMGInitInstanceXtra(
 
 
     HypreInitialize(pf_Bmat,
-		    &(instance_xtra -> hypre_grid),
-		    &(instance_xtra -> hypre_stencil),
-		    &(instance_xtra -> hypre_mat),
-		    &(instance_xtra -> hypre_b),
-		    &(instance_xtra -> hypre_x)
-		    );
+                    &(instance_xtra->hypre_grid),
+                    &(instance_xtra->hypre_stencil),
+                    &(instance_xtra->hypre_mat),
+                    &(instance_xtra->hypre_b),
+                    &(instance_xtra->hypre_x)
+                    );
 
     /* Copy the matrix entries */
     BeginTiming(public_xtra->time_index_copy_hypre);
-    
+
     HypreAssembleMatrixAsElements(pf_Bmat,
-				  pf_Cmat,
-				  &(instance_xtra -> hypre_mat),
-				  problem_data);
+                                  pf_Cmat,
+                                  &(instance_xtra->hypre_mat),
+                                  problem_data);
 
     EndTiming(public_xtra->time_index_copy_hypre);
 

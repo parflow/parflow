@@ -43,8 +43,8 @@ void _amps_wait_exchange(amps_Handle handle)
                 handle->package->recv_requests, handle->package->status);
     for (i = 0; i < handle->package->num_recv; i++)
     {
-      amps_gpupacking(AMPS_UNPACK, 
-                      handle->package->recv_invoices[i], 
+      amps_gpupacking(AMPS_UNPACK,
+                      handle->package->recv_invoices[i],
                       i, &combuf, &size);
     }
     for (i = 0; i < handle->package->num_recv; i++)
@@ -59,7 +59,7 @@ void _amps_wait_exchange(amps_Handle handle)
     MPI_Datatype type = handle->package->recv_invoices[i]->mpi_type;
     if (type != MPI_DATATYPE_NULL && type != MPI_BYTE)
       MPI_Type_free(&(handle->package->recv_invoices[i]->mpi_type));
-    if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+    if (handle->package->recv_requests[i] != MPI_REQUEST_NULL)
       MPI_Request_free(&(handle->package->recv_requests[i]));
   }
   for (i = 0; i < handle->package->num_send; i++)
@@ -67,7 +67,7 @@ void _amps_wait_exchange(amps_Handle handle)
     MPI_Datatype type = handle->package->send_invoices[i]->mpi_type;
     if (type != MPI_DATATYPE_NULL && type != MPI_BYTE)
       MPI_Type_free(&handle->package->send_invoices[i]->mpi_type);
-    if(handle->package->send_requests[i] != MPI_REQUEST_NULL)
+    if (handle->package->send_requests[i] != MPI_REQUEST_NULL)
       MPI_Request_free(&(handle->package->send_requests[i]));
   }
 }
@@ -79,11 +79,13 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   int errchk;
   int i;
 
-  if(package->num_send > 0){
+  if (package->num_send > 0)
+  {
     combuf = (char**)malloc(package->num_send * sizeof(char*));
     size = (int*)malloc(package->num_send * sizeof(int));
   }
-  else{
+  else
+  {
     combuf = (char**)malloc(sizeof(char*));
     size = (int*)malloc(sizeof(int));
   }
@@ -93,12 +95,14 @@ amps_Handle amps_IExchangePackage(amps_Package package)
    *--------------------------------------------------------------------*/
   for (i = 0; i < package->num_recv; i++)
   {
-    errchk = amps_gpupacking(AMPS_GETRBUF, package->recv_invoices[i], 
-                   i, &combuf[0], &size[0]);
-    if(errchk == 0){    
+    errchk = amps_gpupacking(AMPS_GETRBUF, package->recv_invoices[i],
+                             i, &combuf[0], &size[0]);
+    if (errchk == 0)
+    {
       package->recv_invoices[i]->mpi_type = MPI_BYTE;
     }
-    else{ 
+    else
+    {
       combuf[0] = NULL;
       size[0] = 1;
       amps_create_mpi_type(oas3Comm, package->recv_invoices[i]);
@@ -115,12 +119,14 @@ amps_Handle amps_IExchangePackage(amps_Package package)
    *--------------------------------------------------------------------*/
   for (i = 0; i < package->num_send; i++)
   {
-    errchk = amps_gpupacking(AMPS_PACK, package->send_invoices[i], 
-                   i, &combuf[i], &size[i]);
-    if(errchk == 0){    
+    errchk = amps_gpupacking(AMPS_PACK, package->send_invoices[i],
+                             i, &combuf[i], &size[i]);
+    if (errchk == 0)
+    {
       package->send_invoices[i]->mpi_type = MPI_BYTE;
     }
-    else{
+    else
+    {
       combuf[i] = NULL;
       size[i] = 1;
       amps_create_mpi_type(oas3Comm, package->send_invoices[i]);
@@ -155,7 +161,7 @@ void _amps_wait_exchange(amps_Handle handle)
     {
       if (handle->package->recv_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
         MPI_Type_free(&(handle->package->recv_invoices[i]->mpi_type));
-      if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+      if (handle->package->recv_requests[i] != MPI_REQUEST_NULL)
         MPI_Request_free(&handle->package->recv_requests[i]);
     }
 
@@ -163,7 +169,7 @@ void _amps_wait_exchange(amps_Handle handle)
     {
       if (handle->package->send_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
         MPI_Type_free(&handle->package->send_invoices[i]->mpi_type);
-      if(handle->package->send_requests[i] != MPI_REQUEST_NULL)
+      if (handle->package->send_requests[i] != MPI_REQUEST_NULL)
         MPI_Request_free(&handle->package->send_requests[i]);
     }
   }

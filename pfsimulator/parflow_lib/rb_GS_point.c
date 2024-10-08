@@ -59,7 +59,7 @@ void     RedBlackGSPoint(
                          double  tol,
                          int     zero)
 {
-  PUSH_NVTX("RedBlackGSPoint",5)
+  PUSH_NVTX("RedBlackGSPoint", 5)
 
   PFModule       *this_module = ThisPFModule;
   PublicXtra     *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -338,7 +338,7 @@ void     RedBlackGSPoint(
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
           iv = im = 0;
-          
+
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                     iv, nx_v, ny_v, nz_v, sx, sy, sz,
                     im, nx_m, ny_m, nz_m, sx, sy, sz,
@@ -349,8 +349,8 @@ void     RedBlackGSPoint(
                                 a4[im] * x4[iv] +
                                 a5[im] * x5[iv] +
                                 a6[im] * x6[iv])) / a0[im];
-                                
-            SKIP_PARALLEL_SYNC;                                
+
+            SKIP_PARALLEL_SYNC;
           });
         }
       }
@@ -368,9 +368,9 @@ void     RedBlackGSPoint(
   else
     IncFLOPCount(13 * (iter * VectorSize(x)));
 
-    PARALLEL_SYNC;
+  PARALLEL_SYNC;
 
-    POP_NVTX
+  POP_NVTX
 }
 
 

@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
   me = amps_Rank(amps_CommWorld);
 
-  if(me == 0)
+  if (me == 0)
   {
     FILE* test_file;
 
@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
     fprintf(test_file, "4 10 234 5 6\n");
     fprintf(test_file, "65555 200 234 678 890 6789 2789\n");
     fprintf(test_file, "100000 2789 78 8 1 98 987 98765\n");
-    fprintf(test_file, "12.500000 12.000500 17.400000 679.800000\n"); 
-    fprintf(test_file, "12.500000 0.078000 679.799988 0.500000\n"); 
+    fprintf(test_file, "12.500000 12.000500 17.400000 679.800000\n");
+    fprintf(test_file, "12.500000 0.078000 679.799988 0.500000\n");
 
     fclose(test_file);
   }
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
                   string, recvd_string);
       result |= 1;
     }
-    
+
     for (i = 0; i < shorts_length; i++)
       if (shorts[i] != recvd_shorts[i])
       {
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
                     floats[i], recvd_floats[i]);
         result |= 1;
       }
-    
+
     amps_FreeInvoice(recv_invoice);
   }
 

@@ -35,26 +35,25 @@
  *----------------------------------------------------------------*/
 
 typedef struct {
-    int number;
-    char          *name;
-    double intake_x_lower, intake_y_lower, z_lower;
-    double intake_x_upper, intake_y_upper, z_upper;
-    int has_secondary_intake_cell;
-    double secondary_intake_x_lower, secondary_intake_y_lower;
-    int intake_cell_mpi_rank, secondary_intake_cell_mpi_rank, release_cell_mpi_rank;
-    double secondary_intake_x_upper, secondary_intake_y_upper;
-    double release_x_lower, release_y_lower, release_z_lower;
-    double release_x_upper, release_y_upper, release_z_upper;
-    double max_storage, min_release_storage, storage, release_rate;
-    double intake_amount_since_last_print, release_amount_since_last_print, release_amount_in_solver;
-    Subgrid       *intake_subgrid;
-    Subgrid       *secondary_intake_subgrid;
-    Subgrid       *release_subgrid;
-    double size;
+  int number;
+  char          *name;
+  double intake_x_lower, intake_y_lower, z_lower;
+  double intake_x_upper, intake_y_upper, z_upper;
+  int has_secondary_intake_cell;
+  double secondary_intake_x_lower, secondary_intake_y_lower;
+  int intake_cell_mpi_rank, secondary_intake_cell_mpi_rank, release_cell_mpi_rank;
+  double secondary_intake_x_upper, secondary_intake_y_upper;
+  double release_x_lower, release_y_lower, release_z_lower;
+  double release_x_upper, release_y_upper, release_z_upper;
+  double max_storage, min_release_storage, storage, release_rate;
+  double intake_amount_since_last_print, release_amount_since_last_print, release_amount_in_solver;
+  Subgrid       *intake_subgrid;
+  Subgrid       *secondary_intake_subgrid;
+  Subgrid       *release_subgrid;
+  double size;
     #ifdef PARFLOW_HAVE_MPI
-      MPI_Comm mpi_communicator;
+  MPI_Comm mpi_communicator;
     #endif
-
 } ReservoirDataPhysical;
 
 /*------------------------------------------------------------------
@@ -62,108 +61,107 @@ typedef struct {
  *----------------------------------------------------------------*/
 
 typedef struct {
-    int num_reservoirs;
-    int overland_flow_solver;
-    ReservoirDataPhysical  **reservoir_physicals;
-
+  int num_reservoirs;
+  int overland_flow_solver;
+  ReservoirDataPhysical  **reservoir_physicals;
 } ReservoirData;
 
 /*--------------------------------------------------------------------------
  * Accessor macros: ReservoirDataPhysical
  *--------------------------------------------------------------------------*/
 #define ReservoirDataPhysicalNumber(reservoir_data_physical) \
-  ((reservoir_data_physical)->number)
+        ((reservoir_data_physical)->number)
 
 #define ReservoirDataPhysicalName(reservoir_data_physical) \
-  ((reservoir_data_physical)->name)
+        ((reservoir_data_physical)->name)
 
 #define ReservoirDataPhysicalMpiCommunicator(reservoir_data_physical) \
-  ((reservoir_data_physical)->mpi_communicator)
+        ((reservoir_data_physical)->mpi_communicator)
 
 #define ReservoirDataPhysicalIntakeCellMpiRank(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_cell_mpi_rank)
+        ((reservoir_data_physical)->intake_cell_mpi_rank)
 
 #define ReservoirDataPhysicalIntakeXLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_x_lower)
+        ((reservoir_data_physical)->intake_x_lower)
 
 #define ReservoirDataPhysicalIntakeYLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_y_lower)
+        ((reservoir_data_physical)->intake_y_lower)
 
 #define ReservoirDataPhysicalSecondaryIntakeCellMpiRank(reservoir_data_physical) \
-  ((reservoir_data_physical)->secondary_intake_cell_mpi_rank)
+        ((reservoir_data_physical)->secondary_intake_cell_mpi_rank)
 
 #define ReservoirDataPhysicalSecondaryIntakeXLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->secondary_intake_x_lower)
+        ((reservoir_data_physical)->secondary_intake_x_lower)
 
 #define ReservoirDataPhysicalSecondaryIntakeYLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->secondary_intake_y_lower)
+        ((reservoir_data_physical)->secondary_intake_y_lower)
 
 
 #define ReservoirDataPhysicalIntakeXUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_x_upper)
+        ((reservoir_data_physical)->intake_x_upper)
 
 #define ReservoirDataPhysicalIntakeYUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_y_upper)
+        ((reservoir_data_physical)->intake_y_upper)
 
 #define ReservoirDataPhysicalSecondaryIntakeXUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_x_upper)
+        ((reservoir_data_physical)->intake_x_upper)
 
 #define ReservoirDataPhysicalSecondaryIntakeYUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_y_upper)
+        ((reservoir_data_physical)->intake_y_upper)
 
 
 #define ReservoirDataPhysicalIntakeSubgrid(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_subgrid)
+        ((reservoir_data_physical)->intake_subgrid)
 
 #define ReservoirDataPhysicalSecondaryIntakeSubgrid(reservoir_data_physical) \
-  ((reservoir_data_physical)->secondary_intake_subgrid)
+        ((reservoir_data_physical)->secondary_intake_subgrid)
 
 #define ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical) \
-  ((reservoir_data_physical)->has_secondary_intake_cell)
+        ((reservoir_data_physical)->has_secondary_intake_cell)
 
 #define ReservoirDataPhysicalReleaseCellMpiRank(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_cell_mpi_rank)
+        ((reservoir_data_physical)->release_cell_mpi_rank)
 
 #define ReservoirDataPhysicalReleaseXLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_x_lower)
+        ((reservoir_data_physical)->release_x_lower)
 
 #define ReservoirDataPhysicalReleaseYLower(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_y_lower)
+        ((reservoir_data_physical)->release_y_lower)
 
 #define ReservoirDataPhysicalReleaseXUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_x_upper)
+        ((reservoir_data_physical)->release_x_upper)
 
 #define ReservoirDataPhysicalReleaseYUpper(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_y_upper)
+        ((reservoir_data_physical)->release_y_upper)
 
 
 #define ReservoirDataPhysicalReleaseSubgrid(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_subgrid)
+        ((reservoir_data_physical)->release_subgrid)
 
 #define ReservoirDataPhysicalSize(reservoir_data_physical) \
-  ((reservoir_data_physical)->size)
+        ((reservoir_data_physical)->size)
 
 
 #define ReservoirDataPhysicalMaxStorage(reservoir_data_physical) \
-  ((reservoir_data_physical)->max_storage)
+        ((reservoir_data_physical)->max_storage)
 
 #define ReservoirDataPhysicalStorage(reservoir_data_physical) \
-  ((reservoir_data_physical)->storage)
+        ((reservoir_data_physical)->storage)
 
 #define ReservoirDataPhysicalReleaseAmountSinceLastPrint(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_amount_since_last_print)
+        ((reservoir_data_physical)->release_amount_since_last_print)
 
 #define ReservoirDataPhysicalIntakeAmountSinceLastPrint(reservoir_data_physical) \
-  ((reservoir_data_physical)->intake_amount_since_last_print)
+        ((reservoir_data_physical)->intake_amount_since_last_print)
 
 #define ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_amount_in_solver)
+        ((reservoir_data_physical)->release_amount_in_solver)
 
 #define ReservoirDataPhysicalMinReleaseStorage(reservoir_data_physical) \
-  ((reservoir_data_physical)->min_release_storage)
+        ((reservoir_data_physical)->min_release_storage)
 
 #define ReservoirDataPhysicalReleaseRate(reservoir_data_physical) \
-  ((reservoir_data_physical)->release_rate)
+        ((reservoir_data_physical)->release_rate)
 
 
 
@@ -179,9 +177,9 @@ typedef struct {
 #define ReservoirDataOverlandFlowSolver(reservoir_data)      ((reservoir_data)->overland_flow_solver)
 
 #define ReservoirDataReservoirPhysicals(reservoir_data) \
-  ((reservoir_data)->reservoir_physicals)
+        ((reservoir_data)->reservoir_physicals)
 #define ReservoirDataReservoirPhysical(reservoir_data, i) \
-  ((reservoir_data)->reservoir_physicals[i])
+        ((reservoir_data)->reservoir_physicals[i])
 
 
 

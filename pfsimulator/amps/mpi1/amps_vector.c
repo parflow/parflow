@@ -100,7 +100,7 @@ void amps_vector_in(amps_Comm comm, int type, char **data, char **buf_ptr, int d
 
       switch (type)
       {
-	case AMPS_INVOICE_BYTE_CTYPE:
+        case AMPS_INVOICE_BYTE_CTYPE:
           *(char**)data += stride[dim];
           break;
 
@@ -151,7 +151,7 @@ int amps_vector_align(amps_Comm comm, int type, char **data, char **buf_ptr, int
       align = AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[0],
                                    stride[0]);
       break;
-    
+
     case AMPS_INVOICE_CHAR_CTYPE:
       align = AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[0],
                                    stride[0]);
@@ -251,7 +251,7 @@ int amps_vector_sizeof_local(amps_Comm comm, int type, char **data, char **buf_p
                                    stride[0]);
       el_size = sizeof(char);
       break;
-    
+
     case AMPS_INVOICE_CHAR_CTYPE:
       size = AMPS_CALL_CHAR_SIZEOF(comm, *buf_ptr, NULL, len[0],
                                    stride[0]);

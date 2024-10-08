@@ -1347,7 +1347,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
 
   double       *temp_data, *temp_data_placeholder;
   int total_mobility_sz, pressure_sz, velocity_sz, satur_sz = 0,
-    concen_sz, temp_data_size, sz;
+      concen_sz, temp_data_size, sz;
   int is_multiphase;
 
   int i;
@@ -1634,9 +1634,9 @@ PFModule *SolverDiffusionInitInstanceXtra()
                             (NULL, NULL, temp_data_placeholder));
   int size_retardation = PFModuleSizeOfTempData(instance_xtra->retardation);
   int size_advect = PFModuleSizeOfTempData(instance_xtra->advect_concen);
-  
+
   temp_data_placeholder += pfmax(size_retardation,
-				 size_advect
+                                 size_advect
                                  );
 
   temp_data += temp_data_size;

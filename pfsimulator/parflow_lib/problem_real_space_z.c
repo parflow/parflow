@@ -132,15 +132,15 @@ void realSpaceZ(ProblemData *problem_data, Vector *rsz)
         ips = SubvectorEltIndex(rsz_sub, i, j, k);
 
         breaking_out_PV_visiting = PV_visiting;
-	// Can't just do a break since GrGeom loops are multiple levels deep.
+        // Can't just do a break since GrGeom loops are multiple levels deep.
         goto  breakout;
       });
 
 breakout:;
 
-      /* 
-       * If we broke out of GrGeomInLoop we found point in 
-       * domain on this rank.   If not then nothing 
+      /*
+       * If we broke out of GrGeomInLoop we found point in
+       * domain on this rank.   If not then nothing
        * was in domain.
        */
 
