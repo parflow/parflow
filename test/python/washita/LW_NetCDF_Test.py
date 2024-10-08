@@ -7,7 +7,7 @@
 # package   require parflow
 LW_NetCDF_Test = Run("LW_NetCDF_Test", __file__)
 
-LW_NetCDF_Test. = 'FileVersion 4'
+LW_NetCDF_Test.FileVersion = 'FileVersion 4'
 
 #-----------------------------------------------------------------------------
 # Set Processor topology 
@@ -152,9 +152,9 @@ LW_NetCDF_Test.Geom.g8.Perm.Value = 0.68
 
 LW_NetCDF_Test.Perm.TensorType = 'TensorByGeom'
 LW_NetCDF_Test.Geom.Perm.TensorByGeom.Names = 'domain'
-LW_NetCDF_Test.Geom.domain.Perm.TensorValX = 1.0d0
-LW_NetCDF_Test.Geom.domain.Perm.TensorValY = 1.0d0
-LW_NetCDF_Test.Geom.domain.Perm.TensorValZ = 1.0d0
+LW_NetCDF_Test.Geom.domain.Perm.TensorValX = 1.0
+LW_NetCDF_Test.Geom.domain.Perm.TensorValY = 1.0
+LW_NetCDF_Test.Geom.domain.Perm.TensorValZ = 1.0
 
 #-----------------------------------------------------------------------------
 # Specific Storage
@@ -255,7 +255,7 @@ LW_NetCDF_Test.Cycle.constant.Repeat = -1
 #-----------------------------------------------------------------------------
 # Boundary Conditions
 #-----------------------------------------------------------------------------
-LW_NetCDF_Test.BCPressure.PatchNames = [pfget Geom.domain.Patches]
+LW_NetCDF_Test.BCPressure.PatchNames = LW_NetCDF_Test.Geom.domain.Patches
 
 LW_NetCDF_Test.Patch.x_lower.BCPressure.Type = 'FluxConst'
 LW_NetCDF_Test.Patch.x_lower.BCPressure.Cycle = 'constant'

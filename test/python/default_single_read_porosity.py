@@ -369,19 +369,19 @@ abs_value = 1e-12
 test_files = ["press"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.{timestep}.pfb"
-    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", sig_digits, abs_value):
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", abs_value, sig_digits):
         passed = False
 
 test_files = ["perm_x", "perm_y", "perm_z"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.pfb"
-    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", sig_digits, abs_value):
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", abs_value, sig_digits):
         passed = False
 
 test_files = ["phasex", "phasey", "phasez"]
 for test_file in test_files:
     filename = f"/{run_name}.out.{test_file}.0.{timestep}.pfb"
-    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", sig_digits, abs_value):
+    if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename, f"Max difference in {filename}", abs_value, sig_digits):
         passed = False
 
 

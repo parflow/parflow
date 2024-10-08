@@ -499,7 +499,9 @@ crater.run(working_directory=new_output_dir_name)
 
 passed = True
 sig_digits = 5
-abs_diff = 1e-200
+# Pressure was very close to zero and test was failing so ignore very small pressures even if
+# the numbers differ in sig_digits
+abs_value = 1E-200
 test_files = ["perm_x", "perm_y", "perm_z", "porosity"]
 
 for test_file in test_files:
@@ -512,11 +514,11 @@ for i in range(3):
     timestep = str(i).rjust(5, '0')
     filename = f"/{run_name}.out.press.{timestep}.pfb"
     if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in Pressure for timestep {timestep}", sig_digits, abs_diff):
+                                 f"Max difference in Pressure for timestep {timestep}", abs_value, sig_digits):
         passed = False
     filename = f"/{run_name}.out.satur.{timestep}.pfb"
     if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in Saturation for timestep {timestep}", sig_digits, abs_diff):
+                                 f"Max difference in Saturation for timestep {timestep}", abs_value, sig_digits):
         passed = False
 
 
