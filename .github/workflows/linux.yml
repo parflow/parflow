@@ -23,6 +23,21 @@ jobs:
             sudo make install
             cd ../..
             rm -fr uncrustify-uncrustify-0.79.0 uncrustify-0.79.0.tar.gz
+       - name: CMake Install
+          run: |
+            echo "Installing"
+            cd ~/depend
+            echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
+            wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
+            tar -xf cmake-3.25.1-linux-x86_64.tar.gz
+            $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
+            echo "$HOME/depend/cmake-3.25.1-linux-x86_64/bin" >> $GITHUB_PATH
+       - name: ParFlow CMake Configure
+          run: |
+            echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
+            cmake -Bbuild -DPARFLOW_ENABLE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
+       - name: ParFlow CMake Build
+          run: (cd build; make -j 2 install)
        - name: Run Uncrustify
          run: |
             ./bin/pfformat --check
