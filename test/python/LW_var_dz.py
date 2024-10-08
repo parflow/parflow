@@ -389,15 +389,15 @@ for i in range(0, 12, 2):
         passed = False
     filename = f"/{run_name}.out.velx.{timestep}.pfb"
     if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in x-velocity for timestep {timestep}", sig_digits, abs_value):
+                                 f"Max difference in x-velocity for timestep {timestep}", abs_value, sig_digits):
         passed = False
     filename = f"/{run_name}.out.vely.{timestep}.pfb"
     if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in y-velocity for timestep {timestep}", sig_digits, abs_value):
+                                 f"Max difference in y-velocity for timestep {timestep}", abs_value, sig_digits):
         passed = False
     filename = f"/{run_name}.out.vely.{timestep}.pfb"
     if not pf_test_file_with_abs(new_output_dir_name + filename, correct_output_dir_name + filename,
-                                 f"Max difference in z-velocity for timestep {timestep}", sig_digits, abs_value):
+                                 f"Max difference in z-velocity for timestep {timestep}", abs_value, sig_digits):
         passed = False
 
 rm(new_output_dir_name)
