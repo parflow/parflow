@@ -9,6 +9,20 @@ jobs:
      steps:
        - name: Checkout commit
          uses: actions/checkout@v4
+       - name: Package Install
+         run: |
+            sudo apt-get -qq update
+            sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev
+
+       - name: Cache dependencies
+         uses: actions/cache@v4
+         id: cache-parflow-dependencies
+        env:
+          cache-name: cache-parflow-dependencies
+          cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+        with:
+          path: "~/depend"
+          key: cache-check-style-${{ secrets.CACHE_VERSION }}
        - name: Directory Setup
          run: |
             mkdir -p $HOME/install
@@ -23,29 +37,36 @@ jobs:
             export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
             echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
        - name: Build Uncrustify
+         env:
+           CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
          run: |
-            sudo apt-get -qq update
-            sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev 
-            curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
-            tar -xf uncrustify-0.79.0.tar.gz
-            cd uncrustify-uncrustify-0.79.0
-            mkdir build
-            cd build
-            cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
-            make
-            sudo make -j 2 install
-            cd ../..
-            rm -fr uncrustify-uncrustify-0.79.0 uncrustify-0.79.0.tar.gz
+            if [[ "$CACHE_HIT" != 'true' ]]; then
+              sudo apt-get -qq update
+              sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev 
+              curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
+              tar -xf uncrustify-0.79.0.tar.gz
+              cd uncrustify-uncrustify-0.79.0
+              mkdir build
+              cd build
+              cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+              make
+              sudo make -j 2 install
+              cd ../..
+              rm -fr uncrustify-uncrustify-0.79.0 uncrustify-0.79.0.tar.gz
        - name: CMake Install
+         env:
+           CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
          run: |
-            echo "Installing"
-            mkdir -p $HOME/depend/{include,lib}
-            cd ~/depend
-            echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
-            wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
-            tar -xf cmake-3.25.1-linux-x86_64.tar.gz
-            $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
-            echo "$HOME/depend/cmake-3.25.1-linux-x86_64/bin" >> $GITHUB_PATH
+            if [[ "$CACHE_HIT" != 'true' ]]; then
+               echo "Installing"
+               mkdir -p $HOME/depend/{include,lib}
+               cd ~/depend
+               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
+               wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
+               tar -xf cmake-3.25.1-linux-x86_64.tar.gz
+               $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
+               echo "$HOME/depend/cmake-3.25.1-linux-x86_64/bin" >> $GITHUB_PATH
+            fi
        - name: ParFlow CMake Configure
          run: |
             cmake -Bbuild -DPARFLOW_ENABLE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
