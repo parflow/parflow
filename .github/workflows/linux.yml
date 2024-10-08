@@ -55,7 +55,7 @@ jobs:
               sudo make -j 2 install
               cd ../..
               rm -fr uncrustify-uncrustify-0.79.0 uncrustify-0.79.0.tar.gz
-	    fi
+            fi
 
        - name: CMake Install
          env:
