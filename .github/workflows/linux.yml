@@ -26,6 +26,7 @@ jobs:
        - name: CMake Install
          run: |
             echo "Installing"
+	    mkdir -p $HOME/depend/{include,lib}
             cd ~/depend
             echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
             wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
