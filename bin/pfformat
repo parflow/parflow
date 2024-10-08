@@ -121,7 +121,7 @@ function main() {
    # Disable this for now while Python is being refactored.
    if $check
    then
-      if output=$(pfpython -m black . --check)
+      if output=$($PARFLOW_DIR/bin/pfpython -m black . --check)
       then
 	 log 'pfformat PASSED %s\n' $i
       else
@@ -129,7 +129,7 @@ function main() {
 	 failed=true
       fi
    else
-      pfpython -m black .
+      $PARFLOW_DIR/bin/pfpython -m black .
    fi
 
    if $check
