@@ -119,18 +119,18 @@ function main() {
    done
 
    # Disable this for now while Python is being refactored.
-   # if $check
-   # then
-   #    if output=$(pfpython -m black . --check)
-   #    then
-   # 	 log 'pfformat PASSED %s\n' $i
-   #    else
-   # 	 printf 'pfFormat FAILED\nPython black output was «%s»\n' "$output\n"
-   # 	 failed=true
-   #    fi
-   # else
-   #    pfpython -m black .
-   # fi
+   if $check
+   then
+      if output=$($PARFLOW_DIR/bin/pfpython -m black . --check)
+      then
+	 log 'pfformat PASSED %s\n' $i
+      else
+	 printf 'pfFormat FAILED\nPython black output was «%s»\n' "$output\n"
+	 failed=true
+      fi
+   else
+      $PARFLOW_DIR/bin/pfpython -m black .
+   fi
 
    if $check
    then
