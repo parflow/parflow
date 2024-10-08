@@ -2,14 +2,19 @@ r"""
 This module aims to provide the core components that are required to build
 a Parflow input deck.
 """
+
 import sys
 import yaml
 
 from parflow.tools import settings
 from parflow.tools.fs import get_text_file_content
 from parflow.tools.helper import (
-    map_to_child, map_to_children_of_type, map_to_parent, map_to_self,
-    remove_prefix, filter_none
+    map_to_child,
+    map_to_children_of_type,
+    map_to_parent,
+    map_to_self,
+    remove_prefix,
+    filter_none,
 )
 from parflow.tools.helper import normalize_location, sort_dict_by_priority
 from parflow.tools.io import read_pfidb
@@ -22,37 +27,45 @@ from .handlers import decorate_value
 # Accessor helpers
 # ----------------------------------------------------------------------------
 
+
 def validate_helper(container, name, value, indent):
-    """Helper function for validating a value
-    """
+    """Helper function for validating a value"""
     num_errors = 0
-    validation_string = ''
+    validation_string = ""
     details = container._details_[name]
-    has_default = 'default' in details
-    history = details.get('history')
-    if (has_default and value == details['default'] and
-            'MandatoryValue' not in details['domains']):
+    has_default = "default" in details
+    history = details.get("history")
+    if (
+        has_default
+        and value == details["default"]
+        and "MandatoryValue" not in details["domains"]
+    ):
         pass
     else:
-        num_errors, validation_string = \
-            validate_value_to_string(
-                container, value, has_default, details['domains'],
-                container.get_context_settings(), history, indent)
+        num_errors, validation_string = validate_value_to_string(
+            container,
+            value,
+            has_default,
+            details["domains"],
+            container.get_context_settings(),
+            history,
+            indent,
+        )
 
     return num_errors, validation_string
+
 
 # -----------------------------------------------------------------------------
 
 
 def detail_helper(container, name, value):
-    """Helper function that extract elements of the field's detail
-    """
+    """Helper function that extract elements of the field's detail"""
     details = container._details_.get(name, {})
-    domains = details.get('domains')
-    handlers = details.get('handlers')
-    crosscheck = details.get('crosscheck')
+    domains = details.get("domains")
+    handlers = details.get("handlers")
+    crosscheck = details.get("crosscheck")
     if details:
-        history = details.setdefault('history', [])
+        history = details.setdefault("history", [])
         history.append(value)
     else:
         history = None
@@ -64,15 +77,17 @@ def detail_helper(container, name, value):
 # Internal field name helpers
 # -----------------------------------------------------------------------------
 
+
 def is_private_key(name):
     """Test if the given key is a key or a private member
 
     Return True if it is a private member
     """
-    return name[0] == '_' and name[-1] == '_'
+    return name[0] == "_" and name[-1] == "_"
 
 
 # -----------------------------------------------------------------------------
+
 
 def is_not_private_key(name):
     """Test if the given key is a key or a private member
@@ -84,25 +99,26 @@ def is_not_private_key(name):
 
 # -----------------------------------------------------------------------------
 
+
 def to_str_dict_format(value):
-    """Ensure that the output value is a valid string
-    """
+    """Ensure that the output value is a valid string"""
     if isinstance(value, str):
         return value
 
-    if hasattr(value, '__iter__'):
-        return ' '.join([str(v) for v in value])
+    if hasattr(value, "__iter__"):
+        return " ".join([str(v) for v in value])
 
     return value
 
 
 # -----------------------------------------------------------------------------
 
-def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
+
+def extract_keys_from_object(dict_to_fill, instance, parent_namespace=""):
     """Method that walk PFDBObj object and record their key and value
     inside a Python dict.
     """
-    if hasattr(instance, '_pfstore_'):
+    if hasattr(instance, "_pfstore_"):
         for key, value in instance._pfstore_.items():
             dict_to_fill[key] = to_str_dict_format(value)
 
@@ -113,20 +129,18 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
 
         full_qualified_key = instance.to_pf_name(parent_namespace, key)
         if isinstance(value, PFDBObj):
-            if hasattr(value, '_value_'):
-                has_details = hasattr(value, '_details_') \
-                    and '_value_' in value._details_
-                details = value._details_['_value_'] if has_details else None
-                has_default = has_details and 'default' in details
-                has_domain = has_details and 'domains' in details
-                is_mandatory = has_domain \
-                    and 'MandatoryValue' in details['domains']
-                is_default = has_default and \
-                    value._value_ == details['default']
-                is_set = has_details and details.get('history')
+            if hasattr(value, "_value_"):
+                has_details = (
+                    hasattr(value, "_details_") and "_value_" in value._details_
+                )
+                details = value._details_["_value_"] if has_details else None
+                has_default = has_details and "default" in details
+                has_domain = has_details and "domains" in details
+                is_mandatory = has_domain and "MandatoryValue" in details["domains"]
+                is_default = has_default and value._value_ == details["default"]
+                is_set = has_details and details.get("history")
                 if is_mandatory or not is_default or is_set:
-                    dict_to_fill[full_qualified_key] = \
-                        to_str_dict_format(value._value_)
+                    dict_to_fill[full_qualified_key] = to_str_dict_format(value._value_)
             extract_keys_from_object(dict_to_fill, value, full_qualified_key)
         else:
             dict_to_fill[full_qualified_key] = to_str_dict_format(value)
@@ -134,26 +148,24 @@ def extract_keys_from_object(dict_to_fill, instance, parent_namespace=''):
 
 # -----------------------------------------------------------------------------
 
-def extract_keys_from_dict(dict_to_fill, dict_obj, parent_namespace=''):
+
+def extract_keys_from_dict(dict_to_fill, dict_obj, parent_namespace=""):
     """Helper function to extract a flat key/value dictionary for
     a given PFDBObj inside dict_to_fill.
     """
     for key, value in dict_obj.items():
-        if parent_namespace and key == '_value_':
+        if parent_namespace and key == "_value_":
             dict_to_fill[parent_namespace] = value
             continue
 
         if value is None or is_private_key(key):
             continue
 
-        full_qualified_key = (
-            f'{parent_namespace}.{key}' if parent_namespace else key
-        )
+        full_qualified_key = f"{parent_namespace}.{key}" if parent_namespace else key
         if isinstance(value, dict):
             # Need to handle _value_
-            if hasattr(value, '_value_'):
-                dict_to_fill[full_qualified_key] = to_str_dict_format(
-                    value._value_)
+            if hasattr(value, "_value_"):
+                dict_to_fill[full_qualified_key] = to_str_dict_format(value._value_)
             extract_keys_from_dict(dict_to_fill, value, full_qualified_key)
         else:
             dict_to_fill[full_qualified_key] = to_str_dict_format(value)
@@ -161,12 +173,13 @@ def extract_keys_from_dict(dict_to_fill, dict_obj, parent_namespace=''):
 
 # -----------------------------------------------------------------------------
 
+
 def flatten_hierarchical_map(hierarchical_map):
     """Helper function that take a hierarchical map and return a flat
     version of it.
     """
     flat_map = {}
-    extract_keys_from_dict(flat_map, hierarchical_map, parent_namespace='')
+    extract_keys_from_dict(flat_map, hierarchical_map, parent_namespace="")
     return flat_map
 
 
@@ -174,9 +187,10 @@ def flatten_hierarchical_map(hierarchical_map):
 # Main DB Object
 # -----------------------------------------------------------------------------
 
+
 class PFDBObj:
-    """Core ParFlow Database Object node
-    """
+    """Core ParFlow Database Object node"""
+
     def __init__(self, parent=None):
         """
         Create container object while keeping a reference to your parent
@@ -200,32 +214,35 @@ class PFDBObj:
         handlers = None
         history = None
         value_object_assignment = False
-        if is_not_private_key(name) and hasattr(self, '_details_'):
+        if is_not_private_key(name) and hasattr(self, "_details_"):
             if name in self._details_:
                 domains, handlers, history, crosscheck = detail_helper(
-                    self, name, value)
-            elif hasattr(self, name) and isinstance(self.__dict__[name],
-                                                    PFDBObj):
+                    self, name, value
+                )
+            elif hasattr(self, name) and isinstance(self.__dict__[name], PFDBObj):
                 # Handle value object assignment
                 value_object_assignment = True
                 value_obj = self.__dict__[name]
                 domains, handlers, history, crosscheck = detail_helper(
-                    value_obj, '_value_', value)
+                    value_obj, "_value_", value
+                )
             else:
-                msg = (f'{self.full_name()}: Field {name} is not part of the '
-                       f'expected schema {self.__class__}')
+                msg = (
+                    f"{self.full_name()}: Field {name} is not part of the "
+                    f"expected schema {self.__class__}"
+                )
                 print(msg)
                 if settings.EXIT_ON_ERROR:
                     raise ValueError(msg)
 
         # Run domain validation
         if settings.PRINT_LINE_ERROR:
-            validate_value_with_exception(
-                value, domains, settings.EXIT_ON_ERROR)
+            validate_value_with_exception(value, domains, settings.EXIT_ON_ERROR)
 
         if value_object_assignment:
-            self.__dict__[name].__dict__['_value_'] = \
-                decorate_value(value, self, handlers)
+            self.__dict__[name].__dict__["_value_"] = decorate_value(
+                value, self, handlers
+            )
         else:
             # Decorate value if need be (i.e. Geom.names: 'a b c')
             self.__dict__[name] = decorate_value(value, self, handlers)
@@ -241,7 +258,7 @@ class PFDBObj:
         """
         value_count = 0
 
-        if hasattr(self, '_value_') and self._value_ is not None:
+        if hasattr(self, "_value_") and self._value_ is not None:
             value_count += 1
 
         for name in self.keys(True):
@@ -250,9 +267,12 @@ class PFDBObj:
                 value_count += len(obj)
             elif obj is not None:
                 value_count += 1
-            elif hasattr(self, '_details_') and name in self._details_ \
-                    and 'domains' in self._details_[name]:
-                if 'MandatoryValue' in self._details_[name]['domains']:
+            elif (
+                hasattr(self, "_details_")
+                and name in self._details_
+                and "domains" in self._details_[name]
+            ):
+                if "MandatoryValue" in self._details_[name]["domains"]:
                     value_count += 1
 
         return value_count
@@ -271,14 +291,16 @@ class PFDBObj:
         if hasattr(self, key_str):
             return getattr(self, key_str, None)
 
-        prefix = ''
-        if hasattr(self, '_details_') and '_prefix_' in self._details_:
-            prefix = self._details_['_prefix_']
+        prefix = ""
+        if hasattr(self, "_details_") and "_prefix_" in self._details_:
+            prefix = self._details_["_prefix_"]
 
-        key_str = f'{prefix}{key_str}'
+        key_str = f"{prefix}{key_str}"
         if not hasattr(self, key_str):
-            print(f'Could not find key {key}/{key_str} in '
-                  f'{list(self.__dict__.keys())}')
+            print(
+                f"Could not find key {key}/{key_str} in "
+                f"{list(self.__dict__.keys())}"
+            )
 
         return getattr(self, key_str, None)
 
@@ -303,7 +325,7 @@ class PFDBObj:
         """
         for name in self.__dict__:
             if name is None:
-                print('need to fix the children instantiator')
+                print("need to fix the children instantiator")
                 continue
 
             if is_private_key(name):
@@ -315,16 +337,14 @@ class PFDBObj:
                     yield name
 
             else:
-                has_details = hasattr(self, '_details_') \
-                    and name in self._details_
+                has_details = hasattr(self, "_details_") and name in self._details_
                 details = self._details_[name] if has_details else None
-                has_default = has_details and 'default' in details
-                has_domain = has_details and 'domains' in details
-                is_ignored = has_details and 'ignore' in details
-                is_mandatory = has_domain \
-                    and 'MandatoryValue' in details['domains']
-                is_default = has_default and obj == details['default']
-                is_set = has_details and details.get('history')
+                has_default = has_details and "default" in details
+                has_domain = has_details and "domains" in details
+                is_ignored = has_details and "ignore" in details
+                is_mandatory = has_domain and "MandatoryValue" in details["domains"]
+                is_default = has_default and obj == details["default"]
+                is_set = has_details and details.get("history")
 
                 if is_ignored:
                     continue
@@ -341,8 +361,9 @@ class PFDBObj:
 
     # -------------------------------------------------------------------------
 
-    def validate(self, indent=1, verbose=False, enable_print=True,
-                 working_directory=None):
+    def validate(
+        self, indent=1, verbose=False, enable_print=True, working_directory=None
+    ):
         """
         Method to validate sub hierarchy
         """
@@ -355,37 +376,37 @@ class PFDBObj:
             settings.set_working_directory(working_directory)
 
         error_count = 0
-        indent_str = '  '*indent
+        indent_str = "  " * indent
         for name in self.keys(skip_default=True):
             obj = self.__dict__[name]
             if isinstance(obj, PFDBObj):
                 if len(obj):
-                    if hasattr(obj, '_value_'):
+                    if hasattr(obj, "_value_"):
                         value = obj._value_
                         add_errors, validation_string = validate_helper(
-                            obj, '_value_', value, indent)
+                            obj, "_value_", value, indent
+                        )
 
                         if enable_print and (add_errors or verbose):
-                            print(f'{indent_str}{name}: {validation_string}')
+                            print(f"{indent_str}{name}: {validation_string}")
 
                         error_count += add_errors
                     elif enable_print:
                         if verbose or obj.validate(enable_print=False):
-                            print(f'{indent_str}{name}:')
+                            print(f"{indent_str}{name}:")
 
-                    error_count += obj.validate(indent + 1,
-                                                verbose=verbose,
-                                                enable_print=enable_print)
+                    error_count += obj.validate(
+                        indent + 1, verbose=verbose, enable_print=enable_print
+                    )
 
-            elif hasattr(self, '_details_') and name in self._details_:
-                add_errors, validation_string = validate_helper(
-                    self, name, obj, indent)
+            elif hasattr(self, "_details_") and name in self._details_:
+                add_errors, validation_string = validate_helper(self, name, obj, indent)
                 if enable_print and (verbose or add_errors):
-                    print(f'{indent_str}{name}: {validation_string}')
+                    print(f"{indent_str}{name}: {validation_string}")
                 error_count += add_errors
             elif obj is not None:
                 if enable_print and verbose:
-                    print(f'{indent_str}{name}: {obj}')
+                    print(f"{indent_str}{name}: {obj}")
 
         # revert working directory to original directory
         settings.set_working_directory(prev_dir)
@@ -414,7 +435,7 @@ class PFDBObj:
                 return f'not found {count}: {".".join(full_path)}'
 
         full_path.reverse()
-        return '.'.join(full_path)
+        return ".".join(full_path)
 
     # -------------------------------------------------------------------------
 
@@ -425,16 +446,16 @@ class PFDBObj:
         can be defined in Python vs Parflow key.
         """
         value = self.__dict__[key]
-        prefix = ''
+        prefix = ""
         if isinstance(value, PFDBObj):
             if value._prefix_ and key.startswith(value._prefix_):
                 prefix = value._prefix_
         elif key in self._details_:
             detail = self._details_[key]
-            if '_prefix_' in detail:
-                prefix = detail['_prefix_']
+            if "_prefix_" in detail:
+                prefix = detail["_prefix_"]
 
-        start = f'{parent_namespace}.' if parent_namespace else ''
+        start = f"{parent_namespace}." if parent_namespace else ""
         return start + remove_prefix(key, prefix)
 
     # -------------------------------------------------------------------------
@@ -444,7 +465,7 @@ class PFDBObj:
         our children.
         """
         results = []
-        for (key, value) in self.__dict__.items():
+        for key, value in self.__dict__.items():
             if is_private_key(key):
                 continue
             if value.__class__.__name__ == class_name:
@@ -455,7 +476,7 @@ class PFDBObj:
     # -------------------------------------------------------------------------
 
     @normalize_location
-    def select(self, location='.'):
+    def select(self, location="."):
         """
         Return a PFDBObj object based on a location.
 
@@ -466,8 +487,8 @@ class PFDBObj:
           run.Process.Topology.select('/Geom') => run.Geom
         """
         current_location = self
-        path_items = location.split('/')
-        if location.startswith('/'):
+        path_items = location.split("/")
+        if location.startswith("/"):
             while current_location._parent_ is not None:
                 current_location = current_location._parent_
 
@@ -479,16 +500,17 @@ class PFDBObj:
             current_list = next_list
             next_list = []
 
-            if path_item == '..':
+            if path_item == "..":
                 next_list.extend(map(map_to_parent, current_list))
-            elif path_item == '.':
+            elif path_item == ".":
                 next_list.extend(map(map_to_self, current_list))
-            elif path_item.startswith('{'):
-                multi_list = map(map_to_children_of_type(
-                    path_item[1:-1]), current_list)
+            elif path_item.startswith("{"):
+                multi_list = map(map_to_children_of_type(path_item[1:-1]), current_list)
                 next_list = [x for sublist in multi_list for x in sublist]
             else:
-                next_list.extend(filter(filter_none, map(map_to_child(path_item), current_list)))
+                next_list.extend(
+                    filter(filter_none, map(map_to_child(path_item), current_list))
+                )
                 if next_list and isinstance(next_list[0], list):
                     next_list = [x for sublist in next_list for x in sublist]
 
@@ -497,7 +519,7 @@ class PFDBObj:
     # -------------------------------------------------------------------------
 
     @normalize_location
-    def value(self, location='.', skip_default=False):
+    def value(self, location=".", skip_default=False):
         """
         Return a value based on a location.
 
@@ -512,7 +534,7 @@ class PFDBObj:
 
         if skip_default:
             details = self.details(location)
-            if not details.get('history'):
+            if not details.get("history"):
                 return
 
         return value
@@ -520,7 +542,7 @@ class PFDBObj:
     # -------------------------------------------------------------------------
 
     @normalize_location
-    def details(self, location='.'):
+    def details(self, location="."):
         """
         Return details based on a location.
         """
@@ -530,15 +552,15 @@ class PFDBObj:
             value = container[key]
 
         if isinstance(value, PFDBObj):
-            return getattr(value, '_details_', {}).get('_value_', {})
+            return getattr(value, "_details_", {}).get("_value_", {})
 
-        key = '_value_' if key is None else key
-        return getattr(container, '_details_', {}).get(key, {})
+        key = "_value_" if key is None else key
+        return getattr(container, "_details_", {}).get(key, {})
 
     # -------------------------------------------------------------------------
 
     @normalize_location
-    def doc(self, location='.'):
+    def doc(self, location="."):
         """
         Return docs based on a location.
         """
@@ -551,11 +573,11 @@ class PFDBObj:
         if not value and isinstance(container, PFDBObj):
             value = container
 
-        ret = ''
-        if isinstance(value, PFDBObj) and getattr(value, '__doc__', None):
-            ret += value.__doc__ + '\n'
-        if details.get('help'):
-            ret += details['help'] + '\n'
+        ret = ""
+        if isinstance(value, PFDBObj) and getattr(value, "__doc__", None):
+            ret += value.__doc__ + "\n"
+        if details.get("help"):
+            ret += details["help"] + "\n"
         return ret
 
     # -------------------------------------------------------------------------
@@ -566,17 +588,26 @@ class PFDBObj:
         This is useful when providing global information for domains or else.
         """
         return {
-            'print_line_error': settings.PRINT_LINE_ERROR,
-            'exit_on_error': settings.EXIT_ON_ERROR,
-            'working_directory': settings.WORKING_DIRECTORY,
-            'pf_version': settings.PARFLOW_VERSION
+            "print_line_error": settings.PRINT_LINE_ERROR,
+            "exit_on_error": settings.EXIT_ON_ERROR,
+            "working_directory": settings.WORKING_DIRECTORY,
+            "pf_version": settings.PARFLOW_VERSION,
         }
 
     # ---------------------------------------------------------------------------
 
-    def pfset(self, key='', value=None, yaml_file=None, yaml_content=None,
-              pfidb_file=None, hierarchical_map=None, flat_map=None,
-              exit_if_undefined=False, silence_if_undefined=False):
+    def pfset(
+        self,
+        key="",
+        value=None,
+        yaml_file=None,
+        yaml_content=None,
+        pfidb_file=None,
+        hierarchical_map=None,
+        flat_map=None,
+        exit_if_undefined=False,
+        silence_if_undefined=False,
+    ):
         """
         Allow to define any parflow key so it can be exported.
         Many formats are supported:
@@ -606,26 +637,31 @@ class PFDBObj:
         if flat_map:
             sorted_flat_map = sort_dict_by_priority(flat_map)
             for key, value in sorted_flat_map.items():
-                self.pfset(key=key, value=value,
-                           exit_if_undefined=exit_if_undefined,
-                           silence_if_undefined=silence_if_undefined)
+                self.pfset(
+                    key=key,
+                    value=value,
+                    exit_if_undefined=exit_if_undefined,
+                    silence_if_undefined=silence_if_undefined,
+                )
 
         if not key:
             return
 
         key_stored = False
-        tokens = key.split('.')
+        tokens = key.split(".")
         if len(tokens) > 1:
             value_key = tokens[-1]
             container = None
-            query = '/'.join(tokens[:-1])
+            query = "/".join(tokens[:-1])
             selection = self.select(query)
 
             if len(selection) > 0:
                 container = selection[0]
 
             if len(selection) > 1:
-                raise ValueError(f"Found {len(selection)} containers when selecting {query}: expected one or zero")
+                raise ValueError(
+                    f"Found {len(selection)} containers when selecting {query}: expected one or zero"
+                )
 
             if container is None:
                 # We need to maybe handle prefix
@@ -639,11 +675,10 @@ class PFDBObj:
                         container = container[name]
                     else:
                         # Extract available prefix
-                        known_prefixes = set('_')
+                        known_prefixes = set("_")
                         for child_name in container.keys():
                             if isinstance(container[child_name], PFDBObj):
-                                prefix = getattr(container[child_name],
-                                                 '_prefix_', '')
+                                prefix = getattr(container[child_name], "_prefix_", "")
                                 if prefix is not None:
                                     known_prefixes.add(prefix)
 
@@ -653,7 +688,7 @@ class PFDBObj:
                         for prefix in known_prefixes:
                             if found:
                                 break
-                            name_w_prefix = f'{prefix}{name}'
+                            name_w_prefix = f"{prefix}{name}"
                             if name_w_prefix in container.__dict__:
                                 found = True
                                 container = container[name_w_prefix]
@@ -676,17 +711,20 @@ class PFDBObj:
                 root = root._parent_
 
             # store key on the side
-            if '_pfstore_' not in root.__dict__:
-                root.__dict__['_pfstore_'] = {}
+            if "_pfstore_" not in root.__dict__:
+                root.__dict__["_pfstore_"] = {}
             parent_namespace = self.full_name()
-            full_key_name = f"{parent_namespace}" \
-                            f"{'.' if parent_namespace else ''}{key}"
-            root.__dict__['_pfstore_'][full_key_name] = value
+            full_key_name = (
+                f"{parent_namespace}" f"{'.' if parent_namespace else ''}{key}"
+            )
+            root.__dict__["_pfstore_"][full_key_name] = value
             root_path = self.full_name()
             if not silence_if_undefined:
-                print(f"Caution: Using internal store of "
-                      f"{root_path if root_path else 'run'} "
-                      f"to save {full_key_name} = {value}")
+                print(
+                    f"Caution: Using internal store of "
+                    f"{root_path if root_path else 'run'} "
+                    f"to save {full_key_name} = {value}"
+                )
             if exit_if_undefined:
                 sys.exit(1)
 
@@ -697,6 +735,7 @@ class PFDBObj:
         Processing the dynamically defined (user-defined) key names
         """
         from . import generated
+
         for class_name, selection in self._dynamic_.items():
             klass = getattr(generated, class_name)
             names = self.select(selection)
@@ -707,7 +746,7 @@ class PFDBObj:
     # -------------------------------------------------------------------------
 
     @normalize_location
-    def _value(self, location='.'):
+    def _value(self, location="."):
         """
         Internal function to get the value, container and key from location
         """
@@ -719,7 +758,7 @@ class PFDBObj:
             value = getattr(container, key, None)
 
         if isinstance(value, PFDBObj):
-            value = getattr(value, '_value_', None)
+            value = getattr(value, "_value_", None)
 
         # Try to do a store lookup
         if value is None or container is None:
@@ -728,24 +767,24 @@ class PFDBObj:
                 root = root._parent_
 
             if container is not None and key is not None:
-                full_key_name = '.'.join([container.full_name(), key])
-                if '_pfstore_' in root.__dict__:
-                    store = root.__dict__['_pfstore_']
+                full_key_name = ".".join([container.full_name(), key])
+                if "_pfstore_" in root.__dict__:
+                    store = root.__dict__["_pfstore_"]
                     if full_key_name in store:
                         return store[full_key_name], root, full_key_name
 
             # no container were found need to start from root
-            path_tokens = location.split('/')
+            path_tokens = location.split("/")
 
             if len(path_tokens[0]) == 0:
                 # We have abs_path
-                full_key_name = '.'.join(path_tokens[1:])
+                full_key_name = ".".join(path_tokens[1:])
             elif len(path_tokens):
                 # relative path
                 local_root = self
-                while len(path_tokens) and path_tokens[0] == '.':
+                while len(path_tokens) and path_tokens[0] == ".":
                     path_tokens.pop(0)
-                while len(path_tokens) and path_tokens[0] == '..':
+                while len(path_tokens) and path_tokens[0] == "..":
                     local_root = local_root._parent_
                     path_tokens.pop(0)
 
@@ -753,12 +792,12 @@ class PFDBObj:
                 if prefix_name:
                     path_tokens.insert(0, prefix_name)
 
-                full_key_name = '.'.join(path_tokens)
+                full_key_name = ".".join(path_tokens)
 
             # Resolve full_key_name from root
             current_key = full_key_name
             current_node = root
-            current_store = getattr(current_node, '_pfstore_', None)
+            current_store = getattr(current_node, "_pfstore_", None)
 
             # Find key in store
             while len(current_key) and current_store is not None:
@@ -767,12 +806,15 @@ class PFDBObj:
 
                 # Find child store
                 current_store = None
-                while (len(current_key) > 0 and current_node is not None and
-                        current_store is None):
-                    tokens = current_key.split('.')
+                while (
+                    len(current_key) > 0
+                    and current_node is not None
+                    and current_store is None
+                ):
+                    tokens = current_key.split(".")
                     current_node = current_node[tokens[0]]
-                    current_store = getattr(current_node, '_pfstore_', None)
-                    current_key = '.'.join(tokens[1:])
+                    current_store = getattr(current_node, "_pfstore_", None)
+                    current_key = ".".join(tokens[1:])
 
         return value, container, key
 
@@ -783,17 +825,17 @@ class PFDBObj:
         """
         Internal function to get the container and key from location
         """
-        split = location.split('/')
-        path, key = '/'.join(split[:-1]), split[-1]
+        split = location.split("/")
+        path, key = "/".join(split[:-1]), split[-1]
 
-        if key == '.':
+        if key == ".":
             return self, None
 
         parent = self
-        while key == '..' and getattr(parent, '_parent_', None):
+        while key == ".." and getattr(parent, "_parent_", None):
             parent = parent._parent_
-            split = path.split('/')
-            path, key = '/'.join(split[:-1]), split[-1]
+            split = path.split("/")
+            path, key = "/".join(split[:-1]), split[-1]
 
         if parent is not self:
             # We went through the loop above. Return...
@@ -810,12 +852,12 @@ class PFDBObj:
 # Main DB Object
 # -----------------------------------------------------------------------------
 
+
 class PFDBObjListNumber(PFDBObj):
     """Class for leaf list values"""
 
     def __setattr__(self, name, value):
-        """Helper method that aims to streamline dot notation assignment
-        """
+        """Helper method that aims to streamline dot notation assignment"""
         key_str = str(name)
         if is_private_key(key_str):
             self.__dict__[key_str] = value
@@ -825,7 +867,7 @@ class PFDBObjListNumber(PFDBObj):
             if key_str.startswith(self._prefix_):
                 self.__dict__[key_str] = value
             else:
-                self.__dict__[f'{self._prefix_}{key_str}'] = value
+                self.__dict__[f"{self._prefix_}{key_str}"] = value
             return
 
         self.__dict__[key_str] = value
@@ -835,5 +877,5 @@ class PFDBObjListNumber(PFDBObj):
         a given field key. This allows handling of differences
         between what can be defined in Python vs Parflow key.
         """
-        start = f'{parent_namespace}.' if parent_namespace else ''
+        start = f"{parent_namespace}." if parent_namespace else ""
         return start + remove_prefix(key, self._prefix_)

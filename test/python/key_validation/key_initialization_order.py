@@ -480,13 +480,13 @@ class WellConcentrationCase(AbstractPftoolsTest):
         self.run.Wells.well1.alltime.Concentration.water.contaminant1.Value = 0.0
 
     def test_well_first(self):
-        """ Should be able to set Wells[".{well_name}"][".{interval_name}"].Concentration[".{phase_name}"][".{contaminant_name}"] setting Wells.Names before Contaminants.Names """
+        """Should be able to set Wells[".{well_name}"][".{interval_name}"].Concentration[".{phase_name}"][".{contaminant_name}"] setting Wells.Names before Contaminants.Names"""
         self.set_up_wells()
         self.set_up_contaminants()
         self.set_value()
 
     def test_contam_first(self):
-        """ Should be able to set Wells[".{well_name}"][".{interval_name}"].Concentration[".{phase_name}"][".{contaminant_name}"] setting Contaminants.Names before Wells.Names """
+        """Should be able to set Wells[".{well_name}"][".{interval_name}"].Concentration[".{phase_name}"][".{contaminant_name}"] setting Contaminants.Names before Wells.Names"""
         self.set_up_contaminants()
         self.set_up_wells()
         self.set_value()
@@ -500,13 +500,13 @@ class PatchSatCase(AbstractPftoolsTest):
         self.run.Patch.x_lower.BCSaturation.water.Value = 2.0
 
     def test_patch_first(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCSaturation[".{phase_name}"].Value """
+        """Should be able to set json.Patch[".{patch_name}"].BCSaturation[".{phase_name}"].Value"""
         self.set_up_patches()
         self.set_up_phases()
         self.set_value()
 
     def test_phase_first(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCSaturation[".{phase_name}"].Value """
+        """Should be able to set json.Patch[".{patch_name}"].BCSaturation[".{phase_name}"].Value"""
         self.set_up_phases()
         self.set_up_patches()
         self.set_value()
@@ -520,13 +520,13 @@ class PatchPresCase(AbstractPftoolsTest):
         self.run.Patch.x_lower.BCPressure.alltime.Value = 2.0
 
     def test_patch_first(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"].Value """
+        """Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"].Value"""
         self.set_up_patches()
         self.set_up_intervals()
         self.set_value()
 
     def test_interval_first(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"].Value """
+        """Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"].Value"""
         self.set_up_intervals()
         self.set_up_patches()
         self.set_value()
@@ -542,42 +542,42 @@ class PatchPresPhaseCase(AbstractPftoolsTest):
         )
 
     def test_patch_interval_phase_order(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue """
+        """Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue"""
         self.set_up_patches()
         self.set_up_intervals()
         self.set_up_phases()
         self.set_int_value()
 
     def test_patch_phase_interval_order(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue   """
+        """Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue"""
         self.set_up_patches()
         self.set_up_phases()
         self.set_up_intervals()
         self.set_int_value()
 
     def test_interval_patch_phase_order(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue   """
+        """Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue"""
         self.set_up_intervals()
         self.set_up_patches()
         self.set_up_phases()
         self.set_int_value()
 
     def test_interval_phase_patch_order(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue """
+        """Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue"""
         self.set_up_intervals()
         self.set_up_phases()
         self.set_up_patches()
         self.set_int_value()
 
     def test_phase_patch_interval_order(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue   """
+        """Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue"""
         self.set_up_phases()
         self.set_up_patches()
         self.set_up_intervals()
         self.set_int_value()
 
     def test_phase_interval_patch_order(self):
-        """ Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue   """
+        """Should be able to set json.Patch[".{patch_name}"].BCPressure[".{interval_name}"][".{phase_name}"].IntValue"""
         self.set_up_phases()
         self.set_up_intervals()
         self.set_up_patches()
