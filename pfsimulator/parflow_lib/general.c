@@ -308,7 +308,7 @@ void printMemoryInfo(FILE *log_file)
 
   /* Get all the memory currently allocated to user by malloc, etc. */
   size_t used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks +
-                 my_mallinfo.uordblks;
+                    my_mallinfo.uordblks;
 
   /* Get memory not currently allocated to user but malloc controls */
   size_t free_mem = my_mallinfo.fsmblks + my_mallinfo.fordblks;

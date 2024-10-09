@@ -40,7 +40,7 @@
  * Macros for DistributeUserGrid
  *--------------------------------------------------------------------------*/
 
-#define pqr_to_xyz(pqr, mxyz, lxyz, xyz)   (pqr*mxyz + pfmin(pqr, lxyz) + xyz)
+#define pqr_to_xyz(pqr, mxyz, lxyz, xyz)   (pqr * mxyz + pfmin(pqr, lxyz) + xyz)
 
 #define pqr_to_nxyz(pqr, mxyz, lxyz)  (pqr < lxyz ? mxyz + 1 : mxyz)
 

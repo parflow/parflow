@@ -191,7 +191,7 @@ PFModule   *FByNewPublicXtra()
   switch_name = GetStringDefault(name, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, name);
   NA_FreeNameArray(switch_na);
-  
+
   public_xtra->FB_in_y = switch_value;
   if (public_xtra->FB_in_y == 1)
   {
@@ -218,7 +218,7 @@ PFModule   *FByNewPublicXtra()
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }
     NA_FreeNameArray(switch_na);

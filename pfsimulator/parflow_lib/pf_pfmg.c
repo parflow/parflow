@@ -185,21 +185,21 @@ PFModule  *PFMGInitInstanceXtra(
     }
 
     HypreInitialize(pf_Bmat,
-		    &(instance_xtra -> hypre_grid),
-		    &(instance_xtra -> hypre_stencil),
-		    &(instance_xtra -> hypre_mat),
-		    &(instance_xtra -> hypre_b),
-		    &(instance_xtra -> hypre_x)
-		    );
+                    &(instance_xtra->hypre_grid),
+                    &(instance_xtra->hypre_stencil),
+                    &(instance_xtra->hypre_mat),
+                    &(instance_xtra->hypre_b),
+                    &(instance_xtra->hypre_x)
+                    );
 
     /* Copy the matrix entries */
     BeginTiming(public_xtra->time_index_copy_hypre);
 
     HypreAssembleMatrixAsElements(pf_Bmat,
-				  pf_Cmat,
-				  &(instance_xtra -> hypre_mat),
-				  problem_data);
-    
+                                  pf_Cmat,
+                                  &(instance_xtra->hypre_mat),
+                                  problem_data);
+
     EndTiming(public_xtra->time_index_copy_hypre);
 
     /* Set up the PFMG preconditioner */
@@ -307,7 +307,7 @@ PFModule  *PFMGNewPublicXtra(char *name)
   public_xtra->raptype = NA_NameToIndexExitOnError(raptype_switch_na, raptype_name, key);
   NA_FreeNameArray(raptype_switch_na);
 
-  if (public_xtra->raptype == 0 && public_xtra->smoother  > 1)
+  if (public_xtra->raptype == 0 && public_xtra->smoother > 1)
   {
     InputError("Error: Galerkin RAPType is not compatible with Smoother <%s>.\n",
                smoother_name, key);

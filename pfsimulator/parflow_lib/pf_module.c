@@ -52,12 +52,12 @@ PFModule  *NewPFModule(
 
   new_module = talloc(PFModule, 1);
 
-  (new_module->call) = (void (*)())call;
-  (new_module->init_instance_xtra) = (void (*)())init_instance_xtra;
-  (new_module->free_instance_xtra) = (void (*)())free_instance_xtra;
-  (new_module->new_public_xtra) = (void (*)())new_public_xtra;
-  (new_module->free_public_xtra) = (void (*)())free_public_xtra;
-  (new_module->sizeof_temp_data) = (int (*)())sizeof_temp_data;
+  (new_module->call) = (void (*)()) call;
+  (new_module->init_instance_xtra) = (void (*)()) init_instance_xtra;
+  (new_module->free_instance_xtra) = (void (*)()) free_instance_xtra;
+  (new_module->new_public_xtra) = (void (*)()) new_public_xtra;
+  (new_module->free_public_xtra) = (void (*)()) free_public_xtra;
+  (new_module->sizeof_temp_data) = (int (*)()) sizeof_temp_data;
 
   PFModuleInstanceXtra(new_module) = instance_xtra;
   PFModulePublicXtra(new_module) = public_xtra;
@@ -66,29 +66,29 @@ PFModule  *NewPFModule(
 }
 
 PFModule  *NewPFModuleExtended(
-                       void *call,
-                       void *init_instance_xtra,
-                       void *free_instance_xtra,
-                       void *new_public_xtra,
-                       void *free_public_xtra,
-                       void *sizeof_temp_data,
-		       void *output,
-		       void *output_static,
-                       void *instance_xtra,
-                       void *public_xtra)
+                               void *call,
+                               void *init_instance_xtra,
+                               void *free_instance_xtra,
+                               void *new_public_xtra,
+                               void *free_public_xtra,
+                               void *sizeof_temp_data,
+                               void *output,
+                               void *output_static,
+                               void *instance_xtra,
+                               void *public_xtra)
 {
   PFModule         *new_module;
 
   new_module = talloc(PFModule, 1);
 
-  (new_module->call) = (void (*)())call;
-  (new_module->init_instance_xtra) = (void (*)())init_instance_xtra;
-  (new_module->free_instance_xtra) = (void (*)())free_instance_xtra;
-  (new_module->new_public_xtra) = (void (*)())new_public_xtra;
-  (new_module->free_public_xtra) = (void (*)())free_public_xtra;
-  (new_module->sizeof_temp_data) = (int (*)())sizeof_temp_data;
-  (new_module->output) = (void (*)())output;
-  (new_module->output_static) = (void (*)())output_static;
+  (new_module->call) = (void (*)()) call;
+  (new_module->init_instance_xtra) = (void (*)()) init_instance_xtra;
+  (new_module->free_instance_xtra) = (void (*)()) free_instance_xtra;
+  (new_module->new_public_xtra) = (void (*)()) new_public_xtra;
+  (new_module->free_public_xtra) = (void (*)()) free_public_xtra;
+  (new_module->sizeof_temp_data) = (int (*)()) sizeof_temp_data;
+  (new_module->output) = (void (*)()) output;
+  (new_module->output_static) = (void (*)()) output_static;
 
   PFModuleInstanceXtra(new_module) = instance_xtra;
   PFModulePublicXtra(new_module) = public_xtra;
@@ -104,15 +104,15 @@ PFModule  *NewPFModuleExtended(
 PFModule  *DupPFModule(PFModule *pf_module)
 {
   return NewPFModuleExtended((void*)(pf_module->call),
-			     (void*)(pf_module->init_instance_xtra),
-			     (void*)(pf_module->free_instance_xtra),
-			     (void*)(pf_module->new_public_xtra),
-			     (void*)(pf_module->free_public_xtra),
-			     (void*)(pf_module->sizeof_temp_data),
-			     (void*)(pf_module->output),
-			     (void*)(pf_module->output_static),
-			     PFModuleInstanceXtra(pf_module),
-			     PFModulePublicXtra(pf_module));
+                             (void*)(pf_module->init_instance_xtra),
+                             (void*)(pf_module->free_instance_xtra),
+                             (void*)(pf_module->new_public_xtra),
+                             (void*)(pf_module->free_public_xtra),
+                             (void*)(pf_module->sizeof_temp_data),
+                             (void*)(pf_module->output),
+                             (void*)(pf_module->output_static),
+                             PFModuleInstanceXtra(pf_module),
+                             PFModulePublicXtra(pf_module));
 }
 
 

@@ -360,7 +360,7 @@ PFModule   *GeometriesNewPublicXtra()
             NA_IndexToName(geom_input_na, i));
     intype_name = GetString(key);
     intype = NA_NameToIndexExitOnError(switch_na, intype_name, key);
-    
+
     num_new_solids = 0;
 
     switch (intype)

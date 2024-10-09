@@ -143,10 +143,10 @@ void Fsignal()
 #ifdef AMPS_IRIX_SIGNALS
   signal(SIGFPE, handler_fpe);      /* Arithmetic exception        */
   handle_sigfpes(_ON, _EN_DIVZERO, 0, _REPLACE_HANDLER_ON_ERROR,
-                 (void (*)())handler_division);
+                 (void (*)()) handler_division);
   handle_sigfpes(_ON, _EN_OVERFL, 0, _REPLACE_HANDLER_ON_ERROR,
-                 (void (*)())handler_overflow);
+                 (void (*)()) handler_overflow);
   handle_sigfpes(_ON, _EN_INVALID, 0, _REPLACE_HANDLER_ON_ERROR,
-                 (void (*)())handler_invalid);
+                 (void (*)()) handler_invalid);
 #endif
 }

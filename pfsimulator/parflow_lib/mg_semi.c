@@ -96,8 +96,8 @@ void     MGSemi(
                 double  tol,
                 int     zero)
 {
-  PUSH_NVTX("MGSemi",2)
-  
+  PUSH_NVTX("MGSemi", 2)
+
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -212,7 +212,7 @@ void     MGSemi(
   /* smooth (use `zero' to determine initial x) */
   PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, zero));
 
-  PUSH_NVTX("MGSemi_solveloop",4)
+  PUSH_NVTX("MGSemi_solveloop", 4)
   while (++i)
   {
     /*--------------------------------------------------------------------
@@ -772,7 +772,7 @@ PFModule     *MGSemiInitInstanceXtra(
                                      Matrix *     A,
                                      double *     temp_data)
 {
-  PUSH_NVTX("MGSemiInitInstanceXtra",3)
+  PUSH_NVTX("MGSemiInitInstanceXtra", 3)
 
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);

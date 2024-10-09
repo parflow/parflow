@@ -40,16 +40,16 @@
 #define ADVECT advect_
 #endif
 
-#define CALL_ADVECT(s, sn, uedge, vedge, wedge, phi,                      \
-                    slx, sly, slz,                                        \
-                    lo, hi, dlo, dhi, hx, dt, fstord,                     \
-                    sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, \
-                    dxscr, dyscr, dzscr, dzfrm)                           \
-  ADVECT(s, sn, uedge, vedge, wedge, phi,                                 \
-         slx, sly, slz,                                                   \
-         lo, hi, dlo, dhi, hx, &dt, &fstord,                              \
-         sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,            \
-         dxscr, dyscr, dzscr, dzfrm)
+#define CALL_ADVECT(s, sn, uedge, vedge, wedge, phi,                            \
+                    slx, sly, slz,                                              \
+                    lo, hi, dlo, dhi, hx, dt, fstord,                           \
+                    sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,       \
+                    dxscr, dyscr, dzscr, dzfrm)                                 \
+        ADVECT(s, sn, uedge, vedge, wedge, phi,                                 \
+               slx, sly, slz,                                                   \
+               lo, hi, dlo, dhi, hx, &dt, &fstord,                              \
+               sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,            \
+               dxscr, dyscr, dzscr, dzfrm)
 
 void ADVECT(double *s, double *sn,
             double *uedge, double *vedge, double *wedge, double *phi,
@@ -69,18 +69,18 @@ void ADVECT(double *s, double *sn,
 #define SADVECT sadvect_
 #endif
 
-#define CALL_SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,            \
-                     viscosity, density, gravity,                          \
-                     slx, sly, slz,                                        \
-                     lohi, dlohi, hx, dt,                                  \
-                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, \
-                     dxscr, dyscr, dzscr, dzfrm)                           \
-  SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,                       \
-          viscosity, density, &gravity,                                    \
-          slx, sly, slz,                                                   \
-          lohi, dlohi, hx, &dt,                                            \
-          sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,            \
-          dxscr, dyscr, dzscr, dzfrm)
+#define CALL_SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,                  \
+                     viscosity, density, gravity,                                \
+                     slx, sly, slz,                                              \
+                     lohi, dlohi, hx, dt,                                        \
+                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,       \
+                     dxscr, dyscr, dzscr, dzfrm)                                 \
+        SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,                       \
+                viscosity, density, &gravity,                                    \
+                slx, sly, slz,                                                   \
+                lohi, dlohi, hx, &dt,                                            \
+                sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,            \
+                dxscr, dyscr, dzscr, dzfrm)
 
 void SADVECT(double *s, double *sn,
              double *uedge, double *vedge, double *wedge, double *betaedge, double *phi,
@@ -96,6 +96,6 @@ void SADVECT(double *s, double *sn,
 #define FTEST ftest_
 
 #define CALL_FTEST(outflow_log) \
-  FTEST(outflow_log);
+        FTEST(outflow_log);
 
 void FTEST(double *outflow_log);
