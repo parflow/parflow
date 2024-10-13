@@ -561,4 +561,5 @@ for file in nldas_files:
 # Run Simulation
 # -----------------------------------------------------------------------------
 
+LW_Test.check_nans()
 LW_Test.run(working_directory=dir_name)
