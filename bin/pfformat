@@ -102,7 +102,7 @@ function main() {
 
    failed=false
 
-   for i in $(find . -name \*.[ch] | grep -v './build\|third_party')
+   for i in $(find . -name \*.[ch] | grep -v './build\|third_party\|./py-env')
    do
       if $check
       then
