@@ -51,6 +51,7 @@ void WriteCLMNC(char * file_prefix, char* file_postfix, double t, Vector  *v, in
                 char *varName, int dimensionality)
 {
 #ifdef PARFLOW_HAVE_NETCDF
+  BeginTiming(NetcdfTimingIndex);
   static int numCLMStepsInFile = 0;
   int userSpecSteps = GetInt("NetCDF.CLMNumStepsPerFile");
   static char file_name[255];
@@ -96,6 +97,7 @@ void WriteCLMNC(char * file_prefix, char* file_postfix, double t, Vector  *v, in
       }
     }
   }
+  EndTiming(NetcdfTimingIndex);
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
 #endif
