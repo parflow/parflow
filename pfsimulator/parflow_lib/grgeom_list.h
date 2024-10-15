@@ -55,21 +55,21 @@ typedef struct list_member {
  * Macros : ListMember
  *--------------------------------------------------------------------------*/
 #define ListValueInClosedInterval(current_member, lower_point, upper_point) \
-  (((current_member) != NULL) ? (((ListMemberValue((current_member)) >= (lower_point)) && (ListMemberValue((current_member)) <= (upper_point))) ? TRUE : FALSE) : FALSE)
+        (((current_member) != NULL) ? (((ListMemberValue((current_member)) >= (lower_point)) && (ListMemberValue((current_member)) <= (upper_point))) ? TRUE : FALSE) : FALSE)
 
 #define ListValueLEPoint(current_member, point) \
-  (((current_member) != NULL) ? ((ListMemberValue((current_member)) <= (point)) ? TRUE : FALSE) : FALSE)
+        (((current_member) != NULL) ? ((ListMemberValue((current_member)) <= (point)) ? TRUE : FALSE) : FALSE)
 
 #define ListValueLTPoint(current_member, point) \
-  (((current_member) != NULL) ? ((ListMemberValue((current_member)) < (point)) ? TRUE : FALSE) : FALSE)
+        (((current_member) != NULL) ? ((ListMemberValue((current_member)) < (point)) ? TRUE : FALSE) : FALSE)
 
 #define ListValueEQPoint(current_member, point) \
-  (((current_member) != NULL) ? ((ListMemberValue((current_member)) == (point)) ? TRUE : FALSE) : FALSE)
+        (((current_member) != NULL) ? ((ListMemberValue((current_member)) == (point)) ? TRUE : FALSE) : FALSE)
 
 #define ListValueGTPoint(current_member, point) \
-  (((current_member) != NULL) ? ((ListMemberValue((current_member)) > (point)) ? TRUE : FALSE) : FALSE)
+        (((current_member) != NULL) ? ((ListMemberValue((current_member)) > (point)) ? TRUE : FALSE) : FALSE)
 
 #define ListValueGEPoint(current_member, point) \
-  (((current_member) != NULL) ? ((ListMemberValue((current_member)) >= (point)) ? TRUE : FALSE) : FALSE)
+        (((current_member) != NULL) ? ((ListMemberValue((current_member)) >= (point)) ? TRUE : FALSE) : FALSE)
 
 #endif

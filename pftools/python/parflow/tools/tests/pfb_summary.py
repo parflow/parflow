@@ -11,6 +11,7 @@
 
         The purpose of this utility is to assist with debugging so you can view a summary of a PFB file.
 """
+
 from ctypes import cdll
 import sys
 import os
@@ -68,7 +69,7 @@ class PFBSummary:
         checksum = 0
         first_cell = 0
         printed_dots = False
-        number_of_subgrids = int(self.header.get('n_subgrids', 0))
+        number_of_subgrids = int(self.header.get("n_subgrids", 0))
         for i in range(0, number_of_subgrids):
             subgrid_header = self.read_subgrid_header()
             data = self.read_subgrid_data(subgrid_header)
@@ -104,56 +105,56 @@ class PFBSummary:
 
         self.fp.seek(0)
         self.header = {}
-        self.header['x'] = struct.unpack('>d', self.fp.read(8))[0]
-        self.header['y'] = struct.unpack('>d', self.fp.read(8))[0]
-        self.header['z'] = struct.unpack('>d', self.fp.read(8))[0]
-        self.header['nx'] = struct.unpack('>i', self.fp.read(4))[0]
-        self.header['ny'] = struct.unpack('>i', self.fp.read(4))[0]
-        self.header['nz'] = struct.unpack('>i', self.fp.read(4))[0]
-        self.header['dx'] = struct.unpack('>d', self.fp.read(8))[0]
-        self.header['dy'] = struct.unpack('>d', self.fp.read(8))[0]
-        self.header['dz'] = struct.unpack('>d', self.fp.read(8))[0]
-        self.header['n_subgrids'] = struct.unpack('>i', self.fp.read(4))[0]
+        self.header["x"] = struct.unpack(">d", self.fp.read(8))[0]
+        self.header["y"] = struct.unpack(">d", self.fp.read(8))[0]
+        self.header["z"] = struct.unpack(">d", self.fp.read(8))[0]
+        self.header["nx"] = struct.unpack(">i", self.fp.read(4))[0]
+        self.header["ny"] = struct.unpack(">i", self.fp.read(4))[0]
+        self.header["nz"] = struct.unpack(">i", self.fp.read(4))[0]
+        self.header["dx"] = struct.unpack(">d", self.fp.read(8))[0]
+        self.header["dy"] = struct.unpack(">d", self.fp.read(8))[0]
+        self.header["dz"] = struct.unpack(">d", self.fp.read(8))[0]
+        self.header["n_subgrids"] = struct.unpack(">i", self.fp.read(4))[0]
 
     def read_subgrid_header(self):
         """Read the subgrid header from the file and return the header as a dict."""
 
         subgrid_header = {}
-        subgrid_header['ix'] = struct.unpack('>i', self.fp.read(4))[0]
-        subgrid_header['iy'] = struct.unpack('>i', self.fp.read(4))[0]
-        subgrid_header['iz'] = struct.unpack('>i', self.fp.read(4))[0]
-        subgrid_header['nx'] = struct.unpack('>i', self.fp.read(4))[0]
-        subgrid_header['ny'] = struct.unpack('>i', self.fp.read(4))[0]
-        subgrid_header['nz'] = struct.unpack('>i', self.fp.read(4))[0]
-        subgrid_header['rx'] = struct.unpack('>i', self.fp.read(4))[0]
-        subgrid_header['ry'] = struct.unpack('>i', self.fp.read(4))[0]
-        subgrid_header['rz'] = struct.unpack('>i', self.fp.read(4))[0]
+        subgrid_header["ix"] = struct.unpack(">i", self.fp.read(4))[0]
+        subgrid_header["iy"] = struct.unpack(">i", self.fp.read(4))[0]
+        subgrid_header["iz"] = struct.unpack(">i", self.fp.read(4))[0]
+        subgrid_header["nx"] = struct.unpack(">i", self.fp.read(4))[0]
+        subgrid_header["ny"] = struct.unpack(">i", self.fp.read(4))[0]
+        subgrid_header["nz"] = struct.unpack(">i", self.fp.read(4))[0]
+        subgrid_header["rx"] = struct.unpack(">i", self.fp.read(4))[0]
+        subgrid_header["ry"] = struct.unpack(">i", self.fp.read(4))[0]
+        subgrid_header["rz"] = struct.unpack(">i", self.fp.read(4))[0]
         return subgrid_header
 
     def read_subgrid_data(self, subgrid_header):
         """Read the data of the subgrid. Returns a numpy array mapped to the subgrid data."""
-        ix = subgrid_header['ix']
-        iy = subgrid_header['iy']
-        iz = subgrid_header['iz']
-        nx = subgrid_header['nx']
-        ny = subgrid_header['ny']
-        nz = subgrid_header['nz']
+        ix = subgrid_header["ix"]
+        iy = subgrid_header["iy"]
+        iz = subgrid_header["iz"]
+        nx = subgrid_header["nx"]
+        ny = subgrid_header["ny"]
+        nz = subgrid_header["nz"]
 
         offset = self.fp.tell()
         shape = [nz, ny, nx]
         data = np.memmap(
             self.file_name,
             dtype=np.float64,
-            mode='r',
+            mode="r",
             offset=offset,
             shape=tuple(shape),
-            order='F'
+            order="F",
         ).byteswap()
-        offset = offset + nx*ny*nz*8
+        offset = offset + nx * ny * nz * 8
         self.fp.seek(offset)
         return data
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main = PFBSummary()
     main.run()

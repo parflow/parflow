@@ -128,15 +128,15 @@ typedef struct _VectorUpdateCommHandle {
 #define SubvectorNY(subvector)   (SubgridNY(SubvectorDataSpace(subvector)))
 #define SubvectorNZ(subvector)   (SubgridNZ(SubvectorDataSpace(subvector)))
 
-#define SubvectorEltIndex(subvector, x, y, z) \
-  (((x) - SubvectorIX(subvector)) +           \
-   (((y) - SubvectorIY(subvector)) +          \
-    (((z) - SubvectorIZ(subvector))) *        \
-    SubvectorNY(subvector)) *                 \
-   SubvectorNX(subvector))
+#define SubvectorEltIndex(subvector, x, y, z)       \
+        (((x) - SubvectorIX(subvector)) +           \
+         (((y) - SubvectorIY(subvector)) +          \
+          (((z) - SubvectorIZ(subvector))) *        \
+          SubvectorNY(subvector)) *                 \
+         SubvectorNX(subvector))
 
 #define SubvectorElt(subvector, x, y, z) \
-  (SubvectorData(subvector) + SubvectorEltIndex(subvector, x, y, z))
+        (SubvectorData(subvector) + SubvectorEltIndex(subvector, x, y, z))
 
 #define SubvectorDataSize(subvector) ((subvector)->data_size)
 

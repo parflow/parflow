@@ -37,19 +37,19 @@
 
 /**
  * @brief CUDA error handling.
- * 
+ *
  * If error detected, print error message and exit.
  *
  * @param expr CUDA error (of type cudaError_t) [IN]
  */
-#define CUDA_ERR(expr)                                                                 \
-{                                                                                      \
-  cudaError_t err = expr;                                                              \
-  if (err != cudaSuccess) {                                                            \
-    printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), __FILE__, __LINE__);  \
-    exit(1);                                                                           \
-  }                                                                                    \
-}
+#define CUDA_ERR(expr)                                                                         \
+        {                                                                                      \
+          cudaError_t err = expr;                                                              \
+          if (err != cudaSuccess) {                                                            \
+            printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), __FILE__, __LINE__);  \
+            exit(1);                                                                           \
+          }                                                                                    \
+        }
 
 /*--------------------------------------------------------------------------
  * CUDA profiling macros
@@ -57,22 +57,22 @@
 
 /** Record an NVTX range for NSYS if accelerator present. */
 #include "nvToolsExt.h"
-#define PUSH_NVTX_cuda(name,cid)                                                          \
-{                                                                                         \
-  const uint32_t colors_nvtx[] =                                                          \
-    {0xff00ff00, 0xff0000ff, 0xffffff00, 0xffff00ff, 0xff00ffff, 0xffff0000, 0xffffffff}; \
-  const int num_colors_nvtx = sizeof(colors_nvtx)/sizeof(uint32_t);                       \
-  int color_id_nvtx = cid;                                                                \
-  color_id_nvtx = color_id_nvtx%num_colors_nvtx;                                          \
-  nvtxEventAttributes_t eventAttrib = {0};                                                \
-  eventAttrib.version = NVTX_VERSION;                                                     \
-  eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;                                       \
-  eventAttrib.colorType = NVTX_COLOR_ARGB;                                                \
-  eventAttrib.color = colors_nvtx[color_id_nvtx];                                         \
-  eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;                                      \
-  eventAttrib.message.ascii = name;                                                       \
-  nvtxRangePushEx(&eventAttrib);                                                          \
-}
+#define PUSH_NVTX_cuda(name, cid)                                                                   \
+        {                                                                                           \
+          const uint32_t colors_nvtx[] =                                                            \
+          { 0xff00ff00, 0xff0000ff, 0xffffff00, 0xffff00ff, 0xff00ffff, 0xffff0000, 0xffffffff };   \
+          const int num_colors_nvtx = sizeof(colors_nvtx) / sizeof(uint32_t);                       \
+          int color_id_nvtx = cid;                                                                  \
+          color_id_nvtx = color_id_nvtx % num_colors_nvtx;                                          \
+          nvtxEventAttributes_t eventAttrib = { 0 };                                                \
+          eventAttrib.version = NVTX_VERSION;                                                       \
+          eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;                                         \
+          eventAttrib.colorType = NVTX_COLOR_ARGB;                                                  \
+          eventAttrib.color = colors_nvtx[color_id_nvtx];                                           \
+          eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;                                        \
+          eventAttrib.message.ascii = name;                                                         \
+          nvtxRangePushEx(&eventAttrib);                                                            \
+        }
 /** Stop recording an NVTX range for NSYS if accelerator present. */
 #define POP_NVTX_cuda nvtxRangePop();
 
@@ -82,19 +82,19 @@
 #include <rmm/rmm_api.h>
 /**
  * @brief RMM error handling.
- * 
+ *
  * If error detected, print error message and exit.
  *
  * @param expr RMM error (of type rmmError_t) [IN]
  */
-#define RMM_ERR(expr)                                                                  \
-{                                                                                      \
-  rmmError_t err = expr;                                                               \
-  if (err != RMM_SUCCESS) {                                                            \
-    printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), __FILE__, __LINE__);   \
-    exit(1);                                                                           \
-  }                                                                                    \
-}
+#define RMM_ERR(expr)                                                                          \
+        {                                                                                      \
+          rmmError_t err = expr;                                                               \
+          if (err != RMM_SUCCESS) {                                                            \
+            printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), __FILE__, __LINE__);   \
+            exit(1);                                                                           \
+          }                                                                                    \
+        }
 #endif
 
 /*--------------------------------------------------------------------------
@@ -123,9 +123,9 @@ void kokkosMemSet(char *ptr, size_t size);
 
 /**
  * @brief Allocates unified memory.
- * 
+ *
  * If RMM library is available, pool allocation is used for better performance.
- * 
+ *
  * @note Should not be called directly.
  *
  * @param size bytes to be allocated [IN]
@@ -134,15 +134,15 @@ void kokkosMemSet(char *ptr, size_t size);
 
 static inline void *_talloc_device(size_t size)
 {
-  void *ptr = NULL;  
-  
+  void *ptr = NULL;
+
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+  RMM_ERR(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
-  // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));  
+  // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
 #endif
 
   return ptr;
@@ -150,9 +150,9 @@ static inline void *_talloc_device(size_t size)
 
 /**
  * @brief Allocates unified memory initialized to 0.
- * 
+ *
  * If RMM library is available, pool allocation is used for better performance.
- * 
+ *
  * @note Should not be called directly.
  *
  * @param size bytes to be allocated [IN]
@@ -160,30 +160,30 @@ static inline void *_talloc_device(size_t size)
  */
 static inline void *_ctalloc_device(size_t size)
 {
-  void *ptr = NULL;  
+  void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+  RMM_ERR(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
-#endif  
+#endif
 
 #if defined(PARFLOW_HAVE_CUDA)
-  CUDA_ERR(cudaMemset(ptr, 0, size));  
+  CUDA_ERR(cudaMemset(ptr, 0, size));
 #else
   // memset(ptr, 0, size);
   kokkosMemSet((char*)ptr, size);
 #endif
-  
+
   return ptr;
 }
 
 /**
  * @brief Frees unified memory allocated with \ref _talloc_device or \ref _ctalloc_device.
- * 
+ *
  * @note Should not be called directly.
  *
  * @param ptr a void pointer to the allocated dataspace [IN]
@@ -191,7 +191,7 @@ static inline void *_ctalloc_device(size_t size)
 static inline void _tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
+  RMM_ERR(rmmFree(ptr, 0, __FILE__, __LINE__));
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

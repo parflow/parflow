@@ -117,7 +117,7 @@ int amps_unpack(
         }
         break;
 
-	
+
       case AMPS_INVOICE_CHAR_CTYPE:
         if (!ptr->ignore)
         {
@@ -310,8 +310,8 @@ int amps_unpack(
 
         switch (ptr->type - AMPS_INVOICE_LAST_CTYPE)
         {
-	  case AMPS_INVOICE_BYTE_CTYPE:
-	                if (!ptr->ignore)
+          case AMPS_INVOICE_BYTE_CTYPE:
+            if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
               element_size = sizeof(char);

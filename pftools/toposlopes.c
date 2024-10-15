@@ -2845,7 +2845,7 @@ void ComputeTopoDeficitToWT(
 
   nx = DataboxNx(mask);
   ny = DataboxNy(mask);
-  
+
   dz = DataboxDz(mask);
 
   // loop over grid, skip nodata/ocean cells
@@ -3223,7 +3223,7 @@ void ComputeSegmentD8(
 
   nx = DataboxNx(dem);
   ny = DataboxNy(dem);
-  
+
   dx = DataboxDx(dem);
   dy = DataboxDy(dem);
 

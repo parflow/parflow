@@ -296,14 +296,14 @@ GrGeomSolid   *GrGeomNewSolid(
   new_grgeomsolid->interior_boxes = NULL;
 
 #if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
-  GrGeomSolidCellFlagData(new_grgeomsolid) = NULL; 
+  GrGeomSolidCellFlagData(new_grgeomsolid) = NULL;
   GrGeomSolidCellFlagDataSize(new_grgeomsolid) = 0;
   GrGeomSolidCellFlagInitialized(new_grgeomsolid) = 0;
 
   (new_grgeomsolid->ival) = talloc(int**, GrGeomOctreeNumFaces);
   for (int f = 0; f < GrGeomOctreeNumFaces; f++)
-  { 
-    (new_grgeomsolid->ival[f]) = talloc(int*, 2 * num_patches);    
+  {
+    (new_grgeomsolid->ival[f]) = talloc(int*, 2 * num_patches);
     for (int ipatch = 0; ipatch < 2 * num_patches; ipatch++)
       (new_grgeomsolid->ival[f][ipatch]) = NULL;
   }
@@ -363,14 +363,15 @@ void          GrGeomFreeSolid(
 
 #if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
   // Internal _tfree_device function is used because unified memory is not active in this comp unit
-  if(GrGeomSolidCellFlagData(solid)) _tfree_device(GrGeomSolidCellFlagData(solid));
+  if (GrGeomSolidCellFlagData(solid))
+    _tfree_device(GrGeomSolidCellFlagData(solid));
 
   for (int f = 0; f < GrGeomOctreeNumFaces; f++)
   {
     for (int ipatch = 0; ipatch < 2 * GrGeomSolidNumPatches(solid); ipatch++)
     {
       int *ival = GrGeomSolidCellIval(solid, ipatch, f);
-      if(ival)
+      if (ival)
         _tfree_device(ival);
     }
     tfree(solid->ival[f]);

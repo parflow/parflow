@@ -1002,15 +1002,14 @@ PFModule   *ICPhasePressureNewPublicXtra()
         sprintf(key, "Geom.%s.ICPressure.RefGeom", region);
         switch_name = GetString(key);
         dummy2->geom_indices[ir] = NA_NameToIndexExitOnError(GlobalsGeomNames,
-							     switch_name, key);
+                                                             switch_name, key);
 
         sprintf(key, "Geom.%s.ICPressure.RefPatch", region);
         switch_name = GetString(key);
         dummy2->patch_indices[ir] =
           NA_NameToIndexExitOnError(GeomSolidPatches(
-                                          GlobalsGeometries[dummy2->geom_indices[ir]]),
-				    switch_name, key);
-
+                                                     GlobalsGeometries[dummy2->geom_indices[ir]]),
+                                    switch_name, key);
       }
 
       (public_xtra->data) = (void*)dummy2;

@@ -102,7 +102,7 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
     switch (ptr->type)
     {
       case AMPS_INVOICE_BYTE_CTYPE:
-	      mpi_type = MPI_BYTE;
+        mpi_type = MPI_BYTE;
         element_size = sizeof(char);
         break;
 
@@ -147,7 +147,8 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
     struct cudaPointerAttributes attributes;
     cudaPointerGetAttributes(&attributes, (void *)data);
 
-    if(cudaGetLastError() == cudaSuccess && attributes.type > 1){
+    if (cudaGetLastError() == cudaSuccess && attributes.type > 1)
+    {
       if (stride == 1)
         CUDA_ERRCHK(cudaMemPrefetchAsync(data, (size_t)len * element_size, cudaCpuDeviceId, 0));
       else
@@ -156,7 +157,7 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
              ptr_src += stride * element_size)
           CUDA_ERRCHK(cudaMemPrefetchAsync(ptr_src, (size_t)element_size, cudaCpuDeviceId, 0));
 
-      CUDA_ERRCHK(cudaStreamSynchronize(0)); 
+      CUDA_ERRCHK(cudaStreamSynchronize(0));
     }
 
     /* Copy into a contigous buffer */
@@ -184,6 +185,6 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
 
     ptr = ptr->next;
   }
-  
+
   return 0;
 }

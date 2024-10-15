@@ -81,7 +81,7 @@ int ChebyshevSizeOfTempData(void);
 
 /* comm_pkg.c */
 void ProjectRegion(Region *region, int sx, int sy, int sz, int ix, int iy, int iz);
-Region *ProjectRBPoint(Region *region, int rb [4 ][3 ]);
+Region *ProjectRBPoint(Region *region, int rb[4 ][3 ]);
 void CreateComputePkgs(Grid *grid);
 void FreeComputePkgs(Grid *grid);
 
@@ -481,7 +481,7 @@ void PerturbSystem(Lattice *lattice, Problem *problem);
 
 /* pf_module.c */
 PFModule *NewPFModule(void *call, void *init_instance_xtra, void *free_instance_xtra, void *new_public_xtra, void *free_public_xtra, void *sizeof_temp_data, void *instance_xtra, void *public_xtra);
-PFModule *NewPFModuleExtended(void *call, void *init_instance_xtra, void *free_instance_xtra, void *new_public_xtra, void *free_public_xtra, void *sizeof_temp_data,  void *output, void *output_static,void *instance_xtra, void *public_xtra);
+PFModule *NewPFModuleExtended(void *call, void *init_instance_xtra, void *free_instance_xtra, void *new_public_xtra, void *free_public_xtra, void *sizeof_temp_data, void *output, void *output_static, void *instance_xtra, void *public_xtra);
 PFModule *DupPFModule(PFModule *pf_module);
 void FreePFModule(PFModule *pf_module);
 
@@ -515,8 +515,8 @@ PFModule  *SMGInitInstanceXtra(
                                Problem *    problem,
                                Grid *       grid,
                                ProblemData *problem_data,
-			       Matrix *     pf_Bmat,
-			       Matrix *     pf_Cmat,
+                               Matrix *     pf_Bmat,
+                               Matrix *     pf_Cmat,
                                double *     temp_data);
 void SMGFreeInstanceXtra(void);
 PFModule *SMGNewPublicXtra(char *name);
@@ -1303,8 +1303,27 @@ PFModule *WellPackageNewPublicXtra(int num_phases, int num_contaminants);
 void WellPackageFreePublicXtra(void);
 int WellPackageSizeOfTempData(void);
 
+/* reservoir.c */
+ReservoirData *NewReservoirData(void);
+void FreeReservoirData(ReservoirData *reservoir_data);
+void PrintReservoirData(ReservoirData *reservoir_data, unsigned int print_mask);
+void WriteReservoirs(char *file_prefix, Problem *problem, ReservoirData *reservoir_data, double time, int write_header);
+
+typedef void (*ReservoirPackageInvoke) (ProblemData *problem_data);
+typedef PFModule *(*ReservoirPackageNewPublicXtraInvoke) (int num_phases, int num_contaminants);
+
+
+
 /* wells_lb.c */
 void LBWells(Lattice *lattice, Problem *problem, ProblemData *problem_data);
+
+/* reservoir_package.c */
+void ReservoirPackage(ProblemData *problem_data);
+PFModule *ReservoirPackageInitInstanceXtra(void);
+void ReservoirPackageFreeInstanceXtra(void);
+PFModule *ReservoirPackageNewPublicXtra(void);
+void ReservoirPackageFreePublicXtra(void);
+int ReservoirPackageSizeOfTempData(void);
 
 /* write_parflow_binary.c */
 long SizeofPFBinarySubvector(Subvector *subvector, Subgrid *subgrid);
@@ -1372,7 +1391,7 @@ void ComputeTop(Problem *    problem,
                 ProblemData *problem_data);
 
 void ComputePatchTop(Problem *    problem,
-		     ProblemData *problem_data);
+                     ProblemData *problem_data);
 
 int CheckTime(Problem *problem, char *key, double time);
 

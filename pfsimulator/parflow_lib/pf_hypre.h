@@ -39,9 +39,9 @@
  * @param hypre_vector the destination vector
  */
 void CopyParFlowVectorToHypreVector(
-				    Vector *pf_vector,				    
-				    HYPRE_StructVector* hypre_vector
-				    );
+                                    Vector *            pf_vector,
+                                    HYPRE_StructVector* hypre_vector
+                                    );
 
 /**
  * Copy a Hypre vector to a ParFlow vector.
@@ -50,23 +50,23 @@ void CopyParFlowVectorToHypreVector(
  * @param pf_vector the destination vector
  */
 void CopyHypreVectorToParflowVector(
-				    HYPRE_StructVector* hypre_vector,
-				    Vector *pf_vector
-				    );
+                                    HYPRE_StructVector* hypre_vector,
+                                    Vector *            pf_vector
+                                    );
 
 
 void HypreAssembleGrid(
-		       Grid* pf_grid,
-		       HYPRE_StructGrid* hypre_grid,
-		       double* dxyz
-		       );
+                       Grid*             pf_grid,
+                       HYPRE_StructGrid* hypre_grid,
+                       double*           dxyz
+                       );
 
 /**
  * Create and initialize Hypre structures.
- * 
+ *
  * Sets up the Hypre data structures for the grid, stencil, matrix and vectors.
  * This setup is common to all the Hypre solvers ParFlow is using so it has
- * been factored out to a common utility function.   Pointers to 
+ * been factored out to a common utility function.   Pointers to
  * the Hypre data structures are returned.
  *
  * @param pf_matrix Source matrix
@@ -76,13 +76,13 @@ void HypreAssembleGrid(
  * @param hypre_rhs Constructed rhs vector
  * @parame hypre_soln Constucted solution vector
  */
-void HypreInitialize(Matrix* pf_matrix,
-		     HYPRE_StructGrid* hypre_grid,
-		     HYPRE_StructStencil* hypre_stencil,
-		     HYPRE_StructMatrix* hypre_mat,
-		     HYPRE_StructVector* hypre_rhs,
-		     HYPRE_StructVector* hypre_soln
-		     );
+void HypreInitialize(Matrix*              pf_matrix,
+                     HYPRE_StructGrid*    hypre_grid,
+                     HYPRE_StructStencil* hypre_stencil,
+                     HYPRE_StructMatrix*  hypre_mat,
+                     HYPRE_StructVector*  hypre_rhs,
+                     HYPRE_StructVector*  hypre_soln
+                     );
 
 /**
  * Assemble the Hypre matrix from B and C ParFlow matrices using an
@@ -102,11 +102,11 @@ void HypreInitialize(Matrix* pf_matrix,
  * @param problem_data ParFlow problem data
  */
 void HypreAssembleMatrixAsElements(
-				   Matrix *     pf_Bmat,
-				   Matrix *     pf_Cmat,
-				   HYPRE_StructMatrix* hypre_mat,
-				   ProblemData *problem_data
-				   );
+                                   Matrix *            pf_Bmat,
+                                   Matrix *            pf_Cmat,
+                                   HYPRE_StructMatrix* hypre_mat,
+                                   ProblemData *       problem_data
+                                   );
 
 #endif
 

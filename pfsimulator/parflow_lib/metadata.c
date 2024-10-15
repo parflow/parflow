@@ -48,14 +48,14 @@ cJSON* js_domains = NULL;
 // Print a message on rank 0 and return 0. Note that ##__VA_ARGS__ is
 // used to allow an empty __VA_ARGS__ , which is not standard but is
 // supported by most major compilers (clang, gcc, msvc).
-#define METADATA_ERROR(message, ...) \
-  { \
-    if (!amps_Rank(amps_CommWorld) && message && message[0]) \
-    { \
-      amps_Printf(message, ##__VA_ARGS__ ); \
-    } \
-    return 0; \
-  }
+#define METADATA_ERROR(message, ...)                               \
+        {                                                          \
+          if (!amps_Rank(amps_CommWorld) && message && message[0]) \
+          {                                                        \
+            amps_Printf(message, ## __VA_ARGS__);                  \
+          }                                                        \
+          return 0;                                                \
+        }
 
 static void MetadataAddParflowBuildInfo(cJSON* pf)
 {
@@ -592,59 +592,59 @@ int MetadataAddForcingField(
   if (!field_name)
   {
     METADATA_ERROR(
-      "Unable to add metadata for null field.\n");
+                   "Unable to add metadata for null field.\n");
   }
   if (num_field_components <= 0)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; invalid components (%d).\n",
-      field_name, num_field_components);
+                   "Unable to add metadata for \"%s\"; invalid components (%d).\n",
+                   field_name, num_field_components);
   }
   if (!clm_metfile)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; no CLM Met file.\n", field_name);
+                   "Unable to add metadata for \"%s\"; no CLM Met file.\n", field_name);
   }
   if (!clm_metpath)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; no CLM Met path.\n", field_name);
+                   "Unable to add metadata for \"%s\"; no CLM Met path.\n", field_name);
   }
   if (!field_placement)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; null field placement.\n",
-      field_name);
+                   "Unable to add metadata for \"%s\"; null field placement.\n",
+                   field_name);
   }
   if (!field_domain)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; null field domain.\n", field_name);
+                   "Unable to add metadata for \"%s\"; null field domain.\n", field_name);
   }
   if (!field_component_postfixes)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; null field component_postfixes.\n",
-      field_name);
+                   "Unable to add metadata for \"%s\"; null field component_postfixes.\n",
+                   field_name);
   }
   if (clm_metforce < 2 || clm_metforce > 3)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; Unhandled CLM Met forcing %d.\n",
-      field_name, clm_metforce);
+                   "Unable to add metadata for \"%s\"; Unhandled CLM Met forcing %d.\n",
+                   field_name, clm_metforce);
   }
   if (clm_metnt <= 0)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; %d timesteps provided (> 0 required).\n",
-      field_name, clm_metnt);
+                   "Unable to add metadata for \"%s\"; %d timesteps provided (> 0 required).\n",
+                   field_name, clm_metnt);
   }
   if (clm_istep_start > clm_metnt)
   {
     METADATA_ERROR(
-      "Unable to add metadata for \"%s\"; "
-      "start time (%d) beyond forcing timesteps provided (%d).\n",
-      field_name, clm_istep_start, clm_metnt);
+                   "Unable to add metadata for \"%s\"; "
+                   "start time (%d) beyond forcing timesteps provided (%d).\n",
+                   field_name, clm_istep_start, clm_metnt);
   }
 
   cJSON* field_item = cJSON_CreateObject();
