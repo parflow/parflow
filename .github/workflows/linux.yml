@@ -100,7 +100,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - uses: setup-fortran
+    - uses: fortran-lang/setup-fortran@v1
 
     - name: Package Install 22.04
       if: matrix.config.os == 'ubuntu-22.04'
