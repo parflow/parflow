@@ -237,7 +237,7 @@ jobs:
           cd hypre
           curl -L $URL | tar --strip-components=1 -xz
           cd src
-          ./configure --prefix=$PARFLOW_DEP_DIR
+          CC=mpicc CXX=mpic++ FC=mpif77 F77=mpif90 ./configure --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
