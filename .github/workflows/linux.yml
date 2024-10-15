@@ -100,6 +100,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      uses: setup-fortran
 
     - name: Package Install 22.04
       if: matrix.config.os == 'ubuntu-22.04'
@@ -313,7 +314,7 @@ jobs:
           cd hypre
           curl -L $URL | tar --strip-components=1 -xz
           cd src
-          FC=gfortran-13 ./configure --prefix=$PARFLOW_DEP_DIR
+          ./configure --prefix=$PARFLOW_DEP_DIR
           make -j 2 install
         fi
 
