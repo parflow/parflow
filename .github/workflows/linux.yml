@@ -16,7 +16,7 @@ jobs:
             cudaos: '',
             python: "false",
             backend: "none",
-            amps_layer: seq,
+            amps_layer: mpi1,
             netcdf: "false"
           }
 
