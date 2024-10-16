@@ -1266,6 +1266,7 @@ void find_variable_length(int nid, int varid, unsigned long dim_lengths[MAX_NC_V
   for (i = 0; i < ndims; i++)
   {
     nc_inq_dim(nid, dim_ids[i], dim_name, &dim_lengths[i]);
+    printf("SGS i=%d dim_name=%s dim_lengths=%ld\n", i, dim_name, dim_lengths[i]);
   }
 #endif
 }

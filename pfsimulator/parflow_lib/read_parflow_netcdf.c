@@ -49,21 +49,23 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
 
   int g;
 
-  int ncRID, varID;
+  int ncRID;
 
   BeginTiming(NetcdfTimingIndex);
 
   OpenNCFile(fileName, &ncRID);
 
-  nc_inq_varid(ncRID, varName, &varID);
+  printf("SGS: Reading %s\n", fileName);
 
   ForSubgridI(g, subgrids)
   {
     subgrid = SubgridArraySubgrid(subgrids, g);
     subvector = VectorSubvector(v, g);
-    ReadNCFile(ncRID, varID, subvector, subgrid, varName, tStep, dimensionality);
+    ReadNCFile(ncRID, subvector, subgrid, varName, tStep, dimensionality);
   }
   nc_close(ncRID);
+
+  printf("SGS: Done Reading %s\n", fileName);
 
   EndTiming(NetcdfTimingIndex);
 }
@@ -112,11 +114,18 @@ void OpenNCFile(char *file_name, int *ncRID)
 #endif
 }
 
-void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality)
+void ReadNCFile(int ncRID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality)
 {
 #ifdef PARFLOW_HAVE_NETCDF
-  nc_inq_varid(ncRID, varName, &varID);
 
+  int varID;
+
+  if (tStep < 0)
+  {
+    //unsigned long end[MAX_NC_VARS];
+    //find_variable_length(ncRID, varID, end);
+  }
+  
   if (dimensionality == 3)
   {
     nc_inq_varid(ncRID, varName, &varID);
@@ -228,6 +237,10 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
     });
 
     free(nc_data);
+  }
+  else
+  {
+    PARFLOW_ERROR("Invalid dimension in ReadNCFile");
   }
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't read NetCDF file\n");
