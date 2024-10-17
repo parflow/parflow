@@ -159,5 +159,5 @@ add_subdirectory (key_validation)
 
 if (${PARFLOW_HAVE_CLM})
   add_subdirectory (clm)
-#  add_subdirectory (washita)
+  add_subdirectory (washita)
 endif(${PARFLOW_HAVE_CLM})
