@@ -25,6 +25,7 @@ clean: testclean
 
 testclean:
 	@rm -f *.pfb*
+	@rm -f *.nc
 	@rm -f *.silo*
 	@rm -f *.pfsb*
 	@rm -f *.sa

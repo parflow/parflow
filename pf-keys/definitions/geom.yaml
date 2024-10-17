@@ -1241,6 +1241,12 @@ Geom:
           AnyString:
           ValidFile:
 
+      TimeStep:
+        help: >
+          This key specifies the timestep to be read from the pressure file.   Currently this key is only valid for NetCDF files.
+        domains:
+          IntValue:
+
       RefElevation:
         help: >
           [Type: double] This key specifies the reference elevation on which the reference pressure is given for type HydroStaticDepth
