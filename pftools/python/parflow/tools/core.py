@@ -515,10 +515,11 @@ class Run(BaseRun):
             sys.exit(1)
 
 
-    def check_nans(self, exclude_forcing=True):
+    def check_nans(self, working_directory, exclude_forcing=True):
         """Check the input files for NaNs.
 
         Args:
+            working_directory: The working directory of the ParFlow run.
             exclude_forcing (bool): If set to True, forcing files are not going
                 to be checked.
 
@@ -533,7 +534,7 @@ class Run(BaseRun):
                 line = line.strip()
                 if line.startswith("FileName: ") and line.endswith(".pfb"):
                     path = os.path.join(
-                        settings.WORKING_DIRECTORY,
+                        working_directory,
                         line.split()[1]
                     )
                     all_files.append(path)
