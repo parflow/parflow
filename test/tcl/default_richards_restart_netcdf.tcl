@@ -366,7 +366,7 @@ if ![pftestFile default_richards.out.perm_z.pfb "Max difference in perm_z" $sig_
     set passed 0
 }
 
-for {set i 10} { $i <= 50 } {incr i} {
+for {set i 1} { $i <= 50 } {incr i} {
     set i_string [format "%05d" $i]
     if ![pftestFile default_richards.out.press.$i_string.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
     set passed 0
