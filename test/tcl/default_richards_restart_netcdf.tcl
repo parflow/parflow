@@ -430,7 +430,7 @@ set initial_pressure "default_richards.out.00001.nc"
 pfset ICPressure.Type                 NCFile
 pfset ICPressure.GeomNames            domain
 pfset Geom.domain.ICPressure.FileName $initial_pressure
-pfset Geom.domain.ICPressure.TimeStep 11
+pfset Geom.domain.ICPressure.TimeStep 9
 pfset Geom.domain.ICPressure.RefGeom  domain
 pfset Geom.domain.ICPressure.RefPatch bottom
 
