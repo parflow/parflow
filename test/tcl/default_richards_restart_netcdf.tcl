@@ -1,7 +1,4 @@
-#  This runs the basic default_richards test case.
-#  This run, as written in this input file, should take
-#  3 nonlinear iterations.
-
+#  Testing restart using PFB and NetCDF files
 #
 # Import the ParFlow TCL package
 #
@@ -397,7 +394,9 @@ if $passed {
 set passed 1
 remove_restart_files
 
+#=============================================================================
 # Restart run from step 10
+#=============================================================================
 set istep 10
 set initial_pressure "initial_pressure.pfb"
 file copy -force default_richards.out.press.00010.pfb $initial_pressure
@@ -439,7 +438,9 @@ if $passed {
 set passed 1
 remove_restart_files
 
+#=============================================================================
 # Restart run from step 10
+#=============================================================================
 set istep 10
 set initial_pressure "default_richards.out.00001.nc"
 
@@ -476,12 +477,17 @@ if $passed {
 
 set passed 1
 
+#=============================================================================
 # Restart run from step last timestep in a file.  Indices in the
-# NetCDF files may be negative values to index from last
-# timestep.  This is similar to Python vector indexing.
-# Note we still have to know the initial timestep (istep here)
-# index but the negative index feature makes restartng
-# from NetCDF files a bit easier.
+# NetCDF files may be negative values to index from last timestep.
+# This is similar to Python vector indexing.  Note this is not fully
+# automated, we still have to know the initial timestep index but the
+# negative index feature makes restartng from NetCDF files a bit
+# easier.  Given an the istep still need to know which NetCDF file
+# contains that step.  In this case we wanted to restart from the
+# first NetCDF file so istep =25 since that is the number of timesteps
+# per NetCDF files.
+# =============================================================================
 
 remove_restart_files
 

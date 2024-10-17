@@ -55,8 +55,6 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
 
   OpenNCFile(fileName, &ncRID);
 
-  printf("SGS: Reading %s\n", fileName);
-
   ForSubgridI(g, subgrids)
   {
     subgrid = SubgridArraySubgrid(subgrids, g);
@@ -64,8 +62,6 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
     ReadNCFile(fileName, ncRID, subvector, subgrid, varName, tStep, dimensionality);
   }
   nc_close(ncRID);
-
-  printf("SGS: Done Reading %s\n", fileName);
 
   EndTiming(NetcdfTimingIndex);
 }
@@ -127,7 +123,6 @@ void ReadNCFile(char* filename, int ncRID, Subvector *subvector, Subgrid *subgri
   {
     unsigned long end[MAX_NC_VARS];
     find_variable_length(ncRID, varID, end);
-    printf("SGS: ReadNCFile %s end=%ld\n", varName, end[0]);
 
     time_index = end[0] + tStep;
 
@@ -141,9 +136,6 @@ void ReadNCFile(char* filename, int ncRID, Subvector *subvector, Subgrid *subgri
 
   if (dimensionality == 3)
   {
-    nc_inq_varid(ncRID, varName, &varID);
-
-
     int ix = SubgridIX(subgrid);
     int iy = SubgridIY(subgrid);
     int iz = SubgridIZ(subgrid);
@@ -198,9 +190,6 @@ void ReadNCFile(char* filename, int ncRID, Subvector *subvector, Subgrid *subgri
   }
   else if (dimensionality == 2)
   {
-    nc_inq_varid(ncRID, varName, &varID);
-
-
     int ix = SubgridIX(subgrid);
     int iy = SubgridIY(subgrid);
     int iz = SubgridIZ(subgrid);
