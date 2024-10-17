@@ -92,7 +92,7 @@ typedef struct {
                                * read from a file */
 typedef struct {
   char    *filename;
-  int      timestep;
+  int timestep;
   Vector  *ic_values;
 } Type4;                      /* Spatially varying field over entire domain
                                * read from a file */
@@ -720,7 +720,7 @@ void         ICPhasePressure(
     case 4: /* ParFlow NetCDF file with spatially varying pressure values */
     {
       Type4         *dummy4 = (Type4*)(public_xtra->data);
-      
+
       Vector *ic_values = dummy4->ic_values;
 
       gr_domain = ProblemDataGrDomain(problem_data);
@@ -855,7 +855,6 @@ void  ICPhasePressureFreeInstanceXtra()
 
   if (instance_xtra)
   {
-
     /* Uses a spatially varying field */
     if (public_xtra->type == 3)
     {
@@ -1019,7 +1018,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
       sprintf(ncKey, "Geom.%s.ICPressure.FileName", "domain");
       dummy4->filename = GetString(ncKey);
-      
+
       sprintf(ncKey, "Geom.%s.ICPressure.TimeStep", "domain");
       dummy4->timestep = GetIntDefault(ncKey, 0);
 

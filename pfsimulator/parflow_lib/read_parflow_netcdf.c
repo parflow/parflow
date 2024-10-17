@@ -113,11 +113,10 @@ void OpenNCFile(char *file_name, int *ncRID)
 void ReadNCFile(char* filename, int ncRID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality)
 {
 #ifdef PARFLOW_HAVE_NETCDF
-
   int varID;
   nc_inq_varid(ncRID, varName, &varID);
 
-  int time_index=tStep;
+  int time_index = tStep;
 
   if (tStep < 0)
   {
