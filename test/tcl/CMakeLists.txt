@@ -65,6 +65,7 @@ if(${PARFLOW_HAVE_NETCDF})
     list(APPEND TESTS
     	default_richards_with_netcdf.tcl
     	default_richards_with_netcdf_compressed.tcl)
+       	default_richards_restart_netcdf.tcl
   endif()
 endif()
 

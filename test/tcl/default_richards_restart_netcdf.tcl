@@ -9,6 +9,14 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
+proc remove_restart_files {} {
+
+    set files [glob -nocomplain default_richards_restart.out.press.* default_richards_restart.out.satur.*]
+    foreach path $files {
+	file delete -force -- $path
+    }
+}
+
 pfset FileVersion 4
 
 pfset Process.Topology.P        [lindex $argv 0]
@@ -386,6 +394,8 @@ if $passed {
     puts "default_richards : FAILED"
 }
 
+set passed 1
+remove_restart_files
 
 # Restart run from step 10
 set istep 10
@@ -417,11 +427,17 @@ for {set i 11} { $i <= 50 } {incr i} {
     }
 }
 
+# Remove the temporary initial pressure for the restart
+file delete -force $initial_pressure
+
 if $passed {
     puts "default_richards_restart PFB : PASSED"
 } {
     puts "default_richards_restart PFB: FAILED"
 }
+
+set passed 1
+remove_restart_files
 
 # Restart run from step 10
 set istep 10
@@ -456,5 +472,50 @@ if $passed {
     puts "default_richards_restart NetCDF : PASSED"
 } {
     puts "default_richards_restart NetCDF : FAILED"
+}
+
+set passed 1
+
+# Restart run from step last timestep in a file.  Indices in the
+# NetCDF files may be negative values to index from last
+# timestep.  This is similar to Python vector indexing.
+# Note we still have to know the initial timestep (istep here)
+# index but the negative index feature makes restartng
+# from NetCDF files a bit easier.
+
+remove_restart_files
+
+set istep 25
+set initial_pressure "default_richards.out.00001.nc"
+
+pfset ICPressure.Type                 NCFile
+pfset ICPressure.GeomNames            domain
+pfset Geom.domain.ICPressure.FileName $initial_pressure
+pfset Geom.domain.ICPressure.TimeStep -1
+pfset Geom.domain.ICPressure.RefGeom  domain
+pfset Geom.domain.ICPressure.RefPatch bottom
+
+pfset TimingInfo.StartCount $istep
+pfset TimingInfo.StartTime  [expr $istep * $timestep]
+
+pfrun default_richards_restart
+pfundist default_richards_restart
+
+set correct_output_dir "../correct_output/"
+
+for {set i 25} { $i <= 50 } {incr i} {
+    set i_string [format "%05d" $i]
+    if ![pftestFile default_richards_restart.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir] {
+    set passed 0
+    }
+    if ![pftestFile default_richards_restart.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits $correct_output_dir] {
+    set passed 0
+    }
+}
+
+if $passed {
+    puts "default_richards_restart NetCDF negative index: PASSED"
+} {
+    puts "default_richards_restart NetCDF negative index: FAILED"
 }
 
