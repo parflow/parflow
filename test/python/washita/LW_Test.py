@@ -4,8 +4,12 @@
 # Arugments are 1) runname 2) year
 # -----------------------------------------------------------------------------
 
+import os
+import numpy as np
 from parflow import Run
 from parflow.tools.fs import mkdir, cp, chdir, get_absolute_path
+from parflow.tools.io import read_pfb, write_pfb
+
 
 LW_Test = Run("LW_Test", __file__)
 
@@ -561,4 +565,20 @@ for file in nldas_files:
 # Run Simulation
 # -----------------------------------------------------------------------------
 
+# Corrupt the indicator file and run check_nans()
+corrupted_indicator = read_pfb(os.path.join(dir_name, "IndicatorFile_Gleeson.50z.pfb"))
+corrupted_indicator[0, 0, 0] = np.nan
+write_pfb(os.path.join(dir_name, "corrupted_indicator.pfb"), corrupted_indicator)
+LW_Test.Geom.indi_input.FileName = "corrupted_indicator.pfb"
+try:
+    LW_Test.check_nans(working_directory=dir_name)
+    raise AssertionError("ValueError was not raised for corrupted indicator file.")
+except ValueError as e:
+    assert "corrupted_indicator.pfb" in str(e)
+
+# Restore the original
+LW_Test.Geom.indi_input.FileName = "IndicatorFile_Gleeson.50z.pfb"
+
+# Check NaNs for original inputs
+LW_Test.check_nans(working_directory=dir_name)
 LW_Test.run(working_directory=dir_name)
