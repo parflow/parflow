@@ -4295,6 +4295,26 @@ minimum value for the :math:`\bar{S_{f}}` used in the
    <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
 
 
+*string* **Solver.PrintInitialConditions** True This key is used to
+      turn on printing of the initial conditions.  This includes the
+      pressure, saturation, slopes, etc.  By default the initial
+      conditions output is genrerated before the first time
+      advancement; when doing a restart this leads to a duplication
+      of files on each restart.  Setting this key to False will
+      prevent the duplication.
+
+      Note setting this key to False overrides the other individual
+      output flags that are enabled.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintInitialConditions False           ## TCL syntax
+
+      <runname>.Solver.PrintInitalConditions = False     ## Python syntax
+
+
 *string* **Solver.PrintSubsurf** True This key is used to turn on
 printing of the subsurface data, Permeability and Porosity. The data is
 printed after it is generated and before the main time stepping loop -

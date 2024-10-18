@@ -395,12 +395,14 @@ set passed 1
 remove_restart_files
 
 #=============================================================================
-# Restart run from step 10
+# Restart run from step 10 using PFBFile
 #=============================================================================
 set istep 10
 set initial_pressure "initial_pressure.pfb"
 file copy -force default_richards.out.press.00010.pfb $initial_pressure
 pfdist $initial_pressure
+
+pfset Solver.PrintInitialConditions False
 
 pfset ICPressure.Type                 PFBFile
 pfset ICPressure.GeomNames            domain
@@ -439,10 +441,12 @@ set passed 1
 remove_restart_files
 
 #=============================================================================
-# Restart run from step 10
+# Restart run from step 10 using NetCDF file
 #=============================================================================
 set istep 10
 set initial_pressure "default_richards.out.00001.nc"
+
+pfset Solver.PrintInitialConditions False
 
 pfset ICPressure.Type                 NCFile
 pfset ICPressure.GeomNames            domain
@@ -494,6 +498,8 @@ remove_restart_files
 set istep 25
 set initial_pressure "default_richards.out.00001.nc"
 
+pfset Solver.PrintInitialConditions False
+
 pfset ICPressure.Type                 NCFile
 pfset ICPressure.GeomNames            domain
 pfset Geom.domain.ICPressure.FileName $initial_pressure
@@ -509,7 +515,7 @@ pfundist default_richards_restart
 
 set correct_output_dir "../correct_output/"
 
-for {set i 25} { $i <= 50 } {incr i} {
+for {set i 26} { $i <= 50 } {incr i} {
     set i_string [format "%05d" $i]
     if ![pftestFile default_richards_restart.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir] {
     set passed 0
