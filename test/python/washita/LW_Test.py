@@ -572,10 +572,9 @@ write_pfb(os.path.join(dir_name, "corrupted_indicator.pfb"), corrupted_indicator
 LW_Test.Geom.indi_input.FileName = "corrupted_indicator.pfb"
 try:
     LW_Test.check_nans(working_directory=dir_name)
-    raise AssertionError("Expected ValueError, but none was raised.")
+    raise AssertionError("ValueError was not raised for corrupted indicator file.")
 except ValueError as e:
     assert "corrupted_indicator.pfb" in str(e)
-    print("ValueError was raised as expected for corrupted indicator file.")
 
 # Restore the original
 LW_Test.Geom.indi_input.FileName = "IndicatorFile_Gleeson.50z.pfb"
