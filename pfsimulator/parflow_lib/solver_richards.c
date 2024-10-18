@@ -1226,38 +1226,37 @@ SetupRichards(PFModule * this_module)
 
     if (print_initial_conditions)
     {
-
       /*-------------------------------------------------------------------
        * Print out the initial reservoir data?
        *-------------------------------------------------------------------*/
       if (print_reservoirs)
       {
-	WriteReservoirs("ReservoirsOutput",
-			problem,
-			ProblemDataReservoirData(problem_data),
-			t, RESERVOIRDATA_WRITEHEADER);
+        WriteReservoirs("ReservoirsOutput",
+                        problem,
+                        ProblemDataReservoirData(problem_data),
+                        t, RESERVOIRDATA_WRITEHEADER);
       }
       /*-------------------------------------------------------------------
        * Print out the initial well data?
        *-------------------------------------------------------------------*/
       if (print_wells)
       {
-	WriteWells(file_prefix,
-		   problem,
-		   ProblemDataWellData(problem_data),
-		   t, WELLDATA_WRITEHEADER);
+        WriteWells(file_prefix,
+                   problem,
+                   ProblemDataWellData(problem_data),
+                   t, WELLDATA_WRITEHEADER);
       }
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
       if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur
-	  || public_xtra->write_netcdf_mannings
-	  || public_xtra->write_netcdf_subsurface
-	  || public_xtra->write_netcdf_slopes
-	  || public_xtra->write_netcdf_mask
-	  || public_xtra->write_netcdf_dzmult)
+          || public_xtra->write_netcdf_mannings
+          || public_xtra->write_netcdf_subsurface
+          || public_xtra->write_netcdf_slopes
+          || public_xtra->write_netcdf_mask
+          || public_xtra->write_netcdf_dzmult)
       {
-	WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
-		  public_xtra->numVarTimeVariant, "time", 1, true,
-		  public_xtra->numVarIni);
+        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
+                  public_xtra->numVarTimeVariant, "time", 1, true,
+                  public_xtra->numVarIni);
       }
       /*-----------------------------------------------------------------
        * Print out the initial pressures?
@@ -1265,46 +1264,46 @@ SetupRichards(PFModule * this_module)
 
       if (print_press)
       {
-	sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
-	WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
-	any_file_dumped = 1;
+        sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
+        WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
+        any_file_dumped = 1;
 
-	static const char* press_filenames[] = {
-	  "press"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "pressure", "m", "cell", "subsurface",
-				sizeof(press_filenames) / sizeof(press_filenames[0]),
-				press_filenames);
+        static const char* press_filenames[] = {
+          "press"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "pressure", "m", "cell", "subsurface",
+                                sizeof(press_filenames) / sizeof(press_filenames[0]),
+                                press_filenames);
       }
 
       if (public_xtra->write_silo_press)
       {
-	sprintf(file_postfix, "%05d", instance_xtra->file_number);
-	strcpy(file_type, "press");
-	WriteSilo(file_prefix, file_type, file_postfix,
-		  instance_xtra->pressure, t, instance_xtra->file_number,
-		  "Pressure");
-	any_file_dumped = 1;
+        sprintf(file_postfix, "%05d", instance_xtra->file_number);
+        strcpy(file_type, "press");
+        WriteSilo(file_prefix, file_type, file_postfix,
+                  instance_xtra->pressure, t, instance_xtra->file_number,
+                  "Pressure");
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_silopmpio_press)
       {
-	sprintf(file_postfix, "%05d", instance_xtra->file_number);
-	strcpy(file_type, "press");
-	WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-		       instance_xtra->pressure, t,
-		       instance_xtra->file_number, "Pressure");
-	any_file_dumped = 1;
+        sprintf(file_postfix, "%05d", instance_xtra->file_number);
+        strcpy(file_type, "press");
+        WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+                       instance_xtra->pressure, t,
+                       instance_xtra->file_number, "Pressure");
+        any_file_dumped = 1;
       }
       if (public_xtra->write_netcdf_press)
       {
-	sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
-	sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-	WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
-		  public_xtra->numVarTimeVariant, "pressure", 3, true,
-		  public_xtra->numVarIni);
-	any_file_dumped = 1;
+        sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
+                  public_xtra->numVarTimeVariant, "pressure", 3, true,
+                  public_xtra->numVarIni);
+        any_file_dumped = 1;
       }
       /*-----------------------------------------------------------------
        * Print out the initial saturations?
@@ -1312,47 +1311,47 @@ SetupRichards(PFModule * this_module)
 
       if (print_satur)
       {
-	sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
-	WritePFBinary(file_prefix, file_postfix,
-		      instance_xtra->saturation);
-	any_file_dumped = 1;
+        sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+        WritePFBinary(file_prefix, file_postfix,
+                      instance_xtra->saturation);
+        any_file_dumped = 1;
 
-	static const char* satur_filenames[] = {
-	  "satur"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "saturation", NULL, "cell", "subsurface",
-				sizeof(satur_filenames) / sizeof(satur_filenames[0]),
-				satur_filenames);
+        static const char* satur_filenames[] = {
+          "satur"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "saturation", NULL, "cell", "subsurface",
+                                sizeof(satur_filenames) / sizeof(satur_filenames[0]),
+                                satur_filenames);
       }
 
       if (public_xtra->write_silo_satur)
       {
-	sprintf(file_postfix, "%05d", instance_xtra->file_number);
-	strcpy(file_type, "satur");
-	WriteSilo(file_prefix, file_type, file_postfix,
-		  instance_xtra->saturation, t, instance_xtra->file_number,
-		  "Saturation");
-	any_file_dumped = 1;
+        sprintf(file_postfix, "%05d", instance_xtra->file_number);
+        strcpy(file_type, "satur");
+        WriteSilo(file_prefix, file_type, file_postfix,
+                  instance_xtra->saturation, t, instance_xtra->file_number,
+                  "Saturation");
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_silopmpio_satur)
       {
-	sprintf(file_postfix, "%05d", instance_xtra->file_number);
-	strcpy(file_type, "satur");
-	WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-		       instance_xtra->saturation, t,
-		       instance_xtra->file_number, "Saturation");
-	any_file_dumped = 1;
+        sprintf(file_postfix, "%05d", instance_xtra->file_number);
+        strcpy(file_type, "satur");
+        WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+                       instance_xtra->saturation, t,
+                       instance_xtra->file_number, "Saturation");
+        any_file_dumped = 1;
       }
       if (public_xtra->write_netcdf_satur)
       {
-	sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
-	sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-	WritePFNC(file_prefix, nc_postfix, t, instance_xtra->saturation,
-		  public_xtra->numVarTimeVariant, "saturation", 3, true,
-		  public_xtra->numVarIni);
-	any_file_dumped = 1;
+        sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->saturation,
+                  public_xtra->numVarTimeVariant, "saturation", 3, true,
+                  public_xtra->numVarIni);
+        any_file_dumped = 1;
       }
 
       /*-----------------------------------------------------------------
@@ -1360,12 +1359,12 @@ SetupRichards(PFModule * this_module)
        *-----------------------------------------------------------------*/
       if (public_xtra->write_netcdf_mannings)
       {
-	sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-	WritePFNC(file_prefix, nc_postfix, t,
-		  ProblemDataMannings(problem_data),
-		  public_xtra->numVarTimeVariant, "mannings", 2, true,
-		  public_xtra->numVarIni);
-	any_file_dumped = 1;
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  ProblemDataMannings(problem_data),
+                  public_xtra->numVarTimeVariant, "mannings", 2, true,
+                  public_xtra->numVarIni);
+        any_file_dumped = 1;
       }
 
       /*-----------------------------------------------------------------
@@ -1373,28 +1372,28 @@ SetupRichards(PFModule * this_module)
        *-----------------------------------------------------------------*/
       if (public_xtra->write_netcdf_subsurface)
       {
-	sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-	WritePFNC(file_prefix, nc_postfix, t,
-		  ProblemDataPermeabilityX(problem_data),
-		  public_xtra->numVarTimeVariant, "perm_x", 3, true,
-		  public_xtra->numVarIni);
-	WritePFNC(file_prefix, nc_postfix, t,
-		  ProblemDataPermeabilityY(problem_data),
-		  public_xtra->numVarTimeVariant, "perm_y", 3, true,
-		  public_xtra->numVarIni);
-	WritePFNC(file_prefix, nc_postfix, t,
-		  ProblemDataPermeabilityZ(problem_data),
-		  public_xtra->numVarTimeVariant, "perm_z", 3, true,
-		  public_xtra->numVarIni);
-	WritePFNC(file_prefix, nc_postfix, t,
-		  ProblemDataPorosity(problem_data),
-		  public_xtra->numVarTimeVariant, "porosity", 3, true,
-		  public_xtra->numVarIni);
-	WritePFNC(file_prefix, nc_postfix, t,
-		  ProblemDataSpecificStorage(problem_data),
-		  public_xtra->numVarTimeVariant, "specific_storage", 3,
-		  true, public_xtra->numVarIni);
-	any_file_dumped = 1;
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  ProblemDataPermeabilityX(problem_data),
+                  public_xtra->numVarTimeVariant, "perm_x", 3, true,
+                  public_xtra->numVarIni);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  ProblemDataPermeabilityY(problem_data),
+                  public_xtra->numVarTimeVariant, "perm_y", 3, true,
+                  public_xtra->numVarIni);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  ProblemDataPermeabilityZ(problem_data),
+                  public_xtra->numVarTimeVariant, "perm_z", 3, true,
+                  public_xtra->numVarIni);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  ProblemDataPorosity(problem_data),
+                  public_xtra->numVarTimeVariant, "porosity", 3, true,
+                  public_xtra->numVarIni);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  ProblemDataSpecificStorage(problem_data),
+                  public_xtra->numVarTimeVariant, "specific_storage", 3,
+                  true, public_xtra->numVarIni);
+        any_file_dumped = 1;
       }
 
       /*-----------------------------------------------------------------
@@ -1402,16 +1401,16 @@ SetupRichards(PFModule * this_module)
        *-----------------------------------------------------------------*/
       if (public_xtra->write_netcdf_slopes)
       {
-	sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-	WritePFNC(file_prefix, nc_postfix, t,
-		  ProblemDataTSlopeX(problem_data),
-		  public_xtra->numVarTimeVariant, "slopex", 2, true,
-		  public_xtra->numVarIni);
-	WritePFNC(file_prefix, nc_postfix, t,
-		  ProblemDataTSlopeY(problem_data),
-		  public_xtra->numVarTimeVariant, "slopey", 2, true,
-		  public_xtra->numVarIni);
-	any_file_dumped = 1;
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  ProblemDataTSlopeX(problem_data),
+                  public_xtra->numVarTimeVariant, "slopex", 2, true,
+                  public_xtra->numVarIni);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  ProblemDataTSlopeY(problem_data),
+                  public_xtra->numVarTimeVariant, "slopey", 2, true,
+                  public_xtra->numVarIni);
+        any_file_dumped = 1;
       }
 
       /*-----------------------------------------------------------------
@@ -1419,11 +1418,11 @@ SetupRichards(PFModule * this_module)
        *-----------------------------------------------------------------*/
       if (public_xtra->write_netcdf_dzmult)
       {
-	sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-	WritePFNC(file_prefix, nc_postfix, t, instance_xtra->dz_mult,
-		  public_xtra->numVarTimeVariant, "DZ_Multiplier", 3, true,
-		  public_xtra->numVarIni);
-	any_file_dumped = 1;
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->dz_mult,
+                  public_xtra->numVarTimeVariant, "DZ_Multiplier", 3, true,
+                  public_xtra->numVarIni);
+        any_file_dumped = 1;
       }
 
       /*-----------------------------------------------------------------
@@ -1432,86 +1431,86 @@ SetupRichards(PFModule * this_module)
 
       if (public_xtra->print_mask)
       {
-	strcpy(file_postfix, "mask");
-	WritePFBinary(file_prefix, file_postfix, instance_xtra->mask);
-	any_file_dumped = 1;
+        strcpy(file_postfix, "mask");
+        WritePFBinary(file_prefix, file_postfix, instance_xtra->mask);
+        any_file_dumped = 1;
 
-	static const char* mask_filenames[] = {
-	  "mask"
-	};
-	MetadataAddStaticField(
-			       js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
-			       sizeof(mask_filenames) / sizeof(mask_filenames[0]),
-			       mask_filenames);
+        static const char* mask_filenames[] = {
+          "mask"
+        };
+        MetadataAddStaticField(
+                               js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
+                               sizeof(mask_filenames) / sizeof(mask_filenames[0]),
+                               mask_filenames);
       }
 
       if (public_xtra->write_netcdf_mask)
       {
-	sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-	WritePFNC(file_prefix, nc_postfix, t, instance_xtra->mask,
-		  public_xtra->numVarTimeVariant, "mask", 3, true,
-		  public_xtra->numVarIni);
-	any_file_dumped = 1;
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t, instance_xtra->mask,
+                  public_xtra->numVarTimeVariant, "mask", 3, true,
+                  public_xtra->numVarIni);
+        any_file_dumped = 1;
       }
 
 
       if (public_xtra->write_silo_mask)
       {
-	strcpy(file_postfix, "");
-	strcpy(file_type, "mask");
-	WriteSilo(file_prefix, file_type, file_postfix,
-		  instance_xtra->mask, t, instance_xtra->file_number,
-		  "Mask");
-	any_file_dumped = 1;
+        strcpy(file_postfix, "");
+        strcpy(file_type, "mask");
+        WriteSilo(file_prefix, file_type, file_postfix,
+                  instance_xtra->mask, t, instance_xtra->file_number,
+                  "Mask");
+        any_file_dumped = 1;
       }
 
       if (public_xtra->write_silopmpio_mask)
       {
-	strcpy(file_postfix, "");
-	strcpy(file_type, "mask");
-	WriteSiloPMPIO(file_prefix, file_type, file_postfix,
-		       instance_xtra->mask, t, instance_xtra->file_number,
-		       "Mask");
-	any_file_dumped = 1;
+        strcpy(file_postfix, "");
+        strcpy(file_type, "mask");
+        WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+                       instance_xtra->mask, t, instance_xtra->file_number,
+                       "Mask");
+        any_file_dumped = 1;
       }
 
       /* print initial velocities??? jjb */
       if (print_velocities)
       {
-	sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
-	WritePFBinary(file_prefix, file_postfix,
-		      instance_xtra->x_velocity);
-	static const char* velx_filenames[] = {
-	  "velx"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "x-velocity", "m/s", "x-face", "subsurface",
-				sizeof(velx_filenames) / sizeof(velx_filenames[0]),
-				velx_filenames);
+        sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
+        WritePFBinary(file_prefix, file_postfix,
+                      instance_xtra->x_velocity);
+        static const char* velx_filenames[] = {
+          "velx"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "x-velocity", "m/s", "x-face", "subsurface",
+                                sizeof(velx_filenames) / sizeof(velx_filenames[0]),
+                                velx_filenames);
 
-	sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
-	WritePFBinary(file_prefix, file_postfix,
-		      instance_xtra->y_velocity);
-	static const char* vely_filenames[] = {
-	  "vely"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "y-velocity", "m/s", "y-face", "subsurface",
-				sizeof(vely_filenames) / sizeof(vely_filenames[0]),
-				vely_filenames);
+        sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
+        WritePFBinary(file_prefix, file_postfix,
+                      instance_xtra->y_velocity);
+        static const char* vely_filenames[] = {
+          "vely"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "y-velocity", "m/s", "y-face", "subsurface",
+                                sizeof(vely_filenames) / sizeof(vely_filenames[0]),
+                                vely_filenames);
 
-	sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
-	WritePFBinary(file_prefix, file_postfix,
-		      instance_xtra->z_velocity);
-	static const char* velz_filenames[] = {
-	  "velz"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "z-velocity", "m/s", "z-face", "subsurface",
-				sizeof(velz_filenames) / sizeof(velz_filenames[0]),
-				velz_filenames);
+        sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
+        WritePFBinary(file_prefix, file_postfix,
+                      instance_xtra->z_velocity);
+        static const char* velz_filenames[] = {
+          "velz"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "z-velocity", "m/s", "z-face", "subsurface",
+                                sizeof(velz_filenames) / sizeof(velz_filenames[0]),
+                                velz_filenames);
 
-	any_file_dumped = 1;
+        any_file_dumped = 1;
       }
     } // if print_initial_conditions
     else
@@ -1520,85 +1519,84 @@ SetupRichards(PFModule * this_module)
       // This is not very clean.
       if (print_wells || print_press || print_satur || public_xtra->print_mask || print_velocities)
       {
-	any_file_dumped = 1;
+        any_file_dumped = 1;
       }
 
-      if (public_xtra -> write_silo_press ||  public_xtra->write_silopmpio_press || public_xtra->write_netcdf_press || public_xtra->write_silo_satur || public_xtra->write_silopmpio_satur || public_xtra->write_silo_mask || public_xtra->write_silopmpio_mask)
+      if (public_xtra->write_silo_press || public_xtra->write_silopmpio_press || public_xtra->write_netcdf_press || public_xtra->write_silo_satur || public_xtra->write_silopmpio_satur || public_xtra->write_silo_mask || public_xtra->write_silopmpio_mask)
       {
-	any_file_dumped = 1;
+        any_file_dumped = 1;
       }
-	
+
       if (public_xtra->write_netcdf_press
-	  || public_xtra->write_netcdf_satur 
-	  || public_xtra->write_netcdf_mannings
-	  || public_xtra->write_netcdf_subsurface
-	  || public_xtra->write_netcdf_slopes
-	  || public_xtra->write_netcdf_mask
-	  || public_xtra->write_netcdf_dzmult)
+          || public_xtra->write_netcdf_satur
+          || public_xtra->write_netcdf_mannings
+          || public_xtra->write_netcdf_subsurface
+          || public_xtra->write_netcdf_slopes
+          || public_xtra->write_netcdf_mask
+          || public_xtra->write_netcdf_dzmult)
       {
-	any_file_dumped = 1;
+        any_file_dumped = 1;
       }
 
       // Need to add metadata
       if (print_press)
       {
-	static const char* press_filenames[] = {
-	  "press"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "pressure", "m", "cell", "subsurface",
-				sizeof(press_filenames) / sizeof(press_filenames[0]),
-				press_filenames);
+        static const char* press_filenames[] = {
+          "press"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "pressure", "m", "cell", "subsurface",
+                                sizeof(press_filenames) / sizeof(press_filenames[0]),
+                                press_filenames);
       }
-      
+
       if (print_satur)
       {
-	static const char* satur_filenames[] = {
-	  "satur"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "saturation", NULL, "cell", "subsurface",
-				sizeof(satur_filenames) / sizeof(satur_filenames[0]),
-				satur_filenames);
+        static const char* satur_filenames[] = {
+          "satur"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "saturation", NULL, "cell", "subsurface",
+                                sizeof(satur_filenames) / sizeof(satur_filenames[0]),
+                                satur_filenames);
       }
-      
+
       if (public_xtra->print_mask)
       {
-	static const char* mask_filenames[] = {
-	  "mask"
-	};
-	MetadataAddStaticField(
-			       js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
-			       sizeof(mask_filenames) / sizeof(mask_filenames[0]),
-			       mask_filenames);
+        static const char* mask_filenames[] = {
+          "mask"
+        };
+        MetadataAddStaticField(
+                               js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
+                               sizeof(mask_filenames) / sizeof(mask_filenames[0]),
+                               mask_filenames);
       }
-      
+
       if (print_velocities)
       {
-	static const char* velx_filenames[] = {
-	  "velx"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "x-velocity", "m/s", "x-face", "subsurface",
-				sizeof(velx_filenames) / sizeof(velx_filenames[0]),
-				velx_filenames);
-	
-	static const char* vely_filenames[] = {
-	  "vely"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "y-velocity", "m/s", "y-face", "subsurface",
-				sizeof(vely_filenames) / sizeof(vely_filenames[0]),
-				vely_filenames);
-	
-	static const char* velz_filenames[] = {
-	  "velz"
-	};
-	MetadataAddDynamicField(
-				js_outputs, file_prefix, t, 0, "z-velocity", "m/s", "z-face", "subsurface",
-				sizeof(velz_filenames) / sizeof(velz_filenames[0]),
-				velz_filenames);
-	
+        static const char* velx_filenames[] = {
+          "velx"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "x-velocity", "m/s", "x-face", "subsurface",
+                                sizeof(velx_filenames) / sizeof(velx_filenames[0]),
+                                velx_filenames);
+
+        static const char* vely_filenames[] = {
+          "vely"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "y-velocity", "m/s", "y-face", "subsurface",
+                                sizeof(vely_filenames) / sizeof(vely_filenames[0]),
+                                vely_filenames);
+
+        static const char* velz_filenames[] = {
+          "velz"
+        };
+        MetadataAddDynamicField(
+                                js_outputs, file_prefix, t, 0, "z-velocity", "m/s", "z-face", "subsurface",
+                                sizeof(velz_filenames) / sizeof(velz_filenames[0]),
+                                velz_filenames);
       }
     }
 
