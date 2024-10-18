@@ -4298,7 +4298,7 @@ minimum value for the :math:`\bar{S_{f}}` used in the
 *string* **Solver.PrintInitialConditions** True This key is used to
       turn on printing of the initial conditions.  This includes the
       pressure, saturation, slopes, etc.  By default the initial
-      conditions output is genrerated before the first time
+      conditions output is generated before the first time
       advancement; when doing a restart this leads to a duplication
       of files on each restart.  Setting this key to False will
       prevent the duplication.
