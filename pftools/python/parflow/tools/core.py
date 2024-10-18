@@ -514,12 +514,12 @@ class Run(BaseRun):
         if not success or error_count > 0:
             sys.exit(1)
 
-    def check_nans(self, working_directory, exclude_forcing=True):
+    def check_nans(self, working_directory, include_forcing=True):
         """Check the input files for NaNs.
 
         Args:
             working_directory: The working directory of the ParFlow run.
-            exclude_forcing (bool): If set to True, forcing files are not going
+            include_forcing (bool): If set to True, forcing files are going
                 to be checked.
 
         Raises:
@@ -535,7 +535,7 @@ class Run(BaseRun):
                     path = os.path.join(working_directory, line.split()[1])
                     all_files.append(path)
 
-        if not exclude_forcing:
+        if include_forcing:
             run = self.__class__.from_definition(runscript_path)
             forcing_dir = run.Solver.CLM.MetFilePath
             for file in os.listdir(forcing_dir):
