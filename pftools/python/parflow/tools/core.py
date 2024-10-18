@@ -13,6 +13,8 @@ from pathlib import Path
 import sys
 import argparse
 
+import numpy as np
+
 from . import settings
 from .fs import get_absolute_path
 from .io import (
@@ -511,6 +513,39 @@ class Run(BaseRun):
 
         if not success or error_count > 0:
             sys.exit(1)
+
+    def check_nans(self, working_directory, include_forcing=True):
+        """Check the input files for NaNs.
+
+        Args:
+            working_directory: The working directory of the ParFlow run.
+            include_forcing (bool): If set to True, forcing files are going
+                to be checked.
+
+        Raises:
+            ValueError: If an input file contains a NaN.
+        """
+
+        runscript_path, _ = self.write(file_format="yaml")
+        all_files = []
+        with open(runscript_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("FileName: ") and line.endswith(".pfb"):
+                    path = os.path.join(working_directory, line.split()[1])
+                    all_files.append(path)
+
+        if include_forcing:
+            run = self.__class__.from_definition(runscript_path)
+            forcing_dir = run.Solver.CLM.MetFilePath
+            for file in os.listdir(forcing_dir):
+                if file.endswith(".pfb"):
+                    all_files.append(os.path.join(forcing_dir, file))
+
+        for file in all_files:
+            data = read_pfb(file)
+            if np.any(np.isnan(data)):
+                raise ValueError(f"{file} contains NaN values.")
 
     def dist(self, pfb_file, **kwargs):
         """Distribute a PFB file using the P/Q/R settings from the run
