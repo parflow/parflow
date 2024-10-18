@@ -436,6 +436,8 @@ shutil.copy(
 
 default_richards.dist(os.path.join(new_output_dir_name, initial_pressure))
 
+default_richards.Solver.PrintInitialConditions = False
+
 default_richards.ICPressure.Type = "PFBFile"
 default_richards.ICPressure.GeomNames = "domain"
 default_richards.Geom.domain.ICPressure.FileName = initial_pressure
@@ -451,7 +453,7 @@ default_richards.set_name(run_name)
 
 default_richards.run(working_directory=new_output_dir_name)
 
-for i in range(10, 51):
+for i in range(11, 51):
     timeindex = str(i).rjust(5, "0")
     filename = f"/{run_name}.out.press.{timeindex}.pfb"
     if not pf_test_file(
@@ -485,6 +487,8 @@ passed = True
 
 istep = 10
 initial_pressure = "default_richards.out.00001.nc"
+
+default_richards.Solver.PrintInitialConditions = False
 
 default_richards.ICPressure.Type = "NCFile"
 default_richards.ICPressure.GeomNames = "domain"
@@ -538,6 +542,8 @@ passed = True
 
 istep = 25
 initial_pressure = "default_richards.out.00001.nc"
+
+default_richards.Solver.PrintInitialConditions = False
 
 default_richards.ICPressure.Type = "NCFile"
 default_richards.ICPressure.GeomNames = "domain"
