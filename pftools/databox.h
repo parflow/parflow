@@ -90,9 +90,9 @@ typedef struct {
 
 #define DataboxLabel(databox)   ((databox)->label)
 
-#define DataboxCoeff(databox, i, j, k) \
-  (DataboxCoeffs(databox) +            \
-   (k) * DataboxNy(databox) * DataboxNx(databox) + (j) * DataboxNx(databox) + (i))
+#define DataboxCoeff(databox, i, j, k)       \
+        (DataboxCoeffs(databox) +            \
+         (k) * DataboxNy(databox) * DataboxNx(databox) + (j) * DataboxNx(databox) + (i))
 
 
 /* Defines how a grid definition is */

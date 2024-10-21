@@ -19,18 +19,22 @@ class ValueHandlerException(Exception):
     """
     Basic parflow exception used for ValueHandlers to report error
     """
+
     pass
 
 
 # -----------------------------------------------------------------------------
+
 
 class ChildHandler:
     """
     This class creates new keys from user-defined name input
     (e.g. GeomName)
     """
-    def decorate(self, value, container, class_name=None, location='.',
-                 eager=None, **kwargs):
+
+    def decorate(
+        self, value, container, class_name=None, location=".", eager=None, **kwargs
+    ):
 
         klass = None
         destination_containers = []
@@ -45,32 +49,37 @@ class ChildHandler:
         for destination_container in destination_containers:
             if destination_container is not None:
                 if valid_name not in destination_container.__dict__:
-                    destination_container.__dict__[valid_name] = (
-                        klass(destination_container))
+                    destination_container.__dict__[valid_name] = klass(
+                        destination_container
+                    )
                 elif eager:
-                    print(f'Error no selection for {location}')
+                    print(f"Error no selection for {location}")
 
         return valid_name
 
 
 # -----------------------------------------------------------------------------
 
+
 class ChildrenHandler:
     """
     This class creates new keys from user-defined name inputs
     (e.g. GeomNames)
     """
+
     def __init__(self):
         self.child_handler = ChildHandler()
 
-    def decorate(self, value, container, class_name=None, location='.',
-                 eager=None, **kwargs):
+    def decorate(
+        self, value, container, class_name=None, location=".", eager=None, **kwargs
+    ):
         if isinstance(value, str):
             names = value.split()
             valid_names = []
             for name in names:
                 valid_name = self.child_handler.decorate(
-                    name, container, class_name, location, eager)
+                    name, container, class_name, location, eager
+                )
                 if valid_name is not None:
                     valid_names.append(valid_name)
 
@@ -81,45 +90,56 @@ class ChildrenHandler:
         elif isinstance(value, int):
             valid_names = []
             for i in range(value):
-                name = f'_{i}'  # FIXME should use prefix instead
+                name = f"_{i}"  # FIXME should use prefix instead
                 valid_names.append(
-                    self.child_handler.decorate(name, container, class_name,
-                                                location, eager))
+                    self.child_handler.decorate(
+                        name, container, class_name, location, eager
+                    )
+                )
 
             return valid_names
 
-        if hasattr(value, '__iter__'):
+        if hasattr(value, "__iter__"):
             valid_names = []
             for name in value:
                 valid_name = self.child_handler.decorate(
-                    name, container, class_name, location, eager)
+                    name, container, class_name, location, eager
+                )
                 if valid_name is not None:
                     valid_names.append(valid_name)
 
             return valid_names
 
         raise ValueHandlerException(
-            f'{value} is not of the expected type for ChildrenHandler')
+            f"{value} is not of the expected type for ChildrenHandler"
+        )
+
 
 # -----------------------------------------------------------------------------
 class ListHandler:
     """
     This class ensures the output is not a single string but a list of trimmed string.
     """
+
     def __init__(self):
         self.children_handler = ChildrenHandler()
 
     def decorate(self, value, container, **kwargs):
         return self.children_handler.decorate(value, container)
 
+
 # -----------------------------------------------------------------------------
+
 
 class SplitHandler:
     """
     This class will split the provided key using the separator convert
     each tocken using a type converter and set the field list.
     """
-    def decorate(self, value, container, separator='/', convert='int', fields=None, **kwargs):
+
+    def decorate(
+        self, value, container, separator="/", convert="int", fields=None, **kwargs
+    ):
         if isinstance(value, str):
             tokens = value.split(separator)
             index = 0
@@ -132,7 +152,9 @@ class SplitHandler:
             return value
 
         raise ValueHandlerException(
-            f'{value} is not of the expected type for SplitHandler')
+            f"{value} is not of the expected type for SplitHandler"
+        )
+
 
 # -----------------------------------------------------------------------------
 # Helper map with an instance of each Value handler
@@ -160,8 +182,10 @@ def get_handler(class_name, print_error=True):
         return instance
 
     if print_error:
-        print(f'{term.FAIL}{term_symbol.ko}{term.ENDC} Could not find '
-              f'handler: "{class_name}"')
+        print(
+            f"{term.FAIL}{term_symbol.ko}{term.ENDC} Could not find "
+            f'handler: "{class_name}"'
+        )
 
     return None
 
@@ -169,6 +193,7 @@ def get_handler(class_name, print_error=True):
 # -----------------------------------------------------------------------------
 # API meant to be used outside of this module
 # -----------------------------------------------------------------------------
+
 
 def decorate_value(value, container=None, handlers=None):
     """Return a decorated version of the value while
@@ -207,8 +232,8 @@ def decorate_value(value, container=None, handlers=None):
     for handler_classname in handlers:
         handler = get_handler(handler_classname, False)
 
-        if handler is None and 'type' in handlers[handler_classname]:
-            handler = get_handler(handlers[handler_classname]['type'])
+        if handler is None and "type" in handlers[handler_classname]:
+            handler = get_handler(handlers[handler_classname]["type"])
         else:
             get_handler(handler_classname)
 
@@ -217,8 +242,7 @@ def decorate_value(value, container=None, handlers=None):
             if isinstance(handler_kwargs, str):
                 return_value = handler.decorate(value, container)
             else:
-                return_value = handler.decorate(
-                    value, container, **handler_kwargs)
+                return_value = handler.decorate(value, container, **handler_kwargs)
 
     # added to handle variable DZ
     if isinstance(value, int):

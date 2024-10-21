@@ -46,22 +46,20 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
   Subvector      *subvector;
-  
+
   int g;
-  
-  int ncRID, varID;
+
+  int ncRID;
 
   BeginTiming(NetcdfTimingIndex);
-  
+
   OpenNCFile(fileName, &ncRID);
 
-  nc_inq_varid(ncRID, varName, &varID);
-  
   ForSubgridI(g, subgrids)
   {
     subgrid = SubgridArraySubgrid(subgrids, g);
     subvector = VectorSubvector(v, g);
-    ReadNCFile(ncRID, varID, subvector, subgrid, varName, tStep, dimensionality);
+    ReadNCFile(fileName, ncRID, subvector, subgrid, varName, tStep, dimensionality);
   }
   nc_close(ncRID);
 
@@ -73,7 +71,7 @@ void OpenNCFile(char *file_name, int *ncRID)
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
   char *default_val = "None";
-  
+
   sprintf(key, "NetCDF.ROMIOhints");
   switch_name = GetStringDefault(key, "None");
   if (strcmp(switch_name, default_val) != 0)
@@ -94,7 +92,7 @@ void OpenNCFile(char *file_name, int *ncRID)
       MPI_Info_set(romio_info, romio_key, value);
     }
     int res = nc_open_par(file_name, NC_MPIIO, amps_CommWorld, romio_info, ncRID);
-    if(res != NC_NOERR)
+    if (res != NC_NOERR)
     {
       amps_Printf("Error: nc_open_par failed for file <%s>\n", file_name);
     }
@@ -102,7 +100,7 @@ void OpenNCFile(char *file_name, int *ncRID)
   else
   {
     int res = nc_open_par(file_name, NC_MPIIO, amps_CommWorld, MPI_INFO_NULL, ncRID);
-    if(res != NC_NOERR)
+    if (res != NC_NOERR)
     {
       amps_Printf("Error: nc_open_par failed for file <%s>\n", file_name);
     }
@@ -112,16 +110,31 @@ void OpenNCFile(char *file_name, int *ncRID)
 #endif
 }
 
-void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality)
+void ReadNCFile(char* filename, int ncRID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality)
 {
 #ifdef PARFLOW_HAVE_NETCDF
+  int varID;
   nc_inq_varid(ncRID, varName, &varID);
+
+  int time_index = tStep;
+
+  if (tStep < 0)
+  {
+    unsigned long end[MAX_NC_VARS];
+    find_variable_length(ncRID, varID, end);
+
+    time_index = end[0] + tStep;
+
+    if (time_index < 0)
+    {
+      char buffer[2048];
+      snprintf(buffer, 2048, "Negative index provided (%d) into NetCDF file (%s) is larger than number of timesteps present in file", time_index, filename);
+      PARFLOW_ERROR(buffer);
+    }
+  }
 
   if (dimensionality == 3)
   {
-    nc_inq_varid(ncRID, varName, &varID);
-
-
     int ix = SubgridIX(subgrid);
     int iy = SubgridIY(subgrid);
     int iz = SubgridIZ(subgrid);
@@ -144,7 +157,7 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
     nc_data = (double*)malloc(sizeof(double) * nx * ny * nz);
 
     (void)subgrid;
-    startp[0] = tStep, countp[0] = 1;
+    startp[0] = time_index, countp[0] = 1;
     startp[1] = iz, countp[1] = nz;
     startp[2] = iy, countp[2] = ny;
     startp[3] = ix, countp[3] = nx;
@@ -176,9 +189,6 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
   }
   else if (dimensionality == 2)
   {
-    nc_inq_varid(ncRID, varName, &varID);
-
-
     int ix = SubgridIX(subgrid);
     int iy = SubgridIY(subgrid);
     int iz = SubgridIZ(subgrid);
@@ -200,7 +210,7 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
     double *nc_data;
     nc_data = (double*)malloc(sizeof(double) * nx * ny * nz);
 
-    startp[0] = tStep, countp[0] = 1;
+    startp[0] = time_index, countp[0] = 1;
     startp[1] = iy, countp[1] = ny;
     startp[2] = ix, countp[2] = nx;
 
@@ -228,6 +238,10 @@ void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, ch
     });
 
     free(nc_data);
+  }
+  else
+  {
+    PARFLOW_ERROR("Invalid dimension in ReadNCFile");
   }
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't read NetCDF file\n");

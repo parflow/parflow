@@ -1731,6 +1731,16 @@ Solver:
     domains:
       BoolDomain:
 
+  PrintInitialConditions:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the initial conditions.   This includes the pressure, saturation,
+      slopes, etc.   By default the initial conditions output is generated before the first time advancement.   When doing a restart
+      this leads to a duplication of files on each restart.   Setting this key to False will prevent the duplication.
+    default: True
+    domains:
+      BoolDomain:
+
+
   # missing from manual
   PrintMannings:
     help: >

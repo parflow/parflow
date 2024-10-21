@@ -3,21 +3,21 @@ import numpy as np
 
 def compute_top(mask):
     """Python version of the C ComputeTop function.
- 
+
     Computes the top indices of the computation domain as defined by
     the mask values. Mask has values 0 outside of domain so first
-    non-zero entry is the top. 
+    non-zero entry is the top.
 
     Args:
         mask (numpy.ndarray): mask for the computation domain with shape (nz, nx, ny)
 
     Returns:
-        A new numpy ndarray with dimensions (1, mask.shape[0], mask.shape[1]) 
+        A new numpy ndarray with dimensions (1, mask.shape[0], mask.shape[1])
         with (z) indices of the top surface for each i, j location.
     """
     nz, nx, ny = mask.shape
     top = np.ndarray((1, nx, ny))
-    
+
     for j in range(ny):
         for i in range(nx):
             k = nz - 1
@@ -30,13 +30,11 @@ def compute_top(mask):
     return top
 
 
-
-
 def extract_top(data, top):
     """Python version of the C ExtractTop function.
-    
-    Extracts the top values of a dataset based on a top dataset 
-    (which contains the z indices that define the top of the domain). 
+
+    Extracts the top values of a dataset based on a top dataset
+    (which contains the z indices that define the top of the domain).
 
     Args:
         data (numpy.ndarray): array of data values with shape (nz, nx, ny)

@@ -71,7 +71,7 @@ typedef struct {
  *    Phase
  *--------------------------------------------------------------------------*/
 
-void         PhaseSource(phase_source, phase, problem, problem_data, time)
+void PhaseSource(phase_source, phase, problem, problem_data, time)
 
 Vector * phase _source;
 int phase;
@@ -445,15 +445,15 @@ PFModule   *PhaseSourceNewPublicXtra()
         switch_name = GetString(key);
 
         dummy2->geom_indices[ir] = NA_NameToIndexExitOnError(GlobalsGeomNames,
-							     switch_name, key);
+                                                             switch_name, key);
 
         sprintf(key, "Geom.%s.ICPressure.RefPatch", region);
         switch_name = GetString(key);
 
         dummy2->patch_indices[ir] =
           NA_NameToIndexExitOnError(GeomSolidPatches(
-                                          GlobalsGeometries[dummy2->geom_indices[ir]]),
-				    switch_name, key);
+                                                     GlobalsGeometries[dummy2->geom_indices[ir]]),
+                                    switch_name, key);
       }
 
       (public_xtra->data) = (void*)dummy2;
@@ -475,7 +475,8 @@ PFModule   *PhaseSourceNewPublicXtra()
 
     default:
     {
-      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);    }
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+    }
   }
 
   NA_FreeNameArray(type_na);
