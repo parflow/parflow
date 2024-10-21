@@ -210,10 +210,10 @@ Problem   *NewProblem(
   ProblemYSlope(problem) =
     PFModuleNewModule(YSlope, ());   //sk
 
-  ProblemXChannelWidth(problem) = 
+  ProblemXChannelWidth(problem) =
     PFModuleNewModule(XChannelWidth, ());
 
-  ProblemYChannelWidth(problem) = 
+  ProblemYChannelWidth(problem) =
     PFModuleNewModule(YChannelWidth, ());
 
   ProblemMannings(problem) =

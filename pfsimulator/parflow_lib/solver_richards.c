@@ -615,7 +615,7 @@ SetupRichards(PFModule * this_module)
                            sizeof(slope_filenames) / sizeof(slope_filenames[0]),
                            slope_filenames);
   }
-  
+
   if (public_xtra->print_channelwidth)
   {
     strcpy(file_postfix, "wc_x");
