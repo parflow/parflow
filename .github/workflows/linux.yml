@@ -23,6 +23,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: fortran-lang/setup-fortran@v1
+      with:
+        compiler: gcc, version: 13
     - uses: mpi4py/setup-mpi@v1
 
     - name: Package Install 22.04
