@@ -9,13 +9,13 @@ cmake_minimum_required(VERSION 3.14)
 # A rank of -1 is used for a sequential run that is run without mpiexec.
 # all parameters passed in as reference
 macro(pf_amps_exec_check cmd ranks args)
-  
+
   set( ENV{PF_TEST} "yes" )
   if (${${ranks}} GREATER 0)
     # Separate potentially space delimited arguments in MPIEXEC_PREFLAGS and MPIEXEC_POSTFLAGS.
     separate_arguments(sep_MPIEXEC_PREFLAGS NATIVE_COMMAND ${MPIEXEC_PREFLAGS})
     separate_arguments(sep_MPIEXEC_POSTFLAGS NATIVE_COMMAND ${MPIEXEC_POSTFLAGS})
-    set( full_command ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${${ranks}} ${sep_MPIEXEC_POSTFLAGS} ${sep_MPIEXEC_PREFLAGS} ${${cmd}} ${${args}} )
+    set( full_command ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${${ranks}} ${sep_MPIEXEC_POSTFLAGS} ${sep_MPIEXEC_PREFLAGS} ./${${cmd}} ${${args}} )
   else()
     set( full_command ./${${cmd}} ${${args}} )
   endif()
