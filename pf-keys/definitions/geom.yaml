@@ -1497,9 +1497,6 @@ TopoSlopesY:
 # -----------------------------------------------------------------------------
 # ChannelWidth
 # -----------------------------------------------------------------------------
-# ChannelWidth missing from manual and grep
-
-# TODO: Change the documentation to match with channel width, also add handlers if needed? (Not sure if they are needed)
 
 ChannelWidth:
   __doc__: >
@@ -1533,13 +1530,12 @@ ChannelWidthX:
         class_name: ChannelWidthXItem
         location: ./Geom
 
-  # in manual, need to consolidate duplicates (manual also includes NetCDF file capability, which is included here)
   Type:
     help: >
       [Type: string] This key specifies which method is to be used to assign channel widths. The choices currently available are
       Constant which indicates that a constant is to be assigned to all grid cells within a geometry and PFBFile which
       indicates that all values are read in from a distributed, grid-based ParFlow binary file. If NetCDF is used, NCFile can be
-      specified, which will read in slopes from a NetCDF file.
+      specified, which will read in channel widths from a NetCDF file.
     default: Constant
     domains:
       EnumDomain:
@@ -1596,13 +1592,12 @@ ChannelWidthY:
         class_name: ChannelWidthYItem
         location: ./Geom
 
-  # in manual, need to consolidate duplicates (manual also includes NetCDF file capability, which is included here)
   Type:
     help: >
       [Type: string] This key specifies which method is to be used to assign channel widths. The choices currently available are
       Constant which indicates that a constant is to be assigned to all grid cells within a geometry and PFBFile which
       indicates that all values are read in from a distributed, grid-based ParFlow binary file. If NetCDF is used, NCFile can be
-      specified, which will read in slopes from a NetCDF file.
+      specified, which will read in channel width from a NetCDF file.
     default: Constant
     domains:
       EnumDomain:

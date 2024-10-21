@@ -626,7 +626,7 @@ SetupRichards(PFModule * this_module)
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataChannelWidthY(problem_data));
 
-    static const char* slope_filenames[] = {
+    static const char* filenames[] = {
       "wc_x", "wc_y"
     };
     MetadataAddStaticField(

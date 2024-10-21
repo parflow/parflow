@@ -61,11 +61,12 @@ typedef struct {
   Vector *wcx_values;
 } Type2;                       /* .nc file */
 
-/*
- * XChannelWidth
- * Description: Populates region data for channel width in X direction
- * Inputs: Problem data, channel width information, and a dummy vector
- * Outputs: Returns nothing but is called in channel width X invoke
+/** @brief Populates region data for channel width in Y direction.
+ * 
+ * @param problem_data pointer to ProblemData structure
+ * @param wc_y channel width data (in the y direction)
+ * @param dummy dummy vector
+ *
  */
 void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy)
 {
@@ -233,12 +234,9 @@ void XChannelWidth(ProblemData *problem_data, Vector *wc_x, Vector *dummy)
   FinalizeVectorUpdate(handle);
 }
 
-
-/*
- * XChannelWidthInitInstanceXtra
- * Description: Initializes InstanceXtra object for channel width X problem
- * Inputs: 2d and 3d grid
- * Outputs: PFModule *this_module
+/** @brief Initializes InstanceXtra object for channel width Y problem
+ *
+ * @return Modified PFModule with YChannelWidth information
  */
 PFModule *XChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d)
 {
@@ -295,11 +293,8 @@ PFModule *XChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d)
   return this_module;
 }
 
-/*
- * XChannelWidthFreeInstanceXtra
- * Description: Frees the InstanceXtra object for channel width X problem
- * Inputs: None
- * Outputs: None
+/** @brief Frees the InstanceXtra object for channel width Y problem
+ *
  */
 void XChannelWidthFreeInstanceXtra()
 {
@@ -331,11 +326,8 @@ void XChannelWidthFreeInstanceXtra()
   }
 }
 
-/*
- * XChannelWidthNewPublicXtra
- * Description: Creates PublicXtra object for channel width
- * Inputs: None
- * Outputs: PFModule *this_module
+/** @brief Creates PublicXtra object for channel width  
+ *
  */
 PFModule *XChannelWidthNewPublicXtra()
 {
@@ -434,11 +426,8 @@ PFModule *XChannelWidthNewPublicXtra()
   return this_module;
 }
 
-/*
- * XChannelWidthFreePublicXtra
- * Description: Frees the PublicXtra object associated with XChannelWidth.
- * Inputs: None
- * Outputs: None
+/** @brief Frees the PublicXtra object associated with XChannelWidth. 
+ *
  */
 void XChannelWidthFreePublicXtra()
 {
@@ -485,12 +474,7 @@ void XChannelWidthFreePublicXtra()
   }
 }
 
-/*
- * XChannelWidthSizeOfTempData
- * Description: Sets width size of temporary data for XChannelWidth
- * Inputs: None
- * Outputs: 0
- */
+
 int XChannelWidthSizeOfTempData()
 {
   return 0;
