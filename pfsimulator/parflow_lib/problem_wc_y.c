@@ -64,7 +64,7 @@ typedef struct {
 
 
 /** @brief Populates region data for channel width in Y direction.
- * 
+ *
  * @param problem_data pointer to ProblemData structure
  * @param wc_y channel width data (in the y direction)
  * @param dummy dummy vector
@@ -238,7 +238,7 @@ void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy)
 
 
 /** @brief Initializes InstanceXtra object for channel width Y problem
- * 
+ *
  * @return Modified PFModule with YChannelWidth information
  */
 PFModule *YChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d)
@@ -295,7 +295,7 @@ PFModule *YChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d)
   return this_module;
 }
 
-/** @brief Frees the InstanceXtra object for channel width Y problem  
+/** @brief Frees the InstanceXtra object for channel width Y problem
  *
  */
 void YChannelWidthFreeInstanceXtra()
@@ -328,7 +328,7 @@ void YChannelWidthFreeInstanceXtra()
   }
 }
 
-/** @brief Creates PublicXtra object for channel width        
+/** @brief Creates PublicXtra object for channel width
  *
  */
 PFModule *YChannelWidthNewPublicXtra()

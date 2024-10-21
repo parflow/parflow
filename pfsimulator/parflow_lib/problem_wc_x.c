@@ -62,7 +62,7 @@ typedef struct {
 } Type2;                       /* .nc file */
 
 /** @brief Populates region data for channel width in Y direction.
- * 
+ *
  * @param problem_data pointer to ProblemData structure
  * @param wc_y channel width data (in the y direction)
  * @param dummy dummy vector
@@ -326,7 +326,7 @@ void XChannelWidthFreeInstanceXtra()
   }
 }
 
-/** @brief Creates PublicXtra object for channel width  
+/** @brief Creates PublicXtra object for channel width
  *
  */
 PFModule *XChannelWidthNewPublicXtra()
@@ -426,7 +426,7 @@ PFModule *XChannelWidthNewPublicXtra()
   return this_module;
 }
 
-/** @brief Frees the PublicXtra object associated with XChannelWidth. 
+/** @brief Frees the PublicXtra object associated with XChannelWidth.
  *
  */
 void XChannelWidthFreePublicXtra()
