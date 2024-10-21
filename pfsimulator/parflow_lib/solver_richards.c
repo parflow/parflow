@@ -631,8 +631,8 @@ SetupRichards(PFModule * this_module)
     };
     MetadataAddStaticField(
                            js_inputs, file_prefix, "channel_width", NULL, "cell", "surface",
-                           sizeof(slope_filenames) / sizeof(slope_filenames[0]),
-                           slope_filenames);
+                           sizeof(filenames) / sizeof(filenames[0]),
+                           filenames);
   }
 
 
