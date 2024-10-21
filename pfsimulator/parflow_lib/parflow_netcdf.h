@@ -56,7 +56,7 @@ void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *no
                      int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int *netCDFIDs);
 void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimensionality);
 void OpenNCFile(char *file_name, int *ncRID);
-void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality);
+void ReadNCFile(char* filename, int ncRID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality);
 
 
 

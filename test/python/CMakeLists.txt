@@ -70,7 +70,8 @@ if(${PARFLOW_HAVE_NETCDF})
   if(${PARFLOW_HAVE_HYPRE})
     #This test is failing on several platforms
     list(APPEND TESTS
-#    	default_richards_with_netcdf
+      #    	default_richards_with_netcdf
+      default_richards_restart_netcdf
         )
   endif()
 endif()
@@ -99,6 +100,11 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
     list(APPEND PARALLEL_3DTOPO_TESTS
       default_richards
       default_richards_restart)
+
+    if(${PARFLOW_HAVE_NETCDF})
+      list(APPEND PARALLEL_3DTOPO_TESTS
+	default_richards_restart_netcdf)
+    endif()
 
     list(APPEND PARALLEL_2DTOPO_TESTS
       default_overland
@@ -159,5 +165,5 @@ add_subdirectory (key_validation)
 
 if (${PARFLOW_HAVE_CLM})
   add_subdirectory (clm)
-#  add_subdirectory (washita)
+  add_subdirectory (washita)
 endif(${PARFLOW_HAVE_CLM})

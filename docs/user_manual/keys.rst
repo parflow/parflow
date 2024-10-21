@@ -4295,6 +4295,26 @@ minimum value for the :math:`\bar{S_{f}}` used in the
    <runname>.Solver.OverlandKinematic.Epsilon = 1E-7     ## Python syntax
 
 
+*string* **Solver.PrintInitialConditions** True This key is used to
+      turn on printing of the initial conditions.  This includes the
+      pressure, saturation, slopes, etc.  By default the initial
+      conditions output is generated before the first time
+      advancement; when doing a restart this leads to a duplication
+      of files on each restart.  Setting this key to False will
+      prevent the duplication.
+
+      Note setting this key to False overrides the other individual
+      output flags that are enabled.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintInitialConditions False           ## TCL syntax
+
+      <runname>.Solver.PrintInitalConditions = False     ## Python syntax
+
+
 *string* **Solver.PrintSubsurf** True This key is used to turn on
 printing of the subsurface data, Permeability and Porosity. The data is
 printed after it is generated and before the main time stepping loop -
@@ -6087,7 +6107,7 @@ lon) or (time,z, y, x)*
       	x = 200 ;
       	y = 200 ;
       	z = 40 ;
-      	time = UNLIMITED ; // (1 currently)
+      	time = UNLIMITED ; 
       variables:
       	double time(time) ;
       	double pressure(time, z, y, x) ;
@@ -6099,15 +6119,23 @@ initial conditions.**
 *string* **ICPressure.Type** no default This key sets flag for initial
 conditions to be read from a NetCDF file.
 
+NetCDF4 files may have more than one timestep in the file.   By default the first
+timestep will be read.  The TimeStep attribute is used to specify the timestep
+to be used for the initial pressure.   Negative values are allowed to index
+from the end.   "-1" is often a useful index to read the last timestep
+in the file.
+
 .. container:: list
 
    ::
 
       pfset ICPressure.Type   "NCFile"        ## TCL syntax  
       pfset Geom.domain.ICPressure.FileName "initial_condition.nc" ## TCL syntax
+      pfset Geom.domain.ICPressure.TimeStep -1 ## TCL syntax
 
       <runname>.ICPressure.Type = "NCFile"    ## Python syntax
       <runname>.Geom.domain.ICPressure.FileName = "initial_condition.nc" ## Python syntax
+      <runname>.Geom.domain.ICPressure.TimeStep = -1 ## Python syntax
 
 NetCDF4 Slopes
 ~~~~~~~~~~~~~~
