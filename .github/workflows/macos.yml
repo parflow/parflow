@@ -14,7 +14,7 @@ jobs:
             name: "MacOS 14",
             os: macos-14,
             cudaos: '',
-            python: "false",
+            python: "true",
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true"
@@ -29,12 +29,6 @@ jobs:
       with:
         mpi: openmpi
 
-    - name: Python Package Install
-      if: matrix.config.python == 'true'
-      run: |
-        sudo apt-get -qq update
-        sudo apt -qq install python3 python3-venv
-        
     - name: HDF5 Install
       run: |
         brew install hdf5-mpi
