@@ -1049,36 +1049,33 @@ PFModule  *BCPressurePackageNewPublicXtra(
           NewTypeStruct(GroundwaterFlow, data);
 
           // this cannot be defined here because the module is not available
+          // from Problem's PublicXtra structure.
           // therefore, it will be defined in BCPressurePackage()
           GroundwaterFlowModule(data) = NULL;
 
-          char key_d[IDB_MAX_KEY_LEN], key_f[IDB_MAX_KEY_LEN];
+          NameArray na_types = NA_NewNameArray("Constant PFBFile");
 
-          sprintf(key_d, 
-              "Patch.%s.BCPressure.GroundwaterFlow.SpecificYield.Value", 
-              patch_name);
-          sprintf(key_f, 
-              "Patch.%s.BCPressure.GroundwaterFlow.SpecificYield.FileName", 
-              patch_name);
+          char key_base[IDB_MAX_KEY_LEN];
 
-          GetParameterUnion(
-            GroundwaterFlowSpecificYield(data), { 
-            ParameterUnionString(0, key_d); 
-            ParameterUnionDouble(1, key_f); 
-          });
-
-          sprintf(key_d, 
-              "Patch.%s.BCPressure.GroundwaterFlow.AquiferDepth.Value", 
-              patch_name);
-          sprintf(key_f, 
-              "Patch.%s.BCPressure.GroundwaterFlow.AquiferDepth.FileName", 
-              patch_name);
+          sprintf(key_base, 
+              "Patch.%s.BCPressure.GroundwaterFlow.SpecificYield.%s", 
+              patch_name, "%s");
 
           GetParameterUnion(
-            GroundwaterFlowAquiferDepth(data), { 
-            ParameterUnionString(0, key_d); 
-            ParameterUnionDouble(1, key_f); 
-          });
+            GroundwaterFlowSpecificYield(data), na_types, key_base,
+            ParameterUnionDouble(0, "Value")
+            ParameterUnionString(1, "Filename")
+          );
+
+          sprintf(key_base, 
+              "Patch.%s.BCPressure.GroundwaterFlow.AquiferDepth.%s", 
+              patch_name, "%s");
+
+          GetParameterUnion(
+            GroundwaterFlowAquiferDepth(data), na_types, key_base,
+            ParameterUnionDouble(0, "Value")
+            ParameterUnionString(1, "Filename")
+          );
 
           StoreTypeStruct(public_xtra, data, i);
           break;

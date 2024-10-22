@@ -28,9 +28,6 @@
 
 #include "parflow.h"
 
-#define Constant 0
-#define PFBFile  1
-
 #define DelHarmonicMean(a, b, da, db, hm) ( !((a)+(b)) ? 0 :   \
     (2*((da)*(b) + (a)*(db)) - (hm)*((da) + (db))) / ((a)+(b)) \
   )
@@ -55,7 +52,7 @@ Vector* NewGroundwaterFlowParameter(
   {
     case 0: // is double value
     {
-      InitVector(par_v, ParameterUnionDataDouble(par));
+      InitVectorAll(par_v, ParameterUnionDataDouble(par));
       break;
     }
 
@@ -67,10 +64,13 @@ Vector* NewGroundwaterFlowParameter(
 
     default:
     {
-      InitVector(par_v, 0.0);
+      InitVectorAll(par_v, 0.0);
       break;
     }
   }
+
+  VectorUpdateCommHandle *handle = InitVectorUpdate(par_v, VectorUpdateAll);
+  FinalizeVectorUpdate(handle);
 
   return par_v;
 }
@@ -164,8 +164,6 @@ void GroundwaterFlowEvalNLFunc(
       double dx = SubgridDX(subgrid);
       double dy = SubgridDY(subgrid);
       double dz = SubgridDZ(subgrid);
-      // int nx = SubgridNX(subgrid);
-      // int ny = SubgridNY(subgrid);
       double dxdy = dx*dy;
       double dtdx_over_dy = dt * dx / dy;
       double dtdy_over_dx = dt * dy / dx;
@@ -176,7 +174,6 @@ void GroundwaterFlowEvalNLFunc(
       int ibot_lwr = 0;
       int ibot_upr = 0;
 
-      int k_mid = 0; 
       int k_lft = 0; 
       int k_rgt = 0; 
       int k_lwr = 0; 
@@ -195,13 +192,6 @@ void GroundwaterFlowEvalNLFunc(
 
       double q_storage = 0.0, q_divergence = 0.0;
 
-      double KrKs_x_mid = 0.0;
-      double KrKs_x_lft = 0.0;
-      double KrKs_x_rgt = 0.0;
-      double KrKs_y_mid = 0.0;
-      double KrKs_y_lwr = 0.0;
-      double KrKs_y_upr = 0.0;
-
       double Tx_mid = 0.0, Ty_mid = 0.0;
       double Tx_lft = 0.0, Tx_rgt = 0.0;
       double Ty_lwr = 0.0, Ty_upr = 0.0;
@@ -216,7 +206,7 @@ void GroundwaterFlowEvalNLFunc(
     ),
     CellSetup({
       ip_mid = SubvectorEltIndex(p_sub, i, j, k);
-      
+
       q_storage = 0.0;
       q_divergence = 0.0;
 
@@ -234,14 +224,10 @@ void GroundwaterFlowEvalNLFunc(
       ibot_lwr = SubvectorEltIndex(bottom_sub, i, j-1, 0);
       ibot_upr = SubvectorEltIndex(bottom_sub, i, j+1, 0);
 
-      k_mid = rint(bottom_dat[ibot_mid]);
       k_lft = rint(bottom_dat[ibot_lft]);
       k_rgt = rint(bottom_dat[ibot_rgt]);
       k_lwr = rint(bottom_dat[ibot_lwr]);
       k_upr = rint(bottom_dat[ibot_upr]);
-
-      // amps_Printf("i: %d , j: %d k: %d , k_mid: %d \n", i, j, k, k_mid);
-      // amps_Printf("k_mid: %d , k_lft: %d , k_rgt: %d , k_lwr: %d , k_upr: %d \n", k_mid, k_lft, k_rgt, k_lwr, k_upr);
 
       // find if we are at an edge cell:
       is_lft_edge = (k_lft < 0);
@@ -249,10 +235,10 @@ void GroundwaterFlowEvalNLFunc(
       is_lwr_edge = (k_lwr < 0);
       is_upr_edge = (k_upr < 0);
 
-      ip_lft = SubvectorEltIndex(p_sub, i-1, j, is_lft_edge ? k_mid : k_lft);
-      ip_rgt = SubvectorEltIndex(p_sub, i+1, j, is_rgt_edge ? k_mid : k_rgt);
-      ip_lwr = SubvectorEltIndex(p_sub, i, j-1, is_lwr_edge ? k_mid : k_lwr);
-      ip_upr = SubvectorEltIndex(p_sub, i, j+1, is_upr_edge ? k_mid : k_upr);
+      ip_lft = is_lft_edge ? ip_mid : SubvectorEltIndex(p_sub, i-1, j, k_lft);
+      ip_rgt = is_rgt_edge ? ip_mid : SubvectorEltIndex(p_sub, i+1, j, k_rgt);
+      ip_lwr = is_lwr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j-1, k_lwr);
+      ip_upr = is_upr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j+1, k_upr);
 
       Sy = Sy_dat[ibot_mid];
       Ad_mid = Ad_dat[ibot_mid];
@@ -262,48 +248,22 @@ void GroundwaterFlowEvalNLFunc(
       Ad_upr = is_upr_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_upr];
 
       // compute pressure head in adjacent cells
-
-      // no special cases in the middle (everything is known)
       old_head_mid = old_pressure[ip_mid] + 0.5*(Ad_mid + dz*z_mult[ip_mid]);
       new_head_mid = new_pressure[ip_mid] + 0.5*(Ad_mid + dz*z_mult[ip_mid]);
-
-      new_head_lft = is_lft_edge ? new_head_mid : 
-          new_pressure[ip_lft] + 0.5*(Ad_lft + dz*z_mult[ip_lft]);
-      new_head_rgt = is_rgt_edge ? new_head_mid : 
-          new_pressure[ip_rgt] + 0.5*(Ad_rgt + dz*z_mult[ip_rgt]);
-
-      new_head_lwr = is_lwr_edge ? new_head_mid : 
-          new_pressure[ip_lwr] + 0.5*(Ad_lwr + dz*z_mult[ip_lwr]);
-      new_head_upr = is_upr_edge ? new_head_mid : 
-          new_pressure[ip_upr] + 0.5*(Ad_upr + dz*z_mult[ip_upr]);
-
-      // hydraulic conductivity times relative permeability
-      // KrKs_x_mid = Kr[ip_mid] * Ks_x[ip_mid];
-      // KrKs_x_lft = is_lft_edge ? KrKs_x_mid : Kr[ip_lft] * Ks_x[ip_lft];
-      // KrKs_x_rgt = is_rgt_edge ? KrKs_x_mid : Kr[ip_rgt] * Ks_x[ip_rgt];
-      // KrKs_y_mid = Kr[ip_mid] * Ks_y[ip_mid];
-      // KrKs_y_lwr = is_lwr_edge ? KrKs_y_mid : Kr[ip_lwr] * Ks_y[ip_lwr];
-      // KrKs_y_upr = is_upr_edge ? KrKs_y_mid : Kr[ip_upr] * Ks_y[ip_upr];
-
-      KrKs_x_mid = Ks_x[ip_mid];
-      KrKs_x_lft = is_lft_edge ? KrKs_x_mid : Ks_x[ip_lft];
-      KrKs_x_rgt = is_rgt_edge ? KrKs_x_mid : Ks_x[ip_rgt];
-      KrKs_y_mid = Ks_y[ip_mid];
-      KrKs_y_lwr = is_lwr_edge ? KrKs_y_mid : Ks_y[ip_lwr];
-      KrKs_y_upr = is_upr_edge ? KrKs_y_mid : Ks_y[ip_upr];
+      new_head_lft = new_pressure[ip_lft] + 0.5*(Ad_lft + dz*z_mult[ip_lft]);
+      new_head_rgt = new_pressure[ip_rgt] + 0.5*(Ad_rgt + dz*z_mult[ip_rgt]);
+      new_head_lwr = new_pressure[ip_lwr] + 0.5*(Ad_lwr + dz*z_mult[ip_lwr]);
+      new_head_upr = new_pressure[ip_upr] + 0.5*(Ad_upr + dz*z_mult[ip_upr]);
 
       // compute transmissivity at the cell faces
-      Tx_mid = new_head_mid * KrKs_x_mid;
-      Ty_mid = new_head_mid * KrKs_y_mid;
+      // the aquifer is assumed to be fully saturated: Kr = 1
+      Tx_mid = new_head_mid * Ks_x[ip_mid];
+      Ty_mid = new_head_mid * Ks_y[ip_mid];
 
-      Tx_lft = is_lft_edge ? Tx_mid : 
-        HarmonicMean(new_head_lft * KrKs_x_lft, Tx_mid);
-      Tx_rgt = is_rgt_edge ? Tx_mid : 
-        HarmonicMean(new_head_rgt * KrKs_x_rgt, Tx_mid);
-      Ty_lwr = is_lwr_edge ? Ty_mid : 
-        HarmonicMean(new_head_lwr * KrKs_y_lwr, Ty_mid);
-      Ty_upr = is_upr_edge ? Ty_mid : 
-        HarmonicMean(new_head_upr * KrKs_y_upr, Ty_mid);
+      Tx_lft = HarmonicMean(new_head_lft * Ks_x[ip_lft], Tx_mid);
+      Tx_rgt = HarmonicMean(new_head_rgt * Ks_x[ip_rgt], Tx_mid);
+      Ty_lwr = HarmonicMean(new_head_lwr * Ks_y[ip_lwr], Ty_mid);
+      Ty_upr = HarmonicMean(new_head_upr * Ks_y[ip_upr], Ty_mid);
 
       // compute difference in pressure head
       dh_dt  = new_head_mid - old_head_mid;
@@ -411,7 +371,6 @@ void GroundwaterFlowEvalJacob(
       int ibot_lwr = 0;
       int ibot_upr = 0;
 
-      int k_mid = 0; 
       int k_lft = 0; 
       int k_rgt = 0; 
       int k_lwr = 0; 
@@ -431,20 +390,6 @@ void GroundwaterFlowEvalJacob(
       double Tx_mid = 0.0, Ty_mid = 0.0;
       double Tx_lft = 0.0, Tx_rgt = 0.0;
       double Ty_lwr = 0.0, Ty_upr = 0.0;
-
-      double KrKs_x_mid = 0.0;
-      double KrKs_x_lft = 0.0;
-      double KrKs_x_rgt = 0.0;
-      double KrKs_y_mid = 0.0;
-      double KrKs_y_lwr = 0.0;
-      double KrKs_y_upr = 0.0;
-
-      double del_KrKs_x_mid = 0.0;
-      double del_KrKs_x_lft = 0.0;
-      double del_KrKs_x_rgt = 0.0;
-      double del_KrKs_y_mid = 0.0;
-      double del_KrKs_y_lwr = 0.0;
-      double del_KrKs_y_upr = 0.0;
 
       double new_head_mid = 0.0;
       double new_head_lft = 0.0, new_head_rgt = 0.0;
@@ -512,7 +457,6 @@ void GroundwaterFlowEvalJacob(
       ibot_lwr = SubvectorEltIndex(bottom_sub, i, j-1, 0);
       ibot_upr = SubvectorEltIndex(bottom_sub, i, j+1, 0);
 
-      k_mid = rint(bottom_dat[ibot_mid]);
       k_lft = rint(bottom_dat[ibot_lft]);
       k_rgt = rint(bottom_dat[ibot_rgt]);
       k_lwr = rint(bottom_dat[ibot_lwr]);
@@ -524,10 +468,10 @@ void GroundwaterFlowEvalJacob(
       is_lwr_edge = (k_lwr < 0);
       is_upr_edge = (k_upr < 0);
 
-      ip_lft = SubvectorEltIndex(p_sub, i-1, j, is_lft_edge ? k_mid : k_lft);
-      ip_rgt = SubvectorEltIndex(p_sub, i+1, j, is_rgt_edge ? k_mid : k_rgt);
-      ip_lwr = SubvectorEltIndex(p_sub, i, j-1, is_lwr_edge ? k_mid : k_lwr);
-      ip_upr = SubvectorEltIndex(p_sub, i, j+1, is_upr_edge ? k_mid : k_upr);
+      ip_lft = is_lft_edge ? ip_mid : SubvectorEltIndex(p_sub, i-1, j, k_lft);
+      ip_rgt = is_rgt_edge ? ip_mid : SubvectorEltIndex(p_sub, i+1, j, k_rgt);
+      ip_lwr = is_lwr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j-1, k_lwr);
+      ip_upr = is_upr_edge ? ip_mid : SubvectorEltIndex(p_sub, i, j+1, k_upr);
 
       Sy = Sy_dat[ibot_mid];
       Ad_mid = Ad_dat[ibot_mid];
@@ -538,110 +482,67 @@ void GroundwaterFlowEvalJacob(
 
       // no special cases in the middle (everything is known)
       new_head_mid = new_pressure[ip_mid] + 0.5*(Ad_mid + dz*z_mult[ip_mid]);
-
-      new_head_lft = is_lft_edge ? new_head_mid : 
-          new_pressure[ip_lft] + 0.5*(Ad_lft + dz*z_mult[ip_lft]);
-      new_head_rgt = is_rgt_edge ? new_head_mid : 
-          new_pressure[ip_rgt] + 0.5*(Ad_rgt + dz*z_mult[ip_rgt]);
-
-      new_head_lwr = is_lwr_edge ? new_head_mid : 
-          new_pressure[ip_lwr] + 0.5*(Ad_lwr + dz*z_mult[ip_lwr]);
-      new_head_upr = is_upr_edge ? new_head_mid : 
-          new_pressure[ip_upr] + 0.5*(Ad_upr + dz*z_mult[ip_upr]);
-
-      // hydraulic conductivity times relative permeability
-      // KrKs_x_mid = Kr[ip_mid] * Ks_x[ip_mid];
-      // KrKs_x_lft = is_lft_edge ? KrKs_x_mid : Kr[ip_lft] * Ks_x[ip_lft];
-      // KrKs_x_rgt = is_rgt_edge ? KrKs_x_mid : Kr[ip_rgt] * Ks_x[ip_rgt];
-      // KrKs_y_mid = Kr[ip_mid] * Ks_y[ip_mid];
-      // KrKs_y_lwr = is_lwr_edge ? KrKs_y_mid : Kr[ip_lwr] * Ks_y[ip_lwr];
-      // KrKs_y_upr = is_upr_edge ? KrKs_y_mid : Kr[ip_upr] * Ks_y[ip_upr];
-      
-      KrKs_x_mid = Ks_x[ip_mid];
-      KrKs_x_lft = is_lft_edge ? KrKs_x_mid : Ks_x[ip_lft];
-      KrKs_x_rgt = is_rgt_edge ? KrKs_x_mid : Ks_x[ip_rgt];
-      KrKs_y_mid = Ks_y[ip_mid];
-      KrKs_y_lwr = is_lwr_edge ? KrKs_y_mid : Ks_y[ip_lwr];
-      KrKs_y_upr = is_upr_edge ? KrKs_y_mid : Ks_y[ip_upr];
-      
-      // del_KrKs_x_mid = del_Kr[ip_mid] * Ks_x[ip_mid];
-      // del_KrKs_x_lft = is_lft_edge ? 
-      //     del_KrKs_x_mid : del_Kr[ip_lft] * Ks_x[ip_lft];
-      // del_KrKs_x_rgt = is_rgt_edge ? 
-      //     del_KrKs_x_mid : del_Kr[ip_rgt] * Ks_x[ip_rgt];
-      // del_KrKs_y_mid = del_Kr[ip_mid] * Ks_y[ip_mid];
-      // del_KrKs_y_lwr = is_lwr_edge ? 
-      //     del_KrKs_y_mid : del_Kr[ip_lwr] * Ks_y[ip_lwr];
-      // del_KrKs_y_upr = is_upr_edge ? 
-      //     del_KrKs_y_mid : del_Kr[ip_upr] * Ks_y[ip_upr];
-
-      del_KrKs_x_mid = 0.0;
-      del_KrKs_x_lft = 0.0;
-      del_KrKs_x_rgt = 0.0;
-      del_KrKs_y_mid = 0.0;
-      del_KrKs_y_lwr = 0.0;
-      del_KrKs_y_upr = 0.0;
+      new_head_lft = new_pressure[ip_lft] + 0.5*(Ad_lft + dz*z_mult[ip_lft]);
+      new_head_rgt = new_pressure[ip_rgt] + 0.5*(Ad_rgt + dz*z_mult[ip_rgt]);
+      new_head_lwr = new_pressure[ip_lwr] + 0.5*(Ad_lwr + dz*z_mult[ip_lwr]);
+      new_head_upr = new_pressure[ip_upr] + 0.5*(Ad_upr + dz*z_mult[ip_upr]);
 
       // compute transmissivity at the cell faces
-      Tx_mid = new_head_mid * KrKs_x_mid;
-      Ty_mid = new_head_mid * KrKs_y_mid;
+      Tx_mid = new_head_mid * Ks_x[ip_mid];
+      Ty_mid = new_head_mid * Ks_y[ip_mid];
 
-      Tx_lft = is_lft_edge ? Tx_mid : 
-        HarmonicMean(new_head_lft * KrKs_x_lft, Tx_mid);
-      Tx_rgt = is_rgt_edge ? Tx_mid : 
-        HarmonicMean(new_head_rgt * KrKs_x_rgt, Tx_mid);
-      Ty_lwr = is_lwr_edge ? Ty_mid : 
-        HarmonicMean(new_head_lwr * KrKs_y_lwr, Ty_mid);
-      Ty_upr = is_upr_edge ? Ty_mid : 
-        HarmonicMean(new_head_upr * KrKs_y_upr, Ty_mid);
+      Tx_lft = HarmonicMean(new_head_lft * Ks_x[ip_lft], Tx_mid);
+      Tx_rgt = HarmonicMean(new_head_rgt * Ks_x[ip_rgt], Tx_mid);
+      Ty_lwr = HarmonicMean(new_head_lwr * Ks_y[ip_lwr], Ty_mid);
+      Ty_upr = HarmonicMean(new_head_upr * Ks_y[ip_upr], Ty_mid);
 
 
       // dTx[i,j,k] / dp[i,j,k]
-      del_mid_Tx_mid = KrKs_x_mid + new_head_mid * del_KrKs_x_mid;
+      del_mid_Tx_mid = Ks_x[ip_mid];
       // dTy[i,j,k] / dp[i,j,k]
-      del_mid_Ty_mid = KrKs_y_mid + new_head_mid * del_KrKs_y_mid;
+      del_mid_Ty_mid = Ks_y[ip_mid];
 
       // dTx[i-1/2,j,k] / dp[i,j,k]
       del_mid_Tx_lft = is_lft_edge ? del_mid_Tx_mid : 
-        DelHarmonicMean(new_head_lft * KrKs_x_lft, Tx_mid,
-            new_head_lft * del_KrKs_x_lft, del_mid_Tx_mid, Tx_lft);
+        DelHarmonicMean(new_head_lft * Ks_x[ip_lft], Tx_mid,
+            0, del_mid_Tx_mid, Tx_lft);
 
       // dTx[i+1/2,j,k] / dp[i,j,k]
       del_mid_Tx_rgt = is_rgt_edge ? del_mid_Tx_mid : 
-        DelHarmonicMean(new_head_rgt * KrKs_x_rgt, Tx_mid,
-            new_head_rgt * del_KrKs_x_rgt, del_mid_Tx_mid, Tx_rgt);
+        DelHarmonicMean(new_head_rgt * Ks_x[ip_rgt], Tx_mid,
+            0, del_mid_Tx_mid, Tx_rgt);
 
       // dTy[i,j-1/2,k] / dp[i,j,k]
       del_mid_Ty_lwr = is_lwr_edge ? del_mid_Ty_mid : 
-        DelHarmonicMean(new_head_lwr * KrKs_y_lwr, Ty_mid,
-            new_head_lwr * del_KrKs_y_lwr, del_mid_Ty_mid, Ty_lwr);
+        DelHarmonicMean(new_head_lwr * Ks_y[ip_lwr], Ty_mid,
+            0, del_mid_Ty_mid, Ty_lwr);
 
       // dTy[i,j+1/2,k] / dp[i,j,k]
       del_mid_Ty_upr = is_upr_edge ? del_mid_Ty_mid : 
-        DelHarmonicMean(new_head_upr * KrKs_y_upr, Ty_mid,
-            new_head_upr * del_KrKs_y_upr, del_mid_Ty_mid, Ty_upr);
+        DelHarmonicMean(new_head_upr * Ks_y[ip_upr], Ty_mid,
+            0, del_mid_Ty_mid, Ty_upr);
 
       // Non-diagonal terms
 
       // dTx[i-1/2,j,k] / dp[i-1,j,k]
       del_lft_Tx_lft = is_lft_edge ? 0.0 : 
-        DelHarmonicMean(new_head_lft * KrKs_x_lft, Tx_mid,
-            (KrKs_x_lft + new_head_lft * del_KrKs_x_lft), 0.0, Tx_lft);
+        DelHarmonicMean(new_head_lft * Ks_x[ip_lft], Tx_mid,
+            Ks_x[ip_lft], 0.0, Tx_lft);
 
       // dTx[i+1/2,j,k] / dp[i+1,j,k]
       del_rgt_Tx_rgt = is_rgt_edge ? 0.0 : 
-        DelHarmonicMean(new_head_rgt * KrKs_x_rgt, Tx_mid,
-            (KrKs_x_rgt + new_head_rgt * del_KrKs_x_rgt), 0.0, Tx_rgt);
+        DelHarmonicMean(new_head_rgt * Ks_x[ip_rgt], Tx_mid,
+            Ks_x[ip_rgt], 0.0, Tx_rgt);
 
       // dTy[i,j-1/2,k] / dp[i,j-1,k]
       del_lwr_Ty_lwr = is_lwr_edge ? 0.0 : 
-        DelHarmonicMean(new_head_lwr * KrKs_y_lwr, Ty_mid,
-            (KrKs_y_lwr + new_head_lwr * del_KrKs_y_lwr), 0.0, Ty_lwr);
+        DelHarmonicMean(new_head_lwr * Ks_y[ip_lwr], Ty_mid,
+            Ks_y[ip_lwr], 0.0, Ty_lwr);
 
       // dTy[i,j+1/2,k] / dp[i,j+1,k]
       del_upr_Ty_upr = is_upr_edge ? 0.0 : 
-        DelHarmonicMean(new_head_upr * KrKs_y_upr, Ty_mid,
-            (KrKs_y_upr + new_head_upr * del_KrKs_y_upr), 0.0, Ty_upr);
+        DelHarmonicMean(new_head_upr * Ks_y[ip_upr], Ty_mid,
+            Ks_y[ip_upr], 0.0, Ty_upr);
 
 
       if(is_lft_edge) {
@@ -764,7 +665,6 @@ void GroundwaterFlowEvalFreeInstanceXtra()
     FreeVector(instance_xtra->SpecificYield);
     FreeVector(instance_xtra->AquiferDepth);
     tfree(instance_xtra);
-    instance_xtra = NULL;
   }
 }
 

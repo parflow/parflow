@@ -56,6 +56,7 @@
       ParameterUnionDouble(2, "parameter_alias2.Value");
       ParameterUnionString(3, "parameter_alias2.Filename");
       ParameterUnionInt(   4, "parameter_alias3.FunctionType");
+      ParameterUnionString(5, "parameter_alias4.PredefinedFunction");
     });
 
     for(i = 0; i < n; ++i) {
@@ -94,6 +95,9 @@ typedef struct {
 #define ParameterUnionDataDouble(par) (par.data.dobl)
 #define ParameterUnionDataString(par) (par.data.strg)
 
+
+#define TYPE_CHECK 1
+#ifndef TYPE_CHECK
 
 #define GetParameterUnion(par, args)                   \
   {                                                    \
@@ -162,3 +166,65 @@ typedef struct {
     }                                                    \
     _ParameterUnionAddKey(_key_list, _key);              \
   }
+
+
+#else // TYPE_CHECK is selected
+
+#define GetParameterUnion(par, na_types, base_str, args)   \
+  {                                                        \
+    char  _base_str[IDB_MAX_KEY_LEN];                      \
+    char  _full_key[IDB_MAX_KEY_LEN];                      \
+    char *_type_str;                                       \
+    ParameterUnion _tmp;                                   \
+                                                           \
+    strcpy(_base_str, base_str);                           \
+    sprintf(_full_key, _base_str, "Type");                 \
+    _type_str = GetString(_full_key);                      \
+                                                           \
+    int _type = NA_NameToIndexExitOnError(na_types,        \
+        _type_str, _full_key);                             \
+                                                           \
+    switch(_type)                                          \
+    {                                                      \
+      args                                         \
+      default:                                             \
+      {                                                    \
+        ParameterUnionDataInt(_tmp) = 0;                   \
+        break;                                             \
+      }                                                    \
+    }                                                      \
+    par = _tmp;                                            \
+  }
+
+
+#define ParameterUnionInt(_id, _key)                       \
+  case _id:                                                \
+  {                                                        \
+    sprintf(_full_key, _base_str, _key);                   \
+    ParameterUnionID(_tmp) = _id;                          \
+    ParameterUnionDataInt(_tmp) = GetInt(_full_key);       \
+    break;                                                 \
+  }
+
+
+#define ParameterUnionDouble(_id, _key)                    \
+  case _id:                                                \
+  {                                                        \
+    sprintf(_full_key, _base_str, _key);                   \
+    ParameterUnionID(_tmp) = _id;                          \
+    ParameterUnionDataDouble(_tmp) = GetDouble(_full_key); \
+    break;                                                 \
+  }
+
+
+#define ParameterUnionString(_id, _key)                    \
+  case _id:                                                \
+  {                                                        \
+    sprintf(_full_key, _base_str, _key);                   \
+    ParameterUnionID(_tmp) = _id;                          \
+    ParameterUnionDataString(_tmp) = GetString(_full_key); \
+    break;                                                 \
+  }
+
+
+#endif
