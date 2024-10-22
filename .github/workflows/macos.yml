@@ -34,11 +34,11 @@ jobs:
       run: |
         sudo apt-get -qq update
         sudo apt -qq install python3 python3-venv
-	
+        
     - name: HDF5 Install
       run: |
         sudo brew install hdf5-mpi
-	find /opt/homebrew -name \*hdf5\*
+        find /opt/homebrew -name \*hdf5\*
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
