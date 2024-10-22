@@ -103,7 +103,7 @@ jobs:
           mkdir netcdf-fortran
           cd netcdf-fortran
           curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc FC=mpifort CPPFLAGS=-I/opt/homebrew/include LDFLAGS=-L/opt/homebrew/lib/ ./configure --prefix=${PARFLOW_DEP_DIR}
+          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
           make
           make install
         fi
