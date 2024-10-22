@@ -22,6 +22,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' 
     - uses: fortran-lang/setup-fortran@v1
       with:
         compiler: gcc
@@ -32,7 +35,6 @@ jobs:
     - name: HDF5 Install
       run: |
         brew install hdf5-mpi
-        find /opt/homebrew -name \*hdf5\*
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
