@@ -467,12 +467,10 @@ void         PhaseSource(
 
             data = SubvectorElt(ps_sub, ix, iy, iz);
 
-            int ip = 0;
             int ips = 0;
             double weight = 1.0;
 
-            BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
+            BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
             {
               data[ips] += weight * flux;
