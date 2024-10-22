@@ -94,7 +94,7 @@ jobs:
           mkdir netcdf-c
           cd netcdf-c
           curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc  CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
+          CC=mpicc CPPFLAGS=-I/opt/homebrew/include LDFLAGS=-L/opt/homebrew/lib/ ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
           cd ..
@@ -103,7 +103,7 @@ jobs:
           mkdir netcdf-fortran
           cd netcdf-fortran
           curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc FC=mpifort CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=${PARFLOW_DEP_DIR}
+          CC=mpicc FC=mpifort CPPFLAGS=-I/opt/homebrew/include LDFLAGS=-L/opt/homebrew/lib/ ./configure --prefix=${PARFLOW_DEP_DIR}
           make
           make install
         fi
