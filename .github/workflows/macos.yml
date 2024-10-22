@@ -1,4 +1,4 @@
-name: ParFlow CI Test
+name: ParFlow MacOS CI Test
 
 on: [push, pull_request]
 
