@@ -38,6 +38,7 @@ jobs:
     - name: HDF5 Install
       run: |
         brew install hdf5-mpi
+        find /opt/homebrew -name \*hdf5\*
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
@@ -93,7 +94,7 @@ jobs:
           mkdir netcdf-c
           cd netcdf-c
           curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc ./configure --prefix=$PARFLOW_DEP_DIR
+          CC=mpicc  CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
           cd ..
@@ -102,7 +103,7 @@ jobs:
           mkdir netcdf-fortran
           cd netcdf-fortran
           curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc FC=mpifort ./configure --prefix=${PARFLOW_DEP_DIR}
+          CC=mpicc FC=mpifort CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=${PARFLOW_DEP_DIR}
           make
           make install
         fi
