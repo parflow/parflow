@@ -37,7 +37,7 @@ jobs:
         
     - name: HDF5 Install
       run: |
-        sudo brew install hdf5-mpi
+        brew install hdf5-mpi
         find /opt/homebrew -name \*hdf5\*
 
 # Cache dependencies so don't have to rebuild on each test.
