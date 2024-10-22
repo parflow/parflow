@@ -38,7 +38,6 @@ jobs:
     - name: HDF5 Install
       run: |
         brew install hdf5-mpi
-        find /opt/homebrew -name \*hdf5\*
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
@@ -94,7 +93,7 @@ jobs:
           mkdir netcdf-c
           cd netcdf-c
           curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
+          CC=mpicc ./configure --prefix=$PARFLOW_DEP_DIR
           make
           make install
           cd ..
@@ -103,7 +102,7 @@ jobs:
           mkdir netcdf-fortran
           cd netcdf-fortran
           curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
+          CC=mpicc FC=mpifort ./configure --prefix=${PARFLOW_DEP_DIR}
           make
           make install
         fi
@@ -139,7 +138,6 @@ jobs:
     - name: ParFlow CMake Configure
       run: |
         mpicc -v
-        find /opt/homebrew -name python\*
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
         CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include -DTCL_LIBRARY=/opt/homebrew/lib/libtcl8.6.dylib -DTCL_TCLSH=/opt/homebrew/bin/tclsh
 
