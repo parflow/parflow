@@ -2142,13 +2142,13 @@ int pfsolFmtConvert(
     printf("ERROR (pfsolidfmtconvert): Missing extension on file 2, must be .pfsol or .pfsolb\n");
     return TCL_ERROR;
   }
-  if ((strcmp(file1_ext + 1, "pfsol") != 0) & (strcmp(file1_ext + 1, "pfsolb") != 0))
+  if ((strcmp(file1_ext + 1, "pfsol") != 0) && (strcmp(file1_ext + 1, "pfsolb") != 0))
   {
     printf("ERROR (pfsolidfmtconvert): File extension on file 1 must be .pfsol or .pfsolb\n");
     printf("                           detected .%s\n", file1_ext + 1);
     return TCL_ERROR;
   }
-  if ((strcmp(file2_ext + 1, "pfsol") != 0) & (strcmp(file2_ext + 1, "pfsolb") != 0))
+  if ((strcmp(file2_ext + 1, "pfsol") != 0) && (strcmp(file2_ext + 1, "pfsolb") != 0))
   {
     printf("ERROR (pfsolidfmtconvert): File extension on file 2 must be .pfsol or .pfsolb\n");
     printf("                           detected .%s\n", file2_ext + 1);
