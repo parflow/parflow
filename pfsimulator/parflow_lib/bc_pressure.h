@@ -144,8 +144,6 @@
   })                             \
   BC_TYPE(GroundwaterFlow, {     \
     PFModule *groundwaterflow;   \
-    ParameterUnion SpcYield;     \
-    ParameterUnion AqDepth;      \
   })
 
 

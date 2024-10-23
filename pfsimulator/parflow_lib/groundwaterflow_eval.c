@@ -41,13 +41,8 @@ typedef struct {
 } InstanceXtra;
 
 
-Vector* NewGroundwaterFlowParameter(
-    ProblemData *problem_data, ParameterUnion par)
+void InitGroundwaterFlowParameter(Vector *par_v, ParameterUnion par)
 {
-  Vector *bottom = ProblemDataIndexOfDomainBottom(problem_data);
-  Grid   *grid2d = VectorGrid(bottom);
-  Vector *par_v  = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-
   switch(ParameterUnionID(par))
   {
     case 0: // is double value
@@ -72,7 +67,7 @@ Vector* NewGroundwaterFlowParameter(
   VectorUpdateCommHandle *handle = InitVectorUpdate(par_v, VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 
-  return par_v;
+  return;
 }
 
 
@@ -143,9 +138,11 @@ void GroundwaterFlowEvalNLFunc(
   Subvector *bottom_sub  = VectorSubvector(bottom, isubgrid);
   double    *bottom_dat  = SubvectorData(bottom_sub);
 
-  Subvector *Sy_sub = VectorSubvector(instance_xtra->SpecificYield, isubgrid);
+  Vector    *Sy = ProblemDataSpecificYield(problem_data);
+  Vector    *Ad = ProblemDataAquiferDepth(problem_data);
+  Subvector *Sy_sub = VectorSubvector(Sy, isubgrid);
   double    *Sy_dat = SubvectorData(Sy_sub);
-  Subvector *Ad_sub = VectorSubvector(instance_xtra->AquiferDepth,  isubgrid);
+  Subvector *Ad_sub = VectorSubvector(Ad, isubgrid);
   double    *Ad_dat = SubvectorData(Ad_sub);
 
   int i = 0, j = 0, k = 0, ival = 0;
@@ -332,9 +329,11 @@ void GroundwaterFlowEvalJacob(
   Subvector *bottom_sub  = VectorSubvector(bottom, isubgrid);
   double    *bottom_dat  = SubvectorData(bottom_sub);
   
-  Subvector *Sy_sub = VectorSubvector(instance_xtra->SpecificYield, isubgrid);
+  Vector    *Sy = ProblemDataSpecificYield(problem_data);
+  Vector    *Ad = ProblemDataAquiferDepth(problem_data);
+  Subvector *Sy_sub = VectorSubvector(Sy, isubgrid);
   double    *Sy_dat = SubvectorData(Sy_sub);
-  Subvector *Ad_sub = VectorSubvector(instance_xtra->AquiferDepth,  isubgrid);
+  Subvector *Ad_sub = VectorSubvector(Ad, isubgrid);
   double    *Ad_dat = SubvectorData(Ad_sub);
 
   double *cp  = SubmatrixStencilData(J_sub, 0);
@@ -638,14 +637,33 @@ void GroundwaterFlowEvalJacob(
  * GroundwaterFlowEvalInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule* GroundwaterFlowEvalInitInstanceXtra(
-    ProblemData *problem_data, ParameterUnion Sy, ParameterUnion Ad)
+PFModule* GroundwaterFlowEvalInitInstanceXtra(ProblemData *problem_data)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra = ctalloc(InstanceXtra, 1);
 
-  instance_xtra->SpecificYield = NewGroundwaterFlowParameter(problem_data, Sy);
-  instance_xtra->AquiferDepth  = NewGroundwaterFlowParameter(problem_data, Ad);
+  NameArray na_types = NA_NewNameArray("Constant PFBFile");
+
+  ParameterUnion Sy;
+  GetParameterUnion(
+    Sy, na_types, 
+    "Patch.BCPressure.GroundwaterFlow.SpecificYield.%s",
+    ParameterUnionDouble(0, "Value")
+    ParameterUnionString(1, "Filename")
+  );
+
+  ParameterUnion Ad;
+  GetParameterUnion(
+    Ad, na_types, 
+    "Patch.BCPressure.GroundwaterFlow.AquiferDepth.%s",
+    ParameterUnionDouble(0, "Value")
+    ParameterUnionString(1, "Filename")
+  );
+
+  InitGroundwaterFlowParameter(ProblemDataSpecificYield(problem_data), Sy);
+  instance_xtra->SpecificYield = ProblemDataSpecificYield(problem_data);
+  InitGroundwaterFlowParameter(ProblemDataAquiferDepth(problem_data), Sy);
+  instance_xtra->AquiferDepth  = ProblemDataAquiferDepth(problem_data);
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
   return this_module;
@@ -662,8 +680,6 @@ void GroundwaterFlowEvalFreeInstanceXtra()
 
   if(instance_xtra)
   {
-    FreeVector(instance_xtra->SpecificYield);
-    FreeVector(instance_xtra->AquiferDepth);
     tfree(instance_xtra);
   }
 }

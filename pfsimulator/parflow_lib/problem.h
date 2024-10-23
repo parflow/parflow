@@ -164,6 +164,10 @@ typedef struct {
   WellData       *well_data;
   ReservoirData       *reservoir_data;
   BCPressureData *bc_pressure_data;
+  
+  /* GroundwaterFlow BC vectors */
+  Vector *specific_yield;
+  Vector *aquifer_depth;
 
   /*sk  overland flow*/
   Vector *x_slope;
@@ -291,6 +295,8 @@ typedef struct {
 #define ProblemDataWellData(problem_data)       ((problem_data)->well_data)
 #define ProblemDataReservoirData(problem_data)       ((problem_data)->reservoir_data)
 #define ProblemDataBCPressureData(problem_data) ((problem_data)->bc_pressure_data)
+#define ProblemDataSpecificYield(problem_data) ((problem_data)->specific_yield)
+#define ProblemDataAquiferDepth(problem_data) ((problem_data)->aquifer_depth)
 #define ProblemDataSpecificStorage(problem_data)((problem_data)->specific_storage)   //sk
 #define ProblemDataTSlopeX(problem_data)        ((problem_data)->x_slope)   //sk
 #define ProblemDataTSlopeY(problem_data)        ((problem_data)->y_slope)   //sk

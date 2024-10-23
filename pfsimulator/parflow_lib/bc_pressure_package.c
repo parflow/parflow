@@ -456,8 +456,7 @@ void         BCPressurePackage(
 
             GroundwaterFlowModule(data) = PFModuleNewInstanceType(
                 GroundwaterFlowEvalInitInstanceXtraInvoke,
-                groundwaterflow_eval, (problem_data, data->SpcYield, 
-                data->AqDepth));
+                groundwaterflow_eval, (problem_data));
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
                 = (void*)interval_data;
@@ -1052,30 +1051,6 @@ PFModule  *BCPressurePackageNewPublicXtra(
           // from Problem's PublicXtra structure.
           // therefore, it will be defined in BCPressurePackage()
           GroundwaterFlowModule(data) = NULL;
-
-          NameArray na_types = NA_NewNameArray("Constant PFBFile");
-
-          char key_base[IDB_MAX_KEY_LEN];
-
-          sprintf(key_base, 
-              "Patch.%s.BCPressure.GroundwaterFlow.SpecificYield.%s", 
-              patch_name, "%s");
-
-          GetParameterUnion(
-            GroundwaterFlowSpecificYield(data), na_types, key_base,
-            ParameterUnionDouble(0, "Value")
-            ParameterUnionString(1, "Filename")
-          );
-
-          sprintf(key_base, 
-              "Patch.%s.BCPressure.GroundwaterFlow.AquiferDepth.%s", 
-              patch_name, "%s");
-
-          GetParameterUnion(
-            GroundwaterFlowAquiferDepth(data), na_types, key_base,
-            ParameterUnionDouble(0, "Value")
-            ParameterUnionString(1, "Filename")
-          );
 
           StoreTypeStruct(public_xtra, data, i);
           break;
