@@ -4487,6 +4487,19 @@ only once during the run. The data is written as a ParFlow binary file.
 
       <runname>.Solver.PrintSubsurf = False     ## Python syntax
 
+*string* **Solver.PrintChannelWidth** True This key is used to turn on
+printing of the channelwidth data, ChannelWidthX and ChannelWidthY. The data
+is printed before the main time stepping loop - only once during the run.
+The data is written as two ParFlow binary files.
+
+.. container:: list
+
+   ::
+
+      pfset Solver.PrintChannelWidth False           ## TCL syntax
+
+      <runname>.Solver.PrintChannelWidth = False     ## Python syntax      
+
 *string* **Solver.PrintPressure** True This key is used to turn on
 printing of the pressure data. The printing of the data is controlled by
 values in the timing information section. The data is written as a PFB
