@@ -1,5 +1,10 @@
 name: ParFlow MacOS CI Test
 
+#
+# Notes
+# Currently using GCC for the build rather than Clang
+# Python 3.12 used rather than more current available versions since Numba library does not work with later versions
+
 on: [push, pull_request]
 
 jobs:
@@ -14,7 +19,7 @@ jobs:
             name: "MacOS 14",
             os: macos-14,
             cudaos: '',
-            python: "false",
+            python: "true",
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true"
@@ -22,6 +27,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' 
     - uses: fortran-lang/setup-fortran@v1
       with:
         compiler: gcc
@@ -29,16 +37,9 @@ jobs:
       with:
         mpi: openmpi
 
-    - name: Python Package Install
-      if: matrix.config.python == 'true'
-      run: |
-        sudo apt-get -qq update
-        sudo apt -qq install python3 python3-venv
-        
     - name: HDF5 Install
       run: |
         brew install hdf5-mpi
-        find /opt/homebrew -name \*hdf5\*
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
@@ -66,6 +67,8 @@ jobs:
         echo "$HOME/depend/bin" >> $GITHUB_PATH
         export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        export PARFLOW_PYTHON3=/opt/homebrew/bin/python3.12
+        echo "PARFLOW_PYTHON3=${PARFLOW_PYTHON3}" >> $GITHUB_ENV
 
     - name: CMake Install
       if: matrix.config.os != 'macos-14'
@@ -140,7 +143,7 @@ jobs:
       run: |
         mpicc -v
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
-        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include -DTCL_LIBRARY=/opt/homebrew/lib/libtcl8.6.dylib -DTCL_TCLSH=/opt/homebrew/bin/tclsh
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include -DTCL_LIBRARY=/opt/homebrew/lib/libtcl8.6.dylib -DTCL_TCLSH=/opt/homebrew/bin/tclsh -DPython3_EXECUTABLE=$PARFLOW_PYTHON3
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 VERBOSE=1 install)
