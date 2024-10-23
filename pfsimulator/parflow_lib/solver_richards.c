@@ -77,6 +77,7 @@ typedef struct {
   int print_subsurf_data;       /* print permeability/porosity? */
   int print_press;              /* print pressures? */
   int print_slopes;             /* print slopes? */
+  int print_channelwidth;       /* print channel width? */
   int print_mannings;           /* print mannings? */
   int print_specific_storage;   /* print spec storage? */
   int print_top;                /* print top? */
@@ -614,6 +615,26 @@ SetupRichards(PFModule * this_module)
                            sizeof(slope_filenames) / sizeof(slope_filenames[0]),
                            slope_filenames);
   }
+
+  if (public_xtra->print_channelwidth)
+  {
+    strcpy(file_postfix, "wc_x");
+    WritePFBinary(file_prefix, file_postfix,
+                  ProblemDataChannelWidthX(problem_data));
+
+    strcpy(file_postfix, "wc_y");
+    WritePFBinary(file_prefix, file_postfix,
+                  ProblemDataChannelWidthY(problem_data));
+
+    static const char* filenames[] = {
+      "wc_x", "wc_y"
+    };
+    MetadataAddStaticField(
+                           js_inputs, file_prefix, "channel_width", NULL, "cell", "surface",
+                           sizeof(filenames) / sizeof(filenames[0]),
+                           filenames);
+  }
+
 
   if (public_xtra->write_silo_slopes)
   {
@@ -5457,6 +5478,11 @@ SolverRichardsNewPublicXtra(char *name)
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_slopes = switch_value;
+
+  sprintf(key, "%s.PrintChannelWidth", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_channelwidth = switch_value;
 
   sprintf(key, "%s.PrintMannings", name);
   switch_name = GetStringDefault(key, "False");
