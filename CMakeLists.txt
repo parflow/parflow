@@ -542,6 +542,7 @@ if (PARFLOW_ENABLE_PYTHON)
   set(PARFLOW_PYTHON_DEPENDS)
   set(PARFLOW_HAVE_PYTHON)
   set(PARFLOW_PYTHON "${CMAKE_INSTALL_PREFIX}/py-env/bin/python3")
+  message(STATUS "Found Python: ${Python3_EXECUTABLE}")
   add_custom_command(
     WORKING_DIRECTORY
       "${CMAKE_CURRENT_BINARY_DIR}"
