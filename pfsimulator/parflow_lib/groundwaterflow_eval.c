@@ -87,7 +87,6 @@ void GroundwaterFlowEval(
     double      *del_Kr,       // derivative of the relative permebility
     double      *Ks_x,         // permeability_x subvector data
     double      *Ks_y,         // permeability_y subvector data
-    double      *z_mult,        // dz multiplication factor
     int          ipatch,        // current patch
     int          isubgrid,      // current subgrid
     ProblemData *problem_data)  // geometry data for problem
@@ -98,7 +97,7 @@ void GroundwaterFlowEval(
 
     GroundwaterFlowEvalNLFunc(fp, bc_struct, subgrid, 
         p_sub, old_pressure, dt, Kr, del_Kr, Ks_x, Ks_y,
-        z_mult, ipatch, isubgrid, problem_data);
+        ipatch, isubgrid, problem_data);
 
   } else { /* fcn == CALCDER */
     
@@ -106,7 +105,7 @@ void GroundwaterFlowEval(
 
     GroundwaterFlowEvalJacob(J_sub, bc_struct, subgrid, 
         p_sub, old_pressure, dt, Kr, del_Kr, Ks_x, Ks_y,
-        z_mult, ipatch, isubgrid, problem_data);
+        ipatch, isubgrid, problem_data);
   }
 
   return;
@@ -123,7 +122,6 @@ void GroundwaterFlowEvalNLFunc(
     double      *del_Kr,       // derivative of the relative permebility
     double      *Ks_x,         // permeability_x subvector data
     double      *Ks_y,         // permeability_y subvector data
-    double      *z_mult,       // dz multiplication factor
     int          ipatch,       // current patch
     int          isubgrid,     // current subgrid
     ProblemData *problem_data) // geometry data for problem
@@ -245,12 +243,12 @@ void GroundwaterFlowEvalNLFunc(
       Ad_upr = is_upr_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_upr];
 
       // compute pressure head in adjacent cells
-      old_head_mid = old_pressure[ip_mid] + 0.5*(Ad_mid + dz*z_mult[ip_mid]);
-      new_head_mid = new_pressure[ip_mid] + 0.5*(Ad_mid + dz*z_mult[ip_mid]);
-      new_head_lft = new_pressure[ip_lft] + 0.5*(Ad_lft + dz*z_mult[ip_lft]);
-      new_head_rgt = new_pressure[ip_rgt] + 0.5*(Ad_rgt + dz*z_mult[ip_rgt]);
-      new_head_lwr = new_pressure[ip_lwr] + 0.5*(Ad_lwr + dz*z_mult[ip_lwr]);
-      new_head_upr = new_pressure[ip_upr] + 0.5*(Ad_upr + dz*z_mult[ip_upr]);
+      old_head_mid = old_pressure[ip_mid] + 0.5 * Ad_mid;
+      new_head_mid = new_pressure[ip_mid] + 0.5 * Ad_mid;
+      new_head_lft = new_pressure[ip_lft] + 0.5 * Ad_lft;
+      new_head_rgt = new_pressure[ip_rgt] + 0.5 * Ad_rgt;
+      new_head_lwr = new_pressure[ip_lwr] + 0.5 * Ad_lwr;
+      new_head_upr = new_pressure[ip_upr] + 0.5 * Ad_upr;
 
       // compute transmissivity at the cell faces
       // the aquifer is assumed to be fully saturated: Kr = 1
@@ -294,9 +292,7 @@ void GroundwaterFlowEvalNLFunc(
     }),
     FACE(FrontFace, DoNothing),
     CellFinalize({
-      fp[ip_mid] += q_storage - q_divergence;
-      // PlusEquals(fp[ip], q_storage - q_divergence + q_divergence);
-      // PlusEquals(fp[ip], q_storage - q_divergence);
+      PlusEquals(fp[ip_mid], q_storage - q_divergence);
     }),
     AfterAllCells(DoNothing)
   );    /* End GroundwaterFlow case */
@@ -314,7 +310,6 @@ void GroundwaterFlowEvalJacob(
     double      *del_Kr,       // derivative of the relative permebility
     double      *Ks_x,         // permeability_x subvector data
     double      *Ks_y,         // permeability_y subvector data
-    double      *z_mult,       // dz multiplication factor
     int          ipatch,       // current patch
     int          isubgrid,     // current subgrid
     ProblemData *problem_data) // geometry data for problem
@@ -479,12 +474,11 @@ void GroundwaterFlowEvalJacob(
       Ad_lwr = is_lwr_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_lwr];
       Ad_upr = is_upr_edge ? Ad_dat[ibot_mid] : Ad_dat[ibot_upr];
 
-      // no special cases in the middle (everything is known)
-      new_head_mid = new_pressure[ip_mid] + 0.5*(Ad_mid + dz*z_mult[ip_mid]);
-      new_head_lft = new_pressure[ip_lft] + 0.5*(Ad_lft + dz*z_mult[ip_lft]);
-      new_head_rgt = new_pressure[ip_rgt] + 0.5*(Ad_rgt + dz*z_mult[ip_rgt]);
-      new_head_lwr = new_pressure[ip_lwr] + 0.5*(Ad_lwr + dz*z_mult[ip_lwr]);
-      new_head_upr = new_pressure[ip_upr] + 0.5*(Ad_upr + dz*z_mult[ip_upr]);
+      new_head_mid = new_pressure[ip_mid] + 0.5 * Ad_mid;
+      new_head_lft = new_pressure[ip_lft] + 0.5 * Ad_lft;
+      new_head_rgt = new_pressure[ip_rgt] + 0.5 * Ad_rgt;
+      new_head_lwr = new_pressure[ip_lwr] + 0.5 * Ad_lwr;
+      new_head_upr = new_pressure[ip_upr] + 0.5 * Ad_upr;
 
       // compute transmissivity at the cell faces
       Tx_mid = new_head_mid * Ks_x[ip_mid];
@@ -617,16 +611,11 @@ void GroundwaterFlowEvalJacob(
         lp[im]  = dF[i,j,k] / dp[i,j,k-1]
         up[im]  = dF[i,j,k] / dp[i,j,k+1]
       */
-      cp[im]  += del_mid_q_storage - del_mid_q_divergence;
-      wp[im]  += -del_lft_q_divergence;
-      ep[im]  += -del_rgt_q_divergence;
-      sop[im] += -del_lwr_q_divergence;
-      np[im]  += -del_upr_q_divergence;
-      // PlusEquals(cp[im],  del_mid_q_storage - del_mid_q_divergence+del_mid_q_divergence);
-      // PlusEquals(wp[im],  -del_lft_q_divergence+del_lft_q_divergence);
-      // PlusEquals(ep[im],  -del_rgt_q_divergence+del_rgt_q_divergence);
-      // PlusEquals(sop[im], -del_lwr_q_divergence+del_lwr_q_divergence);
-      // PlusEquals(np[im],  -del_upr_q_divergence+del_upr_q_divergence);
+      PlusEquals(cp[im],  del_mid_q_storage - del_mid_q_divergence);
+      PlusEquals(wp[im],  -del_lft_q_divergence);
+      PlusEquals(ep[im],  -del_rgt_q_divergence);
+      PlusEquals(sop[im], -del_lwr_q_divergence);
+      PlusEquals(np[im],  -del_upr_q_divergence);
     }),
     AfterAllCells(DoNothing)
   );    /* End GroundwaterFlow case */

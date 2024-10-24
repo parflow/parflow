@@ -1449,8 +1449,7 @@ void    RichardsJacobianEval(
                              PFModuleInvokeType(GroundwaterFlowEvalInvoke, 
                                groundwaterflow_eval, ((void*)J_sub, CALCDER,
                                bc_struct, subgrid, p_sub, opp, dt, rpp, rpdp, 
-                               permxp, permyp, z_mult_dat, ipatch, is, 
-                               problem_data));
+                               permxp, permyp, ipatch, is, problem_data));
 
                            })
         ); /* End GroundwaterFlowBC */
