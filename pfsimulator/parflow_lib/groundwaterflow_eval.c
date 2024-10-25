@@ -677,7 +677,7 @@ PFModule* GroundwaterFlowEvalInitInstanceXtra(ProblemData *problem_data)
 
   InitGroundwaterFlowParameter(ProblemDataSpecificYield(problem_data), Sy);
   instance_xtra->SpecificYield = ProblemDataSpecificYield(problem_data);
-  InitGroundwaterFlowParameter(ProblemDataAquiferDepth(problem_data), Sy);
+  InitGroundwaterFlowParameter(ProblemDataAquiferDepth(problem_data), Ad);
   instance_xtra->AquiferDepth = ProblemDataAquiferDepth(problem_data);
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
