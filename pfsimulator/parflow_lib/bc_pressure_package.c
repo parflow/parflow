@@ -77,8 +77,8 @@ void         BCPressurePackage(
 {
   PFModule         *this_module = ThisPFModule;
   PublicXtra       *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
-  InstanceXtra     *instance_xtra = 
-      (InstanceXtra*)PFModuleInstanceXtra(this_module);
+  InstanceXtra     *instance_xtra =
+    (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   BCPressureData   *bc_pressure_data
     = ProblemDataBCPressureData(problem_data);
@@ -450,15 +450,15 @@ void         BCPressurePackage(
             GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
 
             // because the module instance wasn't created before, it is now.
-            PFModule *groundwaterflow_eval = 
-                ProblemGroundwaterFlowEval(instance_xtra->problem);
+            PFModule *groundwaterflow_eval =
+              ProblemGroundwaterFlowEval(instance_xtra->problem);
 
-            GroundwaterFlowModule(data) = PFModuleNewInstanceType(
-                GroundwaterFlowEvalInitInstanceXtraInvoke,
-                groundwaterflow_eval, (problem_data));
+            GroundwaterFlowModule(data) =
+              PFModuleNewInstanceType(GroundwaterFlowEvalInitInstanceXtraInvoke,
+                                      groundwaterflow_eval, (problem_data));
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
-                = (void*)interval_data;
+              = (void*)interval_data;
 
             break;
           } /* End GroundwaterFlow */
@@ -474,10 +474,11 @@ void         BCPressurePackage(
 }
 
 PFModule* BCPressurePackageGroundwaterFlowModule(
-    PFModule *bc_pressure_package, int ipatch) 
+                                                 PFModule *bc_pressure_package, int ipatch)
 {
-  PublicXtra *public_xtra = 
-      (PublicXtra*)PFModulePublicXtra(bc_pressure_package);
+  PublicXtra *public_xtra =
+    (PublicXtra*)PFModulePublicXtra(bc_pressure_package);
+
   GetTypeStruct(GroundwaterFlow, data, public_xtra, ipatch);
   return GroundwaterFlowModule(data);
 }
@@ -1054,7 +1055,6 @@ PFModule  *BCPressurePackageNewPublicXtra(
           StoreTypeStruct(public_xtra, data, i);
           break;
         } /* End GroundwaterFlow */
-
       } /* End switch types */
     } /* End for patches */
   } /* if patches */
@@ -1220,13 +1220,14 @@ void  BCPressurePackageFreePublicXtra()
           case GroundwaterFlow:
           {
             GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
-            if(GroundwaterFlowModule(data)) {
+            if (GroundwaterFlowModule(data))
+            {
               PFModuleFreeInstance(GroundwaterFlowModule(data));
             }
             tfree(data);
             break;
           }
-	  
+
           default:
           {
             PARFLOW_ERROR("Invalid BC input type");

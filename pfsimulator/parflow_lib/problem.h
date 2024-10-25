@@ -166,7 +166,7 @@ typedef struct {
   WellData       *well_data;
   ReservoirData       *reservoir_data;
   BCPressureData *bc_pressure_data;
-  
+
   /* GroundwaterFlow BC vectors */
   Vector *specific_yield;
   Vector *aquifer_depth;
@@ -249,7 +249,7 @@ typedef struct {
 #define ProblemOverlandFlowEvalDiff(problem)          ((problem)->overlandflow_eval_diff)   //@RMM
 #define ProblemOverlandFlowEvalKin(problem)  ((problem)->overlandflow_eval_kin) //@MCB
 #define ProblemGroundwaterFlowEval(problem)  \
-    ((problem)->groundwaterflow_eval)
+        ((problem)->groundwaterflow_eval)
 
 #define ProblemdzScale(problem)            ((problem)->dz_mult)    //RMM
 #define ProblemRealSpaceZ(problem)            ((problem)->real_space_z)

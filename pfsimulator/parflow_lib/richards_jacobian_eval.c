@@ -1426,35 +1426,33 @@ void    RichardsJacobianEval(
       ForPatchCellsPerFace(GroundwaterFlowBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int im; double *op;),
-                           CellSetup({ im = SubmatrixEltIndex(J_sub, i, j, k); }),
-                           FACE(LeftFace,  { op = wp; }),
+                           Locals(int im; double *op; ),
+                           CellSetup({
+        im = SubmatrixEltIndex(J_sub, i, j, k);
+      }),
+                           FACE(LeftFace, { op = wp; }),
                            FACE(RightFace, { op = ep; }),
-                           FACE(DownFace,  { op = sop; }),
-                           FACE(UpFace,    { op = np; }),
-                           FACE(BackFace,  { op = lp; }),
+                           FACE(DownFace, { op = sop; }),
+                           FACE(UpFace, { op = np; }),
+                           FACE(BackFace, { op = lp; }),
                            FACE(FrontFace, { op = up; }),
                            CellFinalize({
-                               cp[im] += op[im];
-                               op[im] = 0.0;
-                             }),
+        cp[im] += op[im];
+        op[im] = 0.0;
+      }),
                            AfterAllCells({
+        PFModule *bc_pressure_package =
+          ProblemBCPressurePackage(problem);
 
-                             PFModule *bc_pressure_package = 
-                                 ProblemBCPressurePackage(problem);
+        PFModule *groundwaterflow_eval =
+          BCPressurePackageGroundwaterFlowModule(bc_pressure_package, ipatch);
 
-                             PFModule *groundwaterflow_eval = 
-                                 BCPressurePackageGroundwaterFlowModule(
-                                   bc_pressure_package, ipatch);
-
-                             PFModuleInvokeType(GroundwaterFlowEvalInvoke, 
-                               groundwaterflow_eval, ((void*)J_sub, CALCDER,
-                               bc_struct, subgrid, p_sub, opp, dt, rpp, rpdp, 
-                               permxp, permyp, ipatch, is, problem_data));
-
-                           })
-        ); /* End GroundwaterFlowBC */
-
+        PFModuleInvokeType(GroundwaterFlowEvalInvoke, groundwaterflow_eval,
+                           ((void*)J_sub, CALCDER, bc_struct, subgrid, p_sub,
+                            opp, dt, rpp, rpdp, permxp, permyp, ipatch, is,
+                            problem_data));
+      })
+                           ); /* End GroundwaterFlowBC */
     } /* End ipatch loop */
   }            /* End subgrid loop */
 

@@ -43,9 +43,9 @@
 #include "parflow.h"
 
 void ComputeBottom(
-    Problem  *problem,     /* General problem information */
-    ProblemData *problem_data /* Contains problem's geometry information */
-                )
+                   Problem *    problem, /* General problem information */
+                   ProblemData *problem_data /* Contains problem's geometry information */
+                   )
 {
   GrGeomSolid   *gr_solid = ProblemDataGrDomain(problem_data);
   Vector        *bottom = ProblemDataIndexOfDomainBottom(problem_data);

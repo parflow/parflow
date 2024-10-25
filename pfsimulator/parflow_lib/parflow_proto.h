@@ -33,8 +33,8 @@ typedef PFModule *(*BCPressurePackageNewPublicXtraInvoke) (int num_phases);
 
 /* bc_pressure_package.c */
 void BCPressurePackage(ProblemData *problem_data);
-PFModule *BCPressurePackageGroundwaterFlowModule(
-    PFModule *bc_pressure_package, int ipatch);
+PFModule *BCPressurePackageGroundwaterFlowModule(PFModule *bc_pressure_package,
+                                                 int       ipatch);
 PFModule *BCPressurePackageInitInstanceXtra(Problem *problem);
 void BCPressurePackageFreeInstanceXtra(void);
 PFModule *BCPressurePackageNewPublicXtra(int num_phases);
@@ -879,32 +879,36 @@ int OverlandFlowEvalKinSizeOfTempData(void);
 /* groundwaterflow_eval.c */
 void InitGroundwaterFlowParameter(Vector *par_v, ParameterUnion par);
 
-typedef void (*GroundwaterFlowEvalInvoke)(
-    void *groundwater_out, int flag, BCStruct *bc_struct, Subgrid *subgrid, 
-    Subvector *p_sub, double *old_pressure, double dt, 
-    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, 
-    int ipatch, int isubgrid, ProblemData *problem_data);
+typedef void (*GroundwaterFlowEvalInvoke)(void *groundwater_out, int flag,
+                                          BCStruct *bc_struct, Subgrid *subgrid,
+                                          Subvector *p_sub,
+                                          double *old_pressure, double dt,
+                                          double *Kr, double *del_Kr,
+                                          double *Ks_x, double *Ks_y,
+                                          int ipatch, int isubgrid,
+                                          ProblemData *problem_data);
 
-void GroundwaterFlowEval(
-    void *groundwater_out, int flag, BCStruct *bc_struct, Subgrid *subgrid, 
-    Subvector *p_sub, double *old_pressure, double dt, 
-    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, 
-    int ipatch, int isubgrid, ProblemData *problem_data);
+void GroundwaterFlowEval(void *groundwater_out, int flag, BCStruct *bc_struct,
+                         Subgrid *subgrid, Subvector *p_sub,
+                         double *old_pressure, double dt, double *Kr,
+                         double *del_Kr, double *Ks_x, double *Ks_y,
+                         int ipatch, int isubgrid, ProblemData *problem_data);
 
-void GroundwaterFlowEvalNLFunc(
-    double *q_groundwater, BCStruct *bc_struct, Subgrid *subgrid, 
-    Subvector *p_sub, double *old_pressure, double dt, 
-    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, 
-    int ipatch, int isubgrid, ProblemData *problem_data);
+void GroundwaterFlowEvalNLFunc(double *q_groundwater, BCStruct *bc_struct,
+                               Subgrid *subgrid, Subvector *p_sub,
+                               double *old_pressure, double dt, double *Kr,
+                               double *del_Kr, double *Ks_x, double *Ks_y,
+                               int ipatch, int isubgrid,
+                               ProblemData *problem_data);
 
-void GroundwaterFlowEvalJacob(
-    Submatrix *J_sub, BCStruct *bc_struct, Subgrid *subgrid, 
-    Subvector *p_sub, double *old_pressure, double dt, 
-    double *Kr, double *del_Kr, double *Ks_x, double *Ks_y, 
-    int ipatch, int isubgrid, ProblemData *problem_data);
+void GroundwaterFlowEvalJacob(Submatrix *J_sub, BCStruct *bc_struct,
+                              Subgrid *subgrid, Subvector *p_sub,
+                              double *old_pressure, double dt, double *Kr,
+                              double *del_Kr, double *Ks_x, double *Ks_y,
+                              int ipatch, int isubgrid,
+                              ProblemData *problem_data);
 
-typedef PFModule* (*GroundwaterFlowEvalInitInstanceXtraInvoke)(
-    ProblemData *problem_data);
+typedef PFModule* (*GroundwaterFlowEvalInitInstanceXtraInvoke)(ProblemData *problem_data);
 PFModule* GroundwaterFlowEvalInitInstanceXtra(ProblemData *problem_data);
 void GroundwaterFlowEvalFreeInstanceXtra();
 PFModule* GroundwaterFlowEvalNewPublicXtra();
@@ -1448,7 +1452,7 @@ void ComputeTop(Problem *    problem,
 void ComputePatchTop(Problem *    problem,
                      ProblemData *problem_data);
 
-void ComputeBottom(Problem  *problem, ProblemData *problem_data);
+void ComputeBottom(Problem *problem, ProblemData *problem_data);
 
 int CheckTime(Problem *problem, char *key, double time);
 

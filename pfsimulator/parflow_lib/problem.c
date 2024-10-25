@@ -463,10 +463,10 @@ ProblemData   *NewProblemData(
 
   ProblemDataBCPressureData(problem_data) = NewBCPressureData();
 
-  ProblemDataSpecificYield(problem_data) = 
-      NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  ProblemDataAquiferDepth(problem_data) = 
-      NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataSpecificYield(problem_data) =
+    NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataAquiferDepth(problem_data) =
+    NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
   ProblemDataWellData(problem_data) = NewWellData();
   ProblemDataReservoirData(problem_data) = NewReservoirData();

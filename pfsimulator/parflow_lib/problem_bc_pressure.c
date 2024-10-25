@@ -1130,8 +1130,8 @@ BCStruct    *BCPressure(
         case GroundwaterFlow:
         {
           /* Constant flux rate value on patch */
-          GetBCPressureTypeStruct(GroundwaterFlow, interval_data, 
-              bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(GroundwaterFlow, interval_data,
+                                  bc_pressure_data, ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -1158,7 +1158,7 @@ BCStruct    *BCPressure(
       }
     }
   }
-  
+
   return bc_struct;
 }
 
