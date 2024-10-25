@@ -53,6 +53,7 @@ double   InnerProd(
   int i_s, i, j, k, iv;
 
   amps_Invoice result_invoice;
+
   result_invoice = amps_NewInvoice("%d", &result);
 
   ForSubgridI(i_s, GridSubgrids(grid))
@@ -80,8 +81,8 @@ double   InnerProd(
     iv = 0;
 
     BoxLoopReduceI1(result,
-										i, j, k, ix, iy, iz, nx, ny, nz,
-										iv, nx_v, ny_v, nz_v, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       ReduceSum(result, yp[iv] * xp[iv]);
     });

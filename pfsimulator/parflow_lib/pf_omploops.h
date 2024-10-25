@@ -26,6 +26,7 @@
 *  USA
 **********************************************************************EHEADER*/
 
+/* *INDENT-OFF* */
 #ifndef _PF_OMPLOOPS_H_
 #define _PF_OMPLOOPS_H_
 
@@ -721,3 +722,4 @@ static const int FDIR_TABLE[6][3] = {
 
 #endif // PARFLOW_HAVE_OMP
 #endif // _PF_OMPLOOPS_H_
+/* *INDENT-ON* */

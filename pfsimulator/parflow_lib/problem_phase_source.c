@@ -382,16 +382,20 @@ void         PhaseSource(
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
             {
               double weight = (px[ip] / avg_x) * (area_x / area_sum)
-                      + (py[ip] / avg_y) * (area_y / area_sum)
-                      + (pz[ip] / avg_z) * (area_z / area_sum);
+                              + (py[ip] / avg_y) * (area_y / area_sum)
+                              + (pz[ip] / avg_z) * (area_z / area_sum);
               data[ips] += weight * flux;
             });
-          }else{
+          }
+          else
+          {
             double weight = -FLT_MAX;
             if (WellDataPhysicalMethod(well_data_physical)
-                == FLUX_STANDARD)weight = 1.0;
+                == FLUX_STANDARD)
+              weight = 1.0;
             else if (WellDataPhysicalMethod(well_data_physical)
-                     == FLUX_PATTERNED)weight = 0.0;
+                     == FLUX_PATTERNED)
+              weight = 0.0;
             BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                       ip, nx_p, ny_p, nz_p, 1, 1, 1,
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
@@ -405,7 +409,7 @@ void         PhaseSource(
       }
     }
   }  /* End well data */
-  
+
   if (ReservoirDataNumReservoirs(reservoir_data) > 0)
   {
     for (int reservoir = 0; reservoir < ReservoirDataNumReservoirs(reservoir_data); reservoir++)
@@ -416,8 +420,9 @@ void         PhaseSource(
       volume = ReservoirDataPhysicalSize(reservoir_data_physical);
       flux = reservoir_value / (volume);
       //If we are overfull need to release the rest of the flux
-      if (reservoir_data_physical->storage > reservoir_data_physical->max_storage){
-        flux = (reservoir_data_physical->storage - reservoir_data_physical->max_storage) / (volume) ;
+      if (reservoir_data_physical->storage > reservoir_data_physical->max_storage)
+      {
+        flux = (reservoir_data_physical->storage - reservoir_data_physical->max_storage) / (volume);
       }
       ForSubgridI(is, subgrids)
       {
@@ -437,11 +442,12 @@ void         PhaseSource(
         ny_ps = SubvectorNY(ps_sub);
         nz_ps = SubvectorNZ(ps_sub);
 
-        if (reservoir_data_physical->storage > reservoir_data_physical->min_release_storage) {
+        if (reservoir_data_physical->storage > reservoir_data_physical->min_release_storage)
+        {
           reservoir_data_physical = ReservoirDataReservoirPhysical(reservoir_data, reservoir);
           /*  Get the intersection of the reservoir with the subgrid  */
-          if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid))) {
-
+          if ((tmp_subgrid = IntersectSubgrids(subgrid, reservoir_release_subgrid)))
+          {
             /*  If an intersection;  loop over it, and insert value  */
             ix = SubgridIX(tmp_subgrid);
             iy = SubgridIY(tmp_subgrid);
@@ -461,17 +467,15 @@ void         PhaseSource(
 
             data = SubvectorElt(ps_sub, ix, iy, iz);
 
-            int ip = 0;
             int ips = 0;
             double weight = 1.0;
 
-            BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                      ip, nx_p, ny_p, nz_p, 1, 1, 1,
+            BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                       ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
-                      {
-                        data[ips] += weight * flux;
-                        ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = flux*volume;
-                      });
+            {
+              data[ips] += weight * flux;
+              ReservoirDataPhysicalReleaseAmountInSolver(reservoir_data_physical) = flux * volume;
+            });
           }
         }
       }
@@ -618,7 +622,7 @@ PFModule  *PhaseSourceNewPublicXtra(
 
       default:
       {
-	InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+        InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
       }
     }     /* End case statement */
   }

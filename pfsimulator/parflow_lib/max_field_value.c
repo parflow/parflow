@@ -268,32 +268,32 @@ double  MaxPhaseFieldValue(
           tmp_max = fabs(vp[vi]) / psi_max;
           switch (dir)
           {
-            case 0:
-              {
-                if (tmp_max > max_xdir_value)
+              case 0:
                 {
-                  max_xdir_value = tmp_max;
+                  if (tmp_max > max_xdir_value)
+                  {
+                    max_xdir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
 
-            case 1:
-              {
-                if (tmp_max > max_ydir_value)
+              case 1:
                 {
-                  max_ydir_value = tmp_max;
+                  if (tmp_max > max_ydir_value)
+                  {
+                    max_ydir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
 
-            case 2:
-              {
-                if (tmp_max > max_zdir_value)
+              case 2:
                 {
-                  max_zdir_value = tmp_max;
+                  if (tmp_max > max_zdir_value)
+                  {
+                    max_zdir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
           }
         }
       });
@@ -364,7 +364,7 @@ double  MaxTotalFieldValue(
   double f_prime_max, h_prime_max = 0.0;
   double max_field_value, psi_max, ds = 0.0;
   double max_xdir_value, max_ydir_value, max_zdir_value,
-    max_total_value, max_gravity_value;
+         max_total_value, max_gravity_value;
   double tmp, tmp_max, tmp_total = 0.0, tmp_gravity = 0.0;
 
   double a, b, den0, den1, dtmp, g, constant;
@@ -577,40 +577,40 @@ double  MaxTotalFieldValue(
 
           switch (dir)
           {
-            case 0:
-              {
-                if (tmp_max > max_xdir_value)
+              case 0:
                 {
-                  max_xdir_value = tmp_max;
+                  if (tmp_max > max_xdir_value)
+                  {
+                    max_xdir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
 
-            case 1:
-              {
-                if (tmp_max > max_ydir_value)
+              case 1:
                 {
-                  max_ydir_value = tmp_max;
+                  if (tmp_max > max_ydir_value)
+                  {
+                    max_ydir_value = tmp_max;
+                  }
+                  break;
                 }
-                break;
-              }
 
-            case 2:
-              {
-                if (tmp_max > max_zdir_value)
+              case 2:
                 {
-                  max_zdir_value = tmp_max;
+                  if (tmp_max > max_zdir_value)
+                  {
+                    max_zdir_value = tmp_max;
+                  }
+                  if (tmp_total > max_total_value)
+                  {
+                    max_total_value = tmp_total;
+                  }
+                  if (tmp_gravity > max_gravity_value)
+                  {
+                    max_gravity_value = tmp_gravity;
+                  }
+                  break;
                 }
-                if (tmp_total > max_total_value)
-                {
-                  max_total_value = tmp_total;
-                }
-                if (tmp_gravity > max_gravity_value)
-                {
-                  max_gravity_value = tmp_gravity;
-                }
-                break;
-              }
           }
         }
       });

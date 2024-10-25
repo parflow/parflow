@@ -88,7 +88,7 @@ void         BCPressurePackage(
   int num_patches;
   int i;
   int cycle_length, cycle_number, interval_division,
-    interval_number;
+      interval_number;
 
   /* Allocate the bc data */
   BCPressureDataNumPhases(bc_pressure_data) = (public_xtra->num_phases);
@@ -141,10 +141,10 @@ void         BCPressurePackage(
       BCPressureDataIntervalValues(bc_pressure_data, i) = ctalloc(void *, interval_division);
       for (interval_number = 0; interval_number < interval_division; interval_number++)
       {
-	switch ((public_xtra)->input_types[(i)])
+        switch ((public_xtra)->input_types[(i)])
         {
 #if 0 /* Do not uncomment this block, it is example code */
-	  case MyNewPatchType:
+          case MyNewPatchType:
           {
             /* Allocate the struct for an interval */
             NewBCPressureTypeStruct(MyNewPatchType, interval_data);
@@ -162,8 +162,8 @@ void         BCPressurePackage(
             /* Save the pointer into bc_pressure_data */
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
-	    
-	    break;
+
+            break;
           } /* End MyNewPatchType */
 #endif // #if 0
 
@@ -202,7 +202,7 @@ void         BCPressurePackage(
             }
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number) = (void*)interval_data;
-	    break;
+            break;
           } /* End DirEquilRefPatch */
 
           /* Setup a piecewise linear pressure condition structure */
@@ -252,8 +252,8 @@ void         BCPressurePackage(
             }
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number) = (void*)interval_data;
-	    
-	    break;
+
+            break;
           } /* End DirEquilPLinear */
 
           /* Setup a constant flux condition structure */
@@ -271,7 +271,7 @@ void         BCPressurePackage(
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
 
-	    break;
+            break;
           } /* End FluxConst */
 
           /* Setup a volumetric flux condition structure */
@@ -288,7 +288,7 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
-	    break;
+            break;
           } /* End FluxVolumetric */
 
           /* Setup a file defined pressure condition structure */
@@ -308,7 +308,7 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
-	    break;
+            break;
           } /* End PressureFile */
 
           /* Setup a file defined flux condition structure */
@@ -328,8 +328,8 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
-	    
-	    break;
+
+            break;
           } /* End FluxFile */
 
           /* Setup a Dir. pressure MATH problem condition */
@@ -346,8 +346,8 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
-	    
-	    break;
+
+            break;
           } /* End ExactSolution */
 
           /*//sk  Setup a overland flow condition structure */
@@ -364,7 +364,7 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
-	    break;
+            break;
           } /* End OverlandFlow */
 
           /* Setup a file defined flux condition structure for overland flow BC*/
@@ -384,8 +384,8 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
-	    
-	    break;
+
+            break;
           } /* End OverlandFlowPFB */
 
           /* Set up a seepage face condition structure */
@@ -402,10 +402,9 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
-	    break;
-	    
+            break;
           } /* End SeepageFace */
-	  
+
           /* Set up overland OverlandKinematic condition structure */
           case OverlandKinematic:
           {
@@ -421,11 +420,11 @@ void         BCPressurePackage(
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
 
-	    break;
+            break;
           } /* End OverlandKinematic */
-	  
+
           /* Set up overland OverlandDiffusive condition structure */
-	  case OverlandDiffusive:
+          case OverlandDiffusive:
           {
             NewBCPressureTypeStruct(OverlandDiffusive, interval_data);
 
@@ -439,8 +438,8 @@ void         BCPressurePackage(
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
 
-	    break;
-	  } /* End OverlandDiffusive */
+            break;
+          } /* End OverlandDiffusive */
 
           case GroundwaterFlow:
           {
@@ -464,11 +463,10 @@ void         BCPressurePackage(
             break;
           } /* End GroundwaterFlow */
 
-	  default:
-	  {
-	    PARFLOW_ERROR("Invalid BC input type");
-	  }
-	  
+          default:
+          {
+            PARFLOW_ERROR("Invalid BC input type");
+          }
         } /* End switch BC type  */
       } /* End for interval */
     } /* End for patch */
@@ -605,10 +603,10 @@ PFModule  *BCPressurePackageNewPublicXtra(
         NA_NameToIndex(GlobalsGeometries[domain_index]->patches,
                        patch_name);
 
-      if(public_xtra->patch_indexes[i] < 0)
+      if (public_xtra->patch_indexes[i] < 0)
       {
-	amps_Printf("Invalid patch name <%s>\n", patch_name);
-	NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
+        amps_Printf("Invalid patch name <%s>\n", patch_name);
+        NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
       }
 
       sprintf(key, "Patch.%s.BCPressure.Type", patch_name);
@@ -636,41 +634,42 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
       switch ((public_xtra)->input_types[(i)])
       {
-	
 #if 0 /* Do not undef this block, it is example code not for actual use */
-        /* Example flow for setting up TypeStruct for boundary conditions */
-        switch yNewPatchType:
-        {
-          /* Allocate the struct, second parameter is whatever variable name you wish to use in this scope */
-          NewTypeStruct(MyNewPatchType, data);
-
-          /* Allocate struct data if necessary */
-          (data->values) = ctalloc(double, interval_division);
-
-          /* Populate the data with something, e.g. values from a file */
-          ForEachInterval(interval_division, interval_number)
-          {
-            sprintf(key, "Patch.%s.BCPressure.%s.Value",
-                    patch_name,
-                    NA_IndexToName(
-                                   GlobalsIntervalNames[global_cycle],
-                                   interval_number));
-
-            data->values[interval_number] = GetDouble(key);
-          }
-
-          /* Store the allocated and populated Type struct into public_xtra */
-          StoreTypeStruct(public_xtra, data, i);
-	  break;
-        } /* End Example */
+      /* Example flow for setting up TypeStruct for boundary conditions */
+      /*
+       * switch yNewPatchType:
+       * {
+       * // Allocate the struct, second parameter is whatever variable name you wish to use in this scope
+       * NewTypeStruct(MyNewPatchType, data);
+       *
+       * // Allocate struct data if necessary
+       * (data->values) = ctalloc(double, interval_division);
+       *
+       * // Populate the data with something, e.g. values from a file
+       * ForEachInterval(interval_division, interval_number)
+       * {
+       *  sprintf(key, "Patch.%s.BCPressure.%s.Value",
+       *          patch_name,
+       *          NA_IndexToName(
+       *                         GlobalsIntervalNames[global_cycle],
+       *                         interval_number));
+       *
+       *  data->values[interval_number] = GetDouble(key);
+       * }
+       *
+       * // Store the allocated and populated Type struct into public_xtra
+       * StoreTypeStruct(public_xtra, data, i);
+       * break;
+       * } // End Example
+       */
 #endif // #if 0
 
         case DirEquilRefPatch:
         {
           int size;
-	  
+
           NewTypeStruct(DirEquilRefPatch, data);
-	  
+
           (data->values) = ctalloc(double,
                                    interval_division);
           (data->value_at_interface) = ctalloc(double *,
@@ -692,8 +691,8 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
           data->reference_patch =
             NA_NameToIndexExitOnError(GeomSolidPatches(
-						       GlobalsGeometries[data->reference_solid]),
-				      switch_name, key);
+                                                       GlobalsGeometries[data->reference_solid]),
+                                      switch_name, key);
 
           ForEachInterval(interval_division, interval_number)
           {
@@ -730,16 +729,16 @@ PFModule  *BCPressurePackageNewPublicXtra(
               (data->value_at_interface[interval_number]) = NULL;
             }
           }
-	  
+
           StoreTypeStruct(public_xtra, data, i);
-	  
-	  break;
+
+          break;
         } /* End DirEquilRefPatch */
-	
+
         case DirEquilPLinear:
-	{
-	  int k;
-	  int num_points;
+        {
+          int k;
+          int num_points;
           int size;
 
           NewTypeStruct(DirEquilPLinear, data);
@@ -826,15 +825,15 @@ PFModule  *BCPressurePackageNewPublicXtra(
           }
 
           StoreTypeStruct(public_xtra, data, i);
-	  break;
+          break;
         } /* End DirEquilPLinear */
-			    
+
         case FluxConst:
         {
           NewTypeStruct(FluxConst, data);
-	  
+
           (data->values) = ctalloc(double, interval_division);
-	  
+
           ForEachInterval(interval_division, interval_number)
           {
             sprintf(key, "Patch.%s.BCPressure.%s.Value",
@@ -846,11 +845,11 @@ PFModule  *BCPressurePackageNewPublicXtra(
           }
 
           StoreTypeStruct(public_xtra, data, i);
-	  
-	  break;
+
+          break;
         } /* End FluxConst */
 
-	case FluxVolumetric:
+        case FluxVolumetric:
         {
           NewTypeStruct(FluxVolumetric, data);
 
@@ -867,8 +866,8 @@ PFModule  *BCPressurePackageNewPublicXtra(
           }
 
           StoreTypeStruct(public_xtra, data, i);
-	  
-	  break;
+
+          break;
         } /* End FluxVolumetric */
 
         case PressureFile:
@@ -889,10 +888,10 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
           StoreTypeStruct(public_xtra, data, i);
 
-	  break;
+          break;
         } /* End PressureFile */
 
-	case FluxFile:
+        case FluxFile:
         {
           NewTypeStruct(FluxFile, data);
 
@@ -909,8 +908,8 @@ PFModule  *BCPressurePackageNewPublicXtra(
           }
 
           StoreTypeStruct(public_xtra, data, i);
-	  
-	  break;
+
+          break;
         } /* End FluxFile */
 
         case ExactSolution:
@@ -926,7 +925,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
             switch_name = GetString(key);
 
             data->function_type = NA_NameToIndexExitOnError(function_na,
-							    switch_name, key);
+                                                            switch_name, key);
 
             // MCB: This is overwriting the data struct inside the for loop
             // Also structured this way in master branch without changes
@@ -934,36 +933,36 @@ PFModule  *BCPressurePackageNewPublicXtra(
             StoreTypeStruct(public_xtra, data, i);
           }
 
-	  break;
+          break;
         } /* End ExactSolution */
 
         case OverlandFlow:
         {
           NewTypeStruct(OverlandFlow, data);
-	  
+
           (data->values) = ctalloc(double, interval_division);
-	  
+
           ForEachInterval(interval_division, interval_number)
           {
             sprintf(key, "Patch.%s.BCPressure.%s.Value",
                     patch_name,
                     NA_IndexToName(GlobalsIntervalNames[global_cycle],
                                    interval_number));
-	    
+
             data->values[interval_number] = GetDouble(key);
           }
-	  
+
           StoreTypeStruct(public_xtra, data, i);
-	  
-	  break;
+
+          break;
         } /* End OverlandFlow */
 
-	case OverlandFlowPFB:
+        case OverlandFlowPFB:
         {
           NewTypeStruct(OverlandFlowPFB, data);
-	  
+
           (data->filenames) = ctalloc(char *, interval_division);
-	  
+
           ForEachInterval(interval_division, interval_number)
           {
             sprintf(key, "Patch.%s.BCPressure.%s.FileName",
@@ -973,14 +972,14 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
             data->filenames[interval_number] = GetString(key);
           }
-	  
+
           StoreTypeStruct(public_xtra, data, i);
 
-	  break;
+          break;
         } /* End OverlandFlowPFB */
 
-	case SeepageFace:
-	{
+        case SeepageFace:
+        {
           /* Constant "rainfall" rate value on patch */
           NewTypeStruct(SeepageFace, data);
 
@@ -999,8 +998,8 @@ PFModule  *BCPressurePackageNewPublicXtra(
             data->values[interval_number] = GetDouble(key);
           }
           StoreTypeStruct(public_xtra, data, i);
-	  
-	  break;
+
+          break;
         } /* End SeepageFace */
 
         case OverlandKinematic:
@@ -1020,7 +1019,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
           }
           StoreTypeStruct(public_xtra, data, i);
 
-	  break;
+          break;
         } /* End OverlandKinematic */
 
         case OverlandDiffusive:
@@ -1039,8 +1038,8 @@ PFModule  *BCPressurePackageNewPublicXtra(
             data->values[interval_number] = GetDouble(key);
           }
           StoreTypeStruct(public_xtra, data, i);
-	  
-	  break;
+
+          break;
         } /* End OverlandDiffusive */
 
         case GroundwaterFlow:
@@ -1091,8 +1090,8 @@ void  BCPressurePackageFreePublicXtra()
       for (i = 0; i < num_patches; i++)
       {
         interval_division = (public_xtra->interval_divisions[(public_xtra->cycle_numbers[i])]);
-	switch ((public_xtra)->input_types[(i)])
-	{
+        switch ((public_xtra)->input_types[(i)])
+        {
           case DirEquilRefPatch:
           {
             GetTypeStruct(DirEquilRefPatch, data, public_xtra, i);
@@ -1106,7 +1105,7 @@ void  BCPressurePackageFreePublicXtra()
             tfree((data->values));
 
             tfree(data);
-	    break;
+            break;
           }
 
           case DirEquilPLinear:
@@ -1134,7 +1133,7 @@ void  BCPressurePackageFreePublicXtra()
             tfree((data->xlower));
 
             tfree(data);
-	    break;
+            break;
           }
 
           case FluxConst:
@@ -1142,7 +1141,7 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(FluxConst, data, public_xtra, i);
             tfree((data->values));
             tfree(data);
-	    break;
+            break;
           }
 
           case FluxVolumetric:
@@ -1150,7 +1149,7 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(FluxVolumetric, data, public_xtra, i);
             tfree((data->values));
             tfree(data);
-	    break;
+            break;
           }
 
           case PressureFile:
@@ -1158,7 +1157,7 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(PressureFile, data, public_xtra, i);
             tfree((data->filenames));
             tfree(data);
-	    break;
+            break;
           }
 
           case FluxFile:
@@ -1166,14 +1165,14 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(FluxFile, data, public_xtra, i);
             tfree((data->filenames));
             tfree(data);
-	    break;
+            break;
           }
 
           case ExactSolution:
           {
             GetTypeStruct(ExactSolution, data, public_xtra, i);
             tfree(data);
-	    break;
+            break;
           }
 
           //sk
@@ -1182,7 +1181,7 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(OverlandFlow, data, public_xtra, i);
             tfree((data->values));
             tfree(data);
-	    break;
+            break;
           }
 
           //RMM
@@ -1191,7 +1190,7 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(OverlandFlowPFB, data, public_xtra, i);
             tfree((data->filenames));
             tfree(data);
-	    break;
+            break;
           }
 
           case SeepageFace:
@@ -1199,7 +1198,7 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(SeepageFace, data, public_xtra, i);
             tfree(data->values);
             tfree(data);
-	    break;
+            break;
           };
 
           case OverlandKinematic:
@@ -1207,7 +1206,7 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(OverlandKinematic, data, public_xtra, i);
             tfree(data->values);
             tfree(data);
-	    break;
+            break;
           }
 
           case OverlandDiffusive:
@@ -1215,7 +1214,7 @@ void  BCPressurePackageFreePublicXtra()
             GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
             tfree(data->values);
             tfree(data);
-	    break;
+            break;
           }
 
           case GroundwaterFlow:
@@ -1227,12 +1226,11 @@ void  BCPressurePackageFreePublicXtra()
             tfree(data);
             break;
           }
-
-	  default:
-	  {
-	    PARFLOW_ERROR("Invalid BC input type");
-	  }
 	  
+          default:
+          {
+            PARFLOW_ERROR("Invalid BC input type");
+          }
         } /* End switch type */
       } /* End for patch */
 

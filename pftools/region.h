@@ -132,7 +132,7 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define SubregionArraySubregion(subregion_array, i) \
-  ((subregion_array)->subregions[(i)])
+        ((subregion_array)->subregions[(i)])
 #define SubregionArraySize(subregion_array)  ((subregion_array)->size)
 
 /*--------------------------------------------------------------------------
@@ -147,10 +147,10 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define ForSubregionI(i, subregion_array) \
-  for (i = 0; i < SubregionArraySize(subregion_array); i ++)
+        for (i = 0; i < SubregionArraySize(subregion_array); i++)
 
 #define ForSubregionArrayI(i, region) \
-  for (i = 0; i < RegionSize(region); i ++)
+        for (i = 0; i < RegionSize(region); i++)
 
 
 /* region.c */

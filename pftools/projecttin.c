@@ -473,7 +473,7 @@ void AddTINToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin)
       {
         for (i = 0; i < projection_point->num_triangles; i++)
         {
-	  //MeshTriangle *projection_triangle;
+          //MeshTriangle *projection_triangle;
           //projection_triangle = &(PM->triangles[projection_point->triangles[i]]);
           /* Add Intersection point to the intersection list */
           AddIntersectionPointToMeshVertex(projection_point,
@@ -848,7 +848,7 @@ void IntersectLineWithTriangle(
     q[1] = NAN;
     p[2] = NAN;
     q[2] = NAN;
-  }    
+  }
 
   /*---------------------------------------------
    * Check to see how many edges cross the

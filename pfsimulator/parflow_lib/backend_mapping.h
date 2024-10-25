@@ -22,21 +22,21 @@
  */
 
 /* PF_COMP_UNIT_TYPE determines the behavior of the NVCC compilation unit and/or OpenMP loops:
-------------------------------------------------------------
-   CUDA
-------------------------------------------------------------
-   1:     NVCC compiler, Unified Memory allocation, Parallel loops on GPUs
-   2:     NVCC compiler, Unified Memory allocation, Sequential loops on host
-   Other: NVCC compiler, Standard heap allocation, Sequential loops on host
-
-
-------------------------------------------------------------
-   OpenMP
-------------------------------------------------------------
-   1:     CXX compiler, Standard heap allocation, Parallel loops on CPU
-   2:     CXX compiler, Standard heap allocation, Sequential loops on CPU
-   Other: CXX compiler, Standard heap allocation, Sequential loops on CPU
-*/
+ * ------------------------------------------------------------
+ * CUDA
+ * ------------------------------------------------------------
+ * 1:     NVCC compiler, Unified Memory allocation, Parallel loops on GPUs
+ * 2:     NVCC compiler, Unified Memory allocation, Sequential loops on host
+ * Other: NVCC compiler, Standard heap allocation, Sequential loops on host
+ *
+ *
+ * ------------------------------------------------------------
+ * OpenMP
+ * ------------------------------------------------------------
+ * 1:     CXX compiler, Standard heap allocation, Parallel loops on CPU
+ * 2:     CXX compiler, Standard heap allocation, Sequential loops on CPU
+ * Other: CXX compiler, Standard heap allocation, Sequential loops on CPU
+ */
 
 /* Include headers depending on the accelerator backend */
 #ifdef PARFLOW_HAVE_KOKKOS
@@ -80,8 +80,8 @@
 
 #define EMPTY()
 #define DEFER(x) x EMPTY()
-#define PASTER(x,y) x ## y
-#define EVALUATOR(x,y) PASTER(x,y)
+#define PASTER(x, y) x ## y
+#define EVALUATOR(x, y) PASTER(x, y)
 #define CHOOSE_BACKEND(name, id) EVALUATOR(name, id)
 
 // Memory management
@@ -152,7 +152,7 @@
   #define PARALLEL_SYNC PARALLEL_SYNC_default
 #endif
 
-// General 
+// General
 
 #if defined(PlusEquals_cuda) || defined(PlusEquals_kokkos) || defined(PlusEquals_omp)
   #define PlusEquals CHOOSE_BACKEND(DEFER(PlusEquals), ACC_ID)

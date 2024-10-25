@@ -134,19 +134,19 @@ void     Godunov(
   SubregionArray   *subregion_array;
 
   Subgrid          *subgrid,
-    *well_subgrid,
-    *tmp_subgrid;
+                   *well_subgrid,
+                   *tmp_subgrid;
   Subregion        *subregion;
   Subvector        *subvector,
-    *subvector_smf,
-    *subvector_scal,
-    *subvector_rhs,
-    *subvector_xvel,
-    *subvector_yvel,
-    *subvector_zvel,
-    *px_sub,
-    *py_sub,
-    *pz_sub;
+                   *subvector_smf,
+                   *subvector_scal,
+                   *subvector_rhs,
+                   *subvector_xvel,
+                   *subvector_yvel,
+                   *subvector_zvel,
+                   *px_sub,
+                   *py_sub,
+                   *pz_sub;
 
   ComputePkg       *compute_pkg;
   Region           *compute_reg = NULL;
@@ -156,11 +156,11 @@ void     Godunov(
   int nx, ny, nz;
   double dx, dy, dz;
   int nx_c, ny_c, nz_c,
-    nx_p, ny_p, nz_p,
-    nx_w, ny_w, nz_w,
-    nx_xv, ny_xv, nz_xv,
-    nx_yv, ny_yv, nz_yv,
-    nx_zv, ny_zv, nz_zv;
+      nx_p, ny_p, nz_p,
+      nx_w, ny_w, nz_w,
+      nx_xv, ny_xv, nz_xv,
+      nx_yv, ny_yv, nz_yv,
+      nx_zv, ny_zv, nz_zv;
   int i, j, k, ci, pi, wi, xi, yi, zi;
   int nx_cells, ny_cells, nz_cells, index, flopest;
   double lambda, decay_factor;
@@ -178,7 +178,7 @@ void     Godunov(
   double dt;
   int fstord;
   double cell_volume, field_sum, total_volume, cell_change,
-    well_stat;
+         well_stat;
   double well_value, input_c, volume, flux, scaled_flux, weight = 0;
   double avg_x, avg_y, avg_z, area_x, area_y, area_z, area_sum;
 

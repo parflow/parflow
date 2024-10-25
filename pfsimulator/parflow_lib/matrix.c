@@ -611,6 +611,7 @@ Matrix          *NewMatrixType(
         MatrixCommPkg(new_matrix) = NewMatrixUpdatePkg(new_matrix, ghost);
 
       break;
+
     default:
       PARFLOW_ERROR("invalid matrix type");
       break;

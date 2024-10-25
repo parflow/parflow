@@ -91,6 +91,8 @@ set (SRC_FILES_CONST advect.F
   problem_thermal_conductivity.c
   problem_toposlope_x.c
   problem_toposlope_y.c
+  problem_wc_x.c
+  problem_wc_y.c
   process_grid.c
   random.c
   ratqr.c

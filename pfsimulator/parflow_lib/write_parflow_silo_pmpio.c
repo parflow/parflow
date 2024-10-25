@@ -101,7 +101,7 @@ void     WriteSiloPMPIOInit(char *file_prefix)
 {
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
   char filename[2048];
-  
+
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
 
@@ -116,7 +116,7 @@ void     WriteSiloPMPIOInit(char *file_prefix)
   if (strlen(compression_options))
   {
     DBSetCompression(compression_options);
-    if (db_errno  < 0)
+    if (db_errno < 0)
     {
       amps_Printf("Error: Compression options failed for SILO.CompressionOptions=%s\n", compression_options);
       amps_Printf("       This may mean SILO was not compiled with compression enabled\n");
@@ -198,7 +198,6 @@ void     WriteSiloPMPIO(char *  file_prefix,
                         int     step,
                         char *  variable_name)
 {
-
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);

@@ -542,8 +542,8 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   sprintf(key, "Solver.Nonlinear.PrintFlag");
   switch_name = GetStringDefault(key, "LowVerbosity");
   (public_xtra->print_flag) = NA_NameToIndexExitOnError(verbosity_switch_na,
-							switch_name,
-							key);
+                                                        switch_name,
+                                                        key);
   NA_FreeNameArray(verbosity_switch_na);
 
   eta_switch_na = NA_NewNameArray("EtaConstant Walker1 Walker2");

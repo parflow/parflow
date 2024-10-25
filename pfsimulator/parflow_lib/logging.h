@@ -35,6 +35,6 @@
 #define _LOGGING_HEADER
 
 #define IfLogging(level) \
-  if ((level <= GlobalsLoggingLevel) && (!amps_Rank(amps_CommWorld)))
+        if ((level <= GlobalsLoggingLevel) && (!amps_Rank(amps_CommWorld)))
 
 #endif
