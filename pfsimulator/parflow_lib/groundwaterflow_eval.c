@@ -139,8 +139,8 @@ void GroundwaterFlowEvalNLFunc(
   Subvector *bottom_sub = VectorSubvector(bottom, isubgrid);
   double    *bottom_dat = SubvectorData(bottom_sub);
 
-  Vector    *Sy = ProblemDataSpecificYield(problem_data);
-  Vector    *Ad = ProblemDataAquiferDepth(problem_data);
+  Vector    *Sy = instance_xtra->SpecificYield;
+  Vector    *Ad = instance_xtra->AquiferDepth;
   Subvector *Sy_sub = VectorSubvector(Sy, isubgrid);
   double    *Sy_dat = SubvectorData(Sy_sub);
   Subvector *Ad_sub = VectorSubvector(Ad, isubgrid);
@@ -162,7 +162,6 @@ void GroundwaterFlowEvalNLFunc(
 
                               double dx = SubgridDX(subgrid);
                               double dy = SubgridDY(subgrid);
-                              double dz = SubgridDZ(subgrid);
                               double dxdy = dx * dy;
                               double dtdx_over_dy = dt * dx / dy;
                               double dtdy_over_dx = dt * dy / dx;
@@ -338,8 +337,8 @@ void GroundwaterFlowEvalJacob(
   Subvector *bottom_sub = VectorSubvector(bottom, isubgrid);
   double    *bottom_dat = SubvectorData(bottom_sub);
 
-  Vector    *Sy = ProblemDataSpecificYield(problem_data);
-  Vector    *Ad = ProblemDataAquiferDepth(problem_data);
+  Vector    *Sy = instance_xtra->SpecificYield;
+  Vector    *Ad = instance_xtra->AquiferDepth;
   Subvector *Sy_sub = VectorSubvector(Sy, isubgrid);
   double    *Sy_dat = SubvectorData(Sy_sub);
   Subvector *Ad_sub = VectorSubvector(Ad, isubgrid);
@@ -367,7 +366,6 @@ void GroundwaterFlowEvalJacob(
 
                               double dx = SubgridDX(subgrid);
                               double dy = SubgridDY(subgrid);
-                              double dz = SubgridDZ(subgrid);
                               double dxdy = dx * dy;
                               double dtdx_over_dy = dt * dx / dy;
                               double dtdy_over_dx = dt * dy / dx;
