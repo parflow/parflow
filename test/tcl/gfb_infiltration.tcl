@@ -273,7 +273,7 @@ pfset Solver                                             Richards
 pfset Solver.MaxIter                                     100000
 
 pfset Solver.Nonlinear.MaxIter                           1000
-pfset Solver.Nonlinear.ResidualTol                       1e-4
+pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          1e-4
 pfset Solver.Nonlinear.UseJacobian                       True
