@@ -9,9 +9,9 @@ namespace import Parflow::*
 
 pfset FileVersion 4
 
-pfset Process.Topology.P 1
-pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+pfset Process.Topology.P     1
+pfset Process.Topology.Q     1
+pfset Process.Topology.R     1
 
 #---------------------------------------------------------
 # Computational Grid
@@ -80,8 +80,8 @@ pfset Geom.background.Upper.Z  99999999.0
 pfset TimingInfo.BaseUnit       0.25
 pfset TimingInfo.StartCount     0.0
 pfset TimingInfo.StartTime      0.0
-pfset TimingInfo.StopTime       120.0
-pfset TimingInfo.DumpInterval  -5
+pfset TimingInfo.StopTime       5.0
+pfset TimingInfo.DumpInterval  -4
 pfset TimeStep.Type             Constant
 pfset TimeStep.Value            0.25
 
@@ -122,10 +122,10 @@ pfset Patch.back.BCPressure.alltime.Value    0.0
 
 pfset Patch.bottom.BCPressure.Type   GroundwaterFlow
 pfset Patch.bottom.BCPressure.Cycle  constant
-pfset Patch.bottom.BCPressure.GroundwaterFlow.SpecificYield.Type   Constant
-pfset Patch.bottom.BCPressure.GroundwaterFlow.SpecificYield.Value  0.1
-pfset Patch.bottom.BCPressure.GroundwaterFlow.AquiferDepth.Type    Constant
-pfset Patch.bottom.BCPressure.GroundwaterFlow.AquiferDepth.Value   90.0
+pfset Patch.BCPressure.GroundwaterFlow.SpecificYield.Type   Constant
+pfset Patch.BCPressure.GroundwaterFlow.SpecificYield.Value  0.1
+pfset Patch.BCPressure.GroundwaterFlow.AquiferDepth.Type    Constant
+pfset Patch.BCPressure.GroundwaterFlow.AquiferDepth.Value   90.0
 
 pfset Patch.top.BCPressure.Type              FluxConst
 pfset Patch.top.BCPressure.Cycle             rainfall
@@ -286,13 +286,42 @@ pfset Solver.Linear.Preconditioner                       MGSemi
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
 
-pfset Solver.PrintPressure     False
-pfset Solver.PrintSubsurfData  False
-pfset Solver.PrintSaturation   True
-pfset Solver.PrintMask         False
-
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-# pfwritedb infiltration_gfb
-pfrun infiltration_gfb
+pfrun gfb_infiltration
+pfundist gfb_infiltration
+
+
+#
+# Tests 
+#
+source pftest.tcl
+set passed 1
+
+if ![pftestFile gfb_infiltration.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+    set passed 0
+}
+if ![pftestFile gfb_infiltration.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+    set passed 0
+}
+if ![pftestFile gfb_infiltration.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+    set passed 0
+}
+
+
+foreach i "00000 00001 00002 00003 00004 00005" {
+    if ![pftestFile gfb_infiltration.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+    set passed 0
+    }
+    if ![pftestFile gfb_infiltration.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+    set passed 0
+    }
+}
+
+
+if $passed {
+    puts "gfb_infiltration : PASSED"
+} {
+    puts "gfb_infiltration : FAILED"
+}
