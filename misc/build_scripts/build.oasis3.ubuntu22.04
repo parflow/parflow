@@ -19,7 +19,7 @@ COUPLE          = $(OASIS_ROOT)
 BUILD_DIR       = $(OASIS_ROOT)/util/make_dir
 #
 # ARCHDIR       : directory created when compiling
-ARCHDIR         = $(PARFLOW_DEP_DIR)
+ARCHDIR         = $(OASIS_ROOT)/install
 #
 # MPI library ((see the file /etc/modulefiles/mpi/openmpi-x86_64)
 MPIDIR      = /usr/lib/x86_64-linux-gnu/openmpi
