@@ -229,24 +229,22 @@ jobs:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       if: matrix.config.netcdf == 'true'
       run: |
-        if [[ "$CACHE_HIT" != 'true' ]]; then
-          URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
-          mkdir netcdf-c
-          cd netcdf-c
-          curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
-          make
-          make install
-          cd ..
+        URL=https://github.com/Unidata/netcdf-c/archive/v4.9.0.tar.gz
+        mkdir netcdf-c
+        cd netcdf-c
+        curl -L $URL | tar --strip-components=1 -xz
+        CC=mpicc CPPFLAGS=-I/usr/include/hdf5/openmpi LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi ./configure --prefix=$PARFLOW_DEP_DIR
+        make
+        make install
+        cd ..
 
-          URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
-          mkdir netcdf-fortran
-          cd netcdf-fortran
-          curl -L $URL | tar --strip-components=1 -xz
-          CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
-          make
-          make install
-        fi
+        URL=https://github.com/Unidata/netcdf-fortran/archive/v4.5.4.tar.gz
+        mkdir netcdf-fortran
+        cd netcdf-fortran
+        curl -L $URL | tar --strip-components=1 -xz
+        CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
+        make
+        make install
         echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
 
     - name: OASIS3-MCT Install
@@ -260,6 +258,7 @@ jobs:
         cd util/make_dir
         echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu22.04' > make.inc
         make realclean static-libs -f TopMakefileOasis3
+        cat COMP.err
         mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
         mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
         tree $(OASIS_ROOT)/install
