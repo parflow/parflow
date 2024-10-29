@@ -259,7 +259,7 @@ jobs:
           cd oasis3-mct
           export OASIS_ROOT=$(pwd)
           cd util/make_dir
-          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu20.04' > make.inc
+          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu22.04' > make.inc
           make realclean -f TopMakefileOasis3
           make -f TopMakefileOasis3
           mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
