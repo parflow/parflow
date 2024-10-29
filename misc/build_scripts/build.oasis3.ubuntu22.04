@@ -15,9 +15,11 @@ CHAN            = MPI1
 #
 # COUPLE        : path for oasis3 main directory
 COUPLE          = $(OASIS_ROOT)
+# BUILD_DIR     : dir where the TopMakefileOasis3 is
+BUILD_DIR       = $(OASIS_ROOT)/util/make_dir
 #
 # ARCHDIR       : directory created when compiling
-ARCHDIR         = $(OASIS_ROOT)/install
+ARCHDIR         = $(PARFLOW_DEP_DIR)
 #
 # MPI library ((see the file /etc/modulefiles/mpi/openmpi-x86_64)
 MPIDIR      = /usr/lib/x86_64-linux-gnu/openmpi
