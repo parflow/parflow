@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 #ifndef _AMPS_HEADER
 #define _AMPS_HEADER
 
@@ -265,140 +265,140 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 /*---------------------------------------------------------------------------*/
 /* Functions to for align                                                    */
 /*---------------------------------------------------------------------------*/
-#define AMPS_ALIGN(type, src, dest, len, stride) \
-  ((sizeof(type) -                               \
-    ((unsigned long)(dest) % sizeof(type)))      \
-   % sizeof(type));
+#define AMPS_ALIGN(type, src, dest, len, stride)       \
+        ((sizeof(type) -                               \
+          ((unsigned long)(dest) % sizeof(type)))      \
+         % sizeof(type));
 
 #define AMPS_CALL_CHAR_ALIGN(_comm, _src, _dest, _len, _stride) \
-  AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
+        AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_SHORT_ALIGN(_comm, _src, _dest, _len, _stride) \
-  AMPS_ALIGN(short, (_src), (_dest), (_len), (_stride))
+        AMPS_ALIGN(short, (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_INT_ALIGN(_comm, _src, _dest, _len, _stride) \
-  AMPS_ALIGN(int, (_src), (_dest), (_len), (_stride))
+        AMPS_ALIGN(int, (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_LONG_ALIGN(_comm, _src, _dest, _len, _stride) \
-  AMPS_ALIGN(long, (_src), (_dest), (_len), (_stride))
+        AMPS_ALIGN(long, (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_FLOAT_ALIGN(_comm, _src, _dest, _len, _stride) \
-  AMPS_ALIGN(float, (_src), (_dest), (_len), (_stride))
+        AMPS_ALIGN(float, (_src), (_dest), (_len), (_stride))
 
 /* SGS warning!!!!!!:  since malloc returns 4 byte alinged things we should align
  * in a similiar way */
 
 #define AMPS_CALL_DOUBLE_ALIGN(_comm, _src, _dest, _len, _stride) \
-  AMPS_ALIGN(float, (_src), (_dest), (_len), (_stride))
+        AMPS_ALIGN(float, (_src), (_dest), (_len), (_stride))
 
 /*---------------------------------------------------------------------------*/
 /* Functions to for sizeof                                                   */
 /*---------------------------------------------------------------------------*/
 #define AMPS_SIZEOF(len, stride, size) \
-  ((len) * (size))
+        ((len) * (size))
 
 #define AMPS_CALL_CHAR_SIZEOF(_comm, _src, _dest, _len, _stride) \
-  AMPS_SIZEOF((_len), (_stride), sizeof(char))
+        AMPS_SIZEOF((_len), (_stride), sizeof(char))
 
 #define AMPS_CALL_SHORT_SIZEOF(_comm, _src, _dest, _len, _stride) \
-  AMPS_SIZEOF((_len), (_stride), sizeof(short))
+        AMPS_SIZEOF((_len), (_stride), sizeof(short))
 
 #define AMPS_CALL_INT_SIZEOF(_comm, _src, _dest, _len, _stride) \
-  AMPS_SIZEOF((_len), (_stride), sizeof(int))
+        AMPS_SIZEOF((_len), (_stride), sizeof(int))
 
 #define AMPS_CALL_LONG_SIZEOF(_comm, _src, _dest, _len, _stride) \
-  AMPS_SIZEOF((_len), (_stride), sizeof(long))
+        AMPS_SIZEOF((_len), (_stride), sizeof(long))
 
 #define AMPS_CALL_FLOAT_SIZEOF(_comm, _src, _dest, _len, _stride) \
-  AMPS_SIZEOF((_len), (_stride), sizeof(float))
+        AMPS_SIZEOF((_len), (_stride), sizeof(float))
 
 #define AMPS_CALL_DOUBLE_SIZEOF(_comm, _src, _dest, _len, _stride) \
-  AMPS_SIZEOF((_len), (_stride), sizeof(double))
+        AMPS_SIZEOF((_len), (_stride), sizeof(double))
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                         \
-  {                                                                                                       \
-    type *ptr_src, *ptr_dest;                                                                             \
-    if ((char*)(src) != (char*)(dest))                                                                    \
-      if ((stride) == 1)                                                                                  \
-        memcpy((dest), (src), (len) * sizeof(type));                                                      \
-      else                                                                                                \
-        for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride); \
-             ptr_src += (stride), ptr_dest++)                                                             \
-          *ptr_dest = *ptr_src;                                                                           \
-  }
+#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                               \
+        {                                                                                                       \
+          type *ptr_src, *ptr_dest;                                                                             \
+          if ((char*)(src) != (char*)(dest))                                                                    \
+          if ((stride) == 1)                                                                                    \
+          memcpy((dest), (src), (len) * sizeof(type));                                                          \
+          else                                                                                                  \
+          for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride);     \
+               ptr_src += (stride), ptr_dest++)                                                                 \
+          *ptr_dest = *ptr_src;                                                                                 \
+        }
 
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_SHORT_OUT(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_OUT(short, ctohs, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_OUT(short, ctohs, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_INT_OUT(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_OUT(int, ctohi, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_OUT(int, ctohi, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_LONG_OUT(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_OUT(long, ctohl, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_OUT(long, ctohl, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_FLOAT_OUT(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_OUT(float, ctohf, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_OUT(float, ctohf, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_DOUBLE_OUT(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_OUT(double, ctohd, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_OUT(double, ctohd, (_comm), (_src), (_dest), (_len), (_stride))
 
 
 
-#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                                                \
-  {                                                                                                             \
-    type *ptr_src, *ptr_dest;                                                                                   \
-    if ((char*)(src) != (char*)(dest))                                                                          \
-      if ((stride) == 1)                                                                                        \
-        memcpy((dest), (src), (len) * sizeof(type));                                                            \
-      else                                                                                                      \
-        for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest); (ptr_dest) < (type*)(dest) + (len) * (stride); \
-             (ptr_src)++, (ptr_dest) += (stride))                                                               \
-          *(ptr_dest) = *(ptr_src);                                                                             \
-  }
+#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                                                      \
+        {                                                                                                             \
+          type *ptr_src, *ptr_dest;                                                                                   \
+          if ((char*)(src) != (char*)(dest))                                                                          \
+          if ((stride) == 1)                                                                                          \
+          memcpy((dest), (src), (len) * sizeof(type));                                                                \
+          else                                                                                                        \
+          for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest); (ptr_dest) < (type*)(dest) + (len) * (stride);     \
+               (ptr_src)++, (ptr_dest) += (stride))                                                                   \
+          *(ptr_dest) = *(ptr_src);                                                                                   \
+        }
 
 
 #define AMPS_CALL_CHAR_IN(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_SHORT_IN(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_IN(short, htocs, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_IN(short, htocs, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_INT_IN(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_IN(int, htoci, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_IN(int, htoci, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_LONG_IN(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_IN(long, htocl, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_IN(long, htocl, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_FLOAT_IN(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_IN(float, htocf, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_IN(float, htocf, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_DOUBLE_IN(_comm, _src, _dest, _len, _stride) \
-  AMPS_CONVERT_IN(double, htocd, (_comm), (_src), (_dest), (_len), (_stride))
+        AMPS_CONVERT_IN(double, htocd, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CHECK_OVERLAY(_type, _comm) 1
 
 #define AMPS_CHAR_OVERLAY(_comm) \
-  AMPS_CHECK_OVERLAY(char, _comm)
+        AMPS_CHECK_OVERLAY(char, _comm)
 
 #define AMPS_SHORT_OVERLAY(_comm) \
-  AMPS_CHECK_OVERLAY(short, _comm)
+        AMPS_CHECK_OVERLAY(short, _comm)
 
 #define AMPS_INT_OVERLAY(_comm) \
-  AMPS_CHECK_OVERLAY(int, _comm)
+        AMPS_CHECK_OVERLAY(int, _comm)
 
 #define AMPS_LONG_OVERLAY(_comm) \
-  AMPS_CHECK_OVERLAY(long, _comm)
+        AMPS_CHECK_OVERLAY(long, _comm)
 
 #define AMPS_FLOAT_OVERLAY(_comm) \
-  AMPS_CHECK_OVERLAY(float, _comm)
+        AMPS_CHECK_OVERLAY(float, _comm)
 
 #define AMPS_DOUBLE_OVERLAY(_comm) \
-  AMPS_CHECK_OVERLAY(double, _comm)
+        AMPS_CHECK_OVERLAY(double, _comm)
 
 
 /*---------------------------------------------------------------------------*/
@@ -411,20 +411,20 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 /* Internal macros used to clear buffer and letter spaces.                   */
 /*---------------------------------------------------------------------------*/
 
-#define AMPS_CLEAR_INVOICE(invoice)                     \
-  {                                                     \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    amps_ClearInvoice(invoice);                         \
-  }
+#define AMPS_CLEAR_INVOICE(invoice)                           \
+        {                                                     \
+          (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
+          amps_ClearInvoice(invoice);                         \
+        }
 
-#define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
-  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
-    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;    \
-  else                                                    \
-  {                                                       \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
-    amps_free((comm), (amps_letter));                     \
-  }                                                       \
+#define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter)       \
+        if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
+        (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;      \
+        else                                                    \
+        {                                                       \
+          (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
+          amps_free((comm), (amps_letter));                     \
+        }                                                       \
 
 
 /*****************************************************************************
@@ -444,29 +444,29 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 /*---------------------------------------------------------------------------*/
 
 #define amps_WriteChar(file, ptr, len) \
-  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_WriteShort(file, ptr, len) \
-  fwrite((ptr), sizeof(short), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(short), (len), (FILE*)(file))
 
 void amps_WriteInt();
 
 #define amps_WriteLong(file, ptr, len) \
-  fwrite((ptr), sizeof(long), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(long), (len), (FILE*)(file))
 
 void amps_WriteDouble();
 
 
 #define amps_ReadChar(file, ptr, len) \
-  fread((ptr), sizeof(char), (len), (FILE*)(file))
+        fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadShort(file, ptr, len) \
-  fread((ptr), sizeof(short), (len), (FILE*)(file))
+        fread((ptr), sizeof(short), (len), (FILE*)(file))
 
 void amps_ReadInt();
 
 #define amps_ReadLong(file, ptr, len) \
-  fread((ptr), sizeof(long), (len), (FILE*)(file))
+        fread((ptr), sizeof(long), (len), (FILE*)(file))
 
 void amps_ReadDouble();
 
@@ -477,10 +477,10 @@ void amps_ReadDouble();
 #if 1
 
 #define amps_TAlloc(type, count) \
-  (type*)_amps_TAlloc(count * sizeof(type), __FILE__, __LINE__)
+        (type*)_amps_TAlloc(count * sizeof(type), __FILE__, __LINE__)
 
 #define amps_CTAlloc(type, count) \
-  (type*)_amps_CTAlloc(count * sizeof(type), __FILE__, __LINE__)
+        (type*)_amps_CTAlloc(count * sizeof(type), __FILE__, __LINE__)
 
 
 /* note: the `else' is required to guarantee termination of the `if' */
@@ -493,10 +493,10 @@ void amps_ReadDouble();
 #else
 
 #define amps_TAlloc(type, count) \
-  ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+        ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 #define amps_CTAlloc(type, count) \
-  ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr, amps_arena); else

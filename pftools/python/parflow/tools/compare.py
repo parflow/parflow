@@ -1,12 +1,13 @@
 import os
-from parflow.tools.io import read_pfb
+from parflow.tools.io import read_pfb, read_pfsb
+
 
 def pf_test_equal(a, b, message):
     pf_eps = 1e-5
     if abs(a - b) > pf_eps:
         print(f"FAILED : {message} {a} is not equal to {b}")
         return False
-    
+
     return True
 
 
@@ -15,14 +16,14 @@ def msig_diff(data1, data2, m, abs_zero=0.0):
 
     Two nd arrays are given as the first two arguments.
     The grid point at which the number of digits in agreement
-    (significant digits) is fewest is determined.  If m >= 0 
-    then the coordinate whose two values differ in more than 
-    m significant digits will be computed.  If m < 0 then the 
-    coordinate whose values have a minimum number of significant 
-    digits will be computed. The number of the fewest significant 
-    digits is determined, and the maximum absolute difference is 
-    computed. The only coordinates that will be considered will be 
-    those whose differences are greater than absolute zero. 
+    (significant digits) is fewest is determined.  If m >= 0
+    then the coordinate whose two values differ in more than
+    m significant digits will be computed.  If m < 0 then the
+    coordinate whose values have a minimum number of significant
+    digits will be computed. The number of the fewest significant
+    digits is determined, and the maximum absolute difference is
+    computed. The only coordinates that will be considered will be
+    those whose differences are greater than absolute zero.
 
     Args:
         data1 (numpy.ndarray): first ndarray
@@ -32,9 +33,9 @@ def msig_diff(data1, data2, m, abs_zero=0.0):
 
     Returns:
         A list of the following form is returned upon success:
- 
+
                [[i j k s] max_adiff]
- 
+
         where i, j, and k are the coordinates computed, sd is the
         minimum number of significant digits computed, and max_adiff
         is the maximum absolute difference computed.
@@ -46,12 +47,12 @@ def msig_diff(data1, data2, m, abs_zero=0.0):
     assert abs_zero >= 0
 
     if not data1.shape == data2.shape:
-        raise ValueError("Error: Data arrays must have the same dimensions.") 
-        
+        raise ValueError("Error: Data arrays must have the same dimensions.")
+
     nx, ny, nz = data1.shape
 
     if m >= 0:
-        sig_dig_rhs = 0.5 / 10 ** m
+        sig_dig_rhs = 0.5 / 10**m
     else:
         sig_dig_rhs = 0.0
 
@@ -97,7 +98,7 @@ def msig_diff(data1, data2, m, abs_zero=0.0):
 
 def pf_test_file(file, correct_file, message, sig_digits=6):
     """Python version of the tcl pftestFile procedure.
-    
+
     Two file paths are given as the first two arguments.
     The function reads them into ndarrays and calls a comparison
     function (msig_diff) to check if the files differ by
@@ -123,15 +124,23 @@ def pf_test_file(file, correct_file, message, sig_digits=6):
         raise FileNotFoundError(f"FAILED : output file <{file}> not created")
 
     if not os.path.exists(correct_file):
-        raise FileNotFoundError(f"FAILED : regression check output file <{correct_file}> does not exist")
+        raise FileNotFoundError(
+            f"FAILED : regression check output file <{correct_file}> does not exist"
+        )
 
     try:
-        data = read_pfb(file)
-        correct_data = read_pfb(correct_file)
+        if file.endswith(".pfb"):
+            data = read_pfb(file)
+            correct_data = read_pfb(correct_file)
+        elif file.endswith(".pfsb"):
+            data = read_pfsb(file)
+            correct_data = read_pfsb(correct_file)
+        else:
+            raise ValueError("Unknown parflow file type.")
     except Exception as e:
-        print("Error: Failed to load data from files.", e)
+        print("Error: Failed to load data from files...", e)
         return False
-    
+
     result = msig_diff(data, correct_data, sig_digits)
     if (len(result)) == 0:
         return True
@@ -155,14 +164,14 @@ def pf_test_file(file, correct_file, message, sig_digits=6):
 
 def pf_test_file_with_abs(file, correct_file, message, abs_value, sig_digits=6):
     """Python version of the tcl pftestFileWithAbs procedure.
-    
+
     Two file paths are given as the first two arguments.
     The function reads them into ndarrays and calls a comparison
     function (msig_diff) to check if the files differ by
     more than sig_digits significant digits in any coordinate.
-    If they do, the function checks if the difference in that 
-    coordinate is greater than abs_value. If it is, it prints 
-    an error message and the coordinate in which the files have 
+    If they do, the function checks if the difference in that
+    coordinate is greater than abs_value. If it is, it prints
+    an error message and the coordinate in which the files have
     the greatest difference.
 
     Args:
@@ -185,7 +194,9 @@ def pf_test_file_with_abs(file, correct_file, message, abs_value, sig_digits=6):
         raise FileNotFoundError(f"FAILED : output file <{file}> not created")
 
     if not os.path.exists(correct_file):
-        raise FileNotFoundError(f"FAILED : regression check output file <{correct_file}> does not exist")
+        raise FileNotFoundError(
+            f"FAILED : regression check output file <{correct_file}> does not exist"
+        )
 
     try:
         data = read_pfb(file)
@@ -201,15 +212,16 @@ def pf_test_file_with_abs(file, correct_file, message, abs_value, sig_digits=6):
         i, j, k, sig_digs = m_sig_digs
 
         elt_diff = abs(data[i, j, k] - correct_data[i, j, k])
-        
+
         if elt_diff > abs_value:
             print(f"FAILED : {message}")
-            print(f"\tMinimum significant digits at ({i:3d}, {j:3d}, {k:3d}) = {sig_digs:2d}")
+            print(
+                f"\tMinimum significant digits at ({i:3d}, {j:3d}, {k:3d}) = {sig_digs:2d}"
+            )
             print(f"\tCorrect value {correct_data[i, j, k]:e}")
             print(f"\tComputed value {data[i, j, k]:e}")
             print(f"\tDifference {elt_diff:e}")
             print(f"\tMaximum absolute difference = {max_abs_diff:e}")
             return False
-
 
     return True

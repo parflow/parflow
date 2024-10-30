@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * Header info for the Region structures
@@ -134,9 +134,9 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define SubregionArraySubregions(subregion_array) \
-  ((subregion_array)->subregions)
+        ((subregion_array)->subregions)
 #define SubregionArraySubregion(subregion_array, i) \
-  ((subregion_array)->subregions[(i)])
+        ((subregion_array)->subregions[(i)])
 #define SubregionArraySize(subregion_array)  ((subregion_array)->size)
 
 /*--------------------------------------------------------------------------
@@ -152,60 +152,60 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define RealSpaceDX(rx) \
-  (BackgroundDX(GlobalsBackground) / pow(2.0, (double)rx))
+        (BackgroundDX(GlobalsBackground) / pow(2.0, (double)rx))
 #define RealSpaceDY(ry) \
-  (BackgroundDY(GlobalsBackground) / pow(2.0, (double)ry))
+        (BackgroundDY(GlobalsBackground) / pow(2.0, (double)ry))
 #define RealSpaceDZ(rz) \
-  (BackgroundDZ(GlobalsBackground) / pow(2.0, (double)rz))
+        (BackgroundDZ(GlobalsBackground) / pow(2.0, (double)rz))
 
 #define RealSpaceX(ix, rx) \
-  (BackgroundX(GlobalsBackground) + (ix + 0.5) * RealSpaceDX(rx))
+        (BackgroundX(GlobalsBackground) + (ix + 0.5) * RealSpaceDX(rx))
 #define RealSpaceY(iy, ry) \
-  (BackgroundY(GlobalsBackground) + (iy + 0.5) * RealSpaceDY(ry))
+        (BackgroundY(GlobalsBackground) + (iy + 0.5) * RealSpaceDY(ry))
 #define RealSpaceZ(iz, rz) \
-  (BackgroundZ(GlobalsBackground) + (iz + 0.5) * RealSpaceDZ(rz))
+        (BackgroundZ(GlobalsBackground) + (iz + 0.5) * RealSpaceDZ(rz))
 
 #define IndexSpaceNX(rx) \
-  (BackgroundNX(GlobalsBackground) * (int)pow(2.0, rx))
+        (BackgroundNX(GlobalsBackground) * (int)pow(2.0, rx))
 #define IndexSpaceNY(ry) \
-  (BackgroundNY(GlobalsBackground) * (int)pow(2.0, ry))
+        (BackgroundNY(GlobalsBackground) * (int)pow(2.0, ry))
 #define IndexSpaceNZ(rz) \
-  (BackgroundNZ(GlobalsBackground) * (int)pow(2.0, rz))
+        (BackgroundNZ(GlobalsBackground) * (int)pow(2.0, rz))
 
 #define IndexSpaceX(x, rx) \
-  (pfround((x - RealSpaceX(0, rx)) / RealSpaceDX(rx)))
+        (pfround((x - RealSpaceX(0, rx)) / RealSpaceDX(rx)))
 #define IndexSpaceY(y, ry) \
-  (pfround((y - RealSpaceY(0, ry)) / RealSpaceDY(ry)))
+        (pfround((y - RealSpaceY(0, ry)) / RealSpaceDY(ry)))
 #define IndexSpaceZ(z, rz) \
-  (pfround((z - RealSpaceZ(0, rz)) / RealSpaceDZ(rz)))
+        (pfround((z - RealSpaceZ(0, rz)) / RealSpaceDZ(rz)))
 
 /*--------------------------------------------------------------------------
  * Utility macros:
  *--------------------------------------------------------------------------*/
 
 #define SubregionDX(subregion) \
-  (SubregionSX(subregion) * (RealSpaceDX(SubregionRX(subregion))))
+        (SubregionSX(subregion) * (RealSpaceDX(SubregionRX(subregion))))
 #define SubregionDY(subregion) \
-  (SubregionSY(subregion) * (RealSpaceDY(SubregionRY(subregion))))
+        (SubregionSY(subregion) * (RealSpaceDY(SubregionRY(subregion))))
 #define SubregionDZ(subregion) \
-  (SubregionSZ(subregion) * (RealSpaceDZ(SubregionRZ(subregion))))
+        (SubregionSZ(subregion) * (RealSpaceDZ(SubregionRZ(subregion))))
 
 #define SubregionX(subregion) \
-  RealSpaceX(SubregionIX(subregion), SubregionRX(subregion))
+        RealSpaceX(SubregionIX(subregion), SubregionRX(subregion))
 #define SubregionY(subregion) \
-  RealSpaceY(SubregionIY(subregion), SubregionRY(subregion))
+        RealSpaceY(SubregionIY(subregion), SubregionRY(subregion))
 #define SubregionZ(subregion) \
-  RealSpaceZ(SubregionIZ(subregion), SubregionRZ(subregion))
+        RealSpaceZ(SubregionIZ(subregion), SubregionRZ(subregion))
 
 /*--------------------------------------------------------------------------
  * Looping macros:
  *--------------------------------------------------------------------------*/
 
 #define ForSubregionI(i, subregion_array) \
-  for (i = 0; i < SubregionArraySize(subregion_array); i++)
+        for (i = 0; i < SubregionArraySize(subregion_array); i++)
 
 #define ForSubregionArrayI(i, region) \
-  for (i = 0; i < RegionSize(region); i++)
+        for (i = 0; i < RegionSize(region); i++)
 
 
 #endif

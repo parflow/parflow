@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 #include "parflow_netcdf.h"
@@ -91,7 +91,8 @@ typedef struct {
 } Type3;                      /* Spatially varying field over entire domain
                                * read from a file */
 typedef struct {
-  char    *ncFileName;
+  char    *filename;
+  int timestep;
   Vector  *ic_values;
 } Type4;                      /* Spatially varying field over entire domain
                                * read from a file */
@@ -119,12 +120,6 @@ void         ICPhasePressure(
   Grid          *grid = VectorGrid(ic_pressure);
 
   GrGeomSolid   *gr_solid, *gr_domain;
-
-  Type0         *dummy0;
-  Type1         *dummy1;
-  Type2         *dummy2;
-  Type3         *dummy3;
-  Type4         *dummy4;
 
   SubgridArray  *subgrids = GridSubgrids(grid);
 
@@ -192,7 +187,7 @@ void         ICPhasePressure(
       double  *values;
       int ir;
 
-      dummy0 = (Type0*)(public_xtra->data);
+      Type0* dummy0 = (Type0*)(public_xtra->data);
 
       num_regions = (dummy0->num_regions);
       region_indices = (dummy0->region_indices);
@@ -252,7 +247,7 @@ void         ICPhasePressure(
       double nonlin_resid;
       int ir;
 
-      dummy1 = (Type1*)(public_xtra->data);
+      Type1* dummy1 = (Type1*)(public_xtra->data);
 
       num_regions = (dummy1->num_regions);
       region_indices = (dummy1->region_indices);
@@ -463,7 +458,7 @@ void         ICPhasePressure(
       double  ***elevations;
       int ir;
 
-      dummy2 = (Type2*)(public_xtra->data);
+      Type2* dummy2 = (Type2*)(public_xtra->data);
 
       num_regions = (dummy2->num_regions);
       region_indices = (dummy2->region_indices);
@@ -678,7 +673,7 @@ void         ICPhasePressure(
 
     case 3: /* ParFlow binary file with spatially varying pressure values */
     {
-      dummy3 = (Type3*)(public_xtra->data);
+      Type3* dummy3 = (Type3*)(public_xtra->data);
 
       Vector *ic_values = dummy3->ic_values;
 
@@ -724,7 +719,7 @@ void         ICPhasePressure(
 
     case 4: /* ParFlow NetCDF file with spatially varying pressure values */
     {
-      dummy4 = (Type4*)(public_xtra->data);
+      Type4         *dummy4 = (Type4*)(public_xtra->data);
 
       Vector *ic_values = dummy4->ic_values;
 
@@ -792,8 +787,6 @@ PFModule  *ICPhasePressureInitInstanceXtra(
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra;
 
-  Type3         *dummy3;
-  Type4         *dummy4;
 
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
@@ -814,7 +807,7 @@ PFModule  *ICPhasePressureInitInstanceXtra(
     /* Uses a spatially varying field */
     if (public_xtra->type == 3)
     {
-      dummy3 = (Type3*)(public_xtra->data);
+      Type3* dummy3 = (Type3*)(public_xtra->data);
 
       /* Allocate temp vector */
       dummy3->ic_values = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -822,11 +815,11 @@ PFModule  *ICPhasePressureInitInstanceXtra(
     }
     else if (public_xtra->type == 4)
     {
-      dummy4 = (Type4*)(public_xtra->data);
+      Type4* dummy4 = (Type4*)(public_xtra->data);
 
       /* Allocate temp vector */
       dummy4->ic_values = NewVectorType(grid, 1, 1, vector_cell_centered);
-      ReadPFNC(dummy4->ncFileName, dummy4->ic_values, "pressure", 0, 3);
+      ReadPFNC(dummy4->filename, dummy4->ic_values, "pressure", dummy4->timestep, 3);
     }
   }
 
@@ -862,19 +855,16 @@ void  ICPhasePressureFreeInstanceXtra()
 
   if (instance_xtra)
   {
-    Type3         *dummy3;
-    Type4         *dummy4;
-
     /* Uses a spatially varying field */
     if (public_xtra->type == 3)
     {
-      dummy3 = (Type3*)(public_xtra->data);
+      Type3* dummy3 = (Type3*)(public_xtra->data);
 
       FreeVector(dummy3->ic_values);
     }
     else if (public_xtra->type == 4)
     {
-      dummy4 = (Type4*)(public_xtra->data);
+      Type4* dummy4 = (Type4*)(public_xtra->data);
       FreeVector(dummy4->ic_values);
     }
 
@@ -895,12 +885,6 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
   int num_regions;
   int ir;
-
-  Type0         *dummy0;
-  Type1         *dummy1;
-  Type2         *dummy2;
-  Type3         *dummy3;
-  Type4         *dummy4;
 
   char *switch_name;
   char *region;
@@ -928,7 +912,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
   {
     case 0:
     {
-      dummy0 = ctalloc(Type0, 1);
+      Type0* dummy0 = ctalloc(Type0, 1);
 
       dummy0->num_regions = num_regions;
 
@@ -952,7 +936,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
     case 1:
     {
-      dummy1 = ctalloc(Type1, 1);
+      Type1* dummy1 = ctalloc(Type1, 1);
 
       dummy1->num_regions = num_regions;
 
@@ -981,7 +965,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
     case 2:
     {
-      dummy2 = ctalloc(Type2, 1);
+      Type2* dummy2 = ctalloc(Type2, 1);
 
       dummy2->num_regions = num_regions;
 
@@ -1002,15 +986,14 @@ PFModule   *ICPhasePressureNewPublicXtra()
         sprintf(key, "Geom.%s.ICPressure.RefGeom", region);
         switch_name = GetString(key);
         dummy2->geom_indices[ir] = NA_NameToIndexExitOnError(GlobalsGeomNames,
-							     switch_name, key);
+                                                             switch_name, key);
 
         sprintf(key, "Geom.%s.ICPressure.RefPatch", region);
         switch_name = GetString(key);
         dummy2->patch_indices[ir] =
           NA_NameToIndexExitOnError(GeomSolidPatches(
-                                          GlobalsGeometries[dummy2->geom_indices[ir]]),
-				    switch_name, key);
-
+                                                     GlobalsGeometries[dummy2->geom_indices[ir]]),
+                                    switch_name, key);
       }
 
       (public_xtra->data) = (void*)dummy2;
@@ -1020,7 +1003,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
     case 3:
     {
-      dummy3 = ctalloc(Type3, 1);
+      Type3* dummy3 = ctalloc(Type3, 1);
 
       sprintf(key, "Geom.%s.ICPressure.FileName", "domain");
       dummy3->filename = GetString(key);
@@ -1031,10 +1014,13 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
     case 4:
     {
-      dummy4 = ctalloc(Type4, 1);
+      Type4* dummy4 = ctalloc(Type4, 1);
 
       sprintf(ncKey, "Geom.%s.ICPressure.FileName", "domain");
-      dummy4->ncFileName = GetString(ncKey);
+      dummy4->filename = GetString(ncKey);
+
+      sprintf(ncKey, "Geom.%s.ICPressure.TimeStep", "domain");
+      dummy4->timestep = GetIntDefault(ncKey, 0);
 
       public_xtra->data = (void*)dummy4;
 
@@ -1063,12 +1049,6 @@ void  ICPhasePressureFreePublicXtra()
   PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
 
-  Type0       *dummy0;
-  Type1       *dummy1;
-  Type2       *dummy2;
-  Type3       *dummy3;
-  Type4       *dummy4;
-
   if (public_xtra)
   {
     NA_FreeNameArray(public_xtra->regions);
@@ -1077,7 +1057,7 @@ void  ICPhasePressureFreePublicXtra()
     {
       case 0:
       {
-        dummy0 = (Type0*)(public_xtra->data);
+        Type0* dummy0 = (Type0*)(public_xtra->data);
 
         tfree(dummy0->region_indices);
         tfree(dummy0->values);
@@ -1087,7 +1067,7 @@ void  ICPhasePressureFreePublicXtra()
 
       case 1:
       {
-        dummy1 = (Type1*)(public_xtra->data);
+        Type1* dummy1 = (Type1*)(public_xtra->data);
 
         tfree(dummy1->region_indices);
         tfree(dummy1->reference_elevations);
@@ -1098,7 +1078,7 @@ void  ICPhasePressureFreePublicXtra()
 
       case 2:
       {
-        dummy2 = (Type2*)(public_xtra->data);
+        Type2* dummy2 = (Type2*)(public_xtra->data);
 
         tfree(dummy2->region_indices);
         tfree(dummy2->patch_indices);
@@ -1110,14 +1090,14 @@ void  ICPhasePressureFreePublicXtra()
 
       case 3:
       {
-        dummy3 = (Type3*)(public_xtra->data);
+        Type3* dummy3 = (Type3*)(public_xtra->data);
         tfree(dummy3);
         break;
       }
 
       case 4:
       {
-        dummy4 = (Type4*)(public_xtra->data);
+        Type4* dummy4 = (Type4*)(public_xtra->data);
         tfree(dummy4);
         break;
       }

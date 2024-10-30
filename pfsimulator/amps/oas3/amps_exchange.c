@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "amps.h"
 
@@ -43,8 +43,8 @@ void _amps_wait_exchange(amps_Handle handle)
                 handle->package->recv_requests, handle->package->status);
     for (i = 0; i < handle->package->num_recv; i++)
     {
-      amps_gpupacking(AMPS_UNPACK, 
-                      handle->package->recv_invoices[i], 
+      amps_gpupacking(AMPS_UNPACK,
+                      handle->package->recv_invoices[i],
                       i, &combuf, &size);
     }
     for (i = 0; i < handle->package->num_recv; i++)
@@ -59,7 +59,7 @@ void _amps_wait_exchange(amps_Handle handle)
     MPI_Datatype type = handle->package->recv_invoices[i]->mpi_type;
     if (type != MPI_DATATYPE_NULL && type != MPI_BYTE)
       MPI_Type_free(&(handle->package->recv_invoices[i]->mpi_type));
-    if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+    if (handle->package->recv_requests[i] != MPI_REQUEST_NULL)
       MPI_Request_free(&(handle->package->recv_requests[i]));
   }
   for (i = 0; i < handle->package->num_send; i++)
@@ -67,7 +67,7 @@ void _amps_wait_exchange(amps_Handle handle)
     MPI_Datatype type = handle->package->send_invoices[i]->mpi_type;
     if (type != MPI_DATATYPE_NULL && type != MPI_BYTE)
       MPI_Type_free(&handle->package->send_invoices[i]->mpi_type);
-    if(handle->package->send_requests[i] != MPI_REQUEST_NULL)
+    if (handle->package->send_requests[i] != MPI_REQUEST_NULL)
       MPI_Request_free(&(handle->package->send_requests[i]));
   }
 }
@@ -79,11 +79,13 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   int errchk;
   int i;
 
-  if(package->num_send > 0){
+  if (package->num_send > 0)
+  {
     combuf = (char**)malloc(package->num_send * sizeof(char*));
     size = (int*)malloc(package->num_send * sizeof(int));
   }
-  else{
+  else
+  {
     combuf = (char**)malloc(sizeof(char*));
     size = (int*)malloc(sizeof(int));
   }
@@ -93,12 +95,14 @@ amps_Handle amps_IExchangePackage(amps_Package package)
    *--------------------------------------------------------------------*/
   for (i = 0; i < package->num_recv; i++)
   {
-    errchk = amps_gpupacking(AMPS_GETRBUF, package->recv_invoices[i], 
-                   i, &combuf[0], &size[0]);
-    if(errchk == 0){    
+    errchk = amps_gpupacking(AMPS_GETRBUF, package->recv_invoices[i],
+                             i, &combuf[0], &size[0]);
+    if (errchk == 0)
+    {
       package->recv_invoices[i]->mpi_type = MPI_BYTE;
     }
-    else{ 
+    else
+    {
       combuf[0] = NULL;
       size[0] = 1;
       amps_create_mpi_type(oas3Comm, package->recv_invoices[i]);
@@ -115,12 +119,14 @@ amps_Handle amps_IExchangePackage(amps_Package package)
    *--------------------------------------------------------------------*/
   for (i = 0; i < package->num_send; i++)
   {
-    errchk = amps_gpupacking(AMPS_PACK, package->send_invoices[i], 
-                   i, &combuf[i], &size[i]);
-    if(errchk == 0){    
+    errchk = amps_gpupacking(AMPS_PACK, package->send_invoices[i],
+                             i, &combuf[i], &size[i]);
+    if (errchk == 0)
+    {
       package->send_invoices[i]->mpi_type = MPI_BYTE;
     }
-    else{
+    else
+    {
       combuf[i] = NULL;
       size[i] = 1;
       amps_create_mpi_type(oas3Comm, package->send_invoices[i]);
@@ -155,7 +161,7 @@ void _amps_wait_exchange(amps_Handle handle)
     {
       if (handle->package->recv_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
         MPI_Type_free(&(handle->package->recv_invoices[i]->mpi_type));
-      if(handle->package->recv_requests[i] != MPI_REQUEST_NULL)
+      if (handle->package->recv_requests[i] != MPI_REQUEST_NULL)
         MPI_Request_free(&handle->package->recv_requests[i]);
     }
 
@@ -163,7 +169,7 @@ void _amps_wait_exchange(amps_Handle handle)
     {
       if (handle->package->send_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
         MPI_Type_free(&handle->package->send_invoices[i]->mpi_type);
-      if(handle->package->send_requests[i] != MPI_REQUEST_NULL)
+      if (handle->package->send_requests[i] != MPI_REQUEST_NULL)
         MPI_Request_free(&handle->package->send_requests[i]);
     }
   }

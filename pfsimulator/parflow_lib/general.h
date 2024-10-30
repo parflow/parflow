@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /** @file
  * @brief General macro definitions.
@@ -39,10 +39,10 @@
  * Error macros
  *--------------------------------------------------------------------------*/
 
-#define PARFLOW_ERROR(X)                \
-  do {                                  \
-    _amps_Abort(X, __FILE__, __LINE__); \
-  } while (0)
+#define PARFLOW_ERROR(X)                      \
+        do {                                  \
+          _amps_Abort(X, __FILE__, __LINE__); \
+        } while (0)
 
 /*--------------------------------------------------------------------------
  * Define memory allocation routines
@@ -52,7 +52,7 @@
  * @brief Allocates memory that is passed to amps library.
  *
  * When using an accelerator device, allocates unified memory with redefined macro.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param type the C type name
@@ -65,7 +65,7 @@
  * @brief Allocates memory initialized to 0 that is passed to amps library.
  *
  * When using an accelerator device, allocates unified memory with redefined macro.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param type the C type name
@@ -76,7 +76,7 @@
 
 /**
  * Deallocates memory for objects that were allocated by \ref talloc_amps_default or \ref ctalloc_amps_default.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param ptr pointer to dataspace to free
@@ -91,11 +91,11 @@
  *--------------------------------------*/
 
 #define talloc_default(type, count) \
-  (type*)malloc_chk((unsigned int)((count) * sizeof(type)), __FILE__, __LINE__)
+        (type*)malloc_chk((unsigned int)((count) * sizeof(type)), __FILE__, __LINE__)
 
 #define ctalloc_default(type, count)                                           \
-  (type*)calloc_chk((unsigned int)(count), (unsigned int)sizeof(type), \
-                    __FILE__, __LINE__)
+        (type*)calloc_chk((unsigned int)(count), (unsigned int)sizeof(type),   \
+                          __FILE__, __LINE__)
 
 #else
 
@@ -107,7 +107,7 @@
  * @brief Allocates memory.
  *
  * When using an accelerator device, allocates unified memory with redefined macro.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param type the C type name
@@ -115,13 +115,13 @@
  * @return pointer to the allocated dataspace
  */
 #define talloc_default(type, count) \
-  (((count) > 0) ? (type*)malloc(sizeof(type) * (unsigned int)(count)) : NULL)
+        (((count) > 0) ? (type*)malloc(sizeof(type) * (unsigned int)(count)) : NULL)
 
 /**
  * @brief Allocates memory initialized to 0.
  *
  * When using an accelerator device, allocates unified memory with redefined macro.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param type the C type name
@@ -129,13 +129,13 @@
  * @return pointer to the allocated dataspace
  */
 #define ctalloc_default(type, count) \
-  (((count) > 0) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        (((count) > 0) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
 #endif
 
 /**
  * Deallocates memory for objects that were allocated by \ref talloc_default or \ref ctalloc_default.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param ptr pointer to dataspace to free
@@ -145,7 +145,7 @@
 
 /**
  * Copies data from dest to src
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param dest destination address
@@ -178,7 +178,7 @@
 /**
  * Thread-safe addition assignment. This macro
  * can be called anywhere in any compute kernel.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param a original value [IN], sum result [OUT]
@@ -189,29 +189,29 @@
 /**
  * Thread-safe reduction to find maximum value for reduction loops.
  * Each thread must call this macro as the last statement inside the reduction loop body.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param a value 1 for comparison [IN], max value [OUT]
  * @param b value 2 for comparison [IN]
  */
-#define ReduceMax_default(a, b) if(a < b) { a = b; } else {};
+#define ReduceMax_default(a, b) if (a < b) { a = b; } else {};
 
 /**
  * Thread-safe reduction to find maximum value for reduction loops.
  * Each thread must call this macro as the last statement inside the reduction loop body.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param a value 1 for comparison [IN], min value [OUT]
  * @param b value 2 for comparison [IN]
  */
-#define ReduceMin_default(a, b) if(a > b) { a = b; } else {};
+#define ReduceMin_default(a, b) if (a > b) { a = b; } else {};
 
 /**
  * Thread-safe addition assignment for reduction loops.
  * Each thread must call this macro as the last statement inside the reduction loop body.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param a original value [IN], sum result [OUT]
@@ -261,25 +261,25 @@
  *--------------------------------------------------------------------------*/
 
 #ifndef __host__
-  /** Defines an object accessible from host. @note Does nothing if not supported by the compiler. */
+/** Defines an object accessible from host. @note Does nothing if not supported by the compiler. */
   #define __host__
 #endif
 #ifndef __device__
-  /** Defines an object accessible from device. @note Does nothing if not supported by the compiler. */
+/** Defines an object accessible from device. @note Does nothing if not supported by the compiler. */
   #define __device__
 #endif
 #ifndef __managed__
-  /** Defines a variable that is automatically migrated between host/device. @note Does nothing if not supported by the compiler. */
+/** Defines a variable that is automatically migrated between host/device. @note Does nothing if not supported by the compiler. */
   #define __managed__
 #endif
 #ifndef __restrict__
-  /** Defines a restricted pointer. @note Does nothing if not supported by the compiler. */
+/** Defines a restricted pointer. @note Does nothing if not supported by the compiler. */
   #define __restrict__
 #endif
 
 /**
  * Used to prefetch data from host to device for better performance.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param ptr pointer to data [IN]
@@ -291,7 +291,7 @@
 
 /**
  * Used to prefetch data from host to device for better performance.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  *
  * @param ptr pointer to data [IN]
@@ -304,7 +304,7 @@
 /**
  * Explicit sync between host and device default stream if accelerator present.
  * Can be called anywhere.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  */
 #define PARALLEL_SYNC_default
@@ -312,13 +312,13 @@
 /**
  * Skip sync after BoxLoop if accelerator present.
  * Must be the called as the last action inside the loop body.
- * 
+ *
  * @note Multiple definitions (see backend_mapping.h).
  */
 #define SKIP_PARALLEL_SYNC_default
 
 /** Record an NVTX range for NSYS if accelerator present. @note Multiple definitions (see backend_mapping.h). */
-#define PUSH_NVTX_default(name,cid)
+#define PUSH_NVTX_default(name, cid)
 
 /** Stop recording an NVTX range for NSYS if accelerator present. @note Multiple definitions (see backend_mapping.h). */
 #define POP_NVTX_default

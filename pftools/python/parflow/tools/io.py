@@ -22,15 +22,19 @@ from functools import partial
 import itertools
 import json
 from pathlib import Path
+
 try:
     from numba import jit, njit
 except ImportError:
     # Some systems may not have numba capabilities
     def jit(*args, **kwargs):
         """Dummy decorator, does nothing"""
+
         def _decorator(func):
             return func
+
         return _decorator
+
 
 from numbers import Number
 import pandas as pd
@@ -56,8 +60,41 @@ except ImportError:
     from yaml import Dumper as YAMLDumper
 
 
-def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
-             read_sg_info: bool=True):
+def read_pfsb(file_path):
+    """
+    Read a ParFlow scattered binary file (pfsb) and return the data.
+
+    The data will be returned as a numpy array of shape (nz, ny, nx).
+    To avoid confusion, there is no option to toggle 'z_first' on and
+    off.
+    """
+    with open(file_path, "rb") as f:
+        # Read the header
+        x, y, z = struct.unpack(">ddd", f.read(24))
+        nx, ny, nz = struct.unpack(">iii", f.read(12))
+        dx, dy, dz = struct.unpack(">ddd", f.read(24))
+        num_subgrids = struct.unpack(">i", f.read(4))[0]
+        data = np.zeros((nz, ny, nx), dtype=np.float64)
+
+        for _ in range(num_subgrids):
+            # Skip most of subgrid header
+            f.seek(36, 1)
+            num_nonzero_data = struct.unpack(">i", f.read(4))[0]
+
+            for idx in range(num_nonzero_data):
+                i, j, k = struct.unpack(">iii", f.read(12))
+                data[k, j, i] = struct.unpack(">d", f.read(8))[0]
+
+    return data
+
+
+def read_pfb(
+    file: str,
+    keys: dict = None,
+    mode: str = "full",
+    z_first: bool = True,
+    read_sg_info: bool = True,
+):
     """
     Read a single pfb file, and return the data therein
 
@@ -78,7 +115,7 @@ def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
         for more information about what modes are available.
     :param read_sg_info:
         Precalculating subgrid information does not always work correctly for
-        some files, especially velocity files. If ``True``, read subgrid info 
+        some files, especially velocity files. If ``True``, read subgrid info
         directly from the pfb file (slower, but more robust)
     :return:
         An nd array containing the data from the pfb file.
@@ -88,29 +125,39 @@ def read_pfb(file: str, keys: dict=None, mode: str='full', z_first: bool=True,
             data = pfb.read_all_subgrids(mode=mode, z_first=z_first)
         else:
             base_header = pfb.header
-            start_x = keys.get('x', {}).get('start', None) or 0
-            start_y = keys.get('y', {}).get('start', None) or 0
-            start_z = keys.get('z', {}).get('start', None) or 0
-            stop_x =  keys.get('x', {}).get('stop', None) or base_header['nx']
-            stop_y =  keys.get('y', {}).get('stop', None) or base_header['ny']
-            stop_z =  keys.get('z', {}).get('stop', None) or base_header['nz']
+            start_x = keys.get("x", {}).get("start", None) or 0
+            start_y = keys.get("y", {}).get("start", None) or 0
+            start_z = keys.get("z", {}).get("start", None) or 0
+            stop_x = keys.get("x", {}).get("stop", None) or base_header["nx"]
+            stop_y = keys.get("y", {}).get("stop", None) or base_header["ny"]
+            stop_z = keys.get("z", {}).get("stop", None) or base_header["nz"]
             nx = np.max([stop_x - start_x, 1])
             ny = np.max([stop_y - start_y, 1])
             nz = np.max([stop_z - start_z, 1])
             data = pfb.read_subarray(
-                        start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
+                start_x, start_y, start_z, nx, ny, nz, z_first=z_first
+            )
     return data
 
 
 # -----------------------------------------------------------------------------
 
+
 def write_pfb(
-    file, array,
-    p=1, q=1, r=1,
-    x=0.0, y=0.0, z=0.0,
-    dx=1.0, dy=1.0, dz=1.0,
-    z_first=True, dist=True,
-    **kwargs
+    file,
+    array,
+    p=1,
+    q=1,
+    r=1,
+    x=0.0,
+    y=0.0,
+    z=0.0,
+    dx=1.0,
+    dy=1.0,
+    dz=1.0,
+    z_first=True,
+    dist=True,
+    **kwargs,
 ):
     """
     Write a single pfb file. The data must be a 3D numpy array with float64
@@ -155,12 +202,14 @@ def write_pfb(
         args by passing in a dictionary with `**dict`.
     """
     if array.dtype != np.float64:
-        raise ValueError(f"Arrays written to pfb must be of type np.float64!"
-                          + " Found {array.dtype} instead!")
+        raise ValueError(
+            f"Arrays written to pfb must be of type np.float64!"
+            + " Found {array.dtype} instead!"
+        )
 
     if len(array.shape) == 3:
         if z_first:
-                nz, ny, nx = array.shape
+            nz, ny, nx = array.shape
         else:
             nx, ny, nz = array.shape
     elif len(array.shape) == 2:
@@ -176,44 +225,44 @@ def write_pfb(
         nx, ny, nz, p, q, r
     )
 
-    with open(file, 'wb') as f:
+    with open(file, "wb") as f:
         # Write the file header
-        f.write(struct.pack('>d', float(x)))
-        f.write(struct.pack('>d', float(y)))
-        f.write(struct.pack('>d', float(z)))
-        f.write(struct.pack('>i', int(nx)))
-        f.write(struct.pack('>i', int(ny)))
-        f.write(struct.pack('>i', int(nz)))
-        f.write(struct.pack('>d', float(dx)))
-        f.write(struct.pack('>d', float(dy)))
-        f.write(struct.pack('>d', float(dz)))
-        f.write(struct.pack('>i', int(n_subgrids)))
+        f.write(struct.pack(">d", float(x)))
+        f.write(struct.pack(">d", float(y)))
+        f.write(struct.pack(">d", float(z)))
+        f.write(struct.pack(">i", int(nx)))
+        f.write(struct.pack(">i", int(ny)))
+        f.write(struct.pack(">i", int(nz)))
+        f.write(struct.pack(">d", float(dx)))
+        f.write(struct.pack(">d", float(dy)))
+        f.write(struct.pack(">d", float(dz)))
+        f.write(struct.pack(">i", int(n_subgrids)))
 
         # loop over subgrids:
         for off, loc, start, shape in zip(sg_offs, sg_locs, sg_starts, sg_shapes):
             # Write the subgrid header
-            for sgh in itertools.chain(start, shape, [1,1,1]):
-                f.write(struct.pack('>i', int(sgh)))
+            for sgh in itertools.chain(start, shape, [1, 1, 1]):
+                f.write(struct.pack(">i", int(sgh)))
 
             mm = np.memmap(
                 file,
                 dtype=np.float64,
-                mode='r+',
+                mode="r+",
                 offset=off,
                 shape=tuple(shape),
-                order='F'
+                order="F",
             )
             # Gather shapes & extents
             s_ix, s_iy, s_iz = start
             n_ix, n_iy, n_iz = shape
             if z_first:
-                mm[:] = array[s_iz:s_iz+n_iz,
-                              s_iy:s_iy+n_iy,
-                              s_ix:s_ix+n_ix].T.byteswap()
+                mm[:] = array[
+                    s_iz : s_iz + n_iz, s_iy : s_iy + n_iy, s_ix : s_ix + n_ix
+                ].T.byteswap()
             else:
-                mm[:] = array[s_ix:s_ix+n_ix,
-                              s_iy:s_iy+n_iy,
-                              s_iz:s_iz+n_iz].byteswap()
+                mm[:] = array[
+                    s_ix : s_ix + n_ix, s_iy : s_iy + n_iy, s_iz : s_iz + n_iz
+                ].byteswap()
             # Seek to offset + the size of the subgrid
             f.seek(off + 8 * np.prod(shape))
 
@@ -235,17 +284,18 @@ def write_dist(file, sg_offs):
         for i, s in enumerate(sg_offs):
             # Need to account for header bytes
             real_off = s - 100 if i == 0 else s - 36
-            dist_fp.write(f'{real_off}\n')
+            dist_fp.write(f"{real_off}\n")
 
 
 # -----------------------------------------------------------------------------
 
+
 def read_pfb_sequence(
     file_seq: Iterable[str],
     keys=None,
-    z_first: bool=True,
-    z_is: str='z',
-    read_sg_info: bool=False
+    z_first: bool = True,
+    z_is: str = "z",
+    read_sg_info: bool = False,
 ):
     """
     An efficient wrapper to read a sequence of pfb files. This
@@ -273,9 +323,9 @@ def read_pfb_sequence(
         'z', 'time', 'variable'. Default is 'z'.
     :param read_sg_info:
         Precalculating subgrid information does not always work correctly for
-        some files, especially velocity files. If ``True``, read subgrid info 
+        some files, especially velocity files. If ``True``, read subgrid info
         directly from the pfb file (slower, but more robust)
-    
+
     :return:
         An nd array containing the data from the files.
     """
@@ -290,14 +340,14 @@ def read_pfb_sequence(
         base_sg_chunks = pfb_init.chunks
         base_sg_coords = pfb_init.coords
     if not keys:
-        nx, ny, nz = base_header['nx'], base_header['ny'], base_header['nz']
+        nx, ny, nz = base_header["nx"], base_header["ny"], base_header["nz"]
     else:
-        start_x = keys.get('x', {}).get('start', None) or 0
-        start_y = keys.get('y', {}).get('start', None) or 0
-        start_z = keys.get(z_is, {}).get('start', None) or 0
-        stop_x =  keys.get('x', {}).get('stop', None) or base_header['nx']
-        stop_y =  keys.get('y', {}).get('stop', None) or base_header['ny']
-        stop_z =  keys.get(z_is, {}).get('stop', None) or base_header['nz']
+        start_x = keys.get("x", {}).get("start", None) or 0
+        start_y = keys.get("y", {}).get("start", None) or 0
+        start_z = keys.get(z_is, {}).get("start", None) or 0
+        stop_x = keys.get("x", {}).get("stop", None) or base_header["nx"]
+        stop_y = keys.get("y", {}).get("stop", None) or base_header["ny"]
+        stop_z = keys.get(z_is, {}).get("stop", None) or base_header["nz"]
         nx = np.max([stop_x - start_x, 1])
         ny = np.max([stop_y - start_y, 1])
         nz = np.max([stop_z - start_z, 1])
@@ -319,12 +369,13 @@ def read_pfb_sequence(
             pfb.coords = base_sg_coords
             pfb.chunks = base_sg_chunks
             if not keys:
-                subseq_data = pfb.read_all_subgrids(mode='full', z_first=z_first)
+                subseq_data = pfb.read_all_subgrids(mode="full", z_first=z_first)
             else:
                 subseq_data = pfb.read_subarray(
-                        start_x, start_y, start_z, nx, ny, nz, z_first=z_first)
-            pfb_seq[i, :, : ,:] = subseq_data
-    if z_is == 'time':
+                    start_x, start_y, start_z, nx, ny, nz, z_first=z_first
+                )
+            pfb_seq[i, :, :, :] = subseq_data
+    if z_is == "time":
         if z_first:
             pfb_seq = np.concatenate(pfb_seq, axis=0)
         else:
@@ -333,6 +384,7 @@ def read_pfb_sequence(
 
 
 # -----------------------------------------------------------------------------
+
 
 class ParflowBinaryReader:
     """
@@ -373,51 +425,36 @@ class ParflowBinaryReader:
     :param read_sg_info:
         Whether or not to read subgrid information directly from the pfb file.
         Precalculating subgrid information does not always work correctly for
-        some files, especially velocity files. This reads the subgrid offset 
-        bytes, subgrid indices and subgrid shapes, then computes the subgrid 
+        some files, especially velocity files. This reads the subgrid offset
+        bytes, subgrid indices and subgrid shapes, then computes the subgrid
         coordinates subgrid locations, and chunk sizes as normal
-        
+
     """
 
     def __init__(
         self,
         file: str,
-        precompute_subgrid_info: bool=True,
-        p: int=None,
-        q: int=None,
-        r: int=None,
-        header: Mapping[str, Number]=None,
-        read_sg_info: bool=False
+        precompute_subgrid_info: bool = True,
+        p: int = None,
+        q: int = None,
+        r: int = None,
+        header: Mapping[str, Number] = None,
+        read_sg_info: bool = False,
     ):
         self.filename = file
-        self.f = open(self.filename, 'rb')
+        self.f = open(self.filename, "rb")
         if not header:
             self.header = self.read_header()
         else:
             self.header = header
 
         if np.all([p, q, r]):
-            self.header['p'] = p
-            self.header['q'] = q
-            self.header['r'] = r
+            self.header["p"] = p
+            self.header["q"] = q
+            self.header["r"] = r
 
-        if not ('p' in self.header
-            and 'q' in self.header
-            and 'r' in self.header):
-            # If p, q, and r aren't given we can precompute them
-            # NOTE: This is a bit of a fallback and may not always work
-            eps = 1 - 1e-6
-            first_sg_head = self.read_subgrid_header()
-            self.header['p'] = int((self.header['nx'] / first_sg_head['nx']) + eps)
-            self.header['q'] = int((self.header['ny'] / first_sg_head['ny']) + eps)
-            self.header['r'] = int((self.header['nz'] / first_sg_head['nz']) + eps)
+        self.read_subgrid_info()
 
-        if precompute_subgrid_info:
-            self.compute_subgrid_info()
-
-        if read_sg_info:
-            self.read_subgrid_info()
-            
     def close(self):
         self.f.close()
 
@@ -428,15 +465,15 @@ class ParflowBinaryReader:
         self.f.close()
 
     def compute_subgrid_info(self):
-        """ Computes the subgrid information """
+        """Computes the subgrid information"""
         try:
             sg_offs, sg_locs, sg_starts, sg_shapes = precalculate_subgrid_info(
-                self.header['nx'],
-                self.header['ny'],
-                self.header['nz'],
-                self.header['p'],
-                self.header['q'],
-                self.header['r']
+                self.header["nx"],
+                self.header["ny"],
+                self.header["nz"],
+                self.header["p"],
+                self.header["q"],
+                self.header["r"],
             )
         except:
             raise ValueError(self.header)
@@ -448,33 +485,60 @@ class ParflowBinaryReader:
         self.coords = self._compute_coords()
 
     def read_subgrid_info(self):
-        """ Read the header for each subgrid directly from the pfb file, rather 
-        than calculating it via precalculate_subgrid_info """
-        
+        """Read the header for each subgrid directly from the pfb file, rather
+        than calculating it via precalculate_subgrid_info"""
+
         sg_shapes = []
         sg_offs = []
         sg_locs = []
         sg_starts = []
 
         off = 64
-        for sg_num in range(self.header['n_subgrids']):
+        for sg_num in range(self.header["n_subgrids"]):
             # Read and move past the current subgrid header
             sg_head = self.read_subgrid_header(off)
-            off += 36 
-            
-            sg_starts.append([sg_head['ix'], sg_head['iy'], sg_head['iz']])
-            sg_shapes.append([sg_head['nx'], sg_head['ny'], sg_head['nz']])
+            off += 36
+
+            sg_starts.append([sg_head["ix"], sg_head["iy"], sg_head["iz"]])
+            sg_shapes.append([sg_head["nx"], sg_head["ny"], sg_head["nz"]])
             sg_offs.append(off)
 
-            # Calculate subgrid locs instead of reading from file
-            sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, self.header['p'], 
-                                                       self.header['q'], 
-                                                       self.header['r'])
-            sg_locs.append((sg_p, sg_q, sg_r))
-            
             # Finally, move past the current subgrid before next iteration
-            off += sg_head['sg_size']*8
-        
+            off += sg_head["sg_size"] * 8
+
+        # Calculate p, q, r from subgrid shapes
+        p, q, r = 0, 0, 0
+        x, y, z = 0, 0, 0
+
+        for shape in sg_shapes:
+            if x == self.header["nx"]:
+                break
+            p = p + 1
+            x = x + shape[0]
+
+        for shape in sg_shapes[::p]:
+            if y == self.header["ny"]:
+                break
+            q = q + 1
+            y = y + shape[1]
+
+        for shape in sg_shapes[:: p * q]:
+            if z == self.header["nz"]:
+                break
+            r = r + 1
+            z = z + shape[2]
+
+        self.header["p"] = p
+        self.header["q"] = q
+        self.header["r"] = r
+
+        for sg_num in range(self.header["n_subgrids"]):
+            # Calculate subgrid locs instead of reading from file
+            sg_p, sg_q, sg_r = get_subgrid_loc(
+                sg_num, self.header["p"], self.header["q"], self.header["r"]
+            )
+            sg_locs.append((sg_p, sg_q, sg_r))
+
         self.subgrid_offsets = np.array(sg_offs)
         self.subgrid_locations = np.array(sg_locs)
         self.subgrid_start_indices = np.array(sg_starts)
@@ -494,11 +558,15 @@ class ParflowBinaryReader:
              'y': tuple_with_len_q,
              'z': tuple_with_len_r}
         """
-        p, q, r = self.header['p'], self.header['q'], self.header['r'],
-        x_chunks = tuple(self.subgrid_shapes[:,0][0:p].flatten())
-        y_chunks = tuple(self.subgrid_shapes[:,1][0:p*q:p].flatten())
-        z_chunks = tuple(self.subgrid_shapes[:,2][0:p*q*r:p*q].flatten())
-        return {'x': x_chunks, 'y': y_chunks, 'z': z_chunks}
+        p, q, r = (
+            self.header["p"],
+            self.header["q"],
+            self.header["r"],
+        )
+        x_chunks = tuple(self.subgrid_shapes[:, 0][0:p].flatten())
+        y_chunks = tuple(self.subgrid_shapes[:, 1][0 : p * q : p].flatten())
+        z_chunks = tuple(self.subgrid_shapes[:, 2][0 : p * q * r : p * q].flatten())
+        return {"x": x_chunks, "y": y_chunks, "z": z_chunks}
 
     def _compute_coords(self) -> Mapping[str, Iterable[Iterable[int]]]:
         """
@@ -518,8 +586,8 @@ class ParflowBinaryReader:
                    (n1+1, n1+2, ... n1+n2),
                     ... for ni in self.chunks['z']],
         """
-        coords = {'x': [], 'y': [], 'z': []}
-        for c in ['x', 'y', 'z']:
+        coords = {"x": [], "y": [], "z": []}
+        for c in ["x", "y", "z"]:
             chunk_start = 0
             for chunk in self.chunks[c]:
                 coords[c].append(np.arange(chunk_start, chunk_start + chunk))
@@ -530,51 +598,55 @@ class ParflowBinaryReader:
         """Reads the header"""
         self.f.seek(0)
         header = {}
-        header['x'] = struct.unpack('>d', self.f.read(8))[0]
-        header['y'] = struct.unpack('>d', self.f.read(8))[0]
-        header['z'] = struct.unpack('>d', self.f.read(8))[0]
-        header['nx'] = struct.unpack('>i', self.f.read(4))[0]
-        header['ny'] = struct.unpack('>i', self.f.read(4))[0]
-        header['nz'] = struct.unpack('>i', self.f.read(4))[0]
-        header['dx'] = struct.unpack('>d', self.f.read(8))[0]
-        header['dy'] = struct.unpack('>d', self.f.read(8))[0]
-        header['dz'] = struct.unpack('>d', self.f.read(8))[0]
-        header['n_subgrids'] = struct.unpack('>i', self.f.read(4))[0]
+        header["x"] = struct.unpack(">d", self.f.read(8))[0]
+        header["y"] = struct.unpack(">d", self.f.read(8))[0]
+        header["z"] = struct.unpack(">d", self.f.read(8))[0]
+        header["nx"] = struct.unpack(">i", self.f.read(4))[0]
+        header["ny"] = struct.unpack(">i", self.f.read(4))[0]
+        header["nz"] = struct.unpack(">i", self.f.read(4))[0]
+        header["dx"] = struct.unpack(">d", self.f.read(8))[0]
+        header["dy"] = struct.unpack(">d", self.f.read(8))[0]
+        header["dz"] = struct.unpack(">d", self.f.read(8))[0]
+        header["n_subgrids"] = struct.unpack(">i", self.f.read(4))[0]
         return header
 
-    def read_subgrid_header(self, skip_bytes: int=64):
+    def read_subgrid_header(self, skip_bytes: int = 64):
         """Reads a subgrid header at the position ``skip_bytes``"""
         self.f.seek(skip_bytes)
         sg_header = {}
         header_len = 9
 
         # Apologies, this is kind of ugly, but faster than using struct
-        (sg_header['ix'],
-         sg_header['iy'],
-         sg_header['iz'],
-         sg_header['nx'],
-         sg_header['ny'],
-         sg_header['nz'],
-         sg_header['rx'],
-         sg_header['ry'],
-         sg_header['rz']) = np.memmap(self.f,
-                                      dtype=np.int32,
-                                      offset=skip_bytes,
-                                      mode='r',
-                                      shape=(header_len,),
-                                      order='F').byteswap()
-        sg_header['sg_size'] = np.prod([sg_header[n] for n in ['nx', 'ny', 'nz']])
+        (
+            sg_header["ix"],
+            sg_header["iy"],
+            sg_header["iz"],
+            sg_header["nx"],
+            sg_header["ny"],
+            sg_header["nz"],
+            sg_header["rx"],
+            sg_header["ry"],
+            sg_header["rz"],
+        ) = np.memmap(
+            self.f,
+            dtype=np.int32,
+            offset=skip_bytes,
+            mode="r",
+            shape=(header_len,),
+            order="F",
+        ).byteswap()
+        sg_header["sg_size"] = np.prod([sg_header[n] for n in ["nx", "ny", "nz"]])
         return sg_header
 
     def read_subarray(
-            self,
-            start_x: int,
-            start_y: int,
-            start_z: int=0,
-            nx: int=1,
-            ny: int=1,
-            nz: int=None,
-            z_first: bool=True
+        self,
+        start_x: int,
+        start_y: int,
+        start_z: int = 0,
+        nx: int = 1,
+        ny: int = 1,
+        nz: int = None,
+        z_first: bool = True,
     ) -> np.ndarray:
         """
         Read a subsection of the full pfb file. For an example of what happens
@@ -618,8 +690,9 @@ class ParflowBinaryReader:
         :returns:
             A nd array with shape (nx, ny, nz).
         """
+
         def _get_final_clip(start, end, coords):
-            """ Helper to clean up code at the end of this """
+            """Helper to clean up code at the end of this"""
             x0 = np.flatnonzero(start == coords)
             x0 = 0 if not x0 else x0[0]
             x1 = np.flatnonzero(end == coords)
@@ -627,12 +700,14 @@ class ParflowBinaryReader:
             return slice(x0, x1)
 
         def _get_needed_subgrids(start, end, coords):
-            """ Helper function to clean up subgrid selection """
+            """Helper function to clean up subgrid selection"""
             for s, c in enumerate(coords):
-                if start in c: break
+                if start in c:
+                    break
             for e, c in enumerate(coords):
-                if end in c: break
-            return np.arange(s, e+1)
+                if end in c:
+                    break
+            return np.arange(s, e + 1)
 
         if not start_x:
             start_x = 0
@@ -641,20 +716,20 @@ class ParflowBinaryReader:
         if not start_z:
             start_z = 0
         if not nx:
-            nx = self.header['nx']
+            nx = self.header["nx"]
         if not ny:
-            ny = self.header['ny']
+            ny = self.header["ny"]
         if not nz:
-            nz = self.header['nz']
+            nz = self.header["nz"]
 
         end_x = start_x + nx
         end_y = start_y + ny
         end_z = start_z + nz
-        p, q, r = self.header['p'], self.header['q'], self.header['r']
+        p, q, r = self.header["p"], self.header["q"], self.header["r"]
         # Convert to numpy array for simpler indexing
-        x_coords = np.array(self.coords['x'], dtype=object)
-        y_coords = np.array(self.coords['y'], dtype=object)
-        z_coords = np.array(self.coords['z'], dtype=object)
+        x_coords = np.array(self.coords["x"], dtype=object)
+        y_coords = np.array(self.coords["y"], dtype=object)
+        z_coords = np.array(self.coords["z"], dtype=object)
 
         # Determine which subgrids we need to read
         p_subgrids = _get_needed_subgrids(start_x, end_x, x_coords)
@@ -673,13 +748,13 @@ class ParflowBinaryReader:
         full_size = (len(x_sg_coords), len(y_sg_coords), len(z_sg_coords))
         bounding_data = np.empty(full_size, dtype=np.float64)
         subgrid_iter = itertools.product(p_subgrids, q_subgrids, r_subgrids)
-        for (xsg, ysg, zsg) in subgrid_iter:
+        for xsg, ysg, zsg in subgrid_iter:
             subgrid_idx = xsg + (p * ysg) + (p * q * zsg)
             # Set up the indices to insert subgrid data into the bounding data
             x0, y0, z0 = self.subgrid_start_indices[subgrid_idx]
             x0, y0, z0 = x0 - x_min, y0 - y_min, z0 - z_min
             dx, dy, dz = self.subgrid_shapes[subgrid_idx]
-            x1, y1, z1 = x0 + dx, y0 + dy, z0+ dz
+            x1, y1, z1 = x0 + dx, y0 + dy, z0 + dz
             bounding_data[x0:x1, y0:y1, z0:z1] = self.iloc_subgrid(subgrid_idx)
 
         # Now clip out the exact part from the bounding box
@@ -691,7 +766,6 @@ class ParflowBinaryReader:
         else:
             ret_data = bounding_data[clip_x, clip_y, clip_z]
         return ret_data
-
 
     def loc_subgrid(self, sg_p: int, sg_q: int, sg_r: int) -> np.ndarray:
         """
@@ -706,7 +780,7 @@ class ParflowBinaryReader:
         :returns:
             The data from the (sg_p, sg_q, sg_r)'th subgrid.
         """
-        p, q, r = self.header['p'], self.header['q'], self.header['r']
+        p, q, r = self.header["p"], self.header["q"], self.header["r"]
         subgrid_idx = sg_p + (p * sg_q) + (q * p * sg_r)
         return self.iloc_subgrid(subgrid_idx)
 
@@ -723,9 +797,7 @@ class ParflowBinaryReader:
         shape = self.subgrid_shapes[idx]
         return self._backend_iloc_subgrid(offset, shape)
 
-    def _backend_iloc_subgrid(
-            self, offset: int, shape: Iterable[int]
-    ) -> np.ndarray:
+    def _backend_iloc_subgrid(self, offset: int, shape: Iterable[int]) -> np.ndarray:
         """
         Backend function for memory mapping data from the pfb file on disk.
 
@@ -739,16 +811,16 @@ class ParflowBinaryReader:
         mm = np.memmap(
             self.f,
             dtype=np.float64,
-            mode='r',
+            mode="r",
             offset=offset,
             shape=tuple(shape),
-            order='F'
+            order="F",
         ).byteswap()
         data = np.array(mm)
         return data
 
     def read_all_subgrids(
-            self, mode: str='full', z_first: bool=True
+        self, mode: str = "full", z_first: bool = True
     ) -> Union[Iterable[np.ndarray], np.ndarray]:
         """
         Read all of the subgrids in the file.
@@ -768,40 +840,45 @@ class ParflowBinaryReader:
             also will be numpy array of floats with dimensions (sg_nx, sg_ny, sg_nz) where
             each of sg_nx, sg_ny, and sg_nz are the size of the subgrid array.
         """
-        if mode not in ['flat', 'tiled', 'full']:
-            raise Exception('mode must be one of flat, tiled, or full')
-        if mode in ['flat', 'tiled']:
+        if mode not in ["flat", "tiled", "full"]:
+            raise Exception("mode must be one of flat, tiled, or full")
+        if mode in ["flat", "tiled"]:
             all_data = []
-            for i in range(self.header['n_subgrids']):
+            for i in range(self.header["n_subgrids"]):
                 if z_first:
                     all_data.append(self.iloc_subgrid(i).T)
                 else:
                     all_data.append(self.iloc_subgrid(i))
-            if mode == 'tiled':
+            if mode == "tiled":
                 if z_first:
-                    tiled_shape = tuple(self.header[dim] for dim in ['r', 'q', 'p'])
+                    tiled_shape = tuple(self.header[dim] for dim in ["r", "q", "p"])
                     all_data = np.array(all_data, dtype=object).reshape(tiled_shape)
                 else:
-                    tiled_shape = tuple(self.header[dim] for dim in ['p', 'q', 'r'])
+                    tiled_shape = tuple(self.header[dim] for dim in ["p", "q", "r"])
                     all_data = np.array(all_data, dtype=object).reshape(tiled_shape)
-        elif mode == 'full':
+        elif mode == "full":
             if z_first:
-                full_shape = tuple(self.header[dim] for dim in ['nz', 'ny', 'nx'])
+                full_shape = tuple(self.header[dim] for dim in ["nz", "ny", "nx"])
             else:
-                full_shape = tuple(self.header[dim] for dim in ['nx', 'ny', 'nz'])
-            chunks = self.chunks['x'], self.chunks['y'], self.chunks['z']
+                full_shape = tuple(self.header[dim] for dim in ["nx", "ny", "nz"])
+            chunks = self.chunks["x"], self.chunks["y"], self.chunks["z"]
             all_data = np.empty(full_shape, dtype=np.float64)
-            for i in range(self.header['n_subgrids']):
+            for i in range(self.header["n_subgrids"]):
                 nx, ny, nz = self.subgrid_shapes[i]
                 ix, iy, iz = self.subgrid_start_indices[i]
                 if z_first:
-                    all_data[iz:iz+nz, iy:iy+ny, ix:ix+nx] = self.iloc_subgrid(i).T
+                    all_data[iz : iz + nz, iy : iy + ny, ix : ix + nx] = (
+                        self.iloc_subgrid(i).T
+                    )
                 else:
-                    all_data[ix:ix+nx, iy:iy+ny, iz:iz+nz] = self.iloc_subgrid(i)
+                    all_data[ix : ix + nx, iy : iy + ny, iz : iz + nz] = (
+                        self.iloc_subgrid(i)
+                    )
         return all_data
 
 
 # -----------------------------------------------------------------------------
+
 
 @jit(nopython=True)
 def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
@@ -827,13 +904,14 @@ def get_maingrid_and_remainder(nx, ny, nz, p, q, r):
     mg_nx = int(nx / p)
     mg_ny = int(ny / q)
     mg_nz = int(nz / r)
-    rm_nx = (nx % p)
-    rm_ny = (ny % q)
-    rm_nz = (nz % r)
+    rm_nx = nx % p
+    rm_ny = ny % q
+    rm_nz = nz % r
     return mg_nx, mg_ny, mg_nz, rm_nx, rm_ny, rm_nz
 
 
 # -----------------------------------------------------------------------------
+
 
 @jit(nopython=True)
 def get_subgrid_loc(sel_subgrid, p, q, r):
@@ -850,7 +928,7 @@ def get_subgrid_loc(sel_subgrid, p, q, r):
         The number of subgrids along the z axis.
     """
     sg_r = int(np.floor(sel_subgrid / (p * q)))
-    sg_q = int(np.floor((sel_subgrid - (sg_r*p*q)) / p))
+    sg_q = int(np.floor((sel_subgrid - (sg_r * p * q)) / p))
     sg_p = int(sel_subgrid - sg_r * (p * q) - (sg_q * p))
     subgrid_loc = (sg_p, sg_q, sg_r)
     return subgrid_loc
@@ -858,12 +936,9 @@ def get_subgrid_loc(sel_subgrid, p, q, r):
 
 # -----------------------------------------------------------------------------
 
+
 @jit(nopython=True)
-def subgrid_lower_left(
-    mg_nx, mg_ny, mg_nz,
-    sg_p, sg_q, sg_r,
-    rm_nx, rm_ny, rm_nz
-):
+def subgrid_lower_left(mg_nx, mg_ny, mg_nz, sg_p, sg_q, sg_r, rm_nx, rm_ny, rm_nz):
     """
     Get the index of the lower left corner of a subgrid.
 
@@ -894,12 +969,9 @@ def subgrid_lower_left(
 
 # -----------------------------------------------------------------------------
 
+
 @jit(nopython=True)
-def subgrid_size(
-    mg_nx, mg_ny, mg_nz,
-    sg_p, sg_q, sg_r,
-    rm_nx, rm_ny, rm_nz
-):
+def subgrid_size(mg_nx, mg_ny, mg_nz, sg_p, sg_q, sg_r, rm_nx, rm_ny, rm_nz):
     """
     Get the size of a subgrid
 
@@ -922,13 +994,14 @@ def subgrid_size(
     :param rm_nz:
         Remainder from the maingrid calculation on the z-axis
     """
-    sg_nx = mg_nx if sg_p >= rm_nx else mg_nx+1
-    sg_ny = mg_ny if sg_q >= rm_ny else mg_ny+1
-    sg_nz = mg_nz if sg_r >= rm_nz else mg_nz+1
+    sg_nx = mg_nx if sg_p >= rm_nx else mg_nx + 1
+    sg_ny = mg_ny if sg_q >= rm_ny else mg_ny + 1
+    sg_nz = mg_nz if sg_r >= rm_nz else mg_nz + 1
     return sg_nx, sg_ny, sg_nz
 
 
 # -----------------------------------------------------------------------------
+
 
 @jit(nopython=True)
 def precalculate_subgrid_info(nx, ny, nz, p, q, r):
@@ -967,25 +1040,22 @@ def precalculate_subgrid_info(nx, ny, nz, p, q, r):
     off = 64
     for sg_num in range(n_subgrids):
         # Move past the current header and previous subgrid
-        off += 36 +  (8 * (sg_nx * sg_ny * sg_nz))
+        off += 36 + (8 * (sg_nx * sg_ny * sg_nz))
         subgrid_offsets.append(off)
 
-        (mg_nx, mg_ny, mg_nz,
-         rm_nx, rm_ny, rm_nz) = get_maingrid_and_remainder(nx, ny, nz, p, q, r)
+        (mg_nx, mg_ny, mg_nz, rm_nx, rm_ny, rm_nz) = get_maingrid_and_remainder(
+            nx, ny, nz, p, q, r
+        )
         sg_p, sg_q, sg_r = get_subgrid_loc(sg_num, p, q, r)
         subgrid_locs.append((sg_p, sg_q, sg_r))
 
         ix, iy, iz = subgrid_lower_left(
-            mg_nx, mg_ny, mg_nz,
-            sg_p, sg_q, sg_r,
-            rm_nx, rm_ny, rm_nz
+            mg_nx, mg_ny, mg_nz, sg_p, sg_q, sg_r, rm_nx, rm_ny, rm_nz
         )
         subgrid_begin_idxs.append((ix, iy, iz))
 
         sg_nx, sg_ny, sg_nz = subgrid_size(
-            mg_nx, mg_ny, mg_nz,
-            sg_p, sg_q, sg_r,
-            rm_nx, rm_ny, rm_nz
+            mg_nx, mg_ny, mg_nz, sg_p, sg_q, sg_r, rm_nx, rm_ny, rm_nz
         )
         subgrid_shapes.append((sg_nx, sg_ny, sg_nz))
     return subgrid_offsets, subgrid_locs, subgrid_begin_idxs, subgrid_shapes
@@ -993,8 +1063,8 @@ def precalculate_subgrid_info(nx, ny, nz, p, q, r):
 
 # -----------------------------------------------------------------------------
 
-def load_patch_matrix_from_image_file(file_name, color_to_patch=None,
-                                      fall_back_id=0):
+
+def load_patch_matrix_from_image_file(file_name, color_to_patch=None, fall_back_id=0):
     import imageio
 
     im = imageio.imread(file_name)
@@ -1012,15 +1082,15 @@ def load_patch_matrix_from_image_file(file_name, color_to_patch=None,
         colors = []
 
         def _to_key(c, num):
-            return ','.join([f'{c[i]}' for i in range(num)])
+            return ",".join([f"{c[i]}" for i in range(num)])
 
         to_key_1 = partial(_to_key, num=1)
         to_key_2 = partial(_to_key, num=2)
         to_key_3 = partial(_to_key, num=3)
 
         for key, value in color_to_patch.items():
-            hex_color = key.lstrip('#')
-            color = tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
+            hex_color = key.lstrip("#")
+            color = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
             colors.append((color, value))
             size1.add(to_key_1(color))
             size2.add(to_key_2(color))
@@ -1034,11 +1104,13 @@ def load_patch_matrix_from_image_file(file_name, color_to_patch=None,
         if len(colors) == len(size1):
             to_key = to_key_1
 
-        print(f'Sizes: colors({len(colors)}), 1({len(size1)}), '
-              f'2({len(size2)}), 3({len(size3)})')
+        print(
+            f"Sizes: colors({len(colors)}), 1({len(size1)}), "
+            f"2({len(size2)}), 3({len(size3)})"
+        )
 
         if to_key is None:
-            raise Exception('You have duplicate colors')
+            raise Exception("You have duplicate colors")
 
         fast_map = {}
         for color_patch in colors:
@@ -1057,6 +1129,7 @@ def load_patch_matrix_from_image_file(file_name, color_to_patch=None,
 
 # -----------------------------------------------------------------------------
 
+
 def load_patch_matrix_from_asc_file(file_name):
     ncols = -1
     nrows = -1
@@ -1070,9 +1143,9 @@ def load_patch_matrix_from_asc_file(file_name):
                 in_header = False
             except Exception:
                 key, value = line.split()
-                if key == 'ncols':
+                if key == "ncols":
                     ncols = int(value)
-                if key == 'nrows':
+                if key == "nrows":
                     nrows = int(value)
                 nb_line_to_skip += 1
 
@@ -1083,6 +1156,7 @@ def load_patch_matrix_from_asc_file(file_name):
 
 
 # -----------------------------------------------------------------------------
+
 
 def load_patch_matrix_from_sa_file(file_name):
     i_size = -1
@@ -1098,67 +1172,77 @@ def load_patch_matrix_from_sa_file(file_name):
 
 # -----------------------------------------------------------------------------
 
-def write_patch_matrix_as_asc(matrix, file_name, xllcorner=0.0, yllcorner=0.0,
-                              cellsize=1.0, NODATA_value=0, **kwargs):
+
+def write_patch_matrix_as_asc(
+    matrix,
+    file_name,
+    xllcorner=0.0,
+    yllcorner=0.0,
+    cellsize=1.0,
+    NODATA_value=0,
+    **kwargs,
+):
     """Write asc for pfsol"""
     height, width = matrix.shape
-    with open(file_name, 'w') as out:
-        out.write(f'ncols          {width}\n')
-        out.write(f'nrows          {height}\n')
-        out.write(f'xllcorner      {xllcorner}\n')
-        out.write(f'yllcorner      {yllcorner}\n')
-        out.write(f'cellsize       {cellsize}\n')
-        out.write(f'NODATA_value   {NODATA_value}\n')
+    with open(file_name, "w") as out:
+        out.write(f"ncols          {width}\n")
+        out.write(f"nrows          {height}\n")
+        out.write(f"xllcorner      {xllcorner}\n")
+        out.write(f"yllcorner      {yllcorner}\n")
+        out.write(f"cellsize       {cellsize}\n")
+        out.write(f"NODATA_value   {NODATA_value}\n")
         # asc are vertically flipped
         for j in range(height):
             for i in range(width):
-                out.write(f'{matrix[height - j - 1, i]}\n')
+                out.write(f"{matrix[height - j - 1, i]}\n")
 
 
 # -----------------------------------------------------------------------------
+
 
 def write_patch_matrix_as_sa(matrix, file_name, **kwargs):
     """Write asc for pfsol"""
     nrows, ncols = matrix.shape
-    with open(file_name, 'w') as out:
-        out.write(f'{ncols} {nrows} 1\n')
+    with open(file_name, "w") as out:
+        out.write(f"{ncols} {nrows} 1\n")
         it = np.nditer(matrix)
         for value in it:
-            out.write(f'{value}\n')
+            out.write(f"{value}\n")
 
 
 # -----------------------------------------------------------------------------
+
 
 def write_dict_as_pfidb(dict_obj, file_name):
-    """Write a Python dict in a pfidb format inside the provided file_name
-    """
-    with open(file_name, 'w') as out:
-        out.write(f'{len(dict_obj)}\n')
+    """Write a Python dict in a pfidb format inside the provided file_name"""
+    with open(file_name, "w") as out:
+        out.write(f"{len(dict_obj)}\n")
         for key in dict_obj:
-            out.write(f'{len(key)}\n')
-            out.write(f'{key}\n')
+            out.write(f"{len(key)}\n")
+            out.write(f"{key}\n")
             value = dict_obj[key]
-            out.write(f'{len(str(value))}\n')
-            out.write(f'{str(value)}\n')
+            out.write(f"{len(str(value))}\n")
+            out.write(f"{str(value)}\n")
 
 
 # -----------------------------------------------------------------------------
 
+
 def write_dict_as_yaml(dict_obj, file_name):
-    """Write a Python dict in a pfidb format inside the provided file_name
-    """
+    """Write a Python dict in a pfidb format inside the provided file_name"""
     yaml_obj = {}
     overriden_keys = {}
     for key, value in dict_obj.items():
-        keys_path = key.split('.')
-        get_or_create_dict(
-            yaml_obj, keys_path[:-1], overriden_keys)[keys_path[-1]] = value
+        keys_path = key.split(".")
+        get_or_create_dict(yaml_obj, keys_path[:-1], overriden_keys)[
+            keys_path[-1]
+        ] = value
 
     # Push value back to yaml
     for key, value in overriden_keys.items():
-        keys_path = key.split('.')
+        keys_path = key.split(".")
         value_obj = get_or_create_dict(yaml_obj, keys_path, {})
-        value_obj['_value_'] = value
+        value_obj["_value_"] = value
 
     output = yaml.dump(sort_dict(yaml_obj), Dumper=YAMLDumper)
     Path(file_name).write_text(output)
@@ -1166,13 +1250,14 @@ def write_dict_as_yaml(dict_obj, file_name):
 
 # -----------------------------------------------------------------------------
 
+
 def write_dict_as_json(dict_obj, file_name):
-    """Write a Python dict in a json format inside the provided file_name
-    """
+    """Write a Python dict in a json format inside the provided file_name"""
     Path(file_name).write_text(json.dumps(dict_obj, indent=2))
 
 
 # -----------------------------------------------------------------------------
+
 
 def write_dict(dict_obj, file_name):
     """Write a Python dict into a file_name using the extension to
@@ -1182,17 +1267,18 @@ def write_dict(dict_obj, file_name):
     sorted_dict = sort_dict(dict_obj)
 
     ext = Path(file_name).suffix[1:].lower()
-    if ext in ['yaml', 'yml']:
+    if ext in ["yaml", "yml"]:
         write_dict_as_yaml(sorted_dict, file_name)
-    elif ext == 'pfidb':
+    elif ext == "pfidb":
         write_dict_as_pfidb(sorted_dict, file_name)
-    elif ext == 'json':
+    elif ext == "json":
         write_dict_as_json(sorted_dict, file_name)
     else:
-        raise Exception(f'Could not find writer for {file_name}')
+        raise Exception(f"Could not find writer for {file_name}")
 
 
 # -----------------------------------------------------------------------------
+
 
 def to_native_type(string):
     """Converting a string to a value in native format.
@@ -1207,51 +1293,51 @@ def to_native_type(string):
 
     # Handle boolean type
     lower_str = string.lower()
-    if lower_str in ['true', 'false']:
-        return lower_str[0] == 't'
+    if lower_str in ["true", "false"]:
+        return lower_str[0] == "t"
 
     return string
 
 
 # -----------------------------------------------------------------------------
 
+
 def read_pfidb(file_path):
-    """Load pfidb file into a Python dict
-    """
+    """Load pfidb file into a Python dict"""
     result_dict = {}
-    action = 'nb_lines'  # nb_lines, size, string
+    action = "nb_lines"  # nb_lines, size, string
     size = 0
-    key = ''
-    value = ''
+    key = ""
+    value = ""
     string_type_count = 0
     full_path = get_absolute_path(file_path)
 
-    with open(full_path, 'r') as input_file:
+    with open(full_path, "r") as input_file:
         for line in input_file:
-            if action == 'string':
+            if action == "string":
                 if string_type_count % 2 == 0:
                     key = line[:size]
                 else:
                     value = line[:size]
                     result_dict[key] = to_native_type(value)
                 string_type_count += 1
-                action = 'size'
+                action = "size"
 
-            elif action == 'size':
+            elif action == "size":
                 size = int(line)
-                action = 'string'
+                action = "string"
 
-            elif action == 'nb_lines':
-                action = 'size'
+            elif action == "nb_lines":
+                action = "size"
 
     return result_dict
 
 
 # -----------------------------------------------------------------------------
 
+
 def read_yaml(file_path):
-    """Load yaml file into a Python dict
-    """
+    """Load yaml file into a Python dict"""
     path = Path(file_path)
     if not path.exists():
         return {}
@@ -1261,17 +1347,18 @@ def read_yaml(file_path):
 
 # -----------------------------------------------------------------------------
 
+
 def _read_clmin(file_name):
     """function to load in drv_clmin.dat files
 
-       Args:
-           - file_name: name of drv_clmin.dat file
+    Args:
+        - file_name: name of drv_clmin.dat file
 
-       Returns:
-           dictionary of key/value pairs of variables in file
+    Returns:
+        dictionary of key/value pairs of variables in file
     """
     clm_vars = {}
-    with open(file_name, 'r') as rf:
+    with open(file_name, "r") as rf:
         for line in rf:
             # skip if first 15 are empty or exclamation
             if line and line[0].islower():
@@ -1286,23 +1373,24 @@ def _read_clmin(file_name):
 
 # -----------------------------------------------------------------------------
 
+
 def _read_vegm(file_name):
     """function to load in drv_vegm.dat files
 
-       Args:
-           - file_name: name of drv_vegm.dat file
+    Args:
+        - file_name: name of drv_vegm.dat file
 
-       Returns:
-           3D numpy array for domain, with 3rd dimension defining each column
-           in the vegm.dat file except for x/y
+    Returns:
+        3D numpy array for domain, with 3rd dimension defining each column
+        in the vegm.dat file except for x/y
     """
     # Assume first two lines are comments and use generic column names
     df = pd.read_csv(file_name, delim_whitespace=True, skiprows=2, header=None)
-    df.columns = [f'c{i}' for i in range(df.shape[1])]
+    df.columns = [f"c{i}" for i in range(df.shape[1])]
 
     # Number of columns and rows determined by last line of file
-    nx = int(df.iloc[-1]['c0'])
-    ny = int(df.iloc[-1]['c1'])
+    nx = int(df.iloc[-1]["c0"])
+    ny = int(df.iloc[-1]["c1"])
     # Don't use 'x' and 'y' columns
     feature_cols = df.columns[2:]
     # Stack everything into (ny, nx, n_features)
@@ -1314,21 +1402,22 @@ def _read_vegm(file_name):
 
 # -----------------------------------------------------------------------------
 
+
 def _read_vegp(file_name):
     """function to load in drv_vegp.dat files
 
-       Args:
-           - file_name: name of drv_vegp.dat file
+    Args:
+        - file_name: name of drv_vegp.dat file
 
-       Returns:
-           Dictionary with keys as variables and values as lists of parameter
-           values for each of the 18 land cover types
+    Returns:
+        Dictionary with keys as variables and values as lists of parameter
+        values for each of the 18 land cover types
     """
     vegp_data = {}
     current_var = None
-    with open(file_name, 'r') as rf:
+    with open(file_name, "r") as rf:
         for line in rf:
-            if not line or line[0] == '!':
+            if not line or line[0] == "!":
                 continue
 
             split = line.split()
@@ -1343,15 +1432,12 @@ def _read_vegp(file_name):
 
 # -----------------------------------------------------------------------------
 
-def read_clm(file_name, type='clmin'):
-    type_map = {
-        'clmin': _read_clmin,
-        'vegm': _read_vegm,
-        'vegp': _read_vegp
-    }
+
+def read_clm(file_name, type="clmin"):
+    type_map = {"clmin": _read_clmin, "vegm": _read_vegm, "vegp": _read_vegp}
 
     if type not in type_map:
-        raise Exception(f'Unknown clm type: {type}')
+        raise Exception(f"Unknown clm type: {type}")
 
     return type_map[type](get_absolute_path(file_name))
 
@@ -1392,7 +1478,7 @@ class DataAccessor:
     @time.setter
     def time(self, t):
         self._time = int(t)
-        self._ts = f'{self._time:0>{self._t_padding}}'
+        self._ts = f"{self._time:0>{self._t_padding}}"
 
     @property
     def times(self):
@@ -1454,7 +1540,7 @@ class DataAccessor:
         return (
             self._run.ComputationalGrid.NZ,
             self._run.ComputationalGrid.NY,
-            self._run.ComputationalGrid.NX
+            self._run.ComputationalGrid.NX,
         )
 
     @property
@@ -1468,10 +1554,10 @@ class DataAccessor:
     @property
     def dz(self):
         if self._run.Solver.Nonlinear.VariableDz:
-            assert self._run.dzScale.Type == 'nzList'
+            assert self._run.dzScale.Type == "nzList"
             dz_scale = []
             for i in range(self._run.dzScale.nzListNumber):
-                dz_scale.append(self._run.Cell[str(i)]['dzScale']['Value'])
+                dz_scale.append(self._run.Cell[str(i)]["dzScale"]["Value"])
             dz_scale = np.array(dz_scale)
         else:
             dz_scale = np.ones((self._run.ComputationalGrid.NZ,))
@@ -1485,7 +1571,7 @@ class DataAccessor:
 
     @property
     def mannings(self):
-        return self._pfb_to_array(f'{self._name}.out.mannings.pfb')
+        return self._pfb_to_array(f"{self._name}.out.mannings.pfb")
 
     # ---------------------------------------------------------------------------
     # Mask
@@ -1493,7 +1579,7 @@ class DataAccessor:
 
     @property
     def mask(self):
-        return self._pfb_to_array(f'{self._name}.out.mask.pfb')
+        return self._pfb_to_array(f"{self._name}.out.mask.pfb")
 
     # ---------------------------------------------------------------------------
     # Slopes X Y
@@ -1502,14 +1588,14 @@ class DataAccessor:
     @property
     def slope_x(self):
         if self._run.TopoSlopesX.FileName is None:
-            return self._pfb_to_array(f'{self._name}.out.slope_x.pfb')
+            return self._pfb_to_array(f"{self._name}.out.slope_x.pfb")
         else:
             return self._pfb_to_array(self._run.TopoSlopesX.FileName)
 
     @property
     def slope_y(self):
         if self._run.TopoSlopesY.FileName is None:
-            return self._pfb_to_array(f'{self._name}.out.slope_y.pfb')
+            return self._pfb_to_array(f"{self._name}.out.slope_y.pfb")
         else:
             return self._pfb_to_array(self._run.TopoSlopesY.FileName)
 
@@ -1520,7 +1606,7 @@ class DataAccessor:
     @property
     def elevation(self):
         if self._run.TopoSlopes.Elevation.FileName is None:
-            return self._pfb_to_array(f'{self._name}.DEM.pfb')
+            return self._pfb_to_array(f"{self._name}.DEM.pfb")
         else:
             return self._pfb_to_array(self._run.TopoSlopes.Elevation.FileName)
 
@@ -1530,7 +1616,7 @@ class DataAccessor:
 
     @property
     def computed_porosity(self):
-        return self._pfb_to_array(f'{self._name}.out.porosity.pfb')
+        return self._pfb_to_array(f"{self._name}.out.porosity.pfb")
 
     # ---------------------------------------------------------------------------
     # Computed Permeability
@@ -1538,15 +1624,15 @@ class DataAccessor:
 
     @property
     def computed_permeability_x(self):
-        return self._pfb_to_array(f'{self._name}.out.perm_x.pfb')
+        return self._pfb_to_array(f"{self._name}.out.perm_x.pfb")
 
     @property
     def computed_permeability_y(self):
-        return self._pfb_to_array(f'{self._name}.out.perm_y.pfb')
+        return self._pfb_to_array(f"{self._name}.out.perm_y.pfb")
 
     @property
     def computed_permeability_z(self):
-        return self._pfb_to_array(f'{self._name}.out.perm_z.pfb')
+        return self._pfb_to_array(f"{self._name}.out.perm_z.pfb")
 
     # ---------------------------------------------------------------------------
     # Pressures
@@ -1555,16 +1641,16 @@ class DataAccessor:
     @property
     def pressure_initial_condition(self):
         press_type = self._run.ICPressure.Type
-        if press_type == 'PFBFile':
+        if press_type == "PFBFile":
             geom_name = self._run.ICPressure.GeomNames
             if len(geom_name) > 1:
-                msg = f'ICPressure.GeomNames are set to {geom_name}'
+                msg = f"ICPressure.GeomNames are set to {geom_name}"
                 raise Exception(msg)
             file_name = self._run.Geom[geom_name[0]].ICPressure.FileName
             return self._pfb_to_array(file_name)
         else:
             # HydroStaticPatch, ... ?
-            msg = f'Initial pressure of type {press_type} is not supported'
+            msg = f"Initial pressure of type {press_type} is not supported"
             raise Exception(msg)
 
     # ---------------------------------------------------------------------------
@@ -1585,7 +1671,7 @@ class DataAccessor:
             cycle_name = self._run.Patch[p_name].BCPressure.Cycle
             cycle_names = self._run.Cycle[cycle_name].Names
             for c_name in cycle_names:
-                key = f'{p_name}__{c_name}'
+                key = f"{p_name}__{c_name}"
                 bc[key] = self._run.Patch[p_name].BCPressure[c_name].Value
 
         return bc
@@ -1594,7 +1680,7 @@ class DataAccessor:
 
     @property
     def pressure(self):
-        file_name = get_absolute_path(f'{self._name}.out.press.{self._ts}.pfb')
+        file_name = get_absolute_path(f"{self._name}.out.press.{self._ts}.pfb")
         return self._pfb_to_array(file_name)
 
     # ---------------------------------------------------------------------------
@@ -1603,7 +1689,7 @@ class DataAccessor:
 
     @property
     def saturation(self):
-        file_name = get_absolute_path(f'{self._name}.out.satur.{self._ts}.pfb')
+        file_name = get_absolute_path(f"{self._name}.out.satur.{self._ts}.pfb")
         return self._pfb_to_array(file_name)
 
     # ---------------------------------------------------------------------------
@@ -1612,7 +1698,7 @@ class DataAccessor:
 
     @property
     def specific_storage(self):
-        return self._pfb_to_array(f'{self._name}.out.specific_storage.pfb')
+        return self._pfb_to_array(f"{self._name}.out.specific_storage.pfb")
 
     # ---------------------------------------------------------------------------
     # Evapotranspiration
@@ -1622,19 +1708,25 @@ class DataAccessor:
     def et(self):
         if self._run.Solver.PrintCLM:
             # Read ET from CLM output
-            return self.clm_output('qflx_evap_tot')
+            return self.clm_output("qflx_evap_tot")
         else:
             # Assert that one and only one of Solver.EvapTransFile or Solver.EvapTransFileTransient is set
-            assert self._run.Solver.EvapTransFile != self._run.Solver.EvapTransFileTransient, \
-                'Only one of Solver.EvapTrans.FileName, Solver.EvapTransFileTransient can be set in order to ' \
-                'calculate evapotranspiration'
+            assert (
+                self._run.Solver.EvapTransFile
+                != self._run.Solver.EvapTransFileTransient
+            ), (
+                "Only one of Solver.EvapTrans.FileName, Solver.EvapTransFileTransient can be set in order to "
+                "calculate evapotranspiration"
+            )
 
             if self._run.Solver.EvapTransFile:
                 # Read steady-state flux file
                 et_data = self._pfb_to_array(self._run.Solver.EvapTrans.FileName)
             else:
                 # Read current timestep from series of flux PFB files
-                et_data = self._pfb_to_array(f'{self._run.Solver.EvapTrans.FileName}.{self._ts}.pfb')
+                et_data = self._pfb_to_array(
+                    f"{self._run.Solver.EvapTrans.FileName}.{self._ts}.pfb"
+                )
 
         return calculate_evapotranspiration(et_data, self.dx, self.dy, self.dz)
 
@@ -1642,17 +1734,35 @@ class DataAccessor:
     # Overland Flow
     # ---------------------------------------------------------------------------
 
-    def overland_flow(self, flow_method='OverlandKinematic', epsilon=1e-5):
-        return calculate_overland_flow(self.pressure, self.slope_x, self.slope_y, self.mannings,
-                                       self.dx, self.dy, flow_method=flow_method, epsilon=epsilon, mask=self.mask)
+    def overland_flow(self, flow_method="OverlandKinematic", epsilon=1e-5):
+        return calculate_overland_flow(
+            self.pressure,
+            self.slope_x,
+            self.slope_y,
+            self.mannings,
+            self.dx,
+            self.dy,
+            flow_method=flow_method,
+            epsilon=epsilon,
+            mask=self.mask,
+        )
 
     # ---------------------------------------------------------------------------
     # Overland Flow Grid
     # ---------------------------------------------------------------------------
 
-    def overland_flow_grid(self, flow_method='OverlandKinematic', epsilon=1e-5):
-        return calculate_overland_flow_grid(self.pressure, self.slope_x, self.slope_y, self.mannings,
-                                            self.dx, self.dy, flow_method=flow_method, epsilon=epsilon, mask=self.mask)
+    def overland_flow_grid(self, flow_method="OverlandKinematic", epsilon=1e-5):
+        return calculate_overland_flow_grid(
+            self.pressure,
+            self.slope_x,
+            self.slope_y,
+            self.mannings,
+            self.dx,
+            self.dy,
+            flow_method=flow_method,
+            epsilon=epsilon,
+            mask=self.mask,
+        )
 
     # ---------------------------------------------------------------------------
     # Subsurface Storage
@@ -1660,8 +1770,16 @@ class DataAccessor:
 
     @property
     def subsurface_storage(self):
-        return calculate_subsurface_storage(self.computed_porosity, self.pressure, self.saturation,
-                                            self.specific_storage, self.dx, self.dy, self.dz, mask=self.mask)
+        return calculate_subsurface_storage(
+            self.computed_porosity,
+            self.pressure,
+            self.saturation,
+            self.specific_storage,
+            self.dx,
+            self.dy,
+            self.dz,
+            mask=self.mask,
+        )
 
     # ---------------------------------------------------------------------------
     # Surface Storage
@@ -1669,7 +1787,9 @@ class DataAccessor:
 
     @property
     def surface_storage(self):
-        return calculate_surface_storage(self.pressure, self.dx, self.dy, mask=self.mask)
+        return calculate_surface_storage(
+            self.pressure, self.dx, self.dy, mask=self.mask
+        )
 
     # ---------------------------------------------------------------------------
     # Water Table Depth
@@ -1684,28 +1804,32 @@ class DataAccessor:
     # ---------------------------------------------------------------------------
 
     def _clm_output_filepath(self, directory, prefix, ext):
-        file_name = f'{prefix}.{self._ts}.{ext}.{self._process_id}'
-        base_path = f'{self._run.Solver.CLM.CLMFileDir}/{directory}'
-        return get_absolute_path(f'{base_path}/{file_name}')
+        file_name = f"{prefix}.{self._ts}.{ext}.{self._process_id}"
+        base_path = f"{self._run.Solver.CLM.CLMFileDir}/{directory}"
+        return get_absolute_path(f"{base_path}/{file_name}")
 
     def _clm_output_bin(self, field, dtype):
-        fp = self._clm_output_filepath(field, field, 'bin')
-        return np.fromfile(fp, dtype=dtype, count=-1, sep='', offset=0)
+        fp = self._clm_output_filepath(field, field, "bin")
+        return np.fromfile(fp, dtype=dtype, count=-1, sep="", offset=0)
 
     def clm_output(self, field, layer=-1):
-        assert self._run.Solver.PrintCLM, 'CLM output must be enabled'
-        assert field in self.clm_output_variables, f'Unrecognized variable {field}'
+        assert self._run.Solver.PrintCLM, "CLM output must be enabled"
+        assert field in self.clm_output_variables, f"Unrecognized variable {field}"
 
         if self._run.Solver.CLM.SingleFile:
-            file_name = f'{self._name}.out.clm_output.{self._ts}.C.pfb'
-            arr = self._pfb_to_array(f'{file_name}')
+            file_name = f"{self._name}.out.clm_output.{self._ts}.C.pfb"
+            arr = self._pfb_to_array(f"{file_name}")
 
             nz = arr.shape[0]
-            nz_expected = len(self.clm_output_variables) + self._run.Solver.CLM.RootZoneNZ - 1
-            assert nz == nz_expected, f'Unexpected shape of CLM output, expected {nz_expected}, got {nz}'
+            nz_expected = (
+                len(self.clm_output_variables) + self._run.Solver.CLM.RootZoneNZ - 1
+            )
+            assert (
+                nz == nz_expected
+            ), f"Unexpected shape of CLM output, expected {nz_expected}, got {nz}"
 
             i = self.clm_output_variables.index(field)
-            if field == 't_soil':
+            if field == "t_soil":
                 if layer < 0:
                     i = layer
                 else:
@@ -1713,13 +1837,15 @@ class DataAccessor:
 
             arr = arr[i, :, :]
         else:
-            file_name = f'{self._name}.out.{field}.{self._ts}.pfb'
-            arr = self._pfb_to_array(f'{file_name}')
+            file_name = f"{self._name}.out.{field}.{self._ts}.pfb"
+            arr = self._pfb_to_array(f"{file_name}")
 
-            if field == 't_soil':
+            if field == "t_soil":
                 nz = arr.shape[0]
-                assert nz == self._run.Solver.CLM.RootZoneNZ, f'Unexpected shape of CLM output, expected ' \
-                                                              f'{self._run.Solver.CLM.RootZoneNZ}, got {nz}'
+                assert nz == self._run.Solver.CLM.RootZoneNZ, (
+                    f"Unexpected shape of CLM output, expected "
+                    f"{self._run.Solver.CLM.RootZoneNZ}, got {nz}"
+                )
                 arr = arr[layer, :, :]
 
         if arr.ndim == 3:
@@ -1728,137 +1854,138 @@ class DataAccessor:
 
     @property
     def clm_output_variables(self):
-        return ('eflx_lh_tot',
-                'eflx_lwrad_out',
-                'eflx_sh_tot',
-                'eflx_soil_grnd',
-                'qflx_evap_tot',
-                'qflx_evap_grnd',
-                'qflx_evap_soi',
-                'qflx_evap_veg',
-                'qflx_tran_veg',
-                'qflx_infl',
-                'swe_out',
-                't_grnd',
-                'qflx_qirr',
-                't_soil')
+        return (
+            "eflx_lh_tot",
+            "eflx_lwrad_out",
+            "eflx_sh_tot",
+            "eflx_soil_grnd",
+            "qflx_evap_tot",
+            "qflx_evap_grnd",
+            "qflx_evap_soi",
+            "qflx_evap_veg",
+            "qflx_tran_veg",
+            "qflx_infl",
+            "swe_out",
+            "t_grnd",
+            "qflx_qirr",
+            "t_soil",
+        )
 
     @property
     def clm_output_diagnostics(self):
-        return self._clm_output_filepath('diag_out', 'diagnostics', 'dat')
+        return self._clm_output_filepath("diag_out", "diagnostics", "dat")
 
     @property
     def clm_output_eflx_lh_tot(self):
-        return self._clm_output_bin('eflx_lh_tot', float)
+        return self._clm_output_bin("eflx_lh_tot", float)
 
     @property
     def clm_output_eflx_lwrad_out(self):
-        return self._clm_output_bin('eflx_lwrad_out', float)
+        return self._clm_output_bin("eflx_lwrad_out", float)
 
     @property
     def clm_output_eflx_sh_tot(self):
-        return self._clm_output_bin('eflx_sh_tot', float)
+        return self._clm_output_bin("eflx_sh_tot", float)
 
     @property
     def clm_output_eflx_soil_grnd(self):
-        return self._clm_output_bin('eflx_soil_grnd', float)
+        return self._clm_output_bin("eflx_soil_grnd", float)
 
     @property
     def clm_output_qflx_evap_grnd(self):
-        return self._clm_output_bin('qflx_evap_grnd', float)
+        return self._clm_output_bin("qflx_evap_grnd", float)
 
     @property
     def clm_output_qflx_evap_soi(self):
-        return self._clm_output_bin('qflx_evap_soi', float)
+        return self._clm_output_bin("qflx_evap_soi", float)
 
     @property
     def clm_output_qflx_evap_tot(self):
-        return self._clm_output_bin('qflx_evap_tot', float)
+        return self._clm_output_bin("qflx_evap_tot", float)
 
     @property
     def clm_output_qflx_evap_veg(self):
-        return self._clm_output_bin('qflx_evap_veg', float)
+        return self._clm_output_bin("qflx_evap_veg", float)
 
     @property
     def clm_output_qflx_infl(self):
-        return self._clm_output_bin('qflx_infl', float)
+        return self._clm_output_bin("qflx_infl", float)
 
     @property
     def clm_output_qflx_top_soil(self):
-        return self._clm_output_bin('qflx_top_soil', float)
+        return self._clm_output_bin("qflx_top_soil", float)
 
     @property
     def clm_output_qflx_tran_veg(self):
-        return self._clm_output_bin('qflx_tran_veg', float)
+        return self._clm_output_bin("qflx_tran_veg", float)
 
     @property
     def clm_output_swe_out(self):
-        return self._clm_output_bin('swe_out', float)
+        return self._clm_output_bin("swe_out", float)
 
     @property
     def clm_output_t_grnd(self):
-        return self._clm_output_bin('t_grnd', float)
+        return self._clm_output_bin("t_grnd", float)
 
     def clm_forcing(self, name):
         time_slice = self._run.Solver.CLM.MetFileNT
         prefix = self._run.Solver.CLM.MetFileName
         directory = self._run.Solver.CLM.MetFilePath
         file_index = int(self._forcing_time / time_slice)
-        t0 = f'{file_index * time_slice + 1:0>6}'
-        t1 = f'{(file_index + 1) * time_slice:0>6}'
-        file_name = get_absolute_path(
-            f'{directory}/{prefix}.{name}.{t0}_to_{t1}.pfb')
+        t0 = f"{file_index * time_slice + 1:0>6}"
+        t1 = f"{(file_index + 1) * time_slice:0>6}"
+        file_name = get_absolute_path(f"{directory}/{prefix}.{name}.{t0}_to_{t1}.pfb")
 
         return self._pfb_to_array(file_name)[self._forcing_time % time_slice]
 
     @property
     def clm_forcing_dswr(self):
         """Downward Visible or Short-Wave radiation [W/m2]"""
-        return self.clm_forcing('DSWR')
+        return self.clm_forcing("DSWR")
 
     @property
     def clm_forcing_dlwr(self):
         """Downward Infa-Red or Long-Wave radiation [W/m2]"""
-        return self.clm_forcing('DLWR')
+        return self.clm_forcing("DLWR")
 
     @property
     def clm_forcing_apcp(self):
         """Precipitation rate [mm/s]"""
-        return self.clm_forcing('APCP')
+        return self.clm_forcing("APCP")
 
     @property
     def clm_forcing_temp(self):
         """Air temperature [K]"""
-        return self.clm_forcing('Temp')
+        return self.clm_forcing("Temp")
 
     @property
     def clm_forcing_ugrd(self):
         """West-to-East or U-component of wind [m/s]"""
-        return self.clm_forcing('UGRD')
+        return self.clm_forcing("UGRD")
 
     @property
     def clm_forcing_vgrd(self):
         """South-to-North or V-component of wind [m/s]"""
-        return self.clm_forcing('VGRD')
+        return self.clm_forcing("VGRD")
 
     @property
     def clm_forcing_press(self):
         """Atmospheric Pressure [pa]"""
-        return self.clm_forcing('Press')
+        return self.clm_forcing("Press")
 
     @property
     def clm_forcing_spfh(self):
         """Water-vapor specific humidity [kg/kg]"""
-        return self.clm_forcing('SPFH')
+        return self.clm_forcing("SPFH")
 
     def _clm_map(self, root):
-        if root.Type == 'Constant':
+        if root.Type == "Constant":
             return root.Value
 
-        if root.Type == 'Linear':
+        if root.Type == "Linear":
             return (root.Min, root.Max)
 
-        if root.Type == 'PFBFile':
+        if root.Type == "PFBFile":
             return self._pfb_to_array(root.FileName)
 
         return None

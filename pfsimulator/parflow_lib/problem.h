@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #ifndef _PROBLEM_HEADER
 #define _PROBLEM_HEADER
@@ -99,10 +99,13 @@ typedef struct {
 
   /*****  packages  *****/
   PFModule  *well_package;
+  PFModule  *reservoir_package;
 
   /*sk**  overland flow*/
   PFModule  *x_slope;
   PFModule  *y_slope;
+  PFModule  *wc_x;
+  PFModule  *wc_y;
   PFModule  *mann;
   PFModule  *overlandflow_eval;        //DOK
   PFModule  *overlandflow_eval_diff;         //@RMM
@@ -130,7 +133,7 @@ typedef struct {
    */
   Vector         *index_of_domain_top;
 
-  /* 
+  /*
    * This is a NX * NY vector of patch id/index of the top
    * of the domain.
    *
@@ -152,11 +155,14 @@ typedef struct {
 
 
   WellData       *well_data;
+  ReservoirData       *reservoir_data;
   BCPressureData *bc_pressure_data;
 
   /*sk  overland flow*/
   Vector *x_slope;
   Vector *y_slope;
+  Vector *wc_x;
+  Vector *wc_y;
   Vector *mann;
 
   /* @RMM terrain grid */
@@ -218,6 +224,8 @@ typedef struct {
 #define ProblemSpecStorage(problem)               ((problem)->specific_storage)   //sk
 #define ProblemXSlope(problem)                    ((problem)->x_slope)   //sk
 #define ProblemYSlope(problem)                    ((problem)->y_slope)   //sk
+#define ProblemXChannelWidth(problem)             ((problem)->wc_x)
+#define ProblemYChannelWidth(problem)             ((problem)->wc_y)
 #define ProblemFBx(problem)                      ((problem)->FBx)    //RMM
 #define ProblemFBy(problem)                      ((problem)->FBy)    //RMM
 #define ProblemFBz(problem)                      ((problem)->FBz)    //RMM
@@ -246,6 +254,7 @@ typedef struct {
 
 /* packages */
 #define ProblemWellPackage(problem)               ((problem)->well_package)
+#define ProblemReservoirPackage(problem)               ((problem)->reservoir_package)
 
 /* error calculations */
 #define ProblemL2ErrorNorm(problem)               ((problem)->l2_error_norm)
@@ -274,10 +283,13 @@ typedef struct {
 #define ProblemDataFBy(problem_data)            ((problem_data)->FBy)    //RMM
 #define ProblemDataFBz(problem_data)            ((problem_data)->FBz)    //RMM
 #define ProblemDataWellData(problem_data)       ((problem_data)->well_data)
+#define ProblemDataReservoirData(problem_data)       ((problem_data)->reservoir_data)
 #define ProblemDataBCPressureData(problem_data) ((problem_data)->bc_pressure_data)
 #define ProblemDataSpecificStorage(problem_data)((problem_data)->specific_storage)   //sk
 #define ProblemDataTSlopeX(problem_data)        ((problem_data)->x_slope)   //sk
 #define ProblemDataTSlopeY(problem_data)        ((problem_data)->y_slope)   //sk
+#define ProblemDataChannelWidthX(problem_data)  ((problem_data)->wc_x)
+#define ProblemDataChannelWidthY(problem_data)  ((problem_data)->wc_y)
 #define ProblemDataMannings(problem_data)       ((problem_data)->mann)   //sk
 #define ProblemDataSSlopeX(problem_data)        ((problem_data)->x_sslope)   //RMM
 #define ProblemDataSSlopeY(problem_data)        ((problem_data)->y_sslope)   //RMM
@@ -297,3 +309,4 @@ typedef struct {
 
 
 #endif
+

@@ -89,6 +89,8 @@ set (SRC_FILES_CONST advect.F
   problem_thermal_conductivity.c
   problem_toposlope_x.c
   problem_toposlope_y.c
+  problem_wc_x.c
+  problem_wc_y.c
   process_grid.c
   random.c
   ratqr.c
@@ -115,6 +117,8 @@ set (SRC_FILES_CONST advect.F
   well.c
   well_package.c
   wells_lb.c
+  reservoir.c
+  reservoir_package.c
   wrf_parflow.c
   write_clm_netcdf.c
   write_parflow_binary.c
@@ -199,7 +203,6 @@ endif(${PARFLOW_HAVE_KOKKOS})
 
   if ( ${PARFLOW_HAVE_CUDA} )
     target_link_libraries(pfsimulator nvToolsExt)
-    target_include_directories(pfsimulator PUBLIC "../third_party/cub")
     target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
   endif ( ${PARFLOW_HAVE_CUDA} )
 

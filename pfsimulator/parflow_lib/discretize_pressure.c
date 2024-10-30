@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 *
@@ -81,7 +81,7 @@ int seven_pt_shape[7][3] = { { 0, 0, 0 },
 #define Mean(a, b)  CellFaceConductivity(a, b)
 
 #define Coeff(Ta, Tb, Pa, Pb) \
-  (((Ta) + (Tb)) ? ((Ta) * (Pb) + (Tb) * (Pa)) / ((Ta) + (Tb)) : 0)
+        (((Ta) + (Tb)) ? ((Ta) * (Pb) + (Tb) * (Pa)) / ((Ta) + (Tb)) : 0)
 
 
 /*--------------------------------------------------------------------------
@@ -144,18 +144,18 @@ void          DiscretizePressure(
   Subvector     **tc_sub;
   Subvector      *tv_sub;
 
-  double dx, dy, dz, d=0.0;
+  double dx, dy, dz, d = 0.0;
 
   double         *cp, *wp, *ep, *sp, *np, *lp, *up, *op = NULL;
   double         *fp;
   double         *ttx_p, *tty_p, *ttz_p;
   double         *tmx_p, *tmy_p, *tmz_p;
-  double         *tm_p, *tt_p=NULL;
+  double         *tm_p, *tt_p = NULL;
   double        **tmx_pvec, **tmy_pvec, **tmz_pvec;
   double         *tc_p, **tc_pvec;
   double         *tv_p;
 
-  double scale, ffx, ffy, ffz, ff=0.0, vf;
+  double scale, ffx, ffy, ffz, ff = 0.0, vf;
 
   double e_temp, n_temp, u_temp, f_temp;
   double o_temp;
@@ -596,15 +596,15 @@ void          DiscretizePressure(
         d = dx;
         switch (fdir[0])
         {
-          case -1:
-            sv = -1;
-            op = wp;
-            break;
+            case -1:
+              sv = -1;
+              op = wp;
+              break;
 
-          case  1:
-            sv = 1;
-            op = ep;
-            break;
+            case  1:
+              sv = 1;
+              op = ep;
+              break;
         }
       }
       else if (fdir[1])
@@ -613,15 +613,15 @@ void          DiscretizePressure(
         d = dy;
         switch (fdir[1])
         {
-          case -1:
-            sv = -sy_v;
-            op = sp;
-            break;
+            case -1:
+              sv = -sy_v;
+              op = sp;
+              break;
 
-          case  1:
-            sv = sy_v;
-            op = np;
-            break;
+            case  1:
+              sv = sy_v;
+              op = np;
+              break;
         }
       }
       else if (fdir[2])
@@ -630,15 +630,15 @@ void          DiscretizePressure(
         d = dz;
         switch (fdir[2])
         {
-          case -1:
-            sv = -sz_v;
-            op = lp;
-            break;
+            case -1:
+              sv = -sz_v;
+              op = lp;
+              break;
 
-          case  1:
-            sv = sz_v;
-            op = up;
-            break;
+            case  1:
+              sv = sz_v;
+              op = up;
+              break;
         }
       }
 
@@ -744,79 +744,79 @@ void          DiscretizePressure(
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(int iv, im, phase;
                                   double ff, d, o_temp, f_temp;
-                                  double *tm_p;),
+                                  double *tm_p; ),
                            CellSetup({
-                               iv = SubvectorEltIndex(f_sub, i, j, k);
-                               im = SubmatrixEltIndex(A_sub, i, j, k);
-                             }),
+        iv = SubvectorEltIndex(f_sub, i, j, k);
+        im = SubmatrixEltIndex(A_sub, i, j, k);
+      }),
                            FACE(LeftFace, {
-                               ff = ffx;
-                               d = dx;
-                               tt_p = ttx_p;
-                             }),
+        ff = ffx;
+        d = dx;
+        tt_p = ttx_p;
+      }),
                            FACE(RightFace, {
-                               ff = ffx;
-                               d = dx;
-                               tt_p = ttx_p;
-                             }),
+        ff = ffx;
+        d = dx;
+        tt_p = ttx_p;
+      }),
                            FACE(DownFace, {
-                               ff = ffy;
-                               d = dy;
-                               tt_p = tty_p;
-                             }),
+        ff = ffy;
+        d = dy;
+        tt_p = tty_p;
+      }),
                            FACE(UpFace, {
-                               ff = ffy;
-                               d = dy;
-                               tt_p = tty_p;
-                             }),
+        ff = ffy;
+        d = dy;
+        tt_p = tty_p;
+      }),
                            FACE(BackFace, {
-                               ff = ffz;
-                               d = dz;
-                               tt_p = ttz_p;
+        ff = ffz;
+        d = dz;
+        tt_p = ttz_p;
 
-                               for (phase = 0; phase < num_phases; phase++)
-                               {
-                                 tm_p = tmz_pvec[phase];
-                                 f_temp = ff * tm_p[iv] *
-                                          (phase_density[phase] * gravity);
-                                 fp[iv] += (-f_temp);
-                               }
-                             }),
+        for (phase = 0; phase < num_phases; phase++)
+        {
+          tm_p = tmz_pvec[phase];
+          f_temp = ff * tm_p[iv] *
+                   (phase_density[phase] * gravity);
+          fp[iv] += (-f_temp);
+        }
+      }),
                            FACE(FrontFace, {
-                               ff = ffz;
-                               d = dz;
-                               tt_p = ttz_p;
+        ff = ffz;
+        d = dz;
+        tt_p = ttz_p;
 
-                               for (phase = 0; phase < num_phases; phase++)
-                               {
-                                 tm_p = tmz_pvec[phase];
-                                 f_temp = ff * tm_p[iv] *
-                                          (phase_density[phase] * gravity);
-                                 fp[iv] += f_temp;
-                               }
-                             }),
+        for (phase = 0; phase < num_phases; phase++)
+        {
+          tm_p = tmz_pvec[phase];
+          f_temp = ff * tm_p[iv] *
+                   (phase_density[phase] * gravity);
+          fp[iv] += f_temp;
+        }
+      }),
                            CellFinalize({
-                               o_temp = -ff * 2.0 * tt_p[iv] / d;
-                               cp[im] -= o_temp;
-                               fp[iv] -= o_temp * bc_patch_values[ival];
-                             }),
+        o_temp = -ff * 2.0 * tt_p[iv] / d;
+        cp[im] -= o_temp;
+        fp[iv] -= o_temp * bc_patch_values[ival];
+      }),
                            AfterAllCells(DoNothing)
-        );
+                           );
 
       ForPatchCellsPerFace(FluxBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           Locals(int iv, dir; double ff;),
+                           Locals(int iv, dir; double ff; ),
                            CellSetup({ iv = SubvectorEltIndex(f_sub, i, j, k); }),
-                           FACE(LeftFace,  { ff = ffx; dir = -1;}),
-                           FACE(RightFace, { ff = ffx; dir = 1;}),
-                           FACE(DownFace,  { ff = ffy; dir = -1;}),
-                           FACE(UpFace,    { ff = ffy; dir = 1;}),
-                           FACE(BackFace,  { ff = ffz; dir = -1;}),
-                           FACE(FrontFace, { ff = ffz; dir = 1;}),
+                           FACE(LeftFace, { ff = ffx; dir = -1; }),
+                           FACE(RightFace, { ff = ffx; dir = 1; }),
+                           FACE(DownFace, { ff = ffy; dir = -1; }),
+                           FACE(UpFace, { ff = ffy; dir = 1; }),
+                           FACE(BackFace, { ff = ffz; dir = -1; }),
+                           FACE(FrontFace, { ff = ffz; dir = 1; }),
                            CellFinalize({ fp[iv] -= ff * dir * bc_patch_values[ival]; }),
                            AfterAllCells(DoNothing)
-        );
+                           );
     }
   }
 

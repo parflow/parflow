@@ -13,6 +13,8 @@ from pathlib import Path
 import sys
 import argparse
 
+import numpy as np
+
 from . import settings
 from .fs import get_absolute_path
 from .io import (
@@ -21,7 +23,7 @@ from .io import (
     write_dict,
     read_pfb,
     write_pfb,
-    write_dist
+    write_dist,
 )
 
 from .database.generated import BaseRun
@@ -42,22 +44,21 @@ def check_parflow_execution(out_file):
     print(f'# {"=" * 78}')
     execute_success = False
     if Path(out_file).exists():
-        with open(out_file, 'r') as f:
+        with open(out_file, "r") as f:
             contents = f.read()
-            if 'Problem solved' in contents:
-                print(
-                    f'# ParFlow ran successfully')
+            if "Problem solved" in contents:
+                print(f"# ParFlow ran successfully")
                 execute_success = True
             else:
-                print(f'# ParFlow run failed. '
-                      f'Contents of error output file:')
+                print(f"# ParFlow run failed. " f"Contents of error output file:")
                 print("-" * 80)
                 print(contents)
                 print("-" * 80)
     else:
-        print(f'# Cannot find {out_file} in {os.getcwd()}')
+        print(f"# Cannot find {out_file} in {os.getcwd()}")
     print(f'# {"=" * 78}')
     return execute_success
+
 
 # -----------------------------------------------------------------------------
 
@@ -75,19 +76,21 @@ def get_current_parflow_version():
         str: Return ParFlow version like '3.6.0'
 
     """
-    version = '3.6.0'
+    version = "3.6.0"
     version_file = f'{os.getenv("PARFLOW_DIR")}/config/pf-cmake-env.sh'
     if Path(version_file).resolve().exists():
-        with open(version_file, 'r') as f:
+        with open(version_file, "r") as f:
             for line in f:
-                if 'PARFLOW_VERSION=' in line:
+                if "PARFLOW_VERSION=" in line:
                     version = line[17:-2]
             if not version:
-                print(f'Cannot find version in {version_file}')
+                print(f"Cannot find version in {version_file}")
     else:
-        print(f'Cannot find environment file in '
-              f'{str(Path(version_file).resolve())}.')
+        print(
+            f"Cannot find environment file in " f"{str(Path(version_file).resolve())}."
+        )
     return version
+
 
 # -----------------------------------------------------------------------------
 
@@ -99,84 +102,113 @@ def get_process_args():
     parser = argparse.ArgumentParser(description="Parflow run arguments")
 
     # ++++++++++++++++
-    group = parser.add_argument_group('Parflow settings')
-    group.add_argument("--parflow-directory",
-                       default=None,
-                       dest="parflow_directory",
-                       help="Path to use for PARFLOW_DIR")
-    group.add_argument("--parflow-version",
-                       default=None,
-                       dest="parflow_version",
-                       help="Override detected Parflow version")
+    group = parser.add_argument_group("Parflow settings")
+    group.add_argument(
+        "--parflow-directory",
+        default=None,
+        dest="parflow_directory",
+        help="Path to use for PARFLOW_DIR",
+    )
+    group.add_argument(
+        "--parflow-version",
+        default=None,
+        dest="parflow_version",
+        help="Override detected Parflow version",
+    )
     # ++++++++++++++++
-    group = parser.add_argument_group('Execution settings')
-    group.add_argument("--working-directory",
-                       default=None,
-                       dest="working_directory",
-                       help="Path to execution working directory")
+    group = parser.add_argument_group("Execution settings")
+    group.add_argument(
+        "--working-directory",
+        default=None,
+        dest="working_directory",
+        help="Path to execution working directory",
+    )
 
-    group.add_argument("--skip-validation",
-                       default=False,
-                       dest="skip_validation",
-                       action='store_true',
-                       help="Disable validation pass")
+    group.add_argument(
+        "--skip-validation",
+        default=False,
+        dest="skip_validation",
+        action="store_true",
+        help="Disable validation pass",
+    )
 
-    group.add_argument("--dry-run",
-                       default=False,
-                       action='store_true',
-                       dest="dry_run",
-                       help="Prevent execution")
+    group.add_argument(
+        "--dry-run",
+        default=False,
+        action="store_true",
+        dest="dry_run",
+        help="Prevent execution",
+    )
     # ++++++++++++++++
-    group = parser.add_argument_group('Error handling settings')
-    group.add_argument("--show-line-error",
-                       default=False,
-                       dest="show_line_error",
-                       action='store_true',
-                       help="Show line error")
+    group = parser.add_argument_group("Error handling settings")
+    group.add_argument(
+        "--show-line-error",
+        default=False,
+        dest="show_line_error",
+        action="store_true",
+        help="Show line error",
+    )
 
-    group.add_argument("--exit-on-error",
-                       default=False,
-                       dest="exit_on_error",
-                       action='store_true',
-                       help="Exit at error")
+    group.add_argument(
+        "--exit-on-error",
+        default=False,
+        dest="exit_on_error",
+        action="store_true",
+        help="Exit at error",
+    )
     # ++++++++++++++++
-    group = parser.add_argument_group('Additional output')
-    group.add_argument("--write-yaml",
-                       default=False,
-                       dest="write_yaml",
-                       action='store_true',
-                       help="Enable config to be written as YAML file")
+    group = parser.add_argument_group("Additional output")
+    group.add_argument(
+        "--write-yaml",
+        default=False,
+        dest="write_yaml",
+        action="store_true",
+        help="Enable config to be written as YAML file",
+    )
 
-    group.add_argument("--validation-verbose",
-                       default=False,
-                       dest="validation_verbose",
-                       action='store_true',
-                       help="Only print validation results for "
-                            "key/value pairs with errors")
+    group.add_argument(
+        "--validation-verbose",
+        default=False,
+        dest="validation_verbose",
+        action="store_true",
+        help="Only print validation results for " "key/value pairs with errors",
+    )
 
-    group.add_argument("--overwrite-clm-driver-files",
-                       default=False,
-                       dest="overwrite_clm_driver_files",
-                       action='store_true',
-                       help="Allow old clm driver files to be overwritten")
+    group.add_argument(
+        "--overwrite-clm-driver-files",
+        default=False,
+        dest="overwrite_clm_driver_files",
+        action="store_true",
+        help="Allow old clm driver files to be overwritten",
+    )
 
     # ++++++++++++++++
-    group = parser.add_argument_group('Parallel execution')
-    group.add_argument("-p", type=int, default=0,
-                       dest="p",
-                       help="P allocates the number of processes "
-                            "to the grid-cells in x")
-    group.add_argument("-q", type=int, default=0,
-                       dest="q",
-                       help="Q allocates the number of processes "
-                            "to the grid-cells in y")
-    group.add_argument("-r", type=int, default=0,
-                       dest="r",
-                       help="R allocates the number of processes "
-                            "to the grid-cells in z")
+    group = parser.add_argument_group("Parallel execution")
+    group.add_argument(
+        "-p",
+        type=int,
+        default=0,
+        dest="p",
+        help="P allocates the number of processes " "to the grid-cells in x",
+    )
+    group.add_argument(
+        "-q",
+        type=int,
+        default=0,
+        dest="q",
+        help="Q allocates the number of processes " "to the grid-cells in y",
+    )
+    group.add_argument(
+        "-r",
+        type=int,
+        default=0,
+        dest="r",
+        help="R allocates the number of processes " "to the grid-cells in z",
+    )
 
     args, unknown = parser.parse_known_args()
     return args
+
 
 # -----------------------------------------------------------------------------
 
@@ -213,13 +245,14 @@ def update_run_from_args(run, args):
     if args.overwrite_clm_driver_files:
         clm_solver = run.Solver.CLM
         keys = [
-            'OverwriteDrvClmin',
-            'OverwriteDrvVegp',
-            'OverwriteDrvVegm',
+            "OverwriteDrvClmin",
+            "OverwriteDrvVegp",
+            "OverwriteDrvVegm",
         ]
         for key in keys:
             if getattr(clm_solver, key) is False:
                 setattr(clm_solver, key, True)
+
 
 # -----------------------------------------------------------------------------
 
@@ -236,6 +269,7 @@ class Run(BaseRun):
             directory where the python executable was run from.
 
     """
+
     def __init__(self, name, basescript=None):
         super().__init__(None)
         self._accessor_ = None
@@ -269,50 +303,48 @@ class Run(BaseRun):
         file_path = Path(get_absolute_path(file_path))
         name, ext = file_path.stem, file_path.suffix[1:]
 
-        ext_map = {
-            'yaml': 'yaml_file',
-            'yml': 'yaml_file',
-            'pfidb': 'pfidb_file'
-        }
+        ext_map = {"yaml": "yaml_file", "yml": "yaml_file", "pfidb": "pfidb_file"}
 
         if ext not in ext_map:
-            raise Exception(f'Unknown extension: {ext}')
+            raise Exception(f"Unknown extension: {ext}")
 
         new_run = cls(name, file_path)
         kwargs = {ext_map[ext]: file_path}
         new_run.pfset(silence_if_undefined=True, **kwargs)
 
         # Try to solve order sensitive property settings
-        while '_pfstore_' in new_run.__dict__:
-            invalid_props = new_run.__dict__.pop('_pfstore_')
+        while "_pfstore_" in new_run.__dict__:
+            invalid_props = new_run.__dict__.pop("_pfstore_")
             previous_size = len(invalid_props)
             for key, value in invalid_props.items():
                 new_run.pfset(key, value, silence_if_undefined=True)
 
             # Break if no key was able to be mapped outside pfstore
-            if ('_pfstore_' in new_run.__dict__ and
-                    previous_size == len(new_run.__dict__['_pfstore_'])):
+            if "_pfstore_" in new_run.__dict__ and previous_size == len(
+                new_run.__dict__["_pfstore_"]
+            ):
                 break
 
         # Print any remaining key with no mapping
-        if '_pfstore_' in new_run.__dict__:
-            invalid_props = new_run.__dict__.pop('_pfstore_')
+        if "_pfstore_" in new_run.__dict__:
+            invalid_props = new_run.__dict__.pop("_pfstore_")
             for key, value in invalid_props.items():
                 new_run.pfset(key, value)
 
-        if ext == 'pfidb':
+        if ext == "pfidb":
             # Import CLM files if we need to
             try:
                 CLMImporter(new_run).import_if_needed()
             except Exception:
-                print(' => Error during CLM import - '
-                      'CLM specific key have been skipped')
+                print(
+                    " => Error during CLM import - "
+                    "CLM specific key have been skipped"
+                )
 
         return new_run
 
     def get_name(self):
-        """Returns name of run
-        """
+        """Returns name of run"""
         return self._name_
 
     def set_name(self, new_name):
@@ -332,8 +364,7 @@ class Run(BaseRun):
             self._accessor_ = DataAccessor(self)
         return self._accessor_
 
-    def write(self, file_name=None, file_format='pfidb',
-              working_directory=None):
+    def write(self, file_name=None, file_format="pfidb", working_directory=None):
         """Method to write database file to disk
 
         Args:
@@ -354,11 +385,13 @@ class Run(BaseRun):
         if working_directory:
             settings.set_working_directory(working_directory)
 
-        f_name = os.path.join(settings.WORKING_DIRECTORY,
-                              f'{self._name_}.{file_format}')
+        f_name = os.path.join(
+            settings.WORKING_DIRECTORY, f"{self._name_}.{file_format}"
+        )
         if file_name:
-            f_name = os.path.join(settings.WORKING_DIRECTORY,
-                                  f'{file_name}.{file_format}')
+            f_name = os.path.join(
+                settings.WORKING_DIRECTORY, f"{file_name}.{file_format}"
+            )
         full_file_path = os.path.abspath(f_name)
         write_dict(self.to_dict(), full_file_path)
 
@@ -369,7 +402,7 @@ class Run(BaseRun):
         # revert working directory to original directory
         settings.set_working_directory(prev_dir)
 
-        return full_file_path, full_file_path[:-(len(file_format)+1)]
+        return full_file_path, full_file_path[: -(len(file_format) + 1)]
 
     def write_subsurface_table(self, file_name=None, working_directory=None):
         # overwrite current working directory
@@ -378,10 +411,10 @@ class Run(BaseRun):
             settings.set_working_directory(working_directory)
 
         if file_name is None:
-            file_name = f'{self._name_}_subsurface.csv'
+            file_name = f"{self._name_}_subsurface.csv"
         full_path = get_absolute_path(file_name)
         exporter = SubsurfacePropertiesExporter(self)
-        if file_name.lower().endswith('.csv'):
+        if file_name.lower().endswith(".csv"):
             exporter.write_csv(full_path)
         else:
             exporter.write_txt(full_path)
@@ -436,19 +469,19 @@ class Run(BaseRun):
 
         print()
         print(f'# {"=" * 78}')
-        print('# ParFlow directory')
+        print("# ParFlow directory")
         print(f'#  - {os.getenv("PARFLOW_DIR")}')
-        print('# ParFlow version')
-        print(f'#  - {settings.PARFLOW_VERSION}')
-        print('# Working directory')
-        print(f'#  - {os.path.dirname(file_name)}')
-        print('# ParFlow database')
-        print(f'#  - {os.path.basename(file_name)}')
+        print("# ParFlow version")
+        print(f"#  - {settings.PARFLOW_VERSION}")
+        print("# Working directory")
+        print(f"#  - {os.path.dirname(file_name)}")
+        print("# ParFlow database")
+        print(f"#  - {os.path.basename(file_name)}")
         print(f'# {"=" * 78}')
 
         # Only write YAML in run()
         if self._process_args_.write_yaml:
-            full_path, no_extension = self.write(file_format='yaml')
+            full_path, no_extension = self.write(file_format="yaml")
             print(f'YAML output: "{full_path}"')
 
         print()
@@ -468,8 +501,8 @@ class Run(BaseRun):
             prev_dir = os.getcwd()
             try:
                 os.chdir(settings.WORKING_DIRECTORY)
-                os.system(f'sh $PARFLOW_DIR/bin/run {run_file} {num_procs}')
-                success = check_parflow_execution(f'{run_file}.out.txt')
+                os.system(f"sh $PARFLOW_DIR/bin/run {run_file} {num_procs}")
+                success = check_parflow_execution(f"{run_file}.out.txt")
             finally:
                 os.chdir(prev_dir)
 
@@ -480,6 +513,39 @@ class Run(BaseRun):
 
         if not success or error_count > 0:
             sys.exit(1)
+
+    def check_nans(self, working_directory, include_forcing=True):
+        """Check the input files for NaNs.
+
+        Args:
+            working_directory: The working directory of the ParFlow run.
+            include_forcing (bool): If set to True, forcing files are going
+                to be checked.
+
+        Raises:
+            ValueError: If an input file contains a NaN.
+        """
+
+        runscript_path, _ = self.write(file_format="yaml")
+        all_files = []
+        with open(runscript_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("FileName: ") and line.endswith(".pfb"):
+                    path = os.path.join(working_directory, line.split()[1])
+                    all_files.append(path)
+
+        if include_forcing:
+            run = self.__class__.from_definition(runscript_path)
+            forcing_dir = run.Solver.CLM.MetFilePath
+            for file in os.listdir(forcing_dir):
+                if file.endswith(".pfb"):
+                    all_files.append(os.path.join(forcing_dir, file))
+
+        for file in all_files:
+            data = read_pfb(file)
+            if np.any(np.isnan(data)):
+                raise ValueError(f"{file} contains NaN values.")
 
     def dist(self, pfb_file, **kwargs):
         """Distribute a PFB file using the P/Q/R settings from the run
@@ -493,19 +559,16 @@ class Run(BaseRun):
         update_run_from_args(self, self._process_args_)
 
         pfb_file_full_path = get_absolute_path(pfb_file)
-        p = kwargs.get('P', self.Process.Topology.P)
-        q = kwargs.get('Q', self.Process.Topology.Q)
-        r = kwargs.get('R', self.Process.Topology.R)
+        p = kwargs.get("P", self.Process.Topology.P)
+        q = kwargs.get("Q", self.Process.Topology.Q)
+        r = kwargs.get("R", self.Process.Topology.R)
 
-        with ParflowBinaryReader(pfb_file_full_path) as pfb:
+        with ParflowBinaryReader(pfb_file_full_path, read_sg_info=True) as pfb:
             array = pfb.read_all_subgrids()
             header = pfb.header
 
-        dx, dy, dz = header['dx'], header['dy'], header['dz']
+        dx, dy, dz = header["dx"], header["dy"], header["dz"]
 
-        write_pfb(pfb_file_full_path, array,
-                   p=p, q=q, r=r, dx=dx, dy=dy, dz=dz,
-                   dist=True)
-
-
-
+        write_pfb(
+            pfb_file_full_path, array, p=p, q=q, r=r, dx=dx, dy=dy, dz=dz, dist=True
+        )

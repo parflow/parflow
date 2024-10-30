@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /* This file contains utility routines for ParFlow's Vector class.
  *
  * This file was modified from a coresponding PVODE package file to account
@@ -723,9 +723,9 @@ double PFVDotProd(
     i_y = 0;
 
     BoxLoopReduceI2(sum,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_y, nx_y, ny_y, nz_y, 1, 1, 1,
     {
       ReduceSum(sum, xp[i_x] * yp[i_y]);
     });
@@ -782,8 +782,8 @@ double PFVMaxNorm(
 
     i_x = 0;
     BoxLoopReduceI1(max_val,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       double xp_abs = fabs(xp[i_x]);
       ReduceMax(max_val, xp_abs);
@@ -851,9 +851,9 @@ double PFVWrmsNorm(
     i_w = 0;
 
     BoxLoopReduceI2(sum,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              i_w, nx_w, ny_w, nz_w, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       double prod = xp[i_x] * wp[i_w];
       ReduceSum(sum, prod * prod);
@@ -923,9 +923,9 @@ double PFVWL2Norm(
     i_w = 0;
 
     BoxLoopReduceI2(sum,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              i_w, nx_w, ny_w, nz_w, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       const double prod = xp[i_x] * wp[i_w];
       ReduceSum(sum, prod * prod);
@@ -983,8 +983,8 @@ double PFVL1Norm(
 
     i_x = 0;
     BoxLoopReduceI1(sum,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceSum(sum, fabs(xp[i_x]));
     });
@@ -1046,8 +1046,8 @@ double PFVMin(
     {
       i_x = 0;
       BoxLoopReduceI1(min_val,
-                i, j, k, ix, iy, iz, 1, 1, 1,
-                i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                      i, j, k, ix, iy, iz, 1, 1, 1,
+                      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
       {
         ReduceSum(min_val, xp[i_x]);
       });
@@ -1055,8 +1055,8 @@ double PFVMin(
 
     i_x = 0;
     BoxLoopReduceI1(min_val,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceMin(min_val, xp[i_x]);
     });
@@ -1113,8 +1113,8 @@ double PFVMax(
     {
       i_x = 0;
       BoxLoopReduceI1(max_val,
-                i, j, k, ix, iy, iz, 1, 1, 1,
-                i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                      i, j, k, ix, iy, iz, 1, 1, 1,
+                      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
       {
         ReduceSum(max_val, xp[i_x]);
       });
@@ -1123,8 +1123,8 @@ double PFVMax(
     i_x = 0;
 
     BoxLoopReduceI1(max_val,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceMax(max_val, xp[i_x]);
     });
@@ -1385,7 +1385,7 @@ void PFVCopy(Vector *x,
     Subvector  *x_sub = VectorSubvector(x, sg);
     Subvector  *y_sub = VectorSubvector(y, sg);
 
-    tmemcpy(SubvectorData(y_sub), SubvectorData(x_sub), SubvectorDataSize(y_sub)*sizeof(double));
+    tmemcpy(SubvectorData(y_sub), SubvectorData(x_sub), SubvectorDataSize(y_sub) * sizeof(double));
   }
 }
 

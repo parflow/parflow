@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 *****************************************************************************/
@@ -107,7 +107,8 @@ void          BCPhaseSaturation(
   int nx_v, ny_v;
   int sx_v, sy_v, sz_v;
 
-  int indx, ipatch, is, i, j, k, ival=0;
+  int indx, ipatch, is, i, j, k, ival = 0;
+
   PF_UNUSED(ival);
 
   /*-----------------------------------------------------------------------
@@ -152,28 +153,28 @@ void          BCPhaseSaturation(
           double constant;
           ForPatchCellsPerFace(BC_ALL,
                                BeforeAllCells({
-                                   dummy0 = (Type0*)(public_xtra->data[indx + ipatch]);
-                                   constant = (dummy0->constant);
-                                 }),
+            dummy0 = (Type0*)(public_xtra->data[indx + ipatch]);
+            constant = (dummy0->constant);
+          }),
                                LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                               Locals(int sv, iv;),
+                               Locals(int sv, iv; ),
                                CellSetup({
-                                   sv = 0;
-                                   iv = SubvectorEltIndex(sat_sub, i, j, k);
-                                 }),
-                               FACE(LeftFace,  { sv = -sx_v; }),
+            sv = 0;
+            iv = SubvectorEltIndex(sat_sub, i, j, k);
+          }),
+                               FACE(LeftFace, { sv = -sx_v; }),
                                FACE(RightFace, { sv = sx_v; }),
-                               FACE(DownFace,  { sv = -sy_v; }),
-                               FACE(UpFace,    { sv = sy_v; }),
-                               FACE(BackFace,  { sv = -sz_v; }),
+                               FACE(DownFace, { sv = -sy_v; }),
+                               FACE(UpFace, { sv = sy_v; }),
+                               FACE(BackFace, { sv = -sz_v; }),
                                FACE(FrontFace, { sv = sz_v; }),
                                CellFinalize({
-                                   satp[iv]          = constant;
-                                   satp[iv + sv]     = constant;
-                                   satp[iv + 2 * sv] = constant;
-                                 }),
+            satp[iv] = constant;
+            satp[iv + sv] = constant;
+            satp[iv + 2 * sv] = constant;
+          }),
                                AfterAllCells(DoNothing)
-            );
+                               );
           break;
         }
 
@@ -183,47 +184,47 @@ void          BCPhaseSaturation(
 
           ForPatchCellsPerFace(BC_ALL,
                                BeforeAllCells({
-                                   dummy1 = (Type1*)(public_xtra->data[indx + ipatch]);
-                                   height = (dummy1->height);
-                                   lower = (dummy1->lower);
-                                   upper = (dummy1->upper);
-                                   dz2 = SubgridDZ(subgrid) / 2.0;
-                                 }),
+            dummy1 = (Type1*)(public_xtra->data[indx + ipatch]);
+            height = (dummy1->height);
+            lower = (dummy1->lower);
+            upper = (dummy1->upper);
+            dz2 = SubgridDZ(subgrid) / 2.0;
+          }),
                                LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                               Locals(int sv, iv; double z;),
+                               Locals(int sv, iv; double z; ),
                                CellSetup({
-                                   sv = 0;
-                                   z = RealSpaceZ(k, SubgridRZ(subgrid));
-                                   iv = SubvectorEltIndex(sat_sub, i, j, k);
-                                 }),
-                               FACE(LeftFace,  { sv = -sx_v; }),
+            sv = 0;
+            z = RealSpaceZ(k, SubgridRZ(subgrid));
+            iv = SubvectorEltIndex(sat_sub, i, j, k);
+          }),
+                               FACE(LeftFace, { sv = -sx_v; }),
                                FACE(RightFace, { sv = sx_v; }),
-                               FACE(DownFace,  { sv = -sy_v; }),
-                               FACE(UpFace,    { sv = sy_v; }),
+                               FACE(DownFace, { sv = -sy_v; }),
+                               FACE(UpFace, { sv = sy_v; }),
                                FACE(BackFace, {
-                                   sv = -sz_v;
-                                   z = z - dz2;
-                                 }),
+            sv = -sz_v;
+            z = z - dz2;
+          }),
                                FACE(FrontFace, {
-                                   sv = sz_v;
-                                   z = z + dz2;
-                                 }),
+            sv = sz_v;
+            z = z + dz2;
+          }),
                                CellFinalize({
-                                   if (z <= height)
-                                   {
-                                     satp[iv       ] = lower;
-                                     satp[iv + sv] = lower;
-                                     satp[iv + 2 * sv] = lower;
-                                   }
-                                   else
-                                   {
-                                     satp[iv       ] = upper;
-                                     satp[iv + sv] = upper;
-                                     satp[iv + 2 * sv] = upper;
-                                   }
-                                 }),
+            if (z <= height)
+            {
+              satp[iv       ] = lower;
+              satp[iv + sv] = lower;
+              satp[iv + 2 * sv] = lower;
+            }
+            else
+            {
+              satp[iv       ] = upper;
+              satp[iv + sv] = upper;
+              satp[iv + 2 * sv] = upper;
+            }
+          }),
                                AfterAllCells(DoNothing)
-            );
+                               );
           break;
         }
 
@@ -240,95 +241,95 @@ void          BCPhaseSaturation(
 
           ForPatchCellsPerFace(BC_ALL,
                                BeforeAllCells({
-                                   dummy2 = (Type2*)(public_xtra->data[indx + ipatch]);
-                                   num_points = (dummy2->num_points);
-                                   point = (dummy2->point);
-                                   height = (dummy2->height);
-                                   lower = (dummy2->lower);
-                                   upper = (dummy2->upper);
+            dummy2 = (Type2*)(public_xtra->data[indx + ipatch]);
+            num_points = (dummy2->num_points);
+            point = (dummy2->point);
+            height = (dummy2->height);
+            lower = (dummy2->lower);
+            upper = (dummy2->upper);
 
-                                   dx2 = SubgridDX(subgrid) / 2.0;
-                                   dy2 = SubgridDY(subgrid) / 2.0;
-                                   dz2 = SubgridDZ(subgrid) / 2.0;
+            dx2 = SubgridDX(subgrid) / 2.0;
+            dy2 = SubgridDY(subgrid) / 2.0;
+            dz2 = SubgridDZ(subgrid) / 2.0;
 
-                                   /* compute unit direction vector for piecewise linear line */
-                                   unitx = (dummy2->xupper) - (dummy2->xlower);
-                                   unity = (dummy2->yupper) - (dummy2->ylower);
-                                   line_length = sqrt(unitx * unitx + unity * unity);
-                                   unitx /= line_length;
-                                   unity /= line_length;
-                                   line_min = (dummy2->xlower) * unitx
-                                              + (dummy2->ylower) * unity;
-                                 }),
+            /* compute unit direction vector for piecewise linear line */
+            unitx = (dummy2->xupper) - (dummy2->xlower);
+            unity = (dummy2->yupper) - (dummy2->ylower);
+            line_length = sqrt(unitx * unitx + unity * unity);
+            unitx /= line_length;
+            unity /= line_length;
+            line_min = (dummy2->xlower) * unitx
+                       + (dummy2->ylower) * unity;
+          }),
                                LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                                Locals(int sv, iv, ip;
-                                      double x, y, z, xy, slope, interp_height;),
+                                      double x, y, z, xy, slope, interp_height; ),
                                CellSetup({
-                                   sv = 0;
-                                   x = RealSpaceX(i, SubgridRX(subgrid));
-                                   y = RealSpaceY(j, SubgridRY(subgrid));
-                                   z = RealSpaceZ(k, SubgridRZ(subgrid));
-                                   iv = SubvectorEltIndex(sat_sub, i, j, k);
-                                 }),
+            sv = 0;
+            x = RealSpaceX(i, SubgridRX(subgrid));
+            y = RealSpaceY(j, SubgridRY(subgrid));
+            z = RealSpaceZ(k, SubgridRZ(subgrid));
+            iv = SubvectorEltIndex(sat_sub, i, j, k);
+          }),
                                FACE(LeftFace, {
-                                   sv = -sx_v;
-                                   x = x - dx2;
-                                 }),
+            sv = -sx_v;
+            x = x - dx2;
+          }),
                                FACE(RightFace, {
-                                   sv = sx_v;
-                                   x = x + dx2;
-                                 }),
+            sv = sx_v;
+            x = x + dx2;
+          }),
                                FACE(DownFace, {
-                                   sv = -sy_v;
-                                   y = y - dy2;
-                                 }),
+            sv = -sy_v;
+            y = y - dy2;
+          }),
                                FACE(UpFace, {
-                                   sv = sy_v;
-                                   y = y + dy2;
-                                 }),
+            sv = sy_v;
+            y = y + dy2;
+          }),
                                FACE(BackFace, {
-                                   sv = -sz_v;
-                                   z = z - dz2;
-                                 }),
+            sv = -sz_v;
+            z = z - dz2;
+          }),
                                FACE(FrontFace, {
-                                   sv = sz_v;
-                                   z = z + dz2;
-                                 }),
+            sv = sz_v;
+            z = z + dz2;
+          }),
                                CellFinalize(
-                               {
-                                 /* project center of BC face onto piecewise linear line */
-                                 xy = x * unitx + y * unity;
-                                 xy = (xy - line_min) / line_length;
+          {
+            /* project center of BC face onto piecewise linear line */
+            xy = x * unitx + y * unity;
+            xy = (xy - line_min) / line_length;
 
-                                 /* find two neighboring points */
-                                 ip = 1;
-                                 for (; ip < (num_points - 1); ip++)
-                                 {
-                                   if (xy < point[ip])
-                                     break;
-                                 }
+            /* find two neighboring points */
+            ip = 1;
+            for (; ip < (num_points - 1); ip++)
+            {
+              if (xy < point[ip])
+                break;
+            }
 
-                                 /* compute the slope */
-                                 slope = ((height[ip] - height[ip - 1]) /
-                                          (point[ip] - point[ip - 1]));
+            /* compute the slope */
+            slope = ((height[ip] - height[ip - 1]) /
+                     (point[ip] - point[ip - 1]));
 
-                                 interp_height = height[ip - 1] + slope * (xy - point[ip - 1]);
+            interp_height = height[ip - 1] + slope * (xy - point[ip - 1]);
 
-                                 if (z <= interp_height)
-                                 {
-                                   satp[iv       ] = lower;
-                                   satp[iv + sv] = lower;
-                                   satp[iv + 2 * sv] = lower;
-                                 }
-                                 else
-                                 {
-                                   satp[iv       ] = upper;
-                                   satp[iv + sv] = upper;
-                                   satp[iv + 2 * sv] = upper;
-                                 }
-                               }),
+            if (z <= interp_height)
+            {
+              satp[iv       ] = lower;
+              satp[iv + sv] = lower;
+              satp[iv + 2 * sv] = lower;
+            }
+            else
+            {
+              satp[iv       ] = upper;
+              satp[iv + sv] = upper;
+              satp[iv + 2 * sv] = upper;
+            }
+          }),
                                AfterAllCells(DoNothing)
-            );
+                               );
 
           break;
         }
@@ -450,11 +451,11 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
 
       public_xtra->patch_indexes[indx] =
         NA_NameToIndex(GlobalsGeometries[domain_index]->patches,
-		       patch_name);
+                       patch_name);
 
-      if(public_xtra->patch_indexes[indx] < 0)
+      if (public_xtra->patch_indexes[indx] < 0)
       {
-	NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
+        NA_InputError(GlobalsGeometries[domain_index]->patches, patch_name, "");
       }
 
       sprintf(key, "Patch.%s.BCSaturation.%s.Type", patch_name, phase_name);
@@ -546,7 +547,7 @@ PFModule  *BCPhaseSaturationNewPublicXtra(
 
         default:
         {
-	  InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+          InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
         }
       }
       indx++;

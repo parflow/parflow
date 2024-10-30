@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 * PFModule structure and accessor macros
 *
@@ -50,13 +50,13 @@
  * invokes the algorithm.  It is a little like a functor in C++.  This
  * is limited so two Output methods have been added in Extended
  * modules.  And yes, moving to C++ would make this cleaner.
- * 
- * Construction is broken down into two calls.   PublicExtra is data that is 
+ *
+ * Construction is broken down into two calls.   PublicExtra is data that is
  * shared by all instances of that type of module.   The Extra concept is
- * much like a static member of a C++ class.   InstanceExtra is the 
+ * much like a static member of a C++ class.   InstanceExtra is the
  * data that is unique to each instance of an algorithm.
  *
- * The output methods can be called to output state that is 
+ * The output methods can be called to output state that is
  * time variant (called at each timestep as indicated by the user)
  * or time invariant (called only once).
  */
@@ -68,12 +68,12 @@ typedef struct {
 
   /**
    * Virtual method invoked to construct instance data.
-   * 
-   * Instance data is per instantiation the module type; it is 
+   *
+   * Instance data is per instantiation the module type; it is
    * not shared between instances.
    */
   void (*init_instance_xtra)();
-  
+
   /**
    * Virtual method invoked to free the instance data.
    */
@@ -91,11 +91,11 @@ typedef struct {
    * Virtual method invoked to free the class data.
    */
   void (*free_public_xtra)();
-  
+
   /**
    * Virtual method to compute the size of the temporary data.
    *
-   * This returns the size of the temporary data used by 
+   * This returns the size of the temporary data used by
    * the instance.
    */
   int (*sizeof_temp_data)();
@@ -132,7 +132,7 @@ typedef struct {
 
 /**
  * A 'this' pointer for module methods.
- * 
+ *
  * Used by module macros below to pass module xtra data to module
  * routines This is similar in purpose to the 'this' pointer in C++.
  * Rather than passing this in each function it is done through a
@@ -151,13 +151,13 @@ amps_ThreadLocalDcl(extern PFModule *, global_ptr_this_pf_module);
 
 /**
  * Device copy of the 'this' module pointer.
- */ 
+ */
 #if (PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA) && defined(__CUDACC__)
 #ifdef PARFLOW_GLOBALS
 __device__ PFModule *dev_global_ptr_this_pf_module;
 #else
-/* This extern requires CUDA separate compilation, otherwise nvcc compiler 
-   treats the pointer as static variable for each compilation unit          */
+/* This extern requires CUDA separate compilation, otherwise nvcc compiler
+ * treats the pointer as static variable for each compilation unit          */
 extern __device__ PFModule *dev_global_ptr_this_pf_module;
 #endif // PARFLOW_GLOBALS
 #endif // PARFLOW_ACC_BACKEND == PARFLOW_BACKEND_CUDA && __CUDACC__
@@ -200,7 +200,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  *
  * Modules are based on the idea the module has single method that
  * does the work of the algorithm.  A bit like the functor pattern in
- * C++.   
+ * C++.
  *
  * @note
  * Rational: This was done so all PFModules would have the same
@@ -211,11 +211,11 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke.
  * @return The invoked method return
  */
-#define PFModuleInvokeType(type, pf_module, args) \
-  (                                               \
-   ThisPFModule = pf_module,                      \
-   (*(type)(ThisPFModule->call))args              \
-  )
+#define PFModuleInvokeType(type, pf_module, args)        \
+        (                                                \
+         ThisPFModule = pf_module,                       \
+         (*(type)(ThisPFModule->call)) args              \
+        )
 
 /**
  * Create a new instance of a module.
@@ -223,21 +223,21 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * Note we have done some renaming to better match OO (C++) naming
  * schemes.  This invokes the "init" method in the method which is a
  * ctor for the method instance.
- * 
+ *
  * The method invoked is assumed to be of type 'PFModule * (*)()'.
  * The PFModuleNewInstanceType can be used to specify the actual type
  * of the method to invoke.  It is better to specify the type; PF
  * started with KR style C with less type safety.
- * 
+ *
  * @param pf_module The module instance
  * @param args Arguments for the method to invoke
  * @return The new module instance pointer
  */
-#define PFModuleNewInstance(pf_module, args)                   \
-  (                                                            \
-   ThisPFModule = DupPFModule(pf_module),                      \
-   (*(PFModule * (*)())(ThisPFModule->init_instance_xtra))args \
-  )
+#define PFModuleNewInstance(pf_module, args)                          \
+        (                                                             \
+         ThisPFModule = DupPFModule(pf_module),                       \
+         (*(PFModule * (*)())(ThisPFModule->init_instance_xtra)) args \
+        )
 
 /**
  * Create a new instance of a module.
@@ -251,15 +251,15 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke
  * @return The new module instance pointer
  */
-#define PFModuleNewInstanceType(type, pf_module, args) \
-  (                                                    \
-   ThisPFModule = DupPFModule(pf_module),              \
-   (*(type)(ThisPFModule->init_instance_xtra))args     \
-  )
+#define PFModuleNewInstanceType(type, pf_module, args)        \
+        (                                                     \
+         ThisPFModule = DupPFModule(pf_module),               \
+         (*(type)(ThisPFModule->init_instance_xtra)) args     \
+        )
 
 /**
  * 'ReNew' the instance of a module.
- * 
+ *
  * 'ReNew'ing a module is done when the module has already been
  * constructed but some state may have changed.
  *
@@ -267,7 +267,7 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * The PFModuleReNewInstanceType can be used to specify the actual
  * type of the method to invoke.  It is better to specify the type; PF
  * started with KR style C with less type safety.
- * 
+ *
  * \TODO this should be better documented.  What do we mean by rewnew
  * and when/how is it used.
  *
@@ -275,18 +275,18 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke
  * @return The new module instance pointer
  */
-#define PFModuleReNewInstance(pf_module, args)                 \
-  (                                                            \
-   ThisPFModule = pf_module,                                   \
-   (*(PFModule * (*)())(ThisPFModule->init_instance_xtra))args \
-  )
+#define PFModuleReNewInstance(pf_module, args)                        \
+        (                                                             \
+         ThisPFModule = pf_module,                                    \
+         (*(PFModule * (*)())(ThisPFModule->init_instance_xtra)) args \
+        )
 
 /**
  * 'ReNew' the instance of a module.
- * 
+ *
  * 'ReNew'ing a module is done when the module has already been
  * constructed but some state may have changed.
- * 
+ *
  * \TODO this should be better documented.  What do we mean by rewnew
  * and when/how is it used.
  *
@@ -294,11 +294,11 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the method to invoke.
  * @return The new module instance pointer.
  */
-#define PFModuleReNewInstanceType(type, pf_module, args) \
-  (                                                      \
-   ThisPFModule = pf_module,                             \
-   (*(type)(ThisPFModule->init_instance_xtra))args       \
-  )
+#define PFModuleReNewInstanceType(type, pf_module, args)        \
+        (                                                       \
+         ThisPFModule = pf_module,                              \
+         (*(type)(ThisPFModule->init_instance_xtra)) args       \
+        )
 
 /**
  * Free the module.
@@ -307,16 +307,16 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  *
  * @param pf_module The module instance
  */
-#define PFModuleFreeInstance(pf_module)                 \
-  (                                                     \
-   ThisPFModule = pf_module,                            \
-   (*(void (*)())(ThisPFModule->free_instance_xtra))(), \
-   FreePFModule(pf_module)                              \
-  )
+#define PFModuleFreeInstance(pf_module)                       \
+        (                                                     \
+         ThisPFModule = pf_module,                            \
+         (*(void (*)())(ThisPFModule->free_instance_xtra))(), \
+         FreePFModule(pf_module)                              \
+        )
 
 /**
  * Output time variant state associated with this module instance.
- * 
+ *
  * This method is invoked at the output time intervals specified by
  * the user input.  The method should write any vectors or other state
  * out for the current timestep.
@@ -325,16 +325,16 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param pf_module The module instance
  * @param args Arguments for the output method
  */
-#define PFModuleOutputType(type, pf_module, args) \
-  (                                           \
-   ThisPFModule = pf_module,                  \
-   (*(type (*)())(ThisPFModule->output))args  \
-  )
+#define PFModuleOutputType(type, pf_module, args)    \
+        (                                            \
+         ThisPFModule = pf_module,                   \
+         (*(type (*)())(ThisPFModule->output)) args  \
+        )
 
 
 /**
  * Output static (time invariant) state associated with this module instance.
- * 
+ *
  * This method is invoked at the start of a run and should write any
  * vectors or other state for the module that does not require a
  * timestamp.
@@ -343,11 +343,11 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param pf_module The module instance
  * @param args Arguments for the output method
  */
-#define PFModuleOutputStaticType(type, pf_module, args) \
-  (                                           \
-   ThisPFModule = pf_module,                  \
-   (*(type (*)(char file_prefix[2048],ProblemData *))(ThisPFModule->output_static))args	\
-  )
+#define PFModuleOutputStaticType(type, pf_module, args)                                         \
+        (                                                                                       \
+         ThisPFModule = pf_module,                                                              \
+         (*(type (*)(char file_prefix[2048], ProblemData *))(ThisPFModule->output_static)) args \
+        )
 
 /**
  * Create a class of module.
@@ -359,17 +359,17 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the module class constructor
  * @return The new module instance
  */
-#define PFModuleNewModule(name, args)                          \
-  (                                                            \
-   ThisPFModule = NewPFModule((void*)name,                     \
-                              (void*)name ## InitInstanceXtra, \
-                              (void*)name ## FreeInstanceXtra, \
-                              (void*)name ## NewPublicXtra,    \
-                              (void*)name ## FreePublicXtra,   \
-                              (void*)name ## SizeOfTempData,   \
-                              NULL, NULL),                     \
-   (*(PFModule * (*)())(ThisPFModule->new_public_xtra))args    \
-  )
+#define PFModuleNewModule(name, args)                                 \
+        (                                                             \
+         ThisPFModule = NewPFModule((void*)name,                      \
+                                    (void*)name ## InitInstanceXtra,  \
+                                    (void*)name ## FreeInstanceXtra,  \
+                                    (void*)name ## NewPublicXtra,     \
+                                    (void*)name ## FreePublicXtra,    \
+                                    (void*)name ## SizeOfTempData,    \
+                                    NULL, NULL),                      \
+         (*(PFModule * (*)())(ThisPFModule->new_public_xtra)) args    \
+        )
 
 /**
  * Create a class of module.
@@ -382,21 +382,21 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the module class constructor
  * @return The new module instance
  */
-#define PFModuleNewModuleType(type, name, args)                \
-  (                                                            \
-   ThisPFModule = NewPFModule((void*)name,                     \
-                              (void*)name ## InitInstanceXtra, \
-                              (void*)name ## FreeInstanceXtra, \
-                              (void*)name ## NewPublicXtra,    \
-                              (void*)name ## FreePublicXtra,   \
-                              (void*)name ## SizeOfTempData,   \
-                              NULL, NULL),                     \
-   (*(type)(ThisPFModule->new_public_xtra))args                \
-  )
+#define PFModuleNewModuleType(type, name, args)                       \
+        (                                                             \
+         ThisPFModule = NewPFModule((void*)name,                      \
+                                    (void*)name ## InitInstanceXtra,  \
+                                    (void*)name ## FreeInstanceXtra,  \
+                                    (void*)name ## NewPublicXtra,     \
+                                    (void*)name ## FreePublicXtra,    \
+                                    (void*)name ## SizeOfTempData,    \
+                                    NULL, NULL),                      \
+         (*(type)(ThisPFModule->new_public_xtra)) args                \
+        )
 
 /**
  * Create a class of extended module.
- * 
+ *
  * For use with modules that implement the Extended module API.
  * Currently this is the Output methods.
  *
@@ -408,32 +408,32 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * @param args Arguments for the module class constructor
  * @return The new module instance
  */
-#define PFModuleNewModuleExtendedType(type, name, args)        \
-  (                                                            \
-   ThisPFModule = NewPFModuleExtended((void*)name,                     \
-                              (void*)name ## InitInstanceXtra, \
-                              (void*)name ## FreeInstanceXtra, \
-                              (void*)name ## NewPublicXtra,    \
-                              (void*)name ## FreePublicXtra,   \
-                              (void*)name ## SizeOfTempData,   \
-                              (void*)name ## Output,	       \
-                              (void*)name ## OutputStatic,     \
-                              NULL, NULL),                     \
-   (*(type)(ThisPFModule->new_public_xtra))args                \
-  )
+#define PFModuleNewModuleExtendedType(type, name, args)                      \
+        (                                                                    \
+         ThisPFModule = NewPFModuleExtended((void*)name,                     \
+                                            (void*)name ## InitInstanceXtra, \
+                                            (void*)name ## FreeInstanceXtra, \
+                                            (void*)name ## NewPublicXtra,    \
+                                            (void*)name ## FreePublicXtra,   \
+                                            (void*)name ## SizeOfTempData,   \
+                                            (void*)name ## Output,           \
+                                            (void*)name ## OutputStatic,     \
+                                            NULL, NULL),                     \
+         (*(type)(ThisPFModule->new_public_xtra)) args                       \
+        )
 
 
 /**
  * Invoke the destructor of the module.
- * 
+ *
  * @param pf_module The module instance
  */
-#define PFModuleFreeModule(pf_module)                 \
-  (                                                   \
-   ThisPFModule = pf_module,                          \
-   (*(void (*)())(ThisPFModule->free_public_xtra))(), \
-   FreePFModule(pf_module)                            \
-  )
+#define PFModuleFreeModule(pf_module)                       \
+        (                                                   \
+         ThisPFModule = pf_module,                          \
+         (*(void (*)())(ThisPFModule->free_public_xtra))(), \
+         FreePFModule(pf_module)                            \
+        )
 
 /**
  * Return this size of the temporary data needed by this module instance.
@@ -441,22 +441,22 @@ extern __device__ PFModule *dev_global_ptr_this_pf_module;
  * Temp date is a block of memory allocated in the solver and modules
  * use this block.  Data use may be overlayed in this block.  The
  * size of the block is the high water mark.
- * 
+ *
  * Use of temp data has mostly been removed but some modules
  * (e.g. advection_godunov) still use temp_data.  Modern memory
  * allocators have removed much of the need for this mechanism.
  *
  * @note
  * Rational: PF originally operated on very low memory compute nodes
- * (4MB-16MB) so had to carefully manage space for vectors.   This 
+ * (4MB-16MB) so had to carefully manage space for vectors.   This
  * method is part of that mechanism.
  *
  * @param pf_module The module instance
  */
-#define PFModuleSizeOfTempData(pf_module)           \
-  (                                                 \
-   ThisPFModule = pf_module,                        \
-   (*(int (*)())(ThisPFModule->sizeof_temp_data))() \
-  )
+#define PFModuleSizeOfTempData(pf_module)                 \
+        (                                                 \
+         ThisPFModule = pf_module,                        \
+         (*(int (*)())(ThisPFModule->sizeof_temp_data))() \
+        )
 
 #endif

@@ -3,6 +3,84 @@ name: ParFlow CI Test
 on: [push, pull_request]
 
 jobs:
+  style-check:
+     runs-on: ubuntu-22.04
+     name: Check Style
+     steps:
+       - name: Checkout commit
+         uses: actions/checkout@v4
+
+       - name: Package Install
+         run: |
+            sudo apt-get -qq update
+            sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev
+
+       - name: Cache dependencies
+         uses: actions/cache@v4
+         id: cache-parflow-style-dependencies
+         env:
+           cache-name: cache-parflow-style-dependencies
+           cache-parflow-style-hit: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
+         with:
+           path: "~/depend"
+           key: cache-check-style-${{ secrets.CACHE_VERSION }}
+
+       - name: Directory Setup
+         run: |
+            mkdir -p $HOME/install
+            echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
+            echo "Setting PARFLOW_DIR=$HOME/install"
+            mkdir -p $HOME/depend/{include,lib}
+            echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+            echo "Setting PARFLOW_DEP_DIR=$HOME/depend"
+            echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+            echo "$HOME/depend/bin" >> $GITHUB_PATH
+            echo "$PARFLOW_DIR/bin" >> $GITHUB_PATH
+            export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
+            echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+
+       - name: Build Uncrustify
+         env:
+           CACHE_HIT: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
+         run: |
+            if [[ "$CACHE_HIT" != 'true' ]]; then
+              echo "cache-check-style-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
+              curl -L -o uncrustify-0.79.0.tar.gz https://github.com/uncrustify/uncrustify/archive/uncrustify-0.79.0.tar.gz
+              tar -xf uncrustify-0.79.0.tar.gz
+              cd uncrustify-uncrustify-0.79.0
+              mkdir build
+              cd build
+              cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+              make
+              sudo make -j 2 install
+              cd ../..
+              rm -fr uncrustify-uncrustify-0.79.0 uncrustify-0.79.0.tar.gz
+            fi
+
+       - name: CMake Install
+         env:
+           CACHE_HIT: ${{steps.cache-parflow-style-dependencies.outputs.cache-hit}}
+         run: |
+            if [[ "$CACHE_HIT" != 'true' ]]; then
+               echo "Installing"
+               mkdir -p $HOME/depend/{include,lib}
+               cd ~/depend
+               echo "cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}" > ~/depend/cache-key
+               wget -nv --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
+               tar -xf cmake-3.25.1-linux-x86_64.tar.gz
+               $HOME/depend/cmake-3.25.1-linux-x86_64/bin/cmake --version
+               echo "$HOME/depend/cmake-3.25.1-linux-x86_64/bin" >> $GITHUB_PATH
+            fi
+
+       - name: ParFlow CMake Configure
+         run: |
+            cmake -Bbuild -DPARFLOW_ENABLE_PYTHON=ON -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
+       - name: ParFlow CMake Build
+         run: (cd build; make -j 2 install)
+       - name: Run Uncrustify
+         run: |
+            ./bin/pfformat --check
+
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
@@ -300,7 +378,7 @@ jobs:
         gcc -v
         mpicc -v
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
-        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} -DPARFLOW_PYTHON_VIRTUAL_ENV=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)
