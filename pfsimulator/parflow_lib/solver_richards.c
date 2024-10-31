@@ -41,6 +41,20 @@
 
 #include "cJSON.h"
 
+#ifdef PARFLOW_HAVE_TORCH
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+  void* create_random_tensor(int rows, int cols);
+  void print_tensor(void* tensor_ptr);
+  void free_tensor(void* tensor_ptr);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+
 #ifdef HAVE_SLURM
 #include <slurm/slurm.h>
 #endif
@@ -3045,7 +3059,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
 #ifdef PARFLOW_HAVE_TORCH
-      
+      void* tensor = create_random_tensor(2, 3);
+      print_tensor(tensor);
+      free_tensor(tensor);
 #endif
       
       /*******************************************************************/

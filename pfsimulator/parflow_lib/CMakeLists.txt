@@ -125,6 +125,7 @@ set (SRC_FILES_CONST advect.F
   write_parflow_netcdf.c
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
+  torch_wrapper.cpp
 )
 
 if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
@@ -268,6 +269,11 @@ install (TARGETS pfsimulator DESTINATION lib)
 if (${PARFLOW_HAVE_HYPRE})
   target_include_directories (pfsimulator PUBLIC ${HYPRE_INCLUDE_DIR})
 endif (${PARFLOW_HAVE_HYPRE})
+
+if (${PARFLOW_HAVE_TORCH})
+  target_link_libraries(pfsimulator "${TORCH_LIBRARIES}")
+  set_property(TARGET pfsimulator PROPERTY CXX_STANDARD 17)
+endif (${PARFLOW_HAVE_TORCH})
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
