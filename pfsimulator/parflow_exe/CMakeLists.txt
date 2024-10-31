@@ -21,6 +21,10 @@ if (${PARFLOW_HAVE_HYPRE})
   target_link_libraries (parflow ${HYPRE_LIBRARIES})
 endif (${PARFLOW_HAVE_HYPRE})
 
+if (${PARFLOW_HAVE_TORCH})
+  target_link_libraries (parflow ${TORCH_LIBRARIES})
+endif (${PARFLOW_HAVE_TORCH})
+
 if (${PARFLOW_HAVE_MPI})
   # In CMake 3.13 this could be target_link_options
   target_link_libraries(parflow ${MPI_LINK_FLAGS})

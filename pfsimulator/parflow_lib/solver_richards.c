@@ -3044,6 +3044,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
       }
 
+#ifdef PARFLOW_HAVE_TORCH
+      
+#endif
+      
       /*******************************************************************/
       /*          Solve the nonlinear system for this time step          */
       /*******************************************************************/
