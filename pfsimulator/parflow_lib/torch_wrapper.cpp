@@ -2,6 +2,8 @@
 #include <torch/torch.h>
 #include <iostream>
 
+#include "torch_wrapper.h"
+
 extern "C" {
   void* create_random_tensor(int rows, int cols) {
     torch::Tensor* tensor = new torch::Tensor(torch::rand({rows, cols}));
