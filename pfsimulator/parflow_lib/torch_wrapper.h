@@ -1,4 +1,4 @@
-#ifdef PARFLOW_HAVE_TORCH
+
 
 #include <stdio.h>
 
@@ -14,4 +14,4 @@ void free_tensor(void* tensor_ptr);
 }
 #endif
 
-#endif
+

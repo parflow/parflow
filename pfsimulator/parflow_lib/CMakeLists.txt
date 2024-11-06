@@ -1,4 +1,5 @@
-set (SRC_FILES_CONST advect.F
+set (SRC_FILES_CONST torch_wrapper.cpp
+  advect.F
   advection_godunov.c
   bc_lb.c
   bc_pressure.c
@@ -125,7 +126,6 @@ set (SRC_FILES_CONST advect.F
   write_parflow_netcdf.c
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
-  torch_wrapper.cpp
 )
 
 if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )

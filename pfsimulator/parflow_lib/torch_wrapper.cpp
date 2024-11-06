@@ -1,4 +1,4 @@
-#ifdef PARFLOW_HAVE_TORCH
+
 #include <torch/torch.h>
 #include <iostream>
 
@@ -20,4 +20,4 @@ extern "C" {
     delete tensor;
   }
 }
-#endif
+
