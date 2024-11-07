@@ -1,8 +1,8 @@
+#include "torch_wrapper.h"
+#ifdef PARFLOW_HAVE_TORCH
 
 #include <torch/torch.h>
 #include <iostream>
-
-#include "torch_wrapper.h"
 
 extern "C" {
   void* create_random_tensor(int rows, int cols) {
@@ -21,3 +21,4 @@ extern "C" {
   }
 }
 
+#endif

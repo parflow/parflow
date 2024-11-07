@@ -41,9 +41,9 @@
 
 #include "cJSON.h"
 
-
+#ifdef PARFLOW_HAVE_TORCH
 #include "torch_wrapper.h"
-
+#endif
 
 #ifdef HAVE_SLURM
 #include <slurm/slurm.h>
@@ -3048,11 +3048,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         }
       }
 
-
+#ifdef PARFLOW_HAVE_TORCH
       void* tensor = create_random_tensor(2, 3);
       print_tensor(tensor);
       free_tensor(tensor);
-
+#endif
       
       /*******************************************************************/
       /*          Solve the nonlinear system for this time step          */

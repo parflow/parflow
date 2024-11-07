@@ -1,4 +1,9 @@
+#ifndef TORCH_WRAPPER
+#define TORCH_WRAPPER
 
+#include "parflow_config.h"
+
+#ifdef PARFLOW_HAVE_TORCH
 
 #include <stdio.h>
 
@@ -14,4 +19,6 @@ void free_tensor(void* tensor_ptr);
 }
 #endif
 
+#endif
 
+#endif
