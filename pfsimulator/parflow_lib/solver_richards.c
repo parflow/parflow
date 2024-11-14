@@ -3054,7 +3054,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	Subgrid *subgrid;
 	Grid *grid = VectorGrid(evap_trans_sum);
 	Subvector *p_sub;
-	double *pp, *pp_out;
+	double *pp;
 	int is, nx, ny, nz;
 	
         ForSubgridI(is, GridSubgrids(grid))
@@ -3065,7 +3065,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  nz = SubgridNZ(subgrid);
           p_sub = VectorSubvector(instance_xtra->pressure, is);
 	  pp = SubvectorData(p_sub);
-	  pp_out = predict_next_pressure_step(pp, nx, ny, nz);
+	  SubvectorData(p_sub) = predict_next_pressure_step(pp, nx, ny, nz);
 	}
 	
 	//void* tensor = create_random_tensor(2, 3);
