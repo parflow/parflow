@@ -3049,9 +3049,29 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
 #ifdef PARFLOW_HAVE_TORCH
-      void* tensor = create_random_tensor(2, 3);
-      print_tensor(tensor);
-      free_tensor(tensor);
+      if (1) { // this should be if (ML turned on)
+	GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+	Subgrid *subgrid;
+	Grid *grid = VectorGrid(evap_trans_sum);
+	Subvector *p_sub;
+	double *pp, *pp_out;
+	int is, nx, ny, nz;
+	
+        ForSubgridI(is, GridSubgrids(grid))
+        {
+          subgrid = GridSubgrid(grid, is);
+	  nx = SubgridNX(subgrid);
+	  ny = SubgridNY(subgrid);
+	  nz = SubgridNZ(subgrid);
+          p_sub = VectorSubvector(instance_xtra->pressure, is);
+	  pp = SubvectorData(p_sub);
+	  pp_out = predict_next_pressure_step(pp, nx, ny, nz);
+	}
+	
+	//void* tensor = create_random_tensor(2, 3);
+	//print_tensor(tensor);
+	//free_tensor(tensor);
+      }
 #endif
       
       /*******************************************************************/
