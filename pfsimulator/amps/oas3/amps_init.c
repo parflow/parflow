@@ -118,7 +118,7 @@ int amps_Init(int *argc, char **argv[])
 
   CALL_oas_pfl_init(&dummy1_oas3);
   amps_mpi_initialized = TRUE;
-#ifdef __INTEL_COMPILER
+#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
   oas3Comm = MPI_Comm_f2c(oas_pfl_vardef_mp_localcomm_);  //for Intel compilers
 #else
   oas3Comm = MPI_Comm_f2c(__oas_pfl_vardef_MOD_localcomm);  //for GNU compilers
