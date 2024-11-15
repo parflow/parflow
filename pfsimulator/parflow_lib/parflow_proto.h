@@ -883,7 +883,7 @@ typedef void (*GroundwaterFlowEvalInvoke)(void *groundwater_out, int flag,
                                           BCStruct *bc_struct, Subgrid *subgrid,
                                           Subvector *p_sub,
                                           double *old_pressure, double dt,
-                                          double *Kr, double *del_Kr,
+                                          double *Kr,
                                           double *Ks_x, double *Ks_y,
                                           int ipatch, int isubgrid,
                                           ProblemData *problem_data);
@@ -891,22 +891,20 @@ typedef void (*GroundwaterFlowEvalInvoke)(void *groundwater_out, int flag,
 void GroundwaterFlowEval(void *groundwater_out, int flag, BCStruct *bc_struct,
                          Subgrid *subgrid, Subvector *p_sub,
                          double *old_pressure, double dt, double *Kr,
-                         double *del_Kr, double *Ks_x, double *Ks_y,
-                         int ipatch, int isubgrid, ProblemData *problem_data);
+                         double *Ks_x, double *Ks_y, int ipatch, int isubgrid,
+                         ProblemData *problem_data);
 
 void GroundwaterFlowEvalNLFunc(double *q_groundwater, BCStruct *bc_struct,
                                Subgrid *subgrid, Subvector *p_sub,
                                double *old_pressure, double dt, double *Kr,
-                               double *del_Kr, double *Ks_x, double *Ks_y,
-                               int ipatch, int isubgrid,
-                               ProblemData *problem_data);
+                               double *Ks_x, double *Ks_y, int ipatch,
+                               int isubgrid, ProblemData *problem_data);
 
 void GroundwaterFlowEvalJacob(Submatrix *J_sub, BCStruct *bc_struct,
                               Subgrid *subgrid, Subvector *p_sub,
                               double *old_pressure, double dt, double *Kr,
-                              double *del_Kr, double *Ks_x, double *Ks_y,
-                              int ipatch, int isubgrid,
-                              ProblemData *problem_data);
+                              double *Ks_x, double *Ks_y, int ipatch,
+                              int isubgrid, ProblemData *problem_data);
 
 typedef PFModule* (*GroundwaterFlowEvalInitInstanceXtraInvoke)(ProblemData *problem_data);
 PFModule* GroundwaterFlowEvalInitInstanceXtra(ProblemData *problem_data);

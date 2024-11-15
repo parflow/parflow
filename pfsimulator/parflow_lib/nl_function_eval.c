@@ -2282,8 +2282,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         /* GWF BC terms are added inside the module */
         PFModuleInvokeType(GroundwaterFlowEvalInvoke, groundwaterflow_eval,
                            ((void*)fp, CALCFCN, bc_struct, subgrid, p_sub, opp,
-                            dt, rpp, NULL, permxp, permyp, ipatch, is,
-                            problem_data));
+                            dt, rpp, permxp, permyp, ipatch, is, problem_data));
       })
                            ); /* End GroundwaterFlowBC */
     }          /* End ipatch loop */

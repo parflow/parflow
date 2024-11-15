@@ -76,29 +76,50 @@ void InitGroundwaterFlowParameter(Vector *par_v, ParameterUnion par)
 /*--------------------------------------------------------------------------
  * GroundwaterFlowEval
  *--------------------------------------------------------------------------*/
-
+/**
+ * @name GroundwaterFlow BC Module
+ * @brief Evaluation of the GroundwaterFlow boundary
+ *
+ * This module can evaluate both the non-linear function
+ * and its jacobian. When invoked, the `fcn` flag tracks
+ * which output to compute. The evaluation is added to
+ * `groundwater_out`.
+ *
+ * @param groundwater_out groundwaterflow evaluation
+ * @param fcn flag = {CALCFCN , CALCDER}
+ * @param bc_struct boundary condition structure
+ * @param subgrid current subgrid
+ * @param p_sub new pressure subvector
+ * @param old_pressure old pressure data
+ * @param dt timestep
+ * @param Kr relative permeability
+ * @param Ks_x permeability_x subvector data
+ * @param Ks_y permeability_y subvector data
+ * @param ipatch current patch
+ * @param isubgrid current subgrid
+ * @param problem_data geometry data for problem
+ */
 void GroundwaterFlowEval(
-                         void *       groundwater_out, // @return: groundwaterflow evaluation
-                         int          fcn, // flag = {CALCFCN , CALCDER}
-                         BCStruct *   bc_struct, // boundary condition structure
-                         Subgrid *    subgrid, // current subgrid
-                         Subvector *  p_sub, // new pressure subvector
-                         double *     old_pressure, // old pressure data
-                         double       dt, // timestep
-                         double *     Kr, // relative permeability
-                         double *     del_Kr, // derivative of the relative permebility
-                         double *     Ks_x, // permeability_x subvector data
-                         double *     Ks_y, // permeability_y subvector data
-                         int          ipatch, // current patch
-                         int          isubgrid, // current subgrid
-                         ProblemData *problem_data) // geometry data for problem
+                         void *       groundwater_out,
+                         int          fcn,
+                         BCStruct *   bc_struct,
+                         Subgrid *    subgrid,
+                         Subvector *  p_sub,
+                         double *     old_pressure,
+                         double       dt,
+                         double *     Kr,
+                         double *     Ks_x,
+                         double *     Ks_y,
+                         int          ipatch,
+                         int          isubgrid,
+                         ProblemData *problem_data)
 {
   if (fcn == CALCFCN)
   {
     double *fp = (double*)groundwater_out;
 
     GroundwaterFlowEvalNLFunc(fp, bc_struct, subgrid,
-                              p_sub, old_pressure, dt, Kr, del_Kr, Ks_x, Ks_y,
+                              p_sub, old_pressure, dt, Kr, Ks_x, Ks_y,
                               ipatch, isubgrid, problem_data);
   }
   else     /* fcn == CALCDER */
@@ -107,27 +128,47 @@ void GroundwaterFlowEval(
     Submatrix *J_sub = (Submatrix*)groundwater_out;
 
     GroundwaterFlowEvalJacob(J_sub, bc_struct, subgrid,
-                             p_sub, old_pressure, dt, Kr, del_Kr, Ks_x, Ks_y,
+                             p_sub, old_pressure, dt, Kr, Ks_x, Ks_y,
                              ipatch, isubgrid, problem_data);
   }
 
   return;
 }
 
+/**
+ * @name GroundwaterFlow Eval NLFunc
+ * @brief Evaluation of the GroundwaterFlow boundary
+ *
+ * This module can evaluates the non-linear function.
+ * The function evaluation is added to `fp` arg.
+ *
+ *
+ * @param fp groundwaterflow function evaluation
+ * @param bc_struct boundary condition structure
+ * @param subgrid current subgrid
+ * @param p_sub new pressure subvector
+ * @param old_pressure old pressure data
+ * @param dt timestep
+ * @param Kr relative permeability
+ * @param Ks_x permeability_x subvector data
+ * @param Ks_y permeability_y subvector data
+ * @param ipatch current patch
+ * @param isubgrid current subgrid
+ * @param problem_data geometry data for problem
+ */
 void GroundwaterFlowEvalNLFunc(
-                               double *     fp, // @return: groundwaterflow function evaluation
-                               BCStruct *   bc_struct, // boundary condition structure
-                               Subgrid *    subgrid, // current subgrid
-                               Subvector *  p_sub, // new pressure subvector
-                               double *     old_pressure, // old pressure data
-                               double       dt, // timestep
-                               double *     Kr, // relative permeability
-                               double *     del_Kr, // derivative of the relative permebility
-                               double *     Ks_x, // permeability_x subvector data
-                               double *     Ks_y, // permeability_y subvector data
-                               int          ipatch, // current patch
-                               int          isubgrid, // current subgrid
-                               ProblemData *problem_data) // geometry data for problem
+                               double *     fp,
+                               BCStruct *   bc_struct,
+                               Subgrid *    subgrid,
+                               Subvector *  p_sub,
+                               double *     old_pressure,
+                               double       dt,
+                               double *     Kr,
+                               double *     Ks_x,
+                               double *     Ks_y,
+                               int          ipatch,
+                               int          isubgrid,
+                               ProblemData *problem_data)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra =
@@ -312,20 +353,40 @@ void GroundwaterFlowEvalNLFunc(
   return;
 }
 
+/**
+ * @name GroundwaterFlow Eval Jacobian
+ * @brief Evaluation of the GroundwaterFlow jacobian
+ *
+ * This module can evaluates the non-linear function.
+ * The jacobian evaluation is added to `J_sub` arg.
+ *
+ *
+ * @param J_sub groundwaterflow jacobian evaluation
+ * @param bc_struct boundary condition structure
+ * @param subgrid current subgrid
+ * @param p_sub new pressure subvector
+ * @param old_pressure old pressure data
+ * @param dt timestep
+ * @param Kr relative permeability
+ * @param Ks_x permeability_x subvector data
+ * @param Ks_y permeability_y subvector data
+ * @param ipatch current patch
+ * @param isubgrid current subgrid
+ * @param problem_data geometry data for problem
+ */
 void GroundwaterFlowEvalJacob(
-                              Submatrix *  J_sub, // @return: groundwaterflow del evaluation
-                              BCStruct *   bc_struct, // boundary condition structure
-                              Subgrid *    subgrid, // current subgrid
-                              Subvector *  p_sub, // new pressure subvector
-                              double *     old_pressure, // old pressure data
-                              double       dt, // timestep
-                              double *     Kr, // relative permeability
-                              double *     del_Kr, // derivative of the relative permebility
-                              double *     Ks_x, // permeability_x subvector data
-                              double *     Ks_y, // permeability_y subvector data
-                              int          ipatch, // current patch
-                              int          isubgrid, // current subgrid
-                              ProblemData *problem_data) // geometry data for problem
+                              Submatrix *  J_sub,
+                              BCStruct *   bc_struct,
+                              Subgrid *    subgrid,
+                              Subvector *  p_sub,
+                              double *     old_pressure,
+                              double       dt,
+                              double *     Kr,
+                              double *     Ks_x,
+                              double *     Ks_y,
+                              int          ipatch,
+                              int          isubgrid,
+                              ProblemData *problem_data)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra =
