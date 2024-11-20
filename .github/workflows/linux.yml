@@ -125,9 +125,9 @@ jobs:
             netcdf: "false"
           }
         - {
-            name: "Ubuntu 20.04 OASIS3-MCT Build",
-            os: ubuntu-20.04,
-            cudaos: 'ubuntu2004',
+            name: "Ubuntu 22.04 OASIS3-MCT Build",
+            os: ubuntu-22.04,
+            cudaos: 'ubuntu2204',
             python: "false",
             backend: "omp",
             amps_layer: oas3,
@@ -325,7 +325,7 @@ jobs:
           make
           make install
         fi
-        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
+        echo "NETCDF_FLAGS=-DNETCDF_DIR=$PARFLOW_DEP_DIR -DNETCDF_Fortran_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_HDF5=TRUE" >> $GITHUB_ENV
 
     - name: OASIS3-MCT Install
       env:
@@ -337,13 +337,11 @@ jobs:
           cd oasis3-mct
           export OASIS_ROOT=$(pwd)
           cd util/make_dir
-          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu20.04' > make.inc
-          make realclean -f TopMakefileOasis3
-          make -f TopMakefileOasis3
+          echo 'include $(GITHUB_WORKSPACE)/misc/build_scripts/build.oasis3.ubuntu22.04' > make.inc
+          make realclean static-libs -f TopMakefileOasis3
           mv -v ${OASIS_ROOT}/install/include/* ${PARFLOW_DEP_DIR}/include/
           mv -v ${OASIS_ROOT}/install/lib/* ${PARFLOW_DEP_DIR}/lib/
         fi
-        echo "NETCDF_FLAGS=-DNETCDF_Fortran_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
 
     - name: SILO Install
       env:
