@@ -72,6 +72,17 @@
 typedef int amps_Comm;
 typedef FILE *amps_File;
 
+/* SGS this should be fixed; someone exposed internal variables rather than using 
+   the API macros */
+/* Node level ranks and size of nodeComm */
+#define amps_node_rank 0
+#define amps_node_size 1
+
+/* Writing proc ranks and size of writeComm */
+extern int amps_write_rank;
+extern int amps_write_size;
+
+
 #define amps_FreeHandle(handle) free((handle));
 #define amps_Rank(comm) 0
 #define amps_Size(comm) 1
