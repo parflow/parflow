@@ -14,6 +14,7 @@ PARFLOW_HAVE_NETCDF    = @PARFLOW_HAVE_NETCDF@
 PARFLOW_HAVE_HYPRE     = @PARFLOW_HAVE_HYPRE@
 PARFLOW_HAVE_SAMRAI    = @PARFLOW_HAVE_SAMRAI@
 PARFLOW_HAVE_OAS3      = @PARFLOW_HAVE_OAS3@
+PARFLOW_HAVE_TORCH     = @PARFLOW_HAVE_TORCH@
 
 ######################################################################
 # Rules used in all directories.
