@@ -2632,6 +2632,28 @@ Solver:
       BoolDomain:
       RequiresModule: SILO
 
+  Torch:
+    __doc__: >
+      Setting Torch parameters
+
+    EnableAccelerator:
+      help: >
+        [Type: boolean/string] This key specifies whether the Torch ML Accelerator is turned on or off. Choices for
+        this key include True and False. Note that the Torch library must be compiled and linked at runtime for this option to be active.
+      default: False
+      domains:
+        BoolDomain:
+        RequiresModule: TORCH
+
+    ModelFilePath:
+      help: > 
+        [Type: string] This key specifies the location of the Torch file that contains the trained ML model for the accelerator. This must
+        be an absolute path. Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+      domains:
+        AnyString:
+        RequiresModule: TORCH
+
+
 # SILO options
 SILO: # typo in documentation
   __doc__: >
@@ -2699,3 +2721,4 @@ KnownSolution:
       [Type: double] This key specifies the constant value of the known solution for type Constant known solutions.
     domains:
       DoubleValue:
+

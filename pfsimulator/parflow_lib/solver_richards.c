@@ -209,6 +209,8 @@ typedef struct {
 
   int nc_evap_trans_file_transient;     /* read NetCDF evap_trans as a transient file before advance richards timestep */
   char *nc_evap_trans_filename; /* NetCDF File name for evap trans */
+  int enable_torch_accelerator;       /* Enable the ML Torch accelerator between timesteps */
+  char *torch_model_filepath;         /* Path to the .pth file containing the trained Torch model */
 } PublicXtra;
 
 typedef struct {
@@ -3049,7 +3051,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
 #ifdef PARFLOW_HAVE_TORCH
-      if (1) { // this should be if (ML turned on)
+      if (public_xtra->enable_torch_accelerator) {
 	GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 	Subgrid *subgrid;
 	Grid *grid = VectorGrid(evap_trans_sum);
@@ -3065,7 +3067,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  nz = SubgridNZ(subgrid);
           p_sub = VectorSubvector(instance_xtra->pressure, is);
 	  pp = SubvectorData(p_sub);
-	  SubvectorData(p_sub) = predict_next_pressure_step(pp, nx, ny, nz);
+	  SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
 	}
 	
 	//void* tensor = create_random_tensor(2, 3);
@@ -6042,6 +6044,16 @@ SolverRichardsNewPublicXtra(char *name)
   {
     WriteSiloPMPIOInit(GlobalsOutFileName);
   }
+  
+#ifdef PARFLOW_HAVE_TORCH
+  sprintf(key, "%s.Torch.EnableAccelerator", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->enable_torch_accelerator = switch_value;
+
+  sprintf(key, "%s.Torch.ModelFilePath", name);
+  public_xtra->torch_model_filepath = GetStringDefault(key, "");  
+#endif
 
   NA_FreeNameArray(switch_na);
   PFModulePublicXtra(this_module) = public_xtra;

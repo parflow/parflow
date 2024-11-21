@@ -6,8 +6,8 @@
 #include <iostream>
 
 extern "C" {
-  double* predict_next_pressure_step(double* pp, int nx, int ny, int nz) {
-    std::string model_path = "/home/ga6/saved_model.pth";
+  double* predict_next_pressure_step(char* model_filepath, double* pp, int nx, int ny, int nz) {
+    std::string model_path = std::string(model_filepath);
     torch::jit::script::Module model;
     try {
       model = torch::jit::load(model_path);
