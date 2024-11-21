@@ -431,7 +431,7 @@ void          PhaseVelocityFace(
                                  (problem_data, grid, gr_domain, time));
 
   double problem_gravity = ProblemGravity(problem);
-  
+
   ForSubgridI(is, GridSubgrids(grid))
   {
     subgrid = GridSubgrid(grid, is);
@@ -486,7 +486,6 @@ void          PhaseVelocityFace(
                                   double *mob_vec, *vel_vec;
                                   double pdiff, value, vel_h; ),
                            CellSetup({
-
         ip = SubvectorEltIndex(p_sub, i, j, k);
 
         vx_l = SubvectorEltIndex(vx_sub, i, j, k);
@@ -552,7 +551,7 @@ void          PhaseVelocityFace(
         pdiff = pres[ip] - value;
       }),
                            CellFinalize({
-	vel_vec[vel_idx] = mob_vec[ip] * (pdiff / (0.5 * vel_h) - alpha * den[ip] * problem_gravity);
+        vel_vec[vel_idx] = mob_vec[ip] * (pdiff / (0.5 * vel_h) - alpha * den[ip] * problem_gravity);
       }),
                            AfterAllCells(DoNothing)
                            );
