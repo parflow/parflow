@@ -28,17 +28,26 @@ jobs:
        - name: Directory Setup
          run: |
             mkdir -p $HOME/install
-            echo "PARFLOW_DIR=$HOME/install" >> $GITHUB_ENV
-            echo "Setting PARFLOW_DIR=$HOME/install"
-            mkdir -p $HOME/depend/{include,lib}
-            echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
-            echo "Setting PARFLOW_DEP_DIR=$HOME/depend"
-            export "PARFLOW_DEP_DIR=$HOME/depend"
-            echo "PARFLOW_DEP_DIR=$HOME/depend" >> $GITHUB_ENV
+
+            # Set necessary vars
+            PARFLOW_DIR="$HOME/install"
+            PARFLOW_DEP_DIR="$HOME/depend"
+            LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
+
+            # Create folders
+            mkdir -p ${PARFLOW_DIR} ${PARFLOW_DEP_DIR}{include,lib}
+
+            # Verify if paths were correctly set
+            echo "PARFLOW_DIR=${PARFLOW_DIR}"
+            echo "PARFLOW_DEP_DIR=${PARFLOW_DIR}"
+            echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+
+            # Vars pushed to GITHUB_ENV take effect only on the next CI steps.
+            echo "PARFLOW_DIR=${PARFLOW_DIR}" >> $GITHUB_ENV
+            echo "PARFLOW_DEP_DIR=${PARFLOW_DIR}" >> $GITHUB_ENV
+            echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
             echo "$HOME/depend/bin" >> $GITHUB_PATH
             echo "$PARFLOW_DIR/bin" >> $GITHUB_PATH
-            export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
-            echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
        - name: Build Uncrustify
          env:
