@@ -183,7 +183,7 @@ jobs:
     - name: LLVM 18.X Install
       if: matrix.config.cc == 'clang-18'
       run: |
-        sudo apt -qq install clang-18
+        sudo apt -qq install clang-18 libomp-18-dev
 
     - name: Python Package Install
       if: matrix.config.python == 'true'
