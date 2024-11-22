@@ -43,6 +43,9 @@ jobs:
         # in GitHub Actions runner now. We can remove this once
         # pkg-config formula is removed from GitHub Actions runner.
         #brew uninstall pkg-config
+        brew upgrade
+        brew list
+        brew install hdf5-mpi
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
