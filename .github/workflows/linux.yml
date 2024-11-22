@@ -238,7 +238,7 @@ jobs:
 
         # Vars pushed to GITHUB_ENV take effect only on the next CI steps.
         echo "PARFLOW_DIR=${PARFLOW_DIR}" >> $GITHUB_ENV
-        echo "PARFLOW_DEP_DIR=${PARFLOW_DIR}" >> $GITHUB_ENV
+        echo "PARFLOW_DEP_DIR=${PARFLOW_DEP_DIR}" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
         echo "$HOME/depend/bin" >> $GITHUB_PATH
         echo "$PARFLOW_DIR/bin" >> $GITHUB_PATH
