@@ -44,6 +44,7 @@ jobs:
         # pkg-config formula is removed from GitHub Actions runner.
         brew uninstall pkg-config@0.29.2
         brew install hdf5-mpi
+        brew install tcl-tk@8
         brew ls --verbose tcl-tk@8
         ls /opt/homebrew/lib/
         ls /opt/homebrew/bin
