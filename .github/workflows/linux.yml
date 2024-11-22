@@ -101,6 +101,7 @@ jobs:
             name: "Ubuntu 22.04 Python",
             os: ubuntu-22.04,
             cudaos: 'ubuntu2204',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "true",
             backend: "none",
             amps_layer: mpi1,
@@ -110,6 +111,7 @@ jobs:
             name: "Ubuntu 20.04 Python",
             os: ubuntu-20.04,
             cudaos: 'ubuntu2004',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "true",
             backend: "none",
             amps_layer: mpi1,
@@ -119,15 +121,17 @@ jobs:
             name: "Ubuntu 22.04 OMP",
             os: ubuntu-22.04,
             cudaos: 'ubuntu2204',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "omp",
             amps_layer: mpi1,
             netcdf: "false"
           }
         - {
-            name: "Ubuntu 22.04 OASIS3-MCT Build",
-            os: ubuntu-22.04,
+            name: "Ubuntu 24.04 OASIS3-MCT Build",
+            os: ubuntu-24.04,
             cudaos: 'ubuntu2204',
+            cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
             python: "false",
             backend: "omp",
             amps_layer: oas3,
@@ -136,7 +140,7 @@ jobs:
         - {
             name: "Ubuntu 22.04 CUDA Build",
             os: ubuntu-22.04,
-            cc: "gcc", cxx: "g++",
+            cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "cuda",
             cudaos: 'ubuntu2204',
@@ -146,7 +150,7 @@ jobs:
         - {
             name: "Ubuntu 22.04 Kokkos Build",
             os: ubuntu-22.04,
-            cc: "gcc", cxx: "g++",
+            cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "kokkos",
             cudaos: 'ubuntu2204',
@@ -157,17 +161,28 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Package Install 22.04
-      if: matrix.config.os == 'ubuntu-22.04'
+    - name: Package Install Common
       run: |
         sudo apt-get -qq update
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
+        sudo apt -qq install gfortran libhdf5-openmpi-dev hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
 
-    - name: Package Install 20.04
-      if: matrix.config.os == 'ubuntu-20.04'
+    - name: libhdf5-openmpi Install 22.04
+      if: matrix.config.os == 'ubuntu-20.04' || matrix.config.os == 'ubuntu-22.04'
       run: |
         sudo apt-get -qq update
-        sudo apt -qq install gfortran libhdf5-openmpi-dev libhdf5-openmpi-103 hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
+        sudo apt -qq install libhdf5-openmpi-103
+
+    # libhdf5-openmpi-103 has been renamed in Ubuntu 24.04.
+    - name: libhdf5-openmpi Install 24.04
+      if: matrix.config.os == 'ubuntu-24.04'
+      run: |
+        sudo apt-get -qq update
+        sudo apt -qq install libhdf5-openmpi-103-1t64
+
+    - name: LLVM 18.X Install
+      if: matrix.config.cc == 'clang-18'
+      run: |
+        sudo apt -qq install clang-18
 
     - name: Python Package Install
       if: matrix.config.python == 'true'
@@ -175,9 +190,9 @@ jobs:
         sudo apt-get -qq update
         sudo apt -qq install python3 python3-venv
 
-# Cache dependencies so don't have to rebuild on each test.
-# Can flush caches by resetting the CACHE_VERSION secret on GitHub
-# settings for the project (using date-timestamp for secret).
+    # Cache dependencies so don't have to rebuild on each test.
+    # Can flush caches by resetting the CACHE_VERSION secret on GitHub
+    # settings for the project (using date-timestamp for secret).
 
     - name: Cache dependencies
       uses: actions/cache@v4
@@ -201,6 +216,18 @@ jobs:
         echo "$HOME/depend/bin" >> $GITHUB_PATH
         export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+
+    - name: Configure OpenMPI backend compiler
+      run: |
+        export OMPI_CC=${{ matrix.config.cc }}
+        export OMPI_CXX=${{ matrix.config.cxx }}
+        export OMPI_FC=${{ matrix.config.fc }}
+        echo "export OMPI_CC=${{ matrix.config.cc }}" >> $GITHUB_ENV
+        echo "export OMPI_CXX=${{ matrix.config.cxx }}" >> $GITHUB_ENV
+        echo "export OMPI_FC=${{ matrix.config.fc }}" >> $GITHUB_ENV
+        echo "  mpicc: $(mpicc --version | head -n 1)"
+        echo " mpicxx: $(mpicxx --version | head -n 1)"
+        echo "mpifort: $(mpifort --version | head -n 1)"
 
     - name: CMake Install
       env:
@@ -375,7 +402,7 @@ jobs:
         cat ~/depend/cache-key
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
-        gcc -v
+        ${{ matrix.config.cc }} -v
         mpicc -v
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
         CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DMPIEXEC_POSTFLAGS='--oversubscribe' -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR
