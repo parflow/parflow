@@ -111,6 +111,16 @@ jobs:
             netcdf: "true"
           }
         - {
+            name: "Ubuntu 24.04 LLVM",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "true"
+          }
+        - {
             name: "Ubuntu 22.04 GCC Python",
             os: ubuntu-22.04,
             cudaos: 'ubuntu2204',
@@ -433,7 +443,7 @@ jobs:
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
         CFLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function -Wno-stringop-overread"
         if [[ "${{ matrix.config.cc }}" == "gcc" ]]; then CFLAGS="${CFLAGS} -Wno-stringop-overread"; fi
-        export CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 
+        export CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90
         cmake -Bbuild                                                   \
            -DCMAKE_BUILD_TYPE=Release                                   \
            -DCMAKE_C_FLAGS=$CFLAGS                                      \
