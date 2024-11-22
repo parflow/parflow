@@ -328,14 +328,6 @@ jobs:
         fi
         sudo ldconfig
 
-    - name: Setup upterm session
-      uses: lhotari/action-upterm@v1
-      with:
-        ## limits ssh access and adds the ssh public key for the user which triggered the workflow
-        limit-access-to-actor: true
-        ## limits ssh access and adds the ssh public keys of the listed GitHub users
-        limit-access-to-users: kvrigor
-
     # Package netcdf is missing features needed by the ParFlow writers, build from source
     # netcdf is True when we want to build the PF NetCDF writer.  OASIS is using the Fortran interface
     # which is currently not built here.   This is currently incompatible with the OASIS build which uses the NetCDF packages.
