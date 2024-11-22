@@ -35,7 +35,7 @@ jobs:
             LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
 
             # Create folders
-            mkdir -p ${PARFLOW_DIR} ${PARFLOW_DEP_DIR}{include,lib}
+            mkdir -p ${PARFLOW_DIR} ${PARFLOW_DEP_DIR}/{include,lib}
 
             # Verify if paths were correctly set
             echo "PARFLOW_DIR=${PARFLOW_DIR}"
@@ -225,7 +225,7 @@ jobs:
         LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
 
         # Create folders
-        mkdir -p ${PARFLOW_DIR} ${PARFLOW_DEP_DIR}{include,lib}
+        mkdir -p ${PARFLOW_DIR} ${PARFLOW_DEP_DIR}/{include,lib}
 
         # Verify if paths were correctly set
         echo "PARFLOW_DIR=${PARFLOW_DIR}"
