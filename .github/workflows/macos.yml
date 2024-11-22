@@ -39,7 +39,8 @@ jobs:
 
     - name: HDF5 Install
       run: |
-        brew install hdf5-mpi || brew link --overwrite hdf5-mpi
+        brew link --overwrite pkgconf
+        brew install hdf5-mpi
 
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
