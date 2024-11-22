@@ -223,9 +223,9 @@ jobs:
         export OMPI_CC=${{ matrix.config.cc }}
         export OMPI_CXX=${{ matrix.config.cxx }}
         export OMPI_FC=${{ matrix.config.fc }}
-        echo "export OMPI_CC=${{ matrix.config.cc }}" >> $GITHUB_ENV
-        echo "export OMPI_CXX=${{ matrix.config.cxx }}" >> $GITHUB_ENV
-        echo "export OMPI_FC=${{ matrix.config.fc }}" >> $GITHUB_ENV
+        echo "OMPI_CC=${{ matrix.config.cc }}" >> $GITHUB_ENV
+        echo "OMPI_CXX=${{ matrix.config.cxx }}" >> $GITHUB_ENV
+        echo "OMPI_FC=${{ matrix.config.fc }}" >> $GITHUB_ENV
         echo "  mpicc: $(mpicc --version | head -n 1)"
         echo " mpicxx: $(mpicxx --version | head -n 1)"
         echo "mpifort: $(mpifort --version | head -n 1)"
