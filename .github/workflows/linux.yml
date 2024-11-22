@@ -217,6 +217,7 @@ jobs:
         echo "$HOME/depend/bin" >> $GITHUB_PATH
         export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/lib64:${PARFLOW_DEP_DIR}/lib:${LD_LIBRARY_PATH}
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
 
     - name: Configure OpenMPI backend compiler
       run: |
@@ -357,7 +358,7 @@ jobs:
           mkdir netcdf-fortran
           cd netcdf-fortran
           curl -L $URL | tar --strip-components=1 -xz
-          mpifort --version
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
           CC=mpicc FC=mpifort CPPFLAGS=-I${PARFLOW_DEP_DIR}/include LDFLAGS=-L${PARFLOW_DEP_DIR}/lib ./configure --prefix=${PARFLOW_DEP_DIR}
           make
           make install
