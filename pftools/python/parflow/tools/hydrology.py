@@ -165,6 +165,7 @@ def calculate_subsurface_storage(
     ]  # make 3d so we can broadcast the multiplication below
     incompressible = porosity * saturation * dz * dx * dy
     compressible = pressure * saturation * specific_storage * dz * dx * dy
+    compressible = np.where(pressure < 0, 0, compressible)
     total = incompressible + compressible
     total[mask == 0] = 0  # output values for points outside the mask are clamped to 0
     return total
