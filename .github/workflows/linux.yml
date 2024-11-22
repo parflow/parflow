@@ -89,9 +89,9 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu 22.04",
-            os: ubuntu-22.04,
-            cudaos: 'ubuntu2204',
+            name: "Ubuntu 24.04 GCC",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "none",
@@ -99,7 +99,7 @@ jobs:
             netcdf: "true"
           }
         - {
-            name: "Ubuntu 22.04 Python",
+            name: "Ubuntu 22.04 GCC Python",
             os: ubuntu-22.04,
             cudaos: 'ubuntu2204',
             cc: "gcc", cxx: "g++", fc: "gfortran",
@@ -109,7 +109,7 @@ jobs:
             netcdf: "true"
           }
         - {
-            name: "Ubuntu 20.04 Python",
+            name: "Ubuntu 20.04 GCC Python",
             os: ubuntu-20.04,
             cudaos: 'ubuntu2004',
             cc: "gcc", cxx: "g++", fc: "gfortran",
@@ -119,7 +119,7 @@ jobs:
             netcdf: "false"
           }
         - {
-            name: "Ubuntu 22.04 OMP",
+            name: "Ubuntu 22.04 GCC OMP",
             os: ubuntu-22.04,
             cudaos: 'ubuntu2204',
             cc: "gcc", cxx: "g++", fc: "gfortran",
@@ -129,7 +129,7 @@ jobs:
             netcdf: "false"
           }
         - {
-            name: "Ubuntu 24.04 OASIS3-MCT Build",
+            name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
             os: ubuntu-24.04,
             cudaos: 'ubuntu2204',
             cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
@@ -139,7 +139,7 @@ jobs:
             netcdf: "true"
           }
         - {
-            name: "Ubuntu 22.04 CUDA Build",
+            name: "Ubuntu 22.04 GCC CUDA Build",
             os: ubuntu-22.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
@@ -149,7 +149,7 @@ jobs:
             netcdf: "false"
           }
         - {
-            name: "Ubuntu 22.04 Kokkos Build",
+            name: "Ubuntu 22.04 GCC Kokkos Build",
             os: ubuntu-22.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
