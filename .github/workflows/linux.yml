@@ -11,9 +11,11 @@ jobs:
          uses: actions/checkout@v4
 
        - name: Package Install
-         run: |
-            sudo apt-get -qq update
-            sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev
+         uses: awalsh128/cache-apt-pkgs-action@latest
+         with:
+           packages: curl cmake build-essential tcl-dev tk-dev
+           version: 1.0
+           execute_install_scripts: true
 
        - name: Cache dependencies
          uses: actions/cache@v4
@@ -172,23 +174,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Package Install Common
-      run: |
-        sudo apt-get -qq update
-        sudo apt -qq install gfortran libhdf5-openmpi-dev hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
+    - name: Package Install
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: gfortran hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
+        version: 1.0
+        execute_install_scripts: true
 
-    - name: libhdf5-openmpi Install 22.04
+    - name: HDF5 and OpenMPI Install on Ubuntu 22.04
       if: matrix.config.os == 'ubuntu-20.04' || matrix.config.os == 'ubuntu-22.04'
       run: |
         sudo apt-get -qq update
-        sudo apt -qq install libhdf5-openmpi-103
+        sudo apt -qq install libhdf5-openmpi-103 libhdf5-openmpi-dev
 
     # libhdf5-openmpi-103 has been renamed in Ubuntu 24.04.
-    - name: libhdf5-openmpi Install 24.04
+    - name: HDF5 and OpenMPI Install on Ubuntu 24.04
       if: matrix.config.os == 'ubuntu-24.04'
       run: |
         sudo apt-get -qq update
-        sudo apt -qq install libhdf5-openmpi-103-1t64
+        sudo apt -qq install libhdf5-openmpi-103-1t64 libhdf5-openmpi-dev
 
     - name: LLVM 18.X Install
       if: matrix.config.cc == 'clang-18'
