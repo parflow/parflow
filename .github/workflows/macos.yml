@@ -45,11 +45,9 @@ jobs:
         #brew uninstall pkg-config
         brew list
         brew ls --verbose tcl-tk@8
-        ls -l /opt/homebrew/lib/libtcl8.6.dylib
         brew uninstall pkg-config@0.29.2
         brew list
         brew install hdf5-mpi
-        ls -l /opt/homebrew/lib/libtcl8.6.dylib
         brew ls --verbose tcl-tk@8
 
 
