@@ -86,7 +86,7 @@
 #define SeepageFace      9
 #define OverlandKinematic 10
 #define OverlandDiffusive 11
-#define GroundwaterFlow   12
+#define DeepAquifer   12
 /** @} */
 
 
@@ -142,8 +142,8 @@
         BC_TYPE(OverlandDiffusive, {   \
     double *values;                    \
   })                                   \
-        BC_TYPE(GroundwaterFlow, {     \
-    PFModule *groundwaterflow;         \
+        BC_TYPE(DeepAquifer, {         \
+    PFModule *deepaquifer;             \
   })
 
 
@@ -242,7 +242,7 @@
         BC_TYPE(OverlandDiffusive, {   \
     double value;                      \
   })                                   \
-        BC_TYPE(GroundwaterFlow, {     \
+        BC_TYPE(DeepAquifer, {         \
   })
 
 
@@ -379,13 +379,13 @@ typedef struct {
     #define OverlandDiffusiveValue(patch) \
             ((patch)->value)
 /*--------------------------------------------------------------------------*/
-#define GroundwaterFlowModule(patch) \
-        ((patch)->groundwaterflow)
+#define DeepAquiferModule(patch) \
+        ((patch)->deepaquifer)
 /*--------------------------------------------------------------------------*/
-#define GroundwaterFlowSpecificYield(patch) \
+#define DeepAquiferSpecificYield(patch) \
         ((patch)->SpcYield)
 /*--------------------------------------------------------------------------*/
-#define GroundwaterFlowAquiferDepth(patch) \
+#define DeepAquiferAquiferDepth(patch) \
         ((patch)->AqDepth)
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData

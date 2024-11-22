@@ -1127,10 +1127,10 @@ BCStruct    *BCPressure(
           break;
         } /* End OverlandDiffusive */
 
-        case GroundwaterFlow:
+        case DeepAquifer:
         {
           /* Constant flux rate value on patch */
-          GetBCPressureTypeStruct(GroundwaterFlow, interval_data,
+          GetBCPressureTypeStruct(DeepAquifer, interval_data,
                                   bc_pressure_data, ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
@@ -1154,7 +1154,7 @@ BCStruct    *BCPressure(
             });
           } /* End subgrid loop */
           break;
-        }   /* End GroundwaterFlow */
+        }   /* End DeepAquifer */
       }
     }
   }

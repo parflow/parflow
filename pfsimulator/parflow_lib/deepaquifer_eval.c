@@ -43,7 +43,7 @@ typedef struct {
 } InstanceXtra;
 
 
-void InitGroundwaterFlowParameter(Vector *par_v, ParameterUnion par)
+void InitDeepAquiferParameter(Vector *par_v, ParameterUnion par)
 {
   switch (ParameterUnionID(par))
   {
@@ -74,11 +74,11 @@ void InitGroundwaterFlowParameter(Vector *par_v, ParameterUnion par)
 
 
 /*--------------------------------------------------------------------------
- * GroundwaterFlowEval
+ * DeepAquiferEval
  *--------------------------------------------------------------------------*/
 /**
- * @name GroundwaterFlow BC Module
- * @brief Evaluation of the GroundwaterFlow boundary
+ * @name DeepAquifer BC Module
+ * @brief Evaluation of the DeepAquifer boundary
  *
  * This module can evaluate both the non-linear function
  * and its jacobian. When invoked, the `fcn` flag tracks
@@ -99,45 +99,44 @@ void InitGroundwaterFlowParameter(Vector *par_v, ParameterUnion par)
  * @param isubgrid current subgrid
  * @param problem_data geometry data for problem
  */
-void GroundwaterFlowEval(
-                         void *       groundwater_out,
-                         int          fcn,
-                         BCStruct *   bc_struct,
-                         Subgrid *    subgrid,
-                         Subvector *  p_sub,
-                         double *     old_pressure,
-                         double       dt,
-                         double *     Kr,
-                         double *     Ks_x,
-                         double *     Ks_y,
-                         int          ipatch,
-                         int          isubgrid,
-                         ProblemData *problem_data)
+void DeepAquiferEval(void *       groundwater_out,
+                     int          fcn,
+                     BCStruct *   bc_struct,
+                     Subgrid *    subgrid,
+                     Subvector *  p_sub,
+                     double *     old_pressure,
+                     double       dt,
+                     double *     Kr,
+                     double *     Ks_x,
+                     double *     Ks_y,
+                     int          ipatch,
+                     int          isubgrid,
+                     ProblemData *problem_data)
 {
   if (fcn == CALCFCN)
   {
     double *fp = (double*)groundwater_out;
 
-    GroundwaterFlowEvalNLFunc(fp, bc_struct, subgrid,
-                              p_sub, old_pressure, dt, Kr, Ks_x, Ks_y,
-                              ipatch, isubgrid, problem_data);
+    DeepAquiferEvalNLFunc(fp, bc_struct, subgrid,
+                          p_sub, old_pressure, dt, Kr, Ks_x, Ks_y,
+                          ipatch, isubgrid, problem_data);
   }
   else     /* fcn == CALCDER */
 
   {
     Submatrix *J_sub = (Submatrix*)groundwater_out;
 
-    GroundwaterFlowEvalJacob(J_sub, bc_struct, subgrid,
-                             p_sub, old_pressure, dt, Kr, Ks_x, Ks_y,
-                             ipatch, isubgrid, problem_data);
+    DeepAquiferEvalJacob(J_sub, bc_struct, subgrid,
+                         p_sub, old_pressure, dt, Kr, Ks_x, Ks_y,
+                         ipatch, isubgrid, problem_data);
   }
 
   return;
 }
 
 /**
- * @name GroundwaterFlow Eval NLFunc
- * @brief Evaluation of the GroundwaterFlow boundary
+ * @name DeepAquifer Eval NLFunc
+ * @brief Evaluation of the DeepAquifer boundary
  *
  * This module can evaluates the non-linear function.
  * The function evaluation is added to `fp` arg.
@@ -156,19 +155,18 @@ void GroundwaterFlowEval(
  * @param isubgrid current subgrid
  * @param problem_data geometry data for problem
  */
-void GroundwaterFlowEvalNLFunc(
-                               double *     fp,
-                               BCStruct *   bc_struct,
-                               Subgrid *    subgrid,
-                               Subvector *  p_sub,
-                               double *     old_pressure,
-                               double       dt,
-                               double *     Kr,
-                               double *     Ks_x,
-                               double *     Ks_y,
-                               int          ipatch,
-                               int          isubgrid,
-                               ProblemData *problem_data)
+void DeepAquiferEvalNLFunc(double *     fp,
+                           BCStruct *   bc_struct,
+                           Subgrid *    subgrid,
+                           Subvector *  p_sub,
+                           double *     old_pressure,
+                           double       dt,
+                           double *     Kr,
+                           double *     Ks_x,
+                           double *     Ks_y,
+                           int          ipatch,
+                           int          isubgrid,
+                           ProblemData *problem_data)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra =
@@ -189,8 +187,7 @@ void GroundwaterFlowEvalNLFunc(
 
   int i = 0, j = 0, k = 0, ival = 0;
 
-  ForPatchCellsPerFace(
-                       GroundwaterFlowBC,
+  ForPatchCellsPerFace(DeepAquiferBC,
                        BeforeAllCells(DoNothing),
                        LoopVars(i, j, k, ival, bc_struct, ipatch, isubgrid),
                        Locals(
@@ -349,13 +346,13 @@ void GroundwaterFlowEvalNLFunc(
     PlusEquals(fp[ip_mid], q_storage - q_divergence);
   }),
                        AfterAllCells(DoNothing)
-                       ); /* End GroundwaterFlow case */
+                       ); /* End DeepAquifer case */
   return;
 }
 
 /**
- * @name GroundwaterFlow Eval Jacobian
- * @brief Evaluation of the GroundwaterFlow jacobian
+ * @name DeepAquifer Eval Jacobian
+ * @brief Evaluation of the DeepAquifer jacobian
  *
  * This module can evaluates the non-linear function.
  * The jacobian evaluation is added to `J_sub` arg.
@@ -374,19 +371,18 @@ void GroundwaterFlowEvalNLFunc(
  * @param isubgrid current subgrid
  * @param problem_data geometry data for problem
  */
-void GroundwaterFlowEvalJacob(
-                              Submatrix *  J_sub,
-                              BCStruct *   bc_struct,
-                              Subgrid *    subgrid,
-                              Subvector *  p_sub,
-                              double *     old_pressure,
-                              double       dt,
-                              double *     Kr,
-                              double *     Ks_x,
-                              double *     Ks_y,
-                              int          ipatch,
-                              int          isubgrid,
-                              ProblemData *problem_data)
+void DeepAquiferEvalJacob(Submatrix *  J_sub,
+                          BCStruct *   bc_struct,
+                          Subgrid *    subgrid,
+                          Subvector *  p_sub,
+                          double *     old_pressure,
+                          double       dt,
+                          double *     Kr,
+                          double *     Ks_x,
+                          double *     Ks_y,
+                          int          ipatch,
+                          int          isubgrid,
+                          ProblemData *problem_data)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra =
@@ -413,8 +409,7 @@ void GroundwaterFlowEvalJacob(
 
   int i = 0, j = 0, k = 0, ival = 0;
 
-  ForPatchCellsPerFace(
-                       GroundwaterFlowBC,
+  ForPatchCellsPerFace(DeepAquiferBC,
                        BeforeAllCells(DoNothing),
                        LoopVars(i, j, k, ival, bc_struct, ipatch, isubgrid),
                        Locals(
@@ -702,15 +697,15 @@ void GroundwaterFlowEvalJacob(
     PlusEquals(np[im], -del_upr_q_divergence);
   }),
                        AfterAllCells(DoNothing)
-                       ); /* End GroundwaterFlow case */
+                       ); /* End DeepAquifer case */
   return;
 }
 
 /*--------------------------------------------------------------------------
- * GroundwaterFlowEvalInitInstanceXtra
+ * DeepAquiferEvalInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule* GroundwaterFlowEvalInitInstanceXtra(ProblemData *problem_data)
+PFModule* DeepAquiferEvalInitInstanceXtra(ProblemData *problem_data)
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra = ctalloc(InstanceXtra, 1);
@@ -719,24 +714,22 @@ PFModule* GroundwaterFlowEvalInitInstanceXtra(ProblemData *problem_data)
 
   ParameterUnion Sy;
 
-  GetParameterUnion(
-                    Sy, na_types,
-                    "Patch.BCPressure.GroundwaterFlow.SpecificYield.%s",
+  GetParameterUnion(Sy, na_types,
+                    "Patch.BCPressure.DeepAquifer.SpecificYield.%s",
                     ParameterUnionDouble(0, "Value")
                     ParameterUnionString(1, "Filename")
                     );
 
   ParameterUnion Ad;
-  GetParameterUnion(
-                    Ad, na_types,
-                    "Patch.BCPressure.GroundwaterFlow.AquiferDepth.%s",
+  GetParameterUnion(Ad, na_types,
+                    "Patch.BCPressure.DeepAquifer.AquiferDepth.%s",
                     ParameterUnionDouble(0, "Value")
                     ParameterUnionString(1, "Filename")
                     );
 
-  InitGroundwaterFlowParameter(ProblemDataSpecificYield(problem_data), Sy);
+  InitDeepAquiferParameter(ProblemDataSpecificYield(problem_data), Sy);
   instance_xtra->SpecificYield = ProblemDataSpecificYield(problem_data);
-  InitGroundwaterFlowParameter(ProblemDataAquiferDepth(problem_data), Ad);
+  InitDeepAquiferParameter(ProblemDataAquiferDepth(problem_data), Ad);
   instance_xtra->AquiferDepth = ProblemDataAquiferDepth(problem_data);
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -744,9 +737,9 @@ PFModule* GroundwaterFlowEvalInitInstanceXtra(ProblemData *problem_data)
 }
 
 /*--------------------------------------------------------------------------
- * GroundwaterFlowEvalFreeInstanceXtra
+ * DeepAquiferEvalFreeInstanceXtra
  *--------------------------------------------------------------------------*/
-void GroundwaterFlowEvalFreeInstanceXtra()
+void DeepAquiferEvalFreeInstanceXtra()
 {
   PFModule     *this_module = ThisPFModule;
   InstanceXtra *instance_xtra =
@@ -759,10 +752,10 @@ void GroundwaterFlowEvalFreeInstanceXtra()
 }
 
 /*--------------------------------------------------------------------------
- * GroundwaterFlowEvalNewPublicXtra
+ * DeepAquiferEvalNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule* GroundwaterFlowEvalNewPublicXtra()
+PFModule* DeepAquiferEvalNewPublicXtra()
 {
   PFModule   *this_module = ThisPFModule;
   PublicXtra *public_xtra = NULL;
@@ -772,10 +765,10 @@ PFModule* GroundwaterFlowEvalNewPublicXtra()
 }
 
 /*-------------------------------------------------------------------------
- * GroundwaterFlowEvalFreePublicXtra
+ * DeepAquiferEvalFreePublicXtra
  *-------------------------------------------------------------------------*/
 
-void GroundwaterFlowEvalFreePublicXtra()
+void DeepAquiferEvalFreePublicXtra()
 {
   PFModule   *this_module = ThisPFModule;
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -787,10 +780,10 @@ void GroundwaterFlowEvalFreePublicXtra()
 }
 
 /*--------------------------------------------------------------------------
- * GroundwaterFlowEvalSizeOfTempData
+ * DeepAquiferEvalSizeOfTempData
  *--------------------------------------------------------------------------*/
 
-int GroundwaterFlowEvalSizeOfTempData()
+int DeepAquiferEvalSizeOfTempData()
 {
   return 0;
 }

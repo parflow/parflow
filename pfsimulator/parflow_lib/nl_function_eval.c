@@ -2134,7 +2134,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                            ); /* End OverlandDiffusiveBC case */
 
       ForPatchCellsPerFace(
-                           GroundwaterFlowBC,
+                           DeepAquiferBC,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            Locals(
@@ -2275,16 +2275,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       }),
                            AfterAllCells({
         PFModule *bc_pressure_package = ProblemBCPressurePackage(problem);
-        PFModule *groundwaterflow_eval =
-          BCPressurePackageGroundwaterFlowModule(
-                                                 bc_pressure_package, ipatch);
+        PFModule *deepaquifer_eval =
+          BCPressurePackageDeepAquiferModule(bc_pressure_package, ipatch);
 
         /* GWF BC terms are added inside the module */
-        PFModuleInvokeType(GroundwaterFlowEvalInvoke, groundwaterflow_eval,
+        PFModuleInvokeType(DeepAquiferEvalInvoke, deepaquifer_eval,
                            ((void*)fp, CALCFCN, bc_struct, subgrid, p_sub, opp,
                             dt, rpp, permxp, permyp, ipatch, is, problem_data));
       })
-                           ); /* End GroundwaterFlowBC */
+                           ); /* End DeepAquiferBC */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 

@@ -1,4 +1,4 @@
-#  This runs the infiltration experiment using the GroundwaterFlowBC.
+#  This runs the infiltration experiment using the DeepAquiferBC.
 
 #
 # Import the ParFlow TCL package
@@ -120,12 +120,12 @@ pfset Patch.back.BCPressure.Type             FluxConst
 pfset Patch.back.BCPressure.Cycle            constant
 pfset Patch.back.BCPressure.alltime.Value    0.0
 
-pfset Patch.bottom.BCPressure.Type   GroundwaterFlow
+pfset Patch.bottom.BCPressure.Type   DeepAquifer
 pfset Patch.bottom.BCPressure.Cycle  constant
-pfset Patch.BCPressure.GroundwaterFlow.SpecificYield.Type   Constant
-pfset Patch.BCPressure.GroundwaterFlow.SpecificYield.Value  0.1
-pfset Patch.BCPressure.GroundwaterFlow.AquiferDepth.Type    Constant
-pfset Patch.BCPressure.GroundwaterFlow.AquiferDepth.Value   90.0
+pfset Patch.BCPressure.DeepAquifer.SpecificYield.Type   Constant
+pfset Patch.BCPressure.DeepAquifer.SpecificYield.Value  0.1
+pfset Patch.BCPressure.DeepAquifer.AquiferDepth.Type    Constant
+pfset Patch.BCPressure.DeepAquifer.AquiferDepth.Value   90.0
 
 pfset Patch.top.BCPressure.Type              FluxConst
 pfset Patch.top.BCPressure.Cycle             rainfall
@@ -273,7 +273,7 @@ pfset Solver                                             Richards
 pfset Solver.MaxIter                                     100000
 
 pfset Solver.Nonlinear.MaxIter                           1000
-pfset Solver.Nonlinear.ResidualTol                       1e-9
+pfset Solver.Nonlinear.ResidualTol                       1e-10
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          1e-4
 pfset Solver.Nonlinear.UseJacobian                       True
@@ -289,8 +289,8 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun gfb_infiltration
-pfundist gfb_infiltration
+pfrun daq_infiltration
+pfundist daq_infiltration
 
 
 #
@@ -299,29 +299,29 @@ pfundist gfb_infiltration
 source pftest.tcl
 set passed 1
 
-if ![pftestFile gfb_infiltration.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+if ![pftestFile daq_infiltration.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
     set passed 0
 }
-if ![pftestFile gfb_infiltration.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+if ![pftestFile daq_infiltration.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
     set passed 0
 }
-if ![pftestFile gfb_infiltration.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+if ![pftestFile daq_infiltration.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
     set passed 0
 }
 
 
 foreach i "00000 00001 00002 00003 00004 00005" {
-    if ![pftestFile gfb_infiltration.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+    if ![pftestFile daq_infiltration.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
     set passed 0
     }
-    if ![pftestFile gfb_infiltration.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+    if ![pftestFile daq_infiltration.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
     set passed 0
     }
 }
 
 
 if $passed {
-    puts "gfb_infiltration : PASSED"
+    puts "daq_infiltration : PASSED"
 } {
-    puts "gfb_infiltration : FAILED"
+    puts "daq_infiltration : FAILED"
 }

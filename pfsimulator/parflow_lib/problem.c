@@ -244,8 +244,8 @@ Problem   *NewProblem(
   ProblemOverlandFlowEvalKin(problem) =
     PFModuleNewModule(OverlandFlowEvalKin, ());
 
-  ProblemGroundwaterFlowEval(problem) =
-    PFModuleNewModule(GroundwaterFlowEval, ());
+  ProblemDeepAquiferEval(problem) =
+    PFModuleNewModule(DeepAquiferEval, ());
 
   if (solver != RichardsSolve)
   {
@@ -405,7 +405,7 @@ void      FreeProblem(
   PFModuleFreeModule(ProblemOverlandFlowEval(problem));  //DOK
   PFModuleFreeModule(ProblemOverlandFlowEvalDiff(problem));   //@RMM
   PFModuleFreeModule(ProblemOverlandFlowEvalKin(problem));
-  PFModuleFreeModule(ProblemGroundwaterFlowEval(problem));
+  PFModuleFreeModule(ProblemDeepAquiferEval(problem));
 
   PFModuleFreeModule(ProblemDomain(problem));
 

@@ -254,7 +254,7 @@ Patch:
         help: >
           [Type: string] This key specifies the type of boundary condition data given for patch patch_name. Possible values for this key
           are DirEquilRefPatch, DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFlow,
-          OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive, ExactSolution and GroundwaterFlow.
+          OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive, ExactSolution and DeepAquifer.
           The choice DirEquilRefPatch specifies that the pressure on the specified patch will be in hydrostatic equilibrium
           with a constant reference pressure given on a reference patch. The choice DirEquilPLinear specifies that the pressure
           on the specified patch will be in hydrostatic equilibrium with pressure given along a piecewise line at elevation
@@ -278,7 +278,7 @@ Patch:
           on the respective patch. Note that this does not change according to any cycle. Instead, time dependence is handled
           by evaluating at the time the boundary condition value is desired. The solution is specified by using a predefined
           function (choices are described below). The choice 
-          GroundwaterFlow turns on groundwater interactions with a deep 
+          DeepAquifer turns on groundwater interactions with a deep 
           aquifer as described in [Rahman2018]. The aquifer is set with the 
           Specific Yield and Aquifer Depth parameters, detailed below. NOTE: 
           These last seven types of boundary condition input are for Richards’
@@ -310,12 +310,12 @@ Patch:
                 - OverlandKinematic
                 - OverlandDiffusive
                 - ExactSolution
-                - GroundwaterFlow
+                - DeepAquifer
 
-      GroundwaterFlow:
+      DeepAquifer:
         __doc__: >
           This section defines the parameters necessary to describe the
-          interactions with the aquifer in the GroundwaterFlow boundary 
+          interactions with the aquifer in the DeepAquifer boundary 
           condition.
 
         SpecificYield:
@@ -324,7 +324,7 @@ Patch:
 
           Type:
             help: >
-              [Type: string] This key specifies the type of the GroundwaterFlow 
+              [Type: string] This key specifies the type of the DeepAquifer 
               parameter: "Constant" will set the parameter to a constant value,
               while "FileName" will set the parameter to values read from a 
               file. 
@@ -335,14 +335,14 @@ Patch:
             
           Value:
             help: >
-              [Type: double] This key will set the GroundwaterFlow parameter to 
+              [Type: double] This key will set the DeepAquifer parameter to 
               the inserted constant value.
             domains:
               DoubleValue:
           
           FileName:
             help: >
-              [Type: string] This key will set the GroundwaterFlow parameter to 
+              [Type: string] This key will set the DeepAquifer parameter to 
               the values read from the inserted file.
             domains:
               AnyString:
@@ -354,7 +354,7 @@ Patch:
 
           Type:
             help: >
-              [Type: string] This key specifies the type of the GroundwaterFlow 
+              [Type: string] This key specifies the type of the DeepAquifer 
               parameter: "Constant" will set the parameter to a constant value,
               while "FileName" will set the parameter to values read from a 
               file. 
@@ -365,14 +365,14 @@ Patch:
             
           Value:
             help: >
-              [Type: double] This key will set the GroundwaterFlow parameter to 
+              [Type: double] This key will set the DeepAquifer parameter to 
               the inserted constant value.
             domains:
               DoubleValue:
           
           FileName:
             help: >
-              [Type: string] This key will set the GroundwaterFlow parameter to 
+              [Type: string] This key will set the DeepAquifer parameter to 
               the values read from the inserted file.
             domains:
               AnyString:

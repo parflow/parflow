@@ -180,7 +180,7 @@ void FreeBCPressureData(
                   break;
                 }
 
-                case GroundwaterFlow:
+                case DeepAquifer:
                 {
                   // Do Nothing
                   break;

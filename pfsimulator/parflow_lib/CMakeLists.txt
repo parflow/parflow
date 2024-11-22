@@ -31,7 +31,7 @@ set (SRC_FILES_CONST advect.F
   grgeom_list.c
   grgeom_octree.c
   grid.c
-  groundwaterflow_eval.c
+  deepaquifer_eval.c
   hbt.c
   index_space.c
   infinity_norm.c

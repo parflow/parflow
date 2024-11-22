@@ -48,7 +48,7 @@
 #define SeepageFaceBC   3   //rmm
 #define OverlandKinematicBC 4
 #define OverlandDiffusiveBC 5
-#define GroundwaterFlowBC 6
+#define DeepAquiferBC 6
 /** @} */
 
 /*----------------------------------------------------------------

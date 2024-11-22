@@ -33,8 +33,8 @@ typedef PFModule *(*BCPressurePackageNewPublicXtraInvoke) (int num_phases);
 
 /* bc_pressure_package.c */
 void BCPressurePackage(ProblemData *problem_data);
-PFModule *BCPressurePackageGroundwaterFlowModule(PFModule *bc_pressure_package,
-                                                 int       ipatch);
+PFModule *BCPressurePackageDeepAquiferModule(PFModule *bc_pressure_package,
+                                             int       ipatch);
 PFModule *BCPressurePackageInitInstanceXtra(Problem *problem);
 void BCPressurePackageFreeInstanceXtra(void);
 PFModule *BCPressurePackageNewPublicXtra(int num_phases);
@@ -876,42 +876,42 @@ PFModule *OverlandFlowEvalKinNewPublicXtra(void);
 void OverlandFlowEvalKinFreePublicXtra(void);
 int OverlandFlowEvalKinSizeOfTempData(void);
 
-/* groundwaterflow_eval.c */
-void InitGroundwaterFlowParameter(Vector *par_v, ParameterUnion par);
+/* deepaquifer_eval.c */
+void InitDeepAquiferParameter(Vector *par_v, ParameterUnion par);
 
-typedef void (*GroundwaterFlowEvalInvoke)(void *groundwater_out, int flag,
-                                          BCStruct *bc_struct, Subgrid *subgrid,
-                                          Subvector *p_sub,
-                                          double *old_pressure, double dt,
-                                          double *Kr,
-                                          double *Ks_x, double *Ks_y,
-                                          int ipatch, int isubgrid,
-                                          ProblemData *problem_data);
+typedef void (*DeepAquiferEvalInvoke)(void *groundwater_out, int flag,
+                                      BCStruct *bc_struct, Subgrid *subgrid,
+                                      Subvector *p_sub,
+                                      double *old_pressure, double dt,
+                                      double *Kr,
+                                      double *Ks_x, double *Ks_y,
+                                      int ipatch, int isubgrid,
+                                      ProblemData *problem_data);
 
-void GroundwaterFlowEval(void *groundwater_out, int flag, BCStruct *bc_struct,
-                         Subgrid *subgrid, Subvector *p_sub,
-                         double *old_pressure, double dt, double *Kr,
-                         double *Ks_x, double *Ks_y, int ipatch, int isubgrid,
-                         ProblemData *problem_data);
+void DeepAquiferEval(void *groundwater_out, int flag, BCStruct *bc_struct,
+                     Subgrid *subgrid, Subvector *p_sub,
+                     double *old_pressure, double dt, double *Kr,
+                     double *Ks_x, double *Ks_y, int ipatch, int isubgrid,
+                     ProblemData *problem_data);
 
-void GroundwaterFlowEvalNLFunc(double *q_groundwater, BCStruct *bc_struct,
-                               Subgrid *subgrid, Subvector *p_sub,
-                               double *old_pressure, double dt, double *Kr,
-                               double *Ks_x, double *Ks_y, int ipatch,
-                               int isubgrid, ProblemData *problem_data);
+void DeepAquiferEvalNLFunc(double *q_groundwater, BCStruct *bc_struct,
+                           Subgrid *subgrid, Subvector *p_sub,
+                           double *old_pressure, double dt, double *Kr,
+                           double *Ks_x, double *Ks_y, int ipatch,
+                           int isubgrid, ProblemData *problem_data);
 
-void GroundwaterFlowEvalJacob(Submatrix *J_sub, BCStruct *bc_struct,
-                              Subgrid *subgrid, Subvector *p_sub,
-                              double *old_pressure, double dt, double *Kr,
-                              double *Ks_x, double *Ks_y, int ipatch,
-                              int isubgrid, ProblemData *problem_data);
+void DeepAquiferEvalJacob(Submatrix *J_sub, BCStruct *bc_struct,
+                          Subgrid *subgrid, Subvector *p_sub,
+                          double *old_pressure, double dt, double *Kr,
+                          double *Ks_x, double *Ks_y, int ipatch,
+                          int isubgrid, ProblemData *problem_data);
 
-typedef PFModule* (*GroundwaterFlowEvalInitInstanceXtraInvoke)(ProblemData *problem_data);
-PFModule* GroundwaterFlowEvalInitInstanceXtra(ProblemData *problem_data);
-void GroundwaterFlowEvalFreeInstanceXtra();
-PFModule* GroundwaterFlowEvalNewPublicXtra();
-void GroundwaterFlowEvalFreePublicXtra();
-int GroundwaterFlowEvalSizeOfTempData();
+typedef PFModule* (*DeepAquiferEvalInitInstanceXtraInvoke)(ProblemData *problem_data);
+PFModule* DeepAquiferEvalInitInstanceXtra(ProblemData *problem_data);
+void DeepAquiferEvalFreeInstanceXtra();
+PFModule* DeepAquiferEvalNewPublicXtra();
+void DeepAquiferEvalFreePublicXtra();
+int DeepAquiferEvalSizeOfTempData();
 
 /* problem_ic_phase_satur.c */
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);

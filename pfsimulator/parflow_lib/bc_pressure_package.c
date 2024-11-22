@@ -441,27 +441,27 @@ void         BCPressurePackage(
             break;
           } /* End OverlandDiffusive */
 
-          case GroundwaterFlow:
+          case DeepAquifer:
           {
-            NewBCPressureTypeStruct(GroundwaterFlow, interval_data);
+            NewBCPressureTypeStruct(DeepAquifer, interval_data);
 
-            BCPressureDataBCType(bc_pressure_data, i) = GroundwaterFlowBC;
+            BCPressureDataBCType(bc_pressure_data, i) = DeepAquiferBC;
 
-            GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
+            GetTypeStruct(DeepAquifer, data, public_xtra, i);
 
             // because the module instance wasn't created before, it is now.
-            PFModule *groundwaterflow_eval =
-              ProblemGroundwaterFlowEval(instance_xtra->problem);
+            PFModule *deepaquifer_eval =
+              ProblemDeepAquiferEval(instance_xtra->problem);
 
-            GroundwaterFlowModule(data) =
-              PFModuleNewInstanceType(GroundwaterFlowEvalInitInstanceXtraInvoke,
-                                      groundwaterflow_eval, (problem_data));
+            DeepAquiferModule(data) =
+              PFModuleNewInstanceType(DeepAquiferEvalInitInstanceXtraInvoke,
+                                      deepaquifer_eval, (problem_data));
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
 
             break;
-          } /* End GroundwaterFlow */
+          } /* End DeepAquifer */
 
           default:
           {
@@ -473,22 +473,21 @@ void         BCPressurePackage(
   }
 }
 
-PFModule* BCPressurePackageGroundwaterFlowModule(
-                                                 PFModule *bc_pressure_package, int ipatch)
+PFModule* BCPressurePackageDeepAquiferModule(PFModule *bc_pressure_package,
+                                             int       ipatch)
 {
   PublicXtra *public_xtra =
     (PublicXtra*)PFModulePublicXtra(bc_pressure_package);
 
-  GetTypeStruct(GroundwaterFlow, data, public_xtra, ipatch);
-  return GroundwaterFlowModule(data);
+  GetTypeStruct(DeepAquifer, data, public_xtra, ipatch);
+  return DeepAquiferModule(data);
 }
 
 /*--------------------------------------------------------------------------
  * BCPressurePackageInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule *BCPressurePackageInitInstanceXtra(
-                                            Problem *problem)
+PFModule *BCPressurePackageInitInstanceXtra(Problem *problem)
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
@@ -1043,18 +1042,18 @@ PFModule  *BCPressurePackageNewPublicXtra(
           break;
         } /* End OverlandDiffusive */
 
-        case GroundwaterFlow:
+        case DeepAquifer:
         {
-          NewTypeStruct(GroundwaterFlow, data);
+          NewTypeStruct(DeepAquifer, data);
 
           // this cannot be defined here because the module is not available
           // from Problem's PublicXtra structure.
           // therefore, it will be defined in BCPressurePackage()
-          GroundwaterFlowModule(data) = NULL;
+          DeepAquiferModule(data) = NULL;
 
           StoreTypeStruct(public_xtra, data, i);
           break;
-        } /* End GroundwaterFlow */
+        } /* End DeepAquifer */
       } /* End switch types */
     } /* End for patches */
   } /* if patches */
@@ -1217,12 +1216,12 @@ void  BCPressurePackageFreePublicXtra()
             break;
           }
 
-          case GroundwaterFlow:
+          case DeepAquifer:
           {
-            GetTypeStruct(GroundwaterFlow, data, public_xtra, i);
-            if (GroundwaterFlowModule(data))
+            GetTypeStruct(DeepAquifer, data, public_xtra, i);
+            if (DeepAquiferModule(data))
             {
-              PFModuleFreeInstance(GroundwaterFlowModule(data));
+              PFModuleFreeInstance(DeepAquiferModule(data));
             }
             tfree(data);
             break;
