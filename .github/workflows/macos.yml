@@ -43,13 +43,14 @@ jobs:
         # in GitHub Actions runner now. We can remove this once
         # pkg-config formula is removed from GitHub Actions runner.
         #brew uninstall pkg-config
-        brew upgrade
         brew list
+        brew ls --verbose tcl-tk
         ls -l /opt/homebrew/lib/libtcl8.6.dylib
         brew uninstall pkg-config@0.29.2
         brew list
         brew install hdf5-mpi
-        ls -l /opt/homebrew/lib/libtcl8.6.dylib         
+        ls -l /opt/homebrew/lib/libtcl8.6.dylib
+        brew ls --verbose tcl-tk
 
 
 # Cache dependencies so don't have to rebuild on each test.
