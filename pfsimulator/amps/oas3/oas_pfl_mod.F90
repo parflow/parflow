@@ -22,7 +22,7 @@ module oas_pfl_mod
   integer(c_int), public :: localComm 
 
   ! Hack to conform with localComm usage in oas3/amps_init.c
-#if defined(__INTEL_COMPILER)
+#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
   bind(c, name="oas_pfl_vardef_mp_localcomm_")   :: localComm
 #else
   bind(c, name="__oas_pfl_vardef_MOD_localcomm") :: localComm
