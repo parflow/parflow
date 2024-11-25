@@ -1444,13 +1444,11 @@ void PF2WRF(Vector *pf_vector,
             int     ghost_size_j_upper,
             Vector *top);
 
-void ComputeTop(Problem *    problem,
-                ProblemData *problem_data);
+void ComputeTopAndBottom(Problem *    problem,
+                         ProblemData *problem_data);
 
 void ComputePatchTop(Problem *    problem,
                      ProblemData *problem_data);
-
-void ComputeBottom(Problem *problem, ProblemData *problem_data);
 
 int CheckTime(Problem *problem, char *key, double time);
 

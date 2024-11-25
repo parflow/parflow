@@ -42,12 +42,13 @@
 
 #include "parflow.h"
 
-void ComputeTop(Problem *    problem,      /* General problem information */
-                ProblemData *problem_data  /* Contains geometry information for the problem */
-                )
+void ComputeTopAndBottom(Problem *    problem,      /* General problem information */
+                         ProblemData *problem_data  /* Contains geometry information for the problem */
+                         )
 {
   GrGeomSolid   *gr_solid = ProblemDataGrDomain(problem_data);
   Vector        *top = ProblemDataIndexOfDomainTop(problem_data);
+  Vector        *bottom = ProblemDataIndexOfDomainBottom(problem_data);
   Vector        *perm_x = ProblemDataPermeabilityX(problem_data);
 
   Grid          *grid2d = VectorGrid(top);
@@ -58,7 +59,6 @@ void ComputeTop(Problem *    problem,      /* General problem information */
   SubgridArray  *grid3d_subgrids = GridSubgrids(grid3d);
 
 
-  double *top_data;
   int index;
 
   VectorUpdateCommHandle   *handle;
@@ -66,7 +66,7 @@ void ComputeTop(Problem *    problem,      /* General problem information */
   (void)problem;
 
   InitVectorAll(top, -1);
-//   PFVConstInit(-1, top);
+  InitVectorAll(bottom, -1);
 
   int is;
   ForSubgridI(is, grid3d_subgrids)
@@ -75,6 +75,7 @@ void ComputeTop(Problem *    problem,      /* General problem information */
     Subgrid       *grid3d_subgrid = SubgridArraySubgrid(grid3d_subgrids, is);
 
     Subvector     *top_subvector = VectorSubvector(top, is);
+    Subvector     *bottom_subvector = VectorSubvector(bottom, is);
 
     int grid3d_ix = SubgridIX(grid3d_subgrid);
     int grid3d_iy = SubgridIY(grid3d_subgrid);
@@ -88,9 +89,11 @@ void ComputeTop(Problem *    problem,      /* General problem information */
 
     int grid3d_r = SubgridRX(grid3d_subgrid);
 
-    top_data = SubvectorData(top_subvector);
+    double *top_data = SubvectorData(top_subvector);
+    double *bottom_data = SubvectorData(bottom_subvector);
 
     int i, j, k;
+
     GrGeomInLoop(i, j, k,
                  gr_solid, grid3d_r,
                  grid3d_ix, grid3d_iy, grid3d_iz,
@@ -102,10 +105,18 @@ void ComputeTop(Problem *    problem,      /* General problem information */
       {
         top_data[index] = k;
       }
+
+      if (bottom_data[index] > k || bottom_data[index] < 0)
+      {
+        bottom_data[index] = k;
+      }
     });
   }      /* End of subgrid loop */
 
   /* Pass top values to neighbors.  */
   handle = InitVectorUpdate(top, VectorUpdateAll);
+  FinalizeVectorUpdate(handle);
+  /* Pass bottom values to neighbors.  */
+  handle = InitVectorUpdate(bottom, VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 }

@@ -460,8 +460,7 @@ SetupRichards(PFModule * this_module)
 
   /* Do turning bands (and other stuff maybe) */
   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
-  ComputeTop(problem, problem_data);
-  ComputeBottom(problem, problem_data);
+  ComputeTopAndBottom(problem, problem_data);
 
   if (public_xtra->print_top || public_xtra->write_silo_top)
   {
