@@ -151,7 +151,7 @@ jobs:
             netcdf: "false"
           }
         - {
-            name: "Ubuntu 24.04 LLVM OASIS3-MCT",
+            name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
             os: ubuntu-24.04,
             cudaos: 'ubuntu2204',
             cc: "clang-18", cxx: "clang++-18", fc: "gfortran",
@@ -161,7 +161,7 @@ jobs:
             netcdf: "true"
           }
         - {
-            name: "Ubuntu 22.04 GCC CUDA",
+            name: "Ubuntu 22.04 GCC CUDA Build",
             os: ubuntu-22.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
@@ -171,7 +171,7 @@ jobs:
             netcdf: "false"
           }
         - {
-            name: "Ubuntu 22.04 GCC Kokkos",
+            name: "Ubuntu 22.04 GCC Kokkos Build",
             os: ubuntu-22.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
