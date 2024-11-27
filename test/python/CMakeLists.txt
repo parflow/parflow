@@ -16,6 +16,7 @@ set(TESTS
   LW_surface_press
   channelwidth
   overland_tiltedV_MGSemiTest
+  daq_infiltration
 )
 
 if(${PARFLOW_HAVE_HYPRE})

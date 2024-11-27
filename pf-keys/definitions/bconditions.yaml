@@ -312,72 +312,6 @@ Patch:
                 - ExactSolution
                 - DeepAquifer
 
-      DeepAquifer:
-        __doc__: >
-          This section defines the parameters necessary to describe the
-          interactions with the aquifer in the DeepAquifer boundary 
-          condition.
-
-        SpecificYield:
-          __doc__: >
-            In this section, the aquifer variable "Specific Yield" is set.
-
-          Type:
-            help: >
-              [Type: string] This key specifies the type of the DeepAquifer 
-              parameter: "Constant" will set the parameter to a constant value,
-              while "FileName" will set the parameter to values read from a 
-              file. 
-            domains:
-              EnumDomain:
-                - Constant
-                - FileName
-            
-          Value:
-            help: >
-              [Type: double] This key will set the DeepAquifer parameter to 
-              the inserted constant value.
-            domains:
-              DoubleValue:
-          
-          FileName:
-            help: >
-              [Type: string] This key will set the DeepAquifer parameter to 
-              the values read from the inserted file.
-            domains:
-              AnyString:
-              ValidFile:
-
-        AquiferDepth:
-          __doc__: >
-            In this section, the aquifer variable "Aquifer Depth" is set.
-
-          Type:
-            help: >
-              [Type: string] This key specifies the type of the DeepAquifer 
-              parameter: "Constant" will set the parameter to a constant value,
-              while "FileName" will set the parameter to values read from a 
-              file. 
-            domains:
-              EnumDomain:
-                - Constant
-                - FileName
-            
-          Value:
-            help: >
-              [Type: double] This key will set the DeepAquifer parameter to 
-              the inserted constant value.
-            domains:
-              DoubleValue:
-          
-          FileName:
-            help: >
-              [Type: string] This key will set the DeepAquifer parameter to 
-              the values read from the inserted file.
-            domains:
-              AnyString:
-              ValidFile:
-
       Cycle:
         help: >
           [Type: string] This key specifies the time cycle to which boundary condition data for patch patch_name corresponds.
@@ -509,4 +443,80 @@ Patch:
               line, then linearly interpolating between the neighboring water-table height values onto the line.
             domains:
               DoubleValue:
+
+
+  BCPressure:
+    __class__: BCGeneralItem
+    __rst__:
+      skip:
+    __doc__: ''
+
+
+    DeepAquifer:
+      __doc__: >
+        This section defines the parameters necessary to describe the
+        interactions with the aquifer in the DeepAquifer boundary 
+        condition.
+
+      SpecificYield:
+        __doc__: >
+          In this section, the aquifer variable "Specific Yield" is set.
+
+        Type:
+          help: >
+            [Type: string] This key specifies the type of the DeepAquifer 
+            parameter: "Constant" will set the parameter to a constant value,
+            while "FileName" will set the parameter to values read from a 
+            file. 
+          domains:
+            EnumDomain:
+              enum_list:
+                - Constant
+                - FileName
+          
+        Value:
+          help: >
+            [Type: double] This key will set the DeepAquifer parameter to 
+            the inserted constant value.
+          domains:
+            DoubleValue:
+        
+        FileName:
+          help: >
+            [Type: string] This key will set the DeepAquifer parameter to 
+            the values read from the inserted file.
+          domains:
+            AnyString:
+            ValidFile:
+
+      AquiferDepth:
+        __doc__: >
+          In this section, the aquifer variable "Aquifer Depth" is set.
+
+        Type:
+          help: >
+            [Type: string] This key specifies the type of the DeepAquifer 
+            parameter: "Constant" will set the parameter to a constant value,
+            while "FileName" will set the parameter to values read from a 
+            file. 
+          domains:
+            EnumDomain:
+              enum_list:
+                - Constant
+                - FileName
+          
+        Value:
+          help: >
+            [Type: double] This key will set the DeepAquifer parameter to 
+            the inserted constant value.
+          domains:
+            DoubleValue:
+        
+        FileName:
+          help: >
+            [Type: string] This key will set the DeepAquifer parameter to 
+            the values read from the inserted file.
+          domains:
+            AnyString:
+            ValidFile:
 
