@@ -113,7 +113,8 @@ void ComputeSubsurfaceStorage(Databox *mask,
       /* OLD way
        * subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
        */
-      subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * dx * dy * dz;
+      /* fmax added to guarantee positive compressible storage*/
+      subsurface_storage_coeff[m] += fmax(pressure_coeff[m], 0.0) * specific_storage_coeff[m] * saturation_coeff[m] * dx * dy * dz;
     }
   }
 }
