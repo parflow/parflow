@@ -14,7 +14,6 @@ endif()
 
 # Remove this failing test
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  list(REMOVE_ITEM TESTS test_XPlusYPlusZ.tcl)
   list(REMOVE_ITEM TESTS llnl-perm.tcl)
 endif()
 
