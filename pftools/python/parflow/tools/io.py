@@ -18,10 +18,13 @@ pfb files:
 +-------------------------+------------------+---------------------+
 """
 
+import os
+import glob
 from functools import partial
 import itertools
 import json
 from pathlib import Path
+import shutil
 
 try:
     from numba import jit, njit
@@ -59,6 +62,7 @@ try:
 except ImportError:
     from yaml import Dumper as YAMLDumper
 
+from parflow.tools.fs import cp, rm, mkdir, exists
 
 def read_pfsb(file_path):
     """
@@ -382,6 +386,89 @@ def read_pfb_sequence(
             pfb_seq = np.concatenate(pfb_seq, axis=-1)
     return pfb_seq
 
+def undist(undis_name: str):
+    """
+    Undistribute PFB files.  PFB can ahve two formats.   The split file model
+    creates a file per rank.   The sequential model writes all data to
+    a single file and creates and index file (.dist extenstion) to aid
+    in locating offsets.
+
+    The Python interface currently can't create the split file model but
+    this should undistribute the split files, which is just a cat operation.
+
+    :param undis_name: This can be the full undis_name used, in this case all files
+    will be undistributed.   Also a specific PFB file can be specified.
+    """
+
+    
+    # first check if this is a single file if so just work on it
+    if os.path.isfile(f"{undis_name}.dist"):
+        rm(f"{undis_name}.dist")
+        return
+
+    if os.path.isfile(f"{undis_name}..00000"):
+        files=glob.glob(f"{undis_name}.\[0-9\]*").sort()
+
+        rm(f"{undis_name}")
+
+        with open(undis_name,'wb') as wfd:
+            for f in files:
+                with open(f,'rb') as fd:
+                    shutil.copyfileobj(fd, wfd)
+                    
+        for file in files:
+            rm(file)
+            
+        return
+
+    # if not a single file assume it is a undis_name and unload all
+    
+    root=f"{undis_name}.out"
+
+    filelist=[]
+
+    for postfix in [".00000", ".dist"]:
+
+        for filetype in ["density", "satur temp", "et", "obf", "mask"]:
+            files=glob.glob(f"{root}.{filetype}.?????.*{postfix}")
+            if files:
+                filelist.extend(sorted(files))
+
+        for filetype in ["satur", "phasex", "phasey", "phasez"]:
+            files=glob.glob(f"{root}.{filetype}.?.?????.*{postfix}")
+            if files:
+                filelist.extend(sorted(files))
+
+        files=glob.glob(f"{root}.concen.??.?????.*{postfix}")
+        if files:
+            filelist.extend(sorted(files))
+        files=glob.glob(f"{root}.concen.?.??.?????.*{postfix}")
+        if files:
+            filelist.extend(sorted(files))
+        
+        for filetype in ["perm_x", "perm_y", "perm_z", "porosity", "specific_storage", "press", "mask", "velx", "vely", "velz", "top_patch", "top_zindex", "alpha", "sres", "ssat", "n"]:
+            files=glob.glob(f"{root}.{filetype}.*{postfix}")
+            if files:
+                filelist.extend(sorted(files))
+
+    for i in filelist:
+        if not i.endswith(".dist"):
+            files=glob.glob(f"{Path(i).stem}.[0-9]*")
+            
+            if files:
+                files=sorted(files)
+                
+                rm(Path(i).stem)
+
+                with open(Path(i).stem,'wb') as wfd:
+                    for f in files:
+                        with open(f,'rb') as fd:
+                            shutil.copyfileobj(fd, wfd)
+
+                for file in files:
+                    rm(file)
+        else:
+            rm(i)
 
 # -----------------------------------------------------------------------------
 
