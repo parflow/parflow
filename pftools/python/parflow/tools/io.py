@@ -390,8 +390,8 @@ def read_pfb_sequence(
 
 def undist(undis_name: str):
     """
-    Undistribute PFB files.  PFB can ahve two formats.   The split file model
-    creates a file per rank.   The sequential model writes all data to
+    Undistribute PFB files.  Distributed PFB files can be in two formats.   The split file model
+    creates a file per rank; each rank file has the rank index appended to the fileneme.   The sequential model writes all data to
     a single file and creates and index file (.dist extenstion) to aid
     in locating offsets.
 
