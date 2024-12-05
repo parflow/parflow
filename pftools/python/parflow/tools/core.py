@@ -32,6 +32,7 @@ from .builders import CLMImporter
 
 from .io import undist
 
+
 def check_parflow_execution(out_file):
     """Helper function that can be used to parse ParFlow output file
 
@@ -468,7 +469,7 @@ class Run(BaseRun):
 
         file_name, run_file = self.write()
 
-        self._run_file=run_file
+        self._run_file = run_file
 
         print()
         print(f'# {"=" * 78}')
@@ -578,22 +579,21 @@ class Run(BaseRun):
             pfb_file_full_path, array, p=p, q=q, r=r, dx=dx, dy=dy, dz=dz, dist=True
         )
 
-        
     def undist(self, run_file=None, working_directory=None):
         """Undistribute a PFB file.
 
         Currently this does not support the split file PFB file format.
-        
+
         Args:
             run_file: The name of the PFIDB file.  Defaults to the last run.
             working_directory: The working directory of the ParFlow run.  Defaults to the last run.
         """
 
         if not run_file:
-            run_file=self._run_file
+            run_file = self._run_file
 
         if not working_directory:
-            working_directory=settings.WORKING_DIRECTORY
+            working_directory = settings.WORKING_DIRECTORY
 
         prev_dir = os.getcwd()
         try:
@@ -601,4 +601,3 @@ class Run(BaseRun):
             undist(os.path.basename(run_file))
         finally:
             os.chdir(prev_dir)
-        
