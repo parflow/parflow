@@ -30,6 +30,8 @@ from .database.generated import BaseRun
 from .export import CLMExporter, SubsurfacePropertiesExporter
 from .builders import CLMImporter
 
+from .io import undist
+
 
 def check_parflow_execution(out_file):
     """Helper function that can be used to parse ParFlow output file
@@ -438,7 +440,7 @@ class Run(BaseRun):
         new_run.pfset(flat_map=self.to_dict())
         return new_run
 
-    def run(self, working_directory=None, skip_validation=False):
+    def run(self, working_directory=None, skip_validation=False, undist=False):
         """Method to run simulation
 
         That method will automatically run the database write,
@@ -453,7 +455,7 @@ class Run(BaseRun):
               be used. This also affect the relative FileNames.
           skip_validation (bool): Allow user to skip validation before
               running the simulation.
-
+          undist (bool): undistribute PFB output files
         """
         # overwrite current working directory
         prev_dir = settings.WORKING_DIRECTORY
@@ -466,6 +468,8 @@ class Run(BaseRun):
         update_run_from_args(self, self._process_args_)
 
         file_name, run_file = self.write()
+
+        self._run_file = run_file
 
         print()
         print(f'# {"=" * 78}')
@@ -503,6 +507,8 @@ class Run(BaseRun):
                 os.chdir(settings.WORKING_DIRECTORY)
                 os.system(f"sh $PARFLOW_DIR/bin/run {run_file} {num_procs}")
                 success = check_parflow_execution(f"{run_file}.out.txt")
+                if undist:
+                    self.undist(run_file, working_directory=settings.WORKING_DIRECTORY)
             finally:
                 os.chdir(prev_dir)
 
@@ -572,3 +578,26 @@ class Run(BaseRun):
         write_pfb(
             pfb_file_full_path, array, p=p, q=q, r=r, dx=dx, dy=dy, dz=dz, dist=True
         )
+
+    def undist(self, run_file=None, working_directory=None):
+        """Undistribute a PFB file.
+
+        Currently this does not support the split file PFB file format.
+
+        Args:
+            run_file: The name of the PFIDB file.  Defaults to the last run.
+            working_directory: The working directory of the ParFlow run.  Defaults to the last run.
+        """
+
+        if not run_file:
+            run_file = self._run_file
+
+        if not working_directory:
+            working_directory = settings.WORKING_DIRECTORY
+
+        prev_dir = os.getcwd()
+        try:
+            os.chdir(working_directory)
+            undist(os.path.basename(run_file))
+        finally:
+            os.chdir(prev_dir)
