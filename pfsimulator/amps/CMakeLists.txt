@@ -17,7 +17,7 @@ if(${PARFLOW_HAVE_CUDA})
 endif(${PARFLOW_HAVE_CUDA})
 
 if( ${PARFLOW_HAVE_RMM} )
-  target_link_libraries(amps rmm)
+  target_link_libraries(amps rmm::rmm)
   target_include_directories(amps PUBLIC ${RMM_INCLUDE})
 endif( ${PARFLOW_HAVE_RMM} )
 
