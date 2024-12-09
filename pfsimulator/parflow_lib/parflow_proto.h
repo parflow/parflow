@@ -454,9 +454,6 @@ PFModule *NoDiagScaleNewPublicXtra(char *name);
 void NoDiagScaleFreePublicXtra(void);
 int NoDiagScaleSizeOfTempData(void);
 
-/* parflow.c */
-int main(int argc, char *argv []);
-
 /* pcg.c */
 void PCG(Vector *x, Vector *b, double tol, int zero);
 PFModule *PCGInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, Matrix *A, Matrix *C, double *temp_data);
