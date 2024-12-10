@@ -80,8 +80,14 @@ else()
   message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
 endif()
 
-# Include RapidsAI Memory Manager (RMM) for pool allocation
+# Include Umpire for pool allocation
 if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
+  if(DEFINED umpire_ROOT)
+    find_package(umpire)
+    set(PARFLOW_HAVE_UMPIRE "yes")
+    message(STATUS "ACCELERATOR: Compiling with CUDA and Umpire")
+  endif(DEFINED umpire_ROOT)
+  
   if(DEFINED RMM_ROOT)
     find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
     find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")

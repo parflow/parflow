@@ -78,6 +78,10 @@
 
 #endif // PARFLOW_HAVE_CUDA
 
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "umpire_wrapper.h"
+#endif
+
 #ifdef PARFLOW_HAVE_RMM
 #include <rmm/rmm_api.h>
 /**
@@ -138,6 +142,8 @@ static inline void *_talloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -164,6 +170,8 @@ static inline void *_ctalloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -192,6 +200,8 @@ static inline void _tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERR(rmmFree(ptr, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  umpireFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

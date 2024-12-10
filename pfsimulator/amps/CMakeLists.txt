@@ -4,6 +4,12 @@ set(COMMON_SRC_FILES amps_abort.c amps_clear.c amps_clock.c
   amps_exchange.c amps_ffopen.c amps_find_powers.c amps_fopen.c
   amps_invoice.c amps_io.c amps_newhandle.c amps_newpackage.c
   amps_sfbcast.c amps_sfclose.c amps_sfopen.c amps_wait.c signal.c amps_print.c)
+
+if (${PARFLOW_HAVE_UMPIRE})
+  list(APPEND COMMON_SRC_FILES
+    umpire_wrapper.cpp
+  )
+endif (${PARFLOW_HAVE_UMPIRE})  
 string(REGEX REPLACE "([^;]+)" "common/\\1" COMMON_SRC_FILES "${COMMON_SRC_FILES}")
 
 # Sets AMPS_SRC_FILES for AMPS transport layer being used in build
@@ -15,6 +21,10 @@ add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 if(${PARFLOW_HAVE_CUDA})
   target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 endif(${PARFLOW_HAVE_CUDA})
+
+if( ${PARFLOW_HAVE_UMPIRE} )
+  target_link_libraries(amps umpire)
+endif( ${PARFLOW_HAVE_UMPIRE} )
 
 if( ${PARFLOW_HAVE_RMM} )
   target_link_libraries(amps rmm)
