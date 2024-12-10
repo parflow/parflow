@@ -58,6 +58,9 @@
 #ifdef PARFLOW_HAVE_RMM
 #include <rmm/rmm_api.h>
 #endif
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "umpire_wrapper.h"
+#endif
 
 /*
  * Prevent inclusion of mpi C++ bindings in mpi.h includes.
@@ -1171,6 +1174,8 @@ static inline void *_amps_talloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -1197,6 +1202,8 @@ static inline void *_amps_ctalloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -1225,6 +1232,8 @@ static inline void _amps_tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmFree(ptr, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  umpireFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosUVMFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

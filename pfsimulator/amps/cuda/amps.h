@@ -1059,6 +1059,10 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line)
   }
 }
 
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "umpire_wrapper.h"
+#endif
+
 #ifdef PARFLOW_HAVE_RMM
 #include <rmm/rmm_api.h>
 /**
@@ -1172,6 +1176,8 @@ static inline void *_amps_talloc_cuda(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireAlloc(size);
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
@@ -1196,6 +1202,8 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireAlloc(size);
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
@@ -1217,6 +1225,8 @@ static inline void _amps_tfree_cuda(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmFree(ptr, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireFree(ptr);
 #else
   CUDA_ERRCHK(cudaFree(ptr));
   // CUDA_ERRCHK(cudaFreeHost(ptr));

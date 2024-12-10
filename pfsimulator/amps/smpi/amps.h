@@ -54,6 +54,9 @@
 #include <rmm/rmm_api.h>
 #endif
 #endif
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "umpire_wrapper.h"
+#endif
 
 /*
  * Prevent inclusion of mpi C++ bindings in mpi.h includes.
@@ -1127,6 +1130,8 @@ static inline void *_amps_talloc_cuda(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireAlloc(size);
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
@@ -1151,6 +1156,8 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = umpireAlloc(size);
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
@@ -1172,6 +1179,8 @@ static inline void _amps_tfree_cuda(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmFree(ptr, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  umpireFree(ptr);
 #else
   CUDA_ERRCHK(cudaFree(ptr));
   // CUDA_ERRCHK(cudaFreeHost(ptr));
