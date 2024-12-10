@@ -83,7 +83,7 @@ endif()
 # Include Umpire for pool allocation
 if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
   if(DEFINED umpire_ROOT)
-    find_package(umpire)
+    find_package(umpire REQUIRED)
     set(PARFLOW_HAVE_UMPIRE "yes")
     message(STATUS "ACCELERATOR: Compiling with CUDA and Umpire")
   endif(DEFINED umpire_ROOT)

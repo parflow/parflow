@@ -9,7 +9,7 @@
 extern "C" {
   void umpireInit() {
     // Create a pool allocator
-    // Initial size (default: 512MB) and pool increase size (1MB) can be tuned in the constructor. 
+    // Initial size (default: 512MB) and pool increase size (1MB) can be tuned in the constructor.
     auto& rm = umpire::ResourceManager::getInstance();
     auto allocator = rm.getAllocator("UM");
     auto pooled_allocator = rm.makeAllocator<umpire::strategy::DynamicPoolList>("UM_pool", allocator);    
