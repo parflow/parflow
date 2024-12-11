@@ -339,11 +339,11 @@ jobs:
           cd Umpire
           mkdir build
           cd build
-          cmake ../ -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DENABLE_CUDA=On
+          cmake ../ -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/Umpire -DENABLE_CUDA=On
           make
           make install
         fi
-        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
+        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
 
     - name: Kokkos Install
       env:
