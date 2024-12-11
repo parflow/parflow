@@ -108,7 +108,8 @@ jobs:
             python: "false",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "true"
+            netcdf: "true",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 24.04 LLVM",
@@ -118,7 +119,8 @@ jobs:
             python: "false",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "true"
+            netcdf: "true",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 22.04 GCC Python",
@@ -128,7 +130,8 @@ jobs:
             python: "true",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "true"
+            netcdf: "true",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 20.04 GCC Python",
@@ -138,7 +141,8 @@ jobs:
             python: "true",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "false"
+            netcdf: "false",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 22.04 GCC OMP",
@@ -148,7 +152,8 @@ jobs:
             python: "false",
             backend: "omp",
             amps_layer: mpi1,
-            netcdf: "false"
+            netcdf: "false",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
@@ -158,27 +163,52 @@ jobs:
             python: "false",
             backend: "omp",
             amps_layer: oas3,
-            netcdf: "true"
+            netcdf: "true",
+            memory_manager: "none"
           }
         - {
-            name: "Ubuntu 22.04 GCC CUDA Build",
+            name: "Ubuntu 22.04 GCC CUDA/RMM Build",
             os: ubuntu-22.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "cuda",
             cudaos: 'ubuntu2204',
             amps_layer: mpi1,
-            netcdf: "false"
+            netcdf: "false",
+            memory_manager: "rmm"
           }
         - {
-            name: "Ubuntu 22.04 GCC Kokkos Build",
+            name: "Ubuntu 22.04 GCC CUDA/Umpire Build",
+            os: ubuntu-22.04,
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "cuda",
+            cudaos: 'ubuntu2204',
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "umpire"
+          }
+        - {
+            name: "Ubuntu 22.04 GCC Kokkos/RMM Build",
             os: ubuntu-22.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "kokkos",
             cudaos: 'ubuntu2204',
             amps_layer: mpi1,
-            netcdf: "false"
+            netcdf: "false",
+            memory_manager: "rmm"
+          }
+        - {
+            name: "Ubuntu 22.04 GCC Kokkos/Umpire Build",
+            os: ubuntu-22.04,
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "kokkos",
+            cudaos: 'ubuntu2204',
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "umpire"
           }
 
     steps:
@@ -227,7 +257,7 @@ jobs:
         cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       with:
         path: "~/depend"
-        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ secrets.CACHE_VERSION }}
 
     - name: Directory Setup
       run: |
@@ -319,7 +349,7 @@ jobs:
     - name: RMM Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
+      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'rmm'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone -b branch-0.10  --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
@@ -332,7 +362,7 @@ jobs:
     - name: Umpire Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
+      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'umpire'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone --recursive https://github.com/LLNL/Umpire.git
