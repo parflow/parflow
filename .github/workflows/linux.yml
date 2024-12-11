@@ -335,7 +335,7 @@ jobs:
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-	  git clone --recursive https://github.com/LLNL/Umpire.git
+          git clone --recursive https://github.com/LLNL/Umpire.git
 	  cd Umpire
 	  mkdir build
 	  cd build
