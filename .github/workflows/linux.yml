@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   style-check:
-     runs-on: ubuntu-24.04
+     runs-on: ubuntu-22.04
      name: Check Style
      steps:
        - name: Checkout commit
@@ -222,7 +222,7 @@ jobs:
         execute_install_scripts: true
 
     - name: HDF5 and OpenMPI Install on Ubuntu 22.04
-      if: matrix.config.os == 'ubuntu-20.04' || matrix.config.os == 'ubuntu-24.04'
+      if: matrix.config.os == 'ubuntu-20.04' || matrix.config.os == 'ubuntu-22.04'
       run: |
         sudo apt-get -qq update
         sudo apt -qq install libhdf5-openmpi-103 libhdf5-openmpi-dev
