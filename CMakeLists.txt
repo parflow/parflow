@@ -186,6 +186,10 @@ else ()
   set(AMPS_SPLIT_FILE "yes")
 endif ()
 
+if (NOT(PARFLOW_AMPS_SEQUENTIAL_IO) AND PARFLOW_ENABLE_PYTHON)
+  message(FATAL_ERROR "ERROR: Python does not support the multiple file AMPS I/O model for PFB output")
+endif ()
+
 # OAS3
 if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
   find_package(OASIS)
