@@ -187,7 +187,7 @@ int main(int argc, char *argv [])
 
 #ifdef PARFLOW_HAVE_UMPIRE
     umpireInit();
-#endif PARFLOW_HAVE_UMPIRE
+#endif
 
     wall_clock_time = amps_Clock();
 
