@@ -329,6 +329,22 @@ jobs:
         fi
         echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
 
+    - name: Umpire Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+	  git clone --recursive https://github.com/LLNL/Umpire.git
+	  cd Umpire
+	  mkdir build
+	  cd build
+	  cmake ../ -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DENABLE_CUDA=On
+	  make
+	  make install
+        fi
+        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
+
     - name: Kokkos Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
@@ -458,7 +474,7 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
-           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS
+           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)
