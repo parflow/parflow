@@ -336,12 +336,12 @@ jobs:
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone --recursive https://github.com/LLNL/Umpire.git
-	  cd Umpire
-	  mkdir build
-	  cd build
-	  cmake ../ -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DENABLE_CUDA=On
-	  make
-	  make install
+          cd Umpire
+          mkdir build
+          cd build
+          cmake ../ -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR -DENABLE_CUDA=On
+          make
+          make install
         fi
         echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
 
