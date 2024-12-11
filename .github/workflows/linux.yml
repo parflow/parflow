@@ -319,8 +319,8 @@ jobs:
     - name: CUDA Install
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
-        export CUDA_VERSION_MAJOR_MINOR=11.8.0
-        export CUDA_SHORT=11.8
+        export CUDA_VERSION_MAJOR_MINOR=12.4.0
+        export CUDA_SHORT=12.4
         export CUDA_OS=${{ matrix.config.cudaos }}
         ./bin/install-cuda.sh
         export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
