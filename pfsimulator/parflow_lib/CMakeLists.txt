@@ -213,8 +213,8 @@ endif(${PARFLOW_HAVE_KOKKOS})
 
   if( ${PARFLOW_HAVE_RMM} )
     target_link_libraries(pfsimulator rmm::rmm)
-    target_include_directories(pfsimulator PRIVATE ${RMM_INCLUDE})
-    target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
+#    target_include_directories(pfsimulator PRIVATE ${RMM_INCLUDE})
+#    target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
   endif( ${PARFLOW_HAVE_RMM} )
 
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
