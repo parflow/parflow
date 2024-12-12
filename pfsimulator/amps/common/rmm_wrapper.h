@@ -10,7 +10,7 @@ extern "C" {
 
 void rmmInit();
 void* rmmAlloc(size_t bytes);
-void rmmFree(void *p, size_t bytes);
+void rmmFree(void *p);
   
 #ifdef __cplusplus
 }

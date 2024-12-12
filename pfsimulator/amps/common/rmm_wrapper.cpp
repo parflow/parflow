@@ -15,12 +15,12 @@ extern "C" {
 
   void* rmmAlloc(size_t bytes) {
     rmm::mr::device_memory_resource* mr = rmm::mr::get_current_device_resource(); // Points to `pool_mr`
-    return mr.allocate(bytes, cuda_stream_view(0));
+    return mr.allocate(bytes);
   }
 
-  void rmmFree(void *p, size_t bytes) {
+  void rmmFree(void *p) {
     rmm::mr::device_memory_resource* mr = rmm::mr::get_current_device_resource(); // Points to `pool_mr`
-    mr.deallocate(p, bytes, cuda_stream_view(0));
+    mr.deallocate(p);
   }
 }
 
