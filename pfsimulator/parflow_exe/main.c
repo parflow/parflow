@@ -176,14 +176,15 @@ int main(int argc, char *argv [])
     /*-----------------------------------------------------------------------
      * Initialize RMM pool allocator
      *-----------------------------------------------------------------------*/
-#ifdef PARFLOW_HAVE_RMM
+    //#ifdef PARFLOW_HAVE_RMM
     // RMM
-    rmmOptions_t rmmOptions;
-    rmmOptions.allocation_mode = (rmmAllocationMode_t)(PoolAllocation | CudaManagedMemory);
-    rmmOptions.initial_pool_size = 1;   // size = 0 initializes half the device memory
-    rmmOptions.enable_logging = false;
-    RMM_ERR(rmmInitialize(&rmmOptions));
-#endif // PARFLOW_HAVE_RMM
+    //    rmmOptions_t rmmOptions;
+    //    rmmOptions.allocation_mode = (rmmAllocationMode_t)(PoolAllocation | CudaManagedMemory);
+    //    rmmOptions.initial_pool_size = 1;   // size = 0 initializes half the device memory
+    //    rmmOptions.enable_logging = false;
+    //    RMM_ERR(rmmInitialize(&rmmOptions));
+    rmmInit();
+    //#endif // PARFLOW_HAVE_RMM
 
     wall_clock_time = amps_Clock();
 
