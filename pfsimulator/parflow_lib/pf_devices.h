@@ -31,6 +31,10 @@
 #include <cuda_runtime.h>
 #include <stdbool.h>
 
+#ifdef PARFLOW_HAVE_RMM
+#include "rmm_wrapper.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * CUDA error handling macros
  *--------------------------------------------------------------------------*/
@@ -56,7 +60,7 @@
  *--------------------------------------------------------------------------*/
 
 /** Record an NVTX range for NSYS if accelerator present. */
-#include "nvToolsExt.h"
+#include "nvtx3/nvToolsExt.h"
 #define PUSH_NVTX_cuda(name, cid)                                                                   \
         {                                                                                           \
           const uint32_t colors_nvtx[] =                                                            \
@@ -78,9 +82,6 @@
 
 #endif // PARFLOW_HAVE_CUDA
 
-#ifdef PARFLOW_HAVE_RMM
-#include rmm_wrapper.h
-#endif
 
 /*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for device
