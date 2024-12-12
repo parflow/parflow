@@ -1,7 +1,7 @@
 #include "rmm_wrapper.h"
 #ifdef PARFLOW_HAVE_RMM
 
-#include <pool_memory_resource.hpp>
+#include <rmm/mr/device/pool_memory_resource.hpp>
 
 extern "C" {
   void rmmInit() {
@@ -15,12 +15,12 @@ extern "C" {
 
   void* rmmAlloc(size_t bytes) {
     rmm::mr::device_memory_resource* mr = rmm::mr::get_current_device_resource(); // Points to `pool_mr`
-    return mr.allocate(bytes);
+    return mr->allocate(bytes);
   }
 
   void rmmFree(void *p) {
     rmm::mr::device_memory_resource* mr = rmm::mr::get_current_device_resource(); // Points to `pool_mr`
-    mr.deallocate(p);
+    mr->deallocate(p, 0);
   }
 }
 
