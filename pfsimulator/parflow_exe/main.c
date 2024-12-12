@@ -502,7 +502,7 @@ int main(int argc, char *argv [])
    * Shutdown RMM pool allocator
    *-----------------------------------------------------------------------*/
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERR(rmmFinalize());
+  //  RMM_ERR(rmmFinalize());
 #endif
 
   return 0;
