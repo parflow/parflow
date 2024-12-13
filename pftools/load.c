@@ -49,7 +49,10 @@ void           LoadParflowB(
 {
   char output_name[MAXPATHLEN];
   FILE     *file;
+
+#ifndef AMPS_SPLIT_FILE
   FILE     *dist_file;
+#endif
 
   Subgrid  *subgrid;
 
