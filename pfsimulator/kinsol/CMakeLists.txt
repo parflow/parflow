@@ -1,4 +1,3 @@
-
 set (SRC_FILES iterativ.c kinsol.c kinspgmr.c llnlmath.c spgmr.c)
 
 add_library(pfkinsol ${SRC_FILES})
@@ -9,8 +8,6 @@ endif(${PARFLOW_HAVE_CUDA})
 
 if( ${PARFLOW_HAVE_RMM} )
   target_link_libraries(pfkinsol rmm::rmm)
-#  target_include_directories(pfkinsol PRIVATE ${RMM_INCLUDE})
-#  target_compile_definitions(pfkinsol PRIVATE PARFLOW_HAVE_RMM)
 endif( ${PARFLOW_HAVE_RMM} )
 
 if (${PARFLOW_HAVE_MPI})
