@@ -166,7 +166,7 @@ jobs:
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "cuda",
-            cudaos: 'ubuntu2404',
+            cudaos: 'ubuntu2204',
             amps_layer: mpi1,
             netcdf: "false"
           }
@@ -176,7 +176,7 @@ jobs:
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "kokkos",
-            cudaos: 'ubuntu2404',
+            cudaos: 'ubuntu2204',
             amps_layer: mpi1,
             netcdf: "false"
           }
