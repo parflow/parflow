@@ -322,7 +322,7 @@ jobs:
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone --recurse-submodules --branch main --single-branch https://github.com/rapidsai/rmm.git
+          git clone --recurse-submodules --branch main https://github.com/rapidsai/rmm.git
           cd rmm
           mkdir build
           cd build
