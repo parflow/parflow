@@ -322,12 +322,16 @@ jobs:
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
-          git clone -b branch-0.10  --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
+          git clone --recurse-submodules --branch main --single-branch https://github.com/rapidsai/rmm.git
           cd rmm
-          cmake . -DCMAKE_CXX_FLAGS="-DTHRUST_IGNORE_DEPRECATED_CPP_DIALECT" -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/rmm
+          make -j
+          make install
           make -j 2 install
         fi
-        echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
+        echo "RMM_FLAGS=-Drmm_ROOT=$PARFLOW_DEP_DIR/rmm" >> $GITHUB_ENV
 
     - name: Kokkos Install
       env:
