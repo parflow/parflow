@@ -161,22 +161,22 @@ jobs:
             netcdf: "true"
           }
         - {
-            name: "Ubuntu 22.04 GCC CUDA Build",
-            os: ubuntu-22.04,
+            name: "Ubuntu 24.04 GCC CUDA Build",
+            os: ubuntu-24.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "cuda",
-            cudaos: 'ubuntu2204',
+            cudaos: 'ubuntu2404',
             amps_layer: mpi1,
             netcdf: "false"
           }
         - {
-            name: "Ubuntu 22.04 GCC Kokkos Build",
-            os: ubuntu-22.04,
+            name: "Ubuntu 24.04 GCC Kokkos Build",
+            os: ubuntu-24.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "kokkos",
-            cudaos: 'ubuntu2204',
+            cudaos: 'ubuntu2404',
             amps_layer: mpi1,
             netcdf: "false"
           }
