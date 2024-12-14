@@ -329,7 +329,6 @@ jobs:
           cmake .. -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/rmm
           make -j
           make install
-          make -j 2 install
         fi
         echo "RMM_FLAGS=-Drmm_ROOT=$PARFLOW_DEP_DIR/rmm" >> $GITHUB_ENV
 
