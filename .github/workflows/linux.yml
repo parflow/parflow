@@ -326,7 +326,7 @@ jobs:
           cd rmm
           mkdir build
           cd build
-          cmake .. -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/rmm
+          cmake .. -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/rmm -DBUILD_TESTS=OFF
           make -j
           make install
         fi
