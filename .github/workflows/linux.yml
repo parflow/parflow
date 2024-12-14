@@ -490,6 +490,9 @@ jobs:
         CFLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function -Wno-stringop-overread"
         if [[ "${{ matrix.config.cc }}" == "gcc" ]]; then CFLAGS="${CFLAGS} -Wno-stringop-overread"; fi
         export CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90
+        export NVCC_PREPEND_FLAGS="-ccbin=$(which mpicc)"
+        echo ">>>>>>>>>>>>>>>>>>>>"
+        echo $NVCC_PREPEND_FLAGS
         cmake -Bbuild                                                   \
            -DCMAKE_BUILD_TYPE=Release                                   \
            -DCMAKE_C_FLAGS=$CFLAGS                                      \
