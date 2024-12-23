@@ -1,6 +1,6 @@
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -289,8 +289,6 @@ proc Parflow::pfrun { runname args } {
 #
 proc Parflow::pfundist { runname } {
 
-    global PARFLOW_DIR
-
     # first check if this is a single file if so just work on it
     if [file exists $runname.dist] {
 	file delete $runname.dist
@@ -315,30 +313,21 @@ proc Parflow::pfundist { runname } {
     set filelist ""
 
     foreach  postfix ".00000 .dist" {
-	append filelist [glob -nocomplain $root.perm_x.*$postfix] " "
-	append filelist [glob -nocomplain $root.perm_y.*$postfix] " "
-	append filelist [glob -nocomplain $root.perm_z.*$postfix] " "
-	append filelist [glob -nocomplain $root.porosity.*$postfix] " "
-        append filelist [glob -nocomplain $root.specific_storage.*$postfix] " "
 
-	append filelist [glob -nocomplain $root.press.*$postfix] " "
-	append filelist [glob -nocomplain $root.density.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.satur.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.satur.?.?????.*$postfix] " "
+	foreach filetype "density satur temp et obf mask" {
+	    append filelist [glob -nocomplain $root.$filetype.?????.*$postfix] " "
+	}
+
+	foreach filetype "satur phasex phasey phasez" {
+	    append filelist [glob -nocomplain $root.$filetype.?.?????.*$postfix] " "
+	}
+
 	append filelist [glob -nocomplain $root.concen.??.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.concen.?.??.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.phasex.?.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.phasey.?.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.phasez.?.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.temp.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.et.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.obf.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.mask.?????.*$postfix] " "
-	append filelist [glob -nocomplain $root.mask.*$postfix] " "
-
-	append filelist [glob -nocomplain $root.velx.*$postfix] " "
-	append filelist [glob -nocomplain $root.vely.*$postfix] " "
-	append filelist [glob -nocomplain $root.velz.*$postfix] " "
+	
+	foreach filetype "perm_x perm_y perm_z porosity specific_storage press mask velx vely velz top_patch top_zindex alpha sres ssat n" {
+	    append filelist [glob -nocomplain $root.$filetype.*$postfix] " "
+	}
     }
 
     foreach i $filelist {

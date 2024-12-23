@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -399,6 +399,114 @@ void  WRFSelectTimeStepFreePublicXtra()
  *--------------------------------------------------------------------------*/
 
 int  WRFSelectTimeStepSizeOfTempData()
+{
+  return 0;
+}
+
+/*--------------------------------------------------------------------------
+ * CPLSelectTimeStepInitInstanceXtra
+ *--------------------------------------------------------------------------*/
+
+PFModule  *CPLSelectTimeStepInitInstanceXtra()
+{
+  PFModule      *this_module = ThisPFModule;
+  InstanceXtra  *instance_xtra;
+
+  instance_xtra = NULL;
+
+  PFModuleInstanceXtra(this_module) = instance_xtra;
+  return this_module;
+}
+
+
+/*--------------------------------------------------------------------------
+ * CPLSelectTimeStepFreeInstanceXtra
+ *--------------------------------------------------------------------------*/
+
+void  CPLSelectTimeStepFreeInstanceXtra()
+{
+  PFModule      *this_module = ThisPFModule;
+  InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
+
+  if (instance_xtra)
+  {
+    tfree(instance_xtra);
+  }
+}
+
+
+/*--------------------------------------------------------------------------
+ * CPLSelectTimeStepNewPublicXtra
+ *--------------------------------------------------------------------------*/
+
+PFModule  *CPLSelectTimeStepNewPublicXtra(
+                                          double initial_step,
+                                          double growth_factor,
+                                          double max_step,
+                                          double min_step)
+{
+  PFModule      *this_module = ThisPFModule;
+  PublicXtra    *public_xtra;
+
+  Type1            *dummy1;
+
+  public_xtra = ctalloc(PublicXtra, 1);
+
+  public_xtra->type = 1;
+
+  dummy1 = ctalloc(Type1, 1);
+
+  dummy1->initial_step = initial_step;
+  dummy1->factor = growth_factor;
+  dummy1->max_step = max_step;
+  dummy1->min_step = min_step;
+
+  (public_xtra->data) = (void*)dummy1;
+
+  PFModulePublicXtra(this_module) = public_xtra;
+  return this_module;
+}
+
+/*-------------------------------------------------------------------------
+ * CPLSelectTimeStepFreePublicXtra
+ *-------------------------------------------------------------------------*/
+
+void  CPLSelectTimeStepFreePublicXtra()
+{
+  PFModule    *this_module = ThisPFModule;
+  PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+
+  Type0        *dummy0;
+  Type1        *dummy1;
+
+  if (public_xtra)
+  {
+    switch ((public_xtra->type))
+    {
+      case 0:
+      {
+        dummy0 = (Type0*)(public_xtra->data);
+        tfree(dummy0);
+        break;
+      }
+
+      case 1:
+      {
+        dummy1 = (Type1*)(public_xtra->data);
+        tfree(dummy1);
+        break;
+      }
+    }
+
+    tfree(public_xtra);
+  }
+}
+
+/*--------------------------------------------------------------------------
+ * CPLSelectTimeStepSizeOfTempData
+ *--------------------------------------------------------------------------*/
+
+int  CPLSelectTimeStepSizeOfTempData()
 {
   return 0;
 }

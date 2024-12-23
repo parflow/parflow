@@ -15,7 +15,7 @@
 
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
-UNCRUSTIFY_VERSION='0.67'
+UNCRUSTIFY_VERSION='0.79.0'
 
 # Exit script
 # $1 (required): Message to print on exit
@@ -64,6 +64,9 @@ function parse_params() {
             -v|--verbose)
                 verbose=true
                 ;;
+            -c|--check)
+                check=true
+                ;;
             *)
                 script_exit "Invalid parameter was provided: $param" 2
                 ;;
@@ -82,19 +85,63 @@ function check_version() {
    esac
 }
 
+function log () {
+    if $verbose ; then
+        printf "$@"
+    fi
+}
+
 function main() {
 
-   parse_params "$@"
+   verbose=false
+   check=false
 
+   parse_params "$@"
+   
    check_version
 
-   files=$(find . -name \*.[ch] | grep -v './build\|third-party')
-   for i in $files
+   failed=false
+
+   for i in $(find . -name \*.[ch] | grep -v './build\|third_party\|./py-env')
    do
-      uncrustify -l C --replace --no-backup -c bin/parflow.cfg $i 
+      if $check
+      then
+	 if output=$(uncrustify --check -c bin/parflow.cfg $i)
+	 then
+	    log 'pfformat PASSED %s\n' $i
+	 else
+	    printf 'pfFormat FAILED\nUncrustify output was «%s»\n' "$output\n"
+	    failed=true
+	 fi
+      else
+	 uncrustify --if-changed --replace --no-backup -c bin/parflow.cfg $i
+      fi
    done
+
+   # Disable this for now while Python is being refactored.
+   if $check
+   then
+      if output=$($PARFLOW_DIR/bin/pfpython -m black . --check)
+      then
+	 log 'pfformat PASSED %s\n' $i
+      else
+	 printf 'pfFormat FAILED\nPython black output was «%s»\n' "$output\n"
+	 failed=true
+      fi
+   else
+      $PARFLOW_DIR/bin/pfpython -m black .
+   fi
+
+   if $check
+   then
+      if $failed ;
+      then
+	 printf 'pfFormat style check : FAILED\n'
+	 exit -1
+      else
+	 printf 'pfFormat style check : PASSED\n'
+      fi
+   fi
 }
 
 main "$@"
-
-

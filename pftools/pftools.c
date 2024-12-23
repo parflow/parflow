@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /****************************************************************************
  * Program to interactively read, print, etc. different file formats.
  *
@@ -1459,7 +1459,7 @@ int SavePFVTKCommand(
   int i, j, k;
   int flt = 0;
   char          *dzlist_in;
-  char*         Endp1=0;
+  char*         Endp1 = 0;
   int dz_els;
 
   FILE          *fp = NULL;
@@ -1891,15 +1891,15 @@ int SavePFVTKCommand(
  *-----------------------------------------------------------------------*/
 
 int MakePatchySolidCommand(
-                     ClientData  clientData,
-                     Tcl_Interp *interp,
-                     int         argc,
-                     char *      argv[])
+                           ClientData  clientData,
+                           Tcl_Interp *interp,
+                           int         argc,
+                           char *      argv[])
 {
   Data          *data = (Data*)clientData;
 
   char          *filename, *vtk_filename;
-  int           i;
+  int i;
 
   FILE          *fp = NULL;
   FILE          *fp_vtk = NULL;
@@ -1921,7 +1921,7 @@ int MakePatchySolidCommand(
   tophash = NULL;
   bothash = NULL;
 
-  int msk=0, top=0, bot=0, vtk=0, sub_patch=0, bin_out=0;  //Initalize flags for the options
+  int msk = 0, top = 0, bot = 0, vtk = 0, sub_patch = 0, bin_out = 0;  //Initalize flags for the options
   // Note: bin_out is a place holder for a yet to be added BINARY solid file...
   //       vtk is a flag for writing a BINARY VTK of the solid file too
 
@@ -1955,9 +1955,10 @@ int MakePatchySolidCommand(
       vtk = 1;
       vtk_filename = argv[i + 1];
       file1_ext = strrchr(vtk_filename, '.');
-      if (strcmp(file1_ext+1,"vtk")!=0) {
+      if (strcmp(file1_ext + 1, "vtk") != 0)
+      {
         printf("ERROR (pfpatchysolid): vtk file extension must be .vtk\n");
-        printf("                       detected %s\n",file1_ext+1);
+        printf("                       detected %s\n", file1_ext + 1);
         return TCL_ERROR;
       }
     }
@@ -1966,44 +1967,46 @@ int MakePatchySolidCommand(
     {
       filename = argv[i + 1];
       file1_ext = strrchr(filename, '.');
-      if (strcmp(file1_ext+1,"pfsol")!=0) {
+      if (strcmp(file1_ext + 1, "pfsol") != 0)
+      {
         printf("ERROR (pfpatchysolid): ASCII file extension must be .pfsol\n");
-        printf("                       detected %s\n",file1_ext+1);
+        printf("                       detected %s\n", file1_ext + 1);
         return TCL_ERROR;
       }
     }
     else if ((strcmp(argv[i], "-pfsolb") == 0) || (strcmp(argv[i], "–pfsolb") == 0))
     {
-      bin_out=1;
+      bin_out = 1;
       filename = argv[i + 1];
       file1_ext = strrchr(filename, '.');
-      if (strcmp(file1_ext+1,"pfsolb")!=0) {
+      if (strcmp(file1_ext + 1, "pfsolb") != 0)
+      {
         printf("ERROR (pfpatchysolid): Binary file extension must be .pfsolb\n");
-        printf("                       detected %s\n",file1_ext+1);
+        printf("                       detected %s\n", file1_ext + 1);
         return TCL_ERROR;
       }
     }
   }
 
-  if ( (top==0) || (bot==0)) // (msk==0) ||
+  if ((top == 0) || (bot == 0)) // (msk==0) ||
   {
     printf("\n ERROR (pfpatchysolid): Missing required arguments. Please add:\n");
     // if (msk==0)
     // {
     //   printf("      -msk <Mask_dataset_ID>\n");
     // }
-    if (top==0)
+    if (top == 0)
     {
       printf("      -top <Top_surface_dataset_ID>\n");
     }
-    if (top==0)
+    if (top == 0)
     {
       printf("      -bot <Bottom_surface_dataset_ID>\n");
     }
     return TCL_ERROR;
   }
 
-  if (strcmp(filename,"SolidFile.pfsol")==0)
+  if (strcmp(filename, "SolidFile.pfsol") == 0)
   {
     printf("WARNING (pfpatchysolid): No solid file name specified, default is: SolidFile.pfsol\n");
   }
@@ -2020,13 +2023,16 @@ int MakePatchySolidCommand(
     return TCL_ERROR;
   }
 
-  if (msk==1) {
+  if (msk == 1)
+  {
     if ((databox = DataMember(data, maskkey, entryPtr)) == NULL)
     {
       SetNonExistantError(interp, maskkey);
       return TCL_ERROR;
     }
-  } else {
+  }
+  else
+  {
     // No mask provided so make one of all ones matching the size of top
     int NX = DataboxNx(top_databox);
     int NY = DataboxNy(top_databox);
@@ -2038,7 +2044,7 @@ int MakePatchySolidCommand(
     double DY = DataboxDy(top_databox);
     double DZ = DataboxDz(top_databox);
 
-    databox=NewDataboxDefault(NX,NY,NZ,X,Y,Z,DX,DY,DZ,1.0);
+    databox = NewDataboxDefault(NX, NY, NZ, X, Y, Z, DX, DY, DZ, 1.0);
   }
 
   if ((fp = fopen(filename, "wb")) == NULL)
@@ -2047,7 +2053,7 @@ int MakePatchySolidCommand(
     ReadWriteError(interp);
     return TCL_ERROR;
   }
-  if (vtk==1)
+  if (vtk == 1)
   {
     if ((fp_vtk = fopen(vtk_filename, "wb")) == NULL)
     {
@@ -2062,21 +2068,21 @@ int MakePatchySolidCommand(
   // start_time=clock();
   // double run_time;
 
-  i=MakePatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, sub_patch, bin_out);
+  i = MakePatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, sub_patch, bin_out);
 
   // end_time=clock();
   // run_time=(double)(end_time-start_time) / CLOCKS_PER_SEC;
   // printf("Elapsed time: %f\n", run_time);
 
-  if (i!=0)
+  if (i != 0)
   {
-    if (i==-2) // Flag for errors deriving from input issues
+    if (i == -2) // Flag for errors deriving from input issues
     {
       printf("\n ERROR (pfpatchysolid): Error with inputs\n");
     }
     else  // Everything else...
     {
-    printf("\n ERROR (pfpatchysolid): Other internal error\n");
+      printf("\n ERROR (pfpatchysolid): Other internal error\n");
     }
   }
 
@@ -2100,60 +2106,65 @@ int MakePatchySolidCommand(
 //   from first filename format to the second filename format
 // ----------------------------------------------------------------------------
 int pfsolFmtConvert(
-                     ClientData  clientData,
-                     Tcl_Interp *interp,
-                     int         argc,
-                     char *      argv[])
+                    ClientData  clientData,
+                    Tcl_Interp *interp,
+                    int         argc,
+                    char *      argv[])
 {
   char          *bin_filename, *ascii_filename;
-  char          *file1_name, *file2_name,*file1_ext, *file2_ext;
-  int           bin2asc;
+  char          *file1_name, *file2_name, *file1_ext, *file2_ext;
+  int bin2asc;
 
   FILE          *fp_bin = NULL;
   FILE          *fp_ascii = NULL;
 
   // Perform some checks before calling the appropriate routine in solidtools.c
 
-  if (argc!=3)
+  if (argc != 3)
   {
     printf("ERROR (pfsolidfmtconvert): Two input file names are required\n");
     return TCL_ERROR;
   }
 
-  file1_name=argv[1];
-  file2_name=argv[2];
+  file1_name = argv[1];
+  file2_name = argv[2];
 
   file1_ext = strrchr(file1_name, '.');
   file2_ext = strrchr(file2_name, '.');
 
-  if (!file1_ext) {
+  if (!file1_ext)
+  {
     printf("ERROR (pfsolidfmtconvert): Missing extension on file 1, must be .pfsol or .pfsolb\n");
     return TCL_ERROR;
   }
-  if (!file2_ext) {
+  if (!file2_ext)
+  {
     printf("ERROR (pfsolidfmtconvert): Missing extension on file 2, must be .pfsol or .pfsolb\n");
     return TCL_ERROR;
   }
-  if ((strcmp(file1_ext+1,"pfsol")!=0)&(strcmp(file1_ext+1,"pfsolb")!=0)) {
+  if ((strcmp(file1_ext + 1, "pfsol") != 0) && (strcmp(file1_ext + 1, "pfsolb") != 0))
+  {
     printf("ERROR (pfsolidfmtconvert): File extension on file 1 must be .pfsol or .pfsolb\n");
-    printf("                           detected .%s\n",file1_ext+1);
+    printf("                           detected .%s\n", file1_ext + 1);
     return TCL_ERROR;
   }
-  if ((strcmp(file2_ext+1,"pfsol")!=0)&(strcmp(file2_ext+1,"pfsolb")!=0)) {
+  if ((strcmp(file2_ext + 1, "pfsol") != 0) && (strcmp(file2_ext + 1, "pfsolb") != 0))
+  {
     printf("ERROR (pfsolidfmtconvert): File extension on file 2 must be .pfsol or .pfsolb\n");
-    printf("                           detected .%s\n",file2_ext+1);
+    printf("                           detected .%s\n", file2_ext + 1);
     return TCL_ERROR;
   }
-  if (strcmp(file2_ext+1,file1_ext+1)==0) {
+  if (strcmp(file2_ext + 1, file1_ext + 1) == 0)
+  {
     printf("ERROR (pfsolidfmtconvert): File extensions must be different\n");
     return TCL_ERROR;
   }
 
-  if (strcmp(file1_ext+1,"pfsol")==0)
+  if (strcmp(file1_ext + 1, "pfsol") == 0)
   {
-    ascii_filename=file1_name;
-    bin_filename=file2_name;
-    bin2asc=0;
+    ascii_filename = file1_name;
+    bin_filename = file2_name;
+    bin2asc = 0;
 
     if ((fp_ascii = fopen(ascii_filename, "r")) == NULL)
     {
@@ -2167,10 +2178,12 @@ int pfsolFmtConvert(
       ReadWriteError(interp);
       return TCL_ERROR;
     }
-  } else {
-    ascii_filename=file2_name;
-    bin_filename=file1_name;
-    bin2asc=1;
+  }
+  else
+  {
+    ascii_filename = file2_name;
+    bin_filename = file1_name;
+    bin2asc = 1;
 
     if ((fp_ascii = fopen(ascii_filename, "w")) == NULL)
     {
@@ -2186,11 +2199,14 @@ int pfsolFmtConvert(
     }
   }
 
-  int out_status=0;
-  if (bin2asc==0){
-    out_status=ConvertPfsolAscii2Bin(fp_ascii,fp_bin);
-  } else {
-    out_status=ConvertPfsolBin2Ascii(fp_bin,fp_ascii);
+  int out_status = 0;
+  if (bin2asc == 0)
+  {
+    out_status = ConvertPfsolAscii2Bin(fp_ascii, fp_bin);
+  }
+  else
+  {
+    out_status = ConvertPfsolBin2Ascii(fp_bin, fp_ascii);
   }
 
   if (fp_ascii)
@@ -2202,7 +2218,7 @@ int pfsolFmtConvert(
     fclose(fp_bin);
   }
 
-  if (out_status!=0)
+  if (out_status != 0)
   {
     printf("\n ERROR (pfsolidfmtconvert): Problem during file conversion\n");
     return TCL_ERROR;

@@ -1,11 +1,30 @@
-/*BHEADER*********************************************************************
-* (c) 1995   The Regents of the University of California
+/*BHEADER**********************************************************************
 *
-* See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
-* notice, contact person, and disclaimer.
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
 *
-* $Revision: 1.1.1.1 $
-*********************************************************************EHEADER*/
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #ifndef _BC_PRESSURE_HEADER
 #define _BC_PRESSURE_HEADER
@@ -75,52 +94,52 @@
  * These contain information for all interval steps to be read later
  * These structs will be local to the BCPressurePackage source file only
  *----------------------------------------------------------------*/
-#define BC_TYPE_TABLE            \
-  BC_TYPE(DirEquilRefPatch, {    \
-    int reference_solid;         \
-    int reference_patch;         \
-    double *values;              \
-    double **value_at_interface; \
-  })                             \
-  BC_TYPE(DirEquilPLinear, {     \
-    double *xlower;              \
-    double *ylower;              \
-    double *xupper;              \
-    double *yupper;              \
-    int    *num_points;          \
-    double **points;             \
-    double **values;             \
-    double **value_at_interface; \
-  })                             \
-  BC_TYPE(FluxConst, {           \
-    double *values;              \
-  })                             \
-  BC_TYPE(FluxVolumetric, {      \
-    double *values;              \
-  })                             \
-  BC_TYPE(PressureFile, {        \
-    char **filenames;            \
-  })                             \
-  BC_TYPE(FluxFile, {            \
-    char **filenames;            \
-  })                             \
-  BC_TYPE(ExactSolution, {       \
-    int function_type;           \
-  })                             \
-  BC_TYPE(OverlandFlow, {        \
-    double *values;              \
-  })                             \
-  BC_TYPE(OverlandFlowPFB, {     \
-    char **filenames;            \
-  })                             \
-  BC_TYPE(SeepageFace, {         \
-    double *values;              \
-  })                             \
-  BC_TYPE(OverlandKinematic, {   \
-    double *values;              \
-  })                             \
-  BC_TYPE(OverlandDiffusive, {   \
-    double *values;              \
+#define BC_TYPE_TABLE                  \
+        BC_TYPE(DirEquilRefPatch, {    \
+    int reference_solid;               \
+    int reference_patch;               \
+    double *values;                    \
+    double **value_at_interface;       \
+  })                                   \
+        BC_TYPE(DirEquilPLinear, {     \
+    double *xlower;                    \
+    double *ylower;                    \
+    double *xupper;                    \
+    double *yupper;                    \
+    int    *num_points;                \
+    double **points;                   \
+    double **values;                   \
+    double **value_at_interface;       \
+  })                                   \
+        BC_TYPE(FluxConst, {           \
+    double *values;                    \
+  })                                   \
+        BC_TYPE(FluxVolumetric, {      \
+    double *values;                    \
+  })                                   \
+        BC_TYPE(PressureFile, {        \
+    char **filenames;                  \
+  })                                   \
+        BC_TYPE(FluxFile, {            \
+    char **filenames;                  \
+  })                                   \
+        BC_TYPE(ExactSolution, {       \
+    int function_type;                 \
+  })                                   \
+        BC_TYPE(OverlandFlow, {        \
+    double *values;                    \
+  })                                   \
+        BC_TYPE(OverlandFlowPFB, {     \
+    char **filenames;                  \
+  })                                   \
+        BC_TYPE(SeepageFace, {         \
+    double *values;                    \
+  })                                   \
+        BC_TYPE(OverlandKinematic, {   \
+    double *values;                    \
+  })                                   \
+        BC_TYPE(OverlandDiffusive, {   \
+    double *values;                    \
   })
 
 
@@ -132,7 +151,7 @@
  * @param var Variable name for newly declared and allocated TypeStruct pointer
  */
 #define NewTypeStruct(type, var) \
-  Type ## type * var = ctalloc(Type ## type, 1)
+        Type ## type * var = ctalloc(Type ## type, 1)
 
 /**
  * @name TypeStruct Setter
@@ -143,7 +162,7 @@
  * @param i Patch index
  */
 #define StoreTypeStruct(public_xtra, var, i) \
-  (public_xtra)->data[(i)] = (void*)(var);
+        (public_xtra)->data[(i)] = (void*)(var);
 
 /**
  * @name TypeStruct Accessor
@@ -155,14 +174,14 @@
  * @param i Patch index
  */
 #define GetTypeStruct(type, var, public_xtra, i) \
-  Type ## type * var = (Type ## type*)(public_xtra->data[i])
+        Type ## type * var = (Type ## type*)(public_xtra->data[i])
 
 
 // MCB: These two macros aren't really necessary but they do make the code cleaner
 #define ForEachPatch(num_patches, i) \
-  for (i = 0; i < num_patches; i++)
+        for (i = 0; i < num_patches; i++)
 #define ForEachInterval(interval_division, interval_number) \
-  for (interval_number = 0; interval_number < interval_division; interval_number++)
+        for (interval_number = 0; interval_number < interval_division; interval_number++)
 
 
 /*----------------------------------------------------------------
@@ -172,52 +191,52 @@
  *       the type struct definitions, with one less reference level.
  *       Could use C++ std::remove_pointer to only need one table def.
  *----------------------------------------------------------------*/
-#define BC_INTERVAL_TYPE_TABLE   \
-  BC_TYPE(DirEquilRefPatch, {    \
-    int reference_solid;         \
-    int reference_patch;         \
-    double value;                \
-    double *value_at_interfaces; \
-  })                             \
-  BC_TYPE(DirEquilPLinear, {     \
-    double xlower;               \
-    double ylower;               \
-    double xupper;               \
-    double yupper;               \
-    int num_points;              \
-    double *points;              \
-    double *values;              \
-    double *value_at_interfaces; \
-  })                             \
-  BC_TYPE(FluxConst, {           \
-    double value;                \
-  })                             \
-  BC_TYPE(FluxVolumetric, {      \
-    double value;                \
-  })                             \
-  BC_TYPE(PressureFile, {        \
-    char *filename;              \
-  })                             \
-  BC_TYPE(FluxFile, {            \
-    char *filename;              \
-  })                             \
-  BC_TYPE(ExactSolution, {       \
-    int function_type;           \
-  })                             \
-  BC_TYPE(OverlandFlow, {        \
-    double value;                \
-  })                             \
-  BC_TYPE(OverlandFlowPFB, {     \
-    char *filename;              \
-  })                             \
-  BC_TYPE(SeepageFace, {         \
-    double value;                \
-  })                             \
-  BC_TYPE(OverlandKinematic, {   \
-    double value;                \
-  })                             \
-  BC_TYPE(OverlandDiffusive, {   \
-    double value;                \
+#define BC_INTERVAL_TYPE_TABLE         \
+        BC_TYPE(DirEquilRefPatch, {    \
+    int reference_solid;               \
+    int reference_patch;               \
+    double value;                      \
+    double *value_at_interfaces;       \
+  })                                   \
+        BC_TYPE(DirEquilPLinear, {     \
+    double xlower;                     \
+    double ylower;                     \
+    double xupper;                     \
+    double yupper;                     \
+    int num_points;                    \
+    double *points;                    \
+    double *values;                    \
+    double *value_at_interfaces;       \
+  })                                   \
+        BC_TYPE(FluxConst, {           \
+    double value;                      \
+  })                                   \
+        BC_TYPE(FluxVolumetric, {      \
+    double value;                      \
+  })                                   \
+        BC_TYPE(PressureFile, {        \
+    char *filename;                    \
+  })                                   \
+        BC_TYPE(FluxFile, {            \
+    char *filename;                    \
+  })                                   \
+        BC_TYPE(ExactSolution, {       \
+    int function_type;                 \
+  })                                   \
+        BC_TYPE(OverlandFlow, {        \
+    double value;                      \
+  })                                   \
+        BC_TYPE(OverlandFlowPFB, {     \
+    char *filename;                    \
+  })                                   \
+        BC_TYPE(SeepageFace, {         \
+    double value;                      \
+  })                                   \
+        BC_TYPE(OverlandKinematic, {   \
+    double value;                      \
+  })                                   \
+        BC_TYPE(OverlandDiffusive, {   \
+    double value;                      \
   })
 
 
@@ -235,7 +254,7 @@ BC_INTERVAL_TYPE_TABLE
  * @param varname Name of the variable to declare and allocate
  */
 #define NewBCPressureTypeStruct(type, varname) \
-  BCPressureType ## type * varname = ctalloc(BCPressureType ## type, 1)
+        BCPressureType ## type * varname = ctalloc(BCPressureType ## type, 1)
 
 /**
  * @name BCPressureType Accessor
@@ -247,11 +266,11 @@ BC_INTERVAL_TYPE_TABLE
  * @param ipatch Patch index
  * @param interval_number Interval index
  */
-#define GetBCPressureTypeStruct(type, varname, bc_pressure_data, ipatch, interval_number) \
-  BCPressureType ## type * varname                                                        \
-    = (BCPressureType ## type*)BCPressureDataIntervalValue(bc_pressure_data,              \
-                                                           (ipatch), (interval_number));  \
-  PF_UNUSED(varname)
+#define GetBCPressureTypeStruct(type, varname, bc_pressure_data, ipatch, interval_number)        \
+        BCPressureType ## type * varname                                                         \
+          = (BCPressureType ## type*)BCPressureDataIntervalValue(bc_pressure_data,               \
+                                                                 (ipatch), (interval_number));   \
+        PF_UNUSED(varname)
 
 /*----------------------------------------------------------------
  * BCPressure Data structure
@@ -277,120 +296,120 @@ typedef struct {
  * @MCB: With the new macro system these don't make as much sense, replace/deprecate?
  *--------------------------------------------------------------------------*/
 #define DirEquilRefPatchValue(patch) \
-  ((patch)->value)
+        ((patch)->value)
 
 #define DirEquilRefPatchRefSolid(patch) \
-  ((patch)->reference_solid)
+        ((patch)->reference_solid)
 #define DirEquilRefPatchRefPatch(patch) \
-  ((patch)->reference_patch)
+        ((patch)->reference_patch)
 
 #define DirEquilRefPatchValueAtInterfaces(patch) \
-  ((patch)->value_at_interfaces)
+        ((patch)->value_at_interfaces)
 #define DirEquilRefPatchValueAtInterface(patch, i) \
-  ((patch)->value_at_interfaces[i - 1])
+        ((patch)->value_at_interfaces[i - 1])
 /*--------------------------------------------------------------------------*/
 #define DirEquilPLinearXLower(patch) \
-  ((patch)->xlower)
+        ((patch)->xlower)
 
 #define DirEquilPLinearYLower(patch) \
-  ((patch)->ylower)
+        ((patch)->ylower)
 
 #define DirEquilPLinearXUpper(patch) \
-  ((patch)->xupper)
+        ((patch)->xupper)
 
 #define DirEquilPLinearYUpper(patch) \
-  ((patch)->yupper)
+        ((patch)->yupper)
 
 #define DirEquilPLinearNumPoints(patch) \
-  ((patch)->num_points)
+        ((patch)->num_points)
 
 #define DirEquilPLinearPoints(patch) \
-  ((patch)->points)
+        ((patch)->points)
 #define DirEquilPLinearPoint(patch, i) \
-  ((patch)->points[i])
+        ((patch)->points[i])
 
 #define DirEquilPLinearValues(patch) \
-  ((patch)->values)
+        ((patch)->values)
 #define DirEquilPLinearValue(patch, i) \
-  ((patch)->values[i])
+        ((patch)->values[i])
 
 #define DirEquilPLinearValueAtInterfaces(patch) \
-  ((patch)->value_at_interfaces)
+        ((patch)->value_at_interfaces)
 #define DirEquilPLinearValueAtInterface(patch, i) \
-  ((patch)->value_at_interfaces[i - 1])
+        ((patch)->value_at_interfaces[i - 1])
 /*--------------------------------------------------------------------------*/
 #define FluxConstValue(patch) \
-  ((patch)->value)
+        ((patch)->value)
 /*--------------------------------------------------------------------------*/
 #define FluxVolumetricValue(patch) \
-  ((patch)->value)
+        ((patch)->value)
 
 /*--------------------------------------------------------------------------*/
 #define PressureFileName(patch) \
-  ((patch)->filename)
+        ((patch)->filename)
 
 /*--------------------------------------------------------------------------*/
 #define FluxFileName(patch) \
-  ((patch)->filename)
+        ((patch)->filename)
 
 /*--------------------------------------------------------------------------*/
 #define ExactSolutionFunctionType(patch) \
-  ((patch)->function_type)
+        ((patch)->function_type)
 
 /*--------------------------------------------------------------------------*/
 #define OverlandFlowValue(patch) \
-  ((patch)->value)
+        ((patch)->value)
 /*--------------------------------------------------------------------------*/
 #define OverlandFlowPFBFileName(patch) \
-  ((patch)->filename)
+        ((patch)->filename)
 /*--------------------------------------------------------------------------*/
 #define SeepageFaceValue(patch) \
-  ((patch)->value)
+        ((patch)->value)
 
 /*--------------------------------------------------------------------------*/
   #define OverlandKinematicValue(patch) \
-  ((patch)->value)
+          ((patch)->value)
 /*--------------------------------------------------------------------------*/
     #define OverlandDiffusiveValue(patch) \
-  ((patch)->value)
+            ((patch)->value)
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
  *--------------------------------------------------------------------------*/
 #define BCPressureDataNumPhases(bc_pressure_data) \
-  ((bc_pressure_data)->num_phases)
+        ((bc_pressure_data)->num_phases)
 
 #define BCPressureDataNumPatches(bc_pressure_data) \
-  ((bc_pressure_data)->num_patches)
+        ((bc_pressure_data)->num_patches)
 
 #define BCPressureDataTypes(bc_pressure_data) \
-  ((bc_pressure_data)->types)
+        ((bc_pressure_data)->types)
 #define BCPressureDataType(bc_pressure_data, i) \
-  ((bc_pressure_data)->types[i])
+        ((bc_pressure_data)->types[i])
 
 #define BCPressureDataCycleNumbers(bc_pressure_data) \
-  ((bc_pressure_data)->cycle_numbers)
+        ((bc_pressure_data)->cycle_numbers)
 #define BCPressureDataCycleNumber(bc_pressure_data, i) \
-  ((bc_pressure_data)->cycle_numbers[i])
+        ((bc_pressure_data)->cycle_numbers[i])
 
 #define BCPressureDataPatchIndexes(bc_pressure_data) \
-  ((bc_pressure_data)->patch_indexes)
+        ((bc_pressure_data)->patch_indexes)
 #define BCPressureDataPatchIndex(bc_pressure_data, i) \
-  ((bc_pressure_data)->patch_indexes[i])
+        ((bc_pressure_data)->patch_indexes[i])
 
 #define BCPressureDataBCTypes(bc_pressure_data) \
-  ((bc_pressure_data)->bc_types)
+        ((bc_pressure_data)->bc_types)
 #define BCPressureDataBCType(bc_pressure_data, i) \
-  ((bc_pressure_data)->bc_types[i])
+        ((bc_pressure_data)->bc_types[i])
 
 #define BCPressureDataValues(bc_pressure_data) \
-  ((bc_pressure_data)->values)
+        ((bc_pressure_data)->values)
 #define BCPressureDataIntervalValues(bc_pressure_data, i) \
-  ((bc_pressure_data)->values[i])
+        ((bc_pressure_data)->values[i])
 #define BCPressureDataIntervalValue(bc_pressure_data, i, interval_number) \
-  (((bc_pressure_data)->values[i])[interval_number])
+        (((bc_pressure_data)->values[i])[interval_number])
 
 #define BCPressureDataTimeCycleData(bc_pressure_data) \
-  ((bc_pressure_data)->time_cycle_data)
+        ((bc_pressure_data)->time_cycle_data)
 
 /** @} */
 

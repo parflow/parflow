@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -35,7 +35,7 @@
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
 
-void CopyParFlowVectorToHypreVector(Vector *rhs,                                    
+void CopyParFlowVectorToHypreVector(Vector *            rhs,
                                     HYPRE_StructVector* hypre_b)
 {
   Grid* grid = VectorGrid(rhs);
@@ -45,7 +45,7 @@ void CopyParFlowVectorToHypreVector(Vector *rhs,
   int nx_v, ny_v, nz_v;
   int i, j, k;
   int index[3];
-    
+
   ForSubgridI(sg, GridSubgrids(grid))
   {
     Subgrid* subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
@@ -71,21 +71,19 @@ void CopyParFlowVectorToHypreVector(Vector *rhs,
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-
       index[0] = i;
       index[1] = j;
       index[2] = k;
-      
+
       HYPRE_StructVectorSetValues(*hypre_b, index, rhs_ptr[iv]);
     });
-
   }
   HYPRE_StructVectorAssemble(*hypre_b);
 }
 
 
 void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
-                                    Vector *soln)
+                                    Vector *            soln)
 {
   Grid* grid = VectorGrid(soln);
   int sg;
@@ -132,16 +130,16 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
 
 
 void HypreAssembleGrid(
-		       Grid* pf_grid,
-		       HYPRE_StructGrid* hypre_grid,
-		       double* dxyz
-		       )
+                       Grid*             pf_grid,
+                       HYPRE_StructGrid* hypre_grid,
+                       double*           dxyz
+                       )
 {
   int sg;
 
   int ilo[3];
   int ihi[3];
-  
+
   if (pf_grid != NULL)
   {
     /* Free the HYPRE grid */
@@ -175,12 +173,12 @@ void HypreAssembleGrid(
   }
 }
 
-void HypreInitialize(Matrix* pf_Bmat,
-                     HYPRE_StructGrid* hypre_grid,
+void HypreInitialize(Matrix*              pf_Bmat,
+                     HYPRE_StructGrid*    hypre_grid,
                      HYPRE_StructStencil* hypre_stencil,
-                     HYPRE_StructMatrix* hypre_mat,
-                     HYPRE_StructVector* hypre_b,
-                     HYPRE_StructVector* hypre_x
+                     HYPRE_StructMatrix*  hypre_mat,
+                     HYPRE_StructVector*  hypre_b,
+                     HYPRE_StructVector*  hypre_x
                      )
 {
   int full_ghosts[6] = { 1, 1, 1, 1, 1, 1 };
@@ -190,17 +188,18 @@ void HypreInitialize(Matrix* pf_Bmat,
    * entire nonlinear solve process */
   /* Set stencil parameters */
   int stencil_size = MatrixDataStencilSize(pf_Bmat);
+
   if (!(*hypre_stencil))
   {
     HYPRE_StructStencilCreate(3, stencil_size, hypre_stencil);
-    
+
     for (int i = 0; i < stencil_size; i++)
     {
       HYPRE_StructStencilSetElement(*hypre_stencil, i,
-                                      &(MatrixDataStencil(pf_Bmat))[i * 3]);
+                                    &(MatrixDataStencil(pf_Bmat))[i * 3]);
     }
   }
-  
+
   /* Set up new matrix */
   int symmetric = MatrixSymmetric(pf_Bmat);
   if (!(*hypre_mat))
@@ -212,7 +211,7 @@ void HypreInitialize(Matrix* pf_Bmat,
     HYPRE_StructMatrixSetSymmetric(*hypre_mat, symmetric);
     HYPRE_StructMatrixInitialize(*hypre_mat);
   }
-  
+
   /* Set up new right-hand-side vector */
   if (!(*hypre_b))
   {
@@ -222,7 +221,7 @@ void HypreInitialize(Matrix* pf_Bmat,
     HYPRE_StructVectorSetNumGhost(*hypre_b, no_ghosts);
     HYPRE_StructVectorInitialize(*hypre_b);
   }
-  
+
   /* Set up new solution vector */
   if (!(*hypre_x))
   {
@@ -237,10 +236,10 @@ void HypreInitialize(Matrix* pf_Bmat,
 }
 
 void HypreAssembleMatrixAsElements(
-                                   Matrix *     pf_Bmat,
-                                   Matrix *     pf_Cmat,
+                                   Matrix *            pf_Bmat,
+                                   Matrix *            pf_Cmat,
                                    HYPRE_StructMatrix* hypre_mat,
-                                   ProblemData *problem_data
+                                   ProblemData *       problem_data
                                    )
 {
   Grid *mat_grid = MatrixGrid(pf_Bmat);
@@ -264,13 +263,11 @@ void HypreAssembleMatrixAsElements(
   int symmetric = MatrixSymmetric(pf_Bmat);
 
   Vector* top = ProblemDataIndexOfDomainTop(problem_data);
-  
+
   if (pf_Cmat == NULL) /* No overland flow */
   {
     ForSubgridI(sg, GridSubgrids(mat_grid))
     {
-
-      
       Subgrid* subgrid = GridSubgrid(mat_grid, sg);
 
       Submatrix* pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
@@ -294,21 +291,21 @@ void HypreAssembleMatrixAsElements(
         lp = SubmatrixStencilData(pfB_sub, 5);
         up = SubmatrixStencilData(pfB_sub, 6);
       }
-      
+
       ix = SubgridIX(subgrid);
       iy = SubgridIY(subgrid);
       iz = SubgridIZ(subgrid);
-      
+
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-      
+
       nx_m = SubmatrixNX(pfB_sub);
       ny_m = SubmatrixNY(pfB_sub);
       nz_m = SubmatrixNZ(pfB_sub);
-      
+
       im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
-      
+
       if (symmetric)
       {
         BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -356,12 +353,12 @@ void HypreAssembleMatrixAsElements(
     ForSubgridI(sg, GridSubgrids(mat_grid))
     {
       Subgrid* subgrid = GridSubgrid(mat_grid, sg);
-      
+
       Submatrix* pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
       Submatrix* pfC_sub = MatrixSubmatrix(pf_Cmat, sg);
-      
+
       Subvector* top_sub = VectorSubvector(top, sg);
-      
+
       if (symmetric)
       {
         /* Pull off upper diagonal coeffs here for symmetric part */
@@ -369,7 +366,7 @@ void HypreAssembleMatrixAsElements(
         ep = SubmatrixStencilData(pfB_sub, 2);
         np = SubmatrixStencilData(pfB_sub, 4);
         up = SubmatrixStencilData(pfB_sub, 6);
-        
+
         //          cp_c    = SubmatrixStencilData(pfC_sub, 0);
         //          ep_c    = SubmatrixStencilData(pfC_sub, 2);
         //          np_c    = SubmatrixStencilData(pfC_sub, 4);
@@ -389,7 +386,7 @@ void HypreAssembleMatrixAsElements(
         np = SubmatrixStencilData(pfB_sub, 4);
         lp = SubmatrixStencilData(pfB_sub, 5);
         up = SubmatrixStencilData(pfB_sub, 6);
-        
+
         cp_c = SubmatrixStencilData(pfC_sub, 0);
         wp_c = SubmatrixStencilData(pfC_sub, 1);
         ep_c = SubmatrixStencilData(pfC_sub, 2);
@@ -397,23 +394,23 @@ void HypreAssembleMatrixAsElements(
         np_c = SubmatrixStencilData(pfC_sub, 4);
         top_dat = SubvectorData(top_sub);
       }
-      
+
       ix = SubgridIX(subgrid);
       iy = SubgridIY(subgrid);
       iz = SubgridIZ(subgrid);
-      
+
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-      
+
       nx_m = SubmatrixNX(pfB_sub);
       ny_m = SubmatrixNY(pfB_sub);
       nz_m = SubmatrixNZ(pfB_sub);
-      
+
       sy_v = SubvectorNX(top_sub);
-      
+
       im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
-      
+
       if (symmetric)
       {
         BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -442,7 +439,7 @@ void HypreAssembleMatrixAsElements(
             coeffs_symm[2] = np[im];
             coeffs_symm[3] = up[im];
           }
-          
+
           index[0] = i;
           index[1] = j;
           index[2] = k;
@@ -506,7 +503,7 @@ void HypreAssembleMatrixAsElements(
             coeffs[5] = lp[im];
             coeffs[6] = up[im];
           }
-          
+
           index[0] = i;
           index[1] = j;
           index[2] = k;
@@ -518,7 +515,7 @@ void HypreAssembleMatrixAsElements(
       }
     }   /* End subgrid loop */
   }  /* end if pf_Cmat==NULL */
-  
+
   HYPRE_StructMatrixAssemble(*hypre_mat);
 }
 

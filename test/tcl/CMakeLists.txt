@@ -2,7 +2,6 @@
 include(ParflowTest)
 
 set(TESTS
-  Dirichlet.tcl
   default_single.tcl
   default_richards_wells.tcl
   forsyth2.tcl
@@ -14,12 +13,13 @@ set(TESTS
   small_domain.tcl
   richards_hydrostatic_equalibrium.tcl
   LW_surface_press.tcl
-  bc_pressure_file.tcl
-  bc_flux_file.tcl
 )
 
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS
+    Dirichlet.tcl
+    bc_pressure_file.tcl
+    bc_flux_file.tcl
     default_richards.tcl
     default_richards_nocluster.tcl
     default_overland.tcl
@@ -63,8 +63,9 @@ if(${PARFLOW_HAVE_NETCDF})
   if(${PARFLOW_HAVE_HYPRE})
     #This test is failing on several platforms
     list(APPEND TESTS
-    	default_richards_with_netcdf.tcl
-    	default_richards_with_netcdf_compressed.tcl)
+      default_richards_with_netcdf.tcl
+      default_richards_with_netcdf_compressed.tcl
+      default_richards_restart_netcdf.tcl)
   endif()
 endif()
 

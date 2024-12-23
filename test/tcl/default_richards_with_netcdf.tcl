@@ -9,14 +9,6 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-# Examples of compression options for SILO
-# Note compression only works for HDF5
-#pfset SILO.Filetype "HDF5"
-#pfset SILO.CompressionOptions "METHOD=GZIP"
-#pfset SILO.CompressionOptions "METHOD=SZIP"
-#pfset SILO.CompressionOptions "METHOD=FPZIP"
-#pfset SILO.CompressionOptions "ERRMODE=FALLBACK METHOD=GZIP"
-
 pfset FileVersion 4
 
 pfset Process.Topology.P 1

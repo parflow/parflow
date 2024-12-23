@@ -81,7 +81,7 @@ int ChebyshevSizeOfTempData(void);
 
 /* comm_pkg.c */
 void ProjectRegion(Region *region, int sx, int sy, int sz, int ix, int iy, int iz);
-Region *ProjectRBPoint(Region *region, int rb [4 ][3 ]);
+Region *ProjectRBPoint(Region *region, int rb[4 ][3 ]);
 void CreateComputePkgs(Grid *grid);
 void FreeComputePkgs(Grid *grid);
 
@@ -455,9 +455,6 @@ PFModule *NoDiagScaleNewPublicXtra(char *name);
 void NoDiagScaleFreePublicXtra(void);
 int NoDiagScaleSizeOfTempData(void);
 
-/* parflow.c */
-int main(int argc, char *argv []);
-
 /* pcg.c */
 void PCG(Vector *x, Vector *b, double tol, int zero);
 PFModule *PCGInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, Matrix *A, Matrix *C, double *temp_data);
@@ -482,7 +479,7 @@ void PerturbSystem(Lattice *lattice, Problem *problem);
 
 /* pf_module.c */
 PFModule *NewPFModule(void *call, void *init_instance_xtra, void *free_instance_xtra, void *new_public_xtra, void *free_public_xtra, void *sizeof_temp_data, void *instance_xtra, void *public_xtra);
-PFModule *NewPFModuleExtended(void *call, void *init_instance_xtra, void *free_instance_xtra, void *new_public_xtra, void *free_public_xtra, void *sizeof_temp_data,  void *output, void *output_static,void *instance_xtra, void *public_xtra);
+PFModule *NewPFModuleExtended(void *call, void *init_instance_xtra, void *free_instance_xtra, void *new_public_xtra, void *free_public_xtra, void *sizeof_temp_data, void *output, void *output_static, void *instance_xtra, void *public_xtra);
 PFModule *DupPFModule(PFModule *pf_module);
 void FreePFModule(PFModule *pf_module);
 
@@ -516,8 +513,8 @@ PFModule  *SMGInitInstanceXtra(
                                Problem *    problem,
                                Grid *       grid,
                                ProblemData *problem_data,
-			       Matrix *     pf_Bmat,
-			       Matrix *     pf_Cmat,
+                               Matrix *     pf_Bmat,
+                               Matrix *     pf_Cmat,
                                double *     temp_data);
 void SMGFreeInstanceXtra(void);
 PFModule *SMGNewPublicXtra(char *name);
@@ -1011,6 +1008,24 @@ PFModule *YSlopeNewPublicXtra(void);
 void YSlopeFreePublicXtra(void);
 int YSlopeSizeOfTempData(void);
 
+typedef void (*ChannelWidthInvoke) (ProblemData *problem_data, Vector *wc_x, Vector *dummy);
+typedef PFModule *(*ChannelWidthInitInstanceXtraInvoke) (Grid *grid3d, Grid *grid2d);
+/* problem_wc_x.c */
+void XChannelWidth(ProblemData *problem_data, Vector *x_wc, Vector *dummy);
+PFModule *XChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d);
+void XChannelWidthFreeInstanceXtra(void);
+PFModule *XChannelWidthNewPublicXtra(void);
+void XChannelWidthFreePublicXtra(void);
+int XChannelWidthSizeOfTempData(void);
+
+/* problem_wc_y.c */
+void YChannelWidth(ProblemData *problem_data, Vector *wc_y, Vector *dummy);
+PFModule *YChannelWidthInitInstanceXtra(Grid *grid3d, Grid *grid2d);
+void YChannelWidthFreeInstanceXtra(void);
+PFModule *YChannelWidthNewPublicXtra(void);
+void YChannelWidthFreePublicXtra(void);
+int YChannelWidthSizeOfTempData(void);
+
 /* random.c */
 void SeedRand(int seed);
 double Rand(void);
@@ -1101,6 +1116,15 @@ PFModule  *WRFSelectTimeStepNewPublicXtra(
                                           double max_step,
                                           double min_step);
 void  WRFSelectTimeStepFreePublicXtra();
+PFModule  *CPLSelectTimeStepInitInstanceXtra();
+void CPLSelectTimeStepFreeInstanceXtra();
+PFModule  *CPLSelectTimeStepNewPublicXtra(
+                                          double initial_step,
+                                          double growth_factor,
+                                          double max_step,
+                                          double min_step);
+void  CPLSelectTimeStepFreePublicXtra();
+int  CPLSelectTimeStepSizeOfTempData();
 
 typedef void (*SetProblemDataInvoke) (ProblemData *problem_data);
 typedef PFModule *(*SetProblemDataInitInstanceXtraInvoke) (Problem *problem, Grid *grid, Grid *grid2d, double *temp_data);
@@ -1152,6 +1176,8 @@ int SolverRichardsSizeOfTempData(void);
 ProblemData *GetProblemDataRichards(PFModule *this_module);
 Problem  *GetProblemRichards(PFModule *this_module);
 PFModule *GetICPhasePressureRichards(PFModule *this_module);
+Grid *GetGrid2DRichards(PFModule *this_module);
+Vector *GetMaskRichards(PFModule *this_module);
 void AdvanceRichards(PFModule *this_module,
                      double    start_time,   /* Starting time */
                      double    stop_time,    /* Stopping time */
@@ -1161,6 +1187,11 @@ void AdvanceRichards(PFModule *this_module,
                      Vector ** porosity_out,
                      Vector ** saturation_out
                      );
+void ExportRichards(PFModule *this_module,
+                    Vector ** pressure_out,  /* Output vars */
+                    Vector ** porosity_out,
+                    Vector ** saturation_out
+                    );
 void SetupRichards(PFModule *this_module);
 
 
@@ -1305,8 +1336,27 @@ PFModule *WellPackageNewPublicXtra(int num_phases, int num_contaminants);
 void WellPackageFreePublicXtra(void);
 int WellPackageSizeOfTempData(void);
 
+/* reservoir.c */
+ReservoirData *NewReservoirData(void);
+void FreeReservoirData(ReservoirData *reservoir_data);
+void PrintReservoirData(ReservoirData *reservoir_data, unsigned int print_mask);
+void WriteReservoirs(char *file_prefix, Problem *problem, ReservoirData *reservoir_data, double time, int write_header);
+
+typedef void (*ReservoirPackageInvoke) (ProblemData *problem_data);
+typedef PFModule *(*ReservoirPackageNewPublicXtraInvoke) (int num_phases, int num_contaminants);
+
+
+
 /* wells_lb.c */
 void LBWells(Lattice *lattice, Problem *problem, ProblemData *problem_data);
+
+/* reservoir_package.c */
+void ReservoirPackage(ProblemData *problem_data);
+PFModule *ReservoirPackageInitInstanceXtra(void);
+void ReservoirPackageFreeInstanceXtra(void);
+PFModule *ReservoirPackageNewPublicXtra(void);
+void ReservoirPackageFreePublicXtra(void);
+int ReservoirPackageSizeOfTempData(void);
 
 /* write_parflow_binary.c */
 long SizeofPFBinarySubvector(Subvector *subvector, Subgrid *subgrid);
@@ -1370,11 +1420,90 @@ void PF2WRF(Vector *pf_vector,
             int     ghost_size_j_upper,
             Vector *top);
 
+/* cpl_parflow.c */
+void cplparflowinit_(int *  fcom,
+                     char * input_file,
+                     int *  numprocs,
+                     int *  subgridcount,
+                     int *  nz,
+                     int *  ierror);
+
+void cplparflowadvance_(double * current_time,
+                        double * dt,
+                        float *  imp_flux,
+                        float *  exp_pressure,
+                        float *  exp_porosity,
+                        float *  exp_saturation,
+                        float *  exp_specific,
+                        float *  exp_zmult,
+                        int *    num_soil_layers,
+                        int *    num_cpl_layers,
+                        int *    ghost_size_i_lower, /* Number of ghost cells */
+                        int *    ghost_size_j_lower,
+                        int *    ghost_size_i_upper,
+                        int *    ghost_size_j_upper,
+                        int *    ierror);
+
+void cplparflowexport_(float * exp_pressure,
+                       float * exp_porosity,
+                       float * exp_saturation,
+                       float * exp_specific,
+                       float * exp_zmult,
+                       int *   num_soil_layers,
+                       int *   num_cpl_layers,
+                       int *   ghost_size_i_lower,  /* Number of ghost cells */
+                       int *   ghost_size_j_lower,
+                       int *   ghost_size_i_upper,
+                       int *   ghost_size_j_upper,
+                       int *   ierror);
+
+void CPL2PF(float *  imp_array,
+            int      imp_nz,
+            int      cpy_layers,
+            int      ghost_size_i_lower, /* Number of ghost cells */
+            int      ghost_size_j_lower,
+            int      ghost_size_i_upper,
+            int      ghost_size_j_upper,
+            Vector * pf_vector,
+            Vector * top,
+            Vector * mask);
+
+void PF2CPL(Vector * pf_vector,
+            float *  exp_array,
+            int      exp_nz,
+            int      ghost_size_i_lower, /* Number of ghost cells */
+            int      ghost_size_j_lower,
+            int      ghost_size_i_upper,
+            int      ghost_size_j_upper,
+            Vector * top,
+            Vector * mask);
+
+void cplparflowlcldecomp_(int * sg,
+                          int * lowerx,
+                          int * upperx,
+                          int * lowery,
+                          int * uppery,
+                          int * ierror);
+
+void cplparflowlclmask_(int * sg,
+                        int * localmask,
+                        int * ierror);
+
+void cplparflowlclxyctr_(int *   sg,
+                         float * localx,
+                         float * localy,
+                         int *   ierror);
+
+void cplparflowlclxyedg_(int *   sg,
+                         float * localx,
+                         float * localy,
+                         int *   ierror);
+
 void ComputeTop(Problem *    problem,
                 ProblemData *problem_data);
 
 void ComputePatchTop(Problem *    problem,
-		     ProblemData *problem_data);
+                     ProblemData *problem_data);
 
 int CheckTime(Problem *problem, char *key, double time);
 

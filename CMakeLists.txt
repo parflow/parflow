@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.14)
 
 project (PARFLOW LANGUAGES C Fortran CXX)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
 #-----------------------------------------------------------------------------
 # Set standard compiler flagsx
@@ -186,6 +186,10 @@ else ()
   set(AMPS_SPLIT_FILE "yes")
 endif ()
 
+if (NOT(PARFLOW_AMPS_SEQUENTIAL_IO) AND PARFLOW_ENABLE_PYTHON)
+  message(FATAL_ERROR "ERROR: Python does not support the multiple file AMPS I/O model for PFB output")
+endif ()
+
 # OAS3
 if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
   find_package(OASIS)
@@ -214,6 +218,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   if (${MPI_C_FOUND})
     set(PARFLOW_HAVE_MPI "yes")
     set(HAVE_MPI ${PARFLOW_HAVE_MPI})
+    message(STATUS "Found MPIEXEC: ${MPIEXEC}")    
   endif (${MPI_C_FOUND})
 
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
@@ -532,6 +537,44 @@ include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/common")
 include_directories ("${PROJECT_BINARY_DIR}/include")
 
 #-----------------------------------------------------------------------------
+# Building Python key library and documentation if required
+#-----------------------------------------------------------------------------
+
+option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
+if (PARFLOW_ENABLE_PYTHON)
+  find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
+  set(PARFLOW_PYTHON_DEPENDS)
+  set(PARFLOW_HAVE_PYTHON)
+  set(PARFLOW_PYTHON "${CMAKE_INSTALL_PREFIX}/py-env/bin/python3")
+  message(STATUS "Found Python: ${Python3_EXECUTABLE}")
+  add_custom_command(
+    WORKING_DIRECTORY
+      "${CMAKE_CURRENT_BINARY_DIR}"
+    OUTPUT
+      "${PARFLOW_PYTHON}"
+    COMMAND
+      ${Python3_EXECUTABLE} -m venv ${CMAKE_INSTALL_PREFIX}/py-env
+    COMMAND
+      "${CMAKE_INSTALL_PREFIX}//py-env/bin/pip3" install --upgrade pip wheel setuptools
+    COMMAND
+      "${CMAKE_INSTALL_PREFIX}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_all.txt"
+    COMMAND
+      "${CMAKE_INSTALL_PREFIX}//py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/user_manual/requirements.txt"
+    COMMAND
+      "${CMAKE_INSTALL_PREFIX}//py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_dev.txt"
+    COMMENT
+      "Generate ParFlow virtual environment"
+    VERBATIM
+    )
+    add_custom_target(
+      BuildVirtualEnv
+      DEPENDS
+        "${PARFLOW_PYTHON}"
+    )
+    set(PARFLOW_PYTHON_DEPENDS BuildVirtualEnv)
+endif ()
+
+#-----------------------------------------------------------------------------
 # Setup configure.h file for accessing configure options
 # -----------------------------------------------------------------------------
 configure_file (cmake/parflow_config.h.in include/parflow_config.h)
@@ -574,6 +617,13 @@ if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
 endif ()
 
+# Optionally build the NUOPC cap and ESMX
+option(PARFLOW_ENABLE_NUOPC "Enable building of the Parflow nuopc" "False")
+option(PARFLOW_ENABLE_ESMX "Enable building of ESMX" "False")
+if ( ${PARFLOW_ENABLE_NUOPC} OR ${PARFLOW_ENABLE_ESMX} )
+  add_subdirectory (pfnuopc)
+endif ()
+
 #-----------------------------------------------------------------------------
 # Setup CTEST environment
 #-----------------------------------------------------------------------------
@@ -584,7 +634,7 @@ if (PARFLOW_ENABLE_LATEX)
   add_subdirectory(docs/manuals)
 endif()
 
-install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
+install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/config/ DESTINATION config)
 
 #-----------------------------------------------------------------------------
 # Doxygen
@@ -609,46 +659,10 @@ if ( ${PARFLOW_ENABLE_DOXYGEN} )
 endif()
 
 #-----------------------------------------------------------------------------
-# Building Python key library and documentation if required
+# Python directories
 #-----------------------------------------------------------------------------
 
-option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
 if (PARFLOW_ENABLE_PYTHON)
-  find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
-  set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
-  set(PARFLOW_PYTHON_DEPENDS)
-  set(PARFLOW_HAVE_PYTHON)
-
-  option(PARFLOW_PYTHON_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
-  if (PARFLOW_PYTHON_VIRTUAL_ENV)
-    set(PARFLOW_PYTHON "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/python3")
-    add_custom_command(
-      WORKING_DIRECTORY
-        "${CMAKE_CURRENT_BINARY_DIR}"
-      OUTPUT
-        "${PARFLOW_PYTHON}"
-      COMMAND
-        ${Python3_EXECUTABLE} -m venv py-env
-      COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install --upgrade pip wheel setuptools
-      COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_all.txt"
-      COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/user_manual/requirements.txt"
-      COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_dev.txt"
-      COMMENT
-        "Generate virtual environment for building Python components"
-      VERBATIM
-    )
-    add_custom_target(
-      BuildVirtualEnv
-      DEPENDS
-        "${PARFLOW_PYTHON}"
-    )
-    set(PARFLOW_PYTHON_DEPENDS BuildVirtualEnv)
-  endif()
-
   add_subdirectory(pf-keys)
   add_subdirectory(pftools/python)
   add_subdirectory(test/python)

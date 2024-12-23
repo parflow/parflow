@@ -66,7 +66,6 @@ INTEGER, POINTER                           ::  il_paral(:)        ! Define proce
 !
 INTEGER                                    ::  part_id            ! ID returned by prism_def_partition_proto 
 INTEGER                                    ::  ii, jj, nn         ! Local Variables
-INTEGER, POINTER                           ::  mask_land(:,:)     ! Mask land
 
 REAL(KIND=8), ALLOCATABLE                  :: lglon(:,:),        &! 
                                               lglat(:,:)          ! Global Grid Centres 
@@ -84,7 +83,8 @@ INTEGER                         :: readclm = 1         ! 1 or 0 to read clm mask
 REAL(KIND=8), ALLOCATABLE                  ::  clmlon(:,:),        &! 
                                                clmlat(:,:)          ! Global Grid Centres
 INTEGER                                    ::  status, pflncid,  &!
-                                               pflvarid(3)        ! CPS increased to 3,Debug netcdf output
+                                               pflvarid(3),      &! CPS increased to 3,Debug netcdf output
+                                               ib, npes
 !------------------------------------------------------------------------------
 !- End of header
 !------------------------------------------------------------------------------
@@ -93,7 +93,24 @@ INTEGER                                    ::  status, pflncid,  &!
 !- Begin Subroutine oas_pfl_define 
 !------------------------------------------------------------------------------
 !
- !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! Read in land mask for each sub-domain to mask recv values from CLM
+ALLOCATE( mask_land_sub(nx,ny), stat = ierror )
+IF (ierror >0) CALL prism_abort_proto(comp_id, 'oas_pfl_define', 'Failure in allocating mask_land_sub')
+CALL MPI_Comm_size(localComm, npes, ierror)
+DO ib = 0,npes-1
+  IF (rank == ib ) THEN
+   status = nf90_open("clmgrid.nc", NF90_NOWRITE, pflncid)
+   status = nf90_inq_varid(pflncid, "LANDMASK" , pflvarid(3))
+   status = nf90_get_var(pflncid, pflvarid(3), mask_land_sub, &
+                         start = (/ix+1, iy+1/), &
+                         count = (/nx, ny/) )
+   status = nf90_close(pflncid)
+   mask_land_sub = mask_land_sub
+  ENDIF
+ENDDO
+
+
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  !Global grid definition for OASIS3, written by master process for 
  !the component, i.e rank = 0 
  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

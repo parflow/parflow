@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "amps.h"
 
@@ -300,7 +300,7 @@ amps_Invoice inv;
 
         switch (ptr->type - AMPS_INVOICE_LAST_CTYPE)
         {
-	  case AMPS_INVOICE_BYTE_CTYPE:
+          case AMPS_INVOICE_BYTE_CTYPE:
             MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
             element_size = sizeof(char);
             break;
@@ -334,9 +334,10 @@ amps_Invoice inv;
             MPI_Type_vector(len, 1, stride, MPI_DOUBLE, base_type);
             element_size = sizeof(double);
             break;
-	  default:
-	    amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
-	    element_size = INT_MIN;
+
+          default:
+            amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+            element_size = INT_MIN;
         }
 
         base_size = element_size * (len + (len - 1) * (stride - 1));
@@ -346,9 +347,9 @@ amps_Invoice inv;
           if (i == dim - 1)
           {
             MPI_Type_create_hvector(ptr->ptr_len[i], 1,
-                             base_size +
-                             (ptr->ptr_stride[i] - 1) * element_size,
-                             *base_type, &mpi_types[element]);
+                                    base_size +
+                                    (ptr->ptr_stride[i] - 1) * element_size,
+                                    *base_type, &mpi_types[element]);
             base_size = base_size * ptr->ptr_len[i]
                         + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1)
                         * element_size;
@@ -357,9 +358,9 @@ amps_Invoice inv;
           else
           {
             MPI_Type_create_hvector(ptr->ptr_len[i], 1,
-                             base_size +
-                             (ptr->ptr_stride[i] - 1) * element_size,
-                             *base_type, new_type);
+                                    base_size +
+                                    (ptr->ptr_stride[i] - 1) * element_size,
+                                    *base_type, new_type);
             base_size = base_size * ptr->ptr_len[i]
                         + (ptr->ptr_stride[i] - 1) * (ptr->ptr_len[i] - 1)
                         * element_size;
@@ -388,10 +389,10 @@ amps_Invoice inv;
   }
 
   MPI_Type_create_struct(inv->num,
-                  mpi_block_len,
-                  mpi_displacements,
-                  mpi_types,
-                  &inv->mpi_type);
+                         mpi_block_len,
+                         mpi_displacements,
+                         mpi_types,
+                         &inv->mpi_type);
 
   for (element = 0; element < inv->num; element++)
   {

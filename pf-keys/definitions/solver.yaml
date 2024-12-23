@@ -1731,6 +1731,16 @@ Solver:
     domains:
       BoolDomain:
 
+  PrintInitialConditions:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the initial conditions.   This includes the pressure, saturation,
+      slopes, etc.   By default the initial conditions output is generated before the first time advancement.   When doing a restart
+      this leads to a duplication of files on each restart.   Setting this key to False will prevent the duplication.
+    default: True
+    domains:
+      BoolDomain:
+
+
   # missing from manual
   PrintMannings:
     help: >
@@ -1802,6 +1812,15 @@ Solver:
       BoolDomain:
 
   # missing from manual
+  PrintChannelWidth:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: True 
+    domains:
+      BoolDomain:
+
+  # missing from manual
   PrintSpecificStorage:
     help: >
       [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the
@@ -1849,6 +1868,14 @@ Solver:
   PrintWells:
     help: >
       [Type: boolean/string] This key is used to turn on collection and printing of the well data. The data is collected at intervals given by
+      values in the timing information section. Printing occurs at the end of the run when all collected data is written.
+    default: True
+    domains:
+      BoolDomain:
+  
+  PrintReservoirs:
+    help: >
+      [Type: boolean/string] This key is used to turn on collection and printing of the reservoir data. The data is collected at intervals given by
       values in the timing information section. Printing occurs at the end of the run when all collected data is written.
     default: True
     domains:
@@ -2189,6 +2216,21 @@ Solver:
       help: >
         [Type: boolean/string] This key specifies whether Flow Barriers are to be used in the Z direction, the default is False. The default
         indicates a false or FBz value of one [-] everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+
+    ChannelWidthExistX:
+      help: >
+        [Type: boolean/string] This key specifies whether channel width is used to be used in the X direction, default is false. The default
+        indicates a false or ChannelWidthX value of 0 everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+    ChannelWidthExistY:
+      help: >
+        [Type: boolean/string] This key specifies whether channel width is used to be used in the Y direction, default is false. The default
+        indicates a false or ChannelWidthY value of 0 everywhere in the domain.
       default: False
       domains:
         BoolDomain:

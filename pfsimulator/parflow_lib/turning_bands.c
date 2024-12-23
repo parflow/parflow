@@ -94,7 +94,7 @@ typedef struct {
  * Turn
  *--------------------------------------------------------------------------*/
 
-void    Turn(field, vxtra)
+void Turn(field, vxtra)
 Vector * field;
 void   *vxtra;
 {
@@ -370,7 +370,7 @@ char *geom_name;
   else
   {
     NA_InputError("Error: Invalid True/False value for key <%s> was <%s>\n",
-               key, tmp);
+                  key, tmp);
   }
 
   sprintf(key, "Geom.%s.Perm.Seed", geom_name);
@@ -388,7 +388,7 @@ char *geom_name;
  * FreeTurn
  *--------------------------------------------------------------------------*/
 
-void           FreeTurn(xtra)
+void FreeTurn(xtra)
 void *xtra;
 {
   free(xtra);

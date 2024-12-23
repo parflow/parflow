@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "amps.h"
 
@@ -42,10 +42,6 @@ int amps_mpi_initialized = FALSE;
 char amps_malloclog[MAXPATHLEN];
 #endif
 
-#ifndef CRAY_TIME
-long AMPS_CPU_TICKS_PER_SEC;
-#endif
-
 int amps_size;
 int amps_rank;
 int amps_node_rank;
@@ -55,7 +51,7 @@ int amps_write_size;
 MPI_Comm amps_CommNode = MPI_COMM_NULL;
 MPI_Comm amps_CommWrite = MPI_COMM_NULL;
 
-MPI_Comm oas3Comm;
+MPI_Comm oas3Comm = MPI_COMM_NULL;
 int dummy1_oas3 = 0;
 
 #ifdef AMPS_F2CLIB_FIX
@@ -122,10 +118,10 @@ int amps_Init(int *argc, char **argv[])
 
   CALL_oas_pfl_init(&dummy1_oas3);
   amps_mpi_initialized = TRUE;
-#ifdef __INTEL_COMPILER
-   oas3Comm = MPI_Comm_f2c(oas_pfl_vardef_mp_localcomm_); //for Intel compilers
+#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
+  oas3Comm = MPI_Comm_f2c(oas_pfl_vardef_mp_localcomm_);  //for Intel compilers
 #else
-   oas3Comm = MPI_Comm_f2c(__oas_pfl_vardef_MOD_localcomm); //for GNU compilers
+  oas3Comm = MPI_Comm_f2c(__oas_pfl_vardef_MOD_localcomm);  //for GNU compilers
 #endif
 
   MPI_Comm_size(oas3Comm, &amps_size);
@@ -168,9 +164,7 @@ int amps_Init(int *argc, char **argv[])
   setbuf(stdout, NULL);
 #endif
 
-#ifdef CASC_HAVE_GETTIMEOFDAY
   amps_clock_init();
-#endif
 
 #ifdef AMPS_MPI_SETHOME
   if (!amps_rank)
@@ -205,12 +199,6 @@ int amps_Init(int *argc, char **argv[])
 #ifdef AMPS_MALLOC_DEBUG
   dmalloc_logpath = amps_malloclog;
   sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
-#endif
-
-#ifdef TIMING
-#ifndef CRAY_TIME
-   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
-#endif
 #endif
 
 #ifdef AMPS_PRINT_HOSTNAME
@@ -253,22 +241,82 @@ int amps_EmbeddedInit(void)
   setbuf(stdout, NULL);
 #endif
 
-#ifdef CASC_HAVE_GETTIMEOFDAY
   amps_clock_init();
-#endif
 
 #ifdef AMPS_MALLOC_DEBUG
   dmalloc_logpath = amps_malloclog;
   sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
 #endif
 
-#ifdef TIMING
-#ifndef CRAY_TIME
-  AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
-#endif
-#endif
-
   return 0;
 }
 
+/**
+ * Compare oas3Comm to communicator for embedded parflow application.
+ *
+ * ParFlow converts communicator context from f2c and compares to oas3Comm.
+ *
+ * {\large Example:}
+ * \begin{verbatim}
+ * int main( int argc, char *argv)
+ * {
+ * <MPI Initialized>
+ * amps_EmbeddedInitFComm(MPI_COMM_PARFLOW);
+ *
+ * amps_Printf("Hello World");
+ *
+ * amps_Finalize();
+ * }
+ * \end{verbatim}
+ *
+ * {\large Notes:}
+ *
+ * @memo Initialize AMPS
+ * @param comm MPI Fortran communicator context to use for ParFlow
+ * @return
+ */
+int amps_EmbeddedInitFComm(MPI_Fint *f_handle)
+{
+  MPI_Comm comm;
 
+  comm = MPI_Comm_f2c(*f_handle);
+  return amps_EmbeddedInitComm(comm);
+}
+
+/**
+ * Compare oas3Comm to communicator for embedded parflow application.
+ *
+ * ParFlow will continue to use oas3Comm but checks for congruency.
+ *
+ * {\large Example:}
+ * \begin{verbatim}
+ * int main( int argc, char *argv)
+ * {
+ * <MPI Initialized>
+ * amps_EmbeddedInit(MPI_COMM_WORLD);
+ *
+ * amps_Printf("Hello World");
+ *
+ * amps_Finalize();
+ * }
+ * \end{verbatim}
+ *
+ * {\large Notes:}
+ *
+ * @memo Initialize AMPS
+ * @param comm MPI communicator context to use for ParFlow
+ * @return
+ */
+int amps_EmbeddedInitComm(MPI_Comm comm)
+{
+  int result;
+
+  MPI_Comm_compare(oas3Comm, comm, &result);
+  if (result != MPI_CONGRUENT)
+  {
+    printf("AMPS Error: oas3Comm is not congruent with embedded usage\n");
+    exit(1);
+  }
+
+  return amps_EmbeddedInit();
+}

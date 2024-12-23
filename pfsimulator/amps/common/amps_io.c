@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "amps.h"
 
@@ -40,7 +40,7 @@ void amps_ScanByte(
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
   {
-    if(fread(ptr, 1, 1, file) != 1)
+    if (fread(ptr, 1, 1, file) != 1)
     {
       printf("AMPS Error: Can't read byte\n");
       AMPS_ABORT("AMPS Error");
@@ -61,7 +61,7 @@ void amps_ScanChar(
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
   {
-    if(fscanf(file, "%c", ptr) != 1)
+    if (fscanf(file, "%c", ptr) != 1)
     {
       printf("AMPS Error: Can't read char\n");
       AMPS_ABORT("AMPS Error");
@@ -81,7 +81,7 @@ void amps_ScanShort(
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
   {
-    if(fscanf(file, "%hd ", ptr) != 1)
+    if (fscanf(file, "%hd ", ptr) != 1)
     {
       printf("AMPS Error: Can't read short\n");
       AMPS_ABORT("AMPS Error");
@@ -101,7 +101,7 @@ void amps_ScanInt(
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
   {
-    if(fscanf(file, "%d ", ptr) != 1)
+    if (fscanf(file, "%d ", ptr) != 1)
     {
       printf("AMPS Error: Can't read int\n");
       AMPS_ABORT("AMPS Error");
@@ -121,7 +121,7 @@ void amps_ScanLong(
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
   {
-    if(fscanf(file, "%ld ", ptr) != 1)
+    if (fscanf(file, "%ld ", ptr) != 1)
     {
       printf("AMPS Error: Can't read long\n");
       AMPS_ABORT("AMPS Error");
@@ -141,12 +141,11 @@ void amps_ScanFloat(
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
   {
-    if(fscanf(file, "%f ", ptr) != 1)
+    if (fscanf(file, "%f ", ptr) != 1)
     {
       printf("AMPS Error: Can't read float\n");
       AMPS_ABORT("AMPS Error");
     }
-
   }
 }
 
@@ -162,7 +161,7 @@ void amps_ScanDouble(
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
   {
-    if(fscanf(file, "%lf ", ptr) != 1)
+    if (fscanf(file, "%lf ", ptr) != 1)
     {
       printf("AMPS Error: Can't read double\n");
       AMPS_ABORT("AMPS Error");
@@ -241,7 +240,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len)
   /* read in each double with bytes swaped                               */
   for (i = len, data = ptr; i--;)
   {
-    if(fread(&a.number, sizeof(double), 1, (FILE*)file) != 1)
+    if (fread(&a.number, sizeof(double), 1, (FILE*)file) != 1)
     {
       printf("AMPS Error: Can't read double\n");
       AMPS_ABORT("AMPS Error");
@@ -274,7 +273,7 @@ void amps_ReadInt(amps_File file, int *ptr, int len)
 
   for (i = len, data = ptr; i--;)
   {
-    if(fread(&a.number, sizeof(int), 1, (FILE*)file) != 1)
+    if (fread(&a.number, sizeof(int), 1, (FILE*)file) != 1)
     {
       printf("AMPS Error: Can't read int\n");
       AMPS_ABORT("AMPS Error");
@@ -322,12 +321,12 @@ int len;
 
   for (i = len, data = ptr; i--;)
   {
-    if(fread(&number, sizeof(short), 1, (FILE*)file) != 1)
+    if (fread(&number, sizeof(short), 1, (FILE*)file) != 1)
     {
       printf("AMPS Error: Can't read byte\n");
       AMPS_ABORT("AMPS Error");
     }
-    
+
     *data++ = number;
   }
 }

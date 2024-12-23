@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 * Header file for `well.c'
@@ -161,128 +161,128 @@ typedef struct {
  * Accessor macros: ProblemData
  *--------------------------------------------------------------------------*/
 #define ProblemDataNumPhases(problem_data) \
-  ((problem_data)->num_phases)
+        ((problem_data)->num_phases)
 
 #define ProblemDataNumComponents(problem_data) \
-  ((problem_data)->num_components)
+        ((problem_data)->num_components)
 
 #define ProblemDataNumWells(problem_data) \
-  ((problem_data)->num_wells)
+        ((problem_data)->num_wells)
 
 /*--------------------------------------------------------------------------
  * Accessor macros: WellDataHeader
  *--------------------------------------------------------------------------*/
 #define WellDataHeaderNumber(well_data_header) \
-  ((well_data_header)->number)
+        ((well_data_header)->number)
 
 #define WellDataHeaderName(well_data_header) \
-  ((well_data_header)->name)
+        ((well_data_header)->name)
 
 #define WellDataHeaderXLower(well_data_header) \
-  ((well_data_header)->x_lower)
+        ((well_data_header)->x_lower)
 
 #define WellDataHeaderYLower(well_data_header) \
-  ((well_data_header)->y_lower)
+        ((well_data_header)->y_lower)
 
 #define WellDataHeaderZLower(well_data_header) \
-  ((well_data_header)->z_lower)
+        ((well_data_header)->z_lower)
 
 #define WellDataHeaderXUpper(well_data_header) \
-  ((well_data_header)->x_upper)
+        ((well_data_header)->x_upper)
 
 #define WellDataHeaderYUpper(well_data_header) \
-  ((well_data_header)->y_upper)
+        ((well_data_header)->y_upper)
 
 #define WellDataHeaderZUpper(well_data_header) \
-  ((well_data_header)->z_upper)
+        ((well_data_header)->z_upper)
 
 #define WellDataHeaderDiameter(well_data_header) \
-  ((well_data_header)->diameter)
+        ((well_data_header)->diameter)
 
 #define WellDataHeaderType(well_data_header) \
-  ((well_data_header)->type)
+        ((well_data_header)->type)
 
 #define WellDataHeaderAction(well_data_header) \
-  ((well_data_header)->action)
+        ((well_data_header)->action)
 
 /*--------------------------------------------------------------------------
  * Accessor macros: WellDataPhysical
  *--------------------------------------------------------------------------*/
 #define WellDataPhysicalNumber(well_data_physical) \
-  ((well_data_physical)->number)
+        ((well_data_physical)->number)
 
 #define WellDataPhysicalIX(well_data_physical) \
-  ((well_data_physical)->ix)
+        ((well_data_physical)->ix)
 
 #define WellDataPhysicalIY(well_data_physical) \
-  ((well_data_physical)->iy)
+        ((well_data_physical)->iy)
 
 #define WellDataPhysicalIZ(well_data_physical) \
-  ((well_data_physical)->iz)
+        ((well_data_physical)->iz)
 
 #define WellDataPhysicalNX(well_data_physical) \
-  ((well_data_physical)->nx)
+        ((well_data_physical)->nx)
 
 #define WellDataPhysicalNY(well_data_physical) \
-  ((well_data_physical)->ny)
+        ((well_data_physical)->ny)
 
 #define WellDataPhysicalNZ(well_data_physical) \
-  ((well_data_physical)->nz)
+        ((well_data_physical)->nz)
 
 #define WellDataPhysicalRX(well_data_physical) \
-  ((well_data_physical)->rx)
+        ((well_data_physical)->rx)
 
 #define WellDataPhysicalRY(well_data_physical) \
-  ((well_data_physical)->ry)
+        ((well_data_physical)->ry)
 
 #define WellDataPhysicalRZ(well_data_physical) \
-  ((well_data_physical)->rz)
+        ((well_data_physical)->rz)
 
 /*--------------------------------------------------------------------------
  * Accessor macros: WellDataValue
  *--------------------------------------------------------------------------*/
 #define WellDataValuePhaseValues(well_data_value) \
-  ((well_data_value)->phase_values)
+        ((well_data_value)->phase_values)
 #define WellDataValuePhaseValue(well_data_value, i) \
-  ((well_data_value)->phase_values[i])
+        ((well_data_value)->phase_values[i])
 
 #define WellDataValueSaturationValues(well_data_value) \
-  ((well_data_value)->saturation_values)
+        ((well_data_value)->saturation_values)
 #define WellDataValueSaturationValue(well_data_value, i) \
-  ((well_data_value)->saturation_values[i])
+        ((well_data_value)->saturation_values[i])
 
 #define WellDataValueComponentValues(well_data_value) \
-  ((well_data_value)->component_values)
+        ((well_data_value)->component_values)
 #define WellDataValueComponentValue(well_data_value, i) \
-  ((well_data_value)->component_values[i])
+        ((well_data_value)->component_values[i])
 
 #define WellDataValueComponentFractions(well_data_value) \
-  ((well_data_value)->component_fractions)
+        ((well_data_value)->component_fractions)
 #define WellDataValueComponentFraction(well_data_value, i) \
-  ((well_data_value)->component_fractions[i])
+        ((well_data_value)->component_fractions[i])
 
 /*--------------------------------------------------------------------------
  * Accessor macros: WellDataStat
  *--------------------------------------------------------------------------*/
 #define WellDataStatPhaseStats(well_data_stat) \
-  ((well_data_stat)->phase_stats)
+        ((well_data_stat)->phase_stats)
 #define WellDataStatPhaseStat(well_data_stat, i) \
-  ((well_data_stat)->phase_stats[i])
+        ((well_data_stat)->phase_stats[i])
 
 #define WellDataStatSaturationStats(well_data_stat) \
-  ((well_data_stat)->saturation_stats)
+        ((well_data_stat)->saturation_stats)
 #define WellDataStatSaturationStat(well_data_stat, i) \
-  ((well_data_stat)->saturation_stats[i])
+        ((well_data_stat)->saturation_stats[i])
 
 #define WellDataStatComponentStats(well_data_stat) \
-  ((well_data_stat)->component_stats)
+        ((well_data_stat)->component_stats)
 #define WellDataStatComponentStat(well_data_stat, i) \
-  ((well_data_stat)->component_stats[i])
+        ((well_data_stat)->component_stats[i])
 
 #define WellDataStatConcentrationStats(well_data_stat) \
-  ((well_data_stat)->concentration_stats)
+        ((well_data_stat)->concentration_stats)
 #define WellDataStatConcentrationStat(well_data_stat, i) \
-  ((well_data_stat)->concentration_stats[i])
+        ((well_data_stat)->concentration_stats[i])
 
 
 /*-----------------------------------------------------------------------

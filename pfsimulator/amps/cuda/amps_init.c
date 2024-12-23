@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "amps.h"
 
@@ -52,9 +52,9 @@ MPI_Comm amps_CommWorld = MPI_COMM_NULL;
 MPI_Comm amps_CommNode = MPI_COMM_NULL;
 MPI_Comm amps_CommWrite = MPI_COMM_NULL;
 
-amps_Devicestruct amps_device_globals = {.combuf_recv_size = 0, 
-                                         .combuf_send_size = 0, 
-                                         .streams_created = 0};
+amps_Devicestruct amps_device_globals = { .combuf_recv_size = 0,
+                                          .combuf_send_size = 0,
+                                          .streams_created = 0 };
 
 #ifdef AMPS_F2CLIB_FIX
 int MAIN__()
@@ -120,7 +120,7 @@ int amps_Init(int *argc, char **argv[])
 
   MPI_Init(argc, argv);
   amps_mpi_initialized = TRUE;
-  
+
   MPI_Comm_dup(MPI_COMM_WORLD, &amps_CommWorld);
   MPI_Comm_size(amps_CommWorld, &amps_size);
   MPI_Comm_rank(amps_CommWorld, &amps_rank);
@@ -139,7 +139,7 @@ int amps_Init(int *argc, char **argv[])
   checkSum &= INT_MAX;
   MPI_Comm_split(amps_CommWorld, checkSum, amps_rank, &amps_CommNode);
 #endif
-  
+
   MPI_Comm_rank(amps_CommNode, &amps_node_rank);
   MPI_Comm_size(amps_CommNode, &amps_node_size);
   int color;
@@ -239,6 +239,39 @@ int amps_EmbeddedInit(void)
   amps_EmbeddedInitComm(MPI_COMM_WORLD);
 
   return 0;
+}
+
+/**
+ * Initialization when ParFlow is being invoked by another application.
+ * This must be done before any other {\em AMPS} calls.
+ *
+ * ParFlow will use the supplied communication context and convert it from f2c.
+ *
+ * {\large Example:}
+ * \begin{verbatim}
+ * int main( int argc, char *argv)
+ * {
+ * <MPI Initialized>
+ * amps_EmbeddedInitFComm(MPI_COMM_PARFLOW);
+ *
+ * amps_Printf("Hello World");
+ *
+ * amps_Finalize();
+ * }
+ * \end{verbatim}
+ *
+ * {\large Notes:}
+ *
+ * @memo Initialize AMPS
+ * @param comm MPI communicator context to use for ParFlow
+ * @return
+ */
+int amps_EmbeddedInitFComm(MPI_Fint *f_handle)
+{
+  MPI_Comm comm;
+
+  comm = MPI_Comm_f2c(*f_handle);
+  return amps_EmbeddedInitComm(comm);
 }
 
 /**

@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 *
@@ -134,19 +134,19 @@ void     Godunov(
   SubregionArray   *subregion_array;
 
   Subgrid          *subgrid,
-    *well_subgrid,
-    *tmp_subgrid;
+                   *well_subgrid,
+                   *tmp_subgrid;
   Subregion        *subregion;
   Subvector        *subvector,
-    *subvector_smf,
-    *subvector_scal,
-    *subvector_rhs,
-    *subvector_xvel,
-    *subvector_yvel,
-    *subvector_zvel,
-    *px_sub,
-    *py_sub,
-    *pz_sub;
+                   *subvector_smf,
+                   *subvector_scal,
+                   *subvector_rhs,
+                   *subvector_xvel,
+                   *subvector_yvel,
+                   *subvector_zvel,
+                   *px_sub,
+                   *py_sub,
+                   *pz_sub;
 
   ComputePkg       *compute_pkg;
   Region           *compute_reg = NULL;
@@ -156,11 +156,11 @@ void     Godunov(
   int nx, ny, nz;
   double dx, dy, dz;
   int nx_c, ny_c, nz_c,
-    nx_p, ny_p, nz_p,
-    nx_w, ny_w, nz_w,
-    nx_xv, ny_xv, nz_xv,
-    nx_yv, ny_yv, nz_yv,
-    nx_zv, ny_zv, nz_zv;
+      nx_p, ny_p, nz_p,
+      nx_w, ny_w, nz_w,
+      nx_xv, ny_xv, nz_xv,
+      nx_yv, ny_yv, nz_yv,
+      nx_zv, ny_zv, nz_zv;
   int i, j, k, ci, pi, wi, xi, yi, zi;
   int nx_cells, ny_cells, nz_cells, index, flopest;
   double lambda, decay_factor;
@@ -178,7 +178,7 @@ void     Godunov(
   double dt;
   int fstord;
   double cell_volume, field_sum, total_volume, cell_change,
-    well_stat;
+         well_stat;
   double well_value, input_c, volume, flux, scaled_flux, weight = 0;
   double avg_x, avg_y, avg_z, area_x, area_y, area_z, area_sum;
 

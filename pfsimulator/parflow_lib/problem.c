@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 *
@@ -210,6 +210,12 @@ Problem   *NewProblem(
   ProblemYSlope(problem) =
     PFModuleNewModule(YSlope, ());   //sk
 
+  ProblemXChannelWidth(problem) =
+    PFModuleNewModule(XChannelWidth, ());
+
+  ProblemYChannelWidth(problem) =
+    PFModuleNewModule(YChannelWidth, ());
+
   ProblemMannings(problem) =
     PFModuleNewModule(Mannings, ());   //sk
 
@@ -329,6 +335,9 @@ Problem   *NewProblem(
     PFModuleNewModuleType(WellPackageNewPublicXtraInvoke,
                           WellPackage, (num_phases, num_contaminants));
 
+  ProblemReservoirPackage(problem) =
+    PFModuleNewModuleType(ReservoirPackageNewPublicXtraInvoke,
+                          ReservoirPackage, (num_phases, num_contaminants));
 
   return problem;
 }
@@ -343,6 +352,7 @@ void      FreeProblem(
                       int      solver)
 {
   PFModuleFreeModule(ProblemWellPackage(problem));
+  PFModuleFreeModule(ProblemReservoirPackage(problem));
 
 
   NA_FreeNameArray(GlobalsPhaseNames);
@@ -379,6 +389,8 @@ void      FreeProblem(
   PFModuleFreeModule(ProblemSpecStorage(problem));  //sk
   PFModuleFreeModule(ProblemXSlope(problem));  //sk
   PFModuleFreeModule(ProblemYSlope(problem));
+  PFModuleFreeModule(ProblemXChannelWidth(problem));
+  PFModuleFreeModule(ProblemYChannelWidth(problem));
   PFModuleFreeModule(ProblemMannings(problem));
   PFModuleFreeModule(ProblemdzScale(problem));    //RMM
   PFModuleFreeModule(ProblemFBx(problem));    //RMM
@@ -420,6 +432,8 @@ ProblemData   *NewProblemData(
   ProblemDataSpecificStorage(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);  //sk
   ProblemDataTSlopeX(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //sk
   ProblemDataTSlopeY(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);   //sk
+  ProblemDataChannelWidthX(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
+  ProblemDataChannelWidthY(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   ProblemDataMannings(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);  //sk
 
   /* @RMM added vectors for subsurface slopes for terrain-following grid */
@@ -445,6 +459,7 @@ ProblemData   *NewProblemData(
   ProblemDataBCPressureData(problem_data) = NewBCPressureData();
 
   ProblemDataWellData(problem_data) = NewWellData();
+  ProblemDataReservoirData(problem_data) = NewReservoirData();
 
   return problem_data;
 }
@@ -471,6 +486,7 @@ void          FreeProblemData(
 #endif
 
     FreeWellData(ProblemDataWellData(problem_data));
+    FreeReservoirData(ProblemDataReservoirData(problem_data));
     FreeBCPressureData(ProblemDataBCPressureData(problem_data));
     FreeVector(ProblemDataPorosity(problem_data));
     FreeVector(ProblemDataPermeabilityX(problem_data));
@@ -479,6 +495,8 @@ void          FreeProblemData(
     FreeVector(ProblemDataSpecificStorage(problem_data));   //sk
     FreeVector(ProblemDataTSlopeX(problem_data));   //sk
     FreeVector(ProblemDataTSlopeY(problem_data));   //sk
+    FreeVector(ProblemDataChannelWidthX(problem_data));
+    FreeVector(ProblemDataChannelWidthY(problem_data));
     FreeVector(ProblemDataMannings(problem_data));   //sk
     FreeVector(ProblemDataSSlopeX(problem_data));   //RMM
     FreeVector(ProblemDataSSlopeY(problem_data));   //RMM
@@ -494,3 +512,4 @@ void          FreeProblemData(
     tfree(problem_data);
   }
 }
+

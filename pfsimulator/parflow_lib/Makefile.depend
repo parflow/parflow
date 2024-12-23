@@ -424,7 +424,7 @@ DEPENDS_22:=\
 	logging.h loops.h matrix.h n_vector.h nl_function_eval.h	\
 	parflow.h parflow_proto.h parflow_proto_f.h pf_module.h		\
 	problem.h problem_bc.h problem_eval.h region.h solver.h		\
-	time_cycle_data.h timing.h vector.h well.h
+	time_cycle_data.h timing.h vector.h well.h reservoir.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
 DEPENDS_22 +=\
@@ -2873,4 +2873,23 @@ DEPENDS_152 +=\
 endif
 
 ${FILE_152:X.o=${NDIM}.o}: ${DEPENDS_152}
+
+FILE_153=cpl_parflow.o
+DEPENDS_153:=\
+	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
+	Parflow.hxx background.h bc_pressure.h char_vector.h		\
+	communication.h computation.h file_versions.h general.h		\
+	geometry.h geostats.h globals.h grgeom_list.h grgeom_octree.h	\
+	grgeometry.h grid.h hbt.h info_header.h input_database.h lb.h	\
+	logging.h loops.h matrix.h n_vector.h nl_function_eval.h	\
+	parflow.h parflow_proto.h parflow_proto_f.h pf_module.h		\
+	problem.h problem_bc.h problem_eval.h region.h solver.h		\
+	time_cycle_data.h timing.h vector.h well.h cpl_parflow.c
+
+ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
+DEPENDS_153 +=\
+	
+endif
+
+${FILE_153:X.o=${NDIM}.o}: ${DEPENDS_153}
 

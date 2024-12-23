@@ -1,4 +1,4 @@
-#ifdef __INTEL_COMPILER
+#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
 extern int oas_pfl_vardef_mp_comp_id_;
 extern int oas_pfl_vardef_mp_ierror_;
 extern int oas_pfl_vardef_mp_localcomm_;
