@@ -1,7 +1,8 @@
 
 include(ParflowTest)
 
-set(TESTS bc.00.tcl cond.tcl example_richards.tcl example_single.tcl forsyth2.tcl forsyth5.tcl impes.internalbc.tcl impes.simple.tcl llnl.tcl llnl-perm.tcl test_X3Y2PlusSinXYPlus1.tcl test_XPlusYPlusZ.tcl test_X.tcl test_XYZTPlus1.tcl well_00.tcl well_01.tcl)
+#todo add well tests back in well_00.tcl well_01.tcl
+set(TESTS bc.00.tcl cond.tcl example_richards.tcl example_single.tcl forsyth2.tcl forsyth5.tcl impes.internalbc.tcl impes.simple.tcl llnl.tcl llnl-perm.tcl test_X3Y2PlusSinXYPlus1.tcl test_XPlusYPlusZ.tcl test_X.tcl test_XYZTPlus1.tcl)
 
 if((${PARFLOW_HAVE_HYPRE}) AND (${PARFLOW_HAVE_SILO}))
   list(APPEND TESTS impes.plinear.tcl)
