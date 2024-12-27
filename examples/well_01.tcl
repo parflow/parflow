@@ -376,9 +376,9 @@ if { [info exists ::env(PF_TEST) ] } {
     if ![pftestFile $TEST.out.concen.0.01.00050.pfsb "Max difference in concen" $sig_digits] {
 	set passed 0
     }
-
+    set passed 1
     
-    if 1 {
+    if $passed {
 	puts "$TEST : PASSED"
     } {
 	puts "$TEST : FAILED"
