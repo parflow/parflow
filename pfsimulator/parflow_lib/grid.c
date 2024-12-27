@@ -1000,7 +1000,9 @@ double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
   SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
   Subgrid        *tmp_subgrid;
   int subgrid_index;
-  ForSubgridI(subgrid_index, subgrids) {
+
+  ForSubgridI(subgrid_index, subgrids)
+  {
     tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
     Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
     double* dz_mult_data = SubvectorData(dz_mult_subvector);
@@ -1020,6 +1022,7 @@ double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
                    volume += dz_mult * dx * dy * dz;
                  });
   }
+  printf("we calculated the volume of this subgrid as %f\n", volume);
   return volume;
-}
+};
 
