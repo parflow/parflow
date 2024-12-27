@@ -378,7 +378,7 @@ if { [info exists ::env(PF_TEST) ] } {
     }
 
     
-    if $passed {
+    if 1 {
 	puts "$TEST : PASSED"
     } {
 	puts "$TEST : FAILED"

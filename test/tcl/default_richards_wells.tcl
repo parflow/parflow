@@ -383,8 +383,7 @@ foreach i "00000 00001 00002 00003 00004 00005" {
 }
 }
 
-#TODO uncomment and switch output files
-if 1 {
+if $passed {
     puts "$runname : PASSED"
 } {
     puts "$runname : FAILED"
