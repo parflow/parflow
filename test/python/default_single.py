@@ -10,6 +10,10 @@ import sys
 run_name = "default_single"
 default_single = Run(run_name, __file__)
 
+default_single.P = 2
+default_single.Q = 2
+default_single.R = 2
+
 correct_output_dir_name = get_absolute_path("../correct_output")
 
 # -----------------------------------------------------------------------------
@@ -347,7 +351,7 @@ default_single.Solver.AbsTol = 1e-25
 
 new_output_dir_name = get_absolute_path("test_output/default_single")
 mkdir(new_output_dir_name)
-default_single.run(working_directory=new_output_dir_name, undist=True)
+default_single.run(working_directory=new_output_dir_name)
 
 # -----------------------------------------------------------------------------
 # Check results for regression
