@@ -7,7 +7,7 @@ set(COMMON_SRC_FILES amps_abort.c amps_clear.c amps_clock.c
 
 if (${PARFLOW_HAVE_UMPIRE})
   list(APPEND COMMON_SRC_FILES
-    umpire_wrapper.cpp
+    amps_umpire_wrapper.cpp
   )
 endif (${PARFLOW_HAVE_UMPIRE})  
 string(REGEX REPLACE "([^;]+)" "common/\\1" COMMON_SRC_FILES "${COMMON_SRC_FILES}")
