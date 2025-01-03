@@ -38,7 +38,11 @@ endif(${PARFLOW_AMPS_LAYER} STREQUAL "cuda")
 
 # Add GPU test case (same as test15 with Unified Memory)
 if(((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS})) AND (${PARFLOW_AMPS_LAYER} STREQUAL "mpi1"))
-  list(APPEND PARALLEL_TESTS test18)
+  # We cannot execute test18 if the memory manager has not been initialized.
+  # This needs to be fixed when we decouple the backend from amps.
+  if(NOT DEFINED PARFLOW_HAVE_RMM)
+    list(APPEND PARALLEL_TESTS test18)
+  endif(NOT DEFINED PARFLOW_HAVE_RMM)
   if(NOT (${PARFLOW_HAVE_CUDA}))
     list(REMOVE_ITEM PARALLEL_TESTS test15)  
   endif(NOT (${PARFLOW_HAVE_CUDA}))
