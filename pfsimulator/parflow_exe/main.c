@@ -178,7 +178,7 @@ int main(int argc, char *argv [])
      *-----------------------------------------------------------------------*/
 
 #ifdef PARFLOW_HAVE_RMM
-    rmmInit();
+    amps_rmmInit();
 #endif
 
     wall_clock_time = amps_Clock();

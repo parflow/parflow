@@ -1060,7 +1060,7 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line)
 }
 
 #ifdef PARFLOW_HAVE_RMM
-#include "rmm_wrapper.h"
+#include "amps_rmm_wrapper.h"
 #endif
 
 /*--------------------------------------------------------------------------
@@ -1155,7 +1155,7 @@ static inline void *_amps_talloc_cuda(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  ptr = rmmAlloc(size);
+  ptr = amps_rmmAlloc(size);
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
@@ -1179,7 +1179,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  ptr = rmmAlloc(ptr);
+  ptr = amps_rmmAlloc(ptr);
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
@@ -1200,7 +1200,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 static inline void _amps_tfree_cuda(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
-  rmmFree(ptr);
+  amps_rmmFree(ptr);
 #else
   CUDA_ERRCHK(cudaFree(ptr));
   // CUDA_ERRCHK(cudaFreeHost(ptr));

@@ -56,7 +56,7 @@
 #include <cuda_runtime.h>
 #endif
 #ifdef PARFLOW_HAVE_RMM
-#include "rmm_wrapper.h"
+#include "amps_rmm_wrapper.h"
 #endif
 
 /*
@@ -1121,7 +1121,7 @@ static inline void *_amps_talloc_device(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  ptr = rmmAlloc(size);
+  ptr = amps_rmmAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -1147,7 +1147,7 @@ static inline void *_amps_ctalloc_device(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  ptr = rmmAlloc(size);
+  ptr = amps_rmmAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -1175,7 +1175,7 @@ static inline void *_amps_ctalloc_device(size_t size)
 static inline void _amps_tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
-  rmmFree(ptr);
+  amps_rmmFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosUVMFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

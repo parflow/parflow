@@ -32,7 +32,7 @@
 #include <stdbool.h>
 
 #ifdef PARFLOW_HAVE_RMM
-#include "rmm_wrapper.h"
+#include "amps_rmm_wrapper.h"
 #endif
 
 /*--------------------------------------------------------------------------
@@ -123,7 +123,7 @@ static inline void *_talloc_device(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  ptr = rmmAlloc(size);
+  ptr = amps_rmmAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -149,7 +149,7 @@ static inline void *_ctalloc_device(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  ptr = rmmAlloc(size);
+  ptr = amps_rmmAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -177,7 +177,7 @@ static inline void *_ctalloc_device(size_t size)
 static inline void _tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
-  rmmFree(ptr);
+  amps_rmmFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

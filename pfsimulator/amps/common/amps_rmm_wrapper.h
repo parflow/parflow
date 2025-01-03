@@ -8,9 +8,9 @@
 extern "C" {
 #endif
 
-void rmmInit();
-void* rmmAlloc(size_t bytes);
-void rmmFree(void *p);
+void amps_rmmInit();
+void* amps_rmmAlloc(size_t bytes);
+void amps_rmmFree(void *p);
 
 #ifdef __cplusplus
 }
