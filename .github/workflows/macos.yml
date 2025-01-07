@@ -41,6 +41,10 @@ jobs:
       run: |
         brew install hdf5-mpi
 
+    - name: TCL Link
+      run: |
+        brew link tcl-tk@8
+
 # Cache dependencies so don't have to rebuild on each test.
 # Can flush caches by resetting the CACHE_VERSION secret on GitHub
 # settings for the project (using date-timestamp for secret).
@@ -143,9 +147,9 @@ jobs:
       run: |
         mpicc -v
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
-        # SGS 2024-11-22  Had to hack in homebrew file paths for TCL.  Why are links not in /opt/homebrew/bin and lib anymore?
+        # SGS 2025-01-06  Had to hack in homebrew file paths for TCL.  Links in /opt/homebrew/bin and lib are created by brew link above.
         # Why can't we get TCL paths from pkgconf?
-        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include -DTCL_LIBRARY=/opt/homebrew/Cellar/tcl-tk@8/8.6.15/lib/libtcl8.6.dylib -DTCL_TCLSH=/opt/homebrew/Cellar/tcl-tk@8/8.6.15/bin/tclsh8.6 -DPython3_EXECUTABLE=$PARFLOW_PYTHON3
+        CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function" -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_AMPS_LAYER=${{ matrix.config.amps_layer }} -DPARFLOW_ACCELERATOR_BACKEND=${{ matrix.config.backend }} -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_HAVE_CLM=${HAVE_CLM} -DHYPRE_ROOT=$PARFLOW_DEP_DIR -DOAS3_ROOT=$PARFLOW_DEP_DIR -DSILO_ROOT=$PARFLOW_DEP_DIR -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }} $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DTCL_INCLUDE_PATH=/opt/homebrew/bin/usr/include -DTCL_LIBRARY=/opt/homebrew/lib/libtcl8.6.dylib -DTCL_TCLSH=/opt/homebrew/bin/tclsh8.6 -DPython3_EXECUTABLE=$PARFLOW_PYTHON3
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 VERBOSE=1 install)
