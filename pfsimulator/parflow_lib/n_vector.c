@@ -63,7 +63,7 @@ N_Vector N_VNew(
 }
 
 void N_VFree(
-              N_Vector x)
+             N_Vector x)
 {
   FreeVector(x);
 }

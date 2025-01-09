@@ -433,7 +433,7 @@ void FreeTempVector(Vector *vector);
 #ifdef __cplusplus
 extern "C" {
 #endif
-  
+
 N_Vector N_VNew(int N, void *machEnv);
 void N_VFree(N_Vector x);
 

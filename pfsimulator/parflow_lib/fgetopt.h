@@ -44,7 +44,7 @@ extern int optreset;    /* reset getopt  */
 extern char *optarg;    /* argument associated with option */
 
 #ifndef __cplusplus
-extern int getopt (int ___argc, char *const *___argv, const char *__shortopts);
+extern int getopt(int ___argc, char *const *___argv, const char *__shortopts);
 #endif
 
 #ifdef __cplusplus
