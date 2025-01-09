@@ -10,6 +10,11 @@ jobs:
        - name: Checkout commit
          uses: actions/checkout@v4
 
+       - name: Package Install
+         run: |
+           sudo apt-get -qq update
+           sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev
+
        - name: Cache dependencies
          uses: actions/cache@v4
          id: cache-parflow-style-dependencies
@@ -176,6 +181,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Package Install
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev gfortran hdf5-helpers libcurl4 libcurl4-gnutls-dev
 
     - name: HDF5 and OpenMPI Install on Ubuntu 22.04
       if: matrix.config.os == 'ubuntu-20.04' || matrix.config.os == 'ubuntu-22.04'
