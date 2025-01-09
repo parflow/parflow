@@ -426,9 +426,20 @@ ComputePkg *NewMGSemiRestrictComputePkg(Grid *grid, Stencil *stencil, int sx, in
 
 /* n_vector.c */
 void SetPf2KinsolData(Grid *grid, int num_ghost);
-N_Vector N_VNew(int N, void *machEnv);
 void N_VPrint(N_Vector x);
 void FreeTempVector(Vector *vector);
+
+/* Kinsol API is in C. */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+N_Vector N_VNew(int N, void *machEnv);
+void N_VFree(N_Vector x);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* new_endpts.c */
 void NewEndpts(double *alpha, double *beta, double *pp, int *size_ptr, int n, double *a_ptr, double *b_ptr, double *cond_ptr, double ereps);
@@ -1278,6 +1289,10 @@ void InitVectorAll(Vector *v, double value);
 void InitVectorInc(Vector *v, double value, double inc);
 void InitVectorRandom(Vector *v, long seed);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* vector_utilities.c */
 void PFVLinearSum(double a, Vector *x, double b, Vector *y, Vector *z);
 void PFVConstInit(double c, Vector *z);
@@ -1308,6 +1323,10 @@ void PFVLin2(double a, Vector *x, Vector *y, Vector *z);
 void PFVAxpy(double a, Vector *x, Vector *y);
 void PFVScaleBy(double a, Vector *x);
 void PFVLayerCopy(int a, int b, Vector *x, Vector *y);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* w_jacobi.c */
 void WJacobi(Vector *x, Vector *b, double tol, int zero);

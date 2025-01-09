@@ -257,6 +257,11 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
 
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
+if( ${PARFLOW_BUILD_WITH_CPP} )
+  set_source_files_properties(${SRC_FILES_ARCH} ${SRC_FILES_CONST}
+    PROPERTIES LANGUAGE CXX)
+endif()
+
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
