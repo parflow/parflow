@@ -31,6 +31,14 @@ foreach (DEBUG_FLAG "-ggdb" "-g3")
 endforeach ()
 
 #-----------------------------------------------------------------------------
+# The ParFlow C library source will be built as C++ if this flag is set.
+# ParFlow is moving to using C++; this flag is a first step towards that goal.
+# Does not currently change pftools build.
+#-----------------------------------------------------------------------------
+
+set(PARFLOW_BUILD_WITH_CPP FALSE CACHE STRING "Build ParFlow using the C++ compiler.  This flag is principlly for developers.")
+
+#-----------------------------------------------------------------------------
 # Set accelerator backend
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
