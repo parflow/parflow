@@ -52,7 +52,6 @@ set (SRC_FILES_CONST advect.F
   pcg.c
   permeability_face.c
   perturb_lb.c
-  pf_hypre.c
   pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
@@ -166,6 +165,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     problem_bc_pressure.cpp
     problem_ic_phase_pressure.cpp
     region.cpp
+    pf_hypre.cpp
   )
 
 if(${PARFLOW_HAVE_KOKKOS})
@@ -252,6 +252,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     richards_jacobian_eval.c
     vector.c
     vector_utilities.c
+    pf_hypre.c
   )
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 

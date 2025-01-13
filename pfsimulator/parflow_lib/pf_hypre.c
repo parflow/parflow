@@ -45,7 +45,7 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
   int nx_v, ny_v, nz_v;
   int i, j, k;
   int index[3];
-
+  
   ForSubgridI(sg, GridSubgrids(grid))
   {
     Subgrid* subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
@@ -65,17 +65,27 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
     ny_v = SubvectorNY(rhs_sub);
     nz_v = SubvectorNZ(rhs_sub);
 
+    //double* rhs_ptr_device;
+    //size_t count = nx * ny * nz * sizeof(double);
+    //cudaMalloc(&(rhs_ptr_device), count);
+    //cudaMemcpy(rhs_ptr_device, rhs_ptr, count, cudaMemcpyHostToDevice);
+    //double* rhs_ptr_um;
+    //cudaMallocManaged(&(rhs_ptr_um), count);
+    //memcpy(rhs_ptr_um, rhs_ptr, count); 
+    
     int iv = SubvectorEltIndex(rhs_sub, ix, iy, iz);
-
-
+    
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       index[0] = i;
       index[1] = j;
       index[2] = k;
-
-      HYPRE_StructVectorSetValues(*hypre_b, index, rhs_ptr[iv]);
+      
+      double* value;
+      cudaMallocManaged(&(value), 1 * sizeof(double));
+      value[0] = rhs_ptr[iv];
+      HYPRE_StructVectorSetValues(*hypre_b, index, value[0]); //rhs_ptr[iv]);
     });
   }
   HYPRE_StructVectorAssemble(*hypre_b);
@@ -257,7 +267,9 @@ void HypreAssembleMatrixAsElements(
   int index[3];
 
   double coeffs[7];
-  double coeffs_symm[4];
+  //  double coeffs_symm[4];
+  double* coeffs_symm;
+  cudaMallocManaged(&(coeffs_symm), 4 * sizeof(double));
 
   int stencil_size = MatrixDataStencilSize(pf_Bmat);
   int symmetric = MatrixSymmetric(pf_Bmat);
