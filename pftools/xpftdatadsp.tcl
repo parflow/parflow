@@ -61,7 +61,7 @@ proc XParflow::DataDisplay {w args} {
 
 
 # Procedure DataDisplay_ParseWidgetArgs - This procedure is
-# used to parse the commands and configureation options.
+# used to parse the commands and configuration options.
 #
 # Parameters - w  - the path of the data display
 #            args - The configuration options and commands
@@ -527,7 +527,7 @@ proc XParflow::DataDisplay_PgDownButton {w dataSet} {
 
 proc XParflow::DataDisplay_PgUpButton {w dataSet} {
 
-   # Decrement the topmost coordinate untill an entire pageful
+   # Decrement the topmost coordinate until an entire pageful
    # of data is passed 
    for {set n 1} {$n <= [$w.listBox cget -height]} {incr n} {
 

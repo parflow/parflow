@@ -13,7 +13,7 @@
   ix=0;iy=0;iz=0
   rx=0;ry=0;rz=0
  
-! Start: writeing of domain spatial information
+! Start: writing of domain spatial information
   write(100) x1 !X
   write(100) y1 !Y 
   write(100) z1 !Z
@@ -27,12 +27,12 @@
   write(100) dz !DZ
  
   write(100) ns !num_subgrids
-! End: writeing of domain spatial information
+! End: writing of domain spatial information
  
 ! Start: loop over number of sub grids
   do is = 0, (ns-1)
  
-! Start: writeing of sub-grid spatial information
+! Start: writing of sub-grid spatial information
    write(100) ix
    write(100) iy
    write(100) iz
@@ -44,7 +44,7 @@
    write(100) ry
    write(100) rz
  
-! End: writeing of sub-grid spatial information
+! End: writing of sub-grid spatial information
  
 ! Start: write in saturation data from each individual subgrid
   do  k=iz +1 , iz + nnz

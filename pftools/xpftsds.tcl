@@ -200,7 +200,7 @@ proc XParflow::GetHDFFileName sdsType {
 	    {"All Files" *} }
 
    #--------------------------------------------------
-   # Set the title appropriatly depending on what type
+   # Set the title appropriately depending on what type
    # the SDS is to be saved as.
    #--------------------------------------------------
 

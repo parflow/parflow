@@ -258,7 +258,7 @@ BC_INTERVAL_TYPE_TABLE
 
 /**
  * @name BCPressureType Accessor
- * @brief Declares and assignes a variable to the specified BCPressureType struct
+ * @brief Declares and assigns a variable to the specified BCPressureType struct
  *
  * @param type BCPressureType to cast to
  * @param varname Name of variable to declare and assign

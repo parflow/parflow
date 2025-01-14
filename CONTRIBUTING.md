@@ -142,7 +142,7 @@ directory.
 
 ParFlow was written before the MPI standard was created.  In order to
 easily port to vendor specific message passing libraries a
-communication layer was created called Another Message Passing Sytem
+communication layer was created called Another Message Passing System
 (AMPS).  We continue to use AMPS since it has proved useful for easily
 porting ParFlow to use with other frameworks, like [OASIS 3](
 https://journals.ametsoc.org/doi/10.1175/MWR-D-14-00029.1).  The AMPS
@@ -152,10 +152,10 @@ The pftools directory contains the Python and TCL interfaces and a
 verity of tools for pre/post processing input/output files.  The
 normal workflow for ParFlow is to use the pftools interface (Python or
 TCL) to create an input for the ParFlow executable (these files use
-the '.pfidb' file extenstion by convention).
+the '.pfidb' file extension by convention).
 
 Additional documentation can be found in the [ParFlow Users
-Manaul](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
+Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
 
 ### ParFlow Input and Input Database
 
@@ -195,7 +195,7 @@ structure in C.  ParFlow was writtenb before C++ was widely available
 on HPC systems.  A ParFlow module is simply a structure with function
 pointers and data.  The module has a public and instance structure.
 The basic use for public is functions/data that are instance
-independent (similiar to class methods/members in C++).  Instance data
+independent (similar to class methods/members in C++).  Instance data
 is used for functions/data that are specific to an instance.  In
 theory one can have many instances of a specific type, this is used in
 a few places in ParFlow but most modules only have a single instance.
@@ -251,7 +251,7 @@ common on Open Source projects.  Everyone has different preferred
 styles and has setup their editors with different options.  Reviewing
 and merging code conflicts that have divered primarily due to code
 formatting creates unnecessary headaches and makes it harder to
-understand what 'real' changes have occured.
+understand what 'real' changes have occurred.
 
 ## ParFlow C Conventions
 
@@ -272,13 +272,13 @@ pfformat tool to maintain consistency.
 
 #### Source Code Documentation
 
-ParFlow has historically had inadaquate source code documenation.   We are
+ParFlow has historically had inadaquate source code documentation.   We are
 working to address this by requiring new code submissions to have
-documenation to aid others in understanding the code.  The team has
-selected to use Doxygen for code documenation.
+documentation to aid others in understanding the code.  The team has
+selected to use Doxygen for code documentation.
 
 All new source code file header files should document EVERY user
-visiable structure, function, and macro.   Reviewers will reject
+visible structure, function, and macro.   Reviewers will reject
 submissions that do not do this.
 
 Target comments at new users to the code, focus on intent and purpose
@@ -300,7 +300,7 @@ Format for documenting a function/macro:
  */
 ```
 
-All structures should have documenation for the purpose of the structure and a description of the fields
+All structures should have documentation for the purpose of the structure and a description of the fields
 in the structure.
 
 ```c
@@ -341,7 +341,7 @@ issues.
 [Googlestyle](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstringsa)
 Python docstrings formatting should be used.  Please document every
 method, ParFlow has not done this historically and it has made the
-code more diffult to maintain.  We are documenting now so don't follow
+code more difficult to maintain.  We are documenting now so don't follow
 the bad practices from our past.
 
 Using the [Black](https://pypi.org/project/black/) code formatter is
@@ -378,7 +378,7 @@ Copyright 2009 John Doe.  If the you work for an employer or a
 university, the you should check with how to properly identify the
 copyright holder (which may not be the contributor as an individual).
 
-Please use a header similiar to this example in ALL new code files.
+Please use a header similar to this example in ALL new code files.
 
 We will not accept code without a proper license statement.
 
@@ -410,7 +410,7 @@ We will not accept code without a proper license statement.
 
 > **Note:** ParFlow will not accept Pull Requests that do not pass ALL tests
 
-Contributions with feature addtions should include tests for that
+Contributions with feature additions should include tests for that
 feature.  Submissions that do not pass the test suite will not be
 accepted.  A major goal is to ensure the master branch of ParFlow
 always builds and successfully runs the test suite.

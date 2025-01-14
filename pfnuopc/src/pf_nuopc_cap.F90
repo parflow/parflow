@@ -366,7 +366,7 @@ module parflow_nuopc
           '  Coordinate Type          = ',trim(attval)
         call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
         write (logMsg, "(A,(A,A))") trim(cname)//': ', &
-          '  Coodinates Filename      = ',is%wrap%coord_filename
+          '  Coordinates Filename      = ',is%wrap%coord_filename
         call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
         attval = is%wrap%check_import
         write (logMsg, "(A,(A,A))") trim(cname)//': ', &
@@ -544,7 +544,7 @@ module parflow_nuopc
       inquire(file=trim(is%wrap%prep_filename), exist=file_exists)
       if (.not. file_exists) then
         call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-          msg="configuraiton file missing: "//trim(is%wrap%prep_filename), &
+          msg="configuration file missing: "//trim(is%wrap%prep_filename), &
           line=__LINE__, file=__FILE__, rcToReturn=rc)
         return
       end if
@@ -573,7 +573,7 @@ module parflow_nuopc
     inquire(file=trim(is%wrap%pfidb_filename), exist=file_exists)
     if (.not. file_exists) then
       call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
-        msg="configuraiton file missing: "//trim(is%wrap%pfidb_filename), &
+        msg="configuration file missing: "//trim(is%wrap%pfidb_filename), &
         line=__LINE__, file=__FILE__, rcToReturn=rc)
       return
     end if

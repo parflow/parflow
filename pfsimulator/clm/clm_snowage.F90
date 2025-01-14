@@ -57,7 +57,7 @@ subroutine clm_snowage (clm)
 
   !   clm%snowage = 0.
 
-  else                               !! RMM rmoved ! Away from Antarctica 
+  else                               !! RMM removed ! Away from Antarctica 
 
      age3  = 0.3
      arg   = 5.e3*(1./tfrz-1./clm%t_grnd)

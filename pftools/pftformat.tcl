@@ -307,7 +307,7 @@ proc Parflow::pfprintmdiff args {
 
    set code [catch {eval pfmdiff $args} diffs]
 
-   # Make sure no error occured in pfmdiff
+   # Make sure no error occurred in pfmdiff
 
    if {$code == 1} {
       return -code error $diffs
@@ -663,7 +663,7 @@ from disk\n"
                     puts "Usage      : pfprintgrid dataset\n"
 	            puts "Description: This command executes pfgetgrid and formats its output"
                     puts "             before printing it on the screen.  The triples (nx, ny, nz),"
-                    puts "             (x, y, z), (dx, dy, dz) are all printed on seperate lines"
+                    puts "             (x, y, z), (dx, dy, dz) are all printed on separate lines"
                     puts "             along with labels describing the meaning of each.\n"
                     puts "             Type: `pfhelp pfgetgrid' for more information."
 

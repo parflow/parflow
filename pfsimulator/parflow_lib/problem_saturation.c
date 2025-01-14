@@ -1344,7 +1344,7 @@ void  SaturationOutputStatic(
               pd_alpha_dat[ips] = alpha;  //BB
               pd_n_dat[ips] = n;  //BB
               pd_sres_dat[ips] = s_res;  //BB  // no ssat???
-              // Storing s_dif in the stucture, convert back to s_sat for output
+              // Storing s_dif in the structure, convert back to s_sat for output
               pd_ssat_dat[ips] = s_dif + s_res;
             });
           }     /* End subgrid loop */

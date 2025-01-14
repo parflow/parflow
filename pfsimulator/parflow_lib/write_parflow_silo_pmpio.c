@@ -49,7 +49,7 @@
 amps_ThreadLocalDcl(int, s_num_silo_files);
 
 /*-----------------------------------------------------------------------------
- * Purpose:     Impliment the create callback to initialize pmpio
+ * Purpose:     Implement the create callback to initialize pmpio
  *              Will create the silo file and the 'first' directory (namespace)
  *              in it. The driver type (DB_PDB or DB_HDF5) is passed as user
  *              data; a void pointer to the driver determined in main.
@@ -65,7 +65,7 @@ void *CreateSiloFile(const char *fname, const char *nsname, void *userData)
 }
 
 /*-----------------------------------------------------------------------------
- * Purpose:     Impliment the open callback to initialize pmpio
+ * Purpose:     Implement the open callback to initialize pmpio
  *              Will open the silo file and, for write, create the new
  *              directory or, for read, just cd into the right directory.
  *-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ void *OpenSiloFile(const char *fname, const char *nsname, PMPIO_iomode_t ioMode,
 }
 
 /*-----------------------------------------------------------------------------
- * Purpose:     Impliment the close callback for pmpio
+ * Purpose:     Implement the close callback for pmpio
  *-----------------------------------------------------------------------------
  */
 void CloseSiloFile(void *file, void *userData)
@@ -187,7 +187,7 @@ void     WriteSiloPMPIOInit(char *file_prefix)
  * Write a Vector to a Silo file.
  *
  * Notes:
- * Silo files can store additinal metadata such as name of variable,
+ * Silo files can store additional metadata such as name of variable,
  * simulation time etc.  These should be added.
  */
 void     WriteSiloPMPIO(char *  file_prefix,
@@ -261,7 +261,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
    * } */
 
   //  if (numGroups == 1) {
-  sprintf(nsName, "domain_%06u", p);   /* note, even though I set this for the open routine we don't use domain structure for mulitple files, all done
+  sprintf(nsName, "domain_%06u", p);   /* note, even though I set this for the open routine we don't use domain structure for multiple files, all done
                                         * in the mesh.  For a single file (this case) we do use domains */
 //    } else {
 //        nsName == "";
@@ -270,7 +270,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
   /* Wait for write access to the file. All processors call this.
    * Some processors (the first in each group) return immediately
    * with write access to the file. Other processors wind up waiting
-   * until they are given control by the preceeding processor in
+   * until they are given control by the preceding processor in
    * the group when that processor calls "HandOffBaton" */
   db_file = (DBfile*)PMPIO_WaitForBaton(bat, filename2, nsName);
 

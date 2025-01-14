@@ -735,9 +735,9 @@ void *HBT_delete(
 
       /*-----------------------------------------------------------*/
       /* The rotation that needs to be done can be determined from */
-      /* the son of del.  Again refering to Knuth or Reingold would*/
-      /* be more valuable than any written description that I could*/
-      /* write.  One day, perhaps, we can include pictures in      */
+      /* the son of del.  Again referring to Knuth or Reingold     */
+      /* would be more valuable than any written description that  */
+      /* I could write.  One day, perhaps, we can include pictures */
       /* in comments.                                              */
       /*-----------------------------------------------------------*/
       if (dir == UNBALANCED_LEFT)
@@ -931,7 +931,7 @@ void *HBT_successor(
     return NULL;
 
   /* If this node has right children then the successor is the first       */
-  /* decendant with no left children.                                      */
+  /* descendant with no left children.                                      */
   /* Otherwise the successor is the first predecessor with right children  */
   if (RIGHT(temp))
   {

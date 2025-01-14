@@ -322,7 +322,7 @@ ENDDO
    ENDIF
  ENDDO
 
- !Allocate memory for data exchange and initilize it
+ !Allocate memory for data exchange and initialize it
  !
  ALLOCATE( bufz(vshape(1):vshape(2), vshape(3):vshape(4)), stat = ierror )
  IF (ierror > 0) CALL prism_abort_proto(comp_id, 'oas_pfl_define', 'Failure in allocating bufz' )

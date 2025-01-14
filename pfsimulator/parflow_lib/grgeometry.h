@@ -281,7 +281,7 @@ typedef struct {
 #else
 
 //  \todo SGS 12/3/2008 can optimize fdir by using 1 assignment to static.  Should
-// elimiate 2 assignment statements and switch and replace with table:
+// eliminate 2 assignment statements and switch and replace with table:
 // fdir = FDIR[PV_f] type of thing.
 //
 

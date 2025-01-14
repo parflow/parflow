@@ -498,7 +498,7 @@ check_symbol_exists(mallinfo malloc.h PARFLOW_HAVE_MALLINFO)
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
 if ( ${PARFLOW_HAVE_CLM} )
-  # Make true value match autoconf value; for some backwards compatiblity
+  # Make true value match autoconf value; for some backwards compatibility
   set(PARFLOW_HAVE_CLM "yes")
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 

@@ -167,7 +167,7 @@ void AddFace(int id, int face, int *vertices, int opposite_pnt)
       faces[faces[face].sister_face].sister_face = face;
   }
 
-  /* Currently a face can only be a trianlge */
+  /* Currently a face can only be a triangle */
   faces[face].num_nodes = 3;
 
   /* We need to check the normals on things since sometimes we
@@ -216,7 +216,7 @@ void AddFace(int id, int face, int *vertices, int opposite_pnt)
               nodes[faces[face].nodes[j]].num_faces);
   }
 
-  /* Set up the color of the face for outputing boundary info */
+  /* Set up the color of the face for outputting boundary info */
   /* color matches the color of the element */
   faces[face].color = elements[id].color;
 
@@ -601,7 +601,7 @@ int main(int argc, char **argv)
     {
       /* This is a boundary specification */
       /* First value is the element index, second is a the side
-       * that the bounary is on, followed by the color */
+       * that the boundary is on, followed by the color */
       /* CB1   867     3     1 */
 
       sscanf(line, "%s %d %d %d", string, &id, &face, &color);
