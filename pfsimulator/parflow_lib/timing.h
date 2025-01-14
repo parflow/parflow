@@ -50,8 +50,9 @@
 #define PFSOLReadTimingIndex  8
 #define ClusteringTimingIndex 9
 #define NetcdfTimingIndex 10
+#define TorchTimingIndex 11
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  11
+#define VectorUpdateTimingIndex  12
 #endif
 
 

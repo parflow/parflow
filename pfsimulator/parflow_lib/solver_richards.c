@@ -3052,6 +3052,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
 #ifdef PARFLOW_HAVE_TORCH
       if (public_xtra->enable_torch_accelerator) {
+	BeginTiming(TorchTimingIndex);
 	GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 	Subgrid *subgrid;
 	Grid *grid = VectorGrid(evap_trans_sum);
@@ -3069,7 +3070,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  pp = SubvectorData(p_sub);
 	  SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
 	}
-	
+	EndTiming(TorchTimingIndex);
 	//void* tensor = create_random_tensor(2, 3);
 	//print_tensor(tensor);
 	//free_tensor(tensor);
