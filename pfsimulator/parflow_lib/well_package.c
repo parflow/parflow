@@ -60,47 +60,6 @@ bool SubgridIsOnThisRank(Subgrid* subgrid, Grid *grid)
   return false;
 }
 
-double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
-  {
-    double dx = SubgridDX(subgrid);
-    double dy = SubgridDY(subgrid);
-    double dz = SubgridDZ(subgrid);
-    GrGeomSolid *gr_domain = problem_data->gr_domain;
-
-    double volume = 0;
-    SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
-    Subgrid        *tmp_subgrid;
-    int subgrid_index;
-
-    ForSubgridI(subgrid_index, subgrids)
-    {
-      tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
-      Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
-      double* dz_mult_data = SubvectorData(dz_mult_subvector);
-      Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
-      int nx = SubgridNX(intersection);
-      int ny = SubgridNY(intersection);
-      int nz = SubgridNZ(intersection);
-      int r = SubgridRZ(intersection);
-      int ix = SubgridIX(intersection);
-      int iy = SubgridIY(intersection);
-      int iz = SubgridIZ(intersection);
-      int i, j, k;
-      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                   {
-                     printf("1\n");
-                     int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
-                     printf("2\n");
-                     double dz_mult = dz_mult_data[index];
-                     printf("3\n");
-                     volume += dz_mult * dx * dy * dz;
-                     printf("volume: %f\n", volume);
-                   });
-    }
-    printf("5\n");
-    return volume;
-  };
-};
 
 typedef struct {
   int num_phases;
@@ -280,21 +239,12 @@ void         WellPackage(
           if (SubgridIsOnThisRank(new_subgrid, grid)){
             subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
           }
-          printf("volume = %f\n", subgrid_volume);
-          printf("6\n");
 #ifdef PARFLOW_HAVE_MPI
           // here I am making the assumption that indices need to be positive so we can use amps_max
-
-          amps_Invoice well_indices_invoice = amps_NewInvoice("%i%i", &iz_lower, &iz_upper);
-          printf("6\n");
-          amps_AllReduce(amps_CommWorld, well_indices_invoice, amps_Max);
-          amps_FreeInvoice(well_indices_invoice);
-          amps_Invoice well_volume_invoice = amps_NewInvoice("%d", &subgrid_volume);
-          amps_AllReduce(amps_CommWorld, well_volume_invoice, amps_Add);
-          amps_FreeInvoice(well_volume_invoice);
-
+          amps_Invoice well_properties_invoice = amps_NewInvoice("%i%i%d", &iz_lower, &iz_upper, &subgrid_volume);
+          amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
+          amps_FreeInvoice(well_properties_invoice);
 #endif
-          printf("well upper is: %i, well lower is: %i, subgrid volume is: %f\n", iz_upper, iz_lower, subgrid_volume);
           if ((dummy0->mechanism) == PRESSURE_WELL)
           {
             /* Put in physical data for this well */
@@ -600,19 +550,11 @@ void         WellPackage(
             if (SubgridIsOnThisRank(new_subgrid, grid)){
               subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
             }
-            printf("volume = %f\n", subgrid_volume);
-            printf("6\n");
 #ifdef PARFLOW_HAVE_MPI
             // here I am making the assumption that indices need to be positive so we can use amps_max
-
-            amps_Invoice well_indices_invoice = amps_NewInvoice("%i%i", &iz_lower, &iz_upper);
-            printf("6\n");
-            amps_AllReduce(amps_CommWorld, well_indices_invoice, amps_Max);
-            amps_FreeInvoice(well_indices_invoice);
-            amps_Invoice well_volume_invoice = amps_NewInvoice("%d", &subgrid_volume);
-            amps_AllReduce(amps_CommWorld, well_volume_invoice, amps_Add);
-            amps_FreeInvoice(well_volume_invoice);
-
+            amps_Invoice well_properties_invoice = amps_NewInvoice("%i%i%d", &iz_lower, &iz_upper, &subgrid_volume);
+            amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
+            amps_FreeInvoice(well_properties_invoice);
 #endif
             if (mechanism == PRESSURE_WELL)
             {

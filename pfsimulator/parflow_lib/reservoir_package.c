@@ -60,79 +60,8 @@ typedef struct {
  * ReservoirPackage
  *--------------------------------------------------------------------------*/
 
-// Temp solution while I get this fix checked in as part of it's own independent module that handles
-// var dz correctly. Works for all cases that I am aware of. (Ben West)
-/** @brief Calculates a subgrids total volume, accounting for variable dz. Assumes subgrid is fully
- * contained within the current rank.
- *
- * @param subgrid the subgrid we are checking
- * @param problem_data the problems problem data structure
- * @return the volume of the subgrid
- */
-double GetSubgridVolume(Subgrid *subgrid, ProblemData* problem_data)
-{
-  double dx = SubgridDX(subgrid);
-  double dy = SubgridDY(subgrid);
-  double dz = SubgridDZ(subgrid);
-  GrGeomSolid *gr_domain = problem_data->gr_domain;
-
-  double volume = 0;
-  SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
-  Subgrid        *tmp_subgrid;
-  int subgrid_index;
-
-  ForSubgridI(subgrid_index, subgrids)
-  {
-    tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
-    Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
-    double* dz_mult_data = SubvectorData(dz_mult_subvector);
-    Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
-    int nx = SubgridNX(intersection);
-    int ny = SubgridNY(intersection);
-    int nz = SubgridNZ(intersection);
-    int r = SubgridRZ(intersection);
-    int ix = SubgridIX(intersection);
-    int iy = SubgridIY(intersection);
-    int iz = SubgridIZ(intersection);
-    int i, j, k;
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    {
-      int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
-      double dz_mult = dz_mult_data[index];
-      volume += dz_mult * dx * dy * dz;
-    });
-  }
-  return volume;
-};
-
-
-/** @brief Checks whether a subgrid intersects with the current ranks subgrid
- *
- * @param subgrid the subgrid we are checking
- * @param grid the problems grid
- * @return True or False corresponding to whether the subgrid intersects
- */
-bool SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid)
-{
-  int subgrid_index;
-  Subgrid* rank_subgrid, *tmp_subgrid;
-
-  ForSubgridI(subgrid_index, GridSubgrids(grid))
-  {
-    rank_subgrid = SubgridArraySubgrid(GridSubgrids(grid), subgrid_index);
-    if ((tmp_subgrid = IntersectSubgrids(rank_subgrid, subgrid)))
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
 /** @brief Sets the slops at the outlet faces of a cell to 0 to stop flow.
  * Assumes an overlandkinematic boundary condition
- *
- *
- *
  * @param i the x index of the cell in question
  * @param j the y index of the cell in question
  * @return Null, but modifies the problem datas x and y slopes
@@ -342,7 +271,7 @@ void         ReservoirPackage(
       if (SubgridLivesOnThisRank(new_release_subgrid, grid))
       {
         release_cell_rank = current_mpi_rank;
-        release_subgrid_volume = GetSubgridVolume(new_release_subgrid, problem_data);
+        release_subgrid_volume = CalculateSubgridVolume(new_release_subgrid, problem_data);
       }
       //If we are multiprocessor we need to do some reductions to determine the correct ranks
       // for the reservoirs
