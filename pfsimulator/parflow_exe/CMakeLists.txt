@@ -20,11 +20,8 @@ if( ${PARFLOW_HAVE_RMM} )
   target_compile_definitions(parflow PRIVATE PARFLOW_HAVE_RMM)
 endif( ${PARFLOW_HAVE_RMM} )
 
-#if( ${PARFLOW_HAVE_CUDA} )
 if(CMAKE_CUDA_COMPILER)
-  message(STATUS "******* CUDA LIBS ${CUDA_curand_LIBRARY}")
-  #target_link_libraries(parflow PRIVATE CUDA::cublas CUDA::curand)
-  target_link_libraries(parflow CUDA::cudart CUDA::cublas CUDA::curand CUDA::cusparse)
+  target_link_libraries(parflow ${PARFLOW_CUDA_TOOLKIT_LIBS})
 endif(CMAKE_CUDA_COMPILER)
 
 if( ${PARFLOW_HAVE_CLM} )
