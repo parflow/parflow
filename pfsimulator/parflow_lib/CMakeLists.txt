@@ -156,12 +156,12 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     vector_utilities.cpp
   )
   set (SRC_FILES_ARCH_TYPE_2
-    pf_hypre.cpp
-    pf_pfmg.cpp
     background.cpp
     calc_elevations.cpp
     globals.cpp
-    pf_module.cpp
+    pf_hypre.cpp
+    pf_module.cpp    
+    pf_pfmg.cpp
     problem_bc.cpp
     problem_bc_pressure.cpp
     problem_ic_phase_pressure.cpp
@@ -171,8 +171,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
   if(${PARFLOW_HAVE_KOKKOS})
     list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
   endif(${PARFLOW_HAVE_KOKKOS})
-
-  message(STATUS "SGS Have CUDA")
 
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
 	#  ------------------------------------------------------------
@@ -223,8 +221,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH
-    pf_hypre.c
-    pf_pfmg.c
     axpy.c
     background.c
     calc_elevations.c
@@ -236,14 +232,16 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     matrix.c
     matvec.c
     mg_semi.c
-    mg_semi_restrict.c
     mg_semi_prolong.c
+    mg_semi_restrict.c
     nl_function_eval.c
     overlandflow_eval.c
-    overlandflow_eval_diffusive.c
     overlandflow_eval_Kin.c
-    phase_velocity_face.c
+    overlandflow_eval_diffusive.c
+    pf_hypre.c
     pf_module.c
+    pf_pfmg.c
+    phase_velocity_face.c
     problem_bc.c
     problem_bc_pressure.c
     problem_ic_phase_pressure.c
