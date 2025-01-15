@@ -52,8 +52,6 @@ set (SRC_FILES_CONST advect.F
   pcg.c
   permeability_face.c
   perturb_lb.c
-  pf_hypre.c
-  pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
   pfield.c
@@ -158,6 +156,8 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     vector_utilities.cpp
   )
   set (SRC_FILES_ARCH_TYPE_2
+    pf_hypre.cpp
+    pf_pfmg.cpp
     background.cpp
     calc_elevations.cpp
     globals.cpp
@@ -168,9 +168,11 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     region.cpp
   )
 
-if(${PARFLOW_HAVE_KOKKOS})
-  list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
-endif(${PARFLOW_HAVE_KOKKOS})
+  if(${PARFLOW_HAVE_KOKKOS})
+    list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
+  endif(${PARFLOW_HAVE_KOKKOS})
+
+  message(STATUS "SGS Have CUDA")
 
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
 	#  ------------------------------------------------------------
@@ -221,6 +223,8 @@ endif(${PARFLOW_HAVE_KOKKOS})
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH
+    pf_hypre.c
+    pf_pfmg.c
     axpy.c
     background.c
     calc_elevations.c
