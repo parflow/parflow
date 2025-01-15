@@ -37,6 +37,7 @@
 
 #include <cuda_runtime.h>
 
+/* Hacked copy of Hypre method to allow values argument to be in device/unified memory rather than on host stack */
 HYPRE_Int
 HACKED_HYPRE_StructVectorSetValues( HYPRE_StructVector  vector,
 				    HYPRE_Int          *grid_index,
@@ -89,8 +90,15 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
 
     int iv = SubvectorEltIndex(rhs_sub, ix, iy, iz);
 
-    double* tmp;
-    cudaMallocManaged(&tmp, 1 * sizeof(double));
+
+
+    
+#ifdef PARFLOW_HAVE_CUDA
+    double* value;    
+    cudaMallocManaged(&value, 1 * sizeof(double));
+#else
+    dobule value[1];
+#endif
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
@@ -101,11 +109,13 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
       index[1] = j;
       index[2] = k;
 
-      *tmp = rhs_ptr[iv];
-      HACKED_HYPRE_StructVectorSetValues(*hypre_b, index, tmp);
+      *value = rhs_ptr[iv];
+      HACKED_HYPRE_StructVectorSetValues(*hypre_b, index, value);
     });
-
-    cudaFree(tmp);
+    
+#ifdef PARFLOW_HAVE_CUDA    
+    cudaFree(value);
+#endif
   }
   
   HYPRE_StructVectorAssemble(*hypre_b);
@@ -143,9 +153,13 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
 
     int iv = SubvectorEltIndex(soln_sub, ix, iy, iz);
 
-    double* tmp;
-    cudaMallocManaged(&tmp, 1 * sizeof(double));
-
+#ifdef PARFLOW_HAVE_CUDA
+    double* value;
+    cudaMallocManaged(&value, 1 * sizeof(double));
+#else
+    double value[1];
+    value = malloc(sizeof(double));
+#endif
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
@@ -154,11 +168,14 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
       index[1] = j;
       index[2] = k;
 
-      HYPRE_StructVectorGetValues(*hypre_x, index, tmp);
-      soln_ptr[iv] = *tmp;
+      HYPRE_StructVectorGetValues(*hypre_x, index, value);
+      soln_ptr[iv] = *value;
     });
 
-    cudaFree(tmp);
+#ifdef PARFLOW_HAVE_CUDA    
+    cudaFree(value);
+#endif
+    
   }
 }
 
@@ -285,11 +302,26 @@ void HypreAssembleMatrixAsElements(
   int ix, iy, iz;
   int nx, ny, nz;
   int nx_m, ny_m, nz_m, sy_v;
-  int i, j, k;
-  int im;
+  int i, j, k, itop, k1, ktop;
+  int im, io;
 
-  HYPRE_Int stencil_size = MatrixDataStencilSize(pf_Bmat);
-  HYPRE_Int symmetric = MatrixSymmetric(pf_Bmat);
+  int stencil_indices[7] = { 0, 1, 2, 3, 4, 5, 6 };
+  int stencil_indices_symm[4] = { 0, 1, 2, 3 };
+  int index[3];
+
+
+#ifdef PARFLOW_HAVE_CUDA
+  double* coeffs;
+  cudaMallocManaged(&(coeffs), 7 * sizeof(double));
+  double* coeffs_symm;
+  cudaMallocManaged(&(coeffs_symm), 4 * sizeof(double));
+#else
+  double coeffs[7];
+  double coeffs_symm[4];
+#endif	
+
+  int stencil_size = MatrixDataStencilSize(pf_Bmat);
+  int symmetric = MatrixSymmetric(pf_Bmat);
 
   Vector* top = ProblemDataIndexOfDomainTop(problem_data);
 
@@ -339,46 +371,18 @@ void HypreAssembleMatrixAsElements(
         BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                   im, nx_m, ny_m, nz_m, 1, 1, 1,
         {
-#if 0
-	  double coeffs_symm[4];
-#else
-	  double* coeffs_symm;
-	  cudaMallocManaged(&(coeffs_symm), 4 * sizeof(double));
-#endif	  
           coeffs_symm[0] = cp[im];
           coeffs_symm[1] = ep[im];
           coeffs_symm[2] = np[im];
           coeffs_symm[3] = up[im];
-
-	  int index[3];
           index[0] = i;
           index[1] = j;
           index[2] = k;
-
-	  HYPRE_Int stencil_indices_symm[4];
-	  stencil_indices_symm[0] = 0;
-	  stencil_indices_symm[1] = 1;
-	  stencil_indices_symm[2] = 2;
-	  stencil_indices_symm[3] = 3;
-
-#if 1
           HYPRE_StructMatrixSetValues(*hypre_mat,
                                       index,
-                                      4,
-                                      (HYPRE_Int *)stencil_indices_symm,
+                                      stencil_size,
+                                      stencil_indices_symm,
                                       coeffs_symm);
-#else
-
-	  auto f1 = *hypre_mat;
-
-	  auto f11 = hypre_StructMatrixGrid(*hypre_mat);
-	  
-	  auto f2 = index;
-	  auto f3 = stencil_indices_symm;
-	  auto f4 = coeffs_symm;
-	  stencil_indices_symm[0] = 0;
-#endif
-	  
         });
       }
       else
@@ -386,7 +390,6 @@ void HypreAssembleMatrixAsElements(
         BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                   im, nx_m, ny_m, nz_m, 1, 1, 1,
         {
-	  double coeffs[7];
           coeffs[0] = cp[im];
           coeffs[1] = wp[im];
           coeffs[2] = ep[im];
@@ -394,8 +397,6 @@ void HypreAssembleMatrixAsElements(
           coeffs[4] = np[im];
           coeffs[5] = lp[im];
           coeffs[6] = up[im];
-
-	  int index[3];
           index[0] = i;
           index[1] = j;
           index[2] = k;
@@ -476,13 +477,11 @@ void HypreAssembleMatrixAsElements(
         BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                   im, nx_m, ny_m, nz_m, 1, 1, 1,
         {
-          int itop = SubvectorEltIndex(top_sub, i, j, 0);
-          int ktop = (int)top_dat[itop];
-          int io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
+          ktop = (int)top_dat[itop];
+          io = SubmatrixEltIndex(pfC_sub, i, j, iz);
           /* Since we are using a boxloop, we need to check for top index
            * to update with the surface contributions */
-          double coeffs_symm[4];
-
           if (ktop == k)
           {
             /* update diagonal coeff */
@@ -502,7 +501,6 @@ void HypreAssembleMatrixAsElements(
             coeffs_symm[3] = up[im];
           }
 
-	  int index[3];
           index[0] = i;
           index[1] = j;
           index[2] = k;
@@ -518,19 +516,17 @@ void HypreAssembleMatrixAsElements(
         BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                   im, nx_m, ny_m, nz_m, 1, 1, 1,
         {
-          int itop = SubvectorEltIndex(top_sub, i, j, 0);
-          int ktop = (int)top_dat[itop];
-          int io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+          itop = SubvectorEltIndex(top_sub, i, j, 0);
+          ktop = (int)top_dat[itop];
+          io = SubmatrixEltIndex(pfC_sub, i, j, iz);
           /* Since we are using a boxloop, we need to check for top index
            * to update with the surface contributions */
-
-	  double coeffs[7];
           if (ktop == k)
           {
             /* update diagonal coeff */
             coeffs[0] = cp_c[io];               //cp[im] is zero
             /* update west coeff */
-            int k1 = (int)top_dat[itop - 1];
+            k1 = (int)top_dat[itop - 1];
             if (k1 == ktop)
               coeffs[1] = wp_c[io];                  //wp[im] is zero
             else
@@ -569,7 +565,6 @@ void HypreAssembleMatrixAsElements(
             coeffs[6] = up[im];
           }
 
-	  int index[3];
           index[0] = i;
           index[1] = j;
           index[2] = k;
