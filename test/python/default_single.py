@@ -24,8 +24,8 @@ default_single.FileVersion = 4
 # Process Topology
 # -----------------------------------------------------------------------------
 
-default_single.Process.Topology.P = 1
-default_single.Process.Topology.Q = 1
+default_single.Process.Topology.P = 2
+default_single.Process.Topology.Q = 2
 default_single.Process.Topology.R = 1
 
 # -----------------------------------------------------------------------------

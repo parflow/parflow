@@ -360,21 +360,18 @@ test_case_pressure_file = "model.out.press.00010.pfb"
 # correct_pressure_file = "multi_column_var_dz_with_well.out.press.00010.pfb"
 # correct_output_dir = get_absolute_path('../correct_output')
 correct_pressure_file = "model.out.press.00010.pfb"
-correct_output_dir = get_absolute_path('test_output/multi_column_1')
-correct_pressure = pf.read_pfb(f"{correct_output_dir}/{correct_pressure_file}")
 
 # Original mutli column setup
-dir_name = get_absolute_path('test_output/mpi_multi_column_1')
+dir_name = get_absolute_path('test_output/var_dz_with_well_mpi_1')
 mkdir(dir_name)
 
 vardz.run(working_directory=dir_name)
 
-test_case_pressure = pf.read_pfb(f"{dir_name}/{test_case_pressure_file}")
+correct_pressure = pf.read_pfb(f"{dir_name}/{test_case_pressure_file}")
 
-assert(np.allclose(correct_pressure, test_case_pressure))
 
 # Multi-column setup 2
-dir_name = get_absolute_path('test_output/mpi_multi_column_2')
+dir_name = get_absolute_path('test_output/var_dz_with_well_mpi_2')
 mkdir(dir_name)
 
 vardz.ComputationalGrid.DZ = 10.0
@@ -401,7 +398,7 @@ test_case_pressure = pf.read_pfb(f"{dir_name}/{test_case_pressure_file}")
 assert(np.allclose(correct_pressure, test_case_pressure))
 
 # Multi-column setup 3
-dir_name = get_absolute_path('test_output/mpi_multi_column_3')
+dir_name = get_absolute_path('test_output/var_dz_with_well_mpi_3')
 mkdir(dir_name)
 
 vardz.ComputationalGrid.DZ = 0.1

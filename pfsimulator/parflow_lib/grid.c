@@ -990,39 +990,45 @@ SubgridArray  *UnionSubgridArray(
  * @return The subgrid volume
  */
 //This will calculate the subgrid volume accounting for vardz
-double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
-  double dx = SubgridDX(subgrid);
-  double dy = SubgridDY(subgrid);
-  double dz = SubgridDZ(subgrid);
-  GrGeomSolid *gr_domain = problem_data->gr_domain;
-
-  double volume = 0;
-  SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
-  Subgrid        *tmp_subgrid;
-  int subgrid_index;
-
-  ForSubgridI(subgrid_index, subgrids)
-  {
-    tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
-    Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
-    double* dz_mult_data = SubvectorData(dz_mult_subvector);
-    Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
-    int nx = SubgridNX(intersection);
-    int ny = SubgridNY(intersection);
-    int nz = SubgridNZ(intersection);
-    int r = SubgridRZ(intersection);
-    int ix = SubgridIX(intersection);
-    int iy = SubgridIY(intersection);
-    int iz = SubgridIZ(intersection);
-    int i, j, k;
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                 {
-                   int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
-                   double dz_mult = dz_mult_data[index];
-                   volume += dz_mult * dx * dy * dz;
-                 });
-  }
-  printf("we calculated the volume of this subgrid as %f\n", volume);
-  return volume;
-};
+//double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
+//  {
+//    double dx = SubgridDX(subgrid);
+//    double dy = SubgridDY(subgrid);
+//    double dz = SubgridDZ(subgrid);
+//    GrGeomSolid *gr_domain = problem_data->gr_domain;
+//
+//    double volume = 0;
+//    SubgridArray   *subgrids = problem_data->dz_mult->grid->subgrids;
+//    Subgrid        *tmp_subgrid;
+//    int subgrid_index;
+//
+//    ForSubgridI(subgrid_index, subgrids)
+//    {
+//      tmp_subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
+//      Subvector *dz_mult_subvector = VectorSubvector(problem_data->dz_mult, subgrid_index);
+//      double* dz_mult_data = SubvectorData(dz_mult_subvector);
+//      Subgrid *intersection = IntersectSubgrids(subgrid, tmp_subgrid);
+//      int nx = SubgridNX(intersection);
+//      int ny = SubgridNY(intersection);
+//      int nz = SubgridNZ(intersection);
+//      int r = SubgridRZ(intersection);
+//      int ix = SubgridIX(intersection);
+//      int iy = SubgridIY(intersection);
+//      int iz = SubgridIZ(intersection);
+//      int i, j, k;
+//      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+//                   {
+//                    printf("1\n");
+//                     int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
+//                     printf("2\n");
+//                     double dz_mult = dz_mult_data[index];
+//                     printf("3\n");
+//                     volume += dz_mult * dx * dy * dz;
+//                     printf("volume: %f\n", volume);
+//                   });
+//    }
+//    printf("5\n");
+//    return volume;
+//  };
+//};
 
