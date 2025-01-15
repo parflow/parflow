@@ -95,10 +95,10 @@ void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_da
     subgrid_y_ceiling = subgrid_y_floor + SubgridNY(subgrid) - 1;
 
     // Check all 4 faces, as long as they live on this subgrid. First the East face
-    if (i + 1 >= subgrid_x_floor && i + 1 <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
+    if (i  >= subgrid_x_floor && i <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
     {
-      index_slope_x = SubvectorEltIndex(slope_x_subvector, i + 1, j, 0);
-      if (slope_x_ptr[index_slope_x] > 0)
+      index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+      if (slope_x_ptr[index_slope_x] < 0)
       {
         slope_x_ptr[index_slope_x] = 0;
       }
@@ -114,8 +114,8 @@ void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_da
     }
     if (i >= subgrid_x_floor && i <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
     {
-      index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
-      if (slope_x_ptr[index_slope_x] < 0)
+      index_slope_x = SubvectorEltIndex(slope_x_subvector, i-1, j, 0);
+      if (slope_x_ptr[index_slope_x] > 0)
       {
         slope_x_ptr[index_slope_x] = 0;
       }
@@ -290,7 +290,7 @@ void         ReservoirPackage(
       MPI_Comm_split(amps_CommWorld, split_color, current_mpi_rank, &new_reservoir_communicator);
 #endif
 //     edit the slopes to prevent stuff running through the reservoir
-      if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_FLOW)
+      if (public_xtra->overland_flow_solver == OVERLAND_FLOW)
       {
         StopOutletFlowAtCellOverlandFlow(intake_ix, intake_iy, problem_data, grid);
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical))
@@ -298,7 +298,7 @@ void         ReservoirPackage(
           StopOutletFlowAtCellOverlandFlow(secondary_intake_ix, secondary_intake_iy, problem_data, grid);
         }
       }
-      else if (ReservoirDataOverlandFlowSolver(reservoir_data) == OVERLAND_KINEMATIC)
+      else if (public_xtra->overland_flow_solver == OVERLAND_KINEMATIC)
       {
         StopOutletFlowAtCellOverlandKinematic(intake_ix, intake_iy, problem_data, grid);
         if (ReservoirDataPhysicalHasSecondaryIntakeCell(reservoir_data_physical))
