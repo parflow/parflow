@@ -74,7 +74,7 @@
 
 /* Kinsol API is in C */
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
 
 void PFVLinearSum(
@@ -2084,5 +2084,5 @@ void PFVLayerCopy(
 }
 
 #ifdef __cplusplus
-}
+} // extern "C"
 #endif
