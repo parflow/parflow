@@ -35,7 +35,9 @@
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
 
+#ifdef PARFLOW_HAVE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 /* Hacked copy of Hypre method to allow values argument to be in device/unified memory rather than on host stack */
 HYPRE_Int
@@ -97,7 +99,7 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
     double* value;    
     cudaMallocManaged(&value, 1 * sizeof(double));
 #else
-    dobule value[1];
+    double value[1];
 #endif
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -158,7 +160,6 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
     cudaMallocManaged(&value, 1 * sizeof(double));
 #else
     double value[1];
-    value = malloc(sizeof(double));
 #endif
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
