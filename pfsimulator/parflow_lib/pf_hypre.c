@@ -41,23 +41,23 @@
 
 /* Hacked copy of Hypre method to allow values argument to be in device/unified memory rather than on host stack */
 HYPRE_Int
-HACKED_HYPRE_StructVectorSetValues( HYPRE_StructVector  vector,
-				    HYPRE_Int          *grid_index,
-				    HYPRE_Complex       *values )
+HACKED_HYPRE_StructVectorSetValues(HYPRE_StructVector vector,
+                                   HYPRE_Int *        grid_index,
+                                   HYPRE_Complex *    values)
 {
-   hypre_Index  new_grid_index;
+  hypre_Index new_grid_index;
 
-   HYPRE_Int    d;
+  HYPRE_Int d;
 
-   hypre_SetIndex(new_grid_index, 0);
-   for (d = 0; d < hypre_StructVectorNDim(vector); d++)
-   {
-      hypre_IndexD(new_grid_index, d) = grid_index[d];
-   }
+  hypre_SetIndex(new_grid_index, 0);
+  for (d = 0; d < hypre_StructVectorNDim(vector); d++)
+  {
+    hypre_IndexD(new_grid_index, d) = grid_index[d];
+  }
 
-   hypre_StructVectorSetValues(vector, new_grid_index, values, 0, -1, 0);
+  hypre_StructVectorSetValues(vector, new_grid_index, values, 0, -1, 0);
 
-   return hypre_error_flag;
+  return hypre_error_flag;
 }
 
 
@@ -94,9 +94,9 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
 
 
 
-    
+
 #ifdef PARFLOW_HAVE_CUDA
-    double* value;    
+    double* value;
     cudaMallocManaged(&value, 1 * sizeof(double));
 #else
     double value[1];
@@ -106,7 +106,7 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       int index[3];
-	
+
       index[0] = i;
       index[1] = j;
       index[2] = k;
@@ -114,12 +114,12 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
       *value = rhs_ptr[iv];
       HACKED_HYPRE_StructVectorSetValues(*hypre_b, index, value);
     });
-    
-#ifdef PARFLOW_HAVE_CUDA    
+
+#ifdef PARFLOW_HAVE_CUDA
     cudaFree(value);
 #endif
   }
-  
+
   HYPRE_StructVectorAssemble(*hypre_b);
 }
 
@@ -173,10 +173,9 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
       soln_ptr[iv] = *value;
     });
 
-#ifdef PARFLOW_HAVE_CUDA    
+#ifdef PARFLOW_HAVE_CUDA
     cudaFree(value);
 #endif
-    
   }
 }
 
@@ -319,7 +318,7 @@ void HypreAssembleMatrixAsElements(
 #else
   double coeffs[7];
   double coeffs_symm[4];
-#endif	
+#endif
 
   int stencil_size = MatrixDataStencilSize(pf_Bmat);
   int symmetric = MatrixSymmetric(pf_Bmat);
@@ -405,7 +404,7 @@ void HypreAssembleMatrixAsElements(
                                       index,
                                       stencil_size,
                                       (HYPRE_Int*)stencil_indices,
-				      coeffs);
+                                      coeffs);
         });
       }
     }   /* End subgrid loop */
@@ -573,7 +572,7 @@ void HypreAssembleMatrixAsElements(
                                       index,
                                       stencil_size,
                                       (HYPRE_Int*)stencil_indices,
-				      coeffs);
+                                      coeffs);
         });
       }
     }   /* End subgrid loop */
