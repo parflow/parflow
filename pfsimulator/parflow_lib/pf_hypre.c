@@ -39,9 +39,12 @@
 #include <cuda_runtime.h>
 #endif
 
-/* Hacked copy of Hypre method to allow values argument to be in device/unified memory rather than on host stack */
+/* 
+ * This is version of the Hypre method that uses a Ptr value to value; needed for CUDA host loop so the value can be in device accessible memory. 
+ * The Hypre version causes issue since the values parameter is allocated on Host stack.
+*/
 HYPRE_Int
-HACKED_HYPRE_StructVectorSetValues(HYPRE_StructVector vector,
+PF_HYPRE_StructVectorSetValuesPtr(HYPRE_StructVector vector,
                                    HYPRE_Int *        grid_index,
                                    HYPRE_Complex *    values)
 {
@@ -112,7 +115,7 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
       index[2] = k;
 
       *value = rhs_ptr[iv];
-      HACKED_HYPRE_StructVectorSetValues(*hypre_b, index, value);
+      PF_HYPRE_StructVectorSetValuesPtr(*hypre_b, index, value);
     });
 
 #ifdef PARFLOW_HAVE_CUDA
