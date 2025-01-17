@@ -54,7 +54,6 @@ set (SRC_FILES_CONST advect.F
   permeability_face.c
   perturb_lb.c
   pf_pfmg.c
-  pf_pfmg_octree.c
   pf_smg.c
   pfield.c
   pgsRF.c
@@ -161,6 +160,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     calc_elevations.cpp
     globals.cpp
     pf_hypre.cpp
+    pf_pfmg_octree.cpp
     pf_module.cpp    
     problem_bc.cpp
     problem_bc_pressure.cpp
@@ -239,6 +239,7 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     overlandflow_eval_Kin.c
     overlandflow_eval_diffusive.c
     pf_hypre.c
+    pf_pfmg_octree.c
     pf_module.c
     phase_velocity_face.c
     problem_bc.c
