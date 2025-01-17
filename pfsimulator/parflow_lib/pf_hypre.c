@@ -285,9 +285,6 @@ void HypreInitialize(Matrix*              pf_Bmat,
   HYPRE_StructVectorAssemble(*hypre_x);
 }
 
-__device__ HYPRE_Int stencil_indices[7] = { 0, 1, 2, 3, 4, 5, 6 };
-__device__ HYPRE_Int stencil_indices_symm[4] = { 0, 1, 2, 3 };
-
 void HypreAssembleMatrixAsElements(
                                    Matrix *            pf_Bmat,
                                    Matrix *            pf_Cmat,
