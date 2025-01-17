@@ -73,6 +73,7 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
   int nx, ny, nz;
   int nx_v, ny_v, nz_v;
   int i, j, k;
+  int index[3];
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
@@ -108,8 +109,6 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      int index[3];
-
       index[0] = i;
       index[1] = j;
       index[2] = k;
