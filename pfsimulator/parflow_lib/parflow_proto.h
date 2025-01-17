@@ -493,10 +493,6 @@ PFModule *NewPFModuleExtended(void *call, void *init_instance_xtra, void *free_i
 PFModule *DupPFModule(PFModule *pf_module);
 void FreePFModule(PFModule *pf_module);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* pf_pfmg.c */
 void PFMG(Vector *soln, Vector *rhs, double tol, int zero);
 //PFModule *PFMGInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_Bmat , Matrix *pf_Cmat, double *temp_data );
@@ -505,10 +501,6 @@ void PFMGFreeInstanceXtra(void);
 PFModule *PFMGNewPublicXtra(char *name);
 void PFMGFreePublicXtra(void);
 int PFMGSizeOfTempData(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 /* pf_pfmg_octree.c */
 

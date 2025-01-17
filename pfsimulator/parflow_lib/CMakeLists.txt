@@ -10,11 +10,12 @@ set (SRC_FILES_CONST advect.F
   communication.c
   computation.c
   compute_maximums.c
-  compute_top.c
   compute_patch_top.c
+  compute_top.c
   compute_total_concentration.c
   constantRF.c
   constant_porosity.c
+  cpl_parflow.c
   create_grid.c
   diag_scale.c
   diffuse_lb.c
@@ -52,6 +53,7 @@ set (SRC_FILES_CONST advect.F
   pcg.c
   permeability_face.c
   perturb_lb.c
+  pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
   pfield.c
@@ -61,15 +63,15 @@ set (SRC_FILES_CONST advect.F
   printmatrix.c
   printvector.c
   problem.c
+  problem_FBx.c
+  problem_FBy.c
+  problem_FBz.c
   problem_bc_internal.c
   problem_bc_phase_saturation.c
   problem_capillary_pressure.c
   problem_domain.c
   problem_dz_scale.c
   problem_eval.c
-  problem_FBx.c
-  problem_FBy.c
-  problem_FBz.c
   problem_geometries.c
   problem_ic_phase_concen.c
   problem_ic_phase_satur.c
@@ -95,6 +97,8 @@ set (SRC_FILES_CONST advect.F
   read_parflow_binary.c
   read_parflow_netcdf.c
   reg_from_stenc.c
+  reservoir.c
+  reservoir_package.c
   sadvect.F
   sadvection_godunov.c
   scale.c
@@ -115,10 +119,7 @@ set (SRC_FILES_CONST advect.F
   well.c
   well_package.c
   wells_lb.c
-  reservoir.c
-  reservoir_package.c
   wrf_parflow.c
-  cpl_parflow.c
   write_clm_netcdf.c
   write_parflow_binary.c
   write_parflow_netcdf.c
@@ -161,7 +162,6 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     globals.cpp
     pf_hypre.cpp
     pf_module.cpp    
-    pf_pfmg.cpp
     problem_bc.cpp
     problem_bc_pressure.cpp
     problem_ic_phase_pressure.cpp
@@ -240,7 +240,6 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     overlandflow_eval_diffusive.c
     pf_hypre.c
     pf_module.c
-    pf_pfmg.c
     phase_velocity_face.c
     problem_bc.c
     problem_bc_pressure.c
