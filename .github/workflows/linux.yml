@@ -426,7 +426,7 @@ jobs:
           curl -L $URL | tar --strip-components=1 -xz
           cd src
           HYPRE_CONFIG_FLAGS=""
-          if [[ "${{ matrix.config.backend }}" == "cuda" ]]; then HYPRE_CONFIG_FLAGS="$HYPRE_CONFIG_FLAGS -DHYPRE_WITH_CUDA=ON -DHYPRE_ENABLE_UNIFIED_MEMORY=ON"
+          if [[ "${{ matrix.config.backend }}" == "cuda" ]]; then HYPRE_CONFIG_FLAGS="$HYPRE_CONFIG_FLAGS -DHYPRE_WITH_CUDA=ON -DHYPRE_ENABLE_UNIFIED_MEMORY=ON"; fi
           mkdir build
           cd build
           cmake $HYPRE_CONFIG_FLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX
