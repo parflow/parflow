@@ -1013,7 +1013,8 @@ bool SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid)
  * @return The subgrid volume
  */
 //This will calculate the subgrid volume accounting for vardz
-double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
+double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data)
+{
   {
     double dx = SubgridDX(subgrid);
     double dy = SubgridDY(subgrid);
@@ -1040,11 +1041,11 @@ double CalculateSubgridVolume(Subgrid *subgrid, ProblemData* problem_data){
       int iz = SubgridIZ(intersection);
       int i, j, k;
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                   {
-                     int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
-                     double dz_mult = dz_mult_data[index];
-                     volume += dz_mult * dx * dy * dz;
-                   });
+      {
+        int index = SubvectorEltIndex(dz_mult_subvector, i, j, k);
+        double dz_mult = dz_mult_data[index];
+        volume += dz_mult * dx * dy * dz;
+      });
     }
     return volume;
   };

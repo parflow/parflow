@@ -156,6 +156,7 @@ void         WellPackage(
          z_lower, z_upper;
 
   Grid* grid = VectorGrid(problem_data->rsz);
+
   subgrid_volume = 0;
   /* Allocate the well data */
   WellDataNumPhases(well_data) = (public_xtra->num_phases);
@@ -236,7 +237,8 @@ void         WellPackage(
                                    process);
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
-          if (SubgridIsOnThisRank(new_subgrid, grid)){
+          if (SubgridIsOnThisRank(new_subgrid, grid))
+          {
             subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
           }
 #ifdef PARFLOW_HAVE_MPI
@@ -547,7 +549,8 @@ void         WellPackage(
                                      process);
             dx = SubgridDX(new_subgrid);
             dy = SubgridDY(new_subgrid);
-            if (SubgridIsOnThisRank(new_subgrid, grid)){
+            if (SubgridIsOnThisRank(new_subgrid, grid))
+            {
               subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
             }
 #ifdef PARFLOW_HAVE_MPI

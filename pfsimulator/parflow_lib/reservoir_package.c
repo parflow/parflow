@@ -95,7 +95,7 @@ void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_da
     subgrid_y_ceiling = subgrid_y_floor + SubgridNY(subgrid) - 1;
 
     // Check all 4 faces, as long as they live on this subgrid. First the East face
-    if (i  >= subgrid_x_floor && i <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
+    if (i >= subgrid_x_floor && i <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
     {
       index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
       if (slope_x_ptr[index_slope_x] < 0)
@@ -114,7 +114,7 @@ void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_da
     }
     if (i >= subgrid_x_floor && i <= subgrid_x_ceiling && j >= subgrid_y_floor && j <= subgrid_y_ceiling)
     {
-      index_slope_x = SubvectorEltIndex(slope_x_subvector, i-1, j, 0);
+      index_slope_x = SubvectorEltIndex(slope_x_subvector, i - 1, j, 0);
       if (slope_x_ptr[index_slope_x] > 0)
       {
         slope_x_ptr[index_slope_x] = 0;
