@@ -31,10 +31,6 @@
 
 #include "parflow.h"
 
-
-
-#define N_VFree(x)                    FreeVector(x)
-
 #define N_VLinearSum(a, x, b, y, z)   PFVLinearSum(a, x, b, y, z)
 #define N_VConst(c, z)                PFVConstInit(c, z)
 #define N_VProd(x, y, z)              PFVProd(x, y, z)

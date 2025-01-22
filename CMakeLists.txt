@@ -31,6 +31,14 @@ foreach (DEBUG_FLAG "-ggdb" "-g3")
 endforeach ()
 
 #-----------------------------------------------------------------------------
+# The ParFlow C library source will be built as C++ if this flag is set.
+# ParFlow is moving to using C++; this flag is a first step towards that goal.
+# Does not currently change pftools build.
+#-----------------------------------------------------------------------------
+
+set(PARFLOW_BUILD_WITH_CPP FALSE CACHE STRING "Build ParFlow using the C++ compiler.  This flag is principlly for developers.")
+
+#-----------------------------------------------------------------------------
 # Set accelerator backend
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
@@ -46,10 +54,13 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     if(CMAKE_CUDA_COMPILER)
       enable_language(CUDA)
       set(CMAKE_CUDA_STANDARD 14)
-      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
-      if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_80,code=sm_80")
-      endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
+      if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70")
+	if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+          set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_80,code=sm_80")
+	endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+      endif(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
       set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
       set(CMAKE_CUDA_HOST_COMPILER mpicxx)
       message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")

@@ -11,11 +11,9 @@ jobs:
          uses: actions/checkout@v4
 
        - name: Package Install
-         uses: awalsh128/cache-apt-pkgs-action@latest
-         with:
-           packages: curl cmake build-essential tcl-dev tk-dev
-           version: 1.0
-           execute_install_scripts: true
+         run: |
+           sudo apt-get -qq update
+           sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev
 
        - name: Cache dependencies
          uses: actions/cache@v4
@@ -185,11 +183,9 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Package Install
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: gfortran hdf5-helpers tcl-dev tk-dev libcurl4 libcurl4-gnutls-dev
-        version: 1.0
-        execute_install_scripts: true
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev gfortran hdf5-helpers libcurl4 libcurl4-gnutls-dev
 
     - name: HDF5 and OpenMPI Install on Ubuntu 22.04
       if: matrix.config.os == 'ubuntu-20.04' || matrix.config.os == 'ubuntu-22.04'
