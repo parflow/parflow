@@ -1,7 +1,7 @@
 # ParFlow
 
-![ParFlow Linux CI Test](https://github.com/parflow/parflow/actions/workflows/linux.yml/badge.svg?branch=master)
-![ParFlow MacOS CI Test](https://github.com/parflow/parflow/actions/workflows/macos.yml/badge.svg?branch=master)
+![ParFlow Linux CI Test](https://github.com/parflow/parflow/actions/workflows/linux.yml/badge.svg)
+![ParFlow MacOS CI Test](https://github.com/parflow/parflow/actions/workflows/macos.yml/badge.svg)
 
 ParFlow is an open-source, modular, parallel watershed flow model. It
 includes fully-integrated overland flow, the ability to simulate
