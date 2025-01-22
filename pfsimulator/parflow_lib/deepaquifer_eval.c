@@ -83,9 +83,9 @@ void InitDeepAquiferParameter(Vector *par_v, ParameterUnion par)
  * This module can evaluate both the non-linear function
  * and its jacobian. When invoked, the `fcn` flag tracks
  * which output to compute. The evaluation is added to
- * `groundwater_out`.
+ * `deepaquifer_out`.
  *
- * @param groundwater_out groundwaterflow evaluation
+ * @param deepaquifer_out deepaquifer evaluation
  * @param fcn flag = {CALCFCN , CALCDER}
  * @param bc_struct boundary condition structure
  * @param subgrid current subgrid
@@ -99,7 +99,7 @@ void InitDeepAquiferParameter(Vector *par_v, ParameterUnion par)
  * @param isubgrid current subgrid
  * @param problem_data geometry data for problem
  */
-void DeepAquiferEval(void *       groundwater_out,
+void DeepAquiferEval(void *       deepaquifer_out,
                      int          fcn,
                      BCStruct *   bc_struct,
                      Subgrid *    subgrid,
@@ -115,7 +115,7 @@ void DeepAquiferEval(void *       groundwater_out,
 {
   if (fcn == CALCFCN)
   {
-    double *fp = (double*)groundwater_out;
+    double *fp = (double*)deepaquifer_out;
 
     DeepAquiferEvalNLFunc(fp, bc_struct, subgrid,
                           p_sub, old_pressure, dt, Kr, Ks_x, Ks_y,
@@ -124,7 +124,7 @@ void DeepAquiferEval(void *       groundwater_out,
   else     /* fcn == CALCDER */
 
   {
-    Submatrix *J_sub = (Submatrix*)groundwater_out;
+    Submatrix *J_sub = (Submatrix*)deepaquifer_out;
 
     DeepAquiferEvalJacob(J_sub, bc_struct, subgrid,
                          p_sub, old_pressure, dt, Kr, Ks_x, Ks_y,
@@ -142,7 +142,7 @@ void DeepAquiferEval(void *       groundwater_out,
  * The function evaluation is added to `fp` arg.
  *
  *
- * @param fp groundwaterflow function evaluation
+ * @param fp deepaquifer function evaluation
  * @param bc_struct boundary condition structure
  * @param subgrid current subgrid
  * @param p_sub new pressure subvector
@@ -358,7 +358,7 @@ void DeepAquiferEvalNLFunc(double *     fp,
  * The jacobian evaluation is added to `J_sub` arg.
  *
  *
- * @param J_sub groundwaterflow jacobian evaluation
+ * @param J_sub deepaquifer jacobian evaluation
  * @param bc_struct boundary condition structure
  * @param subgrid current subgrid
  * @param p_sub new pressure subvector
@@ -713,16 +713,15 @@ PFModule* DeepAquiferEvalInitInstanceXtra(ProblemData *problem_data)
   NameArray na_types = NA_NewNameArray("Constant PFBFile");
 
   ParameterUnion Sy;
-
-  GetParameterUnion(Sy, na_types,
-                    "Patch.BCPressure.DeepAquifer.SpecificYield.%s",
+  GetParameterUnion(Sy, "Patch.BCPressure.DeepAquifer.SpecificYield.%s",
+                    na_types,
                     ParameterUnionDouble(0, "Value")
                     ParameterUnionString(1, "Filename")
                     );
 
   ParameterUnion Ad;
-  GetParameterUnion(Ad, na_types,
-                    "Patch.BCPressure.DeepAquifer.AquiferDepth.%s",
+  GetParameterUnion(Ad, "Patch.BCPressure.DeepAquifer.AquiferDepth.%s",
+                    na_types,
                     ParameterUnionDouble(0, "Value")
                     ParameterUnionString(1, "Filename")
                     );

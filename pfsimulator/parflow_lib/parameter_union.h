@@ -27,43 +27,49 @@
 **********************************************************************EHEADER*/
 
 /*
- * ParameterUnion looks for a parameter that might go by
- * different aliases or assume different types of values.
+ * ParameterUnion is an attempt to prevent repeated code
+ * when reading information from the input script.
+ * It should be used in cases where the values for a
+ * variable can be set from different inputs. For example,
+ * a variable could be set with a constant value, read 
+ * from a file, or given by a predefined function.
  *
- * It can be used in cases where:
- * - a physical variable may come under different names
- * - different physical quantities can provide the same
- *  information, so when one is defined, all the others
- *  are readily obtained
- * - a variable may be defined through different inputs
- *  (e.g. through a constant value or a filename).
- *
- * ParameterUnion will produce an error if none of the
- * required keys is found. At least one key/alias must be
- * defined in the input file. In case multiple aliases are
- * defined in the input file, the first key to be found is
- * returned. Key look up is done in the order in which they are
- * written into GetParameterUnion.
+ * The macro arguments are: 
+ * 
+ * @param par        ParameterUnion structure that stores
+ *                   the values read from the input script.
+ * @param base_str   Base of the key string that is looked
+ *                   for in the database. Keys are created
+ *                   by adding suffixes to the base.
+ * @param na_types   Expected values that the input key
+ *                   "`base_str`.Type" can assume. This
+ *                   selects which of the subsequent
+ *                   suffixes will be read in the input script.
+ * @param args       Body macros that tell what kind of 
+ *                   variable is expected to be read, what
+ *                   key value they correspond to in the 
+ *                   `na_types`
+
  *
  * Example:
  * {
- *  double arr[n];
  *  ParameterUnion par;
+ *  NameArray na_types = NA_NewNameArray("Constant 
+ *                                        PFBFile
+ *                                        PredefinedFunction 
+ *                                        Option");
  *
- *  GetParameterUnion(par, {
- *    ParameterUnionDouble(0, "parameter_alias1.Value");
- *    ParameterUnionString(1, "parameter_alias1.Filename");
- *    ParameterUnionDouble(2, "parameter_alias2.Value");
- *    ParameterUnionString(3, "parameter_alias2.Filename");
- *    ParameterUnionInt(   4, "parameter_alias3.FunctionType");
- *    ParameterUnionString(5, "parameter_alias4.PredefinedFunction");
- *  });
+ *  GetParameterUnion(par, "base.string", na_types,
+ *    ParameterUnionDouble(0, "Value")
+ *    ParameterUnionString(1, "Filename")
+ *    ParameterUnionString(2, "PredefinedFunction")
+ *    ParameterUnionInt(3, "Option")
+ *  );
  *
  *  for(i = 0; i < n; ++i) {
  *    switch(ParameterUnionID(par)) {
  *      case 0:
- *        // fill array with constant value
- *        arr[i] = ParameterUnionDataDouble(par);
+ *        double value = ParameterUnionDataDouble(par);
  *      case 1:
  *        // fill array with values from a file
  *        char *filename = ParameterUnionDataString(par);
@@ -96,84 +102,7 @@ typedef struct {
 #define ParameterUnionDataString(par) (par.data.strg)
 
 
-#define TYPE_CHECK 1
-#ifndef TYPE_CHECK
-
-#define GetParameterUnion(par, args)                                         \
-        {                                                                    \
-          IDB *_database = amps_ThreadLocal(input_database);                 \
-          IDB_Entry _lookup_entry;                                           \
-          IDB_Entry *_result;                                                \
-          char _key_list[IDB_MAX_KEY_LEN];                                   \
-          ParameterUnion _tmp;                                               \
-                                                                             \
-          switch (1)                                                         \
-          {                                                                  \
-            default:                                                         \
-              {                                                              \
-                args                                                         \
-                InputError(                                                  \
-                           "Input Error: Set one of these keys:\n %s %s \n", \
-                           _key_list, " ");                                  \
-              }                                                              \
-          }                                                                  \
-          par = _tmp;                                                        \
-        }
-
-
-#define _ParameterUnionLookup(_key)
-(                                                      \
-  _lookup_entry.key = (char*)_key,                     \
-  (IDB_Entry*)HBT_lookup(_database, &_lookup_entry)    \
-)
-
-
-#define _ParameterUnionAddKey(_key_list, _key)                 \
-        {                                                      \
-          strcat(_key_list, _key);                             \
-          strcat(_key_list, " \n");                            \
-        }
-
-
-#define ParameterUnionInt(_id, _key) {                          \
-          _result = _ParameterUnionLookup(_key);                \
-          if (_result)                                          \
-          {                                                     \
-            ParameterUnionID(_tmp) = _id;                       \
-            ParameterUnionDataInt(_tmp) = GetInt(_key);         \
-            break;                                              \
-          }                                                     \
-          _ParameterUnionAddKey(_key_list, _key);               \
-}
-
-
-#define ParameterUnionDouble(_id, _key) {                       \
-          _result = _ParameterUnionLookup(_key);                \
-          if (_result)                                          \
-          {                                                     \
-            ParameterUnionID(_tmp) = _id;                       \
-            ParameterUnionDataDouble(_tmp) = GetDouble(_key);   \
-            break;                                              \
-          }                                                     \
-          _ParameterUnionAddKey(_key_list, _key);               \
-}
-
-
-#define ParameterUnionString(_id, _key) {                       \
-          _result = _ParameterUnionLookup(_key);                \
-          if (_result)                                          \
-          {                                                     \
-            ParameterUnionID(_tmp) = _id;                       \
-            ParameterUnionDataString(_tmp) = GetString(_key);   \
-            break;                                              \
-          }                                                     \
-          _ParameterUnionAddKey(_key_list, _key);               \
-}
-
-
-#else // TYPE_CHECK is selected
-
-#define GetParameterUnion(par, na_types, base_str, args)               \
+#define GetParameterUnion(par, base_str, na_types, args)               \
         {                                                              \
           char _base_str[IDB_MAX_KEY_LEN];                             \
           char _full_key[IDB_MAX_KEY_LEN];                             \
@@ -228,6 +157,3 @@ typedef struct {
               ParameterUnionDataString(_tmp) = GetString(_full_key); \
               break;                                                 \
             }
-
-
-#endif
