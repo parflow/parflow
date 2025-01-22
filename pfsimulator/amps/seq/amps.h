@@ -42,6 +42,14 @@
 #include <stdlib.h>
 #endif
 
+#ifdef PARFLOW_HAVE_CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
+#endif
+#ifdef PARFLOW_HAVE_RMM
+#include <rmm/rmm_api.h>
+#endif
+
 #define AMPS_EXCHANGE_SPECIALIZED
 #define AMPS_FOPEN_SPECIALIZED
 #define AMPS_NEWHANDLE_SPECIALIZED
@@ -63,6 +71,17 @@
 
 typedef int amps_Comm;
 typedef FILE *amps_File;
+
+/* SGS this should be fixed; someone exposed internal variables rather than using
+ * the API macros */
+/* Node level ranks and size of nodeComm */
+#define amps_node_rank 0
+#define amps_node_size 1
+
+/* Writing proc ranks and size of writeComm */
+extern int amps_write_rank;
+extern int amps_write_size;
+
 
 #define amps_FreeHandle(handle) free((handle));
 #define amps_Rank(comm) 0
@@ -95,6 +114,8 @@ typedef FILE *amps_File;
 #define amps_Fopen(filename, type) fopen((filename), (type))
 #define amps_Init(argc, argv) amps_clock_init(), 0
 #define amps_EmbeddedInit() amps_clock_init(), 0
+#define amps_EmbeddedInitFComm(f_handle) amps_clock_init(), 0
+#define amps_EmbeddedInitComm(com) amps_clock_init(), 0
 
 #define amps_IExchangePackage(package) 0
 
@@ -216,13 +237,13 @@ typedef struct amps_HandleObject {
 #define PACK_HOST_TYPE 1
 #define PACK_NO_CONVERT_TYPE 2
 
-#define AMPS_ALIGN(type, dest)              \
-  ((sizeof(type) -                          \
-    ((unsigned long)(dest) % sizeof(type))) \
-   % sizeof(type));
+#define AMPS_ALIGN(type, dest)                    \
+        ((sizeof(type) -                          \
+          ((unsigned long)(dest) % sizeof(type))) \
+         % sizeof(type));
 
 #define AMPS_SIZEOF(type, len, stride) \
-  ((sizeof(type) * (len) * (stride)))
+        ((sizeof(type) * (len) * (stride)))
 
 /*---------------------------------------------------------------------------*/
 /* Macros for Invoice creation and deletion.                                 */
@@ -234,19 +255,19 @@ typedef struct amps_HandleObject {
 /* Internal macros used to clear buffer and letter spaces.                   */
 /*---------------------------------------------------------------------------*/
 #if SGS
-#define AMPS_CLEAR_INVOICE(invoice) \
-  {                                 \
-    amps_ClearInvoice(invoice);     \
-  }
+#define AMPS_CLEAR_INVOICE(invoice)       \
+        {                                 \
+          amps_ClearInvoice(invoice);     \
+        }
 
-#define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
-  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
-    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;    \
-  else                                                    \
-  {                                                       \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
-    pvm_freebuf(amps_letter);                             \
-  }
+#define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter)       \
+        if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
+        (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;      \
+        else                                                    \
+        {                                                       \
+          (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
+          pvm_freebuf(amps_letter);                             \
+        }
 
 #endif
 
@@ -286,47 +307,47 @@ typedef struct amps_HandleObject {
 #define amps_SizeofDouble sizeof(double)
 
 #define amps_WriteChar(file, ptr, len) \
-  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_WriteShort(file, ptr, len) \
-  fwrite((ptr), sizeof(short), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(short), (len), (FILE*)(file))
 
 #define amps_WriteLong(file, ptr, len) \
-  fwrite((ptr), sizeof(long), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(long), (len), (FILE*)(file))
 
 #define amps_WriteFloat(file, ptr, len) \
-  fwrite((ptr), sizeof(float), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(float), (len), (FILE*)(file))
 
 #ifdef CASC_HAVE_BIGENDIAN
 
 #define amps_WriteInt(file, ptr, len) \
-  fwrite((ptr), sizeof(int), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(int), (len), (FILE*)(file))
 
 #define amps_WriteDouble(file, ptr, len) \
-  fwrite((ptr), sizeof(double), (len), (FILE*)(file))
+        fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
 #endif
 
 
 #define amps_ReadChar(file, ptr, len) \
-  fread((ptr), sizeof(char), (len), (FILE*)(file))
+        fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadShort(file, ptr, len) \
-  fread((ptr), sizeof(short), (len), (FILE*)(file))
+        fread((ptr), sizeof(short), (len), (FILE*)(file))
 
 #define amps_ReadLong(file, ptr, len) \
-  fread((ptr), sizeof(long), (len), (FILE*)(file))
+        fread((ptr), sizeof(long), (len), (FILE*)(file))
 
 #define amps_ReadFloat(file, ptr, len) \
-  fread((ptr), sizeof(float), (len), (FILE*)(file))
+        fread((ptr), sizeof(float), (len), (FILE*)(file))
 
 #ifdef CASC_HAVE_BIGENDIAN
 
 #define amps_ReadInt(file, ptr, len) \
-  fread((ptr), sizeof(int), (len), (FILE*)(file))
+        fread((ptr), sizeof(int), (len), (FILE*)(file))
 
 #define amps_ReadDouble(file, ptr, len) \
-  fread((ptr), sizeof(double), (len), (FILE*)(file))
+        fread((ptr), sizeof(double), (len), (FILE*)(file))
 
 #endif
 
@@ -334,24 +355,24 @@ typedef struct amps_HandleObject {
 
 #ifdef AMPS_MEMORY_ALLOC_CHECK
 
-#define amps_TAlloc(type, count)                                      \
-  {                                                                   \
-    (type*)ptr;                                                       \
-    if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count)))) \
-        == NULL)                                                      \
-      amps_Printf("Error: out of memory in <%s> at line %d\n",        \
-                  __FILE__, __LINE__);                                \
-    ptr;                                                              \
-  }
+#define amps_TAlloc(type, count)                                            \
+        {                                                                   \
+          (type*)ptr;                                                       \
+          if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count)))) \
+              == NULL)                                                      \
+          amps_Printf("Error: out of memory in <%s> at line %d\n",          \
+                      __FILE__, __LINE__);                                  \
+          ptr;                                                              \
+        }
 
-#define amps_CTAlloc(type, count)                                                         \
-  {                                                                                       \
-    (type*)ptr;                                                                           \
-    if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL) \
-      amps_Printf("Error: out of memory in <%s> at line %d\n",                            \
-                  __FILE__, __LINE__);                                                    \
-    ptr;                                                                                  \
-  }
+#define amps_CTAlloc(type, count)                                                               \
+        {                                                                                       \
+          (type*)ptr;                                                                           \
+          if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL) \
+          amps_Printf("Error: out of memory in <%s> at line %d\n",                              \
+                      __FILE__, __LINE__);                                                      \
+          ptr;                                                                                  \
+        }
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr); else
@@ -363,10 +384,10 @@ typedef struct amps_HandleObject {
 #else
 
 #define amps_TAlloc(type, count) \
-  ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+        ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 #define amps_CTAlloc(type, count) \
-  ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+        ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr); else
@@ -399,6 +420,187 @@ typedef struct amps_HandleObject {
 
 #define AMPS_INVOICE_ALLOCATED 1
 #define AMPS_INVOICE_OVERLAYED 2
+
+#ifdef PARFLOW_HAVE_CUDA
+/*--------------------------------------------------------------------------
+ * Amps defines with CUDA
+ *--------------------------------------------------------------------------*/
+
+/**
+ * @brief Operation modes for amps_gpupacking function
+ *
+ * @note See function description for amps_gpupacking.
+ *
+ * @{
+ */
+#define AMPS_GETRBUF 1
+#define AMPS_GETSBUF 2
+#define AMPS_PACK 4
+#define AMPS_UNPACK 8
+/** @} */
+
+#if defined(PARFLOW_HAVE_CUDA) || defined(PARFLOW_HAVE_KOKKOS)
+
+/*--------------------------------------------------------------------------
+ *  GPU error handling macros
+ *--------------------------------------------------------------------------*/
+
+/**
+ * @brief CUDA error handling
+ *
+ * If error detected, print error message and exit.
+ *
+ * @param expr CUDA error (of type cudaError_t) [IN]
+ */
+#define CUDA_ERRCHK(err) (amps_cuda_error(err, __FILE__, __LINE__))
+static inline void amps_cuda_error(cudaError_t err, const char *file, int line)
+{
+  if (err != cudaSuccess)
+  {
+    printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
+    exit(1);
+  }
+}
+#endif // PARFLOW_HAVE_CUDA || PARFLOW_HAVE_KOKKOS
+
+#ifdef PARFLOW_HAVE_RMM
+/**
+ * @brief RMM error handling
+ *
+ * If error detected, print error message and exit.
+ *
+ * @param expr RMM error (of type rmmError_t) [IN]
+ */
+#define RMM_ERRCHK(err) (amps_rmm_error(err, __FILE__, __LINE__))
+static inline void amps_rmm_error(rmmError_t err, const char *file, int line)
+{
+  if (err != RMM_SUCCESS)
+  {
+    printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), file, line);
+    exit(1);
+  }
+}
+#endif // PARFLOW_HAVE_RMM
+
+/*--------------------------------------------------------------------------
+ * Define static unified memory allocation routines for devices
+ *--------------------------------------------------------------------------*/
+
+/**
+ * @brief Kokkos C wrapper declaration for memory allocation.
+ */
+void* kokkosUVMAlloc(size_t size);
+
+/**
+ * @brief Kokkos C wrapper declaration for memory deallocation.
+ */
+void kokkosUVMFree(void *ptr);
+
+/**
+ * @brief Kokkos C wrapper declaration for memory copy.
+ */
+void kokkosMemCpyUVMToUVM(char *dest, char *src, size_t size);
+
+/**
+ * @brief Kokkos C wrapper declaration for memset.
+ */
+void kokkosMemSetAmps(char *ptr, size_t size);
+
+/**
+ * @brief Allocates unified memory
+ *
+ * If RMM library is available, pool allocation is used for better performance.
+ *
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
+static inline void *_amps_talloc_device(size_t size)
+{
+  void *ptr = NULL;
+
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  ptr = kokkosUVMAlloc(size);
+#elif defined(PARFLOW_HAVE_CUDA)
+  CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+#endif
+
+  return ptr;
+}
+
+/**
+ * @brief Allocates unified memory initialized to 0
+ *
+ * If RMM library is available, pool allocation is used for better performance.
+ *
+ * @note Should not be called directly.
+ *
+ * @param size bytes to be allocated [IN]
+ * @return a void pointer to the allocated dataspace
+ */
+static inline void *_amps_ctalloc_device(size_t size)
+{
+  void *ptr = NULL;
+
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  ptr = kokkosUVMAlloc(size);
+#elif defined(PARFLOW_HAVE_CUDA)
+  CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+#endif
+
+#if defined(PARFLOW_HAVE_CUDA)
+  CUDA_ERRCHK(cudaMemset(ptr, 0, size));
+#else
+  // memset(ptr, 0, size);
+  kokkosMemSetAmps((char*)ptr, size);
+#endif
+
+  return ptr;
+}
+
+/**
+ * @brief Frees unified memory allocated with \ref _talloc_cuda or \ref _ctalloc_cuda
+ *
+ * @note Should not be called directly.
+ *
+ * @param ptr a void pointer to the allocated dataspace [IN]
+ */
+static inline void _amps_tfree_device(void *ptr)
+{
+#ifdef PARFLOW_HAVE_RMM
+  RMM_ERRCHK(rmmFree(ptr, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_KOKKOS)
+  kokkosUVMFree(ptr);
+#elif defined(PARFLOW_HAVE_CUDA)
+  CUDA_ERRCHK(cudaFree(ptr));
+  // CUDA_ERRCHK(cudaFreeHost(ptr));
+#endif
+}
+
+/**
+ * Same as \ref amps_TAlloc but allocates managed memory
+ */
+#define amps_TAlloc_managed(type, count) ((count > 0) ? (type*)_amps_talloc_device((unsigned int)(sizeof(type) * (count))) : NULL)
+
+/**
+ * Same as \ref amps_CTAlloc but allocates managed memory
+ */
+#define amps_CTAlloc_managed(type, count) ((count) ? (type*)_amps_ctalloc_device((unsigned int)(sizeof(type) * (count))) : NULL)
+
+/**
+ * Same as \ref amps_TFree but deallocates managed memory
+ */
+#define amps_TFree_managed(ptr) if (ptr) _amps_tfree_device(ptr); else {}
+
+#endif // PARFLOW_HAVE_CUDA || PARFLOW_HAVE_KOKKOS
+
 
 #include "amps_proto.h"
 

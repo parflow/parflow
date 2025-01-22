@@ -389,8 +389,8 @@ for i in range(51):
         new_output_dir_name + filename,
         correct_output_dir_name + filename,
         f"Max difference in x-velocity for timestep {timestep}",
-        sig_digits,
         abs_value,
+        sig_digits,
     ):
         passed = False
     filename = f"/{run_name}.out.vely.{timestep}.pfb"
@@ -398,8 +398,8 @@ for i in range(51):
         new_output_dir_name + filename,
         correct_output_dir_name + filename,
         f"Max difference in y-velocity for timestep {timestep}",
-        sig_digits,
         abs_value,
+        sig_digits,
     ):
         passed = False
     filename = f"/{run_name}.out.vely.{timestep}.pfb"
@@ -407,8 +407,8 @@ for i in range(51):
         new_output_dir_name + filename,
         correct_output_dir_name + filename,
         f"Max difference in z-velocity for timestep {timestep}",
-        sig_digits,
         abs_value,
+        sig_digits,
     ):
         passed = False
 

@@ -21,8 +21,11 @@ BaseRun:
     - Contaminants
     - Domain
     - Wells
+    - Reservoirs
     - TopoSlopesX
     - TopoSlopesY
+    - ChannelWidthX
+    - ChannelWidthY
     - Mannings
     - ICPressure
     - InternalBC

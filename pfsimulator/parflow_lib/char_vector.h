@@ -79,7 +79,7 @@ typedef struct _CharVector {
 
 #define SubcharvectorData(subcharvector) ((subcharvector)->data)
 #define SubcharvectorCompData(subcharvector, ci) \
-  (((subcharvector)->data) + ((subcharvector)->data_index[ci]))
+        (((subcharvector)->data) + ((subcharvector)->data_index[ci]))
 
 #define SubcharvectorDataSpace(subcharvector)  ((subcharvector)->data_space)
 
@@ -93,16 +93,16 @@ typedef struct _CharVector {
 
 #define SubcharvectorNC(subcharvector)   ((subcharvector)->nc)
 
-#define SubcharvectorEltIndex(subcharvector, x, y, z) \
-  (((x) - SubcharvectorIX(subcharvector)) +           \
-   (((y) - SubcharvectorIY(subcharvector)) +          \
-    (((z) - SubcharvectorIZ(subcharvector))) *        \
-    SubcharvectorNY(subcharvector)) *                 \
-   SubcharvectorNX(subcharvector))
+#define SubcharvectorEltIndex(subcharvector, x, y, z)       \
+        (((x) - SubcharvectorIX(subcharvector)) +           \
+         (((y) - SubcharvectorIY(subcharvector)) +          \
+          (((z) - SubcharvectorIZ(subcharvector))) *        \
+          SubcharvectorNY(subcharvector)) *                 \
+         SubcharvectorNX(subcharvector))
 
-#define SubcharvectorElt(subcharvector, ci, x, y, z) \
-  (SubcharvectorCompData(subcharvector, ci) +        \
-   SubcharvectorEltIndex(subcharvector, x, y, z))
+#define SubcharvectorElt(subcharvector, ci, x, y, z)       \
+        (SubcharvectorCompData(subcharvector, ci) +        \
+         SubcharvectorEltIndex(subcharvector, x, y, z))
 
 /*--------------------------------------------------------------------------
  * Accessor functions for the CharVector structure

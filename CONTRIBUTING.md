@@ -211,6 +211,48 @@ pretty familiar.  Since C doesn't have the language constructs it
 makes the infrastructure for supporting OO more visible, manual and
 error prone.
 
+## Automatic style checking
+
+ParFlow uses automated code formatters to check code as one of the
+checks in our CI system.  Incorrectly formatted code will fail the
+check and won't be merged.  The check is done using Uncrustify for C
+and Black for Python.  A script is provided to automatically reformat 
+code and do the check.
+
+To check if the coding style is correct run the pfformat script at the 
+root of the PF source tree:
+
+```
+cd parflow
+./bin/pfformat --check
+```
+
+Checking is done with the same script:
+
+```
+cd parflow
+./bin/pfformat
+```
+
+You must have installed Uncrustify version 0.79.0 in order for this to
+work.  The Python Black code formatter will be installed during the
+ParFlow installation so you don't need to manually install Black.
+
+Information and source on these tools can be found here:
+
+[Uncrustify](https://github.com/uncrustify/uncrustify)
+
+[Black](https://github.com/psf/black)
+
+### Why auto code formatting?
+
+Enforcing a common code indentation and other style format is fairly
+common on Open Source projects.  Everyone has different preferred
+styles and has setup their editors with different options.  Reviewing
+and merging code conflicts that have divered primarily due to code
+formatting creates unnecessary headaches and makes it harder to
+understand what 'real' changes have occured.
+
 ## ParFlow C Conventions
 
 Most of ParFlow is written in ANSI C.  ParFlow has been compiled with
@@ -222,20 +264,11 @@ be usable with C++.  CLM is written in FORTRAN.
 ParFlow doesn't have a full coding style guide document; follow the
 existing coding style to when doing a code submission.
 
-Code contributions should NOT do indentation/whitespace changes
-intermixed with bug fixes/feature additions.  Large amounts of white
-spaces changes makes it hard for reviewers to see what is actually
-being changed.  Looking at 20 changed files for a 1 line of a bug fix
-is not reviewer friendly.
-
-If you have indentation/whitespace changes, please submit those as a
-separate pull request so they can be easily reviewed.
-
 ParFlow uses Uncrustify to perform automatic code indentation/spacing.
 The bin/pfuncrustify script is supplied to run the uncrustify tool on
 the ParFlow source code.  The Uncrustify setup is in the
 bin/parflow.cfg file.  Code contributions should use the the
-pfuncrustify tool to maintain consistency.
+pfformat tool to maintain consistency.
 
 #### Source Code Documentation
 
@@ -312,8 +345,7 @@ code more diffult to maintain.  We are documenting now so don't follow
 the bad practices from our past.
 
 Using the [Black](https://pypi.org/project/black/) code formatter is
-highly recommended and we are planing on enforcing use of Black at
-some point.
+enforced in the CI process for checking pull requests.
 
 ## Your First Code Contribution
 

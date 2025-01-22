@@ -132,7 +132,7 @@ void PrintVersionInfo(FILE *log_file)
 {
   fprintf(log_file, "\tVersion         : %s\n", PARFLOW_VERSION_STRING);
   fprintf(log_file, "\tCompiled on     : %s %s\n", __DATE__, __TIME__);
-  
+
 #ifdef CFLAGS
   fprintf(log_file, "\tWith C flags    : %s\n", CFLAGS);
 #endif
@@ -152,5 +152,4 @@ void PrintVersionInfo(FILE *log_file)
 #elif defined(PARFLOW_HAVE_OMP)
   fprintf(log_file, "\tWith acc backend: OMP\n");
 #endif
-
 }

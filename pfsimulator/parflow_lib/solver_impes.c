@@ -283,7 +283,7 @@ void      SolverImpes()
 
   if (public_xtra->write_silo_subsurf_data)
   {
-    strcpy(file_postfix,"");
+    strcpy(file_postfix, "");
     sprintf(file_type, "perm_x");
     WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPermeabilityX(problem_data),
               t, 0, "PermeabilityX");
@@ -1150,28 +1150,28 @@ void      SolverImpes()
           }
 
           /* put call to CRUNCHFLOW here @RMM */
-	  /* int is; */
-	  /* ForSubgridI(is, GridSubgrids(grid)) */
-	  /* { */
-	  /*   double dx, dy, dz; */
-	  /*   int nx, ny, nz, nx_f, ny_f, nz_f, nz_rz, ip, ix, iy, iz; */
-	  /*   int x, y, z; */
-	  
-	  /*   // @RMM - dummy variables for calling CRUNCHFLOW */
-	  /*   nx = SubgridNX(subgrid); */
-	  /*   ny = SubgridNY(subgrid); */
-	  /*   nz = SubgridNZ(subgrid); */
-	  
-	  /*   ix = SubgridIX(subgrid); */
-	  /*   iy = SubgridIY(subgrid); */
-	  /*   iz = SubgridIZ(subgrid); */
-	  
-	  /*   dx = SubgridDX(subgrid); */
-	  /*   dy = SubgridDY(subgrid); */
-	  /*   dz = SubgridDZ(subgrid); */
-	  
-	  /*   CALL_CRUNCHFLOW(); */
-	  /* } */
+          /* int is; */
+          /* ForSubgridI(is, GridSubgrids(grid)) */
+          /* { */
+          /*   double dx, dy, dz; */
+          /*   int nx, ny, nz, nx_f, ny_f, nz_f, nz_rz, ip, ix, iy, iz; */
+          /*   int x, y, z; */
+
+          /*   // @RMM - dummy variables for calling CRUNCHFLOW */
+          /*   nx = SubgridNX(subgrid); */
+          /*   ny = SubgridNY(subgrid); */
+          /*   nz = SubgridNZ(subgrid); */
+
+          /*   ix = SubgridIX(subgrid); */
+          /*   iy = SubgridIY(subgrid); */
+          /*   iz = SubgridIZ(subgrid); */
+
+          /*   dx = SubgridDX(subgrid); */
+          /*   dy = SubgridDY(subgrid); */
+          /*   dz = SubgridDZ(subgrid); */
+
+          /*   CALL_CRUNCHFLOW(); */
+          /* } */
         }
 
         /* Print the concentration values at this time-step? */
@@ -1264,7 +1264,7 @@ void      SolverImpes()
 
       if (public_xtra->write_silo_press)
       {
-	strcpy(file_postfix, "");
+        strcpy(file_postfix, "");
         sprintf(file_type, "press");
         WriteSilo(file_prefix, file_type, file_postfix, pressure,
                   t, file_number, "Pressure");
@@ -1503,7 +1503,7 @@ PFModule *SolverImpesInitInstanceXtra()
   // SGS TODO total_mobility_sz is not being set anywhere so initialized to 0 here.
   int total_mobility_sz = 0;
   int pressure_sz, velocity_sz, satur_sz = 0,
-    concen_sz, temp_data_size, sz;
+      concen_sz, temp_data_size, sz;
   int is_multiphase;
 
   int i;
@@ -1823,7 +1823,7 @@ PFModule *SolverImpesInitInstanceXtra()
   int size_advect = PFModuleSizeOfTempData(instance_xtra->advect_concen);
   temp_data_placeholder += pfmax(
                                  size_retardation,
-				 size_advect
+                                 size_advect
                                  );
   /* set temporary vector data used for advection */
 

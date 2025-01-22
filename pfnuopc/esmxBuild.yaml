@@ -1,0 +1,9 @@
+application:
+  exe_name: esmx_parflow
+
+components:
+  parflow:
+    build_type: none
+    cmake_config: ParFlow.cmake
+    libraries: parflow_nuopc
+    fort_module: parflow_nuopc.mod

@@ -72,6 +72,11 @@
 #define ZERO 0.0
 #define ONE  1.0
 
+/* Kinsol API is in C */
+#ifdef __cplusplus
+extern "C"
+#endif
+
 void PFVLinearSum(
 /* LinearSum : z = a * x + b * y              */
                   double  a,
@@ -723,9 +728,9 @@ double PFVDotProd(
     i_y = 0;
 
     BoxLoopReduceI2(sum,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_y, nx_y, ny_y, nz_y, 1, 1, 1,
     {
       ReduceSum(sum, xp[i_x] * yp[i_y]);
     });
@@ -782,8 +787,8 @@ double PFVMaxNorm(
 
     i_x = 0;
     BoxLoopReduceI1(max_val,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       double xp_abs = fabs(xp[i_x]);
       ReduceMax(max_val, xp_abs);
@@ -851,9 +856,9 @@ double PFVWrmsNorm(
     i_w = 0;
 
     BoxLoopReduceI2(sum,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              i_w, nx_w, ny_w, nz_w, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       double prod = xp[i_x] * wp[i_w];
       ReduceSum(sum, prod * prod);
@@ -923,9 +928,9 @@ double PFVWL2Norm(
     i_w = 0;
 
     BoxLoopReduceI2(sum,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              i_w, nx_w, ny_w, nz_w, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       const double prod = xp[i_x] * wp[i_w];
       ReduceSum(sum, prod * prod);
@@ -983,8 +988,8 @@ double PFVL1Norm(
 
     i_x = 0;
     BoxLoopReduceI1(sum,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceSum(sum, fabs(xp[i_x]));
     });
@@ -1046,8 +1051,8 @@ double PFVMin(
     {
       i_x = 0;
       BoxLoopReduceI1(min_val,
-                i, j, k, ix, iy, iz, 1, 1, 1,
-                i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                      i, j, k, ix, iy, iz, 1, 1, 1,
+                      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
       {
         ReduceSum(min_val, xp[i_x]);
       });
@@ -1055,8 +1060,8 @@ double PFVMin(
 
     i_x = 0;
     BoxLoopReduceI1(min_val,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceMin(min_val, xp[i_x]);
     });
@@ -1113,8 +1118,8 @@ double PFVMax(
     {
       i_x = 0;
       BoxLoopReduceI1(max_val,
-                i, j, k, ix, iy, iz, 1, 1, 1,
-                i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                      i, j, k, ix, iy, iz, 1, 1, 1,
+                      i_x, nx_x, ny_x, nz_x, 1, 1, 1,
       {
         ReduceSum(max_val, xp[i_x]);
       });
@@ -1123,8 +1128,8 @@ double PFVMax(
     i_x = 0;
 
     BoxLoopReduceI1(max_val,
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+                    i, j, k, ix, iy, iz, nx, ny, nz,
+                    i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceMax(max_val, xp[i_x]);
     });
@@ -1385,7 +1390,7 @@ void PFVCopy(Vector *x,
     Subvector  *x_sub = VectorSubvector(x, sg);
     Subvector  *y_sub = VectorSubvector(y, sg);
 
-    tmemcpy(SubvectorData(y_sub), SubvectorData(x_sub), SubvectorDataSize(y_sub)*sizeof(double));
+    tmemcpy(SubvectorData(y_sub), SubvectorData(x_sub), SubvectorDataSize(y_sub) * sizeof(double));
   }
 }
 
@@ -2077,3 +2082,7 @@ void PFVLayerCopy(
   }
   IncFLOPCount(2 * VectorSize(x));
 }
+
+#ifdef __cpluspus
+}
+#endif

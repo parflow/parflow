@@ -28,6 +28,7 @@
 
 #include "parflow.h"
 
+#include <string.h>
 #include <assert.h>
 
 /*--------------------------------------------------------------------------
@@ -198,7 +199,7 @@ VanGTable *VanGComputeTable(
 
   // GCC 11.3.0 WITH optimization warns that del is possibly used without initialization.
   // This silences the warning.   Looks like a false warning, what is the opt doing?
-  memset(del, num_sample_points+1, sizeof(double));
+  memset(del, num_sample_points + 1, sizeof(double));
   // begin monotonic spline (see Fritsch and Carlson, SIAM J. Num. Anal., 17 (2), 1980)
   for (index = 0; index < num_sample_points; index++)
   {
@@ -363,6 +364,7 @@ static inline double VanGLookupLinear(
   int num_sample_points = lookup_table->num_sample_points;
   double min_pressure_head = lookup_table->min_pressure_head;
   int max = num_sample_points + 1;
+
   PF_UNUSED(max);
 
   // This table goes from 0 to fabs(min_pressure_head)
@@ -503,7 +505,7 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               prdat[ipr] = values[ir];
             });
           }
@@ -513,7 +515,7 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               prdat[ipr] = 0.0;
             });
           }     /* End else clause */
@@ -692,11 +694,11 @@ void         PhaseRelPerm(
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
@@ -720,7 +722,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
-		    PF_UNUSED(max);
+                    PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                    nx, ny, nz,
@@ -728,11 +730,11 @@ void         PhaseRelPerm(
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 1.0;
@@ -766,11 +768,11 @@ void         PhaseRelPerm(
                                nx, ny, nz,
                 {
                   int ipr = SubvectorEltIndex(pr_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipp = SubvectorEltIndex(pp_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipd = SubvectorEltIndex(pd_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 1.0;
@@ -804,11 +806,11 @@ void         PhaseRelPerm(
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
@@ -831,7 +833,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
-		    PF_UNUSED(max);
+                    PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                    nx, ny, nz,
@@ -839,11 +841,11 @@ void         PhaseRelPerm(
                       /* Table Lookup */
 
                       int ipr = SubvectorEltIndex(pr_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipp = SubvectorEltIndex(pp_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
                       int ipd = SubvectorEltIndex(pd_sub,
-                                              i + fdir[0], j + fdir[1], k + fdir[2]);
+                                                  i + fdir[0], j + fdir[1], k + fdir[2]);
 
                       if (ppdat[ipp] >= 0.0)
                         prdat[ipr] = 0.0;
@@ -883,11 +885,11 @@ void         PhaseRelPerm(
                                nx, ny, nz,
                 {
                   int ipr = SubvectorEltIndex(pr_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipp = SubvectorEltIndex(pp_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
                   int ipd = SubvectorEltIndex(pd_sub,
-                                          i + fdir[0], j + fdir[1], k + fdir[2]);
+                                              i + fdir[0], j + fdir[1], k + fdir[2]);
 
                   if (ppdat[ipp] >= 0.0)
                     prdat[ipr] = 0.0;
@@ -956,11 +958,11 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
               int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
@@ -987,11 +989,11 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               int n_index = SubvectorEltIndex(n_values_sub, i, j, k);
               int alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
@@ -1087,7 +1089,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
-		    PF_UNUSED(max);
+                    PF_UNUSED(max);
 
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
@@ -1190,7 +1192,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
-		    PF_UNUSED(max);
+                    PF_UNUSED(max);
 
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
@@ -1402,11 +1404,11 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 1.0;
@@ -1424,11 +1426,11 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipd = SubvectorEltIndex(pd_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
 
               if (ppdat[ipp] >= 0.0)
                 prdat[ipr] = 0.0;
@@ -1567,9 +1569,9 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = region_coeffs[0];
               else
@@ -1588,9 +1590,9 @@ void         PhaseRelPerm(
                            nx, ny, nz,
             {
               int ipr = SubvectorEltIndex(pr_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               int ipp = SubvectorEltIndex(pp_sub,
-                                      i + fdir[0], j + fdir[1], k + fdir[2]);
+                                          i + fdir[0], j + fdir[1], k + fdir[2]);
               if (ppdat[ipp] == 0.0)
                 prdat[ipr] = 0.0;
               else

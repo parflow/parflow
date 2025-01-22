@@ -1,12 +1,11 @@
-
 from parflow import Run
 from parflow.tools.builders import SubsurfacePropertiesBuilder
 
 run = Run("table_test", __file__)
 
-run.GeomInput.Names = 's1 s2 s3 s4'
+run.GeomInput.Names = "s1 s2 s3 s4"
 
-soil_properties = '''
+soil_properties = """
 # -----------------------------------------------------------------------------
 # Sample header
 # -----------------------------------------------------------------------------
@@ -24,26 +23,26 @@ s4   0.6   0.567     0.554            4.4      3.5       3.4      8
 s5   0.65  0.675     0.455            5.5      4.5       5.6      9
 
 s6   -     0.7       -                6.6      -         -        -
-'''
+"""
 
 soil_builder = SubsurfacePropertiesBuilder(run).load_txt_content(soil_properties)
 
-print('-'*80)
-print('basic mapping')
-print('-'*80)
+print("-" * 80)
+print("basic mapping")
+print("-" * 80)
 soil_builder.print()
-print('-'*80)
-print('remap s5 to s4')
-print('-'*80)
-soil_builder.assign('s5', 's4').print()
+print("-" * 80)
+print("remap s5 to s4")
+print("-" * 80)
+soil_builder.assign("s5", "s4").print()
 
-print('-'*80)
-print('remap s6 to s4 (with skip)')
-print('-'*80)
-soil_builder.assign('s6', 's4').print()
+print("-" * 80)
+print("remap s6 to s4 (with skip)")
+print("-" * 80)
+soil_builder.assign("s6", "s4").print()
 
-print('+'*80)
-soil_properties_transpose = '''
+print("+" * 80)
+soil_properties_transpose = """
 # -----------------------------------------------------------------------------
 # Sample header transposed
 # -----------------------------------------------------------------------------
@@ -56,21 +55,23 @@ RelPermA      1.2     2.3    2.4      3.5     4.5     -
 RelPermN      1.4     1.7    2.3      3.4     5.6     -
 A             5       6      7        8       9       -
 # -----------------------------------------------------------------------------
-'''
-soil_builder = SubsurfacePropertiesBuilder(run).load_txt_content(soil_properties_transpose)
+"""
+soil_builder = SubsurfacePropertiesBuilder(run).load_txt_content(
+    soil_properties_transpose
+)
 
-print('-'*80)
-print('basic mapping')
-print('-'*80)
+print("-" * 80)
+print("basic mapping")
+print("-" * 80)
 soil_builder.print()
-print('-'*80)
-print('remap s5 to s4')
-print('-'*80)
-soil_builder.assign('s5', 's4').print()
-print('-'*80)
-print('remap s6 to s4 (with skip)')
-print('-'*80)
-soil_builder.assign('s6', 's4').print()
+print("-" * 80)
+print("remap s5 to s4")
+print("-" * 80)
+soil_builder.assign("s5", "s4").print()
+print("-" * 80)
+print("remap s6 to s4 (with skip)")
+print("-" * 80)
+soil_builder.assign("s6", "s4").print()
 
 soil_builder.apply()
 

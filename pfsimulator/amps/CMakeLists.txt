@@ -10,6 +10,11 @@ string(REGEX REPLACE "([^;]+)" "common/\\1" COMMON_SRC_FILES "${COMMON_SRC_FILES
 include("${PARFLOW_AMPS_LAYER}/CMakeLists.cmake")
 string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SRC_FILES "${AMPS_SRC_FILES}")
 
+if( ${PARFLOW_BUILD_WITH_CPP} )
+  set_source_files_properties(${COMMON_SRC_FILES} ${AMPS_SRC_FILES}
+    PROPERTIES LANGUAGE CXX)
+endif()
+
 add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
 if(${PARFLOW_HAVE_CUDA})

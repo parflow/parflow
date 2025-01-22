@@ -136,7 +136,7 @@ int amps_Init(int *argc, char **argv[])
   checkSum &= INT_MAX;
   MPI_Comm_split(amps_CommWorld, checkSum, amps_rank, &amps_CommNode);
 #endif
-  
+
   MPI_Comm_rank(amps_CommNode, &amps_node_rank);
   MPI_Comm_size(amps_CommNode, &amps_node_size);
   int color;
@@ -236,6 +236,38 @@ int amps_EmbeddedInit(void)
   amps_EmbeddedInitComm(MPI_COMM_WORLD);
 
   return 0;
+}
+
+/**
+ * Initialization when ParFlow is being invoked by another application.
+ * This must be done before any other {\em AMPS} calls.
+ *
+ * ParFlow will use the supplied communication context and convert it from f2c.
+ *
+ * {\large Example:}
+ * \begin{verbatim}
+ * int init_wrapper()
+ * {
+ * amps_EmbeddedInitFComm(MPI_COMM_PARFLOW);
+ *
+ * amps_Printf("Hello World");
+ *
+ * amps_Finalize();
+ * }
+ * \end{verbatim}
+ *
+ * {\large Notes:}
+ *
+ * @memo Initialize AMPS
+ * @param comm MPI Fortran communicator context to use for ParFlow
+ * @return
+ */
+int amps_EmbeddedInitFComm(MPI_Fint *f_handle)
+{
+  MPI_Comm comm;
+
+  comm = MPI_Comm_f2c(*f_handle);
+  return amps_EmbeddedInitComm(comm);
 }
 
 /**

@@ -66,7 +66,7 @@ int operation;
         case amps_Max:
           switch (ptr->type)
           {
-	    case AMPS_INVOICE_BYTE_CTYPE:
+            case AMPS_INVOICE_BYTE_CTYPE:
               pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
                                                pos_dest, len, 1);
               pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
@@ -162,7 +162,7 @@ int operation;
         case amps_Min:
           switch (ptr->type)
           {
-	    case AMPS_INVOICE_BYTE_CTYPE:
+            case AMPS_INVOICE_BYTE_CTYPE:
               pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
                                                pos_dest, len, 1);
               pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
@@ -258,7 +258,7 @@ int operation;
         case amps_Add:
           switch (ptr->type)
           {
-	    case AMPS_INVOICE_BYTE_CTYPE:
+            case AMPS_INVOICE_BYTE_CTYPE:
               pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
                                                pos_dest, len, 1);
               pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
@@ -342,13 +342,14 @@ int operation;
                    pos_dest += sizeof(double), pos_src += sizeof(double))
                 *(double*)pos_dest += *(double*)pos_src;
               break;
-	    default:
-	    {
-	      amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
-	      pos_dest = 0;
-	      pos_src = 0;
-	    }
-	    break;
+
+            default:
+            {
+              amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+              pos_dest = 0;
+              pos_src = 0;
+            }
+            break;
           }
           break;
       }

@@ -9,15 +9,15 @@ from parflow.tools.fs import cp, get_absolute_path, rm
 
 
 default_driver_file_names = {
-    'input': 'drv_clmin.dat',
-    'map': 'drv_vegm.dat',
-    'parameters': 'drv_vegp.dat',
+    "input": "drv_clmin.dat",
+    "map": "drv_vegm.dat",
+    "parameters": "drv_vegp.dat",
 }
 
 default_driver_file_paths = {
-    'input': '../../input/drv_clmin.dat.old',
-    'map': '../../tcl/clm/drv_vegm.dat',
-    'parameters': '../../tcl/clm/drv_vegp.dat',
+    "input": "../../input/drv_clmin.dat.old",
+    "map": "../../tcl/clm/drv_vegm.dat",
+    "parameters": "../../tcl/clm/drv_vegp.dat",
 }
 
 
@@ -25,14 +25,13 @@ default_driver_file_paths = {
 # Testing overwriting driver files with CLMExporter
 # ---------------------------------------------------------
 
+
 def test_overwrite_failure(clm):
     # First, copy the files over
     copy_driver_files()
 
     # Import the files
-    CLMImporter(clm) \
-        .set_default_land_names() \
-        .files()
+    CLMImporter(clm).set_default_land_names().files()
 
     exporter = CLMExporter(clm)
 
@@ -55,9 +54,7 @@ def test_overwrite_success(clm):
     copy_driver_files()
 
     # Import the files
-    CLMImporter(clm) \
-        .set_default_land_names() \
-        .files()
+    CLMImporter(clm).set_default_land_names().files()
 
     exporter = CLMExporter(clm)
 
@@ -125,13 +122,11 @@ def test_write_allowed(clm):
         return originally_written_times == driver_file_written_times()
 
     # Import the files
-    CLMImporter(clm) \
-        .set_default_land_names() \
-        .files()
+    CLMImporter(clm).set_default_land_names().files()
 
     exporter = CLMExporter(clm)
 
-    warning_func = '_print_not_written_warning'
+    warning_func = "_print_not_written_warning"
     # This should not print any warnings even though it didn't write,
     # because we did not change any settings.
     assert was_called(exporter, warning_func, exporter.write_allowed) is False
@@ -141,18 +136,16 @@ def test_write_allowed(clm):
 
     # Change some settings. Warnings should be printed in every case.
     clm_solver = clm.Solver.CLM
-    clm_solver.Input.Timing.StartYear = '2020'
+    clm_solver.Input.Timing.StartYear = "2020"
     assert was_called(exporter, warning_func, exporter.write_allowed) is True
 
     # Prove the files were not written to
     assert files_unchanged()
 
     # Re-import the files to erase history
-    CLMImporter(clm) \
-        .set_default_land_names() \
-        .files()
+    CLMImporter(clm).set_default_land_names().files()
 
-    clm_solver.Vegetation.Map.Sand.Type = 'Constant'
+    clm_solver.Vegetation.Map.Sand.Type = "Constant"
     clm_solver.Vegetation.Map.Sand.Value = 0.3
     assert was_called(exporter, warning_func, exporter.write_allowed) is True
 
@@ -160,9 +153,7 @@ def test_write_allowed(clm):
     assert files_unchanged()
 
     # Re-import the files to erase history
-    CLMImporter(clm) \
-        .set_default_land_names() \
-        .files()
+    CLMImporter(clm).set_default_land_names().files()
 
     clm_solver.Vegetation.Parameters.forest_en.WaterType = 5
     assert was_called(exporter, warning_func, exporter.write_allowed) is True
@@ -171,9 +162,7 @@ def test_write_allowed(clm):
     assert files_unchanged()
 
     # Re-import the files to erase history
-    CLMImporter(clm) \
-        .set_default_land_names() \
-        .files()
+    CLMImporter(clm).set_default_land_names().files()
     # Should not be called this time
     assert was_called(exporter, warning_func, exporter.write_allowed) is False
 
@@ -192,7 +181,7 @@ def assert_exception(func, *args, **kwargs):
     except exc:
         return
     else:
-        sys.exit(f'{exc} did not occur')
+        sys.exit(f"{exc} did not occur")
 
 
 def was_called(obj, func_name, run_func, *args, **kwargs):
@@ -228,8 +217,8 @@ def driver_file_written_times():
     }
 
 
-if __name__ == '__main__':
-    clm = Run('clm', __file__)
+if __name__ == "__main__":
+    clm = Run("clm", __file__)
 
     # These are required to write out the map
     clm.ComputationalGrid.NX = 5

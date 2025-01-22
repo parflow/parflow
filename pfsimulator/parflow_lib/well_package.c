@@ -128,7 +128,7 @@ void         WellPackage(
   double          **phase_values;
   double subgrid_volume;
   double x_lower, x_upper, y_lower, y_upper,
-    z_lower, z_upper;
+         z_lower, z_upper;
 
   /* Allocate the well data */
   WellDataNumPhases(well_data) = (public_xtra->num_phases);
@@ -865,7 +865,8 @@ PFModule  *WellPackageNewPublicXtra(
   (public_xtra->num_phases) = num_phases;
   (public_xtra->num_contaminants) = num_contaminants;
 
-  well_names = GetString("Wells.Names");
+  char* EMPTY_NAMES_LIST = "";
+  well_names = GetStringDefault("Wells.Names", EMPTY_NAMES_LIST);
 
   public_xtra->well_names = NA_NewNameArray(well_names);
 
@@ -1283,7 +1284,7 @@ PFModule  *WellPackageNewPublicXtra(
 
         default:
         {
-	  InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
+          InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
         }
       }
     }
