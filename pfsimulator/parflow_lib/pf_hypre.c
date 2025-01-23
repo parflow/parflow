@@ -35,6 +35,35 @@
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
 
+#ifdef PARFLOW_HAVE_CUDA
+#include <cuda_runtime.h>
+#endif
+
+/* 
+ * This is version of the Hypre method that uses a Ptr value to value; needed for CUDA host loop so the value can be in device accessible memory. 
+ * The Hypre version causes issue since the values parameter is allocated on Host stack.
+*/
+HYPRE_Int
+PF_HYPRE_StructVectorSetValuesPtr(HYPRE_StructVector vector,
+                                   HYPRE_Int *        grid_index,
+                                   HYPRE_Complex *    values)
+{
+  hypre_Index new_grid_index;
+
+  HYPRE_Int d;
+
+  hypre_SetIndex(new_grid_index, 0);
+  for (d = 0; d < hypre_StructVectorNDim(vector); d++)
+  {
+    hypre_IndexD(new_grid_index, d) = grid_index[d];
+  }
+
+  hypre_StructVectorSetValues(vector, new_grid_index, values, 0, -1, 0);
+
+  return hypre_error_flag;
+}
+
+
 void CopyParFlowVectorToHypreVector(Vector *            rhs,
                                     HYPRE_StructVector* hypre_b)
 {
@@ -68,6 +97,15 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
     int iv = SubvectorEltIndex(rhs_sub, ix, iy, iz);
 
 
+
+
+#ifdef PARFLOW_HAVE_CUDA
+    double* value;
+    cudaMallocManaged(&value, 1 * sizeof(double));
+#else
+    double value[1];
+#endif
+
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
@@ -75,9 +113,15 @@ void CopyParFlowVectorToHypreVector(Vector *            rhs,
       index[1] = j;
       index[2] = k;
 
-      HYPRE_StructVectorSetValues(*hypre_b, index, rhs_ptr[iv]);
+      *value = rhs_ptr[iv];
+      PF_HYPRE_StructVectorSetValuesPtr(*hypre_b, index, value);
     });
+
+#ifdef PARFLOW_HAVE_CUDA
+    cudaFree(value);
+#endif
   }
+
   HYPRE_StructVectorAssemble(*hypre_b);
 }
 
@@ -91,7 +135,6 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
   int nx, ny, nz;
   int nx_v, ny_v, nz_v;
   int i, j, k;
-  int index[3];
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
@@ -114,20 +157,29 @@ void CopyHypreVectorToParflowVector(HYPRE_StructVector* hypre_x,
 
     int iv = SubvectorEltIndex(soln_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_CUDA
+    double* value;
+    cudaMallocManaged(&value, 1 * sizeof(double));
+#else
+    double value[1];
+#endif
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
+      int index[3];
       index[0] = i;
       index[1] = j;
       index[2] = k;
 
-      double value;
-      HYPRE_StructVectorGetValues(*hypre_x, index, &value);
-      soln_ptr[iv] = value;
+      HYPRE_StructVectorGetValues(*hypre_x, index, value);
+      soln_ptr[iv] = *value;
     });
+
+#ifdef PARFLOW_HAVE_CUDA
+    cudaFree(value);
+#endif
   }
 }
-
 
 void HypreAssembleGrid(
                        Grid*             pf_grid,
@@ -187,7 +239,7 @@ void HypreInitialize(Matrix*              pf_Bmat,
   /* For remainder of routine, assume matrix is structured the same for
    * entire nonlinear solve process */
   /* Set stencil parameters */
-  int stencil_size = MatrixDataStencilSize(pf_Bmat);
+  HYPRE_Int stencil_size = MatrixDataStencilSize(pf_Bmat);
 
   if (!(*hypre_stencil))
   {
@@ -256,8 +308,16 @@ void HypreAssembleMatrixAsElements(
   int stencil_indices_symm[4] = { 0, 1, 2, 3 };
   int index[3];
 
+
+#ifdef PARFLOW_HAVE_CUDA
+  double* coeffs;
+  cudaMallocManaged(&(coeffs), 7 * sizeof(double));
+  double* coeffs_symm;
+  cudaMallocManaged(&(coeffs_symm), 4 * sizeof(double));
+#else
   double coeffs[7];
   double coeffs_symm[4];
+#endif
 
   int stencil_size = MatrixDataStencilSize(pf_Bmat);
   int symmetric = MatrixSymmetric(pf_Bmat);
@@ -271,7 +331,6 @@ void HypreAssembleMatrixAsElements(
       Subgrid* subgrid = GridSubgrid(mat_grid, sg);
 
       Submatrix* pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
-
 
       if (symmetric)
       {
@@ -343,7 +402,8 @@ void HypreAssembleMatrixAsElements(
           HYPRE_StructMatrixSetValues(*hypre_mat,
                                       index,
                                       stencil_size,
-                                      stencil_indices, coeffs);
+                                      (HYPRE_Int*)stencil_indices,
+                                      coeffs);
         });
       }
     }   /* End subgrid loop */
@@ -446,7 +506,7 @@ void HypreAssembleMatrixAsElements(
           HYPRE_StructMatrixSetValues(*hypre_mat,
                                       index,
                                       stencil_size,
-                                      stencil_indices_symm,
+                                      (HYPRE_Int*)stencil_indices_symm,
                                       coeffs_symm);
         });
       }
@@ -510,7 +570,8 @@ void HypreAssembleMatrixAsElements(
           HYPRE_StructMatrixSetValues(*hypre_mat,
                                       index,
                                       stencil_size,
-                                      stencil_indices, coeffs);
+                                      (HYPRE_Int*)stencil_indices,
+                                      coeffs);
         });
       }
     }   /* End subgrid loop */
