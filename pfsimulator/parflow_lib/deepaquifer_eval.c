@@ -713,6 +713,7 @@ PFModule* DeepAquiferEvalInitInstanceXtra(ProblemData *problem_data)
   NameArray na_types = NA_NewNameArray("Constant PFBFile");
 
   ParameterUnion Sy;
+
   GetParameterUnion(Sy, "Patch.BCPressure.DeepAquifer.SpecificYield.%s",
                     na_types,
                     ParameterUnionDouble(0, "Value")

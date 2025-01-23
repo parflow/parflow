@@ -31,11 +31,11 @@
  * when reading information from the input script.
  * It should be used in cases where the values for a
  * variable can be set from different inputs. For example,
- * a variable could be set with a constant value, read 
+ * a variable could be set with a constant value, read
  * from a file, or given by a predefined function.
  *
- * The macro arguments are: 
- * 
+ * The macro arguments are:
+ *
  * @param par        ParameterUnion structure that stores
  *                   the values read from the input script.
  * @param base_str   Base of the key string that is looked
@@ -45,18 +45,18 @@
  *                   "`base_str`.Type" can assume. This
  *                   selects which of the subsequent
  *                   suffixes will be read in the input script.
- * @param args       Body macros that tell what kind of 
+ * @param args       Body macros that tell what kind of
  *                   variable is expected to be read, what
- *                   key value they correspond to in the 
+ *                   key value they correspond to in the
  *                   `na_types`
-
+ *
  *
  * Example:
  * {
  *  ParameterUnion par;
- *  NameArray na_types = NA_NewNameArray("Constant 
+ *  NameArray na_types = NA_NewNameArray("Constant
  *                                        PFBFile
- *                                        PredefinedFunction 
+ *                                        PredefinedFunction
  *                                        Option");
  *
  *  GetParameterUnion(par, "base.string", na_types,
