@@ -241,12 +241,14 @@ void         WellPackage(
           {
             subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
           }
+          printf("volume1%f\n", subgrid_volume);
 #ifdef PARFLOW_HAVE_MPI
           // here I am making the assumption that indices need to be positive so we can use amps_max
           amps_Invoice well_properties_invoice = amps_NewInvoice("%i%i%d", &iz_lower, &iz_upper, &subgrid_volume);
           amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
           amps_FreeInvoice(well_properties_invoice);
 #endif
+          printf("volume2%f\n", subgrid_volume);
           if ((dummy0->mechanism) == PRESSURE_WELL)
           {
             /* Put in physical data for this well */
@@ -532,7 +534,7 @@ void         WellPackage(
             }
             iz_lower = CalculateIndexSpaceZ(z_lower, problem_data);
             iz_upper = CalculateIndexSpaceZ(z_upper, problem_data);
-
+            printf("izlower %i, izupper %i\n", iz_lower, iz_upper);
             nx = 1;
             ny = 1;
             nz = iz_upper - iz_lower + 1;
@@ -553,12 +555,14 @@ void         WellPackage(
             {
               subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
             }
+//            printf("volume1 %f\n", subgrid_volume);
 #ifdef PARFLOW_HAVE_MPI
             // here I am making the assumption that indices need to be positive so we can use amps_max
             amps_Invoice well_properties_invoice = amps_NewInvoice("%i%i%d", &iz_lower, &iz_upper, &subgrid_volume);
             amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
             amps_FreeInvoice(well_properties_invoice);
 #endif
+            printf("volume2 %f\n", subgrid_volume);
             if (mechanism == PRESSURE_WELL)
             {
               /* Put in physical data for this well */

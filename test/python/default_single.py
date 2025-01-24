@@ -12,7 +12,7 @@ default_single = Run(run_name, __file__)
 
 default_single.P = 2
 default_single.Q = 2
-default_single.R = 2
+default_single.R = 1
 
 correct_output_dir_name = get_absolute_path("../correct_output")
 
@@ -26,7 +26,7 @@ default_single.FileVersion = 4
 
 default_single.Process.Topology.P = 2
 default_single.Process.Topology.Q = 2
-default_single.Process.Topology.R = 1
+default_single.Process.Topology.R = 2
 
 # -----------------------------------------------------------------------------
 # Computational Grid
