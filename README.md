@@ -366,7 +366,7 @@ submission system used.  By default CMake will attempt to determine an
 appropriate tool; a process that does not always yield the correct result.
 
 There are several ways to modify the CMake guess on how applications
-should be run.  At configure time you may overwrite the MPI launcher
+should be run.  At configure time you may override the MPI launcher
 using:
 
 ```shell 
