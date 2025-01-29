@@ -72,6 +72,11 @@
 #define ZERO 0.0
 #define ONE  1.0
 
+/* Kinsol API is in C */
+#ifdef __cplusplus
+extern "C"
+#endif
+
 void PFVLinearSum(
 /* LinearSum : z = a * x + b * y              */
                   double  a,
@@ -2077,3 +2082,7 @@ void PFVLayerCopy(
   }
   IncFLOPCount(2 * VectorSize(x));
 }
+
+#ifdef __cpluspus
+}
+#endif

@@ -174,7 +174,7 @@ L40:
     {
       goto L60;
     }
-    d__3 = (d__1 = d[i], abs(d__1)) + (d__2 = d[i - 1], abs(d__2));
+    d__3 = (d__1 = d[i], pfabs(d__1)) + (d__2 = d[i - 1], pfabs(d__2));
     if (p > epslon_(&d__3))
     {
       goto L80;
@@ -193,7 +193,7 @@ L80:
     q = 0.;
     if (i != *n)
     {
-      q = (d__1 = e[i + 1], abs(d__1));
+      q = (d__1 = e[i + 1], pfabs(d__1));
     }
 /* Computing MIN */
     d__1 = w[i] - p - q;
@@ -226,7 +226,7 @@ L180:
     tot += s;
     delta = w[*n] - s;
     i = *n;
-    f = (d__1 = epslon_(&tot), abs(d__1));
+    f = (d__1 = epslon_(&tot), pfabs(d__1));
     if (*eps1 < f)
     {
       *eps1 = f;
@@ -347,7 +347,7 @@ L300:
 
 L340:
     w[k] = tot;
-    err += abs(delta);
+    err += pfabs(delta);
     bd[k] = err;
     ind[k] = ii;
 /* L360: */
@@ -421,12 +421,12 @@ double epslon_(double *x)
 L10:
   b = a - 1.;
   c = b + b + b;
-  eps = (d__1 = c - 1., abs(d__1));
+  eps = (d__1 = c - 1., pfabs(d__1));
   if (eps == 0.)
   {
     goto L10;
   }
-  ret_val = eps * abs(*x);
+  ret_val = eps * pfabs(*x);
   return ret_val;
 } /* epslon_ */
 

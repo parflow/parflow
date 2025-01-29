@@ -1,4 +1,11 @@
-add_executable(parflow main.c)
+set(MAIN_SRC main.c)
+
+if( ${PARFLOW_BUILD_WITH_CPP} )
+  set_source_files_properties(${MAIN_SRC}
+    PROPERTIES LANGUAGE CXX)
+endif()
+
+add_executable(parflow ${MAIN_SRC})
 
 target_link_libraries(parflow pfsimulator)
 

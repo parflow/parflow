@@ -18,6 +18,9 @@ set(AMPS_SRC_FILES
   amps_vector.c
   )
 
+set_source_files_properties(${AMPS_SRC_FILES}
+  PROPERTIES LANGUAGE CXX)
+
 if((${PARFLOW_HAVE_CUDA}) AND (NOT (${PARFLOW_HAVE_KOKKOS})))
   list(APPEND AMPS_SRC_FILES amps_gpupacking.cu)
 endif((${PARFLOW_HAVE_CUDA}) AND (NOT (${PARFLOW_HAVE_KOKKOS})))
