@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.14)
 
 project (PARFLOW LANGUAGES C Fortran CXX)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
 #-----------------------------------------------------------------------------
 # Set standard compiler flagsx
@@ -31,6 +31,14 @@ foreach (DEBUG_FLAG "-ggdb" "-g3")
 endforeach ()
 
 #-----------------------------------------------------------------------------
+# The ParFlow C library source will be built as C++ if this flag is set.
+# ParFlow is moving to using C++; this flag is a first step towards that goal.
+# Does not currently change pftools build.
+#-----------------------------------------------------------------------------
+
+set(PARFLOW_BUILD_WITH_CPP FALSE CACHE STRING "Build ParFlow using the C++ compiler.  This flag is principlly for developers.")
+
+#-----------------------------------------------------------------------------
 # Set accelerator backend
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
@@ -46,10 +54,13 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     if(CMAKE_CUDA_COMPILER)
       enable_language(CUDA)
       set(CMAKE_CUDA_STANDARD 14)
-      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
-      if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_80,code=sm_80")
-      endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
+      if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70")
+	if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+          set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_80,code=sm_80")
+	endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+      endif(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
       set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
       set(CMAKE_CUDA_HOST_COMPILER mpicxx)
       message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
@@ -184,6 +195,10 @@ if (PARFLOW_AMPS_SEQUENTIAL_IO)
 else ()
   message(STATUS "Using multiple file AMPS I/O for PFB output")
   set(AMPS_SPLIT_FILE "yes")
+endif ()
+
+if (NOT(PARFLOW_AMPS_SEQUENTIAL_IO) AND PARFLOW_ENABLE_PYTHON)
+  message(FATAL_ERROR "ERROR: Python does not support the multiple file AMPS I/O model for PFB output")
 endif ()
 
 # OAS3
@@ -495,7 +510,7 @@ check_symbol_exists(mallinfo malloc.h PARFLOW_HAVE_MALLINFO)
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
 if ( ${PARFLOW_HAVE_CLM} )
-  # Make true value match autoconf value; for some backwards compatiblity
+  # Make true value match autoconf value; for some backwards compatibility
   set(PARFLOW_HAVE_CLM "yes")
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 
@@ -625,6 +640,13 @@ if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
 endif ()
 
+# Optionally build the NUOPC cap and ESMX
+option(PARFLOW_ENABLE_NUOPC "Enable building of the Parflow nuopc" "False")
+option(PARFLOW_ENABLE_ESMX "Enable building of ESMX" "False")
+if ( ${PARFLOW_ENABLE_NUOPC} OR ${PARFLOW_ENABLE_ESMX} )
+  add_subdirectory (pfnuopc)
+endif ()
+
 #-----------------------------------------------------------------------------
 # Setup CTEST environment
 #-----------------------------------------------------------------------------
@@ -635,7 +657,7 @@ if (PARFLOW_ENABLE_LATEX)
   add_subdirectory(docs/manuals)
 endif()
 
-install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
+install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/config/ DESTINATION config)
 
 #-----------------------------------------------------------------------------
 # Doxygen

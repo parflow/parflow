@@ -540,7 +540,7 @@
 ##############################################################################
 #
 # CUDA
-# These supressions are overly version specific
+# These suppressions are overly version specific
 #
 ##############################################################################
 
@@ -610,3 +610,139 @@
    ...
 }
 
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:libcudart_static_ad9262876fc0252a7a95dbc876859d40746b0b56
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:libcudart_static_5887a27cefafb4cd438bdc166b0a6f874b079d4b
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:libcudart_static_5449a5077e9603031b6d1a024d25647afd27a0ba
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   ...
+   fun:cudaSetDevice
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   obj:/usr/lib64/libcuda.so.565.57.01
+   fun:libcudart_static_15bc4877fcf67472146b5fd7d7e6223370e4b8d7
+   fun:cudaMemPrefetchAsync
+   fun:PFVMin
+   fun:KINSolInit
+   fun:KINSol
+   fun:KinsolNonlinSolver
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:libcudart_static_2369b246cc952badcfa5311ee4767fae824f7e57
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:libcudart_static_36ecffef451fb2da0dfc7cde338d9561352294f7
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   ...
+   fun:libcudart_static_963dbe518da27ad62a57079a1a0c90814a2710ec
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   ...
+   fun:libcudart_static_f819957d10e6023af1d90b177e9706eb1ae2ea98
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:cudaMemPrefetchAsync
+   ...
+}

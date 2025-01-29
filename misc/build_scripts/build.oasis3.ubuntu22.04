@@ -48,7 +48,7 @@ CPPDEF    = -Duse_comm_$(CHAN) -D__VERBOSE -DTREAT_OVERLAY
 #
 # 
 #F90FLAGS_1  = -g -ffree-line-length-0 -fbounds-check -fopenmp
-F90FLAGS_1  = -ffree-line-length-none -fopenmp
+F90FLAGS_1  = -ffree-line-length-none -fallow-argument-mismatch -fopenmp
 f90FLAGS_1  = $(F90FLAGS_1)
 FFLAGS_1    = $(F90FLAGS_1)
 fFLAGS_1    = $(F90FLAGS_1)

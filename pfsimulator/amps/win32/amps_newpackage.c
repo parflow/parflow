@@ -55,7 +55,7 @@ amps_Package amps_NewPackage(amps_Comm     comm,
   package->src = src;
   package->recv_invoices = recv_invoices;
 
-  /* For each of the destinations pack up and send the package inforamation
+  /* For each of the destinations pack up and send the package information
    * (ie locations, lengths and strides ) */
 
   package->snd_info = NULL;

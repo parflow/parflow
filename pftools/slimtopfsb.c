@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
   /* All the rest of the input is read in f77 env */
   ropen_(input_filename, (long)strlen(input_filename));
 
-  /* Each component has a seperate output file */
+  /* Each component has a separate output file */
   fp = (FILE**)malloc(ncnt * sizeof(FILE *));
 
   /* For each timestep write out each component */

@@ -42,7 +42,7 @@
 #
 # Structure of the meta entry:
 #
-# <meta_entry_path>.label     # Label the preceed the entry
+# <meta_entry_path>.label     # Label the precede the entry
 # <meta_entry_path>.entry     # Entry 
 #
 

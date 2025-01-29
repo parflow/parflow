@@ -54,7 +54,7 @@ Before commencing development of new features or enhancing existing capabilities
 within the ParFlow code suite, requirements of the new code as well as the design 
 approach for implementing it must be documented.  These Requirements and Design 
 documents will be stored in the github repository so that all team members will 
-be able to access them and contribute as appropriate.  The Requirments and Design 
+be able to access them and contribute as appropriate.  The Requirements and Design 
 documents are maintained in the ParFlow repository at 
 <https://github.com/parflow/parflow/tree/master/docs/design_documents>.
 
@@ -74,7 +74,7 @@ code, targeted use cases, and any constraints.  Furthermore, test problems that
 target the proposed new capability must also be described in the R&D document.
 The Requirements and Design Document is viewed as a living document that 
 evolves with the team’s understanding of its tasks and needs. 
-A template for teh R&D document is located at:
+A template for the R&D document is located at:
 <https://github.com/parflow/parflow/blob/master/pftools/design_documents/0000-template.md>.
 
 A requirement should be expressed succinctly in the form of some definite 
@@ -347,7 +347,7 @@ The issue workflow for developers follows the standard GitHub Forking model
 outlined previously with minor additions to link the pull request with an issue 
 using a tag in the commit message: 
 
-When a commiter decides to start work on resolving an issue in the project, 
+When a committer decides to start work on resolving an issue in the project, 
 they should first assign the issue to themselves to record that the issue is 
 being worked on.  The standard  GitHub Forking model is used to prepare the 
 code to address the issue. The last commit in the history should indicate 

@@ -36,7 +36,7 @@ Tcl Support:		@PARFLOW_HAVE_TCL@
 Python Support:		@PARFLOW_HAVE_PYTHON@
 
 Silo Support:		@PARFLOW_HAVE_SILO@
-NetCDF Suppport:	@PARFLOW_HAVE_NETCDF@
+NetCDF Support:	@PARFLOW_HAVE_NETCDF@
 HDF5 Support:		@PARFLOW_HAVE_HDF5@
 Zlib Support:		@PARFLOW_HAVE_ZLIB@
 SZlib Support:		@PARFLOW_HAVE_SZLIB@

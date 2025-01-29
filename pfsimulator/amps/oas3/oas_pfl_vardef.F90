@@ -44,7 +44,7 @@ INTEGER                                   :: IOASISDEBUGLVL = 0
 INTEGER                                   :: ierror                ! Local Variables
 INTEGER                                   :: localComm             ! local MPI communicator and Initialized 
 INTEGER                                   :: comp_id               ! component identification
-INTEGER                                   :: rank                  ! Rank of the processor, intialized(oas_pfl_init)
+INTEGER                                   :: rank                  ! Rank of the processor, initialized(oas_pfl_init)
 INTEGER                                   :: info
 INTEGER, PUBLIC                           :: OASIS_Rcv  = 1        ! return code if received field
 INTEGER, PUBLIC                           :: OASIS_idle = 0        ! return code if nothing done by oasis

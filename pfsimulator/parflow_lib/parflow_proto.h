@@ -426,9 +426,20 @@ ComputePkg *NewMGSemiRestrictComputePkg(Grid *grid, Stencil *stencil, int sx, in
 
 /* n_vector.c */
 void SetPf2KinsolData(Grid *grid, int num_ghost);
-N_Vector N_VNew(int N, void *machEnv);
 void N_VPrint(N_Vector x);
 void FreeTempVector(Vector *vector);
+
+/* Kinsol API is in C. */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+N_Vector N_VNew(int N, void *machEnv);
+void N_VFree(N_Vector x);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* new_endpts.c */
 void NewEndpts(double *alpha, double *beta, double *pp, int *size_ptr, int n, double *a_ptr, double *b_ptr, double *cond_ptr, double ereps);
@@ -453,9 +464,6 @@ void NoDiagScaleFreeInstanceXtra(void);
 PFModule *NoDiagScaleNewPublicXtra(char *name);
 void NoDiagScaleFreePublicXtra(void);
 int NoDiagScaleSizeOfTempData(void);
-
-/* parflow.c */
-int main(int argc, char *argv []);
 
 /* pcg.c */
 void PCG(Vector *x, Vector *b, double tol, int zero);
@@ -1117,6 +1125,15 @@ PFModule  *WRFSelectTimeStepNewPublicXtra(
                                           double max_step,
                                           double min_step);
 void  WRFSelectTimeStepFreePublicXtra();
+PFModule  *CPLSelectTimeStepInitInstanceXtra();
+void CPLSelectTimeStepFreeInstanceXtra();
+PFModule  *CPLSelectTimeStepNewPublicXtra(
+                                          double initial_step,
+                                          double growth_factor,
+                                          double max_step,
+                                          double min_step);
+void  CPLSelectTimeStepFreePublicXtra();
+int  CPLSelectTimeStepSizeOfTempData();
 
 typedef void (*SetProblemDataInvoke) (ProblemData *problem_data);
 typedef PFModule *(*SetProblemDataInitInstanceXtraInvoke) (Problem *problem, Grid *grid, Grid *grid2d, double *temp_data);
@@ -1168,6 +1185,8 @@ int SolverRichardsSizeOfTempData(void);
 ProblemData *GetProblemDataRichards(PFModule *this_module);
 Problem  *GetProblemRichards(PFModule *this_module);
 PFModule *GetICPhasePressureRichards(PFModule *this_module);
+Grid *GetGrid2DRichards(PFModule *this_module);
+Vector *GetMaskRichards(PFModule *this_module);
 void AdvanceRichards(PFModule *this_module,
                      double    start_time,   /* Starting time */
                      double    stop_time,    /* Stopping time */
@@ -1177,6 +1196,11 @@ void AdvanceRichards(PFModule *this_module,
                      Vector ** porosity_out,
                      Vector ** saturation_out
                      );
+void ExportRichards(PFModule *this_module,
+                    Vector ** pressure_out,  /* Output vars */
+                    Vector ** porosity_out,
+                    Vector ** saturation_out
+                    );
 void SetupRichards(PFModule *this_module);
 
 
@@ -1265,6 +1289,10 @@ void InitVectorAll(Vector *v, double value);
 void InitVectorInc(Vector *v, double value, double inc);
 void InitVectorRandom(Vector *v, long seed);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* vector_utilities.c */
 void PFVLinearSum(double a, Vector *x, double b, Vector *y, Vector *z);
 void PFVConstInit(double c, Vector *z);
@@ -1295,6 +1323,10 @@ void PFVLin2(double a, Vector *x, Vector *y, Vector *z);
 void PFVAxpy(double a, Vector *x, Vector *y);
 void PFVScaleBy(double a, Vector *x);
 void PFVLayerCopy(int a, int b, Vector *x, Vector *y);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* w_jacobi.c */
 void WJacobi(Vector *x, Vector *b, double tol, int zero);
@@ -1404,6 +1436,85 @@ void PF2WRF(Vector *pf_vector,
             int     ghost_size_i_upper,
             int     ghost_size_j_upper,
             Vector *top);
+
+/* cpl_parflow.c */
+void cplparflowinit_(int *  fcom,
+                     char * input_file,
+                     int *  numprocs,
+                     int *  subgridcount,
+                     int *  nz,
+                     int *  ierror);
+
+void cplparflowadvance_(double * current_time,
+                        double * dt,
+                        float *  imp_flux,
+                        float *  exp_pressure,
+                        float *  exp_porosity,
+                        float *  exp_saturation,
+                        float *  exp_specific,
+                        float *  exp_zmult,
+                        int *    num_soil_layers,
+                        int *    num_cpl_layers,
+                        int *    ghost_size_i_lower, /* Number of ghost cells */
+                        int *    ghost_size_j_lower,
+                        int *    ghost_size_i_upper,
+                        int *    ghost_size_j_upper,
+                        int *    ierror);
+
+void cplparflowexport_(float * exp_pressure,
+                       float * exp_porosity,
+                       float * exp_saturation,
+                       float * exp_specific,
+                       float * exp_zmult,
+                       int *   num_soil_layers,
+                       int *   num_cpl_layers,
+                       int *   ghost_size_i_lower,  /* Number of ghost cells */
+                       int *   ghost_size_j_lower,
+                       int *   ghost_size_i_upper,
+                       int *   ghost_size_j_upper,
+                       int *   ierror);
+
+void CPL2PF(float *  imp_array,
+            int      imp_nz,
+            int      cpy_layers,
+            int      ghost_size_i_lower, /* Number of ghost cells */
+            int      ghost_size_j_lower,
+            int      ghost_size_i_upper,
+            int      ghost_size_j_upper,
+            Vector * pf_vector,
+            Vector * top,
+            Vector * mask);
+
+void PF2CPL(Vector * pf_vector,
+            float *  exp_array,
+            int      exp_nz,
+            int      ghost_size_i_lower, /* Number of ghost cells */
+            int      ghost_size_j_lower,
+            int      ghost_size_i_upper,
+            int      ghost_size_j_upper,
+            Vector * top,
+            Vector * mask);
+
+void cplparflowlcldecomp_(int * sg,
+                          int * lowerx,
+                          int * upperx,
+                          int * lowery,
+                          int * uppery,
+                          int * ierror);
+
+void cplparflowlclmask_(int * sg,
+                        int * localmask,
+                        int * ierror);
+
+void cplparflowlclxyctr_(int *   sg,
+                         float * localx,
+                         float * localy,
+                         int *   ierror);
+
+void cplparflowlclxyedg_(int *   sg,
+                         float * localx,
+                         float * localy,
+                         int *   ierror);
 
 void ComputeTop(Problem *    problem,
                 ProblemData *problem_data);

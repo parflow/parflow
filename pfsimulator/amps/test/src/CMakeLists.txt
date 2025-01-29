@@ -48,6 +48,12 @@ set(ALL_TESTS ${SEQUENTIAL_TESTS} ${PARALLEL_TESTS})
 list(REMOVE_DUPLICATES ALL_TESTS)
 
 foreach(test ${ALL_TESTS})
+
+  if( ${PARFLOW_BUILD_WITH_CPP} )
+    set_source_files_properties(${test}.c
+      PROPERTIES LANGUAGE CXX)
+  endif()
+
   add_executable( ${test} ${test}.c)
   target_link_libraries(${test} amps)
   

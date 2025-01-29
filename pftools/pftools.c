@@ -557,7 +557,7 @@ int       AddSubgridArray(
 
   num = 0;
 
-  /* Keep tring to find a unique hash key */
+  /* Keep trying to find a unique hash key */
   do
   {
     sprintf(hashkey, "subgridarray%d", num);
@@ -607,7 +607,7 @@ int       AddData(
 
   num = DataNum(data);
 
-  /* Keep tring to find a unique hash key */
+  /* Keep trying to find a unique hash key */
   do
   {
     sprintf(hashkey, "dataset%lu", num);
@@ -715,7 +715,7 @@ int keycompare(
 
   while (*endnum1 != ' ')
   {
-    /* Point number1 to the begining of the number */
+    /* Point number1 to the beginning of the number */
     /* substring.                                   */
 
     if (!number1 && isdigit(*endnum1))
@@ -730,7 +730,7 @@ int keycompare(
 
   while (*endnum2 != ' ')
   {
-    /* Point number2 to the begining of the number */
+    /* Point number2 to the beginning of the number */
 
     if (!number2 && isdigit(*endnum2))
       number2 = endnum2;
@@ -774,13 +774,13 @@ int keycompare(
 /* arguments to the procedure which implements the command.  They are described */
 /* here.                                                                        */
 /*                                                                              */
-/* ClientData clientData - Points to data that a Tcl command may need acess to. */
+/* ClientData clientData - Points to data that a Tcl command may need access to. */
 /*                         In the case of the PFTools commands, it will point   */
 /*                         to the Data structure which contains the hash table  */
 /*                         of data box pointers.                                */
 /* Tcl_Interp *interp    - The interpreter being used to execute PFTools        */
 /*                         commands.                                            */
-/* int argc              - The number of agruments in the PFTools command       */
+/* int argc              - The number of arguments in the PFTools command       */
 /* char *argv            - each of the arguments in the command                 */
 
 
@@ -874,7 +874,7 @@ int               GetSubBoxCommand(
 
   sub_box = CompSubBox(databox_in, il, jl, kl, iu, ju, ku);
 
-  /* Make sure no error occured while computing. */
+  /* Make sure no error occurred while computing. */
   /* Also, make sure there were no memory allocation problems. */
 
   if (sub_box)
@@ -964,7 +964,7 @@ int               EnlargeBoxCommand(
 
   new_box = EnlargeBox(databox_in, sx, sy, sz);
 
-  /* Make sure no error occured while computing. */
+  /* Make sure no error occurred while computing. */
   /* Also, make sure there were no memory allocation problems. */
 
   if (new_box)
@@ -1110,7 +1110,7 @@ int            LoadPFCommand(
     return TCL_ERROR;
   }
 
-  /* Options are preceeded by a dash.  Check to make sure the */
+  /* Options are preceded by a dash.  Check to make sure the */
   /* option is valid.                                         */
 
   if (*argv[1] == '-')
@@ -1921,7 +1921,7 @@ int MakePatchySolidCommand(
   tophash = NULL;
   bothash = NULL;
 
-  int msk = 0, top = 0, bot = 0, vtk = 0, sub_patch = 0, bin_out = 0;  //Initalize flags for the options
+  int msk = 0, top = 0, bot = 0, vtk = 0, sub_patch = 0, bin_out = 0;  //Initialize flags for the options
   // Note: bin_out is a place holder for a yet to be added BINARY solid file...
   //       vtk is a flag for writing a BINARY VTK of the solid file too
 
@@ -2566,7 +2566,7 @@ int               GetGridCommand(
 /*-----------------------------------------------------------------------
  * routine for `pfgridtype' command
  * Description: The argument is either vertex or cell.  A vertex grid
- *              type means that the grid is vertex centerd and the cell
+ *              type means that the grid is vertex centered and the cell
  *              type means that the grid is cell centered.  If no argument
  *              is given, then the current setting is returned as the TCL
  *              result.
@@ -2817,7 +2817,7 @@ int               VVelCommand(
       Tcl_AppendElement(interp, newhashkey);
   }
 
-  /* An error has occured computing the velocity */
+  /* An error has occurred computing the velocity */
 
   else
   {
@@ -2920,7 +2920,7 @@ int               BFCVelCommand(
       Tcl_AppendElement(interp, newhashkey);
   }
 
-  /* An error has occured computing the velocity */
+  /* An error has occurred computing the velocity */
 
   else
   {
@@ -3006,7 +3006,7 @@ int               VMagCommand(
 
   vmag = CompVMag(databoxx, databoxy, databoxz);
 
-  /* Make sure no error occured while computing the magnitude. */
+  /* Make sure no error occurred while computing the magnitude. */
   /* Also, make sure there were no memory allocation problems. */
 
   if (vmag)
@@ -3082,7 +3082,7 @@ int               HHeadCommand(
   sprintf(label, "Hydraulic head of `%s'", pHead);
 
   /* Make sure the hydraulic head could be allocated and */
-  /* computed successfuly.                               */
+  /* computed successfully.                               */
 
   if (hHead)
   {
@@ -3154,7 +3154,7 @@ int               PHeadCommand(
   sprintf(label, "Pressure head of `%s'", hHead);
 
   /* Make sure the pressure head was allocated and */
-  /* computed successfuly.                         */
+  /* computed successfully.                         */
 
   if (pHead)
   {
@@ -3239,7 +3239,7 @@ int               FluxCommand(
   flux = CompFlux(databoxk, databoxh);
 
   /* Make sure that memory for the flux was allocated */
-  /* and the flux was computed successfuly.           */
+  /* and the flux was computed successfully.           */
 
   if (flux)
   {
@@ -3508,7 +3508,7 @@ exit:
 /*-----------------------------------------------------------------------
  * routine for `pfnewlabel' command
  * Description: A data set hash key and a label are passed as arguments.
- *              the data set cooresponding to the hash key will have
+ *              the data set corresponding to the hash key will have
  *              it's label changed.  Nothing will be appended to the
  *              Tcl result upon success.
  *
@@ -3562,7 +3562,7 @@ int                NewLabelCommand(
  * Description: The arguments are a floating point number alpha, and
  *              two data set hash keys.  The operation:
  *              datasety=alpha*datasetx+datasety
- *              is perfomed.  The hash key `datasety' will be appended
+ *              is performed.  The hash key `datasety' will be appended
  *              to the Tcl result upon successful completion.
  *
  * Cmd. Syntax: pfaxpy alpha datasetx datasety
@@ -3635,7 +3635,7 @@ int               AxpyCommand(
 /*-----------------------------------------------------------------------
  * routine for `pfsum' command
  * Description: The arguments are data set hash key.  The operation:
- *              sum = sum of all elements of datasetx is perfomed.
+ *              sum = sum of all elements of datasetx is performed.
  *
  * Cmd. Syntax: pfsum datasetx
  *-----------------------------------------------------------------------*/
@@ -4077,7 +4077,7 @@ int               CellDivCommand(
 /*-----------------------------------------------------------------------
  * routine for `pfcellsumconst' command
  * Description: The arguments are data set hash key.  The operation:
- *              sum = sum of all elements of datasetx is perfomed.
+ *              sum = sum of all elements of datasetx is performed.
  *
  * Cmd. Syntax: pfcellsumconst datasetx const mask
  *-----------------------------------------------------------------------*/
@@ -4515,7 +4515,7 @@ int               GetStatsCommand(
  *              a minimum number of significant digits will be computed.
  *              The number of the fewest significant digits is determined,
  *              and the maximum absolute difference is computed.  A list of the
- *              The only coordintes that will be considered will be those
+ *              The only coordinates that will be considered will be those
  *              whose differences are greater than absolute zero.
  *              following form is appended to the Tcl result upon success:
  *
@@ -4742,7 +4742,7 @@ int               SaveDiffCommand(
         return TCL_ERROR;
       }
 
-      /* Make sure the file was opened successfuly */
+      /* Make sure the file was opened successfully */
 
       if ((fp = fopen(argv[filearg + 1], "wb")) == NULL)
       {
@@ -4778,10 +4778,10 @@ int               SaveDiffCommand(
  * routine for `pfdiffelt' command
  * Description: Two data set hash keys are passed as the first two
  *              arguments.  Coordinates for the element to be diffed are
- *              then passed as three seperate arguments: i, j, and k.
+ *              then passed as three separate arguments: i, j, and k.
  *              If the values at (i, j, k) differ by more than sig_digs
  *              significant digits and the difference is greater than
- *              absolute zero, then the differnce will be appended to the
+ *              absolute zero, then the difference will be appended to the
  *              Tcl result.
  *
  * Cmd. Syntax: pfdiffelt datasetp datasetq i j k sig_digs [abs_zero]

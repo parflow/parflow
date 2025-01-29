@@ -83,7 +83,7 @@ tar -xvf ../parflow.tar.Z
 %------------------------------
 
 \item {\bf Build and install \parflow{}} with \cmake{}\\ This step builds
-the \parflow{} and associated \pftools{} excutables.  A \parflow{}
+the \parflow{} and associated \pftools{} executables.  A \parflow{}
 library is also built which can be used when \parflow{} is used as a
 component of another simulation (\emph{e.g.}  WRF).
 
@@ -96,7 +96,7 @@ may set in an interactive GUI.
 The following commands configure and build a sequenital version of
 \parflow{}.  You can control build options for \parflow{} in the
 \cmake{} configure step by adding other options to that command-line.
-Note we build in a seperate directory from the source.  This keeps the
+Note we build in a separate directory from the source.  This keeps the
 source directory free of files created during the build.  Going back
 to a clean state can be done by removing the build directory and
 starting over.  This is fairly common \cmake{} practice.
@@ -112,7 +112,7 @@ make
 make install
 \end{verbatim}\end{display}
 
-For a list of \emph{all} the \cmake{} configure options, the easist
+For a list of \emph{all} the \cmake{} configure options, the easiest
 method is to use the \code{ccmake} command:
 
 \begin{display}\begin{verbatim}
@@ -121,7 +121,7 @@ ccmake ../parflow  -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR)
 
 \parflow{} defaults to building a sequential version; setting the
 \code{PARFLOW_AMPS_LAYER} variable is required to build a parallel
-version.  The easist way to use the MPI version to use is to ensure
+version.  The easiest way to use the MPI version to use is to ensure
 that the \code{mpicc} command is in your path and set the
 \code{PARFLOW_AMPS_LAYER} to ``mpi1''.  The \code{PARFLOW_AMPS_LAYER}
 variable controls \emph{AMPS} which stands for \emph{A}nother
@@ -130,7 +130,7 @@ message-passing adapter layer within \parflow{} that allows a common
 code core to be quickly and easily adapted to different parallel
 environments.
 
-Here is an example of the simplist MPI configuration:
+Here is an example of the simplest MPI configuration:
 
 \begin{display}\begin{verbatim}
 cmake ../parflow -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR) -DPARFLOW_AMPS_LAYER=mpi1
@@ -232,7 +232,7 @@ export F77=ifort
 In addition configuration with \code{cmake}, \parflow{} has deprecated
 support for \code{GNU autoconf}. \code{GNU autoconf} support will be
 maintained while the \code{cmake} support is fully tested.  Support
-will be removed in a future relase.  Please use \code{cmake} and
+will be removed in a future release.  Please use \code{cmake} and
 report bugs.
   
 This step builds the \parflow{} library and executable that runs on

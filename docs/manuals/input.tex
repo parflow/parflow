@@ -55,12 +55,12 @@ passes in it's module name with an addition name appended to.  The
 parent modules name their children.  For example an iterative solver
 would pass into a preconditioner MyName.Precond (where ``MyName''
 would be what this module was given as it's name).  This constructs a
-tree like nameing convention to ensure that each module instance has a
+tree like naming convention to ensure that each module instance has a
 unique name to use as a key for getting input that is specific to that
 module instance.
 
 In some cases you want to provide a choice on which module should be used.
-For example you might wish to let the user choose amoung several different
+For example you might wish to let the user choose among several different
 preconditioners.  This is done by querying the database for the name
 of the preconditioner to invoke and using a standard switch statement to
 invoke the appropriate \code{NewModule} routine.
@@ -71,7 +71,7 @@ invoke the appropriate \code{NewModule} routine.
    char          *switch_name;
    int            switch_value;
 
-   /* Name arrays are helper structures to parse space seperated strings */
+   /* Name arrays are helper structures to parse space separated strings */
    /* A name array can convert from an index to name or from a name      */
    /* to an index.                                                       */
    NameArray      switch_na;

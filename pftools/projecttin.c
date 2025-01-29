@@ -802,7 +802,7 @@ void IntersectLineWithTriangle(
    * and new lines added to the algorithm are marked
    * with comments below.  The main modifications can
    * be summed up as follows: (1) we treat p=0 and q=0
-   * explicitely (when this occurs `sign_holder' and
+   * explicitly (when this occurs `sign_holder' and
    * `next_sign_holder' are 0 below); (2) a `break'
    * statement below always indicates an intersection
    * on an edge or vertex.

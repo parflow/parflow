@@ -43,16 +43,16 @@ amps_ThreadLocalDcl(Vector   *, evap_trans);
 void wrfparflowinit_(char *input_file)
 {
   Grid         *grid;
-  char *seperators = " \n";
+  char *separators = " \n";
   /* Fortran char array is not NULL terminated */
-  char *filename = strtok(input_file, seperators);
+  char *filename = strtok(input_file, separators);
 
   /*-----------------------------------------------------------------------
    * Initialize AMPS from existing MPI state
    *-----------------------------------------------------------------------*/
   if (amps_EmbeddedInit())
   {
-    amps_Printf("Error: amps_EmbeddedInit initalization failed\n");
+    amps_Printf("Error: amps_EmbeddedInit initialization failed\n");
     exit(1);
   }
 

@@ -57,7 +57,7 @@ static int one = 1;
 //   double *data;
 //   double number;
 //
-//   /* write out each double with bytes swaped                               */
+//   /* write out each double with bytes swapped                               */
 //   for(i=len, data=ptr; i--;)
 //   {
 //      CRAY2IEG(&tools_Double, &one, &number, &zero, data);
@@ -75,7 +75,7 @@ void tools_WriteInt(
   int *data;
   int number;
 
-  /* write out each double with bytes swaped                               */
+  /* write out each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     CRAY2IEG(&tools_Integer, &one, &number, &zero, data);
@@ -141,7 +141,7 @@ void tools_WriteFloat(
     char buf[4];
   } a, b;
 
-  /* write out each double with bytes swaped                               */
+  /* write out each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
@@ -167,7 +167,7 @@ void tools_WriteDouble(
     char buf[8];
   } a, b;
 
-  /* write out each double with bytes swaped                               */
+  /* write out each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
@@ -206,7 +206,7 @@ void tools_WriteInt(
   } a, b;
 
 
-  /* write out int with bytes swaped                                       */
+  /* write out int with bytes swapped                                       */
   for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
@@ -232,7 +232,7 @@ void tools_ReadDouble(
     char buf[8];
   } a, b;
 
-  /* read in each double with bytes swaped                               */
+  /* read in each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     fread(&a.number, sizeof(double), 1, (FILE*)file);
@@ -262,7 +262,7 @@ void tools_ReadInt(
   } a, b;
 
 
-  /* write out int with bytes swaped                                       */
+  /* write out int with bytes swapped                                       */
   for (i = len, data = ptr; i--;)
   {
     fread(&a.number, sizeof(int), 1, (FILE*)file);
@@ -291,7 +291,7 @@ int len;
   int *data;
   short number;
 
-  /* write out int with bytes swaped                                       */
+  /* write out int with bytes swapped                                       */
   for (i = len, data = ptr; i--;)
   {
     number = *data++;

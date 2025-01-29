@@ -214,7 +214,7 @@ void    OverlandFlowEvalDiff(
 
         // Recalculating the x flow in the case with both the lower and left boundaries
         // This is exactly the same as the q_x in the left boundary conditional above but
-        // recalculating qx_v here again becuase the sf_mag will be adjusted with the new sf_yo above
+        // recalculating qx_v here again because the sf_mag will be adjusted with the new sf_yo above
         if (k0x < 0.0)
         {
           if (Sf_x > 0.0)
@@ -403,7 +403,7 @@ void    OverlandFlowEvalDiff(
 
         // Recalculating the x flow in the case with both the lower and left boundaries
         // This is exactly the same as the q_x in the left boundary conditional above but
-        // recalculating qx_v here again becuase the sf_mag will be adjusted with the new sf_yo above
+        // recalculating qx_v here again because the sf_mag will be adjusted with the new sf_yo above
         if (k0x < 0.0)
         {
           if (Sf_x < 0)
