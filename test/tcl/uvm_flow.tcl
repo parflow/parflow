@@ -554,7 +554,7 @@ source pftest.tcl
 set passed 1
 
 # This test is not as stable as some of the others.
-# Differnce between optimized and debug version is this large.
+# Difference between optimized and debug version is this large.
 # The absolute error is very small however so use a test the 
 # checks not only the sig digits but also the absolute value of the difference.
 set sig_digits 5

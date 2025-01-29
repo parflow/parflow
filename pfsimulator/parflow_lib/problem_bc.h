@@ -274,7 +274,7 @@ typedef struct {
 #define LoopVars(...) __VA_ARGS__
 
 /**
- * @brief Packs arbitrary number of statements into paranthesis to pass through to other macros.
+ * @brief Packs arbitrary number of statements into parenthesis to pass through to other macros.
  *
  * Used in ForPatchCellsPerFace loop to declare local variables.  Provides architecture portability and scope safety.  Use to provide thread-local variables for use in accelerators.
  * Allows for same-line, multiple declarations.  ex: Locals(int i, j, k;) is perfectly valid.
@@ -366,7 +366,7 @@ ForPatchCellsPerFace(NotARealBCType,
  * @brief Iterates over the cells of a boundary condition patch with conditional branching on each face direction
  *
  * @note Do not use exposed commas inside of any statement body.
- * Exposed means not encapsulated by paranthesis.  For example, `double *dummy1, *dummy2;` inside of the BeforeAllCells statement body is not allowed.  However, a call such as `int im = SubmatrixEltIndex(J_sub, i, j, k);` is perfectly fine, as the commas are contained within paranthesis.
+ * Exposed means not encapsulated by parenthesis.  For example, `double *dummy1, *dummy2;` inside of the BeforeAllCells statement body is not allowed.  However, a call such as `int im = SubmatrixEltIndex(J_sub, i, j, k);` is perfectly fine, as the commas are contained within parenthesis.
  * This is a limitation of the C Preprocessor.
  * The only exception to this is the `Locals()` macro, which allows for multiple variable definitions on one line.
  *

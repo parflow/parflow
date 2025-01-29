@@ -150,7 +150,7 @@ breakout:;
         tfree(breaking_out_PV_visiting - 1);
       }
 
-      // GrGeomInLoop didnt' find any points in domain
+      // GrGeomInLoop didn't find any points in domain
       if (k - iz < nz)
       {
         z += 0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];

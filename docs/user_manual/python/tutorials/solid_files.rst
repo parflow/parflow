@@ -83,7 +83,7 @@ Full API: IO tools (from ``parflow.tools.io``)
     Reads in an image file ``file_name`` and converts it to a patch matrix. 
     
     :param ``file_name``: Path to image file.
-    :param ``color_to_patch``: A dictionary with hexidecimal colors as keys with their corresponding ID numbers as values. 
+    :param ``color_to_patch``: A dictionary with hexadecimal colors as keys with their corresponding ID numbers as values. 
         See *$PARFLOW_SOURCE/test/python/pfsol/image-as-mask/image-as-mask.py* for an example. If ``color_to_patch`` is not 
         provided, it will default to assume that everything in white is not part of the mask and everything else is part of the mask. 
     :param ``fall_back_id``: The ID number for colors that are found in the image but are not specified in the ``color_to_patch`` 

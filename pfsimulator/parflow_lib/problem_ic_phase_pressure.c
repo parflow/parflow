@@ -105,7 +105,7 @@ typedef struct {
 
 void         ICPhasePressure(
 
-                             Vector *     ic_pressure, /* Return values of intial condition */
+                             Vector *     ic_pressure, /* Return values of initial condition */
                              Vector *     mask, /* Mask of active cells needed by the LSM */
                              ProblemData *problem_data, /* Contains geometry information for the problem */
                              Problem *    problem) /* General problem information */

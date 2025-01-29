@@ -168,7 +168,7 @@ int amps_Init(int *argc, char **argv[])
   {
     if ((temp_path = getenv("AMPS_EXE_DIR")) == NULL)
     {
-      printf("AMPS Error: can't get AMPS_EXE_DIR envirnment variabl\n");
+      printf("AMPS Error: can't get AMPS_EXE_DIR environment variable\n");
       exit(1);
     }
 

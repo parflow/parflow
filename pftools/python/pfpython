@@ -5,10 +5,10 @@ then
    echo "ERROR: PARFLOW_DIR is not set"
 fi
 			 
-[ ! -d "$PARFLOW_DIR" ] && echo "ERROR: ParFlow not installed correctly or PARFLOW_DIR is not set corretly.  ParFlow not found at $PARFLOW_DIR"
+[ ! -d "$PARFLOW_DIR" ] && echo "ERROR: ParFlow not installed correctly or PARFLOW_DIR is not set correctly.  ParFlow not found at $PARFLOW_DIR"
 
 VIRTUAL_ENV="$PARFLOW_DIR/py-env"
 
-[ ! -d "$VIRTUAL_ENV" ] && echo "ERROR: ParFlow not installed correctly or PARFLOW_DIR is not set corretly.  Python environment not found at $VIRTUAL_ENV"
+[ ! -d "$VIRTUAL_ENV" ] && echo "ERROR: ParFlow not installed correctly or PARFLOW_DIR is not set correctly.  Python environment not found at $VIRTUAL_ENV"
 
 $VIRTUAL_ENV/bin/python $@

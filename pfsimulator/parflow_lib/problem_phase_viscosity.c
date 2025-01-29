@@ -226,7 +226,7 @@ void    PhaseViscosity(
             }
           });
         }
-        else            /* fcn = CALCDER sjk: has to be inplemented still*/
+        else            /* fcn = CALCDER sjk: has to be implemented still*/
         {
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                     ip, nx_p, ny_p, nz_p, 1, 1, 1,

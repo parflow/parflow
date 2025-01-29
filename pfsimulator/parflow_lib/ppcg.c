@@ -211,7 +211,7 @@ void     PPCG(
   /* gamma = <r,p> */
   gamma = InnerProd(r, p);
 
-  /* Main interation loop */
+  /* Main iteration loop */
   while (((i + 1) <= max_iter) && (gamma > 0))
   {
     i++;

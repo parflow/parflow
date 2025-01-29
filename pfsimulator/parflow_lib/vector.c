@@ -278,7 +278,7 @@ static Vector  *NewTempVector(
     VectorSubvector(new_vector, i) = new_sub;
   }
 
-  (new_vector->data_size) = data_size;    /* data_size is sie of data inclduing ghost points */
+  (new_vector->data_size) = data_size;    /* data_size is size of data including ghost points */
 
   VectorGrid(new_vector) = grid;  /* Grid that this vector is on */
 

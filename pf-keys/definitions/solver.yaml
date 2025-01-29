@@ -282,7 +282,7 @@ Solver:
         [Type: string] This key specifies defines the file name for 1D, 2D or 3D forcing data. 1D meteorological forcing files are text
         files with single columns for each variable and each timestep per row, while 2D and 3D forcing files are distributed
         ParFlow binary files, one for each variable and timestep (2D) or one for each variable and multiple timesteps (3D).
-        Behavior of this key is different for 1D and 2D and 3D cases, as sepcified by the Solver.CLM.MetForcing key
+        Behavior of this key is different for 1D and 2D and 3D cases, as specified by the Solver.CLM.MetForcing key
         above. For 1D cases, it is the FULL FILE NAME. Note that in this configuration, this forcing file is not distributed,
         the user does not provide copies such as narr.1hr.txt.0, narr.1hr.txt.1 for each processor. ParFlow only needs
         the single original file (e.g. narr.1hr.txt). For 2D cases, this key is the BASE FILE NAME for the 2D forcing files,
@@ -360,8 +360,8 @@ Solver:
       help: >
         [Type: int] How many times to reuse a CLM atmospheric forcing file input. For example timestep=1, reuse =1 is normal
         behavior but reuse=2 and timestep=0.5 subdivides the time step using the same CLM input for both halves instead
-        of needing two files. This is particually useful for large, distributed runs when the user wants to run ParFlow at
-        a smaller timestep than the CLM forcing. Forcing files will be re-used and total fluxes adjusted accordingly without
+        of needing two files. This is particularly useful for large, distributed runs when the user wants to run ParFlow at
+        a smaller timestep than the CLM forcing. Forcing files will be reused and total fluxes adjusted accordingly without
         needing duplicate files.
       default: 1
       domains:
@@ -2101,7 +2101,7 @@ Solver:
 
       SymmetricMat:
         help: >
-          [Type: string] This key specifies whether the preconditioning matrix is symmetric. Choices fo rthis key are Symmetric and
+          [Type: string] This key specifies whether the preconditioning matrix is symmetric. Choices for this key are Symmetric and
           Nonsymmetric. The choice Symmetric specifies that the symmetric part of the Jacobian will be used as the preconditioning
           matrix. The choice Nonsymmetric specifies that the full Jacobian will be used as the preconditioning
           matrix. NOTE: ONLY Symmetric CAN BE USED IF MGSemi IS THE SPECIFIED PRECONDITIONER!
@@ -2598,7 +2598,7 @@ Solver:
 
   WriteSiloSlopes:
     help: >
-      [Type: boolean/string] This key is used to turn on printing of the x adn y slope data in silo binary format. The printing of the data is controlled by values in the
+      [Type: boolean/string] This key is used to turn on printing of the x and y slope data in silo binary format. The printing of the data is controlled by values in the
       timing information section. The data is written as a PFB file.
     default: False
     domains:

@@ -162,7 +162,7 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
     }
 #endif
 
-    /* Copy into a contigous buffer */
+    /* Copy into a contiguous buffer */
     if (stride == 1)
       bcopy(data, in_buffer, (size_t)(len * element_size));
     else
