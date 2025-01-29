@@ -190,11 +190,11 @@ Databox         *ReadSilo(char *filename, double default_value)
     for (m = 0; m < nvars; m++)
     {
       char *proc_filename;
-      char *seperator = ":";
+      char *separator = ":";
 
-      proc_filename = strtok(varnames[m], seperator);
+      proc_filename = strtok(varnames[m], separator);
       char *proc_varname;
-      proc_varname = strtok(NULL, seperator);
+      proc_varname = strtok(NULL, separator);
       /*  printf("multivar nvar:  %d  \n", nvars);
        * printf("multivar proc_varname:  %s  \n", proc_varname);
        * printf("multivar proc_filename:  %s  \n", proc_filename); */
@@ -252,7 +252,7 @@ Databox         *ReadSilo(char *filename, double default_value)
         return NULL;
       }
 
-      /* becuase of multi or single file compatibility we need to
+      /* because of multi or single file compatibility we need to
        * grab the actual mesh from that variable.  Then we need to
        * determine the origin from the mesh[0][0], [1][0] and [2][0]
        * divided by DX, DY and DZ since there are multiple origins

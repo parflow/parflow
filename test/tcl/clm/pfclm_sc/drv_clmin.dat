@@ -37,7 +37,7 @@ poutf1d        pfclm.para.out.dat                   CLM 1D Parameter Output File
 rstf           pfclm.rst.                           CLM active restart file                                                                                                                                                                                      
 !                                                                                                                                                                                                                                                         
                                                                                                                                                                                                                                                           
-!   Starting from the intial time below, note that this is UTC, NOT local time
+!   Starting from the initial time below, note that this is UTC, NOT local time
 !   CLM will calculate local time for your domain based on the Lat / Lon values
 !   in drv_vegm.dat
 !                                                                                                                                                                                                                                                         

@@ -454,7 +454,7 @@ dnl
 dnl Changes:  Changed some identifier names.
 dnl           --with-foo-library is now --with-foo-lib
 dnl           foo_LIBS is now foo_LIBFLAGS
-dnl           Fourth posibility for argument to --with-foo-lib added
+dnl           Fourth possibility for argument to --with-foo-lib added
 dnl           Documentation above changed to reflect these changes
 dnl           Noah Elliott, October 1998
 

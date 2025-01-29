@@ -174,7 +174,7 @@ void     ThermalConductivity(
       break;
     }        /* End case 0 */
 
-    case 1: /* Emperical function #1*/
+    case 1: /* Empirical function #1*/
     {
       int data_from_file;
       double *cdrys, *cwets;

@@ -55,7 +55,7 @@
  *   This routine is a recursive routine for quickly sorting `array'.
  *   If the additional argument called `permute' is not NULL, it is
  *   sorted identically to `array'.  This integer array is usually used
- *   to keep track of the permuation of elements in `array' resulting
+ *   to keep track of the permutation of elements in `array' resulting
  *   from the sorting.
  *--------------------------------------------------------------------------*/
 

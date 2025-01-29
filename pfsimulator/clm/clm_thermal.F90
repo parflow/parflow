@@ -163,7 +163,7 @@ subroutine clm_thermal (clm)
        wx,                         & ! patitial volume of ice and water of surface layer
        egsmax,                     & ! max. evaporation which soil can provide at one time step
        egidif,                     & ! the excess of evaporation over "egsmax"
-       brr(clm%snl+1 : nlevsoi),   & ! temporay set 
+       brr(clm%snl+1 : nlevsoi),   & ! temporary set 
        xmf,                        & ! total latent heat of phase change of ground water
        dlrad,                      & ! downward longwave radiation blow the canopy [W/m2]
        ulrad,                      & ! upward longwave radiation above the canopy [W/m2]
@@ -324,7 +324,7 @@ subroutine clm_thermal (clm)
   ! Ground fluxes and temperatures
   ! NOTE: in the current scheme clm%frac_veg_nosno is EITHER 1 or 0
 
-  ! Compute sensible and latent fluxes and their derivatives with repect 
+  ! Compute sensible and latent fluxes and their derivatives with respect 
   ! to ground temperature using ground temperatures from previous time step.
 
   if (clm%frac_veg_nosno == 0) then  
@@ -372,7 +372,7 @@ subroutine clm_thermal (clm)
         obuold = obu
      enddo                       ! end stability iteration
 
-     ! Get derivative of fluxes with repect to ground temperature
+     ! Get derivative of fluxes with respect to ground temperature
 
      clm%acond = ustar*ustar/um ! Add-in for ALMA output
 
@@ -582,7 +582,7 @@ subroutine clm_thermal (clm)
 
   clm%eflx_sh_tot = clm%eflx_sh_veg + clm%eflx_sh_grnd
   clm%qflx_evap_tot = clm%qflx_evap_veg + clm%qflx_evap_soi
-  clm%eflx_lh_tot= hvap*clm%qflx_evap_veg + htvp*clm%qflx_evap_soi   ! W/m2 (accouting for sublimation)
+  clm%eflx_lh_tot= hvap*clm%qflx_evap_veg + htvp*clm%qflx_evap_soi   ! W/m2 (accounting for sublimation)
 
   clm%qflx_evap_grnd = 0.
   clm%qflx_sub_snow = 0.

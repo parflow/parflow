@@ -32,7 +32,7 @@
 
 # List of sub-packages to install.
 
-# Ideally choose from the list of meta-packages to minimise variance between cuda versions (although it does change too). Some of these packages may not be availble in older CUDA releases
+# Ideally choose from the list of meta-packages to minimise variance between cuda versions (although it does change too). Some of these packages may not be available in older CUDA releases
 CUDA_PACKAGES_IN=(
     "cuda-compiler"
     "cuda-cudart-dev"
@@ -40,7 +40,7 @@ CUDA_PACKAGES_IN=(
     "cuda-nvrtc-dev"
     "cuda-nvml-dev"
     "libcurand-dev" # 11-0+
-    "cuda-cccl" # 11.4+, provides cub and thrust. On 11.3 knwon as cuda-thrust-11-3
+    "cuda-cccl" # 11.4+, provides cub and thrust. On 11.3 known as cuda-thrust-11-3
 )
 
 ## -------------------
@@ -116,7 +116,7 @@ do :
         # Use cuda-thrust > 11.2
         elif version_ge "$CUDA_VERSION_MAJOR_MINOR" "11.3" ; then
             package="cuda-thrust"
-        # Do not include this pacakge < 11.3
+        # Do not include this package < 11.3
         else
             continue
         fi

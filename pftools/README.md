@@ -9,7 +9,7 @@ Utitility to build 3D PFSOL domain from 2D mask file(s).
 There are two modes of running.  In the first case a single mask file
 is supplied, enabling a top surface to have multiple patches with the
 sides/bottom labeled as one patch.  In the second mode, a mask file is
-provived for each direction to enable labeling of each cell surface.
+provided for each direction to enable labeling of each cell surface.
 The values in the mask file are used to label the patches.
 
 ```shell

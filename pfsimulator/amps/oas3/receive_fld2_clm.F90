@@ -47,7 +47,7 @@ REAL(KIND=8), INTENT(IN)           :: pstep                              ! Parfl
 REAL(KIND=8), INTENT(IN)           :: topo((nx+2)*(ny+2)*(nz+2))         ! mask    (0 for inactive, 1 for active)
 REAL(KIND=8), INTENT(INOUT)        :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! source/sink (1/T)
 
-                                                                         ! All vecotrs from parflow on grid w/ ghost nodes for current proc
+                                                                         ! All vectors from parflow on grid w/ ghost nodes for current proc
 !Local Variables 
 INTEGER                            :: i, j, k, l
 INTEGER                            :: isecs                              ! Parflow model time in seconds
@@ -110,7 +110,7 @@ DO i = 1, nx
   ENDDO
 ENDDO
 
-! Debug ouput file
+! Debug output file
  IF ( IOASISDEBUGLVL == 1 ) THEN
 
    CALL MPI_Comm_size(localComm, npes, ierror)

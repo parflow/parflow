@@ -7,7 +7,7 @@
 # Add parflow test to ctest framework.
 #
 # Parflow tests must accept a processor topology.  Tests may ignore
-# toplogy for sequential tests.
+# topology for sequential tests.
 #
 # inputfile is the TCL script that defines the test.
 # topology is the processor topology, number of processor along each axis NX NY NZ

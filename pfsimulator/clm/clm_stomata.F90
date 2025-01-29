@@ -88,7 +88,7 @@ subroutine clm_stomata(mpe,       apar,     ei,        ea,      &
        we,                & ! export limited photosynthesis (umol co2/m**2/s)
        cp,                & ! co2 compensation point (pa)
        ci,                & ! internal co2 (pa)
-       awc,               & ! intermediate calcuation for wc
+       awc,               & ! intermediate calculation for wc
        vcmx,              & ! maximum rate of carboxylation (umol co2/m**2/s)
        j,                 & ! electron transport (umol co2/m**2/s)
        cea,               & ! constrain ea or else model blows up

@@ -1,6 +1,6 @@
 #  This test problem runs the Richards' equation solvers
 #  on the eqn:  - div (p grad p) = f where p = x and f
-#  is choosen to guarantee the correct solution.
+#  is chosen to guarantee the correct solution.
 #  For 64 unknowns, the following line should be printed on
 #  the screen:
 #
@@ -374,7 +374,7 @@ pftestParseAndEvaluateOutputForTCL test_X.out.txt
 
 set passed 1
 
-if ![pftestIsEqual $pressure_l2_error(1) 5.84881366e-05 "Pressure l2_error is not corrrect" ] {
+if ![pftestIsEqual $pressure_l2_error(1) 5.84881366e-05 "Pressure l2_error is not correct" ] {
     set passed 0
 }
 
