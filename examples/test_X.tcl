@@ -1,6 +1,6 @@
 #  This test problem runs the Richards' equation solvers
 #  on the eqn:  - div (p grad p) = f where p = x and f
-#  is choosen to guarantee the correct solution.
+#  is chosen to guarantee the correct solution.
 #  For 64 unknowns, the following line should be printed on
 #  the screen:
 #

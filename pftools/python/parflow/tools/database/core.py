@@ -321,7 +321,7 @@ class PFDBObj:
 
     def keys(self, skip_default=False):
         """
-        Gets the key names necessary for the run while skiping unset ones
+        Gets the key names necessary for the run while skipping unset ones
         """
         for name in self.__dict__:
             if name is None:

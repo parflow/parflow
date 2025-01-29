@@ -98,7 +98,7 @@ proc XParflow::FunctionEventLoop {} {
    GrabFocus .func
 
    # Clean up by destroying displays and unsetting
-   # globals associated with their maintenence
+   # globals associated with their maintenance
 
    if {[info commands .func.statDisplay] != ""} {
 
@@ -134,7 +134,7 @@ proc XParflow::FunctionEventLoop {} {
 # one for input parameters and one for output data
 #
 # Parameters inputEntries  - a list of labels and the
-#                            the types of entries they will preceed
+#                            the types of entries they will precede
 #            outputEntries -
 #
 # Return value - None
@@ -159,7 +159,7 @@ proc XParflow::CreateIOFrame {inputEntries outputEntries} {
 }
 
 
-# Procedure CreateIOFrame - This procedure creates the acutal
+# Procedure CreateIOFrame - This procedure creates the actual
 # area where the parameters to the function are input.  For
 # each element in the entries list, there will be an entry
 # and a label created.  The entries will hold the input
@@ -449,7 +449,7 @@ proc XParflow::UpdateDataDisplay {} {
    
 
 # Procedure UpdateDiffDisplay - This procedure updates the diff
-# display everytime the `Compute Function' button is pressed
+# display every time the `Compute Function' button is pressed
 # on the diff display
 #
 # Parameters - None

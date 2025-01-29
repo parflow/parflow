@@ -81,7 +81,7 @@ IBG-3, Forschungszentrum Juelich,
 Juelich, Germany
 
 **George Artavanis**
-Princeton Unversity
+Princeton University
 ga6@princeton.edu
 
 **Chen Yang**

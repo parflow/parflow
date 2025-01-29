@@ -3,7 +3,7 @@
 ## YAML file architecture in definitions:
 
 The files in this directory are split up into groups to limit their length. Each ParFlow key comprises one or more
-tokens, separated by periods. In the YAML files, tokens are set up in a tabbed heirarchical structure, where each 
+tokens, separated by periods. In the YAML files, tokens are set up in a tabbed hierarchical structure, where each 
 token is nested within the preceding token. Tokens are either static (starting with a capital letter) or dynamic
 (denoted by `.{dynamic_name}`, e.g. `geom_name` in `Geom.geom_name.Lower.X`). Leaf tokens are the tokens where
 the value is stored (e.g. `R` in `Process.Topology.R`). All other tokens are referred to as intermediate tokens.

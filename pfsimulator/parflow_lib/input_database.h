@@ -94,7 +94,7 @@ void IDB_Print(FILE *file, void *entry);
  *
  * @param a First entry to compare
  * @param b Second entry to compare
- * @return comparsion value of the keys
+ * @return comparison value of the keys
  */
 int IDB_Compare(void *a, void *b);
 
@@ -120,7 +120,7 @@ IDB_Entry *IDB_NewEntry(char *key, char *value);
  * Read in an input database from a flat file.  The returned database
  * can be then used for querying of user input options.
  *
- * A return of NULL indicates and error occured while reading the database.
+ * A return of NULL indicates and error occurred while reading the database.
  *
  * @param filename The name of the input file containing the database [IN]
  * @return The database
@@ -223,7 +223,7 @@ int IDB_GetInt(IDB *database, const char *key);
  * Provided string is split by whitespace and entries are created for
  * each space separated words.
  *
- * @param string the input string with white space seperated names
+ * @param string the input string with white space separated names
  * @return The new name array
  */
 NameArray NA_NewNameArray(char *string);

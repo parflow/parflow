@@ -48,7 +48,7 @@ REAL(KIND=8), INTENT(IN)           :: pressure((nx+2)*(ny+2)*(nz+2)),   &! press
                                       porosity((nx+2)*(ny+2)*(nz+2)),   &! porosity [m^3/m^3]
                                       dz((nx+2)*(ny+2)*(nz+2))           ! subsurface layer thickness [m]
 
-                                                                         ! All vecotrs from parflow on grid w/ ghost nodes for current proc
+                                                                         ! All vectors from parflow on grid w/ ghost nodes for current proc
 !Local Variables 
 
 INTEGER                            :: i, j, k, l
@@ -113,7 +113,7 @@ CHARACTER(len=19)                  :: foupname
    ENDDO
  ENDDO
 
-! Debug ouput file
+! Debug output file
  IF ( IOASISDEBUGLVL == 1 ) THEN
 
    CALL MPI_Comm_size(localComm, npes, ierror)

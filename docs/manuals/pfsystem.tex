@@ -78,7 +78,7 @@ pfset ComputationalGrid.NZ                       8
 \end{verbatim}\end{display}
 
 The value is normally a single string, double, or integer.  In some cases,
-in particular for a list of names, you need to supply a space seperated
+in particular for a list of names, you need to supply a space separated
 sequence.  This can be done using either a double quote or braces.
 
 \begin{display}\begin{verbatim}
@@ -208,14 +208,14 @@ The general approach is as follows:
 		\item SPFH:	Specific humidity $[kg/kg]$
 	\end{itemize}
 	
-	If you choose to do spatially heterogenous forcings you will need to generate separate 
+	If you choose to do spatially heterogeneous forcings you will need to generate separate 
 	files for each variable. The files should be formatted in the standard ParFlow format 
 	with the third (i.e. z dimension) as time. If you are doing hourly simulations it is 
 	standard practice to put 24 hours in one file, but you can decide how many time steps per 
-	file. For an example of heterogenous forcing files refer to the \file{NLDAS} directory
+	file. For an example of heterogeneous forcing files refer to the \file{NLDAS} directory
 	in the Washita Example)
 
-	Alternatively, if you would like to force the model with spatially homogenous forcings, 
+	Alternatively, if you would like to force the model with spatially homogeneous forcings, 
 	then a single file can be provided where each variable is a column and rows designate 
 	time steps. 
 
@@ -338,7 +338,7 @@ this procedure :
             \begin{itemize}
                \item Use the dump sequence number from step 1
                      as the start\_count.
-               \item Use the real time that the dump occured at from step 1
+               \item Use the real time that the dump occurred at from step 1
                      as the start\_time.
 	     \item To restart with \code{CLM}, use the \file{Solver.CLM.IstepStart} key described in \S~\ref{CLM Solver Parameters} with a value equal to the dump sequence plus one. Make sure this corresponds to changes to \code{drv_clmin.dat}. 
             \end{itemize}
@@ -409,7 +409,7 @@ This section contains two annotated input scripts:
 
 \begin{itemize}
 	\item \S~\ref{Harvey Flow Example} contains the harvey flow example (\file{harvey.flow.tcl})
-	which is an idealized domain with a heterogenous subsurface. The example also demonstrates how to generate 
+	which is an idealized domain with a heterogeneous subsurface. The example also demonstrates how to generate 
 	multiple realizations of the subsurface and add pumping wells. 
 	 
 	\item \S~\ref{Little Washita Example} contains the Little Washita example (\file{LW_Test.tcl})

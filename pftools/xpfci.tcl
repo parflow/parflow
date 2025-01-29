@@ -224,7 +224,7 @@ proc Done {} {
 
 	    exec chmod ug+r RCS/[file tail $i],v
 
-	    # if user can execute make make repository item executeable
+	    # if user can execute make make repository item executable
 	    if { [file executable RCS/[file tail $i],v ] } {
 		exec chmod ug+x RCS/[file tail $i],v
 	    }
