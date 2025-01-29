@@ -14,7 +14,6 @@ set(TESTS
   richards_hydrostatic_equilibrium
   indicator_field
   LW_surface_press
-  channelwidth
   overland_tiltedV_MGSemiTest
 )
 
@@ -52,7 +51,8 @@ if(${PARFLOW_HAVE_HYPRE})
     water_balance_y
     water_balance_x
     water_balance_x.hardflow.nojac
-    water_balance_x.hardflow.jac)
+    water_balance_x.hardflow.jac
+    channelwidth)
 endif()
 
 if(${PARFLOW_HAVE_SILO})
