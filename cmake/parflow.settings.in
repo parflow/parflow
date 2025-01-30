@@ -46,3 +46,4 @@ OMP Support:		@PARFLOW_HAVE_OMP@
 Kokkos Support:		@PARFLOW_HAVE_KOKKOS@
 CUDA Support:		@PARFLOW_HAVE_CUDA@
 RMM Support:		@PARFLOW_HAVE_RMM@
+Umpire Support:         @PARFLOW_HAVE_UMPIRE@

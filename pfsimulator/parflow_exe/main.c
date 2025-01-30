@@ -185,6 +185,10 @@ int main(int argc, char *argv [])
     RMM_ERR(rmmInitialize(&rmmOptions));
 #endif // PARFLOW_HAVE_RMM
 
+#ifdef PARFLOW_HAVE_UMPIRE
+    amps_umpireInit();
+#endif
+
     wall_clock_time = amps_Clock();
 
     /*-----------------------------------------------------------------------
