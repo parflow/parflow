@@ -986,7 +986,7 @@ SubgridArray  *UnionSubgridArray(
  * @param grid the problems grid
  * @return True or False corresponding to whether the subgrid intersects
  */
-bool SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid)
+int SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid)
 {
   int subgrid_index;
   Subgrid* rank_subgrid, *tmp_subgrid;
