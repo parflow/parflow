@@ -1,7 +1,7 @@
 """
-    Unit test for the pf_xarray class.
-    This verifies methods with the pf_xarray tools module of parflow.
-    It uses existing test data .pfb files in the parflow repository for testing.
+Unit test for the pf_xarray class.
+This verifies methods with the pf_xarray tools module of parflow.
+It uses existing test data .pfb files in the parflow repository for testing.
 """
 
 import sys
