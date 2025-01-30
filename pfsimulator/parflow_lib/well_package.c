@@ -38,27 +38,7 @@
  * Structures
  *--------------------------------------------------------------------------*/
 
-/** @brief Checks whether a subgrid intersects with the current ranks subgrid
- *
- * @param subgrid the subgrid we are checking
- * @param grid the problems grid
- * @return True or False corresponding to whether the subgrid intersects
- */
-bool SubgridIsOnThisRank(Subgrid* subgrid, Grid *grid)
-{
-  int subgrid_index;
-  Subgrid* rank_subgrid, *tmp_subgrid;
 
-  ForSubgridI(subgrid_index, GridSubgrids(grid))
-  {
-    rank_subgrid = SubgridArraySubgrid(GridSubgrids(grid), subgrid_index);
-    if ((tmp_subgrid = IntersectSubgrids(rank_subgrid, subgrid)))
-    {
-      return true;
-    }
-  }
-  return false;
-}
 
 
 typedef struct {
@@ -247,7 +227,7 @@ void         WellPackage(
                                    process);
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
-          if (SubgridIsOnThisRank(new_subgrid, grid))
+          if (SubgridLivesOnThisRank(new_subgrid, grid))
           {
             subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
           }
@@ -574,7 +554,7 @@ void         WellPackage(
                                      process);
             dx = SubgridDX(new_subgrid);
             dy = SubgridDY(new_subgrid);
-            if (SubgridIsOnThisRank(new_subgrid, grid))
+            if (SubgridLivesOnThisRank(new_subgrid, grid))
             {
               subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
             }
