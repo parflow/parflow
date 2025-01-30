@@ -28,6 +28,7 @@
 
 #include "parflow.h"
 #include "globals.h"
+#include "stdbool.h"
 
 /*--------------------------------------------------------------------------
  * Structures
