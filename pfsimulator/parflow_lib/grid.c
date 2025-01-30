@@ -34,6 +34,7 @@
 #include "parflow.h"
 #include "grid.h"
 
+#include <stdbool.h>
 #include <math.h>
 
 /*--------------------------------------------------------------------------
