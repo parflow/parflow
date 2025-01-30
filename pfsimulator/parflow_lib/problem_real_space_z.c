@@ -280,6 +280,7 @@ int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data)
   int index_space_z;
   GrGeomSolid *gr_domain = problem_data->gr_domain;
   bool found_index_space_z = false;
+
 //We need this number to always be larger than the number of z indices. Maybe there is an INF or something
 //we can set this to?
   index_space_z = 10000000;

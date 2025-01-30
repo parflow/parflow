@@ -580,7 +580,6 @@ void         WellPackage(
             }
 //            printf("volume1 %f\n", subgrid_volume);
 #ifdef PARFLOW_HAVE_MPI
-
             // here I am making the assumption that indices need to be positive so we can use amps_max
             amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
             amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
