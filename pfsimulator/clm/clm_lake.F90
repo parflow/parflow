@@ -117,7 +117,7 @@ subroutine clm_lake (clm)
        thvstar,           & ! virtual potential temperature scaling parameter
        tksur,             & ! thermal conductivity of snow/soil (w/m/kelvin)
        tstar,             & ! temperature scaling parameter
-       um,                & ! wind speed including the stablity effect [m/s]
+       um,                & ! wind speed including the stability effect [m/s]
        ur,                & ! wind speed at reference height [m/s]
        ustar,             & ! friction velocity [m/s]
        wc,                & ! convective velocity [m/s]
@@ -259,7 +259,7 @@ subroutine clm_lake (clm)
      call clm_obult (0.0d0, z0mg, z0hg, z0qg, obu, um, ustar, temp1, temp2, clm)
      obuold = obu
 
-     ! Get derivative of fluxes with repect to ground temperature
+     ! Get derivative of fluxes with respect to ground temperature
 
      ram    = 1./(ustar*ustar/um)
      rah    = 1./(temp1*ustar)
@@ -318,7 +318,7 @@ subroutine clm_lake (clm)
   enddo
 
   ! If there is snow on the ground and t_grnd > tfrz: reset t_grnd = tfrz.  Reevaluate ground fluxes.
-  ! Energy inbalance used to melt snow.  h2osno > 0.5 prevents spurious fluxes
+  ! Energy imbalance used to melt snow.  h2osno > 0.5 prevents spurious fluxes
 
   if (clm%h2osno > 0.5 .AND. clm%t_grnd > tfrz) then
      clm%t_grnd = tfrz

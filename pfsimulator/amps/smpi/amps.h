@@ -683,7 +683,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @memo Print to a distributed file
  * @param file Shared file handle [IN]
  * @param fmt Format string [IN]
- * @param ... Paramaters for the format string [IN]
+ * @param ... Parameters for the format string [IN]
  * @return Error code
  */
 #define amps_Fprintf fprintf
@@ -715,7 +715,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @memo Read from a distributed file
  * @param file Shared file handle [IN]
  * @param fmt Format string [IN]
- * @param ... Paramaters for the format string [IN]
+ * @param ... Parameters for the format string [IN]
  * @return Error code
  */
 #define amps_Fscanf fscanf

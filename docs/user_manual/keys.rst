@@ -14,7 +14,7 @@ It should be noted that the keys are “dynamic” in that many are built up
 from values of other keys. For example if you have two wells named
 *northwell* and *southwell* then you will have to set some keys which
 specify the parameters for each well. The keys are built up in a simple
-sort of heirarchy.
+sort of hierarchy.
 
 The following sections contain a description of all of the keys used by
 ParFlow. For an example of input files you can look at the ``test`` subdirectory 
@@ -31,7 +31,7 @@ Strings can contain spaces if you use the proper TCL syntax (i.e. using
 double quotes). These types are standard TCL types. Lists are strings
 but they indicate the names of a series of items. For example you might
 need to specify the names of the geometries. You would do this using
-space seperated names (what we are calling a list) “layer1 layer2
+space separated names (what we are calling a list) “layer1 layer2
 layer3”.
 
 The descriptions that follow are organized into functional areas. An
@@ -378,7 +378,7 @@ input filename which contains the field or solid information.
 *integer* **GeomInput.\ *geometry_input_name*.Value** no default For
 IndicatorField geometry inputs you need to specify the mapping between
 values in the input file and the geometry names. The named geometry will
-be defined whereever the input file is equal to the specifed value.
+be defined wherever the input file is equal to the specified value.
 
 .. container:: list
 
@@ -1907,12 +1907,12 @@ Flow Barriers
 Here, the values for Flow Barriers described in :ref:`FB` can be
 input. These are only available with Solver **Richards** and can be
 specified in X, Y or Z directions independently using ParFlow binary files. These
-barriers are appied at the cell face at the location :math:`i+1/2`. That
+barriers are applied at the cell face at the location :math:`i+1/2`. That
 is a value of :math:`FB_x` specified at :math:`i` will be applied to the
 cell face at :math:`i+1/2` or between cells :math:`i` and
 :math:`i+1`. The same goes for :math:`FB_y` (:math:`j+1/2`) and
 :math:`FB_z` (:math:`k+1/2`). The flow barrier values are unitless and
-mulitply the flux equation as shown in :eq:`qFBx`.
+multiply the flux equation as shown in :eq:`qFBx`.
 
 The format for this section of input is:
 
@@ -2503,7 +2503,7 @@ geometries. Note that only one type of relative permeability may be used
 for the entire problem. However, parameters may be different for that
 type in different geometries. For instance, if the problem consists of
 three geometries, then **VanGenuchten** may be specified with three
-different sets of parameters for the three different goemetries.
+different sets of parameters for the three different geometries.
 However, once **VanGenuchten** is specified, one geometry cannot later
 be specified to have **Data** as its relative permeability. The possible
 values for this key are **Constant, VanGenuchten, Haverkamp, Data,** and
@@ -2907,7 +2907,7 @@ geometries. Note that only one type of saturation may be used for the
 entire problem. However, parameters may be different for that type in
 different geometries. For instance, if the problem consists of three
 geometries, then **VanGenuchten** may be specified with three different
-sets of parameters for the three different goemetries. However, once
+sets of parameters for the three different geometries. However, once
 **VanGenuchten** is specified, one geometry cannot later be specified to
 have **Data** as its saturation. The possible values for this key are
 **Constant, VanGenuchten, Haverkamp, Data, Polynomial** and **PFBFile**.
@@ -3313,7 +3313,7 @@ overland flow routing boundary that solve Maning's equation in
 the traditional cell centered slopes). The key **SeepageFace** simulates
 a boundary that allows flow to exit but keeps the surface pressure at
 zero. Consider a sign flip in top boundary condition values (i.e., outgoing
-fluxes are positve and incomming fluxes are negative). The choice
+fluxes are positive and incoming fluxes are negative). The choice
 **ExactSolution** specifies that an exact known
 solution is to be applied as a Dirichlet boundary condition on the
 respective patch. Note that this does not change according to any cycle.
@@ -3993,7 +3993,7 @@ extraction well.
 
       Wells.test_well.Action "Injection"
 
-*double* **Wells.\ *well_name*.Type** no default This key specfies the
+*double* **Wells.\ *well_name*.Type** no default This key specifies the
 mechanism by which the well works (how ParFlow works with the well data)
 if the input type key is set to **Vectical**. This key can be either
 **Pressure** or **Flux**. A value of **Pressure** indicates that the
@@ -4011,7 +4011,7 @@ condition in the computational cells which define the well.
       Wells.test_well.Type "Flux"
 
 *string* **Wells.\ *well_name*.ExtractionType** no default This key
-specfies the mechanism by which the extraction well works (how ParFlow
+specifies the mechanism by which the extraction well works (how ParFlow
 works with the well data) if the input type key is set to **Recirc**.
 This key can be either **Pressure** or **Flux**. A value of **Pressure**
 indicates that the data provided for the well is in terms of hydrostatic
@@ -4029,7 +4029,7 @@ well.
       Wells.ext_well.ExtractionType "Pressure"
 
 *string* **Wells.\ *well_name*.InjectionType** no default This key
-specfies the mechanism by which the injection well works (how ParFlow
+specifies the mechanism by which the injection well works (how ParFlow
 works with the well data) if the input type key is set to **Recirc**.
 This key can be either **Pressure** or **Flux**. A value of **Pressure**
 indicates that the data provided for the well is in terms of hydrostatic
@@ -4237,7 +4237,7 @@ physical relationships that exist between the phases.
 default This key specifies the volumetric flux for a vectical well if
 the type key is set to **Flux**.
 
-Note only a positive number should be entered, ParFlow assignes the
+Note only a positive number should be entered, ParFlow assigns the
 correct sign based on the chosen action for the well.
 
 .. container:: list
@@ -4864,7 +4864,7 @@ configured SILO with HDF5 in order to use that option.
 *string* **SILO.CompressionOptions** This key is used to specify the
 SILO compression options. See the SILO manual for the DB_SetCompression
 command for information on available options. NOTE: the options
-avaialable are highly dependent on the configure options when building
+available are highly dependent on the configure options when building
 SILO.
 
 .. container:: list
@@ -5216,7 +5216,7 @@ help with slope errors and issues and provides some diagnostic information.  The
       pfset Solver.SurfacePredictor        True        ## TCL syntax
       <runname>.Solver.SurfacePredictor  = "True"    ## Python syntax
 
-*double* **Solver.SurfacePredictor.PressureValue** 0.00001 This key specifies a surface pressure if the **SurfacePredictor** key above is True and ponded conditions are predicted at a surface cell.  A negative value allows the surface predictor algorithm to esimate the new surface pressure based on surrounding fluxes.
+*double* **Solver.SurfacePredictor.PressureValue** 0.00001 This key specifies a surface pressure if the **SurfacePredictor** key above is True and ponded conditions are predicted at a surface cell.  A negative value allows the surface predictor algorithm to estimate the new surface pressure based on surrounding fluxes.
 
 .. container:: list
 
@@ -5274,7 +5274,7 @@ should be the complete filename. For the transient option
 ParFlow will load one file per timestep, with the form ``filename.00000.pfb``.
 EvapTrans values are considered as sources or sinks in Richards' equation, so
 they have no conflicts with boundary conditions. Consequently, sign flip is not
-required (i.e., incomming flluxes are positive and outgoing fluxes are negative).
+required (i.e., incoming flluxes are positive and outgoing fluxes are negative).
 
 .. container:: list
 
@@ -5854,9 +5854,9 @@ threshold value for the irrigation in ``CLM``.
 atmospheric forcing file input. For example timestep=1, reuse =1 is 
 normal behavior but reuse=2 and timestep=0.5 subdivides the time step 
 using the same ``CLM`` input for both halves instead of needing two files. 
-This is particually useful for large, distributed runs when the user 
+This is particularly useful for large, distributed runs when the user 
 wants to run ParFlow at a smaller timestep than the ``CLM`` 
-forcing. Forcing files will be re-used and total fluxes adjusted 
+forcing. Forcing files will be reused and total fluxes adjusted 
 accordingly without needing duplicate files.
 
 .. container:: list

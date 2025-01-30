@@ -55,7 +55,7 @@
  *  GrGeomOctreeNodeEmpty   | Exterior to the geometry, not on outside boundary
  *  GrGeomOctreeNodeOutside | Outside boundary
  *  GrGeomOctreeNodeInside  | Inside boundary
- *  GrGeomOctreeNodeFull    | Interior to the geomery, not on inside boundary
+ *  GrGeomOctreeNodeFull    | Interior to the geometry, not on inside boundary
  *
  *
  * In most cases the leaf nodes with inside/outside boundary flags
@@ -85,7 +85,7 @@
  *
  * \image html Octree-2.png
  *
- * Spacial accessors are consistent with the labeling in the literature :
+ * Spatial accessors are consistent with the labeling in the literature :
  *
  * Short Name | Name  | Description
  * ---------- | ----- | ----------------
@@ -355,7 +355,7 @@ typedef struct grgeom_octree {
  * i,j,k should be initialized to the starting indices and modified as the
  * tree is traversed to the starting offset of the current octree node.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  *
  * @param[in,out] i X index
@@ -446,7 +446,7 @@ typedef struct grgeom_octree {
  * Basic Octree looping template macro for interiror and exterior
  * looping.  Traversal is stopped when the traversal_stop_test
  * expression is true.  body_test is evaluated before the code block
- * is exectued on leaf nodes or branch nodes that meet the traversal_stop_test
+ * is executed on leaf nodes or branch nodes that meet the traversal_stop_test
  * criteria.
  *
  * value_test is evaluated to determine if the bodies should be
@@ -455,7 +455,7 @@ typedef struct grgeom_octree {
  * i,j,k should be initialized to the starting indices and modified as the
  * tree is traversed to the starting offset of the current octree node.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @param[in,out] i X index
  * @param[in,out] j Y index
@@ -467,8 +467,8 @@ typedef struct grgeom_octree {
  * @param[in] value_test boolean if tests evaluated before body execution
  * @param[in] level_body code to execute if level has been reached.
  * @param[in] code_body code to execute for leaf nodes or branch nodes
- * @param[in] traversal_stop_test boolean expression evalutated to determine if a branch node should terminate traversal
- *  @param[in] body_test boolean expression evalutated to determine if code_body should be executed.
+ * @param[in] traversal_stop_test boolean expression evaluated to determine if a branch node should terminate traversal
+ *  @param[in] body_test boolean expression evaluated to determine if code_body should be executed.
  */
 #define GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test,                 \
                                  level_body, code_body, traversal_stop_test, body_test)       \
@@ -547,7 +547,7 @@ typedef struct grgeom_octree {
  * Basic Octree looping macro for interior (Full and Inside) indices
  * only.  This is more efficient than the GrGeomOctreeLoop looping.
  * It will stop the octree traversel at nodes that are fully in the interior
- * without distingishing inside indices.
+ * without distinguishing inside indices.
  *
  * Octree is traversed executing the level_body when a node is at the
  * supplied level of interest and executing the code_body when a node
@@ -557,7 +557,7 @@ typedef struct grgeom_octree {
  * i,j,k should be initialized to the starting indices and modified as the
  * tree is traversed to the starting offset of the current octree node.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @param[in,out] i X index
  * @param[in,out] j Y index
@@ -587,7 +587,7 @@ typedef struct grgeom_octree {
  * Basic Octree looping macro for exteriorr (Empty and Outside) indices
  * only.  This is more efficient than the GrGeomOctreeLoop looping.
  * It will stop the octree traversel at nodes that are fully in the interior
- * without distingishing inside indices.
+ * without distinguishing inside indices.
  *
  * Octree is traversed executing the level_body when a node is at the
  * supplied level of interest and executing the code_body when a node
@@ -597,7 +597,7 @@ typedef struct grgeom_octree {
  * i,j,k should be initialized to the starting indices and modified as the
  * tree is traversed to the starting offset of the current octree node.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @param[in,out] i X index
  * @param[in,out] j Y index
@@ -637,7 +637,7 @@ typedef struct grgeom_octree {
  * i,j,k should be initialized to the starting indices and modified as the
  * tree is traversed to the starting offset of the current octree node.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @param[in,out] i X index
  * @param[in,out] j Y index
@@ -739,7 +739,7 @@ typedef struct grgeom_octree {
  *
  * ix,iy,iz and nx,ny,nz specify a bounding box to constrain the the iteration.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @note Level of interest doesn't seem to make sense.  The body will
  * be executed for the first point (i,j,k) in the octree nodes at the
@@ -819,7 +819,7 @@ typedef struct grgeom_octree {
  *
  * ix,iy,iz and nx,ny,nz specify a bounding box to constrain the the iteration.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @note Level of interest doesn't seem to make sense.  The body will
  * be executed for the first point (i,j,k) in the octree nodes at the
@@ -898,7 +898,7 @@ typedef struct grgeom_octree {
  *
  * ix,iy,iz and nx,ny,nz specify a bounding box to constrain the the iteration.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @note Level of interest doesn't seem to make sense.  The body will
  * be executed for the first point (i,j,k) in the octree nodes at the
@@ -1051,7 +1051,7 @@ typedef struct grgeom_octree {
 // Would be better to store planes.
 
 //  \todo SGS 12/3/2008 can optimize fdir by using 1 assignment to static.  Should
-// elimiate 2 assignment statements and switch and replace with table:
+// eliminate 2 assignment statements and switch and replace with table:
 // fdir = FDIR[PV_f] type of thing.
 //
 
@@ -1081,7 +1081,7 @@ typedef struct grgeom_octree {
  * ix,iy,iz and nx,ny,nz specify a bounding box for the iteration
  * for cases when the entire index space should not be iterated.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @note level_of_intest doesn't make a lot of sense, only leaf nodes
  * have faces.
@@ -1206,7 +1206,7 @@ typedef struct grgeom_octree {
  * modified as the tree is traversed to the starting offset of the
  * current octree node.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @param[in,out] i X index
  * @param[in,out] j Y index
@@ -1306,7 +1306,7 @@ typedef struct grgeom_octree {
  *
  * ix,iy,iz and nx,ny,nz specify a bounding box to constrain the the iteration.
  *
- * The current level is maintained in the l parmeter.
+ * The current level is maintained in the l parameter.
  *
  * @param[in,out] i X index
  * @param[in,out] j Y index

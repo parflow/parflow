@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# running different configuraitons of tilted V
+# running different configurations of tilted V
 # -----------------------------------------------------------------------------
 
 import sys
@@ -455,7 +455,7 @@ if runcheck == 1:
 # -----------------------------------------------------------------------------
 # New kinematic formulations without the zero channel
 # Note: The difference in configuration here is to be consistent with the way
-#   the upwinding is handled for the new and original fomulations.
+#   the upwinding is handled for the new and original formulations.
 #   These two results should be almost identiacl for the new and old formulations
 # -----------------------------------------------------------------------------
 overland.TopoSlopesX.Type = "Constant"

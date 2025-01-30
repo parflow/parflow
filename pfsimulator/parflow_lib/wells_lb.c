@@ -146,7 +146,7 @@ void LBWells(
             cellTypep[index] = 0;
           });
 
-          /* done with this temporay subgrid */
+          /* done with this temporary subgrid */
           FreeSubgrid(tmp_subgrid);
         }      /* if (tmp_sub_grid ...)  */
       }     /* for (well = 0; ...)  */

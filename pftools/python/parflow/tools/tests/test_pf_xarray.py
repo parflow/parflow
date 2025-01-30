@@ -1,7 +1,7 @@
 """
-    Unit test for the pf_xarray class.
-    This verifies methods with the pf_xarray tools module of parflow.
-    It uses existing test data .pfb files in the parflow repository for testing.
+Unit test for the pf_xarray class.
+This verifies methods with the pf_xarray tools module of parflow.
+It uses existing test data .pfb files in the parflow repository for testing.
 """
 
 import sys
@@ -35,7 +35,7 @@ class TestPFXArray(unittest.TestCase):
         self.assertEqual(21, ds.dims["z"])
         self.assertEqual(46, ds.dims["x"])
         self.assertEqual(46, ds.dims["y"])
-        # Verify the checkum of values in the data array is what is expected
+        # Verify the checksum of values in the data array is what is expected
         da = ds.to_array()
         self.assertEqual(-444360000, int(np.sum(da)))
         # Verify that the shape of the data set is 1 variable with the expected 3D dimensions
@@ -50,7 +50,7 @@ class TestPFXArray(unittest.TestCase):
         # Verify that the shape of the data set is 2 time rows with the expected 3D dimensions
         self.assertEqual((2, 21, 46, 46), da.shape)
         # Verify the sizes of the dimensions from the loaded xarray
-        # Verify the checkum of values in the data array is what is expected
+        # Verify the checksum of values in the data array is what is expected
         self.assertEqual(-887197545, int(np.sum(da)))
 
     def test_write_pfb_file(self):

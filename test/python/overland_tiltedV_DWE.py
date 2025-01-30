@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# running different configuraitons of tilted V
+# running different configurations of tilted V
 # -----------------------------------------------------------------------------
 
 import sys
@@ -331,7 +331,7 @@ runcheck = 1
 # New diffusive formulations without the zero channel (as compared to the first
 #    tests in overland_tiltedV_KWE.tcl)
 # Note: The difference in configuration here is to be consistent with the way
-#   the upwinding is handled for the new and original fomulations.
+#   the upwinding is handled for the new and original formulations.
 #   These two results should be almost identical for the new and old formulations
 # Commented lines are from original TCL test - will need to convert to Python if running with
 # Python pftools

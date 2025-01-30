@@ -191,7 +191,7 @@ void _amps_wait_exchange(amps_Handle handle)
   i = package->num_send;
   while (i--)
   {
-    /* make sure that reciever has copied date before we continue */
+    /* make sure that receiver has copied date before we continue */
     WaitForSingleObject(package->snd_info[i]->recv_sema, INFINITE);
   }
 #endif

@@ -91,7 +91,7 @@ IDB *IDB_NewDB(char *filename)
 
   amps_File file;
 
-  /* Initalize the db structure */
+  /* Initialize the db structure */
   db = (IDB*)HBT_new(IDB_Compare,
                      IDB_Free,
                      IDB_Print,

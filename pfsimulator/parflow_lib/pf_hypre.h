@@ -74,7 +74,7 @@ void HypreAssembleGrid(
  * @param hypre_stencil Constructed hypre stencil
  * @param hypre_mat Constructed hypre matrix
  * @param hypre_rhs Constructed rhs vector
- * @parame hypre_soln Constucted solution vector
+ * @parame hypre_soln Constructed solution vector
  */
 void HypreInitialize(Matrix*              pf_matrix,
                      HYPRE_StructGrid*    hypre_grid,

@@ -158,7 +158,7 @@ void         XSlope(
            * SGS this does not match the loop in nl_function_eval.  That
            * loop is going over more than the inner geom locations.  Is that
            * important?  Originally the x_slope array was not being allocated
-           * by ctalloc, just alloc and unitialized memory reads were being
+           * by ctalloc, just alloc and uninitialized memory reads were being
            * caused.   Switched that to be ctalloc to init to 0 to "hack" a
            * fix but is this really a sign of deeper indexing problems?
            */
@@ -166,7 +166,7 @@ void         XSlope(
            * not ALL nodes (including ghost) as in nl fn eval and now the overland eval
            * routines.  THis is fine in the KW approximation which only needs interior values
            * but for diffusive wave and for the terrain following grid (which uses the surface
-           * topo slopes as subsurface slopes) this can cuase bddy problems.  */
+           * topo slopes as subsurface slopes) this can cause bddy problems.  */
 
           data = SubvectorData(ps_sub);
           GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,

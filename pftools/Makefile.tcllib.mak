@@ -11,7 +11,7 @@
 #  Makefile for parflow tools.
 # 
 #  This file is machine independent.  Machine dependent information should
-#  be in the build script that invokes this makfile
+#  be in the build script that invokes this makefile
 #
 PROJECT	= parflow
 

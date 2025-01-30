@@ -98,13 +98,13 @@ int main(int argc, char *argv [])
 #ifdef HAVE_SAMRAI
     if (amps_EmbeddedInit())
     {
-      amps_Printf("Error: amps_EmbeddedInit initalization failed\n");
+      amps_Printf("Error: amps_EmbeddedInit initialization failed\n");
       exit(1);
     }
 #else
     if (amps_Init(&argc, &argv))
     {
-      amps_Printf("Error: amps_Init initalization failed\n");
+      amps_Printf("Error: amps_Init initialization failed\n");
       exit(1);
     }
 #endif
@@ -325,7 +325,7 @@ int main(int argc, char *argv [])
       else
       {
         TBOX_ERROR("restart_interval > 0, but key `restart_write_dirname'"
-                   << " not specifed in input file");
+                   << " not specified in input file");
       }
     }
 

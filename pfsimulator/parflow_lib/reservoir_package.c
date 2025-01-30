@@ -135,7 +135,7 @@ bool SubgridLivesOnThisRank(Subgrid* subgrid, Grid *grid)
  *
  * @param i the x index of the cell in question
  * @param j the y index of the cell in question
- * @return Null, but modifies the problem datas x and y slopes
+ * @return Null, but modifies the problem data x and y slopes
  */
 void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_data, Grid* grid)
 {
@@ -210,7 +210,7 @@ void StopOutletFlowAtCellOverlandKinematic(int i, int j, ProblemData* problem_da
  *
  * @param i the x index of the cell in question
  * @param j the y index of the cell in question
- * @return Null, but modifies the problem datas x and y slopes
+ * @return Null, but modifies the problem data x and y slopes
  */
 void StopOutletFlowAtCellOverlandFlow(int i, int j, ProblemData* problem_data, Grid* grid)
 {
