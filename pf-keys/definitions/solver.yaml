@@ -2653,6 +2653,15 @@ Solver:
         AnyString:
         RequiresModule: TORCH
 
+    PrintPredictedPressure:
+      help: > 
+        [Type: boolean/string] This key specifies whether the predicted pressure from the Torch ML Accelerator will be printed for each step.
+	Note that the Torch libary must be compiled and linked at runtime for this option to be active.
+      default: False
+      domains:
+        BoolDomain:
+        RequiresModule: TORCH
+	
 
 # SILO options
 SILO: # typo in documentation

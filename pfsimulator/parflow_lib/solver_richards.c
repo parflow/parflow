@@ -211,6 +211,7 @@ typedef struct {
   char *nc_evap_trans_filename; /* NetCDF File name for evap trans */
   int enable_torch_accelerator;       /* Enable the ML Torch accelerator between timesteps */
   char *torch_model_filepath;         /* Path to the .pth file containing the trained Torch model */
+  int print_predicted_pressure;       /* Print the predicted pressure from the ML Accelerator at each step. */
 } PublicXtra;
 
 typedef struct {
@@ -3070,9 +3071,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  pp = SubvectorData(p_sub);
 	  SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
 	}
-	// Print predicted pressure
-	sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
-        WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
+	if (public_xtra->print_predicted_pressure) {
+	  sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
+	  WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
+	}
 	EndTiming(TorchTimingIndex);
       }
 #endif
@@ -6070,7 +6072,12 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->enable_torch_accelerator = switch_value;
 
   sprintf(key, "%s.Torch.ModelFilePath", name);
-  public_xtra->torch_model_filepath = GetStringDefault(key, "");  
+  public_xtra->torch_model_filepath = GetStringDefault(key, "");
+
+  sprintf(key, "%s.Torch.PrintPredictedPressure", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);  
+  public_xtra->print_predicted_pressure = switch_value;
 #endif
 
   NA_FreeNameArray(switch_na);
