@@ -2661,7 +2661,6 @@ Solver:
       domains:
         BoolDomain:
         RequiresModule: TORCH
-	
 
 # SILO options
 SILO: # typo in documentation
