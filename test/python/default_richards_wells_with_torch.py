@@ -395,11 +395,23 @@ for i in timesteps:
         f"Max difference in Pressure for timestep {i}",
     ):
         passed = False
+
     filename = f"/{run_name}.out.satur.{i}.pfb"
     if not pf_test_file(
         new_output_dir_name + filename,
         correct_output_dir_name + filename,
         f"Max difference in Saturation for timestep {i}",
+    ):
+        passed = False
+        
+# Check that the predicted pressure is the same as the last pressure timestep
+for i in range(1, 6):
+    p = f"/{run_name}.out.press.{(i-1):05d}.pfb"
+    pred_p = f"/{run_name}.out.predicted_press.{i:05d}.pfb"
+    if not pf_test_file(
+        new_output_dir_name + p,
+        new_output_dir_name + pred_p,
+        f"Max difference in Predicted Pressure for timestep {i}",
     ):
         passed = False
 

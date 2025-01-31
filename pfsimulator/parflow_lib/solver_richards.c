@@ -3070,6 +3070,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  pp = SubvectorData(p_sub);
 	  SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
 	}
+	// Print predicted pressure
+	sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
+        WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
 	EndTiming(TorchTimingIndex);
       }
 #endif
