@@ -16,16 +16,13 @@ extern "C" {
       std::cerr << "Error loading the model\n";
       // raise error here
     }
-    //std::cout << "Model loaded successfully\n";
 
     torch::Tensor input_tensor = torch::from_blob(pp, {nx, ny, nz}, torch::kDouble);
-    //std::cout << "Model input: " << input_tensor << std::endl;
 
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(input_tensor);
 
     at::Tensor output = model.forward(inputs).toTensor();
-    //std::cout << "Model output: " << output << std::endl;
 
     if (!output.is_contiguous()) {
         output = output.contiguous();
@@ -38,21 +35,6 @@ extern "C" {
       std::copy(predicted_pressure, predicted_pressure + sz, pp);
     }
     return pp;
-  }
-  
-  void* create_random_tensor(int rows, int cols) {
-    torch::Tensor* tensor = new torch::Tensor(torch::rand({rows, cols}));
-    return static_cast<void*>(tensor);
-  }
-
-  void print_tensor(void* tensor_ptr) {
-    torch::Tensor* tensor = static_cast<torch::Tensor*>(tensor_ptr);
-    std::cout << *tensor << std::endl;
-  }
-
-  void free_tensor(void* tensor_ptr) {
-    torch::Tensor* tensor = static_cast<torch::Tensor*>(tensor_ptr);
-    delete tensor;
   }
 }
 

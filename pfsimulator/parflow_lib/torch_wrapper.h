@@ -12,9 +12,6 @@ extern "C" {
 #endif
 
 double* predict_next_pressure_step(char* model_filepath, double* pp, int nx, int ny, int nz);
-void* create_random_tensor(int rows, int cols);
-void print_tensor(void* tensor_ptr);
-void free_tensor(void* tensor_ptr);
 
 #ifdef __cplusplus
 }
