@@ -30,8 +30,14 @@ extern "C" {
     if (!output.is_contiguous()) {
         output = output.contiguous();
     }
-    double* c_array = output.data_ptr<double>();
-    return c_array;
+    double* predicted_pressure = output.data_ptr<double>();
+
+    // Copy pressure data back to the pressure field
+    if (predicted_pressure != pp) {
+      std::size_t sz = nx * ny * nz;
+      std::copy(predicted_pressure, predicted_pressure + sz, pp);
+    }
+    return pp;
   }
   
   void* create_random_tensor(int rows, int cols) {
