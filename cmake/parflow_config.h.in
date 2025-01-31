@@ -75,4 +75,6 @@
 
 #cmakedefine PARFLOW_HAVE_OMP
 
+#cmakedefine PARFLOW_HAVE_UMPIRE
+
 #endif // PARFLOW_CONFIG_H

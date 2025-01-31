@@ -106,7 +106,8 @@ jobs:
             python: "false",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "true"
+            netcdf: "true",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 24.04 LLVM",
@@ -116,7 +117,8 @@ jobs:
             python: "false",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "true"
+            netcdf: "true",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 22.04 GCC Python",
@@ -126,7 +128,8 @@ jobs:
             python: "true",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "true"
+            netcdf: "true",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 20.04 GCC Python",
@@ -136,7 +139,8 @@ jobs:
             python: "true",
             backend: "none",
             amps_layer: mpi1,
-            netcdf: "false"
+            netcdf: "false",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 22.04 GCC OMP",
@@ -146,7 +150,8 @@ jobs:
             python: "false",
             backend: "omp",
             amps_layer: mpi1,
-            netcdf: "false"
+            netcdf: "false",
+            memory_manager: "none"
           }
         - {
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
@@ -156,27 +161,52 @@ jobs:
             python: "false",
             backend: "omp",
             amps_layer: oas3,
-            netcdf: "true"
+            netcdf: "true",
+            memory_manager: "none"
           }
+#        - {
+#            name: "Ubuntu 24.04 GCC CUDA/RMM Build",
+#            os: ubuntu-24.04,
+#            cc: "gcc", cxx: "g++", fc: "gfortran",
+#            python: "false",
+#            backend: "cuda",
+#            cudaos: 'ubuntu2204',
+#            amps_layer: mpi1,
+#            netcdf: "false",
+#            memory_manager: "rmm"
+#          }
         - {
-            name: "Ubuntu 22.04 GCC CUDA Build",
-            os: ubuntu-22.04,
+            name: "Ubuntu 24.04 GCC CUDA/Umpire Build",
+            os: ubuntu-24.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "cuda",
             cudaos: 'ubuntu2204',
             amps_layer: mpi1,
-            netcdf: "false"
+            netcdf: "false",
+            memory_manager: "umpire"
           }
+#        - {
+#            name: "Ubuntu 24.04 GCC Kokkos/RMM Build",
+#            os: ubuntu-24.04,
+#            cc: "gcc", cxx: "g++", fc: "gfortran",
+#            python: "false",
+#            backend: "kokkos",
+#            cudaos: 'ubuntu2204',
+#            amps_layer: mpi1,
+#            netcdf: "false",
+#            memory_manager: "rmm"
+#          }
         - {
-            name: "Ubuntu 22.04 GCC Kokkos Build",
-            os: ubuntu-22.04,
+            name: "Ubuntu 24.04 GCC Kokkos/Umpire Build",
+            os: ubuntu-24.04,
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "false",
             backend: "kokkos",
             cudaos: 'ubuntu2204',
             amps_layer: mpi1,
-            netcdf: "false"
+            netcdf: "false",
+            memory_manager: "umpire"
           }
 
     steps:
@@ -223,7 +253,7 @@ jobs:
         cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       with:
         path: "~/depend"
-        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ secrets.CACHE_VERSION }}
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ secrets.CACHE_VERSION }}
 
     - name: Directory Setup
       run: |
@@ -280,13 +310,13 @@ jobs:
       run: |
         sudo add-apt-repository -y ppa:graphics-drivers
         sudo apt-get update -qq
-        sudo apt-get install -y nvidia-driver-440
+        sudo apt-get install -y nvidia-driver-535
 
     - name: CUDA Install
       if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
       run: |
-        export CUDA_VERSION_MAJOR_MINOR=11.8.0
-        export CUDA_SHORT=11.8
+        export CUDA_VERSION_MAJOR_MINOR=12.4.0
+        export CUDA_SHORT=12.4
         export CUDA_OS=${{ matrix.config.cudaos }}
         ./bin/install-cuda.sh
         export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT}
@@ -304,7 +334,7 @@ jobs:
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           sudo apt install -qq -y autoconf automake libtool
-          URL=https://github.com/openucx/ucx/releases/download/v1.13.1/ucx-1.13.1.tar.gz
+          URL=https://github.com/openucx/ucx/releases/download/v1.17.0/ucx-1.17.0.tar.gz
           mkdir ucx
           cd ucx
           curl -L $URL | tar --strip-components=1 -xz
@@ -315,7 +345,7 @@ jobs:
     - name: RMM Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
-      if: matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos'
+      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'rmm'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           git clone -b branch-0.10  --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git
@@ -324,6 +354,22 @@ jobs:
           make -j 2 install
         fi
         echo "RMM_FLAGS=-DRMM_ROOT=$PARFLOW_DEP_DIR" >> $GITHUB_ENV
+
+    - name: Umpire Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: (matrix.config.backend == 'cuda' || matrix.config.backend == 'kokkos') && matrix.config.memory_manager == 'umpire'
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          git clone --recursive https://github.com/LLNL/Umpire.git
+          cd Umpire
+          mkdir build
+          cd build
+          cmake ../ -DCMAKE_INSTALL_PREFIX=$PARFLOW_DEP_DIR/Umpire -DENABLE_CUDA=On
+          make
+          make install
+        fi
+        echo "UMPIRE_FLAGS=-Dumpire_ROOT=$PARFLOW_DEP_DIR/Umpire" >> $GITHUB_ENV
 
     - name: Kokkos Install
       env:
@@ -439,7 +485,7 @@ jobs:
         if [[ "${{ matrix.config.amps_layer }}" == "oas3" ]]; then HAVE_CLM="OFF"; else HAVE_CLM="ON"; fi
         CFLAGS="-Wall -Werror -Wno-unused-result -Wno-unused-function -Wno-stringop-overread"
         if [[ "${{ matrix.config.cc }}" == "gcc" ]]; then CFLAGS="${CFLAGS} -Wno-stringop-overread"; fi
-        export CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90
+        export CC=mpicc CXX=mpicxx F77=mpif77 FC=mpif90 CUDAHOSTCXX=mpicxx
         cmake -Bbuild                                                   \
            -DCMAKE_BUILD_TYPE=Release                                   \
            -DCMAKE_C_FLAGS=$CFLAGS                                      \
@@ -454,7 +500,7 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
-           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS
+           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)
