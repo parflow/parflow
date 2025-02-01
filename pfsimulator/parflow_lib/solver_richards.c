@@ -3069,6 +3069,29 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  nz = SubgridNZ(subgrid);
           p_sub = VectorSubvector(instance_xtra->pressure, is);
 	  pp = SubvectorData(p_sub);
+	  et_sub = VectorSubvector(evap_trans, is);
+	  et = SubvectorData(et_sub);
+	  po_sub = VectorSubvector(porosity, is);
+	  po_dat = SubvectorData(po_sub);
+	  Vector *mannings = ProblemDataMannings(problem_data);
+	  Subvector* mann_sub = VectorSubvector(mannings, is);
+	  double *mann_dat = SubvectorData(mann_sub);
+	  Vector *slope_x = ProblemDataTSlopeX(problem_data);
+	  Subvector *slopex_sub = VectorSubvector(slope_x, is);
+	  double *slopex_dat = SubvectorData(slopex_sub);
+	  Vector *slope_y = ProblemDataTSlopeY(problem_data);
+	  Subvector *slopey_sub = VectorSubvector(slope_y, is);
+	  double *slopey_dat = SubvectorData(slopey_sub);
+	  Vector *perm_x = ProblemDataPermeabilityX(problem_data);
+	  Subvector *permx_sub = VectorSubvector(perm_x, is);
+	  double *permx_dat = SubvectorData(permx_sub);
+	  Vector *perm_y = ProblemDataPermeabilityY(problem_data);
+	  Subvector *permy_sub = VectorSubvector(perm_y, is);
+	  double *permy_dat = SubvectorData(permy_sub);
+	  Vector *perm_z = ProblemDataPermeabilityZ(problem_data);
+	  Subvector *permz_sub = VectorSubvector(perm_z, is);
+	  double *permz_dat = SubvectorData(permz_sub);
+	  
 	  SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
 	}
 	if (public_xtra->print_predicted_pressure) {
