@@ -300,6 +300,19 @@ if (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
 endif (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
 
 #-----------------------------------------------------------------------------
+# PDI
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_PDI False CACHE BOOL "Build with PDI")
+if (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
+    
+  find_package(PDI)
+  if (${PDI_FOUND})
+    set(PARFLOW_HAVE_PDI "yes")
+    set(HAVE_PDI ${PARFLOW_HAVE_PDI})
+endif (${PDI_FOUND})
+endif (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
+
+#-----------------------------------------------------------------------------
 # Hypre
 #-----------------------------------------------------------------------------
 option(PARFLOW_ENABLE_HYPRE "Build with Hypre" "OFF")
