@@ -560,9 +560,9 @@ dnl    fprintf(stderr, "floating point exception\n");   abort();
 dnl }
 dnl int main(int argc, char** argv) {
 dnl    unsigned short fpu_flags = _FPU_DEFAULT;
-dnl    fpu_flags &= ~_FPU_MASK_IM;  /* Execption on Invalid operation */
-dnl    fpu_flags &= ~_FPU_MASK_ZM;  /* Execption on Division by zero  */
-dnl    fpu_flags &= ~_FPU_MASK_OM;  /* Execption on Overflow */
+dnl    fpu_flags &= ~_FPU_MASK_IM;  /* Exception on Invalid operation */
+dnl    fpu_flags &= ~_FPU_MASK_ZM;  /* Exception on Division by zero  */
+dnl    fpu_flags &= ~_FPU_MASK_OM;  /* Exception on Overflow */
 dnl    _FPU_SETCW(fpu_flags);
 dnl    signal(SIGFPE, byebye);  /* Invoke byebye when above occurs */
 dnl }
@@ -580,9 +580,9 @@ AC_DEFUN([CASC_CXX_EXCEPTION_HANDLING], [
 static void byebye(int error) { }
 void foo() {
    unsigned short fpu_flags = _FPU_DEFAULT;
-   fpu_flags &= ~_FPU_MASK_IM;  /* Execption on Invalid operation */
-   fpu_flags &= ~_FPU_MASK_ZM;  /* Execption on Division by zero  */
-   fpu_flags &= ~_FPU_MASK_OM;  /* Execption on Overflow */
+   fpu_flags &= ~_FPU_MASK_IM;  /* Exception on Invalid operation */
+   fpu_flags &= ~_FPU_MASK_ZM;  /* Exception on Division by zero  */
+   fpu_flags &= ~_FPU_MASK_OM;  /* Exception on Overflow */
    _FPU_SETCW(fpu_flags);
    signal(SIGFPE, byebye);
 }

@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -351,6 +351,8 @@ PFModule  *PFMGOctreeInitInstanceXtra(
 
   GrGeomSolid        *gr_domain = ProblemDataGrDomain(problem_data);
 
+  PF_UNUSED(im);
+
   (void)problem;
   (void)temp_data;
 
@@ -377,7 +379,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     }
 
     /* Set the HYPRE grid */
-    HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, &(instance_xtra->hypre_grid));
+    HYPRE_StructGridCreate(amps_CommWorld, 3, &(instance_xtra->hypre_grid));
 
 
     grid = instance_xtra->grid;
@@ -450,7 +452,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     symmetric = MatrixSymmetric(pf_Bmat);
     if (!(instance_xtra->hypre_mat))
     {
-      HYPRE_StructMatrixCreate(MPI_COMM_WORLD, instance_xtra->hypre_grid,
+      HYPRE_StructMatrixCreate(amps_CommWorld, instance_xtra->hypre_grid,
                                instance_xtra->hypre_stencil,
                                &(instance_xtra->hypre_mat));
       HYPRE_StructMatrixSetNumGhost(instance_xtra->hypre_mat, full_ghosts);
@@ -461,7 +463,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     /* Set up new right-hand-side vector */
     if (!(instance_xtra->hypre_b))
     {
-      HYPRE_StructVectorCreate(MPI_COMM_WORLD,
+      HYPRE_StructVectorCreate(amps_CommWorld,
                                instance_xtra->hypre_grid,
                                &(instance_xtra->hypre_b));
       HYPRE_StructVectorSetNumGhost(instance_xtra->hypre_b, no_ghosts);
@@ -471,7 +473,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     /* Set up new solution vector */
     if (!(instance_xtra->hypre_x))
     {
-      HYPRE_StructVectorCreate(MPI_COMM_WORLD,
+      HYPRE_StructVectorCreate(amps_CommWorld,
                                instance_xtra->hypre_grid,
                                &(instance_xtra->hypre_x));
       HYPRE_StructVectorSetNumGhost(instance_xtra->hypre_x, full_ghosts);
@@ -841,15 +843,15 @@ PFModule  *PFMGOctreeInitInstanceXtra(
             hypre_BoxDestroy(set_box);
           });
 
-	  hypre_BoxDestroy(value_box);
+          hypre_BoxDestroy(value_box);
         }
       }     /* End subgrid loop */
 
       ForSubgridI(sg, GridSubgrids(mat_grid))
       {
-	double *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
-	double *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL;
-	
+        double *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
+        double *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL;
+
         subgrid = GridSubgrid(mat_grid, sg);
 
         pfB_sub = MatrixSubmatrix(pf_Bmat, sg);
@@ -900,30 +902,30 @@ PFModule  *PFMGOctreeInitInstanceXtra(
         ny_m = SubmatrixNY(pfB_sub);
         nz_m = SubmatrixNZ(pfB_sub);
 
-	int sy_v = SubvectorNX(top_sub);
+        int sy_v = SubvectorNX(top_sub);
 
         im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
 
         if (symmetric)
         {
-	  /* 
-	   * Loop in 2D over top points for surface contributions
-	   * We need to loop separately over this since the above
+          /*
+           * Loop in 2D over top points for surface contributions
+           * We need to loop separately over this since the above
            * box loop does not allow us to loop over the individual
            * top cells. For nonsymmetric, we need to include the
            * diagonal, east, west, north, and south terms - DOK
-	   */
+           */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
 
-	    if (ktop >= 0)
+            if (ktop >= 0)
             {
-	      io = SubmatrixEltIndex(pfC_sub, i, j, 0);
-	      int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
-	      
+              io = SubmatrixEltIndex(pfC_sub, i, j, 0);
+              int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
+
               /* update diagonal coeff */
               coeffs_symm[0] = cp_c[io];               //cp[im] is zero
               /* update east coeff */
@@ -932,39 +934,38 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               coeffs_symm[2] = np[ioB];
               /* update upper coeff */
               coeffs_symm[3] = up[ioB];               // JB keeps upper term on surface. This should be zero
-	      
-	      index[0] = i;
-	      index[1] = j;
-	      index[2] = ktop;
-	      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-					  index,
-					  stencil_size,
-					  stencil_indices_symm,
-					  coeffs_symm);
-	    }
-	    
-	  }); // BoxLoop
-        } // symmetric 
+
+              index[0] = i;
+              index[1] = j;
+              index[2] = ktop;
+              HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+                                          index,
+                                          stencil_size,
+                                          stencil_indices_symm,
+                                          coeffs_symm);
+            }
+          }); // BoxLoop
+        } // symmetric
         else
         {
-	  /* 
-	   * Loop in 2D over top points for surface contributions
-	   * We need to loop separately over this since the above
+          /*
+           * Loop in 2D over top points for surface contributions
+           * We need to loop separately over this since the above
            * box loop does not allow us to loop over the individual
            * top cells. For nonsymmetric, we need to include the
            * diagonal, east, west, north, and south terms - DOK
-	   */
+           */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
           {
             itop = SubvectorEltIndex(top_sub, i, j, 0);
             ktop = (int)top_dat[itop];
 
-	    if (ktop >= 0)
+            if (ktop >= 0)
             {
-	      io = SubmatrixEltIndex(pfC_sub, i, j, 0);
-	      int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
-	      
+              io = SubmatrixEltIndex(pfC_sub, i, j, 0);
+              int ioB = SubmatrixEltIndex(pfB_sub, i, j, ktop);
+
               /* update diagonal coeff */
               coeffs[0] = cp_c[io];               //cp[ioB] is zero
               /* update west coeff */
@@ -996,19 +997,17 @@ PFModule  *PFMGOctreeInitInstanceXtra(
               /* update upper coeff */
               coeffs[6] = up[ioB];               // JB keeps upper term on surface. This should be zero
 
-	      index[0] = i;
-	      index[1] = j;
-	      index[2] = ktop;
-	      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-					  index,
-					  stencil_size,
-					  stencil_indices, coeffs);
-	    }
-
-	  }); // BoxLoop
+              index[0] = i;
+              index[1] = j;
+              index[2] = ktop;
+              HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+                                          index,
+                                          stencil_size,
+                                          stencil_indices, coeffs);
+            }
+          }); // BoxLoop
         } // non symmetric
       }   /* End subgrid loop */
-      
     }  /* end if pf_Cmat==NULL */
 
 
@@ -1017,7 +1016,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
     EndTiming(public_xtra->time_index_copy_hypre);
 
     /* Set up the PFMG preconditioner */
-    HYPRE_StructPFMGCreate(MPI_COMM_WORLD,
+    HYPRE_StructPFMGCreate(amps_CommWorld,
                            &(instance_xtra->hypre_pfmg_data));
 
     HYPRE_StructPFMGSetTol(instance_xtra->hypre_pfmg_data, 1.0e-30);
@@ -1090,8 +1089,6 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
 
   NameArray smoother_switch_na;
 
-  int smoother;
-
   public_xtra = ctalloc(PublicXtra, 1);
 
   sprintf(key, "%s.MaxIter", name);
@@ -1106,22 +1103,10 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
   sprintf(key, "%s.BoxSizePowerOf2", name);
   public_xtra->box_size_power = GetIntDefault(key, 4);
 
-  /* Use a dummy place holder so that cardinalities match
-   * with what HYPRE expects */
-  smoother_switch_na = NA_NewNameArray("Dummy Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
+  smoother_switch_na = NA_NewNameArray("Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
   sprintf(key, "%s.Smoother", name);
   smoother_name = GetStringDefault(key, "RBGaussSeidelNonSymmetric");
-  smoother = NA_NameToIndex(smoother_switch_na, smoother_name);
-  if (smoother != 0)
-  {
-    public_xtra->smoother = NA_NameToIndex(smoother_switch_na,
-                                           smoother_name) - 1;
-  }
-  else
-  {
-    InputError("Error: Invalid value <%s> for key <%s>.\n",
-               smoother_name, key);
-  }
+  public_xtra->smoother = NA_NameToIndexExitOnError(smoother_switch_na, smoother_name, key);
   NA_FreeNameArray(smoother_switch_na);
 
   public_xtra->time_index_pfmg = RegisterTiming("PFMGOctree");

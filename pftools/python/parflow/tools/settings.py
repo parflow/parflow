@@ -7,16 +7,18 @@ import os
 WORKING_DIRECTORY = os.getcwd()
 PRINT_LINE_ERROR = False
 EXIT_ON_ERROR = False
-PARFLOW_VERSION = '3.6.0'
+PARFLOW_VERSION = "3.6.0"
 
 
 # ---------------------------------------------------------------------------
+
 
 def get_working_directory():
     return WORKING_DIRECTORY
 
 
 # ---------------------------------------------------------------------------
+
 
 def set_working_directory(new_working_directory=None):
     """This will set the working directory to use for all the
@@ -31,6 +33,7 @@ def set_working_directory(new_working_directory=None):
 
 
 # ---------------------------------------------------------------------------
+
 
 def enable_line_error():
     """Calling that method will enable line feedback on validation
@@ -65,7 +68,6 @@ def disable_exit_error():
 
 
 def set_parflow_version(version):
-    """Globally store the ParFlow version to test against
-    """
+    """Globally store the ParFlow version to test against"""
     global PARFLOW_VERSION
     PARFLOW_VERSION = version

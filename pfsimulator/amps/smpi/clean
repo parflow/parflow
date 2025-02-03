@@ -26,7 +26,7 @@ do
 case $1 in
   -h|-help) 
        echo "$0"
-       echo "Cleans parflow directorys"
+       echo "Cleans parflow directories"
        echo "Defaults removes object files, -very options cleans"
        echo "executables source."
        exit 0;;

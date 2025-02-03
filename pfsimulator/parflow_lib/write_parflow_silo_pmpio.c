@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * Routines to write a Vector to Silo file.
@@ -49,7 +49,7 @@
 amps_ThreadLocalDcl(int, s_num_silo_files);
 
 /*-----------------------------------------------------------------------------
- * Purpose:     Impliment the create callback to initialize pmpio
+ * Purpose:     Implement the create callback to initialize pmpio
  *              Will create the silo file and the 'first' directory (namespace)
  *              in it. The driver type (DB_PDB or DB_HDF5) is passed as user
  *              data; a void pointer to the driver determined in main.
@@ -65,7 +65,7 @@ void *CreateSiloFile(const char *fname, const char *nsname, void *userData)
 }
 
 /*-----------------------------------------------------------------------------
- * Purpose:     Impliment the open callback to initialize pmpio
+ * Purpose:     Implement the open callback to initialize pmpio
  *              Will open the silo file and, for write, create the new
  *              directory or, for read, just cd into the right directory.
  *-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ void *OpenSiloFile(const char *fname, const char *nsname, PMPIO_iomode_t ioMode,
 }
 
 /*-----------------------------------------------------------------------------
- * Purpose:     Impliment the close callback for pmpio
+ * Purpose:     Implement the close callback for pmpio
  *-----------------------------------------------------------------------------
  */
 void CloseSiloFile(void *file, void *userData)
@@ -101,7 +101,7 @@ void     WriteSiloPMPIOInit(char *file_prefix)
 {
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
   char filename[2048];
-  
+
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
 
@@ -116,7 +116,7 @@ void     WriteSiloPMPIOInit(char *file_prefix)
   if (strlen(compression_options))
   {
     DBSetCompression(compression_options);
-    if (db_errno  < 0)
+    if (db_errno < 0)
     {
       amps_Printf("Error: Compression options failed for SILO.CompressionOptions=%s\n", compression_options);
       amps_Printf("       This may mean SILO was not compiled with compression enabled\n");
@@ -187,7 +187,7 @@ void     WriteSiloPMPIOInit(char *file_prefix)
  * Write a Vector to a Silo file.
  *
  * Notes:
- * Silo files can store additinal metadata such as name of variable,
+ * Silo files can store additional metadata such as name of variable,
  * simulation time etc.  These should be added.
  */
 void     WriteSiloPMPIO(char *  file_prefix,
@@ -198,7 +198,6 @@ void     WriteSiloPMPIO(char *  file_prefix,
                         int     step,
                         char *  variable_name)
 {
-
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
@@ -242,7 +241,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
   P = amps_Size(amps_CommWorld);
   numGroups = s_num_silo_files;
 
-  bat = PMPIO_Init(numGroups, PMPIO_WRITE, MPI_COMM_WORLD, 1,
+  bat = PMPIO_Init(numGroups, PMPIO_WRITE, amps_CommWorld, 1,
                    CreateSiloFile, OpenSiloFile, CloseSiloFile, &driver);
 //    if (numGroups > 1) {
   if (strlen(file_suffix))
@@ -262,7 +261,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
    * } */
 
   //  if (numGroups == 1) {
-  sprintf(nsName, "domain_%06u", p);   /* note, even though I set this for the open routine we don't use domain structure for mulitple files, all done
+  sprintf(nsName, "domain_%06u", p);   /* note, even though I set this for the open routine we don't use domain structure for multiple files, all done
                                         * in the mesh.  For a single file (this case) we do use domains */
 //    } else {
 //        nsName == "";
@@ -271,7 +270,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
   /* Wait for write access to the file. All processors call this.
    * Some processors (the first in each group) return immediately
    * with write access to the file. Other processors wind up waiting
-   * until they are given control by the preceeding processor in
+   * until they are given control by the preceding processor in
    * the group when that processor calls "HandOffBaton" */
   db_file = (DBfile*)PMPIO_WaitForBaton(bat, filename2, nsName);
 

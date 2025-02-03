@@ -3,7 +3,7 @@
 exec wish "$0" "$@"
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -224,7 +224,7 @@ proc Done {} {
 
 	    exec chmod ug+r RCS/[file tail $i],v
 
-	    # if user can execute make make repository item executeable
+	    # if user can execute make make repository item executable
 	    if { [file executable RCS/[file tail $i],v ] } {
 		exec chmod ug+x RCS/[file tail $i],v
 	    }

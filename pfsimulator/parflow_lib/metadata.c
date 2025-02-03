@@ -45,6 +45,18 @@ cJSON* js_outputs = NULL;
 cJSON* js_parflow = NULL;
 cJSON* js_domains = NULL;
 
+// Print a message on rank 0 and return 0. Note that ##__VA_ARGS__ is
+// used to allow an empty __VA_ARGS__ , which is not standard but is
+// supported by most major compilers (clang, gcc, msvc).
+#define METADATA_ERROR(message, ...)                               \
+        {                                                          \
+          if (!amps_Rank(amps_CommWorld) && message && message[0]) \
+          {                                                        \
+            amps_Printf(message, ## __VA_ARGS__);                  \
+          }                                                        \
+          return 0;                                                \
+        }
+
 static void MetadataAddParflowBuildInfo(cJSON* pf)
 {
   cJSON* build = cJSON_CreateObject();
@@ -151,9 +163,9 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
 
 #ifdef PARFLOW_HAVE_MPI
   /* Optimization would be to make this a single reduction operation */
-  MPI_Reduce(idivs, gidivs, ni, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(jdivs, gjdivs, nj, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(kdivs, gkdivs, nk, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce(idivs, gidivs, ni, MPI_INT, MPI_SUM, 0, amps_CommWorld);
+  MPI_Reduce(jdivs, gjdivs, nj, MPI_INT, MPI_SUM, 0, amps_CommWorld);
+  MPI_Reduce(kdivs, gkdivs, nk, MPI_INT, MPI_SUM, 0, amps_CommWorld);
 #else
   /* This is broken for parallel layers other than MPI.  AMPS does not
    * have a Reduce operation; only ReduceAll */
@@ -577,17 +589,62 @@ int MetadataAddForcingField(
 {
   int ii;
 
-  if (
-      num_field_components <= 0 ||
-      !clm_metfile || !clm_metpath || !field_name ||
-      !field_placement || !field_domain ||
-      !field_component_postfixes ||
-      clm_metforce < 2 || clm_metforce > 3 ||
-      clm_metnt <= 0 ||
-      clm_istep_start > clm_metnt
-      )
+  if (!field_name)
   {
-    return 0;
+    METADATA_ERROR(
+                   "Unable to add metadata for null field.\n");
+  }
+  if (num_field_components <= 0)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; invalid components (%d).\n",
+                   field_name, num_field_components);
+  }
+  if (!clm_metfile)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; no CLM Met file.\n", field_name);
+  }
+  if (!clm_metpath)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; no CLM Met path.\n", field_name);
+  }
+  if (!field_placement)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; null field placement.\n",
+                   field_name);
+  }
+  if (!field_domain)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; null field domain.\n", field_name);
+  }
+  if (!field_component_postfixes)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; null field component_postfixes.\n",
+                   field_name);
+  }
+  if (clm_metforce < 2 || clm_metforce > 3)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; Unhandled CLM Met forcing %d.\n",
+                   field_name, clm_metforce);
+  }
+  if (clm_metnt <= 0)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; %d timesteps provided (> 0 required).\n",
+                   field_name, clm_metnt);
+  }
+  if (clm_istep_start > clm_metnt)
+  {
+    METADATA_ERROR(
+                   "Unable to add metadata for \"%s\"; "
+                   "start time (%d) beyond forcing timesteps provided (%d).\n",
+                   field_name, clm_istep_start, clm_metnt);
   }
 
   cJSON* field_item = cJSON_CreateObject();
@@ -681,7 +738,6 @@ int MetadataUpdateForcingField(
   cJSON* field_item = cJSON_GetObjectItem(parent, field_name);
   if (!field_item)
   {
-    fprintf(stderr, "Unable to update metadata for \"%s\"\n", field_name);
     return 0;
   }
 

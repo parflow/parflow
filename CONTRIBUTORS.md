@@ -1,8 +1,20 @@
+# ParFlow Contributors
+
+ParFlow is a community effort, thank you for all the great work.
+
+Contributors may be found in this file and the 
+[contributors](https://github.com/parflow/parflow/graphs/contributors)
+page maintained on GitHub.
+
+Since ParFlow existed in several repositories GitHub has not chaptured
+all of the contributors.
+
 **Reed M. Maxwell** 
-Department of Geology and Geologic Engineering
-Colorado School of Mines
-Golden, CO, USA
-rmaxwell@mines.edu
+Department of Civil and Environmental Engineering 
+High Meadows Environmental Institute
+Princeton University 
+Princeton, NJ USA
+reedmaxwell@princeton.edu
 
 **Stefan J. Kollet**
 Meteorological Institute
@@ -15,6 +27,11 @@ Center for Applied Scientiﬁc Computing
 Lawrence Livermore National Laboratory
 Livermore, CA. USA
 sgsmith@llnl.gov
+
+**Laura E. Condon**
+Department of Hydrology and Atmospheric Sciences
+University of Arizona
+Tucson, AZ, USA
 
 **Carol S. Woodward**
 Center for Applied Scientiﬁc Computing
@@ -62,3 +79,15 @@ Kitware, Inc
 **Jaro Hokkanen**
 IBG-3, Forschungszentrum Juelich,
 Juelich, Germany
+
+**George Artavanis**
+Princeton University
+ga6@princeton.edu
+
+**Chen Yang**
+Princeton University
+chen_yang@princeton.edu
+
+**Benjamin West**
+University of Arizona
+benjaminwest@arizona.edu

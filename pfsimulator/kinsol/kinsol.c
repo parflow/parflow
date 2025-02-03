@@ -1054,7 +1054,7 @@ static int KINConstraint(KINMem kin_mem)
 static void KINForcingTerm(KINMem kin_mem, real fnormp)
 {
   real eta_max = POINT9, eta_min = POINTOHOHOHONE,
-    eta_safe = 0.5, linmodel_norm;
+       eta_safe = 0.5, linmodel_norm;
 
   if (etaflag == ETACHOICE1)        /* Choice 1 forcing terms. */
 
@@ -1230,7 +1230,7 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
 {
   int ret, ivio, nfesav, rladjust = 0;
   real pnorm, ratio, ratio1, slpi, rlmin, rlength, rl, rlmax, rldiff;
-  real rltmp, rlprev=0.0, pt1trl, rllo, rlincr, alpha, beta;
+  real rltmp, rlprev = 0.0, pt1trl, rllo, rlincr, alpha, beta;
   real alpha_cond, beta_cond;
 
   *maxStepTaken = FALSE;

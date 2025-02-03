@@ -86,7 +86,7 @@ AC_DEFUN([CASC_GUESS_ARCH],
    AC_MSG_CHECKING(the architecture)
 
    dnl * $ARCH could already be set in the environment or earlier in configure
-   dnl * Use the preset value if it exists, otherwise go throug the procedure
+   dnl * Use the preset value if it exists, otherwise go through the procedure
    if test -z "$ARCH"; then
 
       dnl * configure searches for the tool "tarch".  It should be in the

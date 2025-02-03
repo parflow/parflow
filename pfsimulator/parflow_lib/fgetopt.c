@@ -37,9 +37,9 @@
 #include <stdio.h>
 
 int opterr = 1,                 /* if error message should be printed */
-  optind = 1,                   /* index into parent argv vector */
-  optopt,                       /* character checked for validity */
-  optreset;                     /* reset getopt */
+    optind = 1,                 /* index into parent argv vector */
+    optopt,                     /* character checked for validity */
+    optreset;                   /* reset getopt */
 char    *optarg;                /* argument associated with option */
 
 #define BADCH   (int)'?'
@@ -119,15 +119,15 @@ I think you need to add extern char *optarg; in getopt.h as well to get that por
 @Marraz
 Marraz commented on Jun 17, 2016
 
-Actually, according to how http://pubs.opengroup.org/onlinepubs/9699919799/functions/getopt.html describe the functionality, the header should look like this, perhaps optreset not but I guess it doesn't hurt to have it there:
+Actually, according to how http: //pubs.opengroup.org/onlinepubs/9699919799/functions/getopt.html describe the functionality, the header should look like this, perhaps optreset not but I guess it doesn't hurt to have it there:
 ifndef GETOPT_H
 define GETOPT_H
 
-extern int opterr, /* if error message should be printed /
-                    * optind, / index into parent argv vector /
-                    * optopt, / character checked for validity /
-                    * optreset; / reset getopt /
-                    * extern char *optarg; / argument associated with option */
+extern int opterr,   /* if error message should be printed /
+                      * optind, / index into parent argv vector /
+                      * optopt, / character checked for validity /
+                      * optreset; / reset getopt /
+                      * extern char *optarg; / argument associated with option */
 
 int getopt(int nargc, char * const nargv[], const char *ostr);
 endif

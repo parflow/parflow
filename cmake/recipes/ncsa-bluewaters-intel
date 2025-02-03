@@ -87,7 +87,7 @@ echo "Running CMake"
 echo "*****************************************************************************"
 
 # Force shared library builds, by default Cori is doing static.  Need to set for both 
-# C and Fortran otherise Cmake will not build dynamic do to rules in the Cray cmake modules.
+# C and Fortran otherwise Cmake will not build dynamic do to rules in the Cray cmake modules.
 # -parallel was needed due to way Hypre was compiled, unresolved symbols if not used.
 FC=${PARFLOW_F77} CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} cmake ../parflow \
    -DCMAKE_BUILD_TYPE=RELEASE \

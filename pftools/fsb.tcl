@@ -1,6 +1,6 @@
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -74,8 +74,8 @@ proc XParflow::FSBox_ScanDir {dir pat} {
    set dirlist [exec ls -a $dir]
 
    # Drop the /.. or /. from the directory string
-   # Ex: /usr/local/bin/.. is equivalant to /usr/local and
-   #     /usr/local/bin/.  is equivalant to /usr/local/bin 
+   # Ex: /usr/local/bin/.. is equivalent to /usr/local and
+   #     /usr/local/bin/.  is equivalent to /usr/local/bin 
 
    if {[string match {*/..} $dir]} {
       set dir [file dirname [file dirname $dir]]
@@ -253,7 +253,7 @@ proc XParflow::FSBox_CreateWidgets {initDir initPat} {
    scrollbar .fsb.fileFrame.xScroll -command ".fsb.fileFrame.listBox xview" \
                                     -orient horizontal
 
-   # Crate a file selection label and entry
+   # Create a file selection label and entry
    # Initialize the text in the selection entry
 
    label .fsb.selFrame.fileLabel -text "Selection" -anchor w

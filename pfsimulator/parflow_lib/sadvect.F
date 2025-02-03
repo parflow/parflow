@@ -45,7 +45,7 @@ c----------------------------------------------------------------------
      $     viscos,densty,gravty,
      $     slx,sly,slz,
      $     lohi,dlohi,hx,dt,
-     $     sbot,stop,sbotp,sfrt,sbck,sleft,sright,sfluxz,
+     $     sbot,s_top,sbotp,sfrt,sbck,sleft,sright,sfluxz,
      $     dxscr,dyscr,dzscr,dzfrm) 
       implicit none
 
@@ -91,7 +91,7 @@ c     ::: argument declarations
 
       real*8   sbot(dlohi(1,1)-3:dlohi(1,2)+3,
      $              dlohi(2,1)-3:dlohi(2,2)+3)
-      real*8   stop(dlohi(1,1)-3:dlohi(1,2)+3,
+      real*8   s_top(dlohi(1,1)-3:dlohi(1,2)+3,
      $              dlohi(2,1)-3:dlohi(2,2)+3)
       real*8  sbotp(dlohi(1,1)-3:dlohi(1,2)+3,
      $              dlohi(2,1)-3:dlohi(2,2)+3)
@@ -411,7 +411,7 @@ C              phiinv = 1./phi(i-1,j,k) was a mistake, I believe
 
                sbotp(i,j)  =
      $              thi_zlo - dth*( sux + suy + cuz ) * phiinv
-               stop(i,j)   =
+               s_top(i,j)   =
      $              tlo_zhi - dth*( sux + suy + cuz ) * phiinv
 
             enddo
@@ -489,7 +489,7 @@ c     ::: add z contributions to sn
                   temp3(1) = mu1
                   temp4(1) = wc
                   temp5(1) = supw
-                  call rpsolv(sbot(i,j),stop(i,j),wedge(i,j,k),
+                  call rpsolv(sbot(i,j),s_top(i,j),wedge(i,j,k),
      $                        temp1,temp2,temp3,
      $                        1,temp4,temp5)
                   sfluxz(i) =

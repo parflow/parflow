@@ -96,7 +96,7 @@ dnl * invoking configure.  Only one directory should be specified with
 dnl * --with-mpi-include, while any number of directories can be specified
 dnl * by --with-mpi-lib-dirs.  Any number of libraries can be specified
 dnl * with --with-mpi-libs, and the libraries must be referred to by their 
-dnl * base names, so libmpi.a is just mpi.  It is adviseable to use all 
+dnl * base names, so libmpi.a is just mpi.  It is advisable to use all 
 dnl * three --with flags whenever one is used, because it is likely that
 dnl * when one is chosen it will mess up the automatic choices for the
 dnl * other two.  If the architecture is unknown, or if the needed MPI

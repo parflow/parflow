@@ -15,6 +15,9 @@ SUBROUTINE receive_fld2_clm(evap_trans,topo,ix,iy,nx,ny,nz,nx_f,ny_f,pstep)
 ! Version    Date       Name
 ! ---------- ---------- ----
 ! 1.00       2011/10/19 Prabhakar Shrestha
+! 1.00       2011/11/17 P. Shrestha 
+! Bug fix for masked coupling
+!
 ! Usage of prism libraries
 ! prism_abort_proto
 !
@@ -44,15 +47,15 @@ REAL(KIND=8), INTENT(IN)           :: pstep                              ! Parfl
 REAL(KIND=8), INTENT(IN)           :: topo((nx+2)*(ny+2)*(nz+2))         ! mask    (0 for inactive, 1 for active)
 REAL(KIND=8), INTENT(INOUT)        :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! source/sink (1/T)
 
-                                                                         ! All vecotrs from parflow on grid w/ ghost nodes for current proc
+                                                                         ! All vectors from parflow on grid w/ ghost nodes for current proc
 !Local Variables 
-
 INTEGER                            :: i, j, k, l
 INTEGER                            :: isecs                              ! Parflow model time in seconds
 INTEGER                            :: j_incr, k_incr                     ! convert 1D vector to 3D i,j,k array
 INTEGER, ALLOCATABLE               :: counter(:,:),                     &!
                                       topo_mask(:,:)                     ! Mask for active parflow cells
-REAL(KIND=8), ALLOCATABLE          :: frcv(:,:,:)                        ! temporary array
+!CPS now allocated in oas_pfl_define
+!REAL(KIND=8), ALLOCATABLE          :: frcv(:,:,:)                        ! temporary array
 
 INTEGER                            :: status, ib, pflncid, dimids(4),   &!
                                       pflvarid, cplfreq, cplstop,npes    ! Debug netcdf output
@@ -69,14 +72,15 @@ CHARACTER(len=19)                  :: foupname
  j_incr = nx_f
  k_incr = nx_f*ny_f
 
-
- ALLOCATE ( frcv(nx,ny,nlevsoil), stat=ierror)
- IF (ierror /= 0)  CALL prism_abort_proto( comp_id, 'receive_fld_2clm', 'Failure in allocating fsnd' )
+!CPS
+! ALLOCATE ( frcv(nx,ny,nlevsoil), stat=ierror)
+! IF (ierror /= 0)  CALL prism_abort_proto( comp_id, 'receive_fld_2clm', 'Failure in allocating fsnd' )
  ALLOCATE( topo_mask(nx,ny), stat=ierror)
  IF (ierror /= 0)  CALL prism_abort_proto( comp_id, 'receive_fld_2clm', 'Failure in allocating topo_mask' )
  ALLOCATE( counter(nx,ny), stat=ierror)
  IF (ierror /= 0)  CALL prism_abort_proto( comp_id, 'receive_fld_2clm', 'Failure in allocating counter' )
- 
+
+ topo_mask = 0                  !CPS initialize 
 ! Create the masking vector
  DO i = 1, nx
    DO j = 1, ny
@@ -91,21 +95,22 @@ CHARACTER(len=19)                  :: foupname
     ENDDO
  ENDDO
 
-!
  DO k = 1, nlevsoil
    IF( trcv(k)%laction )  CALL oas_pfl_rcv( k, isecs, frcv(:,:,k),nx, ny, info )
  ENDDO
 !
- DO i = 1, nx
-   DO j = 1, ny
-     DO k = 1, nlevsoil 
-       l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))  !
-       evap_trans(l) = frcv(i,j,k)
-     ENDDO
-   ENDDO
- ENDDO
+DO i = 1, nx
+  DO j = 1, ny
+    DO k = 1, nlevsoil 
+      IF ((topo_mask(i,j) .gt. 0) .and. (mask_land_sub(i,j) .gt. 0)) THEN                    !CPS mask bug fix
+        l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))  !
+        evap_trans(l) = evap_trans(l) + frcv(i,j,k)
+      END IF
+    ENDDO
+  ENDDO
+ENDDO
 
-! Debug ouput file
+! Debug output file
  IF ( IOASISDEBUGLVL == 1 ) THEN
 
    CALL MPI_Comm_size(localComm, npes, ierror)
@@ -141,7 +146,7 @@ CHARACTER(len=19)                  :: foupname
 ! CALL MPI_Barrier(localcomm, ierror)
 
 
- DEALLOCATE(frcv)
+!CPS  DEALLOCATE(frcv)
  DEALLOCATE(counter)
  DEALLOCATE(topo_mask)
 !------------------------------------------------------------------------------

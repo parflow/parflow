@@ -1,6 +1,6 @@
 #  This test problem runs the Richards' equation solvers
 #  on the eqn:  - div (p grad p) = f where p = x+y+z and f
-#  is choosen to guarantee the correct solution.
+#  is chosen to guarantee the correct solution.
 #  For 32x32x32 unknowns, the following line should be printed on
 #  the screen:
 #
@@ -292,6 +292,8 @@ pfset Solver.Linear.Preconditioner                       MGSemi
 
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels       100
+
+pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation Upwind
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

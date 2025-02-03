@@ -1,4 +1,11 @@
-add_executable(parflow main.c)
+set(MAIN_SRC main.c)
+
+if( ${PARFLOW_BUILD_WITH_CPP} )
+  set_source_files_properties(${MAIN_SRC}
+    PROPERTIES LANGUAGE CXX)
+endif()
+
+add_executable(parflow ${MAIN_SRC})
 
 target_link_libraries(parflow pfsimulator)
 
@@ -12,6 +19,10 @@ if( ${PARFLOW_HAVE_RMM} )
   target_include_directories(parflow PRIVATE ${RMM_INCLUDE})
   target_compile_definitions(parflow PRIVATE PARFLOW_HAVE_RMM)
 endif( ${PARFLOW_HAVE_RMM} )
+
+if( ${PARFLOW_HAVE_UMPIRE} )
+  target_link_libraries(parflow umpire)
+endif( ${PARFLOW_HAVE_UMPIRE} )
 
 if( ${PARFLOW_HAVE_CLM} )
   target_link_libraries(parflow pfclm)
@@ -40,7 +51,7 @@ if (${PARFLOW_HAVE_PDI})
 endif (${PARFLOW_HAVE_PDI})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_link_libraries (parflow ${NETCDF_LIBRARIES})
+  target_link_libraries (parflow ${NetCDF_LIBRARIES})
 
   target_link_libraries (parflow ${CURL_LIBRARIES})
 endif (${PARFLOW_HAVE_NETCDF})

@@ -1,4 +1,4 @@
-SUBROUTINE send_fld2_clm(pressure,saturation,topo,ix,iy,nx,ny,nz,nx_f,ny_f,pstep)
+SUBROUTINE send_fld2_clm(pressure,saturation,topo,ix,iy,nx,ny,nz,nx_f,ny_f,pstep,porosity,dz)
 
 !----------------------------------------------------------------------------
 !
@@ -44,9 +44,11 @@ INTEGER, INTENT(IN)                :: nx, ny, nz,                       &! Subgr
 REAL(KIND=8), INTENT(IN)           :: pstep                              ! Parflow model time-step in hours
 REAL(KIND=8), INTENT(IN)           :: pressure((nx+2)*(ny+2)*(nz+2)),   &! pressure head (m)
                                       saturation((nx+2)*(ny+2)*(nz+2)), &! saturation    (-)
-                                      topo((nx+2)*(ny+2)*(nz+2))         ! mask    (0 for inactive, 1 for active)
+                                      topo((nx+2)*(ny+2)*(nz+2)),       &! mask    (0 for inactive, 1 for active)
+                                      porosity((nx+2)*(ny+2)*(nz+2)),   &! porosity [m^3/m^3]
+                                      dz((nx+2)*(ny+2)*(nz+2))           ! subsurface layer thickness [m]
 
-                                                                         ! All vecotrs from parflow on grid w/ ghost nodes for current proc
+                                                                         ! All vectors from parflow on grid w/ ghost nodes for current proc
 !Local Variables 
 
 INTEGER                            :: i, j, k, l
@@ -81,7 +83,9 @@ CHARACTER(len=19)                  :: foupname
  ALLOCATE( counter(nx,ny), stat=ierror)
  IF (ierror /= 0)  CALL prism_abort_proto( comp_id, 'send_fld_2clm', 'Failure in allocating counter' )
 
+
 ! Create the masking vector
+ topo_mask = 0 
  DO i = 1, nx
    DO j = 1, ny
      counter(i,j) = 0
@@ -95,17 +99,21 @@ CHARACTER(len=19)                  :: foupname
     ENDDO
  ENDDO
 
+ sat_snd = 0
+ psi_snd = 0
  DO i = 1, nx
    DO j = 1, ny
      DO k = 1, nlevsoil
+     IF (topo_mask(i,j) .gt. 0) THEN
        l = 1+i + j_incr*(j) + k_incr*(topo_mask(i,j)-(k-1))  !
        sat_snd(i,j,k) = saturation(l)
        psi_snd(i,j,k) = pressure(l)*1000.0                            ! convert from [m] to [mm]
+     ENDIF
      ENDDO
    ENDDO
  ENDDO
 
-! Debug ouput file
+! Debug output file
  IF ( IOASISDEBUGLVL == 1 ) THEN
 
    CALL MPI_Comm_size(localComm, npes, ierror)

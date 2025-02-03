@@ -317,25 +317,27 @@ pfundist clm_4levels
 #
 # Tests
 #
-source ../pftest_clm.tcl
+source ../pftest.tcl
 set passed 1
 
-if ![pftestFile clm_4levels.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+set correct_output_dir "../../correct_output/clm_output"
+
+if ![pftestFile clm_4levels.out.perm_x.pfb "Max difference in perm_x" $sig_digits $correct_output_dir] {
     set passed 0
 }
-if ![pftestFile clm_4levels.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+if ![pftestFile clm_4levels.out.perm_y.pfb "Max difference in perm_y" $sig_digits $correct_output_dir] {
     set passed 0
 }
-if ![pftestFile clm_4levels.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+if ![pftestFile clm_4levels.out.perm_z.pfb "Max difference in perm_z" $sig_digits$correct_output_dir] {
     set passed 0
 }
 
 for {set i 0} { $i <= 5 } {incr i} {
     set i_string [format "%05d" $i]
-    if ![pftestFile clm_4levels.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits] {
+    if ![pftestFile clm_4levels.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits $correct_output_dir] {
     set passed 0
     }
-    if ![pftestFile clm_4levels.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits] {
+    if ![pftestFile clm_4levels.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits $correct_output_dir] {
     set passed 0
     }
 }
@@ -356,11 +358,11 @@ pfdelete $top
 pfdelete $data
 pfdelete $top_data
 
-if ![pftestFile clm_4levels.out.top_index.pfb "Max difference in top_index" $sig_digits] {
+if ![pftestFile clm_4levels.out.top_index.pfb "Max difference in top_index" $sig_digits $correct_output_dir] {
     set passed 0
 }
 
-if ![pftestFile clm_4levels.out.top.press.00000.pfb "Max difference in top_clm_4levels.out.press.00000.pfb" $sig_digits] {
+if ![pftestFile clm_4levels.out.top.press.00000.pfb "Max difference in top_clm_4levels.out.press.00000.pfb" $sig_digits $correct_output_dir] {
     set passed 0
 }
 

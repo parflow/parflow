@@ -29,7 +29,7 @@ SUBROUTINE oas_pfl_rcv(kid, kstep, kdata, nx, ny, kinfo)
 ! Modules Used:
 
 USE oas_pfl_vardef
-USE mod_prism_get_proto
+
 
 !==============================================================================
 

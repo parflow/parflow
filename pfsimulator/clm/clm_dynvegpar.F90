@@ -55,8 +55,11 @@ subroutine clm_dynvegpar (clm)
 ! Adjust lai and sai for burying by snow. if exposed lai and sai are less than 0.05,
 ! set equal to zero to prevent numerical problems associated with very small lai,sai
 
+! LB revised 5/17/16 - use fraction of veg height covered in snow to approximate unburied LAI+SAI
+! Assumes veg height is 10xRoughness Length. Not lateral snow fraction 
   fb = 0.1*clm%snowdp/clm%z0m
-  fb = fb/(1.+fb)
+  fb=min(dble(1.) ,fb) 
+  !fb = fb/(1.+fb) !- never covers grass
 
   clm%elai = clm%tlai*(1.-fb)
   clm%esai = clm%tsai*(1.-fb)

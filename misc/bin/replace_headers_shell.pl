@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow\@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -38,7 +38,7 @@ my $cpytxt = "";
 $cpytxt = <<END;
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow\@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -114,7 +114,7 @@ sub selectHFiles {
 }
 find( \&selectHFiles, '.' );
 for my $file (@filesToProcess) {
-    print "Workign on $file\n" if $debug > 1;
+    print "Working on $file\n" if $debug > 1;
 
     my $directory = dirname $file;
     my $filebasename = basename $file;
@@ -132,7 +132,7 @@ for my $file (@filesToProcess) {
     #
     # Do substitutions
     #
-    $str =~ s!#BHEADER(.*)EHEADER\**!$cpytxt!sgm;
+    $str =~ s!#BHEADER(.*?)EHEADER\**!$cpytxt!sgm;
 
     #
     # Write new file

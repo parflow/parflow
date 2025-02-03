@@ -1,32 +1,33 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 #include "toposlopes.h"
 #include <math.h>
+#include <stdlib.h>
 
 
 /*-----------------------------------------------------------------------
@@ -35,7 +36,7 @@
  * Calculate the topographic slope at [i,j] in the x-direction using a first-
  * order upwind finite difference scheme.
  *
- * If cell is a local maximum in x, largest downward slope to neightbor is used.
+ * If cell is a local maximum in x, largest downward slope to neighbor is used.
  * If cell is a local minimum in x, slope is set to zero (no drainage in x).
  * Otherwise, upwind slope is used (slope from parent to [i,j]).
  *
@@ -205,7 +206,7 @@ void ComputeSlopeXUpwind(
  * Calculate the topographic slope at [i,j] in the y-direction using a first-
  * order upwind finite difference scheme.
  *
- * If cell is a local maximum in y, largest downward slope to neightbor is used.
+ * If cell is a local maximum in y, largest downward slope to neighbor is used.
  * If cell is a local minimum in y, slope is set to zero (no drainage in y).
  * Otherwise, upwind slope is used (slope from parent to [i,j]).
  *
@@ -861,7 +862,7 @@ void ComputeSlopeXD4(
   }  // end loop over j
 
   printf("ARBITRARY CELLS: arbcount = %d \n", arbcount);
-} // END FUCTION: ComputeSlopeXD4
+} // END FUNCTION: ComputeSlopeXD4
 
 
 /*-----------------------------------------------------------------------
@@ -1379,7 +1380,7 @@ int ComputeTestParent(
   int test = -999;
 
   // Make sure [i,j] and [ii,jj] are adjacent
-  if ((fabs(i - ii) + fabs(j - jj)) == 1.0)
+  if ((abs(i - ii) + abs(j - jj)) == 1.0)
   {
     if (*DataboxCoeff(dem, ii, jj, 0) == -9999.0)
     {
@@ -1723,7 +1724,7 @@ void ComputeFillFlats(
           for (ii = i - 1; ii <= i + 1; ii++)
           {
             // make sure [i,j] and [ii,jj] are adjacent
-            if ((fabs(i - ii) + fabs(j - jj)) == 1.0)
+            if ((abs(i - ii) + abs(j - jj)) == 1.0)
             {
               // skip off-grid cells
               if ((ii < 0) || (jj < 0) || (ii >= nx) || (jj >= ny))
@@ -2191,7 +2192,7 @@ void ComputeSatTransmissivity(
   // }
 
   // Modified to compute over a given number of layers...
-  // If you want to compute over teh whole column, set nlayers to a very large value
+  // If you want to compute over the whole column, set nlayers to a very large value
   for (j = 0; j < ny; j++)
   {
     for (i = 0; i < nx; i++)
@@ -2408,7 +2409,7 @@ void ComputeTopoIndex(
  *              = T * tan(beta) * ds
  *
  * Where tan(beta) is the magnitude of the slope at the land surface, and ds is some contour
- * length perpindicular to the flow direction.
+ * length perpendicular to the flow direction.
  *
  * Because ParFlow separates flow in X and Y, we split the subsurface flow terms into separate
  * directional components. Assuming these components are additive:
@@ -2812,7 +2813,7 @@ void ComputeTopoDeficit(
 
   FreeDatabox(area);
   FreeDatabox(dmax);
-} // END FUCTION: ComputeTopoRelDeficit
+} // END FUNCTION: ComputeTopoRelDeficit
 
 
 /*-----------------------------------------------------------------------
@@ -2844,7 +2845,7 @@ void ComputeTopoDeficitToWT(
 
   nx = DataboxNx(mask);
   ny = DataboxNy(mask);
-  
+
   dz = DataboxDz(mask);
 
   // loop over grid, skip nodata/ocean cells
@@ -2968,7 +2969,7 @@ void ComputeHydroStatFromWT(
  * ComputeSlopeD8:
  *
  * Calculate the topographic slope at [i,j] based on a simple D8 scheme.
- * Drainage direction is first identifed as towards lowest adjacent or diagonal
+ * Drainage direction is first identified as towards lowest adjacent or diagonal
  * neighbor. Slope is then calculated as DOWNWIND slope (from [i,j] to child).
  *
  * If cell is a local minimum, slope is set to zero (no drainage).
@@ -3196,7 +3197,7 @@ void ComputeSlopeD8(
 /*-----------------------------------------------------------------------
  * ComputeSegmentD8:
  *
- * Compute the downstream slope segment lenth at [i,j] for D8 slopes.
+ * Compute the downstream slope segment length at [i,j] for D8 slopes.
  * D8 drainage directions are defined towards lowest adjacent or diagonal
  * neighbor. Segment length is then given as the distance from [i,j] to child
  * (at cell centers).
@@ -3222,7 +3223,7 @@ void ComputeSegmentD8(
 
   nx = DataboxNx(dem);
   ny = DataboxNy(dem);
-  
+
   dx = DataboxDx(dem);
   dy = DataboxDy(dem);
 
@@ -3561,7 +3562,7 @@ int ComputeTestParentD8(
   }
 
   // not neighbors
-  else if ((fabs(i - ii) > 1.0) || (fabs(j - jj) > 1.0))
+  else if ((abs(i - ii) > 1.0) || (abs(j - jj) > 1.0))
   {
     test = 0;
   }
@@ -4127,7 +4128,7 @@ void ComputeFlintLM(
       // -- nodata cell (assumed to be ocean/estuary cell)
       // -- set demflint to -9999.0
       // -- continue loop
-      //    (THI IS THE SAME AS IN ComputeFlintsLaw)
+      //    (THIS IS THE SAME AS IN ComputeFlintsLaw)
       if (*DataboxCoeff(dem, i, j, 0) == -9999.0)
       {
         *DataboxCoeff(demflint, i, j, 0) = -9999.0;

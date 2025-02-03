@@ -26,8 +26,8 @@ pfset ComputationalGrid.DX	                 8.8888888888888893
 pfset ComputationalGrid.DY                      10.666666666666666
 pfset ComputationalGrid.DZ	                 1.0
 
-pfset ComputationalGrid.NX                      10
-pfset ComputationalGrid.NY                      10
+pfset ComputationalGrid.NX                      18
+pfset ComputationalGrid.NY                      15
 pfset ComputationalGrid.NZ                       8
 
 #---------------------------------------------------------
@@ -324,6 +324,8 @@ pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 
+pfset Solver.PrintVelocities True
+
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
@@ -350,10 +352,21 @@ if ![pftestFile default_richards.out.perm_z.pfb "Max difference in perm_z" $sig_
 foreach i "00000 00001 00002 00003 00004 00005" {
     if ![pftestFile default_richards.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
     set passed 0
-}
+    }
     if ![pftestFile default_richards.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
     set passed 0
-}
+    }
+    # use abs value test to prevent machine precision effects
+    set abs_value 1e-12
+    if ![pftestFileWithAbs default_richards.out.velx.$i.pfb "Max difference in x-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
+    }
+    if ![pftestFileWithAbs default_richards.out.vely.$i.pfb "Max difference in y-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
+    }
+    if ![pftestFileWithAbs default_richards.out.velz.$i.pfb "Max difference in z-velocity for timestep $i" $sig_digits $abs_value] {
+    set passed 0
+    }
 }
 
 

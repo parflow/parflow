@@ -1,4 +1,4 @@
-#running different configuraitons of tilted V
+#running different configurations of tilted V
 
 set tcl_precision 17
 
@@ -322,7 +322,7 @@ source pftest.tcl
 # New diffusive formulations without the zero channel (as compared to the first
 #    tests in overland_tiltedV_KWE.tcl)
 # Note: The difference in configuration here is to be consistent with the way
-#   the upwinding is handled for the new and original fomulations.
+#   the upwinding is handled for the new and original formulations.
 #   These two results should be almost identical for the new and old formulations
 #-----------------------------------------------------------------------------
 pfset TopoSlopesX.Type "Constant"

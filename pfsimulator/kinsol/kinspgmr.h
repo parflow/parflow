@@ -78,7 +78,7 @@ enum { SPGMR_NLI=KINSOL_IOPT_SIZE, SPGMR_NPE, SPGMR_NPS, SPGMR_NCFL };
 *----------------------------------------------------------------*
 * The user-supplied preconditioner setup function precondset and *
 * the user-supplied preconditioner solve function precondsolve   *
-* together must define the right preconditoner matrix P chosen   *
+* together must define the right preconditioner matrix P chosen  *
 * so as to provide an easier system for the Krylov solver        *
 * to solve. precondset is called to provide any matrix data      *
 * required by the subsequent call(s) to precondsolve. The data is*
