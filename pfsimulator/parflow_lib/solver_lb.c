@@ -557,8 +557,8 @@ void      SolverDiffusion()
           {
             sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen,
                     file_number);
-            WritePDI(file_prefix, file_postfix, concentrations[indx], file_number,
-                           1,drop_tol);
+            WritePDI(file_prefix, file_postfix, file_number,
+                           concentrations[indx], 1, drop_tol);
             indx++;
           }
         }
