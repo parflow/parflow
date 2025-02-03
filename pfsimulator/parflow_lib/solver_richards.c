@@ -3060,7 +3060,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	Subvector *p_sub;
 	double *pp;
 	int is, nx, ny, nz;
-	
+	/*	printf(">>>>>>>>>>>>>>>> Torch and Call saturation module. \n");
+	PFModuleInvokeType(SaturationInvoke, problem_saturation,
+			   (instance_xtra->saturation, instance_xtra->pressure,
+			    instance_xtra->density, gravity, problem_data,
+			    CALCFCN));	
+	*/
         ForSubgridI(is, GridSubgrids(grid))
         {
           subgrid = GridSubgrid(grid, is);
@@ -3091,12 +3096,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 	  Vector *perm_z = ProblemDataPermeabilityZ(problem_data);
 	  Subvector *permz_sub = VectorSubvector(perm_z, is);
 	  double *permz_dat = SubvectorData(permz_sub);
-	  Vector* sres = ProblemSaturationGetSres(problem_saturation);
+	  /*	  Vector* sres = ProblemSaturationGetSres(problem_saturation);
 	  Subvector *sres_sub = VectorSubvector(sres, is);
 	  double *sres_dat = SubvectorData(sres_sub);
 	  Vector* ssat = ProblemSaturationGetSsat(problem_saturation);
 	  Subvector *ssat_sub = VectorSubvector(ssat, is);
 	  double *ssat_dat = SubvectorData(ssat_sub);
+	  */
 	  
 	  SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
 	}
