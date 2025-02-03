@@ -1447,16 +1447,17 @@ Vector*  ProblemSaturationGetSres(PFModule* this_module)
 {
   PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   Vector *sres = NULL;
-  
+
   switch ((public_xtra->type))
   {
     case 1: /* Van Genuchten saturation curve */
-      {
-	Type1 *data = (Type1*)(public_xtra->data);
-	sres = data->s_res_values;
-      }
+    {
+      Type1 *data = (Type1*)(public_xtra->data);
+      sres = data->s_res_values;
+    }
       printf("In GetSres, sres: %p\n", (void*)sres);
       break;
+
     default:  /* Don't have SRES */
       sres = NULL;
   }
@@ -1473,11 +1474,12 @@ Vector*  ProblemSaturationGetSsat(PFModule* this_module)
   switch ((public_xtra->type))
   {
     case 1: /* Van Genuchten saturation curve */
-      {
-	Type1 *data = (Type1*)(public_xtra->data);
-	ssat = data->s_sat_values;
-      }
-      break;
+    {
+      Type1 *data = (Type1*)(public_xtra->data);
+      ssat = data->s_sat_values;
+    }
+    break;
+
     default:  /* Don't have SSTAT */
       ssat = NULL;
   }

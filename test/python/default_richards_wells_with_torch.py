@@ -404,7 +404,7 @@ for i in timesteps:
         f"Max difference in Saturation for timestep {i}",
     ):
         passed = False
-        
+
 # Check that the predicted pressure is the same as the last pressure timestep
 for i in range(1, 6):
     p = f"/{run_name}.out.press.{(i-1):05d}.pfb"

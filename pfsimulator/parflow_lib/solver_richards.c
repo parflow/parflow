@@ -3052,68 +3052,70 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
 #ifdef PARFLOW_HAVE_TORCH
-      if (public_xtra->enable_torch_accelerator) {
-	BeginTiming(TorchTimingIndex);
-	GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
-	Subgrid *subgrid;
-	Grid *grid = VectorGrid(evap_trans_sum);
-	Subvector *p_sub;
-	double *pp;
-	int is, nx, ny, nz;
-	/*	printf(">>>>>>>>>>>>>>>> Torch and Call saturation module. \n");
-	PFModuleInvokeType(SaturationInvoke, problem_saturation,
-			   (instance_xtra->saturation, instance_xtra->pressure,
-			    instance_xtra->density, gravity, problem_data,
-			    CALCFCN));	
-	*/
+      if (public_xtra->enable_torch_accelerator)
+      {
+        BeginTiming(TorchTimingIndex);
+        GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+        Subgrid *subgrid;
+        Grid *grid = VectorGrid(evap_trans_sum);
+        Subvector *p_sub;
+        double *pp;
+        int is, nx, ny, nz;
+        /*      printf(">>>>>>>>>>>>>>>> Torch and Call saturation module. \n");
+         * PFModuleInvokeType(SaturationInvoke, problem_saturation,
+         *                 (instance_xtra->saturation, instance_xtra->pressure,
+         *                  instance_xtra->density, gravity, problem_data,
+         *                  CALCFCN));
+         */
         ForSubgridI(is, GridSubgrids(grid))
         {
           subgrid = GridSubgrid(grid, is);
-	  nx = SubgridNX(subgrid);
-	  ny = SubgridNY(subgrid);
-	  nz = SubgridNZ(subgrid);
+          nx = SubgridNX(subgrid);
+          ny = SubgridNY(subgrid);
+          nz = SubgridNZ(subgrid);
           p_sub = VectorSubvector(instance_xtra->pressure, is);
-	  pp = SubvectorData(p_sub);
-	  et_sub = VectorSubvector(evap_trans, is);
-	  et = SubvectorData(et_sub);
-	  po_sub = VectorSubvector(porosity, is);
-	  po_dat = SubvectorData(po_sub);
-	  Vector *mannings = ProblemDataMannings(problem_data);
-	  Subvector* mann_sub = VectorSubvector(mannings, is);
-	  double *mann_dat = SubvectorData(mann_sub);
-	  Vector *slope_x = ProblemDataTSlopeX(problem_data);
-	  Subvector *slopex_sub = VectorSubvector(slope_x, is);
-	  double *slopex_dat = SubvectorData(slopex_sub);
-	  Vector *slope_y = ProblemDataTSlopeY(problem_data);
-	  Subvector *slopey_sub = VectorSubvector(slope_y, is);
-	  double *slopey_dat = SubvectorData(slopey_sub);
-	  Vector *perm_x = ProblemDataPermeabilityX(problem_data);
-	  Subvector *permx_sub = VectorSubvector(perm_x, is);
-	  double *permx_dat = SubvectorData(permx_sub);
-	  Vector *perm_y = ProblemDataPermeabilityY(problem_data);
-	  Subvector *permy_sub = VectorSubvector(perm_y, is);
-	  double *permy_dat = SubvectorData(permy_sub);
-	  Vector *perm_z = ProblemDataPermeabilityZ(problem_data);
-	  Subvector *permz_sub = VectorSubvector(perm_z, is);
-	  double *permz_dat = SubvectorData(permz_sub);
-	  /*	  Vector* sres = ProblemSaturationGetSres(problem_saturation);
-	  Subvector *sres_sub = VectorSubvector(sres, is);
-	  double *sres_dat = SubvectorData(sres_sub);
-	  Vector* ssat = ProblemSaturationGetSsat(problem_saturation);
-	  Subvector *ssat_sub = VectorSubvector(ssat, is);
-	  double *ssat_dat = SubvectorData(ssat_sub);
-	  */
-	  
-	  SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
-	}
-	if (public_xtra->print_predicted_pressure) {
-	  sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
-	  WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
-	}
-	EndTiming(TorchTimingIndex);
+          pp = SubvectorData(p_sub);
+          et_sub = VectorSubvector(evap_trans, is);
+          et = SubvectorData(et_sub);
+          po_sub = VectorSubvector(porosity, is);
+          po_dat = SubvectorData(po_sub);
+          Vector *mannings = ProblemDataMannings(problem_data);
+          Subvector* mann_sub = VectorSubvector(mannings, is);
+          double *mann_dat = SubvectorData(mann_sub);
+          Vector *slope_x = ProblemDataTSlopeX(problem_data);
+          Subvector *slopex_sub = VectorSubvector(slope_x, is);
+          double *slopex_dat = SubvectorData(slopex_sub);
+          Vector *slope_y = ProblemDataTSlopeY(problem_data);
+          Subvector *slopey_sub = VectorSubvector(slope_y, is);
+          double *slopey_dat = SubvectorData(slopey_sub);
+          Vector *perm_x = ProblemDataPermeabilityX(problem_data);
+          Subvector *permx_sub = VectorSubvector(perm_x, is);
+          double *permx_dat = SubvectorData(permx_sub);
+          Vector *perm_y = ProblemDataPermeabilityY(problem_data);
+          Subvector *permy_sub = VectorSubvector(perm_y, is);
+          double *permy_dat = SubvectorData(permy_sub);
+          Vector *perm_z = ProblemDataPermeabilityZ(problem_data);
+          Subvector *permz_sub = VectorSubvector(perm_z, is);
+          double *permz_dat = SubvectorData(permz_sub);
+          /*      Vector* sres = ProblemSaturationGetSres(problem_saturation);
+           * Subvector *sres_sub = VectorSubvector(sres, is);
+           * double *sres_dat = SubvectorData(sres_sub);
+           * Vector* ssat = ProblemSaturationGetSsat(problem_saturation);
+           * Subvector *ssat_sub = VectorSubvector(ssat, is);
+           * double *ssat_dat = SubvectorData(ssat_sub);
+           */
+
+          SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
+        }
+        if (public_xtra->print_predicted_pressure)
+        {
+          sprintf(file_postfix, "predicted_press.%05d", instance_xtra->file_number);
+          WritePFBinary(file_prefix, file_postfix, instance_xtra->pressure);
+        }
+        EndTiming(TorchTimingIndex);
       }
 #endif
-      
+
       /*******************************************************************/
       /*          Solve the nonlinear system for this time step          */
       /*******************************************************************/
@@ -6099,7 +6101,7 @@ SolverRichardsNewPublicXtra(char *name)
   {
     WriteSiloPMPIOInit(GlobalsOutFileName);
   }
-  
+
 #ifdef PARFLOW_HAVE_TORCH
   sprintf(key, "%s.TorchEnableAccelerator", name);
   switch_name = GetStringDefault(key, "False");
@@ -6111,7 +6113,7 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "%s.TorchPrintPredictedPressure", name);
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);  
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_predicted_pressure = switch_value;
 #endif
 
