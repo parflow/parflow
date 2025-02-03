@@ -6101,15 +6101,15 @@ SolverRichardsNewPublicXtra(char *name)
   }
   
 #ifdef PARFLOW_HAVE_TORCH
-  sprintf(key, "%s.Torch.EnableAccelerator", name);
+  sprintf(key, "%s.TorchEnableAccelerator", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->enable_torch_accelerator = switch_value;
 
-  sprintf(key, "%s.Torch.ModelFilePath", name);
+  sprintf(key, "%s.TorchModelFilePath", name);
   public_xtra->torch_model_filepath = GetStringDefault(key, "");
 
-  sprintf(key, "%s.Torch.PrintPredictedPressure", name);
+  sprintf(key, "%s.TorchPrintPredictedPressure", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);  
   public_xtra->print_predicted_pressure = switch_value;

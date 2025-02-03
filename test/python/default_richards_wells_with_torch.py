@@ -353,9 +353,9 @@ drich.Solver.Linear.KrylovDimension = 10
 
 drich.Solver.Linear.Preconditioner = "MGSemi"
 
-drich.Solver.Torch.EnableAccelerator = True
-drich.Solver.Torch.ModelFilePath = "identity_model.pth"
-drich.Solver.Torch.PrintPredictedPressure = True
+drich.Solver.TorchEnableAccelerator = True
+drich.Solver.TorchModelFilePath = "identity_model.pth"
+drich.Solver.TorchPrintPredictedPressure = True
 
 # -----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
