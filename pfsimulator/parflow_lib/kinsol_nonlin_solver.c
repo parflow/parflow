@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 #include "kinsol_dependences.h"
@@ -84,7 +84,7 @@ typedef struct {
 
 
 /*--------------------------------------------------------------------------
- * Auxilliary functions for interfacing with outside software
+ * Auxiliary functions for interfacing with outside software
  *--------------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------------
@@ -263,7 +263,7 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
                uscale,                  /* Scalings for the variable */
                fscale,                  /* Scalings for the function */
                residual_tol,            /* Stopping tolerance on func */
-               step_tol,                /* Stop tol. for sucessive steps */
+               step_tol,                /* Stop tol. for successive steps */
                NULL,                    /* Constraints */
                TRUE,                    /* Optional inputs */
                iopt,                    /* Opt. integer inputs */
@@ -541,14 +541,15 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
                                         "NormalVerbosity HighVerbosity");
   sprintf(key, "Solver.Nonlinear.PrintFlag");
   switch_name = GetStringDefault(key, "LowVerbosity");
-  (public_xtra->print_flag) = NA_NameToIndex(verbosity_switch_na,
-                                             switch_name);
+  (public_xtra->print_flag) = NA_NameToIndexExitOnError(verbosity_switch_na,
+                                                        switch_name,
+                                                        key);
   NA_FreeNameArray(verbosity_switch_na);
 
   eta_switch_na = NA_NewNameArray("EtaConstant Walker1 Walker2");
   sprintf(key, "Solver.Nonlinear.EtaChoice");
   switch_name = GetStringDefault(key, "Walker2");
-  switch_value = NA_NameToIndex(eta_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(eta_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -582,8 +583,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(eta_switch_na);
@@ -591,7 +591,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   switch_na = NA_NewNameArray("False True");
   sprintf(key, "Solver.Nonlinear.UseJacobian");
   switch_name = GetStringDefault(key, "False");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -608,8 +608,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(switch_na);
@@ -620,7 +619,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   globalization_switch_na = NA_NewNameArray("InexactNewton LineSearch");
   sprintf(key, "Solver.Nonlinear.Globalization");
   switch_name = GetStringDefault(key, "LineSearch");
-  switch_value = NA_NameToIndex(globalization_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(globalization_switch_na, switch_name, key);
   switch (switch_value)
   {
     case 0:
@@ -637,8 +636,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
     default:
     {
-      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-                 key);
+      InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
     }
   }
   NA_FreeNameArray(globalization_switch_na);
@@ -646,7 +644,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
   sprintf(key, "Solver.Linear.Preconditioner");
   switch_name = GetStringDefault(key, "MGSemi");
-  switch_value = NA_NameToIndex(precond_switch_na, switch_name);
+  switch_value = NA_NameToIndexExitOnError(precond_switch_na, switch_name, key);
   if (switch_value == 0)
   {
     (public_xtra->precond) = NULL;
@@ -664,8 +662,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
   }
   else
   {
-    InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-               key);
+    InputError("Invalid switch value <%s> for key <%s>", switch_name, key);
   }
   NA_FreeNameArray(precond_switch_na);
 

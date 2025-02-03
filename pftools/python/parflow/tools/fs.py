@@ -13,6 +13,7 @@ from . import settings
 
 # -----------------------------------------------------------------------------
 
+
 def get_absolute_path(file_path):
     """Helper function to resolve a file path while using the proper
     working directory.
@@ -27,9 +28,9 @@ def get_absolute_path(file_path):
 
 # -----------------------------------------------------------------------------
 
-def cp(source, target_path='.'):
-    """Copying file/directory within python script
-    """
+
+def cp(source, target_path="."):
+    """Copying file/directory within python script"""
     full_source_path = get_absolute_path(source)
     full_target_path = get_absolute_path(target_path)
     try:
@@ -45,14 +46,14 @@ def cp(source, target_path='.'):
         print("Permission denied.")
     # For other errors
     except Exception:
-        print(f'Error occurred while copying {full_source_path}.')
+        print(f"Error occurred while copying {full_source_path}.")
 
 
 # -----------------------------------------------------------------------------
 
+
 def rm(path):
-    """Deleting file/directory within python script
-    """
+    """Deleting file/directory within python script"""
     full_path = Path(get_absolute_path(path))
     if full_path.exists():
         if full_path.is_dir():
@@ -63,9 +64,9 @@ def rm(path):
 
 # -----------------------------------------------------------------------------
 
+
 def mkdir(dir_name):
-    """mkdir within python script
-    """
+    """mkdir within python script"""
     full_path = Path(get_absolute_path(dir_name))
     if not full_path.exists():
         full_path.mkdir(parents=True)
@@ -73,21 +74,24 @@ def mkdir(dir_name):
 
 # -----------------------------------------------------------------------------
 
+
 def get_text_file_content(file_path):
     full_path = Path(get_absolute_path(file_path))
     if not full_path.exists():
-        raise Exception(f'{str(full_path)} does not exist!')
+        raise Exception(f"{str(full_path)} does not exist!")
 
     return full_path.read_text()
 
 
 # -----------------------------------------------------------------------------
 
+
 def exists(file_path):
     return Path(get_absolute_path(file_path)).exists()
 
 
 # -----------------------------------------------------------------------------
+
 
 def chdir(directory_path):
     full_path = get_absolute_path(directory_path)

@@ -512,17 +512,10 @@ pfundist $runname
 source pftest.tcl
 set passed 1
 
-if ![pftestFile $runname.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile $runname.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile $runname.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile $runname.out.porosity.pfb "Max difference in porosity" $sig_digits] {
-    set passed 0
+foreach file { perm_x perm_y perm_z alpha n sres ssat } {
+    if ![pftestFile $runname.out.$file.pfb "Max difference in $file" $sig_digits] {
+	set passed 0
+    }
 }
 
 foreach i "00000 00001 00002" {

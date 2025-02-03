@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- * Copyright (c) 1995-2009, Lawrence Livermore National Security,
- * LLC. Produced at the Lawrence Livermore National Laboratory. Written
- * by the Parflow Team (see the CONTRIBUTORS file)
- * <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- * This file is part of Parflow. For details, see
- * http://www.llnl.gov/casc/parflow
- *
- * Please read the COPYRIGHT file or Our Notice and the LICENSE file
- * for the GNU Lesser General Public License.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License (as published
- * by the Free Software Foundation) version 2.1 dated February 1999.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- * and conditions of the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- * USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 /*****************************************************************************
 * C to Fortran interfacing macros
@@ -56,16 +56,16 @@ BEGIN_EXTERN_C
 #define ADVECT advect_
 #endif
 
-#define CALL_ADVECT(s, sn, uedge, vedge, wedge, phi,                      \
-                    slx, sly, slz,                                        \
-                    lo, hi, dlo, dhi, hx, dt, fstord,                     \
-                    sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, \
-                    dxscr, dyscr, dzscr, dzfrm)                           \
-  ADVECT(s, sn, uedge, vedge, wedge, phi,                                 \
-         slx, sly, slz,                                                   \
-         lo, hi, dlo, dhi, hx, &dt, &fstord,                              \
-         sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,            \
-         dxscr, dyscr, dzscr, dzfrm)
+#define CALL_ADVECT(s, sn, uedge, vedge, wedge, phi,                            \
+                    slx, sly, slz,                                              \
+                    lo, hi, dlo, dhi, hx, dt, fstord,                           \
+                    sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,       \
+                    dxscr, dyscr, dzscr, dzfrm)                                 \
+        ADVECT(s, sn, uedge, vedge, wedge, phi,                                 \
+               slx, sly, slz,                                                   \
+               lo, hi, dlo, dhi, hx, &dt, &fstord,                              \
+               sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,            \
+               dxscr, dyscr, dzscr, dzfrm)
 
 void ADVECT(double *s, double *sn,
             double *uedge, double *vedge, double *wedge, double *phi,
@@ -85,18 +85,18 @@ void ADVECT(double *s, double *sn,
 #define SADVECT sadvect_
 #endif
 
-#define CALL_SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,            \
-                     viscosity, density, gravity,                          \
-                     slx, sly, slz,                                        \
-                     lohi, dlohi, hx, dt,                                  \
-                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, \
-                     dxscr, dyscr, dzscr, dzfrm)                           \
-  SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,                       \
-          viscosity, density, &gravity,                                    \
-          slx, sly, slz,                                                   \
-          lohi, dlohi, hx, &dt,                                            \
-          sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,            \
-          dxscr, dyscr, dzscr, dzfrm)
+#define CALL_SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,                  \
+                     viscosity, density, gravity,                                \
+                     slx, sly, slz,                                              \
+                     lohi, dlohi, hx, dt,                                        \
+                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,       \
+                     dxscr, dyscr, dzscr, dzfrm)                                 \
+        SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,                       \
+                viscosity, density, &gravity,                                    \
+                slx, sly, slz,                                                   \
+                lohi, dlohi, hx, &dt,                                            \
+                sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,            \
+                dxscr, dyscr, dzscr, dzfrm)
 
 void SADVECT(double *s, double *sn,
              double *uedge, double *vedge, double *wedge, double *betaedge, double *phi,
@@ -120,31 +120,31 @@ void SADVECT(double *s, double *sn,
 #define CLM_LSM clm_lsm_
 #endif
 
-#define CALL_CLM_LSM(pressure_data, saturation_data, evap_trans_data, mask, porosity_data,                                                                                     \
-                     dz_mult_data, istep, dt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,                                                                                   \
-                     nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,                                                                                                     \
-                     sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                              \
-                     lai_data, sai_data, z0m_data, displa_data,                                                                                                                \
-                     slope_x_data, slope_y_data,                                                                                                                               \
-                     eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                             \
-                     qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                      \
-                     qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                   \
-                     clm_dump_interval, clm_1d_out, clm_forc_veg, clm_file_dir, clm_file_dir_length, clm_bin_out_dir, write_CLM_binary, slope_accounting_CLM,                                       \
-                     clm_beta_function, clm_veg_function, clm_veg_wilting, clm_veg_fieldc, clm_res_sat,                                                                        \
-                     clm_irr_type, clm_irr_cycle, clm_irr_rate, clm_irr_start, clm_irr_stop,                                                                                   \
-                     clm_irr_threshold, qirr, qirr_inst, iflag, clm_irr_thresholdtype, soi_z, clm_next, clm_write_logs, clm_last_rst, clm_daily_rst, clm_nlevsoi, clm_nlevlak) \
-  CLM_LSM(pressure_data, saturation_data, evap_trans_data, mask, porosity_data,                                                                                                \
-          dz_mult_data, &istep, &dt, &t, &start_time, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &nz_rz, &ip, &p, &q, &r, &gnx, &gny, &rank,                 \
-          sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                         \
-          lai_data, sai_data, z0m_data, displa_data,                                                                                                                           \
-          slope_x_data, slope_y_data,                                                                                                                                          \
-          eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                                        \
-          qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                                 \
-          qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                              \
-          &clm_dump_interval, &clm_1d_out, &clm_forc_veg, clm_file_dir, &clm_file_dir_length, &clm_bin_out_dir,                                                                \
-          &write_CLM_binary, &slope_accounting_CLM, &clm_beta_function, &clm_veg_function, &clm_veg_wilting, &clm_veg_fieldc,                                                                         \
-          &clm_res_sat, &clm_irr_type, &clm_irr_cycle, &clm_irr_rate, &clm_irr_start, &clm_irr_stop,                                                                           \
-          &clm_irr_threshold, qirr, qirr_inst, iflag, &clm_irr_thresholdtype, &soi_z, &clm_next, &clm_write_logs, &clm_last_rst, &clm_daily_rst, &clm_nlevsoi, &clm_nlevlak);
+#define CALL_CLM_LSM(pressure_data, saturation_data, evap_trans_data, mask, porosity_data,                                                                                                                  \
+                     dz_mult_data, istep, dt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz,                                                                                                                \
+                     nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,                                                                                                                                  \
+                     sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                           \
+                     lai_data, sai_data, z0m_data, displa_data,                                                                                                                                             \
+                     slope_x_data, slope_y_data,                                                                                                                                                            \
+                     eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                                                          \
+                     qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                                                   \
+                     qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                                                \
+                     clm_dump_interval, clm_1d_out, clm_forc_veg, clm_file_dir, clm_file_dir_length, clm_bin_out_dir, write_CLM_binary, slope_accounting_CLM,                                               \
+                     clm_beta_function, clm_veg_function, clm_veg_wilting, clm_veg_fieldc, clm_res_sat,                                                                                                     \
+                     clm_irr_type, clm_irr_cycle, clm_irr_rate, clm_irr_start, clm_irr_stop,                                                                                                                \
+                     clm_irr_threshold, qirr, qirr_inst, iflag, clm_irr_thresholdtype, soi_z, clm_next, clm_write_logs, clm_last_rst, clm_daily_rst, clm_nlevsoi, clm_nlevlak)                              \
+        CLM_LSM(pressure_data, saturation_data, evap_trans_data, mask, porosity_data,                                                                                                                       \
+                dz_mult_data, &istep, &dt, &t, &start_time, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &nz_rz, &ip, &p, &q, &r, &gnx, &gny, &rank,                                        \
+                sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,                                                                                                                \
+                lai_data, sai_data, z0m_data, displa_data,                                                                                                                                                  \
+                slope_x_data, slope_y_data,                                                                                                                                                                 \
+                eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data,                                                                                                               \
+                qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data,                                                                                        \
+                qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data,                                                                                                                                     \
+                &clm_dump_interval, &clm_1d_out, &clm_forc_veg, clm_file_dir, &clm_file_dir_length, &clm_bin_out_dir,                                                                                       \
+                &write_CLM_binary, &slope_accounting_CLM, &clm_beta_function, &clm_veg_function, &clm_veg_wilting, &clm_veg_fieldc,                                                                         \
+                &clm_res_sat, &clm_irr_type, &clm_irr_cycle, &clm_irr_rate, &clm_irr_start, &clm_irr_stop,                                                                                                  \
+                &clm_irr_threshold, qirr, qirr_inst, iflag, &clm_irr_thresholdtype, &soi_z, &clm_next, &clm_write_logs, &clm_last_rst, &clm_daily_rst, &clm_nlevsoi, &clm_nlevlak);
 
 void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_data, double *mask, double *porosity_data,
              double *dz_mult_data, int *istep, double *dt, double *t, double *start_time,

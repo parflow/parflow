@@ -26,7 +26,7 @@ MODULE oas_pfl_vardef
 
 !Modules Used 
 USE mpi
-USE mod_prism_proto
+USE mod_prism
 
 !==============================================================================
 
@@ -44,11 +44,13 @@ INTEGER                                   :: IOASISDEBUGLVL = 0
 INTEGER                                   :: ierror                ! Local Variables
 INTEGER                                   :: localComm             ! local MPI communicator and Initialized 
 INTEGER                                   :: comp_id               ! component identification
-INTEGER                                   :: rank                  ! Rank of the processor, intialized(oas_pfl_init)
+INTEGER                                   :: rank                  ! Rank of the processor, initialized(oas_pfl_init)
 INTEGER                                   :: info
 INTEGER, PUBLIC                           :: OASIS_Rcv  = 1        ! return code if received field
 INTEGER, PUBLIC                           :: OASIS_idle = 0        ! return code if nothing done by oasis
 
+INTEGER, DIMENSION(:,:), ALLOCATABLE      :: mask_land             ! Mask land
+INTEGER, DIMENSION(:,:), ALLOCATABLE      :: mask_land_sub         ! Mask land
 !
 REAL(KIND=8), DIMENSION(:,:), ALLOCATABLE :: bufz                  ! Temp buffer for field transfer
 REAL(KIND=8)                              :: pfl_timestep,        &! parflow time step in hrs
@@ -67,6 +69,8 @@ END TYPE FLD_CPL
 
  ! Define coupling fields
 TYPE(FLD_CPL), DIMENSION(nmaxlev)         :: trcv, psnd, wsnd      ! Coupling fields (HERE WE DEFINE §3 FIELDS)
+
+REAL(KIND=8),  ALLOCATABLE                ::   frcv(:,:,:)         ! all oaisis receive fields
 
 
 END MODULE oas_pfl_vardef

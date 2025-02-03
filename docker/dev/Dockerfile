@@ -17,7 +17,7 @@
 #    *  https://github.com/Unidata/netcdf-c/archive/v4.7.4.tar.gz
 #
 #  SILO_URL
-#    *  https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+#    *  https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
 #
 #  HYPRE_VERSION
 #    *  v2.19.0
@@ -123,7 +123,7 @@ USER ubuntu
 # Install SILO
 # -----------------------------------------------------------------------------
 
-ARG SILO_URL=https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+ARG SILO_URL=https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2.tgz
 
 ENV SILO_DIR /opt/silo
 

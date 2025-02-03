@@ -13,7 +13,7 @@
   
   write(*,*)"Input file name:"
   read(*,'(a)')ifname
-  write(*,*)"Ouput file name:"
+  write(*,*)"Output file name:"
   read(*,'(a)')ofname
   
   open(99,file=trim(adjustl(ifname)),status='old',action='read')

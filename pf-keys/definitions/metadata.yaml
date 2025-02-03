@@ -51,6 +51,8 @@ Metadata:
         name: Metadata.Authors.{author_name}
       __doc__: >
         An author
+      __simput__:
+        type: VariableTable
 
       Name:
         help: >

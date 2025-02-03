@@ -282,7 +282,7 @@ Solver:
         [Type: string] This key specifies defines the file name for 1D, 2D or 3D forcing data. 1D meteorological forcing files are text
         files with single columns for each variable and each timestep per row, while 2D and 3D forcing files are distributed
         ParFlow binary files, one for each variable and timestep (2D) or one for each variable and multiple timesteps (3D).
-        Behavior of this key is different for 1D and 2D and 3D cases, as sepcified by the Solver.CLM.MetForcing key
+        Behavior of this key is different for 1D and 2D and 3D cases, as specified by the Solver.CLM.MetForcing key
         above. For 1D cases, it is the FULL FILE NAME. Note that in this configuration, this forcing file is not distributed,
         the user does not provide copies such as narr.1hr.txt.0, narr.1hr.txt.1 for each processor. ParFlow only needs
         the single original file (e.g. narr.1hr.txt). For 2D cases, this key is the BASE FILE NAME for the 2D forcing files,
@@ -360,8 +360,8 @@ Solver:
       help: >
         [Type: int] How many times to reuse a CLM atmospheric forcing file input. For example timestep=1, reuse =1 is normal
         behavior but reuse=2 and timestep=0.5 subdivides the time step using the same CLM input for both halves instead
-        of needing two files. This is particually useful for large, distributed runs when the user wants to run ParFlow at
-        a smaller timestep than the CLM forcing. Forcing files will be re-used and total fluxes adjusted accordingly without
+        of needing two files. This is particularly useful for large, distributed runs when the user wants to run ParFlow at
+        a smaller timestep than the CLM forcing. Forcing files will be reused and total fluxes adjusted accordingly without
         needing duplicate files.
       default: 1
       domains:
@@ -1000,6 +1000,8 @@ Solver:
             name: Vegetation.Parameters.{land_cover_name}
           __doc__: >
             One of the user-defined names for land cover types for the drv_vegp.dat file
+          __simput__:
+            type: VariableTable
 
           Description:
             help: >
@@ -1190,6 +1192,8 @@ Solver:
               name: Vegetation.Map.LandFrac.{land_cover_name}
             __doc__: >
               One of the user-defined names for land cover types for the drv_vegp.dat file
+            __simput__: 
+              type: VariableTable
 
             Type:
               help: >
@@ -1593,6 +1597,54 @@ Solver:
     domains:
       DoubleValue:
 
+  ResetSurfacePressure:
+    __doc__: >
+      [Type: logical] Check surface pressure and reset values above a threshold to a different value.
+    __value__:
+      help: >
+        [Type: boolean/string] Check surface pressure and reset values above a threshold to a different value.
+      default: False
+      domains:
+        BoolDomain:
+
+    ThresholdPressure:
+      help: >
+        [Type: double]
+      default: 0.0
+      domains:
+        DoubleValue:
+
+    ResetPressure:
+      help: >
+        [Type: double] 
+      default: 0.0
+      domains:
+        DoubleValue:
+  
+  SurfacePredictor:
+    __doc__: >
+      [Type: logical] Try to calculate if a surface cell will pond / switch from sub surface to surface flow and set pressure to a positive value.
+    __value__:
+      help: >
+        [Type: boolean/string] Try to calculate if a surface cell will pond / switch from sub surface to surface flow and set pressure to a positive value.
+      default: False
+      domains:
+        BoolDomain:
+
+    PressureValue:
+      help: >
+        [Type: double] Surface pressure value set if flux into cell exceeds capacity.
+      default: 0.00001
+      domains:
+        DoubleValue:
+      
+    PrintValues:
+      help: >
+        [Type: logical] Surface predictor print flag.
+      default: False
+      domains:
+        BoolDomain:
+
   OverlandDiffusive:
     __doc__: >
       Setting epsilon value for the diffusive overland flow formulation.
@@ -1679,6 +1731,16 @@ Solver:
     domains:
       BoolDomain:
 
+  PrintInitialConditions:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the initial conditions.   This includes the pressure, saturation,
+      slopes, etc.   By default the initial conditions output is generated before the first time advancement.   When doing a restart
+      this leads to a duplication of files on each restart.   Setting this key to False will prevent the duplication.
+    default: True
+    domains:
+      BoolDomain:
+
+
   # missing from manual
   PrintMannings:
     help: >
@@ -1731,12 +1793,30 @@ Solver:
     domains:
       BoolDomain:
 
+  PrintTop:
+    help: >
+      [Type: boolean/string] Key used to control writing of two PFB files for the top of the domain.  'TopZIndex' is a NX * NY
+      file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
+      (i,j) column does not intersect the domain. format.
+    default: False
+    domains:
+      BoolDomain:
+
   # missing from manual
   PrintSlopes:
     help: >
       [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the
       timing information section. The data is written as a PFB file.
     default: True
+    domains:
+      BoolDomain:
+
+  # missing from manual
+  PrintChannelWidth:
+    help: >
+      [Type: boolean/string] This key is used to turn on printing of the saturation data. The printing of the data is controlled by values in the
+      timing information section. The data is written as a PFB file.
+    default: True 
     domains:
       BoolDomain:
 
@@ -1776,8 +1856,11 @@ Solver:
 
   PrintVelocities:
     help: >
-      [Type: boolean/string] This key is used to turn on printing of the x,y, and z velocity data. The printing of the data is controlled by values in the
-      timing information section. The data is written as a PFB file.
+      [Type: boolean/string] This key is used to turn on printing of the x, y, and z velocity (Darcy flux) data. The printing of the data is controlled
+      by values in the timing information section. The x, y, and z data are written to separate PFB files. The dimensions of these files are slightly 
+      different than most PF data, with the dimension of interest representing interfaces, and the other two dimensions representing cells. E.g. the 
+      x-velocity PFB has dimensions [NX+1, NY, NZ]. This key produces files in the format of runname.out.phase<x||y||z>.00.0000.pfb when using ParFlow's
+      saturated solver and runname.out.vel<x||y||z>.00000.pfb when using the Richards equation solver.
     default: False
     domains:
       BoolDomain:
@@ -1785,6 +1868,14 @@ Solver:
   PrintWells:
     help: >
       [Type: boolean/string] This key is used to turn on collection and printing of the well data. The data is collected at intervals given by
+      values in the timing information section. Printing occurs at the end of the run when all collected data is written.
+    default: True
+    domains:
+      BoolDomain:
+  
+  PrintReservoirs:
+    help: >
+      [Type: boolean/string] This key is used to turn on collection and printing of the reservoir data. The data is collected at intervals given by
       values in the timing information section. Printing occurs at the end of the run when all collected data is written.
     default: True
     domains:
@@ -2000,7 +2091,7 @@ Solver:
 
       SymmetricMat:
         help: >
-          [Type: string] This key specifies whether the preconditioning matrix is symmetric. Choices fo rthis key are Symmetric and
+          [Type: string] This key specifies whether the preconditioning matrix is symmetric. Choices for this key are Symmetric and
           Nonsymmetric. The choice Symmetric specifies that the symmetric part of the Jacobian will be used as the preconditioning
           matrix. The choice Nonsymmetric specifies that the full Jacobian will be used as the preconditioning
           matrix. NOTE: ONLY Symmetric CAN BE USED IF MGSemi IS THE SPECIFIED PRECONDITIONER!
@@ -2026,6 +2117,8 @@ Solver:
         __class__: PrecondMethodItem
         __doc__: >
           Setting Solver.Linear.Preconditioner.{precond_method} keys
+        __simput__: 
+          type: VariableTable
 
         MaxIter:
           help: >
@@ -2123,6 +2216,21 @@ Solver:
       help: >
         [Type: boolean/string] This key specifies whether Flow Barriers are to be used in the Z direction, the default is False. The default
         indicates a false or FBz value of one [-] everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+
+    ChannelWidthExistX:
+      help: >
+        [Type: boolean/string] This key specifies whether channel width is used to be used in the X direction, default is false. The default
+        indicates a false or ChannelWidthX value of 0 everywhere in the domain.
+      default: False
+      domains:
+        BoolDomain:
+    ChannelWidthExistY:
+      help: >
+        [Type: boolean/string] This key specifies whether channel width is used to be used in the Y direction, default is false. The default
+        indicates a false or ChannelWidthY value of 0 everywhere in the domain.
       default: False
       domains:
         BoolDomain:
@@ -2329,6 +2437,16 @@ Solver:
       BoolDomain:
       RequiresModule: SILO
 
+  WriteSiloTop:
+    help: >
+      [Type: boolean/string] Key used to control writing of two Silo files for the top of the domain.  'TopZIndex' is a NX * NY
+      file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
+      (i,j) column does not intersect the domain. format.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
   WriteSiloPMPIOConcentration:
     help: >
       [Type: boolean/string]
@@ -2470,7 +2588,7 @@ Solver:
 
   WriteSiloSlopes:
     help: >
-      [Type: boolean/string] This key is used to turn on printing of the x adn y slope data in silo binary format. The printing of the data is controlled by values in the
+      [Type: boolean/string] This key is used to turn on printing of the x and y slope data in silo binary format. The printing of the data is controlled by values in the
       timing information section. The data is written as a PFB file.
     default: False
     domains:

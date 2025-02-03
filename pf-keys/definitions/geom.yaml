@@ -30,6 +30,14 @@ Domain:
         type: ChildHandler
         class_name: TopoSlopesYItem
         location: /TopoSlopesY/Geom
+      ChannelWidthXUpdater:
+        type: ChildHandler
+        class_name: ChannelWidthXItem
+        location: /ChannelWidthX/Geom
+      ChannelWidthYUpdater:
+        type: ChildHandler
+        class_name: ChannelWidthYItem
+        location: /ChannelWidthY/Geom
       ManningsGeomUpdater:
         type: ChildHandler
         class_name: ManningsGeomItem
@@ -63,9 +71,15 @@ ICSaturation:
       [Type: string] This key specifies the geometries on which an initial condition will be given if the type is set to Constant.
       Note that geometries listed later “overlay” geometries listed earlier.
     domains:
-      AnyString:
-
-
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler                       
+    __simput__: 
+      type: MultiSelect
 
 # Setting ICPressure Type and GeomNames
 ICPressure:
@@ -79,7 +93,14 @@ ICPressure:
       comprise the entire domain. Note that conditions for regions that overlap other regions will have unpredictable
       results. The regions given must be disjoint.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler
+
 
   Type:
     help: >
@@ -251,7 +272,13 @@ SpecificStorage:
       [Type: string] This key specifies all of the geometries on which a different specific storage value will be
       assigned. These geometries must cover the entire computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler
 
   Type:
     help: >
@@ -279,7 +306,13 @@ dzScale:
       [Type: string] This key specifies which problem domain is being applied a variable dz subsurface. These
       geometries must cover the entire computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler
 
   Type:
     help: >
@@ -319,6 +352,9 @@ Cell:
       warning: >
         This should be set in the Python script in the format l#, where # is the integer number of the layer. Example:
         Cell.l0.dzScale.Value
+    __simput__:
+      type: VariableTable
+
     dzScale:
       __class__: CellNzItemDzScale
       __doc__: >
@@ -354,7 +390,13 @@ Geom:
         permeability field will be assigned. These geometries must cover the
         entire computational domain.
       domains:
-        AnyString:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        NamesToListConverter:
+          type: ListHandler
 
     TensorByGeom:
       __doc__: >
@@ -366,8 +408,14 @@ Geom:
           entries will be assigned. These geometries must cover the entire
           computational domain.
         domains:
-          AnyString:
-
+          EnumDomain:
+            locations: 
+              - /GeomInput/{GeomInputItem}/GeomNames
+              - /GeomInput/{GeomInputItem}/GeomName
+        handlers:
+          NamesToListConverter:
+            type: ListHandler
+  
   Porosity:
     __doc__: >
       run.Geom.Porosity input options are: GeomNames
@@ -378,7 +426,13 @@ Geom:
         porosity will be assigned. These geometries must cover the
         entire computational domain.
       domains:
-        AnyString:
+        EnumDomain:
+          locations: 
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
+      handlers:
+        NamesToListConverter:
+          type: ListHandler                       
 
   Retardation:
     __doc__: >
@@ -389,12 +443,16 @@ Geom:
         [Type: string] This key specifies all of the geometries to which the
         contaminants will have a retardation function applied.
       domains:
-        AnyString:
+        EnumDomain:
+          locations:
+            - /GeomInput/{GeomInputItem}/GeomNames
+            - /GeomInput/{GeomInputItem}/GeomName
       handlers:
         ContRetNameUpdater:
           type: ChildrenHandler
           class_name: GeomItem
           location: ..
+
 
   # GeomItems: for keys in the form Geom.geom_name.[]
 
@@ -763,6 +821,7 @@ Geom:
           EnumDomain:
             enum_list:
               - Constant
+              - PFBFile
 
       Value:
         help: >
@@ -1190,6 +1249,12 @@ Geom:
           AnyString:
           ValidFile:
 
+      TimeStep:
+        help: >
+          This key specifies the timestep to be read from the pressure file.   Currently this key is only valid for NetCDF files.
+        domains:
+          IntValue:
+
       RefElevation:
         help: >
           [Type: double] This key specifies the reference elevation on which the reference pressure is given for type HydroStaticDepth
@@ -1230,6 +1295,8 @@ Geom:
         __rst__:
           name: Geom.{geom_name}.ICSaturation.{phase_name}
         __doc__: ''
+        __simput__: 
+          type: VariableTable
 
         Value:
           help: >
@@ -1247,6 +1314,8 @@ Geom:
 
       __doc__: >
         Setting retardation properties for specific contaminants and specific geometries
+      __simput__:
+        type: VariableTable
 
       Retardation:
         __class__: GeomContItemRetardation
@@ -1312,7 +1381,10 @@ TopoSlopesX:
       slopes may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper surface of the
       computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
     handlers:
       TopoSlopesXUpdater:
         type: ChildrenHandler
@@ -1351,6 +1423,9 @@ TopoSlopesX:
         name: TopoSlopesX.Geom.{geom_name}
       __doc__: >
         Setting value for slopes in the X direction
+      __simput__:
+        type: VariableTable
+
       Value:
         help: >
           [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
@@ -1368,7 +1443,10 @@ TopoSlopesY:
       slopes may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper surface of the
       computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
     handlers:
       TopoSlopesYUpdater:
         type: ChildrenHandler
@@ -1407,10 +1485,152 @@ TopoSlopesY:
         name: TopoSlopesY.Geom.{geom_name}
       __doc__: >
         Setting value for slopes in the Y direction
+      __simput__:
+        type: VariableTable
       Value:
         help: >
           [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
           to constant.
+        domains:
+          DoubleValue:
+
+# -----------------------------------------------------------------------------
+# ChannelWidth
+# -----------------------------------------------------------------------------
+
+ChannelWidth:
+  __doc__: >
+    Setting filename for channel width data 
+  Width:
+    __doc__: >
+      Setting filename for channel width data
+    FileName:
+      help: >
+        [Type: string] This key is the name of the PFB file that contains channel width data which ParFlow uses.
+      domains:
+        Anystring:
+        ValidFile:
+
+ChannelWidthX:
+  __doc__: >
+    Setting data for channel width in the X direction
+  GeomNames:
+    help: >
+      [Type: string] This key specifies all of the geometries on which different channel width x values will be assigned. Channel widths
+      may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper surface of the
+      computational domain. 
+    domains:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      ChannelWidthXUpdater:
+        type: ChildrenHandler
+        class_name: ChannelWidthXItem
+        location: ./Geom
+
+  Type:
+    help: >
+      [Type: string] This key specifies which method is to be used to assign channel widths. The choices currently available are
+      Constant which indicates that a constant is to be assigned to all grid cells within a geometry and PFBFile which
+      indicates that all values are read in from a distributed, grid-based ParFlow binary file. If NetCDF is used, NCFile can be
+      specified, which will read in channel widths from a NetCDF file.
+    default: Constant
+    domains:
+      EnumDomain:
+        enum_list:
+          - Constant
+          - PFBFile
+          - NCFile
+
+  FileName:
+    help: >
+      [Type: string] This key specifies the value assigned to all points be read in from a ParFlow binary file.
+    domains:
+      AnyString:
+      ValidFile:
+
+  Geom:
+    __class__: ChannelWidthXGeom
+    __rst__:
+      skip:
+    __doc__: ''
+    .{geom_name}:
+      __class__: ChannelWidthXItem
+      __rst__:
+        name: ChannelWidthX.Geom.{geom_name}
+      __doc__: >
+        Setting value for channel widths in the X direction
+      __simput__:
+        type: VariableTable
+
+      Value:
+        help: >
+          [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
+          to constant.
+        default: 0.0
+        domains:
+          DoubleValue:
+
+ChannelWidthY:
+  __doc__: >
+    Setting data for channel width in the Y direction
+  GeomNames:
+    help: >
+      [Type: string] This key specifies all of the geometries on which a different y channel width values will be assigned. Channel width values
+      may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper surface of the
+      computational domain.
+    domains:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      ChannelWidthYUpdater:
+        type: ChildrenHandler
+        class_name: ChannelWidthYItem
+        location: ./Geom
+
+  Type:
+    help: >
+      [Type: string] This key specifies which method is to be used to assign channel widths. The choices currently available are
+      Constant which indicates that a constant is to be assigned to all grid cells within a geometry and PFBFile which
+      indicates that all values are read in from a distributed, grid-based ParFlow binary file. If NetCDF is used, NCFile can be
+      specified, which will read in channel width from a NetCDF file.
+    default: Constant
+    domains:
+      EnumDomain:
+        enum_list:
+          - Constant
+          - PFBFile
+          - NCFile
+
+  FileName:
+    help: >
+      [Type: string] This key specifies the value assigned to all points be read in from a ParFlow binary file.
+    domains:
+      AnyString:
+      ValidFile:
+
+  Geom:
+    __class__: ChannelWidthYGeom
+    __rst__:
+      skip:
+    __doc__: ''
+    .{geom_name}:
+      __class__: ChannelWidthYItem
+      __rst__:
+        name: ChannelWidthY.Geom.{geom_name}
+      __doc__: >
+        Setting value for slopes in the Y direction
+      __simput__:
+        type: VariableTable
+      Value:
+        help: >
+          [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
+          to constant.
+        default: 0.0
         domains:
           DoubleValue:
 
@@ -1444,7 +1664,13 @@ CapPressurePhaseItem:
       Regions listed later “overlay” regions listed earlier. Any geometries not listed will be assigned 0:0 capillary pressure
       by ParFlow.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
+    handlers:
+      NamesToListConverter:
+        type: ListHandler
 
 # -----------------------------------------------------------------------------
 # Mannings
@@ -1460,7 +1686,10 @@ Mannings:
       values may be assigned by PFBFile or as Constant by geometry. These geometries must cover the entire upper
       surface of the computational domain.
     domains:
-      AnyString:
+      EnumDomain:
+        locations: 
+          - /GeomInput/{GeomInputItem}/GeomNames
+          - /GeomInput/{GeomInputItem}/GeomName
     handlers:
       ManningsGeomUpdater:
         type: ChildrenHandler
@@ -1496,6 +1725,8 @@ Mannings:
       __rst__:
         skip:
       __doc__: ''
+      __simput__:
+        type: VariableTable
       Value:
         help: >
           [Type: double] This key specifies the value assigned to all points in the named geometry, geometry_name, if the type was set
@@ -1551,3 +1782,4 @@ FBz:
       EnumDomain:
         enum_list:
           - PFBFile
+

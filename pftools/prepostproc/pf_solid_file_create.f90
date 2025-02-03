@@ -119,7 +119,7 @@ print*, 'points: ',jj - 1, num_points
 ! jj = triangle counter
 ! ii = patch counter; ii restarts w/ every face
 !
-! NOTE: the order in which the triangle points verticies are specified is critical -
+! NOTE: the order in which the triangle points vertices are specified is critical -
 ! they must be specified so the normal vector points out of the domain always (ie RHR
 !  counterclockwise for the top face, etc)
 !

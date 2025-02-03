@@ -8,91 +8,24 @@
 
 include $(PARFLOW_DIR)/config/Makefile.config
 
-default: check
-
-TESTS := \
-
-ifeq (${PARFLOW_HAVE_CLM},yes)
-ifeq (${PARFLOW_HAVE_HYPRE},yes)
-TESTS += clm.tcl \
-         clm_forc_veg.tcl \
-	 clm_varDZ.tcl \
-         clm_slope.tcl
-endif
-endif
-
-PARALLEL_TESTS =
-
-ifeq (${AMPS},mpi1)
-ifeq (${PARFLOW_HAVE_CLM},yes)
-ifeq (${PARFLOW_HAVE_HYPRE},yes)
-	PARALLEL_TESTS += \
-		clm.tcl \
-		clm.jac.tcl \
-        clm_forc_veg.tcl \
-		clm_varDZ.tcl \
-                clm_slope.tcl
-endif
-endif
-endif
-
-SAMRAI_TESTS :=
-ifeq (${PARFLOW_HAVE_CLM},yes)
-ifeq (${PARFLOW_HAVE_SAMRAI},yes)
-ifeq (${PARFLOW_HAVE_HYPRE},yes)
-SAMRAI_TESTS += \
-	clm_samrai.tcl
-endif
-endif
-endif
-
-check: check_samrai check_sequential check_parallel
-
-check_sequential:
-	@-for i in $(TESTS); \
-	do \
-	        make --no-print-directory testclean; \
-		echo "*****************************************************************************"; \
-		echo "Running $$i on 1 1 1"; \
-		tclsh $$i 1 1 1; \
-	done
-
-check_parallel:
-	@-for i in $(PARALLEL_TESTS); \
-	do \
-		for processor_topology in "1 2 1" "2 1 1" "2 2 1" "3 3 1" "1 4 1" "4 1 1"; \
-		do \
-		        make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done \
-	done
-
-
-check_samrai:
-	@-for i in $(SAMRAI_TESTS); \
-	do \
-		for processor_topology in "1 1 1 1" "2 1 1 1"; \
-		do \
-		        make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done \
-	done
-
-
+SUBDIRS = pfclm_sc clm-reuse
 
 clean: testclean
+	@-for i in $(SUBDIRS); \
+	do \
+	        (cd $$i; make --no-print-directory clean); \
+	done
 
 testclean:
+	@rm -f *.pfb*
+	@rm -f *.pfidb
+	@rm -f *.out.txt
 	@rm -f global_nt.scr
 	@rm -f clm_elog.txt.*
-	@rm -f washita.para.out.dat.*
 	@rm -f balance.txt.*
 	@rm -f alma_washita.output.txt.*
 	@rm -f washita.output.txt.*
+	@rm -f washita.para.out.dat.*
 	@rm -fr qflx_infl
 	@rm -f clm.out.pftcl
 	@rm -fr qflx_top_soil
@@ -139,3 +72,4 @@ testclean:
 	@rm -f clm_forc_veg_elog.txt.*	
 	@rm -fr clm-reuse-ts-* swe.out.csv
 	@rm -f *.pfmetadata
+

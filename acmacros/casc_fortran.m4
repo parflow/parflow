@@ -733,7 +733,7 @@ if test "x$casc_cv_fortran_implicit_none_fcflags" != xerror; then
 
     # There are problems with GCC and Intel not stopping on bad
     # command line flags so change order of options in hopes of
-    # stopping bad options from being seleted
+    # stopping bad options from being selected
     case $FC in 
         *ifort*)
 	    for acx_flag in -implicitnone -fimplicit-none -u -Wimplicit none; do

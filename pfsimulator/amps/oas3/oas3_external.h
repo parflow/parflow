@@ -1,9 +1,12 @@
+#if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
 extern int oas_pfl_vardef_mp_comp_id_;
 extern int oas_pfl_vardef_mp_ierror_;
 extern int oas_pfl_vardef_mp_localcomm_;
-//extern int __oas_pfl_vardef_MOD_comp_id;
-//extern int __oas_pfl_vardef_MOD_ierror;
-//extern int __oas_pfl_vardef_MOD_localcomm;
+#else
+extern int __oas_pfl_vardef_MOD_comp_id;
+extern int __oas_pfl_vardef_MOD_ierror;
+extern int __oas_pfl_vardef_MOD_localcomm;
+#endif
 
 #define oas_pfl_init oas_pfl_init_
 #define CALL_oas_pfl_init(arg1) oas_pfl_init(arg1);

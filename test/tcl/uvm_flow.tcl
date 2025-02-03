@@ -554,7 +554,7 @@ source pftest.tcl
 set passed 1
 
 # This test is not as stable as some of the others.
-# Differnce between optimized and debug version is this large.
+# Difference between optimized and debug version is this large.
 # The absolute error is very small however so use a test the 
 # checks not only the sig digits but also the absolute value of the difference.
 set sig_digits 5
@@ -575,15 +575,15 @@ foreach i "00000 00001" {
 	set passed 0
     }
 
-    if ![pftestFileWithAbs $runname.out.phasex.0.$i.pfb "Max difference in phase x for timestep $i" $sig_digits $abs_diff] {
+    if ![pftestFileWithAbs $runname.out.phasex.0.$i.pfb "Max difference in x-velocity at timestep $i" $sig_digits $abs_diff] {
 	set passed 0
     }
 
-    if ![pftestFileWithAbs $runname.out.phasey.0.$i.pfb "Max difference phase y for timestep $i" $sig_digits $abs_diff] {
+    if ![pftestFileWithAbs $runname.out.phasey.0.$i.pfb "Max difference in y-velocity at timestep $i" $sig_digits $abs_diff] {
 	set passed 0
     }
 
-    if ![pftestFileWithAbs $runname.out.phasez.0.$i.pfb "Max difference in phase z for timestep $i" $sig_digits $abs_diff] {
+    if ![pftestFileWithAbs $runname.out.phasez.0.$i.pfb "Max difference in z-velocity at timestep $i" $sig_digits $abs_diff] {
 	set passed 0
     }
 }

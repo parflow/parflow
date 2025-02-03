@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /*****************************************************************************
 *
 * Header file for parflow timing.
@@ -49,8 +49,9 @@
 #define CLMTimingIndex  7
 #define PFSOLReadTimingIndex  8
 #define ClusteringTimingIndex 9
+#define NetcdfTimingIndex 10
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  10
+#define VectorUpdateTimingIndex  11
 #endif
 
 
@@ -103,39 +104,39 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
 
 #define IncFLOPCount(inc) TimingFLOPCount += (FLOPType)inc
 #define StartTiming()     TimingTimeCount -= amps_Clock(); \
-  TimingCPUCount -= amps_CPUClock()
+        TimingCPUCount -= amps_CPUClock()
 #define StopTiming()      TimingTimeCount += amps_Clock(); \
-  TimingCPUCount += amps_CPUClock()
+        TimingCPUCount += amps_CPUClock()
 
 #ifdef TIMING_WITH_SYNC
-#define BeginTiming(i)                  \
-  {                                     \
-    StopTiming();                       \
-    TimingTime(i) -= TimingTimeCount;   \
-    TimingCPUTime(i) -= TimingCPUCount; \
-    TimingFLOPS(i) -= TimingFLOPCount;  \
-    amps_Sync(amps_CommWorld);          \
-    StartTiming();                      \
-  }
+#define BeginTiming(i)                        \
+        {                                     \
+          StopTiming();                       \
+          TimingTime(i) -= TimingTimeCount;   \
+          TimingCPUTime(i) -= TimingCPUCount; \
+          TimingFLOPS(i) -= TimingFLOPCount;  \
+          amps_Sync(amps_CommWorld);          \
+          StartTiming();                      \
+        }
 #else
-#define BeginTiming(i)                  \
-  {                                     \
-    StopTiming();                       \
-    TimingTime(i) -= TimingTimeCount;   \
-    TimingCPUTime(i) -= TimingCPUCount; \
-    TimingFLOPS(i) -= TimingFLOPCount;  \
-    StartTiming();                      \
-  }
+#define BeginTiming(i)                        \
+        {                                     \
+          StopTiming();                       \
+          TimingTime(i) -= TimingTimeCount;   \
+          TimingCPUTime(i) -= TimingCPUCount; \
+          TimingFLOPS(i) -= TimingFLOPCount;  \
+          StartTiming();                      \
+        }
 #endif
 
-#define EndTiming(i)                    \
-  {                                     \
-    StopTiming();                       \
-    TimingTime(i) += TimingTimeCount;   \
-    TimingCPUTime(i) += TimingCPUCount; \
-    TimingFLOPS(i) += TimingFLOPCount;  \
-    StartTiming();                      \
-  }
+#define EndTiming(i)                          \
+        {                                     \
+          StopTiming();                       \
+          TimingTime(i) += TimingTimeCount;   \
+          TimingCPUTime(i) += TimingCPUCount; \
+          TimingFLOPS(i) += TimingFLOPCount;  \
+          StartTiming();                      \
+        }
 
 #ifdef VECTOR_UPDATE_TIMING
 

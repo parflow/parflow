@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include <unistd.h>
 #include <string.h>
@@ -126,16 +126,30 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
     if (amps_Rank(comm))
     {
 #ifdef AMPS_SPLIT_FILE
-      file = fopen(temp_filename, type);
+      if ((file = fopen(temp_filename, type)) == NULL)
+      {
+        amps_Printf("AMPS Error: Can't open the file for: %s\n", temp_filename);
+        amps_Printf("            Common issue is incorrect name or file location\n");
+        amps_Printf("            Opening as 'split' file so a file should exist for each rank, be sure to distribute the file\n");
+        AMPS_ABORT("AMPS Error");
+      }
 #else
       start = size;
       amps_Send(comm, 0, invoice);
       amps_Recv(comm, 0, invoice);
 
+
       if (strchr(type, 'b'))
         file = fopen(filename, "r+b");
       else
         file = fopen(filename, "r+");
+
+      if (file == NULL)
+      {
+        amps_Printf("AMPS Error: Can't open the file: %s\n", filename);
+        amps_Printf("            Common issue is incorrect name or file location\n");
+        AMPS_ABORT("AMPS Error");
+      }
 
       fseek(file, start, SEEK_SET);
 #endif
@@ -151,16 +165,30 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
       /* Node 0 always starts at byte 0 */
 
 #ifdef AMPS_SPLIT_FILE
-      file = fopen(temp_filename, type);
+      if ((file = fopen(temp_filename, type)) == NULL)
+      {
+        amps_Printf("AMPS Error: Can't open the file for: %s\n", temp_filename);
+        amps_Printf("            Common issue is incorrect name or file location\n");
+        amps_Printf("            Opening as 'split' file so a file should exist for each rank, be sure to distribute the file\n");
+        AMPS_ABORT("AMPS Error");
+      }
 #else
-      file = fopen(filename, type);
+      if ((file = fopen(filename, type)) == NULL)
+      {
+        amps_Printf("AMPS Error: Can't open the file: %s\n", filename);
+        amps_Printf("            Common issue is incorrect name or file location\n");
+        AMPS_ABORT("AMPS Error");
+      }
+
       fseek(file, 0L, SEEK_SET);
 
       if ((dfile = fopen(dist_filename, "w")) == NULL)
       {
-        printf("AMPS Error: Can't open the distribution file %s\n",
-               dist_filename);
-        exit(1);
+        amps_Printf("AMPS Error: Can't open the distribution file %s\n",
+                    dist_filename);
+        amps_Printf("            Common issue is incorrect name or file location\n");
+        amps_Printf("            Common issue is not distributing the file before running\n");
+        AMPS_ABORT("AMPS Error");
       }
 
       total = start = size;
@@ -182,17 +210,35 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
   if (amps_Rank(comm))
   {
 #ifdef AMPS_SPLIT_FILE
-    file = fopen(temp_filename, type);
+    if ((file = fopen(temp_filename, type)) == NULL)
+    {
+      amps_Printf("AMPS Error: Can't open the file for: %s\n", temp_filename);
+      amps_Printf("            Common issue is incorrect name or file location\n");
+      amps_Printf("            Opening as 'split' file so a file should exist for each rank, be sure to distribute the file\n");
+      AMPS_ABORT("AMPS Error");
+    }
 #else
     amps_Recv(comm, 0, invoice);
-    file = fopen(filename, type);
+    if ((file = fopen(filename, type)) == NULL)
+    {
+      amps_Printf("AMPS Error: Can't open the file for: %s\n", filename);
+      amps_Printf("            Common issue is incorrect name or file location\n");
+      AMPS_ABORT("AMPS Error");
+    }
+
     fseek(file, start, SEEK_SET);
 #endif
   }
   else
   {
 #ifdef AMPS_SPLIT_FILE
-    file = fopen(temp_filename, type);
+    if ((file = fopen(temp_filename, type)) == NULL)
+    {
+      amps_Printf("AMPS Error: Can't open the file for: %s\n", temp_filename);
+      amps_Printf("            Common issue is incorrect name or file location\n");
+      amps_Printf("            Opening as 'split' file so a file should exist for each rank, be sure to distribute the file\n");
+      AMPS_ABORT("AMPS Error");
+    }
 #else
     /* Open the  dist file and send the size information to each node */
     strcpy(dist_filename, filename);
@@ -200,30 +246,37 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
 
     if ((file = fopen(dist_filename, "r")) == NULL)
     {
-      printf("AMPS Error: Can't open the distribution file %s for reading\n",
-             dist_filename);
+      amps_Printf("AMPS Error: Can't open the distribution file %s for reading\n",
+                  dist_filename);
+      amps_Printf("            Common issue is incorrect name or file location\n");
+      amps_Printf("            Common issue is not distributing the file before running\n");
       AMPS_ABORT("AMPS Error");
     }
 
-    if(fscanf(file, "%ld", &start) != 1)
+    if (fscanf(file, "%ld", &start) != 1)
     {
-      printf("AMPS Error: Can't read start in file %s\n", dist_filename);
+      amps_Printf("AMPS Error: Can't read start in file %s\n", dist_filename);
       AMPS_ABORT("AMPS Error");
     }
-    
+
     for (p = 1; p < amps_Size(comm); p++)
     {
-      if(fscanf(file, "%ld", &start) != 1)
+      if (fscanf(file, "%ld", &start) != 1)
       {
-	printf("AMPS Error: Can't read start in file %s\n", dist_filename);
-	AMPS_ABORT("AMPS Error");
+        printf("AMPS Error: Can't read start in file %s\n", dist_filename);
+        AMPS_ABORT("AMPS Error");
       }
-      
+
       amps_Send(comm, p, invoice);
     }
     fclose(file);
 
-    file = fopen(filename, type);
+    if ((file = fopen(filename, type)) == NULL)
+    {
+      amps_Printf("AMPS Error: Can't open the file for: %s\n", filename);
+      amps_Printf("            Common issue is incorrect name or file location\n");
+      AMPS_ABORT("AMPS Error");
+    }
     fseek(file, 0, SEEK_SET);
 #endif
   }

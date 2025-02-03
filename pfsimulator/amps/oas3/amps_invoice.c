@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include <string.h>
 #include <ctype.h>
@@ -74,7 +74,7 @@ int amps_FreeInvoice(amps_Invoice inv)
   /* Delete any storage associated with this invoice */
   amps_ClearInvoice(inv);
 
-  if (inv->mpi_type != MPI_DATATYPE_NULL)
+  if (inv->mpi_type != MPI_DATATYPE_NULL && inv->mpi_type != MPI_BYTE)
   {
     MPI_Type_free(&inv->mpi_type);
   }
@@ -444,7 +444,6 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
   int dim = 0;
   void *ptr_data;
   int ptr_data_type;
-  int ret;
   int type;
   int num = 0;
   amps_Invoice inv;
@@ -455,7 +454,6 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
   inv = NULL;
 
   fmt = (char*)fmt0;
-  ret = 0;
 
   for (;;)
   {
@@ -554,6 +552,10 @@ reswitch:
         while (isdigit(ch));
         len = n;
         goto reswitch;
+
+      case 'b':
+        type = AMPS_INVOICE_BYTE_CTYPE;
+        break;
 
       case 'c':
         type = AMPS_INVOICE_CHAR_CTYPE;
@@ -670,6 +672,3 @@ int amps_num_package_items(amps_Invoice inv)
 
   return num;
 }
-
-
-

@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -185,25 +185,25 @@ PFModule  *PFMGInitInstanceXtra(
     }
 
     HypreInitialize(pf_Bmat,
-		    &(instance_xtra -> hypre_grid),
-		    &(instance_xtra -> hypre_stencil),
-		    &(instance_xtra -> hypre_mat),
-		    &(instance_xtra -> hypre_b),
-		    &(instance_xtra -> hypre_x)
-		    );
+                    &(instance_xtra->hypre_grid),
+                    &(instance_xtra->hypre_stencil),
+                    &(instance_xtra->hypre_mat),
+                    &(instance_xtra->hypre_b),
+                    &(instance_xtra->hypre_x)
+                    );
 
     /* Copy the matrix entries */
     BeginTiming(public_xtra->time_index_copy_hypre);
 
     HypreAssembleMatrixAsElements(pf_Bmat,
-				  pf_Cmat,
-				  &(instance_xtra -> hypre_mat),
-				  problem_data);
-    
+                                  pf_Cmat,
+                                  &(instance_xtra->hypre_mat),
+                                  problem_data);
+
     EndTiming(public_xtra->time_index_copy_hypre);
 
     /* Set up the PFMG preconditioner */
-    HYPRE_StructPFMGCreate(MPI_COMM_WORLD,
+    HYPRE_StructPFMGCreate(amps_CommWorld,
                            &(instance_xtra->hypre_pfmg_data));
 
     HYPRE_StructPFMGSetTol(instance_xtra->hypre_pfmg_data, 1.0e-30);
@@ -279,10 +279,8 @@ PFModule  *PFMGNewPublicXtra(char *name)
   char key[IDB_MAX_KEY_LEN];
   char          *smoother_name;
   NameArray smoother_switch_na;
-  int smoother;
   char          *raptype_name;
   NameArray raptype_switch_na;
-  int raptype;
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -300,35 +298,16 @@ PFModule  *PFMGNewPublicXtra(char *name)
   smoother_switch_na = NA_NewNameArray("Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
   sprintf(key, "%s.Smoother", name);
   smoother_name = GetStringDefault(key, "RBGaussSeidelNonSymmetric");
-  smoother = NA_NameToIndex(smoother_switch_na, smoother_name);
-  if (smoother >= 0)
-  {
-    public_xtra->smoother = NA_NameToIndex(smoother_switch_na,
-                                           smoother_name);
-  }
-  else
-  {
-    InputError("Error: Invalid value <%s> for key <%s>.\n",
-               smoother_name, key);
-  }
+  public_xtra->smoother = NA_NameToIndexExitOnError(smoother_switch_na, smoother_name, key);
   NA_FreeNameArray(smoother_switch_na);
 
   raptype_switch_na = NA_NewNameArray("Galerkin NonGalerkin");
   sprintf(key, "%s.RAPType", name);
   raptype_name = GetStringDefault(key, "NonGalerkin");
-  raptype = NA_NameToIndex(raptype_switch_na, raptype_name);
-  if (raptype >= 0)
-  {
-    public_xtra->raptype = raptype;
-  }
-  else
-  {
-    InputError("Error: Invalid value <%s> for key <%s>.\n",
-               raptype_name, key);
-  }
+  public_xtra->raptype = NA_NameToIndexExitOnError(raptype_switch_na, raptype_name, key);
   NA_FreeNameArray(raptype_switch_na);
 
-  if (raptype == 0 && smoother > 1)
+  if (public_xtra->raptype == 0 && public_xtra->smoother > 1)
   {
     InputError("Error: Galerkin RAPType is not compatible with Smoother <%s>.\n",
                smoother_name, key);

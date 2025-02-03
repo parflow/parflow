@@ -6,7 +6,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
                         htvp,       sfacx,      dqgmax,         &
                         emv,        emg,        dlrad,          &
                         ulrad,      cgrnds,     cgrndl,         &
-                        cgrnd,      temp_alpha,      clm)
+                        cgrnd,      soil_beta,      clm)
 
 !=========================================================================
 !
@@ -85,12 +85,12 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        dqgmax,            & ! max of d(qg)/d(theta)
        emv,               & ! ground emissivity
        emg,               &  ! vegetation emissivity
-       temp_alpha            ! beta-type formulation for soil resistance / bare soil under canopy evap
+       soil_beta            ! beta-type formulation for soil resistance / bare soil under canopy evap
 
   real(r8), intent(inout) :: &
        cgrnd,             & ! deriv. of soil energy flux wrt to soil temp [w/m2/k]
-       cgrndl,            & ! deriv, of soil sensible heat flux wrt soil temp [w/m2/k]
-       cgrnds               ! deriv of soil latent heat flux wrt soil temp [w/m**2/k]
+       cgrndl,            & ! deriv of soil latent heat flux wrt soil temp [w/m**2/k]  (RMM fixed)
+       cgrnds               ! deriv, of soil sensible heat flux wrt soil temp [w/m2/k]
 
   real(r8), intent(out) ::   &
        dlrad,             & ! downward longwave radiation blow the canopy [W/m2]
@@ -107,7 +107,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        dthv,              & ! diff of vir. poten. temp. between ref. height and surface
        dqh,               & ! diff of humidity between ref. height and surface
        obu,               & ! Monin-Obukhov length (m)
-       um,                & ! wind speed including the stablity effect [m/s]
+       um,                & ! wind speed including the stability effect [m/s]
        ur,                & ! wind speed at reference height [m/s]
        uaf,               & ! velocity of air within foliage [m/s]
        temp1,             & ! relation for potential temperature profile
@@ -148,7 +148,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        deldT,             & ! derivative of "el" on "t_veg" [pa/K]
        qsatl,             & ! leaf specific humidity [kg/kg]
        qsatldT,           & ! derivative of "qsatl" on "t_veg"
-       air,bir,cir,       & ! atmos. radiation temporay set
+       air,bir,cir,       & ! atmos. radiation temporary set
        dc1,dc2,           & ! derivative of energy flux [W/m2/K]
        w, csoilcn           ! weight function and revised csoilc - declare  @RMM
 
@@ -497,8 +497,8 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
   clm%taux  = clm%taux - clm%frac_veg_nosno*clm%forc_rho*clm%forc_u/ram(1)
   clm%tauy  = clm%tauy - clm%frac_veg_nosno*clm%forc_rho*clm%forc_v/ram(1)
   clm%eflx_sh_grnd = clm%eflx_sh_grnd + cpair*clm%forc_rho*wtg*delt
-  clm%qflx_evap_soi = clm%qflx_evap_soi +   temp_alpha*clm%forc_rho*wtgq*delq
-!!print*, 'temp_alpha:',temp_alpha
+  clm%qflx_evap_soi = clm%qflx_evap_soi +   soil_beta*clm%forc_rho*wtgq*delq
+!!print*, 'soil_beta leaftem:',soil_beta
 ! 2 m height air temperature
 
   clm%t_ref2m   = clm%t_ref2m + clm%frac_veg_nosno*(taf + temp1*dth * &
@@ -521,9 +521,10 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        *(tlbef + 4.*clm%dt_veg) + emg *(1.-emv) *sb * tg**4)
 
 ! Derivative of soil energy flux with respect to soil temperature (cgrnd) 
-
+! apply soil beta function to ground latent heat flux 
+!
   cgrnds = cgrnds + cpair*clm%forc_rho*wtg*wtal
-  cgrndl = cgrndl + clm%forc_rho*wtgq*wtalq*dqgdT
+  cgrndl = cgrndl + (clm%forc_rho*wtgq*wtalq*dqgdT)*soil_beta
   cgrnd  = cgrnds + cgrndl*htvp
 
 ! Update dew accumulation (kg/m2) 

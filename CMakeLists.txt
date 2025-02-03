@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.14)
 
 project (PARFLOW LANGUAGES C Fortran CXX)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
 #-----------------------------------------------------------------------------
 # Set standard compiler flagsx
@@ -31,37 +31,78 @@ foreach (DEBUG_FLAG "-ggdb" "-g3")
 endforeach ()
 
 #-----------------------------------------------------------------------------
+# The ParFlow C library source will be built as C++ if this flag is set.
+# ParFlow is moving to using C++; this flag is a first step towards that goal.
+# Does not currently change pftools build.
+#-----------------------------------------------------------------------------
+
+set(PARFLOW_BUILD_WITH_CPP FALSE CACHE STRING "Build ParFlow using the C++ compiler.  This flag is principlly for developers.")
+
+#-----------------------------------------------------------------------------
 # Set accelerator backend
 #-----------------------------------------------------------------------------
 set(PARFLOW_ACCELERATOR_BACKEND "none" CACHE STRING "Set accelerator backend")
-set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda omp)
+set_property(CACHE PARFLOW_ACCELERATOR_BACKEND PROPERTY STRINGS none cuda kokkos omp)
 
 if(PARFLOW_ACCELERATOR_BACKEND STREQUAL "none")
-  set(PARFLOW_ACC_BACKEND 0)
 elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
-  # Initialize CUDA
-  include(CheckLanguage)
-  check_language(CUDA)
-  if(CMAKE_CUDA_COMPILER)
-    enable_language(CUDA)
-    set(CMAKE_CUDA_STANDARD 14)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
-    if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
-      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_80,code=sm_80")
-    endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
-    set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
-    set(CMAKE_CUDA_FLAGS_RELEASE "-Xptxas ${CMAKE_CUDA_FLAGS_RELEASE}")
-    set(CMAKE_CUDA_HOST_COMPILER mpicxx)
-    message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
-    set(PARFLOW_HAVE_CUDA "yes")
-    set(PARFLOW_ACC_BACKEND 1)
-  else(CMAKE_CUDA_COMPILER)
-    message(FATAL_ERROR "ERROR: CUDA installation not found")
-  endif(CMAKE_CUDA_COMPILER)
+  set(PARFLOW_HAVE_CUDA "yes")
+  if(NOT DEFINED KOKKOS_ROOT)
+    # Initialize CUDA
+    include(CheckLanguage)
+    check_language(CUDA)
+    if(CMAKE_CUDA_COMPILER)
+      enable_language(CUDA)
+      set(CMAKE_CUDA_STANDARD 14)
+      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
+      if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70")
+	if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+          set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_80,code=sm_80")
+	endif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER 11)
+      endif(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+      set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
+      set(CMAKE_CUDA_HOST_COMPILER mpicxx)
+      message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
+    else(CMAKE_CUDA_COMPILER)
+      message(FATAL_ERROR "ERROR: CUDA installation not found")
+    endif(CMAKE_CUDA_COMPILER)
+  else(NOT DEFINED KOKKOS_ROOT)
+    # Allow mixed use of CUDA and Kokkos for development purposes
+    find_package(Kokkos REQUIRED HINTS ${KOKKOS_ROOT})
+    set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
+    set(PARFLOW_HAVE_KOKKOS "yes")
+  endif(NOT DEFINED KOKKOS_ROOT)
+elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "kokkos")
+  if(DEFINED KOKKOS_ROOT)
+    find_package(Kokkos REQUIRED HINTS ${KOKKOS_ROOT})
+    set(KOKKOS_INCLUDE "${KOKKOS_ROOT}/include")
+    set(PARFLOW_HAVE_KOKKOS "yes")
+  else(DEFINED KOKKOS_ROOT)
+    message(FATAL_ERROR "ERROR: KOKKOS_ROOT not specified with PARFLOW_ACCELERATOR_BACKEND=kokkos")
+  endif(DEFINED KOKKOS_ROOT)
+elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
+  message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
+  # Enable C and CXX -fopenmp flag, enable ParFlow defines.
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+  set(PARFLOW_HAVE_OMP "yes")
+else()
+  message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
+endif()
 
-  # Include RapidsAI Memory Manager (RMM) for pool allocation
-  # @MCB 04/16/2020: This should probably be moved outside of the CUDA block at some point
-  #   so other accelerators have the option to use it as well.
+# Include Umpire or RMM memory manager for pool allocation
+if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
+  if (DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
+    message(FATAL_ERROR "ERROR: Cannot have both Umpire and RMM enabled at the same time.")
+  endif(DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
+  
+  if(DEFINED umpire_ROOT)
+    find_package(umpire REQUIRED)
+    set(PARFLOW_HAVE_UMPIRE "yes")
+    message(STATUS "ACCELERATOR: Compiling with CUDA and Umpire")
+  endif(DEFINED umpire_ROOT)
+  
   if(DEFINED RMM_ROOT)
     find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
     find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
@@ -78,20 +119,19 @@ elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "cuda")
     else(RMM_INCLUDE AND RMM_LIBRARY)
       message(FATAL_ERROR "ERROR: RMM installation not found")
     endif(RMM_INCLUDE AND RMM_LIBRARY)
-    message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
+    if(${PARFLOW_HAVE_CUDA}) 
+      message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
+    else(${PARFLOW_HAVE_CUDA}) 
+      message(STATUS "ACCELERATOR: Compiling with Kokkos and RMM")
+    endif(${PARFLOW_HAVE_CUDA}) 
   else(DEFINED RMM_ROOT)
-    message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
+    if(${PARFLOW_HAVE_CUDA}) 
+      message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
+    else(${PARFLOW_HAVE_CUDA}) 
+      message(STATUS "ACCELERATOR: Compiling with Kokkos (RMM not used)")
+    endif(${PARFLOW_HAVE_CUDA}) 
   endif(DEFINED RMM_ROOT)
-elseif(PARFLOW_ACCELERATOR_BACKEND STREQUAL "omp")
-  message(STATUS "ACCELERATOR: Compiling ParFlow with backend accelerator OpenMP")
-  # Enable C and CXX -fopenmp flag, enable ParFlow defines.
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-  set(PARFLOW_HAVE_OMP "yes")
-  set(PARFLOW_ACC_BACKEND 2)
-else()
-  message(FATAL_ERROR "ERROR: Unknown backend type! PARFLOW_ACCELERATOR_BACKEND=${PARFLOW_ACCELERATOR_BACKEND} does not exist!")
-endif()
+endif((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
 
 #-----------------------------------------------------------------------------
 # Version number
@@ -109,8 +149,13 @@ if (NOT PARFLOW_VERSION)
   file (STRINGS "VERSION" PARFLOW_VERSION)
 endif ()
 
-message("Configuring version : ${PARFLOW_VERSION}")
+message(STATUS "Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
+
+#-----------------------------------------------------------------------------
+# System information
+#-----------------------------------------------------------------------------
+cmake_host_system_information(RESULT HOSTNAME QUERY HOSTNAME)
 
 #-----------------------------------------------------------------------------
 # General project wide configuration
@@ -156,19 +201,31 @@ endif((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
 option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "TRUE")
 
 if (PARFLOW_AMPS_SEQUENTIAL_IO)
-  message("Using single file AMPS I/O for PFB output")
+  message(STATUS "Using single file AMPS I/O for PFB output")
 else ()
-  message("Using multiple file AMPS I/O for PFB output")
+  message(STATUS "Using multiple file AMPS I/O for PFB output")
   set(AMPS_SPLIT_FILE "yes")
 endif ()
 
-# OAS3
-option(PARFLOW_HAVE_OAS3 "Build with OAS3" "no")
-
-if (PARFLOW_HAVE_OAS3)
-  set (PARFLOW_HAVE_OAS3 "yes")
-  set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
+if (NOT(PARFLOW_AMPS_SEQUENTIAL_IO) AND PARFLOW_ENABLE_PYTHON)
+  message(FATAL_ERROR "ERROR: Python does not support the multiple file AMPS I/O model for PFB output")
 endif ()
+
+# OAS3
+if (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
+  find_package(OASIS)
+  if (OASIS_FOUND)
+    find_package(NetCDF-Fortran)
+    if (NetCDF-Fortran_FOUND)
+      set (PARFLOW_HAVE_OAS3 "yes")
+      set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
+    else (NetCDF-Fortran_FOUND)
+      message(FATAL_ERROR "ERROR: NetCDF-Fortran is required when compiling with PARFLOW_AMPS_LAYER=oas3 (check NETCDF_Fortran_ROOT variable)")
+    endif (NetCDF-Fortran_FOUND)
+  else (OASIS_FOUND)
+    message(FATAL_ERROR "ERROR: OASIS is required when compiling with PARFLOW_AMPS_LAYER=oas3 (check OAS3_ROOT variable)")
+  endif (OASIS_FOUND)
+endif (${PARFLOW_AMPS_LAYER} STREQUAL "oas3")
 
 set (PARFLOW_AMPS_LAYER_REQUIRE_MPI cuda mpi1 smpi oas3)
 set (PARFLOW_TEST_PARALLEL cuda mpi1 smpi)
@@ -182,6 +239,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   if (${MPI_C_FOUND})
     set(PARFLOW_HAVE_MPI "yes")
     set(HAVE_MPI ${PARFLOW_HAVE_MPI})
+    message(STATUS "Found MPIEXEC: ${MPIEXEC}")    
   endif (${MPI_C_FOUND})
 
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
@@ -214,11 +272,11 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 option(PARFLOW_ENABLE_NETCDF "Build with NetCDF" "OFF")
 if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
   find_package (NetCDF)
-  if (${NETCDF_FOUND})
+  if (${NetCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
     find_package(CURL)
-  endif (${NETCDF_FOUND})
+  endif (${NetCDF_FOUND})
 endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
 
 #-----------------------------------------------------------------------------
@@ -457,19 +515,34 @@ if ( ${PARFLOW_HAVE_MALLOC_H} )
 endif ( ${PARFLOW_HAVE_MALLOC_H} )
 
 # Check for mallinfo
+check_symbol_exists(mallinfo2 malloc.h PARFLOW_HAVE_MALLINFO2)
 check_symbol_exists(mallinfo malloc.h PARFLOW_HAVE_MALLINFO)
-if ( ${PARFLOW_HAVE_MALLINFO} )
-  set(HAVE_MALLINFO ${PARFLOW_HAVE_MALLINFO})
-endif ( ${PARFLOW_HAVE_MALLINFO} )
 
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
 if ( ${PARFLOW_HAVE_CLM} )
-  # Make true value match autoconf value; for some backwards compatiblity
+  # Make true value match autoconf value; for some backwards compatibility
   set(PARFLOW_HAVE_CLM "yes")
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
+
+  if( ${PARFLOW_HAVE_CLM} )
+    add_subdirectory (pfsimulator/clm)
+  endif( ${PARFLOW_HAVE_CLM} )
 endif ( ${PARFLOW_HAVE_CLM} )
 
+option(PARFLOW_HAVE_ECLM "Compile with eCLM (experimental)" "OFF")
+
+if ( ${PARFLOW_HAVE_ECLM} )
+  if (HAVE_CLM)
+    message(FATAL_ERROR "ERROR: PARFLOW_HAVE_CLM and PARFLOW_HAVE_ECLM cannot be enabled at the same time.")
+  endif (HAVE_CLM)
+  if (NOT HAVE_OAS3)
+    message(FATAL_ERROR "ERROR: OASIS is required when compiling with PARFLOW_HAVE_ECLM=ON (check OAS3_ROOT variable)")
+  else (HAVE_OAS3)
+    message(WARNING "Enabling components for ParFlow-eCLM coupled model (experimental feature!)")
+    set (HAVE_ECLM ${PARFLOW_HAVE_ECLM})
+  endif (HAVE_OAS3)
+endif ( ${PARFLOW_HAVE_ECLM} )
 #
 # Parflow specific configuration options
 #
@@ -498,6 +571,44 @@ include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/common")
 include_directories ("${PROJECT_BINARY_DIR}/include")
 
 #-----------------------------------------------------------------------------
+# Building Python key library and documentation if required
+#-----------------------------------------------------------------------------
+
+option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
+if (PARFLOW_ENABLE_PYTHON)
+  find_package(Python3 3.6 QUIET REQUIRED COMPONENTS Interpreter)
+  set(PARFLOW_PYTHON_DEPENDS)
+  set(PARFLOW_HAVE_PYTHON)
+  set(PARFLOW_PYTHON "${CMAKE_INSTALL_PREFIX}/py-env/bin/python3")
+  message(STATUS "Found Python: ${Python3_EXECUTABLE}")
+  add_custom_command(
+    WORKING_DIRECTORY
+      "${CMAKE_CURRENT_BINARY_DIR}"
+    OUTPUT
+      "${PARFLOW_PYTHON}"
+    COMMAND
+      ${Python3_EXECUTABLE} -m venv ${CMAKE_INSTALL_PREFIX}/py-env
+    COMMAND
+      "${CMAKE_INSTALL_PREFIX}//py-env/bin/pip3" install --upgrade pip wheel setuptools
+    COMMAND
+      "${CMAKE_INSTALL_PREFIX}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_all.txt"
+    COMMAND
+      "${CMAKE_INSTALL_PREFIX}//py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/user_manual/requirements.txt"
+    COMMAND
+      "${CMAKE_INSTALL_PREFIX}//py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_dev.txt"
+    COMMENT
+      "Generate ParFlow virtual environment"
+    VERBATIM
+    )
+    add_custom_target(
+      BuildVirtualEnv
+      DEPENDS
+        "${PARFLOW_PYTHON}"
+    )
+    set(PARFLOW_PYTHON_DEPENDS BuildVirtualEnv)
+endif ()
+
+#-----------------------------------------------------------------------------
 # Setup configure.h file for accessing configure options
 # -----------------------------------------------------------------------------
 configure_file (cmake/parflow_config.h.in include/parflow_config.h)
@@ -506,6 +617,7 @@ configure_file (cmake/pfversion.h.in include/pfversion.h)
 
 configure_file (cmake/Makefile.config.in config/Makefile.config)
 configure_file (cmake/pf-cmake-env.sh.in config/pf-cmake-env.sh)
+configure_file (cmake/parflow.settings.in config/parflow.settings)
 
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)
@@ -527,11 +639,23 @@ if ( ${PARFLOW_ENABLE_SIMULATOR} )
   add_subdirectory (pfsimulator)
   add_subdirectory (test)
   add_subdirectory (examples)
+
+  #-----------------------------------------------------------------------------
+  # Install general helper scripts
+  #-----------------------------------------------------------------------------
+  install(PROGRAMS bin/pfrun DESTINATION bin)
 endif ()
 
 option(PARFLOW_ENABLE_TOOLS "Enable building of the Parflow tools" "True")
 if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
+endif ()
+
+# Optionally build the NUOPC cap and ESMX
+option(PARFLOW_ENABLE_NUOPC "Enable building of the Parflow nuopc" "False")
+option(PARFLOW_ENABLE_ESMX "Enable building of ESMX" "False")
+if ( ${PARFLOW_ENABLE_NUOPC} OR ${PARFLOW_ENABLE_ESMX} )
+  add_subdirectory (pfnuopc)
 endif ()
 
 #-----------------------------------------------------------------------------
@@ -544,9 +668,7 @@ if (PARFLOW_ENABLE_LATEX)
   add_subdirectory(docs/manuals)
 endif()
 
-install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
-# Test script for docker builds
-install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
+install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/config/ DESTINATION config)
 
 #-----------------------------------------------------------------------------
 # Doxygen
@@ -559,57 +681,22 @@ if ( ${PARFLOW_ENABLE_DOXYGEN} )
     set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/docs/doxygen)
     set(DOXYGEN_IMAGE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/docs/doxygen/images)
 
-    message("Doxygen build started")
+    message(STATUS "Doxygen build started")
 
     doxygen_add_docs(doxygen
       COMMENT "Generating API documentation with Doxygen"
       ${PROJECT_SOURCE_DIR})
 
   else (DOXYGEN_FOUND)
-    message("Doxygen need to be installed to generate the doxygen documentation")
+    message(WARNING "Doxygens need to be installed to generate the doxygen documentation")
   endif (DOXYGEN_FOUND)
 endif()
 
 #-----------------------------------------------------------------------------
-# Building Python key library and documentation if required
+# Python directories
 #-----------------------------------------------------------------------------
 
-option(PARFLOW_ENABLE_PYTHON "Build python module for running ParFlow" "FALSE")
 if (PARFLOW_ENABLE_PYTHON)
-  find_package(Python3 3.3 QUIET REQUIRED COMPONENTS Interpreter)
-  set(PARFLOW_PYTHON ${Python3_EXECUTABLE})
-  set(PARFLOW_PYTHON_DEPENDS)
-
-  option(PARFLOW_PYTHON_VIRTUAL_ENV "Use local Python virtual environment" "FALSE")
-  if (PARFLOW_PYTHON_VIRTUAL_ENV)
-    set(PARFLOW_PYTHON "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/python3")
-    add_custom_command(
-      WORKING_DIRECTORY
-        "${CMAKE_CURRENT_BINARY_DIR}"
-      OUTPUT
-        "${PARFLOW_PYTHON}"
-      COMMAND
-        ${Python3_EXECUTABLE} -m venv py-env
-      COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install --upgrade pip wheel setuptools
-      COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_all.txt"
-      COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/docs/pf-keys/requirements.txt"
-      COMMAND
-        "${CMAKE_CURRENT_BINARY_DIR}/py-env/bin/pip3" install -r "${CMAKE_CURRENT_SOURCE_DIR}/pftools/python/requirements_dev.txt"
-      COMMENT
-        "Generate virtual environment for building Python components"
-      VERBATIM
-    )
-    add_custom_target(
-      BuildVirtualEnv
-      DEPENDS
-        "${PARFLOW_PYTHON}"
-    )
-    set(PARFLOW_PYTHON_DEPENDS BuildVirtualEnv)
-  endif()
-
   add_subdirectory(pf-keys)
   add_subdirectory(pftools/python)
   add_subdirectory(test/python)
@@ -617,7 +704,7 @@ if (PARFLOW_ENABLE_PYTHON)
   # Only enable Key Documentation if we enable Python
   option(PARFLOW_ENABLE_KEYS_DOC "Build key documentation for ParFlow" "FALSE")
   if (PARFLOW_ENABLE_KEYS_DOC)
-    add_subdirectory(docs/pf-keys)
+    add_subdirectory(docs/user_manual)
   endif()
 endif()
 

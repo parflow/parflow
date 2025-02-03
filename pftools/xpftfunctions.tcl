@@ -1,6 +1,6 @@
 #BHEADER**********************************************************************
 #
-#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  Copyright (c) 1995-2024, Lawrence Livermore National Security,
 #  LLC. Produced at the Lawrence Livermore National Laboratory. Written
 #  by the Parflow Team (see the CONTRIBUTORS file)
 #  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
@@ -339,7 +339,7 @@ proc XParflow::Diff {} {
    set inputEntries  {{{Set A}            META_E_LIST_BOX}
                       {{Set B}            META_E_LIST_BOX}
                       {{# Differing SD's} META_ENTRY     }
-                      {{Absolue Zero}     META_ENTRY     }} 
+                      {{Absolute Zero}    META_ENTRY     }}
 
    set outputEntries {{{Min # Sig. Digs.} NO_RADIO_BUTTON}
                       {{At}               NO_RADIO_BUTTON}
@@ -362,7 +362,7 @@ proc XParflow::Diff_Compute {} {
 
 
     if {$dataSetA == "" || $dataSetB == ""} {
-	ErrorDialog "You must select two data sets before the differece can be computed."
+	ErrorDialog "You must select two data sets before the difference can be computed."
 	return
     }
 
@@ -371,7 +371,7 @@ proc XParflow::Diff_Compute {} {
     }
     
     if { [scan "$sigDigs" "%d%s" x junk ] != 1 || $sigDigs < 0 } {
-	ErrorDialog "You must enter a positive integer for the minimum number of differing significant digits the absolute zero before the differece can be computed."
+	ErrorDialog "You must enter a positive integer for the minimum number of differing significant digits the absolute zero before the difference can be computed."
 	return
 
     }
@@ -381,7 +381,7 @@ proc XParflow::Diff_Compute {} {
 	set absZero 0.0
     }
     if { [scan "$absZero" "%lf%s" x junk] != 1 || $absZero < 0 } {
-	ErrorDialog "You must enter a positive value for the absolute zero before the differece can be computed."
+	ErrorDialog "You must enter a positive value for the absolute zero before the difference can be computed."
 	return
     }
 

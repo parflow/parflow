@@ -19,7 +19,7 @@ def compare_files(name):
     print(" Analyze {}".format(name))
     print("")
 
-    files = sorted(glob.glob(name + '.h5*'))
+    files = sorted(glob.glob(name + '*.h5*'))
     
     print(files)
 
@@ -155,12 +155,12 @@ def compare_files(name):
 
     if (with_tolerance <= 0):
         
-        files = sorted(glob.glob(name + '.pfb*'))
+        files = sorted(glob.glob(name + '.*pfb*'))
         print(files)
         pfb_file = open(files[0], mode='rb')
         
     else:
-        pfb_file = open(name + ".pfsb", mode='rb')
+        pfb_file = open(name + ".*pfsb", mode='rb')
         
     content = pfb_file.read()
 

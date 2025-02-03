@@ -1,30 +1,30 @@
-/*BHEADER*********************************************************************
- *
- *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
- *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
- *  by the Parflow Team (see the CONTRIBUTORS file)
- *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
- *
- *  This file is part of Parflow. For details, see
- *  http://www.llnl.gov/casc/parflow
- *
- *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
- *  for the GNU Lesser General Public License.
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License (as published
- *  by the Free Software Foundation) version 2.1 dated February 1999.
- *
- *  This program is distributed in the hope that it will be useful, but
- *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
- *  and conditions of the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- *  USA
- **********************************************************************EHEADER*/
+/*BHEADER**********************************************************************
+*
+*  Copyright (c) 1995-2024, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
+**********************************************************************EHEADER*/
 /* Code for reading/writing XDR format on non-standard systems */
 
 /* create a dummy function call to prevent warnings when compiling
@@ -57,7 +57,7 @@ static int one = 1;
 //   double *data;
 //   double number;
 //
-//   /* write out each double with bytes swaped                               */
+//   /* write out each double with bytes swapped                               */
 //   for(i=len, data=ptr; i--;)
 //   {
 //      CRAY2IEG(&tools_Double, &one, &number, &zero, data);
@@ -75,7 +75,7 @@ void tools_WriteInt(
   int *data;
   int number;
 
-  /* write out each double with bytes swaped                               */
+  /* write out each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     CRAY2IEG(&tools_Integer, &one, &number, &zero, data);
@@ -141,7 +141,7 @@ void tools_WriteFloat(
     char buf[4];
   } a, b;
 
-  /* write out each double with bytes swaped                               */
+  /* write out each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
@@ -167,7 +167,7 @@ void tools_WriteDouble(
     char buf[8];
   } a, b;
 
-  /* write out each double with bytes swaped                               */
+  /* write out each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
@@ -206,7 +206,7 @@ void tools_WriteInt(
   } a, b;
 
 
-  /* write out int with bytes swaped                                       */
+  /* write out int with bytes swapped                                       */
   for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
@@ -232,7 +232,7 @@ void tools_ReadDouble(
     char buf[8];
   } a, b;
 
-  /* read in each double with bytes swaped                               */
+  /* read in each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     fread(&a.number, sizeof(double), 1, (FILE*)file);
@@ -262,7 +262,7 @@ void tools_ReadInt(
   } a, b;
 
 
-  /* write out int with bytes swaped                                       */
+  /* write out int with bytes swapped                                       */
   for (i = len, data = ptr; i--;)
   {
     fread(&a.number, sizeof(int), 1, (FILE*)file);
@@ -291,7 +291,7 @@ int len;
   int *data;
   short number;
 
-  /* write out int with bytes swaped                                       */
+  /* write out int with bytes swapped                                       */
   for (i = len, data = ptr; i--;)
   {
     number = *data++;
