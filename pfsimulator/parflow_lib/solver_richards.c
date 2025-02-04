@@ -1726,7 +1726,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   int clm_skip = public_xtra->clm_reuse_count;  // NBE:defaults to 1
   int clm_write_logs = public_xtra->clm_write_logs;     // NBE: defaults to 1, disables log file writing if 0
   int clm_last_rst = public_xtra->clm_last_rst; // Reuse of the RST file
-  int clm_water_stress_type = public_xtra -> clm_water_stress_type;      // Water stress RZ
+  int clm_water_stress_type = public_xtra->clm_water_stress_type;        // Water stress RZ
   int clm_daily_rst = public_xtra->clm_daily_rst;       // Daily or hourly RST files, defaults to daily
 
   int fstep = INT_MIN;
@@ -2578,7 +2578,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_irr_thresholdtype, soi_z,
                          clm_next, clm_write_logs, clm_last_rst,
                          clm_daily_rst,
-			 clm_water_stress_type,
+                         clm_water_stress_type,
                          public_xtra->clm_nz,
                          public_xtra->clm_nz);
 
@@ -5126,8 +5126,8 @@ SolverRichardsNewPublicXtra(char *name)
 
   /* @RMM - CLM water tress dist over RZ*/
   sprintf(key, "%s.CLM.RZWaterStress", name);
-  public_xtra -> clm_water_stress_type = GetIntDefault(key, 0);
-    
+  public_xtra->clm_water_stress_type = GetIntDefault(key, 0);
+
   /* NBE - Option to write daily or hourly outputs from CLM */
   sprintf(key, "%s.CLM.DailyRST", name);
   switch_name = GetStringDefault(key, "True");
