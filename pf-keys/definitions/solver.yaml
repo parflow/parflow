@@ -1802,6 +1802,14 @@ Solver:
     domains:
       BoolDomain:
 
+  PrintBottom:
+    help: >
+      [Type: boolean/string] Key used to control writing of one PFB file for the bottom of the domain.  'BottomZIndex' is a NX * NY
+      file with the Z index of the bottom of the domain. 
+    default: False
+    domains:
+      BoolDomain:
+
   # missing from manual
   PrintSlopes:
     help: >
@@ -2442,6 +2450,15 @@ Solver:
       [Type: boolean/string] Key used to control writing of two Silo files for the top of the domain.  'TopZIndex' is a NX * NY
       file with the Z index of the top of the domain. 'TopPatch' is the Patch index for the top of the domain.  A value of -1 indicates an
       (i,j) column does not intersect the domain. format.
+    default: False
+    domains:
+      BoolDomain:
+      RequiresModule: SILO
+
+  WriteSiloBottom:
+    help: >
+      [Type: boolean/string] Key used to control writing of one Silo file for the bottom of the domain.  'BottomZIndex' is a NX * NY
+      file with the Z index of the bottom of the domain. 
     default: False
     domains:
       BoolDomain:

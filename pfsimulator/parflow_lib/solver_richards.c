@@ -81,6 +81,7 @@ typedef struct {
   int print_mannings;           /* print mannings? */
   int print_specific_storage;   /* print spec storage? */
   int print_top;                /* print top? */
+  int print_bottom;             /* print bottom? */
   int print_velocities;         /* print velocities? */
   int print_satur;              /* print saturations? */
   int print_mask;               /* print mask? */
@@ -104,6 +105,7 @@ typedef struct {
   int write_silo_mannings;      /* write mannings? */
   int write_silo_specific_storage;      /* write specific storage? */
   int write_silo_top;           /* write top? */
+  int write_silo_bottom;        /* write bottom? */
   int write_silo_overland_sum;  /* write sum of overland outflow? */
   int write_silo_overland_bc_flux;      /* write overland outflow boundary condition flux? */
   int write_silo_dzmult;        /* write dz multiplier */
@@ -760,6 +762,12 @@ SetupRichards(PFModule * this_module)
     WritePFBinary(file_prefix, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data));
   }
 
+  if (public_xtra->print_bottom)
+  {
+    strcpy(file_postfix, "bottom_zindex");
+    WritePFBinary(file_prefix, file_postfix, ProblemDataIndexOfDomainBottom(problem_data));
+  }
+
   if (public_xtra->write_silo_top)
   {
     strcpy(file_postfix, "");
@@ -769,6 +777,14 @@ SetupRichards(PFModule * this_module)
     strcpy(file_type, "top_patch");
     WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPatchIndexOfDomainTop(problem_data),
               t, 0, "TopPatch");
+  }
+
+  if (public_xtra->write_silo_bottom)
+  {
+    strcpy(file_postfix, "");
+    strcpy(file_type, "bottom_zindex");
+    WriteSilo(file_prefix, file_type, file_postfix, ProblemDataIndexOfDomainBottom(problem_data),
+              t, 0, "BottomZIndex");
   }
 
   if (!amps_Rank(amps_CommWorld))
@@ -5516,6 +5532,11 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->print_top = switch_value;
 
+  sprintf(key, "%s.PrintBottom", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->print_bottom = switch_value;
+
   sprintf(key, "%s.PrintPressure", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
@@ -5839,6 +5860,10 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->write_silo_top = switch_value;
 
+  sprintf(key, "%s.WriteSiloBottom", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
+  public_xtra->write_silo_bottom = switch_value;
 
   /* Initialize silo if necessary */
   if (public_xtra->write_silo_subsurf_data ||
@@ -5853,6 +5878,7 @@ SolverRichardsNewPublicXtra(char *name)
       public_xtra->write_silo_mannings ||
       public_xtra->write_silo_mask ||
       public_xtra->write_silo_top ||
+      public_xtra->write_silo_bottom ||
       public_xtra->write_silo_overland_sum ||
       public_xtra->write_silo_overland_bc_flux ||
       public_xtra->write_silo_dzmult || public_xtra->write_silo_CLM)
