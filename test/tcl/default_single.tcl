@@ -323,8 +323,8 @@ pfset Solver.AbsTol 1e-25
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-#pfrun default_single
-#pfundist default_single
+pfrun default_single
+pfundist default_single
 
 # To run with debugging
 # pfrun default_single -g {0 1}

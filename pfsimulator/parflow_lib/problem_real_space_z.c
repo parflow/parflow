@@ -282,9 +282,8 @@ int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data)
   GrGeomSolid *gr_domain = problem_data->gr_domain;
   bool found_index_space_z = false;
 
-//We need this number to always be larger than the number of z indices. Maybe there is an INF or something
-//we can set this to?
-  index_space_z = 10000000;
+//We need this number to always be larger than the number of z indices, hence the choice of INT_MAX
+  index_space_z = INT_MAX;
   ForSubgridI(subgrid_index, subgrids)
   {
     subgrid = SubgridArraySubgrid(subgrids, subgrid_index);
@@ -323,12 +322,10 @@ int CalculateIndexSpaceZ(double real_space_z, ProblemData* problem_data)
   //Right now doing this reduction is needed to avoid seg faults later but if someone knows a
   //good default value to return that might be possible. Tried with -1 and checking for that but
   //ended up needing a reduction later anyways
-  printf("index_space_z before accumulation: %i\n", index_space_z);
   #ifdef PARFLOW_HAVE_MPI
   amps_Invoice index_space_z_invoice = amps_NewInvoice("%i", &index_space_z);
   amps_AllReduce(amps_CommWorld, index_space_z_invoice, amps_Min);
   amps_FreeInvoice(index_space_z_invoice);
-  printf("index_space_z after accumulation: %i\n", index_space_z);
   #endif
   return index_space_z;
 }

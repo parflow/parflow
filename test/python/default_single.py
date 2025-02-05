@@ -10,9 +10,6 @@ import sys
 run_name = "default_single"
 default_single = Run(run_name, __file__)
 
-default_single.P = 2
-default_single.Q = 2
-default_single.R = 1
 
 correct_output_dir_name = get_absolute_path("../correct_output")
 
@@ -24,9 +21,9 @@ default_single.FileVersion = 4
 # Process Topology
 # -----------------------------------------------------------------------------
 
-default_single.Process.Topology.P = 2
-default_single.Process.Topology.Q = 2
-default_single.Process.Topology.R = 2
+default_single.Process.Topology.P = 1
+default_single.Process.Topology.Q = 1
+default_single.Process.Topology.R = 1
 
 # -----------------------------------------------------------------------------
 # Computational Grid
