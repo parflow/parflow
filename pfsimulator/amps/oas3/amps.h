@@ -58,6 +58,9 @@
 #ifdef PARFLOW_HAVE_RMM
 #include <rmm/rmm_api.h>
 #endif
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "amps_umpire_wrapper.h"
+#endif
 
 /*
  * Prevent inclusion of mpi C++ bindings in mpi.h includes.
@@ -700,7 +703,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @memo Print to a distributed file
  * @param file Shared file handle [IN]
  * @param fmt Format string [IN]
- * @param ... Paramaters for the format string [IN]
+ * @param ... Parameters for the format string [IN]
  * @return Error code
  */
 #define amps_Fprintf fprintf
@@ -732,7 +735,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @memo Read from a distributed file
  * @param file Shared file handle [IN]
  * @param fmt Format string [IN]
- * @param ... Paramaters for the format string [IN]
+ * @param ... Parameters for the format string [IN]
  * @return Error code
  */
 #define amps_Fscanf fscanf
@@ -1171,6 +1174,8 @@ static inline void *_amps_talloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -1197,6 +1202,8 @@ static inline void *_amps_ctalloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -1225,6 +1232,8 @@ static inline void _amps_tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   RMM_ERRCHK(rmmFree(ptr, 0, __FILE__, __LINE__));
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  amps_umpireFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosUVMFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

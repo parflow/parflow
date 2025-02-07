@@ -392,7 +392,7 @@ def undist(undis_name: str):
     """
     Undistribute PFB files.  Distributed PFB files can be in two formats.   The split file model
     creates a file per rank; each rank file has the rank index appended to the fileneme.   The sequential model writes all data to
-    a single file and creates and index file (.dist extenstion) to aid
+    a single file and creates and index file (.dist extension) to aid
     in locating offsets.
 
     The Python interface currently can't create the split file model but
@@ -940,7 +940,7 @@ class ParflowBinaryReader:
         :returns:
             A numpy array or iterable of numpy arrays, depending on how ``mode`` is set.
             If ``full`` the returned array will be of dimensions (nx, ny, nz).
-            If ``flat`` the returned data will be a list of each fo the subgrid arrays.
+            If ``flat`` the returned data will be a list of each of the subgrid arrays.
             If ``tiled`` the returned data will be a numpy array with dimensions
             (p, q, r) where each index of the array contains the subgrid data which
             also will be numpy array of floats with dimensions (sg_nx, sg_ny, sg_nz) where

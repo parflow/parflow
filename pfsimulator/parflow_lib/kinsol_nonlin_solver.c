@@ -84,7 +84,7 @@ typedef struct {
 
 
 /*--------------------------------------------------------------------------
- * Auxilliary functions for interfacing with outside software
+ * Auxiliary functions for interfacing with outside software
  *--------------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------------
@@ -263,7 +263,7 @@ int KinsolNonlinSolver(Vector *pressure, Vector *density, Vector *old_density, V
                uscale,                  /* Scalings for the variable */
                fscale,                  /* Scalings for the function */
                residual_tol,            /* Stopping tolerance on func */
-               step_tol,                /* Stop tol. for sucessive steps */
+               step_tol,                /* Stop tol. for successive steps */
                NULL,                    /* Constraints */
                TRUE,                    /* Optional inputs */
                iopt,                    /* Opt. integer inputs */

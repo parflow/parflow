@@ -31,7 +31,7 @@
 /*****************************************************************************
 *
 * The functions in this file are for manipulating the BCPressureData structure
-*   in ProblemData and work in conjuction with the BCPressurePackage module.
+*   in ProblemData and work in conjunction with the BCPressurePackage module.
 *
 * Because of the times things are called, the New function is twinky
 * (it was basically put in to be symmetric with the New/Free paradigm

@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# running different configuraitons of tilted V
+# running different configurations of tilted V
 # -----------------------------------------------------------------------------
 import os
 

@@ -163,7 +163,7 @@ subroutine clm_thermal (clm)
        wx,                         & ! patitial volume of ice and water of surface layer
        egsmax,                     & ! max. evaporation which soil can provide at one time step
        egidif,                     & ! the excess of evaporation over "egsmax"
-       brr(clm%snl+1 : nlevsoi),   & ! temporay set 
+       brr(clm%snl+1 : nlevsoi),   & ! temporary set 
        xmf,                        & ! total latent heat of phase change of ground water
        dlrad,                      & ! downward longwave radiation blow the canopy [W/m2]
        ulrad,                      & ! upward longwave radiation above the canopy [W/m2]
@@ -324,7 +324,7 @@ subroutine clm_thermal (clm)
   ! Ground fluxes and temperatures
   ! NOTE: in the current scheme clm%frac_veg_nosno is EITHER 1 or 0
 
-  ! Compute sensible and latent fluxes and their derivatives with repect 
+  ! Compute sensible and latent fluxes and their derivatives with respect 
   ! to ground temperature using ground temperatures from previous time step.
 
   if (clm%frac_veg_nosno == 0) then  
@@ -372,7 +372,7 @@ subroutine clm_thermal (clm)
         obuold = obu
      enddo                       ! end stability iteration
 
-     ! Get derivative of fluxes with repect to ground temperature
+     ! Get derivative of fluxes with respect to ground temperature
 
      clm%acond = ustar*ustar/um ! Add-in for ALMA output
 
@@ -450,17 +450,24 @@ subroutine clm_thermal (clm)
            if (temp < 0.) temp = 0.
            if (temp > 1.) temp = 1.
            temp_rz = temp ** clm%vw
+           clm%soil_resistance(i) = temp_rz    !! @RMM, we store each soil resistnace factor over the soil layers
         else
            temp2 = 0.01d0
         endif
 !       temp_rz = temp_rz / float(nlevsoi)
-        clm%btran = clm%btran + clm%rootfr(i)*temp_rz
+        !!@RMM, T is still based upon the total soil resistance but the option is provided to limit layer-by-layer T over the RZ
+        clm%btran = clm%btran + clm%rootfr(i)*clm%soil_resistance(i)
      enddo
 
 !@RMM
-! added a transpiration cutoff depending on soil moisture,  user input via PF
+! transpiration cutoff depending on soil moisture, the default is only the top soil layer
+! if this is distributed (rzwaterstress=1) then clm%soil_resistance(i) set above is used to limit
+!  T in each soil layer individually
+! option set from a user input via PF
+     if (clm%rzwaterstress == 0) then
      if ( (clm%vegwaterstresstype == 1).and.(clm%pf_press(1)<=(clm%wilting_point*1000.d0)) ) clm%btran = 0.0d0
      if ( (clm%vegwaterstresstype == 2).and.(clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
+     end if
 
      call clm_leaftem(z0mv,z0hv,z0qv,thm,th,thv,tg,qg,dqgdT,htvp,sfacx,     &
           dqgmax,emv,emg,dlrad,ulrad,cgrnds,cgrndl,cgrnd,soil_beta,clm)
@@ -575,7 +582,7 @@ subroutine clm_thermal (clm)
 
   clm%eflx_sh_tot = clm%eflx_sh_veg + clm%eflx_sh_grnd
   clm%qflx_evap_tot = clm%qflx_evap_veg + clm%qflx_evap_soi
-  clm%eflx_lh_tot= hvap*clm%qflx_evap_veg + htvp*clm%qflx_evap_soi   ! W/m2 (accouting for sublimation)
+  clm%eflx_lh_tot= hvap*clm%qflx_evap_veg + htvp*clm%qflx_evap_soi   ! W/m2 (accounting for sublimation)
 
   clm%qflx_evap_grnd = 0.
   clm%qflx_sub_snow = 0.

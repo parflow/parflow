@@ -34,7 +34,7 @@
 /*****************************************************************************
 *
 * The functions in this file are for manipulating the WellData structure
-*   in ProblemData and work in conjuction with the WellPackage module.
+*   in ProblemData and work in conjunction with the WellPackage module.
 *
 * Because of the times things are called, the New function is twinky
 * (it was basically put in to be symmetric with the New/Free paradigm

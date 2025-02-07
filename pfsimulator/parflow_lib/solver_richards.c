@@ -167,7 +167,7 @@ typedef struct {
   int clm_irr_cycle;            /* CLM irrigation cycle flag -- 0=Constant, 1=Deficit */
   double clm_irr_rate;          /* CLM irrigation application rate [mm/s] */
   double clm_irr_start;         /* CLM irrigation schedule -- start time of constant cycle [GMT] */
-  double clm_irr_stop;          /* CLM irrigation schedule -- stop time of constant cyle [GMT] */
+  double clm_irr_stop;          /* CLM irrigation schedule -- stop time of constant cycle [GMT] */
   double clm_irr_threshold;     /* CLM irrigation schedule -- soil moisture threshold for deficit cycle */
   int clm_irr_thresholdtype;    /* Deficit-based saturation criteria (top, bottom, column avg) */
 
@@ -175,6 +175,7 @@ typedef struct {
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
   int clm_last_rst;             /* NBE: Only write/overwrite one rst file or write a lot of them */
   int clm_daily_rst;            /* NBE: Write daily RST files or hourly */
+  int clm_water_stress_type;    /* @RMM: switch for different RZ distribution after Ferguson et al EES 2016 */
 #endif
 
   int print_lsm_sink;           /* print LSM sink term? */
@@ -249,7 +250,7 @@ typedef struct {
   Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
   Vector *overland_sum;
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
-  Vector *dz_mult;              /* vector containing dz multplier values for all cells */
+  Vector *dz_mult;              /* vector containing dz multiplier values for all cells */
   Vector *x_velocity;           /* vector containing x-velocity face values */
   Vector *y_velocity;           /* vector containing y-velocity face values */
   Vector *z_velocity;           /* vector containing z-velocity face values */
@@ -268,7 +269,7 @@ typedef struct {
   Vector *swe_out;              /* snow water equivalent [mm] */
   Vector *t_grnd;               /* CLM soil surface temperature [K] */
   Vector *tsoil;                /* CLM soil temp, all 10 layers [K] */
-  Grid *gridTs;                 /* New grid fro tsoi (nx*ny*10) */
+  Grid *gridTs;                 /* New grid for tsoil (nx*ny*10) */
 
   /* IMF: vars for printing clm irrigation output */
   Vector *irr_flag;             /* Flag for irrigating/pumping under deficit-based irrigation scheme */
@@ -291,7 +292,7 @@ typedef struct {
   Vector *displa_forc;          /* Displacement height [m]                  BH */
   Vector *veg_map_forc;         /* Vegetation map [classes 1-18]    BH */
 
-  Grid *snglclm;                /* NBE: New grid for single file CLM ouptut */
+  Grid *snglclm;                /* NBE: New grid for single file CLM output */
   Vector *clm_out_grid;         /* NBE - Holds multi-layer, single file output of CLM */
 #endif
 
@@ -875,7 +876,7 @@ SetupRichards(PFModule * this_module)
       NewVectorType(grid, 1, 0, vector_cell_centered);
     InitVectorAll(instance_xtra->evap_trans_sum, 0.0);
 
-    /* intialize vel vectors - jjb */
+    /* initialize vel vectors - jjb */
     instance_xtra->x_velocity =
       NewVectorType(x_grid, 1, 1, vector_side_centered_x);
     InitVectorAll(instance_xtra->x_velocity, 0.0);
@@ -1741,6 +1742,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   int clm_skip = public_xtra->clm_reuse_count;  // NBE:defaults to 1
   int clm_write_logs = public_xtra->clm_write_logs;     // NBE: defaults to 1, disables log file writing if 0
   int clm_last_rst = public_xtra->clm_last_rst; // Reuse of the RST file
+  int clm_water_stress_type = public_xtra->clm_water_stress_type;        // Water stress RZ
   int clm_daily_rst = public_xtra->clm_daily_rst;       // Daily or hourly RST files, defaults to daily
 
   int fstep = INT_MIN;
@@ -2120,7 +2122,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             }
             else
             {
-              fstart = istep;                   // forst time value in 3D met file names
+              fstart = istep;                   // first time value in 3D met file names
               fstop = fstart - 1 + public_xtra->clm_metnt;              // second value in 3D met file names
             }                   // end if fflag==0
 
@@ -2600,6 +2602,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_irr_thresholdtype, soi_z,
                          clm_next, clm_write_logs, clm_last_rst,
                          clm_daily_rst,
+                         clm_water_stress_type,
                          public_xtra->clm_nz,
                          public_xtra->clm_nz);
 
@@ -3721,7 +3724,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         any_file_dumped = 1;
       }
 
-      // IMF: I assume this print obselete now that we have keys for EvapTrans and OverlandBCFlux?
+      // IMF: I assume this print obsolete now that we have keys for EvapTrans and OverlandBCFlux?
       if (public_xtra->print_lsm_sink)
       {
         /*sk Print the sink terms from the land surface model */
@@ -4199,7 +4202,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (!amps_Rank(amps_CommWorld))
       {
         printf
-          ("Checking execution time limit, interation = %d, remaining time = %ld (s)\n",
+          ("Checking execution time limit, iteration = %d, remaining time = %ld (s)\n",
           instance_xtra->iteration_number, slurm_get_rem_time(0));
       }
 
@@ -4354,7 +4357,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       any_file_dumped = 1;
     }
 
-    // IMF: I assume this print obselete now that we have keys for EvapTrans and OverlandBCFlux?
+    // IMF: I assume this print obsolete now that we have keys for EvapTrans and OverlandBCFlux?
     if (public_xtra->print_lsm_sink)
     {
       /*sk Print the sink terms from the land surface model */
@@ -5145,6 +5148,10 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   public_xtra->clm_last_rst = switch_value;
 
+  /* @RMM - CLM water tress dist over RZ*/
+  sprintf(key, "%s.CLM.RZWaterStress", name);
+  public_xtra->clm_water_stress_type = GetIntDefault(key, 0);
+
   /* NBE - Option to write daily or hourly outputs from CLM */
   sprintf(key, "%s.CLM.DailyRST", name);
   switch_name = GetStringDefault(key, "True");
@@ -5369,7 +5376,7 @@ SolverRichardsNewPublicXtra(char *name)
   NA_FreeNameArray(irrtype_switch_na);
 
   /* KKu: Write CLM in NetCDF file */
-  /* This key is added here as depenedent on irrigation type
+  /* This key is added here as dependent on irrigation type
    * an extra variable is written out*/
   sprintf(key, "NetCDF.WriteCLM");
   switch_name = GetStringDefault(key, "False");
@@ -5752,7 +5759,7 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
-    /*Increamenting by 5 for x, y, z permiability, porosity and specific storage */
+    /*Incrementing by 5 for x, y, z permiability, porosity and specific storage */
     public_xtra->numVarIni = public_xtra->numVarIni + 5;
   }
   public_xtra->write_netcdf_subsurface = switch_value;
@@ -5762,7 +5769,7 @@ SolverRichardsNewPublicXtra(char *name)
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
   if (switch_value == 1)
   {
-    /*Increamenting by 2 for x, y slopes */
+    /*Incrementing by 2 for x, y slopes */
     public_xtra->numVarIni = public_xtra->numVarIni + 2;
   }
   public_xtra->write_netcdf_slopes = switch_value;
@@ -5785,7 +5792,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->write_netcdf_mask = switch_value;
 
-  /* For future other vaiables, handle the TCL flags here
+  /* For future other variables, handle the TCL flags here
    * and modify the if condition below for time variable
    */
 
@@ -5806,7 +5813,7 @@ SolverRichardsNewPublicXtra(char *name)
   {
     /* KKu: Incrementing one for time variable in NC file only if one of
      * the time variant variable is requested for output. This if statement
-     * will grow as number of vaiant variable will be added. Could be handled
+     * will grow as number of variant variable will be added. Could be handled
      * in a different way?
      * This variable is added extra in NetCDF file for ease of post processing
      * with tools such as CDO, NCL, python netcdf etc. */

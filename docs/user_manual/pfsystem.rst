@@ -79,7 +79,7 @@ within the ``.pfb`` script as follows:
 
 The value is normally a single string, double, or integer. In some
 cases, in particular for a list of names, you need to supply a space
-seperated sequence. This can be done using either a double quote or
+separated sequence. This can be done using either a double quote or
 braces.
 
 .. container:: list
@@ -248,16 +248,16 @@ The general approach is as follows:
 
    -  SPFH: Specific humidity :math:`[kg/kg]`
 
-   If you choose to do spatially heterogenous forcings you will need to
+   If you choose to do spatially heterogeneous forcings you will need to
    generate separate files for each variable. The files should be
    formatted in the standard ParFlow format with the third (i.e. z
    dimension) as time. If you are doing hourly simulations it is
    standard practice to put 24 hours in one file, but you can decide how
-   many time steps per file. For an example of heterogenous forcing
+   many time steps per file. For an example of heterogeneous forcing
    files refer to the ``NLDAS`` directory in the Washita Example).
 
    Alternatively, if you would like to force the model with spatially
-   homogenous forcings, then a single file can be provided where each
+   homogeneous forcings, then a single file can be provided where each
    variable is a column and rows designate time steps.
 
    12. Run your simulation!
@@ -319,7 +319,7 @@ you will see many files after the run. Each of these contains
 the output from a single node; before attempting using them 
 you should undistribute them.
 
-Since the input file is a TCL script run it using the TCL shell or command intepreter:
+Since the input file is a TCL script run it using the TCL shell or command interpreter:
 
 .. container:: list
 
@@ -439,7 +439,7 @@ follow this procedure :
 
       -  Use the dump sequence number from step 1 as the start_count.
 
-      -  Use the real time that the dump occured at from step 1 as the
+      -  Use the real time that the dump occurred at from step 1 as the
          start_time.
 
       -  To restart with ``CLM``, use the ``Solver.CLM.IstepStart`` 
@@ -553,7 +553,7 @@ This section contains two annotated input scripts:
 
 -  §3.6.1 :ref:`Harvey Flow Example` contains the harvey flow 
    example (``harvey.flow.tcl``) which is an idealized domain 
-   with a heterogenous subsurface. The example also demonstrates 
+   with a heterogeneous subsurface. The example also demonstrates 
    how to generate multiple realizations of the subsurface and 
    add pumping wells.
 

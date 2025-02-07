@@ -48,16 +48,16 @@ void cplparflowinit_(int *  fcom,
                      int *  ierror)
 {
   Grid         *grid;
-  char *seperators = " \n";
+  char *separators = " \n";
   /* Fortran char array is not NULL terminated */
-  char *filename = strtok(input_file, seperators);
+  char *filename = strtok(input_file, separators);
 
   /*-----------------------------------------------------------------------
    * Initialize AMPS from existing MPI state
    *-----------------------------------------------------------------------*/
   if (amps_EmbeddedInitFComm(fcom))
   {
-    amps_Printf("Error: amps_EmbeddedInitFComm initalization failed\n");
+    amps_Printf("Error: amps_EmbeddedInitFComm initialization failed\n");
     exit(1);
   }
 

@@ -141,7 +141,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
   PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
 
-  /* Re-use saturation vector to save memory */
+
+  /* Reuse saturation vector to save memory */
   Vector      *rel_perm = saturation;
   Vector      *source = saturation;
 
@@ -620,7 +621,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
       /* @RMM: modified the terrain-following transform
-       * to be swtichable in the UZ
+       * to be switchable in the UZ
        * terms:
        * 1. x dir terrain tendency:  gravity*sin(atan(x_ssl_dat[io]))
        * 2. y dir terrain tendency:  gravity*sin(atan(y_ssl_dat[io]))

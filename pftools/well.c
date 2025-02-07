@@ -31,7 +31,7 @@
 /*****************************************************************************
 *
 * The functions in this file are for manipulating the WellData structure
-*   in ProblemData and work in conjuction with the WellPackage module.
+*   in ProblemData and work in conjunction with the WellPackage module.
 *
 *****************************************************************************/
 

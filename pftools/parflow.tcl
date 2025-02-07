@@ -155,7 +155,7 @@ namespace eval Parflow {
 }
 
 #
-# Output a string that can containg blanks etc to a file
+# Output a string that can containing blanks etc to a file
 #
 proc Parflow::PFWriteComplexString {file string} {
     puts $file [string length $string]
@@ -203,7 +203,7 @@ proc Parflow::pfset { key value } {
 }
 
 #
-# Retreives a value from the DataBase
+# Retrieves a value from the DataBase
 #
 proc Parflow::pfget { key } {
 

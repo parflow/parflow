@@ -1,6 +1,6 @@
 # SCRIPT TO RUN LITTLE WASHITA DOMAIN WITH TERRAIN-FOLLOWING GRID
 # DETAILS:
-# Arugments are 1) runname 2) year
+# Arguments are 1) runname 2) year
 
 # Import the ParFlow TCL package
 # lappend   auto_path $env(PARFLOW_DIR)/bin

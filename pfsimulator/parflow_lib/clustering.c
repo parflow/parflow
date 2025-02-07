@@ -358,7 +358,7 @@ int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector, DoubleTags 
  *
  * Attempt to find a zero histogram value near the middle of the index
  * interval (lo, hi) in the given coordinate direction. Note that the
- * cut_pt is kept more than a minimium distance from the endpoints of
+ * cut_pt is kept more than a minimum distance from the endpoints of
  * of the index interval. Since box indices are cell-centered, the cut
  * point value corresponds to the right edge of the cell whose index
  * is equal to the cut point.
@@ -396,7 +396,7 @@ int FindZeroCutPoint(int*          cut_pt,
  *
  * Attempt to find a point in the given coordinate direction near an
  * inflection point in the histogram for that direction. Note that the
- * cut point is kept more than a minimium distance from the endpoints
+ * cut point is kept more than a minimum distance from the endpoints
  * of the index interval (lo, hi).  Also, the box must have at least
  * three cells along a side to apply the Laplacian test.  If no
  * inflection point is found, the mid-point of the interval is

@@ -311,7 +311,7 @@ void     WriteSiloInit(char *file_prefix)
  * Write a Vector to a Silo file.
  *
  * Notes:
- * Silo files can store additinal metadata such as name of variable,
+ * Silo files can store additional metadata such as name of variable,
  * simulation time etc.  These should be added.
  */
 void     WriteSilo(char *  file_prefix,

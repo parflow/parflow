@@ -36,7 +36,7 @@ subroutine clm_subdiv (clm)
        dzsno(5),            & ! Snow layer thickness [m] 
        swice(5),            & ! Partial volume of ice [m3/m3]
        swliq(5),            & ! Partial volume of liquid water [m3/m3]
-       tsno(5)                ! Nodel temperature [K]
+       tsno(5)                ! Nodal temperature [K]
 
   integer k,                & ! number of do looping
        msno                   ! number of snow layer 1 (top) to msno (bottom)

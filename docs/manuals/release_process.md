@@ -1,4 +1,4 @@
-# ParFlow elease Process
+# ParFlow release Process
 
 The release process for ParFlow follows the a standard GitHub
 release process.  The following steps should be followed for creating a new
@@ -66,7 +66,7 @@ page use ``Draft a new release'' to create the release.
 Version tag should have format of `vX.Z.Z` version.  Release title
 should have format of `ParFlow Version X.Y.Z`.  The GitHub release
 description can be copied from the release notes markdown file that
-was created in a proir step.
+was created in a prior step.
 
 ## Generate Docker
 
