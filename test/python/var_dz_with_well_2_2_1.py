@@ -308,21 +308,10 @@ vardz.Solver.Linear.Preconditioner = "PFMG"
 vardz.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 vardz.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
-# vardz.Wells.Names = 'pumping_well'
-# vardz.Wells.pumping_well.InputType = 'Vertical'
-# vardz.Wells.pumping_well.Action = 'Extraction'
-# vardz.Wells.pumping_well.Type = 'Pressure'
-# vardz.Wells.pumping_well.X = 0.5
-# vardz.Wells.pumping_well.Y = 0.5
-# vardz.Wells.pumping_well.ZUpper = 10.5
-# vardz.Wells.pumping_well.ZLower = .5
-# vardz.Wells.pumping_well.Method = 'Standard'
-# vardz.Wells.pumping_well.Cycle = 'constant'
-# vardz.Wells.pumping_well.alltime.Pressure.Value = 0.5
-# vardz.Wells.pumping_well.alltime.Saturation.water.Value = 1.0
+
 
 vardz.Wells.Names = "pressure_well flux_well"
-
+vardz.wells.CorrectForVarDz = 1
 vardz.Wells.pressure_well.InputType = "Vertical"
 vardz.Wells.pressure_well.Action = "Extraction"
 vardz.Wells.pressure_well.Type = "Pressure"

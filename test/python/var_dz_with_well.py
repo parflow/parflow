@@ -309,6 +309,7 @@ vardz.Solver.Linear.Preconditioner.MGSemi.MaxIter = 1
 vardz.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
 vardz.Wells.Names = "pressure_well"
+vardz.wells.CorrectForVarDz = 1
 vardz.Wells.pressure_well.InputType = "Vertical"
 vardz.Wells.pressure_well.Action = "Extraction"
 vardz.Wells.pressure_well.Type = "Pressure"
