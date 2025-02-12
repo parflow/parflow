@@ -30,6 +30,7 @@
 //#include "grid_utilities.c"
 
 #include <string.h>
+#include <stdbool.h>
 
 #define PRESSURE_WELL   0
 #define FLUX_WELL       1
@@ -61,6 +62,7 @@ typedef struct {
   int      **intervals;
   int       *repeat_counts;
 
+  int correct_for_var_dz;
   NameArray well_names;
 } PublicXtra;
 
@@ -124,7 +126,7 @@ void         WellPackage(
   int ix, iy;
   int iz_lower, iz_upper;
   int nx, ny, nz;
-  double dx, dy;
+  double dx, dy, dz;
   int rx, ry, rz;
   int process;
   int well_action, action, mechanism, method;
@@ -198,9 +200,15 @@ void         WellPackage(
 
           ix = IndexSpaceX((dummy0->xlocation), 0);
           iy = IndexSpaceY((dummy0->ylocation), 0);
-//          if (public_xtra->var
-          iz_lower = CalculateIndexSpaceZ(dummy0->z_lower, problem_data);
-          iz_upper = CalculateIndexSpaceZ(dummy0->z_upper, problem_data);
+          if (public_xtra->correct_for_var_dz == 1){
+            iz_lower = CalculateIndexSpaceZ(dummy0->z_lower, problem_data);
+            iz_upper = CalculateIndexSpaceZ(dummy0->z_upper, problem_data);
+          }
+          else{
+            iz_lower = IndexSpaceZ(dummy0->z_lower, 0);
+            iz_upper = IndexSpaceZ(dummy0->z_upper, 0);
+          }
+
           nx = 1;
           ny = 1;
           nz = iz_upper - iz_lower + 1;
@@ -223,10 +231,17 @@ void         WellPackage(
                                    process);
           dx = SubgridDX(new_subgrid);
           dy = SubgridDY(new_subgrid);
-          if (SubgridLivesOnThisRank(new_subgrid, grid))
-          {
-            subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
+          dz = SubgridDZ(new_subgrid);
+          if(public_xtra->correct_for_var_dz){
+            if (SubgridLivesOnThisRank(new_subgrid, grid))
+            {
+              subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
+            }
           }
+          else{
+            subgrid_volume = nx * ny * nz * dx * dy * dz;
+          }
+
 //It would be nice to do only one reduce but we need to result of the reduce above to create the grid we
 // calculate the volume for this reduce from
 #ifdef PARFLOW_HAVE_MPI
@@ -498,11 +513,19 @@ void         WellPackage(
           {
             ix = IndexSpaceX((dummy1->xlocation), 0);
             iy = IndexSpaceY((dummy1->ylocation), 0);
+            // We need to reset these for the future MPI reduce to work correctly
+            iz_lower = -1;
+            iz_upper = -1;
             if (well_action == 0)
             {
-              z_lower = (dummy1->z_lower_ext);
-              z_upper = (dummy1->z_upper_ext);
-
+              if (public_xtra->correct_for_var_dz == 1){
+                iz_lower = CalculateIndexSpaceZ(dummy1->z_lower_ext, problem_data);
+                iz_upper = CalculateIndexSpaceZ(dummy1->z_upper_ext, problem_data);
+              }
+              else{
+                iz_lower = IndexSpaceZ(dummy1->z_lower_ext, 0);
+                iz_upper = IndexSpaceZ(dummy1->z_upper_ext, 0);
+              }
               action = EXTRACTION_WELL;
               phase_values = (dummy1->phase_values_ext);
               mechanism = (dummy1->mechanism_ext);
@@ -510,20 +533,21 @@ void         WellPackage(
             }
             else
             {
-              z_lower = (dummy1->z_lower_inj);
-              z_upper = (dummy1->z_upper_inj);
+              if (public_xtra->correct_for_var_dz == 1){
+                iz_lower = CalculateIndexSpaceZ(dummy1->z_lower_inj, problem_data);
+                iz_upper = CalculateIndexSpaceZ(dummy1->z_upper_inj, problem_data);
+              }
+              else{
+                iz_lower = IndexSpaceZ(dummy1->z_lower_inj, 0);
+                iz_upper = IndexSpaceZ(dummy1->z_upper_inj, 0);
+              }
 
               action = INJECTION_WELL;
               phase_values = (dummy1->phase_values_inj);
               mechanism = (dummy1->mechanism_inj);
               method = (dummy1->method_inj);
             }
-            // We need to reset these for the future MPI reduce to work correctly
-            iz_lower = -1;
-            iz_upper = -1;
-            iz_lower = CalculateIndexSpaceZ(z_lower, problem_data);
-            iz_upper = CalculateIndexSpaceZ(z_upper, problem_data);
-            printf("izlower %i, izupper %i\n", iz_lower, iz_upper);
+
             nx = 1;
             ny = 1;
             nz = iz_upper - iz_lower + 1;
@@ -539,9 +563,15 @@ void         WellPackage(
                                      process);
             dx = SubgridDX(new_subgrid);
             dy = SubgridDY(new_subgrid);
-            if (SubgridLivesOnThisRank(new_subgrid, grid))
-            {
-              subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
+            dz = SubgridDZ(new_subgrid);
+            if(public_xtra->correct_for_var_dz){
+              if (SubgridLivesOnThisRank(new_subgrid, grid))
+              {
+                subgrid_volume = CalculateSubgridVolume(new_subgrid, problem_data);
+              }
+            }
+            else{
+              subgrid_volume = nx * ny * nz * dx * dy * dz;
             }
 #ifdef PARFLOW_HAVE_MPI
             // here I am making the assumption that indices need to be positive so we can use amps_max
@@ -862,7 +892,7 @@ PFModule  *WellPackageNewPublicXtra(
   int num_cycles;
   int global_cycle;
 
-
+  int correct_for_var_dz;
   char *well_names;
   char *well_name;
 
@@ -892,6 +922,9 @@ PFModule  *WellPackageNewPublicXtra(
 
   (public_xtra->num_phases) = num_phases;
   (public_xtra->num_contaminants) = num_contaminants;
+
+  correct_for_var_dz = GetIntDefault("Wells.CorrectForVarDz", 0);
+  public_xtra->correct_for_var_dz = correct_for_var_dz;
 
   char* EMPTY_NAMES_LIST = "";
   well_names = GetStringDefault("Wells.Names", EMPTY_NAMES_LIST);

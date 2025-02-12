@@ -232,7 +232,7 @@ default_single.Cycle.constant.Repeat = -1
 # -----------------------------------------------------------------------------
 
 default_single.Wells.Names = "snoopy"
-default_single.Wells.CorrectForVarDz = True
+default_single.Wells.CorrectForVarDz = 1
 default_single.Wells.snoopy.InputType = "Recirc"
 
 default_single.Wells.snoopy.Cycle = "constant"
