@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-double* predict_next_pressure_step(char* model_filepath, double* pp, int nx, int ny, int nz);
+double* predict_next_pressure_step(double* pp, int nx, int ny, int nz);
 
 #ifdef __cplusplus
 }

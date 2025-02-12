@@ -1245,6 +1245,13 @@ SetupRichards(PFModule * this_module)
     handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
 
+#ifdef PARFLOW_HAVE_TORCH
+    if (public_xtra->enable_torch_accelerator) {
+      BeginTiming(TorchTimingIndex);
+      init_torch_model(public_xtra->torch_model_filepath);
+      EndTiming(TorchTimingIndex);
+    }
+#endif
 
     /*****************************************************************/
     /*          Print out any of the requested initial data          */
@@ -3105,7 +3112,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
            * double *ssat_dat = SubvectorData(ssat_sub);
            */
 
-          SubvectorData(p_sub) = predict_next_pressure_step(public_xtra->torch_model_filepath, pp, nx, ny, nz);
+          SubvectorData(p_sub) = predict_next_pressure_step(pp, nx, ny, nz);
         }
         if (public_xtra->print_predicted_pressure)
         {

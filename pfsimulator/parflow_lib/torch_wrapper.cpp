@@ -5,10 +5,11 @@
 #include <torch/script.h>
 #include <iostream>
 
+static torch::jit::script::Module model;
+
 extern "C" {
-  double* predict_next_pressure_step(char* model_filepath, double* pp, int nx, int ny, int nz) {
+  void init_torch_model(char* model_filepath) {
     std::string model_path = std::string(model_filepath);
-    torch::jit::script::Module model;
     try {
       model = torch::jit::load(model_path);
     }
@@ -16,6 +17,11 @@ extern "C" {
       std::cerr << "Error loading the model\n";
       // raise error here
     }
+
+    // also call scale statics and store the result in a global variable.
+  }
+  
+  double* predict_next_pressure_step(double* pp, int nx, int ny, int nz) {
 
     torch::Tensor input_tensor = torch::from_blob(pp, {nx, ny, nz}, torch::kDouble);
 
