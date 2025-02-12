@@ -10,7 +10,7 @@ extern "C" {
 
 void amps_rmmInit();
 void* amps_rmmAlloc(size_t bytes);
-void amps_rmmFree(void *p);
+void amps_rmmFree(void *data);
 
 #ifdef __cplusplus
 }
