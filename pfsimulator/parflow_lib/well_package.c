@@ -210,16 +210,12 @@ void         WellPackage(
           rz = 0;
 
           process = amps_Rank(amps_CommWorld);
-//#ifdef PARFLOW_HAVE_MPI
+#ifdef PARFLOW_HAVE_MPI
 //          // here I am making the assumption that indices need to be positive so we can use amps_max
-//          amps_Invoice well_properties_invoice = amps_NewInvoice("%i", &iz_upper);
-//          amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
-//          amps_FreeInvoice(well_properties_invoice);
-//          well_properties_invoice = amps_NewInvoice("%i", &iz_lower);
-//          amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Min);
-//          amps_FreeInvoice(well_properties_invoice);
-//
-//#endif
+          amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
+          amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
+          amps_FreeInvoice(well_properties_invoice);
+#endif
 
           new_subgrid = NewSubgrid(ix, iy, iz_lower,
                                    nx, ny, nz,
@@ -235,7 +231,7 @@ void         WellPackage(
 // calculate the volume for this reduce from
 #ifdef PARFLOW_HAVE_MPI
           // here I am making the assumption that indices need to be positive so we can use amps_max
-          amps_Invoice well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
+          well_properties_invoice = amps_NewInvoice("%d", &subgrid_volume);
           amps_AllReduce(amps_CommWorld, well_properties_invoice, amps_Max);
           amps_FreeInvoice(well_properties_invoice);
 #endif
