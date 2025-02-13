@@ -107,10 +107,6 @@ if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
   if(DEFINED rmm_ROOT)
     find_package(rmm REQUIRED)
     set(PARFLOW_HAVE_RMM "yes")
-    # PARFLOW_HAVE_RMM is not defined in parflow_config.h because because it is
-    # only set for the compilation of parflow_exe, parflow_lib, and kinsol sources.
-    # RMM must be initialized before it is used, so, for example,
-    # the amps tests would fail if used across all compiles.
     if(${PARFLOW_HAVE_CUDA}) 
       message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
     else(${PARFLOW_HAVE_CUDA}) 
