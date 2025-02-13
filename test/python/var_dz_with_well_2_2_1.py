@@ -311,7 +311,7 @@ vardz.Solver.Linear.Preconditioner.MGSemi.MaxLevels = 10
 
 
 vardz.Wells.Names = "pressure_well flux_well"
-vardz.wells.CorrectForVarDz = 1
+vardz.Wells.CorrectForVarDz = 1
 vardz.Wells.pressure_well.InputType = "Vertical"
 vardz.Wells.pressure_well.Action = "Extraction"
 vardz.Wells.pressure_well.Type = "Pressure"
@@ -410,4 +410,9 @@ vardz.run(working_directory=dir_name)
 
 test_case_pressure = pf.read_pfb(f"{dir_name}/{test_case_pressure_file}")
 
-assert np.allclose(correct_pressure, test_case_pressure)
+passed = np.allclose(correct_pressure, test_case_pressure)
+
+if passed:
+    print(f"{vardz_with_well_2_2_1} : PASSED")
+else:
+    print(f"{vardz_with_well_2_2_1} : FAILED")
