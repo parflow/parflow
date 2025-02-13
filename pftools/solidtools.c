@@ -633,7 +633,7 @@ int            MakePatchySolid(
                 break;
               }
             }
-            // If it's a bottom point keep going to find the next instance of the x-y coodrinates
+            // If it's a bottom point keep going to find the next instance of the x-y coordinates
             if (km <= 3)
             {
               for (m = m - 1; m > 0; m = m - 1)
@@ -926,7 +926,7 @@ int            MakePatchySolid(
   if (bin_out == 0)
   {
     fprintf(fp, "1 \n"); // VERSION #
-    fprintf(fp, "%i \n", np_act + 1); // # of POINTS/VERTICIES
+    fprintf(fp, "%i \n", np_act + 1); // # of POINTS/VERTICES
     for (i = 0; i <= np_act; ++i)
     {
       fprintf(fp, "%17.4f %17.4f %17.4f\n", Xp_Act[3 * i], Xp_Act[3 * i + 1], Xp_Act[3 * i + 2]);
@@ -1023,7 +1023,7 @@ int            MakePatchySolid(
 
     tools_WriteInt(fp, &write_int, 1); // VERSION #
     write_int = np_act + 1;
-    tools_WriteInt(fp, &write_int, 1); // # of POINTS/VERTICIES
+    tools_WriteInt(fp, &write_int, 1); // # of POINTS/VERTICES
     for (i = 0; i <= np_act; ++i)
     {
       tools_WriteDouble(fp, &Xp_Act[3 * i], 1);
@@ -1348,7 +1348,7 @@ int         ConvertPfsolAscii2Bin(FILE *fp_asc,
   if (debug)
     printf("\n--> Version %i \n", read_int);
 
-  fscanf(fp_asc, "%i", &n_vertex); // Read # of POINTS/VERTICIES
+  fscanf(fp_asc, "%i", &n_vertex); // Read # of POINTS/VERTICES
   tools_WriteInt(fp_bin, &n_vertex, 1); //
   if (debug)
     printf("--> N-Vertices %i \n", n_vertex);
@@ -1446,7 +1446,7 @@ int         ConvertPfsolBin2Ascii(FILE *fp_bin,
   if (debug)
     printf("\n--> Version %i \n", read_int);
 
-  tools_ReadInt(fp_bin, &n_vertex, 1); // Read # of POINTS/VERTICIES
+  tools_ReadInt(fp_bin, &n_vertex, 1); // Read # of POINTS/VERTICES
   fprintf(fp_asc, "%i\n", n_vertex); //
   if (debug)
     printf("--> N-Vertices %i \n", n_vertex);

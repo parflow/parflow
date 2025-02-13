@@ -495,7 +495,7 @@ void            PrintVizamrai(
 
   tools_WriteInt(fp, &ione, 1);               /* Number Of PatchBoundaries */
 
-  tools_WriteDouble(fp, &dzero, 1);            /* Lower corner patch bondary */
+  tools_WriteDouble(fp, &dzero, 1);            /* Lower corner patch boundary */
   tools_WriteDouble(fp, &dzero, 1);
   tools_WriteDouble(fp, &dzero, 1);
 

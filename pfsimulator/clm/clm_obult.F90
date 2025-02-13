@@ -43,7 +43,7 @@ subroutine clm_obult (displa,  z0m,      z0h,    z0q,    obu,  &
        z0h,          & ! roughness length, sensible heat [m]
        z0q,          & ! roughness length, latent heat [m]
        obu,          & ! monin-obukhov length (m)
-       um              ! wind speed including the stablity effect [m/s]
+       um              ! wind speed including the stability effect [m/s]
 
   real(r8), intent(out) :: &
        ustar,       & ! friction velocity [m/s]

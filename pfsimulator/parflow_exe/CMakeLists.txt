@@ -18,6 +18,10 @@ if( ${PARFLOW_HAVE_RMM} )
   target_link_libraries(parflow rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
 
+if( ${PARFLOW_HAVE_UMPIRE} )
+  target_link_libraries(parflow umpire)
+endif( ${PARFLOW_HAVE_UMPIRE} )
+
 if( ${PARFLOW_HAVE_CLM} )
   target_link_libraries(parflow pfclm)
 endif( ${PARFLOW_HAVE_CLM} )

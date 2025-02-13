@@ -49,6 +49,9 @@
 #ifdef PARFLOW_HAVE_RMM
 #include "amps_rmm_wrapper.h"
 #endif
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "amps_umpire_wrapper.h"
+#endif
 
 #define AMPS_EXCHANGE_SPECIALIZED
 #define AMPS_FOPEN_SPECIALIZED
@@ -504,6 +507,8 @@ static inline void *_amps_talloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -530,6 +535,8 @@ static inline void *_amps_ctalloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosUVMAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -558,6 +565,8 @@ static inline void _amps_tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   amps_rmmFree(ptr);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  amps_umpireFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosUVMFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

@@ -2,7 +2,7 @@
 # Macros for helping with version numbers
 
 #
-# Split a version number "vX.Y.Z-tweak-gHASH" into seperate variables.
+# Split a version number "vX.Y.Z-tweak-gHASH" into separate variables.
 # Variable ${packageName}_VERSION must exist and contain the version number.
 #
 macro (version_create_variables packageName)

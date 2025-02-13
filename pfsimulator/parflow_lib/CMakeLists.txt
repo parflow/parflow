@@ -216,6 +216,10 @@ endif(${PARFLOW_HAVE_KOKKOS})
     target_link_libraries(pfsimulator rmm::rmm)
   endif( ${PARFLOW_HAVE_RMM} )
 
+  if( ${PARFLOW_HAVE_UMPIRE} )
+    target_link_libraries(pfsimulator umpire)
+  endif( ${PARFLOW_HAVE_UMPIRE} )  
+
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH

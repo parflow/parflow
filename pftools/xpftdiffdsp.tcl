@@ -60,7 +60,7 @@ proc XParflow::DiffDisplay {w args} {
 
 
 # Procedure DiffDisplay_ParseWidgetArgs - This procedure is
-# used to parse the commands and configureation options.
+# used to parse the commands and configuration options.
 #
 # Parameters - w  - the path of the diff display
 #            args - The configuration options and commands
@@ -188,7 +188,7 @@ proc XParflow::DiffDisplay_FillDisplay {w dataSetA dataSetB x y z sigDigs absZer
             set diffElt [pfdiffelt $dataSetA $dataSetB $i $j $k \
                                    $sigDigs $absZero]
 
-            # Don't display the differnce if it does not meet the given
+            # Don't display the difference if it does not meet the given
             # criteria
 
             if {$diffElt == ""} {

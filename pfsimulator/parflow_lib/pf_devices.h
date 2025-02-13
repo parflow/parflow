@@ -82,6 +82,9 @@
 
 #endif // PARFLOW_HAVE_CUDA
 
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "amps_umpire_wrapper.h"
+#endif
 
 /*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for device
@@ -124,6 +127,8 @@ static inline void *_talloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -150,6 +155,8 @@ static inline void *_ctalloc_device(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   ptr = kokkosAlloc(size);
 #elif defined(PARFLOW_HAVE_CUDA)
@@ -178,6 +185,8 @@ static inline void _tfree_device(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   amps_rmmFree(ptr);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  amps_umpireFree(ptr);
 #elif defined(PARFLOW_HAVE_KOKKOS)
   kokkosFree(ptr);
 #elif defined(PARFLOW_HAVE_CUDA)

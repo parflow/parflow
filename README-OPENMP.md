@@ -1,4 +1,4 @@
-# Buidling ParFlow with OpenMP Multicore Accelerator
+# Building ParFlow with OpenMP Multicore Accelerator
 
 **NOTE 04/21/2020** As of writing OpenMP support should be considered "in beta".  Please check answer tolerances, variances of 10^-17 can be expected in saturation and pressure results.
 

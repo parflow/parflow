@@ -739,7 +739,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @memo Print to a distributed file
  * @param file Shared file handle [IN]
  * @param fmt Format string [IN]
- * @param ... Paramaters for the format string [IN]
+ * @param ... Parameters for the format string [IN]
  * @return Error code
  */
 #define amps_Fprintf fprintf
@@ -771,7 +771,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @memo Read from a distributed file
  * @param file Shared file handle [IN]
  * @param fmt Format string [IN]
- * @param ... Paramaters for the format string [IN]
+ * @param ... Parameters for the format string [IN]
  * @return Error code
  */
 #define amps_Fscanf fscanf
@@ -1059,6 +1059,10 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line)
   }
 }
 
+#ifdef PARFLOW_HAVE_UMPIRE
+#include "amps_umpire_wrapper.h"
+#endif
+
 #ifdef PARFLOW_HAVE_RMM
 #include "amps_rmm_wrapper.h"
 #endif
@@ -1156,6 +1160,8 @@ static inline void *_amps_talloc_cuda(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   ptr = amps_rmmAlloc(size);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
@@ -1180,6 +1186,8 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 
 #ifdef PARFLOW_HAVE_RMM
   ptr = amps_rmmAlloc(ptr);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireAlloc(size);
 #else
   CUDA_ERRCHK(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERRCHK(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
@@ -1201,6 +1209,8 @@ static inline void _amps_tfree_cuda(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
   amps_rmmFree(ptr);
+#elif defined(PARFLOW_HAVE_UMPIRE)
+  ptr = amps_umpireFree(ptr);
 #else
   CUDA_ERRCHK(cudaFree(ptr));
   // CUDA_ERRCHK(cudaFreeHost(ptr));

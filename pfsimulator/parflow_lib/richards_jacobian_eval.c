@@ -83,10 +83,10 @@ typedef struct {
    * J =  |        |
    *      [ JF  JB ]
    *
-   * where JC corresponds to surface-surface interations,
-   *      JB corresponds to subsurface-subsurface interations,
-   *      JE corresponds to surface-subsurface interations, and
-   *      JF corresponds to subsurface-surface interations.
+   * where JC corresponds to surface-surface interactions,
+   *      JB corresponds to subsurface-subsurface interactions,
+   *      JE corresponds to surface-subsurface interactions, and
+   *      JF corresponds to subsurface-surface interactions.
    *
    * To make for a more efficient implementation, we store the
    * interactions for JE and JF as part of JB, so that JC handles
@@ -224,7 +224,7 @@ void    RichardsJacobianEval(
   Vector      *density_der = NULL;
   Vector      *saturation_der = NULL;
 
-  /* Re-use vectors to save memory */
+  /* Reuse vectors to save memory */
   Vector      *rel_perm = NULL;
   Vector      *rel_perm_der = NULL;
 
@@ -449,7 +449,7 @@ void    RichardsJacobianEval(
     ddp = SubvectorData(dd_sub);    // density derivative: del-rho / del-press
     sdp = SubvectorData(sd_sub);    // saturation derivative: del-S / del-press
     pop = SubvectorData(po_sub);     // porosity
-    ss = SubvectorData(ss_sub);     // sepcific storage
+    ss = SubvectorData(ss_sub);     // specific storage
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
@@ -1058,7 +1058,7 @@ void    RichardsJacobianEval(
         /* MCB 04/14/2020:
          * Previously two module invokes were made every iteration
          * of the loop.  However, these calls were only retrieving
-         * a scalar and (potentially) multipling it against the BC
+         * a scalar and (potentially) multiplying it against the BC
          * value.
          * The PhaseDensityConstants function was added to
          * retrieve those values once and set den_d and dend_d appropriately.
