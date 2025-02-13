@@ -503,6 +503,6 @@ passed = np.allclose(base_case_pressure, test_case_pressure)
 
 
 if passed:
-    print(f"{vardz_with_well} : PASSED")
+    print(f"vardz_with_well : PASSED")
 else:
-    print(f"{vardz_with_well} : FAILED")
+    print(f"vardz_with_well : FAILED")

@@ -413,6 +413,6 @@ test_case_pressure = pf.read_pfb(f"{dir_name}/{test_case_pressure_file}")
 passed = np.allclose(correct_pressure, test_case_pressure)
 
 if passed:
-    print(f"{vardz_with_well_2_2_1} : PASSED")
+    print(f"vardz_with_well_2_2_1 : PASSED")
 else:
-    print(f"{vardz_with_well_2_2_1} : FAILED")
+    print(f"vardz_with_well_2_2_1 : FAILED")
