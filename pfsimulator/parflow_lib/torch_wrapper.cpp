@@ -7,17 +7,39 @@
 
 static torch::jit::script::Module model;
 
+
 extern "C" {
-  void init_torch_model(char* model_filepath) {
+  void init_torch_model(char* model_filepath, int nx, int ny, int nz, double *po_dat,
+			double *mann_dat, double *slopex_dat, double *slopey_dat, double *permx_dat,
+			double *permy_dat, double *permz_dat, double *sres_dat, double *ssat_dat) {
     std::string model_path = std::string(model_filepath);
     try {
       model = torch::jit::load(model_path);
     }
     catch (const c10::Error& e) {
-      std::cerr << "Error loading the model\n";
-      // raise error here
+      throw std::runtime_error(std::string("Failed to load the Torch model:\n") + e.what());
     }
 
+    std::unordered_map<std::string, torch::Tensor> statics;
+    torch::Tensor porosity = torch::from_blob(po_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["porosity"] = porosity;
+    torch::Tensor mannings = torch::from_blob(mann_dat, {nx, ny}, torch::kDouble).clone();
+    statics["mannings"] = mannings;
+    torch::Tensor slope_x = torch::from_blob(slopex_dat, {nx, ny}, torch::kDouble).clone();
+    statics["slope_x"] = slope_x;
+    torch::Tensor slope_y = torch::from_blob(slopey_dat, {nx, ny}, torch::kDouble).clone();
+    statics["slope_y"] = slope_y;
+    torch::Tensor perm_x = torch::from_blob(permx_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["permeability_x"] = perm_x;
+    torch::Tensor perm_y = torch::from_blob(permy_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["permeability_y"] = perm_y;
+    torch::Tensor perm_z = torch::from_blob(permz_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["permeability_z"] = perm_z;
+    torch::Tensor sres = torch::from_blob(sres_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["sres"] = sres;
+    torch::Tensor ssat = torch::from_blob(ssat_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["ssat"] = ssat;
+    
     // also call scale statics and store the result in a global variable.
   }
   

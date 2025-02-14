@@ -1294,9 +1294,9 @@ SetupRichards(PFModule * this_module)
 	  //Vector* ssat = ProblemSaturationGetSsat(problem_saturation);
           Subvector *ssat_sub = VectorSubvector(ssat, is);
           double *ssat_dat = SubvectorData(ssat_sub);
-	  init_torch_model(public_xtra->torch_model_filepath);
+	  init_torch_model(public_xtra->torch_model_filepath, nx, ny, nz, po_dat, mann_dat, slopex_dat,
+			   slopey_dat, permx_dat, permy_dat, permz_dat, sres_dat, ssat_dat);
         }
-
       FreeVector(sres);
       FreeVector(ssat);
       EndTiming(TorchTimingIndex);
