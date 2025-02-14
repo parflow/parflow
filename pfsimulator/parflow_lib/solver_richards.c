@@ -1248,7 +1248,57 @@ SetupRichards(PFModule * this_module)
 #ifdef PARFLOW_HAVE_TORCH
     if (public_xtra->enable_torch_accelerator) {
       BeginTiming(TorchTimingIndex);
-      init_torch_model(public_xtra->torch_model_filepath);
+      // Read sres and ssat from file. Ideally, these will be read in from
+      // fields of problem_saturation (see commented lines in the grid loop.)
+      Vector *sres = NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(sres, 0.0);
+      sprintf(filename, "%s.sres.pfb", file_prefix);
+      ReadPFBinary(filename, sres);
+      Vector *ssat = NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(sres, 0.0);
+      sprintf(filename, "%s.ssat.pfb", file_prefix);
+      ReadPFBinary(filename, ssat);
+      
+      Subgrid *subgrid;
+      int is, nx, ny, nz;
+      ForSubgridI(is, GridSubgrids(grid))
+        {
+          subgrid = GridSubgrid(grid, is);
+          nx = SubgridNX(subgrid);
+          ny = SubgridNY(subgrid);
+          nz = SubgridNZ(subgrid);
+	  Vector *porosity = ProblemDataPorosity(problem_data);
+	  Subvector *po_sub = VectorSubvector(porosity, is);
+          double *po_dat = SubvectorData(po_sub);
+          Vector *mannings = ProblemDataMannings(problem_data);
+          Subvector* mann_sub = VectorSubvector(mannings, is);
+          double *mann_dat = SubvectorData(mann_sub);
+          Vector *slope_x = ProblemDataTSlopeX(problem_data);
+          Subvector *slopex_sub = VectorSubvector(slope_x, is);
+          double *slopex_dat = SubvectorData(slopex_sub);
+          Vector *slope_y = ProblemDataTSlopeY(problem_data);
+          Subvector *slopey_sub = VectorSubvector(slope_y, is);
+          double *slopey_dat = SubvectorData(slopey_sub);
+          Vector *perm_x = ProblemDataPermeabilityX(problem_data);
+          Subvector *permx_sub = VectorSubvector(perm_x, is);
+          double *permx_dat = SubvectorData(permx_sub);
+          Vector *perm_y = ProblemDataPermeabilityY(problem_data);
+          Subvector *permy_sub = VectorSubvector(perm_y, is);
+          double *permy_dat = SubvectorData(permy_sub);
+          Vector *perm_z = ProblemDataPermeabilityZ(problem_data);
+          Subvector *permz_sub = VectorSubvector(perm_z, is);
+          double *permz_dat = SubvectorData(permz_sub);
+          //Vector* sres = ProblemSaturationGetSres(problem_saturation);
+          Subvector *sres_sub = VectorSubvector(sres, is);
+          double *sres_dat = SubvectorData(sres_sub);
+	  //Vector* ssat = ProblemSaturationGetSsat(problem_saturation);
+          Subvector *ssat_sub = VectorSubvector(ssat, is);
+          double *ssat_dat = SubvectorData(ssat_sub);
+	  init_torch_model(public_xtra->torch_model_filepath);
+        }
+
+      FreeVector(sres);
+      FreeVector(ssat);
       EndTiming(TorchTimingIndex);
     }
 #endif
@@ -3062,18 +3112,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (public_xtra->enable_torch_accelerator)
       {
         BeginTiming(TorchTimingIndex);
-        GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
         Subgrid *subgrid;
         Grid *grid = VectorGrid(evap_trans_sum);
         Subvector *p_sub;
         double *pp;
         int is, nx, ny, nz;
-        /*      printf(">>>>>>>>>>>>>>>> Torch and Call saturation module. \n");
-         * PFModuleInvokeType(SaturationInvoke, problem_saturation,
-         *                 (instance_xtra->saturation, instance_xtra->pressure,
-         *                  instance_xtra->density, gravity, problem_data,
-         *                  CALCFCN));
-         */
+
         ForSubgridI(is, GridSubgrids(grid))
         {
           subgrid = GridSubgrid(grid, is);
@@ -3084,34 +3128,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           pp = SubvectorData(p_sub);
           et_sub = VectorSubvector(evap_trans, is);
           et = SubvectorData(et_sub);
-          po_sub = VectorSubvector(porosity, is);
-          po_dat = SubvectorData(po_sub);
-          Vector *mannings = ProblemDataMannings(problem_data);
-          Subvector* mann_sub = VectorSubvector(mannings, is);
-          double *mann_dat = SubvectorData(mann_sub);
-          Vector *slope_x = ProblemDataTSlopeX(problem_data);
-          Subvector *slopex_sub = VectorSubvector(slope_x, is);
-          double *slopex_dat = SubvectorData(slopex_sub);
-          Vector *slope_y = ProblemDataTSlopeY(problem_data);
-          Subvector *slopey_sub = VectorSubvector(slope_y, is);
-          double *slopey_dat = SubvectorData(slopey_sub);
-          Vector *perm_x = ProblemDataPermeabilityX(problem_data);
-          Subvector *permx_sub = VectorSubvector(perm_x, is);
-          double *permx_dat = SubvectorData(permx_sub);
-          Vector *perm_y = ProblemDataPermeabilityY(problem_data);
-          Subvector *permy_sub = VectorSubvector(perm_y, is);
-          double *permy_dat = SubvectorData(permy_sub);
-          Vector *perm_z = ProblemDataPermeabilityZ(problem_data);
-          Subvector *permz_sub = VectorSubvector(perm_z, is);
-          double *permz_dat = SubvectorData(permz_sub);
-          /*      Vector* sres = ProblemSaturationGetSres(problem_saturation);
-           * Subvector *sres_sub = VectorSubvector(sres, is);
-           * double *sres_dat = SubvectorData(sres_sub);
-           * Vector* ssat = ProblemSaturationGetSsat(problem_saturation);
-           * Subvector *ssat_sub = VectorSubvector(ssat, is);
-           * double *ssat_dat = SubvectorData(ssat_sub);
-           */
-
           SubvectorData(p_sub) = predict_next_pressure_step(pp, nx, ny, nz);
         }
         if (public_xtra->print_predicted_pressure)
