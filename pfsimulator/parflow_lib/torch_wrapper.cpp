@@ -43,9 +43,9 @@ extern "C" {
     // also call scale statics and store the result in a global variable.
   }
   
-  double* predict_next_pressure_step(double* pp, int nx, int ny, int nz) {
-
-    torch::Tensor input_tensor = torch::from_blob(pp, {nx, ny, nz}, torch::kDouble);
+  double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz) {
+    torch::Tensor press = torch::from_blob(pp, {nx, ny, nz}, torch::kDouble);
+    torch::Tensor evap_trans = torch::from_blob(et, {nx, ny, nz}, torch::kDouble);    
 
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(input_tensor);
