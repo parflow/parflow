@@ -20,11 +20,12 @@
  *
  * The solution below creates those containers implicitly, by asking for PADDING more data
  * and storing the size of the allocation in the beginning of the allocated block. PADDING
- * is chosen so that memory alignment is not affected. 
+ * is chosen so that memory alignment is not affected (CUDA memory allocation routines
+ * always return an address aligned to at least 256 bytes).
  *
  */
 
-#define PADDING 128
+#define PADDING 256
 
 #include <rmm/mr/device/pool_memory_resource.hpp>
 #include <rmm/mr/device/managed_memory_resource.hpp>
@@ -61,7 +62,7 @@ extern "C" {
   }
 
   void amps_rmmFinalize() {
-    pool_mr->~pool_memory_resource();
+    delete pool_mr;
   }
 }
 
