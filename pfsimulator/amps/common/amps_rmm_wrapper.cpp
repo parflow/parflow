@@ -21,8 +21,9 @@
  * The solution below creates those containers implicitly, by asking for PADDING more data
  * and storing the size of the allocation in the beginning of the allocated block. PADDING
  * is chosen so that memory alignment is not affected (CUDA memory allocation routines
- * always return an address aligned to at least 256 bytes).
- *
+ * always return an address aligned to at least 256 bytes). For a ParFlow simulation, the
+ * amount of GPU memory used for padding is just a rounding error.
+ * 
  */
 
 #define PADDING 256
