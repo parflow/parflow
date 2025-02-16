@@ -429,6 +429,15 @@ jobs:
           make -j 2 install
         fi
 
+    - name: Torch Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          wget https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.6.0%2Bcpu.zip
+          unzip libtorch-cxx11-abi-shared-with-deps-2.6.0+cpu.zip
+        fi
+
     - name: ParFlow CMake Configure
       run: |
         cat $HOME/depend/cache-key
@@ -454,6 +463,7 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
+	   -DTorch_ROOT=$PARFLOW_DEP_DIR/libtorch                       \
            $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS
 
     - name: ParFlow CMake Build
