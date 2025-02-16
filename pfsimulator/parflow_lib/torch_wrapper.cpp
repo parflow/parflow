@@ -48,7 +48,7 @@ extern "C" {
     torch::Tensor evap_trans = torch::from_blob(et, {nx, ny, nz}, torch::kDouble);    
 
     std::vector<torch::jit::IValue> inputs;
-    inputs.push_back(input_tensor);
+    inputs.push_back(press);
 
     at::Tensor output = model.forward(inputs).toTensor();
 
