@@ -509,7 +509,7 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
-      	   -DTorch_ROOT=$PARFLOW_DEP_DIR/libtorch                       \
+           -DTorch_ROOT=$PARFLOW_DEP_DIR/libtorch                       \
            $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS
 
     - name: ParFlow CMake Build
