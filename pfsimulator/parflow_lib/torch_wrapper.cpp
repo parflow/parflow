@@ -42,7 +42,12 @@ extern "C" {
     statics["ssat"] = ssat;
     torch::Tensor fbz = torch::from_blob(fbz_dat, {nx, ny, nz}, torch::kDouble).clone();
     statics["pf_flowbarrier"] = fbz;
-    std::cout << ">>>>>>>>>>>>> FBz: " << fbz << std::endl;
+    torch::Tensor specific_storage = torch::from_blob(specific_storage_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["specific_storage"] = specific_storage;
+    torch::Tensor alpha = torch::from_blob(alpha_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["vg_alpha"] = alpha;
+    torch::Tensor n = torch::from_blob(n_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["vg_n"] = n;
     // also call scale statics and store the result in a global variable.
   }
   
