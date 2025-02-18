@@ -48,7 +48,7 @@ extern "C" {
   
   double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz) {
     torch::Tensor press = torch::from_blob(pp, {nx, ny, nz}, torch::kDouble);
-    torch::Tensor evap_trans = torch::from_blob(et, {nx, ny, nz}, torch::kDouble);    
+    torch::Tensor evap_trans = torch::from_blob(et, {nx, ny}, torch::kDouble);    
 
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(press);
