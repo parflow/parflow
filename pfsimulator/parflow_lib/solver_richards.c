@@ -1249,7 +1249,7 @@ SetupRichards(PFModule * this_module)
 #ifdef PARFLOW_HAVE_TORCH
     if (public_xtra->enable_torch_accelerator) {
       BeginTiming(TorchTimingIndex);
-      // Read sres and ssat from file. Ideally, these will be read in from
+      // Read sres, ssat, n, alpha from file. Ideally, these will be read in from
       // fields of problem_saturation (see commented lines in the grid loop.)
       Vector *sres = NewVectorType(grid, 1, 1, vector_cell_centered);
       InitVectorAll(sres, 0.0);
@@ -1259,6 +1259,14 @@ SetupRichards(PFModule * this_module)
       InitVectorAll(sres, 0.0);
       sprintf(filename, "%s.ssat.pfb", file_prefix);
       ReadPFBinary(filename, ssat);
+      Vector *alpha = NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(alpha, 0.0);
+      sprintf(filename, "%s.alpha.pfb", file_prefix);
+      ReadPFBinary(filename, alpha);
+      Vector *n = NewVectorType(grid, 1, 1, vector_cell_centered);
+      InitVectorAll(n, 0.0);
+      sprintf(filename, "%s.n.pfb", file_prefix);
+      ReadPFBinary(filename, n);
       
       Subgrid *subgrid;
       int is, nx, ny, nz;
@@ -1295,8 +1303,19 @@ SetupRichards(PFModule * this_module)
 	  //Vector* ssat = ProblemSaturationGetSsat(problem_saturation);
           Subvector *ssat_sub = VectorSubvector(ssat, is);
           double *ssat_dat = SubvectorData(ssat_sub);
+	  Vector *fbz = ProblemDataFBz(problem_data);
+	  Subvector *fbz_sub = VectorSubvector(fbz, is);
+	  double *fbz_dat = SubvectorData(fbz_sub);
+	  Vector *specific_storage = ProblemDataSpecificStorage(problem_data);
+	  Subvector *specific_storage_sub = VectorSubvector(specific_storage, is);
+	  double *specific_storage_dat = SubvectorData(specific_storage_sub);
+	  Subvector *alpha_sub = VectorSubvector(alpha, is);
+	  double *alpha_dat = SubvectorData(alpha_sub);
+	  Subvector *n_sub = VectorSubvector(n, is);
+	  double *n_dat = SubvectorData(n_sub);
 	  init_torch_model(public_xtra->torch_model_filepath, nx, ny, nz, po_dat, mann_dat, slopex_dat,
-			   slopey_dat, permx_dat, permy_dat, permz_dat, sres_dat, ssat_dat);
+			   slopey_dat, permx_dat, permy_dat, permz_dat, sres_dat, ssat_dat, fbz_dat,
+			   specific_storage_dat, alpha_dat, n_dat);
         }
       FreeVector(sres);
       FreeVector(ssat);

@@ -11,7 +11,8 @@ static torch::jit::script::Module model;
 extern "C" {
   void init_torch_model(char* model_filepath, int nx, int ny, int nz, double *po_dat,
 			double *mann_dat, double *slopex_dat, double *slopey_dat, double *permx_dat,
-			double *permy_dat, double *permz_dat, double *sres_dat, double *ssat_dat) {
+			double *permy_dat, double *permz_dat, double *sres_dat, double *ssat_dat,
+			double *fbz_dat, double *specific_storage_dat, double *alpha_dat, double *n_dat) {                           
     std::string model_path = std::string(model_filepath);
     try {
       model = torch::jit::load(model_path);
@@ -39,7 +40,9 @@ extern "C" {
     statics["sres"] = sres;
     torch::Tensor ssat = torch::from_blob(ssat_dat, {nx, ny, nz}, torch::kDouble).clone();
     statics["ssat"] = ssat;
-    
+    torch::Tensor fbz = torch::from_blob(fbz_dat, {nx, ny, nz}, torch::kDouble).clone();
+    statics["pf_flowbarrier"] = fbz;
+    std::cout << ">>>>>>>>>>>>> FBz: " << fbz << std::endl;
     // also call scale statics and store the result in a global variable.
   }
   
