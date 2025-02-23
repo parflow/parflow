@@ -5,11 +5,18 @@ set(COMMON_SRC_FILES amps_abort.c amps_clear.c amps_clock.c
   amps_invoice.c amps_io.c amps_newhandle.c amps_newpackage.c
   amps_sfbcast.c amps_sfclose.c amps_sfopen.c amps_wait.c signal.c amps_print.c)
 
+if (${PARFLOW_HAVE_RMM})
+  list(APPEND COMMON_SRC_FILES
+    amps_rmm_wrapper.cpp
+  )
+endif (${PARFLOW_HAVE_RMM})  
+
 if (${PARFLOW_HAVE_UMPIRE})
   list(APPEND COMMON_SRC_FILES
     amps_umpire_wrapper.cpp
   )
 endif (${PARFLOW_HAVE_UMPIRE})  
+
 string(REGEX REPLACE "([^;]+)" "common/\\1" COMMON_SRC_FILES "${COMMON_SRC_FILES}")
 
 # Sets AMPS_SRC_FILES for AMPS transport layer being used in build
@@ -32,8 +39,7 @@ if( ${PARFLOW_HAVE_UMPIRE} )
 endif( ${PARFLOW_HAVE_UMPIRE} )
 
 if( ${PARFLOW_HAVE_RMM} )
-  target_link_libraries(amps rmm)
-  target_include_directories(amps PUBLIC ${RMM_INCLUDE})
+  target_link_libraries(amps rmm::rmm)
 endif( ${PARFLOW_HAVE_RMM} )
 
 if( ${PARFLOW_HAVE_KOKKOS} )
