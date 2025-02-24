@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
+subroutine drv_clmini (drv, grid,pf_porosity, tile, clm, istep_pf)
 
 !=========================================================================
 !
@@ -75,6 +75,7 @@ subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
   real(r8) zlak(1:10)   !temporary z; currenly hard coded initialization
   real(r8) dzlak(1:10)  !temporary dz; currenly hard coded initialization
   real(r8) xksat
+  real(r8) pf_porosity(nlevsoi)  !porosity from PF, replaces watsat clm var
 
 !=== End Variable List ===================================================
 
@@ -207,7 +208,8 @@ subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
      do j = 1, nlevsoi
         clm%bsw(j)    = 2.91 + 0.159*tile%clay(j)*100.0
 !@      clm%watsat(j) = 0.489 - 0.00126*tile%sand(j)*100.0 Stefan: followed Reed to make it consistent with PILPS
-        clm%watsat(j) = 0.401d0  !@This varaible is now read in directly in read_array.f90 !@IMF: uncommented b/c used later...must be defined.
+!@        clm%watsat(j) = 0.401d0  !@This varaible is now read in directly in read_array.f90 !@IMF: uncommented b/c used later...must be defined.
+       clm%watsat(j) = pf_porosity(j)   !@RMM passed in parflow porosity
         xksat         = 0.0070556 *( 10.**(-0.884+0.0153*tile%sand(j)*100.0)) 
 
 !@== clm%hksat(j)  = xksat * exp(-clm%zi(j)/tile%hkdepth) This is now read in from drv_main from an array in read_array.f90

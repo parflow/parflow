@@ -6,7 +6,8 @@ set(CLM_2D_TESTS)
 if (${PARFLOW_HAVE_CLM})
   if (${PARFLOW_HAVE_HYPRE})
     list(APPEND CLM_TESTS
-      clm-reuse)
+      clm-reuse
+      clm_rz_water_stress)
 
     list(APPEND CLM_2D_TESTS
       clm_slope)

@@ -4421,6 +4421,13 @@ pfset Solver.CLM.RootZoneNZ      4
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.SoiLayer      4
 \end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.CLM.RZWaterStress}{0}
+{This key sets the distribution of transpiration over the root zone and changes the behavior of plant water limitations.  As discussed in \cite{Ferg16} water stress approaches result in different cut-offs for transpiration.  Two options are currently implemented both use the beta-type water stress defined above.  Option 0 (default) will limit transpiration when the top soil layer drops below wilting point, option 1 limits each layer independently.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.RZWaterStress       1
+\end{verbatim}\end{display}
+
 %====
 % @JSS CLM Slope Keys here
 %=====
