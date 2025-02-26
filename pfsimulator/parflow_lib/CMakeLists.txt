@@ -305,14 +305,7 @@ endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_PDI})
   target_include_directories (pfsimulator PUBLIC "${PDI_INCLUDE_DIRS}")
-endif (${PARFLOW_HAVE_PDI})
-
-if (${PARFLOW_HAVE_PDI})
   target_include_directories (pfsimulator PUBLIC "${PARACONF_INCLUDE_DIRS}")
-endif (${PARFLOW_HAVE_PDI})
-
-if (${PARFLOW_HAVE_PDI})
-  target_link_libraries(pfsimulator "${SPDLOG_LIBRARIES}")
 endif (${PARFLOW_HAVE_PDI})
 
 if (${PARFLOW_HAVE_NETCDF})

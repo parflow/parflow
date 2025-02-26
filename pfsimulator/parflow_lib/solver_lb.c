@@ -287,24 +287,24 @@ void      SolverDiffusion()
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataPorosity(problem_data));
   }
-  
+
   if (public_xtra->write_pdi_subsurf_data)
   {
     sprintf(file_postfix, "perm_x");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataPermeabilityX(problem_data), 0, 0);
+             ProblemDataPermeabilityX(problem_data), 0, 0);
 
     sprintf(file_postfix, "perm_y");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataPermeabilityY(problem_data), 0, 0);
+             ProblemDataPermeabilityY(problem_data), 0, 0);
 
     sprintf(file_postfix, "perm_y");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataPermeabilityY(problem_data), 0, 0);
+             ProblemDataPermeabilityY(problem_data), 0, 0);
 
     sprintf(file_postfix, "porosity");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataPorosity(problem_data), 0, 0);
+             ProblemDataPorosity(problem_data), 0, 0);
   }
 
   if (!amps_Rank(amps_CommWorld))
@@ -547,7 +547,7 @@ void      SolverDiffusion()
         }
         any_file_dumped = 1;
       }
-      
+
       if (public_xtra->write_pdi_concen && dump_files)
       {
         indx = 0;
@@ -558,7 +558,7 @@ void      SolverDiffusion()
             sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen,
                     file_number);
             WritePDI(file_prefix, file_postfix, file_number,
-                           concentrations[indx], 1, drop_tol);
+                     concentrations[indx], 1, drop_tol);
             indx++;
           }
         }
@@ -903,13 +903,12 @@ void      SolverDiffusion()
           }
 #endif
         }
-        
+
         if (public_xtra->write_pdi_press)
         {
           sprintf(file_postfix, "press.%05d", file_number - 1);
           WritePDI(file_prefix, file_postfix, file_number - 1, pressure, 0, 0);
         }
-        
       }
     }
 
@@ -1164,7 +1163,7 @@ void      SolverDiffusion()
             }
             any_file_dumped = 1;
           }
-          
+
           if (public_xtra->write_pdi_satur && dump_files)
           {
             for (phase = 0; phase < ProblemNumPhases(problem); phase++)
@@ -1174,7 +1173,6 @@ void      SolverDiffusion()
             }
             any_file_dumped = 1;
           }
-          
         }
       }
 
@@ -1229,7 +1227,7 @@ void      SolverDiffusion()
           }
           any_file_dumped = 1;
         }
-        
+
         if (public_xtra->write_pdi_concen && dump_files)
         {
           indx = 0;
@@ -1240,13 +1238,12 @@ void      SolverDiffusion()
               sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen,
                       file_number);
               WritePDI(file_prefix, file_postfix, file_number,
-                             concentrations[indx], 1, drop_tol);
+                       concentrations[indx], 1, drop_tol);
               indx++;
             }
           }
           any_file_dumped = 1;
         }
-        
       }
 
       /**********************************************************************/
@@ -1297,13 +1294,12 @@ void      SolverDiffusion()
         sprintf(file_postfix, "press");
         WritePFBinary(file_prefix, file_postfix, pressure);
       }
-      
+
       if (public_xtra->write_pdi_press)
       {
         sprintf(file_postfix, "press");
         WritePDI(file_prefix, file_postfix, 0, pressure, 0, 0);
       }
-      
     }
   }
   while (still_evolving);

@@ -92,7 +92,7 @@ typedef struct {
   int print_evaptrans_sum;      /* print evaptrans_sum? */
   int print_overland_sum;       /* print overland_sum? */
   int print_overland_bc_flux;   /* print overland outflow boundary condition flux? */
-  
+
   int write_pdi_subsurf_data;     /* write subsurf via PDI */
   int write_pdi_press;            /* write pressure via PDI */
   int write_pdi_slopes;           /* write slopes via PDI */
@@ -109,7 +109,7 @@ typedef struct {
   int write_pdi_evaptrans_sum;    /* write evaptrans_sum via PDI */
   int write_pdi_overland_sum;     /* write overland_sum via PDI */
   int write_pdi_overland_bc_flux; /* write overland_bc_flux via PDI */
-  
+
   int write_silo_subsurf_data;  /* write permeability/porosity? */
   int write_silo_press;         /* write pressures? */
   int write_silo_velocities;    /* write velocities? */
@@ -561,25 +561,24 @@ SetupRichards(PFModule * this_module)
   {
     strcpy(file_postfix, "perm_x");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataPermeabilityX(problem_data),0,0);
-                  
+             ProblemDataPermeabilityX(problem_data), 0, 0);
+
     strcpy(file_postfix, "perm_y");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataPermeabilityY(problem_data),0,0);
+             ProblemDataPermeabilityY(problem_data), 0, 0);
 
     strcpy(file_postfix, "perm_z");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataPermeabilityZ(problem_data),0,0);
+             ProblemDataPermeabilityZ(problem_data), 0, 0);
 
     strcpy(file_postfix, "porosity");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataPorosity(problem_data),0,0);
+             ProblemDataPorosity(problem_data), 0, 0);
 
     // IMF -- added specific storage to subsurface bundle
     strcpy(file_postfix, "specific_storage");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataSpecificStorage(problem_data),0,0);
-                  
+             ProblemDataSpecificStorage(problem_data), 0, 0);
   }
 
   if (public_xtra->write_silo_subsurf_data)
@@ -664,11 +663,11 @@ SetupRichards(PFModule * this_module)
   {
     strcpy(file_postfix, "slope_x");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataTSlopeX(problem_data), 0, 0);
+             ProblemDataTSlopeX(problem_data), 0, 0);
 
     strcpy(file_postfix, "slope_y");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataTSlopeY(problem_data), 0, 0);
+             ProblemDataTSlopeY(problem_data), 0, 0);
   }
 
   if (public_xtra->print_channelwidth)
@@ -734,8 +733,7 @@ SetupRichards(PFModule * this_module)
   {
     strcpy(file_postfix, "mannings");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataMannings(problem_data), 0, 0);
-
+             ProblemDataMannings(problem_data), 0, 0);
   }
 
   if (public_xtra->write_silo_mannings)
@@ -819,8 +817,7 @@ SetupRichards(PFModule * this_module)
   {
     strcpy(file_postfix, "specific_storage");
     WritePDI(file_prefix, file_postfix, 0,
-                  ProblemDataSpecificStorage(problem_data), 0, 0);
-
+             ProblemDataSpecificStorage(problem_data), 0, 0);
   }
 
   if (public_xtra->write_silo_specific_storage)
@@ -843,8 +840,6 @@ SetupRichards(PFModule * this_module)
   if (public_xtra->write_pdi_top)
   {
     printf("WritePDITop -- not yet implemented\n");
-    // strcpy(file_postfix, "top");
-    // WritePFBinary(file_prefix, file_postfix, XXXXXXXXXXXXXXXX(problem_data));
   }
 
   if (public_xtra->write_silo_top)
@@ -1386,12 +1381,12 @@ SetupRichards(PFModule * this_module)
                                 press_filenames);
       }
 
-    if (public_xtra->write_pdi_press)
-    {
-      sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
-      WritePDI(file_prefix, file_postfix, instance_xtra->file_number, instance_xtra->pressure, 0, 0);
-      any_file_dumped = 1;
-    }
+      if (public_xtra->write_pdi_press)
+      {
+        sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number, instance_xtra->pressure, 0, 0);
+        any_file_dumped = 1;
+      }
 
       if (public_xtra->write_silo_press)
       {
@@ -1441,13 +1436,13 @@ SetupRichards(PFModule * this_module)
                                 satur_filenames);
       }
 
-    if (public_xtra->write_pdi_satur)
-    {
-      sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
-      WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                    instance_xtra->saturation, 0, 0);
-      any_file_dumped = 1;
-    }
+      if (public_xtra->write_pdi_satur)
+      {
+        sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+        WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
+                 instance_xtra->saturation, 0, 0);
+        any_file_dumped = 1;
+      }
 
       if (public_xtra->write_silo_satur)
       {
@@ -1568,12 +1563,12 @@ SetupRichards(PFModule * this_module)
                                mask_filenames);
       }
 
-    if (public_xtra->write_pdi_mask)
-    {
-      strcpy(file_postfix, "mask");
-      WritePDI(file_prefix, file_postfix, 0, instance_xtra->mask, 0, 0);
-      any_file_dumped = 1;
-    }
+      if (public_xtra->write_pdi_mask)
+      {
+        strcpy(file_postfix, "mask");
+        WritePDI(file_prefix, file_postfix, 0, instance_xtra->mask, 0, 0);
+        any_file_dumped = 1;
+      }
 
       if (public_xtra->write_netcdf_mask)
       {
@@ -1735,15 +1730,15 @@ SetupRichards(PFModule * this_module)
     {
       sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
       WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                    instance_xtra->x_velocity, 0, 0);
+               instance_xtra->x_velocity, 0, 0);
 
       sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
       WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                    instance_xtra->y_velocity, 0, 0);
+               instance_xtra->y_velocity, 0, 0);
 
       sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
       WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                    instance_xtra->z_velocity, 0, 0);
+               instance_xtra->z_velocity, 0, 0);
 
       any_file_dumped = 1;
     }
@@ -3546,7 +3541,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "press.%05d",
                 instance_xtra->file_number);
         WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                      instance_xtra->pressure, 0, 0);
+                 instance_xtra->pressure, 0, 0);
         any_file_dumped = 1;
       }
 
@@ -3613,15 +3608,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         sprintf(file_postfix, "velx.%05d", instance_xtra->file_number);
         WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                      instance_xtra->x_velocity, 0, 0);
+                 instance_xtra->x_velocity, 0, 0);
 
         sprintf(file_postfix, "vely.%05d", instance_xtra->file_number);
         WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                      instance_xtra->y_velocity, 0, 0);
+                 instance_xtra->y_velocity, 0, 0);
 
         sprintf(file_postfix, "velz.%05d", instance_xtra->file_number);
         WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                      instance_xtra->z_velocity, 0, 0);
+                 instance_xtra->z_velocity, 0, 0);
         any_file_dumped = 1;
       }
 
@@ -3644,7 +3639,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "satur.%05d",
                 instance_xtra->file_number);
         WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                      instance_xtra->saturation, 0, 0);
+                 instance_xtra->saturation, 0, 0);
         any_file_dumped = 1;
       }
 
@@ -3693,7 +3688,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
          * "evapotranspiration", "mm", "cell", "subsurface", 0, NULL);
          */
       }
-      
+
       if (public_xtra->write_pdi_evaptrans)
       {
         sprintf(file_postfix, "evaptrans.%05d",
@@ -3752,7 +3747,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           WritePFBinary(file_prefix, file_postfix, evap_trans_sum);
           any_file_dumped = 1;
         }
-        
+
         if (public_xtra->write_pdi_evaptrans_sum)
         {
           sprintf(file_postfix, "evaptranssum.%05d",
@@ -3807,7 +3802,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           WritePFBinary(file_prefix, file_postfix, overland_sum);
           any_file_dumped = 1;
         }
-        
+
         if (public_xtra->write_pdi_overland_sum)
         {
           sprintf(file_postfix, "overlandsum.%05d",
@@ -3861,9 +3856,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(file_postfix, "overland_bc_flux.%05d",
                 instance_xtra->file_number);
         WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                      instance_xtra->ovrl_bc_flx, 0, 0);
+                 instance_xtra->ovrl_bc_flx, 0, 0);
         any_file_dumped = 1;
-
       }
 
       if (public_xtra->write_netcdf_overland_bc_flux)
@@ -4439,7 +4433,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
       WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                    instance_xtra->saturation, 0, 0);
+               instance_xtra->saturation, 0, 0);
       any_file_dumped = 1;
     }
 
@@ -4460,7 +4454,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       WritePFBinary(file_prefix, file_postfix, evap_trans);
       any_file_dumped = 1;
     }
-    
+
     if (public_xtra->write_pdi_evaptrans)
     {
       sprintf(file_postfix, "evaptrans.%05d",
@@ -4489,7 +4483,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         WritePFBinary(file_prefix, file_postfix, evap_trans_sum);
         any_file_dumped = 1;
       }
-      
+
       if (public_xtra->write_pdi_evaptrans_sum)
       {
         sprintf(file_postfix, "evaptranssum.%05d",
@@ -4522,7 +4516,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         WritePFBinary(file_prefix, file_postfix, overland_sum);
         any_file_dumped = 1;
       }
-      
+
       if (public_xtra->write_pdi_overland_sum)
       {
         sprintf(file_postfix, "overlandsum.%05d",
@@ -4558,7 +4552,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       sprintf(file_postfix, "overland_bc_flux.%05d",
               instance_xtra->file_number);
       WritePDI(file_prefix, file_postfix, instance_xtra->file_number,
-                    instance_xtra->ovrl_bc_flx, 0, 0);
+               instance_xtra->ovrl_bc_flx, 0, 0);
       any_file_dumped = 1;
     }
 
@@ -5838,7 +5832,7 @@ SolverRichardsNewPublicXtra(char *name)
 #endif
 
   /* PDI file writing control */
-  
+
   sprintf(key, "%s.WritePDISubsurfData", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -5980,7 +5974,7 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->write_pdi_overland_bc_flux = switch_value;
 
   /* Silo file writing control */
-  
+
   sprintf(key, "%s.WriteSiloSubsurfData", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndexExitOnError(switch_na, switch_name, key);
