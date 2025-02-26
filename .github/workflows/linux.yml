@@ -132,9 +132,9 @@ jobs:
             memory_manager: "none"
           }
         - {
-            name: "Ubuntu 20.04 GCC Python",
-            os: ubuntu-20.04,
-            cudaos: 'ubuntu2004',
+            name: "Ubuntu 24.04 GCC Python",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
             cc: "gcc", cxx: "g++", fc: "gfortran",
             python: "true",
             backend: "none",
@@ -218,7 +218,7 @@ jobs:
         sudo apt-get -qq install curl cmake build-essential tcl-dev tk-dev gfortran hdf5-helpers libcurl4 libcurl4-gnutls-dev
 
     - name: HDF5 and OpenMPI Install on Ubuntu 22.04
-      if: matrix.config.os == 'ubuntu-20.04' || matrix.config.os == 'ubuntu-22.04'
+      if: matrix.config.os == 'ubuntu-22.04'
       run: |
         sudo apt-get -qq update
         sudo apt -qq install libhdf5-openmpi-103 libhdf5-openmpi-dev
