@@ -1,0 +1,167 @@
+# Building Parflow with PDI Data Interface
+
+This guide explains how to build ParFlow with support for the PDI (ParFlow Data Interface).
+
+## Overview
+
+PDI is a library designed to decouple high-performance simulation codes from input/output (I/O) management. It provides a declarative API that lets codes expose their data buffers and notify PDI of key simulation events. With a flexible plugin system, it integrates seamlessly with existing I/O libraries such as HDF5, NetCDF, and Python, or can also be combined within a single execution. By handling I/O through a dedicated YAML configuration file rather than embedding it in the simulation code, PDI enhances portability and maintainability. Its flexible plugin API also allows users to tailor data handling to their specifc I/O needs whether optimizing for performance, storage format, or hardware constraints.
+
+For more details, see the [PDI GitHub repository](https://github.com/pdidev/pdi/tree/main?tab=readme-ov-file#the-pdi-distribution).
+
+## Current PDI Features
+- Per-Process Data Collection: Each process collects simulation data independently.
+- HDF5 File Output: Data is saved in HDF5 files, with filenames that include the corresponding process rank.
+
+### Future Enhancements:
+
+In-situ Data Processing: Future iterations will focus on in-situ data processing and analysis, reducing the need for disk I/O operations.
+
+## Obtaining and installing PDI
+
+Follow these steps to download and install PDI:
+
+### Bash Instructions
+
+```shell
+# Download the PDI release (example: version 1.8.1)
+wget https://github.com/pdidev/pdi/archive/refs/tags/1.8.1.tar.gz
+tar -xzf 1.8.1.tar.gz
+
+# Prepare the build directory
+rm -rf pdi-1.8.1/build
+mkdir pdi-1.8.1/build
+cd pdi-1.8.1/build
+
+# Set the installation path and compile
+export PDI_INSTALL=../install
+rm -rf ${PDI_INSTALL}
+mkdir ${PDI_INSTALL}
+cmake .. -DCMAKE_INSTALL_PREFIX=${PDI_INSTALL}
+make -j 8 install
+```
+
+## Building ParFlow with PDI
+
+To build ParFlow with PDI support, HDF5 must be enabled. Specify the PDI installation path using the `PDI_ROOT` CMake option:
+
+```shell
+cmake ../parflow -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
+    -DPARFLOW_AMPS_LAYER=mpi1 \
+    -DPARFLOW_ENABLE_HDF5=TRUE \
+    -DPARFLOW_ENABLE_TIMING=TRUE \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DPDI_ROOT=$PDI_INSTALL
+```
+
+## Running ParFlow with PDI
+
+PDI is configured via a YAML file (`conf.yml`), which defines the data specifications and plugins that manage ParFlow outputs. This file is located in:
+
+```swift
+/parflow/pfsimulator/third_party/pdi/conf.yml
+```
+
+It describes the vector data structure that ParFlow uses to store physical parameters such as pressure, saturation, etc. When running ParFlow with PDI, ensure that `conf.yml` is copied to your working directory. For example, add the following to your TCL script:
+
+```tcl
+file copy -force /parflow/pfsimulator/third_party/pdi/conf.yml ./
+
+```
+Or, in a bash sript:
+
+```shell
+scp /parflow/pfsimulator/third_party/pdi/conf.yml .
+```
+## Exposing Solver Outputs to PDI
+
+To expose ParFlow outputs through PDI, enable the following options in your solver configuration.
+
+### Impec Solver
+#### Python Example:
+```python
+{run_name}.Solver.WritePDISubsurfData = True
+{run_name}.Solver.WritePDIPressure = True
+{run_name}.Solver.WritePDIVelocities = True
+{run_name}.Solver.WritePDISaturation = True
+{run_name}.Solver.WritePDIWells = True
+{run_name}.Solver.WritePDIConcentration = True
+```
+#### TCL Example:
+```tcl
+pfset Solver.WritePDISubsurfData True
+pfset Solver.WritePDIPressure True
+pfset Solver.WritePDIVelocities True
+pfset Solver.WritePDISaturation True
+pfset Solver.WritePDIWells True
+pfset Solver.WritePDIConcentration True
+```
+
+### Richards solver
+#### Python Example:
+```python
+{run_name}.Solver.WritePDISubsurfData = True
+{run_name}.Solver.WritePDIMannings = True
+{run_name}.Solver.WritePDISlopes = True
+{run_name}.Solver.WritePDIPressure = True
+{run_name}.Solver.WritePDISpecificStorage = True
+{run_name}.Solver.WritePDIVelocities = True
+{run_name}.Solver.WritePDISaturation = True
+{run_name}.Solver.WritePDIMask = True
+{run_name}.Solver.WritePDIDZMultiplier = True
+{run_name}.Solver.WritePDIEvapTransSum = True
+{run_name}.Solver.WritePDIEvapTrans = True
+{run_name}.Solver.WritePDIOverlandSum = True
+{run_name}.Solver.WritePDIOverlandBCFlux = True
+```
+#### TCL Example:
+```tcl
+pfset Solver.WritePDISubsurfData True
+pfset Solver.WritePDIMannings True
+pfset Solver.WritePDISlopes True
+pfset Solver.WritePDIPressure True
+pfset Solver.WritePDISpecificStorage True
+pfset Solver.WritePDIVelocities True
+pfset Solver.WritePDISaturation True
+pfset Solver.WritePDIMask True
+pfset Solver.WritePDIDZMultiplier True
+pfset Solver.WritePDIEvapTransSum True
+pfset Solver.WritePDIEvapTrans True
+pfset Solver.WritePDIOverlandSum True
+pfset Solver.WritePDIOverlandBCFlux True
+```
+
+### LB solver
+#### Python Example:
+```python
+{run_name}.Solver.WritePDISubsurfData = True
+{run_name}.Solver.WritePDIPressure = True
+{run_name}.Solver.WritePDISaturation = True
+{run_name}.Solver.WritePDIWells = True
+{run_name}.Solver.WritePDIConcentration = True
+```
+### TCL Example:
+```tcl
+pfset Solver.WritePDISubsurfData True
+pfset Solver.WritePDIPressure True
+pfset Solver.WritePDISaturation True
+pfset Solver.WritePDIWells True
+pfset Solver.WritePDIConcentration True
+```
+
+## Testing PDI Outputs 
+
+The directory `/parflow/pfsimulator/third_party/pdi/` contains Python scripts
+to verify the outputs generated by PDI. These scripts compare HDF5 files with
+`.pfb` files to ensure the accuracy of the data. For example, if the outputs
+use the prefix `run_name` and an iteration number `00000`, then run the
+following to verify pressure data outputs:
+
+```shell
+python /parflow/pfsimulator/third_party/pdi/compare_pdi_pfb.py run_name.press.00000
+```
+
+This script prints the data from the HDF5 files and the corresponding `.pfb` file, then calculates the difference between them.
+
+## For Developers
+
+For additional details on the structure of conf.yml and the internal implementation of PDI, please refer to the [PDI README.md](/https://github.com/parflow/parflow/tree/master/pfsimulator/third_party/pdi/README.md) located in the `/parflow/pfsimulator/third_party/pdi/` directory.

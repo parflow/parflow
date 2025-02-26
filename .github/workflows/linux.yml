@@ -475,6 +475,28 @@ jobs:
           make -j 2 install
         fi
 
+    - name: PDI Install
+      env:
+        CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      run: |
+        if [[ "$CACHE_HIT" != 'true' ]]; then
+          PDI_VERSION="1.8.1"
+          URL="https://github.com/pdidev/pdi/archive/refs/tags/1.8.1.tar.gz"
+          mkdir -p pdi
+          cd pdi
+          curl -L $URL | tar --strip-components=1 -xz
+          # Configure and install PDI
+          mkdir build install
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=../install
+          make -j 2 install
+
+          # Clean up
+          cd ../../
+          rm -rf pdi
+        fi
+        echo "PDI_FLAGS=-DPDI_ROOT=$PARFLOW_DEP_DIR/pdi/install" >> $GITHUB_ENV
+
     - name: ParFlow CMake Configure
       run: |
         cat $HOME/depend/cache-key
@@ -500,7 +522,7 @@ jobs:
            -DSILO_ROOT=$PARFLOW_DEP_DIR                                 \
            -DPARFLOW_ENABLE_PYTHON=${{ matrix.config.python }}          \
            -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR                          \
-           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS
+           $NETCDF_FLAGS $KOKKOS_FLAGS $RMM_FLAGS $UMPIRE_FLAGS $PDI_FLAGS
 
     - name: ParFlow CMake Build
       run: (cd build; make -j 2 install)
