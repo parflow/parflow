@@ -6,7 +6,7 @@
 #include <iostream>
 
 static torch::jit::script::Module model;
-
+static torch::Tensor statics;
 
 extern "C" {
   void init_torch_model(char* model_filepath, int nx, int ny, int nz, double *po_dat,
@@ -21,54 +21,60 @@ extern "C" {
       throw std::runtime_error(std::string("Failed to load the Torch model:\n") + e.what());
     }
 
-    std::unordered_map<std::string, torch::Tensor> statics;
-    torch::Tensor porosity = torch::from_blob(po_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["porosity"] = porosity;
-    torch::Tensor mannings = torch::from_blob(mann_dat, {nx, ny}, torch::kDouble).clone();
-    statics["mannings"] = mannings;
-    torch::Tensor slope_x = torch::from_blob(slopex_dat, {nx, ny}, torch::kDouble).clone();
-    statics["slope_x"] = slope_x;
-    torch::Tensor slope_y = torch::from_blob(slopey_dat, {nx, ny}, torch::kDouble).clone();
-    statics["slope_y"] = slope_y;
-    torch::Tensor perm_x = torch::from_blob(permx_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["permeability_x"] = perm_x;
-    torch::Tensor perm_y = torch::from_blob(permy_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["permeability_y"] = perm_y;
-    torch::Tensor perm_z = torch::from_blob(permz_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["permeability_z"] = perm_z;
-    torch::Tensor sres = torch::from_blob(sres_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["sres"] = sres;
-    torch::Tensor ssat = torch::from_blob(ssat_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["ssat"] = ssat;
-    torch::Tensor fbz = torch::from_blob(fbz_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["pf_flowbarrier"] = fbz;
-    torch::Tensor specific_storage = torch::from_blob(specific_storage_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["specific_storage"] = specific_storage;
-    torch::Tensor alpha = torch::from_blob(alpha_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["vg_alpha"] = alpha;
-    torch::Tensor n = torch::from_blob(n_dat, {nx, ny, nz}, torch::kDouble).clone();
-    statics["vg_n"] = n;
-    // also call scale statics and store the result in a global variable.
+    std::unordered_map<std::string, torch::Tensor> statics_map;
+    torch::Tensor porosity = torch::from_blob(po_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["porosity"] = porosity;
+    torch::Tensor mannings = torch::from_blob(mann_dat, {1, ny, nx}, torch::kDouble).clone();
+    statics_map["mannings"] = mannings;
+    torch::Tensor slope_x = torch::from_blob(slopex_dat, {1, ny, nx}, torch::kDouble).clone();
+    statics_map["slope_x"] = slope_x;
+    torch::Tensor slope_y = torch::from_blob(slopey_dat, {1, ny, nx}, torch::kDouble).clone();
+    statics_map["slope_y"] = slope_y;
+    torch::Tensor perm_x = torch::from_blob(permx_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["permeability_x"] = perm_x;
+    torch::Tensor perm_y = torch::from_blob(permy_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["permeability_y"] = perm_y;
+    torch::Tensor perm_z = torch::from_blob(permz_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["permeability_z"] = perm_z;
+    torch::Tensor sres = torch::from_blob(sres_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["sres"] = sres;
+    torch::Tensor ssat = torch::from_blob(ssat_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["ssat"] = ssat;
+    torch::Tensor fbz = torch::from_blob(fbz_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["pf_flowbarrier"] = fbz;
+    torch::Tensor specific_storage = torch::from_blob(specific_storage_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["specific_storage"] = specific_storage;
+    torch::Tensor alpha = torch::from_blob(alpha_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["vg_alpha"] = alpha;
+    torch::Tensor n = torch::from_blob(n_dat, {nz, ny, nx}, torch::kDouble).clone();
+    statics_map["vg_n"] = n;
+
+    statics = model.run_method("get_parflow_statics", statics_map).toTensor();
   }
   
   double* predict_next_pressure_step(double* pp, double* et, int nx, int ny, int nz) {
-    torch::Tensor press = torch::from_blob(pp, {nx, ny, nz}, torch::kDouble);
-    torch::Tensor evap_trans = torch::from_blob(et, {nx, ny}, torch::kDouble);    
-
+    torch::Tensor press = torch::from_blob(pp, {nz, ny, nx}, torch::kDouble);
+    torch::Tensor evaptrans = torch::from_blob(et, {nz, ny, nx}, torch::kDouble);    
+    press = model.run_method("get_parflow_pressure", press).toTensor();
+    evaptrans = model.run_method("get_parflow_evaptrans", evaptrans).toTensor();
+    
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(press);
-
-    at::Tensor output = model.forward(inputs).toTensor();
-
-    if (!output.is_contiguous()) {
-        output = output.contiguous();
+    inputs.push_back(evaptrans);
+    inputs.push_back(statics);
+    torch::Tensor output = model.forward(inputs).toTensor();
+    torch::Tensor predicted_pressure = model.run_method("get_predicted_pressure", output).toTensor();
+    
+    if (!predicted_pressure.is_contiguous()) {
+      predicted_pressure = predicted_pressure.contiguous();
     }
-    double* predicted_pressure = output.data_ptr<double>();
+
+    double* predicted_pressure_array = predicted_pressure.data_ptr<double>();
 
     // Copy pressure data back to the pressure field
-    if (predicted_pressure != pp) {
+    if (predicted_pressure_array != pp) {
       std::size_t sz = nx * ny * nz;
-      std::copy(predicted_pressure, predicted_pressure + sz, pp);
+      std::copy(predicted_pressure_array, predicted_pressure_array + sz, pp);
     }
     return pp;
   }
