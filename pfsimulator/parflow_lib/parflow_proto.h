@@ -1309,6 +1309,12 @@ void PFVAxpy(double a, Vector *x, Vector *y);
 void PFVScaleBy(double a, Vector *x);
 void PFVLayerCopy(int a, int b, Vector *x, Vector *y);
 
+/* vector_utilities_pystencils.cpp */
+void Pystencils_VProd(Vector *x, Vector *y, Vector *z);
+void Pystencils_VLinearSum(double a, Vector *x, double b, Vector *y, Vector *z);
+double Pystencils_VDotProd(Vector *x, Vector *y);
+double Pystencils_VL1Norm(Vector *x);
+
 /* w_jacobi.c */
 void WJacobi(Vector *x, Vector *b, double tol, int zero);
 PFModule *WJacobiInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, Matrix *A, double *temp_data);

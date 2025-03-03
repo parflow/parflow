@@ -93,6 +93,8 @@ static int KINSpgmrAtimes(void *kinsol_mem, N_Vector v, N_Vector z);
 
 static int KINSpgmrAtimesDQ(void *kinsol_mem, N_Vector v, N_Vector z);
 
+static int KINSpgmrAtimesDQPystencils(void *kinsol_mem, N_Vector v, N_Vector z);
+
 static int KINSpgmrPSolve(void *kinsol_mem, N_Vector r, N_Vector z, int lr);
 
 
@@ -516,6 +518,49 @@ static int KINSpgmrAtimesDQ(void *kinsol_mem, N_Vector v, N_Vector z)
   N_VLinearSum(sigma_inv, vtemp2, -sigma_inv, fval, z);
 
   return(0);
+}
+
+// PYSTENCILS VARIANT
+static int KINSpgmrAtimesDQPystencils(void *kinsol_mem, N_Vector v, N_Vector z)
+{
+    real sigma, sigma_inv;
+    real sutsv, sq1norm, sign, vtv;
+    KINMem kin_mem;
+
+    kin_mem = (KINMem)kinsol_mem;
+
+    /* scale the vector v ,   Du * v is put into vtemp1 */
+    Pystencils_VProd(v, uscale, vtemp1);
+
+    /*  scale uu and put into z used as a temporary */
+    Pystencils_VProd(uu, uscale, z);
+
+    /*  compute (Du * u ) . (Du * v)  */
+    sutsv = Pystencils_VDotProd(z, vtemp1);
+
+    /* compute (Du * v ) . (Du * v ) */
+    vtv = Pystencils_VDotProd(vtemp1, vtemp1);
+
+    sq1norm = Pystencils_VL1Norm(vtemp1);
+
+    sign = (sutsv >= ZERO) ? ONE : -ONE;
+
+    /*  this expression for sigma is from p. 469, Brown and Saad paper */
+    sigma = sign * sqrt_relfunc * MAX(ABS(sutsv), sq1norm) / vtv;
+
+    sigma_inv = ONE / sigma;
+
+    /*  compute the u-prime at which to evaluate the function func */
+    Pystencils_VLinearSum(ONE, uu, sigma, v, vtemp1);
+
+    /*  call the system function to calc func(uu+sigma*v)  */
+    // TODO: handling for 'NlFunctionEval'?
+    func(Neq, vtemp1, vtemp2, f_data);    nfe++;
+
+    /*  and finish the computation of the derivative */
+    Pystencils_VLinearSum(sigma_inv, vtemp2, -sigma_inv, fval, z);
+
+    return(0);
 }
 
 /*************** KINSpgmrPSolve ***************************************

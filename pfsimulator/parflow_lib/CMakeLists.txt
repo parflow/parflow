@@ -168,9 +168,13 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     region.cpp
   )
 
-if(${PARFLOW_HAVE_KOKKOS})
-  list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
-endif(${PARFLOW_HAVE_KOKKOS})
+  if(${PARFLOW_HAVE_PYSTENCILS})
+    list(APPEND SRC_FILES_ARCH_TYPE_0 vector_utilities_pystencils.cpp)
+  endif(${PARFLOW_HAVE_PYSTENCILS})
+
+  if(${PARFLOW_HAVE_KOKKOS})
+    list(APPEND SRC_FILES_ARCH_TYPE_0 pf_kokkos.cpp)
+  endif(${PARFLOW_HAVE_KOKKOS})
 
   #  PF_COMP_UNIT_TYPE determines the behavior of the accelerated compilation unit
 	#  ------------------------------------------------------------
@@ -253,7 +257,15 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
     vector.c
     vector_utilities.c
   )
-  add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
+
+  set(SRC_FILES_CXX)
+  if(${PARFLOW_HAVE_PYSTENCILS})
+    list(APPEND SRC_FILES_CXX vector_utilities_pystencils.cpp)
+  endif(${PARFLOW_HAVE_PYSTENCILS})
+
+  set_source_files_properties(${SRC_FILES_CXX} PROPERTIES LANGUAGE CXX)
+
+  add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CXX} ${SRC_FILES_CONST})
 
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
@@ -269,6 +281,12 @@ install (TARGETS pfsimulator DESTINATION lib)
 if(${PARFLOW_HAVE_CLM})
   target_link_libraries (pfsimulator pfclm)
 endif(${PARFLOW_HAVE_CLM})
+
+if(${PARFLOW_HAVE_PYSTENCILS})
+  target_link_libraries(pfsimulator KINSpgmrPystencils)
+  target_include_directories(pfsimulator PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/KINSpgmrPystencils")
+  target_compile_definitions(pfsimulator PUBLIC PARFLOW_HAVE_PYSTENCILS)
+endif(${PARFLOW_HAVE_PYSTENCILS})
 
 if (${PARFLOW_HAVE_HYPRE})
   target_include_directories (pfsimulator PUBLIC ${HYPRE_INCLUDE_DIR})
