@@ -14,7 +14,7 @@ drich = Run(run_name, __file__)
 
 new_output_dir_name = get_absolute_path("test_output/default_richards_wells_with_torch")
 mkdir(new_output_dir_name)
-cp("$PF_SRC/test/input/identity_model.pth", new_output_dir_name)
+cp("$PF_SRC/test/input/simple_id_model.pt", new_output_dir_name)
 
 # ---------------------------------------------------------
 drich.FileVersion = 4
@@ -354,7 +354,7 @@ drich.Solver.Linear.KrylovDimension = 10
 drich.Solver.Linear.Preconditioner = "MGSemi"
 
 drich.Solver.TorchEnableAccelerator = True
-drich.Solver.TorchModelFilePath = "identity_model.pth"
+drich.Solver.TorchModelFilePath = "simple_id_model.pt"
 drich.Solver.TorchPrintPredictedPressure = True
 
 # -----------------------------------------------------------------------------
