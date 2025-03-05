@@ -52,7 +52,7 @@ The pdi parflow functions are called in th solver files:
 Using `cmake`, add the following flag `-DPDI_ROOT=$PDI_HOME`.
 
 ```bash
-FC=mpif90 CC=mpicc CXX=mpic++ cmake ../ -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR/ -DHDF5_ROOT=$HDF5_HOME -DSILO_ROOT=$SILO_HOME -DPARFLOW_ENABLE_NETCDF=ON -DNETCDF_DIR=$NETCDF_HOME -DHYPRE_ROOT=$HYPRE_HOME -DPDI_ROOT=$PDI_HOME
+FC=mpif90 CC=mpicc CXX=mpic++ cmake ../ -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_ENABLE_HDF5=TRUE -DPARFLOW_ENABLE_TIMING=TRUE -DCMAKE_BUILD_TYPE=Release -DPDI_ROOT=$PDI_HOME
 ```
 
 ```
@@ -100,8 +100,8 @@ pfset Solver.WritePDIWells True
 pfset Solver.WritePDIConcentration True
 ```
 
-## Python script to check files
+## Python script to compare PDI files with Parflow Binary files
 
 ```
-python $PARFLOW_DIR../pdi/compare_pdi_pfb.py <file name without extension>
+python $PARFLOW_DIR/pftools/python/parflow/cli/compare_pdi_pfb.py <file name without extension>
 ```

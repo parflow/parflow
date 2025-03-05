@@ -107,7 +107,8 @@ jobs:
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 24.04 LLVM",
@@ -118,7 +119,8 @@ jobs:
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 22.04 GCC Python",
@@ -129,7 +131,8 @@ jobs:
             backend: "none",
             amps_layer: mpi1,
             netcdf: "true",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 24.04 GCC Python",
@@ -140,7 +143,8 @@ jobs:
             backend: "none",
             amps_layer: mpi1,
             netcdf: "false",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 22.04 GCC OMP",
@@ -151,7 +155,8 @@ jobs:
             backend: "omp",
             amps_layer: mpi1,
             netcdf: "false",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
         - {
             name: "Ubuntu 24.04 LLVM OASIS3-MCT Build",
@@ -162,7 +167,8 @@ jobs:
             backend: "omp",
             amps_layer: oas3,
             netcdf: "true",
-            memory_manager: "none"
+            memory_manager: "none",
+            pdi: "false"
           }
 #        - {
 #            name: "Ubuntu 24.04 GCC CUDA/RMM Build",
@@ -184,7 +190,8 @@ jobs:
             cudaos: 'ubuntu2204',
             amps_layer: mpi1,
             netcdf: "false",
-            memory_manager: "umpire"
+            memory_manager: "umpire",
+            pdi: "false"
           }
 #        - {
 #            name: "Ubuntu 24.04 GCC Kokkos/RMM Build",
@@ -206,7 +213,20 @@ jobs:
             cudaos: 'ubuntu2204',
             amps_layer: mpi1,
             netcdf: "false",
-            memory_manager: "umpire"
+            memory_manager: "umpire",
+            pdi: "false"
+          }
+        - {
+            name: "Ubuntu 24.04 GCC PDI Build",
+            os: ubuntu-24.04,
+            cudaos: 'ubuntu2404',
+            cc: "gcc", cxx: "g++", fc: "gfortran",
+            python: "false",
+            backend: "none",
+            amps_layer: mpi1,
+            netcdf: "false",
+            memory_manager: "none",
+            pdi: "true"
           }
 
     steps:
@@ -253,7 +273,7 @@ jobs:
         cache-parflow-hit: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
       with:
         path: "~/depend"
-        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ secrets.CACHE_VERSION }}
+        key: cache-${{ matrix.config.os }}-${{ matrix.config.backend }}-${{ matrix.config.memory_manager }}-${{ matrix.config.pdi }}-${{ secrets.CACHE_VERSION }}
 
     - name: Directory Setup
       run: |
@@ -478,10 +498,12 @@ jobs:
     - name: PDI Install
       env:
         CACHE_HIT: ${{steps.cache-parflow-dependencies.outputs.cache-hit}}
+      if: matrix.config.pdi == 'true'
       run: |
         if [[ "$CACHE_HIT" != 'true' ]]; then
           PDI_VERSION="1.8.1"
           URL="https://github.com/pdidev/pdi/archive/refs/tags/1.8.1.tar.gz"
+          export curr_pdi=$(pwd)
           mkdir -p pdi
           cd pdi
           curl -L $URL | tar --strip-components=1 -xz
@@ -490,8 +512,12 @@ jobs:
           cd build
           cmake .. -DCMAKE_INSTALL_PREFIX=../install
           make -j 2 install
+          mv -v ${curr_pdi}/pdi ${PARFLOW_DEP_DIR}
         fi
-        echo "PDI_FLAGS=-DPDI_ROOT=$PARFLOW_DEP_DIR/pdi/install" >> $GITHUB_ENV
+
+        export LD_LIBRARY_PATH=${PARFLOW_DEP_DIR}/pdi/install/lib:${LD_LIBRARY_PATH}
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "PDI_FLAGS=-DPDI_ROOT=${PARFLOW_DEP_DIR}/pdi/install" >> $GITHUB_ENV
 
     - name: ParFlow CMake Configure
       run: |
@@ -524,8 +550,9 @@ jobs:
       run: (cd build; make -j 2 install)
 
     # Can't test with GPU since have no GPU hardware on testing nodes, GPU test is build only
+    # PDI testing requires a configuration file for specification tree, so for now, it is only being built and not tested.
     - name: ParFlow CTest
-      if: matrix.config.backend != 'cuda' && matrix.config.backend != 'kokkos'
+      if: matrix.config.backend != 'cuda' && matrix.config.backend != 'kokkos' && matrix.config.pdi != 'true'
       run: |
         export OMPI_MCA_rmaps_base_oversubscribe=1
         export OMP_NUM_THREADS=1
