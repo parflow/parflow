@@ -77,7 +77,7 @@ def compare_files(name):
     # ___________________________________________________________________________
 
     print(f"\n_______________________________ \nAnalyzing PDI Files\n")
-    print(" Metadata: {}".format(len(subvectors)))
+    print(" Metadata")
     print(" Number of subvectors from PDI: {}".format(len(subvectors)))
     print(" X: {}, Y: {}, Z: {}".format(X, Y, Z))
     print(" NX: {}, NY: {}, NZ: {}".format(NX, NY, NZ))

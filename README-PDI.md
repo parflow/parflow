@@ -169,7 +169,7 @@ applying optional tolerance thresholds to identify discrepancies.
 To verify pressure data outputs for `run_name`, run:
 
 ```shell
-python /parflow/pftools/compare_pdi_pfb.py run_name.press
+python /parflow/pftools/python/parflow/cli/compare_pdi_pfb.py run_name.press
 ```
 
 ## For Developers
