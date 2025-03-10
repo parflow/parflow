@@ -69,6 +69,8 @@
 
 #include <string.h>
 
+#include "KINSpgmrAtimesDQ.h"
+
 #define ZERO 0.0
 #define ONE  1.0
 
@@ -211,6 +213,14 @@ void PFVLinearSum(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VLinearSum(xp, yp, zp,
+                         nx, ny, nz,
+                         1, nx, nx * ny,
+                         1, nx, nx * ny,
+                         1, nx, nx * ny,
+                         a, b);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -221,6 +231,7 @@ void PFVLinearSum(
     {
       zp[i_z] = a * xp[i_x] + b * yp[i_y];
     });
+#endif
   }
   IncFLOPCount(3 * VectorSize(z));
 }
@@ -330,6 +341,13 @@ void PFVProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    PyCodegen_VProd(xp, yp, zp,
+                    nx, ny, nz,
+                    1, nx, nx * ny,
+                    1, nx, nx * ny,
+                    1, nx, nx * ny);
+#else
     i_x = 0;
     i_y = 0;
     i_z = 0;
@@ -340,6 +358,7 @@ void PFVProd(
     {
       zp[i_z] = xp[i_x] * yp[i_y];
     });
+#endif
   }
   IncFLOPCount(VectorSize(x));
 }
@@ -719,9 +738,21 @@ double PFVDotProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    double* sum_writeback_ptr; // TODO: move (de-)allocation
+    sum_writeback_ptr = (double*) malloc(sizeof(double));
+
+    PyCodegen_VDotProd(xp, yp,
+                  nx, ny, nz,
+                  1, nx, nx * ny,
+                  1, nx, nx * ny,
+                  sum_writeback_ptr);
+
+    sum = *sum_writeback_ptr;
+    free(sum_writeback_ptr);
+#else
     i_x = 0;
     i_y = 0;
-
     BoxLoopReduceI2(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
                     i_x, nx_x, ny_x, nz_x, 1, 1, 1,
@@ -729,6 +760,7 @@ double PFVDotProd(
     {
       ReduceSum(sum, xp[i_x] * yp[i_y]);
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
@@ -981,6 +1013,18 @@ double PFVL1Norm(
 
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+    double* sum_writeback_ptr; // TODO: move (de-)allocation
+    sum_writeback_ptr = (double*) malloc(sizeof(double));
+
+    PyCodegen_VL1Norm(xp,
+                  nx, ny, nz,
+                  1, nx, nx * ny,
+                  sum_writeback_ptr);
+
+    sum = *sum_writeback_ptr;
+    free(sum_writeback_ptr);
+#else
     i_x = 0;
     BoxLoopReduceI1(sum,
                     i, j, k, ix, iy, iz, nx, ny, nz,
@@ -988,6 +1032,7 @@ double PFVL1Norm(
     {
       ReduceSum(sum, fabs(xp[i_x]));
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
