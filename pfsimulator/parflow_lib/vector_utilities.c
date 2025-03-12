@@ -69,7 +69,9 @@
 
 #include <string.h>
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
 #include "KINSpgmrAtimesDQ.h"
+#endif
 
 #define ZERO 0.0
 #define ONE  1.0
