@@ -93,8 +93,6 @@ static int KINSpgmrAtimes(void *kinsol_mem, N_Vector v, N_Vector z);
 
 static int KINSpgmrAtimesDQ(void *kinsol_mem, N_Vector v, N_Vector z);
 
-static int KINSpgmrAtimesDQPystencils(void *kinsol_mem, N_Vector v, N_Vector z);
-
 static int KINSpgmrPSolve(void *kinsol_mem, N_Vector r, N_Vector z, int lr);
 
 
