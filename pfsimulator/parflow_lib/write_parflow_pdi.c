@@ -38,12 +38,6 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#ifdef PARFLOW_HAVE_PDI
-static bool is2Ddefined = false;
-static bool is3Ddefined = false;
-static bool isTdefined = false;
-#endif
-
 
 /**
  * @brief Writes vector data to a PDI (Parallel Data Interface) output file.
@@ -76,14 +70,9 @@ void     WritePDI(
 {
 #ifdef PARFLOW_HAVE_PDI
   Grid           *grid = VectorGrid(v);
-  SubgridArray   *subgrids = GridSubgrids(grid);
-  Subgrid        *subgrid;
   Subvector      *subvector;
 
-  int g;
   int p;
-
-  long size;
 
   /* start PDI timer */
   BeginTiming(PDITimingIndex);
