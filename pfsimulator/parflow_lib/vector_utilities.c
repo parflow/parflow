@@ -218,9 +218,9 @@ void PFVLinearSum(
 #ifdef PARFLOW_HAVE_PYSTENCILS
     PyCodegen_VLinearSum(xp, yp, zp,
                          nx, ny, nz,
-                         1, nx, nx * ny,
-                         1, nx, nx * ny,
-                         1, nx, nx * ny,
+                         1, nx_x, nx_x * ny_x,
+                         1, nx_y, nx_y * ny_y,
+                         1, nx_z, nx_z * ny_z,
                          a, b);
 #else
     i_x = 0;
@@ -346,9 +346,9 @@ void PFVProd(
 #ifdef PARFLOW_HAVE_PYSTENCILS
     PyCodegen_VProd(xp, yp, zp,
                     nx, ny, nz,
-                    1, nx, nx * ny,
-                    1, nx, nx * ny,
-                    1, nx, nx * ny);
+                    1, nx_x, nx_x * ny_x,
+                    1, nx_y, nx_y * ny_y,
+                    1, nx_z, nx_z * ny_z);
 #else
     i_x = 0;
     i_y = 0;
@@ -743,11 +743,12 @@ double PFVDotProd(
 #ifdef PARFLOW_HAVE_PYSTENCILS
     double* sum_writeback_ptr; // TODO: move (de-)allocation
     sum_writeback_ptr = (double*) malloc(sizeof(double));
+    memset(sum_writeback_ptr, 0, sizeof(double));
 
     PyCodegen_VDotProd(xp, yp,
                   nx, ny, nz,
-                  1, nx, nx * ny,
-                  1, nx, nx * ny,
+                  1, nx_x, nx_x * ny_x,
+                  1, nx_y, nx_y * ny_y,
                   sum_writeback_ptr);
 
     sum = *sum_writeback_ptr;
@@ -1018,11 +1019,12 @@ double PFVL1Norm(
 #ifdef PARFLOW_HAVE_PYSTENCILS
     double* sum_writeback_ptr; // TODO: move (de-)allocation
     sum_writeback_ptr = (double*) malloc(sizeof(double));
+    memset(sum_writeback_ptr, 0, sizeof(double));
 
     PyCodegen_VL1Norm(xp,
-                  nx, ny, nz,
-                  1, nx, nx * ny,
-                  sum_writeback_ptr);
+                      nx, ny, nz,
+                      1, nx_x, nx_x * ny_x,
+                      sum_writeback_ptr);
 
     sum = *sum_writeback_ptr;
     free(sum_writeback_ptr);
