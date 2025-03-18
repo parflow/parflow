@@ -4458,16 +4458,16 @@ Mixed Boundary Conditions
 
 If the top boundary is set to **OverlandKinematic** and a pfsolid file is used, this solid file can have multiple patches with mixed boundary conditions.  One patch is assigned to the overland kinematic, and up to two more patches can be assigned to seepage face cells mixed in with the overland flow.
 
-*double* **Solver.OverlandKinematic.SeepageOne** -999  
+*integer* **Solver.OverlandKinematic.SeepageOne** -999  
 
-This key sets the first of two available patch values for mixed boundary conditions.
+This key sets the first of two available patch values for mixed boundary conditions. Default value -999 has the meaning "Off" or "Does not apply".
 
 ::
    pfset Solver.OverlandKinematic.SeepageOne 3           ## TCL syntax
 
    <runname>.Solver.OverlandKinematic.SeepageOne = 3    ## Python syntax
 
-*double* **Solver.OverlandKinematic.SeepageTwo** -999 This key sets the second of two available patch values for mixed boundary conditions.
+*integer* **Solver.OverlandKinematic.SeepageTwo** -999 This key sets the second of two available patch values for mixed boundary conditions. Default value -999 has the meaning "Off" or "Does not apply".
 
 ::
 

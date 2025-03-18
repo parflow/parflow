@@ -2358,9 +2358,9 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    //NBE
 
   sprintf(key, "Solver.OverlandKinematic.SeepageOne");
-  public_xtra->seepage_patch_one = GetDoubleDefault(key, -999);
+  public_xtra->seepage_patch_one = GetIntDefault(key, -999);
   sprintf(key, "Solver.OverlandKinematic.SeepageTwo");
-  public_xtra->seepage_patch_two = GetDoubleDefault(key, -999);
+  public_xtra->seepage_patch_two = GetIntDefault(key, -999);
 
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
