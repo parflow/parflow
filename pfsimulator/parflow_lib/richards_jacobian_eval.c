@@ -1556,7 +1556,7 @@ void    RichardsJacobianEval(
         ForPatchCellsPerFace(OverlandKinematicBC,
                              BeforeAllCells(DoNothing),
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                             Locals(int io, io1, itop, ip, im, iitmp, ione,itwo, k1; ),
+                             Locals(int io, io1, itop, ip, im, iitmp, ione, itwo, k1; ),
                              CellSetup(DoNothing),
                              FACE(LeftFace, DoNothing), FACE(RightFace, DoNothing),
                              FACE(DownFace, DoNothing), FACE(UpFace, DoNothing),
@@ -1625,16 +1625,19 @@ void    RichardsJacobianEval(
           /* Now add overland contributions to JC */
           if ((pp[ip]) > 0.0)
           {
-              /* RMM, switch seepage face on optionally for two surface patches */
-              if ( iitmp == ione || iitmp == itwo )  {
-              cp_c[io] += (vol / dz)  * (1.0 + 0.0); // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-             //           + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-             // printf("Seepage face on: Current Patch %d, seepage one %d, %d (%d,%d,%d)\n",(int)patch_dat[io], public_xtra->seepage_patch_one, io, i,j,k);
-              } else {
+            /* RMM, switch seepage face on optionally for two surface patches */
+            if (iitmp == ione || iitmp == itwo)
+            {
+              cp_c[io] += (vol / dz) * (1.0 + 0.0);  // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+              //           + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+              // printf("Seepage face on: Current Patch %d, seepage one %d, %d (%d,%d,%d)\n",(int)patch_dat[io], public_xtra->seepage_patch_one, io, i,j,k);
+            }
+            else
+            {
               /*regular overland diagonal term */
               cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                        + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-              }
+                          + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
           }
 
           /*west term */
@@ -1968,10 +1971,13 @@ void    RichardsJacobianEval(
           if ((pp[ip]) > 0.0)
           {
             /* RMM, switch seepage face on optionally for two surface patches */
-            if ( iitmp == ione || iitmp == itwo )  {
-            cp[im] += dt*(vol / dz)  * (1.0 + 0.0); // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
-                    //  + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
-            } else {
+            if (iitmp == ione || iitmp == itwo)
+            {
+              cp[im] += dt * (vol / dz) * (1.0 + 0.0); // + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+              //  + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+            }
+            else
+            {
               /*diagonal term */
               cp[im] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                         + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);

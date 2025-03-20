@@ -42,7 +42,7 @@ typedef struct {
   double SpinupDampP2;      // NBE
   int tfgupwind;           //@RMM added for TFG formulation switch
   int seepage_patch_one;  //RMM added two optional seepage face BCs
-  int seepage_patch_two; 
+  int seepage_patch_two;
 } PublicXtra;
 
 typedef struct {
@@ -187,7 +187,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 /* RMM Top patch indicator for multiple / combined overland BC */
   Vector      *patch = ProblemDataPatchIndexOfDomainTop(problem_data);
   Subvector   *patch_sub;
-  double      *patch_dat=NULL;
+  double      *patch_dat = NULL;
 
   double gravity = ProblemGravity(problem);
   double viscosity = ProblemPhaseViscosity(problem, 0);
@@ -1903,20 +1903,23 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
         q_overlnd = 0.0;
         // RMM, switch seepage face on optionally for two surface patches
-        if ((int)patch_dat[io] == public_xtra->seepage_patch_one || (int)patch_dat[io] == public_xtra->seepage_patch_two) {
+        if ((int)patch_dat[io] == public_xtra->seepage_patch_one || (int)patch_dat[io] == public_xtra->seepage_patch_two)
+        {
           q_overlnd = vol
-                    * (pfmax(pp[ip], 0.0) -0.0) / dz; //+
-                    //* dt* (pfmax(pp[ip], 0.0) -0.0) / dz + //RMM, why is dt multiplied by the first term?
-                   // dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-                   // / dz;
+                      * (pfmax(pp[ip], 0.0) - 0.0) / dz; //+
+          //* dt* (pfmax(pp[ip], 0.0) -0.0) / dz + //RMM, why is dt multiplied by the first term?
+          // dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
+          // / dz;
           //printf("Current Patch %d, seepage one %d, %d (%d,%d,%d)\n",(int)patch_dat[io], public_xtra->seepage_patch_one, io, i,j,k);
-        } else {
-        q_overlnd = vol
-                    * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
-                    dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-                    / dz;
         }
-        
+        else
+        {
+          q_overlnd = vol
+                      * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
+                      dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
+                      / dz;
+        }
+
         fp[ip] += q_overlnd;
       }),
                            CellFinalize(
