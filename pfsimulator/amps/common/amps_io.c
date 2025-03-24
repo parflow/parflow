@@ -186,7 +186,7 @@ void amps_WriteDouble(amps_File file, double *ptr, int len)
     char buf[8];
   } a, b;
 
-  /* write out each double with bytes swaped                               */
+  /* write out each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
@@ -214,7 +214,7 @@ void amps_WriteInt(amps_File file, int *ptr, int len)
   } a, b;
 
 
-  /* write out int with bytes swaped                                       */
+  /* write out int with bytes swapped                                       */
   for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
@@ -237,7 +237,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len)
     char buf[8];
   } a, b;
 
-  /* read in each double with bytes swaped                               */
+  /* read in each double with bytes swapped                               */
   for (i = len, data = ptr; i--;)
   {
     if (fread(&a.number, sizeof(double), 1, (FILE*)file) != 1)
@@ -302,7 +302,7 @@ int len;
   int *data;
   short number;
 
-  /* write out int with bytes swaped                                       */
+  /* write out int with bytes swapped                                       */
   for (i = len, data = ptr; i--;)
   {
     number = *data++;

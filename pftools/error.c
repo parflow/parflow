@@ -362,7 +362,7 @@ void        SetNonExistantError(
 void        ReadWriteError(
                            Tcl_Interp *interp)
 {
-  Tcl_SetResult(interp, "\nError: The file could not be accesed or there is not enough memory available\n", TCL_STATIC);
+  Tcl_SetResult(interp, "\nError: The file could not be accessed or there is not enough memory available\n", TCL_STATIC);
 }
 
 

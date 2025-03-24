@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
   total_length = ((v1_len - 1) * v1_stride + 1) * v2_len + (v2_stride - 1) * (v2_len - 1);
   total_length = total_length * v3_len + (v2_stride - 1) * (v3_len - 1);
   /* Init Vector */
-  vector = calloc(total_length, sizeof(double));
+  vector = (double*)calloc(total_length, sizeof(double));
 
 
   /* SGS order of args */

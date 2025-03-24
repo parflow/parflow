@@ -285,8 +285,8 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 #define AMPS_CALL_FLOAT_ALIGN(_comm, _src, _dest, _len, _stride) \
         AMPS_ALIGN(float, (_src), (_dest), (_len), (_stride))
 
-/* SGS warning!!!!!!:  since malloc returns 4 byte alinged things we should align
- * in a similiar way */
+/* SGS warning!!!!!!:  since malloc returns 4 byte aligned things we should align
+ * in a similar way */
 
 #define AMPS_CALL_DOUBLE_ALIGN(_comm, _src, _dest, _len, _stride) \
         AMPS_ALIGN(float, (_src), (_dest), (_len), (_stride))

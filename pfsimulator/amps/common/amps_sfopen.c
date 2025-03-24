@@ -59,7 +59,7 @@
  * @memo Open a shared file
  * @param filename Name of file to open [IN]
  * @param type Mode to open file [IN]
- * @return shared fille handle
+ * @return shared file handle
  */
 #ifndef AMPS_SFOPEN_SPECIALIZED
 amps_File amps_SFopen(const char *filename, const char *type)

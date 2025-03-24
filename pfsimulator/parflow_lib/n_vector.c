@@ -42,6 +42,11 @@ void SetPf2KinsolData(
   pf2kinsol_data.num_ghost = num_ghost;
 }
 
+/* Kinsol API is in C */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 N_Vector N_VNew(
                 int   N,
                 void *machEnv)
@@ -56,6 +61,16 @@ N_Vector N_VNew(
   num_ghost = pf2kinsol_data.num_ghost;
   return(NewVectorType(grid, 1, num_ghost, vector_cell_centered));
 }
+
+void N_VFree(
+             N_Vector x)
+{
+  FreeVector(x);
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 void N_VPrint(
               N_Vector x)

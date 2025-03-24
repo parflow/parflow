@@ -48,7 +48,7 @@ def get_comparable_version(version):
         version (str): A version like '3.6.0' or 'v3.6.0'
 
     Returns:
-        int: An integer that you can easily conpare (i.e: 3006000)
+        int: An integer that you can easily compare (i.e: 3006000)
 
     """
     c_version = 0

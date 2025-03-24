@@ -409,7 +409,7 @@ PFModule  *BCInternalNewPublicXtra()
     for (i = 0; i < num_conditions; i++)
     {
       /***************************************************************/
-      /*  For the forseeable future we only have one  so just insert */
+      /* For the foreseeable future we only have one  so just insert */
       /*   that into the type field without asking for input (which  */
       /* would mean that the input file would have to change - YUCK) */
       /***************************************************************/

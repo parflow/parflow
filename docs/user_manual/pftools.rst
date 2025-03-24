@@ -554,7 +554,7 @@ square brackets are optional and do not need to be provided.
 
    This command computes a domain based on the top and bottom data sets.
    The domain built will have a single subgrid per processor that covers
-   the active data as defined by the top and botttom. This domain will
+   the active data as defined by the top and bottom. This domain will
    more closely follow the topology of the terrain than the default
    single computation domain.
 
@@ -817,7 +817,7 @@ square brackets are optional and do not need to be provided.
       pfgridtype gridtype
 
    This command sets the grid type to either cell centered if ‘gridtype’
-   is set to ‘cell’ or vetex centered if ‘gridtype’ is set to ‘vertex’.
+   is set to ‘cell’ or vertex centered if ‘gridtype’ is set to ‘vertex’.
    If no new value for ‘gridtype’ is given, then the current value of
    ‘gridtype’ is returned. The value of ‘gridtype’ will be returned upon
    successful completion of this command.
@@ -868,7 +868,7 @@ square brackets are optional and do not need to be provided.
       pfload [file format] filename
 
    Loads a dataset into memory so it can be manipulated using the other
-   utilities. A file format may preceed the filename in order to
+   utilities. A file format may proceed the filename in order to
    indicate the file’s format. If no file type option is given, then the
    extension of the filename is used to determine the default file type.
    An identifier used to represent the data set will be returned upon
@@ -1120,7 +1120,7 @@ square brackets are optional and do not need to be provided.
 
    This command executes pfgetgrid and formats its output before
    printing it on the screen. The triples (nx, ny, nz), (x, y, z), and
-   (dx, dy, dz) are all printed on seperate lines along with labels
+   (dx, dy, dz) are all printed on separate lines along with labels
    describing each.
 
    ::
@@ -1285,7 +1285,7 @@ square brackets are optional and do not need to be provided.
    zero. Note that dem must be a ParFlow dataset and must have the
    correct grid information – dx in particular is used in slope
    calculations. If gridded elevation values are read from a text file
-   (e.g., using pfload’s simple ascii format), grid inforamtion must be
+   (e.g., using pfload’s simple ascii format), grid information must be
    specified using the pfsetgrid command.
 
    ::

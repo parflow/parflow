@@ -142,10 +142,9 @@ struct Namelist {
 };
 typedef struct Namelist Namelist;
 
-#ifndef abs
-#define abs(x) ((x) >= 0 ? (x) : -(x))
+#ifndef pfabs
+#define pfabs(x) ((x) >= 0 ? (x) : -(x))
 #endif
-
 
 #define dabs(x) (doublereal)abs(x)
 

@@ -36,7 +36,7 @@
  * Calculate the topographic slope at [i,j] in the x-direction using a first-
  * order upwind finite difference scheme.
  *
- * If cell is a local maximum in x, largest downward slope to neightbor is used.
+ * If cell is a local maximum in x, largest downward slope to neighbor is used.
  * If cell is a local minimum in x, slope is set to zero (no drainage in x).
  * Otherwise, upwind slope is used (slope from parent to [i,j]).
  *
@@ -206,7 +206,7 @@ void ComputeSlopeXUpwind(
  * Calculate the topographic slope at [i,j] in the y-direction using a first-
  * order upwind finite difference scheme.
  *
- * If cell is a local maximum in y, largest downward slope to neightbor is used.
+ * If cell is a local maximum in y, largest downward slope to neighbor is used.
  * If cell is a local minimum in y, slope is set to zero (no drainage in y).
  * Otherwise, upwind slope is used (slope from parent to [i,j]).
  *
@@ -862,7 +862,7 @@ void ComputeSlopeXD4(
   }  // end loop over j
 
   printf("ARBITRARY CELLS: arbcount = %d \n", arbcount);
-} // END FUCTION: ComputeSlopeXD4
+} // END FUNCTION: ComputeSlopeXD4
 
 
 /*-----------------------------------------------------------------------
@@ -2192,7 +2192,7 @@ void ComputeSatTransmissivity(
   // }
 
   // Modified to compute over a given number of layers...
-  // If you want to compute over teh whole column, set nlayers to a very large value
+  // If you want to compute over the whole column, set nlayers to a very large value
   for (j = 0; j < ny; j++)
   {
     for (i = 0; i < nx; i++)
@@ -2409,7 +2409,7 @@ void ComputeTopoIndex(
  *              = T * tan(beta) * ds
  *
  * Where tan(beta) is the magnitude of the slope at the land surface, and ds is some contour
- * length perpindicular to the flow direction.
+ * length perpendicular to the flow direction.
  *
  * Because ParFlow separates flow in X and Y, we split the subsurface flow terms into separate
  * directional components. Assuming these components are additive:
@@ -2813,7 +2813,7 @@ void ComputeTopoDeficit(
 
   FreeDatabox(area);
   FreeDatabox(dmax);
-} // END FUCTION: ComputeTopoRelDeficit
+} // END FUNCTION: ComputeTopoRelDeficit
 
 
 /*-----------------------------------------------------------------------
@@ -2969,7 +2969,7 @@ void ComputeHydroStatFromWT(
  * ComputeSlopeD8:
  *
  * Calculate the topographic slope at [i,j] based on a simple D8 scheme.
- * Drainage direction is first identifed as towards lowest adjacent or diagonal
+ * Drainage direction is first identified as towards lowest adjacent or diagonal
  * neighbor. Slope is then calculated as DOWNWIND slope (from [i,j] to child).
  *
  * If cell is a local minimum, slope is set to zero (no drainage).
@@ -3197,7 +3197,7 @@ void ComputeSlopeD8(
 /*-----------------------------------------------------------------------
  * ComputeSegmentD8:
  *
- * Compute the downstream slope segment lenth at [i,j] for D8 slopes.
+ * Compute the downstream slope segment length at [i,j] for D8 slopes.
  * D8 drainage directions are defined towards lowest adjacent or diagonal
  * neighbor. Segment length is then given as the distance from [i,j] to child
  * (at cell centers).
@@ -4128,7 +4128,7 @@ void ComputeFlintLM(
       // -- nodata cell (assumed to be ocean/estuary cell)
       // -- set demflint to -9999.0
       // -- continue loop
-      //    (THI IS THE SAME AS IN ComputeFlintsLaw)
+      //    (THIS IS THE SAME AS IN ComputeFlintsLaw)
       if (*DataboxCoeff(dem, i, j, 0) == -9999.0)
       {
         *DataboxCoeff(demflint, i, j, 0) = -9999.0;

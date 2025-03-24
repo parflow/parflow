@@ -6,7 +6,7 @@
 ## e.g. python pfb2nc.py saturation_file_list.txt parflow_output.nc saturation
 ## Triple loop(naive implementation) replaced by block input read
 ## and unpacked and reshaped into a 3-D array. Time dimension loop is added.
-## Send the imporvements to k.kulkarni@fz-juelich.de
+## Send the improvements to k.kulkarni@fz-juelich.de
 ## Added another time dimension and loop over a list of files for time variable.
 ####################################################################
 

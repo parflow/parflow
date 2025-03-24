@@ -48,7 +48,7 @@ namespace eval XParflow {
     
     set XParflow::help(dataMenu) {"The data menu allows you to load and save data from and to various file formats respectively. Also, grids may be created, data sets may be deleted, set labels may be changed."}  
     
-    set XParflow::help(gridMenu) {"The grid menu allows you to change how PFTools interprets the grids that the data sets are a part of.  The default value is `cell centered', but can be chaged by clicking on the `vertex centered' menu button."}
+    set XParflow::help(gridMenu) {"The grid menu allows you to change how PFTools interprets the grids that the data sets are a part of.  The default value is `cell centered', but can be changed by clicking on the `vertex centered' menu button."}
     
     set XParflow::help(funcMenu) {"The function menu allows you to perform various mathematical operations upon the data sets that have been loaded in or created thus far.  Selecting a function to perform will bring up a function window that you must use to specify input arguments."}
     
@@ -470,7 +470,7 @@ proc XParflow::MainWin_CreateListBox {} {
 
 
 # Procedure - MainWin_CreateBindings - This procedure is used to create the
-#             bindings associated withe the main window.
+#             bindings associated with the main window.
 #
 # Parameters - None
 #
@@ -576,7 +576,7 @@ proc XParflow::MainWin_Init {} {
 #
 # Parameters - None
 #
-# Variables  - global PF_HAVE_HDF - Ture if the HDF library is installed
+# Variables  - global PF_HAVE_HDF - True if the HDF library is installed
 #
 # return value - None
 
@@ -723,7 +723,7 @@ proc XParflow::MainWin_DeleteDataDialog {} {
     #-----------------------------------------------------------------
     # If the data set to be deleted is associated with an information
     # window that is currently open, then give a warning before
-    # deleteing the data set.
+    # deleting the data set.
     #-----------------------------------------------------------------
     
    set dataSet [lindex [.main.listframe.listbox get $index] 0]
@@ -915,7 +915,7 @@ proc XParflow::MainWin_ChangeLabelDialog {} {
 
 # Procedure CenterWindow - This procedure is used to center toplevel windows
 #
-# Paramters - w - The path of the window to be centered
+# Parameters - w - The path of the window to be centered
 #
 # Variables - x - The new x coordinate the window is to be placed
 #             y - The new y coordinate the window is to be placed

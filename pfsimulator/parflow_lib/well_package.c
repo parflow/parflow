@@ -471,7 +471,7 @@ void         WellPackage(
           /* well_action = 0 means we're doing extraction, well_action = 1 means we're doing injection    */
           /* The ordering of the extraction and injection wells is important.  The partner_ptr of the     */
           /*   injection well needs to point to allocated data (in the extraction well).  If the order is */
-          /*   reversed then this storage wont exist.                                                     */
+          /*   reversed then this storage won't exist.                                                    */
 
           for (well_action = 0; well_action < 2; well_action++)
           {

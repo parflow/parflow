@@ -406,11 +406,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "time") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 1;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     int timVarID;
     int res = nc_def_var(netCDFIDs[0], varName, (*myVarNCData)->ncType, (*myVarNCData)->dimSize,
@@ -425,11 +425,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
   }
   if (strcmp(varName, "pressure") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -467,11 +467,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "saturation") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -509,11 +509,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "mask") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -551,11 +551,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "mannings") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[3];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
@@ -591,11 +591,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "perm_x") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -633,11 +633,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "perm_y") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -675,11 +675,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "perm_z") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -717,11 +717,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "porosity") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -759,11 +759,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "specific_storage") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -801,11 +801,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "slopex") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[3];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
@@ -840,11 +840,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
   }
   if (strcmp(varName, "slopey") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[3];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
@@ -879,11 +879,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
   }
   if (strcmp(varName, "DZ_Multiplier") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -921,11 +921,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "evaptrans") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -963,11 +963,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "evaptrans_sum") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 4;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[2];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[3];
@@ -1004,11 +1004,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
   }
   if (strcmp(varName, "overland_sum") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[3];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];
@@ -1044,11 +1044,11 @@ int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs)
 
   if (strcmp(varName, "overland_bc_flux") == 0)
   {
-    *myVarNCData = malloc(sizeof(varNCData));
+    *myVarNCData = (varNCData*)malloc(sizeof(varNCData));
     (*myVarNCData)->varName = varName;
     (*myVarNCData)->ncType = NC_DOUBLE;
     (*myVarNCData)->dimSize = 3;
-    (*myVarNCData)->dimIDs = malloc((*myVarNCData)->dimSize * sizeof(int));
+    (*myVarNCData)->dimIDs = (int*)malloc((*myVarNCData)->dimSize * sizeof(int));
     (*myVarNCData)->dimIDs[0] = netCDFIDs[1];
     (*myVarNCData)->dimIDs[1] = netCDFIDs[3];
     (*myVarNCData)->dimIDs[2] = netCDFIDs[4];

@@ -4087,7 +4087,7 @@ c
        write(2,200) (creator(i),i=1,ncreator)
  200   format('%%Creator: ',100a1)
 c
-c  covert eps file name to title and write to header
+c  convert eps file name to title and write to header
 c       
        do 10 i=100,1,-1
          if(epsfil(i:i).ne.' ')then

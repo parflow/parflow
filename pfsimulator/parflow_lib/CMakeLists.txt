@@ -218,6 +218,10 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) 
     target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
   endif( ${PARFLOW_HAVE_RMM} )
 
+  if( ${PARFLOW_HAVE_UMPIRE} )
+    target_link_libraries(pfsimulator umpire)
+  endif( ${PARFLOW_HAVE_UMPIRE} )
+
 else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH
@@ -257,6 +261,11 @@ else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
 
 endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}) OR (${PARFLOW_HAVE_OMP}) )
+
+if( ${PARFLOW_BUILD_WITH_CPP} )
+  set_source_files_properties(${SRC_FILES_ARCH} ${SRC_FILES_CONST}
+    PROPERTIES LANGUAGE CXX)
+endif()
 
 if(${PARFLOW_HAVE_PYSTENCILS})
   target_link_libraries(pfsimulator KINSpgmrPystencils)
