@@ -742,8 +742,7 @@ double PFVDotProd(
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
     double* sum_writeback_ptr; // TODO: move (de-)allocation
-    sum_writeback_ptr = (double*) malloc(sizeof(double));
-    memset(sum_writeback_ptr, 0, sizeof(double));
+    sum_writeback_ptr = ctalloc(double, 1);
 
     PyCodegen_VDotProd(xp, yp,
                   nx, ny, nz,
@@ -1018,8 +1017,7 @@ double PFVL1Norm(
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
     double* sum_writeback_ptr; // TODO: move (de-)allocation
-    sum_writeback_ptr = (double*) malloc(sizeof(double));
-    memset(sum_writeback_ptr, 0, sizeof(double));
+    sum_writeback_ptr = ctalloc(double, 1);
 
     PyCodegen_VL1Norm(xp,
                       nx, ny, nz,
