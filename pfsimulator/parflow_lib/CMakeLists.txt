@@ -268,8 +268,8 @@ if( ${PARFLOW_BUILD_WITH_CPP} )
 endif()
 
 if(${PARFLOW_HAVE_PYSTENCILS})
-  target_link_libraries(pfsimulator KINSpgmrPystencils)
-  target_include_directories(pfsimulator PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/KINSpgmrPystencils")
+  target_link_libraries(pfsimulator VectorUtilitiesPystencils)
+  target_include_directories(pfsimulator PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/../third_party/pystencils/VectorUtilitiesPystencils")
   target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_PYSTENCILS)
 endif(${PARFLOW_HAVE_PYSTENCILS})
 

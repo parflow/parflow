@@ -14,8 +14,8 @@ endif ()
 
 # run source file generator
 
-add_library ( KINSpgmrPystencils )
-pystencilssfg_generate_target_sources ( KINSpgmrPystencils
-        SCRIPTS KINSpgmrAtimesDQ.py
-        OUTPUT_DIRECTORY KINSpgmrPystencils
+add_library ( VectorUtilitiesPystencils )
+pystencilssfg_generate_target_sources ( VectorUtilitiesPystencils
+        SCRIPTS pystencils_vector_utilities.py
+        OUTPUT_DIRECTORY VectorUtilitiesPystencils
 )

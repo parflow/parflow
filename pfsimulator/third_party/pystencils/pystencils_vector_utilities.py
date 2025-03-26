@@ -12,7 +12,7 @@ with SourceFileGenerator() as sfg:
         # if sfg.context.project_info['use_cuda']:
         # ...
         #else:
-        sfg.call(kernel)
+        return sfg.call(kernel)
 
 
     # z_i = x_i * y_i (PFVProd)

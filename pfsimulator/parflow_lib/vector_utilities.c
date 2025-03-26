@@ -70,7 +70,7 @@
 #include <string.h>
 
 #ifdef PARFLOW_HAVE_PYSTENCILS
-#include "KINSpgmrAtimesDQ.h"
+#include "pystencils_vector_utilities.h"
 #endif
 
 #define ZERO 0.0
