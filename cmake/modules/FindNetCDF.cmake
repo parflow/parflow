@@ -72,7 +72,7 @@ if (NOT (NETCDF_DIR OR NETCDF_INCLUDE_DIR OR NetCDF_LIBRARY))
 	# reported by `FindPkgConfig`, so this might be empty. Assume that if we
 	# have a library, the include directories are fine (if any) since
 	# PkgConfig reported that the package was found.
-	# NetCDF_INCLUDE_DIR
+        # NetCDF_INCLUDE_DIRS
 	VERSION_VAR NetCDF_VERSION)
 
       if (NOT TARGET NetCDF::NetCDF)
@@ -124,7 +124,7 @@ find_package_handle_standard_args(NetCDF
   VERSION_VAR NetCDF_VERSION)
 
 if (NetCDF_FOUND)
-  set(NetCDF_INCLUDE_DIRS "${NETCDF_INCLUDE_DIR}")
+  set(NETCDF_INCLUDE_DIRS "${NETCDF_INCLUDE_DIR}")
   set(NetCDF_LIBRARIES "${NETCDF_LIBRARY}")
 
   if (NOT TARGET NetCDF::NetCDF)
