@@ -78,35 +78,35 @@ with SourceFileGenerator() as sfg:
 #  PFVCompare(c, x, z)               z_i = (x_i > c)
 #  PFVInvTest(x, z)                  Returns (x_i != 0 forall i), z_i = 1 / x_i
 
-## y = x (PFVCopy)
-create_kernel_func(ps.Assignment(y.center(), x.center()), "VCopy")
+    ## y = x (PFVCopy)
+    create_kernel_func(ps.Assignment(y.center(), x.center()), "VCopy")
 
-## z = x + y (PFVSum)
-create_kernel_func(ps.Assignment(z.center(), x.center() + y.center()), "VSum")
+    ## z = x + y (PFVSum)
+    create_kernel_func(ps.Assignment(z.center(), x.center() + y.center()), "VSum")
 
-## z = x - y (PFVDiff)
-create_kernel_func(ps.Assignment(z.center(), x.center() - y.center()), "VDiff")
+    ## z = x - y (PFVDiff)
+    create_kernel_func(ps.Assignment(z.center(), x.center() - y.center()), "VDiff")
 
-## z = - x (PFVNeg)
-create_kernel_func(ps.Assignment(z.center(), - x.center()), "VNeg")
+    ## z = - x (PFVNeg)
+    create_kernel_func(ps.Assignment(z.center(), - x.center()), "VNeg")
 
-## z = c * (x + y) (PFVScaleSum)
-create_kernel_func(ps.Assignment(z.center(), c * (x.center() + y.center())), "VScaleSum")
+    ## z = c * (x + y) (PFVScaleSum)
+    create_kernel_func(ps.Assignment(z.center(), c * (x.center() + y.center())), "VScaleSum")
 
-## z = c * (x - y) (PFVScaleDiff)
-create_kernel_func(ps.Assignment(z.center(), c * (x.center() - y.center())), "VScaleDiff")
+    ## z = c * (x - y) (PFVScaleDiff)
+    create_kernel_func(ps.Assignment(z.center(), c * (x.center() - y.center())), "VScaleDiff")
 
-## z = a * x + y (PFVLin1)
-create_kernel_func(ps.Assignment(z.center(), a * x.center() + y.center()), "VLin1")
+    ## z = a * x + y (PFVLin1)
+    create_kernel_func(ps.Assignment(z.center(), a * x.center() + y.center()), "VLin1")
 
-## z = a * x - y (PFVLin2)
-create_kernel_func(ps.Assignment(z.center(), a * x.center() - y.center()), "VLin2")
+    ## z = a * x - y (PFVLin2)
+    create_kernel_func(ps.Assignment(z.center(), a * x.center() - y.center()), "VLin2")
 
-## y = y + a * x (PFVAxpy)
-create_kernel_func(ps.Assignment(y.center(), y.center() + a * x.center()), "VAxpy")
+    ## y = y + a * x (PFVAxpy)
+    create_kernel_func(ps.Assignment(y.center(), y.center() + a * x.center()), "VAxpy")
 
-## x = x * a (PFVScaleBy)
-create_kernel_func(ps.Assignment(x.center(), x.center() * a), "VScaleBy")
+    ## x = x * a (PFVScaleBy)
+    create_kernel_func(ps.Assignment(x.center(), x.center() * a), "VScaleBy")
 
 # TODO: Implement
 #  PFVLayerCopy (a, b, x, y)        NBE: Extracts layer b from vector y, inserts into layer a of vector x
