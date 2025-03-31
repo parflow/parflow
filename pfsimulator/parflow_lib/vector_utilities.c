@@ -42,7 +42,7 @@
  * PFVAddConst(x, b, z)              z_i = x_i + b
  * PFVDotProd(x, y)                  Returns x dot y
  * PFVMaxNorm(x)                     Returns ||x||_{max}
- * PFVWrmsNorm(x, w)                 Returns sqrt((sum_i (x_i + w_i)^2)/length)
+ * PFVWrmsNorm(x, w)                 Returns sqrt((sum_i (x_i * w_i)^2)/length)
  * PFVWL2Norm(x, w)                  Returns sqrt(sum_i (x_i * w_i)^2)
  * PFVL1Norm(x)                      Returns sum_i |x_i|
  * PFVMin(x)                         Returns min_i x_i
