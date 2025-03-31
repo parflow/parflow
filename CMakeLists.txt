@@ -278,6 +278,10 @@ if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
     find_package(CURL)
+    if (NOT NetCDF_HAS_PARALLEL)
+      # ParFlow requires parallel NetCDF header file (used in parflow_netcdf.h and write_parflow_netcdf.c).
+      message(FATAL_ERROR "ParFlow requires NetCDF with parallel support.")
+    endif()
   endif (${NetCDF_FOUND})
 endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
 
