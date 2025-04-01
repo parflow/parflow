@@ -113,11 +113,11 @@ else()
 endif()
 
 # Run `cmake ... --log-level=DEBUG` to display these debugging information.
-message(STATUS "NETCDF search stragegy: via ${SEARCH_STRATEGY}")
-message(STATUS "NETCDF_DIR=${NETCDF_DIR}")
-message(STATUS "NETCDF_INCLUDE_DIRS=${NETCDF_INCLUDE_DIRS}")
-message(STATUS "NETCDF_LIBRARIES=${NETCDF_LIBRARIES}")
-message(STATUS "NETCDF_HAS_PARALLEL=${NETCDF_HAS_PARALLEL}")
+message(DEBUG "NETCDF search stragegy: via ${SEARCH_STRATEGY}")
+message(DEBUG "NETCDF_DIR=${NETCDF_DIR}")
+message(DEBUG "NETCDF_INCLUDE_DIRS=${NETCDF_INCLUDE_DIRS}")
+message(DEBUG "NETCDF_LIBRARIES=${NETCDF_LIBRARIES}")
+message(DEBUG "NETCDF_HAS_PARALLEL=${NETCDF_HAS_PARALLEL}")
 
 #
 # Verify if required NETCDF variables were set
