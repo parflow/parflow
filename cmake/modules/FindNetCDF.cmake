@@ -2,38 +2,28 @@
 Provides the following variables:
 
   * `NetCDF_FOUND`: Whether NetCDF was found or not.
-  * `NetCDF_INCLUDE_DIRS`: Include directories necessary to use NetCDF.
-  * `NetCDF_LIBRARIES`: Libraries necessary to use NetCDF.
-  * `NetCDF_VERSION`: The version of NetCDF found.
+  * `NETCDF_INCLUDE_DIRS`: Include directories necessary to use NetCDF.
+  * `NETCDF_LIBRARIES`: Libraries necessary to use NetCDF.
+  * `NETCDF_VERSION`: The version of NetCDF found.
+  * `NETCDF_HAS_PARALLEL`: Whether or not NetCDF was found with parallel IO support.
   * `NetCDF::NetCDF`: A target to use with `target_link_libraries`.
-  * `NetCDF_HAS_PARALLEL`: Whether or not NetCDF was found with parallel IO support.
 #]==]
 
-function(FindNetCDF_get_is_parallel_aware include_dir)
-  # NetCDF is parallel-aware if ${include_dir}/netcdf_par.h exists.
-  find_file(NETCDF_PAR_H netcdf_par.h PATHS include_dir)
-  if (NETCDF_PAR_H)
-    set(NetCDF_HAS_PARALLEL TRUE PARENT_SCOPE)
-  else()
-    set(NetCDF_HAS_PARALLEL FALSE PARENT_SCOPE)
-    message(WARNING "NetCDF parallel header file ${include_dir}/netcdf_par.h not found.")
-  endif()
-endfunction()
-
 if (NOT (NETCDF_DIR OR NETCDF_INCLUDE_DIR OR NetCDF_LIBRARY))
-  # Try to find a CMake-built NetCDF.
+  #
+  # Strategy 1: Search NetCDF via CMake's find_package(). Relevant paths are extracted
+  #             from <search-paths>/lib64/cmake/netCDF/netCDFConfig.cmake (if this file exists).
+  #             Note that <search-paths> are automatically computed by find_package().
+  #
   find_package(netCDF CONFIG QUIET)
   if (netCDF_FOUND)
-    # Forward the variables in a consistent way.
-    set(NetCDF_FOUND "${netCDF_FOUND}")
-    set(NetCDF_INCLUDE_DIRS "${netCDF_INCLUDE_DIR}") # netCDFConfig.cmake returns netCDF_INCLUDE_DIR (singular; see https://github.com/Unidata/netcdf-c/blob/3a6b1debf1557f07b606ce3653e44f0d711203be/netCDFConfig.cmake.in#L9)
-    set(NetCDF_LIBRARIES "${netCDF_LIBRARIES}")
-    set(NetCDF_VERSION "${NetCDFVersion}")
+    set(SEARCH_STRATEGY "find_package (Strategy 1)")
 
-    include(FindPackageHandleStandardArgs)
-    find_package_handle_standard_args(NetCDF
-      REQUIRED_VARS NetCDF_INCLUDE_DIRS NetCDF_LIBRARIES
-      VERSION_VAR NetCDF_VERSION)
+    # Forward the variables in a consistent way.
+    set(NETCDF_DIR "${netCDF_INSTALL_PREFIX}")
+    set(NETCDF_INCLUDE_DIRS "${netCDF_INCLUDE_DIR}") # netCDFConfig.cmake returns netCDF_INCLUDE_DIR (singular; see https://github.com/Unidata/netcdf-c/blob/3a6b1debf1557f07b606ce3653e44f0d711203be/netCDFConfig.cmake.in#L9)
+    set(NETCDF_LIBRARIES "${netCDF_LIBRARIES}")
+    set(NETCDF_VERSION "${NetCDFVersion}")
 
     if (NOT TARGET NetCDF::NetCDF)
       add_library(NetCDF::NetCDF INTERFACE IMPORTED)
@@ -43,90 +33,105 @@ if (NOT (NETCDF_DIR OR NETCDF_INCLUDE_DIR OR NetCDF_LIBRARY))
       elseif (TARGET "netcdf")
         set_target_properties(NetCDF::NetCDF PROPERTIES INTERFACE_LINK_LIBRARIES "netcdf")
       else ()
-        set_target_properties(NetCDF::NetCDF PROPERTIES INTERFACE_LINK_LIBRARIES "${netCDF_LIBRARIES}")
+        set_target_properties(NetCDF::NetCDF PROPERTIES INTERFACE_LINK_LIBRARIES "${NETCDF_LIBRARIES}")
       endif ()
       set_target_properties(NetCDF::NetCDF PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NetCDF_INCLUDE_DIRS}")
     endif ()
-    FindNetCDF_get_is_parallel_aware("${NetCDF_INCLUDE_DIRS}")
-    # Skip the rest of the logic in this file.
-    return ()
-  endif ()
+  else()
+    #
+    # Strategy 2: Search NetCDF via pkgconfig. Relevant paths are extracted
+    #             from <search-paths>/lib64/pkgconfig/netcdf.pc (if this file exists).
+    #             <search-paths> are deduced from the $PKG_CONFIG_PATH environment variable.
+    #
+    find_package(PkgConfig QUIET)
+    if (PkgConfig_FOUND)
+      pkg_check_modules(_NetCDF QUIET netcdf IMPORTED_TARGET)
+      if (_NetCDF_FOUND)
+        set(SEARCH_STRATEGY "pkgconfig (Strategy 2)")
 
-  find_package(PkgConfig QUIET)
-  if (PkgConfig_FOUND)
-    pkg_check_modules(_NetCDF QUIET netcdf IMPORTED_TARGET)
-    if (_NetCDF_FOUND)
-      # Forward the variables in a consistent way.
-      set(NetCDF_FOUND "${_NetCDF_FOUND}")
-      set(NetCDF_INCLUDE_DIRS "${_NetCDF_INCLUDE_DIRS}") # FindPkgConfig returns <XXX>_INCLUDE_DIRS (plural; see https://cmake.org/cmake/help/latest/module/FindPkgConfig.html#command:pkg_check_modules)
-      set(NetCDF_LIBRARIES "${_NetCDF_LINK_LIBRARIES}")
-      set(NetCDF_VERSION "${_NetCDF_VERSION}")
+        # Forward the variables in a consistent way.
+        set(NETCDF_DIR "${_NetCDF_PREFIX}")
+        set(NETCDF_INCLUDE_DIRS "${_NetCDF_INCLUDE_DIRS}") # FindPkgConfig returns <XXX>_INCLUDE_DIRS (plural; see https://cmake.org/cmake/help/latest/module/FindPkgConfig.html#command:pkg_check_modules)
+        set(NETCDF_LIBRARIES "${_NetCDF_LINK_LIBRARIES}")
+        set(NetCDF_VERSION "${_NetCDF_VERSION}")
 
-      include(FindPackageHandleStandardArgs)
-      find_package_handle_standard_args(NetCDF
-        REQUIRED_VARS NetCDF_LIBRARIES
-        # This is not required because system-default include paths are not
-        # reported by `FindPkgConfig`, so this might be empty. Assume that if we
-        # have a library, the include directories are fine (if any) since
-        # PkgConfig reported that the package was found.
-        # NetCDF_INCLUDE_DIRS
-        VERSION_VAR NetCDF_VERSION)
-
-      if (NOT TARGET NetCDF::NetCDF)
-        add_library(NetCDF::NetCDF INTERFACE IMPORTED)
-        set_target_properties(NetCDF::NetCDF PROPERTIES INTERFACE_LINK_LIBRARIES "PkgConfig::_NetCDF")
-        set_target_properties(NetCDF::NetCDF PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NetCDF_INCLUDE_DIRS}")
+        if (NOT TARGET NetCDF::NetCDF)
+          add_library(NetCDF::NetCDF INTERFACE IMPORTED)
+          set_target_properties(NetCDF::NetCDF PROPERTIES INTERFACE_LINK_LIBRARIES "PkgConfig::_NetCDF")
+          set_target_properties(NetCDF::NetCDF PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NETCDF_INCLUDE_DIRS}")
+        endif ()
       endif ()
-      FindNetCDF_get_is_parallel_aware("${NetCDF_INCLUDE_DIRS}")
-      # Skip the rest of the logic in this file.
-      return ()
     endif ()
   endif ()
+else()
+  #
+  # Strategy 3: Guess NETCDF_INCLUDE_DIR and NETCDF_LIBRARY from user-provided NETCDF_DIR
+  #
+  set(SEARCH_STRATEGY "NETCDF_DIR (Strategy 3)")
+
+  find_path(NETCDF_INCLUDE_DIR
+    NAMES netcdf.h
+    DOC "netcdf include directories"
+    PATHS "${NETCDF_DIR}/include")
+  mark_as_advanced(NETCDF_INCLUDE_DIR)
+
+  if (NETCDF_INCLUDE_DIR)
+    # Forward the variables in a consistent way.
+    set(NETCDF_INCLUDE_DIRS "${NETCDF_INCLUDE_DIR}")
+
+    file(STRINGS "${NETCDF_INCLUDE_DIRS}/netcdf_meta.h" _netcdf_version_lines
+      REGEX "#define[ \t]+NC_VERSION_(MAJOR|MINOR|PATCH|NOTE)")
+    string(REGEX REPLACE ".*NC_VERSION_MAJOR *\([0-9]*\).*" "\\1" _netcdf_version_major "${_netcdf_version_lines}")
+    string(REGEX REPLACE ".*NC_VERSION_MINOR *\([0-9]*\).*" "\\1" _netcdf_version_minor "${_netcdf_version_lines}")
+    string(REGEX REPLACE ".*NC_VERSION_PATCH *\([0-9]*\).*" "\\1" _netcdf_version_patch "${_netcdf_version_lines}")
+    string(REGEX REPLACE ".*NC_VERSION_NOTE *\"\([^\"]*\)\".*" "\\1" _netcdf_version_note "${_netcdf_version_lines}")
+    set(NETCDF_VERSION "${_netcdf_version_major}.${_netcdf_version_minor}.${_netcdf_version_patch}${_netcdf_version_note}")
+    unset(_netcdf_version_major)
+    unset(_netcdf_version_minor)
+    unset(_netcdf_version_patch)
+    unset(_netcdf_version_note)
+    unset(_netcdf_version_lines)
+  endif ()
+
+  find_library(NETCDF_LIBRARY
+    NAMES netcdf
+    DOC "netcdf library"
+    PATHS "${NETCDF_DIR}/lib"
+    HINTS "${NETCDF_INCLUDE_DIRS}/../lib")
+  mark_as_advanced(NETCDF_LIBRARY)
 endif ()
 
-find_path(NETCDF_INCLUDE_DIR
-  NAMES netcdf.h
-  DOC "netcdf include directories"
-  PATHS "${NETCDF_DIR}/include")
-mark_as_advanced(NETCDF_INCLUDE_DIR)
+#
+# Check if NetCDF is parallel-aware. if ${include_dir}/netcdf_par.h exists.
+#
+find_file(NETCDF_PAR_H netcdf_par.h PATHS ${NETCDF_INCLUDE_DIRS})
+if (NETCDF_PAR_H)
+  set(NETCDF_HAS_PARALLEL TRUE)
+else()
+  set(NETCDF_HAS_PARALLEL FALSE)
+  message(WARNING "NetCDF parallel header file ${include_dir}/netcdf_par.h not found.")
+endif()
 
-find_library(NETCDF_LIBRARY
-  NAMES netcdf
-  DOC "netcdf library"
-  PATHS "${NETCDF_DIR}/lib"
-  HINTS "${NETCDF_INCLUDE_DIR}/../lib")
-mark_as_advanced(NETCDF_LIBRARY)
+# Run `cmake ... --log-level=DEBUG` to display these debugging information.
+message(STATUS "NETCDF search stragegy: via ${SEARCH_STRATEGY}")
+message(STATUS "NETCDF_DIR=${NETCDF_DIR}")
+message(STATUS "NETCDF_INCLUDE_DIRS=${NETCDF_INCLUDE_DIRS}")
+message(STATUS "NETCDF_LIBRARIES=${NETCDF_LIBRARIES}")
+message(STATUS "NETCDF_HAS_PARALLEL=${NETCDF_HAS_PARALLEL}")
 
-if (NETCDF_INCLUDE_DIR)
-  file(STRINGS "${NETCDF_INCLUDE_DIR}/netcdf_meta.h" _netcdf_version_lines
-    REGEX "#define[ \t]+NC_VERSION_(MAJOR|MINOR|PATCH|NOTE)")
-  string(REGEX REPLACE ".*NC_VERSION_MAJOR *\([0-9]*\).*" "\\1" _netcdf_version_major "${_netcdf_version_lines}")
-  string(REGEX REPLACE ".*NC_VERSION_MINOR *\([0-9]*\).*" "\\1" _netcdf_version_minor "${_netcdf_version_lines}")
-  string(REGEX REPLACE ".*NC_VERSION_PATCH *\([0-9]*\).*" "\\1" _netcdf_version_patch "${_netcdf_version_lines}")
-  string(REGEX REPLACE ".*NC_VERSION_NOTE *\"\([^\"]*\)\".*" "\\1" _netcdf_version_note "${_netcdf_version_lines}")
-  set(NetCDF_VERSION "${_netcdf_version_major}.${_netcdf_version_minor}.${_netcdf_version_patch}${_netcdf_version_note}")
-  unset(_netcdf_version_major)
-  unset(_netcdf_version_minor)
-  unset(_netcdf_version_patch)
-  unset(_netcdf_version_note)
-  unset(_netcdf_version_lines)
-
-  FindNetCDF_get_is_parallel_aware("${NETCDF_INCLUDE_DIR}")
-endif ()
-
+#
+# Verify if required NETCDF variables were set
+#
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(NetCDF
-  REQUIRED_VARS NETCDF_LIBRARY NETCDF_INCLUDE_DIR
-  VERSION_VAR NetCDF_VERSION)
+  REQUIRED_VARS NETCDF_LIBRARIES NETCDF_INCLUDE_DIRS
+  VERSION_VAR NETCDF_VERSION)
 
 if (NetCDF_FOUND)
-  set(NETCDF_INCLUDE_DIRS "${NETCDF_INCLUDE_DIR}")
-  set(NetCDF_LIBRARIES "${NETCDF_LIBRARY}")
-
   if (NOT TARGET NetCDF::NetCDF)
     add_library(NetCDF::NetCDF UNKNOWN IMPORTED)
     set_target_properties(NetCDF::NetCDF PROPERTIES
-      IMPORTED_LOCATION "${NETCDF_LIBRARY}"
-      INTERFACE_INCLUDE_DIRECTORIES "${NETCDF_INCLUDE_DIR}")
+      IMPORTED_LOCATION "${NETCDF_LIBRARIES}"
+      INTERFACE_INCLUDE_DIRECTORIES "${NETCDF_INCLUDE_DIRS}")
   endif ()
 endif ()
