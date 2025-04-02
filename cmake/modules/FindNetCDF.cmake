@@ -56,21 +56,6 @@ else()
     PATHS "${NETCDF_DIR}/include")
   mark_as_advanced(NETCDF_INCLUDE_DIRS)
 
-  if (NETCDF_INCLUDE_DIRS)
-    file(STRINGS "${NETCDF_INCLUDE_DIRS}/netcdf_meta.h" _netcdf_version_lines
-      REGEX "#define[ \t]+NC_VERSION_(MAJOR|MINOR|PATCH|NOTE)")
-    string(REGEX REPLACE ".*NC_VERSION_MAJOR *\([0-9]*\).*" "\\1" _netcdf_version_major "${_netcdf_version_lines}")
-    string(REGEX REPLACE ".*NC_VERSION_MINOR *\([0-9]*\).*" "\\1" _netcdf_version_minor "${_netcdf_version_lines}")
-    string(REGEX REPLACE ".*NC_VERSION_PATCH *\([0-9]*\).*" "\\1" _netcdf_version_patch "${_netcdf_version_lines}")
-    string(REGEX REPLACE ".*NC_VERSION_NOTE *\"\([^\"]*\)\".*" "\\1" _netcdf_version_note "${_netcdf_version_lines}")
-    set(NETCDF_VERSION "${_netcdf_version_major}.${_netcdf_version_minor}.${_netcdf_version_patch}${_netcdf_version_note}")
-    unset(_netcdf_version_major)
-    unset(_netcdf_version_minor)
-    unset(_netcdf_version_patch)
-    unset(_netcdf_version_note)
-    unset(_netcdf_version_lines)
-  endif ()
-
   find_library(NETCDF_LIBRARIES
     NAMES netcdf
     DOC "netcdf library"
@@ -89,6 +74,24 @@ else()
   set(NETCDF_HAS_PARALLEL FALSE)
   message(WARNING "NetCDF parallel header file ${include_dir}/netcdf_par.h not found.")
 endif()
+
+#
+# If NetCDF version wasn't found, try extracting it from netcdf_meta.h
+#
+if (NETCDF_INCLUDE_DIRS AND NOT NETCDF_VERSION)
+  file(STRINGS "${NETCDF_INCLUDE_DIRS}/netcdf_meta.h" _netcdf_version_lines
+    REGEX "#define[ \t]+NC_VERSION_(MAJOR|MINOR|PATCH|NOTE)")
+  string(REGEX REPLACE ".*NC_VERSION_MAJOR *\([0-9]*\).*" "\\1" _netcdf_version_major "${_netcdf_version_lines}")
+  string(REGEX REPLACE ".*NC_VERSION_MINOR *\([0-9]*\).*" "\\1" _netcdf_version_minor "${_netcdf_version_lines}")
+  string(REGEX REPLACE ".*NC_VERSION_PATCH *\([0-9]*\).*" "\\1" _netcdf_version_patch "${_netcdf_version_lines}")
+  string(REGEX REPLACE ".*NC_VERSION_NOTE *\"\([^\"]*\)\".*" "\\1" _netcdf_version_note "${_netcdf_version_lines}")
+  set(NETCDF_VERSION "${_netcdf_version_major}.${_netcdf_version_minor}.${_netcdf_version_patch}${_netcdf_version_note}")
+  unset(_netcdf_version_major)
+  unset(_netcdf_version_minor)
+  unset(_netcdf_version_patch)
+  unset(_netcdf_version_note)
+  unset(_netcdf_version_lines)
+endif ()
 
 # Run `cmake ... --log-level=DEBUG` to display these debugging information.
 message(STATUS "NETCDF search stragegy: via ${SEARCH_STRATEGY}")
