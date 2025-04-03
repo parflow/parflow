@@ -75,7 +75,11 @@ with SourceFileGenerator() as sfg:
 # TODO: Implement
 #  PFVConstrProdPos(c, x)            Returns FALSE if some c_i = 0 &
 #                                        c_i*x_i <= 0.0
-#  PFVCompare(c, x, z)               z_i = (x_i > c)
+
+    ## z_i = (x_i > c)(PFVCompare)
+    create_kernel_func(ps.Assignment(z.center(), sp.Piecewise((1.0, sp.Abs(x.center()) >= c), (0.0, True))), "VCompare")
+
+# TODO: Implement
 #  PFVInvTest(x, z)                  Returns (x_i != 0 forall i), z_i = 1 / x_i
 
     ## y = x (PFVCopy)

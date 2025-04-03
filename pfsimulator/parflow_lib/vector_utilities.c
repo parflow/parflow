@@ -1434,6 +1434,13 @@ void PFVCompare(
     zp = SubvectorElt(z_sub, ix, iy, iz);
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
+#ifdef PARFLOW_HAVE_PYSTENCILS
+      PyCodegen_VCompare(xp, zp,
+                     nx, ny, nz,
+                     1, nx_x, nx_x * ny_x,
+                     1, nx_z, nx_z * ny_z,
+                     c);
+#else
     i_x = 0;
     i_z = 0;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -1442,6 +1449,7 @@ void PFVCompare(
     {
       zp[i_z] = (fabs(xp[i_x]) >= c) ? ONE : ZERO;
     });
+#endif
   }
 }
 
