@@ -118,21 +118,11 @@ subdirectory in your home directory:
 ```shell
    mkdir ~/parflow
    cd ~/parflow
-   tar -xvf ../parflow.tar.gz
+   tar -xzvf ../parflow.tar.gz
 ```
 
 Note the ParFlow tar file will be have a different name based on the
 version number.
-
-If you are not using GNU tar or have a very old version GNU tar you
-will need to uncompress the file first:
-
-```shell
-   mkdir ~/parflow
-   cd ~/parflow
-   gunzip ../parflow.tar.gz
-   tar -xvf ../parflow.tar
-```
 
 ### Step 3: Running CMake to configure ParFlow
 
