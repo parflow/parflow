@@ -150,18 +150,20 @@ You can control build options for ParFlow using the ccmake GUI.
 ```shell
    mkdir build
    cd build
-   ccmake ../parflow 
+   ccmake ../parflow-…
 ```
-At a minimum, you will want to set the CMAKE_INSTALL_PREFIX value to the same thing
-as PARFLOW_DIR was set to above.  Other variables should be set as desired.
 
-After setting a variable 'c' will configure `ParFlow.  When you are
-completely done setting configuration options, use 'g' to generate the
+First press `c` to generate an initial configuration.  Hereafter, at a minimum,
+you will want to set the `CMAKE_INSTALL_PREFIX` value to the same thing
+as `PARFLOW_DIR` was set to above.  Other variables should be set as desired.
+
+After setting a variable `c` will configure ParFlow.  When you are
+completely done setting configuration options, use `g` to generate the
 configuration and exit ccmake.
 
 If you are new to CMake, the creators of CMake provide some additional ccmake usage notes here:
 
-https://cmake.org/runningcmake/
+https://cmake.org/resources/
 
 #### Building with the cmake command line
 
@@ -230,11 +232,11 @@ easy:
 If all went well a sample ParFlow problem can be run using:
 
 ```shell
-   cd parflow/test
+   cd parflow-…/test/tcl
    tclsh default_single.tcl 1 1 1
 ```
 
-Note that the environment variable `PAFLOW_DIR` must be set for this
+Note that the environment variable `PARFLOW_DIR` must be set for this
 to work and it assumes tclsh is in your path.  Make sure to use the
 same TCL shell as was used in the cmake configure.
 
