@@ -96,7 +96,7 @@ For bash:
 
 ```shell
    export PARFLOW_DIR=/home/snoopy/parflow
-```   
+```
 
 For csh and tcsh:
 
@@ -116,8 +116,8 @@ and extract the release.  Here we assume you are building in new
 subdirectory in your home directory:
 
 ```shell
-   mkdir ~/parflow 
-   cd ~/parflow 
+   mkdir ~/parflow
+   cd ~/parflow
    tar -xvf ../parflow.tar.gz
 ```
 
@@ -128,8 +128,8 @@ If you are not using GNU tar or have a very old version GNU tar you
 will need to uncompress the file first:
 
 ```shell
-   mkdir ~/parflow 
-   cd ~/parflow 
+   mkdir ~/parflow
+   cd ~/parflow
    gunzip ../parflow.tar.gz
    tar -xvf ../parflow.tar
 ```
@@ -175,15 +175,15 @@ using MPI libraries.  CLM is being enabled.
    mkdir build
    cd build
    cmake ../parflow \
-   	 -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
-   	 -DPARFLOW_HAVE_CLM=ON
+     -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
+     -DPARFLOW_HAVE_CLM=ON
 ```
 
 If TCL is not installed in the standard locations (/usr or /usr/local)
 you need to specify the path to the tclsh location:
 
 ```shell
-	-DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6
+    -DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6
 ```
 
 Building a parallel version of ParFlow requires the communications
@@ -194,9 +194,9 @@ is a minimal example of an MPI build with CLM:
    mkdir build
    cd build
    cmake ../parflow \
-      	 -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
-   	 -DPARFLOW_HAVE_CLM=ON \
-	 -DPARFLOW_AMPS_LAYER=mpi1
+     -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
+     -DPARFLOW_HAVE_CLM=ON \
+     -DPARFLOW_AMPS_LAYER=mpi1
 ```
 
 Here is a more complex example where location of various external
@@ -206,14 +206,14 @@ packages are being specified and some features are being enabled:
    mkdir build
    cd build
    cmake ../parflow \
-        -DPARFLOW_AMPS_LAYER=mpi1 \
-	-DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
-	-DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
-	-DSILO_ROOT=${PARFLOW_SILO_DIR} \
-	-DCMAKE_BUILD_TYPE=Debug \
-	-DPARFLOW_ENABLE_TIMING=TRUE \
-	-DPARFLOW_HAVE_CLM=ON \
-	-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+     -DPARFLOW_AMPS_LAYER=mpi1 \
+     -DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
+     -DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
+     -DSILO_ROOT=${PARFLOW_SILO_DIR} \
+     -DCMAKE_BUILD_TYPE=Debug \
+     -DPARFLOW_ENABLE_TIMING=TRUE \
+     -DPARFLOW_HAVE_CLM=ON \
+     -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
 ```
 
 ### Step 4: Building and installing
@@ -223,7 +223,7 @@ easy:
 
 ```shell
    cd build
-   make 
+   make
    make install
 ```
 
@@ -265,7 +265,7 @@ pfpython -m pip install -r requirements.txt
 make html
 ```
 
-The main HTML page created at _build/html/index.html.   Open this using 
+The main HTML page created at _build/html/index.html.   Open this using
 a browser.  On MacOS:
 
 ```shell
@@ -326,7 +326,7 @@ On MacOS the key documentation may be viewed with `open` or use a browser to ope
 
 ```
     open ./build-docker/docs/user_manual/build-site/index.html
-```	
+```
 
 ## Configure options
 
@@ -371,7 +371,7 @@ There are several ways to modify the CMake guess on how applications
 should be run.  At configure time you may override the MPI launcher
 using:
 
-```shell 
+```shell
    -DMPIEXEC="<launcher-name>"
    -DMPIEXEC_NUMPROC_FLAG="<flag used to set number of tasks>"
 ```
@@ -485,9 +485,9 @@ For more information look into our [Docker Readme](./docker/README.md)
 
 ## Release
 
-Copyright (c) 1995-2021, Lawrence Livermore National Security LLC. 
+Copyright (c) 1995-2021, Lawrence Livermore National Security LLC.
 
-Produced at the Lawrence Livermore National Laboratory. 
+Produced at the Lawrence Livermore National Laboratory.
 
 Written by the Parflow Team (see the CONTRIBUTORS file)
 
