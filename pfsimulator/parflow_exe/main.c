@@ -496,7 +496,7 @@ int main(int argc, char *argv [])
 #ifdef PARFLOW_HAVE_RMM
   amps_rmmFinalize();
 #endif
-  
+
 #ifdef PARFLOW_HAVE_KOKKOS
   kokkosFinalize();
 #endif

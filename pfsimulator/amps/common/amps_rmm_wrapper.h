@@ -8,11 +8,11 @@
 extern "C" {
 #endif
 
-  void amps_rmmInit();
-  void* amps_rmmAlloc(size_t bytes);
-  void amps_rmmFree(void *data);
-  void amps_rmmFinalize();
-  
+void amps_rmmInit();
+void* amps_rmmAlloc(size_t bytes);
+void amps_rmmFree(void *data);
+void amps_rmmFinalize();
+
 #ifdef __cplusplus
 }
 #endif
