@@ -6,10 +6,14 @@ find_package ( PystencilsSfg REQUIRED )
 
 # determine config file depending on build flags
 
-if ( ${PARFLOW_HAVE_CUDA} )
-        set ( PystencilsSfg_CONFIG_MODULE cuda_config.py )
+if ( DEFINED PYSTENCILS_CONFIG_MODULE )
+        set ( PystencilsSfg_CONFIG_MODULE ${PYSTENCILS_CONFIG_MODULE} )
 else ()
-        set ( PystencilsSfg_CONFIG_MODULE cpu_config.py )
+        if ( ${PARFLOW_HAVE_CUDA} )
+                set ( PystencilsSfg_CONFIG_MODULE cuda_config.py )
+        else ()
+                set ( PystencilsSfg_CONFIG_MODULE cpu_config.py )
+        endif ()
 endif ()
 
 # run source file generator

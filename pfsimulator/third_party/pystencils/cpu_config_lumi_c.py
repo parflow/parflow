@@ -6,7 +6,6 @@ def configure_sfg(cfg: SfgConfig):
     cfg.extensions.header = "h"
     cfg.extensions.impl = "cpp"
     cfg.c_interfacing = True
-    cfg.header_only = True
 
 def project_info():
     return {
@@ -14,6 +13,6 @@ def project_info():
         "float_precision": "float64",
         "use_cpu": True,
         "use_cuda": False,
-        "use_openmp": False,
-        "target": ps.Target.GenericCPU,
+        "use_openmp": True,
+        "target": ps.Target.X86_AVX,
     }

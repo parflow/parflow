@@ -5,17 +5,46 @@ from pystencilssfg import SourceFileGenerator, SfgConfig
 from pystencilssfg.lang.cpp import *
 
 with SourceFileGenerator() as sfg:
-    dtype = "float64"
+    dtype = sfg.context.project_info['float_precision']
+
+    # set up kernel config
+    def get_kernel_cfg(
+            enable_vect: bool = True,
+            enable_omp: bool = True
+    ):
+        if target := sfg.context.project_info['target']:
+            kernel_cfg = ps.CreateKernelConfig(
+                target=target,
+            )
+
+            # cpu optimizations
+            if sfg.context.project_info['use_cpu']:
+
+                # vectorization
+                if target.is_vector_cpu() and enable_vect:
+                    kernel_cfg.cpu.vectorize.enable = True
+                    kernel_cfg.cpu.vectorize.assume_inner_stride_one = True
+
+                # OpenMP
+                if sfg.context.project_info['use_openmp'] and enable_omp:
+                    kernel_cfg.cpu.openmp.enable = True
+
+            return kernel_cfg
 
     def invoke(kernel):
         # TODO: invoke handling for CUDA
         # if sfg.context.project_info['use_cuda']:
-        # ...
-        #else:
+        #     ...
+        # else:
+        #     ...
         return sfg.call(kernel)
 
     def create_kernel_func(assign, func_name):
-        k = sfg.kernels.create(assign, f"{func_name}_gen")
+        k = sfg.kernels.create(assign, f"{func_name}_gen", get_kernel_cfg())
+        sfg.function(f"PyCodegen_{func_name}")(invoke(k))
+
+    def create_kernel_func_no_vect(assign, func_name):
+        k = sfg.kernels.create(assign, f"{func_name}_gen", get_kernel_cfg(enable_vect=False))
         sfg.function(f"PyCodegen_{func_name}")(invoke(k))
 
     # symbols
@@ -72,15 +101,18 @@ with SourceFileGenerator() as sfg:
     ## Returns max_i x_i (PFVMax)
     create_kernel_func(ps.MaxReductionAssignment(r, x.center()), "VMax")
 
-# TODO: Implement
-#  PFVConstrProdPos(c, x)            Returns FALSE if some c_i = 0 &
-#                                        c_i*x_i <= 0.0
+    # TODO: Implement? Not ideal target code for pystencils
+    #  PFVConstrProdPos(c, x)            Returns FALSE if some c_i = 0 &
+    #                                        c_i*x_i <= 0.0
 
     ## z_i = (x_i > c)(PFVCompare)
-    create_kernel_func(ps.Assignment(z.center(), sp.Piecewise((1.0, sp.Abs(x.center()) >= c), (0.0, True))), "VCompare")
+    create_kernel_func_no_vect(
+        ps.Assignment(z.center(),
+                      sp.Piecewise((1.0, sp.Abs(x.center()) >= c), (0.0, True))),
+        "VCompare")
 
-# TODO: Implement
-#  PFVInvTest(x, z)                  Returns (x_i != 0 forall i), z_i = 1 / x_i
+    # TODO: Implement? Not ideal target code for pystencils
+    #  PFVInvTest(x, z)                  Returns (x_i != 0 forall i), z_i = 1 / x_i
 
     ## y = x (PFVCopy)
     #create_kernel_func(ps.Assignment(y.center(), x.center()), "VCopy")
@@ -112,5 +144,5 @@ with SourceFileGenerator() as sfg:
     ## x = x * a (PFVScaleBy)
     create_kernel_func(ps.Assignment(x.center(), x.center() * a), "VScaleBy")
 
-# TODO: Implement
-#  PFVLayerCopy (a, b, x, y)        NBE: Extracts layer b from vector y, inserts into layer a of vector x
+    # TODO: Implement?
+    #  PFVLayerCopy (a, b, x, y)        NBE: Extracts layer b from vector y, inserts into layer a of vector x
