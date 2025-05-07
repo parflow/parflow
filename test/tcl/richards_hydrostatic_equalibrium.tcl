@@ -1,5 +1,5 @@
 # This runs a test case with the Richards' solver 
-# in hydrostatic equalibrium.  As such the solution
+# in hydrostatic equilibrium.  As such the solution
 # should not change over time and should not
 # take any solver iteratorions.
 

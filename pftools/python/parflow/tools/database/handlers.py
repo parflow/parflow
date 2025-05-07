@@ -134,7 +134,7 @@ class ListHandler:
 class SplitHandler:
     """
     This class will split the provided key using the separator convert
-    each tocken using a type converter and set the field list.
+    each token using a type converter and set the field list.
     """
 
     def decorate(

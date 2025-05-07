@@ -74,7 +74,7 @@ proc AddFiles {} {
     pack $w.start
 
     frame $w.stop
-    label $w.stop.label -text "Stoping integer:" -width 15 -anchor w
+    label $w.stop.label -text "Stopping integer:" -width 15 -anchor w
     entry $w.stop.entry -width 40 -textvariable StopInt
     pack $w.stop.label $w.stop.entry -side left
     pack $w.stop

@@ -1,6 +1,6 @@
 # ---------------------------------------------------------
 # Runs a simple sand draining problem, rectangular domain
-# with variable dz and a heterogenous subsurface with different K the top and bottom layers
+# with variable dz and a heterogeneous subsurface with different K the top and bottom layers
 # ---------------------------------------------------------
 
 import sys

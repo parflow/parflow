@@ -301,7 +301,7 @@ module parflow_nuopc_fields
       deallocate(pf_zmult%efld)
     endif
 
-    ! destory internal field bundle
+    ! destroy internal field bundle
     isCreated = ESMF_FieldBundleIsCreated(internalFB, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     if (isCreated) then

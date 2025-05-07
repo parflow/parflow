@@ -164,7 +164,7 @@ level as the ``.{phase_name}`` in ``Phase.phase_name``. This can also be an abso
 ``ignore``
 ^^^^^^^^^^^
 
-Skip field exportation but allow to set other keys from it in a more convinient manner using some handler.
+Skip field exportation but allow to set other keys from it in a more convenient manner using some handler.
 
 .. code-block:: yaml
 

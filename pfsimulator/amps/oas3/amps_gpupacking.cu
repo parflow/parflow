@@ -534,7 +534,7 @@ static char* _amps_gpu_sendbuf_realloc(int id, int pos, int size){
 * @param inv_num amps invoice order number [IN]
 * @param buffer_out pointer to the pointer of the staging buffer [OUT]
 * @param size_out pointer to the invoice message size in bytes [OUT]
-* @return error code (line number), 0 if succesful
+* @return error code (line number), 0 if successful
 */
 int amps_gpupacking(int action, amps_Invoice inv, int inv_num, char **buffer_out, int *size_out){
   

@@ -107,7 +107,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        dthv,              & ! diff of vir. poten. temp. between ref. height and surface
        dqh,               & ! diff of humidity between ref. height and surface
        obu,               & ! Monin-Obukhov length (m)
-       um,                & ! wind speed including the stablity effect [m/s]
+       um,                & ! wind speed including the stability effect [m/s]
        ur,                & ! wind speed at reference height [m/s]
        uaf,               & ! velocity of air within foliage [m/s]
        temp1,             & ! relation for potential temperature profile
@@ -148,7 +148,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        deldT,             & ! derivative of "el" on "t_veg" [pa/K]
        qsatl,             & ! leaf specific humidity [kg/kg]
        qsatldT,           & ! derivative of "qsatl" on "t_veg"
-       air,bir,cir,       & ! atmos. radiation temporay set
+       air,bir,cir,       & ! atmos. radiation temporary set
        dc1,dc2,           & ! derivative of energy flux [W/m2/K]
        w, csoilcn           ! weight function and revised csoilc - declare  @RMM
 

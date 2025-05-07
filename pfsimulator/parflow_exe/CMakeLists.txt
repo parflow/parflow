@@ -24,6 +24,10 @@ if(CMAKE_CUDA_COMPILER)
   target_link_libraries(parflow ${PARFLOW_CUDA_TOOLKIT_LIBS})
 endif(CMAKE_CUDA_COMPILER)
 
+if( ${PARFLOW_HAVE_UMPIRE} )
+  target_link_libraries(parflow umpire)
+endif( ${PARFLOW_HAVE_UMPIRE} )
+
 if( ${PARFLOW_HAVE_CLM} )
   target_link_libraries(parflow pfclm)
 endif( ${PARFLOW_HAVE_CLM} )

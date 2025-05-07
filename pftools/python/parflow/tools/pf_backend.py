@@ -80,7 +80,7 @@ class ParflowBackendEntrypoint(BackendEntrypoint):
         :param chunks:
             The chunking scheme to apply along dimensions. See:
             https://xarray.pydata.org/en/stable/generated/xarray.Dataset.chunk.html
-            for useage options. This is primarily set for automatically paralellizing
+            for usage options. This is primarily set for automatically parallelizing
             computations via dask.
         :param strict_ext_check:
             Whether or not to strictly check the filename extension for

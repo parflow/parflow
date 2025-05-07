@@ -132,7 +132,7 @@ public:
    static const std::string SCRATCH_CONTEXT;
 
 
-   // Not implemeted; standard C++'ism to avoid bad things
+   // Not implemented; standard C++'ism to avoid bad things
    Parflow(const Parflow&);
    void operator=(const Parflow&);
    
