@@ -118,7 +118,7 @@ subdirectory in your home directory:
 ```shell
    mkdir ~/parflow
    cd ~/parflow
-   tar -xzvf ../parflow.tar.gz
+   tar -xzvf ../parflow-<version>.tar.gz
 ```
 
 Note the ParFlow tar file will be have a different name based on the
@@ -140,7 +140,7 @@ You can control build options for ParFlow using the ccmake GUI.
 ```shell
    mkdir build
    cd build
-   ccmake ../parflow-…
+   ccmake ../parflow-<version>
 ```
 
 First press `c` to generate an initial configuration.  Hereafter, at a minimum,
@@ -164,7 +164,7 @@ using MPI libraries.  CLM is being enabled.
 ```shell
    mkdir build
    cd build
-   cmake ../parflow \
+   cmake ../parflow-<version> \
      -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR} \
      -DPARFLOW_HAVE_CLM=ON
 ```
@@ -195,7 +195,7 @@ packages are being specified and some features are being enabled:
 ```shell
    mkdir build
    cd build
-   cmake ../parflow \
+   cmake ../parflow-<version> \
      -DPARFLOW_AMPS_LAYER=mpi1 \
      -DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
      -DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
@@ -203,7 +203,7 @@ packages are being specified and some features are being enabled:
      -DCMAKE_BUILD_TYPE=Debug \
      -DPARFLOW_ENABLE_TIMING=TRUE \
      -DPARFLOW_HAVE_CLM=ON \
-     -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+     -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR}
 ```
 
 ### Step 4: Building and installing
@@ -222,7 +222,7 @@ easy:
 If all went well a sample ParFlow problem can be run using:
 
 ```shell
-   cd parflow-…/test/tcl
+   cd parflow-<version>/test/tcl
    tclsh default_single.tcl 1 1 1
 ```
 
