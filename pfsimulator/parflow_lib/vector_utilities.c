@@ -520,7 +520,7 @@ void PFVScale(
       zp = SubvectorElt(z_sub, ix, iy, iz);
       xp = SubvectorElt(x_sub, ix, iy, iz);
 
-#if PARFLOW_HAVE_PYSTENCILS
+#ifdef PARFLOW_HAVE_PYSTENCILS
         PyCodegen_VScale(xp, zp,
                         nx, ny, nz,
                         1, nx_x, nx_x * ny_x,

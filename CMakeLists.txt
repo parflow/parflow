@@ -367,6 +367,18 @@ endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
 
 
 #-----------------------------------------------------------------------------
+# PYSTENCILS
+#-----------------------------------------------------------------------------
+option(PARFLOW_ENABLE_PYSTENCILS "Build with Pystencils" "OFF")
+if (${PARFLOW_ENABLE_PYSTENCILS})
+  find_package(PystencilsSfg REQUIRED)
+  if (${PystencilsSfg_FOUND})
+    set(PARFLOW_HAVE_PYSTENCILS "yes")
+    set(HAVE_PYSTENCILS ${PARFLOW_HAVE_PYSTENCILS})
+  endif (${PystencilsSfg_FOUND})
+endif (${PARFLOW_ENABLE_PYSTENCILS})
+
+#-----------------------------------------------------------------------------
 # libm
 #-----------------------------------------------------------------------------
 if (NOT DEFINED PARFLOW_LIBM)

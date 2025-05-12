@@ -1,9 +1,5 @@
 cmake_minimum_required ( VERSION 3.24 )
 
-# find package for CMake integration
-
-find_package ( PystencilsSfg REQUIRED )
-
 # determine config file depending on build flags
 
 if ( DEFINED PYSTENCILS_CONFIG_MODULE )
