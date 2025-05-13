@@ -213,9 +213,7 @@ endif(${PARFLOW_HAVE_KOKKOS})
   endif( ${PARFLOW_HAVE_KOKKOS} )
 
   if( ${PARFLOW_HAVE_RMM} )
-    target_link_libraries(pfsimulator rmm)
-    target_include_directories(pfsimulator PRIVATE ${RMM_INCLUDE})
-    target_compile_definitions(pfsimulator PRIVATE PARFLOW_HAVE_RMM)
+    target_link_libraries(pfsimulator rmm::rmm)
   endif( ${PARFLOW_HAVE_RMM} )
 
   if( ${PARFLOW_HAVE_UMPIRE} )

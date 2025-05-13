@@ -93,6 +93,7 @@ endif()
 
 # Include Umpire or RMM memory manager for pool allocation
 if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
+
   if (DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
     message(FATAL_ERROR "ERROR: Cannot have both Umpire and RMM enabled at the same time.")
   endif(DEFINED umpire_ROOT AND DEFINED rmm_ROOT)
@@ -103,34 +104,21 @@ if((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
     message(STATUS "ACCELERATOR: Compiling with CUDA and Umpire")
   endif(DEFINED umpire_ROOT)
   
-  if(DEFINED RMM_ROOT)
-    find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
-    find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
-    if(RMM_INCLUDE AND RMM_LIBRARY)
-      message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
-      message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
-      add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
-      set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
-    # PARFLOW_HAVE_RMM is not defined in parflow_config.h because because it is
-    # only set for the compilation of parflow_exe, parflow_lib, and kinsol sources.
-    # RMM must be initialized before it is used, so, for example,
-    # the amps tests would fail if used across all compiles.
-      set(PARFLOW_HAVE_RMM "yes")
-    else(RMM_INCLUDE AND RMM_LIBRARY)
-      message(FATAL_ERROR "ERROR: RMM installation not found")
-    endif(RMM_INCLUDE AND RMM_LIBRARY)
+  if(DEFINED rmm_ROOT)
+    find_package(rmm REQUIRED)
+    set(PARFLOW_HAVE_RMM "yes")
     if(${PARFLOW_HAVE_CUDA}) 
       message(STATUS "ACCELERATOR: Compiling with CUDA and RMM")
     else(${PARFLOW_HAVE_CUDA}) 
       message(STATUS "ACCELERATOR: Compiling with Kokkos and RMM")
     endif(${PARFLOW_HAVE_CUDA}) 
-  else(DEFINED RMM_ROOT)
+  else(DEFINED rmm_ROOT)
     if(${PARFLOW_HAVE_CUDA}) 
       message(STATUS "ACCELERATOR: Compiling with CUDA (RMM not used)")
     else(${PARFLOW_HAVE_CUDA}) 
       message(STATUS "ACCELERATOR: Compiling with Kokkos (RMM not used)")
     endif(${PARFLOW_HAVE_CUDA}) 
-  endif(DEFINED RMM_ROOT)
+  endif(DEFINED rmm_ROOT)
 endif((${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_KOKKOS}))
 
 #-----------------------------------------------------------------------------

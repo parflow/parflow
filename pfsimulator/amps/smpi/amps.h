@@ -51,7 +51,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #ifdef PARFLOW_HAVE_RMM
-#include <rmm/rmm_api.h>
+#include "amps_rmm_wrapper.h"
 #endif
 #endif
 #ifdef PARFLOW_HAVE_UMPIRE
@@ -1091,25 +1091,6 @@ static inline void amps_cuda_error(cudaError_t err, const char *file, int line)
   }
 }
 
-#ifdef PARFLOW_HAVE_RMM
-/**
- * @brief RMM error handling.
- *
- * If error detected, print error message and exit.
- *
- * @param expr RMM error (of type rmmError_t) [IN]
- */
-#define RMM_ERRCHK(err) (amps_rmm_error(err, __FILE__, __LINE__))
-static inline void amps_rmm_error(rmmError_t err, const char *file, int line)
-{
-  if (err != RMM_SUCCESS)
-  {
-    printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), file, line);
-    exit(1);
-  }
-}
-#endif
-
 /*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for CUDA
  *--------------------------------------------------------------------------*/
@@ -1129,7 +1110,7 @@ static inline void *_amps_talloc_cuda(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+  ptr = amps_rmmAlloc(size);
 #elif defined(PARFLOW_HAVE_UMPIRE)
   ptr = amps_umpireAlloc(size);
 #else
@@ -1155,7 +1136,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
   void *ptr = NULL;
 
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERRCHK(rmmAlloc(&ptr, size, 0, __FILE__, __LINE__));
+  ptr = amps_rmmAlloc(size);
 #elif defined(PARFLOW_HAVE_UMPIRE)
   ptr = amps_umpireAlloc(size);
 #else
@@ -1178,7 +1159,7 @@ static inline void *_amps_ctalloc_cuda(size_t size)
 static inline void _amps_tfree_cuda(void *ptr)
 {
 #ifdef PARFLOW_HAVE_RMM
-  RMM_ERRCHK(rmmFree(ptr, 0, __FILE__, __LINE__));
+  amps_rmmFree(ptr);
 #elif defined(PARFLOW_HAVE_UMPIRE)
   amps_umpireFree(ptr);
 #else
