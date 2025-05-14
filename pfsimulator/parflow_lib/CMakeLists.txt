@@ -303,7 +303,5 @@ if (${PARFLOW_HAVE_SILO})
 endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_include_directories (pfsimulator PUBLIC "${netCDF_INCLUDE_DIRS}")
-  target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
-  target_link_libraries (pfsimulator ${NETCDF_LIBRARIES})
+  target_link_libraries (pfsimulator NetCDF::NetCDF)
 endif (${PARFLOW_HAVE_NETCDF})
