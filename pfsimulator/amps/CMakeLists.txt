@@ -32,6 +32,11 @@ add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
 if(${PARFLOW_HAVE_CUDA})
   target_include_directories(amps PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+  if(TARGET CUDA::cudart_static)
+    target_link_libraries(amps CUDA::cudart_static)
+  elseif(TARGET CUDA::cudart)
+    target_link_libraries(amps CUDA::cudart)
+  endif()
 endif(${PARFLOW_HAVE_CUDA})
 
 if( ${PARFLOW_HAVE_UMPIRE} )
